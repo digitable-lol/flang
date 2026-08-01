@@ -1,0 +1,10 @@
+{
+  "tasks": [
+    {
+      "id": "MOB-1842",
+      "status": "in_progress",
+      "assignee": "alexey.petrov",
+      "estimate": 8
+    }
+  ]
+}

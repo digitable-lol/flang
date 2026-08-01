@@ -1,0 +1,33 @@
+{
+  "category": "ClassicalLogic",
+  "structures": [
+    {
+      "name": "Individual",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "isHuman", "type": "boolean" },
+        { "name": "isMortal", "type": "boolean" }
+      ]
+    }
+  ],
+  "functors": [
+    {
+      "name": "humanImpliesMortal",
+      "domain": "Human",
+      "codomain": "Mortal",
+      "law": "forall x. Human(x) -> Mortal(x)"
+    }
+  ],
+  "proposition": {
+    "kind": "compose",
+    "functors": ["humanImpliesMortal"],
+    "arg": {
+      "kind": "witness",
+      "structure": "Individual",
+      "field": "isHuman",
+      "selector": { "name": "Socrates" },
+      "value": true
+    }
+  },
+  "ts_compat": {}
+}

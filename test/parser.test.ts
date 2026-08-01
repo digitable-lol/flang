@@ -1,0 +1,71 @@
+import assert from "node:assert/strict"
+import { readFile } from "node:fs/promises"
+import { describe, it } from "node:test"
+import { compile } from "../src/parser.js"
+
+describe("compile", () => {
+  it("compiles legacy .ch.ts syntax", async () => {
+    const source = await readFile(new URL("../../examples/task-status.ch.ts", import.meta.url), "utf8")
+    const document = compile(source)
+    assert.equal(document.category, "IterationSnapshot")
+    assert.equal(document.structures[0]?.name, "TaskRow")
+    assert.equal(document.functors[0]?.name, "statusOf")
+    assert.deepEqual(document.proposition, {
+      kind: "witness",
+      structure: "TaskRow",
+      field: "status",
+      selector: { id: "MOB-1842" },
+      value: "in_progress",
+      path: ["tasks", { id: "MOB-1842" }, "status"],
+    })
+  })
+
+  it("compiles canonical compose syntax with a nested witness", async () => {
+    const source = await readFile(new URL("../../examples/socrates.fts", import.meta.url), "utf8")
+    const document = compile(source)
+    assert.equal(document.proposition?.kind, "compose")
+    if (document.proposition?.kind !== "compose") assert.fail("expected compose")
+    assert.deepEqual(document.proposition.functors, ["humanImpliesMortal"])
+    assert.equal(document.proposition.arg.kind, "witness")
+  })
+
+  it("accepts legacy compose [f] syntax", () => {
+    const document = compile(`
+      category C {
+        structure A { ok: boolean }
+        functor f: A -> B
+        proposition compose [f] {
+          witness A.ok { value true }
+        }
+      }
+    `)
+    assert.equal(document.proposition?.kind, "compose")
+  })
+
+  it("accepts canonical JSON and export default JSON", () => {
+    const json = '{"category":"C","structures":[],"functors":[]}'
+    assert.equal(compile(json).category, "C")
+    assert.equal(compile(`export default ${json} as const`).category, "C")
+  })
+
+  it("parses Unicode escapes and numeric values without swallowing operators", () => {
+    const document = compile(`category C {
+      structure A { value: number }
+      proposition witness A.value { selector { label: "\\u0424" } value -1.5e2 }
+    }`)
+    assert.equal(document.proposition?.kind, "witness")
+    if (document.proposition?.kind !== "witness") assert.fail("expected witness")
+    assert.deepEqual(document.proposition.selector, { label: "Ф" })
+    assert.equal(document.proposition.value, -150)
+  })
+
+  it("reports source spans for invalid syntax", () => {
+    assert.throws(
+      () => compile("category C { nonsense X }"),
+      (error: unknown) => {
+        assert.equal((error as { diagnostics: Array<{ code: string }> }).diagnostics[0]?.code, "FTS_UNEXPECTED_TOKEN")
+        return true
+      },
+    )
+  })
+})

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fts-lang.dev/schema/document.schema.json",
+  "title": "FTS document",
+  "description": "Canonical JSON representation of a Formal Type Surface document.",
+  "type": "object",
+  "required": ["category", "structures", "functors", "proposition", "ts_compat"],
+  "properties": {
+    "category": { "$ref": "#/$defs/identifier" },
+    "structures": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/structure" }
+    },
+    "functors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/functor" }
+    },
+    "proposition": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/proposition" }
+      ]
+    },
+    "ts_compat": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "type": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "structure": {
+      "type": "object",
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/field" }
+        },
+        "ts_compat": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "functor": {
+      "type": "object",
+      "required": ["name", "domain", "codomain"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "domain": { "type": "string", "minLength": 1 },
+        "codomain": { "type": "string", "minLength": 1 },
+        "law": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "pathSegment": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "integer", "minimum": 0 },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": ["string", "number", "boolean", "null"]
+          }
+        }
+      ]
+    },
+    "witness": {
+      "type": "object",
+      "required": ["kind", "structure", "field"],
+      "properties": {
+        "kind": { "const": "witness" },
+        "structure": { "$ref": "#/$defs/identifier" },
+        "field": { "$ref": "#/$defs/identifier" },
+        "selector": { "type": "object" },
+        "value": true,
+        "path": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pathSegment" }
+        },
+        "detail": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "apply": {
+      "type": "object",
+      "required": ["kind", "functor", "arg"],
+      "properties": {
+        "kind": { "const": "apply" },
+        "functor": { "$ref": "#/$defs/identifier" },
+        "arg": { "$ref": "#/$defs/proposition" },
+        "detail": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "compose": {
+      "type": "object",
+      "required": ["kind", "functors", "arg"],
+      "properties": {
+        "kind": { "const": "compose" },
+        "functors": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "arg": { "$ref": "#/$defs/proposition" },
+        "detail": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "proposition": {
+      "oneOf": [
+        { "$ref": "#/$defs/witness" },
+        { "$ref": "#/$defs/apply" },
+        { "$ref": "#/$defs/compose" }
+      ]
+    }
+  }
+}

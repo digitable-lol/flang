@@ -1,0 +1,19 @@
+// All humans are mortal; Socrates is human; therefore Socrates is mortal.
+category ClassicalLogic {
+  structure Individual {
+    name: string
+    isHuman: boolean
+    isMortal: boolean
+  }
+
+  functor humanImpliesMortal: Human -> Mortal
+
+  proposition compose {
+    functors: ["humanImpliesMortal"]
+    witness Individual.isHuman {
+      selector { name: "Socrates" }
+      value true
+      detail "Socrates is human"
+    }
+  }
+}

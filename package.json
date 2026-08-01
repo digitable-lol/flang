@@ -1,7 +1,7 @@
 {
   "name": "@digitable/fts",
   "version": "0.1.0",
-  "description": "Formal Type Surface: a TypeScript-adjacent language for structures, morphisms, propositions, and machine-checkable witnesses.",
+  "description": "Formal Type Surface: an indentation-based language for domain objects, morphisms, theorems, and machine-checkable evidence.",
   "type": "module",
   "license": "Apache-2.0",
   "private": true,
@@ -49,7 +49,8 @@
     "typescript": "^5.9.0"
   },
   "keywords": [
-    "typescript",
+    "domain-specific-language",
+    "russian-language",
     "formal-methods",
     "proof-carrying-data",
     "category-theory",

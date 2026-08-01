@@ -132,7 +132,7 @@ export interface CertificateVerification {
   actual_digest: string
 }
 
-export type VisualizationMode = "all" | "category" | "functors" | "proof"
+export type VisualizationMode = "all" | "category" | "morphisms" | "functors" | "proof"
 
 export interface FtsVisualization {
   mermaid: string

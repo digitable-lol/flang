@@ -1,8 +1,10 @@
 // Browser-safe public surface. Strict certificate production and verification
 // stay on the trusted server boundary because they use Node.js cryptography.
 export * from "./diagnostics.js"
+export * from "./domain.js"
 export * from "./interpreter.js"
 export * from "./model.js"
+export * from "./natural-parser.js"
 export * from "./parser.js"
 export * from "./stdlib.js"
 export * from "./templates.js"

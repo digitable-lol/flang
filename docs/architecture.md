@@ -25,11 +25,13 @@ Library API ─┬─ browser entry (React/Vue, no Node crypto)
 
 ## Modules
 
-- `parser.ts` owns `.fts` tokenization, parsing, and canonical JSON normalization.
+- `natural-parser.ts` owns the primary indentation-based Russian surface.
+- `parser.ts` dispatches source forms, retains the legacy braced parser, and normalizes canonical JSON.
+- `domain.ts` exposes human-facing `objects`, `morphisms`, and `theorem` views over the version-1 wire model.
 - `validate.ts` owns semantic constraints and stable JSON-path diagnostics.
 - `certificate.ts` constructs deterministic typed certificates and independently verifies them.
 - `interpreter.ts` provides human-readable derivations and resolves generic JSON paths.
-- `visualize.ts` renders category, functor, and proof diagrams as Mermaid.
+- `visualize.ts` renders category, morphism, and proof diagrams as Mermaid.
 - `pipeline.ts` composes the public operations without hidden I/O.
 - `cli.ts` and `mcp.ts` adapt the same API; neither contains language semantics.
 - `browser.ts` exports parsing, validation, proof explanation, and visualization without the Node.js certificate implementation.

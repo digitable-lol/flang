@@ -26,4 +26,11 @@ describe("pipeline", () => {
     const ids = [...result.viz.mermaid_category.matchAll(/^\s+(n_[^\[]+)\[/gm)].map((match) => match[1])
     assert.equal(new Set(ids).size, 2)
   })
+
+  it("uses morphisms as the public visualization mode", async () => {
+    const source = await readFile(new URL("../../examples/real-world/order-shipment.fts", import.meta.url), "utf8")
+    const result = pipeline({ source, viz: "morphisms" })
+    assert.match(result.viz.mermaid, /morphisms/)
+    assert.doesNotMatch(result.viz.mermaid, /category:/)
+  })
 })

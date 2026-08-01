@@ -17,7 +17,7 @@ An application owns:
 - mapping domain data to JSON context;
 - domain templates that emit `.fts`;
 - authentication, persistence, and HTTP routes;
-- decisions about which declared functors are trusted assumptions.
+- decisions about which declared morphisms are trusted assumptions.
 
 ## Recommended integration
 

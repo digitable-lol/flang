@@ -107,7 +107,7 @@ function parseArgs(argv: string[]): CliOptions {
       if (certificateFile === undefined) throw new Error("--certificate requires a JSON file")
     } else if (arg === "--mode") {
       const candidate = argv[++index]
-      if (!isMode(candidate)) throw new Error("--mode must be all, category, functors, or proof")
+      if (!isMode(candidate)) throw new Error("--mode must be all, category, morphisms, or proof")
       mode = candidate
     } else if (arg === "--pretty") {
       pretty = true
@@ -139,7 +139,7 @@ function writeJson(value: unknown, pretty: boolean, stream: NodeJS.WritableStrea
 }
 
 function isMode(value: string | undefined): value is VisualizationMode {
-  return value === "all" || value === "category" || value === "functors" || value === "proof"
+  return value === "all" || value === "category" || value === "morphisms" || value === "functors" || value === "proof"
 }
 
 const helpText = `FTS — Formal Type Surface
@@ -150,8 +150,8 @@ Usage:
   fts prove [file|-] [--context context.json] [--pretty]
   fts certify [file|-] [--context context.json] [--pretty]
   fts verify [file|-] --context context.json --certificate proof.json [--pretty]
-  fts visualize [file|-] [--context context.json] [--mode all|category|functors|proof]
-  fts pipeline [file|-] [--context context.json] [--mode all|category|functors|proof]
+  fts visualize [file|-] [--context context.json] [--mode all|category|morphisms|proof]
+  fts pipeline [file|-] [--context context.json] [--mode all|category|morphisms|proof]
   fts mcp
   fts version
 

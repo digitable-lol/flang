@@ -12,7 +12,7 @@ export function visualize(
   const selected =
     mode === "category"
       ? mermaid_category
-      : mode === "functors"
+      : mode === "morphisms" || mode === "functors"
         ? mermaid_functors || mermaid_category
         : mode === "proof"
           ? mermaid_proof ?? mermaid_category
@@ -32,7 +32,7 @@ export function mermaidCategory(document: FtsDocument): string {
   for (const functor of document.functors) {
     const from = ensureNode(functor.domain, ids, lines)
     const to = ensureNode(functor.codomain, ids, lines)
-    lines.push(`    ${from} -->|"functor ${escapeMermaid(functor.name)}"| ${to}`)
+    lines.push(`    ${from} -->|"morphism ${escapeMermaid(functor.name)}"| ${to}`)
   }
   lines.push("  end")
   return lines.join("\n")
@@ -40,7 +40,7 @@ export function mermaidCategory(document: FtsDocument): string {
 
 export function mermaidFunctors(document: FtsDocument): string {
   if (document.functors.length === 0) return ""
-  const lines = ["flowchart TB", "  subgraph FUNCTORS[\"functors\"]"]
+  const lines = ["flowchart TB", "  subgraph MORPHISMS[\"morphisms\"]"]
   document.functors.forEach((functor, index) => {
     lines.push(`    f${index}a["${escapeMermaid(functor.domain)}"]`)
     lines.push(`    f${index}b["${escapeMermaid(functor.codomain)}"]`)

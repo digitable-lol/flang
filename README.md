@@ -1,6 +1,6 @@
 # FTS — Formal Type Surface
 
-FTS is a small TypeScript-adjacent language for describing structures, morphisms, propositions, and machine-checkable witnesses. It turns `.fts` or canonical JSON into one stable JSON model.
+FTS is a small indentation-based formal language for describing domain objects, morphisms, theorems, and machine-checkable evidence. It turns human-readable `.fts` or canonical JSON into one stable JSON model.
 
 The repository is intentionally usable at three levels:
 
@@ -9,25 +9,24 @@ The repository is intentionally usable at three levels:
 - as a read-only MCP server exposing the same operations to AI agents.
 
 ```fts
-категория «Исполнение заказа» {
-  структура Заказ {
-    номер: Строка
-    «готов к отгрузке»: «Готов к отгрузке»
-  }
+категория «Исполнение заказа»
 
-  функтор «готовность разрешает команду»:
-    «Готов к отгрузке» -> «Отгрузить заказ разрешено»
+  объект Заказ
+    номер является строкой
+    «готов к отгрузке» является состоянием «Готов к отгрузке»
 
-  утверждение применить «готовность разрешает команду» {
-    свидетельство Заказ.«готов к отгрузке» {
-      значение true
-      путь ["заказы", { номер: "ЗК-7781" }, "готов к отгрузке"]
-    }
-  }
-}
+  морфизм «Готовый заказ можно отгрузить»
+    если «Готов к отгрузке»
+    то «Отгрузить заказ разрешено»
+
+  теорема «Заказ ЗК-7781 можно отгрузить»
+    дано Заказ имеет «готов к отгрузке» равное да
+    в данных заказы найти где номер равен «ЗК-7781»
+    по морфизму «Готовый заказ можно отгрузить»
+    следовательно «Отгрузить заказ разрешено»
 ```
 
-Human-readable names may use regular quotes or Russian guillemets. Russian keywords are the primary documented surface; compatible English aliases compile into the same canonical model.
+The primary surface is indentation-based and syllogistic: no structural braces, colons, dots, or arrows. Human-readable names may use regular quotes or Russian guillemets. The legacy braced syntax remains readable for compatibility but is not the recommended authoring form.
 
 ## Quick start
 

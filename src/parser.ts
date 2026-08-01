@@ -1,4 +1,5 @@
 import { diagnosticError } from "./diagnostics.js"
+import { looksLikeNaturalSurface, parseNaturalSurface } from "./natural-parser.js"
 import type {
   ApplyProposition,
   ComposeProposition,
@@ -71,6 +72,8 @@ export function compile(source: string): FtsDocument {
   if (text.startsWith("{") || text.startsWith("[") || /\bexport\s+default\b/.test(text)) {
     return compileJsonLike(text)
   }
+
+  if (looksLikeNaturalSurface(source)) return parseNaturalSurface(source)
 
   return new Parser(source).parseDocument()
 }

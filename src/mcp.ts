@@ -82,13 +82,13 @@ export const tools: ToolDefinition[] = [
   {
     name: "fts_visualize",
     title: "Visualize FTS",
-    description: "Return Mermaid diagrams for FTS categories, functors, and proofs.",
+    description: "Return Mermaid diagrams for FTS categories, morphisms, and proofs.",
     inputSchema: {
       ...sourceOrDocument,
       properties: {
         ...sourceOrDocument.properties,
         context: { description: "Optional JSON value used for witness path verification" },
-        mode: { enum: ["all", "category", "functors", "proof"], default: "all" },
+        mode: { enum: ["all", "category", "morphisms", "functors", "proof"], default: "all" },
       },
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -130,7 +130,7 @@ export const tools: ToolDefinition[] = [
       properties: {
         ...sourceOrDocument.properties,
         context: { description: "Optional JSON value used for witness path verification" },
-        viz: { enum: ["all", "category", "functors", "proof"], default: "all" },
+        viz: { enum: ["all", "category", "morphisms", "functors", "proof"], default: "all" },
       },
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -256,7 +256,7 @@ function asStructuredContent(value: unknown): Record<string, unknown> {
 }
 
 function toMode(value: unknown): VisualizationMode {
-  return value === "category" || value === "functors" || value === "proof" ? value : "all"
+  return value === "category" || value === "morphisms" || value === "functors" || value === "proof" ? value : "all"
 }
 
 function write(message: unknown): void {

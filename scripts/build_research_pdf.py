@@ -121,9 +121,9 @@ def make_styles() -> dict[str, ParagraphStyle]:
             leading=13.3, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=2.4 * mm,
         ),
         "bullet": ParagraphStyle(
-            "Bullet", parent=base["BodyText"], fontName="FTS", fontSize=9.2,
-            leading=12.7, textColor=INK, leftIndent=6 * mm, firstLineIndent=-3.5 * mm,
-            bulletIndent=1 * mm, spaceAfter=1.2 * mm,
+            "Bullet", parent=base["BodyText"], fontName="FTS", fontSize=9.0,
+            leading=11.8, textColor=INK, leftIndent=6 * mm, firstLineIndent=-3.5 * mm,
+            bulletIndent=1 * mm, spaceAfter=0.7 * mm,
         ),
         "quote": ParagraphStyle(
             "Quote", parent=base["BodyText"], fontName="FTS-Italic", fontSize=9.2,

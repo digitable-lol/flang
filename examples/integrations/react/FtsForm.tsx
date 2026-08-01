@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { assertValid, compile } from "@digitable/fts/browser"
+import { assertValid, compile, objects } from "@digitable/fts/browser"
 
 type Props = {
   source: string
@@ -11,7 +11,7 @@ type Props = {
 export function FtsForm({ source, structure: structureName, value, onChange }: Props) {
   const structure = useMemo(() => {
     const document = assertValid(compile(source))
-    const found = document.structures.find((item) => item.name === structureName)
+    const found = objects(document).find((item) => item.name === structureName)
     if (!found) throw new Error(`Структура «${structureName}» не найдена`)
     return found
   }, [source, structureName])

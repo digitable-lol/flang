@@ -12,4 +12,18 @@ describe("pipeline", () => {
     assert.match(result.viz.mermaid, /flowchart/)
     assert.match(result.viz.mermaid_category, /category: ClassicalLogic/)
   })
+
+  it("keeps Russian labels and generates distinct Mermaid node ids", () => {
+    const result = pipeline({
+      source: `category Логистика {
+        structure Заказ { номер: string }
+        structure Склад { код: string }
+      }`,
+    })
+    assert.match(result.viz.mermaid_category, /category: Логистика/)
+    assert.match(result.viz.mermaid_category, /structure Заказ/)
+    assert.match(result.viz.mermaid_category, /structure Склад/)
+    const ids = [...result.viz.mermaid_category.matchAll(/^\s+(n_[^\[]+)\[/gm)].map((match) => match[1])
+    assert.equal(new Set(ids).size, 2)
+  })
 })

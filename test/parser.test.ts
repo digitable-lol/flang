@@ -46,6 +46,25 @@ describe("compile", () => {
     assert.equal(document.proposition.value, -150)
   })
 
+  it("accepts Russian identifiers and normalizes them to NFC", () => {
+    const document = compile(`category Продажи {
+      structure Заказ { номер: string
+        статусОплаты: Оплачен }
+      functor разрешитьОтгрузку: Оплачен -> РазрешенаОтгрузка
+      proposition apply разрешитьОтгрузку {
+        witness Заказ.статусОплаты {
+          value "да"
+          path ["заказы", { номер: "А-42" }, "статусОплаты"]
+        }
+      }
+    }`)
+    assert.equal(document.category, "Продажи")
+    assert.equal(document.structures[0]?.name, "Заказ")
+    assert.equal(document.structures[0]?.fields[1]?.name, "статусОплаты")
+    assert.equal(document.functors[0]?.name, "разрешитьОтгрузку")
+    assert.equal(compile("category И\u0306ога {}").category, "Йога")
+  })
+
   it("reports source spans for invalid syntax", () => {
     assert.throws(
       () => compile("category C { nonsense X }"),

@@ -87,6 +87,8 @@ All authored source uses `.fts`. JSON is the canonical interchange form for APIs
 
 See [Language reference](docs/language.md), [Architecture](docs/architecture.md), [How it works](docs/how-it-works.md), and [Application adoption](docs/adoption.md).
 
+For runnable Russian examples of form generators, table configuration, and DDD command guards, see [FTS на прикладных примерах](docs/examples.ru.md).
+
 ## Status
 
 `0.x` is the language-design phase. The canonical JSON shape and diagnostic codes are treated as compatibility surfaces; syntax may grow through documented proposals.

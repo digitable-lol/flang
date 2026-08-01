@@ -70,7 +70,10 @@ function ensureNode(name: string, ids: Map<string, string>, lines: string[]): st
 }
 
 function nodeId(name: string): string {
-  return `n_${name.replace(/[^A-Za-z0-9_]/g, "_")}`
+  const encoded = Array.from(name, (character) =>
+    /[A-Za-z0-9_]/.test(character) ? character : `u${character.codePointAt(0)!.toString(16)}_`,
+  ).join("")
+  return `n_${encoded}`
 }
 
 function escapeMermaid(value: unknown): string {

@@ -4,7 +4,7 @@ import type { FtsDocument, FtsProposition } from "./model.js"
 import { normalizeDocument } from "./parser.js"
 import { builtinFunctors } from "./stdlib.js"
 
-const identifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+const identifier = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u
 
 export interface ValidationResult {
   valid: boolean
@@ -20,7 +20,7 @@ export function validate(input: unknown): ValidationResult {
   }
 
   if (!identifier.test(document.category)) {
-    report("FTS_CATEGORY_NAME", "category must have a non-empty TypeScript identifier", "$.category")
+    report("FTS_CATEGORY_NAME", "category must have a non-empty Unicode identifier compatible with TypeScript", "$.category")
   }
 
   const structures = new Set<string>()

@@ -31,6 +31,8 @@ separator      := newline | ";"
 
 Comments use `// ...` or `/* ... */`. Strings may use single or double quotes. Objects permit identifier keys, which is the only intentional JSON5-like convenience.
 
+Identifiers follow Unicode identifier rules and are normalized to NFC. Russian domain names are valid everywhere an identifier is expected: `Продажи`, `Заказ`, `статусОплаты`, `разрешитьОтгрузку`. Structural keywords (`category`, `structure`, `functor`, `proposition`, `witness`, `apply`, `compose`) remain language-neutral and stable; strings, object keys, paths, details, types, and domain identifiers may be Russian.
+
 ## Declarations
 
 `category` is the document boundary and roughly corresponds to a TypeScript namespace.

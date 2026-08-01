@@ -22,8 +22,8 @@ interface Token {
   span: SourceSpan
 }
 
-const identifierPattern = /[A-Za-z_$]/
-const identifierPartPattern = /[A-Za-z0-9_$]/
+const identifierPattern = /[\p{ID_Start}_$]/u
+const identifierPartPattern = /[\p{ID_Continue}$\u200C\u200D]/u
 
 export function compile(source: string): FtsDocument {
   if (typeof source !== "string") {
@@ -474,7 +474,7 @@ function tokenize(source: string): Token[] {
       const start = position()
       let value = advance()
       while (identifierPartPattern.test(source[offset] ?? "")) value += advance()
-      push("identifier", value, start)
+      push("identifier", value.normalize("NFC"), start)
       continue
     }
 

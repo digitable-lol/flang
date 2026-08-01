@@ -46,22 +46,23 @@ describe("compile", () => {
     assert.equal(document.proposition.value, -150)
   })
 
-  it("accepts Russian identifiers and normalizes them to NFC", () => {
-    const document = compile(`category Продажи {
-      structure Заказ { номер: string
-        статусОплаты: Оплачен }
-      functor разрешитьОтгрузку: Оплачен -> РазрешенаОтгрузка
-      proposition apply разрешитьОтгрузку {
-        witness Заказ.статусОплаты {
-          value "да"
-          path ["заказы", { номер: "А-42" }, "статусОплаты"]
+  it("accepts Russian keywords, quoted names, guillemets, and NFC", () => {
+    const document = compile(`категория «Продажи и склад» {
+      структура «Заказ клиента» { номер: Строка
+        «статус оплаты»: «Заказ оплачен» }
+      функтор «разрешить отгрузку»: «Заказ оплачен» -> «Отгрузка разрешена»
+      утверждение применить «разрешить отгрузку» {
+        свидетельство «Заказ клиента».«статус оплаты» {
+          значение "да"
+          путь ["заказы", { номер: "А-42" }, "статус оплаты"]
         }
       }
     }`)
-    assert.equal(document.category, "Продажи")
-    assert.equal(document.structures[0]?.name, "Заказ")
-    assert.equal(document.structures[0]?.fields[1]?.name, "статусОплаты")
-    assert.equal(document.functors[0]?.name, "разрешитьОтгрузку")
+    assert.equal(document.category, "Продажи и склад")
+    assert.equal(document.structures[0]?.name, "Заказ клиента")
+    assert.equal(document.structures[0]?.fields[1]?.name, "статус оплаты")
+    assert.equal(document.functors[0]?.name, "разрешить отгрузку")
+    assert.equal(document.functors[0]?.domain, "Заказ оплачен")
     assert.equal(compile("category И\u0306ога {}").category, "Йога")
   })
 

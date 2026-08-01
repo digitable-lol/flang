@@ -25,6 +25,39 @@ interface Token {
 const identifierPattern = /[\p{ID_Start}_$]/u
 const identifierPartPattern = /[\p{ID_Continue}$\u200C\u200D]/u
 
+type StructuralKeyword = "category" | "structure" | "functor" | "proposition"
+type PropositionKind = FtsProposition["kind"]
+
+const keywordAliases: Record<StructuralKeyword, readonly string[]> = {
+  category: ["category", "категория"],
+  structure: ["structure", "структура"],
+  functor: ["functor", "функтор"],
+  proposition: ["proposition", "утверждение"],
+}
+
+const propositionKindAliases: Record<PropositionKind, readonly string[]> = {
+  witness: ["witness", "свидетельство"],
+  apply: ["apply", "применить"],
+  compose: ["compose", "композиция"],
+}
+
+const propositionPropertyAliases: Record<string, string> = {
+  selector: "selector",
+  селектор: "selector",
+  value: "value",
+  значение: "value",
+  path: "path",
+  путь: "path",
+  detail: "detail",
+  описание: "detail",
+  functor: "functor",
+  функтор: "functor",
+  functors: "functors",
+  функторы: "functors",
+  arg: "arg",
+  аргумент: "arg",
+}
+
 export function compile(source: string): FtsDocument {
   if (typeof source !== "string") {
     throw diagnosticError("FTS_SOURCE_TYPE", "source must be a string")
@@ -81,7 +114,7 @@ class Parser {
   parseDocument(): FtsDocument {
     this.#skipNewlines()
     this.#expectKeyword("category")
-    const category = this.#expectIdentifier("expected category name").value
+    const category = this.#expectName("expected category name").value
     this.#expectValue("{")
 
     const structures: FtsStructure[] = []
@@ -113,14 +146,14 @@ class Parser {
 
   #parseStructure(): FtsStructure {
     this.#expectKeyword("structure")
-    const name = this.#expectIdentifier("expected structure name").value
+    const name = this.#expectName("expected structure name").value
     this.#expectValue("{")
     const fields: FtsField[] = []
 
     while (!this.#at("}") && !this.#atKind("eof")) {
       this.#skipSeparators()
       if (this.#at("}")) break
-      const field = this.#expectIdentifier("expected field name").value
+      const field = this.#expectName("expected field name").value
       const optional = this.#consume("?")
       this.#expectValue(":")
       const typeParts: string[] = []
@@ -141,13 +174,13 @@ class Parser {
     }
 
     this.#expectValue("}")
-    const ts_compat = `interface ${name} { ${fields.map((field) => `${field.name}: ${field.type}`).join("; ")} }`
+    const ts_compat = renderTsCompat(name, fields)
     return { name, fields, ts_compat }
   }
 
   #parseFunctor(): FtsFunctor {
     this.#expectKeyword("functor")
-    const name = this.#expectIdentifier("expected functor name").value
+    const name = this.#expectName("expected functor name").value
     this.#expectValue(":")
     const domain = this.#readTypeUntil("->")
     this.#expectKind("arrow", "expected '->' in functor declaration")
@@ -162,8 +195,9 @@ class Parser {
   #parseProposition(prefixed: boolean): FtsProposition {
     if (prefixed) this.#expectKeyword("proposition")
     const kindToken = this.#expectIdentifier("expected proposition kind")
+    const kind = canonicalPropositionKind(kindToken.value)
 
-    switch (kindToken.value) {
+    switch (kind) {
       case "witness":
         return this.#parseWitness()
       case "apply":
@@ -176,9 +210,9 @@ class Parser {
   }
 
   #parseWitness(): WitnessProposition {
-    const structure = this.#expectIdentifier("witness requires Structure.field").value
+    const structure = this.#expectName("witness requires Structure.field").value
     this.#expectValue(".")
-    const field = this.#expectIdentifier("witness requires Structure.field").value
+    const field = this.#expectName("witness requires Structure.field").value
     const body = this.#parsePropositionBody()
 
     const proposition: WitnessProposition = { kind: "witness", structure, field }
@@ -191,8 +225,8 @@ class Parser {
 
   #parseApply(): ApplyProposition {
     let inlineFunctor: string | undefined
-    if (this.#peek().kind === "identifier" && this.#peek(1).value === "{") {
-      inlineFunctor = this.#advance().value
+    if (isNameToken(this.#peek()) && this.#peek(1).value === "{") {
+      inlineFunctor = this.#expectName("apply proposition requires a functor").value
     }
     const body = this.#parsePropositionBody()
     const functor = inlineFunctor ?? (typeof body.functor === "string" ? body.functor : undefined)
@@ -207,7 +241,7 @@ class Parser {
     let inlineFunctors: string[] | undefined
     if (this.#at("[")) inlineFunctors = this.#parseValue() as string[]
     const body = this.#parsePropositionBody()
-    const functors = inlineFunctors ?? (Array.isArray(body.functors) ? body.functors.map(String) : undefined)
+    const functors = inlineFunctors ?? (Array.isArray(body.functors) ? body.functors.map((value) => String(value).normalize("NFC")) : undefined)
     if (functors === undefined || functors.length === 0) {
       this.#fail("FTS_COMPOSE_FUNCTORS", "compose proposition requires one or more functors")
     }
@@ -229,12 +263,13 @@ class Parser {
         body.arg = this.#parseProposition(true)
         continue
       }
-      if (this.#atKeyword("witness") || this.#atKeyword("apply") || this.#atKeyword("compose")) {
+      if (this.#atPropositionKind()) {
         body.arg = this.#parseProposition(false)
         continue
       }
 
-      const key = this.#expectIdentifier("expected proposition property").value
+      const rawKey = this.#expectName("expected proposition property").value
+      const key = propositionPropertyAliases[rawKey] ?? rawKey
       this.#consume(":")
       body[key] = this.#parseValue()
       this.#skipSeparators()
@@ -319,13 +354,20 @@ class Parser {
     while (this.#atKind("newline")) this.#advance()
   }
 
-  #expectKeyword(keyword: string): Token {
+  #expectKeyword(keyword: StructuralKeyword): Token {
     if (!this.#atKeyword(keyword)) this.#fail("FTS_EXPECTED_KEYWORD", `expected '${keyword}'`)
     return this.#advance()
   }
 
   #expectIdentifier(message: string): Token {
     return this.#expectKind("identifier", message)
+  }
+
+  #expectName(message: string): Token {
+    const token = this.#peek()
+    if (!isNameToken(token)) this.#fail("FTS_UNEXPECTED_TOKEN", message, token)
+    this.#advance()
+    return { ...token, value: token.value.normalize("NFC") }
   }
 
   #expectKind(kind: TokenKind, message: string): Token {
@@ -354,9 +396,14 @@ class Parser {
     return this.#peek().kind === kind
   }
 
-  #atKeyword(value: string): boolean {
+  #atKeyword(value: StructuralKeyword): boolean {
     const token = this.#peek()
-    return token.kind === "identifier" && token.value === value
+    return token.kind === "identifier" && keywordAliases[value].includes(token.value)
+  }
+
+  #atPropositionKind(): boolean {
+    const token = this.#peek()
+    return token.kind === "identifier" && canonicalPropositionKind(token.value) !== undefined
   }
 
   #peek(ahead = 0): Token {
@@ -429,14 +476,15 @@ function tokenize(source: string): Token[] {
       push("arrow", "->", start)
       continue
     }
-    if (character === '"' || character === "'") {
+    if (character === '"' || character === "'" || character === "«") {
       const start = position()
       const quote = advance()
+      const closingQuote = quote === "«" ? "»" : quote
       let raw = ""
       let closed = false
       while (offset < source.length) {
         const next = advance()
-        if (next === quote) {
+        if (next === closingQuote) {
           closed = true
           break
         }
@@ -495,6 +543,7 @@ function formatType(parts: string[]): string {
     .replace(/\s*\|\s*/g, " | ")
     .replace(/\s*&\s*/g, " & ")
     .trim()
+    .normalize("NFC")
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -503,4 +552,36 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isProposition(value: unknown): value is FtsProposition {
   return isRecord(value) && ["witness", "apply", "compose"].includes(String(value.kind))
+}
+
+function canonicalPropositionKind(value: string): PropositionKind | undefined {
+  return (Object.entries(propositionKindAliases) as Array<[PropositionKind, readonly string[]]>).find(([, aliases]) =>
+    aliases.includes(value),
+  )?.[0]
+}
+
+function isNameToken(token: Token): boolean {
+  return token.kind === "identifier" || token.kind === "string"
+}
+
+function typescriptAlias(name: string): string {
+  if (/^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u.test(name)) return name
+  return `FTS_${Array.from(name, (character) => character.codePointAt(0)!.toString(16)).join("_")}`
+}
+
+function renderTsCompat(name: string, fields: FtsField[]): string {
+  const identifier = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u
+  if (identifier.test(name) && fields.every((field) => identifier.test(field.name))) {
+    return `interface ${name} { ${fields.map((field) => `${field.name}: ${field.type}`).join("; ")} }`
+  }
+  return `type ${typescriptAlias(name)} = { ${fields.map((field) => `${JSON.stringify(field.name)}: ${typescriptType(field.type)}`).join("; ")} }`
+}
+
+function typescriptType(type: string): string {
+  const parts = type.split(/\s*\|\s*/u)
+  const valid = parts.every((part) =>
+    ["string", "number", "boolean", "unknown", "undefined", "null"].includes(part) ||
+    /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u.test(part),
+  )
+  return valid ? parts.join(" | ") : `unknown /* FTS: ${type.replace(/\*\//g, "* /")} */`
 }

@@ -35,9 +35,9 @@ describe("validate", () => {
 
   it("validates Unicode identifiers used by Russian domain models", () => {
     const result = validate(
-      compile(`category Склад {
-        structure Остаток { доступен: Доступен }
-        proposition witness Остаток.доступен { value true }
+      compile(`категория «Управление складом» {
+        структура «Остаток товара» { «доступен для заказа»: «Товар доступен» }
+        утверждение свидетельство «Остаток товара».«доступен для заказа» { значение true }
       }`),
     )
     assert.equal(result.valid, true)
@@ -47,8 +47,8 @@ describe("validate", () => {
   it("publishes the same Unicode rule in the canonical JSON schema", async () => {
     const schema = JSON.parse(await readFile(new URL("../../schema/document.schema.json", import.meta.url), "utf8"))
     const pattern = new RegExp(schema.$defs.identifier.pattern, "u")
-    assert.equal(pattern.test("КредитнаяПолитика"), true)
-    assert.equal(pattern.test("статусОплаты"), true)
-    assert.equal(pattern.test("не валидно"), false)
+    assert.equal(pattern.test("Кредитная политика"), true)
+    assert.equal(pattern.test("статус оплаты"), true)
+    assert.equal(pattern.test(" не валидно"), false)
   })
 })

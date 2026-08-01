@@ -9,24 +9,25 @@ The repository is intentionally usable at three levels:
 - as a read-only MCP server exposing the same operations to AI agents.
 
 ```fts
-category ClassicalLogic {
-  structure Individual {
-    name: string
-    isHuman: boolean
-    isMortal: boolean
+категория «Исполнение заказа» {
+  структура Заказ {
+    номер: Строка
+    «готов к отгрузке»: «Готов к отгрузке»
   }
 
-  functor humanImpliesMortal: Human -> Mortal
+  функтор «готовность разрешает команду»:
+    «Готов к отгрузке» -> «Отгрузить заказ разрешено»
 
-  proposition compose {
-    functors: ["humanImpliesMortal"]
-    witness Individual.isHuman {
-      selector { name: "Socrates" }
-      value true
+  утверждение применить «готовность разрешает команду» {
+    свидетельство Заказ.«готов к отгрузке» {
+      значение true
+      путь ["заказы", { номер: "ЗК-7781" }, "готов к отгрузке"]
     }
   }
 }
 ```
+
+Human-readable names may use regular quotes or Russian guillemets. Russian keywords are the primary documented surface; compatible English aliases compile into the same canonical model.
 
 ## Quick start
 
@@ -37,9 +38,9 @@ npm install
 npm test
 npm run build
 
-node dist/src/cli.js pipeline examples/socrates.fts --pretty
-node dist/src/cli.js certify examples/task-status.fts \
-  --context examples/task-status.context.json --pretty
+node dist/src/cli.js pipeline examples/real-world/order-shipment.fts --pretty
+node dist/src/cli.js certify examples/real-world/order-shipment.fts \
+  --context examples/real-world/order-shipment.context.json --pretty
 ```
 
 The package is marked private while the repository is private. After the public release and package installation the commands are shorter:
@@ -67,6 +68,8 @@ const result = pipeline({ source, context, viz: "all" })
 
 The canonical interchange format is documented by [`schema/document.schema.json`](schema/document.schema.json). The package has no runtime dependencies and does no I/O from the library API.
 
+Browser applications should import `@digitable/fts/browser`. This entrypoint provides parsing, validation, and visualization without Node.js cryptography; strict certificate decisions stay on the server.
+
 ## AI agents
 
 Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes seven read-only tools:
@@ -83,11 +86,11 @@ Tool results include both `structuredContent` and a JSON text block. See [Agent 
 
 ## One language, one extension
 
-All authored source uses `.fts`. JSON is the canonical interchange form for APIs, storage, generated utilities, and agents. There is no second source dialect or alternate language name.
+All authored source uses `.fts`. JSON is the canonical interchange form for APIs, storage, generated utilities, and agents. Russian and compatible English keywords normalize into one canonical document rather than separate runtime implementations.
 
 See [Language reference](docs/language.md), [Architecture](docs/architecture.md), [How it works](docs/how-it-works.md), and [Application adoption](docs/adoption.md).
 
-For runnable Russian examples of form generators, table configuration, and DDD command guards, see [FTS на прикладных примерах](docs/examples.ru.md).
+For runnable Russian examples of form generators, table configuration, and DDD command guards, see [FTS на прикладных примерах](docs/examples.ru.md). For React, Node.js, Python, HTTP, and the practical value proposition, see [Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md).
 
 ## Status
 

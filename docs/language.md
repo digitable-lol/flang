@@ -1,86 +1,135 @@
-# FTS language reference
+# Справочник языка FTS
 
-FTS (*Formal Type Surface*) is a textual surface over a canonical JSON document. Its notation is deliberately close to TypeScript, while its semantic vocabulary is categorical and Curry–Howard-oriented.
+FTS (*Formal Type Surface*) - текстовая предметная поверхность над каноническим JSON-документом. Основной русскоязычный синтаксис рассчитан на совместное чтение разработчиками, аналитиками и экспертами предметной области.
 
-## Source forms
+## Имена
 
-`compile` accepts:
+Однословное имя можно писать без кавычек:
 
-1. FTS syntax in `.fts` files;
-2. a canonical JSON object;
-3. `export default <canonical JSON> as const` for generated TypeScript modules.
+```fts
+структура Заказ { номер: Строка }
+```
 
-File extensions are conventions; the compiler reads content.
+Имя с пробелами пишется в обычных кавычках или русских ёлочках:
 
-## Grammar
+```fts
+категория «Исполнение заказа» {
+  структура "Заказ клиента" {
+    «дата создания»: Дата
+  }
+}
+```
+
+Обе формы кавычек равноправны. Имена нормализуются в Unicode NFC. В каноническом JSON кавычки не сохраняются: значением будет обычная строка `"Исполнение заказа"`.
+
+Кавычки поддерживаются для:
+
+- категорий и структур;
+- полей;
+- типов;
+- функторов;
+- ссылок на структуры, поля и функторы;
+- элементов списка композиции.
+
+## Грамматика
 
 ```text
-document       := "category" Identifier "{" declaration* "}"
-declaration    := structure | functor | proposition
-structure      := "structure" Identifier "{" field* "}"
-field          := Identifier "?"? ":" TypeExpression separator?
-functor        := "functor" Identifier ":" TypeExpression "->" TypeExpression
-proposition    := "proposition" (witness | apply | compose)
-witness        := "witness" Identifier "." Identifier "{" property* "}"
-apply          := "apply" Identifier? "{" property* nestedProposition "}"
-compose        := "compose" FunctorList? "{" property* nestedProposition "}"
-nestedProposition := ("proposition"?) (witness | apply | compose)
-FunctorList    := "[" value ("," value)* "]"
-separator      := newline | ";"
+документ       := "категория" Имя "{" объявление* "}"
+объявление     := структура | функтор | утверждение
+структура      := "структура" Имя "{" поле* "}"
+поле           := Имя "?"? ":" ВыражениеТипа разделитель?
+функтор        := "функтор" Имя ":" ВыражениеТипа "->" ВыражениеТипа
+утверждение    := "утверждение" (свидетельство | применить | композиция)
+свидетельство  := "свидетельство" Имя "." Имя "{" свойство* "}"
+применить      := "применить" Имя? "{" свойство* вложенноеУтверждение "}"
+композиция     := "композиция" СписокФункторов? "{" свойство* вложенноеУтверждение "}"
+Имя            := UnicodeIdentifier | String | GuillemetsString
+разделитель    := переводСтроки | ";"
 ```
 
-Comments use `// ...` or `/* ... */`. Strings may use single or double quotes. Objects permit identifier keys, which is the only intentional JSON5-like convenience.
+Комментарии используют `// ...` и `/* ... */`. Строковые значения можно писать в одинарных, двойных кавычках или ёлочках. Для данных рекомендуется JSON-совместимая двойная кавычка; ёлочки особенно удобны для имён языка.
 
-Identifiers follow Unicode identifier rules and are normalized to NFC. Russian domain names are valid everywhere an identifier is expected: `Продажи`, `Заказ`, `статусОплаты`, `разрешитьОтгрузку`. Structural keywords (`category`, `structure`, `functor`, `proposition`, `witness`, `apply`, `compose`) remain language-neutral and stable; strings, object keys, paths, details, types, and domain identifiers may be Russian.
+Английские ключевые слова `category`, `structure`, `functor`, `proposition`, `witness`, `apply`, `compose` сохранены как совместимые алиасы, но русская документация и новые русские модели используют основной синтаксис выше.
 
-## Declarations
-
-`category` is the document boundary and roughly corresponds to a TypeScript namespace.
-
-`structure` is a named object shape. Its fields retain TypeScript-like type expressions as strings in canonical JSON.
-
-`functor f: A -> B` declares a named morphism. An optional `law` is available in canonical JSON; the current textual surface assigns `functor.arrow`.
-
-## Propositions
-
-### `witness`
+## Структуры и типы
 
 ```fts
-proposition witness Task.status {
-  selector { id: "T-1" }
-  value "done"
-  path ["tasks", { id: "T-1" }, "status"]
-  detail "task is complete"
+структура «Строка счёта» {
+  номер: Строка
+  контрагент: Строка
+  сумма: Деньги
+  «срок оплаты»: Дата
+  комментарий?: Строка
 }
 ```
 
-Without context, a witness is symbolic. With context, FTS walks `path` and checks `value`. String segments access object properties, numbers access array indices, and object segments must select exactly one array item matching all selector fields. Zero or multiple matches fail strict verification.
+FTS сохраняет тип как номинальную строку. Тип `«Готов к отгрузке»` отличается от типа `«Заказ оплачен»`, даже если оба фактически представлены JSON-значением `true`.
 
-### `apply`
+## Функтор
+
+Функтор объявляет допустимый направленный переход между типами:
 
 ```fts
-proposition apply normalize {
-  witness Input.valid { value true }
+функтор «готовность разрешает команду»:
+  «Готов к отгрузке» -> «Отгрузить заказ разрешено»
+```
+
+В `fts-proof/1` закон функтора является явной предпосылкой сертификата. FTS проверяет совпадение домена и кодомена, но не изобретает доказательство внешнего бизнес-закона.
+
+## Свидетельство
+
+```fts
+утверждение свидетельство Заказ.«готов к отгрузке» {
+  значение true
+  путь ["заказы", { номер: "ЗК-7781" }, "готов к отгрузке"]
+  описание «Все инварианты агрегата выполнены»
 }
 ```
 
-The referenced functor must be declared or built in.
+Строковые сегменты пути читают свойства объекта, числа - индексы массива, объект - selector элемента массива. Selector обязан найти ровно один элемент; ноль или несколько совпадений отклоняются.
 
-### `compose`
+## Применение
 
 ```fts
-proposition compose {
-  functors: ["humanImpliesMortal"]
-  witness Individual.isHuman { value true }
+утверждение применить «готовность разрешает команду» {
+  свидетельство Заказ.«готов к отгрузке» {
+    значение true
+    путь ["заказы", { номер: "ЗК-7781" }, "готов к отгрузке"]
+  }
 }
 ```
 
-The canonical form keeps the functor list inside the proposition body.
+## Композиция
 
-## Built-ins
+```fts
+утверждение композиция {
+  функторы: [
+    «скоринг открывает риск-проверку»,
+    «риск-проверка разрешает лимит»
+  ]
 
-`id`, `compose`, `field`, `path`, and `witness` are reserved built-in functors. They participate in validation but are not injected into the canonical document, so compilation is stable and free of implicit output.
+  свидетельство «Заявка на лимит».«скоринг пройден» {
+    значение true
+    путь ["заявки", { номер: "ЛМ-205" }, "скоринг пройден"]
+  }
+}
+```
 
-## Diagnostics
+Функторы применяются слева направо. Кодомен предыдущего обязан в точности совпасть с доменом следующего.
 
-Parser diagnostics contain a stable code and a 1-based line/column span. Semantic diagnostics contain a stable code and JSON path. Consumers should branch on `code`, not English `message`.
+## Русские свойства утверждения
+
+| Русское имя | Каноническое JSON-поле |
+|---|---|
+| `селектор` | `selector` |
+| `значение` | `value` |
+| `путь` | `path` |
+| `описание` | `detail` |
+| `функтор` | `functor` |
+| `функторы` | `functors` |
+
+Канонический JSON остаётся языконезависимым. Благодаря этому русская поверхность не требует отдельной реализации verifier для Java, Python, Go или другого языка.
+
+## Диагностика
+
+Диагностика содержит стабильный `code`, позицию строки/столбца или JSON path. Сообщения v0.1 пока английские; интерфейс может локализовать их по `code`, не разбирая текст сообщения.

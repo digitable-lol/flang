@@ -17,7 +17,9 @@ source / canonical JSON
           |
   Mermaid / pipeline result
 
-Library API ─┬─ CLI (JSON stdout/stderr)
+Library API ─┬─ browser entry (React/Vue, no Node crypto)
+             ├─ Node.js API (certify/verify)
+             ├─ CLI / HTTP sidecar (cross-language JSON)
              └─ MCP stdio (structuredContent)
 ```
 
@@ -30,6 +32,7 @@ Library API ─┬─ CLI (JSON stdout/stderr)
 - `visualize.ts` renders category, functor, and proof diagrams as Mermaid.
 - `pipeline.ts` composes the public operations without hidden I/O.
 - `cli.ts` and `mcp.ts` adapt the same API; neither contains language semantics.
+- `browser.ts` exports parsing, validation, proof explanation, and visualization without the Node.js certificate implementation.
 
 ## Design constraints
 
@@ -39,6 +42,7 @@ Library API ─┬─ CLI (JSON stdout/stderr)
 - Context verification is generic. Products may build adapters that construct context JSON, but product schemas do not belong in core.
 - CLI and MCP outputs are structured and deterministic so utilities and agents can safely compose them.
 - New syntax must first define its canonical JSON representation and validation rules.
+- Certificate production and action authorization belong on a trusted server boundary, not in the browser.
 
 ## Extension path
 

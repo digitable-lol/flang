@@ -29,6 +29,8 @@ import { pipeline } from "@digitable/fts"
 const result = pipeline({ source, context, viz: "all" })
 ```
 
+For React, Vue, and other browser applications, import `@digitable/fts/browser`. Use it to compile models and generate UI descriptors. Keep `certify`, `verify`, and consequential command authorization on the Node.js server boundary.
+
 For applications in another runtime, invoke the JSON CLI as a subprocess or run a small internal Node service. The request and response boundary remains canonical JSON, so no language semantics are duplicated.
 
 ```bash

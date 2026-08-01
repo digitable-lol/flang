@@ -19,8 +19,8 @@ try {
 }
 
 function presentationFor(type, name) {
-  if (/Money|number/u.test(type)) return { align: "end", format: "number" }
-  if (/Date/u.test(type)) return { align: "start", format: "date" }
+  if (/Money|Деньги|number/u.test(type)) return { align: "end", format: "number" }
+  if (/Date|Дата/u.test(type)) return { align: "start", format: "date" }
   if (/статус|просрочен/iu.test(name) || /Статус|Просрочен/u.test(type)) {
     return { align: "center", format: "badge" }
   }

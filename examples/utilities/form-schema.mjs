@@ -24,8 +24,8 @@ try {
 function controlFor(type) {
   if (/Email/u.test(type)) return "email"
   if (/Телефон/u.test(type)) return "tel"
-  if (/Date/u.test(type)) return "date"
-  if (/Money|number/u.test(type)) return "number"
+  if (/Date|Дата/u.test(type)) return "date"
+  if (/Money|Деньги|number/u.test(type)) return "number"
   if (/Согласие|boolean/u.test(type)) return "checkbox"
   if (/Тип|Статус|Валюта/u.test(type)) return "select"
   return "text"

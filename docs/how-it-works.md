@@ -26,20 +26,19 @@ flowchart LR
 ## Минимальный пример
 
 ```fts
-category ClassicalLogic {
-  structure Individual {
-    name: string
-    isHuman: Human
-    isMortal: Mortal
+категория «Исполнение заказа» {
+  структура Заказ {
+    номер: Строка
+    «готов к отгрузке»: «Готов к отгрузке»
   }
 
-  functor humanImpliesMortal: Human -> Mortal
+  функтор «готовность разрешает команду»:
+    «Готов к отгрузке» -> «Отгрузить заказ разрешено»
 
-  proposition compose {
-    functors: ["humanImpliesMortal"]
-    witness Individual.isHuman {
-      value true
-      path ["individuals", { name: "Socrates" }, "isHuman"]
+  утверждение применить «готовность разрешает команду» {
+    свидетельство Заказ.«готов к отгрузке» {
+      значение true
+      путь ["заказы", { номер: "ЗК-7781" }, "готов к отгрузке"]
     }
   }
 }
@@ -49,26 +48,26 @@ category ClassicalLogic {
 
 ```json
 {
-  "individuals": [{ "name": "Socrates", "isHuman": true }]
+  "заказы": [{ "номер": "ЗК-7781", "готов к отгрузке": true }]
 }
 ```
 
 Запуск:
 
 ```bash
-fts check examples/socrates.fts
-fts certify examples/socrates.fts \
-  --context examples/socrates.context.json \
+fts check examples/real-world/order-shipment.fts
+fts certify examples/real-world/order-shipment.fts \
+  --context examples/real-world/order-shipment.context.json \
   --pretty > proof.json
-fts verify examples/socrates.fts \
-  --context examples/socrates.context.json \
+fts verify examples/real-world/order-shipment.fts \
+  --context examples/real-world/order-shipment.context.json \
   --certificate proof.json
 ```
 
-Итоговый тип - `Mortal`. В сертификате отдельно указаны:
+Итоговый тип - `«Отгрузить заказ разрешено»`. В сертификате отдельно указаны:
 
-- проверенное свидетельство `Individual.isHuman : Human`;
-- применённый функтор `humanImpliesMortal : Human -> Mortal`;
+- проверенное свидетельство `Заказ.«готов к отгрузке» : «Готов к отгрузке»`;
+- применённый функтор `«готовность разрешает команду»`;
 - закон функтора как явная предпосылка;
 - digest документа, контекста, evidence и всего сертификата.
 

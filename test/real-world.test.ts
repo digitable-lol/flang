@@ -8,10 +8,10 @@ import { compile } from "../src/parser.js"
 
 const root = process.cwd()
 const cases = [
-  ["customer-onboarding", "РегистрацияРазрешена"],
-  ["invoices-table", "ТребуетсяКонтроль"],
-  ["order-shipment", "ОтгрузитьЗаказРазрешено"],
-  ["credit-limit", "ЛимитМожетБытьУстановлен"],
+  ["customer-onboarding", "Регистрация разрешена"],
+  ["invoices-table", "Требуется контроль"],
+  ["order-shipment", "Отгрузить заказ разрешено"],
+  ["credit-limit", "Лимит может быть установлен"],
 ] as const
 
 describe("real-world Russian examples", () => {
@@ -29,15 +29,15 @@ describe("real-world Russian examples", () => {
   }
 
   it("generates a form descriptor from a Russian structure", () => {
-    const output = runUtility("form-schema.mjs", "customer-onboarding.fts", "АнкетаКлиента")
+    const output = runUtility("form-schema.mjs", "customer-onboarding.fts", "Анкета клиента")
     assert.equal(output.kind, "form")
-    assert.equal(output.title, "Анкета Клиента")
-    assert.equal(output.fields.find((field: { name: string }) => field.name === "электроннаяПочта")?.control, "email")
+    assert.equal(output.title, "Анкета клиента")
+    assert.equal(output.fields.find((field: { name: string }) => field.name === "электронная почта")?.control, "email")
     assert.equal(output.fields.find((field: { name: string }) => field.name === "телефон")?.required, false)
   })
 
   it("generates table columns from a Russian structure", () => {
-    const output = runUtility("table-columns.mjs", "invoices-table.fts", "СтрокаСчёта")
+    const output = runUtility("table-columns.mjs", "invoices-table.fts", "Строка счёта")
     assert.equal(output.kind, "table")
     assert.equal(output.columns.find((column: { key: string }) => column.key === "сумма")?.align, "end")
     assert.equal(output.columns.find((column: { key: string }) => column.key === "просрочен")?.format, "badge")
@@ -51,7 +51,7 @@ describe("real-world Russian examples", () => {
     assert.equal(result.status, 0, result.stderr)
     const output = JSON.parse(result.stdout)
     assert.equal(output.allowed, true)
-    assert.equal(output.command, "ОтгрузитьЗаказРазрешено")
+    assert.equal(output.command, "Отгрузить заказ разрешено")
   })
 
   it("blocks a DDD command when the snapshot contradicts its witness", () => {

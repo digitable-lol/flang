@@ -4,8 +4,6 @@ import type { FtsDocument, FtsProposition } from "./model.js"
 import { normalizeDocument } from "./parser.js"
 import { builtinFunctors } from "./stdlib.js"
 
-const identifier = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u
-
 export interface ValidationResult {
   valid: boolean
   document: FtsDocument
@@ -19,14 +17,14 @@ export function validate(input: unknown): ValidationResult {
     diagnostics.push({ code, message, path, severity: "error" })
   }
 
-  if (!identifier.test(document.category)) {
-    report("FTS_CATEGORY_NAME", "category must have a non-empty Unicode identifier compatible with TypeScript", "$.category")
+  if (!isName(document.category)) {
+    report("FTS_CATEGORY_NAME", "category must have a non-empty normalized name", "$.category")
   }
 
   const structures = new Set<string>()
   document.structures.forEach((structure, structureIndex) => {
     const path = `$.structures[${structureIndex}]`
-    if (!structure || typeof structure !== "object" || !identifier.test(structure.name ?? "")) {
+    if (!structure || typeof structure !== "object" || !isName(structure.name)) {
       report("FTS_STRUCTURE_NAME", "structure requires a valid name", `${path}.name`)
       return
     }
@@ -39,7 +37,7 @@ export function validate(input: unknown): ValidationResult {
     const fields = new Set<string>()
     structure.fields.forEach((field, fieldIndex) => {
       const fieldPath = `${path}.fields[${fieldIndex}]`
-      if (!field || typeof field !== "object" || !identifier.test(field.name ?? "")) {
+      if (!field || typeof field !== "object" || !isName(field.name)) {
         report("FTS_FIELD_NAME", "field requires a valid name", `${fieldPath}.name`)
         return
       }
@@ -54,7 +52,7 @@ export function validate(input: unknown): ValidationResult {
   const functors = new Set(builtinFunctors.map((functor) => functor.name))
   document.functors.forEach((functor, functorIndex) => {
     const path = `$.functors[${functorIndex}]`
-    if (!functor || typeof functor !== "object" || !identifier.test(functor.name ?? "")) {
+    if (!functor || typeof functor !== "object" || !isName(functor.name)) {
       report("FTS_FUNCTOR_NAME", "functor requires a valid name", `${path}.name`)
       return
     }
@@ -96,12 +94,12 @@ function validateProposition(
 
   switch (proposition.kind) {
     case "witness": {
-      if (!identifier.test(proposition.structure ?? "")) {
+      if (!isName(proposition.structure)) {
         report("FTS_WITNESS_STRUCTURE", "witness requires a structure", `${path}.structure`)
       } else if (!structures.has(proposition.structure)) {
         report("FTS_UNKNOWN_STRUCTURE", `unknown structure '${proposition.structure}'`, `${path}.structure`)
       }
-      if (!identifier.test(proposition.field ?? "")) {
+      if (!isName(proposition.field)) {
         report("FTS_WITNESS_FIELD", "witness requires a field", `${path}.field`)
       } else {
         const structure = document.structures.find((item) => item.name === proposition.structure)
@@ -133,4 +131,11 @@ function validateProposition(
     default:
       report("FTS_PROPOSITION_KIND", `unknown proposition kind '${String((proposition as { kind?: unknown }).kind)}'`, `${path}.kind`)
   }
+}
+
+function isName(value: unknown): value is string {
+  if (typeof value !== "string" || value.length === 0 || value.length > 200) return false
+  if (value !== value.trim() || value !== value.normalize("NFC")) return false
+  if (/\p{Cc}|\p{Cs}/u.test(value)) return false
+  return true
 }

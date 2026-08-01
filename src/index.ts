@@ -1,3 +1,4 @@
+export * from "./certificate.js"
 export * from "./diagnostics.js"
 export * from "./interpreter.js"
 export * from "./model.js"

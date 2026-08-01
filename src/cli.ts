@@ -2,6 +2,7 @@
 import { readFile } from "node:fs/promises"
 import { pathToFileURL } from "node:url"
 import { errorResult } from "./diagnostics.js"
+import { assertVerified, certify } from "./certificate.js"
 import { prove } from "./interpreter.js"
 import type { FtsDocument, VisualizationMode } from "./model.js"
 import { compile } from "./parser.js"
@@ -14,6 +15,7 @@ interface CliOptions {
   command: string
   file: string
   contextFile?: string
+  certificateFile?: string
   mode: VisualizationMode
   pretty: boolean
 }
@@ -42,6 +44,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   try {
     const source = await readInput(options.file)
     const context = options.contextFile === undefined ? undefined : JSON.parse(await readInput(options.contextFile))
+    const certificate = options.certificateFile === undefined ? undefined : JSON.parse(await readInput(options.certificateFile))
     let output: unknown
     switch (options.command) {
       case "compile":
@@ -58,6 +61,13 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       }
       case "prove":
         output = prove(compile(source), context)
+        break
+      case "certify":
+        output = certify(compile(source), context)
+        break
+      case "verify":
+        if (certificate === undefined) throw new Error("verify requires --certificate proof.json")
+        output = assertVerified(compile(source), certificate, context)
         break
       case "visualize": {
         const document = compile(source)
@@ -83,6 +93,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
 function parseArgs(argv: string[]): CliOptions {
   const positional: string[] = []
   let contextFile: string | undefined
+  let certificateFile: string | undefined
   let mode: VisualizationMode = "all"
   let pretty = false
 
@@ -91,6 +102,9 @@ function parseArgs(argv: string[]): CliOptions {
     if (arg === "--context") {
       contextFile = argv[++index]
       if (contextFile === undefined) throw new Error("--context requires a JSON file")
+    } else if (arg === "--certificate") {
+      certificateFile = argv[++index]
+      if (certificateFile === undefined) throw new Error("--certificate requires a JSON file")
     } else if (arg === "--mode") {
       const candidate = argv[++index]
       if (!isMode(candidate)) throw new Error("--mode must be all, category, functors, or proof")
@@ -109,6 +123,7 @@ function parseArgs(argv: string[]): CliOptions {
     pretty,
   }
   if (contextFile !== undefined) result.contextFile = contextFile
+  if (certificateFile !== undefined) result.certificateFile = certificateFile
   return result
 }
 
@@ -133,6 +148,8 @@ Usage:
   fts compile [file|-] [--pretty]
   fts check [file|-] [--pretty]
   fts prove [file|-] [--context context.json] [--pretty]
+  fts certify [file|-] [--context context.json] [--pretty]
+  fts verify [file|-] --context context.json --certificate proof.json [--pretty]
   fts visualize [file|-] [--context context.json] [--mode all|category|functors|proof]
   fts pipeline [file|-] [--context context.json] [--mode all|category|functors|proof]
   fts mcp

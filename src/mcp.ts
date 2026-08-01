@@ -2,8 +2,9 @@
 import { createInterface } from "node:readline"
 import { pathToFileURL } from "node:url"
 import { errorResult } from "./diagnostics.js"
+import { assertVerified, certify } from "./certificate.js"
 import { prove } from "./interpreter.js"
-import type { FtsDocument, VisualizationMode } from "./model.js"
+import type { FtsDocument, FtsProofCertificate, VisualizationMode } from "./model.js"
 import { compile, normalizeDocument } from "./parser.js"
 import { pipeline } from "./pipeline.js"
 import { validate } from "./validate.js"
@@ -68,7 +69,7 @@ export const tools: ToolDefinition[] = [
   {
     name: "fts_prove",
     title: "Evaluate an FTS proposition",
-    description: "Build a Curry–Howard and categorical proof; optionally verify a witness against JSON context.",
+    description: "Build a human-readable symbolic derivation; use fts_certify and fts_verify for strict verification.",
     inputSchema: {
       ...sourceOrDocument,
       properties: {
@@ -89,6 +90,34 @@ export const tools: ToolDefinition[] = [
         context: { description: "Optional JSON value used for witness path verification" },
         mode: { enum: ["all", "category", "functors", "proof"], default: "all" },
       },
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "fts_certify",
+    title: "Create an FTS proof certificate",
+    description: "Create a deterministic typed proof certificate, verified against JSON context when complete evidence is supplied.",
+    inputSchema: {
+      ...sourceOrDocument,
+      properties: {
+        ...sourceOrDocument.properties,
+        context: { description: "Optional JSON evidence context; omission produces a symbolic certificate" },
+      },
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "fts_verify",
+    title: "Verify an FTS proof certificate",
+    description: "Independently reconstruct and strictly verify a proof certificate against its FTS document and JSON evidence context.",
+    inputSchema: {
+      ...sourceOrDocument,
+      properties: {
+        ...sourceOrDocument.properties,
+        context: { description: "JSON evidence context" },
+        certificate: { type: "object", description: "FTS proof certificate to verify" },
+      },
+      required: ["context", "certificate"],
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -144,7 +173,7 @@ export function handleRequest(request: JsonRpcRequest): Record<string, unknown> 
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "fts", title: "Formal Type Surface", version: "0.1.0" },
-        instructions: "Use FTS tools to compile, check, prove, and visualize .fts or legacy .ch.ts sources.",
+        instructions: "Use FTS tools to compile, check, prove, and visualize .fts sources.",
       }
     case "ping":
       return {}
@@ -189,6 +218,13 @@ function callTool(name: string, args: Record<string, unknown>): Record<string, u
         result = { viz: visualize(doc, proof, toMode(args.mode)) }
         break
       }
+      case "fts_certify":
+        result = { certificate: certify(document(), args.context) }
+        break
+      case "fts_verify":
+        if (!isRecord(args.certificate)) throw new Error("certificate must be an object")
+        result = { verification: assertVerified(document(), args.certificate as unknown as FtsProofCertificate, args.context) }
+        break
       case "fts_pipeline":
         result = pipeline({
           ...(typeof args.source === "string" ? { source: args.source } : { document: document() }),

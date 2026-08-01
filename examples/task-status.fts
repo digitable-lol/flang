@@ -1,4 +1,3 @@
-// Legacy CH/TS remains a supported source form.
 category IterationSnapshot {
   structure TaskRow {
     id: TaskId

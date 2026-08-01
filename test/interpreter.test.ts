@@ -36,4 +36,8 @@ describe("prove", () => {
       value: "x",
     })
   })
+
+  it("rejects ambiguous selectors", () => {
+    assert.deepEqual(resolvePath({ rows: [{ id: 7 }, { id: 7 }] }, ["rows", { id: 7 }]), { found: false })
+  })
 })

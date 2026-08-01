@@ -2,8 +2,8 @@
 category ClassicalLogic {
   structure Individual {
     name: string
-    isHuman: boolean
-    isMortal: boolean
+    isHuman: Human
+    isMortal: Mortal
   }
 
   functor humanImpliesMortal: Human -> Mortal
@@ -13,6 +13,7 @@ category ClassicalLogic {
     witness Individual.isHuman {
       selector { name: "Socrates" }
       value true
+      path ["individuals", { name: "Socrates" }, "isHuman"]
       detail "Socrates is human"
     }
   }

@@ -1,0 +1,41 @@
+{
+  "version": "fts-proof/1",
+  "category": "ClassicalLogic",
+  "status": "verified",
+  "document_digest": "sha256:54604b34c736ce4403d2f5432fa00661cd1f910eeb408181c89ad8408a816777",
+  "assumptions": [
+    "humanImpliesMortal : Human → Mortal [functor.arrow]"
+  ],
+  "steps": [
+    {
+      "rule": "witness",
+      "structure": "Individual",
+      "field": "isHuman",
+      "type": "Human",
+      "path": [
+        "individuals",
+        {
+          "name": "Socrates"
+        },
+        "isHuman"
+      ],
+      "verified": true,
+      "expected": true,
+      "actual": true,
+      "evidence_digest": "sha256:e04326fe5cbae4cdda8c7cb401141f8f4bcb54c75ae242070aed33740bd48881"
+    },
+    {
+      "rule": "apply",
+      "functor": "humanImpliesMortal",
+      "domain": "Human",
+      "codomain": "Mortal",
+      "law": "functor.arrow"
+    }
+  ],
+  "conclusion": {
+    "type": "Mortal",
+    "term": "humanImpliesMortal(witness(Individual.isHuman))"
+  },
+  "context_digest": "sha256:44f696ebcb255ada549977a02026578a6a8be2df2f346f5746575cb477c898b3",
+  "certificate_digest": "sha256:ea35ca4c1f8b73648266a0f5a078d7392ed5b6d00535883000525a9e985b6cc7"
+}

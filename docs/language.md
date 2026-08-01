@@ -6,10 +6,9 @@ FTS (*Formal Type Surface*) is a textual surface over a canonical JSON document.
 
 `compile` accepts:
 
-1. native FTS syntax in `.fts` files;
-2. legacy CH/TS syntax in `.ch.ts` files;
-3. a canonical JSON object;
-4. `export default <canonical JSON> as const`.
+1. FTS syntax in `.fts` files;
+2. a canonical JSON object;
+3. `export default <canonical JSON> as const` for generated TypeScript modules.
 
 File extensions are conventions; the compiler reads content.
 
@@ -53,7 +52,7 @@ proposition witness Task.status {
 }
 ```
 
-Without context, a witness is symbolic. With context, `prove` walks `path` and checks `value`. String segments access object properties, numbers access array indices, and object segments select the first array item matching all selector fields.
+Without context, a witness is symbolic. With context, FTS walks `path` and checks `value`. String segments access object properties, numbers access array indices, and object segments must select exactly one array item matching all selector fields. Zero or multiple matches fail strict verification.
 
 ### `apply`
 
@@ -74,7 +73,7 @@ proposition compose {
 }
 ```
 
-Legacy `proposition compose [f, g] { ... }` is also accepted.
+The canonical form keeps the functor list inside the proposition body.
 
 ## Built-ins
 

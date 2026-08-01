@@ -1,4 +1,5 @@
 import { diagnosticError } from "./diagnostics.js"
+import { certify } from "./certificate.js"
 import { prove } from "./interpreter.js"
 import type { FtsDocument, PipelineInput, PipelineResult } from "./model.js"
 import { compile, normalizeDocument } from "./parser.js"
@@ -17,6 +18,7 @@ export function pipeline(input: PipelineInput): PipelineResult {
 
   const document = assertValid(rawDocument)
   const proof = document.proposition === null ? null : prove(document, input.context)
+  const certificate = document.proposition === null ? null : certify(document, input.context)
   const viz = visualize(document, proof, input.viz ?? "all")
-  return { document, proof, viz }
+  return { document, proof, certificate, viz }
 }

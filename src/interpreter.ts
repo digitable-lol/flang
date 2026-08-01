@@ -112,9 +112,11 @@ export function resolvePath(context: unknown, path: PathSegment[]): { found: boo
       current = current[segment]
     } else {
       if (!Array.isArray(current)) return { found: false }
-      const match = current.find((item) => isRecord(item) && Object.entries(segment).every(([key, value]) => deepEqual(item[key], value)))
-      if (match === undefined) return { found: false }
-      current = match
+      const matches = current.filter(
+        (item) => isRecord(item) && Object.entries(segment).every(([key, value]) => deepEqual(item[key], value)),
+      )
+      if (matches.length !== 1) return { found: false }
+      current = matches[0]
     }
   }
   return { found: true, value: current }

@@ -5,8 +5,8 @@
       "name": "Individual",
       "fields": [
         { "name": "name", "type": "string" },
-        { "name": "isHuman", "type": "boolean" },
-        { "name": "isMortal", "type": "boolean" }
+        { "name": "isHuman", "type": "Human" },
+        { "name": "isMortal", "type": "Mortal" }
       ]
     }
   ],
@@ -26,7 +26,8 @@
       "structure": "Individual",
       "field": "isHuman",
       "selector": { "name": "Socrates" },
-      "value": true
+      "value": true,
+      "path": ["individuals", { "name": "Socrates" }, "isHuman"]
     }
   },
   "ts_compat": {}

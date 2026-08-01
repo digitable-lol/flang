@@ -1,5 +1,7 @@
 node_modules/
 dist/
 coverage/
+tmp/
+__pycache__/
 *.tgz
 .DS_Store

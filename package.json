@@ -17,6 +17,7 @@
       "import": "./dist/src/index.js"
     },
     "./schema": "./schema/document.schema.json",
+    "./proof-schema": "./schema/proof-certificate.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -25,7 +26,6 @@
     "schema",
     "examples",
     "README.md",
-    "MIGRATION.md",
     "CONTRIBUTING.md",
     "LICENSE"
   ],
@@ -47,7 +47,7 @@
   "keywords": [
     "typescript",
     "formal-methods",
-    "curry-howard",
+    "proof-carrying-data",
     "category-theory",
     "mcp",
     "ai-agents"

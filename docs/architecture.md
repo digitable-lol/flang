@@ -9,9 +9,9 @@ source / canonical JSON
           |
      FtsDocument ---- validate
           |               |
-        prove         diagnostics
+        certify       diagnostics
           |
-     FtsProof
+ FtsProofCertificate ---- verify
           |
       visualize
           |
@@ -23,9 +23,10 @@ Library API ─┬─ CLI (JSON stdout/stderr)
 
 ## Modules
 
-- `parser.ts` owns tokenization, parsing, legacy syntax, and JSON normalization.
+- `parser.ts` owns `.fts` tokenization, parsing, and canonical JSON normalization.
 - `validate.ts` owns semantic constraints and stable JSON-path diagnostics.
-- `interpreter.ts` evaluates propositions and verifies generic JSON paths.
+- `certificate.ts` constructs deterministic typed certificates and independently verifies them.
+- `interpreter.ts` provides human-readable derivations and resolves generic JSON paths.
 - `visualize.ts` renders category, functor, and proof diagrams as Mermaid.
 - `pipeline.ts` composes the public operations without hidden I/O.
 - `cli.ts` and `mcp.ts` adapt the same API; neither contains language semantics.
@@ -43,4 +44,4 @@ Library API ─┬─ CLI (JSON stdout/stderr)
 
 Utilities should consume `FtsDocument` rather than parser internals. A formatter, LSP, code generator, optimizer, graph analyzer, or IDE can therefore share the same model and diagnostic codes.
 
-Application integrations should live in separate packages. For example, an SPPR adapter may map an iteration snapshot to context JSON and provide domain templates while importing the FTS compiler and prover from this package.
+Application integrations should live in separate packages. For example, an application adapter may map a domain snapshot to context JSON and provide templates while importing the FTS compiler and verifier from this package.

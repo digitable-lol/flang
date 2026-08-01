@@ -86,6 +86,52 @@ export interface FtsProof {
   path: PathSegment[]
 }
 
+export type ProofCertificateStatus = "verified" | "symbolic"
+
+export interface WitnessProofStep {
+  rule: "witness"
+  structure: string
+  field: string
+  type: string
+  path: PathSegment[]
+  expected?: FtsValue
+  actual?: FtsValue
+  evidence_digest?: string
+  verified: boolean
+}
+
+export interface ApplyProofStep {
+  rule: "apply"
+  functor: string
+  domain: string
+  codomain: string
+  law: string
+}
+
+export type ProofCertificateStep = WitnessProofStep | ApplyProofStep
+
+export interface FtsProofCertificate {
+  version: "fts-proof/1"
+  category: string
+  status: ProofCertificateStatus
+  document_digest: string
+  context_digest?: string
+  assumptions: string[]
+  steps: ProofCertificateStep[]
+  conclusion: {
+    type: string
+    term: string
+  }
+  certificate_digest: string
+}
+
+export interface CertificateVerification {
+  valid: boolean
+  status: ProofCertificateStatus
+  expected_digest: string
+  actual_digest: string
+}
+
 export type VisualizationMode = "all" | "category" | "functors" | "proof"
 
 export interface FtsVisualization {
@@ -105,5 +151,6 @@ export interface PipelineInput {
 export interface PipelineResult {
   document: FtsDocument
   proof: FtsProof | null
+  certificate: FtsProofCertificate | null
   viz: FtsVisualization
 }

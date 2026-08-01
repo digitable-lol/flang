@@ -1,11 +1,11 @@
 # FTS — Formal Type Surface
 
-FTS is a small TypeScript-adjacent language for describing structures, morphisms, propositions, and machine-checkable witnesses. It turns `.fts`, legacy `.ch.ts`, or canonical JSON into one stable JSON model.
+FTS is a small TypeScript-adjacent language for describing structures, morphisms, propositions, and machine-checkable witnesses. It turns `.fts` or canonical JSON into one stable JSON model.
 
 The repository is intentionally usable at three levels:
 
-- as a TypeScript library (`compile`, `validate`, `prove`, `visualize`, `pipeline`);
-- as a JSON-first CLI (`fts compile`, `fts check`, `fts prove`);
+- as a TypeScript library (`compile`, `validate`, `certify`, `assertVerified`, `visualize`, `pipeline`);
+- as a JSON-first CLI (`fts compile`, `fts check`, `fts certify`, `fts verify`);
 - as a read-only MCP server exposing the same operations to AI agents.
 
 ```fts
@@ -38,7 +38,7 @@ npm test
 npm run build
 
 node dist/src/cli.js pipeline examples/socrates.fts --pretty
-node dist/src/cli.js prove examples/task-status.ch.ts \
+node dist/src/cli.js certify examples/task-status.fts \
   --context examples/task-status.context.json --pretty
 ```
 
@@ -55,12 +55,13 @@ Every CLI command writes JSON to stdout. Diagnostics go to stderr and failures r
 ## Library API
 
 ```ts
-import { compile, pipeline, prove, validate, visualize } from "@digitable/fts"
+import { assertVerified, certify, compile, pipeline, validate, visualize } from "@digitable/fts"
 
 const document = compile(source)
 const checked = validate(document)
-const proof = prove(document, context)
-const diagrams = visualize(document, proof)
+const certificate = certify(document, context)
+const verification = assertVerified(document, certificate, context)
+const diagrams = visualize(document)
 const result = pipeline({ source, context, viz: "all" })
 ```
 
@@ -68,21 +69,23 @@ The canonical interchange format is documented by [`schema/document.schema.json`
 
 ## AI agents
 
-Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes five read-only tools:
+Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes seven read-only tools:
 
 - `fts_compile`
 - `fts_check`
 - `fts_prove`
 - `fts_visualize`
+- `fts_certify`
+- `fts_verify`
 - `fts_pipeline`
 
 Tool results include both `structuredContent` and a JSON text block. See [Agent integration](docs/agents.md) for configuration and conventions.
 
-## Compatibility
+## One language, one extension
 
-FTS is the standalone continuation of the CH/TS implementation originally embedded in `sppr-pow`. Both `.fts` and `.ch.ts` source files are accepted. The canonical name for new files and APIs is **FTS**; `CH` is retained only as a compatibility term.
+All authored source uses `.fts`. JSON is the canonical interchange form for APIs, storage, generated utilities, and agents. There is no second source dialect or alternate language name.
 
-See [Language reference](docs/language.md), [Architecture](docs/architecture.md), and [CH migration](MIGRATION.md).
+See [Language reference](docs/language.md), [Architecture](docs/architecture.md), [How it works](docs/how-it-works.md), and [Application adoption](docs/adoption.md).
 
 ## Status
 

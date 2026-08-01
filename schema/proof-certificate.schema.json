@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fts-lang.dev/schema/proof-certificate.schema.json",
+  "title": "FTS proof certificate",
+  "type": "object",
+  "required": [
+    "version",
+    "category",
+    "status",
+    "document_digest",
+    "assumptions",
+    "steps",
+    "conclusion",
+    "certificate_digest"
+  ],
+  "properties": {
+    "version": { "const": "fts-proof/1" },
+    "category": { "type": "string" },
+    "status": { "enum": ["verified", "symbolic"] },
+    "document_digest": { "$ref": "#/$defs/digest" },
+    "context_digest": { "$ref": "#/$defs/digest" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "steps": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/witness" },
+          { "$ref": "#/$defs/apply" }
+        ]
+      }
+    },
+    "conclusion": {
+      "type": "object",
+      "required": ["type", "term"],
+      "properties": {
+        "type": { "type": "string" },
+        "term": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "certificate_digest": { "$ref": "#/$defs/digest" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "witness": {
+      "type": "object",
+      "required": ["rule", "structure", "field", "type", "path", "verified"],
+      "properties": {
+        "rule": { "const": "witness" },
+        "structure": { "type": "string" },
+        "field": { "type": "string" },
+        "type": { "type": "string" },
+        "path": { "type": "array" },
+        "expected": true,
+        "actual": true,
+        "evidence_digest": { "$ref": "#/$defs/digest" },
+        "verified": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "apply": {
+      "type": "object",
+      "required": ["rule", "functor", "domain", "codomain", "law"],
+      "properties": {
+        "rule": { "const": "apply" },
+        "functor": { "type": "string" },
+        "domain": { "type": "string" },
+        "codomain": { "type": "string" },
+        "law": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

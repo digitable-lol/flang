@@ -6,5 +6,5 @@ This repository implements the Formal Type Surface language.
 - Keep language semantics in `src/parser.ts`, `src/validate.ts`, and `src/interpreter.ts`; CLI and MCP are adapters.
 - Keep the core deterministic and free of runtime dependencies, filesystem access, and network access.
 - Add parser, validation, and pipeline tests for language changes.
-- Preserve `.ch.ts` compatibility unless a migration explicitly schedules its removal.
+- Author and emit only `.fts` source; JSON is the sole interchange form.
 - Run `npm test` before completing changes.

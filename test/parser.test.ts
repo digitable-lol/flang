@@ -4,8 +4,8 @@ import { describe, it } from "node:test"
 import { compile } from "../src/parser.js"
 
 describe("compile", () => {
-  it("compiles legacy .ch.ts syntax", async () => {
-    const source = await readFile(new URL("../../examples/task-status.ch.ts", import.meta.url), "utf8")
+  it("compiles .fts syntax", async () => {
+    const source = await readFile(new URL("../../examples/task-status.fts", import.meta.url), "utf8")
     const document = compile(source)
     assert.equal(document.category, "IterationSnapshot")
     assert.equal(document.structures[0]?.name, "TaskRow")
@@ -27,19 +27,6 @@ describe("compile", () => {
     if (document.proposition?.kind !== "compose") assert.fail("expected compose")
     assert.deepEqual(document.proposition.functors, ["humanImpliesMortal"])
     assert.equal(document.proposition.arg.kind, "witness")
-  })
-
-  it("accepts legacy compose [f] syntax", () => {
-    const document = compile(`
-      category C {
-        structure A { ok: boolean }
-        functor f: A -> B
-        proposition compose [f] {
-          witness A.ok { value true }
-        }
-      }
-    `)
-    assert.equal(document.proposition?.kind, "compose")
   })
 
   it("accepts canonical JSON and export default JSON", () => {

@@ -7,7 +7,7 @@ import { prove } from "./interpreter.js"
 import type { FtsDocument, FtsProofCertificate, VisualizationMode } from "./model.js"
 import { compile, normalizeDocument } from "./parser.js"
 import { pipeline } from "./pipeline.js"
-import { generateTypeScript, testUtilities } from "./utility.js"
+import { executeUtility, generateTypeScript, testUtilities } from "./utility.js"
 import { assertValid, validate } from "./validate.js"
 import { visualize } from "./visualize.js"
 
@@ -79,6 +79,25 @@ export const tools: ToolDefinition[] = [
     title: "Generate utility implementation",
     description: "Generate deterministic TypeScript implementation and node:test files from FTS utilities.",
     inputSchema: sourceOrDocument,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "fts_execute",
+    title: "Execute an FTS utility",
+    description: "Execute a named deterministic utility with scalar JSON input.",
+    inputSchema: {
+      ...sourceOrDocument,
+      properties: {
+        ...sourceOrDocument.properties,
+        utility: { type: "string", description: "Utility name" },
+        input: {
+          type: "object",
+          description: "Scalar input values keyed by FTS field name",
+          additionalProperties: { type: ["string", "number", "boolean", "null"] },
+        },
+      },
+      required: ["utility", "input"],
+    },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   {
@@ -187,7 +206,7 @@ export function handleRequest(request: JsonRpcRequest): Record<string, unknown> 
       return {
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "fts", title: "Formal Type Surface", version: "0.2.0" },
+        serverInfo: { name: "fts", title: "Formal Type Surface", version: "0.3.0" },
         instructions: "Use FTS tools to compile, check, test, generate, prove, and visualize .fts sources.",
       }
     case "ping":
@@ -229,6 +248,11 @@ function callTool(name: string, args: Record<string, unknown>): Record<string, u
         break
       case "fts_generate":
         result = { generation: generateTypeScript(assertValid(document())) }
+        break
+      case "fts_execute":
+        if (typeof args.utility !== "string") throw new Error("utility must be a string")
+        if (!isScalarRecord(args.input)) throw new Error("input must be an object with scalar JSON values")
+        result = { execution: { utility: args.utility, result: executeUtility(assertValid(document()), args.utility, args.input) } }
         break
       case "fts_prove":
         result = { proof: prove(document(), args.context) }
@@ -286,6 +310,12 @@ function write(message: unknown): void {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function isScalarRecord(value: unknown): value is Record<string, import("./model.js").FtsScalar> {
+  return isRecord(value) && Object.values(value).every(
+    (item) => item === null || typeof item === "string" || typeof item === "number" || typeof item === "boolean",
+  )
 }
 
 const invokedPath = process.argv[1]

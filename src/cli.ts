@@ -9,7 +9,7 @@ import type { FtsDocument, VisualizationMode } from "./model.js"
 import { compile } from "./parser.js"
 import { pipeline } from "./pipeline.js"
 import { runMcpServer } from "./mcp.js"
-import { generateTypeScript, testUtilities } from "./utility.js"
+import { executeUtility, generateTypeScript, testUtilities } from "./utility.js"
 import { assertValid, validate } from "./validate.js"
 import { visualize } from "./visualize.js"
 
@@ -19,6 +19,8 @@ interface CliOptions {
   contextFile?: string
   certificateFile?: string
   outDir?: string
+  utilityName?: string
+  inputFile?: string
   mode: VisualizationMode
   pretty: boolean
 }
@@ -36,7 +38,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     return 0
   }
   if (options.command === "version" || options.command === "--version" || options.command === "-v") {
-    process.stdout.write("0.2.0\n")
+    process.stdout.write("0.3.0\n")
     return 0
   }
   if (options.command === "mcp") {
@@ -93,6 +95,16 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         }
         break
       }
+      case "run": {
+        if (options.utilityName === undefined) throw new Error("run requires --utility name")
+        if (options.inputFile === undefined) throw new Error("run requires --input input.json")
+        const input = parseUtilityInput(JSON.parse(await readInput(options.inputFile)))
+        output = {
+          utility: options.utilityName,
+          result: executeUtility(assertValid(compile(source)), options.utilityName, input),
+        }
+        break
+      }
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${helpText}`)
         return 2
@@ -110,6 +122,8 @@ function parseArgs(argv: string[]): CliOptions {
   let contextFile: string | undefined
   let certificateFile: string | undefined
   let outDir: string | undefined
+  let utilityName: string | undefined
+  let inputFile: string | undefined
   let mode: VisualizationMode = "all"
   let pretty = false
 
@@ -128,6 +142,12 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (arg === "--out") {
       outDir = argv[++index]
       if (outDir === undefined) throw new Error("--out requires a directory")
+    } else if (arg === "--utility") {
+      utilityName = argv[++index]
+      if (utilityName === undefined) throw new Error("--utility requires a name")
+    } else if (arg === "--input") {
+      inputFile = argv[++index]
+      if (inputFile === undefined) throw new Error("--input requires a JSON file")
     } else if (arg === "--pretty") {
       pretty = true
     } else {
@@ -142,10 +162,26 @@ function parseArgs(argv: string[]): CliOptions {
     pretty,
   }
   if (outDir !== undefined && result.command !== "generate") throw new Error("--out is available only for generate")
+  if (utilityName !== undefined && result.command !== "run") throw new Error("--utility is available only for run")
+  if (inputFile !== undefined && result.command !== "run") throw new Error("--input is available only for run")
   if (contextFile !== undefined) result.contextFile = contextFile
   if (certificateFile !== undefined) result.certificateFile = certificateFile
   if (outDir !== undefined) result.outDir = outDir
+  if (utilityName !== undefined) result.utilityName = utilityName
+  if (inputFile !== undefined) result.inputFile = inputFile
   return result
+}
+
+function parseUtilityInput(value: unknown): Record<string, import("./model.js").FtsScalar> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("utility input must be a JSON object")
+  }
+  for (const [field, item] of Object.entries(value)) {
+    if (item !== null && typeof item !== "string" && typeof item !== "number" && typeof item !== "boolean") {
+      throw new Error(`utility input field '${field}' must be a scalar JSON value`)
+    }
+  }
+  return value as Record<string, import("./model.js").FtsScalar>
 }
 
 async function readInput(file: string): Promise<string> {
@@ -187,6 +223,7 @@ Usage:
   fts pipeline [file|-] [--context context.json] [--mode all|category|morphisms|proof]
   fts generate [file|-] [--out directory] [--pretty]
   fts test [file|-] [--pretty]
+  fts run [file|-] --utility name --input input.json [--pretty]
   fts mcp
   fts version
 

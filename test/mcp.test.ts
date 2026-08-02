@@ -11,6 +11,7 @@ describe("MCP server", () => {
         "fts_check",
         "fts_test",
         "fts_generate",
+        "fts_execute",
         "fts_prove",
         "fts_visualize",
         "fts_certify",
@@ -25,7 +26,7 @@ describe("MCP server", () => {
     const initialized = handleRequest({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} })
     assert.equal(initialized.protocolVersion, "2025-06-18")
     const listed = handleRequest({ jsonrpc: "2.0", id: 2, method: "tools/list" })
-    assert.equal((listed.tools as unknown[]).length, 9)
+    assert.equal((listed.tools as unknown[]).length, 10)
   })
 
   it("returns structured content from tool calls", () => {
@@ -76,5 +77,14 @@ describe("MCP server", () => {
     })
     assert.equal(generated.isError, false)
     assert.equal(((generated.structuredContent as { generation: { files: unknown[] } }).generation).files.length, 2)
+
+    const executed = handleRequest({
+      jsonrpc: "2.0",
+      id: 6,
+      method: "tools/call",
+      params: { name: "fts_execute", arguments: { source, utility: "Удвоить", input: { число: 3 } } },
+    })
+    assert.equal(executed.isError, false)
+    assert.equal(((executed.structuredContent as { execution: { result: number } }).execution).result, 6)
   })
 })

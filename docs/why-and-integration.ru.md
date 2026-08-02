@@ -112,7 +112,13 @@ const form = objects(document).find(
 ))}
 ```
 
-Полный пример: [`FtsForm.tsx`](../examples/integrations/react/FtsForm.tsx).
+Полные примеры:
+
+- [`FtsDiscountCalculator.tsx`](../examples/integrations/react/FtsDiscountCalculator.tsx) — самостоятельный React;
+- [`DigitableFtsDiscountForm.tsx`](../examples/integrations/react/DigitableFtsDiscountForm.tsx) — общий `FtsForm` из `@digitable-lol/ui-components`.
+
+Общий компонент принимает уже скомпилированный документ. Поэтому пакет компонентов не зависит от
+парсера FTS, а приложение может получить документ как в браузере, так и от Node.js API.
 
 В браузере доступны compile, validate, symbolic proof и visualization. `certify` и `assertVerified` намеренно отсутствуют в browser-entry: клиент нельзя считать доверенной границей принятия бизнес-решения.
 
@@ -154,7 +160,10 @@ node examples/integrations/node/http-server.mjs
 }
 ```
 
-Реализация находится в [`service.mjs`](../examples/integrations/node/service.mjs) и [`http-server.mjs`](../examples/integrations/node/http-server.mjs).
+Реализация общей FTS-границы находится в [`service.mjs`](../examples/integrations/node/service.mjs)
+и [`http-server.mjs`](../examples/integrations/node/http-server.mjs). Конкретный расчёт скидки показан
+в [`discount-cli.mjs`](../examples/integrations/node/discount-cli.mjs) и
+[`discount-http-server.mjs`](../examples/integrations/node/discount-http-server.mjs).
 
 ## Python
 
@@ -174,6 +183,23 @@ certificate = json.loads(result.stdout)
 ```
 
 Рабочий цикл `certify -> verify`: [`verify_order.py`](../examples/integrations/python/verify_order.py).
+
+Исполнение одной утилиты не требует Python SDK:
+
+```bash
+fts run discount.fts --utility "Рассчитать скидку" --input purchase.json
+```
+
+Полный пример: [`calculate_discount.py`](../examples/integrations/python/calculate_discount.py).
+
+## Производительность
+
+`npm run benchmark` отдельно измеряет компиляцию, валидацию, исполнение правил, генерацию TypeScript
+и запуск предметных примеров. Базовый замер Apple M1 Max находится в
+[`benchmarks/README.md`](../benchmarks/README.md). На модели с 1000 полями и 1000 правилами средняя
+компиляция заняла 4,36 мс, валидация — 1,02 мс, а изолированная транспиляция сгенерированного
+TypeScript — около 23 мс. Полную сборку React/Node.js и `tsc` всё равно нужно измерять отдельно в
+конкретном приложении: там результат зависит от общего графа типов, bundler и кэша.
 
 ## Go, Java, C#, Elixir и другие языки
 

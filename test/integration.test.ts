@@ -30,4 +30,38 @@ describe("integration surfaces", () => {
     )
     assert.equal(packageJson.exports["./browser"].import, "./dist/src/browser.js")
   })
+
+  it("runs a concrete Node.js discount utility", async () => {
+    const program = `
+      import { calculateDiscount } from "./examples/integrations/node/discount-cli.mjs";
+      process.stdout.write(JSON.stringify(await calculateDiscount(
+        "./examples/utilities/discount.fts",
+        "./examples/utilities/discount.input.json"
+      )));
+    `
+    const result = spawnSync(process.execPath, ["--input-type=module", "--eval", program], { cwd: root, encoding: "utf8" })
+    assert.equal(result.status, 0, result.stderr)
+    assert.deepEqual(JSON.parse(result.stdout), {
+      result: 3000,
+      tests: { passed: 3, total: 3 },
+      generated: ["fts.utilities.ts", "fts.utilities.test.ts"],
+    })
+  })
+
+  it("loads the FTS model once for a Node.js HTTP service", () => {
+    const program = `
+      import { createDiscountService } from "./examples/integrations/node/discount-http-server.mjs";
+      const calculate = await createDiscountService("./examples/utilities/discount.fts");
+      process.stdout.write(JSON.stringify({ discount: calculate({ сумма: 20000, "постоянный клиент": true }) }));
+    `
+    const result = spawnSync(process.execPath, ["--input-type=module", "--eval", program], { cwd: root, encoding: "utf8" })
+    assert.equal(result.status, 0, result.stderr)
+    assert.deepEqual(JSON.parse(result.stdout), { discount: 3000 })
+  })
+
+  it("lets Python execute the same FTS utility through JSON CLI", () => {
+    const result = spawnSync("python3", ["examples/integrations/python/calculate_discount.py"], { cwd: root, encoding: "utf8" })
+    assert.equal(result.status, 0, result.stderr)
+    assert.deepEqual(JSON.parse(result.stdout), { utility: "Рассчитать скидку", result: 3000 })
+  })
 })

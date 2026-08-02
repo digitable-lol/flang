@@ -1,6 +1,6 @@
 {
   "name": "@digitable/fts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Formal Type Surface: executable specifications that generate utilities, tests, and machine-checkable evidence.",
   "type": "module",
   "license": "Apache-2.0",
@@ -39,6 +39,8 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test dist/test/**/*.test.js",
     "test:source": "node --experimental-strip-types --test test/**/*.test.ts",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "benchmark:quick": "npm run build && node scripts/benchmark.mjs --quick",
     "prepublishOnly": "npm test"
   },
   "engines": {

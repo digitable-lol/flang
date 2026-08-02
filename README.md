@@ -48,6 +48,8 @@ node dist/src/cli.js pipeline examples/real-world/order-shipment.fts --pretty
 node dist/src/cli.js certify examples/real-world/order-shipment.fts \
   --context examples/real-world/order-shipment.context.json --pretty
 node dist/src/cli.js test examples/utilities/discount.fts --pretty
+node dist/src/cli.js run examples/utilities/discount.fts \
+  --utility "Рассчитать скидку" --input examples/utilities/discount.input.json --pretty
 node dist/src/cli.js generate examples/utilities/discount.fts --out generated
 ```
 
@@ -56,6 +58,7 @@ The package is marked private while the repository is private. After the public 
 ```bash
 fts check model.fts
 fts test model.fts
+fts run model.fts --utility "Рассчитать скидку" --input purchase.json
 fts generate model.fts --out generated
 fts-mcp
 ```
@@ -83,12 +86,13 @@ Browser applications should import `@digitable/fts/browser`. This entrypoint pro
 
 ## AI agents
 
-Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes nine read-only tools, including executable-spec operations:
+Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes ten read-only tools, including executable-spec operations:
 
 - `fts_compile`
 - `fts_check`
 - `fts_test`
 - `fts_generate`
+- `fts_execute`
 - `fts_prove`
 - `fts_visualize`
 - `fts_certify`
@@ -104,6 +108,25 @@ All authored source uses `.fts`. JSON is the canonical interchange form for APIs
 See [Executable utilities](docs/executable-utilities.ru.md), [Language reference](docs/language.md), [Architecture](docs/architecture.md), and [How it works](docs/how-it-works.md).
 
 For runnable Russian examples of form generators, table configuration, and DDD command guards, see [FTS на прикладных примерах](docs/examples.ru.md). For React, Node.js, Python, HTTP, and the practical value proposition, see [Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md).
+
+Concrete integrations include a [Node.js CLI utility](examples/integrations/node/discount-cli.mjs),
+a [Node.js HTTP service](examples/integrations/node/discount-http-server.mjs), a standalone
+[React calculator](examples/integrations/react/FtsDiscountCalculator.tsx), a React example using
+the shared Digitable [`FtsForm`](examples/integrations/react/DigitableFtsDiscountForm.tsx), and a
+[Python CLI client](examples/integrations/python/calculate_discount.py).
+
+## Performance
+
+```bash
+npm run benchmark
+```
+
+The reproducible harness and a checked-in Apple M1 Max baseline are in
+[`benchmarks/`](benchmarks/README.md). In that baseline, a synthetic model with 1000 fields and 1000
+rules compiles in 4.36 ms on average and validates in 1.02 ms; executing 1000 matching rules takes
+0.0157 ms, while isolated transpilation of generated TypeScript takes about 23 ms. These are
+microbenchmarks, not a promise about a host application's bundler or
+`tsc` build.
 
 ## Status
 

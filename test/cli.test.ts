@@ -46,6 +46,20 @@ describe("CLI", () => {
       await rm(directory, { recursive: true, force: true })
     }
   })
+
+  it("executes one utility with JSON input", async () => {
+    const source = await readFile(new URL("../../examples/utilities/discount.fts", import.meta.url), "utf8")
+    const directory = await mkdtemp(join(tmpdir(), "fts-run-"))
+    const inputFile = join(directory, "input.json")
+    try {
+      await (await import("node:fs/promises")).writeFile(inputFile, JSON.stringify({ сумма: 20000, "постоянный клиент": true }))
+      const result = await runCli(["run", "--utility", "Рассчитать скидку", "--input", inputFile], source)
+      assert.equal(result.code, 0, result.stderr)
+      assert.deepEqual(JSON.parse(result.stdout), { utility: "Рассчитать скидку", result: 3000 })
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  })
 })
 
 function runCli(args: string[], stdin: string): Promise<{ code: number | null; stdout: string; stderr: string }> {

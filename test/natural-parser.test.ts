@@ -61,3 +61,57 @@ describe("natural Russian surface", () => {
     ])
   })
 })
+
+describe("natural English surface", () => {
+  it("compiles to the same canonical utility model as Russian", () => {
+    const english = compile(`category "Sales"
+      object Purchase
+        amount is money
+        "loyal customer" is boolean
+
+      utility "Calculate discount"
+        accepts Purchase
+        returns money
+        starts with 0
+
+        rule "Large purchase"
+          if amount is at least 10000
+          then add 10 percent of field amount
+
+        property "Discount is capped"
+          result is at most 20 percent of field amount
+
+        example "Twenty thousand purchase"
+          given amount equals 20000
+          given "loyal customer" equals false
+          expected result equals 2000`)
+
+    assert.equal(english.category, "Sales")
+    assert.equal(english.structures[0]?.fields[0]?.type, "Деньги")
+    assert.equal(english.structures[0]?.fields[1]?.type, "Признак")
+    assert.equal(english.utilities?.[0]?.output, "Деньги")
+    assert.equal(english.utilities?.[0]?.rules[0]?.when[0]?.operator, "gte")
+    assert.equal(english.utilities?.[0]?.examples[0]?.expected, 2000)
+  })
+
+  it("supports English morphisms and concrete theorems without braces", () => {
+    const document = compile(`category "Order execution"
+      object Order
+        number is string
+        ready is state "Ready to ship"
+
+      morphism "Ready order can ship"
+        if "Ready to ship"
+        then "Shipping allowed"
+
+      theorem "Order A-1 can ship"
+        given Order has ready equal to true
+        in data orders find where number equals "A-1"
+        by morphism "Ready order can ship"
+        therefore "Shipping allowed"`)
+
+    assert.equal(document.category, "Order execution")
+    assert.equal(document.functors[0]?.domain, "Ready to ship")
+    assert.equal(document.proposition?.kind, "apply")
+  })
+})

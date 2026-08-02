@@ -178,3 +178,35 @@
 Естественная поверхность компилируется в тот же `FtsDocument`, который используют CLI, Node.js, browser-entry и MCP. Старый скобочный синтаксис пока принимается для обратной совместимости, но не является рекомендуемым авторским форматом.
 
 В канонической модели `fts/1` некоторые внутренние поля всё ещё называются `functors` и `apply`. Это наследие первой версии wire format; пользовательская и научная терминология исправлена на `morphism`. Миграция wire format будет версионированной и не потребует возвращения старого синтаксиса.
+
+## English surface
+
+The same indentation-based surface is available in English. It has the same
+semantics and compiles to the same canonical built-in types; it is not a
+separate runtime or a translation performed by an AI model.
+
+```fts
+category "Sales"
+
+  object Purchase
+    amount is money
+    "loyal customer" is boolean
+
+  utility "Calculate discount"
+    accepts Purchase
+    returns money
+    starts with 0
+
+    rule "Large purchase"
+      if amount is at least 10000
+      then add 10 percent of field amount
+
+    example "Twenty thousand purchase"
+      given amount equals 20000
+      given "loyal customer" equals false
+      expected result equals 2000
+```
+
+Multi-word names must use regular quotes. Russian guillemets remain accepted
+because both surfaces use the same Unicode-aware name reader. See
+`examples/utilities/discount.en.fts` for a runnable example.

@@ -105,6 +105,10 @@ Tool results include both `structuredContent` and a JSON text block. See [Agent 
 
 All authored source uses `.fts`. JSON is the canonical interchange form for APIs, storage, generated utilities, and agents. Russian and compatible English keywords normalize into one canonical document rather than separate runtime implementations.
 
+Both Russian and English have the same indentation-based, brace-free authoring
+surface. See [`examples/utilities/discount.fts`](examples/utilities/discount.fts)
+and [`examples/utilities/discount.en.fts`](examples/utilities/discount.en.fts).
+
 See [Executable utilities](docs/executable-utilities.ru.md), [Language reference](docs/language.md), [Architecture](docs/architecture.md), and [How it works](docs/how-it-works.md).
 
 For runnable Russian examples of form generators, table configuration, and DDD command guards, see [FTS на прикладных примерах](docs/examples.ru.md). For React, Node.js, Python, HTTP, and the practical value proposition, see [Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md).

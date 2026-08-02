@@ -56,11 +56,11 @@ export function looksLikeNaturalSurface(source: string): boolean {
     .split(/\r?\n/u)
     .map((line) => stripLineComment(line).trim())
     .find((line) => line.length > 0)
-  return first !== undefined && /^категория(?:\s|$)/u.test(first) && !first.includes("{")
+  return first !== undefined && /^(?:категория|category)(?:\s|$)/u.test(first) && !first.includes("{")
 }
 
 export function parseNaturalSurface(source: string): FtsDocument {
-  const lines = sourceLines(source)
+  const lines = sourceLines(normalizeEnglishNaturalSurface(source))
   const first = lines[0]
   if (!first || !first.text.startsWith("категория ")) {
     throw naturalError("FTS_NATURAL_CATEGORY", "документ должен начинаться со строки 'категория «Имя»'", first)
@@ -106,6 +106,115 @@ export function parseNaturalSurface(source: string): FtsDocument {
     ts_compat: {},
     ...(utilities.length > 0 ? { utilities } : {}),
   }
+}
+
+/**
+ * English is a second authoring surface over the same parser and canonical
+ * model, not a second runtime.  The rewrite is deliberately line-oriented:
+ * indentation, quoted domain names, comments and source line numbers stay
+ * intact, while only reserved phrases at syntactic positions are translated.
+ */
+function normalizeEnglishNaturalSurface(source: string): string {
+  const first = source
+    .replace(/^\uFEFF/u, "")
+    .split(/\r?\n/u)
+    .map((line) => stripLineComment(line).trim())
+    .find((line) => line.length > 0)
+  if (!first || !/^category(?:\s|$)/u.test(first) || first.includes("{")) return source
+
+  return source.split(/\r?\n/u).map((raw) => {
+    const indentation = raw.match(/^[ \t]*/u)?.[0] ?? ""
+    const text = raw.slice(indentation.length)
+    if (!text.trim() || text.trimStart().startsWith("//")) return raw
+    return indentation + translateEnglishLine(text)
+  }).join("\n")
+}
+
+function translateEnglishLine(line: string): string {
+  const declarations: Array<[RegExp, string]> = [
+    [/^category\s+/u, "категория "],
+    [/^object\s+/u, "объект "],
+    [/^structure\s+/u, "структура "],
+    [/^morphism\s+/u, "морфизм "],
+    [/^theorem\s+/u, "теорема "],
+    [/^utility\s+/u, "утилита "],
+    [/^rule\s+/u, "правило "],
+    [/^property\s+/u, "свойство "],
+    [/^example\s+/u, "пример "],
+    [/^nested object\s+/u, "вложен объект "],
+    [/^nested structure\s+/u, "вложена структура "],
+    [/^accepts\s+/u, "принимает "],
+    [/^starts with\s+/u, "начинает с "],
+    [/^then by morphism\s+/u, "затем по морфизму "],
+    [/^by morphism\s+/u, "по морфизму "],
+    [/^then apply morphism\s+/u, "затем применить морфизм "],
+    [/^apply morphism\s+/u, "применить морфизм "],
+    [/^therefore\s+/u, "следовательно "],
+    [/^under law\s+/u, "по закону "],
+  ]
+  for (const [pattern, replacement] of declarations) {
+    if (pattern.test(line)) return line.replace(pattern, replacement)
+  }
+
+  const returnTypes: Record<string, string> = {
+    string: "строку",
+    number: "число",
+    date: "дату",
+    money: "деньги",
+    boolean: "признак",
+  }
+  const returns = line.match(/^returns\s+(.+)$/u)
+  if (returns?.[1] !== undefined) return `возвращает ${returnTypes[returns[1]] ?? returns[1]}`
+
+  const fieldType = line.match(/^(.+?)\s+(is|may be)\s+(string|number|date|money|boolean)$/u)
+  if (fieldType?.[1] && fieldType[2] && fieldType[3]) {
+    const types: Record<string, string> = {
+      string: "строкой",
+      number: "числом",
+      date: "датой",
+      money: "деньгами",
+      boolean: "признаком",
+    }
+    return `${fieldType[1]} ${fieldType[2] === "may be" ? "иногда является" : "является"} ${types[fieldType[3]]}`
+  }
+  const stateField = line.match(/^(.+?)\s+is state\s+(.+)$/u)
+  if (stateField?.[1] && stateField[2]) return `${stateField[1]} является состоянием ${stateField[2]}`
+
+  if (/^given\s+.+?\s+has\s+/u.test(line)) {
+    return line
+      .replace(/^given\s+/u, "дано ")
+      .replace(/\s+has\s+/u, " имеет ")
+      .replace(/\s+equal to\s+/u, " равное ")
+  }
+  if (/^in data\s+/u.test(line)) {
+    return line
+      .replace(/^in data\s+/u, "в данных ")
+      .replace(/\s+find where\s+/u, " найти где ")
+      .replace(/\s+equals\s+/u, " равен ")
+  }
+
+  let translated = line
+    .replace(/^expected\s+/u, "ожидается ")
+    .replace(/^then add\s+/u, "то добавить ")
+    .replace(/^then result\s+/u, "то результат ")
+    .replace(/^then\s+/u, "то ")
+    .replace(/^if\s+/u, "если ")
+    .replace(/^and\s+/u, "и ")
+    .replace(/^from\s+/u, "из ")
+    .replace(/^to\s+/u, "в ")
+    .replace(/^result\s+/u, "результат ")
+    .replace(/^given\s+/u, "дано ")
+
+  translated = translated
+    .replace(/\s+is at least\s+/u, " не меньше ")
+    .replace(/\s+is at most\s+/u, " не больше ")
+    .replace(/\s+is not equal to\s+/u, " не равен ")
+    .replace(/\s+is greater than\s+/u, " больше ")
+    .replace(/\s+is less than\s+/u, " меньше ")
+    .replace(/\s+equals\s+/u, " равен ")
+    .replace(/\s+percent(?:s)? of field\s+/u, " процентов от поля ")
+    .replace(/^field\s+/u, "поле ")
+  return translated
 }
 
 function parseUtility(header: SourceLine, body: SourceLine[]): FtsUtility {

@@ -8,6 +8,7 @@ import type {
   FtsFunctor,
   FtsProposition,
   FtsStructure,
+  FtsUtility,
   FtsValue,
   PathSegment,
   SourcePosition,
@@ -97,12 +98,14 @@ export function normalizeDocument(input: unknown): FtsDocument {
     throw diagnosticError("FTS_DOCUMENT_TYPE", "document must be an object")
   }
 
+  const utilities = Array.isArray(input.utilities) ? (input.utilities as FtsUtility[]) : undefined
   return {
     category: typeof input.category === "string" ? input.category : "",
     structures: Array.isArray(input.structures) ? (input.structures as FtsStructure[]) : [],
     functors: Array.isArray(input.functors) ? (input.functors as FtsFunctor[]) : [],
     proposition: isRecord(input.proposition) ? (input.proposition as unknown as FtsProposition) : null,
     ts_compat: isRecord(input.ts_compat) ? (input.ts_compat as Record<string, string>) : {},
+    ...(utilities !== undefined ? { utilities } : {}),
   }
 }
 

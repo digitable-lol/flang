@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { join, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { errorResult } from "./diagnostics.js"
 import { assertVerified, certify } from "./certificate.js"
@@ -8,7 +9,8 @@ import type { FtsDocument, VisualizationMode } from "./model.js"
 import { compile } from "./parser.js"
 import { pipeline } from "./pipeline.js"
 import { runMcpServer } from "./mcp.js"
-import { validate } from "./validate.js"
+import { generateTypeScript, testUtilities } from "./utility.js"
+import { assertValid, validate } from "./validate.js"
 import { visualize } from "./visualize.js"
 
 interface CliOptions {
@@ -16,6 +18,7 @@ interface CliOptions {
   file: string
   contextFile?: string
   certificateFile?: string
+  outDir?: string
   mode: VisualizationMode
   pretty: boolean
 }
@@ -33,7 +36,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     return 0
   }
   if (options.command === "version" || options.command === "--version" || options.command === "-v") {
-    process.stdout.write("0.1.0\n")
+    process.stdout.write("0.2.0\n")
     return 0
   }
   if (options.command === "mcp") {
@@ -78,6 +81,18 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       case "pipeline":
         output = pipeline({ source, context, viz: options.mode })
         break
+      case "generate":
+        output = await emitGeneration(generateTypeScript(assertValid(compile(source))), options.outDir)
+        break
+      case "test": {
+        const result = testUtilities(assertValid(compile(source)))
+        output = result
+        if (!result.valid) {
+          writeJson(output, options.pretty, process.stderr)
+          return 1
+        }
+        break
+      }
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${helpText}`)
         return 2
@@ -94,6 +109,7 @@ function parseArgs(argv: string[]): CliOptions {
   const positional: string[] = []
   let contextFile: string | undefined
   let certificateFile: string | undefined
+  let outDir: string | undefined
   let mode: VisualizationMode = "all"
   let pretty = false
 
@@ -109,6 +125,9 @@ function parseArgs(argv: string[]): CliOptions {
       const candidate = argv[++index]
       if (!isMode(candidate)) throw new Error("--mode must be all, category, morphisms, or proof")
       mode = candidate
+    } else if (arg === "--out") {
+      outDir = argv[++index]
+      if (outDir === undefined) throw new Error("--out requires a directory")
     } else if (arg === "--pretty") {
       pretty = true
     } else {
@@ -122,8 +141,10 @@ function parseArgs(argv: string[]): CliOptions {
     mode,
     pretty,
   }
+  if (outDir !== undefined && result.command !== "generate") throw new Error("--out is available only for generate")
   if (contextFile !== undefined) result.contextFile = contextFile
   if (certificateFile !== undefined) result.certificateFile = certificateFile
+  if (outDir !== undefined) result.outDir = outDir
   return result
 }
 
@@ -136,6 +157,18 @@ async function readInput(file: string): Promise<string> {
 
 function writeJson(value: unknown, pretty: boolean, stream: NodeJS.WritableStream): void {
   stream.write(`${JSON.stringify(value, null, pretty ? 2 : 0)}\n`)
+}
+
+async function emitGeneration(generation: ReturnType<typeof generateTypeScript>, outDir: string | undefined): Promise<unknown> {
+  if (outDir === undefined) return generation
+  const directory = resolve(outDir)
+  await mkdir(directory, { recursive: true })
+  for (const file of generation.files) await writeFile(join(directory, file.path), file.content, "utf8")
+  return {
+    target: generation.target,
+    utilities: generation.utilities,
+    files: generation.files.map((file) => join(directory, file.path)),
+  }
 }
 
 function isMode(value: string | undefined): value is VisualizationMode {
@@ -152,6 +185,8 @@ Usage:
   fts verify [file|-] --context context.json --certificate proof.json [--pretty]
   fts visualize [file|-] [--context context.json] [--mode all|category|morphisms|proof]
   fts pipeline [file|-] [--context context.json] [--mode all|category|morphisms|proof]
+  fts generate [file|-] [--out directory] [--pretty]
+  fts test [file|-] [--pretty]
   fts mcp
   fts version
 

@@ -25,6 +25,8 @@ The server implements MCP revision `2025-06-18` over stdio and exposes only dete
 
 - Use `fts_compile` when canonical JSON is the only desired output.
 - Use `fts_check` before generating utilities or modifying a document.
+- Use `fts_test` to execute every authored utility example and property.
+- Use `fts_generate` to receive deterministic TypeScript implementation and test files as structured content.
 - Use `fts_prove` only for a human-readable symbolic derivation.
 - Use `fts_certify` to bind a typed derivation to a concrete evidence context.
 - Use `fts_verify` before allowing an action that requires a strict proof.

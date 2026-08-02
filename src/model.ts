@@ -32,6 +32,51 @@ export interface FtsFunctor {
   law?: string
 }
 
+export type FtsUtilityOperand =
+  | { kind: "value"; value: FtsScalar }
+  | { kind: "field"; field: string }
+  | { kind: "percent"; percent: number; field: string }
+  | { kind: "result" }
+
+export type FtsUtilityComparison = "eq" | "neq" | "gte" | "lte" | "gt" | "lt"
+
+export interface FtsUtilityCondition {
+  field: string
+  operator: FtsUtilityComparison
+  value: FtsUtilityOperand
+}
+
+export interface FtsUtilityRule {
+  name: string
+  when: FtsUtilityCondition[]
+  action: {
+    kind: "set" | "add"
+    value: FtsUtilityOperand
+  }
+}
+
+export interface FtsUtilityProperty {
+  name: string
+  operator: FtsUtilityComparison
+  value: FtsUtilityOperand
+}
+
+export interface FtsUtilityExample {
+  name: string
+  input: Record<string, FtsScalar>
+  expected: FtsScalar
+}
+
+export interface FtsUtility {
+  name: string
+  input: string
+  output: string
+  initial: FtsScalar
+  rules: FtsUtilityRule[]
+  properties: FtsUtilityProperty[]
+  examples: FtsUtilityExample[]
+}
+
 export interface WitnessProposition {
   kind: "witness"
   structure: string
@@ -64,6 +109,18 @@ export interface FtsDocument {
   functors: FtsFunctor[]
   proposition: FtsProposition | null
   ts_compat: Record<string, string>
+  utilities?: FtsUtility[]
+}
+
+export interface GeneratedFile {
+  path: string
+  content: string
+}
+
+export interface UtilityGeneration {
+  target: "typescript"
+  utilities: string[]
+  files: GeneratedFile[]
 }
 
 export interface CurryHowardProof {

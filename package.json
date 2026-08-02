@@ -1,7 +1,7 @@
 {
   "name": "@digitable/fts",
-  "version": "0.1.0",
-  "description": "Formal Type Surface: an indentation-based language for domain objects, morphisms, theorems, and machine-checkable evidence.",
+  "version": "0.2.0",
+  "description": "Formal Type Surface: executable specifications that generate utilities, tests, and machine-checkable evidence.",
   "type": "module",
   "license": "Apache-2.0",
   "private": true,

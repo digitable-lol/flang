@@ -1,6 +1,9 @@
 import assert from "node:assert/strict"
 import { spawn } from "node:child_process"
 import { describe, it } from "node:test"
+import { mkdtemp, readFile, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 
 describe("CLI", () => {
   it("compiles from stdin with machine-readable stdout", async () => {
@@ -14,6 +17,34 @@ describe("CLI", () => {
     const result = await runCli(["check"], "category C { proposition witness Missing.x {} }")
     assert.equal(result.code, 1)
     assert.equal(JSON.parse(result.stderr).valid, false)
+  })
+
+  it("runs utility examples and generates implementation files", async () => {
+    const source = await readFile(new URL("../../examples/utilities/discount.fts", import.meta.url), "utf8")
+    const tested = await runCli(["test"], source)
+    assert.equal(tested.code, 0)
+    assert.equal(JSON.parse(tested.stdout).passed, 3)
+
+    const failed = await runCli(["test"], source.replace("ожидается результат равен 2000", "ожидается результат равен 999"))
+    assert.equal(failed.code, 1)
+    assert.equal(JSON.parse(failed.stderr).failed, 1)
+
+    const generated = await runCli(["generate"], source)
+    assert.equal(generated.code, 0)
+    assert.deepEqual(JSON.parse(generated.stdout).files.map((file: { path: string }) => file.path), [
+      "fts.utilities.ts",
+      "fts.utilities.test.ts",
+    ])
+
+    const directory = await mkdtemp(join(tmpdir(), "fts-generate-"))
+    try {
+      const emitted = await runCli(["generate", "--out", directory], source)
+      assert.equal(emitted.code, 0)
+      assert.match(await readFile(join(directory, "fts.utilities.ts"), "utf8"), /Рассчитать скидку/)
+      assert.match(await readFile(join(directory, "fts.utilities.test.ts"), "utf8"), /node:test/)
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
   })
 })
 

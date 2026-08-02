@@ -8,12 +8,15 @@ source / canonical JSON
         compile
           |
      FtsDocument ---- validate
-          |               |
-        certify       diagnostics
-          |
- FtsProofCertificate ---- verify
-          |
-      visualize
+        /     \             |
+ utilities   certify    diagnostics
+    |           |
+ execute /    FtsProofCertificate
+ test / generate       |
+    |                 verify
+ TypeScript + tests     |
+        \              /
+             visualize
           |
   Mermaid / pipeline result
 
@@ -29,11 +32,12 @@ Library API ─┬─ browser entry (React/Vue, no Node crypto)
 - `parser.ts` dispatches source forms, retains the legacy braced parser, and normalizes canonical JSON.
 - `domain.ts` exposes human-facing `objects`, `morphisms`, and `theorem` views over the version-1 wire model.
 - `validate.ts` owns semantic constraints and stable JSON-path diagnostics.
+- `utility.ts` executes utility rules, checks authored examples and properties, and generates deterministic TypeScript plus `node:test` source.
 - `certificate.ts` constructs deterministic typed certificates and independently verifies them.
 - `interpreter.ts` provides human-readable derivations and resolves generic JSON paths.
 - `visualize.ts` renders category, morphism, and proof diagrams as Mermaid.
 - `pipeline.ts` composes the public operations without hidden I/O.
-- `cli.ts` and `mcp.ts` adapt the same API; neither contains language semantics.
+- `cli.ts` and `mcp.ts` adapt the same API; neither contains language semantics. Only the CLI performs optional `--out` filesystem writes.
 - `browser.ts` exports parsing, validation, proof explanation, and visualization without the Node.js certificate implementation.
 
 ## Design constraints

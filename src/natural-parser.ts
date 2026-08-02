@@ -1,5 +1,19 @@
 import { diagnosticError } from "./diagnostics.js"
-import type { FtsDocument, FtsField, FtsFunctor, FtsProposition, FtsScalar, FtsStructure } from "./model.js"
+import type {
+  FtsDocument,
+  FtsField,
+  FtsFunctor,
+  FtsProposition,
+  FtsScalar,
+  FtsStructure,
+  FtsUtility,
+  FtsUtilityComparison,
+  FtsUtilityCondition,
+  FtsUtilityExample,
+  FtsUtilityOperand,
+  FtsUtilityProperty,
+  FtsUtilityRule,
+} from "./model.js"
 
 interface SourceLine {
   number: number
@@ -28,6 +42,14 @@ const builtinTypes: Record<string, string> = {
   признаком: "Признак",
 }
 
+const returnedTypes: Record<string, string> = {
+  строку: "Строка",
+  число: "Число",
+  дату: "Дата",
+  деньги: "Деньги",
+  признак: "Признак",
+}
+
 export function looksLikeNaturalSurface(source: string): boolean {
   const first = source
     .replace(/^\uFEFF/u, "")
@@ -47,6 +69,7 @@ export function parseNaturalSurface(source: string): FtsDocument {
   const structures: FtsStructure[] = []
   const morphisms: FtsFunctor[] = []
   const theorems: TheoremDraft[] = []
+  const utilities: FtsUtility[] = []
 
   let index = 1
   while (index < lines.length) {
@@ -64,16 +87,176 @@ export function parseNaturalSurface(source: string): FtsDocument {
       morphisms.push(parseMorphism(header, body))
     } else if (header.text.startsWith("теорема ")) {
       theorems.push(parseTheorem(header, body))
+    } else if (header.text.startsWith("утилита ")) {
+      utilities.push(parseUtility(header, body))
     } else {
-      throw naturalError("FTS_NATURAL_DECLARATION", "ожидались объект, структура, морфизм или теорема", header)
+      throw naturalError("FTS_NATURAL_DECLARATION", "ожидались объект, структура, морфизм, теорема или утилита", header)
     }
   }
 
   if (theorems.length > 1) {
-    throw naturalError("FTS_MULTIPLE_PROPOSITIONS", "версия FTS 0.1 допускает одну теорему в документе", lines[0])
+    throw naturalError("FTS_MULTIPLE_PROPOSITIONS", "версия FTS 0.2 допускает одну теорему в документе", lines[0])
   }
   const proposition = theorems.length === 0 ? null : buildProposition(theorems[0]!, structures, morphisms)
-  return { category, structures, functors: morphisms, proposition, ts_compat: {} }
+  return {
+    category,
+    structures,
+    functors: morphisms,
+    proposition,
+    ts_compat: {},
+    ...(utilities.length > 0 ? { utilities } : {}),
+  }
+}
+
+function parseUtility(header: SourceLine, body: SourceLine[]): FtsUtility {
+  const name = readWholeName(header.text.slice("утилита".length), header)
+  if (body.length === 0) throw naturalError("FTS_NATURAL_UTILITY", `утилита «${name}» не содержит определения`, header)
+  const directIndent = Math.min(...body.map((line) => line.indent))
+  let input: string | undefined
+  let output: string | undefined
+  let initial: FtsScalar | undefined
+  const rules: FtsUtilityRule[] = []
+  const properties: FtsUtilityProperty[] = []
+  const examples: FtsUtilityExample[] = []
+
+  let index = 0
+  while (index < body.length) {
+    const line = body[index]!
+    if (line.indent !== directIndent) {
+      throw naturalError("FTS_NATURAL_UTILITY_INDENT", "строка утилиты имеет лишний отступ", line)
+    }
+    if (line.text.startsWith("принимает ")) {
+      input = readWholeName(line.text.slice("принимает".length), line)
+      index += 1
+      continue
+    }
+    if (line.text.startsWith("возвращает ")) {
+      output = normalizeNaturalType(line.text.slice("возвращает".length), line)
+      index += 1
+      continue
+    }
+    if (line.text.startsWith("начинает с ")) {
+      initial = parseScalar(line.text.slice("начинает с".length).trim(), line)
+      index += 1
+      continue
+    }
+
+    const nested: SourceLine[] = []
+    index += 1
+    while (index < body.length && body[index]!.indent > directIndent) nested.push(body[index++]!)
+    if (line.text.startsWith("правило ")) rules.push(parseUtilityRule(line, nested))
+    else if (line.text.startsWith("свойство ")) properties.push(parseUtilityProperty(line, nested))
+    else if (line.text.startsWith("пример ")) examples.push(parseUtilityExample(line, nested))
+    else throw naturalError("FTS_NATURAL_UTILITY", "ожидались принимает, возвращает, начинает с, правило, свойство или пример", line)
+  }
+
+  if (!input) throw naturalError("FTS_UTILITY_INPUT", `утилита «${name}» требует строку 'принимает'`, header)
+  if (!output) throw naturalError("FTS_UTILITY_OUTPUT", `утилита «${name}» требует строку 'возвращает'`, header)
+  if (initial === undefined) throw naturalError("FTS_UTILITY_INITIAL", `утилита «${name}» требует строку 'начинает с'`, header)
+  return { name, input, output, initial, rules, properties, examples }
+}
+
+function parseUtilityRule(header: SourceLine, body: SourceLine[]): FtsUtilityRule {
+  const name = readWholeName(header.text.slice("правило".length), header)
+  const when: FtsUtilityCondition[] = []
+  let action: FtsUtilityRule["action"] | undefined
+  for (const line of body) {
+    if (line.text.startsWith("если ")) when.push(parseUtilityCondition(line.text.slice("если".length), line))
+    else if (line.text.startsWith("и ")) when.push(parseUtilityCondition(line.text.slice(1), line))
+    else if (line.text.startsWith("то добавить ")) {
+      action = { kind: "add", value: parseUtilityOperand(line.text.slice("то добавить".length), line) }
+    } else if (line.text.startsWith("то результат ")) {
+      const comparison = parseUtilityComparison(line.text.slice("то результат".length), line)
+      if (comparison.operator !== "eq") throw naturalError("FTS_UTILITY_ACTION", "результат правила задаётся через 'равен'", line)
+      action = { kind: "set", value: comparison.value }
+    } else {
+      throw naturalError("FTS_UTILITY_RULE", "в правиле ожидаются если, и или то", line)
+    }
+  }
+  if (when.length === 0) throw naturalError("FTS_UTILITY_RULE", `правило «${name}» требует условие 'если'`, header)
+  if (!action) throw naturalError("FTS_UTILITY_RULE", `правило «${name}» требует действие 'то'`, header)
+  return { name, when, action }
+}
+
+function parseUtilityCondition(text: string, line: SourceLine): FtsUtilityCondition {
+  const field = readName(text.trim(), line)
+  const comparison = parseUtilityComparison(field.rest, line)
+  return { field: field.value, operator: comparison.operator, value: comparison.value }
+}
+
+function parseUtilityProperty(header: SourceLine, body: SourceLine[]): FtsUtilityProperty {
+  const name = readWholeName(header.text.slice("свойство".length), header)
+  if (body.length !== 1 || !body[0]!.text.startsWith("результат ")) {
+    throw naturalError("FTS_UTILITY_PROPERTY", `свойство «${name}» должно содержать одно сравнение результата`, header)
+  }
+  const comparison = parseUtilityComparison(body[0]!.text.slice("результат".length), body[0]!)
+  return { name, operator: comparison.operator, value: comparison.value }
+}
+
+function parseUtilityExample(header: SourceLine, body: SourceLine[]): FtsUtilityExample {
+  const name = readWholeName(header.text.slice("пример".length), header)
+  const input: Record<string, FtsScalar> = {}
+  let expected: FtsScalar | undefined
+  for (const line of body) {
+    if (line.text.startsWith("дано ")) {
+      const field = readName(line.text.slice("дано".length).trim(), line)
+      const comparison = parseUtilityComparison(field.rest, line)
+      if (comparison.operator !== "eq" || comparison.value.kind !== "value") {
+        throw naturalError("FTS_UTILITY_EXAMPLE", "пример задаёт вход как 'дано поле равно значению'", line)
+      }
+      input[field.value] = comparison.value.value
+    } else if (line.text.startsWith("ожидается ")) {
+      const result = readName(line.text.slice("ожидается".length).trim(), line)
+      const comparison = parseUtilityComparison(result.rest, line)
+      if (comparison.operator !== "eq" || comparison.value.kind !== "value") {
+        throw naturalError("FTS_UTILITY_EXAMPLE", "ожидание задаётся как 'ожидается результат равен значению'", line)
+      }
+      expected = comparison.value.value
+    } else {
+      throw naturalError("FTS_UTILITY_EXAMPLE", "в примере ожидаются строки 'дано' или 'ожидается'", line)
+    }
+  }
+  if (expected === undefined) throw naturalError("FTS_UTILITY_EXAMPLE", `пример «${name}» требует строку 'ожидается'`, header)
+  return { name, input, expected }
+}
+
+function parseUtilityComparison(text: string, line: SourceLine): { operator: FtsUtilityComparison; value: FtsUtilityOperand } {
+  const comparisons: Array<[string, FtsUtilityComparison]> = [
+    ["не меньше ", "gte"],
+    ["не больше ", "lte"],
+    ["не равен ", "neq"],
+    ["не равна ", "neq"],
+    ["не равно ", "neq"],
+    ["равен ", "eq"],
+    ["равна ", "eq"],
+    ["равно ", "eq"],
+    ["больше ", "gt"],
+    ["меньше ", "lt"],
+  ]
+  const source = text.trim()
+  for (const [phrase, operator] of comparisons) {
+    if (source.startsWith(phrase)) {
+      return { operator, value: parseUtilityOperand(source.slice(phrase.length), line) }
+    }
+  }
+  throw naturalError("FTS_UTILITY_COMPARISON", "ожидалось сравнение: равен, не равен, больше, меньше, не больше или не меньше", line)
+}
+
+function parseUtilityOperand(text: string, line: SourceLine): FtsUtilityOperand {
+  const source = text.trim()
+  if (source === "результат") return { kind: "result" }
+  const percent = source.match(/^(-?(?:0|[1-9]\d*)(?:\.\d+)?)\s+процент(?:а|ов)?\s+(.+)$/u)
+  if (percent?.[1] !== undefined && percent[2] !== undefined) {
+    const reference = percent[2].startsWith("от поля ") ? percent[2].slice("от поля".length) : percent[2]
+    return { kind: "percent", percent: Number(percent[1]), field: readWholeName(reference, line) }
+  }
+  if (source.startsWith("поле ")) return { kind: "field", field: readWholeName(source.slice("поле".length), line) }
+  return { kind: "value", value: parseScalar(source, line) }
+}
+
+function normalizeNaturalType(text: string, line: SourceLine): string {
+  const source = text.trim()
+  return returnedTypes[source] ?? builtinTypes[source] ?? readWholeName(source, line)
 }
 
 function parseObject(header: SourceLine, body: SourceLine[]): FtsStructure {

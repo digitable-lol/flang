@@ -7,7 +7,8 @@ import { prove } from "./interpreter.js"
 import type { FtsDocument, FtsProofCertificate, VisualizationMode } from "./model.js"
 import { compile, normalizeDocument } from "./parser.js"
 import { pipeline } from "./pipeline.js"
-import { validate } from "./validate.js"
+import { generateTypeScript, testUtilities } from "./utility.js"
+import { assertValid, validate } from "./validate.js"
 import { visualize } from "./visualize.js"
 
 const protocolVersion = "2025-06-18"
@@ -63,6 +64,20 @@ export const tools: ToolDefinition[] = [
     name: "fts_check",
     title: "Check FTS",
     description: "Parse and semantically validate an FTS source or canonical document, returning machine-readable diagnostics.",
+    inputSchema: sourceOrDocument,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "fts_test",
+    title: "Run FTS examples",
+    description: "Execute utility examples and verify their expected results and declared properties.",
+    inputSchema: sourceOrDocument,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "fts_generate",
+    title: "Generate utility implementation",
+    description: "Generate deterministic TypeScript implementation and node:test files from FTS utilities.",
     inputSchema: sourceOrDocument,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -172,8 +187,8 @@ export function handleRequest(request: JsonRpcRequest): Record<string, unknown> 
       return {
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "fts", title: "Formal Type Surface", version: "0.1.0" },
-        instructions: "Use FTS tools to compile, check, prove, and visualize .fts sources.",
+        serverInfo: { name: "fts", title: "Formal Type Surface", version: "0.2.0" },
+        instructions: "Use FTS tools to compile, check, test, generate, prove, and visualize .fts sources.",
       }
     case "ping":
       return {}
@@ -208,6 +223,12 @@ function callTool(name: string, args: Record<string, unknown>): Record<string, u
         break
       case "fts_check":
         result = validate(document())
+        break
+      case "fts_test":
+        result = { tests: testUtilities(assertValid(document())) }
+        break
+      case "fts_generate":
+        result = { generation: generateTypeScript(assertValid(document())) }
         break
       case "fts_prove":
         result = { proof: prove(document(), args.context) }

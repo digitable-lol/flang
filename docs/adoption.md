@@ -8,6 +8,7 @@ The FTS repository owns:
 
 - `.fts` parsing and canonical JSON generation;
 - semantic validation and diagnostic codes;
+- deterministic utility execution, example tests, and TypeScript generation;
 - proof construction and independent verification;
 - Mermaid visualization;
 - CLI and MCP interfaces.
@@ -27,6 +28,14 @@ For Node.js applications, import the package directly:
 import { pipeline } from "@digitable/fts"
 
 const result = pipeline({ source, context, viz: "all" })
+```
+
+For an executable specification, run examples before emitting implementation files:
+
+```bash
+fts check calculation.fts
+fts test calculation.fts
+fts generate calculation.fts --out generated
 ```
 
 For React, Vue, and other browser applications, import `@digitable/fts/browser`. Use it to compile models and generate UI descriptors. Keep `certify`, `verify`, and consequential command authorization on the Node.js server boundary.

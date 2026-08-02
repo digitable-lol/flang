@@ -24,6 +24,10 @@
     "ts_compat": {
       "type": "object",
       "additionalProperties": { "type": "string" }
+    },
+    "utilities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/utility" }
     }
   },
   "additionalProperties": false,
@@ -64,6 +68,122 @@
         "domain": { "type": "string", "minLength": 1 },
         "codomain": { "type": "string", "minLength": 1 },
         "law": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "utilityOperand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "value" },
+            "value": { "type": ["string", "number", "boolean", "null"] }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "field"],
+          "properties": {
+            "kind": { "const": "field" },
+            "field": { "$ref": "#/$defs/identifier" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "percent", "field"],
+          "properties": {
+            "kind": { "const": "percent" },
+            "percent": { "type": "number" },
+            "field": { "$ref": "#/$defs/identifier" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "result" } },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "utilityCondition": {
+      "type": "object",
+      "required": ["field", "operator", "value"],
+      "properties": {
+        "field": { "$ref": "#/$defs/identifier" },
+        "operator": { "enum": ["eq", "neq", "gte", "lte", "gt", "lt"] },
+        "value": { "$ref": "#/$defs/utilityOperand" }
+      },
+      "additionalProperties": false
+    },
+    "utilityRule": {
+      "type": "object",
+      "required": ["name", "when", "action"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "when": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/utilityCondition" }
+        },
+        "action": {
+          "type": "object",
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "enum": ["set", "add"] },
+            "value": { "$ref": "#/$defs/utilityOperand" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "utilityProperty": {
+      "type": "object",
+      "required": ["name", "operator", "value"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "operator": { "enum": ["eq", "neq", "gte", "lte", "gt", "lt"] },
+        "value": { "$ref": "#/$defs/utilityOperand" }
+      },
+      "additionalProperties": false
+    },
+    "utilityExample": {
+      "type": "object",
+      "required": ["name", "input", "expected"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "input": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        },
+        "expected": { "type": ["string", "number", "boolean", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "utility": {
+      "type": "object",
+      "required": ["name", "input", "output", "initial", "rules", "properties", "examples"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "input": { "$ref": "#/$defs/identifier" },
+        "output": { "type": "string", "minLength": 1 },
+        "initial": { "type": ["string", "number", "boolean", "null"] },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/utilityRule" }
+        },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/utilityProperty" }
+        },
+        "examples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/utilityExample" }
+        }
       },
       "additionalProperties": false
     },

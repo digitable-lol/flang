@@ -85,24 +85,28 @@ fts verify examples/real-world/order-shipment.fts \
 
 ## Как писать утилиты
 
-Утилита должна читать `FtsDocument`, а не внутренние токены парсера. Поэтому formatter, LSP, генератор кода, анализатор графа, редактор или доменный адаптер используют один стабильный контракт.
+Исполняемая утилита компилируется в типизированный раздел `utilities` канонического `FtsDocument`. Interpreter и генератор читают один и тот же раздел, поэтому семантика примеров не зависит от TypeScript-шаблона.
 
 ```ts
-import { compile, certify, verifyCertificate } from "@digitable/fts"
+import { compile, executeUtility, generateTypeScript, testUtilities } from "@digitable/fts"
 
 const document = compile(source)
-const certificate = certify(document, context)
-const verification = verifyCertificate(document, certificate, context)
+const tests = testUtilities(document)
+const result = executeUtility(document, "Рассчитать скидку", input)
+const generated = generateTypeScript(document)
 ```
+
+Formatter, LSP и сторонний генератор также должны читать `FtsDocument`, а не внутренние токены parser.
 
 ## Как работают агенты
 
-`fts-mcp` публикует read-only инструменты компиляции, проверки, сертификации, независимой верификации и визуализации. Агент не получает доступ к файловой системе через FTS: source, context и certificate передаются как явные JSON-аргументы.
+`fts-mcp` публикует read-only инструменты компиляции, запуска примеров, генерации кода, сертификации, независимой верификации и визуализации. Агент не получает доступ к файловой системе через FTS: source, context и certificate передаются как явные JSON-аргументы.
 
 Правильный агентный сценарий:
 
 1. сгенерировать `.fts`;
 2. вызвать `fts_check`;
-3. вызвать `fts_certify` с evidence context;
-4. принять результат только после `fts_verify` со статусом `verified`;
-5. сохранить source, context digest и certificate как единый аудируемый пакет.
+3. для исполняемой утилиты вызвать `fts_test`, затем `fts_generate`;
+4. для доказательного решения вызвать `fts_certify` с evidence context;
+5. принять доказательный результат только после `fts_verify` со статусом `verified`;
+6. сохранить source, context digest и certificate как единый аудируемый пакет.

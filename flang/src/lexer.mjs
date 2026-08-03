@@ -86,6 +86,7 @@ export const KEYWORDS = {
   and: ["и", "and"],
   with: ["с", "with"],
   from: ["из", "from"],
+  only: ["только", "only"],
   to: ["в", "к", "to", "into", "in", "onto"],
   by: ["по", "by"],
   at: ["у", "at"],

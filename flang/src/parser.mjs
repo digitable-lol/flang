@@ -568,7 +568,18 @@ class Parser {
       const category = this.expectName("ожидалось имя категории")
       this.expectKw("from", "после имени категории ожидалось 'из'")
       const from = this.expectName("ожидался путь")
-      value.imports.push({ category, from })
+      /* `только «А», «Б»` — выборочный импорт. Без него модуль вносит все свои
+         имена, и достаточно одного совпадения, чтобы связывание отказало:
+         именно так лексеру ядра пришлось дублировать четыре функции stdlib
+         из-за одной одноимённой. Выбор имён — способ сказать «мне нужна вот
+         эта функция», не переименовывая чужой модуль. */
+      const entry = { category, from }
+      if (this.eatKw("only")) {
+        const names = [this.expectName("ожидалось имя, которое нужно импортировать")]
+        while (this.eatPunct(",")) names.push(this.expectName("ожидалось имя, которое нужно импортировать"))
+        entry.only = names
+      }
+      value.imports.push(entry)
       this.endLine()
       return
     }

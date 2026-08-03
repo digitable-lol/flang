@@ -63,6 +63,18 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
   const sources = new Map()
   const withImports = new Set()
 
+  /**
+   * Пересечение «что модуль отдаёт» и «что у него просят».
+   *
+   * Просьба не расширяет видимое: `только «Внутри»` для неэкспортированного
+   * имени ничего не даёт — иначе `экспортирует` перестал бы что-либо значить.
+   */
+  const narrow = (exported, requested) => {
+    if (requested === undefined || requested === null) return exported
+    if (exported === null) return requested
+    return new Set([...requested].filter((name) => exported.has(name)))
+  }
+
   const merge = (program, file, visible) => {
     for (const type of program.types ?? []) {
       if (visible !== null && !visible.has(type.name)) continue
@@ -101,6 +113,10 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
       functions.push(fn)
     }
   }
+
+  /* Что именно берём из каждого файла: `null` — всё видимое, иначе набор имён
+     из `только`. Пересечение с `экспортирует` считается в merge. */
+  const wanted = new Map()
 
   const load = async (file, text, isEntry) => {
     if (loaded.has(file)) return null
@@ -155,6 +171,12 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
         )
         continue
       }
+      if (Array.isArray(entry.only)) {
+        const already = wanted.get(target)
+        wanted.set(target, already === undefined ? new Set(entry.only) : new Set([...already, ...entry.only]))
+      } else {
+        wanted.set(target, null)
+      }
       const child = await load(target, imported, false)
       /* Имя модуля в `использует` обязано совпадать с его заголовком: иначе
          читатель видит одно имя, а получает объявления из другого файла. */
@@ -170,7 +192,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
 
     loading.pop()
     loaded.add(file)
-    merge(program, file, isEntry ? null : exportsOf(program))
+    merge(program, file, isEntry ? null : narrow(exportsOf(program), wanted.get(file)))
     return program
   }
 

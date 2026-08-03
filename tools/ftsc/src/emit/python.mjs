@@ -183,18 +183,30 @@ function indentBlock(lines, indent = "    ") {
   return lines.map((line) => (line ? `${indent}${line}` : line))
 }
 
-function buildDataclass(structure, typeNamer, stateRegistry) {
+function buildDataclass(structure, ident, stateRegistry) {
   const fieldNamer = wrapNamer(createNamer(snake, PY_RESERVED))
   const fieldsByOriginal = new Map()
   const body = []
+  let needsFieldHelper = false
   for (const field of structure.fields) {
     const info = resolveType(field.type)
-    const ident = fieldNamer(field.name)
-    fieldsByOriginal.set(field.name, { ident, kind: info.kind, optional: info.optional })
+    const fieldIdent = fieldNamer(field.name)
+    fieldsByOriginal.set(field.name, { ident: fieldIdent, kind: info.kind, optional: info.optional, info })
     body.push(`# ${field.name}`)
-    body.push(`${ident}: ${pyTypeName(info, stateRegistry)}`)
+    /* Необязательное поле модели («иногда является») обязано иметь умолчание:
+       иначе dataclass требует его в конструкторе, и пример утилиты, который
+       про это поле ничего не знает, падает с TypeError. Умолчание пишется через
+       field(kw_only=True), а не голым `= None`, потому что порядок полей в
+       классе повторяет порядок модели: без kw_only обязательное поле после
+       необязательного нарушило бы правило Python «аргумент без умолчания не
+       может идти за аргументом с умолчанием» — и класс не создался бы вовсе. */
+    if (info.optional) {
+      needsFieldHelper = true
+      body.push(`${fieldIdent}: ${pyTypeName(info, stateRegistry)} = field(default=None, kw_only=True)`)
+    } else {
+      body.push(`${fieldIdent}: ${pyTypeName(info, stateRegistry)}`)
+    }
   }
-  const ident = typeNamer(structure.name)
   const lines = [
     "@dataclass(frozen=True)",
     `class ${ident}:`,
@@ -202,15 +214,14 @@ function buildDataclass(structure, typeNamer, stateRegistry) {
     "",
     ...indentBlock(body),
   ]
-  return { original: structure.name, ident, fieldsByOriginal, text: lines.join("\n") }
+  return { original: structure.name, ident, fieldsByOriginal, needsFieldHelper, text: lines.join("\n") }
 }
 
-function buildUtilityFunction(utility, structsByOriginal, funcNamer, stateRegistry) {
+function buildUtilityFunction(utility, ident, structsByOriginal, stateRegistry) {
   const inputStruct = structsByOriginal.get(utility.input)
   if (!inputStruct) throw new Error(`утилита «${utility.name}» ссылается на неизвестную структуру «${utility.input}»`)
   const outputInfo = resolveType(utility.output)
   const outType = pyTypeName(outputInfo, stateRegistry)
-  const ident = funcNamer(utility.name)
   const fields = inputStruct.fieldsByOriginal
   const paramName = safeIdent(snake(inputStruct.original))
 
@@ -276,25 +287,60 @@ function buildModule(mod, moduleFileName) {
       }
     }
   }
+  /* Модуль Python — один словарь имён: класс, функция, псевдоним типа и
+     импортированное имя живут в нём вместе, и повторное объявление не ошибка, а
+     молчаливое затирание. Модель же вправе назвать состояние так же, как объект
+     или утилиту, — тогда из двух объявлений уцелело бы последнее. Раздаём имена
+     из общей таблицы теми же правилами, что и бэкенд Go: объект и утилита
+     держат прямое имя, состояние при конфликте получает суффикс State. */
+  const declared = new Map([
+    ["dataclass", "импорта dataclasses"],
+    ["field", "импорта dataclasses"],
+    ["NewType", "импорта typing"],
+    ["FtsPropertyViolation", "импорта исключения свойств"],
+  ])
+  const claim = (ident, owner) => {
+    const previous = declared.get(ident)
+    if (previous !== undefined)
+      throw new Error(
+        `имя «${ident}» модуля Python занято (${previous}) и запрошено для ${owner} — переименуйте одно из имён в модели`,
+      )
+    declared.set(ident, owner)
+    return ident
+  }
+
+  const structIdents = doc.structures.map((structure) => claim(typeNamer(structure.name), `объекта «${structure.name}»`))
+  const utilityIdents = (doc.utilities ?? []).map((utility) => claim(funcNamer(utility.name), `утилиты «${utility.name}»`))
+
   const stateRegistry = new Map()
-  for (const name of stateOrder) stateRegistry.set(name, { ident: typeNamer(name) })
+  for (const name of stateOrder) {
+    const base = typeNamer(name)
+    const taken = declared.get(base)
+    const ident = taken === undefined ? claim(base, `состояния «${name}»`) : claim(`${base}State`, `состояния «${name}»`)
+    stateRegistry.set(name, { ident, renamedFrom: taken === undefined ? null : taken })
+  }
 
   const structsByOriginal = new Map()
   const structBlocks = []
-  for (const structure of doc.structures) {
-    const built = buildDataclass(structure, typeNamer, stateRegistry)
+  let needsFieldHelper = false
+  doc.structures.forEach((structure, index) => {
+    const built = buildDataclass(structure, structIdents[index], stateRegistry)
     structsByOriginal.set(structure.name, built)
     structBlocks.push(built.text)
-  }
+    needsFieldHelper = needsFieldHelper || built.needsFieldHelper
+  })
 
-  const utilities = (doc.utilities ?? []).map((utility) =>
-    buildUtilityFunction(utility, structsByOriginal, funcNamer, stateRegistry),
+  const utilities = (doc.utilities ?? []).map((utility, index) =>
+    buildUtilityFunction(utility, utilityIdents[index], structsByOriginal, stateRegistry),
   )
 
-  const stateBlocks = stateOrder.map(
-    (name) =>
-      `${stateRegistry.get(name).ident} = NewType(${quote(stateRegistry.get(name).ident)}, bool)  # именованное состояние «${name}»`,
-  )
+  const stateBlocks = stateOrder.map((name) => {
+    const entry = stateRegistry.get(name)
+    const note = entry.renamedFrom
+      ? `  # именованное состояние «${name}»; суффикс State: прямое имя занято (${entry.renamedFrom})`
+      : `  # именованное состояние «${name}»`
+    return `${entry.ident} = NewType(${quote(entry.ident)}, bool)${note}`
+  })
 
   const noteLines = buildDocumentNotes(doc)
 
@@ -305,7 +351,9 @@ function buildModule(mod, moduleFileName) {
   parts.push('"""')
   parts.push("")
   const imports = []
-  if (structBlocks.length) imports.push("from dataclasses import dataclass")
+  /* `field` импортируется только там, где есть необязательные поля: лишний
+     импорт в модуле без них — мёртвая строка в сгенерированном файле. */
+  if (structBlocks.length) imports.push(`from dataclasses import dataclass${needsFieldHelper ? ", field" : ""}`)
   if (stateBlocks.length) imports.push("from typing import NewType")
   if (needsErrorType) imports.push(`from .errors import FtsPropertyViolation`)
   if (imports.length) {

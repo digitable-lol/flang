@@ -2,11 +2,15 @@
 
 FTS is an indentation-based executable specification language. A human-readable `.fts` model can define domain objects, deterministic utilities, executable examples, checked properties, morphisms, and machine-checkable evidence.
 
-The repository is intentionally usable at three levels:
+The repository is intentionally usable at several levels:
 
-- as a TypeScript library (`compile`, `validate`, `executeUtility`, `testUtilities`, `generateTypeScript`, `certify`, `verify`);
+- as a library (`compile`, `validate`, `executeUtility`, `testUtilities`, `generateTypeScript`, `certify`, `verify`) — the core is written in TypeScript, but a model is not tied to it: see below;
 - as a JSON-first CLI (`fts check`, `fts test`, `fts generate`, `fts certify`, `fts verify`);
-- as a read-only MCP server exposing the same operations to AI agents.
+- as a read-only MCP server exposing the same operations to AI agents;
+- as a **project compiler** — `ftsc` builds trees of `.fts` modules with checked functors between categories and prints them to **eight languages**: C, Rust, C#, Java, Elixir, Go, Python, TypeScript. A model written once runs natively wherever those compile;
+- as a **full language** — [`flang`](flang/SPEC.md) adds sum types, collections, strings as data, recursion and pattern matching on top of FTS, while keeping every existing `.fts` a valid program (verified against the core on 19 593 inputs, zero divergences).
+
+TypeScript is how the core is implemented, not what a model is limited to.
 
 ```fts
 категория «Продажи»

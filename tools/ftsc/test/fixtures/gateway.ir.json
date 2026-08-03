@@ -1,0 +1,169 @@
+{
+  "ir": 1,
+  "project": "gateway",
+  "modules": [
+    {
+      "name": "Пропуск",
+      "category": "Пропуск",
+      "source": "tools/ftsc/test/fixtures/gateway.ir.json",
+      "imports": [],
+      "exports": null,
+      "document": {
+        "category": "Пропуск",
+        "structures": [
+          {
+            "name": "Заявка",
+            "fields": [
+              {
+                "name": "допущена",
+                "type": "Заявка допущена | undefined"
+              },
+              {
+                "name": "вес",
+                "type": "Число"
+              },
+              {
+                "name": "оформлена",
+                "type": "Заявка оформлена"
+              }
+            ]
+          }
+        ],
+        "functors": [
+          {
+            "name": "Оформленная заявка допускается",
+            "domain": "Заявка оформлена",
+            "codomain": "Заявка допущена",
+            "law": "morphism.declared"
+          }
+        ],
+        "proposition": null,
+        "ts_compat": {},
+        "utilities": [
+          {
+            "name": "Заявка допущена",
+            "input": "Заявка",
+            "output": "Признак",
+            "initial": false,
+            "rules": [
+              {
+                "name": "Заявка с весом",
+                "when": [
+                  {
+                    "field": "вес",
+                    "operator": "gt",
+                    "value": {
+                      "kind": "value",
+                      "value": 0
+                    }
+                  }
+                ],
+                "action": {
+                  "kind": "set",
+                  "value": {
+                    "kind": "value",
+                    "value": true
+                  }
+                }
+              }
+            ],
+            "properties": [],
+            "examples": [
+              {
+                "name": "Заявка с весом допускается",
+                "input": {
+                  "вес": 5,
+                  "оформлена": true
+                },
+                "expected": true
+              },
+              {
+                "name": "Заявка без веса не допускается",
+                "input": {
+                  "вес": 0,
+                  "оформлена": true
+                },
+                "expected": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Журнал",
+      "category": "Журнал",
+      "source": "tools/ftsc/test/fixtures/gateway.ir.json",
+      "imports": [],
+      "exports": null,
+      "document": {
+        "category": "Журнал",
+        "structures": [
+          {
+            "name": "Запись",
+            "fields": [
+              {
+                "name": "допущена",
+                "type": "Запись допущена | undefined"
+              },
+              {
+                "name": "вес",
+                "type": "Число | undefined"
+              },
+              {
+                "name": "оформлена",
+                "type": "Запись оформлена | undefined"
+              }
+            ]
+          }
+        ],
+        "functors": [
+          {
+            "name": "Оформленная запись допускается",
+            "domain": "Запись оформлена",
+            "codomain": "Запись допущена",
+            "law": "morphism.declared"
+          }
+        ],
+        "proposition": null,
+        "ts_compat": {},
+        "utilities": []
+      }
+    }
+  ],
+  "functors": [
+    {
+      "name": "Заявка в запись",
+      "from": "Пропуск",
+      "to": "Журнал",
+      "source": "tools/ftsc/test/fixtures/gateway.ir.json",
+      "objects": [
+        {
+          "from": "Заявка",
+          "to": "Запись",
+          "fields": [
+            {
+              "from": "допущена",
+              "to": "допущена"
+            },
+            {
+              "from": "вес",
+              "to": "вес"
+            },
+            {
+              "from": "оформлена",
+              "to": "оформлена"
+            }
+          ]
+        }
+      ],
+      "morphisms": [
+        {
+          "from": "Оформленная заявка допускается",
+          "to": "Оформленная запись допускается"
+        }
+      ]
+    }
+  ],
+  "order": ["Пропуск", "Журнал"]
+}

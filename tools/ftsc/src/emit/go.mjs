@@ -13,7 +13,7 @@
  */
 import { spawnSync } from "node:child_process"
 
-import { createNamer, pascal, quote, snake } from "../naming.mjs"
+import { camel, createNamer, pascal, quote, snake } from "../naming.mjs"
 import { findExecutable } from "../toolchain.mjs"
 
 export const target = {
@@ -158,6 +158,17 @@ function goTypeName(info, stateRegistry) {
   return info.optional ? `*${base}` : base
 }
 
+/**
+ * Имя типа поля так, как его видит чужой пакет: именованное состояние живёт в
+ * пакете своей категории и снаружи пишется с квалификатором. Базовые типы ядра
+ * (float64/bool/string) у всех категорий одни и те же и квалификатора не имеют —
+ * поэтому у одинаковых по смыслу полей совпадает и текст типа.
+ */
+function goQualifiedBase(info, packageIdent, stateRegistry) {
+  const base = goBaseTypeName(info, stateRegistry)
+  return info.kind === "state" ? `${packageIdent}.${base}` : base
+}
+
 function goZeroValue(info) {
   if (info.optional) return "nil"
   switch (info.kind) {
@@ -237,28 +248,29 @@ function goCondition(when, fields, resultVar, inputVar) {
   return when.map((term) => goConditionTerm(term, fields, resultVar, inputVar)).join(" && ")
 }
 
-function buildStruct(structure, typeNamer, stateRegistry) {
+function buildStruct(structure, ident, stateRegistry) {
   const fieldNamer = wrapNamer(createNamer(pascal, []))
   const fieldsByOriginal = new Map()
   const lines = []
   for (const field of structure.fields) {
     const info = resolveType(field.type)
-    const ident = fieldNamer(field.name)
-    fieldsByOriginal.set(field.name, { ident, kind: info.kind, optional: info.optional })
+    const fieldIdent = fieldNamer(field.name)
+    /* Полное описание типа (`info`) остаётся с полем: функтору нужно знать не
+       только идентификатор, но и то, какой именно тип у поля образа — иначе
+       перенос печатается присваиванием между разными типами Go. */
+    fieldsByOriginal.set(field.name, { ident: fieldIdent, kind: info.kind, optional: info.optional, info })
     lines.push(`\t// ${field.name}`)
-    lines.push(`\t${ident} ${goTypeName(info, stateRegistry)}`)
+    lines.push(`\t${fieldIdent} ${goTypeName(info, stateRegistry)}`)
   }
-  const ident = typeNamer(structure.name)
   const text = [`// ${ident} — исходный объект «${structure.name}».`, `type ${ident} struct {`, ...lines, "}"].join("\n")
   return { original: structure.name, ident, fieldsByOriginal, text }
 }
 
-function buildUtility(utility, structsByOriginal, typeNamer, stateRegistry) {
+function buildUtility(utility, ident, structsByOriginal, stateRegistry) {
   const inputStruct = structsByOriginal.get(utility.input)
   if (!inputStruct) throw new Error(`утилита «${utility.name}» ссылается на неизвестную структуру «${utility.input}»`)
   const outputInfo = resolveType(utility.output)
   const outType = goTypeName(outputInfo, stateRegistry)
-  const ident = typeNamer(utility.name)
   const fields = inputStruct.fieldsByOriginal
 
   const lines = []
@@ -306,7 +318,32 @@ function buildModulePackage(mod, packageIdent) {
   const doc = mod.document
   const typeNamer = wrapNamer(createNamer(pascal, GO_RESERVED))
   const needsErrorType = (doc.utilities ?? []).some((u) => (u.properties ?? []).length > 0)
-  if (needsErrorType) typeNamer("PropertyViolation")
+
+  /* У пакета Go одно пространство имён на все объявления верхнего уровня: тип и
+     функция с одним идентификатором — переобъявление, а не перегрузка. В модели
+     же имя утилиты законно совпадает с именем состояния, которое эта утилита и
+     вычисляет (patterns/retry.fts: состояние «Повтор разрешён» и утилита
+     «Повтор разрешён»), а createNamer видит одно и то же имя модели и молча
+     выдаёт один идентификатор обоим. Поэтому идентификаторы пакета раздаются из
+     общей таблицы: объект и утилита — экспортируемое API модуля — держат прямое
+     имя, а тип состояния (внутреннее представление поля) при конфликте получает
+     суффикс. */
+  const declared = new Map()
+  const claim = (ident, owner) => {
+    const previous = declared.get(ident)
+    if (previous !== undefined)
+      throw new Error(
+        `в пакете «${packageIdent}» идентификатор «${ident}» занят (${previous}) и запрошен для ${owner} — ` +
+          "переименуйте одно из имён в модели",
+      )
+    declared.set(ident, owner)
+    return ident
+  }
+
+  if (needsErrorType) claim(typeNamer("PropertyViolation"), "типа ошибки свойства")
+
+  const structIdents = doc.structures.map((structure) => claim(typeNamer(structure.name), `объекта «${structure.name}»`))
+  const utilityIdents = (doc.utilities ?? []).map((utility) => claim(typeNamer(utility.name), `утилиты «${utility.name}»`))
 
   /* Именованные состояния объявляются один раз, в порядке первого появления
      среди полей структур — детерминированно, без хеш-таблиц. */
@@ -322,23 +359,34 @@ function buildModulePackage(mod, packageIdent) {
     }
   }
   const stateRegistry = new Map()
-  for (const name of stateOrder) stateRegistry.set(name, { ident: typeNamer(name) })
+  for (const name of stateOrder) {
+    const base = typeNamer(name)
+    const taken = declared.get(base)
+    const ident = taken === undefined ? claim(base, `состояния «${name}»`) : claim(`${base}State`, `состояния «${name}»`)
+    stateRegistry.set(name, { ident, renamedFrom: taken === undefined ? null : taken })
+  }
 
   const structsByOriginal = new Map()
   const structBlocks = []
-  for (const structure of doc.structures) {
-    const built = buildStruct(structure, typeNamer, stateRegistry)
+  doc.structures.forEach((structure, index) => {
+    const built = buildStruct(structure, structIdents[index], stateRegistry)
     structsByOriginal.set(structure.name, built)
     structBlocks.push(built.text)
-  }
+  })
 
-  const utilities = (doc.utilities ?? []).map((utility) => buildUtility(utility, structsByOriginal, typeNamer, stateRegistry))
-
-  const stateBlocks = stateOrder.map((name) =>
-    [`// ${stateRegistry.get(name).ident} — именованное состояние «${name}».`, `type ${stateRegistry.get(name).ident} bool`].join(
-      "\n",
-    ),
+  const utilities = (doc.utilities ?? []).map((utility, index) =>
+    buildUtility(utility, utilityIdents[index], structsByOriginal, stateRegistry),
   )
+
+  const stateBlocks = stateOrder.map((name) => {
+    const entry = stateRegistry.get(name)
+    const lines = [`// ${entry.ident} — именованное состояние «${name}».`]
+    /* Переименование объясняется на месте: иначе читатель сгенерированного кода
+       не поймёт, откуда взялся суффикс, которого нет в модели. */
+    if (entry.renamedFrom) lines.push(`// Суффикс State: прямое имя занято другим объявлением пакета (${entry.renamedFrom}).`)
+    lines.push(`type ${entry.ident} bool`)
+    return lines.join("\n")
+  })
 
   const noteLines = buildDocumentNotes(doc)
 
@@ -379,7 +427,7 @@ function buildModulePackage(mod, packageIdent) {
   }
 
   const content = `${parts.join("\n").replace(/\n+$/u, "")}\n`
-  return { packageIdent, content, structsByOriginal, utilities }
+  return { packageIdent, content, structsByOriginal, utilities, stateRegistry }
 }
 
 function buildTestFile(packageIdent, utilities) {
@@ -441,16 +489,45 @@ function buildFunctorPackage(functor, packageIdent, projectIdent, moduleInfoByCa
        объектов, а не заново из кириллицы — pascal() на чистой латинице без
        разделителей идемпотентна, так что коллизии всё равно ловятся namer'ом. */
     const fnIdent = typeNamer(`Transform${fromStruct.ident}To${toStruct.ident}`)
+    /* Временные переменные нужны, когда образа нельзя получить одним выражением
+       (см. ниже случай «обязательное → необязательное с приведением»). */
+    const prelude = []
     const assignments = (object.fields ?? []).map((mapping) => {
       const from = fromStruct.fieldsByOriginal.get(mapping.from)
       const to = toStruct.fieldsByOriginal.get(mapping.to)
       if (!from || !to) throw new Error(`функтор «${functor.name}»: поле «${mapping.from}» → «${mapping.to}» не найдено`)
-      return `\t\t${to.ident}: in.${from.ident},`
+      const fromBase = goQualifiedBase(from.info, fromPkg, fromInfo.stateRegistry)
+      const toBase = goQualifiedBase(to.info, toPkg, toInfo.stateRegistry)
+      /* Прообраз и образ — разные именованные типы Go: состояние «Запрос
+         страницы проверен» пакета домена и состояние «Условие проверено» пакета
+         кодомена оба объявлены как `bool`, но присвоить одно другому нельзя.
+         Смысл переноса задан моделью и проверен линковкой (карта состояний
+         функтора), Go же требует сказать это явным приведением. Базовые типы
+         ядра совпадают текстуально — там приведение не печатается. */
+      if (from.info.optional && !to.info.optional)
+        throw new Error(
+          `функтор «${functor.name}»: необязательное поле «${mapping.from}» нельзя перенести в обязательное «${mapping.to}»`,
+        )
+      if (!from.info.optional && to.info.optional) {
+        /* Образ необязателен — нужен указатель. Поле аргумента адресуемо, но
+           результат приведения — нет, поэтому при смене типа заводится
+           именованное значение. */
+        if (fromBase === toBase) return `\t\t${to.ident}: &in.${from.ident},`
+        const local = `${camel(to.ident)}Value`
+        prelude.push(`\t${local} := ${toBase}(in.${from.ident})`)
+        return `\t\t${to.ident}: &${local},`
+      }
+      if (fromBase === toBase) return `\t\t${to.ident}: in.${from.ident},`
+      /* Приведение указателя пишется со скобками вокруг типа: `*T(x)` Go читает
+         как разыменование результата, а не как преобразование к `*T`. */
+      const cast = to.info.optional ? `(*${toBase})` : toBase
+      return `\t\t${to.ident}: ${cast}(in.${from.ident}),`
     })
     funcs.push(
       [
         `// ${fnIdent} — функтор «${functor.name}»: объект «${object.from}» → «${object.to}».`,
         `func ${fnIdent}(in ${fromPkg}.${fromStruct.ident}) ${toPkg}.${toStruct.ident} {`,
+        ...prelude,
         `\treturn ${toPkg}.${toStruct.ident}{`,
         ...assignments,
         "\t}",

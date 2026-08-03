@@ -1,0 +1,232 @@
+/**
+ * Тесты стандартной библиотеки flang (`flang/stdlib/**`).
+ *
+ * Библиотека написана на самом flang, поэтому проверяется тем же конвейером,
+ * что и любая программа: разбор → типы → тотальность → примеры.
+ *
+ * Сверка значений — `valuesEqual` из `builtins.mjs`, то самое сравнение,
+ * которым язык сравнивает значения внутри программ. Тем же сравнением теперь
+ * пользуется и `runExamples` в `compat.mjs`: до починки он сверял результат с
+ * ожидаемым через `Object.is`, а два структурно равных списка — это два разных
+ * объекта, и `Object.is` о них говорит «не равны», из-за чего `flang test`
+ * объявлял провалившейся любую функцию, возвращающую список или запись.
+ * Прогон библиотеки самой командой живёт в `regression.test.mjs`: здесь
+ * проверяются слои, там — то, чем пользуются.
+ */
+import assert from "node:assert/strict"
+import { readdirSync, readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import test from "node:test"
+
+import { valuesEqual } from "../src/builtins.mjs"
+import { evaluate } from "../src/interpret.mjs"
+import { parse } from "../src/parser.mjs"
+import { checkTotality } from "../src/totality.mjs"
+import { checkTypes } from "../src/types.mjs"
+
+const directory = fileURLToPath(new URL("../stdlib/", import.meta.url))
+const files = readdirSync(directory).filter((name) => name.endsWith(".flang")).sort()
+
+/** Разобранная программа и её анализ — один раз на файл. */
+const modules = new Map()
+for (const file of files) {
+  const program = parse(readFileSync(directory + file, "utf8"), file)
+  modules.set(file, { program, types: checkTypes(program), totality: checkTotality(program) })
+}
+
+const SUM_TYPES = (program) =>
+  new Set((program.types ?? []).filter((type) => type.kind === "sum").map((type) => type.name))
+
+/** Сумма типов в сигнатуре: у таких функций библиотеки примеров пока нет. */
+function touchesSum(fn, sums) {
+  const names = [fn.returns, ...(fn.params ?? []).map((param) => param.type)]
+  return names.some((type) => type?.kind === "named" && sums.has(type.name))
+}
+
+test("в stdlib есть модули", () => {
+  assert.ok(files.length >= 5, `найдено файлов: ${files.length}`)
+})
+
+for (const file of files) {
+  const { program, types, totality } = modules.get(file)
+
+  test(`${file}: разбор даёт контракт SPEC, раздел 5`, () => {
+    assert.equal(program.flang, 1)
+    assert.equal(typeof program.module, "string")
+    assert.ok(Array.isArray(program.functions))
+    assert.ok(program.functions.length > 0)
+    /* Детерминированность: повторный разбор даёт побайтово тот же AST. */
+    const again = parse(readFileSync(directory + file, "utf8"), file)
+    assert.equal(JSON.stringify(again), JSON.stringify(program))
+  })
+
+  test(`${file}: типы без диагностик`, () => {
+    assert.deepEqual(types.diagnostics, [])
+  })
+
+  test(`${file}: тотальность без диагностик`, () => {
+    assert.deepEqual(totality.diagnostics, [])
+  })
+
+  test(`${file}: каждая «тотальная» функция доказана`, () => {
+    for (const fn of program.functions) {
+      if (fn.total !== true) continue
+      assert.ok(totality.total.has(fn.name), `«${fn.name}» помечена тотальной, но не доказана`)
+    }
+  })
+
+  test(`${file}: примеры сходятся`, () => {
+    let count = 0
+    for (const fn of program.functions) {
+      for (const example of fn.examples ?? []) {
+        count += 1
+        const actual = evaluate(program, fn.name, example.args)
+        assert.ok(
+          valuesEqual(actual, example.expected),
+          `«${fn.name}» / «${example.name}»: ожидалось ${JSON.stringify(example.expected)}, получено ${JSON.stringify(actual)}`,
+        )
+      }
+    }
+    assert.ok(count > 0, "в модуле нет ни одного примера")
+  })
+
+  /*
+   * Пример обязан быть у всякой функции, кроме тех, у которых сумма типов
+   * стоит в параметрах или в результате.
+   *
+   * Это послабление осталось от дефекта, которого больше нет: `parseLiteralValue`
+   * сворачивал конструктор варианта в запись из его полей и терял имя варианта,
+   * поэтому значение варианта в примере записать было нечем. Теперь можно —
+   * `пример … ожидается вариант «Есть число» с значение равным 7` разбирается,
+   * проверяется типами и сопоставляется образцами (см. `regression.test.mjs`,
+   * дефект 5). Послабление держится только потому, что сами файлы
+   * `flang/stdlib/**` ещё не переписаны; когда примеры там появятся, эту
+   * проверку надо ужесточить до «примеры есть у всех функций».
+   */
+  test(`${file}: примеры есть у всех функций, кроме работающих с суммами типов`, () => {
+    const sums = SUM_TYPES(program)
+    for (const fn of program.functions) {
+      if ((fn.examples ?? []).length > 0) continue
+      assert.ok(
+        touchesSum(fn, sums),
+        `«${fn.name}» без примеров, хотя сумма типов в её сигнатуре не участвует`,
+      )
+    }
+  })
+}
+
+/* ────────────────────────── проверки помимо примеров ────────────────────── */
+
+/**
+ * Входы, которых в примерах нет: границы, повторы, длинные списки. Примеры —
+ * документация, а это проверка; смешивать их значило бы либо засорять
+ * документацию, либо проверять только то, что и так написано.
+ */
+const ПРОВЕРКИ = [
+  ["lists.flang", "Длина", { элементы: [1, 2, 3, 4, 5, 6, 7] }, 7],
+  ["lists.flang", "Обратить", { элементы: [1] }, [1]],
+  ["lists.flang", "Соединить списки", { первый: [], второй: [] }, []],
+  ["lists.flang", "Срез", { элементы: [1, 2, 3], начало: 1, конец: 99 }, [1, 2, 3]],
+  ["lists.flang", "Срез", { элементы: [1, 2, 3], начало: 1, конец: 1 }, [1]],
+  ["lists.flang", "Элемент", { элементы: [1, 2, 3], индекс: 0 }, 1],
+  ["lists.flang", "Индекс", { элементы: [7, 7, 7], значение: 7 }, 1],
+  ["lists.flang", "Минимум", { элементы: [-5, -1, -9] }, -9],
+  ["lists.flang", "Максимум", { элементы: [-5, -1, -9] }, -1],
+  ["lists.flang", "Сортировать", { элементы: [5, 3, 5, 1, 4, 1] }, [1, 1, 3, 4, 5, 5]],
+  ["lists.flang", "Сортировать", { элементы: [] }, []],
+  ["lists.flang", "Уникальные", { элементы: [2, 2, 2] }, [2]],
+  ["lists.flang", "Все не меньше", { элементы: [], порог: 100 }, true],
+  ["lists.flang", "Любой не меньше", { элементы: [], порог: 0 }, false],
+  ["lists.flang", "Произведение", { элементы: [2, 0, 3] }, 0],
+  ["lists.flang", "Считать вхождения", { элементы: [1, 1, 2, 1], значение: 1 }, 3],
+  ["lists.flang", "Сжать суммами", { первые: [], вторые: [1, 2] }, []],
+  ["lists.flang", "Взять первые", { элементы: [1, 2], сколько: -3 }, []],
+  ["lists.flang", "Отбросить первые", { элементы: [1, 2], сколько: 0 }, [1, 2]],
+
+  ["strings.flang", "Соединить строки", { части: ["один"], разделитель: ", " }, "один"],
+  ["strings.flang", "Заменить", { текст: "ааа", что: "а", чем: "б" }, "ббб"],
+  ["strings.flang", "Считать символ", { текст: "", буква: "а" }, 0],
+  ["strings.flang", "Позиция подстроки", { текст: "абв", часть: "а" }, 1],
+  ["strings.flang", "Заканчивается на", { текст: "аб", суффикс: "абв" }, false],
+  ["strings.flang", "Заканчивается на", { текст: "аб", суффикс: "" }, true],
+  ["strings.flang", "В верхний регистр", { текст: "Мир и world" }, "Мир и WORLD"],
+  ["strings.flang", "В нижний регистр", { текст: "МИР и WORLD" }, "МИР и world"],
+  ["strings.flang", "Символы", { текст: "мир" }, ["м", "и", "р"]],
+  ["strings.flang", "Обратить строку", { текст: "а" }, "а"],
+  ["strings.flang", "Палиндром", { текст: "" }, true],
+  ["strings.flang", "Повторить", { текст: "", раз: 5 }, ""],
+  ["strings.flang", "Обрезать пробелы", { текст: "" }, ""],
+  ["strings.flang", "Обрезать пробелы", { текст: " а б " }, "а б"],
+
+  ["numbers.flang", "Абсолютное значение", { число: 0 }, 0],
+  ["numbers.flang", "Знак", { число: -0.5 }, -1],
+  ["numbers.flang", "Ограничить", { число: 100, снизу: 1, сверху: 9 }, 9],
+  ["numbers.flang", "Целочисленное деление", { делимое: -7, делитель: 2 }, -3],
+  ["numbers.flang", "Чётное", { число: 0 }, true],
+  ["numbers.flang", "НОД", { первое: 0, второе: 5 }, 5],
+  ["numbers.flang", "НОД", { первое: 270, второе: 192 }, 6],
+  ["numbers.flang", "НОК", { первое: 21, второе: 6 }, 42],
+  ["numbers.flang", "Степень", { основание: 3, показатель: 4 }, 81],
+  ["numbers.flang", "Факториал", { число: 10 }, 3628800],
+  ["numbers.flang", "Цифры", { число: 1000 }, [1, 0, 0, 0]],
+  ["numbers.flang", "Сумма цифр", { число: 999 }, 27],
+
+  ["optional.flang", "Первый элемент или запасное", { элементы: [0], запасное: 9 }, 0],
+  ["optional.flang", "Найти не меньше или запасное", { элементы: [], порог: 1, запасное: 7 }, 7],
+  ["optional.flang", "Первый удвоенный или запасное", { элементы: [-3], запасное: 0 }, -6],
+
+  ["result.flang", "Деление или запасное", { делимое: 0, делитель: 5, запасное: 1 }, 0],
+  ["result.flang", "Сообщение деления", { делимое: 1, делитель: 1 }, ""],
+  ["result.flang", "Цифра или запасное", { текст: "0", запасное: -1 }, 0],
+  ["result.flang", "Цифра или запасное", { текст: "", запасное: -1 }, -1],
+  ["result.flang", "Ошибка разбора", { текст: "" }, "ожидалась одна цифра"],
+]
+
+for (const [file, name, args, expected] of ПРОВЕРКИ) {
+  test(`${file}: «${name}» от ${JSON.stringify(args)}`, () => {
+    const { program } = modules.get(file)
+    const actual = evaluate(program, name, args)
+    assert.ok(
+      valuesEqual(actual, expected),
+      `ожидалось ${JSON.stringify(expected)}, получено ${JSON.stringify(actual)}`,
+    )
+  })
+}
+
+/* ─────────────────────── свойства, а не отдельные входы ─────────────────── */
+
+test("lists.flang: «Обратить» дважды возвращает исходный список", () => {
+  const { program } = modules.get("lists.flang")
+  for (const входной of [[], [1], [1, 2, 3], [5, 5, 4, 9, 1]]) {
+    const однажды = evaluate(program, "Обратить", { элементы: входной })
+    const дважды = evaluate(program, "Обратить", { элементы: однажды })
+    assert.ok(valuesEqual(дважды, входной), `${JSON.stringify(входной)} → ${JSON.stringify(дважды)}`)
+  }
+})
+
+test("lists.flang: «Сортировать» сохраняет длину и упорядочивает", () => {
+  const { program } = modules.get("lists.flang")
+  const входной = [9, 1, 8, 2, 7, 3, 3, 0, -4]
+  const отсортированный = evaluate(program, "Сортировать", { элементы: входной })
+  assert.equal(отсортированный.length, входной.length)
+  assert.deepEqual(отсортированный, [...входной].sort((a, b) => a - b))
+})
+
+test("strings.flang: регистр туда и обратно для латиницы", () => {
+  const { program } = modules.get("strings.flang")
+  const верхний = evaluate(program, "В верхний регистр", { текст: "flang works" })
+  assert.equal(верхний, "FLANG WORKS")
+  assert.equal(evaluate(program, "В нижний регистр", { текст: верхний }), "flang works")
+})
+
+test("numbers.flang: «Цифры» и «Сумма цифр» согласованы", () => {
+  const { program } = modules.get("numbers.flang")
+  for (const число of [0, 7, 42, 1234, 90005]) {
+    const цифры = evaluate(program, "Цифры", { число })
+    assert.equal(цифры.join(""), String(число))
+    assert.equal(
+      evaluate(program, "Сумма цифр", { число }),
+      цифры.reduce((sum, digit) => sum + digit, 0),
+    )
+  }
+})

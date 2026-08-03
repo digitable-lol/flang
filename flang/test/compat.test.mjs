@@ -322,6 +322,83 @@ test("примеры всех моделей проходят на движке 
   }
 })
 
+/**
+ * `runExamples` — единственное место, где мост решает, сошёлся пример или нет,
+ * и решать он обязан тем же сравнением, каким язык сравнивает значения внутри
+ * программ. Здесь стоял `Object.is`, и этого хватало ровно до тех пор, пока
+ * результатом была утилита FTS: она возвращает скаляр. Функция flang возвращает
+ * ещё список, запись и вариант — а два структурно равных списка это два разных
+ * объекта, и `Object.is` о них говорит «не равны».
+ *
+ * Программа собрана руками, а не приведена из FTS, именно поэтому: составной
+ * результат из моста прийти не может, и на моделях репозитория дефект не
+ * проявлялся никогда.
+ */
+test("runExamples сверяет составные значения структурно, а не по ссылке", () => {
+  const program = {
+    flang: 1,
+    module: "Составные значения",
+    types: [
+      { kind: "record", name: "Точка", fields: [{ name: "х", type: { kind: "number" } }] },
+      { kind: "sum", name: "Итог", variants: [{ name: "Успех", fields: [{ name: "значение", type: { kind: "number" } }] }] },
+    ],
+    functions: [
+      {
+        name: "Список",
+        total: true,
+        params: [],
+        returns: { kind: "list", of: { kind: "number" } },
+        body: { kind: "list", items: [{ kind: "literal", value: 1 }, { kind: "literal", value: 2 }] },
+        examples: [{ name: "Два числа", args: {}, expected: [1, 2] }],
+      },
+      {
+        name: "Запись",
+        total: true,
+        params: [],
+        returns: { kind: "record", name: "Точка" },
+        body: { kind: "record", type: "Точка", fields: { х: { kind: "literal", value: 1 } } },
+        examples: [{ name: "Точка", args: {}, expected: { х: 1 } }],
+      },
+      {
+        name: "Вариант",
+        total: true,
+        params: [],
+        returns: { kind: "named", name: "Итог" },
+        body: { kind: "construct", variant: "Успех", fields: { значение: { kind: "literal", value: 7 } } },
+        /* Вариант в JSON — { variant, fields }: классов JSON не знает, а AST
+           обязан читаться из файла ровно так же, как из парсера. */
+        examples: [{ name: "Успех", args: {}, expected: { variant: "Успех", fields: { значение: 7 } } }],
+      },
+    ],
+  }
+
+  const result = runExamples(program)
+  assert.deepEqual(result.results.filter((item) => !item.passed), [])
+  assert.equal(result.total, 3)
+  assert.equal(result.valid, true)
+})
+
+test("runExamples не путает структурное равенство с похожестью", () => {
+  const program = {
+    flang: 1,
+    module: "Похожие значения",
+    functions: [
+      {
+        name: "Список",
+        total: true,
+        params: [],
+        returns: { kind: "list", of: { kind: "number" } },
+        body: { kind: "list", items: [{ kind: "literal", value: 1 }, { kind: "literal", value: 2 }] },
+        examples: [
+          { name: "Порядок важен", args: {}, expected: [2, 1] },
+          { name: "Длина важна", args: {}, expected: [1] },
+        ],
+      },
+    ],
+  }
+  assert.equal(runExamples(program).failed, 2)
+})
+
 test(`сквозная сверка с ядром на всех моделях репозитория (движок: ${engine.name})`, () => {
   const report = { models: 0, utilities: 0, inputs: 0, mismatches: [], errorOutcomes: 0, codes: new Set() }
   for (const model of documents) {

@@ -97,6 +97,9 @@ export function checkTypes(program) {
     records: new Map(),      // имя записи → Map<поле, Тип>
     sums: new Map(),         // имя суммы → Map<вариант, Map<поле, Тип>>
     variantOwner: new Map(), // имя варианта → имя суммы
+    aliases: new Map(),      // имя псевдонима → объявление (узел `alias`)
+    aliasTypes: new Map(),   // имя псевдонима → развёрнутый тип (мемоизация)
+    aliasOpen: new Set(),    // псевдонимы в процессе развёртывания — ловушка цикла
     signatures: new Map(),
   }
 
@@ -130,16 +133,28 @@ function collectTypes(program, ctx) {
       ctx.report("FLANG_TYPE", "объявление типа требует имени", declaration)
       continue
     }
-    if (ctx.records.has(declaration.name) || ctx.sums.has(declaration.name)) {
+    if (ctx.records.has(declaration.name) || ctx.sums.has(declaration.name) || ctx.aliases.has(declaration.name)) {
       ctx.report("FLANG_TYPE", `тип «${declaration.name}» объявлен дважды`, declaration)
       continue
     }
     if (declaration.kind === "sum") ctx.sums.set(declaration.name, new Map())
+    /* Псевдоним (`тип «Числа» это список числа`) — не новый тип, а второе имя
+       уже существующего. Своей таблицы полей у него нет и быть не может:
+       раньше он попадал в `records` и притворялся записью без полей, из-за чего
+       `свёртка элементы` по значению объявленного псевдонима сообщала, что
+       получила «Числа», а не список. Разворачивается он в `namedOrScalar`. */
+    else if (declaration.kind === "alias") ctx.aliases.set(declaration.name, declaration)
     else ctx.records.set(declaration.name, new Map())
   }
 
   for (const declaration of declarations) {
     if (!isName(declaration?.name)) continue
+    if (declaration.kind === "alias") {
+      /* Разворачиваем сразу, чтобы «неизвестный тип» в правой части псевдонима
+         был назван даже тогда, когда сам псевдоним нигде не используется. */
+      if (ctx.aliases.get(declaration.name) === declaration) expandAlias(declaration.name, ctx)
+      continue
+    }
     if (declaration.kind === "sum") {
       const variants = ctx.sums.get(declaration.name)
       if (!variants) continue
@@ -278,8 +293,34 @@ function namedOrScalar(name, ctx, at) {
   }
   if (ctx.records.has(name)) return { kind: "record", name }
   if (ctx.sums.has(name)) return { kind: "sum", name }
+  if (ctx.aliases.has(name)) return expandAlias(name, ctx)
   ctx.report("FLANG_UNKNOWN_NAME", `неизвестный тип «${name}»`, at)
   return UNKNOWN
+}
+
+/**
+ * Развёртывание псевдонима в тот тип, которым он назван. Мемоизация нужна не
+ * ради скорости, а ради одинакового результата: тип возвращается один и тот же
+ * объект, сколько бы раз имя ни встретилось.
+ *
+ * Цикл (`тип «А» это «Б»`, `тип «Б» это «А»`) развернуть нельзя — бесконечный
+ * тип не существует. Сообщаем и отдаём джокер: одна диагностика вместо
+ * переполнения стека.
+ */
+function expandAlias(name, ctx) {
+  if (ctx.aliasTypes.has(name)) return ctx.aliasTypes.get(name)
+  const declaration = ctx.aliases.get(name)
+  if (ctx.aliasOpen.has(name)) {
+    ctx.report("FLANG_TYPE", `псевдоним «${name}» определён через самого себя`, declaration)
+    ctx.aliasTypes.set(name, UNKNOWN)
+    return UNKNOWN
+  }
+  ctx.aliasOpen.add(name)
+  const type = normalizeType(declaration.of ?? declaration.type, ctx, declaration)
+  ctx.aliasOpen.delete(name)
+  /* Цикл мог записать джокер, пока мы разворачивались, — не затираем его. */
+  if (!ctx.aliasTypes.has(name)) ctx.aliasTypes.set(name, type)
+  return ctx.aliasTypes.get(name)
 }
 
 /* ------------------------------------------------------------------ */
@@ -570,11 +611,19 @@ function binaryType(expr, env, ctx, fnName) {
   if (ORDERING.has(op)) {
     const left = inferExpr(expr.left, env, null, ctx, fnName)
     const right = inferExpr(expr.right, env, left, ctx, fnName)
-    // Упорядочены только числа и строки: сравнивать признаки и структуры
-    // «больше/меньше» нечем — порядок пришлось бы выдумать.
+    /*
+     * Упорядочены ТОЛЬКО числа. Это не выбор проверки типов, а факт про язык:
+     * порядок задан в одном месте — `compare` ядра FTS (`src/utility.ts`), и
+     * оно бросает «сравнения порядка допустимы только для чисел» на всём
+     * остальном. Ровно то же делают `interpret.mjs` (`order`) и печать в JS
+     * (`$ord`). Пропуская сюда строки, проверка обещала бы то, чего ни один
+     * исполнитель не умеет: программа проходила бы `check` и падала при
+     * запуске. Лексикографический порядок строк пришлось бы сначала завести
+     * в ядре — а до тех пор его здесь нет.
+     */
     for (const [type, side, node] of [[left, "левый", expr.left], [right, "правый", expr.right]]) {
-      if (type.kind !== "unknown" && type.kind !== "number" && type.kind !== "string") {
-        ctx.report("FLANG_TYPE", `${side} операнд сравнения «${op}» имеет тип ${typeName(type)}: сравнимы только числа и строки`, node ?? expr)
+      if (type.kind !== "unknown" && type.kind !== "number") {
+        ctx.report("FLANG_TYPE", `${side} операнд сравнения «${op}» имеет тип ${typeName(type)}: сравнения порядка допустимы только для чисел`, node ?? expr)
       }
     }
     if (!sameType(left, right)) {
@@ -955,7 +1004,13 @@ function builtinType(expr, env, ctx, fnName) {
       return NUMBER
     }
     case "символ":
-      if (arity(2)) { want(0, STRING); want(1, NUMBER) }
+      /*
+       * Порядок аргументов — как в поверхности «символ N в текст»: сначала
+       * номер, потом строка. Так же его кладёт парсер (`args: [позиция,
+       * строка]`), так же читает `builtins.mjs` и печать в JS и C. Здесь
+       * когда-то стояло обратное, и любой реальный вызов не проходил `check`.
+       */
+      if (arity(2)) { want(0, NUMBER); want(1, STRING) }
       return STRING
     case "подстрока":
       if (arity(3)) { want(0, STRING); want(1, NUMBER); want(2, NUMBER) }

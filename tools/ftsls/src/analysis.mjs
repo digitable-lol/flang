@@ -2,78 +2,51 @@
  * Анализ документа: компиляция ядром, проверка, исполнение примеров.
  *
  * Сервер ничего не вычисляет сам. Он вызывает `compile`, `validate` и
- * `testUtilities` из ядра и переводит их результат в координаты редактора.
- * Именно поэтому подсказки в редакторе не могут разойтись с `fts test`:
- * это один и тот же вызов.
+ * `testUtilities` из ядра, а координаты для их диагностик берёт у общего
+ * модуля `tools/locate`. Именно поэтому подсказки в редакторе не могут
+ * разойтись ни с `fts test`, ни с аннотациями CI: и вычисление, и разметка —
+ * один и тот же код.
  *
- * Отдельная ценность — несходящиеся примеры. Ядро возвращает их как
- * `{ passed: false, expected, actual }` без координат; здесь они становятся
- * диагностикой на строке `ожидается` с обоими числами в тексте.
+ * Своего здесь остаётся ровно то, что своим и является: какие вызовы ядра
+ * делать и в каком порядке, и как звучит сообщение — по-русски или
+ * по-английски. Где его подчеркнуть, решает `locate`.
  */
 import { compile, testUtilities, validate } from "../../../dist/src/index.js"
 
-import { resolvePath, scanDocument } from "./outline.mjs"
+import { locate, outline, toLspRange } from "./outline.mjs"
 
 export const Severity = { error: 1, warning: 2, information: 3, hint: 4 }
 
-/* Заголовок модуля понимает ftsc, а не ядро (см. tools/ftsc/src/parse-module.mjs).
-   Границу кириллического слова приходится задавать явно: \b в JavaScript
-   определяется по латинице. */
-const MODULE_HEADER = /^\s*(?:модуль|использует|экспортирует|module|uses|exports)(?![\p{L}])/u
-const FUNCTOR_HEADER = /^\s*(?:функтор|functor)(?![\p{L}])/u
-const COMMENT_LINE = /^\s*\/\//u
-
-/**
- * Снять заголовок модуля, сохранив нумерацию строк.
- *
- * Строки заголовка не удаляются, а заменяются пустыми: и ядро, и разметка
- * считают строки по исходному файлу, поэтому координаты диагностик обязаны
- * остаться прежними.
- *
- * @param {string} text
- * @returns {{ source: string, kind: "document" | "functor" }}
- */
-export function prepare(text) {
-  const lines = text.split(/\r?\n/u)
-  const first = lines.find((line) => line.trim() && !COMMENT_LINE.test(line)) ?? ""
-  if (FUNCTOR_HEADER.test(first)) return { source: text, kind: "functor" }
-
-  const stripped = [...lines]
-  for (let index = 0; index < stripped.length; index += 1) {
-    const line = stripped[index]
-    if (!line.trim() || COMMENT_LINE.test(line)) continue
-    if (!MODULE_HEADER.test(line)) break
-    stripped[index] = ""
-  }
-  return { source: stripped.join("\n"), kind: "document" }
-}
+const START = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } }
 
 /**
  * @param {string} text
  * @returns {{ outline: any, document: any, tests: any, diagnostics: any[] }}
  */
 export function analyze(text) {
-  const prepared = prepare(text)
-  const outline = scanDocument(prepared.source)
-  const result = { outline, document: null, tests: null, diagnostics: [] }
+  const view = outline(text)
+  const result = { outline: view, document: null, tests: null, diagnostics: [] }
   /* Файл-функтор ftsc — отображение между категориями, ядру он не документ:
      разбирать его умеет только ftsc, и придумывать по нему ошибки нельзя. */
-  if (prepared.kind === "functor") return result
-  if (outline.logical.length === 0) return result /* пустой буфер не подчёркиваем */
+  if (view.kind === "functor") return result
+  if (view.logical.length === 0) return result /* пустой буфер не подчёркиваем */
 
   try {
-    result.document = compile(prepared.source)
+    /* `compileSource` — текст без заголовка модуля ftsc, но с прежней
+       нумерацией строк: заголовок ядру не по зубам, а координаты обязаны
+       остаться координатами файла, который открыт в редакторе. */
+    result.document = compile(view.compileSource)
   } catch (error) {
-    result.diagnostics.push(...coreDiagnostics(error, outline, text))
+    result.diagnostics.push(...coreDiagnostics(error, view))
     return result
   }
 
   try {
     for (const diagnostic of validate(result.document).diagnostics) {
-      result.diagnostics.push(toLspDiagnostic(diagnostic, outline, text))
+      result.diagnostics.push(toLspDiagnostic(diagnostic, view))
     }
   } catch (error) {
-    result.diagnostics.push(...coreDiagnostics(error, outline, text))
+    result.diagnostics.push(...coreDiagnostics(error, view))
   }
 
   if ((result.document.utilities ?? []).length > 0) {
@@ -86,7 +59,7 @@ export function analyze(text) {
     for (const item of result.tests?.results ?? []) {
       /* Пример, упавший на уже сообщённой ошибке модели, второй раз не жалуемся. */
       if (item.passed || (item.error && invalid)) continue
-      result.diagnostics.push(exampleDiagnostic(item, outline))
+      result.diagnostics.push(exampleDiagnostic(item, view))
     }
   }
 
@@ -94,27 +67,17 @@ export function analyze(text) {
 }
 
 /** Диагностики из брошенного ядром `FtsError`. */
-function coreDiagnostics(error, outline, text) {
+function coreDiagnostics(error, view) {
   const list = Array.isArray(error?.diagnostics) && error.diagnostics.length > 0
     ? error.diagnostics
     : [{ code: "FTS_INTERNAL", message: error instanceof Error ? error.message : String(error), severity: "error" }]
-  return list.map((diagnostic) => toLspDiagnostic(diagnostic, outline, text))
+  return list.map((diagnostic) => toLspDiagnostic(diagnostic, view))
 }
 
-/**
- * Перевод диагностики ядра в диагностику LSP.
- *
- * Источников координат три, и они не равноценны:
- *  - `span` (скобочная поверхность) — точные строка и колонка;
- *  - `path: "строка N"` (отступная поверхность) — только строка, колонки
- *    берём по содержимому строки без отступа и комментария;
- *  - `path: "$.utilities[0]..."` (validate) — координат нет вовсе, ищем
- *    по разметке; если хвост пути неизвестен, подчёркивание сползает к
- *    ближайшему известному предку.
- */
-function toLspDiagnostic(diagnostic, outline, text) {
+/** Диагностика ядра → диагностика LSP. */
+function toLspDiagnostic(diagnostic, view) {
   return {
-    range: diagnosticRange(diagnostic, outline, text),
+    range: toLspRange(locate(diagnostic, view, { origin: "core" })) ?? START,
     severity: diagnostic.severity === "warning" ? Severity.warning : Severity.error,
     code: diagnostic.code,
     source: "fts",
@@ -122,46 +85,15 @@ function toLspDiagnostic(diagnostic, outline, text) {
   }
 }
 
-function diagnosticRange(diagnostic, outline, text) {
-  if (diagnostic.span) {
-    const start = { line: Math.max(0, diagnostic.span.start.line - 1), character: Math.max(0, diagnostic.span.start.column - 1) }
-    const end = { line: Math.max(0, diagnostic.span.end.line - 1), character: Math.max(0, diagnostic.span.end.column - 1) }
-    return end.line < start.line || (end.line === start.line && end.character <= start.character)
-      ? { start, end: { line: start.line, character: start.character + 1 } }
-      : { start, end }
-  }
-
-  const naturalLine = /^(?:строка|line)\s+(\d+)$/u.exec(diagnostic.path ?? "")
-  if (naturalLine) {
-    const line = outline.lines[Number(naturalLine[1]) - 1]
-    if (line) return { start: { line: line.number, character: line.startChar }, end: { line: line.number, character: Math.max(line.endChar, line.startChar + 1) } }
-  }
-
-  if (diagnostic.path?.startsWith("$")) {
-    const resolved = resolvePath(outline, diagnostic.path)
-    if (resolved) return resolved
-  }
-
-  /* Часть ошибок ядра приходит вообще без координат — например
-     «не найден морфизм «X»». Имя в кавычках есть в самом тексте
-     сообщения, и по нему строка находится однозначно. */
-  const quoted = /[«"']([^«»"']+)[»"']/u.exec(diagnostic.message ?? "")
-  if (quoted) {
-    const line = outline.logical.find((item) => item.text.includes(quoted[1]))
-    if (line) return { start: { line: line.number, character: line.startChar }, end: { line: line.number, character: Math.max(line.endChar, line.startChar + 1) } }
-  }
-
-  const first = outline.logical[0] ?? outline.lines[0]
-  if (!first) return { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } }
-  return { start: { line: first.number, character: first.startChar }, end: { line: first.number, character: Math.max(first.endChar, first.startChar + 1) } }
-}
-
-/** Несходящийся пример → диагностика на строке `ожидается`. */
-function exampleDiagnostic(item, outline) {
-  const utility = outline.utilities.find((node) => node.name === item.utility)
-  const example = utility?.examples.find((node) => node.name === item.example)
-  const target = example?.expectedNode ?? example ?? utility
-  const english = outline.language === "en"
+/**
+ * Несходящийся пример → диагностика на строке `ожидается`.
+ *
+ * Ядро возвращает такие примеры как `{ passed: false, expected, actual }`
+ * без координат вовсе; строку по именам утилиты и примера находит `locate`,
+ * а здесь остаётся только текст с обоими числами.
+ */
+function exampleDiagnostic(item, view) {
+  const english = view.language === "en"
   const message = item.error
     ? english
       ? `example "${item.example}" failed: ${item.error}`
@@ -170,7 +102,7 @@ function exampleDiagnostic(item, outline) {
       ? `example "${item.example}": expected ${format(item.expected)}, actual ${format(item.actual)}`
       : `пример «${item.example}»: ожидается ${format(item.expected)}, фактически ${format(item.actual)}`
   return {
-    range: target?.valueRange ?? target?.lineRange ?? { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } },
+    range: toLspRange(locate(item, view, { origin: "core" })) ?? START,
     severity: Severity.error,
     code: item.error ? "FTS_UTILITY_EXAMPLE_ERROR" : "FTS_UTILITY_EXAMPLE_MISMATCH",
     source: "fts",

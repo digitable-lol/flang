@@ -20,7 +20,7 @@
  * совпадение кодов ошибок зависело бы от реализации `interpret.mjs`, то есть
  * было бы случайным.
  */
-import { FlangError, flangError } from "./builtins.mjs"
+import { FlangError, flangError, reifyValue, valuesEqual } from "./builtins.mjs"
 import { evaluate as interpret } from "./interpret.mjs"
 
 export { FlangError, flangError }
@@ -272,7 +272,23 @@ export function evaluateFlang(program, functionName, args, options = {}) {
   return interpret(program, functionName, args ?? {}, limits)
 }
 
-/** Прогон примеров всех функций программы — аналог `testUtilities` ядра. */
+/**
+ * Прогон примеров всех функций программы — аналог `testUtilities` ядра.
+ *
+ * Сверка структурная, тем же `valuesEqual`, которым язык сравнивает значения
+ * внутри программ. Здесь стояло `Object.is`, и этого хватало ровно до тех пор,
+ * пока функции возвращали скаляры: утилита FTS иначе и не умеет. Но функция
+ * flang возвращает список, запись или вариант, а два структурно равных списка —
+ * это два разных объекта, и `Object.is` о них говорит «не равны». Из-за этого
+ * `flang test` объявлял провалившимся каждый второй файл библиотеки, будучи
+ * при этом полностью прав арифметически. Второе сравнение писать нельзя:
+ * разойдясь на любой мелочи (NaN, -0, порядок полей), оно сделало бы «пример
+ * сошёлся» и «значения равны» разными утверждениями.
+ *
+ * `reifyValue` нужен по той же причине, что и в интерпретаторе: значение
+ * варианта в AST записано как `{ variant, fields }` (JSON не знает классов),
+ * а вычисление даёт `FlangVariant`.
+ */
 export function runExamples(program, evaluate = evaluateFlang) {
   const results = []
   for (const fn of program.functions ?? []) {
@@ -282,7 +298,7 @@ export function runExamples(program, evaluate = evaluateFlang) {
         results.push({
           function: fn.name,
           example: example.name,
-          passed: Object.is(actual, example.expected),
+          passed: valuesEqual(actual, reifyValue(example.expected)),
           expected: example.expected,
           actual,
         })

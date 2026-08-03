@@ -84,6 +84,12 @@ export function checkFtsSource(fts, source) {
         diagnostics.push({
           code: "FTS_EXAMPLE_MISMATCH",
           severity: "error",
+          /* `testUtilities` reports a non-converging example with no location
+             at all — only the names of the utility and the example it ran.
+             Carrying those two names through is what lets `tools/locate` put
+             the annotation on the `expected` line instead of on line 1. */
+          utility: result.utility,
+          example: result.example,
           message: result.error
             ? `utility '${result.utility}', example '${result.example}': ${result.error}`
             : `utility '${result.utility}', example '${result.example}': expected ${JSON.stringify(result.expected)}, got ${JSON.stringify(result.actual)}`,

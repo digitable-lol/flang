@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises"
 
+import { locate, outline } from "../../../../tools/locate/index.mjs"
+
 import { diagnosticToAnnotation } from "./annotate.mjs"
 import { listAllFtsFiles, listChangedFiles, parsePatterns, resolveBaseRef } from "./discover.mjs"
 import { findTool, resolveToolDiagnosticFile, runTool } from "./externalTools.mjs"
@@ -54,7 +56,12 @@ export async function run(options) {
   for (const file of files) {
     const relPath = relative(workspaceDir, file).split("\\").join("/")
     const source = await readFile(file, "utf8")
-    const result = checkFtsSource(fts, source)
+    /* One outline per file, shared by every diagnostic it produces. It also
+       carries `compileSource`: the same text with an ftsc module header
+       blanked out (the core does not compile headers) but with line numbers
+       untouched, so annotations still point at lines of the real file. */
+    const view = outline(source)
+    const result = checkFtsSource(fts, view.compileSource)
     models.push({
       file: relPath,
       hasUtilities: result.hasUtilities,
@@ -62,7 +69,15 @@ export async function run(options) {
       examplesFailed: result.examplesFailed,
       diagnostics: result.diagnostics,
     })
-    for (const diagnostic of result.diagnostics) annotations.push(diagnosticToAnnotation(diagnostic, relPath))
+    /* `fallback: "none"` on purpose. In an editor, guessing a line from a name
+       quoted in the message is a cheap affordance — the cursor is already
+       there. On a pull request a guessed annotation lands on a diff line and
+       misleads, so a diagnostic that carries no location at all keeps the
+       documented line-1 pin instead. */
+    for (const diagnostic of result.diagnostics) {
+      const spot = locate(diagnostic, view, { origin: "core", fallback: "none" })
+      annotations.push(diagnosticToAnnotation(diagnostic, relPath, spot))
+    }
   }
 
   const tools = []
@@ -79,7 +94,10 @@ export async function run(options) {
     tools.push({ name: toolName, diagnostics })
     for (const diagnostic of diagnostics) {
       const file = resolveToolDiagnosticFile(diagnostic, workspaceDir, workspaceDir)
-      annotations.push(diagnosticToAnnotation(diagnostic, file))
+      /* `origin: "tool"` tells `locate` that `diagnostic.path` is a file name
+         and not a pointer into a document, so it never resolves it against an
+         outline of some other file. */
+      annotations.push(diagnosticToAnnotation(diagnostic, file, locate(diagnostic, null, { origin: "tool" })))
     }
   }
 

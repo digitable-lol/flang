@@ -34,13 +34,14 @@ import {
   isScalar,
   isVariant,
   percentOf,
+  reifyValue,
   remainderOf,
   typeName,
   valuesEqual,
   variant,
 } from "./builtins.mjs"
 
-export { FlangError, FlangVariant, flangError, variant, valuesEqual }
+export { FlangError, FlangVariant, flangError, variant, valuesEqual, reifyValue }
 
 // Значения по умолчанию. Шагов — миллион: этого хватает на любую разумную
 // программу (обход списка в 10⁴ элементов укладывается в сотни тысяч шагов),
@@ -224,11 +225,18 @@ function bindArguments(fn, args) {
   })
 }
 
-// undefined в flang нет: «ничто» — это null. Приводим на входе, чтобы внутрь
-// машины никогда не попадало undefined (иначе «имя не связано» перестанет
-// отличаться от «связано с undefined»).
+// Граница между JSON и машиной, и она ровно одна: сюда приходят аргументы
+// вызова, значения примеров и литералы из AST.
+//
+// Две поправки. Первая: undefined в flang нет, «ничто» — это null; иначе «имя
+// не связано» перестало бы отличаться от «связано с undefined». Вторая:
+// вариант в JSON записан как { variant, fields } (классов JSON не знает), и
+// внутрь машины он обязан войти уже FlangVariant — иначе `разбор` не
+// сопоставит его ни с одним образцом, а сообщит «разбор не покрывает значение
+// запись {…}». Именно из-за этого функции, принимающие или возвращающие сумму
+// типов, до сих пор оставались без примеров.
 function normalizeInput(value) {
-  return value === undefined ? null : value
+  return reifyValue(value)
 }
 
 // ───────────────────────────── машина ─────────────────────────────

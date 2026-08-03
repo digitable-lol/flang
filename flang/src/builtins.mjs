@@ -59,6 +59,61 @@ export function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof FlangVariant)
 }
 
+// Значение варианта в JSON. Классов JSON не знает, а значения ходят через JSON
+// сразу в трёх местах: значение примера в AST («пример … ожидается вариант …»),
+// `--args` командной строки и факты для факт-чекинга. Поэтому у варианта есть
+// ровно одна запись — { "variant": "Имя", "fields": { … } }, и это в точности
+// то, что даёт JSON.stringify(new FlangVariant(…)): печать и чтение обратны
+// друг другу, а не «похожи».
+//
+// Форма узнаётся строго: объект ровно с двумя полями, «variant» — непустая
+// строка, «fields» — запись. Запись программы ровно с такими двумя полями от
+// варианта неотличима — это цена одного представления вместо двух; заводить
+// служебную метку внутри записи нельзя по причине из шапки модуля (запись
+// flang — обычный объект JS, метка столкнулась бы с полем пользователя).
+function encodedVariant(value) {
+  if (!isRecord(value)) return null
+  const keys = Object.keys(value)
+  if (keys.length !== 2 || !keys.includes("variant") || !keys.includes("fields")) return null
+  if (typeof value.variant !== "string" || value.variant === "" || !isRecord(value.fields)) return null
+  return value
+}
+
+// JSON-значение → значение времени выполнения. Скаляр возвращается как есть
+// (это подавляющее большинство вызовов), составное обходится вглубь и
+// пересобирается, только если внутри что-то изменилось: иначе каждый литерал
+// в теле функции копировал бы свой список на каждом шаге.
+//
+// Рекурсия по данным, как и у valuesEqual: её глубина ограничена вложенностью
+// значения, а не длиной вычисления, поэтому стек JS ей не грозит.
+export function reifyValue(value) {
+  if (value === undefined) return null
+  if (isScalar(value) || isVariant(value)) return value
+  if (isList(value)) {
+    let changed = false
+    const items = value.map((item) => {
+      const next = reifyValue(item)
+      if (next !== item) changed = true
+      return next
+    })
+    return changed ? items : value
+  }
+  if (!isRecord(value)) return value
+  const encoded = encodedVariant(value)
+  if (encoded !== null) {
+    const fields = {}
+    for (const [name, field] of Object.entries(encoded.fields)) fields[name] = reifyValue(field)
+    return new FlangVariant(encoded.variant, fields)
+  }
+  let changed = false
+  const record = {}
+  for (const [name, field] of Object.entries(value)) {
+    record[name] = reifyValue(field)
+    if (record[name] !== field) changed = true
+  }
+  return changed ? record : value
+}
+
 export function isScalar(value) {
   return value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean"
 }

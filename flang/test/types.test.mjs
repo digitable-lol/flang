@@ -191,6 +191,113 @@ test("«больше» над списками отвергается: поря�
   assert.deepEqual(коды(result), ["FLANG_TYPE", "FLANG_TYPE"])
 })
 
+/**
+ * Порядок — только для чисел, и это не решение проверки типов, а факт про
+ * язык: `compare` ядра FTS (`src/utility.ts`), `order` интерпретатора и `$ord`
+ * печати в JS отказывают на всём, кроме чисел, одним и тем же текстом. Пока
+ * проверка пропускала сюда строки, она обещала то, чего ни один исполнитель не
+ * умеет: программа проходила `check` и падала при запуске.
+ */
+test("«больше» над строками отвергается: порядок в языке только для чисел", () => {
+  const result = checkTypes(программа([], [
+    функция({
+      name: "Первее",
+      params: [{ name: "а", type: строка }, { name: "б", type: строка }],
+      returns: признак,
+      body: оп("lt", пер("а"), пер("б")),
+    }),
+  ]))
+  assert.deepEqual(коды(result), ["FLANG_TYPE", "FLANG_TYPE"])
+  assert.match(result.diagnostics[0].message, /сравнения порядка допустимы только для чисел/u)
+})
+
+test("«больше» над признаками и «ничто» отвергается тоже", () => {
+  for (const тип of [признак, { kind: "null" }]) {
+    const result = checkTypes(программа([], [
+      функция({
+        name: "Больше ли",
+        params: [{ name: "а", type: тип }, { name: "б", type: тип }],
+        returns: признак,
+        body: оп("gte", пер("а"), пер("б")),
+      }),
+    ]))
+    assert.deepEqual(коды(result), ["FLANG_TYPE", "FLANG_TYPE"])
+  }
+})
+
+test("«символ» принимает номер и строку — в порядке поверхности «символ N в текст»", () => {
+  const верно = checkTypes(программа([], [
+    функция({
+      name: "Первая",
+      params: [{ name: "текст", type: строка }],
+      returns: строка,
+      body: форма("символ", лит(1), пер("текст")),
+    }),
+  ]))
+  assert.deepEqual(верно.diagnostics, [])
+
+  const наоборот = checkTypes(программа([], [
+    функция({
+      name: "Первая",
+      params: [{ name: "текст", type: строка }],
+      returns: строка,
+      body: форма("символ", пер("текст"), лит(1)),
+    }),
+  ]))
+  assert.deepEqual(коды(наоборот), ["FLANG_BUILTIN_ARGS", "FLANG_BUILTIN_ARGS"])
+})
+
+/**
+ * Псевдоним — не новый тип, а второе имя уже существующего, и разворачиваться
+ * он обязан всюду, где стоит его имя. Раньше он попадал в таблицу записей и
+ * притворялся записью без полей: значение объявленного им типа не было ни
+ * списком, ни числом — ничем.
+ */
+test("псевдоним разворачивается в свой тип, а не становится пустой записью", () => {
+  const числа = { kind: "alias", name: "Числа", of: список(число) }
+  const result = checkTypes(программа([числа], [
+    функция({
+      name: "Первое",
+      params: [{ name: "элементы", type: имя("Числа") }],
+      returns: число,
+      body: форма("голова", пер("элементы")),
+    }),
+  ]))
+  assert.deepEqual(result.diagnostics, [])
+  assert.deepEqual(result.types.get("Первое").params[0].type, { kind: "list", of: { kind: "number" } })
+})
+
+test("псевдоним псевдонима разворачивается до конца, объявленный в любом порядке", () => {
+  const первый = { kind: "alias", name: "Ряд", of: имя("Числа") }
+  const второй = { kind: "alias", name: "Числа", of: список(число) }
+  const result = checkTypes(программа([первый, второй], [
+    функция({ name: "Пусто", params: [{ name: "р", type: имя("Ряд") }], returns: число, body: форма("длина", пер("р")) }),
+  ]))
+  assert.deepEqual(result.diagnostics, [])
+  assert.deepEqual(result.types.get("Пусто").params[0].type, { kind: "list", of: { kind: "number" } })
+})
+
+test("псевдоним через самого себя — диагностика, а не бесконечное развёртывание", () => {
+  const а = { kind: "alias", name: "А", of: список(имя("Б")) }
+  const б = { kind: "alias", name: "Б", of: список(имя("А")) }
+  const result = checkTypes(программа([а, б], []))
+  assert.deepEqual(коды(result), ["FLANG_TYPE"])
+  assert.match(result.diagnostics[0].message, /определён через самого себя/u)
+})
+
+test("псевдоним на запись остаётся той же записью: поля видны", () => {
+  const место = { kind: "alias", name: "Место", of: имя("Позиция") }
+  const result = checkTypes(программа([позиция, место], [
+    функция({
+      name: "Цена",
+      params: [{ name: "м", type: имя("Место") }],
+      returns: число,
+      body: { kind: "field", target: пер("м"), field: "цена" },
+    }),
+  ]))
+  assert.deepEqual(result.diagnostics, [])
+})
+
 test("условие «если» должно быть признаком, а ветви — одного типа", () => {
   const result = checkTypes(программа([], [
     функция({

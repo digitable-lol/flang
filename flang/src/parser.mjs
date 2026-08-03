@@ -243,6 +243,9 @@ class Parser {
        которые ещё ждут разрешения (имя функции разрешать не нужно). */
     this.scopes = []
     this.pending = new WeakSet()
+    /* Узлы `var`, чьё имя не связано ничем локальным. Разрешаются после
+       разбора всего файла — см. `bindNullaryCalls`. */
+    this.free = []
   }
 
   // ── локальные имена ───────────────────────────────────────────────────────
@@ -269,7 +272,14 @@ class Parser {
   /** `var`, помеченный к разрешению, получает каноническое имя своей привязки. */
   resolved(expression) {
     if (expression.kind !== "var" || !this.pending.has(expression)) return expression
-    return { kind: "var", name: this.resolveLocal(expression.name, expression.span), span: expression.span }
+    const name = this.resolveLocal(expression.name, expression.span)
+    const node = { kind: "var", name, span: expression.span }
+    /* Имя, не связанное ничем локальным, — кандидат в вызов функции без
+       аргументов: `resolveLocal` пропускает такие (тип, вариант и функция
+       пишутся с прописной и не склоняются). Решить сейчас нельзя — функция
+       может быть объявлена ниже по файлу, поэтому узел запоминается. */
+    if (!this.locals().includes(name)) this.free.push(node)
+    return node
   }
 
   resolveLocal(name, span) {
@@ -421,10 +431,44 @@ class Parser {
     }
     this.skipNewlines()
     if (!this.at("eof")) this.fail("не разобрана конструкция: лишний текст после объявлений")
+    this.bindNullaryCalls()
 
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
     if (this.legacy.length > 0) program.legacy = this.legacy
     return program
+  }
+
+  /**
+   * Применение функции без аргументов.
+   *
+   * Единственной формой применения было «Имя» от аргумента, и функцию без
+   * параметров вызвать было нечем: её имя в позиции выражения читалось как
+   * `var` и упиралось в «имя не связано». Отдельного слова для этого заводить
+   * не нужно — имя функции в позиции выражения и означает её применение,
+   * потому что функции в flang не являются значениями (SPEC, раздел 3) и
+   * означать что-либо другое имя функции не может.
+   *
+   * Проход отложен до конца файла ровно по одной причине: функция может быть
+   * объявлена ниже того места, где вызвана. Локальные имена уже разобраны на
+   * своих местах, поэтому затенения здесь быть не может — в `free` попадают
+   * только имена, не связанные ничем локальным.
+   */
+  bindNullaryCalls() {
+    if (this.free.length === 0) return
+    const declared = new Set(this.functions.map((fn) => fn.name))
+    for (const node of this.free) {
+      if (!declared.has(node.name)) continue
+      /* Узел уже вложен в AST, поэтому переписывается на месте. Поля
+         переставляются в порядок обычного `call` — AST разбирается в тот же
+         JSON, что и вызов с аргументами, и различить их по форме нельзя. */
+      const { name, span } = node
+      delete node.name
+      delete node.span
+      node.kind = "call"
+      node.name = name
+      node.args = []
+      node.span = span
+    }
   }
 
   /** Старая скобочная поверхность ядра: `category X { … }`. */
@@ -1105,7 +1149,18 @@ class Parser {
       case "litNull":
         this.next()
         return { kind: "literal", value: literalOfKeyword(token.value), span: token.span }
-      case "empty":
+      case "empty": {
+        this.next()
+        /* «пусто» — два разных слова в одной поверхности: образец/литерал
+           пустого списка и встроенная проверка пустоты. Различаем ровно так
+           же, как одноместные формы вроде «длина» (parseUnaryBuiltin): есть
+           аргумент — форма, нет аргумента — значение. Без этого проверка
+           пустоты была недостижима, и её приходилось писать как
+           «(длина x) равен 0». Однозначное «пустой список» не трогаем: оно
+           всегда значение, чем бы за ним ни следовало. */
+        if (!this.startsExpression()) return { kind: "list", items: [], span: token.span }
+        return { kind: "builtin", name: "пусто", args: [this.parsePostfix()], span: token.span }
+      }
       case "emptyList":
         this.next()
         return { kind: "list", items: [], span: token.span }
@@ -1142,7 +1197,16 @@ class Parser {
       case "join": {
         this.next()
         const left = this.parsePostfix()
-        if (!this.eatKw("with") && !this.eatKw("to")) this.fail("у 'соединить' ожидалось 'с'")
+        /* Две формы, как в `builtins.mjs`. «соединить X с Y» — склейка двух
+           строк (узел binary/concat). «соединить части по разделитель» —
+           списочная форма; предлог тот же, что у обратной операции
+           «разделить текст по разделитель», поэтому пара читается как пара.
+           До появления «по» списочная форма существовала в трёх исполнителях
+           сразу, но пути к ней из грамматики не было. */
+        if (this.eatKw("by")) {
+          return { kind: "builtin", name: "соединить", args: [left, this.parsePostfix()], span: token.span }
+        }
+        if (!this.eatKw("with") && !this.eatKw("to")) this.fail("у 'соединить' ожидалось 'с' или 'по'")
         return { kind: "binary", op: "concat", left, right: this.parsePostfix(), span: token.span }
       }
       case "split": {
@@ -1770,11 +1834,25 @@ function ftsTypeString(type) {
   return type.kind
 }
 
-/** Значение примера: разворачиваем литеральное выражение в обычное значение. */
+/**
+ * Значение примера: разворачиваем литеральное выражение в обычное значение.
+ *
+ * Конструктор варианта даёт не запись из его полей, а `{ variant, fields }` —
+ * ту самую запись значения в JSON, которую читает `reifyValue` (builtins.mjs)
+ * и которую печатает `JSON.stringify` над `FlangVariant`. Раньше здесь
+ * конструктор сворачивался в запись и имя варианта терялось: пример у функции,
+ * работающей с суммой типов, записать было нечем — значение не проходило
+ * проверку типов и не сопоставлялось ни с одним образцом.
+ */
 function literalValue(expression, onError) {
   if (expression.kind === "literal") return expression.value
   if (expression.kind === "list") return expression.items.map((item) => literalValue(item, onError))
-  if (expression.kind === "record" || expression.kind === "construct") {
+  if (expression.kind === "construct") {
+    const fields = {}
+    for (const [key, value] of Object.entries(expression.fields)) fields[key] = literalValue(value, onError)
+    return { variant: expression.variant, fields }
+  }
+  if (expression.kind === "record") {
     const result = {}
     for (const [key, value] of Object.entries(expression.fields)) result[key] = literalValue(value, onError)
     return result

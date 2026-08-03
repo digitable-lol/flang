@@ -383,7 +383,12 @@ export function emitC(program, options = {}) {
     factoryIdents.set(name, `${prefix}_${exported(`создать ${name}`)}`)
     typeIdents.set(name, pascal(name))
   }
-  for (const name of prepared.variants.keys()) variantIdents.set(name, `${prefix}_${exported(name)}`)
+  /* Роль входит в имя, потому что одно пространство имён C не различает
+     конструктор варианта и функцию: в ядре FTS «Значение операнда» — и вариант
+     суммы, и функция вычислителя, и без роли оба давали один идентификатор,
+     то есть некомпилируемый C. Фабрики записей уже так и именуются
+     («создать X»), варианты были исключением. */
+  for (const name of prepared.variants.keys()) variantIdents.set(name, `${prefix}_${exported(`вариант ${name}`)}`)
   for (const name of prepared.functions.keys()) functionIdents.set(name, `${prefix}_${exported(name)}`)
 
   /* Граф хвостовых вызовов: кто разворачивается в цикл, а кто — в батут. */

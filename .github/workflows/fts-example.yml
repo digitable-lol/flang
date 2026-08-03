@@ -1,0 +1,43 @@
+name: FTS check (example)
+
+# Example usage of ./action.yml. Wired to workflow_dispatch only so it doesn't
+# run on every push/PR in this repo in addition to the real CI in ci.yml —
+# a consumer would normally trigger this straight off `pull_request`.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fts-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for changed-only: true to diff against the PR base
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Check FTS models
+        id: fts-check
+        uses: ./
+        with:
+          paths: |
+            examples/**/*.fts
+          changed-only: false
+          fail-on-warning: false
+          summary: true
+
+      - name: Use outputs
+        if: always()
+        run: |
+          echo "models checked: ${{ steps.fts-check.outputs.models }}"
+          echo "diagnostics: ${{ steps.fts-check.outputs.diagnostics }}"
+          echo "examples that did not converge: ${{ steps.fts-check.outputs.examples-failed }}"

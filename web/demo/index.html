@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>&lt;fts-playground&gt; — embeddable FTS compiler</title>
+    <style>
+      :root { color-scheme: light dark; --page: #ffffff; --ink: #16181d; --muted: #5d6675; --line: #dfe3ea; }
+      @media (prefers-color-scheme: dark) { :root { --page: #0c1016; --ink: #e6ebf2; --muted: #98a3b3; --line: #232c39; } }
+      body { margin: 0 auto; max-width: 1060px; padding: 32px 20px 96px; background: var(--page); color: var(--ink);
+             font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
+      h2 { font-size: 20px; margin: 48px 0 4px; }
+      p { margin: 8px 0 16px; color: var(--muted); max-width: 68ch; }
+      p code, li code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; color: var(--ink); }
+      pre.snippet { background: color-mix(in srgb, var(--ink) 6%, transparent); border: 1px solid var(--line);
+                    border-radius: 10px; padding: 12px 14px; overflow: auto;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+      .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+      .note { border-left: 3px solid #d08b00; background: color-mix(in srgb, #d08b00 12%, transparent);
+              padding: 10px 14px; border-radius: 0 8px 8px 0; color: var(--ink); }
+      #log { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; max-height: 190px;
+             overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0; white-space: pre-wrap; }
+      button.plain { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+                     background: transparent; color: var(--ink); cursor: pointer; }
+      /* Deliberately hostile page styles, switched on from the button below to
+         show that nothing here reaches inside the component. */
+      body.hostile pre, body.hostile button, body.hostile textarea, body.hostile table, body.hostile input {
+        border: 3px dashed #d0342c !important; background: #ffe9e7 !important; color: #7a1a14 !important;
+        font-family: "Comic Sans MS", cursive !important; border-radius: 0 !important;
+      }
+    </style>
+
+    <!-- One line to get the element. Nothing to install, no bundler. -->
+    <script type="module" src="../fts-playground.js"></script>
+    <!-- One more line to turn every ```fts block on the page into a playground. -->
+    <script type="module" src="../fts-auto.js" data-view="run"></script>
+  </head>
+  <body>
+    <h1>&lt;fts-playground&gt;</h1>
+    <p>
+      The FTS compiler is 88 KB of ES modules with no dependencies, so the whole thing runs in this tab: parsing,
+      domain examples, executing a utility, generating TypeScript, and proving a theorem against data. Nothing on this
+      page talks to a server.
+    </p>
+
+    <noscript><p class="note">The playground compiles models in the browser, so it needs JavaScript.</p></noscript>
+    <script>
+      /* Not a module on purpose: ES modules are blocked over file:// in every
+         browser, so this warning has to run where the component cannot. */
+      if (location.protocol === "file:") {
+        document.write(
+          '<p class="note">Opened over <code>file://</code>. Browsers refuse to load ES modules from the file system, ' +
+            "so the component below will stay blank. Serve the folder instead — <code>python3 -m http.server</code> in " +
+            "the repository root, then open <code>http://localhost:8000/web/demo/</code> — or start Chrome with " +
+            "<code>--allow-file-access-from-files</code>.</p>",
+        )
+      }
+    </script>
+
+    <h2>1. A model written inside the tag</h2>
+    <p>
+      Exactly like a mermaid block: the model is the text content of the element. Edit it and every panel recomputes.
+      <code>view="check"</code> picks the tab that opens first.
+    </p>
+    <fts-playground id="inline" view="check" height="440">
+      категория «Продажи»
+
+        объект Покупка
+          сумма является деньгами
+          «постоянный клиент» является признаком
+
+        утилита «Рассчитать скидку»
+          принимает Покупка
+          возвращает деньги
+          начинает с 0
+
+          правило «Большая покупка»
+            если сумма не меньше 10000
+            то добавить 10 процентов от поля сумма
+
+          правило «Постоянный клиент»
+            если «постоянный клиент» равен да
+            то добавить 5 процентов от поля сумма
+
+          свойство «Скидка ограничена»
+            результат не больше 20 процентов от поля сумма
+
+          пример «Обычная покупка»
+            дано сумма равна 5000
+            дано «постоянный клиент» равен нет
+            ожидается результат равен 0
+
+          пример «Большая покупка»
+            дано сумма равна 20000
+            дано «постоянный клиент» равен нет
+            ожидается результат равен 2000
+
+          пример «Большая покупка постоянного клиента»
+            дано сумма равна 20000
+            дано «постоянный клиент» равен да
+            ожидается результат равен 3000
+    </fts-playground>
+
+    <h2>2. Events reach the host page</h2>
+    <p>
+      The component lives behind a shadow root, but <code>fts:compiled</code>, <code>fts:error</code> and
+      <code>fts:result</code> are composed events: the page sees them on <code>document</code>. Type in the editor
+      above or run the utility to fill this log.
+    </p>
+    <pre id="log" tabindex="0" aria-label="Event log"></pre>
+    <p>
+      <button class="plain" id="hostile" type="button">Apply hostile page styles</button>
+      Turns on <code>pre, button, input { border: 3px dashed red; font-family: Comic Sans }</code> for the whole page.
+      The snippets on this page change; the playgrounds do not.
+    </p>
+
+    <h2>3. Read-only, for prose</h2>
+    <p>
+      <code>readonly</code> drops the editor and keeps the results. This is what documentation usually wants: the
+      reader cannot break the sample, but can still run it.
+    </p>
+    <fts-playground id="frozen" readonly view="examples" height="360">
+      category "Sales"
+
+        object Purchase
+          amount is money
+          "loyal customer" is boolean
+
+        utility "Calculate discount"
+          accepts Purchase
+          returns money
+          starts with 0
+
+          rule "Large purchase"
+            if amount is at least 10000
+            then add 10 percent of field amount
+
+          rule "Loyal customer"
+            if "loyal customer" equals true
+            then add 5 percent of field amount
+
+          property "Discount is capped"
+            result is at most 20 percent of field amount
+
+          example "Regular purchase"
+            given amount equals 5000
+            given "loyal customer" equals false
+            expected result equals 0
+
+          example "Large loyal purchase"
+            given amount equals 20000
+            given "loyal customer" equals true
+            expected result equals 3000
+    </fts-playground>
+
+    <h2>4. Loaded from a file, opened on the proof</h2>
+    <p>
+      <code>src</code> fetches the model, <code>context-src</code> fetches the JSON the theorem is checked against, and
+      <code>view="proof"</code> opens the tab that matters. Change <code>true</code> to <code>false</code> in the data
+      and the permission disappears.
+    </p>
+    <fts-playground
+      id="remote"
+      src="models/order-shipment.fts"
+      context-src="models/order-shipment.context.json"
+      view="proof"
+      height="440"
+    ></fts-playground>
+
+    <h2>5. Both themes, side by side</h2>
+    <p>
+      <code>theme</code> takes <code>auto</code> (the default, following <code>prefers-color-scheme</code>),
+      <code>light</code> or <code>dark</code>. Two components with different themes coexist on one page because each
+      keeps its palette inside its own shadow root.
+    </p>
+    <div class="row">
+      <fts-playground id="lightone" theme="light" readonly view="check" height="380" views="check model">
+        категория «Доставка»
+
+          объект Отправление
+            вес является числом
+            «в город» является строкой
+      </fts-playground>
+      <fts-playground id="darkone" theme="dark" readonly view="check" height="380" views="check model">
+        категория «Доставка»
+
+          объект Отправление
+            вес является числом
+            «в город» является строкой
+      </fts-playground>
+    </div>
+
+    <h2>6. A fenced code block, upgraded automatically</h2>
+    <p>
+      The block below is plain markup — <code>&lt;pre&gt;&lt;code class="language-fts"&gt;</code>, exactly what a
+      Markdown renderer emits for a <code>```fts</code> fence. <code>fts-auto.js</code> replaced it with a read-only
+      playground on load, the same way mermaid replaces <code>```mermaid</code>.
+    </p>
+    <pre><code class="language-fts">категория «Кредитная политика»
+
+  объект «Заявка на лимит»
+    сумма является деньгами
+    «скоринг пройден» является признаком
+
+  утилита «Одобренная сумма»
+    принимает «Заявка на лимит»
+    возвращает деньги
+    начинает с 0
+
+    правило «Скоринг пройден»
+      если «скоринг пройден» равен да
+      то добавить 50 процентов от поля сумма
+
+    пример «Заявка без скоринга»
+      дано сумма равна 100000
+      дано «скоринг пройден» равен нет
+      ожидается результат равен 0
+
+    пример «Заявка со скорингом»
+      дано сумма равна 100000
+      дано «скоринг пройден» равен да
+      ожидается результат равен 50000
+</code></pre>
+
+    <h2>How it was embedded</h2>
+    <pre class="snippet">&lt;script type="module" src="fts-playground.js"&gt;&lt;/script&gt;
+&lt;script type="module" src="fts-auto.js" data-view="run"&gt;&lt;/script&gt;
+
+&lt;fts-playground view="run"&gt;
+  категория «Продажи»
+    объект Покупка
+      сумма является деньгами
+&lt;/fts-playground&gt;
+
+&lt;fts-playground src="models/order-shipment.fts" view="proof" readonly&gt;&lt;/fts-playground&gt;</pre>
+
+    <script type="module">
+      const log = document.querySelector("#log")
+      const line = (message) => {
+        log.textContent = `${message}\n${log.textContent}`.split("\n").slice(0, 60).join("\n")
+      }
+      document.addEventListener("fts:ready", () => line("fts:ready — compiler loaded"))
+      document.addEventListener("fts:compiled", (event) => {
+        const { detail, target } = event
+        line(`fts:compiled #${target.id} — «${detail.model.category}», valid=${detail.valid}, ${detail.elapsed.toFixed(3)} ms`)
+      })
+      document.addEventListener("fts:error", (event) => line(`fts:error #${event.target.id} — ${event.detail.message}`))
+      document.addEventListener("fts:result", (event) => {
+        const { detail, target } = event
+        if (detail.proof !== undefined) line(`fts:result #${target.id} — proof ${detail.proof ? "granted" : "denied"}`)
+        else line(`fts:result #${target.id} — ${detail.utility} → ${detail.error ?? detail.value}`)
+      })
+      document.querySelector("#hostile").addEventListener("click", (event) => {
+        document.body.classList.toggle("hostile")
+        event.currentTarget.textContent = document.body.classList.contains("hostile")
+          ? "Remove hostile page styles"
+          : "Apply hostile page styles"
+      })
+    </script>
+  </body>
+</html>

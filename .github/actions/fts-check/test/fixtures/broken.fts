@@ -1,0 +1,5 @@
+category X {
+  structure Y {
+    a: string
+
+}

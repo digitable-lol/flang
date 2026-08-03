@@ -1,0 +1,21 @@
+{
+  "package": "@digitable/fts",
+  "version": "0.4.0",
+  "surface": "browser",
+  "generator": "web/scripts/vendor-runtime.mjs",
+  "modules": [
+    "browser.js",
+    "diagnostics.js",
+    "domain.js",
+    "interpreter.js",
+    "model.js",
+    "natural-parser.js",
+    "parser.js",
+    "stdlib.js",
+    "templates.js",
+    "utility.js",
+    "validate.js",
+    "visualize.js"
+  ],
+  "bytes": 89821
+}

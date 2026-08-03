@@ -1,0 +1,18 @@
+{
+  "grammars": [
+    {
+      "name": "fts",
+      "camelcase": "Fts",
+      "scope": "source.fts",
+      "path": ".",
+      "file-types": ["fts"],
+      "highlights": "queries/highlights.scm",
+      "injection-regex": "^fts$"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "tree-sitter grammar for the FTS language"
+  }
+}

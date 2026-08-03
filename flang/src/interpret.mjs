@@ -1,0 +1,819 @@
+// interpret.mjs — вычисление AST flang (SPEC.md, раздел 5).
+//
+// ── Почему явный стек, а не рекурсия по стеку JS ──────────────────────────
+// Обычные (не тотальные) функции flang могут не завершаться, и единственная
+// защита от этого — лимит шагов и глубины. Если бы вычислитель рекурсивно
+// вызывал сам себя, то раньше нашего лимита сработал бы RangeError движка
+// («Maximum call stack size exceeded»), причём непредсказуемо: глубина стека JS
+// зависит от размера кадров, флагов запуска и платформы. Поймать его нельзя
+// надёжно (движок может упасть уже внутри обработчика), а диагностика вышла бы
+// не FLANG_RECURSION_LIMIT.
+//
+// Поэтому вычисление — цикл над явным стеком кадров (машина «кадр → значение»).
+// Стек живёт в куче, глубина ограничена только лимитом и памятью, а счётчик
+// шагов инкрементируется на каждой итерации цикла — то есть срабатывает и там,
+// где рекурсия хвостовая и глубина не растёт вовсе.
+//
+// Хвостовые вызовы не увеличивают глубину: перед вызовом мы смотрим, стоит ли
+// сразу за нами кадр возврата без постусловий, и переиспользуем его. Значит
+// «пока не кончится список» пишется рекурсивно и работает в постоянной глубине.
+//
+// Рекурсия по JS остаётся только в двух местах, и обе — рекурсии по данным,
+// а не по программе: сравнение значений (valuesEqual) и сопоставление образца
+// со значением. Их глубина ограничена вложенностью самого значения.
+
+import {
+  callBuiltin,
+  describeValue,
+  flangError,
+  FlangError,
+  FlangVariant,
+  hasBuiltin,
+  isList,
+  isRecord,
+  isScalar,
+  isVariant,
+  percentOf,
+  remainderOf,
+  typeName,
+  valuesEqual,
+  variant,
+} from "./builtins.mjs"
+
+export { FlangError, FlangVariant, flangError, variant, valuesEqual }
+
+// Значения по умолчанию. Шагов — миллион: этого хватает на любую разумную
+// программу (обход списка в 10⁴ элементов укладывается в сотни тысяч шагов),
+// но зациклившаяся функция упирается в лимит за доли секунды. Глубина — 10⁴:
+// заведомо ниже предела движка мы держаться не обязаны (стек в куче), но
+// осмысленная нехвостовая рекурсия глубже 10⁴ почти всегда означает ошибку.
+const DEFAULT_MAX_STEPS = 1_000_000
+const DEFAULT_MAX_DEPTH = 10_000
+
+const DEFAULT_RESULT_BINDING = "результат"
+
+// ───────────────────────────── публичный интерфейс ─────────────────────────────
+
+export function createRuntime(program, options = {}) {
+  const checked = prepareProgram(program)
+  const limits = {
+    maxSteps: positiveLimit(options.maxSteps, DEFAULT_MAX_STEPS, "maxSteps"),
+    maxDepth: positiveLimit(options.maxDepth, DEFAULT_MAX_DEPTH, "maxDepth"),
+  }
+  const builtinOptions = { indexBase: options.indexBase === 0 ? 0 : 1 }
+  const runtime = { ...checked, limits, builtinOptions }
+
+  return {
+    call(name, args, callOptions) {
+      const local = callOptions
+        ? {
+          ...runtime,
+          limits: {
+            maxSteps: positiveLimit(callOptions.maxSteps, limits.maxSteps, "maxSteps"),
+            maxDepth: positiveLimit(callOptions.maxDepth, limits.maxDepth, "maxDepth"),
+          },
+        }
+        : runtime
+      return callFunction(local, name, args)
+    },
+    listFunctions() {
+      return [...checked.functions.values()].map((fn) => ({
+        name: fn.name,
+        total: fn.total === true,
+        params: fn.params.map((param) => param.name),
+        returns: fn.returns ?? null,
+      }))
+    },
+  }
+}
+
+export function evaluate(program, functionName, args, options = {}) {
+  return createRuntime(program, options).call(functionName, args)
+}
+
+// ───────────────────────────── подготовка программы ─────────────────────────────
+
+function prepareProgram(program) {
+  if (program === null || typeof program !== "object" || Array.isArray(program)) {
+    throw flangError("FLANG_PARSE", "программа должна быть объектом AST flang")
+  }
+  const functionList = program.functions ?? []
+  if (!Array.isArray(functionList)) {
+    throw flangError("FLANG_PARSE", "поле «functions» программы должно быть списком")
+  }
+
+  const functions = new Map()
+  for (const fn of functionList) {
+    if (fn === null || typeof fn !== "object" || typeof fn.name !== "string") {
+      throw flangError("FLANG_PARSE", "функция должна быть объектом с полем «name»")
+    }
+    if (functions.has(fn.name)) {
+      throw flangError("FLANG_PARSE", `функция «${fn.name}» объявлена дважды`, fn.span)
+    }
+    if (fn.body === undefined || fn.body === null) {
+      throw flangError("FLANG_PARSE", `у функции «${fn.name}» нет тела`, fn.span)
+    }
+    functions.set(fn.name, {
+      name: fn.name,
+      total: fn.total === true,
+      params: normalizeParams(fn),
+      returns: fn.returns,
+      body: fn.body,
+      // Постусловия — расширение поверх раздела 5: compat.mjs обязан отобразить
+      // «свойства» утилиты FTS в постусловия функции (SPEC, раздел 9), иначе
+      // нарушение свойства невозможно выразить. Если поля нет — список пуст.
+      postconditions: normalizePostconditions(fn),
+      span: fn.span,
+    })
+  }
+
+  const records = new Map()
+  const variants = new Map()
+  for (const type of program.types ?? []) {
+    if (type === null || typeof type !== "object") continue
+    if (type.kind === "record") records.set(type.name, type)
+    if (type.kind === "sum") {
+      for (const item of type.variants ?? []) variants.set(item.name, { sum: type.name, ...item })
+    }
+  }
+
+  return { functions, records, variants }
+}
+
+function normalizeParams(fn) {
+  const params = fn.params ?? []
+  if (!Array.isArray(params)) {
+    throw flangError("FLANG_PARSE", `поле «params» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return params.map((param) => {
+    if (typeof param === "string") return { name: param }
+    if (param === null || typeof param !== "object" || typeof param.name !== "string") {
+      throw flangError("FLANG_PARSE", `параметр функции «${fn.name}» должен иметь имя`, fn.span)
+    }
+    return param
+  })
+}
+
+function normalizePostconditions(fn) {
+  const list = fn.postconditions ?? []
+  if (!Array.isArray(list)) {
+    throw flangError("FLANG_PARSE", `поле «postconditions» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return list.map((item) => {
+    if (item === null || typeof item !== "object" || item.expr === undefined) {
+      throw flangError("FLANG_PARSE", `постусловие функции «${fn.name}» должно содержать «expr»`, fn.span)
+    }
+    return {
+      name: item.name ?? "",
+      expr: item.expr,
+      bind: typeof item.bind === "string" ? item.bind : DEFAULT_RESULT_BINDING,
+      code: typeof item.code === "string" ? item.code : "FLANG_PROPERTY",
+      message: typeof item.message === "string" ? item.message : null,
+      span: item.span,
+    }
+  })
+}
+
+function positiveLimit(value, fallback, label) {
+  if (value === undefined || value === null) return fallback
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    throw flangError("FLANG_BUILTIN_ARGS", `значение «${label}» должно быть положительным числом`)
+  }
+  return Math.floor(value)
+}
+
+// ───────────────────────────── вход в вычисление ─────────────────────────────
+
+function callFunction(rt, name, args) {
+  const fn = rt.functions.get(name)
+  if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${name}»`)
+  const values = bindArguments(fn, args)
+
+  const machine = {
+    work: [],
+    value: null,
+    steps: 0,
+    depth: 0,
+    current: fn.name,
+    rt,
+  }
+  applyFunction(machine, fn, values, fn.span)
+  return run(machine)
+}
+
+function bindArguments(fn, args) {
+  if (args === undefined || args === null) return bindArguments(fn, [])
+  if (Array.isArray(args)) {
+    if (args.length !== fn.params.length) {
+      throw flangError(
+        "FLANG_TYPE",
+        `функция «${fn.name}» принимает ${fn.params.length} аргум., получено ${args.length}`,
+        fn.span,
+      )
+    }
+    return args.map(normalizeInput)
+  }
+  if (typeof args !== "object") {
+    throw flangError("FLANG_TYPE", `аргументы функции «${fn.name}» должны быть списком или записью`, fn.span)
+  }
+  return fn.params.map((param) => {
+    if (!Object.hasOwn(args, param.name)) {
+      throw flangError("FLANG_UNKNOWN_NAME", `не задан аргумент «${param.name}» функции «${fn.name}»`, fn.span)
+    }
+    return normalizeInput(args[param.name])
+  })
+}
+
+// undefined в flang нет: «ничто» — это null. Приводим на входе, чтобы внутрь
+// машины никогда не попадало undefined (иначе «имя не связано» перестанет
+// отличаться от «связано с undefined»).
+function normalizeInput(value) {
+  return value === undefined ? null : value
+}
+
+// ───────────────────────────── машина ─────────────────────────────
+
+function run(machine) {
+  const { maxSteps } = machine.rt.limits
+  while (machine.work.length > 0) {
+    machine.steps += 1
+    if (machine.steps > maxSteps) {
+      throw flangError(
+        "FLANG_RECURSION_LIMIT",
+        `функция «${machine.current}» исчерпала лимит шагов (${maxSteps}) на глубине вызовов ${machine.depth}`,
+      )
+    }
+    step(machine, machine.work.pop())
+  }
+  return machine.value
+}
+
+function push(machine, frame) {
+  machine.work.push(frame)
+}
+
+function pushEval(machine, expr, env, span) {
+  if (expr === undefined || expr === null || typeof expr !== "object" || Array.isArray(expr)) {
+    throw flangError("FLANG_PARSE", `ожидалось выражение, получено ${JSON.stringify(expr) ?? "undefined"}`, span)
+  }
+  machine.work.push({ op: "eval", expr, env })
+}
+
+// Имя связывания обязано быть строкой: иначе в окружении появился бы ключ
+// «undefined», и промах по имени выглядел бы как успешное связывание.
+// Окружения строятся от Object.create(null), поэтому имя «__proto__» здесь
+// безопасно — акцессора Object.prototype в цепочке нет.
+function requireName(name, kind, field, span) {
+  if (typeof name !== "string" || name.length === 0) {
+    throw flangError("FLANG_PARSE", `узел «${kind}» требует непустое имя в поле «${field}»`, span)
+  }
+}
+
+function step(machine, frame) {
+  switch (frame.op) {
+    case "eval":
+      return evalExpr(machine, frame.expr, frame.env)
+    case "seq":
+      return stepSeq(machine, frame)
+    case "field":
+      return stepField(machine, frame)
+    case "let":
+      return stepLet(machine, frame)
+    case "if":
+      return stepIf(machine, frame)
+    case "match":
+      return stepMatch(machine, frame)
+    case "foldOver":
+      return stepFoldOver(machine, frame)
+    case "foldInit":
+      return stepFoldInit(machine, frame)
+    case "foldStep":
+      return stepFold(machine, frame)
+    case "loopOver":
+      return stepLoopOver(machine, frame)
+    case "loopStep":
+      return stepLoop(machine, frame)
+    case "return":
+      return stepReturn(machine, frame)
+    case "post":
+      return stepPost(machine, frame)
+    default:
+      throw flangError("FLANG_PARSE", `неизвестный кадр вычислителя «${frame.op}»`)
+  }
+}
+
+function evalExpr(machine, expr, env) {
+  switch (expr.kind) {
+    case "literal": {
+      machine.value = normalizeInput(expr.value)
+      return
+    }
+    case "var": {
+      if (!(expr.name in env)) {
+        throw flangError("FLANG_UNKNOWN_NAME", `имя «${expr.name}» не связано`, expr.span)
+      }
+      machine.value = env[expr.name]
+      return
+    }
+    case "field": {
+      push(machine, { op: "field", field: expr.field, span: expr.span })
+      pushEval(machine, expr.target, env, expr.span)
+      return
+    }
+    case "let": {
+      requireName(expr.name, "let", "name", expr.span)
+      push(machine, { op: "let", name: expr.name, body: expr.in ?? expr.body, env, span: expr.span })
+      pushEval(machine, expr.value, env, expr.span)
+      return
+    }
+    case "if": {
+      push(machine, { op: "if", then: expr.then, otherwise: expr.else, env, span: expr.span })
+      pushEval(machine, expr.cond, env, expr.span)
+      return
+    }
+    case "call": {
+      startSeq(machine, expr.args ?? [], env, { kind: "call", name: expr.name, span: expr.span }, expr.span)
+      return
+    }
+    case "builtin": {
+      if (!hasBuiltin(expr.name)) {
+        throw flangError("FLANG_UNKNOWN_NAME", `неизвестная встроенная форма «${expr.name}»`, expr.span)
+      }
+      startSeq(machine, expr.args ?? [], env, { kind: "builtin", name: expr.name, span: expr.span }, expr.span)
+      return
+    }
+    case "binary": {
+      startSeq(machine, [expr.left, expr.right], env, { kind: "binary", op: expr.op, span: expr.span }, expr.span)
+      return
+    }
+    case "list": {
+      startSeq(machine, expr.items ?? [], env, { kind: "list", span: expr.span }, expr.span)
+      return
+    }
+    case "record": {
+      const fields = expr.fields ?? {}
+      const keys = Object.keys(fields)
+      checkRecordType(machine, expr)
+      startSeq(machine, keys.map((key) => fields[key]), env, { kind: "record", keys, span: expr.span }, expr.span)
+      return
+    }
+    case "construct": {
+      const fields = expr.fields ?? {}
+      const keys = Object.keys(fields)
+      checkVariantName(machine, expr)
+      startSeq(machine, keys.map((key) => fields[key]), env, { kind: "construct", name: expr.variant, keys, span: expr.span }, expr.span)
+      return
+    }
+    case "match": {
+      push(machine, { op: "match", cases: expr.cases ?? [], env, span: expr.span })
+      pushEval(machine, expr.target, env, expr.span)
+      return
+    }
+    case "fold": {
+      requireName(expr.acc, "fold", "acc", expr.span)
+      requireName(expr.item, "fold", "item", expr.span)
+      push(machine, { op: "foldOver", node: expr, env })
+      pushEval(machine, expr.over, env, expr.span)
+      return
+    }
+    case "map":
+    case "filter": {
+      requireName(expr.item, expr.kind, "item", expr.span)
+      push(machine, { op: "loopOver", node: expr, env, mode: expr.kind })
+      pushEval(machine, expr.over, env, expr.span)
+      return
+    }
+    default:
+      throw flangError("FLANG_PARSE", `неизвестный вид выражения «${expr.kind}»`, expr.span)
+  }
+}
+
+// ── последовательное (строгое, слева направо) вычисление списка выражений ──
+
+function startSeq(machine, exprs, env, done, span) {
+  if (!Array.isArray(exprs)) {
+    throw flangError("FLANG_PARSE", "аргументы выражения должны быть списком", span)
+  }
+  stepSeq(machine, { op: "seq", exprs, env, index: 0, acc: [], done })
+}
+
+function stepSeq(machine, frame) {
+  if (frame.index > 0) frame.acc.push(machine.value)
+  if (frame.index < frame.exprs.length) {
+    const next = frame.exprs[frame.index]
+    frame.index += 1
+    push(machine, frame)
+    pushEval(machine, next, frame.env, frame.done.span)
+    return
+  }
+  finishSeq(machine, frame.done, frame.acc)
+}
+
+function finishSeq(machine, done, values) {
+  switch (done.kind) {
+    case "list": {
+      machine.value = values
+      return
+    }
+    case "record": {
+      const record = {}
+      done.keys.forEach((key, index) => {
+        record[key] = values[index]
+      })
+      machine.value = record
+      return
+    }
+    case "construct": {
+      const fields = {}
+      done.keys.forEach((key, index) => {
+        fields[key] = values[index]
+      })
+      machine.value = variant(done.name, fields)
+      return
+    }
+    case "binary": {
+      machine.value = applyBinary(done.op, values[0], values[1], done.span)
+      return
+    }
+    case "builtin": {
+      machine.value = callBuiltin(done.name, values, done.span, machine.rt.builtinOptions)
+      return
+    }
+    case "call": {
+      const fn = machine.rt.functions.get(done.name)
+      if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${done.name}»`, done.span)
+      if (values.length !== fn.params.length) {
+        throw flangError(
+          "FLANG_TYPE",
+          `функция «${fn.name}» принимает ${fn.params.length} аргум., передано ${values.length}`,
+          done.span,
+        )
+      }
+      applyFunction(machine, fn, values, done.span)
+      return
+    }
+    default:
+      throw flangError("FLANG_PARSE", `неизвестное завершение «${done.kind}»`)
+  }
+}
+
+// ── вызов функции и возврат ──
+
+function applyFunction(machine, fn, values, span) {
+  const env = Object.create(null)
+  fn.params.forEach((param, index) => {
+    env[param.name] = values[index]
+  })
+
+  // Хвостовой вызов: если следующий кадр — возврат без постусловий, то после
+  // нашего результата в вызывающей функции делать уже нечего. Забираем её кадр
+  // себе, и глубина не растёт. Кадр с постусловиями трогать нельзя: они обязаны
+  // проверить именно свой результат.
+  const top = machine.work[machine.work.length - 1]
+  let previous = machine.current
+  let restoreDepth = machine.depth
+  if (top !== undefined && top.op === "return" && top.post.length === 0) {
+    machine.work.pop()
+    previous = top.previous
+    restoreDepth = top.restoreDepth
+  } else {
+    machine.depth += 1
+    if (machine.depth > machine.rt.limits.maxDepth) {
+      throw flangError(
+        "FLANG_RECURSION_LIMIT",
+        `функция «${fn.name}» превысила предел глубины вызовов (${machine.rt.limits.maxDepth}) на глубине ${machine.depth}`,
+        span,
+      )
+    }
+  }
+
+  machine.current = fn.name
+  push(machine, {
+    op: "return",
+    name: fn.name,
+    previous,
+    restoreDepth,
+    post: fn.postconditions,
+    env,
+  })
+  pushEval(machine, fn.body, env, span)
+}
+
+function stepReturn(machine, frame) {
+  machine.depth = frame.restoreDepth
+  machine.current = frame.previous
+  if (frame.post.length === 0) return
+  // Постусловия проверяем после тела: результат уже в machine.value.
+  push(machine, {
+    op: "post",
+    name: frame.name,
+    env: frame.env,
+    post: frame.post,
+    index: 0,
+    started: false,
+    result: machine.value,
+  })
+}
+
+function stepPost(machine, frame) {
+  if (frame.started) {
+    const holds = machine.value
+    const property = frame.post[frame.index]
+    if (typeof holds !== "boolean") {
+      throw flangError(
+        "FLANG_TYPE",
+        `постусловие «${property.name}» функции «${frame.name}» должно давать признак, получено ${typeName(holds)}`,
+        property.span,
+      )
+    }
+    if (!holds) {
+      const message = property.message
+        ?? `нарушено свойство «${property.name}» функции «${frame.name}»`
+      throw flangError(property.code, message, property.span)
+    }
+    frame.index += 1
+  }
+  frame.started = true
+
+  if (frame.index >= frame.post.length) {
+    machine.value = frame.result
+    return
+  }
+  const property = frame.post[frame.index]
+  const env = Object.create(frame.env)
+  env[property.bind] = frame.result
+  push(machine, frame)
+  pushEval(machine, property.expr, env, property.span)
+}
+
+// ── простые кадры ──
+
+function stepField(machine, frame) {
+  const target = machine.value
+  if (isVariant(target)) {
+    throw flangError(
+      "FLANG_TYPE",
+      `поле «${frame.field}» нельзя взять у варианта «${target.variant}» — нужен разбор`,
+      frame.span,
+    )
+  }
+  if (!isRecord(target)) {
+    throw flangError("FLANG_TYPE", `поле «${frame.field}» можно взять только у записи, получено ${typeName(target)}`, frame.span)
+  }
+  if (!Object.hasOwn(target, frame.field)) {
+    throw flangError("FLANG_UNKNOWN_NAME", `запись не содержит поле «${frame.field}»`, frame.span)
+  }
+  machine.value = target[frame.field]
+}
+
+function stepLet(machine, frame) {
+  const env = Object.create(frame.env)
+  env[frame.name] = machine.value
+  pushEval(machine, frame.body, env, frame.span)
+}
+
+function stepIf(machine, frame) {
+  const condition = machine.value
+  if (typeof condition !== "boolean") {
+    throw flangError("FLANG_TYPE", `условие «если» должно быть признаком, получено ${typeName(condition)}`, frame.span)
+  }
+  // Строгость с оговоркой: вычисляется ровно одна ветвь.
+  pushEval(machine, condition ? frame.then : frame.otherwise, frame.env, frame.span)
+}
+
+function stepMatch(machine, frame) {
+  const target = machine.value
+  for (const branch of frame.cases) {
+    if (branch === null || typeof branch !== "object" || branch.pattern === undefined) {
+      throw flangError("FLANG_PARSE", "случай разбора должен содержать «pattern» и «body»", frame.span)
+    }
+    const bindings = matchPattern(branch.pattern, target, frame.span)
+    if (bindings === null) continue
+    const env = Object.create(frame.env)
+    for (const [name, value] of bindings) env[name] = value
+    pushEval(machine, branch.body, env, frame.span)
+    return
+  }
+  throw flangError(
+    "FLANG_MATCH_NOT_EXHAUSTIVE",
+    `разбор не покрывает значение ${describeValue(target)}`,
+    frame.span,
+  )
+}
+
+// Возвращает список привязок или null. Рекурсии здесь нет: образцы flang
+// (раздел 5) не вложены — вариант связывает поля именами, а не образцами.
+function matchPattern(pattern, value, span) {
+  switch (pattern.kind) {
+    case "empty":
+      return isList(value) && value.length === 0 ? [] : null
+    case "cons": {
+      if (!isList(value) || value.length === 0) return null
+      const bindings = []
+      if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, value[0]])
+      if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, value.slice(1)])
+      return bindings
+    }
+    case "variant": {
+      if (!isVariant(value) || value.variant !== pattern.name) return null
+      const bind = pattern.bind ?? {}
+      const bindings = []
+      const entries = Array.isArray(bind) ? bind.map((field) => [field, field]) : Object.entries(bind)
+      for (const [field, name] of entries) {
+        if (!Object.hasOwn(value.fields, field)) {
+          throw flangError(
+            "FLANG_UNKNOWN_NAME",
+            `вариант «${value.variant}» не содержит поле «${field}»`,
+            span,
+          )
+        }
+        bindings.push([name, value.fields[field]])
+      }
+      return bindings
+    }
+    case "literal":
+      return valuesEqual(value, normalizeInput(pattern.value)) ? [] : null
+    case "any":
+      return typeof pattern.bind === "string" ? [[pattern.bind, value]] : []
+    default:
+      throw flangError("FLANG_PARSE", `неизвестный вид образца «${pattern.kind}»`, span)
+  }
+}
+
+// ── свёртка ──
+
+function stepFoldOver(machine, frame) {
+  const list = requireList(machine.value, "свёртка", frame.node.span)
+  push(machine, { op: "foldInit", node: frame.node, env: frame.env, list })
+  pushEval(machine, frame.node.init, frame.env, frame.node.span)
+}
+
+function stepFoldInit(machine, frame) {
+  push(machine, {
+    op: "foldStep",
+    node: frame.node,
+    env: frame.env,
+    list: frame.list,
+    index: 0,
+    acc: machine.value,
+    started: false,
+  })
+}
+
+function stepFold(machine, frame) {
+  if (frame.started) {
+    frame.acc = machine.value
+    frame.index += 1
+  }
+  frame.started = true
+  if (frame.index >= frame.list.length) {
+    machine.value = frame.acc
+    return
+  }
+  const env = Object.create(frame.env)
+  env[frame.node.acc] = frame.acc
+  env[frame.node.item] = frame.list[frame.index]
+  push(machine, frame)
+  pushEval(machine, frame.node.body, env, frame.node.span)
+}
+
+// ── отобразить / отфильтровать ──
+
+function stepLoopOver(machine, frame) {
+  const label = frame.mode === "map" ? "отобразить" : "отфильтровать"
+  const list = requireList(machine.value, label, frame.node.span)
+  push(machine, {
+    op: "loopStep",
+    node: frame.node,
+    env: frame.env,
+    mode: frame.mode,
+    list,
+    index: 0,
+    out: [],
+    started: false,
+  })
+}
+
+function stepLoop(machine, frame) {
+  if (frame.started) {
+    if (frame.mode === "map") {
+      frame.out.push(machine.value)
+    } else {
+      const keep = machine.value
+      if (typeof keep !== "boolean") {
+        throw flangError(
+          "FLANG_TYPE",
+          `условие «отфильтровать» должно быть признаком, получено ${typeName(keep)}`,
+          frame.node.span,
+        )
+      }
+      // Тело фильтра — предикат; для отброшенных элементов ничего больше не
+      // вычисляется (никакого «а вдруг пригодится»).
+      if (keep) frame.out.push(frame.list[frame.index])
+    }
+    frame.index += 1
+  }
+  frame.started = true
+  if (frame.index >= frame.list.length) {
+    machine.value = frame.out
+    return
+  }
+  const env = Object.create(frame.env)
+  env[frame.node.item] = frame.list[frame.index]
+  push(machine, frame)
+  pushEval(machine, frame.node.body, env, frame.node.span)
+}
+
+function requireList(value, label, span) {
+  if (!isList(value)) {
+    throw flangError("FLANG_TYPE", `«${label}» работает только со списком, получено ${typeName(value)}`, span)
+  }
+  return value
+}
+
+// ───────────────────────────── операции ─────────────────────────────
+
+function applyBinary(op, left, right, span) {
+  switch (op) {
+    case "add":
+      return arithmetic(op, left, right, span, (a, b) => a + b)
+    case "sub":
+      return arithmetic(op, left, right, span, (a, b) => a - b)
+    case "mul":
+      return arithmetic(op, left, right, span, (a, b) => a * b)
+    case "div":
+      // Деление на ноль даёт Infinity — это значение IEEE-754, и печать в JS
+      // обязана давать то же самое.
+      return arithmetic(op, left, right, span, (a, b) => a / b)
+    case "mod":
+      return arithmetic(op, left, right, span, remainderOf)
+    case "percent":
+      // Порядок операций ядра: (percent / 100) * value.
+      return arithmetic(op, left, right, span, percentOf)
+    case "eq":
+      return valuesEqual(left, right)
+    case "neq":
+      return !valuesEqual(left, right)
+    case "gt":
+      return order(op, left, right, span, (a, b) => a > b)
+    case "lt":
+      return order(op, left, right, span, (a, b) => a < b)
+    case "gte":
+      return order(op, left, right, span, (a, b) => a >= b)
+    case "lte":
+      return order(op, left, right, span, (a, b) => a <= b)
+    case "concat": {
+      if (typeof left !== "string" || typeof right !== "string") {
+        throw flangError(
+          "FLANG_TYPE",
+          `«соединить» допустимо только для строк, получено ${typeName(left)} и ${typeName(right)}`,
+          span,
+        )
+      }
+      return left + right
+    }
+    default:
+      throw flangError("FLANG_TYPE", `неизвестная операция «${op}»`, span)
+  }
+}
+
+function arithmetic(op, left, right, span, apply) {
+  if (typeof left !== "number" || typeof right !== "number") {
+    throw flangError(
+      "FLANG_TYPE",
+      `операция «${op}» допустима только для чисел, получено ${typeName(left)} и ${typeName(right)}`,
+      span,
+    )
+  }
+  return apply(left, right)
+}
+
+// Сообщение дословно как в ядре (src/utility.ts, compare): порядок — только
+// для чисел. Совпадение текста облегчает сверку выводов двух движков.
+function order(op, left, right, span, apply) {
+  if (typeof left !== "number" || typeof right !== "number") {
+    throw flangError("FLANG_TYPE", "сравнения порядка допустимы только для чисел", span)
+  }
+  return apply(left, right)
+}
+
+// ───────────────────────────── мягкая проверка имён типов ─────────────────────────────
+
+// Полноценная проверка типов — дело types.mjs. Здесь только защита от опечатки
+// в имени конструктора: если типы объявлены, имя обязано быть среди них.
+function checkVariantName(machine, expr) {
+  if (machine.rt.variants.size === 0) return
+  if (!machine.rt.variants.has(expr.variant)) {
+    throw flangError("FLANG_UNKNOWN_NAME", `неизвестный вариант «${expr.variant}»`, expr.span)
+  }
+}
+
+function checkRecordType(machine, expr) {
+  if (machine.rt.records.size === 0 || expr.type === undefined) return
+  if (!machine.rt.records.has(expr.type)) {
+    throw flangError("FLANG_UNKNOWN_NAME", `неизвестная запись «${expr.type}»`, expr.span)
+  }
+}
+
+// Экспорт помощников, полезных вызывающему коду (тесты, factcheck, CLI).
+export { isList, isRecord, isScalar, isVariant, typeName, describeValue }

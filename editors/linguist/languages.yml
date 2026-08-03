@@ -1,0 +1,23 @@
+# Fragment to merge into github-linguist/linguist's languages.yml.
+#
+# Per linguist's CONTRIBUTING.md, `language_id` is intentionally omitted here:
+# it is assigned by the linguist maintainers by running `script/update-ids`
+# when the PR is accepted, and must stay stable forever afterwards - it is
+# not ours to pick.
+#
+# Insert this entry in alphabetical order (right after "Frontmatter" / before
+# "Futhark", i.e. wherever "FTS" sorts among the existing keys).
+#
+# Color: #00e5e5 is Digitable's brand cyan (--digitable-cyan, defined in
+# https://github.com/<org>/courses `public/css/digitable.tokens.css`), reused
+# here as this language's linguist color the same way e.g. TypeScript reuses
+# its logo blue.
+
+FTS:
+  type: programming
+  color: "#00e5e5"
+  extensions:
+  - ".fts"
+  tm_scope: source.fts
+  ace_mode: text
+  language_id: 0 # placeholder - remove this line; linguist assigns the real id via script/update-ids

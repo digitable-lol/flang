@@ -1,0 +1,24 @@
+category "Sales"
+
+  object Purchase
+    amount is money
+    "loyal customer" is boolean
+
+  utility "Calculate discount"
+    accepts Purchase
+    returns money
+    starts with 0
+
+    rule "Large purchase"
+      if amount is at least 10000
+      then add 10 percent of field amount
+
+    example "Regular purchase"
+      given amount equals 5000
+      given "loyal customer" equals false
+      expected result equals 0
+
+    example "Large purchase"
+      given amount equals 20000
+      given "loyal customer" equals false
+      expected result equals 2000

@@ -34,7 +34,15 @@ import { checkTypes } from "../src/types.mjs"
 const root = fileURLToPath(new URL("../../", import.meta.url))
 const файл = new URL("../core/evaluate.flang", import.meta.url)
 const исходник = readFileSync(файл, "utf8")
-const программа = parse(исходник, "core/evaluate.flang")
+/* Модуль берёт типы документа из соседнего слоя печати («использует «Печать
+   JSON»»), поэтому разбирается со связыванием: без него «Скаляр» и остальные
+   типы контракта остались бы необъявленными. */
+const { linkProgram } = await import("../src/link.mjs")
+const связано = await linkProgram(fileURLToPath(файл), исходник, parse)
+const { diagnostics: связывание, ...программа } = связано
+/* Отдельно — разбор одного файла: проверки формы модуля обязаны смотреть на
+   то, что написано здесь, а не на объявления, пришедшие из слоя печати. */
+const модуль = parse(исходник, "core/evaluate.flang")
 const типы = checkTypes(программа)
 const тотальность = checkTotality(программа)
 
@@ -122,12 +130,20 @@ const кодОшибки = (ошибка) =>
 /* ───────────────────────────── слои языка ───────────────────────────────── */
 
 test("evaluate.flang: разбор даёт контракт SPEC, раздел 5", () => {
-  assert.equal(программа.flang, 1)
-  assert.equal(программа.module, "Вычислитель утилит")
-  assert.ok(Array.isArray(программа.functions))
-  assert.ok(программа.functions.length > 0)
+  assert.equal(модуль.flang, 1)
+  assert.equal(модуль.module, "Вычислитель утилит")
+  assert.ok(Array.isArray(модуль.functions))
+  assert.ok(модуль.functions.length > 0)
   /* Детерминированность: повторный разбор даёт побайтово тот же AST. */
-  assert.equal(JSON.stringify(parse(исходник, "core/evaluate.flang")), JSON.stringify(программа))
+  assert.equal(JSON.stringify(parse(исходник, "core/evaluate.flang")), JSON.stringify(модуль))
+})
+
+test("evaluate.flang: связывание со слоем печати проходит без диагностик", () => {
+  assert.deepEqual(связывание, [], "типы контракта берутся из json.flang, и это обязано связываться молча")
+  assert.ok(
+    программа.functions.length > модуль.functions.length,
+    "связанная программа обязана содержать функции обоих слоёв",
+  )
 })
 
 test("evaluate.flang: типы без диагностик", () => {
@@ -165,8 +181,11 @@ test("evaluate.flang: без примера остаются только фун
      «ожидается» записывается, но у функций, которые тянут за собой состояние
      вычисления («Итог»), пример был бы длиннее самой функции. Всё остальное
      обязано быть показано примером. */
+  /* Проверяется свой модуль: за функции слоя печати отвечает его собственный
+     тест, и требовать от них примеров здесь значило бы дублировать чужое
+     правило. Суммы типов берутся из связанной программы — они объявлены там. */
   const суммы = new Set((программа.types ?? []).filter((тип) => тип.kind === "sum").map((тип) => тип.name))
-  for (const fn of программа.functions) {
+  for (const fn of модуль.functions) {
     if ((fn.examples ?? []).length > 0) continue
     const типыСигнатуры = [fn.returns, ...(fn.params ?? []).map((параметр) => параметр.type)]
     assert.ok(

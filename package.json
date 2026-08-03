@@ -54,7 +54,8 @@
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "benchmark:quick": "npm run build && node scripts/benchmark.mjs --quick",
     "benchmark:ftsvm": "npm run build && node tools/ftsvm/bin/ftsvm.mjs bench",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "prepare": "npm run build"
   },
   "engines": {
     "node": ">=20"

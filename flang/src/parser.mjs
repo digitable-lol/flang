@@ -167,8 +167,18 @@ const EXPRESSION_START = new Set([
   "let",
 ])
 
-export function parse(source) {
-  return new Parser(tokenize(source)).parseProgram()
+/**
+ * `external` — имена функций из импортированных модулей.
+ *
+ * Имя функции без аргументов становится вызовом только если такая функция
+ * объявлена (см. bindNullaryCalls). Пока разбирался один файл, «объявлена»
+ * значило «объявлена здесь»; со связыванием модулей (src/link.mjs) функция
+ * может прийти из другого файла, и без этого списка её вызов остался бы
+ * несвязанным именем. Список передаётся снаружи, а не вычисляется здесь,
+ * потому что парсер не читает файлы — это работа загрузчика.
+ */
+export function parse(source, file, external) {
+  return new Parser(tokenize(source), external).parseProgram()
 }
 
 /**
@@ -232,7 +242,8 @@ function stem(name) {
 }
 
 class Parser {
-  constructor(tokens) {
+  constructor(tokens, external) {
+    this.external = external instanceof Set ? external : new Set(external ?? [])
     this.tokens = tokens
     this.index = 0
     this.types = []
@@ -456,6 +467,7 @@ class Parser {
   bindNullaryCalls() {
     if (this.free.length === 0) return
     const declared = new Set(this.functions.map((fn) => fn.name))
+    for (const name of this.external) declared.add(name)
     for (const node of this.free) {
       if (!declared.has(node.name)) continue
       /* Узел уже вложен в AST, поэтому переписывается на месте. Поля

@@ -192,6 +192,27 @@ async function parseFlang(source, file) {
     )
   }
   if (typeof parse !== "function") throw fail("FLANG_PARSE", "в parser.mjs нет функции разбора")
+
+  /* Со стандартного ввода нет каталога, относительно которого разрешается
+     `использует … из "…"`, поэтому связывание для него не запускаем: честный
+     FLANG_UNKNOWN_NAME лучше, чем чтение файла из случайного каталога. */
+  if (file !== "-") {
+    const { linkProgram, importsOf } = await import(new URL("../src/link.mjs", import.meta.url).href)
+    /* Разбираем сначала сами: у файла без импортов результат обязан остаться
+       побайтово прежним, иначе `ast` начнёт отличаться там, где ничего не
+       менялось. */
+    const single = parse(source, file)
+    if (importsOf(single).length === 0) return single
+    const linked = await linkProgram(file, source, parse)
+    if (linked.diagnostics.length > 0) {
+      const error = new Error(linked.diagnostics[0].message)
+      error.diagnostics = linked.diagnostics
+      throw error
+    }
+    const { diagnostics: _ignored, ...program } = linked
+    return program
+  }
+
   /* Ошибку самого разбора не заворачиваем: у неё уже есть код, сообщение и
      span — подменять их своим текстом значит потерять место ошибки. */
   return parse(source, file)

@@ -159,4 +159,9 @@ microbenchmarks, not a promise about a host application's bundler or
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+BSD 2-Clause. See [LICENSE](LICENSE); the intent behind it, in Russian, is in
+[LICENSE-RU.md](LICENSE-RU.md).
+
+Earlier versions were released under Apache-2.0, inherited from the original
+repository rather than chosen. Anyone who received the code under Apache-2.0
+keeps those rights; the change applies to later versions.

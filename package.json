@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "description": "Formal Type Surface: executable specifications that generate utilities, tests, and machine-checkable evidence.",
   "type": "module",
-  "license": "Apache-2.0",
+  "license": "BSD-2-Clause",
   "private": true,
   "bin": {
     "fts": "./dist/src/cli.js",

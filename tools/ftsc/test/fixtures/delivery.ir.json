@@ -1,0 +1,179 @@
+{
+  "ir": 1,
+  "project": "delivery",
+  "modules": [
+    {
+      "name": "Логистика",
+      "category": "Логистика",
+      "source": "tools/ftsc/examples/models/delivery-price.fts",
+      "imports": [],
+      "exports": null,
+      "document": {
+        "category": "Логистика",
+        "structures": [
+          {
+            "name": "Отправление",
+            "fields": [
+              {
+                "name": "вес",
+                "type": "Число"
+              },
+              {
+                "name": "расстояние",
+                "type": "Число"
+              },
+              {
+                "name": "срочная доставка",
+                "type": "Признак"
+              },
+              {
+                "name": "страховая сумма",
+                "type": "Деньги"
+              }
+            ]
+          }
+        ],
+        "functors": [],
+        "proposition": null,
+        "ts_compat": {},
+        "utilities": [
+          {
+            "name": "Рассчитать доставку",
+            "input": "Отправление",
+            "output": "Деньги",
+            "initial": 300,
+            "rules": [
+              {
+                "name": "Тяжёлое отправление",
+                "when": [
+                  {
+                    "field": "вес",
+                    "operator": "gt",
+                    "value": {
+                      "kind": "value",
+                      "value": 10
+                    }
+                  }
+                ],
+                "action": {
+                  "kind": "add",
+                  "value": {
+                    "kind": "value",
+                    "value": 250
+                  }
+                }
+              },
+              {
+                "name": "Дальняя зона",
+                "when": [
+                  {
+                    "field": "расстояние",
+                    "operator": "gte",
+                    "value": {
+                      "kind": "value",
+                      "value": 500
+                    }
+                  }
+                ],
+                "action": {
+                  "kind": "add",
+                  "value": {
+                    "kind": "value",
+                    "value": 400
+                  }
+                }
+              },
+              {
+                "name": "Срочная доставка",
+                "when": [
+                  {
+                    "field": "срочная доставка",
+                    "operator": "eq",
+                    "value": {
+                      "kind": "value",
+                      "value": true
+                    }
+                  }
+                ],
+                "action": {
+                  "kind": "add",
+                  "value": {
+                    "kind": "value",
+                    "value": 600
+                  }
+                }
+              },
+              {
+                "name": "Страховой сбор",
+                "when": [
+                  {
+                    "field": "страховая сумма",
+                    "operator": "gt",
+                    "value": {
+                      "kind": "value",
+                      "value": 0
+                    }
+                  }
+                ],
+                "action": {
+                  "kind": "add",
+                  "value": {
+                    "kind": "percent",
+                    "percent": 2,
+                    "field": "страховая сумма"
+                  }
+                }
+              }
+            ],
+            "properties": [
+              {
+                "name": "Тариф не опускается ниже базового",
+                "operator": "gte",
+                "value": {
+                  "kind": "value",
+                  "value": 300
+                }
+              }
+            ],
+            "examples": [
+              {
+                "name": "Лёгкая посылка по городу",
+                "input": {
+                  "вес": 3,
+                  "расстояние": 20,
+                  "срочная доставка": false,
+                  "страховая сумма": 0
+                },
+                "expected": 300
+              },
+              {
+                "name": "Тяжёлая посылка в дальнюю зону",
+                "input": {
+                  "вес": 18,
+                  "расстояние": 900,
+                  "срочная доставка": false,
+                  "страховая сумма": 0
+                },
+                "expected": 950
+              },
+              {
+                "name": "Срочная доставка со страховкой",
+                "input": {
+                  "вес": 4,
+                  "расстояние": 60,
+                  "срочная доставка": true,
+                  "страховая сумма": 50000
+                },
+                "expected": 1900
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "functors": [],
+  "order": [
+    "Логистика"
+  ]
+}

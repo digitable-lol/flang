@@ -7,7 +7,10 @@
   "private": true,
   "bin": {
     "fts": "./dist/src/cli.js",
-    "fts-mcp": "./dist/src/mcp.js"
+    "fts-mcp": "./dist/src/mcp.js",
+    "ftsc": "./tools/ftsc/bin/ftsc.mjs",
+    "ftsvm": "./tools/ftsvm/bin/ftsvm.mjs",
+    "ftspec": "./tools/ftspec/bin/ftspec.mjs"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -29,6 +32,7 @@
     "docs",
     "schema",
     "examples",
+    "tools",
     "README.md",
     "CONTRIBUTING.md",
     "LICENSE"
@@ -37,10 +41,15 @@
     "build": "tsc -p tsconfig.json",
     "clean": "node scripts/clean.mjs",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test dist/test/**/*.test.js",
+    "test": "npm run build && node --test dist/test/**/*.test.js && npm run test:tools",
     "test:source": "node --experimental-strip-types --test test/**/*.test.ts",
+    "test:tools": "node --test tools/*/test/*.test.mjs",
+    "test:ftsc": "npm run build && node --test tools/ftsc/test/*.test.mjs",
+    "test:ftsvm": "npm run build && node --test tools/ftsvm/test/*.test.mjs",
+    "test:ftspec": "npm run build && node --test tools/ftspec/test/*.test.mjs",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "benchmark:quick": "npm run build && node scripts/benchmark.mjs --quick",
+    "benchmark:ftsvm": "npm run build && node tools/ftsvm/bin/ftsvm.mjs bench",
     "prepublishOnly": "npm test"
   },
   "engines": {

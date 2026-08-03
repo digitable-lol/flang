@@ -84,6 +84,25 @@ The canonical interchange format is documented by [`schema/document.schema.json`
 
 Browser applications should import `@digitable/fts/browser`. This entrypoint provides parsing, validation, and visualization without Node.js cryptography; strict certificate decisions stay on the server.
 
+## Tools
+
+The core library compiles one file. Three tools in [`tools/`](tools) build on the public API and add the layers above a single document. They are plain ES modules over `dist/src`, so `npm run build` comes first; each declares a `bin` entry of the same name.
+
+- [`tools/ftsc`](tools/ftsc/README.md) — the project compiler. Trees of `.fts` modules, imports between categories, checked functors between domains, and code generation for eight languages: C, Rust, C#, Java, Elixir, Go, Python, TypeScript. The syntax, the IR, and the backend contract are specified in [`tools/ftsc/SPEC.md`](tools/ftsc/SPEC.md).
+- [`tools/ftsvm`](tools/ftsvm/README.md) — the executor. It runs utilities from the `ftsc` IR by interpretation or by JIT-compiling them to JavaScript, and carries FTS-expressed supervision policies.
+- [`tools/ftspec`](tools/ftspec/README.md) — requirement-integrity checking before implementation. It finds conflicts between specifications, constitution invariants, and recorded decisions.
+
+```bash
+npm run build
+
+node tools/ftsc/bin/ftsc.mjs check tools/ftsc/stdlib
+node tools/ftsc/bin/ftsc.mjs build tools/ftsc/stdlib --target rust --out generated
+node tools/ftsvm/bin/ftsvm.mjs bench --quick
+node tools/ftspec/bin/ftspec.mjs check tools/ftspec/examples/clean
+```
+
+Every tool keeps the CLI contract of the core: JSON on stdout, diagnostics on stderr, non-zero exit on failure. `npm test` runs the core suite and the tools; `npm run test:ftsc`, `npm run test:ftsvm`, and `npm run test:ftspec` run one of them. Backend tests compile generated code with the real toolchain and skip explicitly when it is absent; extra lookup directories come from `FTS_TOOLCHAIN_PATH`.
+
 ## AI agents
 
 Run `fts-mcp` (or `fts mcp`) as a stdio MCP server. It exposes ten read-only tools, including executable-spec operations:

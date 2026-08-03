@@ -1,0 +1,6 @@
+{
+  "name": "catalog-listing",
+  "root": ".",
+  "targets": ["typescript"],
+  "out": "generated"
+}

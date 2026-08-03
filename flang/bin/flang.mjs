@@ -12,13 +12,15 @@
  *   flang test  <файл>                             примеры всех функций
  *   flang facts <файл> --facts f.json --claims '["…"]'
  *   flang ast   <файл>                             печать AST
+ *   flang emit  <файл> --target c|go|js            печать в целевой язык
  *
  * Файл — `.fts` (модель FTS, переводится мостом), `.json` (готовый AST) или
  * `.flang` (исходник; разбирается `parser.mjs`, как только он появится).
  * Поддержка `.fts` здесь не «бонус», а тот же тезис, что и у моста: любая
  * существующая модель FTS — валидная программа flang.
  */
-import { readFile } from "node:fs/promises"
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
+import { dirname, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
@@ -31,10 +33,15 @@ const HELP = `flang — полный язык поверх FTS
   flang test  <файл> [--pretty]
   flang facts <файл> --facts факты.json --claims '["…"]' [--steps N] [--pretty]
   flang ast   <файл> [--pretty]
+  flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli]
+                     [--index-base 0|1] [--max-depth N] [--pretty]
   flang version
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+emit: цели берутся из src/emit (по одному модулю на язык); без --out файлы
+уходят в stdout вместе с путями, с --out записываются в каталог.
 `
 
 export async function main(argv = process.argv.slice(2)) {
@@ -67,6 +74,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandTest(options)
       case "facts":
         return await commandFacts(options)
+      case "emit":
+        return await commandEmit(options)
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${HELP}`)
         return 2
@@ -135,6 +144,125 @@ async function commandFacts(options) {
      JSON уходит в stdout. Ненулевой код нужен, чтобы CI мог на нём падать. */
   writeJson(verdict, options.pretty, process.stdout)
   return verdict.ok ? 0 : 1
+}
+
+/* ────────────────────────────── печать в языки ──────────────────────────── */
+
+/**
+ * Печать программы в целевой язык.
+ *
+ * Программа загружается тем же `loadProgram`, что и у остальных команд, и это
+ * не «переиспользование ради экономии»: только он запускает связывание
+ * (`использует … из "…"`). Печать напрямую из `parse` дала бы для ядра FTS,
+ * разложенного по файлам, неполную программу — и первым признаком стала бы не
+ * ошибка CLI, а несобирающийся C.
+ */
+async function commandEmit(options) {
+  const targets = await emitTargets()
+  if (options.target === undefined) {
+    throw usage(`emit требует --target <язык>; доступны: ${listTargets(targets)}`)
+  }
+  /* Бэкенд ищется до разбора файла: неизвестная цель — ошибка вызова, и
+     сообщать о ней после минуты связывания модулей было бы издевательством. */
+  const backend = await loadEmitter(options.target, targets)
+  const program = await loadProgram(options.file)
+  const files = emittedFiles(backend.emit(program, emitOptions(options)), options.target)
+  const head = { target: options.target, module: program.module ?? null }
+
+  if (options.out === undefined) {
+    /* Пути видны рядом с содержимым: одной программе соответствует несколько
+       файлов (рантайм, модуль, прогонщик, Makefile), и без путей вывод не
+       разложить обратно. Форма — JSON, как у всех команд: инструменты вокруг
+       FTS уже умеют её читать. */
+    writeJson({ ...head, files }, options.pretty, process.stdout)
+    return 0
+  }
+
+  const out = resolve(process.cwd(), options.out)
+  for (const file of files) {
+    const path = resolve(out, file.path)
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, file.content, "utf8")
+  }
+  writeJson(
+    { ...head, out, files: files.map((file) => ({ path: file.path, bytes: Buffer.byteLength(file.content, "utf8") })) },
+    options.pretty,
+    process.stdout,
+  )
+  return 0
+}
+
+const EMIT_DIRECTORY = new URL("../src/emit/", import.meta.url)
+
+/**
+ * Реестр бэкендов — сам каталог `src/emit`, а не список в этом файле (тот же
+ * приём, что в tools/ftsc/src/targets.mjs). Новый язык подключается тем, что
+ * рядом с c.mjs, go.mjs и js.mjs появляется ещё один модуль: правок в CLI это
+ * не требует ни при печати, ни в справке, ни в диагностике неизвестной цели.
+ */
+export async function emitTargets() {
+  try {
+    const entries = await readdir(EMIT_DIRECTORY)
+    return entries.filter((name) => name.endsWith(".mjs")).map((name) => name.slice(0, -".mjs".length)).sort()
+  } catch {
+    /* Каталога нет — команда обязана сказать «нет ни одной цели», а не упасть. */
+    return []
+  }
+}
+
+/**
+ * Загрузка бэкенда по идентификатору цели.
+ *
+ * Имя функции печати не навязывается: подходит `emit` (как у бэкендов ftsc),
+ * `emit<Цель>` (как у emitC/emitGo/emitJs) и вообще единственный экспорт,
+ * начинающийся на «emit». Соглашение бэкендов flang — второе, но привязываться
+ * к нему одному значило бы требовать правки CLI от каждого нового бэкенда.
+ */
+export async function loadEmitter(target, targets) {
+  const known = targets ?? (await emitTargets())
+  /* Проверка по списку — она же защита от «цели» вроде `../../etc/passwd`:
+     дальше идентификатор попадает в URL модуля. */
+  if (!known.includes(target)) {
+    throw usage(`неизвестная цель «${target}»; доступны: ${listTargets(known)}`)
+  }
+  const module = await import(new URL(`${target}.mjs`, EMIT_DIRECTORY).href)
+  const byName = [module.emit, module[`emit${target[0].toUpperCase()}${target.slice(1)}`]]
+  const exact = byName.find((value) => typeof value === "function")
+  if (exact !== undefined) return { target, emit: exact }
+
+  const guessed = Object.entries(module).filter(([name, value]) => typeof value === "function" && /^emit/iu.test(name))
+  if (guessed.length === 1) return { target, emit: guessed[0][1] }
+  throw fail(
+    "FLANG_EMIT",
+    guessed.length === 0
+      ? `бэкенд «${target}» не экспортирует функцию печати (ожидалось «emit» или «emit…»)`
+      : `бэкенд «${target}» экспортирует несколько функций печати: ${guessed.map(([name]) => name).join(", ")}`,
+  )
+}
+
+function listTargets(targets) {
+  return targets.length === 0 ? "нет ни одной" : targets.join(", ")
+}
+
+/**
+ * Ключи печати передаются бэкенду только если заданы: у `cli`, `indexBase` и
+ * `maxDepth` есть значения по умолчанию внутри бэкенда, и подставлять их здесь
+ * значило бы завести второе место, где они записаны.
+ */
+function emitOptions(options) {
+  const result = {}
+  if (options.cli !== undefined) result.cli = options.cli
+  if (options.indexBase !== undefined) result.indexBase = options.indexBase
+  if (options.maxDepth !== undefined) result.maxDepth = options.maxDepth
+  return result
+}
+
+function emittedFiles(emitted, target) {
+  const files = Array.isArray(emitted) ? emitted : Array.isArray(emitted?.files) ? emitted.files : null
+  if (files === null || files.some((file) => typeof file?.path !== "string" || typeof file?.content !== "string")) {
+    throw fail("FLANG_EMIT", `бэкенд «${target}» вернул не список файлов {path, content}`)
+  }
+  return files
 }
 
 /* ───────────────────────────── загрузка программы ───────────────────────── */
@@ -355,6 +483,24 @@ function parseArgs(argv) {
       const steps = Number(require_(argv[++index], "--steps требует число"))
       if (!Number.isFinite(steps) || steps <= 0) throw usage("--steps должен быть положительным числом")
       options.steps = steps
+    } else if (arg === "--target") {
+      options.target = require_(argv[++index], "--target требует имя целевого языка")
+    } else if (arg === "--out") {
+      options.out = require_(argv[++index], "--out требует каталог")
+    } else if (arg === "--cli") {
+      options.cli = true
+    } else if (arg === "--no-cli") {
+      /* Прогонщик печатается по умолчанию (`cli !== false` в бэкендах), поэтому
+         отказаться от него можно только явно. */
+      options.cli = false
+    } else if (arg === "--index-base") {
+      const base = Number(require_(argv[++index], "--index-base требует 0 или 1"))
+      if (base !== 0 && base !== 1) throw usage("--index-base должен быть 0 или 1")
+      options.indexBase = base
+    } else if (arg === "--max-depth") {
+      const depth = Number(require_(argv[++index], "--max-depth требует число"))
+      if (!Number.isInteger(depth) || depth <= 0) throw usage("--max-depth должен быть целым положительным числом")
+      options.maxDepth = depth
     } else if (arg === "--pretty") {
       options.pretty = true
     } else if (arg.startsWith("--")) {

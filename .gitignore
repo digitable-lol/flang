@@ -12,3 +12,4 @@ __pycache__/
 # по raw.githubusercontent.com, хотя их собственная шапка запрещает
 # публикацию до подачи заявки.
 research/
+*.log

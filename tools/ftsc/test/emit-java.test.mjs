@@ -17,6 +17,7 @@ import test from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { emit, target } from "../src/emit/java.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url))
 const NAMES = ["discount", "delivery", "shipment", "shop"]
@@ -230,7 +231,7 @@ test("опциональное поле — Optional<T>, отсутствие в
   assert.match(utility.content, /input\.skidka\(\)\.orElseThrow\(\)/u)
 
   if (javac === null) {
-    t.skip("javac не найден")
+    missingToolchain(t, "java", "javac не найден")
     return
   }
   const output = await build(program)
@@ -277,7 +278,7 @@ test("опциональное поле — Optional<T>, отсутствие в
 
 test("discount: код собирается и примеры проходят", async (t) => {
   if (javac === null) {
-    t.skip("javac не найден")
+    missingToolchain(t, "java", "javac не найден")
     return
   }
   const output = await build(await fixture("discount"))
@@ -286,7 +287,7 @@ test("discount: код собирается и примеры проходят",
 
 test("delivery: код собирается и примеры проходят", async (t) => {
   if (javac === null) {
-    t.skip("javac не найден")
+    missingToolchain(t, "java", "javac не найден")
     return
   }
   const output = await build(await fixture("delivery"))
@@ -295,7 +296,7 @@ test("delivery: код собирается и примеры проходят",
 
 test("shop: два модуля и функтор собираются вместе, примеры проходят", async (t) => {
   if (javac === null) {
-    t.skip("javac не найден")
+    missingToolchain(t, "java", "javac не найден")
     return
   }
   const output = await build(await fixture("shop"))
@@ -323,7 +324,7 @@ test("shipment: без утилит — валидный компилируем�
   )
 
   if (javac === null) {
-    t.skip("javac не найден")
+    missingToolchain(t, "java", "javac не найден")
     return
   }
   await build(program)

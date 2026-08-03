@@ -13,13 +13,20 @@ import assert from "node:assert/strict"
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { execFile } from "node:child_process"
+import { execFile, spawnSync } from "node:child_process"
 import { promisify } from "node:util"
 
 import { emit } from "../src/emit/typescript.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const execFileAsync = promisify(execFile)
 const FIXTURES = ["discount", "delivery", "shipment", "shop"]
+
+/* `--experimental-strip-types` появился в Node 22.6, а engines допускает 20.x:
+   на старом Node такого флага нет и синтаксическую проверку им не сделать.
+   Доказательство при этом не теряется — следующий тест компилирует ровно этот
+   же код настоящим tsc на любой версии Node. */
+const stripTypesSupported = spawnSync(process.execPath, ["--experimental-strip-types", "-e", ""]).status === 0
 
 async function loadFixture(name) {
   const url = new URL(`./fixtures/${name}.ir.json`, import.meta.url)
@@ -72,8 +79,11 @@ test("shipment (морфизмы и теорема, без утилит) даё�
   assert.ok(!files.some((file) => file.path.endsWith(".test.ts")), "без утилит не может быть тестов примеров")
 })
 
-/** Синтаксическая проверка без установки чего-либо: node 24 умеет это сам. */
-test("сгенерированный TypeScript синтаксически валиден (node --experimental-strip-types)", async () => {
+/** Синтаксическая проверка без установки чего-либо: node 22.6+ умеет это сам. */
+test("сгенерированный TypeScript синтаксически валиден (node --experimental-strip-types)", async (t) => {
+  if (!stripTypesSupported) {
+    return t.skip(`node ${process.versions.node} не знает --experimental-strip-types (нужен 22.6+)`)
+  }
   const tmp = await mkdtemp(join(tmpdir(), "ftsc-ts-syntax-"))
   try {
     for (const name of FIXTURES) {
@@ -112,7 +122,11 @@ test("компиляция настоящим tsc (strict) и прогон те�
   try {
     const tsc = await setupTypeScriptToolchain(tmp)
     if (!tsc) {
-      t.skip("сеть недоступна или npm i typescript не удался — компиляция пропущена (см. отчёт агента)")
+      missingToolchain(
+        t,
+        "typescript",
+        "сеть недоступна или npm i typescript не удался — компиляция пропущена (см. отчёт агента)",
+      )
       return
     }
 

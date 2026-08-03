@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url"
 
 import { emit, target } from "../src/emit/go.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const here = fileURLToPath(new URL(".", import.meta.url))
 const fixturesDir = join(here, "fixtures")
@@ -91,7 +92,7 @@ test("emit(): вывод детерминирован — два вызова д
 
 test("discount/delivery/shop: сгенерированный Go реально собирается и проходит go test", async (t) => {
   if (!goBin) {
-    t.skip("тулчейн Go не найден (ни в PATH, ни в FTS_TOOLCHAIN_PATH) — пропуск")
+    missingToolchain(t, "go", "тулчейн Go не найден (ни в PATH, ни в FTS_TOOLCHAIN_PATH) — пропуск")
     return
   }
   for (const name of ["discount", "delivery", "shop"]) {
@@ -122,7 +123,7 @@ test("discount/delivery/shop: сгенерированный Go реально �
 
 test("shipment: без утилит даёт валидный компилируемый Go (go build + go vet)", async (t) => {
   if (!goBin) {
-    t.skip("тулчейн Go не найден — пропуск")
+    missingToolchain(t, "go", "тулчейн Go не найден — пропуск")
     return
   }
   const program = await loadFixture("shipment")

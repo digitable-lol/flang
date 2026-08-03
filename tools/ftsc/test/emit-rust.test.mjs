@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url"
 import test from "node:test"
 
 import { emit, target } from "../src/emit/rust.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const FIXTURES = ["discount", "delivery", "shipment", "shop"]
@@ -107,7 +108,7 @@ test("вывод детерминирован: два вызова дают по
 
 for (const name of ["discount", "delivery", "shop"]) {
   test(`${name}: код компилируется rustc и тесты примеров проходят`, async (t) => {
-    if (!rustcAvailable) return t.skip("rustc не найден")
+    if (!rustcAvailable) return missingToolchain(t, "rust", "rustc не найден")
     const program = await fixture(name)
     const directory = await writeCrate(emit(program, { projectName: name }))
     try {
@@ -147,7 +148,7 @@ test("shipment: категория без единой утилиты даёт �
   assert.match(module.content, /pub fn gotovyy_zakaz_mozhno_otgruzit/u)
   assert.match(module.content, /Теорема «Заказ ЗК-7781 можно отгрузить» доказана компилятором FTS/u)
 
-  if (!rustcAvailable) return t.skip("rustc не найден")
+  if (!rustcAvailable) return missingToolchain(t, "rust", "rustc не найден")
   const directory = await writeCrate(files)
   try {
     const { library, tests, run } = build(directory, "shipment")

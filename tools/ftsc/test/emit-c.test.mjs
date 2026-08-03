@@ -15,6 +15,7 @@ import test from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { emit, target } from "../src/emit/c.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url))
 const NAMES = ["discount", "delivery", "shipment", "shop"]
@@ -152,7 +153,7 @@ test("коллизия идентификаторов — ошибка сбор�
 
 test("discount: код собирается и примеры проходят", async (t) => {
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   const output = await build(await fixture("discount"))
@@ -161,7 +162,7 @@ test("discount: код собирается и примеры проходят",
 
 test("delivery: код собирается и примеры проходят", async (t) => {
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   const output = await build(await fixture("delivery"))
@@ -170,7 +171,7 @@ test("delivery: код собирается и примеры проходят",
 
 test("shop: два модуля и функтор собираются вместе, примеры проходят", async (t) => {
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   const output = await build(await fixture("shop"))
@@ -193,7 +194,7 @@ test("shipment: без утилит — валидный код без функ�
   assert.match(header.content, /bool gotovyy_zakaz_mozhno_otgruzit\(bool /u)
 
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   const output = await build(program)
@@ -237,7 +238,7 @@ test("нарушенное свойство прекращает вычисле�
     order: ["Проверка"],
   }
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   /* Свой main вместо сгенерированного: проверяется именно контракт функции —
@@ -329,7 +330,7 @@ test("опциональное поле — пара has_x + значение, �
   assert.match(source.content, /if \(!input->has_skidka\) \{\n\s+return FTSC_UTILITY_INPUT;/u)
 
   if (compiler === null) {
-    t.skip("gcc не найден")
+    missingToolchain(t, "c", "gcc не найден")
     return
   }
   const output = await build(program)

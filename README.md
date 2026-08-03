@@ -101,7 +101,9 @@ node tools/ftsvm/bin/ftsvm.mjs bench --quick
 node tools/ftspec/bin/ftspec.mjs check tools/ftspec/examples/clean
 ```
 
-Every tool keeps the CLI contract of the core: JSON on stdout, diagnostics on stderr, non-zero exit on failure. `npm test` runs the core suite and the tools; `npm run test:ftsc`, `npm run test:ftsvm`, and `npm run test:ftspec` run one of them. Backend tests compile generated code with the real toolchain and skip explicitly when it is absent; extra lookup directories come from `FTS_TOOLCHAIN_PATH`.
+Every tool keeps the CLI contract of the core: JSON on stdout, diagnostics on stderr, non-zero exit on failure. `npm test` runs the core suite and the tools; `npm run test:ftsc`, `npm run test:ftsvm`, and `npm run test:ftspec` run one of them. `npm run test:fast` skips the backends, `npm run test:backends` runs only them. Backend tests compile generated code with the real toolchain and skip explicitly when it is absent; extra lookup directories come from `FTS_TOOLCHAIN_PATH`.
+
+A skipped test is not a passing test. Where the toolchain is supposed to be installed — CI, a release machine — set `FTS_REQUIRE_TOOLCHAINS`: `1` requires every backend, `rust,go` requires the listed ones, and a missing compiler then fails the test by name instead of being silently skipped. The CI matrix installs one toolchain per job and requires exactly that language.
 
 ## AI agents
 

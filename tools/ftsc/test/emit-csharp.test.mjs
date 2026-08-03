@@ -17,6 +17,7 @@ import { execFile, exec } from "node:child_process"
 import { promisify } from "node:util"
 
 import { emit } from "../src/emit/csharp.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const execFileAsync = promisify(execFile)
 const execAsync = promisify(exec)
@@ -148,7 +149,11 @@ async function detectCsharpToolchain() {
 test("компиляция настоящим тулчейном C# и прогон FtsTests.cs", async (t) => {
   const toolchain = await detectCsharpToolchain()
   if (!toolchain) {
-    t.skip("ни dotnet, ни csc, ни mcs, ни mono не найдены в этой системе — компиляция пропущена (см. отчёт агента)")
+    missingToolchain(
+      t,
+      "csharp",
+      "ни dotnet, ни csc, ни mcs, ни mono не найдены в этой системе — компиляция пропущена (см. отчёт агента)",
+    )
     return
   }
 

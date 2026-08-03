@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url"
 
 import { emit, target } from "../src/emit/python.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const here = fileURLToPath(new URL(".", import.meta.url))
 const fixturesDir = join(here, "fixtures")
@@ -82,7 +83,7 @@ test("emit(): вывод детерминирован — два вызова д
 
 test("discount/delivery/shop: сгенерированный Python реально проходит unittest discover", async (t) => {
   if (!python3) {
-    t.skip("python3 не найден — пропуск")
+    missingToolchain(t, "python", "python3 не найден — пропуск")
     return
   }
   for (const name of ["discount", "delivery", "shop"]) {
@@ -104,7 +105,7 @@ test("discount/delivery/shop: сгенерированный Python реальн
 
 test("shipment: без утилит даёт валидный импортируемый Python", async (t) => {
   if (!python3) {
-    t.skip("python3 не найден — пропуск")
+    missingToolchain(t, "python", "python3 не найден — пропуск")
     return
   }
   const program = await loadFixture("shipment")

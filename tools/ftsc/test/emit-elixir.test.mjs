@@ -37,6 +37,7 @@ import { fileURLToPath } from "node:url"
 
 import { emit, target } from "../src/emit/elixir.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const here = fileURLToPath(new URL(".", import.meta.url))
 const fixturesDir = join(here, "fixtures")
@@ -123,7 +124,7 @@ function compile(root) {
 
 test("discount/delivery/shop: сгенерированный Elixir реально собирается и проходит ExUnit", async (t) => {
   if (!elixircBin || !elixirBin) {
-    t.skip("тулчейн Elixir не найден (ни в PATH, ни в FTS_TOOLCHAIN_PATH) — пропуск")
+    missingToolchain(t, "elixir", "тулчейн Elixir не найден (ни в PATH, ни в FTS_TOOLCHAIN_PATH) — пропуск")
     return
   }
   for (const name of ["discount", "delivery", "shop"]) {
@@ -154,7 +155,7 @@ test("discount/delivery/shop: сгенерированный Elixir реальн
 
 test("shipment: без утилит даёт валидный компилируемый Elixir (elixirc --warnings-as-errors)", async (t) => {
   if (!elixircBin) {
-    t.skip("тулчейн Elixir не найден — пропуск")
+    missingToolchain(t, "elixir", "тулчейн Elixir не найден — пропуск")
     return
   }
   const program = await loadFixture("shipment")

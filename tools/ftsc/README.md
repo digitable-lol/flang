@@ -105,3 +105,15 @@ FTS_TOOLCHAIN_PATH=/opt/go/bin npm run test:ftsc
 
 Тест бэкенда, у которого нет тулчейна в системе, пропускается явным `skip` с
 причиной — а не притворяется пройденным.
+
+Но пропущенный тест — не пройденный тест, и там, где тулчейн обязан стоять
+(CI, машина релиза), пропуск недопустим. За это отвечает `FTS_REQUIRE_TOOLCHAINS`:
+
+```bash
+FTS_REQUIRE_TOOLCHAINS=1        node --test "tools/ftsc/test/emit-*.test.mjs"  # обязательны все бэкенды
+FTS_REQUIRE_TOOLCHAINS=rust,go  node --test "tools/ftsc/test/emit-*.test.mjs"  # обязательны только эти
+```
+
+С заданной переменной отсутствие компилятора — падение с именем языка и
+подсказкой, а не «skipped» (см. `test/toolchain-guard.mjs`). В CI по джобе на
+язык: джоба ставит один тулчейн и требует ровно его.

@@ -527,6 +527,21 @@ absent — a skipped test is not a passing test, so where the toolchain is suppo
 demands the listed ones, and a missing compiler then fails by name instead of vanishing.
 `FTS_TOOLCHAIN_PATH` adds lookup directories.
 
+The differential core checks (`flang/test/core-json.test.mjs`, `flang/test/core-parser.test.mjs`)
+run over every `.fts` model in the repository — 47 of them, the same number on any clean clone.
+`FTS_MODEL_PATH` (a `PATH`-style list of directories) adds model corpora from outside the
+repository; a directory that does not exist, is not a directory, or holds no `.fts` at all is an
+error rather than a silent skip. Either way the tests print the coverage they actually got —
+count and sources — so a run on a clean clone is told apart from a run with an external corpus
+by looking at the output:
+
+```bash
+node --test flang/test/core-json.test.mjs
+# ✔ корпус моделей найден — 47 моделей: только репозиторий, внешний корпус не подключён …
+FTS_MODEL_PATH=/path/to/models node --test flang/test/core-json.test.mjs
+# ✔ корпус моделей найден — 56 моделей: репозиторий 47 + внешние 9 (FTS_MODEL_PATH)
+```
+
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
 the same contract everywhere, which is what makes it usable from CI, editors and agents.
 
@@ -572,8 +587,11 @@ which is also how a name conflict between two modules is resolved.
 - **Benchmarks** — `npm run benchmark`; the harness and a checked-in Apple M1 Max baseline are in
   [`benchmarks/`](benchmarks/README.md).
 
-Further reading: [Language reference](docs/language.md) · [Architecture](docs/architecture.md) ·
-[How it works](docs/how-it-works.md) · [Executable utilities](docs/executable-utilities.ru.md) ·
+Further reading — in English: [Architecture](docs/architecture.md) ·
+[Adoption](docs/adoption.md) · [Agents](docs/agents.md).
+In Russian (the language surface is Russian, and so is most of the prose):
+[Справочник языка](docs/language.ru.md) · [Как это работает](docs/how-it-works.ru.md) ·
+[Исполняемые утилиты](docs/executable-utilities.ru.md) ·
 [Прикладные примеры](docs/examples.ru.md) ·
 [Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md).

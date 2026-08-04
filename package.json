@@ -18,8 +18,7 @@
     "fts-mcp": "./dist/src/mcp.js",
     "ftsc": "./tools/ftsc/bin/ftsc.mjs",
     "ftsvm": "./tools/ftsvm/bin/ftsvm.mjs",
-    "ftspec": "./tools/ftspec/bin/ftspec.mjs",
-    "flang": "./flang/bin/flang.mjs"
+    "ftspec": "./tools/ftspec/bin/ftspec.mjs"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

@@ -45,17 +45,26 @@
 //   • функция с постусловиями хвостовых вызовов не получает — интерпретатор
 //     тоже не переиспользует кадр, которому есть что проверить после возврата.
 //
-// ── Чего в C нет, а у интерпретатора есть ──────────────────────────────────
-// Лимита шагов. Незавершающаяся обычная функция здесь крутится вечно, как и в
-// напечатанном JS. А вот предел ГЛУБИНЫ есть, и это не прихоть: в JS
-// переполнение стека даёт исключение, в C — падение процесса. Поэтому каждая
-// функция, лежащая на цикле графа вызовов, считает глубину и на превышении
-// даёт FLANG_RECURSION_LIMIT — тот же код и тот же текст, что у интерпретатора.
-// Знание `total: true` (totality.mjs) при этом используется честно: оно
-// доказывает завершение, но не ограничивает глубину (тотальная «Сумма» на
-// списке в миллион элементов уйдёт на миллион кадров), поэтому счётчик нужен
-// обоим классам — и в заголовке модуля тотальность отмечена как факт для
-// вызывающего, а не как повод убрать проверку.
+// ── Пределы: и глубина, и шаги ─────────────────────────────────────────────
+// Предел ГЛУБИНЫ — не прихоть: в JS переполнение стека даёт исключение, в C —
+// падение процесса. Поэтому каждая функция, лежащая на цикле графа вызовов,
+// считает глубину и на превышении даёт FLANG_RECURSION_LIMIT — тот же код и
+// тот же текст, что у интерпретатора. Знание `total: true` (totality.mjs) при
+// этом используется честно: оно доказывает завершение, но не ограничивает
+// глубину (тотальная «Сумма» на списке в миллион элементов уйдёт на миллион
+// кадров), поэтому счётчик нужен обоим классам — и в заголовке модуля
+// тотальность отмечена как факт для вызывающего, а не как повод убрать
+// проверку.
+//
+// Лимит ШАГОВ раньше был только в Go, Rust и Python, и это была дыра: глубину
+// хвостовая рекурсия не растит, поэтому незавершающаяся обычная функция
+// («Вечность» из курса) собиралась и крутилась вечно, вместо того чтобы
+// сказать FLANG_RECURSION_LIMIT. Теперь шаг считается в трёх местах — вход в
+// функцию (fl_enter), оборот цикла хвостового самовызова и отскок батута, —
+// ровно как в бэкенде Go. Шаг интерпретатора мельче (итерация его машины), так
+// что счётчик здесь всегда МЕНЬШЕ, и при одинаковом пределе интерпретатор
+// упирается первым: расхождение одностороннее и безопасное — напечатанный код
+// не объявит исчерпанным то, что интерпретатор досчитал до конца.
 
 import { readFileSync } from "node:fs"
 
@@ -315,11 +324,35 @@ function stronglyConnected(names, edges) {
 /* ═══════════════════════════ литералы C ═══════════════════════════ */
 
 /**
+ * Двунаправленные управляющие символы Unicode. Раскладку текста они меняют, а
+ * места не занимают, поэтому исходник с ними читается не так, как исполняется —
+ * это «Trojan Source» (CVE-2021-42574). Компиляторы такое ловят: GCC 13 даёт
+ * -Wbidi-chars (в -Werror это ошибка), rustc — deny-by-default
+ * text_direction_codepoint_in_literal. Программе flang они попадают в литерал
+ * законно: таблица блоков в лексере (flang/self/lexer.flang) перечисляет весь
+ * блок U+2000…U+207F подряд, и одиннадцать из них — как раз эти.
+ *
+ * Поэтому печатать их сырыми нельзя ни в одном бэкенде: набор общий, а форма
+ * экранирования у каждого языка своя.
+ */
+const BIDI_CONTROLS = new Set([
+  0x061c /* ALM  */, 0x200e /* LRM  */, 0x200f /* RLM  */, 0x202a /* LRE  */, 0x202b /* RLE  */,
+  0x202c /* PDF  */, 0x202d /* LRO  */, 0x202e /* RLO  */, 0x2066 /* LRI  */, 0x2067 /* RLI  */,
+  0x2068 /* FSI  */, 0x2069 /* PDI  */,
+])
+
+/**
  * Строковый литерал C. Кириллица печатается как есть (UTF-8 в исходнике —
  * ровно то, ради чего этот язык затевался: имена в коде обязаны читаться), а
  * экранируются кавычка, обратный слэш, управляющие символы и вопросительный
  * знак. Вопросительный знак — из-за триграфов: «??=» в строке при -std=c99
  * превращается в «#», и -Wtrigraphs (он в -Wall) сделал бы из этого ошибку.
+ *
+ * Двунаправленные управляющие символы уезжают в восьмеричные экранирования
+ * побайтно: в C99 нет `\u` внутри узкой строки, зато `\NNN` читает не больше
+ * трёх цифр, поэтому следующий за ним символ — хоть цифра, хоть буква — уже не
+ * приклеится. Байты те же, что и у сырого символа, поэтому длина строки в
+ * байтах и в кодовых точках не меняется, и значение остаётся тем же.
  */
 function cstring(value) {
   let result = '"'
@@ -332,7 +365,9 @@ function cstring(value) {
     else if (character === "\\") result += "\\\\"
     else if (character === "?") result += "\\?"
     else if (code < 0x20 || code === 0x7f) result += `\\${code.toString(8).padStart(3, "0")}`
-    else result += character
+    else if (BIDI_CONTROLS.has(code)) {
+      for (const byte of new TextEncoder().encode(character)) result += `\\${byte.toString(8).padStart(3, "0")}`
+    } else result += character
   }
   return `${result}"`
 }
@@ -361,13 +396,14 @@ function needsMath(value) {
  * Печать программы flang в C99.
  *
  * @param {object} program AST flang (SPEC.md, раздел 5)
- * @param {{ path?: string, indexBase?: 0 | 1, maxDepth?: number, cli?: boolean }} [options]
+ * @param {{ path?: string, indexBase?: 0 | 1, maxDepth?: number, maxSteps?: number, cli?: boolean }} [options]
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitC(program, options = {}) {
   const prepared = prepare(program)
   const base = options.indexBase === 0 ? 0 : 1
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
+  const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
   const file = options.path ?? (moduleName === null ? "program" : snake(moduleName))
   const prefix = snake(moduleName === null ? "program" : moduleName)
@@ -465,6 +501,7 @@ export function emitC(program, options = {}) {
     "   #ifndef, поэтому он собирается и без этого блока. */",
     `#define FL_INDEX_BASE ${base}`,
     `#define FL_MAX_DEPTH ${maxDepth}`,
+    `#define FL_MAX_STEPS ${maxSteps}`,
     `#define FL_MAX_TAIL_ARGS ${maxTailArgs}`,
     `#define FL_MAX_ARGS ${maxArgs}`,
   ].join("\n")
@@ -798,6 +835,10 @@ function renderFunction(fn, shared) {
     body.push(`  *result = ${resultIdent};`, "  return FL_OK;")
   } else if (selfTail) {
     body.push("  for (;;) {")
+    /* Оборот цикла — виток: хвостовой самовызов глубину не растит, поэтому
+       fl_enter здесь ничего не поймает, и незавершающаяся функция без этого
+       счётчика крутилась бы вечно. */
+    body.push(`    FL_TRY(fl_tick(ctx, ${cstring(fn.name)}, error));`)
     emitTail(fn.body, ctx, body, "    ")
     body.push("  }")
   } else {
@@ -852,7 +893,8 @@ function renderFunction(fn, shared) {
           ]),
         `  FL_TRY(fl_enter(ctx, ${cstring(fn.name)}, error));`,
         "  {",
-        `    const fl_status status = fl_trampoline(ctx, ${step}, ${args}, ${ctx.params.length}, result, error);`,
+        `    const fl_status status = fl_trampoline(ctx, ${step}, ${args}, ${ctx.params.length}, ${cstring(fn.name)},`,
+        "                                           result, error);",
         "    fl_leave(ctx);",
         "    return status;",
         "  }",
@@ -1463,7 +1505,13 @@ function renderDispatch(shared) {
     `fl_status ${shared.prefix}_call(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,`,
     "                    fl_value *result, fl_error *error) {",
   ]
-  if (shared.prepared.functions.size === 0) lines.push("  (void)args;")
+  /* `args` читается только там, где есть что читать. Пустая программа — не
+     единственный такой случай: программа из одних функций без параметров
+     («Метка» без аргументов) тоже не трогает args, и под -Werror
+     -Wunused-parameter это несобираемый C. Условие поэтому по параметрам, а не
+     по числу функций. */
+  const readsArgs = [...shared.prepared.functions.values()].some((fn) => fn.params.length > 0)
+  if (!readsArgs) lines.push("  (void)args;")
   for (const fn of shared.prepared.functions.values()) {
     const arity = fn.params.length
     lines.push(

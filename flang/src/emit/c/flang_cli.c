@@ -11,7 +11,7 @@
  * любой язык, у которого есть трубы, — Python, Node, shell. Ни FFI, ни ABI.
  *
  * ── Протокол ───────────────────────────────────────────────────────────────
- * Запрос — одна строка:  {"fn":"Имя функции","args":[…],"depth":"10000"}
+ * Запрос — одна строка:  {"fn":"Имя функции","args":[…],"depth":"10000","steps":"1000000"}
  * Ответ  — одна строка:  {"ok":true,"value":…}
  *                    или {"ok":false,"code":"FLANG_TYPE","message":"…"}
  *
@@ -19,7 +19,8 @@
  *   null            «ничто»
  *   true / false    признак
  *   {"n":"1.5"}     число — строкой, иначе потерялись бы NaN, Infinity и −0
- *                   (по той же причине строкой едет и необязательный «depth»)
+ *                   (по той же причине строкой едут необязательные «depth»
+ *                   и «steps»)
  *   {"s":"текст"}   строка
  *   {"l":[…]}       список
  *   {"r":[["поле",…]]}                 запись (порядок полей сохраняется)
@@ -585,6 +586,13 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         return;
       }
       ctx.max_depth = (size_t)depth;
+    } else if (strcmp(key, "steps") == 0) {
+      double steps = 0.0;
+      if (!read_number_text(&reader, &steps)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел шагов\"}\n", stdout);
+        return;
+      }
+      ctx.max_steps = (size_t)steps;
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
       if (!read_items(&reader, &list) || list.as.list.count > FL_MAX_ARGS) {

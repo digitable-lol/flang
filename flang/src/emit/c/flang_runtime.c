@@ -84,7 +84,18 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     size_t capacity = FL_CHUNK_MIN;
     fl_chunk *chunk = NULL;
     if (capacity < wanted) {
+      /*
+       * Запас сверх запрошенного. Кусок, купленный впритык, полон в момент
+       * покупки, и fl_arena_grow на нём не сможет добавить ни байта: линейное
+       * «добавить» выродилось бы обратно в копию на каждом шаге — ровно то, от
+       * чего оно и заведено. Полтора раза дают геометрический рост: копия
+       * случается всё реже, суммарный перерасход ограничен, а накопление
+       * списка остаётся линейным и по времени, и по памяти.
+       */
       capacity = wanted;
+      if (capacity <= ((size_t)-1) / 3 * 2) {
+        capacity = wanted + wanted / 2;
+      }
     }
     if (capacity > (size_t)-1 - header) {
       return NULL; /* переполнение размера — только при абсурдном запросе */
@@ -107,6 +118,36 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     arena->reserved += header + capacity;
     return fl_chunk_data(chunk);
   }
+}
+
+bool fl_arena_grow(fl_arena *arena, const void *block, size_t old_size, size_t new_size) {
+  fl_chunk *chunk = NULL;
+  size_t old_taken = 0;
+  size_t new_taken = 0;
+  if (arena == NULL || block == NULL) {
+    return false;
+  }
+  chunk = arena->current;
+  if (chunk == NULL) {
+    return false;
+  }
+  /* Округление то же, что при выдаче: сравнивать надо занятое, а не
+     запрошенное, иначе кромка не сойдётся на любом невыровненном размере. */
+  old_taken = fl_round_up(old_size == 0 ? 1 : old_size);
+  new_taken = fl_round_up(new_size == 0 ? 1 : new_size);
+  if (new_taken < old_taken) {
+    return false;
+  }
+  /* Кромка: конец блока совпадает с концом выданного. Только в этом случае за
+     блоком заведомо нет чужих байт. */
+  if (fl_chunk_data(chunk) + chunk->used != (const char *)block + old_taken) {
+    return false;
+  }
+  if (chunk->capacity - chunk->used < new_taken - old_taken) {
+    return false;
+  }
+  chunk->used += new_taken - old_taken;
+  return true;
 }
 
 void fl_arena_reset(fl_arena *arena) {
@@ -145,6 +186,8 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   ctx->arena = arena;
   ctx->depth = 0;
   ctx->max_depth = FL_MAX_DEPTH;
+  ctx->steps = 0;
+  ctx->max_steps = FL_MAX_STEPS;
 }
 
 const char *fl_status_text(fl_status status) {
@@ -211,10 +254,33 @@ static fl_status fl_no_memory(fl_error *error) {
   return FL_ERROR;
 }
 
+fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
+  if (ctx == NULL) {
+    return FL_INVALID_ARGUMENT;
+  }
+  /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
+     бы исчерпанной любую программу. */
+  if (ctx->max_steps == 0) {
+    return FL_OK;
+  }
+  ctx->steps += 1;
+  if (ctx->steps > ctx->max_steps) {
+    /* Текст дословно как у интерпретатора: предел, затем глубина вызовов на
+       момент исчерпания (не число шагов). */
+    return fl_fail(ctx, error, FL_CODE_RECURSION_LIMIT,
+                   "функция «%s» исчерпала лимит шагов (%lu) на глубине вызовов %lu", function,
+                   (unsigned long)ctx->max_steps, (unsigned long)ctx->depth);
+  }
+  return FL_OK;
+}
+
 fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
+  /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
+     ветвящаяся программа считала бы глубину и не считала шаги. */
+  FL_TRY(fl_tick(ctx, function, error));
   ctx->depth += 1;
   if (ctx->depth > ctx->max_depth) {
     /* Текст дословно как у интерпретатора: сперва предел, потом достигнутая
@@ -1450,15 +1516,51 @@ fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error
   return FL_OK;
 }
 
+/*
+ * «добавить x к списку» — дописать в конец. Значения flang неизменяемы, поэтому
+ * наивная реализация копирует список целиком, и цикл «складывать по одному»
+ * стоит O(n²) времени и, поскольку арена ничего не отдаёт обратно, O(n²)
+ * памяти: 16·n² байт. Неподвижная точка самоприменения упиралась в 90 ГБ и не
+ * доходила.
+ *
+ * Линейный случай лечится без отказа от неизменяемости. Если массив списка
+ * кончается ровно на кромке выдачи арены, за ним нет ничьих байт: тогда
+ * достаточно занять одну ячейку сверху и записать в неё элемент. Ни одно уже
+ * существующее значение при этом не меняется — каждое несёт свою длину, а
+ * дописанная ячейка лежит за её концом.
+ *
+ * Условие кромки и есть условие линейности: продлить на месте выходит только у
+ * держателя последней версии. Второе «добавить» к тому же самому списку кромку
+ * уже не угадает (её занял результат первого) и честно скопирует. Поэтому
+ * ветка быстрая, но не «оптимизация с оговорками»: она либо применима и
+ * незаметна, либо не применима и не применяется.
+ *
+ * Накопление в цикле становится O(n) по времени и по памяти.
+ */
 fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error) {
   fl_value *items = NULL;
+  size_t count = 0;
   FL_TRY(fl_expect_list(ctx, "добавить", list, "второй аргумент", error));
-  FL_TRY(fl_list_alloc(ctx, list.as.list.count + 1, &items, error));
-  if (list.as.list.count > 0) {
-    memcpy(items, list.as.list.items, list.as.list.count * sizeof(fl_value));
+  count = list.as.list.count;
+
+  if (count > 0 && count <= ((size_t)-1) / sizeof(fl_value) - 1) {
+    /* Приведение снимает const: память арены принадлежит рантайму, а ячейка,
+       в которую пишем, лежит ЗА концом списка и потому ничьим значением не
+       читается. Сам список остаётся тем же — длина у него своя. */
+    fl_value *slots = (fl_value *)(void *)list.as.list.items;
+    if (fl_arena_grow(ctx->arena, slots, count * sizeof(fl_value), (count + 1) * sizeof(fl_value))) {
+      slots[count] = item;
+      *out = fl_list(slots, count + 1);
+      return FL_OK;
+    }
   }
-  items[list.as.list.count] = item;
-  *out = fl_list(items, list.as.list.count + 1);
+
+  FL_TRY(fl_list_alloc(ctx, count + 1, &items, error));
+  if (count > 0) {
+    memcpy(items, list.as.list.items, count * sizeof(fl_value));
+  }
+  items[count] = item;
+  *out = fl_list(items, count + 1);
   return FL_OK;
 }
 
@@ -1478,8 +1580,8 @@ fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value
 
 /* ═════════════════════════ батут ═════════════════════════ */
 
-fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t count, fl_value *result,
-                        fl_error *error) {
+fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t count, const char *function,
+                        fl_value *result, fl_error *error) {
   fl_bounce bounce;
   fl_value buffer[FL_MAX_TAIL_ARGS];
   size_t index = 0;
@@ -1495,6 +1597,9 @@ fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t 
     if (bounce.next == NULL) {
       return FL_OK;
     }
+    /* Отскок — виток: «Чётное»/«Нечётное» друг на друге идут в постоянной
+       глубине, и без этого счётчика незавершающаяся пара крутилась бы вечно. */
+    FL_TRY(fl_tick(ctx, function, error));
     step = bounce.next;
     for (index = 0; index < FL_MAX_TAIL_ARGS; index += 1) {
       buffer[index] = bounce.args[index];

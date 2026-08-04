@@ -34,7 +34,7 @@ const HELP = `flang — полный язык поверх FTS
   flang facts <файл> --facts факты.json --claims '["…"]' [--steps N] [--pretty]
   flang ast   <файл> [--pretty]
   flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli]
-                     [--index-base 0|1] [--max-depth N] [--pretty]
+                     [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
   flang version
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
@@ -245,15 +245,16 @@ function listTargets(targets) {
 }
 
 /**
- * Ключи печати передаются бэкенду только если заданы: у `cli`, `indexBase` и
- * `maxDepth` есть значения по умолчанию внутри бэкенда, и подставлять их здесь
- * значило бы завести второе место, где они записаны.
+ * Ключи печати передаются бэкенду только если заданы: у `cli`, `indexBase`,
+ * `maxDepth` и `maxSteps` есть значения по умолчанию внутри бэкенда, и
+ * подставлять их здесь значило бы завести второе место, где они записаны.
  */
 function emitOptions(options) {
   const result = {}
   if (options.cli !== undefined) result.cli = options.cli
   if (options.indexBase !== undefined) result.indexBase = options.indexBase
   if (options.maxDepth !== undefined) result.maxDepth = options.maxDepth
+  if (options.maxSteps !== undefined) result.maxSteps = options.maxSteps
   return result
 }
 
@@ -501,6 +502,10 @@ function parseArgs(argv) {
       const depth = Number(require_(argv[++index], "--max-depth требует число"))
       if (!Number.isInteger(depth) || depth <= 0) throw usage("--max-depth должен быть целым положительным числом")
       options.maxDepth = depth
+    } else if (arg === "--max-steps") {
+      const steps = Number(require_(argv[++index], "--max-steps требует число"))
+      if (!Number.isInteger(steps) || steps <= 0) throw usage("--max-steps должен быть целым положительным числом")
+      options.maxSteps = steps
     } else if (arg === "--pretty") {
       options.pretty = true
     } else if (arg.startsWith("--")) {

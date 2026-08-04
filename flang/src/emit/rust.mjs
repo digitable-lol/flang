@@ -401,6 +401,20 @@ function stronglyConnected(names, edges) {
  * разобранная на байты и собранная обратно как символы, превратилась бы в
  * двойную кодировку — имя перестало бы совпадать с именем в интерпретаторе.
  */
+/**
+ * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
+ * не занимают, и потому исходник с ними читается не так, как исполняется —
+ * «Trojan Source» (CVE-2021-42574). Для rustc это не придирка, а отказ:
+ * text_direction_codepoint_in_literal — deny-by-default, и напечатанный крейт с
+ * сырым U+202A просто не собирается. В литерал они попадают законно: таблица
+ * блоков лексера (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F.
+ */
+const BIDI_CONTROLS = new Set([
+  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
+  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
+  0x2068 /* FSI */, 0x2069 /* PDI */,
+])
+
 function ruststring(value) {
   let result = '"'
   for (const character of String(value)) {
@@ -410,7 +424,7 @@ function ruststring(value) {
     else if (character === "\n") result += "\\n"
     else if (character === "\r") result += "\\r"
     else if (character === "\t") result += "\\t"
-    else if (code < 0x20 || code === 0x7f) result += `\\u{${code.toString(16)}}`
+    else if (code < 0x20 || code === 0x7f || BIDI_CONTROLS.has(code)) result += `\\u{${code.toString(16)}}`
     else result += character
   }
   return `${result}"`

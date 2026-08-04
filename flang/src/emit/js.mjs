@@ -646,14 +646,47 @@ function renderNumber(value) {
   return String(value)
 }
 
+/**
+ * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
+ * не занимают, и потому исходник с ними читается не так, как исполняется —
+ * «Trojan Source» (CVE-2021-42574). JSON.stringify пропускает их сырыми.
+ * Движок такой модуль выполнит, но печатать их так всё равно нельзя: файл с
+ * ними нечитаем в ревью, а набор общий с бэкендами C и Rust, где это прямая
+ * ошибка сборки. В литерал они попадают законно: таблица блоков лексера
+ * (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F подряд.
+ */
+const BIDI_CONTROLS = new Set([
+  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
+  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
+  0x2068 /* FSI */, 0x2069 /* PDI */,
+])
+
+/**
+ * Строковый литерал JS: как JSON.stringify, но двунаправленные управляющие —
+ * через `\uXXXX`. Значение то же: `‪` и сырой U+202A — одна и та же
+ * кодовая точка, разница только в записи.
+ */
+function jsstring(value) {
+  /* Экранирование кавычек, слэшей и управляющих оставлено JSON.stringify:
+     заменять его своим значило бы держать вторую копию правил ECMAScript.
+     Двунаправленные он пропускает сырыми, поэтому они заменяются после него —
+     на готовое `\uXXXX`, которое он уже не удвоит. Сам этот файл при этом
+     остаётся без сырых двунаправленных: набор задан кодами, не символами. */
+  const pattern = new RegExp(`[${[...BIDI_CONTROLS].map((code) => `\\u{${code.toString(16)}}`).join("")}]`, "gu")
+  return JSON.stringify(String(value)).replace(
+    pattern,
+    (character) => `\\u${character.codePointAt(0).toString(16).padStart(4, "0")}`,
+  )
+}
+
 function renderLiteral(value) {
   if (value === undefined || value === null) return "null"
   if (typeof value === "boolean") return value ? "true" : "false"
   if (typeof value === "number") return renderNumber(value)
-  if (typeof value === "string") return JSON.stringify(value)
+  if (typeof value === "string") return jsstring(value)
   if (Array.isArray(value)) return `[${value.map(renderLiteral).join(", ")}]`
   if (typeof value === "object") {
-    const entries = Object.keys(value).map((key) => `${JSON.stringify(key)}: ${renderLiteral(value[key])}`)
+    const entries = Object.keys(value).map((key) => `${jsstring(key)}: ${renderLiteral(value[key])}`)
     return entries.length === 0 ? "{}" : `{ ${entries.join(", ")} }`
   }
   throw flangError("FLANG_PARSE", `литерал недопустимого вида: ${typeof value}`)

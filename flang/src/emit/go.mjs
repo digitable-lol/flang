@@ -1145,11 +1145,41 @@ function emitLiteral(value, ctx, out, pad) {
     return emitList(value.map((item) => (out2, pad2) => emitLiteral(item, ctx, out2, pad2)), ctx, out, pad)
   }
   if (typeof value === "object") {
+    /* Вариант в JSON записан как { variant, fields }: классов JSON не знает, а
+       значения ходят через JSON в трёх местах — значение примера в AST, --args
+       и факты. Интерпретатор читает эту форму вариантом (builtins.mjs,
+       encodedVariant), и печать обязана делать то же: без проверки литерал
+       «ожидается вариант …» становился здесь записью, то есть та же программа
+       считалась по-разному в Go и в интерпретаторе. Найдено сверкой бэкендов
+       между собой — C, Rust, JS и Python эту форму узнают, Go не узнавал. */
+    const encoded = encodedVariant(value)
+    if (encoded !== null) {
+      const keys = Object.keys(encoded.fields)
+      const values = keys.map((key) => emitLiteral(encoded.fields[key], ctx, out, pad))
+      return emitValues(keys, values, encoded.variant, ctx, out, pad)
+    }
     const keys = Object.keys(value)
     const values = keys.map((key) => emitLiteral(value[key], ctx, out, pad))
     return emitValues(keys, values, null, ctx, out, pad)
   }
   throw flangError("FLANG_PARSE", `литерал недопустимого вида: ${typeof value}`)
+}
+
+/**
+ * Узнаётся строго, как в builtins.mjs: объект ровно с двумя полями, «variant» —
+ * непустая строка, «fields» — запись. Запись программы ровно с такими двумя
+ * полями от варианта неотличима, и это цена одного представления вместо двух;
+ * расхождение здесь означало бы, что литерал, написанный в примере, печатается
+ * не тем, чем его прочитал интерпретатор.
+ */
+function encodedVariant(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null
+  const keys = Object.keys(value)
+  if (keys.length !== 2 || !keys.includes("variant") || !keys.includes("fields")) return null
+  if (typeof value.variant !== "string" || value.variant === "") return null
+  const fields = value.fields
+  if (fields === null || typeof fields !== "object" || Array.isArray(fields)) return null
+  return { variant: value.variant, fields }
 }
 
 /* ── составные значения ── */

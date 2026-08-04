@@ -1653,3 +1653,56 @@ test("тулчейн Go: версия записывается в отчёт, о
   t.diagnostic(`${version}; gofmt ${gofmtBin ? "найден" : "не найден — проверка форматирования пропущена"}`)
   assert.match(version, /^go version go\d+\.\d+/u)
 })
+
+/* ───────────────── литерал варианта: сверка бэкендов между собой ─────────── */
+
+test("литерал { variant, fields } печатается вариантом, а не записью", async () => {
+  /* Дефект, найденный сверкой бэкендов: emitLiteral на любом объекте делал
+     запись, поэтому «ожидается вариант …» в примере превращалось в Go в
+     запись, и та же программа считалась по-разному в Go и в интерпретаторе.
+     Интерпретатор читает эту форму вариантом — builtins.mjs, encodedVariant. */
+  const program = {
+    flang: 1,
+    module: "Литерал варианта",
+    types: [
+      {
+        kind: "sum",
+        name: "Ответ",
+        variants: [
+          { name: "Найдено", fields: [{ name: "значение", type: { kind: "number" } }] },
+          { name: "Пусто", fields: [] },
+        ],
+      },
+    ],
+    functions: [
+      {
+        name: "Образец",
+        total: true,
+        params: [],
+        returns: { kind: "named", name: "Ответ" },
+        body: { kind: "literal", value: { variant: "Найдено", fields: { значение: 7 } } },
+        examples: [],
+      },
+    ],
+  }
+  const { emitGo } = await import("../src/emit/go.mjs")
+  const printed = emitGo(program).files.map((file) => file.content).join("\n")
+  assert.match(
+    printed,
+    /rt\.Variant\("Найдено"/u,
+    "литерал варианта обязан печататься конструктором варианта, а не записи",
+  )
+  assert.ok(
+    !/rt\.Record\(.*Найдено/su.test(printed),
+    "вариант не должен превращаться в запись: интерпретатор читает эту форму вариантом",
+  )
+})
+
+test("запись с полями «variant» и «fields» неотличима от варианта — и это документировано", async () => {
+  /* Цена одного представления вместо двух: запись программы ровно с такими
+     двумя полями будет прочитана вариантом и здесь, и интерпретатором.
+     Тест закрепляет, что оба ведут себя одинаково, а не что это удобно. */
+  const { reifyValue } = await import("../src/builtins.mjs")
+  const значение = reifyValue({ variant: "Найдено", fields: { значение: 7 } })
+  assert.equal(значение.constructor.name, "FlangVariant", "интерпретатор читает эту форму вариантом")
+})

@@ -106,16 +106,23 @@ jobs:
         id: guard
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Имя выхода — латиницей, и это не вкусовщина. Выражения GitHub
+        # разбирают идентификатор по [a-zA-Z_][a-zA-Z0-9_-]*, поэтому
+        # `outputs.настроен` не проходит разбор файла, и workflow падает на
+        # старте — без единого шага, за ноль секунд, на каждый push. Значения
+        # внутри строк кириллице не мешают, а имена — мешают.
         run: |
           if [ -z "${NPM_TOKEN:-}" ]; then
-            echo "настроен=нет" >> "$GITHUB_OUTPUT"
+            echo "configured=no" >> "$GITHUB_OUTPUT"
             echo "::warning::NPM_TOKEN не задан — публикация пропущена. Заведите токен с правом публикации в scope @digitable."
           else
-            echo "настроен=да" >> "$GITHUB_OUTPUT"
+            echo "configured=yes" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Опубликовать
-        if: steps.guard.outputs.настроен == 'да' && inputs.dry-run != true
+        # inputs['dry-run'], а не inputs.dry-run: дефис в выражении читается
+        # как вычитание, и `inputs.dry - run` тоже роняет разбор файла.
+        if: steps.guard.outputs.configured == 'yes' && inputs['dry-run'] != true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         # --access public обязателен: пакеты в scope по умолчанию приватные, и
@@ -123,7 +130,7 @@ jobs:
         run: npm publish --access public --provenance
 
       - name: Показать, что было бы опубликовано
-        if: inputs.dry-run == true
+        if: inputs['dry-run'] == true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --dry-run

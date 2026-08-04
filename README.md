@@ -1,90 +1,471 @@
 **English** · [Русский](README.ru.md)
 
-# flang
+# FTS and flang — a specification that runs, and prints itself into your language
 
-`flang` is a small, checkable programming language. It has sum types, lists,
-strings as data, recursion and pattern matching — and it splits every program
-into two classes, one of which the compiler proves terminating. Programs in the
-proved class can be printed to C, Go and JavaScript and run natively.
+A written specification drifts from the code the day after it is merged. This repository takes
+the other route: the specification **is** the program. You write the rules once, run them, test
+them against their own examples, and then print them into C, Rust, Go, Python or JavaScript —
+where the printed code is required to produce the same values and the same error codes as the
+interpreter, checked input by input.
 
-The language grew out of **FTS (Formal Type Surface)**, the executable-specification
-language that also lives in this repository: an indentation-based, brace-free
-surface in which a `.fts` model declares domain objects, deterministic utilities
-with rules, checked properties, executable examples, morphisms and
-machine-checkable evidence. FTS deliberately has no sum types, no collections, no
-recursion and no strings-as-data. flang adds exactly those, and it keeps every
-existing `.fts` model a valid flang program.
+Two layers:
+
+- **FTS** (`.fts`) — an indentation-based executable specification language for domain objects,
+  deterministic utilities, examples, checked properties, morphisms and machine-checkable evidence.
+- **[`flang`](flang/SPEC.md)** — the full language FTS grew into: sum types, lists, strings as
+  data, recursion, pattern matching, module linking, and five code generators. Every existing
+  `.fts` model is a valid flang program, verified on 19 593 inputs with zero divergences.
+
+The authoring surface is Russian; an English surface exists and lexes to the same identifiers
+(`функция` / `function`, `свёртка` / `fold`). The prose below is English, the code is not
+translated — names in a specification belong to the domain that wrote them.
+
+---
+
+## One function, five targets
+
+This is `flang/examples/leetcode/035-search-insert-position.flang` — LeetCode 35, the position
+where a value belongs in a sorted list. One fold, proven terminating:
 
 ```flang
-модуль «Списки»
-
-тотальная функция «Длина»
-  принимает элементы: список числа
+тотальная функция «Место вставки»
+  принимает элементы: список числа, цель: число
   возвращает число
-  пример «Три элемента»
-    дано элементы равно [7, 8, 9]
-    ожидается 3
-  разбор элементов
+  пример «Пример 1 из условия»
+    дано элементы равно [1, 3, 5, 6]
+    дано цель равно 5
+    ожидается 2
+  свёртка элементы начиная с 0 как акк и эл → если эл меньше цель то акк плюс 1 иначе акк
+```
+
+Everything below was produced by running
+
+```bash
+node flang/bin/flang.mjs emit flang/examples/leetcode/035-search-insert-position.flang \
+  --target c --out ./out-c        # …and again with go, rust, python, js
+```
+
+and is pasted verbatim, not written by hand. The C, Go, Rust and Python backends emit the module,
+a runtime, a JSON-in/JSON-out driver and a build file; the JS backend emits one self-contained
+file. Shown here is only the function itself.
+
+<details open>
+<summary><b>C</b> — <code>out-c/mesto_vstavki.c</code></summary>
+
+```c
+/*
+ * Функция flang «Место вставки».
+ *
+ * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+ * @param elementy — «элементы»: список: число
+ * @param cel — «цель»: число
+ * @return значение: число
+ */
+fl_status mesto_vstavki_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value cel, fl_value *result, fl_error *error) {
+  fl_value fl_t1 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, elementy, "свёртка", &fl_t1, error));
+  fl_value akk = fl_number(0.0); /* «акк» */
+  for (size_t fl_t2 = 0; fl_t2 < fl_t1.as.list.count; fl_t2 += 1) {
+    const fl_value el = fl_t1.as.list.items[fl_t2]; /* «эл» */
+    fl_value fl_t3 = fl_nothing();
+    FL_TRY(fl_lt(ctx, el, cel, &fl_t3, error));
+    bool fl_t4 = false;
+    FL_TRY(fl_cond(ctx, fl_t3, &fl_t4, error));
+    fl_value fl_t5 = fl_nothing();
+    if (fl_t4) {
+      fl_value fl_t6 = fl_nothing();
+      FL_TRY(fl_add(ctx, akk, fl_number(1.0), &fl_t6, error));
+      fl_t5 = fl_t6;
+    } else {
+      fl_t5 = akk;
+    }
+    akk = fl_t5;
+  }
+  *result = akk;
+  return FL_OK;
+}
+```
+
+</details>
+
+<details>
+<summary><b>Go</b> — <code>out-go/flang/mesto_vstavki.go</code></summary>
+
+```go
+// MestoVstavki — функция flang «Место вставки».
+//
+// Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+//
+// Параметр elementy — «элементы»: список: число.
+// Параметр cel — «цель»: число.
+// Результат — значение: число.
+func MestoVstavki(ctx *rt.Ctx, elementy rt.Value, cel rt.Value) (rt.Value, error) {
+	t1, e2 := rt.RequireList(ctx, elementy, "свёртка")
+	if e2 != nil {
+		return rt.Value{}, e2
+	}
+	// «акк»
+	akk := rt.Number(0.0)
+	for t3 := range t1 {
+		// «эл»
+		el := t1[t3]
+		t4, e5 := rt.Lt(ctx, el, cel)
+		if e5 != nil {
+			return rt.Value{}, e5
+		}
+		t6, e7 := rt.Cond(ctx, t4)
+		if e7 != nil {
+			return rt.Value{}, e7
+		}
+		var t8 rt.Value
+		if t6 {
+			t9, e10 := rt.Add(ctx, akk, rt.Number(1.0))
+			if e10 != nil {
+				return rt.Value{}, e10
+			}
+			t8 = t9
+		} else {
+			t8 = akk
+		}
+		akk = t8
+	}
+	return akk, nil
+}
+```
+
+</details>
+
+<details>
+<summary><b>Rust</b> — <code>out-rust/src/mesto_vstavki.rs</code></summary>
+
+```rust
+/// Функция flang «Место вставки».
+///
+/// Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+///
+/// Параметр `elementy` — «элементы»: список: число.
+/// Параметр `cel` — «цель»: число.
+/// Результат — значение: число.
+pub fn funkciya_mesto_vstavki(ctx: &rt::Ctx, elementy: rt::Value, cel: rt::Value) -> Result<rt::Value, rt::Error> {
+    let t1 = rt::require_list(ctx, elementy.clone(), "свёртка")?;
+    // «акк»
+    let mut akk = rt::number(0.0);
+    // «эл»
+    for el in t1.iter().cloned() {
+        let t2 = rt::lt(ctx, el.clone(), cel.clone())?;
+        let t3 = rt::cond(ctx, t2)?;
+        let t4 = if t3 {
+            let t5 = rt::add(ctx, akk.clone(), rt::number(1.0))?;
+            t5
+        } else {
+            akk.clone()
+        };
+        akk = t4;
+    }
+    return Ok(akk);
+}
+```
+
+</details>
+
+<details>
+<summary><b>Python</b> — <code>out-python/mesto_vstavki.py</code></summary>
+
+```python
+def fn_mesto_vstavki(ctx, elementy, cel):
+    """Функция flang «Место вставки».
+
+    Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+
+    Параметр elementy — «элементы»: список: число.
+    Параметр cel — «цель»: число.
+    Результат — значение: число.
+    """
+    _t1 = rt.require_list(ctx, elementy, "свёртка")
+    # «акк»
+    akk = rt.number(0.0)
+    for el in _t1:
+        if rt.cond(ctx, rt.lt(ctx, el, cel)):
+            _t2 = rt.add(ctx, akk, rt.number(1.0))
+        else:
+            _t2 = akk
+        akk = _t2
+    return akk
+```
+
+</details>
+
+<details>
+<summary><b>JavaScript</b> — <code>out-js/mesto_vstavki.js</code>, a single dependency-free file</summary>
+
+```js
+/**
+ * Функция flang «Место вставки».
+ *
+ * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+ *
+ * @param {Array<number>} elementy — «элементы»
+ * @param {number} cel — «цель»
+ * @returns {number}
+ */
+export function mestoVstavki(elementy, cel) {
+  const $t1 = $requireList(elementy, "свёртка")
+  let akk = 0
+  for (const el of $t1) {
+    let $t2
+    if ($cond($lt(el, cel))) {
+      $t2 = $add(akk, 1)
+    } else {
+      $t2 = akk
+    }
+    akk = $t2
+  }
+  return akk
+}
+```
+
+The JS backend inlines only the runtime helpers this module actually uses, so the output is one
+self-contained file that runs in Node and in the browser.
+
+</details>
+
+The generated code is not a sketch you finish by hand. It carries the domain names in comments,
+it reports the interpreter's diagnostic codes and messages verbatim, and the header says what it
+is: *«Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.»*
+
+### Why the backends are believable
+
+Each backend is checked differentially, not by golden files. The corpus is everything in this
+repository actually written in flang — `flang/stdlib/*.flang` and
+`flang/examples/leetcode/*.flang`: **31 programs, 154 functions, 259 examples**. For every
+function a grid of inputs is built from its own examples plus deliberately wrong arguments
+(`null`, a string where a list is wanted, a variant that does not exist), the program is printed
+into an empty directory, compiled with the real toolchain from nothing but what the backend
+emitted, and run as a real process. **2235 grid points** must agree with the interpreter — same
+value, same error code, same error text.
+
+The C backend additionally compiles under `gcc` *and* `clang` with
+`-std=c99 -Wall -Wextra -Werror -pedantic -O2` and is checked under `valgrind` for zero
+unreachable bytes.
+
+---
+
+## Why this exists
+
+The usual arrangement has a specification in one artifact and the implementation in another, and
+a promise that somebody keeps them in step. That promise fails silently: nothing breaks when the
+document and the code disagree.
+
+Here the rule is written once, in a form a domain expert can read
+(an excerpt from [`examples/utilities/discount.fts`](examples/utilities/discount.fts)):
+
+```fts
+категория «Продажи»
+
+  объект Покупка
+    сумма является деньгами
+    «постоянный клиент» является признаком
+
+  утилита «Рассчитать скидку»
+    принимает Покупка
+    возвращает деньги
+    начинает с 0
+
+    правило «Большая покупка»
+      если сумма не меньше 10000
+      то добавить 10 процентов от поля сумма
+
+    правило «Постоянный клиент»
+      если «постоянный клиент» равен да
+      то добавить 5 процентов от поля сумма
+
+    свойство «Скидка ограничена»
+      результат не больше 20 процентов от поля сумма
+
+    пример «Большая покупка»
+      дано сумма равна 20000
+      дано «постоянный клиент» равен нет
+      ожидается результат равен 2000
+```
+
+No braces, no arrows, no colons: the surface is indentation-based and syllogistic, and readable
+names may use guillemets. A legacy braced dialect is still accepted for compatibility.
+
+From that single source you get the implementation, the tests, and the checks — in five
+languages at once. The `свойство` above is not a comment: it becomes a postcondition in the
+emitted code. Printing `examples/utilities/discount.fts` to Python produces, verbatim:
+
+```python
+    # постусловие «Скидка ограничена»
+    if not rt.post(ctx, rt.lte(ctx, _t3, rt.percent(ctx, rt.number(20.0), rt.field_get(ctx, vhod, "сумма"))), "Скидка ограничена", "Рассчитать скидку"):
+        raise rt.fail("FTS_UTILITY_PROPERTY", "нарушено свойство «Скидка ограничена» утилиты «Рассчитать скидку»")
+```
+
+`FTS_UTILITY_PROPERTY` is the FTS core's own diagnostic code, and the message is the core's own
+wording. A Python service, a Go service and a C binary generated from this model refuse the same
+inputs with the same words. That is what "one source of truth" has to mean to be worth anything.
+
+---
+
+## A real problem, not a hello world
+
+LeetCode 121 — best profit from one buy and one sell, one pass, state in a two-field record.
+This is `flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang` in full:
+
+```flang
+объект «Сделка»
+  минимум является числом
+  прибыль является числом
+
+тотальная функция «Лучшая прибыль»
+  принимает цены: список числа
+  возвращает число
+  пример «Пример 1 из условия»
+    дано цены равно [7, 1, 5, 3, 6, 4]
+    ожидается 5
+  пример «Пример 2 из условия»
+    дано цены равно [7, 6, 4, 3, 1]
+    ожидается 0
+  пример «Пустой список»
+    дано цены равно пустой список
+    ожидается 0
+  разбор цены
     случай пусто
       то 0
     случай голова и хвост
-      то 1 плюс «Длина» от хвоста
+      пусть начальное равно запись «Сделка» с минимум равным голова и прибыль равным 0
+      пусть итог равно свёртка хвост начиная с начальное как акк и цена
+        пусть минимум равно если цена меньше акк.минимум то цена иначе акк.минимум
+        пусть сегодня равно цена минус акк.минимум
+        пусть прибыль равно если сегодня больше акк.прибыль то сегодня иначе акк.прибыль
+        запись «Сделка» с минимум равным минимум и прибыль равным прибыль
+      итог.прибыль
 ```
 
-## How FTS and flang relate
+It reads as Russian prose — "разбор цены / случай пусто / то 0" — and the `тотальная` keyword on
+the first line is a claim the compiler had to prove before accepting the file. The examples are
+part of the function, not a separate test file:
 
-This is the question the repository layout does not answer on its own, so here
-it is spelled out.
+```bash
+node flang/bin/flang.mjs test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --pretty
+```
 
-- **FTS is the surface.** Its reference implementation is TypeScript in
-  [`src/`](src) (3 155 lines), which compiles `.fts` text into one canonical JSON
-  `FtsDocument`. Everything else in the FTS world — validation, utility
-  execution, code generation, proof certificates, the MCP server, the tools in
-  [`tools/`](tools) — reads that document, not the parser.
-- **flang is the language.** Its implementation is JavaScript in
-  [`flang/src/`](flang/src): lexer, parser, type checker, totality analysis,
-  interpreter, a module linker, and three emitters (JavaScript, C99, Go). The
-  spec is [`flang/SPEC.md`](flang/SPEC.md).
-- **FTS compiles into flang.** [`flang/src/compat.mjs`](flang/src/compat.mjs)
-  translates an `FtsDocument` into a flang AST: object → record, utility → total
-  function, rules → a chain of `if`, properties → postconditions, examples →
-  examples. `npm test` re-checks that translation differentially against the
-  TypeScript core on every model in the repository — on this checkout: 19 files,
-  22 utilities, **19 593 inputs, zero divergences**, including diagnostic codes.
-- **flang is used to rewrite FTS.** [`flang/core/`](flang/core) is the FTS core —
-  lexer, parser, evaluator, JSON printer, 3 444 lines — written in flang itself,
-  against the contract in [`flang/core/SPEC.md`](flang/core/SPEC.md). The point
-  is stated there: print it to C and get a native `fts` that needs no Node. This
-  became possible only because flang made strings data; in FTS a string is a
-  field type, not something you can compute over, so a parser cannot be written
-  in it.
+There are 26 LeetCode solutions in [`flang/examples/leetcode/`](flang/examples/leetcode), each
+with a comment explaining not only the algorithm but where the language pushed back — why
+binary search needs a "fuel" list to be accepted as terminating, why Single Number is O(n²)
+because there are no bitwise operations, why Roman numerals cannot be total until strings can be
+walked character by character. The standard library
+([`flang/stdlib/`](flang/stdlib): `lists`, `numbers`, `optional`, `result`, `strings`) is written
+the same way — 77 functions, of which 63 are proven total.
 
-**What is not settled, stated plainly.** The TypeScript core is still the
-production implementation of FTS and still the reference the flang rewrite is
-measured against — not the other way round. `flang/core/` reproduces it but does
-not yet replace it: the legacy braced dialect is not parsed (53 of 56 corpus
-models round-trip byte-for-byte; the other three are braced), `executeUtility`
-and `testUtilities` remain core-only, and every remaining gap is written down as
-a debt in `flang/core/SPEC.md`. The npm package is still named `@digitable/fts`.
-So the repository is named for the language it is becoming, while a large part of
-its contents is still the FTS toolchain.
+---
 
-## Two classes of function
+## What `тотальная` buys you
 
-Turing completeness and guaranteed termination are incompatible, so flang does
-not choose: it splits programs, and the compiler checks the split.
+Turing completeness and guaranteed termination are incompatible, so flang does not choose: it
+splits programs into two classes and has the compiler decide which one you are in.
 
-| | `тотальная` (total) | ordinary |
-|---|---|---|
-| recursion | structurally decreasing only | any |
-| termination | proved by the compiler | not guaranteed |
-| example tests | always terminate | may hit the step limit |
-| emitted to C / Go | yes | JavaScript only |
-| usable for fact-checking | yes | no |
+|                              | `тотальная`                     | plain                      |
+|------------------------------|----------------------------------|----------------------------|
+| recursion                    | structurally decreasing only     | any                        |
+| termination                  | proven by the compiler           | not guaranteed             |
+| its examples                 | are guaranteed to finish         | may need a step limit      |
+| accepted by the fact-checker | yes                              | no                         |
 
-Failing to prove decrease is the error `FLANG_NOT_TOTAL`, not a warning. Every
-`.fts` model lands wholly inside the total class, which is why compatibility is
-checkable rather than declared.
+`тотальная` requires every recursive call to receive a structurally smaller argument — the tail
+of a list, a field of a variant. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and
+the file does not compile. Every existing `.fts` model lands in the total class by construction.
+
+This is not pedantry, and the reason is concrete. The embedded fact-checking mode
+([`flang/src/factcheck.mjs`](flang/src/factcheck.mjs)) answers "does this claim hold about this
+data" — and a system that must answer yes or no is not allowed to hang. So it refuses to run a
+function that was not proven to terminate, before evaluating anything:
+
+```bash
+echo '{"н": 30}' | node flang/bin/flang.mjs facts \
+  flang/examples/leetcode/509-fibonacci-number.flang \
+  --facts - --claims '["«Фибоначчи» от н равно 832040"]' --pretty
+```
+
+```json
+{
+  "claim": "«Фибоначчи» от н равно 832040",
+  "holds": false,
+  "why": "функция «Фибоначчи» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить"
+}
+```
+
+The same claim against a total function is verified, and the verdict carries its own derivation
+(`steps`: parse, totality check, which facts were read, what was computed, how it was compared):
+
+```bash
+echo '{"цены": [7, 1, 5, 3, 6, 4]}' | node flang/bin/flang.mjs facts \
+  flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang \
+  --facts - --claims '["«Лучшая прибыль» от цены равно 5"]' --pretty
+```
+
+```json
+{ "ok": true, "results": [ { "holds": true,
+  "why": "«Лучшая прибыль» от факта «цены» = 5; требование «равно 5» выполнено", "status": "verified" } ] }
+```
+
+The mode has no file, network or clock access, and a hard step budget: the answer depends only
+on `(program, facts, claims, limits)`.
+
+---
+
+## The core is written in the language itself
+
+[`flang/core/`](flang/core) is the FTS core — lexer, parser, evaluator, JSON printer — rewritten
+in flang: **300 functions, every one of them `тотальная` and proven so**. `fts check` is not
+allowed to hang either.
+
+The correctness criterion is not "its own tests pass". It is a differential one, stated in
+[`flang/core/SPEC.md`](flang/core/SPEC.md): run the whole chain — *text → lexer in flang →
+parser in flang → JSON printer in flang* — and require the output string to equal
+`JSON.stringify(compile(text))` of the TypeScript core **byte for byte**. It is run over **every
+`.fts` model in this repository** — 47 of them on a clean clone, examples, demos, tool fixtures
+and the models the tools carry — with **zero divergences**, on both surfaces (indentation and
+braced). If an external model directory is present on the machine, its models are added to the
+same run, so your local count may be higher than 47; the promise is the corpus, not the number.
+Diagnostics are compared separately, on 34 deliberately broken indentation models and 13 braced
+ones — code *and* message text.
+
+Byte equality is a strong statement, not a formality, because the JSON string exposes everything
+a looser comparison would hide: key insertion order, `5` versus `"5"` versus `да`, how a float is
+rendered, whether a name kept its guillemets, which diagnostic fired first and in which words.
+A reimplementation that is "morally the same" fails this test on its first document. (An early
+draft of the contract stored scalars as strings; the JSON printer refuted it immediately —
+`5`, `"5"` and `да` print differently and are indistinguishable as text.)
+
+### Which means the core compiles to a native binary
+
+```bash
+node flang/bin/flang.mjs emit flang/core/parser.flang --target c --out ./core-c
+make -C ./core-c
+```
+
+Measured on this machine (gcc 13.3, x86-64, `-std=c99 -Wall -Wextra -Werror -pedantic -O2`):
+
+- compiles with **zero warnings** — the flags are part of the backend's contract, not advice;
+- **663 KB** binary (625 KB stripped), linked against **`libc` and `libm` and nothing else** —
+  no Node, no runtime to install;
+- the largest model in the repository (`tools/gacascade/models/assignment.fts`, 19.5 KB of
+  source) is parsed in **~30 ms**, process startup included;
+- its output was compared against `JSON.stringify(compile(...))` of the TypeScript core and is
+  identical byte for byte.
+
+The binary speaks the backend's JSON-in/JSON-out protocol, one request per line, so any language
+with pipes can call it without FFI:
+
+```bash
+node -e 'const fs=require("fs");
+  process.stdout.write(JSON.stringify({fn:"Скомпилировать",
+    args:[{s:fs.readFileSync("examples/utilities/discount.fts","utf8")}]})+"\n")' \
+| ./core-c/flang_cli
+```
+
+---
 
 ## Quick start
 
@@ -92,222 +473,160 @@ Node.js 20 or newer.
 
 ```bash
 npm install
-npm test
 npm run build
 ```
 
-flang:
+flang, on a file that is not tied to Node in any way:
 
 ```bash
-node flang/bin/flang.mjs check flang/stdlib/lists.flang
-node flang/bin/flang.mjs test  flang/examples/leetcode/509-fibonacci-number.flang
-node flang/bin/flang.mjs ast   flang/stdlib/strings.flang --pretty
-node flang/bin/flang.mjs emit  flang/examples/leetcode/509-fibonacci-number.flang \
-  --target c --out generated
+# parse, type-check, prove totality
+node flang/bin/flang.mjs check flang/examples/leetcode/035-search-insert-position.flang --pretty
+
+# run the examples declared inside the functions
+node flang/bin/flang.mjs test flang/examples/leetcode/035-search-insert-position.flang --pretty
+
+# call a function
+node flang/bin/flang.mjs run flang/examples/leetcode/035-search-insert-position.flang \
+  --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'
+# {"function":"Место вставки","args":{...},"result":1}
+
+# print it — targets: c | go | rust | python | js
+node flang/bin/flang.mjs emit flang/examples/leetcode/035-search-insert-position.flang \
+  --target python --out ./out-python
 ```
 
-The same CLI accepts an FTS model, because an `.fts` file is a flang program
-(this path uses the compat bridge, so run `npm run build` first):
+Any `.fts` model is a valid flang program, so the same commands take one directly:
 
 ```bash
-node flang/bin/flang.mjs check examples/utilities/discount.fts
+node flang/bin/flang.mjs check examples/utilities/discount.fts --pretty
+node flang/bin/flang.mjs emit examples/utilities/discount.fts --target go --out ./out-go
 ```
 
-FTS:
+FTS's own CLI, for models specifically:
 
 ```bash
 node dist/src/cli.js pipeline examples/real-world/order-shipment.fts --pretty
-node dist/src/cli.js certify  examples/real-world/order-shipment.fts \
-  --context examples/real-world/order-shipment.context.json --pretty
 node dist/src/cli.js test examples/utilities/discount.fts --pretty
-node dist/src/cli.js run  examples/utilities/discount.fts \
+node dist/src/cli.js run examples/utilities/discount.fts \
   --utility "Рассчитать скидку" --input examples/utilities/discount.input.json --pretty
+node dist/src/cli.js certify examples/real-world/order-shipment.fts \
+  --context examples/real-world/order-shipment.context.json --pretty
 node dist/src/cli.js generate examples/utilities/discount.fts --out generated
 ```
 
-Every CLI in this repository keeps one contract: JSON on stdout, diagnostics as
-JSON on stderr, non-zero exit on failure. That makes them composable in shells,
-CI, editors and agent runtimes.
-
-## Emitting to C, Go and JavaScript
-
-`flang emit --target c|go|js` prints a whole program to the target language.
-Without `--out` the files go to stdout together with their paths; with `--out`
-they are written to a directory.
-
-The C backend ships a value runtime, an arena, UTF-8 handling
-([`flang/src/emit/c/`](flang/src/emit/c)) and a `Makefile`; the emitted sources
-build with a plain C99 compiler and the resulting binary is expected to answer
-exactly what the interpreter answers — same value, same error code. That equality
-is the test, not a hope: `flang/test/emit-c.test.mjs` and `emit-go.test.mjs` run
-both engines over the standard library and the LeetCode corpus and compare.
-
-Two decisions worth knowing before reading generated code: numbers are IEEE-754
-doubles and equality is `Object.is`, matching the FTS core bit for bit; and string
-indexing is 1-based over code points, because the surface is a domain language in
-which "the first character" means the first one.
-
-## The FTS toolchain
-
-The core library compiles one file. Nine tools in [`tools/`](tools) build on its
-public API and add the layers above a single document. They are plain ES modules
-over `dist/src`, so `npm run build` comes first.
-
-- [`ftsc`](tools/ftsc/README.md) — the project compiler: trees of `.fts` modules,
-  imports between categories, checked functors between domains, and code
-  generation for **eight** languages (C, Rust, C#, Java, Elixir, Go, Python,
-  TypeScript). Spec: [`tools/ftsc/SPEC.md`](tools/ftsc/SPEC.md).
-- [`ftsvm`](tools/ftsvm/README.md) — the executor: runs utilities from the `ftsc`
-  IR by interpretation or by JIT-compiling them to JavaScript, and carries
-  supervision policies expressed as FTS models.
-- [`ftspec`](tools/ftspec/README.md) — requirement-integrity checking before
-  implementation: conflicts between specifications, constitution invariants and
-  recorded decisions.
-- [`ftsls`](tools/ftsls/README.md) — the language server: one LSP server gives
-  `.fts` support in VS Code, Neovim, JetBrains, Zed, Emacs and Helix.
-- [`ftsmap`](tools/ftsmap/README.md) — rule-coverage map: colours a utility's
-  input space by which rules apply there, and shows what no rule covers.
-- [`ftsynth`](tools/ftsynth/README.md) — synthesis of FTS models from historical
-  decisions; the population consists of FTS rules, so the result is a readable
-  executable specification rather than a black box.
-- [`gasearch`](tools/gasearch/README.md) — evolutionary search whose fitness
-  function and constraints are an FTS utility, validated before the search starts.
-- [`gacascade`](tools/gacascade/README.md) — the GA0 → GA1 → GA2 cascade for
-  iteration planning.
-- [`locate`](tools/locate/README.md) — one implementation of "which line and
-  column is this diagnostic on", shared by `ftsls` and the GitHub Action.
+Tests:
 
 ```bash
-node tools/ftsc/bin/ftsc.mjs check tools/ftsc/stdlib
-node tools/ftsc/bin/ftsc.mjs build tools/ftsc/stdlib --target rust --out generated
-node tools/ftsvm/bin/ftsvm.mjs bench --quick
-node tools/ftspec/bin/ftspec.mjs check tools/ftspec/examples/clean
+npm run test:flang    # the language: parser, types, totality, backends, the core in flang
+npm test              # everything: core, tools, flang
 ```
 
-`npm test` runs core, tools and flang; `npm run test:ftsc`, `test:ftsvm`,
-`test:ftspec` and `test:flang` run one set. `npm run test:fast` skips the
-backends, `npm run test:backends` runs only them. Backend tests compile generated
-code with the real toolchain and skip by name when it is absent; extra lookup
-directories come from `FTS_TOOLCHAIN_PATH`.
+Backend tests compile the generated code with the real toolchain and skip explicitly when it is
+absent — a skipped test is not a passing test, so where the toolchain is supposed to exist
+(CI, a release machine) set `FTS_REQUIRE_TOOLCHAINS`: `1` demands every backend, `rust,go`
+demands the listed ones, and a missing compiler then fails by name instead of vanishing.
+`FTS_TOOLCHAIN_PATH` adds lookup directories.
 
-A skipped test is not a passing test. Where a toolchain is supposed to be
-installed — CI, a release machine — set `FTS_REQUIRE_TOOLCHAINS`: `1` requires
-every backend, `rust,go` requires the listed ones, and a missing compiler then
-fails the test by name instead of being silently skipped.
+Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
+the same contract everywhere, which is what makes it usable from CI, editors and agents.
 
-## Library API
+---
 
-```ts
-import { compile, executeUtility, generateTypeScript, testUtilities, validate } from "@digitable/fts"
+## Modules and the standard library
 
-const document = compile(source)
-const checked = validate(document)
-const tests = testUtilities(document)
-const generated = generateTypeScript(document)
+[`flang/examples/import-check.flang`](flang/examples/import-check.flang):
+
+```flang
+модуль «Проба импорта»
+  использует «Списки» из "../stdlib/lists.flang"
+
+тотальная функция «Сумма пробы»
+  принимает элементы: список числа
+  возвращает число
+  «Сумма» от элементы
 ```
 
-The canonical interchange format is documented by
-[`schema/document.schema.json`](schema/document.schema.json). The core package
-has no runtime dependencies and does no I/O from the library API. Browser
-applications import `@digitable/fts/browser`, which provides parsing, validation
-and visualization without Node.js cryptography; strict certificate decisions stay
-on the server.
+A selective form takes only what you name — `использует «Списки» из "…" только «Сумма», «Длина»` —
+which is also how a name conflict between two modules is resolved.
 
-## AI agents
+---
 
-Run `node dist/src/mcp.js` as a stdio MCP server. It exposes ten read-only tools:
-`fts_compile`, `fts_check`, `fts_test`, `fts_generate`, `fts_execute`,
-`fts_prove`, `fts_visualize`, `fts_certify`, `fts_verify`, `fts_pipeline`. Results
-carry both `structuredContent` and a JSON text block. See
-[Agent integration](docs/agents.md).
+## The rest of the repository
 
-## Documentation
+- **Library** — `compile`, `validate`, `executeUtility`, `testUtilities`, `generateTypeScript`,
+  `certify`, `verify`. No runtime dependencies, no I/O from the library API. The interchange
+  format is [`schema/document.schema.json`](schema/document.schema.json); the `./browser`
+  entrypoint gives parsing, validation and visualization without Node.js cryptography, so strict
+  certificate decisions stay on the server. The package is not on npm yet — use the repository
+  directly (`npm install && npm run build`).
+- **[`tools/ftsc`](tools/ftsc/README.md)** — the project compiler: trees of `.fts` modules,
+  checked functors between categories, code generation for eight languages (C, Rust, C#, Java,
+  Elixir, Go, Python, TypeScript).
+- **[`tools/ftsvm`](tools/ftsvm/README.md)** — executes utilities from the `ftsc` IR by
+  interpretation or by JIT to JavaScript.
+- **[`tools/ftspec`](tools/ftspec/README.md)** — finds conflicts between specifications,
+  constitution invariants and recorded decisions, before implementation starts.
+- **MCP server** — `fts-mcp` (or `fts mcp`) over stdio, ten read-only tools: `fts_compile`,
+  `fts_check`, `fts_test`, `fts_generate`, `fts_execute`, `fts_prove`, `fts_visualize`,
+  `fts_certify`, `fts_verify`, `fts_pipeline`. See [Agent integration](docs/agents.md).
+- **Benchmarks** — `npm run benchmark`; the harness and a checked-in Apple M1 Max baseline are in
+  [`benchmarks/`](benchmarks/README.md).
 
-Naming rule: a `.md` file with no language suffix is English and `X.ru.md` is its
-Russian counterpart, with one exception — a `README.md` or `SPEC.md` sitting next
-to code keeps that exact name in whatever language it is written, because GitHub
-renders it as the folder's front page.
+Further reading: [Language reference](docs/language.md) · [Architecture](docs/architecture.md) ·
+[How it works](docs/how-it-works.md) · [Executable utilities](docs/executable-utilities.ru.md) ·
+[Прикладные примеры](docs/examples.ru.md) ·
+[Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md) ·
+[flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md).
 
-Not every document exists in both languages; the language is marked below.
+---
 
-- [`flang/SPEC.md`](flang/SPEC.md) — the flang specification (ru).
-- [`flang/core/SPEC.md`](flang/core/SPEC.md) — the contract for the FTS core
-  written in flang, including its debt list (ru).
-- [Language reference](docs/language.ru.md) — the FTS surface (ru).
-- [How it works](docs/how-it-works.ru.md) — the FTS working cycle (ru).
-- [Architecture](docs/architecture.md) — FTS modules and design constraints (en).
-- [Adoption](docs/adoption.md) — how an application integrates FTS (en).
-- [Agent integration](docs/agents.md) — MCP and CLI conventions (en).
-- [Executable utilities](docs/executable-utilities.ru.md) (ru),
-  [FTS на прикладных примерах](docs/examples.ru.md) (ru),
-  [Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md) (ru).
+## Known limits
 
-Runnable integrations: a [Node.js CLI utility](examples/integrations/node/discount-cli.mjs),
-a [Node.js HTTP service](examples/integrations/node/discount-http-server.mjs), a
-standalone [React calculator](examples/integrations/react/FtsDiscountCalculator.tsx),
-a React example over the shared [`FtsForm`](examples/integrations/react/DigitableFtsDiscountForm.tsx),
-and a [Python CLI client](examples/integrations/python/calculate_discount.py).
+Stated plainly, because a project with undrawn borders is not one you can rely on. The full lists
+are in [`flang/SPEC.md`](flang/SPEC.md) §10 and the "Долги" section of
+[`flang/core/SPEC.md`](flang/core/SPEC.md).
 
-Both FTS surfaces are indentation-based and brace-free; compare
-[`examples/utilities/discount.fts`](examples/utilities/discount.fts) with
-[`examples/utilities/discount.en.fts`](examples/utilities/discount.en.fts). All
-authored FTS source uses `.fts` and all authored flang source uses `.flang`; JSON
-is the sole interchange form.
+**The language.**
 
-## Performance
+- Functions are not first-class values. This is deliberate: without exponentials the language
+  still prints into targets that have no closures, and the termination analysis stays simple.
+  Higher-order work is covered by `отобразить` / `отфильтровать` / `свёртка`, which take a *body*
+  rather than a function.
+- No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
+  programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
+- The totality analysis knows structural decrease only. A number getting smaller is not
+  decrease, so binary search has to carry a "fuel" list to be accepted, and walking a string
+  character by character cannot be total at all.
+- A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
+  diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
+  the explicit `случай вариант «Имя»` form the stdlib uses.
 
-```bash
-npm run benchmark
-```
+**The core written in flang.** It matches the TypeScript core byte for byte on every model in
+the corpus, and the places where it would not are known and written down:
 
-The reproducible harness and a checked-in Apple M1 Max baseline are in
-[`benchmarks/`](benchmarks/README.md). In that baseline a synthetic FTS model with
-1000 fields and 1000 rules compiles in 4.36 ms on average and validates in
-1.02 ms; executing 1000 matching rules takes 0.0157 ms. These are
-microbenchmarks, not a promise about a host application's bundler or `tsc` build.
+- lexer: no NFC normalization, no block comments, no exponent notation (`1e3` reads as a name),
+  no escape unwrapping inside string literals, apostrophe does not open a string, "inside
+  quotes" is decided by parity rather than by an automaton, and an unclosed plain quote is not
+  diagnosed;
+- JSON printer: a lone surrogate is not escaped (there is no "character code" form in the
+  language), and number rendering is delegated to the built-in `к строке`, which every backend
+  must implement as ECMAScript `Number::toString` or byte equality breaks on the first fraction;
+- parser: diagnostics carry no line number and no column (the token stream does not carry
+  positions yet); for deeply unclosed brackets the diagnostic code matches but the message text
+  does not always; a document written as raw JSON is not parsed;
+- evaluator: document-level checks (`FTS_UNKNOWN_UTILITY`, `FTS_NO_UTILITIES`,
+  `FTS_UTILITY_INPUT_TYPE`) belong to a layer that sees the whole document and are not
+  implemented here.
+
+None of these are hit by any model in the corpus — which is exactly why they are listed rather
+than discovered by you.
 
 ## Status
 
-`0.x`. The canonical JSON shape and the diagnostic codes are treated as
-compatibility surfaces; syntax grows through documented proposals.
-
-`npm test` runs three suites. On this checkout, with Node 24, `cc`, `javac` and
-`python3` present:
-
-| Suite | Tests | Passed | Failed | Skipped |
-|---|---:|---:|---:|---:|
-| `test:core` — the FTS core in TypeScript | 59 | 59 | 0 | 0 |
-| `test:tools` — the nine tools in `tools/` | 402 | 392 | 0 | 10 |
-| `test:flang` — the language | 1073 | 1050 | 0 | 23 |
-| **total** | **1534** | **1501** | **0** | **33** |
-
-Every skip is a missing native toolchain, reported by name. Here Rust, C#,
-Elixir and Go were absent, so those `ftsc` backend tests and all 23 flang Go
-tests skipped; C, Java, Python, TypeScript and JavaScript were present, so those
-backends really compiled the generated code and ran it.
-
-What works today: the flang front end (lexer, parser, type checker, totality
-analysis, module linking) and interpreter; the JavaScript and C emitters, both
-checked here against the interpreter on the standard library and the LeetCode
-corpus; the Go emitter, whose comparison tests need a Go toolchain and skipped on
-this machine; `flang check | run | test | facts | ast | emit`; the FTS→flang
-bridge, checked differentially on 19 593 inputs; all four layers of the FTS core
-in `flang/core/`, linked into one program and verified against the TypeScript
-core.
-
-What does not, yet: `flang/core/` does not replace `src/` — the braced FTS dialect
-is not parsed, and the debts in `flang/core/SPEC.md` (no NFC normalization, no
-column in some diagnostics, `executeUtility`/`testUtilities` absent) are open. The
-package is not published: `package.json` still carries `"private": true` and
-`@digitable/fts` is not in the npm registry, so every command above runs through
-`node` from a checkout.
+`0.x` is the language-design phase. The canonical JSON shape and the diagnostic codes are treated
+as compatibility surfaces; syntax may grow through documented proposals.
 
 ## License
 
-BSD 2-Clause. [LICENSE](LICENSE) holds the verbatim license text and nothing
-else. [LICENSE-RU.md](LICENSE-RU.md) explains the intent in Russian and has no
-legal force.
-
-Earlier versions were released under Apache-2.0, inherited from the original
-repository rather than chosen. Anyone who received the code under Apache-2.0
-keeps those rights; the change applies to later versions.
+BSD 2-Clause. The project previously carried Apache-2.0, inherited from the repository it grew
+out of rather than chosen; BSD 2-Clause is the deliberate choice. See [LICENSE](LICENSE).

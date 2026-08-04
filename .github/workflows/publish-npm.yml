@@ -91,8 +91,12 @@ jobs:
         # модули, потребитель узнает об этом первым. Дешевле узнать здесь.
         run: |
           set -eu
-          npm pack --pack-destination /tmp/pkg >/dev/null
+          # Каталог назначения создаём ДО упаковки: npm --pack-destination его
+          # не заводит, и шаг падал с ENOENT на файле, который сам же собирался
+          # положить. mkdir стоял строкой ниже — этого хватило, чтобы workflow
+          # ни разу не дошёл до публикации.
           mkdir -p /tmp/pkg/распакованный
+          npm pack --pack-destination /tmp/pkg >/dev/null
           tar -xzf /tmp/pkg/*.tgz -C /tmp/pkg/распакованный
           node /tmp/pkg/распакованный/package/flang/bin/flang.mjs check \
                /tmp/pkg/распакованный/package/flang/stdlib/lists.flang > /tmp/pkg/итог.json

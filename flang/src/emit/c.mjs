@@ -865,9 +865,15 @@ function renderFunction(fn, shared) {
   const unusedParams = ctx.params
     .filter((param) => !new RegExp(`\\b${param}\\b`, "u").test(text))
     .map((param) => `  (void)${param};`)
+  /* Функция, у которой ВСЕ хвостовые позиции — самовызов, разворачивается в
+     вечный цикл и ни разу не пишет в *result: «Вечность» из курса — ровно
+     такой случай. Под -Wextra с -Werror это несобираемый C. Тот же недосмотр
+     уже чинили в шаге батута (взаимная рекурсия); здесь он оставался для
+     прямой. */
+  const unusedResult = /\bresult\b/u.test(text) ? [] : ["  (void)result;"]
 
   if (!guard) {
-    return [documentation, `${declareFunction(fn, shared)} {`, ...unusedParams, ...prologue, text, "}"].join("\n")
+    return [documentation, `${declareFunction(fn, shared)} {`, ...unusedParams, ...unusedResult, ...prologue, text, "}"].join("\n")
   }
 
   /* Счётчик глубины обязан уменьшаться и на ошибке, поэтому тело уезжает в
@@ -879,6 +885,7 @@ function renderFunction(fn, shared) {
     `/* Тело «${fn.name}»; глубину считает обёртка ниже. */`,
     `static fl_status ${inner}(fl_ctx *ctx${signature.length > 0 ? `, ${signature}` : ""}, fl_value *result, fl_error *error) {`,
     ...unusedParams,
+    ...unusedResult,
     ...prologue,
     text,
     "}",

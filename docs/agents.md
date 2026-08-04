@@ -11,13 +11,13 @@ Build the repository, then configure an MCP client to launch:
   "mcpServers": {
     "fts": {
       "command": "node",
-      "args": ["/absolute/path/to/fts/dist/src/mcp.js"]
+      "args": ["/absolute/path/to/flang/dist/src/mcp.js"]
     }
   }
 }
 ```
 
-After npm publication, the command can be `fts-mcp`.
+The package is not published to npm yet, so the server is launched by path. After publication the command can be `fts-mcp`.
 
 The server implements MCP revision `2025-06-18` over stdio and exposes only deterministic, read-only tools. It never reads paths supplied by a model; `.fts` source and context are passed explicitly as tool arguments.
 

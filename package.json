@@ -1,11 +1,20 @@
 {
   "name": "@digitable/fts",
   "version": "0.4.0",
-  "description": "Formal Type Surface: executable specifications that generate utilities, tests, and machine-checkable evidence.",
+  "description": "flang: a checkable language with total and ordinary functions, emitted to C, Go and JavaScript, over the FTS executable-specification surface.",
   "type": "module",
   "license": "BSD-2-Clause",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitable-lol/flang.git"
+  },
+  "homepage": "https://github.com/digitable-lol/flang#readme",
+  "bugs": {
+    "url": "https://github.com/digitable-lol/flang/issues"
+  },
   "bin": {
+    "flang": "./flang/bin/flang.mjs",
     "fts": "./dist/src/cli.js",
     "fts-mcp": "./dist/src/mcp.js",
     "ftsc": "./tools/ftsc/bin/ftsc.mjs",
@@ -30,10 +39,12 @@
   "files": [
     "dist/src",
     "docs",
+    "flang",
     "schema",
     "examples",
     "tools",
     "README.md",
+    "README.ru.md",
     "CONTRIBUTING.md",
     "LICENSE"
   ],
@@ -66,6 +77,9 @@
     "typescript": "^5.9.0"
   },
   "keywords": [
+    "flang",
+    "programming-language",
+    "totality-checking",
     "domain-specific-language",
     "russian-language",
     "formal-methods",

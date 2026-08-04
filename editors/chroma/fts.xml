@@ -11,7 +11,7 @@
   <rules>
     <!--
       FTS has three surfaces that appear in real .fts files (see
-      docs/language.md and tools/ftsc/src/parse-module.mjs in the fts-upstream
+      docs/language.ru.md and tools/ftsc/src/parse-module.mjs in the fts-upstream
       repo): the natural RU/EN indentation surface, the legacy brace/JSON-like
       surface, and the ftsc module/functor-mapping headers layered on top.
 

@@ -4,7 +4,7 @@ Everything needed to get `.fts` syntax highlighting in editors, on GitHub, and
 on the Digitable courses site (Hugo/Chroma). Four independent grammars, kept
 in sync by hand against the same three sources of truth:
 
-- `docs/language.md` (repo root) - the full language reference.
+- `docs/language.ru.md` (repo root) - the full language reference.
 - `src/natural-parser.ts` (repo root) - the actual keyword list for both the
   Russian and English natural surfaces. If you add/change a keyword there,
   update all four grammars below and re-run the checks in this README.
@@ -17,7 +17,7 @@ tolerate all three:
 1. **Natural surface** (Russian or English, indentation-significant) -
    `категория «Имя»` / `category Name` followed by an indented body of
    `объект`/`морфизм`/`теорема`/`утилита` blocks. This is the recommended,
-   modern surface (see `docs/language.md`).
+   modern surface (see `docs/language.ru.md`).
 2. **Legacy brace surface** - `category Name { structure X { a: string } }`,
    kept for backward compatibility (`examples/task-status.fts`,
    `examples/socrates.fts`).

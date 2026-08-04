@@ -7,7 +7,7 @@
   "keywords": ["parser", "lexer", "fts"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitable/fts.git",
+    "url": "https://github.com/digitable-lol/flang.git",
     "directory": "editors/tree-sitter-fts"
   },
   "tree-sitter": [

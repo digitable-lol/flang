@@ -54,13 +54,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           set -eu
-          тег="${GITHUB_REF_NAME#v}"
-          пакет="$(node -p 'require("./package.json").version')"
-          if [ "$тег" != "$пакет" ]; then
-            echo "::error::тег $GITHUB_REF_NAME обещает версию $тег, а package.json говорит $пакет"
+          # Имена переменных латиницей. В именах оболочка допускает только
+          # [A-Za-z_][A-Za-z0-9_]*, поэтому «тег=…» она разбирает не как
+          # присваивание, а как команду — и шаг падал с кодом 127 «command not
+          # found», не назвав ни одной причины. Внутри значений и сообщений
+          # кириллица по-прежнему уместна, в именах — нет.
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p 'require("./package.json").version')"
+          if [ "$tag_version" != "$package_version" ]; then
+            echo "::error::тег $GITHUB_REF_NAME обещает версию $tag_version, а package.json говорит $package_version"
             exit 1
           fi
-          echo "версия $пакет подтверждена тегом"
+          echo "версия $package_version подтверждена тегом"
 
       - name: Собрать
         run: npm run build

@@ -4,7 +4,6 @@
   "description": "flang: a checkable language with total and ordinary functions, emitted to C, Go and JavaScript, over the FTS executable-specification surface.",
   "type": "module",
   "license": "BSD-2-Clause",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/digitable-lol/flang.git"
@@ -19,7 +18,8 @@
     "fts-mcp": "./dist/src/mcp.js",
     "ftsc": "./tools/ftsc/bin/ftsc.mjs",
     "ftsvm": "./tools/ftsvm/bin/ftsvm.mjs",
-    "ftspec": "./tools/ftspec/bin/ftspec.mjs"
+    "ftspec": "./tools/ftspec/bin/ftspec.mjs",
+    "flang": "./flang/bin/flang.mjs"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -43,6 +43,14 @@
     "schema",
     "examples",
     "tools",
+    "flang/bin",
+    "flang/src",
+    "flang/stdlib",
+    "flang/core",
+    "flang/examples",
+    "flang/SPEC.md",
+    "!**/test",
+    "!**/*.test.mjs",
     "README.md",
     "README.ru.md",
     "CONTRIBUTING.md",

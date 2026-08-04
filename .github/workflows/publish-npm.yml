@@ -1,0 +1,129 @@
+# Публикация пакета @digitable/fts в npm.
+#
+# Запускается только на теге вида v0.4.0 — не на каждый push в main. Причина в
+# необратимости: опубликованную версию нельзя переиздать под тем же номером, а
+# снять её можно лишь в первые 72 часа и ценой репутации пакета. Тег — это
+# явное решение человека «вот эту версию наружу», и оно должно приниматься
+# отдельно от решения «влить ветку».
+#
+# Проверки идут ДО публикации и в полном объёме: npm test (ядро, инструменты и
+# язык), сборка TypeScript и сверка версии в теге с версией в package.json.
+# Расхождение тега и package.json — самая частая причина того, что в реестр
+# уезжает не то, что ожидали, поэтому это отдельный шаг с внятным сообщением.
+#
+# Требуется секрет NPM_TOKEN — токен npm с правом публикации в scope
+# @digitable. Без него шаг публикации не выполняется, а workflow сообщает об
+# этом предупреждением, а не падает: отсутствие секрета на форке не должно
+# выглядеть поломкой.
+#
+# Провенанс (--provenance) включён: npm свяжет опубликованную версию с этим
+# workflow и коммитом, и любой сможет проверить, откуда взялся тарбол. Для
+# этого нужны права id-token: write, они выданы ниже.
+
+name: Публикация в npm
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Только проверить, не публикуя"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Проверить, что тег совпадает с версией пакета
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -eu
+          тег="${GITHUB_REF_NAME#v}"
+          пакет="$(node -p 'require("./package.json").version')"
+          if [ "$тег" != "$пакет" ]; then
+            echo "::error::тег $GITHUB_REF_NAME обещает версию $тег, а package.json говорит $пакет"
+            exit 1
+          fi
+          echo "версия $пакет подтверждена тегом"
+
+      - name: Собрать
+        run: npm run build
+
+      - name: Прогнать весь набор тестов
+        # Ядро, инструменты и язык. prepublishOnly сделал бы то же самое, но
+        # отдельным шагом видно, что именно упало, не разбирая вывод publish.
+        run: npm test
+
+      - name: Проверить состав пакета
+        # Тесты и служебное в тарбол попадать не должны: однажды туда уже
+        # уезжали 50 тестовых файлов. Проверка дешёвая, а находка дорогая.
+        run: |
+          set -eu
+          npm pack --dry-run --json > /tmp/pack.json
+          node -e '
+            const [pkg] = require("/tmp/pack.json")
+            const лишнее = pkg.files.map((f) => f.path).filter((p) => /(^|\/)test\/|\.test\.mjs$/.test(p))
+            if (лишнее.length > 0) {
+              console.error("в пакет попали тестовые файлы:\n  " + лишнее.slice(0, 10).join("\n  "))
+              process.exit(1)
+            }
+            console.log(`файлов ${pkg.entryCount}, размер ${(pkg.size / 1024).toFixed(0)} КБ`)
+          '
+
+      - name: Проверить, что flang запускается из пакета
+        # Пакет объявляет исполняемый файл flang; если он не находит свои
+        # модули, потребитель узнает об этом первым. Дешевле узнать здесь.
+        run: |
+          set -eu
+          npm pack --pack-destination /tmp/pkg >/dev/null
+          mkdir -p /tmp/pkg/распакованный
+          tar -xzf /tmp/pkg/*.tgz -C /tmp/pkg/распакованный
+          node /tmp/pkg/распакованный/package/flang/bin/flang.mjs check \
+               /tmp/pkg/распакованный/package/flang/stdlib/lists.flang > /tmp/pkg/итог.json
+          node -e '
+            const итог = require("/tmp/pkg/итог.json")
+            if (итог.valid !== true) { console.error("flang из пакета не работает"); process.exit(1) }
+            console.log(`flang из пакета проверил модуль «${итог.module}»: ${итог.functions.length} функций`)
+          '
+
+      - name: Проверить, настроен ли секрет
+        id: guard
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "настроен=нет" >> "$GITHUB_OUTPUT"
+            echo "::warning::NPM_TOKEN не задан — публикация пропущена. Заведите токен с правом публикации в scope @digitable."
+          else
+            echo "настроен=да" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Опубликовать
+        if: steps.guard.outputs.настроен == 'да' && inputs.dry-run != true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # --access public обязателен: пакеты в scope по умолчанию приватные, и
+        # без флага первая публикация упрётся в платный план.
+        run: npm publish --access public --provenance
+
+      - name: Показать, что было бы опубликовано
+        if: inputs.dry-run == true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --dry-run

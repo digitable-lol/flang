@@ -827,6 +827,13 @@ function renderFunction(fn, shared) {
         ...(ctx.params.length === 0 ? ["  (void)args;"] : unpack),
         ...unused,
         ...(/\bbounce\b/u.test(text) ? [] : ["  (void)bounce;"]),
+        /* `result` гасится по той же причине, что `bounce`: у компоненты, где
+           ВСЕ хвостовые позиции — отскоки, шаг ни разу не пишет в *result, и
+           -Wextra (то есть -Wunused-parameter) при -Werror делает такой C
+           несобираемым. На программах репозитория этот случай не возникает,
+           поэтому дефект и дожил: его нашла печать, написанная на самом flang,
+           когда напечатала собственный исходник. */
+        ...(/\bresult\b/u.test(text) ? [] : ["  (void)result;"]),
         ...prologue,
         text,
         "}",

@@ -7,17 +7,18 @@
  * (`core/parser.flang`) → печать JSON (`core/json.flang`) — и результат обязан
  * совпасть с `JSON.stringify(compile(текст))` настоящего ядра на TypeScript
  * **побайтово**. Критерий готовности из `flang/core/SPEC.md`, раздел 5: ядро
- * верно не тогда, когда проходят его собственные тесты.
+ * верно не тогда, когда проходят его собственные тесты. Сверяются обе
+ * поверхности ядра — и отступная, и скобочная (`category Имя { … }`).
  *
- * Второй по важности блок — диагностики. Для трёх десятков намеренно сломанных
- * моделей сверяются и код, и текст сообщения: перевод обязан давать ровно ту же
- * ошибку, что ядро, иначе совместимость сломается на первом же отказе
- * (flang/SPEC.md, раздел 5). Два случая расходятся сознательно и закреплены
- * отдельными тестами, чтобы закрытие долга не прошло молча.
+ * Второй по важности блок — диагностики. Для четырёх десятков намеренно
+ * сломанных моделей сверяются и код, и текст сообщения: перевод обязан давать
+ * ровно ту же ошибку, что ядро, иначе совместимость сломается на первом же
+ * отказе (flang/SPEC.md, раздел 5).
  *
  * Остальные проверки закрывают то, чего в моделях репозитория не встречается:
  * скаляры всех четырёх видов, операнды всех четырёх видов, повтор ключа во
- * входе примера, английская поверхность, имена в обычных кавычках.
+ * входе примера, английская поверхность, имена в обычных кавычках, значения
+ * всех видов в утверждении скобочной поверхности.
  */
 import assert from "node:assert/strict"
 import { existsSync, globSync, readFileSync } from "node:fs"
@@ -149,9 +150,19 @@ test("слова: номер считается с единицы, число с
   assert.equal(вызвать("Слово с конца", { слова, номер: 1 }), "сумма")
 })
 
-test("имена в обычных кавычках склеиваются обратно в одно слово", () => {
-  const слова = вызвать("Склеить кавычки", { слова: вызвать("Токены", { исходник: 'given "loyal customer" equals false\n' }).filter((т) => т.variant === "Имя" || т.variant === "Число") })
-  assert.deepEqual(слова.filter((т) => т.variant === "Имя").map((т) => т.fields.текст), ["given", "loyal customer", "equals", "false"])
+/* Имя в обычных кавычках приезжает из лексера одним токеном «Строка» — склейка
+   в парсере (долг 4 прежней редакции) больше не нужна. Парсер обязан считать
+   такой токен именем: `isNameToken` ядра принимает и слово, и строку. */
+test("имя в обычных кавычках — один токен «Строка», и это имя", () => {
+  const поток = вызвать("Токены", { исходник: 'given "loyal customer" equals false\n' })
+  assert.deepEqual(
+    поток.filter((т) => т.variant === "Имя" || т.variant === "Строка").map((т) => [т.variant, т.fields.текст]),
+    [["Имя", "given"], ["Строка", "loyal customer"], ["Имя", "equals"], ["Имя", "false"]],
+  )
+  for (const токен of поток.filter((т) => т.variant === "Строка")) {
+    assert.equal(вызвать("Это имя", { токен }), true)
+    assert.equal(вызвать("Слово токена", { токен }), "", "строка ключевым словом не бывает")
+  }
 })
 
 test("разметка лексера цела: парсер не трогает слой ниже", () => {
@@ -320,28 +331,125 @@ test("правильная модель диагностик не даёт", () 
   assert.deepEqual(коды("категория «Продажи»\n  объект Покупка\n    сумма является числом\n"), [])
 })
 
+/* ───────────────────────────── скобочный диалект ────────────────────────── */
+
 /**
- * Известный долг (flang/core/SPEC.md, «Долги» парсера, пункт 1): скобочный
- * диалект этому слою недоступен — раздел 1 контракта фигурных скобок не
- * токенизирует. Парсер обязан сказать об этом кодом, а не выдумать документ.
- * Тест закрепляет текущее поведение, чтобы закрытие долга не прошло молча.
+ * Вторая поверхность ядра (`src/parser.ts`) разбирается тем же слоем: лексер
+ * выделяет знаки отдельными токенами, парсер сворачивает поток в дерево скобок
+ * и спускается по нему. Проверка та же, что у натуральной поверхности, —
+ * побайтовое совпадение с `JSON.stringify(compile(…))`.
  */
-test("известный долг: скобочный диалект отвергается, а не разбирается", () => {
-  const src = 'category A {\n  structure B {\n    x: string\n  }\n}\n'
-  assert.deepEqual(коды(src), ["FTS_UNSUPPORTED_SURFACE"])
-  /* Ядро на TS такую модель разбирает — расхождение сознательное. */
-  assert.equal(ядро.compile(src).category, "A")
+test("скобочный диалект разбирается, а не отвергается", () => {
+  const src = "category A {\n  structure B {\n    x: string\n  }\n}\n"
+  assert.deepEqual(коды(src), [])
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+  assert.equal(JSON.parse(скомпилировать(src)).category, "A")
+})
+
+test("скобочный диалект: поля, необязательное поле и ts_compat структуры", () => {
+  const src = "category A {\n  structure B {\n    x: string\n    y?: number\n    z: TaskId\n  }\n}\n"
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+  assert.equal(
+    JSON.parse(скомпилировать(src)).structures[0].ts_compat,
+    "interface B { x: string; y: number | undefined; z: TaskId }",
+  )
+})
+
+test("скобочный диалект: функтор со стрелкой и законом", () => {
+  const src = "category A {\n  functor f: Human -> Mortal\n}\n"
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+  assert.deepEqual(JSON.parse(скомпилировать(src)).functors, [
+    { name: "f", domain: "Human", codomain: "Mortal", law: "functor.arrow" },
+  ])
+})
+
+test("скобочный диалект: утверждения всех трёх видов", () => {
+  const свидетельство =
+    'category A {\n  proposition witness B.f {\n    selector { id: "M-1" }\n    value "in_progress"\n    path ["rows", { id: "M-1" }, "f"]\n    detail "так вышло"\n  }\n}\n'
+  const применение = 'category A {\n  proposition apply g {\n    witness B.f {\n      value true\n    }\n  }\n}\n'
+  const композиция =
+    'category A {\n  proposition compose {\n    functors: ["g", "h"]\n    witness B.f {\n      value true\n    }\n  }\n}\n'
+  for (const src of [свидетельство, применение, композиция]) {
+    assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)), src)
+    assert.deepEqual(коды(src), [], src)
+  }
+  assert.equal(JSON.parse(скомпилировать(свидетельство)).proposition.kind, "witness")
+  assert.equal(JSON.parse(скомпилировать(применение)).proposition.kind, "apply")
+  assert.equal(JSON.parse(скомпилировать(композиция)).proposition.kind, "compose")
+})
+
+test("скобочный диалект: значения — строка, число, признак, ничто, список, запись", () => {
+  const src =
+    'category A {\n  proposition witness B.f {\n    value { s: "текст", n: 12.5, t: true, f: false, e: null, l: [1, "два", { k: 3 }] }\n  }\n}\n'
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+})
+
+test("скобочный диалект: строка в кавычках не путается с ключевым словом", () => {
+  const src = 'category A {\n  proposition witness B.f {\n    value "true"\n  }\n}\n'
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+  assert.equal(JSON.parse(скомпилировать(src)).proposition.value, "true")
+})
+
+test("скобочный диалект: русские ключевые слова и вложенное утверждение", () => {
+  const src =
+    'категория A {\n  структура B {\n    x: строка\n  }\n  утверждение применить g {\n    утверждение свидетельство B.x {\n      значение да\n      описание "так"\n    }\n  }\n}\n'
+  assert.equal(скомпилировать(src), JSON.stringify(ядро.compile(src)))
+  assert.deepEqual(коды(src), [])
 })
 
 /**
- * Известный долг (пункт 2): документ не с той первой строки ядро отдаёт
- * скобочному парсеру, и код там другой.
+ * Известный долг (flang/core/SPEC.md, «Долги» парсера, пункт 7): `ts_compat`
+ * структуры с именем-неидентификатором ядро печатает как `FTS_` и коды
+ * символов в шестнадцатеричном виде, а формы «код символа» в языке нет.
+ * Тест закрепляет расхождение, чтобы закрытие долга не прошло молча.
  */
-test("известный долг: не-натуральная первая строка даёт свой код", () => {
-  const src = "объект Б\n  п является числом\n"
-  assert.deepEqual(коды(src), ["FTS_NATURAL_CATEGORY"])
-  assert.throws(() => ядро.compile(src), (error) => error.diagnostics[0].code === "FTS_EXPECTED_KEYWORD")
+test("известный долг: псевдоним типа без кодов символов", () => {
+  const src = 'category A {\n  structure "Loyal customer" {\n    x: string\n  }\n}\n'
+  const наш = JSON.parse(скомпилировать(src)).structures[0].ts_compat
+  const ядерный = ядро.compile(src).structures[0].ts_compat
+  assert.equal(ядерный, 'type FTS_4c_6f_79_61_6c_20_63_75_73_74_6f_6d_65_72 = { "x": string }')
+  assert.equal(наш, 'type FTS_Loyal customer = { "x": string }')
+  /* Всё остальное в этой модели совпадает: расходится ровно псевдоним. */
+  assert.equal(JSON.parse(скомпилировать(src)).structures[0].name, "Loyal customer")
 })
+
+/**
+ * Диагностики скобочного диалекта — те же коды и тексты, что бросает ядро.
+ * Сверяется первая ошибка: именно на ней ядро останавливается.
+ */
+const СЛОМАННЫЕ_СКОБКИ = {
+  "документ не с категории": "объект Б\n  п является числом\n",
+  "категория без имени": "category { }\n",
+  "лишний токен перед телом категории": "category A x {\n}\n",
+  "чужое объявление в категории": "category A {\n  чепуха B { }\n}\n",
+  "поле без типа": "category A {\n  structure B {\n    x:\n  }\n}\n",
+  "функтор без стрелки": "category A {\n  functor f: Human\n}\n",
+  "неизвестный вид утверждения": "category A {\n  proposition чепуха {\n  }\n}\n",
+  "применение без функтора": "category A {\n  proposition apply {\n    witness B.f {\n      value true\n    }\n  }\n}\n",
+  "применение без вложенного утверждения": "category A {\n  proposition apply g {\n  }\n}\n",
+  "композиция без функторов": "category A {\n  proposition compose {\n    witness B.f {\n      value true\n    }\n  }\n}\n",
+  "композиция без вложенного утверждения": 'category A {\n  proposition compose {\n    functors: ["g"]\n  }\n}\n',
+  "две теоремы в категории":
+    "category A {\n  proposition witness B.f {\n    value true\n  }\n  proposition witness B.g {\n    value true\n  }\n}\n",
+  "незакрытая скобка": "category A {\n  structure B {\n    x: string\n\n}\n",
+}
+
+for (const [имя, src] of Object.entries(СЛОМАННЫЕ_СКОБКИ)) {
+  test(`скобочный диалект: диагностика «${имя}» совпадает с ядром`, () => {
+    let ожидается
+    try {
+      ядро.compile(src)
+      assert.fail("ядро не отказало — модель не сломана")
+    } catch (error) {
+      assert.ok(Array.isArray(error.diagnostics), `у ошибки ядра нет диагностик: ${error.message}`)
+      ожидается = error.diagnostics[0]
+    }
+    const получено = диагностики(src)
+    assert.ok(получено.length > 0, "парсер на flang ошибки не увидел")
+    assert.equal(получено[0].код, ожидается.code)
+    assert.equal(получено[0].сообщение, ожидается.message)
+  })
+}
 
 /* ─────────────────── сквозная сверка на моделях репозитория ─────────────── */
 
@@ -381,8 +489,8 @@ function модели() {
       /* Не документ ядра (другой диалект, намеренно сломанная модель). */
       continue
     }
-    /* Скобочный диалект — граница слоя, а не расхождение: он идёт в свой
-       список и проверяется тем, что парсер честно отказывается. */
+    /* Поверхность запоминается только затем, чтобы отдельно посчитать модели
+       каждого диалекта: сверка для обоих одна и та же — побайтовая. */
     const первая = тело.replace(/^﻿/u, "").split(/\r?\n/u).map((строка) => строка.trim()).find((строка) => строка.length > 0 && !строка.startsWith("//"))
     const натуральная = /^(?:категория|category)(?:\s|$)/u.test(первая ?? "") && !(первая ?? "").includes("{")
     найденные.push({ имя, тело, документ, натуральная })
@@ -394,12 +502,13 @@ const корпус = модели()
 const натуральные = корпус.filter(({ натуральная }) => натуральная)
 const скобочные = корпус.filter(({ натуральная }) => !натуральная)
 
-test("корпус моделей найден", () => {
+test("корпус моделей найден, и обе поверхности в нём есть", () => {
   assert.ok(корпус.length >= 40, `моделей: ${корпус.length}`)
   assert.ok(натуральные.length >= 40, `натуральных моделей: ${натуральные.length}`)
+  assert.ok(скобочные.length >= 3, `скобочных моделей: ${скобочные.length}`)
 })
 
-for (const { имя, тело, документ } of натуральные) {
+for (const { имя, тело, документ } of корпус) {
   test(`${имя}: текст → лексер → парсер → JSON байт в байт совпадает с ядром`, () => {
     const ожидается = JSON.stringify(документ)
     const получено = скомпилировать(тело)
@@ -417,11 +526,6 @@ for (const { имя, тело, документ } of натуральные) {
   })
 }
 
-for (const { имя, тело } of скобочные) {
-  test(`${имя}: скобочный диалект отвергается кодом, а не молча`, () => {
-    assert.deepEqual(коды(тело), ["FTS_UNSUPPORTED_SURFACE"])
-  })
-}
 
 test("сверка идёт по документам, а не по пустышкам", () => {
   const непустые = натуральные.filter(({ документ }) => документ.structures.length > 0 || (документ.utilities ?? []).length > 0)

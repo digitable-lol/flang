@@ -2,11 +2,11 @@
  * Печать документа FTS в JSON на flang (`flang/core/json.flang`).
  *
  * Главная проверка здесь одна и она дифференциальная: для каждой модели `.fts`
- * репозитория (и внешнего каталога моделей, если он есть) документ, полученный
- * настоящим ядром на TypeScript (`compile` из `dist/`), печатается функцией
- * «Печать документа» — и обязан совпасть с `JSON.stringify` того же документа
- * **побайтово**. Не «эквивалентный JSON», а тот же байт: порядок ключей,
- * экранирование, запись чисел (flang/core/SPEC.md, раздел 5).
+ * репозитория (и внешних каталогов, если они перечислены в `FTS_MODEL_PATH`)
+ * документ, полученный настоящим ядром на TypeScript (`compile` из `dist/`),
+ * печатается функцией «Печать документа» — и обязан совпасть с `JSON.stringify`
+ * того же документа **побайтово**. Не «эквивалентный JSON», а тот же байт:
+ * порядок ключей, экранирование, запись чисел (flang/core/SPEC.md, раздел 5).
  *
  * Документ ядра — это обычный JSON, а значения flang — записи и варианты сумм,
  * поэтому между ними стоит перевод (`документ` и его помощники ниже). Перевод
@@ -20,18 +20,16 @@
  * списки, вложенность. Оракул везде один и тот же — `JSON.stringify`.
  */
 import assert from "node:assert/strict"
-import { existsSync, readFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import test from "node:test"
-import { fileURLToPath } from "node:url"
 
 import { valuesEqual } from "../src/builtins.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
-import { globSync } from "./glob.mjs"
+import { строкиОхвата, текстМодели, файлыКорпуса } from "./corpus.mjs"
 
-const root = fileURLToPath(new URL("../..", import.meta.url))
 const source = readFileSync(new URL("../core/json.flang", import.meta.url), "utf8")
 const program = parse(source, "json.flang")
 const types = checkTypes(program)
@@ -619,36 +617,27 @@ test("документ: кириллица и кавычки в именах н�
 /* ─────────────────── дифференциальная сверка на моделях ─────────────────── */
 
 /**
- * Корпус: все `.fts` репозитория плюс внешний каталог моделей, если он есть на
- * машине. Внешний каталог не обязателен — тест не имеет права зависеть от
- * чужого рабочего дерева, поэтому проверяется существование.
+ * Корпус: все `.fts` репозитория плюс модели из каталогов, явно перечисленных
+ * в `FTS_MODEL_PATH`. Состав корпуса и его источники печатаются ниже отдельным
+ * тестом: охват сверки обязан быть виден в выводе, а не подразумеваться
+ * (почему именно так — `flang/test/corpus.mjs`).
  */
 function модели() {
-  const пути = globSync("**/*.fts", { cwd: root, exclude: (path) => path.includes("node_modules") })
-    .sort()
-    .map((path) => ({ имя: path, путь: root + path }))
-  const внешний = "/home/m/projects/courses/static/fts/models/"
-  if (existsSync(внешний)) {
-    for (const path of globSync("*.fts", { cwd: внешний }).sort()) {
-      пути.push({ имя: `courses/${path}`, путь: внешний + path })
-    }
-  }
-
   const найденные = []
-  for (const { имя, путь } of пути) {
-    const текст = readFileSync(путь, "utf8")
+  for (const запись of файлы) {
+    const текст = текстМодели(запись)
     let тело = текст
     try {
       /* Файлы `tools/**` начинаются с заголовка `модуль …`, которого ядро не
          знает; файлы-функторы документами FTS не являются вовсе. */
-      const разобранный = parseModuleFile(текст, имя)
+      const разобранный = parseModuleFile(текст, запись.имя)
       if (разобранный.kind !== "module") continue
       тело = разобранный.body
     } catch {
       continue
     }
     try {
-      найденные.push({ имя, документ: core.compile(тело) })
+      найденные.push({ имя: запись.имя, источник: запись.источник, документ: core.compile(тело) })
     } catch {
       /* Не документ ядра (другой диалект, намеренно сломанная модель). */
     }
@@ -656,9 +645,14 @@ function модели() {
   return найденные
 }
 
+const файлы = файлыКорпуса()
 const корпус = модели()
+const охват = строкиОхвата(корпус, файлы)
 
-test("корпус моделей найден", () => {
+/* Число моделей стоит прямо в имени теста, источники — в диагностике: по
+   выводу должно быть видно, каким был охват именно этого прогона. */
+test(`корпус моделей найден — ${охват[0]}`, (t) => {
+  for (const строка of охват) t.diagnostic(строка)
   assert.ok(корпус.length >= 40, `моделей: ${корпус.length}`)
 })
 

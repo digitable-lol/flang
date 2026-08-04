@@ -2,9 +2,9 @@
  * Парсер ядра FTS на flang — `flang/core/parser.flang`.
  *
  * Главная проверка здесь одна и она сквозная: для каждой модели `.fts`
- * репозитория (и внешнего каталога моделей, если он есть) строится вся цепочка
- * ядра на flang — текст → лексер (`core/lexer.flang`) → парсер
- * (`core/parser.flang`) → печать JSON (`core/json.flang`) — и результат обязан
+ * репозитория (и внешних каталогов, если они перечислены в `FTS_MODEL_PATH`)
+ * строится вся цепочка ядра на flang — текст → лексер (`core/lexer.flang`) →
+ * парсер (`core/parser.flang`) → печать JSON (`core/json.flang`) — и результат обязан
  * совпасть с `JSON.stringify(compile(текст))` настоящего ядра на TypeScript
  * **побайтово**. Критерий готовности из `flang/core/SPEC.md`, раздел 5: ядро
  * верно не тогда, когда проходят его собственные тесты. Сверяются обе
@@ -21,7 +21,7 @@
  * всех видов в утверждении скобочной поверхности.
  */
 import assert from "node:assert/strict"
-import { existsSync, readFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
@@ -31,9 +31,8 @@ import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
-import { globSync } from "./glob.mjs"
+import { строкиОхвата, текстМодели, файлыКорпуса } from "./corpus.mjs"
 
-const root = fileURLToPath(new URL("../..", import.meta.url))
 const файл = fileURLToPath(new URL("../core/parser.flang", import.meta.url))
 const исходник = readFileSync(файл, "utf8")
 
@@ -455,24 +454,16 @@ for (const [имя, src] of Object.entries(СЛОМАННЫЕ_СКОБКИ)) {
 /* ─────────────────── сквозная сверка на моделях репозитория ─────────────── */
 
 /**
- * Корпус тот же, что у печати JSON: все `.fts` репозитория плюс внешний
- * каталог моделей, если он есть на машине. Внешний каталог не обязателен —
- * тест не имеет права зависеть от чужого рабочего дерева.
+ * Корпус тот же, что у печати JSON: все `.fts` репозитория плюс модели из
+ * каталогов, явно перечисленных в `FTS_MODEL_PATH`. Охват печатается ниже
+ * отдельным тестом — по выводу должно быть видно, сколько моделей проверено и
+ * откуда они взяты (почему это обязательно — `flang/test/corpus.mjs`).
  */
 function модели() {
-  const пути = globSync("**/*.fts", { cwd: root, exclude: (path) => path.includes("node_modules") })
-    .sort()
-    .map((path) => ({ имя: path, путь: root + path }))
-  const внешний = "/home/m/projects/courses/static/fts/models/"
-  if (existsSync(внешний)) {
-    for (const path of globSync("*.fts", { cwd: внешний }).sort()) {
-      пути.push({ имя: `courses/${path}`, путь: внешний + path })
-    }
-  }
-
   const найденные = []
-  for (const { имя, путь } of пути) {
-    const текст = readFileSync(путь, "utf8")
+  for (const запись of файлы) {
+    const { имя, источник } = запись
+    const текст = текстМодели(запись)
     let тело = текст
     try {
       /* Файлы `tools/**` начинаются с заголовка `модуль …`, которого ядро не
@@ -494,16 +485,22 @@ function модели() {
        каждого диалекта: сверка для обоих одна и та же — побайтовая. */
     const первая = тело.replace(/^﻿/u, "").split(/\r?\n/u).map((строка) => строка.trim()).find((строка) => строка.length > 0 && !строка.startsWith("//"))
     const натуральная = /^(?:категория|category)(?:\s|$)/u.test(первая ?? "") && !(первая ?? "").includes("{")
-    найденные.push({ имя, тело, документ, натуральная })
+    найденные.push({ имя, источник, тело, документ, натуральная })
   }
   return найденные
 }
 
+const файлы = файлыКорпуса()
 const корпус = модели()
 const натуральные = корпус.filter(({ натуральная }) => натуральная)
 const скобочные = корпус.filter(({ натуральная }) => !натуральная)
+const охват = строкиОхвата(корпус, файлы)
 
-test("корпус моделей найден, и обе поверхности в нём есть", () => {
+/* Число моделей стоит прямо в имени теста, источники — в диагностике: по
+   выводу должно быть видно, каким был охват именно этого прогона. */
+test(`корпус моделей найден, и обе поверхности в нём есть — ${охват[0]}`, (t) => {
+  for (const строка of охват) t.diagnostic(строка)
+  t.diagnostic(`  поверхности: натуральных ${натуральные.length}, скобочных ${скобочные.length}`)
   assert.ok(корпус.length >= 40, `моделей: ${корпус.length}`)
   assert.ok(натуральные.length >= 40, `натуральных моделей: ${натуральные.length}`)
   assert.ok(скобочные.length >= 3, `скобочных моделей: ${скобочные.length}`)

@@ -20,7 +20,7 @@
  * списки, вложенность. Оракул везде один и тот же — `JSON.stringify`.
  */
 import assert from "node:assert/strict"
-import { existsSync, globSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
@@ -29,6 +29,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 const source = readFileSync(new URL("../core/json.flang", import.meta.url), "utf8")

@@ -21,7 +21,7 @@
  * всех видов в утверждении скобочной поверхности.
  */
 import assert from "node:assert/strict"
-import { existsSync, globSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
@@ -31,6 +31,7 @@ import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 const файл = fileURLToPath(new URL("../core/parser.flang", import.meta.url))

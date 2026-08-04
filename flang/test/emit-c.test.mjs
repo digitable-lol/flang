@@ -25,9 +25,8 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { globSync } from "node:fs"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { readdirSync } from "node:fs"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { after, test } from "node:test"
@@ -37,6 +36,7 @@ import { errorCode, fromFtsDocument, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { emitC } from "../src/emit/c.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)

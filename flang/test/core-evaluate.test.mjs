@@ -21,7 +21,7 @@
  * ничего, только перекладывает поля.
  */
 import assert from "node:assert/strict"
-import { globSync, readFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
@@ -30,6 +30,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../../", import.meta.url))
 const файл = new URL("../core/evaluate.flang", import.meta.url)

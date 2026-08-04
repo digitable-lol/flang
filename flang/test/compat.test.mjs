@@ -9,7 +9,6 @@
  */
 import assert from "node:assert/strict"
 import { execFile } from "node:child_process"
-import { globSync } from "node:fs"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -17,6 +16,7 @@ import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { errorCode, evaluateFlang, fromFtsDocument, INPUT_PARAM, RESULT_BINDING, runExamples } from "../src/compat.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)

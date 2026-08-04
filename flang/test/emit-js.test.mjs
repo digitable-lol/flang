@@ -19,7 +19,6 @@
  * эмиттер разворачивает хвостовые самовызовы в цикл.
  */
 import assert from "node:assert/strict"
-import { globSync } from "node:fs"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -31,6 +30,7 @@ import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
+import { globSync } from "./glob.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)

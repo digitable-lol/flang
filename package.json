@@ -1,5 +1,5 @@
 {
-  "name": "@digitable/fts",
+  "name": "@digitable-lol/fts",
   "version": "0.4.0",
   "description": "flang: a checkable language with total and ordinary functions, emitted to C, Go and JavaScript, over the FTS executable-specification surface.",
   "type": "module",

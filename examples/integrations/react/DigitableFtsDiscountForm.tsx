@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { FtsForm, type FtsFormValue } from "@digitable-lol/ui-components"
-import { assertValid, compile, executeUtility } from "@digitable/fts/browser"
+import { assertValid, compile, executeUtility } from "@digitable-lol/fts/browser"
 
 type Props = { source: string }
 

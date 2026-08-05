@@ -25,7 +25,7 @@ An application owns:
 For Node.js applications, import the package directly:
 
 ```ts
-import { pipeline } from "@digitable/fts"
+import { pipeline } from "@digitable-lol/fts"
 
 const result = pipeline({ source, context, viz: "all" })
 ```
@@ -38,7 +38,7 @@ fts test calculation.fts
 fts generate calculation.fts --out generated
 ```
 
-For React, Vue, and other browser applications, import `@digitable/fts/browser`. Use it to compile models and generate UI descriptors. Keep `certify`, `verify`, and consequential command authorization on the Node.js server boundary.
+For React, Vue, and other browser applications, import `@digitable-lol/fts/browser`. Use it to compile models and generate UI descriptors. Keep `certify`, `verify`, and consequential command authorization on the Node.js server boundary.
 
 For applications in another runtime, invoke the JSON CLI as a subprocess or run a small internal Node service. The request and response boundary remains canonical JSON, so no language semantics are duplicated.
 

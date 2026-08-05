@@ -81,7 +81,7 @@ location isn't silently lost. A non-converging example gets a synthetic
   is the *right* one — it runs `compile` → `validate` → `testUtilities`
   exactly as `fts check`/`fts test` would and reports what comes back.
 - It does not build or vendor the FTS core itself. The workflow must produce
-  a built `@digitable/fts` before this step (`npm ci && npm run build` when
+  a built `@digitable-lol/fts` before this step (`npm ci && npm run build` when
   checking this repository; a plain `npm install` in a project that merely
   depends on it).
 - It does not evaluate `.fts` files that use `ftsc`'s module header (`модуль` /

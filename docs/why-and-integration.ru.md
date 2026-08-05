@@ -91,7 +91,7 @@ FTS не заменяет React, Node.js, DDD-агрегат, СУБД или у
 Для браузера есть отдельный entrypoint без `node:crypto`:
 
 ```ts
-import { assertValid, compile, objects } from "@digitable/fts/browser"
+import { assertValid, compile, objects } from "@digitable-lol/fts/browser"
 
 const document = assertValid(compile(source))
 const form = objects(document).find(
@@ -127,7 +127,7 @@ const form = objects(document).find(
 Node.js может использовать полный API:
 
 ```ts
-import { assertVerified, certify, compile } from "@digitable/fts"
+import { assertVerified, certify, compile } from "@digitable-lol/fts"
 
 const document = compile(source)
 const certificate = certify(document, context)

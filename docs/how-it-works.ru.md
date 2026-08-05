@@ -88,7 +88,7 @@ fts verify examples/real-world/order-shipment.fts \
 Исполняемая утилита компилируется в типизированный раздел `utilities` канонического `FtsDocument`. Interpreter и генератор читают один и тот же раздел, поэтому семантика примеров не зависит от TypeScript-шаблона.
 
 ```ts
-import { compile, executeUtility, generateTypeScript, testUtilities } from "@digitable/fts"
+import { compile, executeUtility, generateTypeScript, testUtilities } from "@digitable-lol/fts"
 
 const document = compile(source)
 const tests = testUtilities(document)

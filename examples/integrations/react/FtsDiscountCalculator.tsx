@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { assertValid, compile, executeUtility, testUtilities } from "@digitable/fts/browser"
+import { assertValid, compile, executeUtility, testUtilities } from "@digitable-lol/fts/browser"
 
 type Props = { source: string }
 

@@ -8,7 +8,7 @@ import { checkFtsSource, loadFts } from "../lib/ftsRuntime.mjs"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const fixtures = join(here, "fixtures")
-// This test file lives inside the @digitable/fts repo tree, so `loadFts`
+// This test file lives inside the @digitable-lol/fts repo tree, so `loadFts`
 // resolves the package via Node's self-reference against the repo's own
 // (built) dist/src — see lib/ftsRuntime.mjs. workspaceDir only matters for
 // the fallback path, so any value is fine here.

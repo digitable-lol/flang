@@ -6,38 +6,38 @@ import { dirname, join } from "node:path"
  * Load the compiled FTS core (`compile`, `validate`, `testUtilities`).
  *
  * This action deliberately does not vendor or rebuild the core itself: it
- * expects the workflow to have already produced a built `@digitable/fts`
+ * expects the workflow to have already produced a built `@digitable-lol/fts`
  * before this step runs (`npm ci && npm run build` when checking this very
  * repository, or a plain `npm install` in any project that depends on it).
  *
  * Resolution order:
- *   1. `import("@digitable/fts")` — resolves via Node's package
+ *   1. `import("@digitable-lol/fts")` — resolves via Node's package
  *      self-reference when this action runs inside the fts repo itself
- *      (its own package.json declares `"name": "@digitable/fts"` and an
+ *      (its own package.json declares `"name": "@digitable-lol/fts"` and an
  *      `exports` map), and resolves the normal way via `node_modules` when
  *      this action is vendored into a *different* project that installed
- *      `@digitable/fts` as a dependency.
+ *      `@digitable-lol/fts` as a dependency.
  *   2. `<workspace>/dist/src/index.js` — a plain relative fallback for
  *      layouts where neither of the above applies.
  */
 export async function loadFts(workspaceDir) {
   try {
-    return await import("@digitable/fts")
+    return await import("@digitable-lol/fts")
   } catch (selfReferenceError) {
     const fallback = join(workspaceDir, "dist", "src", "index.js")
     if (existsSync(fallback)) return import(pathToFileURL(fallback).href)
     throw new Error(
-      "could not load @digitable/fts (tried package resolution and " +
-        `${fallback}). Run "npm ci && npm run build" (or install @digitable/fts) before this step. ` +
+      "could not load @digitable-lol/fts (tried package resolution and " +
+        `${fallback}). Run "npm ci && npm run build" (or install @digitable-lol/fts) before this step. ` +
         `Underlying error: ${selfReferenceError instanceof Error ? selfReferenceError.message : String(selfReferenceError)}`,
     )
   }
 }
 
-/** Resolve the on-disk root of the @digitable/fts package, for locating tools/ftsc and tools/ftspec. */
+/** Resolve the on-disk root of the @digitable-lol/fts package, for locating tools/ftsc and tools/ftspec. */
 export async function locateFtsPackageRoot(workspaceDir) {
   try {
-    const pkgUrl = await import.meta.resolve("@digitable/fts/package.json")
+    const pkgUrl = await import.meta.resolve("@digitable-lol/fts/package.json")
     return dirname(fileURLToPath(pkgUrl))
   } catch {
     return workspaceDir

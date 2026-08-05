@@ -9,7 +9,7 @@ import { isAbsolute, join, relative } from "node:path"
  * tools/ftsc/bin/ftsc.mjs and tools/ftspec/bin/ftspec.mjs).
  *
  * Per spec, these are best-effort extras: if the tool isn't present in this
- * checkout (e.g. a consumer of `@digitable/fts` that doesn't vendor `tools/`),
+ * checkout (e.g. a consumer of `@digitable-lol/fts` that doesn't vendor `tools/`),
  * `run` is skipped rather than failing the action.
  */
 export function findTool(packageRoot, toolName) {

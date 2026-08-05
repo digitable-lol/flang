@@ -298,18 +298,18 @@ to process and bundle the script:
 
 ### Reusing a compiler you already ship
 
-If the site already serves `@digitable/fts`, point the element at that build and
+If the site already serves `@digitable-lol/fts`, point the element at that build and
 drop `vendor/fts/` from the copy:
 
 ```html
 <script type="module">
   import { FtsPlayground } from "/fts/fts-playground.js"
-  FtsPlayground.defaults.runtime = "/node_modules/@digitable/fts/dist/src/browser.js"
+  FtsPlayground.defaults.runtime = "/node_modules/@digitable-lol/fts/dist/src/browser.js"
 </script>
 ```
 
 Per component, the same thing is the `runtime` attribute. Importing the element
-itself as `@digitable/fts/web/fts-playground.js` would need `./web/*` added to
+itself as `@digitable-lol/fts/web/fts-playground.js` would need `./web/*` added to
 the package's `exports` and `files`, which is a packaging decision outside this
 folder.
 

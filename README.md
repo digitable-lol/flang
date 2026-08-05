@@ -467,13 +467,39 @@ node -e 'const fs=require("fs");
 
 ---
 
-## Quick start
+## Install
 
-Node.js 20 or newer.
+**You do not need Node.** The compiler is written in flang itself and prints to
+C, so the release ships that C already printed: a C99 compiler is all it takes.
+
+```bash
+brew install digitable-lol/tap/flang
+```
+
+Or from a release archive, with nothing but `cc` and `make`:
+
+```bash
+tar -xzf flang-0.4.0-c.tar.gz && cd flang-0.4.0-c
+make                      # cc -std=c99 -Wall -Wextra -Werror -pedantic
+./flang_cli               # JSON in, JSON out
+```
+
+This is how self-hosting languages ship: Go carried generated C for years, Nim
+still does. The bootstrap problem stays only with those who develop the language
+itself — see below.
+
+## Developing the language
+
+Node.js 20 or newer, and here is exactly why: seven of the eight backends (Go,
+Rust, Python, Java, C#, Elixir, JavaScript), the interpreter and the CLI are
+written in JavaScript. The native compiler prints to **C only**. The JavaScript
+reference implementation also stays for good — it is what the fixed point is
+checked against, and deleting it would delete the check.
 
 ```bash
 npm install
 npm run build
+node scripts/build-release-c.mjs     # prints the release C and builds it without Node
 ```
 
 flang, on a file that is not tied to Node in any way:

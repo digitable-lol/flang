@@ -247,6 +247,9 @@ class Parser {
     this.tokens = tokens
     this.index = 0
     this.types = []
+    /* Стрелки категорий и их композиции: отдельный список, потому что они
+       проверяются иначе, чем функции, — стыковкой домена с кодоменом. */
+    this.morphisms = []
     this.functions = []
     this.legacy = []
     this.module = ""
@@ -445,6 +448,7 @@ class Parser {
     this.bindNullaryCalls()
 
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
+    if (this.morphisms.length > 0) program.morphisms = this.morphisms
     if (this.legacy.length > 0) program.legacy = this.legacy
     return program
   }
@@ -522,8 +526,16 @@ class Parser {
         return this.functions.push(this.parseFunction())
       case "utility":
         return this.legacy.push(this.parseUtility())
-      case "morphism":
-        return this.legacy.push(this.parseMorphism())
+      case "morphism": {
+        /* Стрелка и композиция уже уложены в this.morphisms и вернули null;
+           утверждение FTS по-прежнему едет в legacy. */
+        const узел = this.parseMorphism()
+        return узел === null ? undefined : this.legacy.push(узел)
+      }
+      case "chain":
+        return this.parseChain()
+      case "identity":
+        return this.parseIdentity()
       case "theorem":
         return this.legacy.push(this.parseTheorem())
       case "functor":
@@ -1515,9 +1527,55 @@ class Parser {
     return { name, input, expected }
   }
 
+  /**
+   * Морфизм.
+   *
+   * Две формы, и различает их то, что идёт сразу за именем.
+   *
+   * `морфизм «имя» из «А» в «Б»` — стрелка категории: у неё есть домен и
+   * кодомен, и она попадает в AST отдельным узлом, потому что композиция
+   * обязана проверяться компилятором. Сюда же `морфизм «в» это «б» после «а»` —
+   * композиция в математическом порядке: правая применяется первой.
+   *
+   * `морфизм «имя»` с блоком `если … то …` — утверждение FTS, каким морфизм был
+   * всегда: без входа и выхода, импликация, которую применяет теорема. Оно
+   * остаётся в legacy и работает как прежде — обратная совместимость здесь не
+   * пожелание, а условие: 24 морфизма в моделях репозитория написаны так.
+   *
+   * Согласовано с владельцем: морфизм — «и то и другое», стрелка и утверждение
+   * одновременно (flang/cat/SPEC.md, «Решение о морфизме»). Первый шаг даёт
+   * стрелку и композицию; закон при стрелке — следующий.
+   */
   parseMorphism() {
     const start = this.next()
     const name = this.expectName("ожидалось имя морфизма")
+
+    /* Стрелка: `из «А» в «Б»` прямо в строке объявления. */
+    if (this.atKw("from")) {
+      this.next()
+      const domain = this.expectName("ожидался домен морфизма")
+      this.expectKw("to", "после домена ожидалось 'в'")
+      const codomain = this.expectName("ожидался кодомен морфизма")
+      this.endLine()
+      const arrow = { kind: "morphism", name, domain, codomain, span: start.span }
+      this.morphisms.push(arrow)
+      return null
+    }
+
+    /* Композиция: `это «б» после «а»`. */
+    if (this.atKw("alias")) {
+      this.next()
+      const left = this.expectName("ожидалось имя морфизма слева от 'после'")
+      this.expectKw("after", "ожидалось 'после'")
+      const right = this.expectName("ожидалось имя морфизма справа от 'после'")
+      this.endLine()
+      /* Порядок математический: правая применяется первой. Домен и кодомен
+         выводятся при проверке типов — там же, где стыковка и проверяется. */
+      const composed = { kind: "composition", name, left, right, span: start.span }
+      this.morphisms.push(composed)
+      return null
+    }
+
     const value = { name, domain: null, codomain: null, law: "morphism.declared" }
 
     if (this.enterBlock()) {
@@ -1536,6 +1594,83 @@ class Parser {
       this.fail(`морфизм «${name}» требует строки 'если' и 'то'`, start)
     }
     return { kind: "ftsLegacy", construct: "morphism", value, span: start.span }
+  }
+
+  /**
+   * Цепочка — та же композиция, записанная в порядке чтения.
+   *
+   * `«в» после («б» после «а»)` читается наизнанку, и на четырёх звеньях это
+   * уже нечитаемо. Цепочка разворачивается в те же узлы композиции, то есть
+   * ничего нового в семантику не вносит: сахар, но сахар ради того, ради чего
+   * весь язык — чтобы написанное читалось как мысль.
+   *
+   * Промежуточные звенья получают служебные имена: они нужны стыковке, но в
+   * пространстве имён морфизмов их быть не должно — иначе цепочка из трёх
+   * шагов молча занимала бы два лишних имени.
+   */
+  parseChain() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя цепочки")
+    const шаги = []
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.eatKw("firstStep")) {
+          if (шаги.length > 0) this.fail("в цепочке 'сначала' идёт первым и только раз", start)
+          шаги.push(this.expectName("ожидалось имя морфизма после 'сначала'"))
+        } else if (this.eatKw("nextStep")) {
+          if (шаги.length === 0) this.fail("в цепочке 'затем' идёт после 'сначала'", start)
+          шаги.push(this.expectName("ожидалось имя морфизма после 'затем'"))
+        } else {
+          this.fail("не разобрана конструкция: в цепочке ожидаются 'сначала' и 'затем'")
+        }
+        this.endLine()
+      }
+      this.exitBlock()
+    }
+
+    if (шаги.length < 2) this.fail(`цепочка «${name}» требует хотя бы двух шагов`, start)
+
+    /* Разворачиваем слева направо: сначала «а», затем «б» — это «б» после «а». */
+    let текущий = шаги[0]
+    for (let i = 1; i < шаги.length; i += 1) {
+      const последний = i === шаги.length - 1
+      const имя = последний ? name : `${name} · шаг ${i}`
+      this.morphisms.push({
+        kind: "composition",
+        name: имя,
+        left: шаги[i],
+        right: текущий,
+        internal: !последний,
+        span: start.span,
+      })
+      текущий = имя
+    }
+    return undefined
+  }
+
+  /**
+   * Тождественный морфизм объекта: `единица «Заказ»`.
+   *
+   * Нужен не для украшения, а потому что без него не выразить законы: у
+   * функтора обязано быть `F(единица) = единица`, и на что-то это равенство
+   * должно ссылаться.
+   */
+  parseIdentity() {
+    const start = this.next()
+    const object = this.expectName("ожидалось имя объекта после 'единица'")
+    this.endLine()
+    this.morphisms.push({
+      kind: "morphism",
+      name: `единица ${object}`,
+      domain: object,
+      codomain: object,
+      identity: true,
+      span: start.span,
+    })
+    return undefined
   }
 
   parseTheorem() {

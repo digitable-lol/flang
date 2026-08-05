@@ -14,7 +14,7 @@ import { resolve } from "node:path"
 import { test } from "node:test"
 
 import { compile } from "../../../dist/src/index.js"
-import { analyze } from "../src/analysis.mjs"
+import { Severity, analyze } from "../src/analysis.mjs"
 import { resolvePath, scanDocument, scanLines } from "../src/outline.mjs"
 import { complete } from "../src/features/completion.mjs"
 import { definition } from "../src/features/definition.mjs"
@@ -111,7 +111,11 @@ test("английская поверхность разбирается и от
   const analysis = analyze(source)
   assert.equal(analysis.outline.language, "en")
   assert.equal(analysis.outline.utilities[0].output, "Деньги")
-  const [diagnostic] = analysis.diagnostics
+  /* Диагностика примера ищется по коду, а не по первому месту в списке: перед
+     ней идут находки разбора области входов — у discount.en.fts есть
+     настоящая дыра на суммах меньше 10000 и недостижимый предел скидки. */
+  const diagnostic = analysis.diagnostics.find((item) => item.code === "FTS_UTILITY_EXAMPLE_MISMATCH")
+  assert.ok(diagnostic, "несошедшийся пример сообщён")
   assert.match(diagnostic.message, /expected 1, actual 3000/u)
 
   const hints = inlayHints(analysis, null)
@@ -227,7 +231,12 @@ test("после «принимает» предлагаются объекты,
 test("модуль ftsc разбирается: заголовок снят, координаты не съехали", () => {
   const source = read("tools/ftsc/examples/shop/sales/purchase.fts")
   const analysis = analyze(source)
-  assert.deepEqual(analysis.diagnostics, [], "заголовок «модуль/экспортирует» не считается ошибкой ядра")
+  /* Тест про заголовок модуля, а не про содержание модели: сама модель — та же
+     скидка с настоящей дырой и недостижимым пределом «20 % от суммы», и разбор
+     области входов говорит о ней предупреждениями. Ошибок тут быть не должно
+     по-прежнему: заголовок «модуль/экспортирует» ядру не показывают. */
+  const errors = analysis.diagnostics.filter((item) => item.severity === Severity.error)
+  assert.deepEqual(errors, [], "заголовок «модуль/экспортирует» не считается ошибкой ядра")
   assert.equal(analysis.outline.surface, "natural")
   assert.equal(analysis.outline.category.name, "Продажи")
 

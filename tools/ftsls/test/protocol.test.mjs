@@ -40,6 +40,17 @@ const MODEL = [
 const EXPECTED_LINE = 18
 const clients = []
 
+/**
+ * Ошибки среди опубликованных диагностик.
+ *
+ * С тех пор как `validate` разбирает и область входов утилиты, валидная модель
+ * публикует ещё и предупреждения: у MODEL одно правило и порог 10000, значит
+ * на суммах меньше 10000 не срабатывает ничего — настоящая дыра, и говорить о
+ * ней правильно. Тесты протокола проверяют транспорт и жизненный цикл, поэтому
+ * пустым должен быть список ОШИБОК, а не список диагностик вообще.
+ */
+const errorsOf = (published) => published.params.diagnostics.filter((item) => item.severity === 1)
+
 function client() {
   const item = startClient()
   clients.push(item)
@@ -65,13 +76,31 @@ test("initialize возвращает корректные capabilities", async 
   assert.ok(capabilities.completionProvider.triggerCharacters.includes(" "))
 })
 
-test("валидная модель открывается без диагностик", async () => {
+test("валидная модель открывается без ошибок, но с разбором области входов", async () => {
   const lsp = client()
   await lsp.initialize()
   const uri = "file:///discount.fts"
   lsp.open(uri, readFileSync(resolve(repo, "examples/utilities/discount.fts"), "utf8"))
   const published = await lsp.diagnostics(uri)
-  assert.deepEqual(published.params.diagnostics, [])
+
+  /* Модель валидна — ошибок нет. Она же учебная модель с двумя настоящими
+     дефектами, которые до сих пор показывал только ftsmap: на суммах меньше
+     10000 без постоянного клиента не срабатывает ни одно правило, а предел
+     «20 % от суммы» правила не берут никогда (максимум — 15 %). Теперь об этом
+     говорит и редактор: предупреждениями, не ошибками. */
+  assert.deepEqual(errorsOf(published), [], "ошибок нет")
+
+  const hole = published.params.diagnostics.find((item) => item.code === "FTS_COVERAGE_HOLE")
+  assert.ok(hole, "дыра в покрытии показана")
+  assert.equal(hole.severity, 2, "предупреждение, а не ошибка")
+  assert.equal(hole.range.start.line, 6, "подчёркнута строка утилиты")
+
+  const unattainable = published.params.diagnostics.find(
+    (item) => item.code === "FTS_PROPERTY_UNATTAINABLE" && item.message.includes("Скидка ограничена"),
+  )
+  assert.ok(unattainable, "недостижимое свойство показано")
+  assert.equal(unattainable.range.start.line, 22, "подчёркнута строка свойства")
+  assert.match(unattainable.message, /15 % от поля «сумма»/u, "подсказка называет достижимое значение")
 })
 
 test("ошибка разбора получает строку и колонку из содержимого строки", async () => {
@@ -124,8 +153,10 @@ test("несходящийся пример — диагностика на ст
   const source = MODEL.replace("ожидается результат равен 2000", "ожидается результат равен 3000")
   lsp.open(uri, source)
   const published = await lsp.diagnostics(uri)
-  const [diagnostic] = published.params.diagnostics
-  assert.equal(diagnostic.code, "FTS_UTILITY_EXAMPLE_MISMATCH")
+  /* По коду, а не по первому месту в списке: перед примером идут находки
+     разбора области входов. */
+  const diagnostic = published.params.diagnostics.find((item) => item.code === "FTS_UTILITY_EXAMPLE_MISMATCH")
+  assert.ok(diagnostic, "несошедшийся пример сообщён")
   assert.equal(diagnostic.range.start.line, EXPECTED_LINE)
   assert.match(diagnostic.message, /ожидается 3000/u)
   assert.match(diagnostic.message, /фактически 2000/u)
@@ -287,7 +318,7 @@ test("didChange пересчитывает диагностики", async () => 
   const uri = "file:///change.fts"
   lsp.open(uri, MODEL)
   const first = await lsp.diagnostics(uri)
-  assert.deepEqual(first.params.diagnostics, [])
+  assert.deepEqual(errorsOf(first), [])
 
   /* Инкрементальная правка: заменяем только число в строке «ожидается». */
   const character = MODEL.split("\n")[EXPECTED_LINE].indexOf("2000")
@@ -299,8 +330,8 @@ test("didChange пересчитывает диагностики", async () => 
   )
   const second = await lsp.diagnostics(uri, 1)
   assert.equal(second.params.version, 2)
-  assert.equal(second.params.diagnostics.length, 1)
-  assert.match(second.params.diagnostics[0].message, /ожидается 9999, фактически 2000/u)
+  assert.equal(errorsOf(second).length, 1)
+  assert.match(errorsOf(second)[0].message, /ожидается 9999, фактически 2000/u)
 
   lsp.changeRange(
     uri,
@@ -309,7 +340,7 @@ test("didChange пересчитывает диагностики", async () => 
     3,
   )
   const third = await lsp.diagnostics(uri, 2)
-  assert.deepEqual(third.params.diagnostics, [])
+  assert.deepEqual(errorsOf(third), [])
 })
 
 test("дебаунс: очередь правок даёт одну публикацию", async () => {
@@ -335,7 +366,7 @@ test("дебаунс: очередь правок даёт одну публик
   )
   assert.equal(published.length, 2, "открытие и одна отложенная публикация")
   assert.equal(published[1].params.version, 4, "опубликовано последнее состояние")
-  assert.deepEqual(published[1].params.diagnostics, [])
+  assert.deepEqual(errorsOf(published[1]), [])
 })
 
 test("запрос к неоткрытому документу — ошибка параметров, а не падение", async () => {
@@ -356,9 +387,10 @@ test("didClose гасит диагностики", async () => {
   const uri = "file:///closed.fts"
   lsp.open(uri, MODEL.replace("ожидается результат равен 2000", "ожидается результат равен 3000"))
   const opened = await lsp.diagnostics(uri)
-  assert.equal(opened.params.diagnostics.length, 1)
+  assert.equal(errorsOf(opened).length, 1)
   lsp.notify("textDocument/didClose", { textDocument: { uri } })
   const closed = await lsp.diagnostics(uri, 1)
+  /* Здесь пусто именно всё: закрытие гасит диагностики целиком. */
   assert.deepEqual(closed.params.diagnostics, [])
 })
 
@@ -386,7 +418,7 @@ test("невалидный UTF-8 в кадре не роняет сервер", 
   const uri = "file:///after-garbage.fts"
   lsp.open(uri, MODEL)
   const published = await lsp.diagnostics(uri)
-  assert.deepEqual(published.params.diagnostics, [], "сервер продолжает работать")
+  assert.deepEqual(errorsOf(published), [], "сервер продолжает работать")
   assert.equal(lsp.child.exitCode, null)
 })
 

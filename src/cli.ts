@@ -23,6 +23,7 @@ interface CliOptions {
   inputFile?: string
   mode: VisualizationMode
   pretty: boolean
+  coverage: boolean
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
@@ -56,7 +57,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         output = compile(source)
         break
       case "check": {
-        const result = validate(compile(source))
+        const result = validate(compile(source), { coverage: options.coverage })
         output = result
         if (!result.valid) {
           writeJson(output, options.pretty, process.stderr)
@@ -126,6 +127,7 @@ function parseArgs(argv: string[]): CliOptions {
   let inputFile: string | undefined
   let mode: VisualizationMode = "all"
   let pretty = false
+  let coverage = true
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]!
@@ -150,6 +152,8 @@ function parseArgs(argv: string[]): CliOptions {
       if (inputFile === undefined) throw new Error("--input requires a JSON file")
     } else if (arg === "--pretty") {
       pretty = true
+    } else if (arg === "--no-coverage") {
+      coverage = false
     } else {
       positional.push(arg)
     }
@@ -160,7 +164,9 @@ function parseArgs(argv: string[]): CliOptions {
     file: positional[1] ?? "-",
     mode,
     pretty,
+    coverage,
   }
+  if (!coverage && result.command !== "check") throw new Error("--no-coverage is available only for check")
   if (outDir !== undefined && result.command !== "generate") throw new Error("--out is available only for generate")
   if (utilityName !== undefined && result.command !== "run") throw new Error("--utility is available only for run")
   if (inputFile !== undefined && result.command !== "run") throw new Error("--input is available only for run")
@@ -215,7 +221,7 @@ const helpText = `FTS — Formal Type Surface
 
 Usage:
   fts compile [file|-] [--pretty]
-  fts check [file|-] [--pretty]
+  fts check [file|-] [--pretty] [--no-coverage]
   fts prove [file|-] [--context context.json] [--pretty]
   fts certify [file|-] [--context context.json] [--pretty]
   fts verify [file|-] --context context.json --certificate proof.json [--pretty]
@@ -228,6 +234,10 @@ Usage:
   fts version
 
 Commands emit JSON to stdout. Diagnostics are JSON on stderr and failures use a non-zero exit code.
+
+check also reads the input space of every utility: holes in rule coverage, overlaps whose
+outcome depends on declaration order, property limits no input ever reaches. Those are
+warnings — they never make a document invalid. --no-coverage turns the analysis off.
 `
 
 if (invokedDirectly(import.meta.url)) {

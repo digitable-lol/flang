@@ -39,6 +39,39 @@ test("a valid model: zero diagnostics, exit not failed, correct counts", async (
   }
 })
 
+test("a model whose judgement does not hold up: warnings that annotate but do not fail", async () => {
+  const dir = await makeWorkspace()
+  try {
+    await copyFile(join(fixtures, "judgement.fts"), join(dir, "examples", "judgement.fts"))
+    const result = await run({ workspaceDir: dir, paths: "**/*.fts" })
+
+    /* The document is valid and its example converges, so the run must pass.
+       What `check` now adds is its reading of the input space, and it arrives
+       as warnings: a hole below 10000, and a ceiling of 20 % the rules never
+       reach. Neither may fail a build; both must be visible on the pull
+       request, on the line that declares them, together with what to do. */
+    assert.equal(result.failed, false)
+    assert.equal(result.counts.errors, 0)
+    assert.equal(result.counts.examplesFailed, 0)
+
+    const hole = result.annotations.find((line) => line.includes("FTS_COVERAGE_HOLE"))
+    assert.ok(hole, "дыра в покрытии аннотирована")
+    assert.match(hole, /^::warning file=examples\/judgement\.fts,line=10/, "на строке утилиты")
+
+    const unattainable = result.annotations.find((line) => line.includes("FTS_PROPERTY_UNATTAINABLE"))
+    assert.ok(unattainable, "недостижимый предел аннотирован")
+    assert.match(unattainable, /^::warning file=examples\/judgement\.fts,line=19/, "на строке свойства")
+    /* `%0A` и `%25` — экранирование самой GitHub: подсказка идёт второй
+       строкой сообщения, а процент в ней экранирован как `%25`. */
+    assert.match(unattainable, /%0Aправила дотягивают до 10 %25 от поля/u, "подсказка доехала до аннотации")
+
+    const strict = await run({ workspaceDir: dir, paths: "**/*.fts", failOnWarning: true })
+    assert.equal(strict.failed, true, "--fail-on-warning всё же ловит их")
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
 test("a broken model: annotation with the right line, and a failed run", async () => {
   const dir = await makeWorkspace()
   try {

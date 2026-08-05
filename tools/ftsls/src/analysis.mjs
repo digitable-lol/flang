@@ -50,7 +50,9 @@ export function analyze(text) {
   }
 
   if ((result.document.utilities ?? []).length > 0) {
-    const invalid = result.diagnostics.length > 0
+    /* Именно ошибки: предупреждение разбора области входов — не причина
+       прятать несошедшийся пример, оно про другое. */
+    const invalid = result.diagnostics.some((item) => item.severity === Severity.error)
     try {
       result.tests = testUtilities(result.document)
     } catch {
@@ -74,14 +76,32 @@ function coreDiagnostics(error, view) {
   return list.map((diagnostic) => toLspDiagnostic(diagnostic, view))
 }
 
-/** Диагностика ядра → диагностика LSP. */
+/**
+ * Диагностика ядра → диагностика LSP.
+ *
+ * Уровень `info` — «верно и стоит сказать, но ничего не сломано»: разбор
+ * области входов сообщает им о наложении правил, порядок которых ни на что не
+ * влияет. В редакторе это подсказка, а не ошибка; неизвестный уровень
+ * по-прежнему показывается ошибкой, чтобы не приглушить то, чего сервер не
+ * знает.
+ *
+ * Подсказка `hint` — вторая половина диагностики: что именно сделать. В LSP
+ * отдельного поля для неё нет, поэтому она идёт в сообщение следующей строкой,
+ * ровно там, где её увидят вместе с причиной.
+ */
 function toLspDiagnostic(diagnostic, view) {
+  const severity =
+    diagnostic.severity === "warning"
+      ? Severity.warning
+      : diagnostic.severity === "info"
+        ? Severity.information
+        : Severity.error
   return {
     range: toLspRange(locate(diagnostic, view, { origin: "core" })) ?? START,
-    severity: diagnostic.severity === "warning" ? Severity.warning : Severity.error,
+    severity,
     code: diagnostic.code,
     source: "fts",
-    message: diagnostic.message,
+    message: diagnostic.hint ? `${diagnostic.message}\n${diagnostic.hint}` : diagnostic.message,
   }
 }
 

@@ -53,22 +53,17 @@ export function executeUtility(
   return evaluateUtility(utility, input)
 }
 
+export interface UtilityTrace {
+  /** `false` when the core refused the input: the point decides nothing. */
+  ok: boolean
+  result: FtsScalar
+  /** Per rule, in declaration order: did it fire on this input? */
+  fired: boolean[]
+  error?: string
+}
+
 export function evaluateUtility(utility: FtsUtility, input: Record<string, FtsScalar>): FtsScalar {
-  let result = utility.initial
-  for (const rule of utility.rules) {
-    if (!rule.when.every((condition) => compare(resolveField(input, condition.field), condition.operator, resolveOperand(condition.value, input, result)))) {
-      continue
-    }
-    const value = resolveOperand(rule.action.value, input, result)
-    if (rule.action.kind === "set") {
-      result = value
-    } else {
-      if (typeof result !== "number" || typeof value !== "number") {
-        throw diagnosticError("FTS_UTILITY_ADD_TYPE", `правило «${rule.name}» может складывать только числа`)
-      }
-      result += value
-    }
-  }
+  const { result } = applyRules(utility, input)
 
   for (const property of utility.properties) {
     const limit = resolveOperand(property.value, input, result)
@@ -77,6 +72,65 @@ export function evaluateUtility(utility: FtsUtility, input: Record<string, FtsSc
     }
   }
   return result
+}
+
+/**
+ * Evaluate a utility and record which rules fired, without enforcing its
+ * properties.
+ *
+ * Analysis outside the core has to probe: run the utility once per rule with a
+ * marker action to learn whether that rule fired, then once more per property
+ * to learn its limit. Inside the core the same knowledge costs one pass,
+ * because the evaluator is right here — and a violated property is a finding
+ * for the caller, not a reason to abort.
+ */
+export function traceUtility(utility: FtsUtility, input: Record<string, FtsScalar>): UtilityTrace {
+  try {
+    const { result, fired } = applyRules(utility, input)
+    return { ok: true, result, fired }
+  } catch (error) {
+    return {
+      ok: false,
+      result: utility.initial,
+      fired: [],
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+/** The limit a property compares the result against, for this input. */
+export function propertyLimit(
+  property: FtsUtility["properties"][number],
+  input: Record<string, FtsScalar>,
+  result: FtsScalar,
+): FtsScalar {
+  return resolveOperand(property.value, input, result)
+}
+
+/** Does the result satisfy the comparison? Throws for order over non-numbers. */
+export function compareValues(left: FtsScalar, operator: FtsUtilityComparison, right: FtsScalar): boolean {
+  return compare(left, operator, right)
+}
+
+function applyRules(utility: FtsUtility, input: Record<string, FtsScalar>): { result: FtsScalar; fired: boolean[] } {
+  const fired = utility.rules.map(() => false)
+  let result = utility.initial
+  utility.rules.forEach((rule, index) => {
+    if (!rule.when.every((condition) => compare(resolveField(input, condition.field), condition.operator, resolveOperand(condition.value, input, result)))) {
+      return
+    }
+    fired[index] = true
+    const value = resolveOperand(rule.action.value, input, result)
+    if (rule.action.kind === "set") {
+      result = value
+      return
+    }
+    if (typeof result !== "number" || typeof value !== "number") {
+      throw diagnosticError("FTS_UTILITY_ADD_TYPE", `правило «${rule.name}» может складывать только числа`)
+    }
+    result += value
+  })
+  return { result, fired }
 }
 
 export function testUtilities(document: FtsDocument): UtilityTestResult {

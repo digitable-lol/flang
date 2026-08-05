@@ -13,12 +13,27 @@ import type {
   FtsUtilityOperand,
   FtsUtilityProperty,
   FtsUtilityRule,
+  SourceSpan,
 } from "./model.js"
+import { withSpan } from "./spans.js"
 
 interface SourceLine {
   number: number
   indent: number
   text: string
+  /** Column of the first meaningful character, from one, as in `SourceSpan`. */
+  column: number
+  /** Offset of that character, and how far the meaningful text runs. */
+  offset: number
+  length: number
+}
+
+/** The meaningful part of a line — what a diagnostic about it should underline. */
+function lineSpan(line: SourceLine): SourceSpan {
+  return {
+    start: { offset: line.offset, line: line.number, column: line.column },
+    end: { offset: line.offset + line.length, line: line.number, column: line.column + line.length },
+  }
 }
 
 interface TheoremDraft {
@@ -60,7 +75,7 @@ export function looksLikeNaturalSurface(source: string): boolean {
 }
 
 export function parseNaturalSurface(source: string): FtsDocument {
-  const lines = sourceLines(normalizeEnglishNaturalSurface(source))
+  const lines = sourceLines(normalizeEnglishNaturalSurface(source), source)
   const first = lines[0]
   if (!first || !first.text.startsWith("категория ")) {
     throw naturalError("FTS_NATURAL_CATEGORY", "документ должен начинаться со строки 'категория «Имя»'", first)
@@ -262,7 +277,7 @@ function parseUtility(header: SourceLine, body: SourceLine[]): FtsUtility {
   if (!input) throw naturalError("FTS_UTILITY_INPUT", `утилита «${name}» требует строку 'принимает'`, header)
   if (!output) throw naturalError("FTS_UTILITY_OUTPUT", `утилита «${name}» требует строку 'возвращает'`, header)
   if (initial === undefined) throw naturalError("FTS_UTILITY_INITIAL", `утилита «${name}» требует строку 'начинает с'`, header)
-  return { name, input, output, initial, rules, properties, examples }
+  return withSpan({ name, input, output, initial, rules, properties, examples }, lineSpan(header))
 }
 
 function parseUtilityRule(header: SourceLine, body: SourceLine[]): FtsUtilityRule {
@@ -284,7 +299,7 @@ function parseUtilityRule(header: SourceLine, body: SourceLine[]): FtsUtilityRul
   }
   if (when.length === 0) throw naturalError("FTS_UTILITY_RULE", `правило «${name}» требует условие 'если'`, header)
   if (!action) throw naturalError("FTS_UTILITY_RULE", `правило «${name}» требует действие 'то'`, header)
-  return { name, when, action }
+  return withSpan({ name, when, action }, lineSpan(header))
 }
 
 function parseUtilityCondition(text: string, line: SourceLine): FtsUtilityCondition {
@@ -299,7 +314,7 @@ function parseUtilityProperty(header: SourceLine, body: SourceLine[]): FtsUtilit
     throw naturalError("FTS_UTILITY_PROPERTY", `свойство «${name}» должно содержать одно сравнение результата`, header)
   }
   const comparison = parseUtilityComparison(body[0]!.text.slice("результат".length), body[0]!)
-  return { name, operator: comparison.operator, value: comparison.value }
+  return withSpan({ name, operator: comparison.operator, value: comparison.value }, lineSpan(header))
 }
 
 function parseUtilityExample(header: SourceLine, body: SourceLine[]): FtsUtilityExample {
@@ -521,18 +536,48 @@ function buildProposition(theorem: TheoremDraft, structures: FtsStructure[], mor
   return { kind: "compose", functors: theorem.morphisms, arg: witness, detail: theorem.title }
 }
 
-function sourceLines(source: string): SourceLine[] {
-  const withoutBlocks = source.replace(/\/\*[\s\S]*?\*\//gu, (comment) => comment.replace(/[^\n]/g, " "))
-  return withoutBlocks
-    .replace(/^\uFEFF/u, "")
-    .split(/\r?\n/u)
-    .map((raw, index) => {
-      const text = stripLineComment(raw)
-      const prefix = text.match(/^[ \t]*/u)?.[0] ?? ""
-      const indent = Array.from(prefix).reduce((total, character) => total + (character === "\t" ? 2 : 1), 0)
-      return { number: index + 1, indent, text: text.trim() }
+/**
+ * Splits the document into meaningful lines, with the coordinates of each.
+ *
+ * `original` is the text as the author wrote it; `source` may be the English
+ * surface already rewritten into reserved Russian phrases. The rewrite is
+ * line-oriented and keeps indentation, so line numbers coincide \u2014 but phrase
+ * lengths do not, and coordinates must belong to the file that is open in the
+ * editor. Hence the split walks both: text to parse from one, positions from
+ * the other.
+ */
+function sourceLines(source: string, original: string = source): SourceLine[] {
+  const blank = (text: string): string =>
+    text.replace(/\/\*[\s\S]*?\*\//gu, (comment) => comment.replace(/[^\n]/g, " ")).replace(/^\uFEFF/u, "")
+  const parsed = blank(source).split(/\r?\n/u)
+  const written = blank(original)
+  const rawLines = written.split(/\r?\n/u)
+
+  const lines: SourceLine[] = []
+  let offset = 0
+  parsed.forEach((raw, index) => {
+    const rawLine = rawLines[index] ?? raw
+    const lineOffset = offset
+    offset += rawLine.length + (written[lineOffset + rawLine.length] === "\r" ? 2 : 1)
+
+    const text = stripLineComment(raw)
+    const prefix = text.match(/^[ \t]*/u)?.[0] ?? ""
+    const indent = Array.from(prefix).reduce((total, character) => total + (character === "\t" ? 2 : 1), 0)
+    const trimmed = text.trim()
+    if (trimmed.length === 0) return
+
+    const shown = stripLineComment(rawLine)
+    const shownPrefix = shown.match(/^[ \t]*/u)?.[0] ?? ""
+    lines.push({
+      number: index + 1,
+      indent,
+      text: trimmed,
+      column: shownPrefix.length + 1,
+      offset: lineOffset + shownPrefix.length,
+      length: Math.max(shown.trim().length, 1),
     })
-    .filter((line) => line.text.length > 0)
+  })
+  return lines
 }
 
 function stripLineComment(line: string): string {

@@ -1,7 +1,9 @@
+import { analyzeCoverage } from "./coverage.js"
 import type { Diagnostic } from "./diagnostics.js"
 import { FtsError } from "./diagnostics.js"
-import type { FtsDocument, FtsProposition, FtsScalar, FtsStructure, FtsUtilityOperand } from "./model.js"
+import type { FtsDocument, FtsFunctor, FtsProposition, FtsScalar, FtsStructure, FtsUtilityOperand } from "./model.js"
 import { normalizeDocument } from "./parser.js"
+import { spanOf } from "./spans.js"
 import { builtinFunctors } from "./stdlib.js"
 
 export interface ValidationResult {
@@ -10,7 +12,16 @@ export interface ValidationResult {
   diagnostics: Diagnostic[]
 }
 
-export function validate(input: unknown): ValidationResult {
+export interface ValidateOptions {
+  /**
+   * Analyse the input space of the utilities: holes in rule coverage,
+   * order-dependent overlaps, properties whose limit is never reached. On by
+   * default — a check that stays silent unless asked does not get read.
+   */
+  coverage?: boolean
+}
+
+export function validate(input: unknown, options: ValidateOptions = {}): ValidationResult {
   const document = normalizeDocument(input)
   const diagnostics: Diagnostic[] = []
   const report = (code: string, message: string, path: string): void => {
@@ -72,7 +83,68 @@ export function validate(input: unknown): ValidationResult {
 
   validateUtilities(document, structures, report)
 
-  return { valid: diagnostics.length === 0, document, diagnostics }
+  /* Only `error` decides validity: everything below is advisory and must never
+     turn a well-formed document into a rejected one. */
+  const valid = !diagnostics.some((diagnostic) => diagnostic.severity === "error")
+  if (valid) {
+    validateComposition(document, diagnostics)
+    if (options.coverage !== false) diagnostics.push(...analyzeCoverage(document))
+  }
+
+  return { valid, document, diagnostics }
+}
+
+/**
+ * Does the chain of morphisms compose?
+ *
+ * `certify` walks exactly this chain and refuses when a morphism receives a
+ * type other than its domain (`FTS_PROOF_TYPE_MISMATCH`), and the indented
+ * surface refuses at parse time. A document written as canonical JSON or in
+ * the braced surface had nobody to tell it — `check` passed and only `certify`
+ * later failed. Now the mismatch is named where the model is read, with the
+ * position of the proposition that carries it.
+ */
+function validateComposition(document: FtsDocument, diagnostics: Diagnostic[]): void {
+  const proposition = document.proposition
+  if (proposition === null) return
+  const functors = [...document.functors, ...builtinFunctors]
+
+  const report = (message: string, hint: string): void => {
+    const span = spanOf(proposition)
+    diagnostics.push({
+      code: "FTS_COMPOSE_MISMATCH",
+      message,
+      severity: "warning",
+      path: "$.proposition",
+      hint,
+      ...(span === undefined ? {} : { span }),
+    })
+  }
+
+  const step = (name: string, incoming: string | null): string | null => {
+    const functor = functors.find((item) => item.name === name)
+    if (!functor) return null
+    if (incoming !== null && functor.domain !== "*" && incoming !== functor.domain) {
+      report(
+        `morphism '${name}' expects '${functor.domain}', receives '${incoming}'`,
+        `insert a morphism from '${incoming}' to '${functor.domain}', or declare '${name}' over '${incoming}'` +
+          ` — otherwise certify rejects this document with FTS_PROOF_TYPE_MISMATCH`,
+      )
+      return null
+    }
+    return functor.codomain
+  }
+
+  const walk = (node: FtsProposition): string | null => {
+    if (node.kind === "witness") {
+      const structure = document.structures.find((item) => item.name === node.structure)
+      return structure?.fields.find((item) => item.name === node.field)?.type ?? null
+    }
+    if (node.kind === "apply") return step(node.functor, walk(node.arg))
+    return (node.functors ?? []).reduce<string | null>((incoming, name) => step(name, incoming), walk(node.arg))
+  }
+
+  walk(proposition)
 }
 
 function validateUtilities(
@@ -253,9 +325,17 @@ function isComparison(value: unknown): boolean {
   return value === "eq" || value === "neq" || value === "gte" || value === "lte" || value === "gt" || value === "lt"
 }
 
+/**
+ * The document, or an exception carrying the reasons it is not one.
+ *
+ * Coverage analysis is skipped here on purpose, and skipping it changes
+ * nothing: it never produces an `error`, so it cannot influence the outcome —
+ * while `prove`, `certify`, `generate` and `run` all pass through this
+ * function and have no reason to pay for it.
+ */
 export function assertValid(input: unknown): FtsDocument {
-  const result = validate(input)
-  if (!result.valid) throw new FtsError("invalid FTS document", result.diagnostics)
+  const result = validate(input, { coverage: false })
+  if (!result.valid) throw new FtsError("invalid FTS document", result.diagnostics.filter((item) => item.severity === "error"))
   return result.document
 }
 

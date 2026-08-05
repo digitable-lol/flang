@@ -15,6 +15,7 @@ import type {
   SourceSpan,
   WitnessProposition,
 } from "./model.js"
+import { withSpan } from "./spans.js"
 
 type TokenKind = "identifier" | "string" | "number" | "punctuation" | "arrow" | "newline" | "eof"
 
@@ -199,20 +200,15 @@ class Parser {
   }
 
   #parseProposition(prefixed: boolean): FtsProposition {
+    const start = this.#peek().span.start
     if (prefixed) this.#expectKeyword("proposition")
     const kindToken = this.#expectIdentifier("expected proposition kind")
     const kind = canonicalPropositionKind(kindToken.value)
+    if (kind === undefined) this.#fail("FTS_PROPOSITION_KIND", `unknown proposition kind '${kindToken.value}'`, kindToken)
 
-    switch (kind) {
-      case "witness":
-        return this.#parseWitness()
-      case "apply":
-        return this.#parseApply()
-      case "compose":
-        return this.#parseCompose()
-      default:
-        this.#fail("FTS_PROPOSITION_KIND", `unknown proposition kind '${kindToken.value}'`, kindToken)
-    }
+    const proposition =
+      kind === "witness" ? this.#parseWitness() : kind === "apply" ? this.#parseApply() : this.#parseCompose()
+    return withSpan(proposition, { start, end: this.#tokens[Math.max(this.#index - 1, 0)]!.span.end })
   }
 
   #parseWitness(): WitnessProposition {

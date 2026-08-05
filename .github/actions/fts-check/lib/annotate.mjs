@@ -27,7 +27,10 @@ import { formatCommand } from "./commands.mjs"
  * message text so the location information is not silently dropped.
  */
 export function diagnosticToAnnotation(diagnostic, file, spot = locate(diagnostic, null, { fallback: "none" })) {
-  const severity = diagnostic.severity === "warning" ? "warning" : "error"
+  /* `info` — true and worth printing, but nothing is wrong; GitHub calls that
+     level `notice`. Only an unknown severity is treated as an error. */
+  const severity =
+    diagnostic.severity === "warning" ? "warning" : diagnostic.severity === "info" ? "notice" : "error"
   const properties = {}
   if (file !== undefined) properties.file = file
 
@@ -42,7 +45,10 @@ export function diagnosticToAnnotation(diagnostic, file, spot = locate(diagnosti
   }
   if (diagnostic.code) properties.title = diagnostic.code
 
-  const message = spot || !diagnostic.path ? diagnostic.message : `${diagnostic.message} (${diagnostic.path})`
+  const located = spot || !diagnostic.path ? diagnostic.message : `${diagnostic.message} (${diagnostic.path})`
+  /* A hint is the actionable half of a diagnostic; an annotation that dropped
+     it would send the reader back to the terminal to see what to do. */
+  const message = diagnostic.hint ? `${located}\n${diagnostic.hint}` : located
 
   return formatCommand(severity, properties, message)
 }

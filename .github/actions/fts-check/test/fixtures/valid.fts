@@ -1,3 +1,7 @@
+// A model with nothing to report: the two rules partition the whole range of
+// "amount" between them, so no input falls through to the initial value and no
+// two rules ever apply at once. `check` reads the input space now, and a
+// fixture that stands for "fully valid" has to be clean by that measure too.
 category "Sales"
 
   object Purchase
@@ -9,9 +13,13 @@ category "Sales"
     returns money
     starts with 0
 
+    rule "Regular purchase"
+      if amount is less than 10000
+      then result equals 0
+
     rule "Large purchase"
       if amount is at least 10000
-      then add 10 percent of field amount
+      then result equals 2000
 
     example "Regular purchase"
       given amount equals 5000

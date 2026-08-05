@@ -3,18 +3,23 @@ function cell(text) {
   return String(text).replace(/\|/g, "\\|").replace(/\r?\n/g, " ")
 }
 
+/**
+ * Counted by declared severity, and an unknown severity counts as an error:
+ * a level this action has not heard of must not be quietly downgraded.
+ */
 function countBySeverity(diagnostics) {
-  const errors = diagnostics.filter((d) => d.severity !== "warning").length
-  const warnings = diagnostics.length - errors
-  return { errors, warnings }
+  const warnings = diagnostics.filter((d) => d.severity === "warning").length
+  const notices = diagnostics.filter((d) => d.severity === "info").length
+  return { errors: diagnostics.length - warnings - notices, warnings, notices }
 }
 
 function diagnosticsCell(diagnostics) {
   if (diagnostics.length === 0) return "0"
-  const { errors, warnings } = countBySeverity(diagnostics)
+  const { errors, warnings, notices } = countBySeverity(diagnostics)
   const parts = []
   if (errors > 0) parts.push(`${errors} error${errors === 1 ? "" : "s"}`)
   if (warnings > 0) parts.push(`${warnings} warning${warnings === 1 ? "" : "s"}`)
+  if (notices > 0) parts.push(`${notices} notice${notices === 1 ? "" : "s"}`)
   return parts.join(", ")
 }
 
@@ -44,12 +49,12 @@ export function buildSummaryMarkdown(models, tools = []) {
   const allDiagnostics = [...models.flatMap((m) => m.diagnostics), ...tools.flatMap((t) => t.diagnostics)]
   const totalExamplesFailed = models.reduce((sum, m) => sum + m.examplesFailed, 0)
   const totalExamples = models.reduce((sum, m) => sum + m.examplesTotal, 0)
-  const { errors, warnings } = countBySeverity(allDiagnostics)
+  const { errors, warnings, notices } = countBySeverity(allDiagnostics)
 
   lines.push("")
   lines.push(
     `**${models.length} model(s) checked** · ${totalExamples - totalExamplesFailed}/${totalExamples} example(s) converge · ` +
-      `${errors} error(s), ${warnings} warning(s)`,
+      `${errors} error(s), ${warnings} warning(s), ${notices} notice(s)`,
   )
   lines.push("")
 

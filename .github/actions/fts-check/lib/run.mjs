@@ -102,8 +102,13 @@ export async function run(options) {
   }
 
   const allDiagnostics = [...models.flatMap((m) => m.diagnostics), ...tools.flatMap((t) => t.diagnostics)]
-  const errors = allDiagnostics.filter((d) => d.severity !== "warning").length
-  const warnings = allDiagnostics.length - errors
+  const warnings = allDiagnostics.filter((d) => d.severity === "warning").length
+  /* `info` never fails a build and is not a warning either: it reports
+     something true about the model that is not a defect — two rules that both
+     add to the result and therefore do not care about their order. An unknown
+     severity still counts as an error. */
+  const notices = allDiagnostics.filter((d) => d.severity === "info").length
+  const errors = allDiagnostics.length - warnings - notices
   const examplesFailed = models.reduce((sum, m) => sum + m.examplesFailed, 0)
 
   const failed = errors > 0 || (failOnWarning && warnings > 0)
@@ -118,6 +123,7 @@ export async function run(options) {
       diagnostics: allDiagnostics.length,
       errors,
       warnings,
+      notices,
       examplesFailed,
     },
     failed,

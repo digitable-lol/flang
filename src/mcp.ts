@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createInterface } from "node:readline"
-import { pathToFileURL } from "node:url"
+import { invokedDirectly } from "./invoked-directly.js"
 import { errorResult } from "./diagnostics.js"
 import { assertVerified, certify } from "./certificate.js"
 import { prove } from "./interpreter.js"
@@ -318,7 +318,6 @@ function isScalarRecord(value: unknown): value is Record<string, import("./model
   )
 }
 
-const invokedPath = process.argv[1]
-if (invokedPath !== undefined && import.meta.url === pathToFileURL(invokedPath).href) {
+if (invokedDirectly(import.meta.url)) {
   await runMcpServer()
 }

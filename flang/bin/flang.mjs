@@ -19,9 +19,10 @@
  * Поддержка `.fts` здесь не «бонус», а тот же тезис, что и у моста: любая
  * существующая модель FTS — валидная программа flang.
  */
+import { realpathSync } from "node:fs"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
-import { pathToFileURL } from "node:url"
+import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
 
@@ -532,7 +533,22 @@ function parseJson(text, what) {
   }
 }
 
+// Сравниваем РАЗРЕШЁННЫЕ пути, а не строки. npm ставит объявленные в bin
+// команды символьными ссылками в node_modules/.bin/, Node ссылки разрешает, и
+// argv[1] (путь ссылки) с import.meta.url (путь самого файла) не совпадают.
+// Проверка на равенство строк давала ложь, main() не вызывался, и программа
+// завершалась с кодом 0, не напечатав ни байта. Ровно так вели себя flang, fts
+// и fts-mcp в опубликованной 0.4.0: `node путь/к/flang.mjs check …` работал, а
+// `flang check …` после установки молчал.
 const invoked = process.argv[1]
-if (invoked !== undefined && import.meta.url === pathToFileURL(invoked).href) {
+let launchedAsProgram = false
+if (invoked !== undefined) {
+  try {
+    launchedAsProgram = realpathSync(fileURLToPath(import.meta.url)) === realpathSync(invoked)
+  } catch {
+    launchedAsProgram = false
+  }
+}
+if (launchedAsProgram) {
   process.exitCode = await main()
 }

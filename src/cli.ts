@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join, resolve } from "node:path"
-import { pathToFileURL } from "node:url"
+import { invokedDirectly } from "./invoked-directly.js"
 import { errorResult } from "./diagnostics.js"
 import { assertVerified, certify } from "./certificate.js"
 import { prove } from "./interpreter.js"
@@ -230,7 +230,6 @@ Usage:
 Commands emit JSON to stdout. Diagnostics are JSON on stderr and failures use a non-zero exit code.
 `
 
-const invokedPath = process.argv[1]
-if (invokedPath !== undefined && import.meta.url === pathToFileURL(invokedPath).href) {
+if (invokedDirectly(import.meta.url)) {
   process.exitCode = await main()
 }

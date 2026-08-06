@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 import type { FtsDocument, FtsProof, FtsVisualization, VisualizationMode } from "./model.js"
 
 export function visualize(

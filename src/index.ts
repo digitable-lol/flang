@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 export * from "./certificate.js"
 export * from "./coverage.js"
 export * from "./diagnostics.js"

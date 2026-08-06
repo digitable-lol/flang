@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 import { diagnosticError } from "./diagnostics.js"
 import type { FtsDocument, FtsProof, FtsProposition, FtsValue, PathSegment } from "./model.js"
 import { assertValid } from "./validate.js"

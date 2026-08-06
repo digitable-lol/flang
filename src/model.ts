@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 export type FtsScalar = string | number | boolean | null
 export type FtsValue = FtsScalar | FtsValue[] | { [key: string]: FtsValue }
 export type PathSelector = Record<string, FtsScalar>

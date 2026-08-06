@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 import { createHash } from "node:crypto"
 import { diagnosticError } from "./diagnostics.js"
 import { resolvePath } from "./interpreter.js"

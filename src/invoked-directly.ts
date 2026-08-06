@@ -1,5 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
+
 import { realpathSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Сборка и установка.
+#
+# Флаги сборки не смягчаются: -Werror -pedantic — часть контракта бэкенда,
+# напечатанный код обязан собираться без единого предупреждения. Ослабить их
+# здесь значило бы скрыть от себя же, что печать испортилась.
+set -euo pipefail
+
+: "${ASDF_INSTALL_TYPE:?}"
+: "${ASDF_INSTALL_VERSION:?}"
+: "${ASDF_INSTALL_PATH:?}"
+: "${ASDF_DOWNLOAD_PATH:?}"
+
+if [ "$ASDF_INSTALL_TYPE" != "version" ]; then
+  echo "плагин ставит только выпущенные версии: из ветки собрать нельзя," >&2
+  echo "потому что в репозитории компилятор лежит исходником на самом flang," >&2
+  echo "и чтобы получить из него первый бинарник, нужен Node." >&2
+  exit 1
+fi
+
+build="$(mktemp -d)"
+trap 'rm -rf "$build"' EXIT
+cp -R "${ASDF_DOWNLOAD_PATH}/." "$build"
+
+jobs="${ASDF_CONCURRENCY:-1}"
+make -C "$build" -j "$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
+
+mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
+install -m 0755 "${build}/flang_cli" "${ASDF_INSTALL_PATH}/bin/flang"
+if [ -f "${build}/libkompilyator_flang.a" ]; then
+  install -m 0644 "${build}/libkompilyator_flang.a" "${ASDF_INSTALL_PATH}/lib/"
+fi
+install -m 0644 "${build}"/*.h "${ASDF_INSTALL_PATH}/include/"
+
+# Проверяем не «запустился», а «понял язык»: подаём модуль и требуем, чтобы
+# компилятор насчитал в нём ровно одну связанную функцию. Битая установка
+# обязана падать здесь, а не у человека при первом запуске.
+probe='{"fn":"Число связанных функций","args":[{"l":[{"r":[["путь",{"s":"проба.flang"}],["текст",{"s":"модуль «Проба»\n\nтотальная функция «Два»\n  возвращает число\n  2\n"}]]}]},{"s":"проба.flang"}]}'
+answer="$(printf '%s\n' "$probe" | "${ASDF_INSTALL_PATH}/bin/flang")"
+case "$answer" in
+  *'"ok":true'*'"n":"1"'*) echo "flang ${ASDF_INSTALL_VERSION} установлен" ;;
+  *) echo "собранный компилятор ответил не то: ${answer}" >&2; exit 1 ;;
+esac

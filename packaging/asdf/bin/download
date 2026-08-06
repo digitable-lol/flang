@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Скачивание релизного архива: компилятор, уже напечатанный в C99.
+#
+# В архиве нет ни Node, ни самого flang — только C99 и Makefile. Поэтому
+# плагину не нужен ни один тулчейн, кроме компилятора C, который в системе есть
+# всегда. То же обещание даёт формула Homebrew и держит его тем же способом.
+set -euo pipefail
+
+: "${ASDF_INSTALL_VERSION:?не задана версия}"
+: "${ASDF_DOWNLOAD_PATH:?не задан каталог загрузки}"
+
+version="$ASDF_INSTALL_VERSION"
+archive="flang-${version}-c.tar.gz"
+url="https://github.com/digitable-lol/flang/releases/download/v${version}/${archive}"
+
+mkdir -p "$ASDF_DOWNLOAD_PATH"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+echo "flang ${version}: скачиваю ${archive}"
+if ! curl -fsSL -o "${tmp}/${archive}" "$url"; then
+  echo "не удалось скачать ${url}" >&2
+  echo "версии, которые можно поставить, показывает 'asdf list-all flang'" >&2
+  exit 1
+fi
+
+tar -xzf "${tmp}/${archive}" -C "$ASDF_DOWNLOAD_PATH"

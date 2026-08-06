@@ -1,0 +1,434 @@
+/*
+ * Сгенерировано flang (бэкенд C, flang/src/emit/c.mjs). Не редактировать руками.
+ * Модуль flang: «Компилятор flang».
+ * Файл: рантайм: значения, арена, UTF-8, диагностики.
+ * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
+ */
+/* Настройки этой программы; в самом рантайме те же имена объявлены через
+   #ifndef, поэтому он собирается и без этого блока. */
+#define FL_INDEX_BASE 1
+#define FL_MAX_DEPTH 20000
+#define FL_MAX_STEPS 40000000
+#define FL_MAX_TAIL_ARGS 8
+#define FL_MAX_ARGS 9
+
+/*
+ * Рантайм flang для бэкенда C — заголовок.
+ *
+ * Этот файл печатается бэкендом как есть, байт в байт, для любой программы:
+ * зависящие от программы значения (база индексации строк, предел глубины)
+ * лежат в отдельном «flang_config.h». Так диффы между двумя сборками
+ * показывают изменения модели, а не шум рантайма.
+ *
+ * ── Почему рантайм вообще нужен ────────────────────────────────────────────
+ * В C нет ни списков, ни строк как данных, ни сумм типов, ни сборщика мусора.
+ * Значения flang (SPEC, раздел 2) — скаляр, список, запись, вариант — обязаны
+ * получить представление, и оно обязано совпадать по наблюдаемому поведению с
+ * интерпретатором: те же значения, те же коды и тексты ошибок.
+ *
+ * ── Представление значения: теговое объединение ────────────────────────────
+ * `fl_value` — тег плюс объединение. Строка и список лежат в самом значении
+ * (указатель + длина), запись и вариант — за указателем.
+ *
+ * Почему не «отдельный тип C на каждую запись и на каждую сумму»: такой код
+ * читался бы приятнее, но список записей, структурное равенство, сообщение
+ * «запись не содержит поле «цена»» и разбор значения, пришедшего снаружи,
+ * потребовали бы рефлексии — то есть второго, теневого представления рядом с
+ * первым. Два представления одного значения — два набора расхождений с
+ * интерпретатором. Поэтому представление одно, а типизированный слой поверх
+ * него бэкенд печатает функциями-конструкторами (см. заголовок модуля).
+ *
+ * Длина строки хранится и в байтах, и в кодовых точках. Кодовые точки — это
+ * то, чем flang меряет строки (SPEC, раздел 5: «длина строки — в кодовых
+ * точках»), и считать их заново на каждом обращении значило бы сделать
+ * «длина» линейной там, где она обязана быть мгновенной.
+ *
+ * ── Память: арена ──────────────────────────────────────────────────────────
+ * Программа flang — чистое вычисление: ни ввода-вывода, ни изменяемого
+ * состояния, ни ссылок наружу. Значит время жизни всего, что она построила,
+ * это время жизни вызова. Ручной malloc/free по сгенерированному коду дал бы
+ * утечки на каждом раннем возврате по ошибке (а возврат по ошибке возможен
+ * почти в каждом узле), подсчёт ссылок — атомарные счётчики и циклы проверок
+ * ради того же самого. Арена решает вопрос одним движением: всё выделяется
+ * бампом указателя, а освобождается одним `fl_arena_reset`/`fl_arena_release`
+ * после того, как вызывающий забрал результат.
+ *
+ * Из этого следует главное правило API: **результат живёт в арене**. Список,
+ * строка, запись и вариант, возвращённые функцией, указывают в память арены;
+ * читать их можно до ближайшего `fl_arena_reset`, а сохранить надолго — только
+ * скопировав в свою память.
+ *
+ * И следствие, которое дороже всех остальных: раз арена ничего не отдаёт до
+ * конца вызова, каждая промежуточная копия остаётся лежать. Поэтому «добавить»
+ * не копирует список — он дописывает в хвостовой запас массива, а неизменяемость
+ * держит счётчик занятых ячеек `fl_grow` (полное объяснение — над
+ * `fl_b_dobavit` в flang_runtime.c). Без этого список из n элементов, собранный
+ * n вызовами «добавить», оставлял бы ~16·n² байт неотбираемого мусора.
+ *
+ * ── Ошибки: статус плюс выходной параметр ──────────────────────────────────
+ * Исключений в C нет. Контракт повторяет бэкенд C для FTS-моделей
+ * (tools/ftsc/src/emit/c.mjs): функция либо кладёт результат в *result и
+ * возвращает FL_OK, либо НЕ трогает *result и возвращает FL_ERROR, заполнив
+ * *error. `error` можно передать NULL, если текст не нужен.
+ *
+ * `fl_error.code` — не enum, а строка: коды flang («FLANG_TYPE») перечислимы,
+ * но код нарушенного постусловия приезжает данными из AST («FTS_UTILITY_PROPERTY»
+ * у моделей FTS), и перечисление перестало бы быть источником истины ровно там,
+ * где важнее всего совпасть с ядром.
+ */
+#ifndef FLANG_RUNTIME_H
+#define FLANG_RUNTIME_H
+
+/*
+ * ── Настройки, зависящие от программы ──────────────────────────────────────
+ * Бэкенд печатает их конкретные значения ПЕРЕД этим файлом, поэтому здесь
+ * стоят только запасные: файл обязан компилироваться и сам по себе, иначе его
+ * нельзя ни проверить компилятором в репозитории, ни взять отдельно в чужой
+ * проект. Отдельного «flang_config.h» намеренно нет: один файл, который и
+ * лежит на диске, и печатается, не может разойтись сам с собой.
+ */
+#ifndef FL_INDEX_BASE
+/* Индексация строк — с 1 и включительно с обоих концов (SPEC, раздел 5). */
+#define FL_INDEX_BASE 1
+#endif
+#ifndef FL_MAX_DEPTH
+/* Как у интерпретатора: глубже — почти наверняка ошибка, а не задача. */
+#define FL_MAX_DEPTH 10000
+#endif
+#ifndef FL_MAX_STEPS
+/* Как у интерпретатора: дольше — почти наверняка незавершающаяся функция. */
+#define FL_MAX_STEPS 1000000
+#endif
+#ifndef FL_MAX_TAIL_ARGS
+/* Ширина отскока батута: наибольшая арность среди взаимно рекурсивных функций. */
+#define FL_MAX_TAIL_ARGS 4
+#endif
+#ifndef FL_MAX_ARGS
+/* Ширина вызова по имени: наибольшая арность функций программы. */
+#define FL_MAX_ARGS 16
+#endif
+
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+/* ───────────────────────────── арена ───────────────────────────── */
+
+typedef struct fl_chunk fl_chunk;
+
+typedef struct fl_arena {
+  fl_chunk *chunks;  /* односвязный список всех купленных кусков */
+  fl_chunk *current; /* кусок, из которого идёт выдача */
+  size_t reserved;   /* сколько байт всего куплено у malloc */
+} fl_arena;
+
+/** Арену можно держать на стеке: init/release, без выделения под саму арену. */
+void fl_arena_init(fl_arena *arena);
+
+/** Выдаёт выровненный блок; NULL — кончилась память (единственная причина). */
+void *fl_arena_alloc(fl_arena *arena, size_t size);
+
+/**
+ * Продлевает на месте блок, выданный последним. Если `block` длиной `size` —
+ * ровно то, что арена отдала в последний раз, и в том же куске лежит ещё
+ * `extra` байт, блок вырастает без копирования и функция даёт true; иначе она
+ * не меняет ничего и даёт false. Всё, что арена умеет отменить, — это
+ * последняя выдача, поэтому продление и ограничено ею.
+ *
+ * Нужна ровно одному месту — «добавить» (см. fl_b_dobavit): накопление списка
+ * в цикле не выделяет ничего, пока хватает куска.
+ */
+bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t extra);
+
+/** Освобождает всё выданное, но оставляет куски себе: следующий вызов дешевле. */
+void fl_arena_reset(fl_arena *arena);
+
+/** Возвращает память системе. После неё арена снова пригодна к fl_arena_init. */
+void fl_arena_release(fl_arena *arena);
+
+/* ───────────────────────────── значения ───────────────────────────── */
+
+typedef enum fl_tag {
+  FL_NOTHING = 0, /* «ничто» */
+  FL_NUMBER,      /* число — IEEE-754 double, как в ядре FTS */
+  FL_FLAG,        /* признак */
+  FL_STRING,      /* строка — UTF-8, длина в байтах и в кодовых точках */
+  FL_LIST,        /* список — однородный по типу, но не по представлению */
+  FL_RECORD,      /* запись — объект FTS */
+  FL_VARIANT      /* вариант — конструктор суммы типов */
+} fl_tag;
+
+typedef struct fl_value fl_value;
+typedef struct fl_field fl_field;
+typedef struct fl_record fl_record;
+typedef struct fl_variant fl_variant;
+
+/*
+ * Хвостовой запас массива списка: сколько в нём ячеек всего и сколько уже
+ * занято. Устройство спрятано в flang_runtime.c — снаружи это непрозрачная
+ * пометка «этот список можно удлинить, не копируя»; правило, по которому
+ * удлинение остаётся безопасным, объяснено над `fl_b_dobavit`.
+ */
+typedef struct fl_grow fl_grow;
+
+struct fl_value {
+  fl_tag tag;
+  union {
+    double number;
+    bool flag;
+    struct {
+      /* НЕ обязана заканчиваться нулём: подстрока и хвост — это срезы. */
+      const char *utf8;
+      size_t bytes;
+      size_t points;
+    } string;
+    struct {
+      const fl_value *items;
+      size_t count;
+      /* Запас за концом; NULL — запаса нет, «добавить» скопирует. Поле не
+         наблюдаемо: равенство, длина и печать смотрят только на items и count.
+         Ширину значения оно не меняет — строка и без него занимает три слова. */
+      fl_grow *grow;
+    } list;
+    const fl_record *record;
+    const fl_variant *variant;
+  } as;
+};
+
+/* Имена полей всегда заканчиваются нулём: они приходят из модели, а не из
+   данных, и печатаются в диагностиках через %s. */
+struct fl_field {
+  const char *name;
+  fl_value value;
+};
+
+struct fl_record {
+  size_t count;
+  const fl_field *fields;
+};
+
+struct fl_variant {
+  const char *name;
+  size_t count;
+  const fl_field *fields;
+};
+
+/* ───────────────────────────── статус и ошибка ───────────────────────────── */
+
+typedef enum fl_status {
+  FL_OK = 0,
+  /* вычисление прекращено; код и текст — в fl_error, *result не тронут */
+  FL_ERROR = 1,
+  /* NULL там, где его быть не может: ошибка вызывающего, а не модели */
+  FL_INVALID_ARGUMENT = 2
+} fl_status;
+
+typedef struct fl_error {
+  const char *code;    /* «FLANG_TYPE», «FTS_UTILITY_PROPERTY», … */
+  const char *message; /* текст, дословно совпадающий с интерпретатором */
+} fl_error;
+
+const char *fl_status_text(fl_status status);
+
+/* Коды диагностик (SPEC, раздел 7) — для сравнения без опечаток. */
+#define FL_CODE_TYPE "FLANG_TYPE"
+#define FL_CODE_UNKNOWN_NAME "FLANG_UNKNOWN_NAME"
+#define FL_CODE_MATCH_NOT_EXHAUSTIVE "FLANG_MATCH_NOT_EXHAUSTIVE"
+#define FL_CODE_BUILTIN_ARGS "FLANG_BUILTIN_ARGS"
+#define FL_CODE_RECURSION_LIMIT "FLANG_RECURSION_LIMIT"
+#define FL_CODE_PROPERTY "FLANG_PROPERTY"
+#define FL_CODE_PARSE "FLANG_PARSE"
+/* Не из SPEC: у интерпретатора кончиться памяти не может, у программы на C — да. */
+#define FL_CODE_MEMORY "FLANG_MEMORY"
+
+/* ───────────────────────────── контекст вызова ───────────────────────────── */
+
+/*
+ * Арена плюс два счётчика: глубина и шаги. Ни один не украшение.
+ *
+ * Глубина: нехвостовая рекурсия в C идёт по настоящему стеку, и его
+ * переполнение это не исключение, а падение процесса. Интерпретатор в том же
+ * месте даёт FLANG_RECURSION_LIMIT, и сгенерированный код обязан давать его же.
+ *
+ * Шаги: обычная (не тотальная) функция flang может не завершаться, и глубину
+ * при этом не растить — хвостовой самовызов и взаимная хвостовая рекурсия идут
+ * в постоянной глубине. Интерпретатор ловит это лимитом шагов; без такого же
+ * счётчика напечатанная программа в том же месте крутилась бы вечно. Ровно это
+ * и делала: «Вечность» из курса собиралась и зависала.
+ *
+ * Оговорка о шаге. Шаг интерпретатора — итерация его машины, а не применение
+ * функции: одно применение стоит там многих шагов. Здесь шагом считается вход в
+ * функцию, виток цикла хвостового самовызова и отскок батута. Значит счётчик
+ * здесь всегда МЕНЬШЕ счётчика интерпретатора на том же вычислении, и при
+ * одинаковом пределе интерпретатор упирается в лимит первым. Расхождение
+ * одностороннее и безопасное: напечатанный код не объявит исчерпанным то, что
+ * интерпретатор досчитал до конца. Тот же порядок выбран в бэкендах Go, Rust и
+ * Python — иначе три из пяти целей печати расходились бы с двумя.
+ */
+typedef struct fl_ctx {
+  fl_arena *arena;
+  size_t depth;
+  size_t max_depth;
+  size_t steps;
+  size_t max_steps;
+} fl_ctx;
+
+void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
+
+/* Вход в функцию, способную к рекурсии; на превышении даёт FLANG_RECURSION_LIMIT. */
+fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error);
+void fl_leave(fl_ctx *ctx);
+
+/*
+ * Виток вычисления: вход в функцию, оборот цикла хвостового самовызова, отскок
+ * батута. Считается отдельно от глубины — хвостовая рекурсия глубину не растит,
+ * но завершаться от этого не начинает. Предел 0 отключает счёт.
+ *
+ * Имя `fl_tick`, а не `fl_step`: `fl_step` уже занят типом функции-шага батута
+ * ниже, и второй смысл у того же имени читался бы как ошибка.
+ */
+fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error);
+
+/*
+ * Ранний возврат по ошибке. Сгенерированный код состоит из него на треть,
+ * поэтому макрос: без него каждая строка обросла бы четырьмя.
+ */
+#define FL_TRY(expression)                 \
+  do {                                     \
+    const fl_status fl_try_status_ = (expression); \
+    if (fl_try_status_ != FL_OK) {         \
+      return fl_try_status_;               \
+    }                                      \
+  } while (0)
+
+/* ───────────────────────────── конструкторы ───────────────────────────── */
+
+fl_value fl_nothing(void);
+fl_value fl_number(double number);
+fl_value fl_flag(bool flag);
+
+/** Строка без копирования: годится для литералов и для срезов. */
+fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points);
+
+/** Строка с копированием в арену; кодовые точки считаются здесь. */
+fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out, fl_error *error);
+
+/** Список из готового массива значений (массив обязан жить в арене). Запаса у
+    такого списка нет: первое же «добавить» к нему скопирует и заведёт запас. */
+fl_value fl_list(const fl_value *items, size_t count);
+
+/** Массив под список: заполняется вызывающим, затем оборачивается в fl_list. */
+fl_status fl_list_alloc(fl_ctx *ctx, size_t count, fl_value **items, fl_error *error);
+
+/** Хвост списка — срез без копирования (значения неизменяемы, память общая). */
+fl_value fl_list_slice(fl_value list, size_t from);
+
+fl_status fl_record_new(fl_ctx *ctx, const char *const *names, const fl_value *values, size_t count,
+                        fl_value *out, fl_error *error);
+fl_status fl_variant_new(fl_ctx *ctx, const char *name, const char *const *names, const fl_value *values,
+                         size_t count, fl_value *out, fl_error *error);
+
+/* ───────────────────────────── предикаты и описание ───────────────────────────── */
+
+bool fl_is_list(fl_value value);
+bool fl_is_record(fl_value value);
+bool fl_is_variant(fl_value value);
+bool fl_is_scalar(fl_value value);
+bool fl_variant_is(fl_value value, const char *name);
+
+/** «ничто», «строка», «число», «признак», «список», «вариант «Имя»», «запись». */
+const char *fl_type_name(fl_ctx *ctx, fl_value value);
+
+/** Короткое описание значения для диагностик (describeValue интерпретатора). */
+const char *fl_describe(fl_ctx *ctx, fl_value value);
+
+/**
+ * Число в текст ровно по правилам ECMAScript Number::toString — потому что
+ * «к строке» и тексты диагностик обязаны совпасть с интерпретатором посимвольно.
+ * Буфера в 40 байт хватает на любой double.
+ */
+#define FL_NUMBER_TEXT_MAX 40
+size_t fl_number_text(double value, char *buffer);
+
+/** Структурное равенство; скаляры — как Object.is (NaN равен NaN, 0 ≠ −0). */
+bool fl_equal(fl_value left, fl_value right);
+
+/* ───────────────────────────── ошибки ───────────────────────────── */
+
+/** Всегда возвращает FL_ERROR: `return fl_fail(ctx, error, FL_CODE_TYPE, "…", …);` */
+fl_status fl_fail(fl_ctx *ctx, fl_error *error, const char *code, const char *format, ...);
+
+/* ───────────────────────────── операции языка ───────────────────────────── */
+
+fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error);
+fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error);
+fl_status fl_cond(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
+fl_status fl_keep(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
+fl_status fl_post(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
+                  fl_error *error);
+fl_status fl_match_fail(fl_ctx *ctx, fl_value value, fl_error *error);
+fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label, fl_value *out, fl_error *error);
+
+fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_gt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_lt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_concat(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+
+/* ───────────────────────────── встроенные формы ───────────────────────────── */
+
+fl_status fl_b_dlina(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_simvol(fl_ctx *ctx, fl_value index, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to, fl_value *out, fl_error *error);
+fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
+fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error);
+fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_pusto(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
+fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+
+/* ───────────────────────────── батут ───────────────────────────── */
+
+/*
+ * Взаимная хвостовая рекурсия. Интерпретатор переиспользует кадр возврата,
+ * поэтому «Чётное»/«Нечётное» на миллионе шагов работают в постоянной глубине.
+ * Обычный вызов C рос бы по стеку и упал бы там, где интерпретатор считает
+ * штатно, — то есть обещание совпадения нарушилось бы на ровном месте.
+ *
+ * Поэтому каждая функция компоненты сильной связности печатается ещё и как
+ * «шаг»: вместо вызова соседа он заполняет отскок и возвращается, а
+ * fl_trampoline крутит отскоки в цикле.
+ */
+typedef struct fl_bounce fl_bounce;
+
+typedef fl_status (*fl_step)(fl_ctx *ctx, const fl_value *args, fl_bounce *bounce, fl_value *result,
+                             fl_error *error);
+
+struct fl_bounce {
+  fl_step next; /* NULL — значение готово, отскока нет */
+  fl_value args[FL_MAX_TAIL_ARGS];
+};
+
+/*
+ * `function` — имя flang, от чьего лица считается отскок и, если предел шагов
+ * исчерпан, называется в диагностике. Батут крутит всю компоненту сильной
+ * связности, поэтому взять имя из самого отскока нельзя: оно менялось бы на
+ * каждом витке, а интерпретатор называет ту функцию, с которой вычисление
+ * началось.
+ */
+fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t count, const char *function,
+                        fl_value *result, fl_error *error);
+
+#endif /* FLANG_RUNTIME_H */

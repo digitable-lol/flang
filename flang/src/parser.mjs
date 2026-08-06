@@ -41,6 +41,14 @@
  *                 применить морфизм / by morphism|then by morphism|apply morphism,
  *                 следовательно|получаем/therefore, по закону/under law,
  *                 отображается в|в поле|в морфизм / maps to|to field|to morphism
+ *   конкурентность процесс/process, обрабатывает/handles, с запасом/with budget,
+ *                 надзор/supervision, стратегия/strategy,
+ *                 порог отказов/failure threshold, прогон/run, семя/seed
+ *
+ * Начальное состояние процесса называется уже занятым `начинает с`, а тип
+ * состояния — уже занятым `состояние`: слова «начальное» и «порог» из контракта
+ * конкурентности в языке заняты именами переменных репозитория, и заводить их
+ * ключевыми значило бы сломать чужие файлы (подробности — в `lexer.mjs`).
  *
  * Английское `starts with` закреплено за утилитой FTS (`начинает с`), поэтому
  * строковая встроенная форма `начинается с` по-английски пишется `begins with`:
@@ -89,6 +97,7 @@
  * Английской поверхности правило не мешает: латинские окончания не обрезаются.
  */
 
+import { ACTION_TYPE } from "./conc.mjs"
 import { FlangError, flangError, tokenize } from "./lexer.mjs"
 
 export { FlangError, flangError, tokenize }
@@ -132,7 +141,25 @@ const FTS_TYPE_NAMES = {
 }
 
 /** Слова, которые никогда не начинают выражение: на них тело функции кончается. */
-const NOT_EXPRESSION = new Set(["accepts", "returns", "example", "utility", "rule", "property"])
+const NOT_EXPRESSION = new Set([
+  "accepts",
+  "returns",
+  "example",
+  "utility",
+  "rule",
+  "property",
+  /* Конкурентность: объявления, а не выражения. Без них тело функции,
+     упершееся в `процесс` соседнего объявления, сообщало бы «неожиданное», не
+     называя слова. */
+  "process",
+  "supervision",
+  "run",
+  "handles",
+  "strategy",
+  "failureThreshold",
+  "seed",
+  "budget",
+])
 
 /** Ключевые слова, которые в позиции выражения читаются как обычные имена. */
 const SOFT_NAMES = new Set(["tNumber", "tString", "tFlag", "tMoney", "tDate", "litNull", "total"])
@@ -251,6 +278,11 @@ class Parser {
        проверяются иначе, чем функции, — стыковкой домена с кодоменом. */
     this.morphisms = []
     this.functions = []
+    /* Конкурентность (flang/conc/SPEC.md): процесс — объявление, а не значение,
+       поэтому у него собственный список, как у типов и функций. */
+    this.processes = []
+    this.supervisors = []
+    this.runs = []
     this.legacy = []
     this.module = ""
     /* Стек областей видимости локальных имён и множество узлов `var`,
@@ -447,8 +479,24 @@ class Parser {
     if (!this.at("eof")) this.fail("не разобрана конструкция: лишний текст после объявлений")
     this.bindNullaryCalls()
 
+    /* Словарь действий вводится языком, а не пользователем: обработчик обязан
+       вернуть значение объявленного типа, а объявлять «отправить» в каждой
+       программе заново значило бы дать двум программам называть отправку
+       по-разному — и планировщику пришлось бы угадывать. Приписывается только
+       там, где процесс есть: чистая программа без конкурентности остаётся
+       побайтово прежней (см. conc.mjs, «Почему словарь действий встроенный»). */
+    if (this.processes.length > 0 && !this.types.some((type) => type.name === ACTION_TYPE.name)) {
+      /* Копия, а не сам образец: узел уходит в `types` разобранной программы, а
+         оттуда — куда угодно, и один общий объект на все программы сразу стал бы
+         общим состоянием между разборами. */
+      this.types.push(structuredClone(ACTION_TYPE))
+    }
+
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
     if (this.morphisms.length > 0) program.morphisms = this.morphisms
+    if (this.processes.length > 0) program.processes = this.processes
+    if (this.supervisors.length > 0) program.supervisors = this.supervisors
+    if (this.runs.length > 0) program.runs = this.runs
     if (this.legacy.length > 0) program.legacy = this.legacy
     return program
   }
@@ -536,6 +584,12 @@ class Parser {
         return this.parseChain()
       case "identity":
         return this.parseIdentity()
+      case "process":
+        return this.processes.push(this.parseProcess())
+      case "supervision":
+        return this.supervisors.push(this.parseSupervision())
+      case "run":
+        return this.runs.push(this.parseRun())
       case "theorem":
         return this.legacy.push(this.parseTheorem())
       case "functor":
@@ -1343,6 +1397,216 @@ class Parser {
       fields[name] = this.parseAdditive()
     } while (this.eatKw("and") || this.eatPunct(","))
     return fields
+  }
+
+  // ── конкурентность: процесс, надзор, прогон ───────────────────────────────
+
+  /**
+   * Процесс — объявление, а не значение.
+   *
+   * ```
+   * процесс «Счётчик»
+   *   состояние «Счёт»
+   *   начинает с «пустой счёт»
+   *   принимает «Команда счёта»
+   *   обрабатывает «шаг счёта» с запасом 100000 витков
+   * ```
+   *
+   * Три из пяти слов уже были в языке: `состояние` (оно же в «является
+   * состоянием «X»»), `начинает с` (начальное значение утилиты FTS) и
+   * `принимает` (параметры функции). Это не экономия ради экономии: каждое
+   * новое ключевое слово запрещает одноимённую переменную во всех файлах
+   * репозитория, и цену этому уже платили — см. комментарий про «символы» в
+   * `lexer.mjs`. Контрактное «начальное» как раз и не заводится потому, что
+   * такая переменная в репозитории есть.
+   */
+  parseProcess() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя процесса")
+    const node = {
+      kind: "process",
+      name,
+      state: null,
+      initial: null,
+      accepts: null,
+      handler: null,
+      budget: null,
+      span: start.span,
+    }
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.eatKw("state")) {
+          node.state = this.expectName("ожидался тип состояния процесса")
+          this.endLine()
+          continue
+        }
+        if (this.eatKw("startsWith")) {
+          node.initial = this.expectName("ожидалось имя начального состояния")
+          this.endLine()
+          continue
+        }
+        if (this.eatKw("accepts")) {
+          node.accepts = this.expectName("ожидался тип сообщения процесса")
+          this.endLine()
+          continue
+        }
+        if (this.eatKw("handles")) {
+          node.handler = this.expectName("ожидалось имя обработчика")
+          if (this.eatKw("budget")) {
+            node.budget = this.expectNumber("после 'с запасом' ожидалось число витков")
+            this.skipFillerWords()
+          }
+          this.endLine()
+          continue
+        }
+        this.fail(
+          "не разобрана конструкция: в процессе ожидаются 'состояние', 'начинает с', 'принимает' или 'обрабатывает'",
+        )
+      }
+      this.exitBlock()
+    }
+
+    for (const [поле, слово] of [
+      ["state", "состояние"],
+      ["initial", "начинает с"],
+      ["accepts", "принимает"],
+      ["handler", "обрабатывает"],
+    ]) {
+      if (node[поле] === null) this.fail(`процесс «${name}» требует строку '${слово}'`, start)
+    }
+    return node
+  }
+
+  /**
+   * Надзор объявляется данными, а не кодом.
+   *
+   * ```
+   * надзор «Приём заказов»
+   *   процесс «Счётчик» стратегия «перезапустить»
+   *   порог отказов 3 за 5000 миллисекунд иначе «передать выше»
+   * ```
+   *
+   * Стратегия пишется в ёлочках, а не словом: ключевое слово «остановить»
+   * столкнулось бы с действием «остановить», а «передать выше» пришлось бы
+   * занимать двумя словами ради одной строки объявления.
+   */
+  parseSupervision() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя надзора")
+    const node = { kind: "supervisor", name, watch: [], threshold: null, span: start.span }
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("process")) {
+          const at = this.next()
+          const process = this.expectName("ожидалось имя процесса под надзором")
+          this.expectKw("strategy", "после имени процесса ожидалось 'стратегия'")
+          const strategy = this.expectName("ожидалось имя стратегии")
+          node.watch.push({ process, strategy, span: at.span })
+          this.endLine()
+          continue
+        }
+        if (this.atKw("failureThreshold")) {
+          const at = this.next()
+          if (node.threshold !== null) this.fail(`у надзора «${name}» больше одного порога отказов`, at)
+          const failures = this.expectNumber("после 'порог отказов' ожидалось число отказов")
+          this.skipFillerWords()
+          const window = this.expectNumber("после числа отказов ожидалось окно в миллисекундах")
+          this.skipFillerWords()
+          this.expectKw("else", "порог отказов заканчивается на 'иначе «стратегия»'")
+          const otherwise = this.expectName("ожидалось имя стратегии после 'иначе'")
+          node.threshold = { failures, window, otherwise, span: at.span }
+          this.endLine()
+          continue
+        }
+        this.fail(
+          "не разобрана конструкция: в надзоре ожидаются 'процесс … стратегия …' или 'порог отказов …'",
+        )
+      }
+      this.exitBlock()
+    }
+    if (node.watch.length === 0) this.fail(`надзор «${name}» не называет ни одного процесса`, start)
+    return node
+  }
+
+  /**
+   * Прогон — пример конкурентной программы: семя, входные сообщения, итог.
+   *
+   * ```
+   * прогон «два прибавления»
+   *   семя 4172
+   *   дано «Счётчик» принимает (вариант «прибавить» с «сколько» равным 2)
+   *   ожидается «Счётчик» равен (запись «Счёт» с «всего» равным 5)
+   * ```
+   *
+   * Слова `дано`, `ожидается` и `равен` — те же, что у обычного `пример`, и это
+   * не сходство, а тождество: конкурентная программа проверяется тем же
+   * аппаратом, что и остальной язык. Отличие ровно одно — `семя`: без него
+   * «ожидаемый итог» не имел бы смысла, потому что итогов у конкурентной
+   * программы столько, сколько чередований.
+   */
+  parseRun() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя прогона")
+    const node = { kind: "run", name, seed: null, inbox: [], expected: [], span: start.span }
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("seed")) {
+          const at = this.next()
+          if (node.seed !== null) this.fail(`у прогона «${name}» больше одного семени`, at)
+          node.seed = this.expectNumber("после 'семя' ожидалось число")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("given")) {
+          const at = this.next()
+          const process = this.expectName("ожидалось имя процесса-получателя")
+          this.expectKw("accepts", "после имени процесса ожидалось 'принимает'")
+          node.inbox.push({ process, message: this.parseLiteralValue(), span: at.span })
+          this.endLine()
+          continue
+        }
+        if (this.atKw("expected")) {
+          const at = this.next()
+          const process = this.expectName("ожидалось имя процесса")
+          if (!this.eatKw("cmpEq")) this.fail("ожидание записывается как 'ожидается «Процесс» равен значение'")
+          node.expected.push({ process, state: this.parseLiteralValue(), span: at.span })
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в прогоне ожидаются 'семя', 'дано' или 'ожидается'")
+      }
+      this.exitBlock()
+    }
+
+    if (node.seed === null) this.fail(`прогон «${name}» требует строку 'семя'`, start)
+    if (node.expected.length === 0) this.fail(`прогон «${name}» требует хотя бы одну строку 'ожидается'`, start)
+    return node
+  }
+
+  expectNumber(message) {
+    if (!this.at("number")) this.fail(message)
+    return this.next().value
+  }
+
+  /**
+   * Слова-пояснения: `витков`, `отказов`, `за`, `миллисекунд`.
+   *
+   * Они читаются глазами и пропускаются парсером. Резервировать под них
+   * ключевые слова значило бы запретить четыре существительных в качестве имён
+   * во всех файлах репозитория — цена, несопоставимая с пользой. Закавыченное
+   * имя не пропускается никогда: `«витков»` — это имя, а не пояснение.
+   */
+  skipFillerWords() {
+    while (this.at("name") && this.peek().quoted !== true) this.next()
   }
 
   // ── наследие FTS: утилиты, морфизмы, теоремы, функторы ────────────────────

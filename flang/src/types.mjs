@@ -20,6 +20,8 @@
  * каскада ложных ошибок.
  */
 
+import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
+
 /** Тип-джокер: совместим со всем. Им гасятся каскады после первой ошибки. */
 const UNKNOWN = Object.freeze({ kind: "unknown" })
 const NUMBER = Object.freeze({ kind: "number" })
@@ -106,6 +108,10 @@ export function checkTypes(program) {
 
   collectTypes(program, ctx)
   collectSignatures(program, ctx)
+  /* Процессы собираются ДО проверки тел: адресат действия «отправить»
+     сверяется с объявленными процессами прямо в теле обработчика, и знать о
+     них к этому моменту уже надо. */
+  checkProcesses(program, ctx)
 
   for (const fn of listFunctions(program)) {
     if (!isName(fn?.name)) continue
@@ -114,6 +120,8 @@ export function checkTypes(program) {
 
   checkMorphisms(program, ctx)
   checkFunctors(program, ctx)
+  checkSupervisors(program, ctx)
+  checkRuns(program, ctx)
 
   return { ok: diagnostics.length === 0, diagnostics, types: ctx.signatures }
 }
@@ -368,6 +376,363 @@ function checkFunctors(program, ctx) {
           узел,
         )
       }
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Конкурентность: процессы, надзор, прогоны                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Процессы (flang/conc/SPEC.md, шаг 1).
+ *
+ * Проверяется то, ради чего процесс вообще объявлением, а не значением:
+ * обработчик — обычная функция языка, и его сигнатуру можно сверить с
+ * объявлением до запуска. Три утверждения проверяются здесь и все три —
+ * утверждения обо всех входах, а не о примерах.
+ *
+ *   1. обработчик принимает ровно объявленный тип состояния и объявленный тип
+ *      сообщения, в этом порядке;
+ *   2. обработчик возвращает отклик — запись ровно из двух полей: «состояние»
+ *      того же типа и «действия» — список «Действие»;
+ *   3. обработчик без признака `тотальная` обязан назвать запас витков.
+ *
+ * Третье — ошибка, а не предупреждение, и это записано в контракте («Что
+ * проверяется и чем», пункт 4). Причина не в строгости ради строгости:
+ * обработчик, про который не известно ни что он завершается, ни сколько ему
+ * отпущено, держит свой процесс неограниченно долго, и планировщику нечего
+ * противопоставить. Предупреждение здесь означало бы «мы знаем, что программа
+ * может встать, и разрешаем это молча».
+ */
+function checkProcesses(program, ctx) {
+  const процессы = Array.isArray(program?.processes) ? program.processes : []
+  ctx.processes = new Map()
+  if (процессы.length === 0) return
+
+  for (const узел of процессы) {
+    if (!isName(узел?.name)) {
+      ctx.report("FLANG_PROCESS", "объявление процесса требует имени", узел)
+      continue
+    }
+    if (ctx.processes.has(узел.name)) {
+      ctx.report("FLANG_PROCESS", `процесс «${узел.name}» объявлен дважды`, узел)
+      continue
+    }
+
+    const состояние = namedOnly(узел.state, ctx, узел, `состояние процесса «${узел.name}»`)
+    const сообщение = namedOnly(узел.accepts, ctx, узел, `тип сообщений процесса «${узел.name}»`)
+    ctx.processes.set(узел.name, { node: узел, state: состояние, accepts: сообщение })
+
+    checkInitial(узел, состояние, ctx)
+    checkHandler(узел, состояние, сообщение, ctx)
+  }
+}
+
+/**
+ * Начальное состояние — функция без параметров.
+ *
+ * Не литерал и не выражение: перезапуск обязан давать ровно то же значение, что
+ * и первый запуск (контракт, «Отказ, надзор, перезапуск»), а функция без
+ * параметров — самая короткая запись «одно и то же значение всякий раз»,
+ * которая при этом проверяется по типу и печатается в C прямо.
+ */
+function checkInitial(узел, состояние, ctx) {
+  const signature = ctx.signatures.get(узел.initial)
+  if (!signature) {
+    ctx.report(
+      "FLANG_UNKNOWN_NAME",
+      `процесс «${узел.name}» начинает с «${String(узел.initial)}», но такой функции нет`,
+      узел,
+    )
+    return
+  }
+  if (signature.params.length !== 0) {
+    ctx.report(
+      "FLANG_PROCESS",
+      `начальное состояние «${signature.name}» процесса «${узел.name}» принимает ${signature.params.length} арг.: ` +
+        `начальное состояние — это значение, поэтому функция обязана быть без параметров`,
+      узел,
+    )
+  }
+  if (!sameType(signature.returns, состояние)) {
+    ctx.report(
+      "FLANG_TYPE",
+      `начальное состояние «${signature.name}» процесса «${узел.name}» даёт ${typeName(signature.returns)}, ` +
+        `а состояние объявлено как ${typeName(состояние)}`,
+      узел,
+    )
+  }
+}
+
+function checkHandler(узел, состояние, сообщение, ctx) {
+  const signature = ctx.signatures.get(узел.handler)
+  if (!signature) {
+    ctx.report(
+      "FLANG_UNKNOWN_NAME",
+      `процесс «${узел.name}» обрабатывает «${String(узел.handler)}», но такой функции нет`,
+      узел,
+    )
+    return
+  }
+
+  if (signature.params.length !== 2) {
+    ctx.report(
+      "FLANG_TYPE",
+      `обработчик «${signature.name}» процесса «${узел.name}» принимает ${signature.params.length} арг., ` +
+        `а обязан принимать два: состояние и сообщение`,
+      узел,
+    )
+  } else {
+    const ожидается = [
+      ["состояние", состояние],
+      ["сообщение", сообщение],
+    ]
+    ожидается.forEach(([роль, тип], индекс) => {
+      const параметр = signature.params[индекс]
+      if (!sameType(параметр.type, тип)) {
+        ctx.report(
+          "FLANG_TYPE",
+          `обработчик «${signature.name}» процесса «${узел.name}»: ${роль} объявлено как ${typeName(тип)}, ` +
+            `а параметр «${параметр.name}» имеет тип ${typeName(параметр.type)}`,
+          узел,
+        )
+      }
+    })
+  }
+
+  checkResponse(узел, signature, состояние, ctx)
+
+  /* Запас витков — единственный ответ на «обработчик может не завершиться»,
+     который у планировщика есть. Нет доказательства и нет запаса — программа
+     не собирается. */
+  if (!signature.total && узел.budget === null) {
+    ctx.report(
+      "FLANG_HANDLER_NOT_TOTAL",
+      `обработчик «${signature.name}» процесса «${узел.name}» не помечен тотальным, поэтому обязан назвать запас: ` +
+        `«обрабатывает «${signature.name}» с запасом N витков». Без запаса и без доказательства завершения ` +
+        `процесс может держать себя сколь угодно долго, и планировщику нечего этому противопоставить`,
+      узел,
+    )
+  }
+  if (узел.budget !== null && (!Number.isInteger(узел.budget) || узел.budget <= 0)) {
+    ctx.report(
+      "FLANG_PROCESS",
+      `запас витков процесса «${узел.name}» — ${узел.budget}: ожидалось целое положительное число`,
+      узел,
+    )
+  }
+}
+
+/** Отклик: запись ровно из «состояние» и «действия». */
+function checkResponse(узел, signature, состояние, ctx) {
+  const отклик = signature.returns
+  if (!отклик || отклик.kind === "unknown") return
+  if (отклик.kind !== "record") {
+    ctx.report(
+      "FLANG_TYPE",
+      `обработчик «${signature.name}» процесса «${узел.name}» возвращает ${typeName(отклик)}, ` +
+        `а обязан возвращать отклик — запись с полями «состояние» и «действия»`,
+      узел,
+    )
+    return
+  }
+  const поля = ctx.records.get(отклик.name)
+  if (!поля) return
+
+  const состояниеОтклика = поля.get("состояние")
+  if (состояниеОтклика === undefined) {
+    ctx.report(
+      "FLANG_TYPE",
+      `отклик «${отклик.name}» обработчика «${signature.name}» не имеет поля «состояние»`,
+      узел,
+    )
+  } else if (!sameType(состояниеОтклика, состояние)) {
+    ctx.report(
+      "FLANG_TYPE",
+      `поле «состояние» отклика «${отклик.name}» имеет тип ${typeName(состояниеОтклика)}, ` +
+        `а состояние процесса «${узел.name}» объявлено как ${typeName(состояние)}`,
+      узел,
+    )
+  }
+
+  const действия = поля.get("действия")
+  if (действия === undefined) {
+    ctx.report(
+      "FLANG_TYPE",
+      `отклик «${отклик.name}» обработчика «${signature.name}» не имеет поля «действия»`,
+      узел,
+    )
+  } else if (действия.kind !== "list" || действия.of?.name !== ACTION_TYPE_NAME) {
+    ctx.report(
+      "FLANG_TYPE",
+      `поле «действия» отклика «${отклик.name}» имеет тип ${typeName(действия)}, ` +
+        `а обязано быть списком «${ACTION_TYPE_NAME}»`,
+      узел,
+    )
+  }
+}
+
+/**
+ * Имя типа и только имя: состояние и сообщение процесса обязаны быть
+ * объявленной записью или суммой. Скаляр здесь запрещён намеренно — состояние
+ * процесса, которое является числом, невозможно ни расширить, ни прочитать по
+ * имени поля, а перезапуск такого процесса неотличим от его продолжения.
+ */
+function namedOnly(name, ctx, at, label) {
+  if (!isName(name)) {
+    ctx.report("FLANG_PROCESS", `${label} требует имени типа`, at)
+    return UNKNOWN
+  }
+  if (ctx.records.has(name)) return { kind: "record", name }
+  if (ctx.sums.has(name)) return { kind: "sum", name }
+  if (ctx.aliases.has(name)) return expandAlias(name, ctx)
+  ctx.report("FLANG_UNKNOWN_NAME", `${label}: неизвестный тип «${name}»`, at)
+  return UNKNOWN
+}
+
+/**
+ * Действие с адресатом: `отправить` и `через`.
+ *
+ * Здесь проверяется то, что делает объявление процесса не украшением, а
+ * контрактом: адресат обязан быть объявленным процессом, а сообщение — того
+ * типа, который этот процесс объявил в `принимает`. Тип поля «что» в словаре
+ * действий — джокер (полиморфизма в языке нет), поэтому без этой сверки
+ * отправка была бы нетипизированной вовсе.
+ *
+ * Адресат обязан быть литералом. Это ограничение шага 1, и оно записано в
+ * контракте: имя процесса как значение (открытый вопрос «Именование процессов»)
+ * ещё не решено, а проверять адресата, вычисленного в рантайме, нечем.
+ *
+ * Возвращает найденный процесс — его `принимает` становится ожидаемым типом
+ * поля «что». Сверять груз здесь нельзя: `constructType` всё равно обойдёт поля
+ * варианта, и второй проход по тому же выражению удвоил бы диагностики.
+ */
+function addresseeOf(expr, ctx) {
+  const адресат = (expr.fields ?? {})["кому"]
+  if (адресат === undefined) return null
+  if (адресат.kind !== "literal" || typeof адресат.value !== "string") {
+    ctx.report(
+      "FLANG_PROCESS",
+      `действие «${expr.variant}»: адресат обязан быть именем объявленного процесса, ` +
+        `записанным прямо здесь — вычисленное имя проверить нечем`,
+      адресат,
+    )
+    return null
+  }
+  const процесс = ctx.processes.get(адресат.value)
+  if (процесс === undefined) {
+    const известные = [...ctx.processes.keys()].map((имя) => `«${имя}»`).join(", ")
+    ctx.report(
+      "FLANG_UNKNOWN_PROCESS",
+      `действие «${expr.variant}» адресовано «${адресат.value}», но такой процесс не объявлен` +
+        (известные === "" ? "" : `; объявлены ${известные}`),
+      expr,
+    )
+    return null
+  }
+  return процесс
+}
+
+/**
+ * Надзор. Проверяется, что под надзором стоят объявленные процессы и что
+ * стратегия — одна из трёх названных контрактом.
+ *
+ * Чего здесь НЕТ: самого надзора. Планировщик эталона шага 1 стратегий не
+ * применяет — упавший процесс остаётся остановленным. Объявление разбирается и
+ * проверяется, но за ним пока не стоит поведения, и это записано в контракте.
+ */
+function checkSupervisors(program, ctx) {
+  const надзоры = Array.isArray(program?.supervisors) ? program.supervisors : []
+  if (надзоры.length === 0) return
+  const процессы = ctx.processes instanceof Map ? ctx.processes : new Map()
+
+  const стратегия = (имя, узел, где) => {
+    if (!STRATEGIES.includes(имя)) {
+      ctx.report(
+        "FLANG_PROCESS",
+        `${где}: стратегия «${имя}» неизвестна; их три — ${STRATEGIES.map((s) => `«${s}»`).join(", ")}`,
+        узел,
+      )
+    }
+  }
+
+  const виденные = new Set()
+  for (const узел of надзоры) {
+    if (виденные.has(узел.name)) ctx.report("FLANG_PROCESS", `надзор «${узел.name}» объявлен дважды`, узел)
+    виденные.add(узел.name)
+
+    const подНадзором = new Set()
+    for (const запись of узел.watch ?? []) {
+      if (!процессы.has(запись.process)) {
+        ctx.report(
+          "FLANG_UNKNOWN_PROCESS",
+          `надзор «${узел.name}» следит за «${запись.process}», но такой процесс не объявлен`,
+          запись,
+        )
+      }
+      if (подНадзором.has(запись.process)) {
+        ctx.report(
+          "FLANG_PROCESS",
+          `надзор «${узел.name}» называет процесс «${запись.process}» дважды: стратегия обязана быть одна`,
+          запись,
+        )
+      }
+      подНадзором.add(запись.process)
+      стратегия(запись.strategy, запись, `надзор «${узел.name}» за «${запись.process}»`)
+    }
+
+    const порог = узел.threshold
+    if (порог === null || порог === undefined) continue
+    стратегия(порог.otherwise, порог, `порог отказов надзора «${узел.name}»`)
+    for (const [поле, подпись] of [["failures", "число отказов"], ["window", "окно в миллисекундах"]]) {
+      if (!Number.isInteger(порог[поле]) || порог[поле] <= 0) {
+        ctx.report(
+          "FLANG_PROCESS",
+          `порог отказов надзора «${узел.name}»: ${подпись} — ${порог[поле]}, ожидалось целое положительное число`,
+          порог,
+        )
+      }
+    }
+  }
+}
+
+/**
+ * Прогон — пример конкурентной программы: семя, входные сообщения, итог.
+ * Сообщение сверяется с `принимает` адресата, ожидаемое состояние — с
+ * объявленным типом состояния. Ровно то же, что делает `checkExamples` для
+ * обычной функции, и по той же причине.
+ */
+function checkRuns(program, ctx) {
+  const прогоны = Array.isArray(program?.runs) ? program.runs : []
+  if (прогоны.length === 0) return
+  const процессы = ctx.processes instanceof Map ? ctx.processes : new Map()
+
+  for (const прогон of прогоны) {
+    const label = `прогон «${прогон.name}»`
+    if (!Number.isInteger(прогон.seed) || прогон.seed < 0) {
+      ctx.report("FLANG_PROCESS", `${label}: семя ${прогон.seed} — ожидалось целое неотрицательное число`, прогон)
+    }
+    if (процессы.size === 0) {
+      ctx.report("FLANG_PROCESS", `${label} записан, но в программе не объявлено ни одного процесса`, прогон)
+      continue
+    }
+
+    for (const запись of прогон.inbox ?? []) {
+      const процесс = процессы.get(запись.process)
+      if (процесс === undefined) {
+        ctx.report("FLANG_UNKNOWN_PROCESS", `${label}: процесс «${запись.process}» не объявлен`, запись)
+        continue
+      }
+      checkValue(запись.message, процесс.accepts, `${label}: сообщение процессу «${запись.process}»`, ctx, запись)
+    }
+    for (const ожидание of прогон.expected ?? []) {
+      const процесс = процессы.get(ожидание.process)
+      if (процесс === undefined) {
+        ctx.report("FLANG_UNKNOWN_PROCESS", `${label}: процесс «${ожидание.process}» не объявлен`, ожидание)
+        continue
+      }
+      checkValue(ожидание.state, процесс.state, `${label}: ожидаемое состояние «${ожидание.process}»`, ctx, ожидание)
     }
   }
 }
@@ -916,6 +1281,13 @@ function checkOperand(node, env, want, ctx, fnName, op, side) {
 function constructType(expr, env, ctx, fnName) {
   const owner = ctx.variantOwner.get(expr.variant)
   const given = expr.fields ?? {}
+  /* Действие с адресатом: адресат сверяется с объявленными процессами, а тип
+     груза берётся у адресата, а не из словаря действий — там он джокер, потому
+     что полиморфизма в языке нет. */
+  const адресат =
+    owner === ACTION_TYPE_NAME && ADDRESSED_ACTIONS.has(expr.variant) && ctx.processes?.size > 0
+      ? addresseeOf(expr, ctx)
+      : null
   if (!owner) {
     ctx.report("FLANG_UNKNOWN_NAME", `неизвестный конструктор варианта «${String(expr.variant)}»`, expr)
     for (const value of Object.values(given)) inferExpr(value, env, null, ctx, fnName)
@@ -927,9 +1299,10 @@ function constructType(expr, env, ctx, fnName) {
       ctx.report("FLANG_TYPE", `конструктор «${expr.variant}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
-    const actual = inferExpr(given[name], env, type, ctx, fnName)
-    if (!sameType(actual, type)) {
-      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(type)}, получен ${typeName(actual)}`, given[name])
+    const wanted = адресат !== null && name === "что" ? адресат.accepts : type
+    const actual = inferExpr(given[name], env, wanted, ctx, fnName)
+    if (!sameType(actual, wanted)) {
+      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(wanted)}, получен ${typeName(actual)}`, given[name])
     }
   }
   for (const name of Object.keys(given)) {

@@ -80,7 +80,11 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
       if (visible !== null && !visible.has(type.name)) continue
       const previous = originOfType.get(type.name)
       if (previous !== undefined) {
-        if (previous !== file) {
+        /* Тип, который вводит сам язык (сумма «Действие» из conc.mjs),
+           приписывается каждому файлу с процессами отдельно. Два таких файла
+           дали бы «объявлен в двух модулях» — конфликт, которого нет: это одно
+           и то же объявление, а не два разных. */
+        if (previous !== file && type.builtin !== true) {
           diagnostics.push(
             diagnostic(
               "FLANG_DUPLICATE_NAME",
@@ -234,7 +238,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
     }
   }
 
-  return {
+  const linked = {
     flang: 1,
     module: entry?.module ?? "",
     types,
@@ -242,4 +246,13 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
     legacy: entry?.legacy ?? [],
     diagnostics,
   }
+  /* Процессы, надзор и прогоны берутся у входного файла и только у него.
+     Причина не в лени: процесс — это объявление о программе целиком (у него
+     ящик, планировщик и итоговое состояние), и слить процессы двух модулей в
+     одну систему значило бы решить, чей прогон чей. Импортируемый модуль отдаёт
+     типы и функции — из них процесс собирается во входном файле. */
+  for (const поле of ["processes", "supervisors", "runs"]) {
+    if (Array.isArray(entry?.[поле]) && entry[поле].length > 0) linked[поле] = entry[поле]
+  }
+  return linked
 }

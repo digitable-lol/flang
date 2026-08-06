@@ -770,7 +770,7 @@
 // конфликта у образца.
 //
 // Форма — не список пар, а строка `|фраза:идентификатор|…|`, и это не
-// экономия места. Словаря в языке нет, значит поиск по списку из 244 записей
+// экономия места. Словаря в языке нет, значит поиск по списку из 274 записей
 // стоил бы 244 сравнений на каждое слово исходника — на корпусе это десятки
 // миллионов сравнений. Строка же ищется одной встроенной «содержит», то есть
 // одним `indexOf` рантайма. Ведущая `|` в ключе не даёт совпасть с хвостом
@@ -785,7 +785,8 @@
     "|multiplied by:opMul|делить на:opDiv|divided by:opDiv|остаток от:opMod|modulo:opMod|процентов:opPercent|процента:opPercent|процент:opPercent|percent:opPercent|percents:opPercent|равен:cmpEq|равна:cmpEq|равно:cmpEq|равным:cmpEq|равной:cmpEq|равное:cmpEq|equals:cmpEq|equal to:cmpEq|не равен:cmpNeq|не равна:cmpNeq|не равно:cmpNeq|is not equal to:cmpNeq|not equals:cmpNeq|больше:cmpGt|is greater than:cmpGt|greater than:cmpGt|меньше:cmpLt|is less than:cmpLt|less than:cmpLt|не больше:cmpLte|is at most:cmpLte|",
     "|at most:cmpLte|не меньше:cmpGte|is at least:cmpGte|at least:cmpGte|да:litTrue|true:litTrue|yes:litTrue|нет:litFalse|false:litFalse|no:litFalse|ничто:litNull|null:litNull|число:tNumber|числа:tNumber|числом:tNumber|числу:tNumber|number:tNumber|строка:tString|строки:tString|строкой:tString|строку:tString|текстом:tString|string:tString|признак:tFlag|признака:tFlag|признаком:tFlag|boolean:tFlag|flag:tFlag|деньги:tMoney|деньгами:tMoney|money:tMoney|",
     "|дата:tDate|даты:tDate|дату:tDate|датой:tDate|date:tDate|состояние:state|состоянием:state|state:state|является:is|is:is|иногда является:maybeIs|may be:maybeIs|утилита:utility|utility:utility|правило:rule|rule:rule|свойство:property|property:property|результат:result|result:result|начинает с:startsWith|starts with:startsWith|поле:field|поля:field|field:field|морфизм:morphism|morphism:morphism|после:after|after:after|цепочка:chain|chain:chain|сначала:firstStep|first:firstStep|затем:nextStep|next:nextStep|единица:identity|identity:identity|теорема:theorem|theorem:theorem|функтор:functor|functor:functor|",
-    "|утверждение:proposition|proposition:proposition|имеет:has|has:has|в данных:inData|in data:inData|найти где:findWhere|find where:findWhere|по морфизму:byMorphism|затем по морфизму:byMorphism|применить морфизм:byMorphism|затем применить морфизм:byMorphism|by morphism:byMorphism|then by morphism:byMorphism|apply morphism:byMorphism|then apply morphism:byMorphism|следовательно:therefore|получаем:therefore|therefore:therefore|по закону:law|under law:law|отображается в:mapsTo|maps to:mapsTo|отображается в поле:mapsToField|maps to field:mapsToField|отображается в морфизм:mapsToMorphism|maps to morphism:mapsToMorphism|"
+    "|утверждение:proposition|proposition:proposition|имеет:has|has:has|в данных:inData|in data:inData|найти где:findWhere|find where:findWhere|по морфизму:byMorphism|затем по морфизму:byMorphism|применить морфизм:byMorphism|затем применить морфизм:byMorphism|by morphism:byMorphism|then by morphism:byMorphism|apply morphism:byMorphism|then apply morphism:byMorphism|следовательно:therefore|получаем:therefore|therefore:therefore|по закону:law|under law:law|отображается в:mapsTo|maps to:mapsTo|отображается в поле:mapsToField|maps to field:mapsToField|отображается в морфизм:mapsToMorphism|maps to morphism:mapsToMorphism|",
+    "|процесс:process|process:process|обрабатывает:handles|handles:handles|с запасом:budget|with budget:budget|надзор:supervision|supervision:supervision|стратегия:strategy|strategy:strategy|порог отказов:failureThreshold|failure threshold:failureThreshold|прогон:run|run:run|семя:seed|seed:seed|"
   ]
 
 // Идентификатор ключевой фразы или пусто. Фраза приходит уже в нижнем

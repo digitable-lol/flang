@@ -21,6 +21,7 @@
  * было бы случайным.
  */
 import { FlangError, flangError, reifyValue, valuesEqual } from "./builtins.mjs"
+import { runConcurrentExamples } from "./conc.mjs"
 import { evaluate as interpret } from "./interpret.mjs"
 
 export { FlangError, flangError }
@@ -314,6 +315,15 @@ export function runExamples(program, evaluate = evaluateFlang) {
       }
     }
   }
+  /* Прогон конкурентной программы — такой же пример, как всякий другой: семя,
+     входные сообщения, ожидаемый итог. Он идёт в тот же список результатов
+     намеренно: иначе конкурентность стала бы местом, где `flang test` молчит, а
+     проверять её пришлось бы отдельным инструментом. Записи появляются только у
+     программы с прогонами, поэтому вывод остальных файлов не меняется. */
+  for (const прогон of runConcurrentExamples(program)) {
+    results.push({ function: `прогон «${прогон.run}»`, example: `семя ${прогон.seed}`, ...прогон })
+  }
+
   const passed = results.filter((result) => result.passed).length
   return { valid: passed === results.length, total: results.length, passed, failed: results.length - passed, results }
 }

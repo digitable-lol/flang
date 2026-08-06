@@ -483,6 +483,27 @@ public final class Flang {
   }
 
   /**
+   * «символы»: разложение строки в список односимвольных строк.
+   *
+   * <p>Идём по кодовым точкам, а не по char: в UTF-16 символ вне BMP занимает
+   * две единицы, и toCharArray разорвал бы суррогатную пару на два значения,
+   * ни одно из которых не является строкой. Кодовые точки — то же деление, что
+   * у «длина» и «подстрока».
+   */
+  public static Value bCharacters(Ctx ctx, Value source) {
+    String value = expectString("символы", source, "строка");
+    java.util.ArrayList<Value> points = new java.util.ArrayList<>();
+    int index = 0;
+    while (index < value.length()) {
+      int point = value.codePointAt(index);
+      int width = Character.charCount(point);
+      points.add(Value.text(value.substring(index, index + width)));
+      index += width;
+    }
+    return Value.list(points.toArray(new Value[0]));
+  }
+
+  /**
    * «разделить … по …».
    *
    * Поиск разделителя идёт по единицам UTF-16, а не по кодовым точкам, — ровно

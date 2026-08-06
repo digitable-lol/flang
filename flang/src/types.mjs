@@ -60,6 +60,7 @@ const EQUALITY = new Set(["eq", "neq"])
 const BUILTIN_ALIASES = new Map([
   ["длина", "длина"], ["length", "длина"],
   ["символ", "символ"], ["char", "символ"],
+  ["символы", "символы"], ["разложить", "символы"], ["decompose", "символы"],
   ["подстрока", "подстрока"], ["substring", "подстрока"],
   ["соединить", "соединить"], ["join", "соединить"],
   ["разделить", "разделить"], ["split", "разделить"],
@@ -1125,6 +1126,13 @@ function builtinType(expr, env, ctx, fnName) {
       return NUMBER
     case "разделить":
       if (arity(2)) { want(0, STRING); want(1, STRING) }
+      return { kind: "list", of: STRING }
+    /* Список строк, а не список чисел: кодовая точка числом потребовала бы
+       обратной формы «символ по коду», а с ней и решения про суррогаты. Список
+       односимвольных строк складывается обратно тем же «соединить», который
+       уже есть. */
+    case "символы":
+      if (arity(1)) want(0, STRING)
       return { kind: "list", of: STRING }
     case "начинается с":
       if (arity(2)) { want(0, STRING); want(1, STRING) }

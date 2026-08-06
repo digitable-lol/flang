@@ -894,6 +894,17 @@ def b_split(ctx, source, separator):
     return Value(TAG_LIST, [Value(TAG_STRING, part) for part in value.split(mark)])
 
 
+def b_characters(ctx, source):
+    """«символы»: разложение строки в список односимвольных строк.
+
+    Строка в Python — последовательность кодовых точек, поэтому итерация даёт
+    ровно то же деление, что «длина» и «подстрока». Пустая строка даёт пустой
+    список.
+    """
+    value = _expect_string("символы", source, "строка")
+    return Value(TAG_LIST, [Value(TAG_STRING, point) for point in value])
+
+
 def b_contains(ctx, left, right):
     """«содержит»: подстрока в строке либо значение в списке."""
     if left.tag == TAG_LIST:

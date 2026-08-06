@@ -848,6 +848,24 @@ func BSplit(ctx *Ctx, text, separator Value) (Value, error) {
 	return List(items), nil
 }
 
+// BCharacters — «символы»: разложение строки в список односимвольных строк.
+//
+// []rune идёт по кодовым точкам, а не по байтам и не по единицам UTF-16, —
+// то же деление, что у «длина» и «подстрока». Пустая строка даёт пустой
+// список.
+func BCharacters(ctx *Ctx, text Value) (Value, error) {
+	source, err := expectString("символы", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	runes := []rune(source)
+	items := make([]Value, len(runes))
+	for index, point := range runes {
+		items[index] = Text(string(point))
+	}
+	return List(items), nil
+}
+
 // BContains — «содержит»: подстрока в строке либо значение в списке.
 func BContains(ctx *Ctx, left, right Value) (Value, error) {
 	if left.Tag == TagList {

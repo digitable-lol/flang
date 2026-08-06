@@ -1221,6 +1221,12 @@ class Parser {
         this.expectKw("to", "у 'символ' ожидалось 'в строке'")
         return { kind: "builtin", name: "символ", args: [position, this.parsePostfix()], span: token.span }
       }
+      case "decompose": {
+        this.next()
+        const text = this.parsePostfix()
+        this.expectKw("intoCharacters", "у 'разложить' ожидалось 'на символы'")
+        return { kind: "builtin", name: "символы", args: [text], span: token.span }
+      }
       case "substring": {
         this.next()
         const text = this.parsePostfix()

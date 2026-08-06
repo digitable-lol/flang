@@ -843,6 +843,20 @@ defmodule Flang.Rt do
     raise fail(@code_builtin_args, "«длина»: ожидается строка или список, получено " <> type_name(value))
   end
 
+  @doc """
+  «символы»: разложение строки в список односимвольных строк.
+
+  `String.codepoints/1`, а не `String.graphemes/1`: графема склеивает базовый
+  символ с комбинирующими знаками в один элемент, и «е» с ударением стало бы
+  одним значением вместо двух. Эталон делит по кодовым точкам (`Array.from`),
+  значит и здесь кодовые точки — иначе цель разошлась бы с интерпретатором на
+  первом же тексте с диакритикой.
+  """
+  def b_characters(source) do
+    value = expect_string("символы", source, "строка")
+    {:list, Enum.map(String.codepoints(value), fn point -> {:str, point} end)}
+  end
+
   @doc "«символ … в …». Индексация с 1 и включительно (SPEC, раздел 5)."
   def b_char(index, source) do
     position = expect_integer("символ", index, "индекс")

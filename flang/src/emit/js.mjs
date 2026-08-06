@@ -397,6 +397,14 @@ function $b_razdelit(text, separator) {
   return text.split(separator)
 }
 
+function $b_simvoly(text) {
+  $expectString("символы", text, "строка")
+  /* Array.from идёт по кодовым точкам, а не по единицам UTF-16: [...text] и
+     text.split("") разошлись бы на первом же символе вне BMP. То же деление,
+     что у «длина» и «подстрока» в builtins.mjs. */
+  return Array.from(text)
+}
+
 function $b_soderzhit(left, right) {
   if ($isList(left)) return left.some((item) => $equal(item, right))
   const text = $expectString("содержит", left, "строка или список")
@@ -546,6 +554,7 @@ runtimeEntry("$b_simvol", ["$fail", "$expectInteger", "$expectString", "$INDEX_B
 runtimeEntry("$b_podstroka", ["$fail", "$expectInteger", "$expectString", "$INDEX_BASE"], fromSource($b_podstroka))
 runtimeEntry("$b_soedinit", ["$fail", "$isList", "$expectString", "$typeName"], fromSource($b_soedinit))
 runtimeEntry("$b_razdelit", ["$fail", "$expectString"], fromSource($b_razdelit))
+runtimeEntry("$b_simvoly", ["$expectString"], fromSource($b_simvoly))
 runtimeEntry("$b_soderzhit", ["$isList", "$equal", "$expectString"], fromSource($b_soderzhit))
 runtimeEntry("$b_nachinaetsya_s", ["$expectString"], fromSource($b_nachinaetsya_s))
 runtimeEntry("$b_k_chislu", ["$fail", "$expectString"], fromSource($b_k_chislu))
@@ -566,6 +575,7 @@ const BUILTIN_HELPERS = new Map([
   ["подстрока", "$b_podstroka"],
   ["соединить", "$b_soedinit"],
   ["разделить", "$b_razdelit"],
+  ["символы", "$b_simvoly"],
   ["содержит", "$b_soderzhit"],
   ["начинается с", "$b_nachinaetsya_s"],
   ["к числу", "$b_k_chislu"],
@@ -585,6 +595,7 @@ const BUILTIN_ARITY = new Map([
   ["подстрока", 3],
   ["соединить", 2],
   ["разделить", 2],
+  ["символы", 1],
   ["содержит", 2],
   ["начинается с", 2],
   ["к числу", 1],

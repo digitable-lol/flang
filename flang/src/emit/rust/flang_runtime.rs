@@ -1042,6 +1042,15 @@ pub fn b_split(_ctx: &Ctx, source: Value, separator: Value) -> Result<Value, Err
     Ok(list(string.split(mark).map(text).collect()))
 }
 
+/// «символы»: разложение строки в список односимвольных строк.
+///
+/// `chars()` идёт по скалярным значениям Unicode — то же деление, что у
+/// «длина» и «подстрока». Пустая строка даёт пустой список.
+pub fn b_characters(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
+    let string = expect_string("символы", &source, "строка")?;
+    Ok(list(string.chars().map(|point| text(&point.to_string())).collect()))
+}
+
 /// «содержит»: подстрока в строке либо значение в списке.
 pub fn b_contains(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {

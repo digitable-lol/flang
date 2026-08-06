@@ -1362,6 +1362,47 @@ fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value
   return FL_OK;
 }
 
+/*
+ * Разложение строки в список односимвольных строк — по кодовым точкам.
+ *
+ * Куски не копируются: каждая строка списка одалживает байты исходной
+ * (`fl_text_borrow`), потому что исходная строка живёт в той же арене и до
+ * конца вызова никуда не денется. Список из n символов стоит поэтому одного
+ * выделения на массив, а не n выделений на строки.
+ *
+ * Пустая строка даёт пустой список — так же, как в эталоне.
+ */
+fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  size_t count = 0;
+  size_t index = 0;
+  size_t start = 0;
+  fl_value *items = NULL;
+  FL_TRY(fl_expect_string(ctx, "символы", text, "строка", error));
+
+  count = fl_utf8_points(text.as.string.utf8, text.as.string.bytes);
+  if (count == 0) {
+    *out = fl_list(NULL, 0);
+    return FL_OK;
+  }
+
+  FL_TRY(fl_list_alloc(ctx, count, &items, error));
+  count = 0;
+  /* Ведущий байт кодовой точки — тот, у которого старшие два бита не 10.
+     Встретив следующий ведущий, закрываем предыдущий символ. */
+  for (index = 1; index <= text.as.string.bytes; index += 1) {
+    const bool конец = index == text.as.string.bytes;
+    const bool ведущий =
+        !конец && ((unsigned char)text.as.string.utf8[index] & 0xC0u) != 0x80u;
+    if (конец || ведущий) {
+      items[count] = fl_text_borrow(text.as.string.utf8 + start, index - start, 1);
+      count += 1;
+      start = index;
+    }
+  }
+  *out = fl_list(items, count);
+  return FL_OK;
+}
+
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
   if (left.tag == FL_LIST) {
     size_t index = 0;

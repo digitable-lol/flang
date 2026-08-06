@@ -549,6 +549,26 @@ public static class Flang
     /// культурное сравнение в .NET умеет считать пустой строкой то, что ею не
     /// является, и находить «совпадения» там, где их нет.
     /// </summary>
+    /// <summary>
+    /// «символы»: разложение строки в список односимвольных строк.
+    ///
+    /// Идём по кодовым точкам, а не по char: символ вне BMP занимает две
+    /// единицы UTF-16, и посимвольный обход разорвал бы суррогатную пару.
+    /// </summary>
+    public static Value BCharacters(Ctx ctx, Value source)
+    {
+        string value = ExpectString("символы", source, "строка");
+        var points = new List<Value>();
+        int index = 0;
+        while (index < value.Length)
+        {
+            int width = char.IsHighSurrogate(value[index]) && index + 1 < value.Length ? 2 : 1;
+            points.Add(Value.Text(value.Substring(index, width)));
+            index += width;
+        }
+        return Value.List(points.ToArray());
+    }
+
     public static Value BSplit(Ctx ctx, Value source, Value separator)
     {
         string value = ExpectString("разделить", source, "строка");

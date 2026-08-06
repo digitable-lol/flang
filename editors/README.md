@@ -36,8 +36,17 @@ editors/
   vscode-fts/        TextMate grammar + minimal VS Code extension
   chroma/            Chroma XML lexer (Hugo `fts` code fences, other Go tools)
   linguist/          github-linguist submission scaffold (languages.yml + samples/)
+  flang-lsp/         setup notes for the `.flang` language server (no grammar)
   README.md          this file
 ```
+
+Everything except `flang-lsp/` is a grammar: it colours text and knows nothing
+about it. `flang-lsp/` is the odd one out on purpose — it documents how to point
+VS Code and Neovim at `flang-lsp`, the language server for `.flang` files that
+ships in this package's `bin` (source: `flang/src/lsp.mjs`,
+`flang/bin/flang-lsp.mjs`). It gives live diagnostics from the same road as
+`flang check`, completion, hover signatures and go-to-definition — not
+highlighting.
 
 `../.gitattributes` (repo root) additionally marks `*.fts linguist-language=FTS`
 so GitHub attributes/diffs treat the extension consistently even before the

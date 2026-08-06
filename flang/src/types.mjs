@@ -959,7 +959,11 @@ function sameType(a, b) {
   return true
 }
 
-function typeName(type) {
+/* Экспортируется ради наведения в редакторе: сигнатуру функции там показывает
+   языковой сервер, и называть типы он обязан теми же словами, какими называет
+   их диагностика. Иначе у языка появился бы второй словарь — тот же довод, по
+   которому оболочка печатает значения поверхностью языка. */
+export function typeName(type) {
   if (!type) return "неизвестный тип"
   if (type.optional === true) return `${typeName({ ...type, optional: false })} или ничто`
   switch (type.kind) {

@@ -14,6 +14,7 @@
   },
   "bin": {
     "flang": "./flang/bin/flang.mjs",
+    "flang-lsp": "./flang/bin/flang-lsp.mjs",
     "fts": "./dist/src/cli.js",
     "fts-mcp": "./dist/src/mcp.js",
     "ftsc": "./tools/ftsc/bin/ftsc.mjs",

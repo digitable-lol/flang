@@ -24,7 +24,69 @@ import { dirname, isAbsolute, resolve } from "node:path"
 
 /** Ошибка связывания в том же формате, что остальные диагностики языка. */
 function diagnostic(code, message, span) {
-  return span === undefined ? { code, message, severity: "error" } : { code, message, severity: "error", span }
+  return span === undefined || span === null
+    ? { code, message, severity: "error" }
+    : { code, message, severity: "error", span }
+}
+
+/**
+ * Имя файла в местах разобранного модуля.
+ *
+ * ── Зачем ──────────────────────────────────────────────────────────────────
+ * Диагностика flang несёт строку и столбец, но не файл: одному файлу оно и не
+ * нужно. После связывания нужно: «строка 12» одинаково правдоподобно указывает
+ * и во входной файл, и в импортированный, а различить их нечем. Для CLI это
+ * неудобство — человек видит одно сообщение и догадывается. Для редактора это
+ * ложь: подчёркивание уезжает в чужой буфер, на строку, к ошибке отношения не
+ * имеющую.
+ *
+ * Чинится там, где ломается, — в языке, а не в языковом сервере: место
+ * рождается в разборе, значит имя файла надо проставить сразу после разбора, и
+ * тогда его унаследует всякий, кто строит диагностику по узлу (`spanOf` в
+ * types.mjs и totality.mjs отдаёт ТОТ ЖЕ объект места). Сервер ничего не
+ * восстанавливает и ничего не угадывает — он читает поле.
+ *
+ * ── Почему по просьбе, а не всегда ─────────────────────────────────────────
+ * AST — не внутреннее дело этого файла. У языка две реализации связывания:
+ * здесь и на самом flang (`flang/self`), и тест самораскрутки сверяет их
+ * ПОБАЙТОВО, печатью в JSON. Всякое новое поле в AST — это работа, которую
+ * обязаны сделать обе, иначе одна из них перестаёт быть реализацией того же
+ * языка. Пока вторая про файлы не знает, поле проставляется только тому, кто
+ * попросил (`attributeFiles`), и печать AST остаётся прежней: `flang ast` и
+ * `flang check` не просят, языковой сервер просит.
+ *
+ * Это не «временный костыль до реализации в self»: имя файла и не должно
+ * попадать в печать AST. AST описывает программу, а не то, из каких файлов её
+ * собрали, — файлы нужны диагностике, а она и получает их через тот же объект
+ * места, ни во что не печатаясь.
+ *
+ * Проставляет имя загрузчик, а не сам `parse`: разбор одного файла обязан
+ * давать побайтово прежний AST (`flang ast` без импортов сверяется с ним в
+ * тесте), да и парсер файлов не читает — это работа загрузчика. Отсюда и
+ * экспорт: тот, кто загрузил текст, знает, как этот текст называется.
+ *
+ * Обход итеративный, а не рекурсивный: тело `core/parser.flang` глубже, чем
+ * стек по умолчанию, и рекурсия здесь однажды упала бы не на своём файле.
+ */
+export function stampFile(root, file) {
+  const seen = new WeakSet()
+  const stack = [root]
+  while (stack.length > 0) {
+    const node = stack.pop()
+    if (node === null || typeof node !== "object" || seen.has(node)) continue
+    seen.add(node)
+    if (Array.isArray(node)) {
+      for (const item of node) stack.push(item)
+      continue
+    }
+    /* Место уже названное чужим файлом не переписываем: узел мог приехать из
+       импортированного модуля, и переклеить ему имя значило бы соврать. */
+    if (node.span !== null && typeof node.span === "object" && node.span.file === undefined) {
+      node.span.file = file
+    }
+    for (const value of Object.values(node)) stack.push(value)
+  }
+  return root
 }
 
 /** Импорты лежат в legacy — там же, куда их кладёт parseModuleHeader. */
@@ -46,9 +108,15 @@ function exportsOf(program) {
  * `parse` передаётся снаружи, а не импортируется здесь: bin/flang.mjs уже умеет
  * находить функцию разбора среди нескольких возможных имён, и дублировать этот
  * выбор значит однажды разойтись с ним.
+ *
+ * `options.attributeFiles` — проставить в места имя файла, из которого узел
+ * приехал (см. `stampFile`). По умолчанию нет: печать AST от этого не меняется.
  */
 export async function linkProgram(entryFile, source, parse, options = {}) {
   const readSource = options.readFile ?? ((file) => readFile(file, "utf8"))
+  /* Без просьбы — тождество: ни одного лишнего поля в AST и ни одного лишнего
+     обхода дерева на каждом связывании. */
+  const mark = options.attributeFiles === true ? stampFile : (node) => node
   const diagnostics = []
   const types = []
   const functions = []
@@ -138,14 +206,15 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
 
     let program
     try {
-      program = parse(text, file)
+      program = mark(parse(text, file), file)
     } catch (error) {
       /* У ошибки разбора уже есть код и место — заворачивать её своим текстом
-         значит потерять строку, на которой всё сломалось. */
+         значит потерять строку, на которой всё сломалось. Не хватает ей ровно
+         одного: файла, в котором эта строка находится. */
       const wrapped = error?.diagnostics ?? [
         diagnostic("FLANG_PARSE", error instanceof Error ? error.message : String(error)),
       ]
-      diagnostics.push(...wrapped)
+      diagnostics.push(...mark(wrapped, file))
       loading.pop()
       loaded.add(file)
       return null
@@ -153,12 +222,18 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
 
     if (importsOf(program).length > 0) withImports.add(file)
 
+    /* Заголовок модуля — место, куда указывают беды импорта: самих строк
+       `использует` в AST нет (у записи импорта нет места), а заголовок стоит
+       ровно над ними. Это не точное место, но честное: тот же файл, тот же
+       блок. Выдумывать строку было бы хуже. */
+    const headerSpan = (program.legacy ?? []).find((node) => node?.construct === "moduleHeader")?.span
+
     for (const entry of importsOf(program)) {
       const target = isAbsolute(entry.from) ? entry.from : resolve(dirname(file), entry.from)
       if (loaded.has(target) || loading.includes(target)) {
         if (loading.includes(target)) {
           diagnostics.push(
-            diagnostic("FLANG_IMPORT_CYCLE", `циклический импорт: ${[...loading, target].join(" → ")}`),
+            diagnostic("FLANG_IMPORT_CYCLE", `циклический импорт: ${[...loading, target].join(" → ")}`, headerSpan),
           )
         }
         continue
@@ -171,6 +246,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
           diagnostic(
             "FLANG_IMPORT_NOT_FOUND",
             `не найден модуль «${entry.category}»: ${target} (${error instanceof Error ? error.message : String(error)})`,
+            headerSpan,
           ),
         )
         continue
@@ -189,6 +265,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
           diagnostic(
             "FLANG_IMPORT_NAME",
             `модуль в ${target} называется «${child.module}», а импортируется как «${entry.category}»`,
+            headerSpan,
           ),
         )
       }
@@ -217,7 +294,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
   for (const [file, text] of sources) {
     if (!withImports.has(file)) continue
     try {
-      reparsed.set(file, parse(text, file, names))
+      reparsed.set(file, mark(parse(text, file, names), file))
     } catch {
       /* Файл уже разобрался на первом проходе, значит второй провалиться не
          может; но если это случилось — оставляем результат первого прохода,

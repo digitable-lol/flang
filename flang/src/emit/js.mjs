@@ -68,6 +68,7 @@
 //      ровно, и сравнивать результаты двух движков можно структурно.
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -658,24 +659,12 @@ function renderNumber(value) {
 }
 
 /**
- * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
- * не занимают, и потому исходник с ними читается не так, как исполняется —
- * «Trojan Source» (CVE-2021-42574). JSON.stringify пропускает их сырыми.
- * Движок такой модуль выполнит, но печатать их так всё равно нельзя: файл с
- * ними нечитаем в ревью, а набор общий с бэкендами C и Rust, где это прямая
- * ошибка сборки. В литерал они попадают законно: таблица блоков лексера
- * (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F подряд.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
-  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
-  0x2068 /* FSI */, 0x2069 /* PDI */,
-])
-
-/**
  * Строковый литерал JS: как JSON.stringify, но двунаправленные управляющие —
- * через `\uXXXX`. Значение то же: `‪` и сырой U+202A — одна и та же
- * кодовая точка, разница только в записи.
+ * через `\uXXXX` (набор — bidi.mjs, общий на все бэкенды обоих компиляторов).
+ * Значение то же: `\u202a` в литерале JS и сырой U+202A — одна и та же кодовая
+ * точка, разница только в записи. Здесь набор задан кодами, а не символами:
+ * сырой управляющий в комментарии этого файла делал бы с ним ровно то, от чего
+ * он стережёт (и был здесь до правки — единственный на весь репозиторий).
  */
 function jsstring(value) {
   /* Экранирование кавычек, слэшей и управляющих оставлено JSON.stringify:
@@ -972,7 +961,13 @@ export function emitJs(program, options = {}) {
   parts.push(...sections.filter((section) => section.length > 0))
 
   const path = options.path ?? `${moduleName === null ? "program" : snake(moduleName)}.js`
-  return { files: [{ path, content: `${parts.join("\n\n")}\n` }] }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии — в шапку модуля и в jsdoc функции, — а комментарий читают
+     первым и проверить исполнением не могут: движок выполнит такой файл молча.
+     Форма JS — `\uXXXX`, та же, что в литерале. */
+  const files = [{ path, content: `${parts.join("\n\n")}\n` }]
+  return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
 }
 
 function renderRuntime(used, base) {

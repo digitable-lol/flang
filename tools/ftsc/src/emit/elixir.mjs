@@ -21,6 +21,7 @@
  *   8. Функтор между категориями — функция `A → B` в отдельном модуле.
  */
 import { pascal, snake, createNamer } from "../naming.mjs"
+import { escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
 import { RESERVED_MODULES } from "./elixir/types.mjs"
 import {
   buildRegistry,
@@ -114,5 +115,12 @@ export function emit(program, options) {
     })
   }
 
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («# Правило «…».»), и в строковый литерал (имя примера в
+     test/2 ExUnit, текст ошибки свойства). Для elixirc это отказ разбора и там, и
+     там («invalid bidirectional formatting character in comment/string»): до этого
+     фильтра напечатанный проект с таким именем не собирался вовсе. Форма Elixir —
+     `\u{X…}`, её же предлагает сам компилятор в тексте отказа. */
+  return escapeBidiInFiles(files, escapeBidiBraced)
 }

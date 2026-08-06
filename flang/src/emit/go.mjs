@@ -94,6 +94,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -372,21 +373,13 @@ function stronglyConnected(names, edges) {
  * По символам, а не по байтам: файл записывается в UTF-8, и «Длина»,
  * разобранная на байты и собранная обратно как символы, превратилась бы в
  * двойную кодировку — имя перестало бы совпадать с именем в интерпретаторе.
+ *
+ * Двунаправленные управляющие (набор — bidi.mjs, общий на все бэкенды обоих
+ * компиляторов) уезжают в `\uXXXX`: go vet за сырые не ругается, но набор общий
+ * с C, Rust и Elixir, где это прямая ошибка сборки. Ровно четыре цифры, поэтому
+ * цифра, стоящая в строке следом, к экранированию не приклеится; кодовая точка
+ * и байты те же — меняется только запись.
  */
-/**
- * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
- * не занимают, и потому исходник с ними читается не так, как исполняется —
- * «Trojan Source» (CVE-2021-42574). go vet за это не ругается, но печатать их
- * сырыми всё равно нельзя: файл с ними нечитаем в ревью, а набор общий с
- * бэкендами C и Rust, где это прямая ошибка сборки. В литерал они попадают
- * законно: таблица блоков лексера перечисляет весь блок U+2000…U+207F.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
-  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
-  0x2068 /* FSI */, 0x2069 /* PDI */,
-])
-
 function gostring(value) {
   let result = '"'
   for (const character of String(value)) {
@@ -546,7 +539,13 @@ export function emitGo(program, options = {}) {
     })
   }
   files.push({ path: "Makefile", content: renderMakefile(options.cli !== false) })
-  return { files }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии — в шапку файла и в строку «Ident — функция flang «…»», — а
+     комментарий читают первым и проверить исполнением не могут. go vet о таком
+     не предупреждает: молчание тулчейна здесь и есть беда, а не оправдание.
+     Форма Go — `\uXXXX`, та же, что в литерале. */
+  return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
 }
 
 function banner(moduleName, what) {

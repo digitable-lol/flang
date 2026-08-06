@@ -99,6 +99,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../../../tools/ftsc/src/bidi.mjs"
 import { pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -386,22 +387,6 @@ function stronglyConnected(names, edges) {
 /* ═══════════════════════════ литералы Elixir ═══════════════════════════ */
 
 /**
- * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
- * не занимают, и потому исходник с ними читается не так, как исполняется —
- * «Trojan Source» (CVE-2021-42574). Для Elixir это не придирка, а отказ: разбор
- * падает с «invalid bidirectional formatting character in string», и
- * напечатанный модуль не собирается вовсе — ни под `--warnings-as-errors`, ни
- * без него. Набор общий с остальными бэкендами (в C и Rust — тоже отказ
- * сборки), а в литерал они попадают законно: таблица блоков лексера
- * (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F подряд.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
-  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
-  0x2068 /* FSI */, 0x2069 /* PDI */,
-])
-
-/**
  * Строковый литерал Elixir.
  *
  * Кириллица печатается как есть: исходник Elixir — всегда UTF-8, и это записано
@@ -631,7 +616,14 @@ export function emitElixir(program, options = {}) {
     })
   }
   files.push({ path: "Makefile", content: renderMakefile(alias, file, options.cli !== false) })
-  return { files }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии и в @moduledoc/@doc. Для elixirc это отказ разбора и там, и там
+     («invalid bidirectional formatting character in comment/string»): до этого
+     фильтра напечатанный модуль с таким именем не собирался вовсе. Форма
+     Elixir — `\u{X…}`, та же, что в литерале; @doc остаётся строкой с теми же
+     байтами. */
+  return { files: escapeBidiInFiles(files, escapeBidiBraced) }
 }
 
 /**

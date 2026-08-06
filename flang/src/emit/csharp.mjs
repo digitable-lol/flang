@@ -83,6 +83,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, pascal } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -389,23 +390,6 @@ function stronglyConnected(names, edges) {
 /* ═══════════════════════════ литералы C# ═══════════════════════════ */
 
 /**
- * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
- * не занимают, и потому исходник с ними читается не так, как исполняется —
- * «Trojan Source» (CVE-2021-42574). Ругается ли на них Roslyn, здесь не
- * проверено: тулчейна .NET на машине не было. Рассчитывать на его молчание, как
- * и на его крик, всё равно нельзя — набор общий с остальными бэкендами, и там
- * это уже не предупреждение: в C и Rust прямая ошибка сборки, в Elixir отказ
- * разбора. В литерал они попадают законно: таблица блоков лексера
- * (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F подряд, и
- * одиннадцать из них — как раз эти.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
-  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
-  0x2068 /* FSI */, 0x2069 /* PDI */,
-])
-
-/**
  * Строковый литерал C#.
  *
  * Кириллица печатается как есть — исходник записывается в UTF-8, и компилятор
@@ -607,7 +591,13 @@ export function emitCsharp(program, options = {}) {
   }
   files.push({ path: "flang.csproj", content: renderProject(moduleName, options.cli !== false) })
   files.push({ path: "Makefile", content: renderMakefile(className, options.cli !== false) })
-  return { files }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии — в шапку файла, в `///`-документацию и в комментарий .csproj,
+     — а комментарий читают первым и проверить исполнением не могут. Как ведёт
+     себя Roslyn, здесь не проверено: тулчейна .NET на машине нет, — и его
+     молчание всё равно не было бы доказательством. Форма C# — `\uXXXX`. */
+  return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
 }
 
 function banner(moduleName, what) {

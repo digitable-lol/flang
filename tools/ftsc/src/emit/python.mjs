@@ -14,6 +14,7 @@
  * FtsPropertyViolation из одного файла errors.py на весь проект.
  */
 import { createNamer, pascal, quote, snake } from "../naming.mjs"
+import { escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 
 export const target = {
   id: "python",
@@ -536,5 +537,11 @@ export function emit(program, options = {}) {
   })
 
   files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («# правило «…»»), и в строку (docstring теста, имя свойства
+     в исключении), а комментарий читают первым и проверить исполнением не могут:
+     CPython такой файл выполнит молча. Форма Python — `\uXXXX`; в docstring она даёт
+     ту же кодовую точку, что сырой символ, — документация не меняется. */
+  return escapeBidiInFiles(files, escapeBidiUnicode4)
 }

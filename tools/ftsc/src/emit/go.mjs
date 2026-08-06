@@ -14,6 +14,7 @@
 import { spawnSync } from "node:child_process"
 
 import { camel, createNamer, pascal, quote, snake } from "../naming.mjs"
+import { escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 import { findExecutable } from "../toolchain.mjs"
 
 export const target = {
@@ -603,5 +604,11 @@ export function emit(program, options = {}) {
   files.push({ path: "go.mod", content: `module ${projectIdent}\n\ngo 1.21\n` })
 
   files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («правило «…»», подпись теста), и в строковый литерал (имя
+     свойства в PropertyViolation), а комментарий читают первым и проверить
+     исполнением не могут: go vet о таком не предупреждает. Молчание тулчейна здесь
+     и есть беда, а не оправдание. Форма Go — `\uXXXX`. */
+  return escapeBidiInFiles(files, escapeBidiUnicode4)
 }

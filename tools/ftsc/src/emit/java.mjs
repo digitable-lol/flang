@@ -66,6 +66,7 @@
  * структуры, поля, правила, примеры, функторы) в порядке их следования.
  */
 import { camel, createNamer, pascal, quote, snake } from "../naming.mjs"
+import { escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 
 export const target = {
   id: "java",
@@ -449,7 +450,14 @@ export function emit(program, options = {}) {
     if (runner) files.push(runner)
   }
 
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («правило «…»»), и в строковый литерал (System.out.println
+     прогонщика примеров, имя свойства в FtsPropertyViolation), а комментарий читают
+     первым и проверить исполнением не могут: javac собирает такой файл молча даже
+     под -Xlint:all -Werror — ровно ради этого молчания атаку и придумали. Форма
+     Java — `\uXXXX`; другой для этих кодовых точек у языка нет вовсе. */
+  return escapeBidiInFiles(files, escapeBidiUnicode4)
 }
 
 /** Доступ к полю входной структуры утилиты: снимает Optional через orElseThrow() — см. п.2 в шапке файла. */

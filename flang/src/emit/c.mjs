@@ -69,6 +69,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../../../tools/ftsc/src/bidi.mjs"
 import { createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -326,24 +327,6 @@ function stronglyConnected(names, edges) {
 /* ═══════════════════════════ литералы C ═══════════════════════════ */
 
 /**
- * Двунаправленные управляющие символы Unicode. Раскладку текста они меняют, а
- * места не занимают, поэтому исходник с ними читается не так, как исполняется —
- * это «Trojan Source» (CVE-2021-42574). Компиляторы такое ловят: GCC 13 даёт
- * -Wbidi-chars (в -Werror это ошибка), rustc — deny-by-default
- * text_direction_codepoint_in_literal. Программе flang они попадают в литерал
- * законно: таблица блоков в лексере (flang/self/lexer.flang) перечисляет весь
- * блок U+2000…U+207F подряд, и одиннадцать из них — как раз эти.
- *
- * Поэтому печатать их сырыми нельзя ни в одном бэкенде: набор общий, а форма
- * экранирования у каждого языка своя.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM  */, 0x200e /* LRM  */, 0x200f /* RLM  */, 0x202a /* LRE  */, 0x202b /* RLE  */,
-  0x202c /* PDF  */, 0x202d /* LRO  */, 0x202e /* RLO  */, 0x2066 /* LRI  */, 0x2067 /* RLI  */,
-  0x2068 /* FSI  */, 0x2069 /* PDI  */,
-])
-
-/**
  * Строковый литерал C. Кириллица печатается как есть (UTF-8 в исходнике —
  * ровно то, ради чего этот язык затевался: имена в коде обязаны читаться), а
  * экранируются кавычка, обратный слэш, управляющие символы и вопросительный
@@ -533,7 +516,15 @@ export function emitC(program, options = {}) {
     })
   }
   files.push({ path: "Makefile", content: renderMakefile(file, options.cli !== false) })
-  return { files }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии — в шапку файла, в описание функции, в подпись поля, — а
+     комментарий читают первым и проверить исполнением не могут. gcc 13 под
+     -Werror останавливает сборку на НЕПАРНОМ управляющем (в комментарии тоже),
+     а парную пару RLO…PDF пропускает молча: его молчание не доказательство.
+     Форма для C одна и в литерале, и в комментарии — байты UTF-8
+     восьмеричными: две записи в одном языке пришлось бы держать в голове. */
+  return { files: escapeBidiInFiles(files, escapeBidiOctalBytes) }
 }
 
 function banner(moduleName, what) {

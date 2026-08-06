@@ -21,6 +21,7 @@
  * транслитерации обязана быть ошибкой сборки, а не молчаливым переименованием.
  */
 import { createNamer, pascal, quote, screaming, snake } from "../naming.mjs"
+import { escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
 import { RUNTIME_HEADER } from "./c/runtime.mjs"
 
 export const target = {
@@ -115,7 +116,15 @@ export function emit(program, options = {}) {
 
   files.push({ path: "ftsc_tests.c", content: renderTests(project, scope) })
   files.push({ path: "Makefile", content: renderMakefile(project, scope) })
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («правило «…»»), и в строковый литерал (ftsc_check в
+     прогонщике примеров, имя нарушенного свойства в *violation), а комментарий
+     читают первым и проверить исполнением не могут. gcc 13 под -Werror
+     останавливает сборку на НЕПАРНОМ управляющем (в комментарии тоже), а парную
+     пару RLO…PDF пропускает молча: его молчание не доказательство. Форма для C —
+     байты UTF-8 восьмеричными: в C99 узкая строка байт-точна только так. */
+  return escapeBidiInFiles(files, escapeBidiOctalBytes)
 }
 
 /* ------------------------------------------------------------------ разбор IR */

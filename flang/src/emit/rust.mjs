@@ -120,6 +120,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../../../tools/ftsc/src/bidi.mjs"
 import { createNamer, snake } from "../../../tools/ftsc/src/naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -402,21 +403,13 @@ function stronglyConnected(names, edges) {
  * По символам, а не по байтам: файл записывается в UTF-8, и «Длина»,
  * разобранная на байты и собранная обратно как символы, превратилась бы в
  * двойную кодировку — имя перестало бы совпадать с именем в интерпретаторе.
+ *
+ * Двунаправленные управляющие (набор — bidi.mjs, общий на все бэкенды обоих
+ * компиляторов) уезжают в `\u{X…}` — ту самую форму, которую предлагает сам
+ * rustc в тексте отказа: `text_direction_codepoint_in_literal` deny-by-default,
+ * то есть сырой символ здесь не предупреждение, а несобирающийся крейт. Скобки
+ * закрывают экранирование, поэтому цифра следом к нему не приклеится.
  */
-/**
- * Двунаправленные управляющие символы Unicode: раскладку текста меняют, места
- * не занимают, и потому исходник с ними читается не так, как исполняется —
- * «Trojan Source» (CVE-2021-42574). Для rustc это не придирка, а отказ:
- * text_direction_codepoint_in_literal — deny-by-default, и напечатанный крейт с
- * сырым U+202A просто не собирается. В литерал они попадают законно: таблица
- * блоков лексера (flang/self/lexer.flang) перечисляет весь блок U+2000…U+207F.
- */
-const BIDI_CONTROLS = new Set([
-  0x061c /* ALM */, 0x200e /* LRM */, 0x200f /* RLM */, 0x202a /* LRE */, 0x202b /* RLE */,
-  0x202c /* PDF */, 0x202d /* LRO */, 0x202e /* RLO */, 0x2066 /* LRI */, 0x2067 /* RLI */,
-  0x2068 /* FSI */, 0x2069 /* PDI */,
-])
-
 function ruststring(value) {
   let result = '"'
   for (const character of String(value)) {
@@ -583,7 +576,13 @@ export function emitRust(program, options = {}) {
     files.push({ path: "src/main.rs", content: renderMain(moduleName) })
   }
   files.push({ path: "Makefile", content: renderMakefile(withCli) })
-  return { files }
+  /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
+     (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
+     комментарии — в шапку файла, в `///` над функцией, в комментарий Cargo.toml.
+     Для rustc это не придирка: `text_direction_codepoint_in_comment` —
+     deny-by-default, и до этого фильтра напечатанный крейт с таким именем не
+     собирался вовсе. Форма Rust — `\u{X…}`, та же, что в литерале. */
+  return { files: escapeBidiInFiles(files, escapeBidiBraced) }
 }
 
 function banner(moduleName, what) {

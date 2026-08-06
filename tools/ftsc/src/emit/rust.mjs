@@ -50,6 +50,7 @@
  */
 
 import { createNamer, pascal, quote, snake } from "../naming.mjs"
+import { escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
 
 export const target = {
   id: "rust",
@@ -722,7 +723,14 @@ export function emit(program, options = {}) {
       "",
     ].join("\n"),
   })
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий (блочный над правилом, `///` над примером), и в строковый литерал
+     (.expect у примера, имя свойства в FtsError). Для rustc это не придирка:
+     `text_direction_codepoint_in_comment` и `…_in_literal` — deny-by-default, и до
+     этого фильтра напечатанный крейт с таким именем не собирался вовсе. Форма
+     Rust — `\u{X…}`, её же предлагает сам rustc в тексте отказа. */
+  return escapeBidiInFiles(files, escapeBidiBraced)
 }
 
 /** Тип ошибки: доменный отказ модели, а не паника программы. */

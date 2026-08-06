@@ -18,6 +18,7 @@
  * имена функций (утилиты, морфизмы, функторы) и имена модулей.
  */
 import { createNamer, pascal, camel, snake, quote } from "../naming.mjs"
+import { escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 
 export const target = {
   id: "typescript",
@@ -385,5 +386,11 @@ export function emit(program, options = {}) {
   }
   files.push({ path: "index.ts", content: `${indexLines.join("\n")}\n` })
 
-  return files
+  /* Последний шаг печати — снять сырые двунаправленные управляющие со всего
+     вывода (../bidi.mjs). Имя FTS (правила, свойства, примера, категории) уезжает
+     и в комментарий («// правило «…»»), и в строковый литерал (имя примера в
+     test(…), имя свойства в ошибке), а комментарий читают первым и проверить
+     исполнением не могут: движок выполнит такой файл молча. Форма TypeScript —
+     `\uXXXX`, как в JavaScript. */
+  return escapeBidiInFiles(files, escapeBidiUnicode4)
 }

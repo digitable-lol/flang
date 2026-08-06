@@ -56,12 +56,17 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
+// globSync — из ./glob.mjs, а не из node:fs: в node:fs он появился только в
+// Node 22, а пакет обещает Node ≥ 20. Остальные шесть тестов перевели на эту
+// замену, а этот пропустили — и на Node 20 файл не загружался целиком, до
+// первой проверки. Ровно поэтому CI был красным.
+import { globSync } from "./glob.mjs"
 
 import { emitC } from "../src/emit/c.mjs"
 import { evaluate } from "../src/interpret.mjs"

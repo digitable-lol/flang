@@ -22,3 +22,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+  # Подсветка FTS для Vim проверяется отдельной работой, а не шагом в матрице
+  # выше: она не зависит от версии Node, и в матрице прогонялась бы трижды
+  # впустую. Плюс падение подсветки не должно читаться как «сломался Node 20».
+  vim-highlight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # vim ставим явно, а не надеемся на состав образа: tests/run.sh без него
+      # сразу выходит с ошибкой «нужен vim», и такой отказ выглядел бы как
+      # сломанная подсветка, хотя сломался бы образ runner-а.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends vim
+      - run: editors/vim-fts/tests/run.sh

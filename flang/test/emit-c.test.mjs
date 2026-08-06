@@ -1392,6 +1392,45 @@ test("напечатанный C ни от чего не зависит и об�
   assert.match(built.header, /Сумма типов FTS «Дерево»/u)
 })
 
+/**
+ * Оболочка `flang repl` — единственный файл печати, которому нужен мир: она
+ * ищет `cc` и каталоги установки, то есть спрашивает окружение и POSIX. Ровно
+ * поэтому она, во-первых, отдельный файл (обещание выше остаётся верным для
+ * всего остального, и взявший напечатанный C к себе в проект просто не берёт
+ * этот файл), а во-вторых — печатается по просьбе: осмысленна она у одной
+ * программы из всех, у самого компилятора flang.
+ */
+test("оболочка печатается только по просьбе, и её нужды названы поимённо", async () => {
+  const без = emitC(treeProgram)
+  assert.ok(!без.files.some((file) => file.path === "flang_repl.c"), "оболочка приехала без просьбы")
+  /* Сам `#ifdef FL_WITH_REPL` в прогонщике есть всегда — нет только просьбы,
+     то есть `#define`, который его включает. */
+  assert.doesNotMatch(
+    без.files.find((file) => file.path === "flang_cli.c").content,
+    /#define FL_WITH_REPL/u,
+    "прогонщик без просьбы не должен звать оболочку",
+  )
+  assert.doesNotMatch(без.files.find((file) => file.path === "Makefile").content, /flang_repl/u)
+
+  const built = await build(treeProgram, { repl: true })
+  const оболочка = built.emitted.files.find((file) => file.path === "flang_repl.c")
+  assert.ok(оболочка !== undefined, "по просьбе оболочка обязана печататься")
+  /* Список нужд оболочки записан здесь поимённо: POSIX ей нужен ради временного
+     каталога, поиска бинарника, isatty и Ctrl-C, а окружение — ради FLANG_CC,
+     FLANG_LIB_DIR и FLANG_INCLUDE_DIR. Вырасти незаметно этот список не может. */
+  assert.doesNotMatch(
+    оболочка.content,
+    /#include\s*<(?!stdarg|stdbool|stddef|stdio|stdlib|string|math|errno|signal|unistd)/u,
+    "оболочке хватает стандартной библиотеки C плюс signal.h и unistd.h",
+  )
+  assert.doesNotMatch(оболочка.content, /\btime\(|\brand\(/u, "ни времени, ни случайности не нужно и оболочке")
+  /* И то, ради чего она вообще отдельно: прогонщик остаётся чистым C99. */
+  const прогонщик = built.emitted.files.find((file) => file.path === "flang_cli.c")
+  assert.doesNotMatch(прогонщик.content, /#include\s*<(signal|unistd)\.h>/u)
+  assert.match(прогонщик.content, /#define FL_WITH_REPL 1/u, "просьба доезжает до прогонщика")
+  assert.match(built.emitted.files.find((file) => file.path === "Makefile").content, /flang_repl\.o/u)
+})
+
 /*
  * Двунаправленные управляющие символы в литерале.
  *

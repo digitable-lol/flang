@@ -89,6 +89,7 @@ const RUNTIME_DIRECTORY = new URL("./c/", import.meta.url)
 const RUNTIME_HEADER = readFileSync(new URL("flang_runtime.h", RUNTIME_DIRECTORY), "utf8")
 const RUNTIME_SOURCE = readFileSync(new URL("flang_runtime.c", RUNTIME_DIRECTORY), "utf8")
 const CLI_SOURCE = readFileSync(new URL("flang_cli.c", RUNTIME_DIRECTORY), "utf8")
+const REPL_SOURCE = readFileSync(new URL("flang_repl.c", RUNTIME_DIRECTORY), "utf8")
 
 /** Канонические имена встроенных форм → функции рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -383,7 +384,11 @@ function needsMath(value) {
  * Печать программы flang в C99.
  *
  * @param {object} program AST flang (SPEC.md, раздел 5)
- * @param {{ path?: string, indexBase?: 0 | 1, maxDepth?: number, maxSteps?: number, cli?: boolean }} [options]
+ * @param {{ path?: string, indexBase?: 0 | 1, maxDepth?: number, maxSteps?: number, cli?: boolean,
+ *           repl?: boolean }} [options]
+ *   `repl` — печатать ли рядом с прогонщиком интерактивную оболочку
+ *   (`flang_repl.c`, команда `flang repl`). По умолчанию нет: осмысленна она
+ *   только у самого компилятора flang, потому что зовёт его точки входа.
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitC(program, options = {}) {
@@ -506,18 +511,43 @@ export function emitC(program, options = {}) {
     { path: `${file}.c`, content: renderSource(file, moduleName, shared, bodies) },
   ]
 
+  /*
+   * Оболочка печатается по просьбе, и просьба эта осмысленна ровно у одной
+   * программы — у самого компилятора flang: только у него есть точки входа,
+   * которые оболочка зовёт («Разбор исходника», «Связать исходники»). Печатать
+   * её всем значило бы возить в каждой напечатанной программе сто с лишним
+   * килобайт кода, который она не может исполнить.
+   *
+   * Отдельным файлом, а не внутри прогонщика, — потому что обещания у них
+   * разные: прогонщик остаётся переносимым C99, который ни от чего не зависит и
+   * ничего не спрашивает у мира, а оболочка обязана спросить, где `cc` и где
+   * каталоги установки.
+   */
+  const repl = options.repl === true && options.cli !== false
   if (options.cli !== false) {
     files.push({
       path: "flang_cli.c",
       content: [
         banner(moduleName, "прогонщик: JSON на входе, JSON на выходе"),
         `#define FL_PROGRAM_CALL ${prefix}_call`,
+        ...(repl ? ["#define FL_WITH_REPL 1"] : []),
         "",
         CLI_SOURCE,
       ].join("\n"),
     })
   }
-  files.push({ path: "Makefile", content: renderMakefile(file, options.cli !== false) })
+  if (repl) {
+    files.push({
+      path: "flang_repl.c",
+      content: [
+        banner(moduleName, "оболочка: «flang repl» для человека"),
+        `#define FL_PROGRAM_CALL ${prefix}_call`,
+        "",
+        REPL_SOURCE,
+      ].join("\n"),
+    })
+  }
+  files.push({ path: "Makefile", content: renderMakefile(file, options.cli !== false, repl) })
   /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
      (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
      комментарии — в шапку файла, в описание функции, в подпись поля, — а
@@ -712,7 +742,7 @@ function renderSource(file, moduleName, shared, bodies) {
   return [head.join("\n"), ...bodies.filter((body) => body.length > 0)].join("\n\n") + "\n"
 }
 
-function renderMakefile(file, cli) {
+function renderMakefile(file, cli, repl) {
   return [
     "# Сгенерировано flang (бэкенд C). Флаги здесь — часть контракта бэкенда:",
     "# сгенерированный код обязан собираться без единого предупреждения.",
@@ -727,11 +757,15 @@ function renderMakefile(file, cli) {
     `lib${file}.a: $(OBJECTS)`,
     "\tar rcs $@ $(OBJECTS)",
     ...(cli
-      ? ["", `flang_cli: flang_cli.o $(OBJECTS)`, "\t$(CC) $(CFLAGS) -o $@ flang_cli.o $(OBJECTS) $(LDLIBS)"]
+      ? [
+          "",
+          `flang_cli: flang_cli.o${repl ? " flang_repl.o" : ""} $(OBJECTS)`,
+          `\t$(CC) $(CFLAGS) -o $@ flang_cli.o${repl ? " flang_repl.o" : ""} $(OBJECTS) $(LDLIBS)`,
+        ]
       : []),
     "",
     "clean:",
-    `\trm -f $(OBJECTS) flang_cli.o flang_cli lib${file}.a`,
+    `\trm -f $(OBJECTS) flang_cli.o${repl ? " flang_repl.o" : ""} flang_cli lib${file}.a`,
     "",
     ".PHONY: all clean",
     "",

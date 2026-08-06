@@ -61,12 +61,15 @@ an install path. Neither needs anything but a C compiler. This is how self-hosti
 ship — Go carried generated C for years, Nim still does.
 
 **Be clear about what that binary is.** It is the five layers of [`flang/self/`](flang/self):
-lexer, parser, types, totality, printing to C. There is no evaluator among them, so running a
-program, running its examples or opening a shell needs the full toolchain below.
+lexer, parser, types, totality, printing to C. There is no evaluator among them — which is why
+`flang repl` there evaluates the only honest way this binary can: it prints the session to C,
+builds it with the system `cc` against the runtime installed beside it, and runs that. Without a
+`cc` the shell does not switch off — it keeps checking parse, types and totality, and says so
+once. Running a program or its examples non-interactively still needs the full toolchain below.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
-the shell, the language server, the MCP server and seven of the eight backends exist only in
-JavaScript. The self-hosted compiler — the one in the release — prints to **C and nothing else**.
+the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
+self-hosted compiler — the one in the release — prints to **C and nothing else**.
 
 ```bash
 npm install -g @digitable-lol/fts

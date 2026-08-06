@@ -1,0 +1,3865 @@
+/*
+ * Интерактивная оболочка flang: `flang repl`.
+ *
+ * ── Почему это отдельный файл печати ────────────────────────────────────────
+ * Рядом лежит прогонщик (flang_cli.c), и у него есть обещание, которое эта
+ * оболочка выполнить не может: напечатанный C ни от чего не зависит и ничего не
+ * спрашивает у мира — ни времени, ни случайности, ни окружения (проверка
+ * «напечатанный C ни от чего не зависит и объясняет себя» в
+ * flang/test/emit-c.test.mjs). Оболочка же обязана спросить: где `cc`, где
+ * каталоги установки, есть ли человек на том конце. Значит ей нужны POSIX и
+ * переменные окружения — и держать её в одном файле с прогонщиком значило бы
+ * тихо лишить переносимости всё напечатанное, включая чужие программы, которым
+ * оболочка не нужна вовсе.
+ *
+ * Поэтому файла два, а бинарник один: `flang_cli` линкуется с обоими, и
+ * прогонщик зовёт `fl_repl_main`, увидев в аргументах `repl`. Кто берёт
+ * напечатанный C к себе в проект, берёт flang_cli.c без этого файла — и остаётся
+ * с чистым C99.
+ *
+ * Печатается этот файл по просьбе (`repl: true` у бэкенда), и просит его ровно
+ * одно место — `scripts/build-release-c.mjs`, который собирает релиз самого
+ * компилятора. У любой другой напечатанной программы нет точек входа, которые
+ * оболочка зовёт, и возить ей сто с лишним килобайт кода, который она не может
+ * исполнить, незачем.
+ *
+ * ── Почему сессия хранит ИСХОДНИК ───────────────────────────────────────────
+ * Ровно тот же довод, что в `flang/src/repl.mjs`: сессия — это программа на
+ * flang, а не набор разобранных узлов. На каждом вводе исходник пересобирается
+ * целиком и проходит ту же дорогу, что `flang check`, — связывание, типы,
+ * завершаемость. Совпадение дорог не оптимизация: разойдись они, и оболочка
+ * принимала бы то, что компилятор отвергает.
+ *
+ * ── Чем вычисляется выражение ───────────────────────────────────────────────
+ * Вычислителя в этом бинарнике нет: в нём лексер, разбор, типы, тотальность и
+ * печать в C. Поэтому выражение вычисляется единственным честным способом —
+ * сессия печатается в C (та же «Печать программы», что у `flang emit`),
+ * собирается системным `cc` и запускается. Пересобирать при этом нечего, кроме
+ * самой сессии: рантайм уже стоит рядом с бинарником — `lib/libkompilyator_flang.a`
+ * и заголовки в `include/` кладут и формула Homebrew, и плагин asdf.
+ *
+ * Без `cc` оболочка не выключается: она по-прежнему проверяет разбор, типы и
+ * завершаемость — то есть делает ровно то, что бинарник умеет. Про то, что
+ * значения при этом не считаются, сказано один раз при запуске, а не на каждой
+ * строке.
+ *
+ * ── Команды через точку ─────────────────────────────────────────────────────
+ * Те же, что в Node-версии, и по той же причине: ни одна конструкция flang не
+ * может начинаться с точки, значит строка с точки заведомо не программа. Имена
+ * команд — русские и английские, как две поверхности самого языка.
+ */
+
+/*
+ * POSIX просит об этом сама оболочка: временный каталог (mkdtemp), поиск
+ * бинарника (access, getcwd), «человек ли на том конце» (isatty) и Ctrl-C,
+ * который бросает набранное, а не сессию (sigaction). При `-std=c99` glibc
+ * прячет всё это, пока не сказано, какой POSIX нужен. Объявление под #ifndef:
+ * если вызывающий уже назвал свою версию, спорить не о чем — переопределение
+ * стоило бы предупреждения, а сборка идёт с -Werror.
+ */
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#include "flang_runtime.h"
+
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+/*
+ * Единственная связь оболочки с конкретной программой — вызов функции по имени,
+ * та же, что у прогонщика. Бэкенд печатает `#define FL_PROGRAM_CALL
+ * <префикс>_call` перед этим файлом; запасное имя ниже нужно, чтобы файл
+ * компилировался и сам по себе.
+ */
+#ifndef FL_PROGRAM_CALL
+#define FL_PROGRAM_CALL fl_program_call
+#endif
+
+extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,
+                                 fl_value *result, fl_error *error);
+
+/*
+ * Чтение файла целиком. У прогонщика есть такое же — и это не досадный повтор,
+ * а цена отдельности: файлы обязаны собираться порознь, и общий заголовок между
+ * ними завёл бы третий файл ради двадцати строк.
+ */
+static char *repl_read_all(FILE *stream, size_t *length) {
+  size_t capacity = 65536;
+  size_t used = 0;
+  char *data = (char *)malloc(capacity);
+  if (data == NULL) {
+    return NULL;
+  }
+  for (;;) {
+    const size_t got = fread(data + used, 1, capacity - used - 1, stream);
+    used += got;
+    if (used + 1 < capacity) {
+      break;
+    }
+    {
+      char *bigger = (char *)realloc(data, capacity * 2);
+      if (bigger == NULL) {
+        free(data);
+        return NULL;
+      }
+      data = bigger;
+      capacity *= 2;
+    }
+  }
+  data[used] = '\0';
+  *length = used;
+  return data;
+}
+
+/** Имя функции-обёртки, в которой вычисляется выражение. */
+#define REPL_EXPR_NAME "⟨выражение⟩"
+
+/** Имя модуля сессии: нужно заголовку, без которого не работает «использует». */
+#define REPL_MODULE "Оболочка"
+
+/** Имя файла сессии — от него связывание отсчитывает относительные пути. */
+#define REPL_FILE "«оболочка».flang"
+
+/** Архив рантайма, который кладут формула и плагин; каталог ищется, имя — нет. */
+#define REPL_ARCHIVE "libkompilyator_flang.a"
+
+/** Сколько объявлений печатать поимённо, прежде чем перейти к счёту. */
+#define REPL_VERBOSE 6
+
+static const char REPL_GREETING[] =
+    "Оболочка flang. «.помощь» — команды, «.выход» — конец.\n"
+    "Объявление заканчивается пустой строкой, выражение вычисляется сразу.";
+
+static const char REPL_HELP[] =
+    "Оболочка flang.\n"
+    "\n"
+    "Объявление вводится в несколько строк; пустая строка заканчивает ввод:\n"
+    "\n"
+    "  тотальная функция «Удвоить»\n"
+    "    принимает х: число\n"
+    "    возвращает число\n"
+    "    х умножить на 2\n"
+    "  <пустая строка>\n"
+    "\n"
+    "Выражение вычисляется сразу:\n"
+    "\n"
+    "  «Удвоить» от 21        →  42\n"
+    "\n"
+    "Объявление проверяется той же дорогой, что и «flang check»: разбор, типы,\n"
+    "завершаемость. Не прошедшее проверку в сессию не попадает.\n"
+    "\n"
+    "Команды (строка с точки — точкой не может начаться ни одна конструкция языка):\n"
+    "  .помощь                    эта справка\n"
+    "  .объявления                что объявлено в сессии\n"
+    "  .исходник                  исходник сессии целиком\n"
+    "  .сохранить <файл>          записать исходник сессии в файл\n"
+    "  .загрузить <файл>          добавить объявления из файла .flang\n"
+    "  .сбросить                  забыть всё объявленное\n"
+    "  .выход                     закончить работу\n"
+    "По-английски: .help .list .source .save .load .reset .quit\n"
+    "\n"
+    "Модули подключаются строкой языка, а не командой:\n"
+    "  использует «Списки» из \"flang/stdlib/lists.flang\"\n"
+    "\n"
+    "Значения печатаются поверхностью языка: да, нет, ничто, \"текст\", [1, 2, 3],\n"
+    "пустой список, {поле: значение}, Вариант(поле: значение).\n"
+    "\n"
+    "Тотальная функция завершается — это доказано. Обычная функция может не\n"
+    "завершиться: её вычисление ограничено лимитом шагов, и на превышении лимита\n"
+    "оболочка говорит FLANG_RECURSION_LIMIT, а не «результата нет».";
+
+/*
+ * Ключевые слова, с которых начинается объявление, — тот же набор, по которому
+ * выбирает `parseDeclaration`. Список кончается NULL, чтобы не заводить рядом
+ * второе число, которое однажды разойдётся с самим списком.
+ */
+static const char *const REPL_DECLARATIONS[] = {
+    "module", "exports", "uses", "category", "object", "record", "type",
+    "total", "function", "utility", "morphism", "chain", "identity", "theorem", "functor", NULL};
+
+/*
+ * Объявления, у которых тело — отступный блок ниже: их ввод не может кончиться
+ * на первой строке. Однострочные заголовки («модуль», «использует», «морфизм»)
+ * сюда не входят — им продолжение не нужно.
+ */
+static const char *const REPL_BLOCKS[] = {
+    "object", "record", "type", "total", "function", "utility", "category", "chain", "functor", "theorem", NULL};
+
+/*
+ * Диагностики связывания, чьё место — в ЧУЖОМ файле. Диагностика flang несёт
+ * строку и столбец, но не файл: после связывания «строка 12» может относиться
+ * и к сессии, и к импортированному модулю. Там, где принадлежность точно
+ * чужая, место лучше не показывать вовсе — неверное место хуже отсутствующего.
+ */
+static const char *const REPL_FOREIGN[] = {
+    "FLANG_DUPLICATE_NAME", "FLANG_IMPORT_CYCLE", "FLANG_IMPORT_NOT_FOUND", "FLANG_IMPORT_NAME", NULL};
+
+static bool repl_in_list(const char *const *list, const char *word, size_t bytes) {
+  size_t index = 0;
+  for (index = 0; list[index] != NULL; index += 1) {
+    if (strlen(list[index]) == bytes && memcmp(list[index], word, bytes) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/* ───────────────────────────── память и строки ───────────────────────────── */
+
+/*
+ * Кончившаяся память в оболочке — конец работы, а не случай, из которого можно
+ * выйти: продолжать с половиной сессии значило бы врать про её содержимое.
+ * Поэтому нехватка памяти прекращает работу здесь, а не едет статусом через
+ * шесть десятков функций, затемняя в каждой то, ради чего она написана.
+ */
+static void repl_oom(void) {
+  fputs("оболочка: кончилась память\n", stderr);
+  exit(1);
+}
+
+static void *repl_alloc(size_t size) {
+  void *block = malloc(size == 0 ? 1 : size);
+  if (block == NULL) {
+    repl_oom();
+  }
+  return block;
+}
+
+static void *repl_grow(void *block, size_t size) {
+  void *bigger = realloc(block, size == 0 ? 1 : size);
+  if (bigger == NULL) {
+    repl_oom();
+  }
+  return bigger;
+}
+
+static char *repl_dup(const char *text, size_t bytes) {
+  char *copy = (char *)repl_alloc(bytes + 1);
+  memcpy(copy, text, bytes);
+  copy[bytes] = '\0';
+  return copy;
+}
+
+static char *repl_say(const char *text) { return repl_dup(text, strlen(text)); }
+
+/** Растущий текст: исходник сессии, ответ, аргумент команды. */
+typedef struct repl_buf {
+  char *data;
+  size_t used;
+  size_t capacity;
+} repl_buf;
+
+static void buf_init(repl_buf *buf) {
+  buf->capacity = 256;
+  buf->data = (char *)repl_alloc(buf->capacity);
+  buf->data[0] = '\0';
+  buf->used = 0;
+}
+
+static void buf_free(repl_buf *buf) {
+  free(buf->data);
+  buf->data = NULL;
+  buf->used = 0;
+  buf->capacity = 0;
+}
+
+static void buf_add(repl_buf *buf, const char *text, size_t bytes) {
+  if (buf->used + bytes + 1 > buf->capacity) {
+    while (buf->used + bytes + 1 > buf->capacity) {
+      buf->capacity *= 2;
+    }
+    buf->data = (char *)repl_grow(buf->data, buf->capacity);
+  }
+  memcpy(buf->data + buf->used, text, bytes);
+  buf->used += bytes;
+  buf->data[buf->used] = '\0';
+}
+
+static void buf_put(repl_buf *buf, const char *text) { buf_add(buf, text, strlen(text)); }
+
+static void buf_char(repl_buf *buf, char symbol) { buf_add(buf, &symbol, 1); }
+
+static void buf_number(repl_buf *buf, size_t number) {
+  char text[32];
+  sprintf(text, "%lu", (unsigned long)number);
+  buf_put(buf, text);
+}
+
+static void buf_reset(repl_buf *buf) {
+  buf->used = 0;
+  buf->data[0] = '\0';
+}
+
+/** Список строк во владении: имена объявлений, пути, экспорты. */
+typedef struct repl_strings {
+  char **items;
+  size_t count;
+  size_t capacity;
+} repl_strings;
+
+static void strings_init(repl_strings *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void strings_add(repl_strings *list, const char *text, size_t bytes) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = (char **)repl_grow(list->items, list->capacity * sizeof(char *));
+  }
+  list->items[list->count] = repl_dup(text, bytes);
+  list->count += 1;
+}
+
+static void strings_say(repl_strings *list, const char *text) { strings_add(list, text, strlen(text)); }
+
+static bool strings_has(const repl_strings *list, const char *text, size_t bytes) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    if (strlen(list->items[index]) == bytes && memcmp(list->items[index], text, bytes) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void strings_free(repl_strings *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index]);
+  }
+  free(list->items);
+  strings_init(list);
+}
+
+/* ───────────────────────────── пути и каталоги ───────────────────────────── */
+
+static char *repl_join(const char *left, const char *right) {
+  repl_buf buf;
+  char *result = NULL;
+  buf_init(&buf);
+  buf_put(&buf, left);
+  if (buf.used > 0 && buf.data[buf.used - 1] != '/') {
+    buf_char(&buf, '/');
+  }
+  buf_put(&buf, right);
+  result = repl_dup(buf.data, buf.used);
+  buf_free(&buf);
+  return result;
+}
+
+static char *repl_dirname(const char *path) {
+  const char *slash = strrchr(path, '/');
+  if (slash == NULL) {
+    return repl_say(".");
+  }
+  if (slash == path) {
+    return repl_say("/");
+  }
+  return repl_dup(path, (size_t)(slash - path));
+}
+
+/*
+ * `resolve` эталона: путь становится абсолютным и нормализованным. Разделитель
+ * один — косая черта; тем же одним разделителем обходится и связывание внутри
+ * компилятора («Разрешить путь» в bootstrap/compiler.flang).
+ */
+static char *repl_resolve(const char *base, const char *path) {
+  repl_strings parts;
+  repl_buf buf;
+  const char *scan = NULL;
+  char *result = NULL;
+  size_t index = 0;
+  strings_init(&parts);
+  buf_init(&buf);
+  if (path[0] != '/') {
+    buf_put(&buf, base);
+    buf_char(&buf, '/');
+  }
+  buf_put(&buf, path);
+  scan = buf.data;
+  while (*scan != '\0') {
+    const char *slash = strchr(scan, '/');
+    const size_t bytes = slash == NULL ? strlen(scan) : (size_t)(slash - scan);
+    if (bytes == 2 && scan[0] == '.' && scan[1] == '.') {
+      if (parts.count > 0) {
+        free(parts.items[parts.count - 1]);
+        parts.count -= 1;
+      }
+    } else if (bytes > 0 && !(bytes == 1 && scan[0] == '.')) {
+      strings_add(&parts, scan, bytes);
+    }
+    if (slash == NULL) {
+      break;
+    }
+    scan = slash + 1;
+  }
+  buf_reset(&buf);
+  for (index = 0; index < parts.count; index += 1) {
+    buf_char(&buf, '/');
+    buf_put(&buf, parts.items[index]);
+  }
+  if (buf.used == 0) {
+    buf_char(&buf, '/');
+  }
+  result = repl_dup(buf.data, buf.used);
+  strings_free(&parts);
+  buf_free(&buf);
+  return result;
+}
+
+/** `relative` эталона: путь от каталога `from` к файлу `to`, оба абсолютные. */
+static char *repl_relative(const char *from, const char *to) {
+  repl_strings here;
+  repl_strings there;
+  repl_buf buf;
+  char *result = NULL;
+  size_t common = 0;
+  size_t index = 0;
+  const char *scan = NULL;
+  strings_init(&here);
+  strings_init(&there);
+  for (scan = from; *scan != '\0';) {
+    const char *slash = strchr(scan, '/');
+    const size_t bytes = slash == NULL ? strlen(scan) : (size_t)(slash - scan);
+    if (bytes > 0) {
+      strings_add(&here, scan, bytes);
+    }
+    if (slash == NULL) {
+      break;
+    }
+    scan = slash + 1;
+  }
+  for (scan = to; *scan != '\0';) {
+    const char *slash = strchr(scan, '/');
+    const size_t bytes = slash == NULL ? strlen(scan) : (size_t)(slash - scan);
+    if (bytes > 0) {
+      strings_add(&there, scan, bytes);
+    }
+    if (slash == NULL) {
+      break;
+    }
+    scan = slash + 1;
+  }
+  while (common < here.count && common < there.count && strcmp(here.items[common], there.items[common]) == 0) {
+    common += 1;
+  }
+  buf_init(&buf);
+  for (index = common; index < here.count; index += 1) {
+    buf_put(&buf, buf.used == 0 ? ".." : "/..");
+  }
+  for (index = common; index < there.count; index += 1) {
+    if (buf.used > 0) {
+      buf_char(&buf, '/');
+    }
+    buf_put(&buf, there.items[index]);
+  }
+  result = repl_dup(buf.data, buf.used);
+  strings_free(&here);
+  strings_free(&there);
+  buf_free(&buf);
+  return result;
+}
+
+/*
+ * Путь эталона `переписатьПуть`: импорт, приехавший из чужого каталога,
+ * пересчитывается относительно каталога сессии. Без пересчёта «использует» из
+ * загруженного файла указывал бы в пустоту.
+ */
+static char *repl_rewrite_path(const char *path, const char *from, const char *base) {
+  char *full = repl_resolve(from, path);
+  char *relative = repl_relative(base, full);
+  if (relative[0] == '\0') {
+    free(relative);
+    return full;
+  }
+  free(full);
+  return relative;
+}
+
+static bool repl_exists(const char *path) { return access(path, F_OK) == 0; }
+
+static char *repl_read_file(const char *path, size_t *bytes) {
+  FILE *stream = fopen(path, "rb");
+  char *text = NULL;
+  if (stream == NULL) {
+    return NULL;
+  }
+  text = repl_read_all(stream, bytes);
+  fclose(stream);
+  return text;
+}
+
+/* ─────────────────────── чем вычислять: cc, lib, include ────────────────── */
+
+/** Каталог, из которого запущен сам бинарник: от него отсчитываются lib и include. */
+static char *repl_self_dir(const char *argv0) {
+  if (argv0 == NULL || argv0[0] == '\0') {
+    return NULL;
+  }
+  if (strchr(argv0, '/') != NULL) {
+    char *cwd = NULL;
+    char *full = NULL;
+    char *dir = NULL;
+    char buffer[4096];
+    if (getcwd(buffer, sizeof(buffer)) == NULL) {
+      return repl_dirname(argv0);
+    }
+    cwd = repl_say(buffer);
+    full = repl_resolve(cwd, argv0);
+    dir = repl_dirname(full);
+    free(cwd);
+    free(full);
+    return dir;
+  }
+  {
+    /* Имя без косой черты — программу нашли в PATH; там же ищем и мы. */
+    const char *path = getenv("PATH");
+    const char *scan = path;
+    if (path == NULL) {
+      return NULL;
+    }
+    while (*scan != '\0') {
+      const char *colon = strchr(scan, ':');
+      const size_t bytes = colon == NULL ? strlen(scan) : (size_t)(colon - scan);
+      if (bytes > 0) {
+        char *directory = repl_dup(scan, bytes);
+        char *candidate = repl_join(directory, argv0);
+        if (access(candidate, X_OK) == 0) {
+          free(candidate);
+          return directory;
+        }
+        free(candidate);
+        free(directory);
+      }
+      if (colon == NULL) {
+        break;
+      }
+      scan = colon + 1;
+    }
+  }
+  return NULL;
+}
+
+/** Программа в PATH: полный путь или NULL. */
+static char *repl_in_path(const char *name) {
+  const char *path = getenv("PATH");
+  const char *scan = path == NULL ? "/usr/bin:/bin:/usr/local/bin" : path;
+  if (strchr(name, '/') != NULL) {
+    return access(name, X_OK) == 0 ? repl_say(name) : NULL;
+  }
+  while (*scan != '\0') {
+    const char *colon = strchr(scan, ':');
+    const size_t bytes = colon == NULL ? strlen(scan) : (size_t)(colon - scan);
+    if (bytes > 0) {
+      char *directory = repl_dup(scan, bytes);
+      char *candidate = repl_join(directory, name);
+      free(directory);
+      if (access(candidate, X_OK) == 0) {
+        return candidate;
+      }
+      free(candidate);
+    }
+    if (colon == NULL) {
+      break;
+    }
+    scan = colon + 1;
+  }
+  return NULL;
+}
+
+/*
+ * Каталог установки ищется от самого бинарника, а не от захардкоженного места:
+ * `bin/flang` → `../lib` и `../include` (так кладут и формула Homebrew, и
+ * плагин asdf), а если бинарник запущен прямо из каталога сборки — рядом с ним.
+ * Переопределяется переменной окружения: это единственный способ починить
+ * необычную установку, не пересобирая бинарник.
+ */
+static char *repl_find_dir(const char *variable, const char *self_dir, const char *sub, const char *probe) {
+  const char *set = getenv(variable);
+  if (set != NULL && set[0] != '\0') {
+    char *candidate = repl_join(set, probe);
+    const bool found = repl_exists(candidate);
+    free(candidate);
+    return found ? repl_say(set) : NULL;
+  }
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  {
+    char *parent = repl_dirname(self_dir);
+    char *directory = repl_join(parent, sub);
+    char *candidate = repl_join(directory, probe);
+    const bool found = repl_exists(candidate);
+    free(parent);
+    free(candidate);
+    if (found) {
+      return directory;
+    }
+    free(directory);
+  }
+  {
+    /* Каталог сборки: рядом с flang_cli лежат и заголовки, и архив. */
+    char *candidate = repl_join(self_dir, probe);
+    const bool found = repl_exists(candidate);
+    free(candidate);
+    if (found) {
+      return repl_say(self_dir);
+    }
+  }
+  return NULL;
+}
+
+/* ──────────────────────── обращение к компилятору ──────────────────────── */
+
+/*
+ * Арена живёт один ввод: разбор ввода, сборка сессии и проверка — это несколько
+ * вызовов компилятора, и результат предыдущего нужен следующему. Сбрасывается
+ * она в начале ввода, поэтому расход памяти не зависит от длины сессии.
+ */
+static fl_arena repl_arena;
+static fl_ctx repl_ctx;
+
+static void repl_cycle(void) {
+  fl_arena_reset(&repl_arena);
+  fl_ctx_init(&repl_ctx, &repl_arena);
+}
+
+static fl_status repl_call(const char *name, const fl_value *args, size_t count, fl_value *result) {
+  fl_error error;
+  fl_status status = FL_OK;
+  error.code = NULL;
+  error.message = NULL;
+  /* Счётчики шагов и глубины — свои у каждого вызова: иначе разбор ввода съедал
+     бы предел, отпущенный проверке. */
+  repl_ctx.steps = 0;
+  repl_ctx.depth = 0;
+  status = FL_PROGRAM_CALL(&repl_ctx, name, args, count, result, &error);
+  if (status != FL_OK) {
+    /* Сбой самого компилятора виден человеку целиком: молча отдать «ошибок нет»
+       значило бы соврать про проверку. */
+    fprintf(stderr, "%s: %s\n", error.code == NULL ? "FLANG_INTERNAL" : error.code,
+            error.message == NULL ? "компилятор прекратил работу" : error.message);
+  }
+  return status;
+}
+
+static fl_value repl_value_text(const char *text, size_t bytes) {
+  fl_value out = fl_nothing();
+  fl_error error;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_text(&repl_ctx, text, bytes, &out, &error) != FL_OK) {
+    repl_oom();
+  }
+  return out;
+}
+
+static fl_value repl_value_say(const char *text) { return repl_value_text(text, strlen(text)); }
+
+static fl_value repl_value_list(const fl_value *items, size_t count) {
+  fl_value *array = NULL;
+  fl_error error;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_list_alloc(&repl_ctx, count, &array, &error) != FL_OK) {
+    repl_oom();
+  }
+  if (count > 0) {
+    memcpy(array, items, count * sizeof(fl_value));
+  }
+  return fl_list(array, count);
+}
+
+static fl_value repl_value_strings(const repl_strings *list) {
+  fl_value *array = NULL;
+  fl_error error;
+  size_t index = 0;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_list_alloc(&repl_ctx, list->count, &array, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < list->count; index += 1) {
+    array[index] = repl_value_say(list->items[index]);
+  }
+  return fl_list(array, list->count);
+}
+
+static fl_value repl_value_record(const char *const *names, const fl_value *values, size_t count) {
+  fl_value out = fl_nothing();
+  fl_error error;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_record_new(&repl_ctx, names, values, count, &out, &error) != FL_OK) {
+    repl_oom();
+  }
+  return out;
+}
+
+/* ──────────────────────── чтение значений компилятора ──────────────────── */
+
+static bool val_field(fl_value node, const char *name, fl_value *out) {
+  size_t index = 0;
+  if (node.tag == FL_RECORD) {
+    for (index = 0; index < node.as.record->count; index += 1) {
+      if (strcmp(node.as.record->fields[index].name, name) == 0) {
+        *out = node.as.record->fields[index].value;
+        return true;
+      }
+    }
+    return false;
+  }
+  if (node.tag == FL_VARIANT) {
+    for (index = 0; index < node.as.variant->count; index += 1) {
+      if (strcmp(node.as.variant->fields[index].name, name) == 0) {
+        *out = node.as.variant->fields[index].value;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+static bool val_is(fl_value node, const char *variant) {
+  return node.tag == FL_VARIANT && strcmp(node.as.variant->name, variant) == 0;
+}
+
+/** Строка значения — байтами: строки рантайма не обязаны кончаться нулём. */
+static bool val_text(fl_value node, const char **utf8, size_t *bytes) {
+  if (node.tag != FL_STRING) {
+    return false;
+  }
+  *utf8 = node.as.string.utf8;
+  *bytes = node.as.string.bytes;
+  return true;
+}
+
+static bool val_same(fl_value node, const char *text) {
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  return val_text(node, &utf8, &bytes) && bytes == strlen(text) && memcmp(utf8, text, bytes) == 0;
+}
+
+static char *val_copy(fl_value node) {
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  if (!val_text(node, &utf8, &bytes)) {
+    return repl_say("");
+  }
+  return repl_dup(utf8, bytes);
+}
+
+/*
+ * Узел AST приезжает как «Значение» из `flang/core/json.flang`: вариант с
+ * тремя случаями. Ходить по нему приходится руками, зато это тот же самый
+ * узел, который видят типы и завершаемость, — а не его пересказ.
+ */
+static bool zn_field(fl_value node, const char *key, fl_value *out) {
+  fl_value fields = fl_nothing();
+  size_t index = 0;
+  if (!val_is(node, "Значение записи") || !val_field(node, "поля", &fields) || fields.tag != FL_LIST) {
+    return false;
+  }
+  for (index = 0; index < fields.as.list.count; index += 1) {
+    fl_value pair = fields.as.list.items[index];
+    fl_value name = fl_nothing();
+    fl_value value = fl_nothing();
+    if (!val_field(pair, "ключ", &name) || !val_field(pair, "значение", &value)) {
+      continue;
+    }
+    if (val_same(name, key)) {
+      *out = value;
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool zn_items(fl_value node, const fl_value **items, size_t *count) {
+  fl_value list = fl_nothing();
+  *items = NULL;
+  *count = 0;
+  if (!val_is(node, "Значение списка") || !val_field(node, "элементы", &list) || list.tag != FL_LIST) {
+    return false;
+  }
+  *items = list.as.list.items;
+  *count = list.as.list.count;
+  return true;
+}
+
+static bool zn_scalar(fl_value node, const char *variant, fl_value *out) {
+  fl_value scalar = fl_nothing();
+  if (!val_is(node, "Значение скаляра") || !val_field(node, "скаляр", &scalar)) {
+    return false;
+  }
+  return val_is(scalar, variant) && val_field(scalar, "значение", out);
+}
+
+static bool zn_text(fl_value node, const char **utf8, size_t *bytes) {
+  fl_value value = fl_nothing();
+  return zn_scalar(node, "Скаляр строка", &value) && val_text(value, utf8, bytes);
+}
+
+static bool zn_number(fl_value node, double *out) {
+  fl_value value = fl_nothing();
+  if (!zn_scalar(node, "Скаляр число", &value) || value.tag != FL_NUMBER) {
+    return false;
+  }
+  *out = value.as.number;
+  return true;
+}
+
+static bool zn_flag(fl_value node, bool *out) {
+  fl_value value = fl_nothing();
+  if (!zn_scalar(node, "Скаляр признак", &value) || value.tag != FL_FLAG) {
+    return false;
+  }
+  *out = value.as.flag;
+  return true;
+}
+
+/** Строковое поле узла: «name», «kind», «construct». */
+static bool zn_field_text(fl_value node, const char *key, const char **utf8, size_t *bytes) {
+  fl_value field = fl_nothing();
+  return zn_field(node, key, &field) && zn_text(field, utf8, bytes);
+}
+
+/** Список-поле узла: «types», «functions», «legacy», «imports». */
+static void zn_field_items(fl_value node, const char *key, const fl_value **items, size_t *count) {
+  fl_value field = fl_nothing();
+  *items = NULL;
+  *count = 0;
+  if (zn_field(node, key, &field)) {
+    zn_items(field, items, count);
+  }
+}
+
+/** Строка узла из его «span»; 0 — места нет. */
+static size_t zn_line(fl_value node) {
+  fl_value span = fl_nothing();
+  fl_value line = fl_nothing();
+  double number = 0.0;
+  if (!zn_field(node, "span", &span) || !zn_field(span, "line", &line) || !zn_number(line, &number)) {
+    return 0;
+  }
+  return number > 0.0 ? (size_t)number : 0;
+}
+
+/* ─────────────────────────────── сессия ─────────────────────────────────── */
+
+typedef struct repl_decl {
+  repl_strings names;
+  char *label;
+  char *text;
+} repl_decl;
+
+/*
+ * Объявления хранятся указателями, а не значениями, и это не вкус. Кандидат на
+ * новую сессию собирается из тех же объявлений, что и старая: пока проверка не
+ * прошла, ни одно из них не имеет права быть скопированным или освобождённым —
+ * отвергнутый ввод обязан оставить сессию точно такой, какой она была.
+ */
+typedef struct repl_decls {
+  repl_decl **items;
+  size_t count;
+  size_t capacity;
+} repl_decls;
+
+typedef struct repl_import {
+  char *category;
+  char *from;
+  repl_strings only;
+  bool has_only;
+} repl_import;
+
+typedef struct repl_imports {
+  repl_import *items;
+  size_t count;
+  size_t capacity;
+} repl_imports;
+
+typedef struct repl_session {
+  char *base; /* каталог сессии; от него отсчитываются все пути */
+  char *file; /* «оболочка».flang, разрешённый в base */
+  /* Заголовок модуля хранится разобранным, а не строкой: «использует» пишется
+     в разных местах ввода и в загружаемых файлах, а в исходнике сессии он
+     обязан быть ровно один и ровно наверху. */
+  char *module;
+  repl_imports imports;
+  repl_strings exports;
+  repl_decls decls;
+  /* Имена функций последней принятой сессии: с ними разбирается ввод, иначе
+     вызов функции без аргументов остался бы несвязанным именем. */
+  repl_strings known;
+  repl_strings total;
+  /* Чем вычислять. NULL в `why_no_eval` означает «вычислять можно». */
+  char *cc;
+  char *include_dir;
+  char *lib_dir;
+  char *tmp_dir;
+  char *why_no_eval;
+  char *steps;
+  char *depth;
+  repl_strings litter;
+} repl_session;
+
+static void decls_init(repl_decls *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void decls_push(repl_decls *list, repl_decl *decl) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = (repl_decl **)repl_grow(list->items, list->capacity * sizeof(repl_decl *));
+  }
+  list->items[list->count] = decl;
+  list->count += 1;
+}
+
+static void decl_free(repl_decl *decl) {
+  strings_free(&decl->names);
+  free(decl->label);
+  free(decl->text);
+  free(decl);
+}
+
+static void decls_free(repl_decls *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    decl_free(list->items[index]);
+  }
+  free(list->items);
+  decls_init(list);
+}
+
+static void imports_init(repl_imports *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void imports_push(repl_imports *list, repl_import item) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 4 : list->capacity * 2;
+    list->items = (repl_import *)repl_grow(list->items, list->capacity * sizeof(repl_import));
+  }
+  list->items[list->count] = item;
+  list->count += 1;
+}
+
+static void import_free(repl_import *item) {
+  free(item->category);
+  free(item->from);
+  strings_free(&item->only);
+  item->category = NULL;
+  item->from = NULL;
+}
+
+static void imports_free(repl_imports *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    import_free(&list->items[index]);
+  }
+  free(list->items);
+  imports_init(list);
+}
+
+static repl_import import_copy(const repl_import *item) {
+  repl_import copy;
+  size_t index = 0;
+  copy.category = repl_say(item->category);
+  copy.from = repl_say(item->from);
+  copy.has_only = item->has_only;
+  strings_init(&copy.only);
+  for (index = 0; index < item->only.count; index += 1) {
+    strings_say(&copy.only, item->only.items[index]);
+  }
+  return copy;
+}
+
+/* ─────────────────── сборка исходника сессии и карта строк ─────────────── */
+
+/*
+ * Карта нужна, чтобы диагностика показывала строку ВВОДА, а не строку
+ * собранного текста: пользователь набрал три строки, и «ошибка в строке 47»
+ * ему ничего не говорит.
+ */
+typedef struct repl_piece {
+  const char *where; /* «ввод», «объявление», «модуль» */
+  const char *name;  /* метка объявления или NULL */
+  size_t first;
+  size_t last;
+  size_t line_shift;
+  size_t column_shift;
+} repl_piece;
+
+typedef struct repl_map {
+  repl_piece *items;
+  size_t count;
+  size_t capacity;
+} repl_map;
+
+static void map_init(repl_map *map) {
+  map->items = NULL;
+  map->count = 0;
+  map->capacity = 0;
+}
+
+static void map_push(repl_map *map, repl_piece piece) {
+  if (map->count == map->capacity) {
+    map->capacity = map->capacity == 0 ? 8 : map->capacity * 2;
+    map->items = (repl_piece *)repl_grow(map->items, map->capacity * sizeof(repl_piece));
+  }
+  map->items[map->count] = piece;
+  map->count += 1;
+}
+
+static void map_free(repl_map *map) {
+  free(map->items);
+  map_init(map);
+}
+
+/** Взгляд на сессию: настоящую или ещё только примеряемую. */
+typedef struct repl_view {
+  const char *module;
+  const repl_imports *imports;
+  const repl_strings *exports;
+  const repl_decls *decls;
+  size_t fresh_first; /* [fresh_first, fresh_last) — только что набранное */
+  size_t fresh_last;
+} repl_view;
+
+static void buf_json_text(repl_buf *buf, const char *text) {
+  size_t index = 0;
+  buf_char(buf, '"');
+  for (index = 0; text[index] != '\0'; index += 1) {
+    const unsigned char symbol = (unsigned char)text[index];
+    switch (symbol) {
+      case '"': buf_put(buf, "\\\""); break;
+      case '\\': buf_put(buf, "\\\\"); break;
+      case '\n': buf_put(buf, "\\n"); break;
+      case '\r': buf_put(buf, "\\r"); break;
+      case '\t': buf_put(buf, "\\t"); break;
+      default:
+        if (symbol < 0x20u) {
+          char escape[8];
+          sprintf(escape, "\\u%04x", (unsigned)symbol);
+          buf_put(buf, escape);
+        } else {
+          buf_char(buf, (char)symbol);
+        }
+    }
+  }
+  buf_char(buf, '"');
+}
+
+/** Текст заголовка модуля; false — заголовка нет и печатать нечего. */
+static bool repl_header_text(const char *module, const repl_imports *imports, const repl_strings *exports,
+                             repl_buf *out) {
+  size_t index = 0;
+  if (imports->count == 0 && exports->count == 0 && module[0] == '\0') {
+    return false;
+  }
+  buf_put(out, "модуль «");
+  buf_put(out, module[0] == '\0' ? REPL_MODULE : module);
+  buf_put(out, "»");
+  for (index = 0; index < imports->count; index += 1) {
+    const repl_import *item = &imports->items[index];
+    size_t inner = 0;
+    buf_put(out, "\n  использует «");
+    buf_put(out, item->category);
+    buf_put(out, "» из ");
+    buf_json_text(out, item->from);
+    if (item->has_only) {
+      buf_put(out, " только ");
+      for (inner = 0; inner < item->only.count; inner += 1) {
+        if (inner > 0) {
+          buf_put(out, ", ");
+        }
+        buf_put(out, "«");
+        buf_put(out, item->only.items[inner]);
+        buf_put(out, "»");
+      }
+    }
+  }
+  if (exports->count > 0) {
+    buf_put(out, "\n  экспортирует ");
+    for (index = 0; index < exports->count; index += 1) {
+      if (index > 0) {
+        buf_put(out, ", ");
+      }
+      buf_put(out, "«");
+      buf_put(out, exports->items[index]);
+      buf_put(out, "»");
+    }
+  }
+  return true;
+}
+
+static size_t repl_lines_in(const char *text) {
+  size_t lines = 1;
+  size_t index = 0;
+  for (index = 0; text[index] != '\0'; index += 1) {
+    if (text[index] == '\n') {
+      lines += 1;
+    }
+  }
+  return lines;
+}
+
+/** Часть исходника + её место в карте. */
+static void repl_add_piece(repl_buf *out, repl_map *map, const char *where, const char *name, const char *text,
+                           size_t line_shift, size_t column_shift, size_t *line) {
+  repl_piece piece;
+  const size_t height = repl_lines_in(text);
+  if (out->used > 0) {
+    buf_put(out, "\n\n");
+  }
+  buf_put(out, text);
+  piece.where = where;
+  piece.name = name;
+  piece.first = *line;
+  piece.last = *line + height - 1;
+  piece.line_shift = line_shift;
+  piece.column_shift = column_shift;
+  map_push(map, piece);
+  /* Между частями ровно одна пустая строка — она же разделитель в файле,
+     который пишет «.сохранить». */
+  *line += height + 1;
+}
+
+/**
+ * Исходник сессии целиком: заголовок, объявления и — если вычисляется
+ * выражение — обёртка. Хвост приходит уже готовым текстом, потому что сдвиги
+ * строк и столбцов у него свои.
+ */
+static void repl_assemble(const repl_view *view, const char *tail, size_t tail_line_shift, size_t tail_column_shift,
+                          repl_buf *out, repl_map *map) {
+  repl_buf header;
+  size_t line = 1;
+  size_t index = 0;
+  buf_reset(out);
+  map->count = 0;
+  buf_init(&header);
+  if (repl_header_text(view->module, view->imports, view->exports, &header)) {
+    repl_add_piece(out, map, "модуль", NULL, header.data, 0, 0, &line);
+  }
+  for (index = 0; index < view->decls->count; index += 1) {
+    const repl_decl *decl = view->decls->items[index];
+    const bool fresh = index >= view->fresh_first && index < view->fresh_last;
+    /* Только что набранное помечается как «ввод»: ошибка в нём обязана
+       указывать строку ввода, а не строку объявления, о котором пользователь
+       ещё не думает как об отдельной части сессии. */
+    repl_add_piece(out, map, fresh ? "ввод" : "объявление", decl->label, decl->text, 0, 0, &line);
+  }
+  if (tail != NULL) {
+    repl_add_piece(out, map, "ввод", NULL, tail, tail_line_shift, tail_column_shift, &line);
+  }
+  if (out->used > 0) {
+    buf_char(out, '\n');
+  }
+  buf_free(&header);
+}
+
+/* ────────────────────────────── диагностика ─────────────────────────────── */
+
+typedef struct repl_bad {
+  char *code;
+  char *message;
+  bool has_at;
+  size_t line;
+  size_t column;
+} repl_bad;
+
+typedef struct repl_bads {
+  repl_bad *items;
+  size_t count;
+  size_t capacity;
+} repl_bads;
+
+static void bads_init(repl_bads *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void bads_push(repl_bads *list, char *code, char *message, bool has_at, size_t line, size_t column) {
+  repl_bad bad;
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 4 : list->capacity * 2;
+    list->items = (repl_bad *)repl_grow(list->items, list->capacity * sizeof(repl_bad));
+  }
+  bad.code = code;
+  bad.message = message;
+  bad.has_at = has_at;
+  bad.line = line;
+  bad.column = column;
+  list->items[list->count] = bad;
+  list->count += 1;
+}
+
+static void bads_say(repl_bads *list, const char *message) {
+  /* Ошибка оболочки — это ошибка вызова, а не ошибка программы, поэтому код тот
+     же, каким CLI помечает неверный вызов: заводить для оболочки собственный код
+     значило бы расширять список кодов там, где ничего нового не произошло. */
+  bads_push(list, repl_say("FLANG_CLI"), repl_say(message), false, 0, 0);
+}
+
+static void bads_free(repl_bads *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index].code);
+    free(list->items[index].message);
+  }
+  free(list->items);
+  bads_init(list);
+}
+
+/** Одна «Беда» компилятора → в наш список. */
+static void bads_take(repl_bads *list, fl_value bad) {
+  fl_value code = fl_nothing();
+  fl_value message = fl_nothing();
+  fl_value at = fl_nothing();
+  fl_value has = fl_nothing();
+  fl_value line = fl_nothing();
+  fl_value column = fl_nothing();
+  bool present = false;
+  if (!val_field(bad, "код", &code) || !val_field(bad, "сообщение", &message)) {
+    return;
+  }
+  if (val_field(bad, "место", &at) && val_field(at, "есть", &has) && has.tag == FL_FLAG) {
+    present = has.as.flag;
+  }
+  if (present) {
+    val_field(at, "строка", &line);
+    val_field(at, "столбец", &column);
+  }
+  bads_push(list, val_copy(code), val_copy(message), present,
+            line.tag == FL_NUMBER ? (size_t)line.as.number : 0,
+            column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
+}
+
+/** «Диагностика анализа» тотальности → «Беда»; предупреждения не едут. */
+static void bads_take_analysis(repl_bads *list, fl_value bad) {
+  fl_value code = fl_nothing();
+  fl_value message = fl_nothing();
+  fl_value weight = fl_nothing();
+  fl_value has = fl_nothing();
+  fl_value line = fl_nothing();
+  fl_value column = fl_nothing();
+  if (!val_field(bad, "код", &code) || !val_field(bad, "сообщение", &message)) {
+    return;
+  }
+  if (val_field(bad, "важность", &weight) && val_same(weight, "warning")) {
+    return;
+  }
+  val_field(bad, "есть место", &has);
+  val_field(bad, "строка", &line);
+  val_field(bad, "столбец", &column);
+  bads_push(list, val_copy(code), val_copy(message), has.tag == FL_FLAG && has.as.flag,
+            line.tag == FL_NUMBER ? (size_t)line.as.number : 0,
+            column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
+}
+
+static void repl_print_bad(const char *code, const char *message, const char *where, const char *name, size_t line,
+                           size_t column) {
+  if (where == NULL) {
+    fprintf(stderr, "%s: %s\n", code, message);
+    return;
+  }
+  if (strcmp(where, "ввод") == 0) {
+    if (column > 0) {
+      fprintf(stderr, "%s, строка %lu, столбец %lu: %s\n", code, (unsigned long)line, (unsigned long)column, message);
+    } else {
+      fprintf(stderr, "%s, строка %lu: %s\n", code, (unsigned long)line, message);
+    }
+    return;
+  }
+  if (strcmp(where, "файл") == 0) {
+    fprintf(stderr, "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line, message);
+    return;
+  }
+  if (strcmp(where, "модуль") == 0) {
+    fprintf(stderr, "%s, заголовок модуля, строка %lu: %s\n", code, (unsigned long)line, message);
+    return;
+  }
+  fprintf(stderr, "%s в объявлении (%s), строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line,
+          message);
+}
+
+/**
+ * Диагностика — кодом и местом, как в «flang check», только не в JSON.
+ *
+ * Место берётся либо из карты собранной сессии, либо — когда ввод разбирался
+ * отдельно от неё — напрямую от вызывающего, которому оно известно заранее.
+ */
+static void repl_print_bads(const repl_bads *bads, const repl_map *map, const char *direct_where,
+                            const char *direct_name, size_t line_shift, size_t column_shift) {
+  size_t index = 0;
+  for (index = 0; index < bads->count; index += 1) {
+    const repl_bad *bad = &bads->items[index];
+    const repl_piece *piece = NULL;
+    size_t line = 0;
+    size_t column = 0;
+    if (!bad->has_at || repl_in_list(REPL_FOREIGN, bad->code, strlen(bad->code))) {
+      repl_print_bad(bad->code, bad->message, NULL, NULL, 0, 0);
+      continue;
+    }
+    if (direct_where != NULL) {
+      line = bad->line > line_shift ? bad->line - line_shift : 1;
+      column = bad->column > column_shift ? bad->column - column_shift : 1;
+      repl_print_bad(bad->code, bad->message, direct_where, direct_name, line, bad->column > 0 ? column : 0);
+      continue;
+    }
+    if (map != NULL) {
+      size_t scan = 0;
+      for (scan = 0; scan < map->count; scan += 1) {
+        if (bad->line >= map->items[scan].first && bad->line <= map->items[scan].last) {
+          piece = &map->items[scan];
+          break;
+        }
+      }
+    }
+    if (piece == NULL) {
+      repl_print_bad(bad->code, bad->message, NULL, NULL, 0, 0);
+      continue;
+    }
+    line = bad->line + 1 - piece->first;
+    line = line > piece->line_shift ? line - piece->line_shift : 1;
+    column = bad->column > piece->column_shift ? bad->column - piece->column_shift : 1;
+    repl_print_bad(bad->code, bad->message, piece->where, piece->name, line, bad->column > 0 ? column : 0);
+  }
+}
+
+/* ───────────────────── исходники сессии и её импортов ──────────────────── */
+
+/** Один «Исходник»: путь и текст. */
+static fl_value repl_source_value(const char *path, const char *text, size_t bytes) {
+  static const char *const names[2] = {"путь", "текст"};
+  fl_value values[2];
+  values[0] = repl_value_say(path);
+  values[1] = repl_value_text(text, bytes);
+  return repl_value_record(names, values, 2);
+}
+
+/** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
+static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  const fl_value *legacy = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  char *directory = repl_dirname(from);
+  args[0] = repl_value_text(text, bytes);
+  args[1] = repl_value_list(NULL, 0);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK || !val_field(parsed, "программа", &program)) {
+    free(directory);
+    return;
+  }
+  zn_field_items(program, "legacy", &legacy, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *construct = NULL;
+    size_t construct_bytes = 0;
+    fl_value value = fl_nothing();
+    const fl_value *items = NULL;
+    size_t imports = 0;
+    size_t inner = 0;
+    if (!zn_field_text(legacy[index], "construct", &construct, &construct_bytes)) {
+      continue;
+    }
+    if (construct_bytes != 12 || memcmp(construct, "moduleHeader", 12) != 0) {
+      continue;
+    }
+    if (!zn_field(legacy[index], "value", &value)) {
+      continue;
+    }
+    zn_field_items(value, "imports", &items, &imports);
+    for (inner = 0; inner < imports; inner += 1) {
+      const char *path = NULL;
+      size_t path_bytes = 0;
+      if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
+        char *relative = repl_dup(path, path_bytes);
+        char *full = repl_resolve(directory, relative);
+        strings_say(queue, full);
+        free(relative);
+        free(full);
+      }
+    }
+  }
+  free(directory);
+}
+
+/**
+ * Список исходников для компилятора: сама сессия и всё, до чего дотягиваются её
+ * «использует». Чтения файлов в языке нет и не будет — программа на flang не
+ * имеет доступа к миру, — поэтому файлы читает оболочка и подаёт их списком.
+ */
+static fl_value repl_sources(repl_session *session, const char *source, const repl_imports *imports) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value *items = NULL;
+  fl_value list = fl_nothing();
+  size_t index = 0;
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, session->file);
+  strings_say(&texts, source);
+  for (index = 0; index < imports->count; index += 1) {
+    char *full = repl_resolve(session->base, imports->items[index].from);
+    strings_say(&queue, full);
+    free(full);
+  }
+  for (index = 0; index < queue.count; index += 1) {
+    const char *path = queue.items[index];
+    char *text = NULL;
+    size_t bytes = 0;
+    if (strings_has(&paths, path, strlen(path))) {
+      continue;
+    }
+    text = repl_read_file(path, &bytes);
+    if (text == NULL) {
+      /* Файла нет — молчим: об этом скажет сам компилятор, и скажет кодом
+         FLANG_IMPORT_NOT_FOUND, а не нашим пересказом. */
+      continue;
+    }
+    strings_say(&paths, path);
+    strings_add(&texts, text, bytes);
+    repl_imports_of(text, bytes, path, &queue);
+    free(text);
+  }
+  {
+    fl_error error;
+    error.code = NULL;
+    error.message = NULL;
+    if (fl_list_alloc(&repl_ctx, paths.count, &items, &error) != FL_OK) {
+      repl_oom();
+    }
+    for (index = 0; index < paths.count; index += 1) {
+      items[index] = repl_source_value(paths.items[index], texts.items[index], strlen(texts.items[index]));
+    }
+    list = fl_list(items, paths.count);
+  }
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  return list;
+}
+
+/* ─────────────────────── та же дорога, что у flang check ────────────────── */
+
+/**
+ * Разбор со связыванием → типы → завершаемость: ровно та пара проверок и в том
+ * же порядке, что у `flang check` («Проверить исходники» связанного
+ * компилятора). Разбита здесь на три вызова не ради удобства, а потому что
+ * оболочке нужна ещё и сама связанная программа: по ней считаются имена,
+ * видимые следующему вводу, и по ней же печатается C, когда вычисляется
+ * выражение, — связывать второй раз ради этого было бы расточительством.
+ */
+static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
+                       fl_value *program, bool *has_program, repl_strings *proven) {
+  fl_value args[2];
+  fl_value linked = fl_nothing();
+  fl_value typed = fl_nothing();
+  fl_value total = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  size_t index = 0;
+  *has_program = false;
+  args[0] = repl_sources(session, source, imports);
+  args[1] = repl_value_say(session->file);
+  if (repl_call("Связать исходники", args, 2, &linked) != FL_OK) {
+    bads_say(bads, "компилятор не связал сессию");
+    return false;
+  }
+  if (!val_field(linked, "программа", program)) {
+    bads_say(bads, "связывание не вернуло программу");
+    return false;
+  }
+  *has_program = true;
+  if (val_field(linked, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      bads_take(bads, diagnostics.as.list.items[index]);
+    }
+  }
+  if (repl_call("Проверить типы", program, 1, &typed) != FL_OK) {
+    bads_say(bads, "проверка типов прекращена");
+    return false;
+  }
+  if (val_field(typed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      bads_take(bads, diagnostics.as.list.items[index]);
+    }
+  }
+  if (repl_call("Проверить тотальность", program, 1, &total) != FL_OK) {
+    bads_say(bads, "анализ завершаемости прекращён");
+    return false;
+  }
+  if (val_field(total, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      bads_take_analysis(bads, diagnostics.as.list.items[index]);
+    }
+  }
+  if (proven != NULL && val_field(total, "тотальные", &diagnostics) && diagnostics.tag == FL_LIST) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      const char *utf8 = NULL;
+      size_t bytes = 0;
+      if (val_text(diagnostics.as.list.items[index], &utf8, &bytes)) {
+        strings_add(proven, utf8, bytes);
+      }
+    }
+  }
+  return bads->count == 0;
+}
+
+/** Имена функций связанной программы: с ними разбирается следующий ввод. */
+static void repl_known_of(fl_value program, repl_strings *out) {
+  const fl_value *functions = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(program, "functions", &functions, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    size_t bytes = 0;
+    if (zn_field_text(functions[index], "name", &name, &bytes)) {
+      strings_add(out, name, bytes);
+    }
+  }
+}
+
+/* ─────────────────── разложение ввода на объявления ────────────────────── */
+
+/** Узел объявления: имя, строка начала, как он называется по-русски. */
+typedef struct repl_node {
+  char *name;
+  size_t line;
+  char *label;
+  int total; /* -1 — не функция, 0 — обычная, 1 — с доказанным завершением */
+} repl_node;
+
+typedef struct repl_nodes {
+  repl_node *items;
+  size_t count;
+  size_t capacity;
+} repl_nodes;
+
+static void nodes_init(repl_nodes *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void nodes_push(repl_nodes *list, char *name, size_t line, char *label, int total) {
+  repl_node node;
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = (repl_node *)repl_grow(list->items, list->capacity * sizeof(repl_node));
+  }
+  node.name = name;
+  node.line = line;
+  node.label = label;
+  node.total = total;
+  list->items[list->count] = node;
+  list->count += 1;
+}
+
+static void nodes_free(repl_nodes *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index].name);
+    free(list->items[index].label);
+  }
+  free(list->items);
+  nodes_init(list);
+}
+
+/** Как называется конструкция наследия FTS по-русски — для списка объявлений. */
+static const char *repl_legacy_word(const char *construct, size_t bytes) {
+  static const char *const pairs[] = {"utility",  "утилита", "theorem",     "теорема", "functor",  "функтор",
+                                      "functorFile", "функтор", "morphism", "морфизм", "category", "категория",
+                                      "chain",    "цепочка", "identity",    "тождество", NULL};
+  size_t index = 0;
+  for (index = 0; pairs[index] != NULL; index += 2) {
+    if (strlen(pairs[index]) == bytes && memcmp(pairs[index], construct, bytes) == 0) {
+      return pairs[index + 1];
+    }
+  }
+  return NULL;
+}
+
+static char *repl_label(const char *word, const char *name, size_t name_bytes) {
+  repl_buf buf;
+  char *label = NULL;
+  buf_init(&buf);
+  buf_put(&buf, word);
+  buf_put(&buf, " «");
+  buf_add(&buf, name, name_bytes);
+  buf_put(&buf, "»");
+  label = repl_dup(buf.data, buf.used);
+  buf_free(&buf);
+  return label;
+}
+
+/**
+ * Узлы объявлений разобранной программы. Порядок тот же, что в эталоне: типы,
+ * функции, наследие, — от него зависит и порядок строк «объявлено: …».
+ */
+static void repl_nodes_of(fl_value program, const repl_strings *proven, repl_nodes *out) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(program, "types", &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    const char *kind = NULL;
+    size_t name_bytes = 0;
+    size_t kind_bytes = 0;
+    if (!zn_field_text(items[index], "name", &name, &name_bytes)) {
+      continue;
+    }
+    zn_field_text(items[index], "kind", &kind, &kind_bytes);
+    nodes_push(out, repl_dup(name, name_bytes), zn_line(items[index]),
+               repl_label(kind != NULL && kind_bytes == 6 && memcmp(kind, "record", 6) == 0 ? "запись" : "тип", name,
+                          name_bytes),
+               -1);
+  }
+  zn_field_items(program, "functions", &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    fl_value marked = fl_nothing();
+    bool total = false;
+    if (!zn_field_text(items[index], "name", &name, &name_bytes)) {
+      continue;
+    }
+    if (zn_field(items[index], "total", &marked)) {
+      zn_flag(marked, &total);
+    }
+    /* «Тотальная» без доказательства сюда не доходит — такое объявление
+       отвергает анализ завершаемости, — но полагаться на пометку незачем:
+       спрашиваем множество доказанных имён. */
+    nodes_push(out, repl_dup(name, name_bytes), zn_line(items[index]),
+               repl_label(total ? "тотальная функция" : "функция", name, name_bytes),
+               total && (proven == NULL || strings_has(proven, name, name_bytes)) ? 1 : 0);
+  }
+  zn_field_items(program, "legacy", &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *construct = NULL;
+    size_t construct_bytes = 0;
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    const char *word = NULL;
+    fl_value value = fl_nothing();
+    if (!zn_field_text(items[index], "construct", &construct, &construct_bytes)) {
+      continue;
+    }
+    if (construct_bytes == 12 && memcmp(construct, "moduleHeader", 12) == 0) {
+      continue;
+    }
+    if (!zn_field(items[index], "value", &value) || !zn_field_text(value, "name", &name, &name_bytes)) {
+      continue;
+    }
+    word = repl_legacy_word(construct, construct_bytes);
+    if (word == NULL) {
+      char *own = repl_dup(construct, construct_bytes);
+      nodes_push(out, repl_dup(name, name_bytes), zn_line(items[index]), repl_label(own, name, name_bytes), -1);
+      free(own);
+      continue;
+    }
+    nodes_push(out, repl_dup(name, name_bytes), zn_line(items[index]), repl_label(word, name, name_bytes), -1);
+  }
+}
+
+static bool repl_blank(const char *line) {
+  size_t index = 0;
+  for (index = 0; line[index] != '\0'; index += 1) {
+    if (line[index] != ' ' && line[index] != '\t' && line[index] != '\r') {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool repl_service_line(const char *line) {
+  size_t index = 0;
+  if (repl_blank(line)) {
+    return true;
+  }
+  while (line[index] == ' ' || line[index] == '\t') {
+    index += 1;
+  }
+  return line[index] == '/' && line[index + 1] == '/';
+}
+
+static void repl_split_lines(const char *text, repl_strings *out) {
+  const char *scan = text;
+  for (;;) {
+    const char *newline = strchr(scan, '\n');
+    if (newline == NULL) {
+      strings_add(out, scan, strlen(scan));
+      return;
+    }
+    strings_add(out, scan, (size_t)(newline - scan));
+    scan = newline + 1;
+  }
+}
+
+/** Метка нескольких узлов сразу: один — свой, много — через запятую. */
+static char *repl_label_of(const repl_nodes *nodes, size_t first, size_t last) {
+  repl_buf buf;
+  char *label = NULL;
+  size_t index = 0;
+  size_t seen = 0;
+  buf_init(&buf);
+  for (index = 0; index < nodes->count; index += 1) {
+    if (nodes->items[index].line < first || nodes->items[index].line > last) {
+      continue;
+    }
+    if (seen > 0) {
+      buf_put(&buf, ", ");
+    }
+    buf_put(&buf, nodes->items[index].label);
+    seen += 1;
+  }
+  if (seen == 0) {
+    buf_put(&buf, "объявление");
+  }
+  label = repl_dup(buf.data, buf.used);
+  buf_free(&buf);
+  return label;
+}
+
+static repl_decl *decl_new(void) {
+  repl_decl *decl = (repl_decl *)repl_alloc(sizeof(repl_decl));
+  strings_init(&decl->names);
+  decl->label = NULL;
+  decl->text = NULL;
+  return decl;
+}
+
+/** Один фрагмент на весь ввод: разрезать не получилось. */
+static void repl_whole(const char *text, const repl_nodes *nodes, repl_decls *out) {
+  repl_decl *decl = decl_new();
+  size_t index = 0;
+  for (index = 0; index < nodes->count; index += 1) {
+    strings_say(&decl->names, nodes->items[index].name);
+  }
+  decl->label = repl_label_of(nodes, 1, (size_t)-1);
+  decl->text = repl_say(text);
+  decls_push(out, decl);
+}
+
+/**
+ * Ввод режется на отдельные объявления по строкам, с которых они начинаются.
+ *
+ * Порознь они нужны, чтобы переобъявление меняло одну функцию, а не весь ввод
+ * целиком, и чтобы «.объявления» показывал список, а не простыню. Комментарии
+ * перед объявлением уходят вместе с ним: в файлах библиотеки они и есть его
+ * описание, и терять их при загрузке нельзя.
+ *
+ * Если разрезать не получается — объявления вложены в «категория «…»», у узла
+ * нет места, кусок начинается с отступа, — ввод остаётся одним фрагментом. Это
+ * не отказ: сессия остаётся правильной, просто переобъявлять придётся целиком.
+ */
+static void repl_split(const char *text, const repl_nodes *nodes, repl_decls *out) {
+  repl_strings lines;
+  size_t *first = NULL;
+  size_t *last = NULL;
+  size_t pieces = 0;
+  size_t index = 0;
+  size_t inner = 0;
+  bool ok = true;
+  if (nodes->count == 0) {
+    repl_whole(text, nodes, out);
+    return;
+  }
+  for (index = 0; index < nodes->count; index += 1) {
+    if (nodes->items[index].line == 0 || nodes->items[index].name == NULL) {
+      repl_whole(text, nodes, out);
+      return;
+    }
+  }
+  strings_init(&lines);
+  repl_split_lines(text, &lines);
+  first = (size_t *)repl_alloc((nodes->count + 1) * sizeof(size_t));
+  last = (size_t *)repl_alloc((nodes->count + 1) * sizeof(size_t));
+  for (index = 0; index < nodes->count; index += 1) {
+    bool seen = false;
+    for (inner = 0; inner < pieces; inner += 1) {
+      if (first[inner] == nodes->items[index].line) {
+        seen = true;
+      }
+    }
+    if (!seen) {
+      first[pieces] = nodes->items[index].line;
+      pieces += 1;
+    }
+  }
+  for (index = 0; index + 1 < pieces; index += 1) {
+    for (inner = index + 1; inner < pieces; inner += 1) {
+      if (first[inner] < first[index]) {
+        const size_t swap = first[index];
+        first[index] = first[inner];
+        first[inner] = swap;
+      }
+    }
+  }
+  for (index = 0; index < pieces; index += 1) {
+    last[index] = (index + 1 < pieces ? first[index + 1] : lines.count + 1) - 1;
+  }
+  /* Хвост куска — комментарии и пустые строки — принадлежит следующему
+     объявлению: читатель написал их про него, а не про предыдущее. */
+  for (index = 0; index + 1 < pieces; index += 1) {
+    while (last[index] >= first[index] && last[index] >= 1 && last[index] <= lines.count &&
+           repl_service_line(lines.items[last[index] - 1])) {
+      last[index] -= 1;
+      first[index + 1] -= 1;
+    }
+  }
+  while (last[pieces - 1] >= first[pieces - 1] && last[pieces - 1] >= 1 && last[pieces - 1] <= lines.count &&
+         repl_blank(lines.items[last[pieces - 1] - 1])) {
+    last[pieces - 1] -= 1;
+  }
+  /* Комментарий перед ПЕРВЫМ объявлением тем же правом принадлежит ему. Назад
+     идём только по служебным строкам, поэтому заголовок модуля (он не служебная
+     строка) остаётся снаружи и в объявление не заезжает. */
+  while (first[0] > 1 && repl_service_line(lines.items[first[0] - 2])) {
+    first[0] -= 1;
+  }
+  for (index = 0; index < pieces; index += 1) {
+    /* Пустые строки в начале куска не несут ничего, кроме лишней пустой строки
+       в сохранённом файле. */
+    while (first[index] < last[index] && first[index] >= 1 && first[index] <= lines.count &&
+           repl_blank(lines.items[first[index] - 1])) {
+      first[index] += 1;
+    }
+  }
+  for (index = 0; index < pieces && ok; index += 1) {
+    repl_buf body;
+    buf_init(&body);
+    for (inner = first[index]; inner <= last[index] && inner <= lines.count; inner += 1) {
+      if (body.used > 0) {
+        buf_char(&body, '\n');
+      }
+      buf_put(&body, lines.items[inner - 1]);
+    }
+    /* Кусок с отступом в первой строке — часть чужого блока («категория «…»»):
+       отдельным объявлением он не соберётся. */
+    if (repl_blank(body.data) || body.data[0] == ' ' || body.data[0] == '\t') {
+      ok = false;
+    } else {
+      repl_decl *decl = decl_new();
+      for (inner = 0; inner < nodes->count; inner += 1) {
+        if (nodes->items[inner].line >= first[index] && nodes->items[inner].line <= last[index]) {
+          strings_say(&decl->names, nodes->items[inner].name);
+        }
+      }
+      decl->label = repl_label_of(nodes, first[index], last[index]);
+      decl->text = repl_dup(body.data, body.used);
+      decls_push(out, decl);
+    }
+    buf_free(&body);
+  }
+  free(first);
+  free(last);
+  strings_free(&lines);
+  if (!ok) {
+    decls_free(out);
+    repl_whole(text, nodes, out);
+  }
+}
+
+/**
+ * Замена прежних объявлений одноимёнными новыми.
+ *
+ * Переобъявление — не роскошь: в оболочке функцию правят по десять раз, и
+ * «функция объявлена дважды» на каждую правку сделала бы её бесполезной. Замена
+ * идёт НА МЕСТЕ, чтобы порядок объявлений (а значит, и сохранённый файл) не
+ * переставлялся от правки к правке.
+ *
+ * Один случай отвергается: если прежний фрагмент объявлял несколько имён и
+ * переобъявлено из них не всё, замена молча потеряла бы остальные.
+ */
+static char *repl_merge(const repl_decls *current, const repl_decls *fresh, repl_decls *candidate,
+                        repl_decls *dropped, repl_strings *replaced, size_t *fresh_first, size_t *fresh_last) {
+  repl_strings names;
+  size_t index = 0;
+  size_t inner = 0;
+  bool inserted = false;
+  char *error = NULL;
+  strings_init(&names);
+  for (index = 0; index < fresh->count; index += 1) {
+    for (inner = 0; inner < fresh->items[index]->names.count; inner += 1) {
+      strings_say(&names, fresh->items[index]->names.items[inner]);
+    }
+  }
+  for (index = 0; index < current->count && error == NULL; index += 1) {
+    const repl_decl *decl = current->items[index];
+    bool some = false;
+    bool every = true;
+    for (inner = 0; inner < decl->names.count; inner += 1) {
+      if (strings_has(&names, decl->names.items[inner], strlen(decl->names.items[inner]))) {
+        some = true;
+      } else {
+        every = false;
+      }
+    }
+    if (some && !every) {
+      repl_buf buf;
+      buf_init(&buf);
+      buf_put(&buf, decl->label);
+      buf_put(&buf, " объявлено вместе с ");
+      for (inner = 0; inner < decl->names.count; inner += 1) {
+        if (inner > 0) {
+          buf_put(&buf, ", ");
+        }
+        buf_put(&buf, "«");
+        buf_put(&buf, decl->names.items[inner]);
+        buf_put(&buf, "»");
+      }
+      buf_put(&buf, ": переобъявите их одним вводом или начните заново командой «.сбросить»");
+      error = repl_dup(buf.data, buf.used);
+      buf_free(&buf);
+    }
+  }
+  if (error != NULL) {
+    strings_free(&names);
+    return error;
+  }
+  *fresh_first = 0;
+  *fresh_last = 0;
+  for (index = 0; index < current->count; index += 1) {
+    repl_decl *decl = current->items[index];
+    bool some = false;
+    for (inner = 0; inner < decl->names.count; inner += 1) {
+      if (strings_has(&names, decl->names.items[inner], strlen(decl->names.items[inner]))) {
+        some = true;
+      }
+    }
+    if (some) {
+      strings_say(replaced, decl->label);
+      decls_push(dropped, decl);
+      if (!inserted) {
+        *fresh_first = candidate->count;
+        for (inner = 0; inner < fresh->count; inner += 1) {
+          decls_push(candidate, fresh->items[inner]);
+        }
+        *fresh_last = candidate->count;
+        inserted = true;
+      }
+      continue;
+    }
+    decls_push(candidate, decl);
+  }
+  if (!inserted) {
+    *fresh_first = candidate->count;
+    for (inner = 0; inner < fresh->count; inner += 1) {
+      decls_push(candidate, fresh->items[inner]);
+    }
+    *fresh_last = candidate->count;
+  }
+  strings_free(&names);
+  return NULL;
+}
+
+/* ───────────────────────────── разбор ввода ─────────────────────────────── */
+
+/**
+ * Ошибка лексера — не повод гадать о виде ввода: пусть её покажет разбор, у
+ * которого есть и место, и код. Поэтому «не разобралось» здесь означает не
+ * «пусто», а «не спрашивай токены».
+ */
+static bool repl_tokens(const char *text, size_t bytes, fl_value *out) {
+  fl_value argument = fl_nothing();
+  fl_value bad = fl_nothing();
+  argument = repl_value_text(text, bytes);
+  if (repl_call("Диагностики", &argument, 1, &bad) != FL_OK) {
+    return false;
+  }
+  if (bad.tag == FL_LIST && bad.as.list.count > 0) {
+    return false;
+  }
+  argument = repl_value_text(text, bytes);
+  return repl_call("Токены", &argument, 1, out) == FL_OK && out->tag == FL_LIST;
+}
+
+static bool token_significant(fl_value token) {
+  fl_value kind = fl_nothing();
+  if (!val_field(token, "вид", &kind)) {
+    return false;
+  }
+  return !val_same(kind, "indent") && !val_same(kind, "dedent") && !val_same(kind, "newline") &&
+         !val_same(kind, "eof");
+}
+
+/** Первый значащий токен; (size_t)-1 — такого нет. */
+static size_t token_first(fl_value tokens) {
+  size_t index = 0;
+  if (tokens.tag != FL_LIST) {
+    return (size_t)-1;
+  }
+  for (index = 0; index < tokens.as.list.count; index += 1) {
+    if (token_significant(tokens.as.list.items[index])) {
+      return index;
+    }
+  }
+  return (size_t)-1;
+}
+
+static bool token_keyword(fl_value token, const char **word, size_t *bytes) {
+  fl_value kind = fl_nothing();
+  fl_value value = fl_nothing();
+  if (!val_field(token, "вид", &kind) || !val_same(kind, "keyword")) {
+    return false;
+  }
+  return val_field(token, "значение", &value) && val_text(value, word, bytes);
+}
+
+/**
+ * Объявление или выражение.
+ *
+ * Решает первое ключевое слово — то же самое, по которому выбирает
+ * `parseDeclaration`. Спорное слово ровно одно: «запись» начинает и объявление
+ * типа, и литерал записи («запись «Точка» с «х» равно 1»). Различаем так же,
+ * как парсер: за именем в литерале стоит «с».
+ */
+static bool repl_is_declaration(bool lexed, fl_value tokens) {
+  const char *word = NULL;
+  size_t bytes = 0;
+  size_t first = 0;
+  if (!lexed) {
+    return false;
+  }
+  first = token_first(tokens);
+  if (first == (size_t)-1 || !token_keyword(tokens.as.list.items[first], &word, &bytes)) {
+    return false;
+  }
+  if (!repl_in_list(REPL_DECLARATIONS, word, bytes)) {
+    return false;
+  }
+  if (bytes == 6 && (memcmp(word, "record", 6) == 0 || memcmp(word, "object", 6) == 0)) {
+    size_t index = 0;
+    for (index = first + 2; index < tokens.as.list.count; index += 1) {
+      const char *tail = NULL;
+      size_t tail_bytes = 0;
+      if (!token_significant(tokens.as.list.items[index])) {
+        continue;
+      }
+      if (token_keyword(tokens.as.list.items[index], &tail, &tail_bytes) &&
+          ((tail_bytes == 4 && memcmp(tail, "with", 4) == 0) ||
+           (tail_bytes == 8 && memcmp(tail, "contains", 8) == 0))) {
+        return false;
+      }
+      break;
+    }
+  }
+  return true;
+}
+
+/**
+ * Общий отступ ввода снимается: вставленный из файла кусок начинается с
+ * отступа, а лексер такому исходнику скажет только «рваный отступ». Столбцы
+ * диагностики восстанавливаются по снятой ширине.
+ */
+static char *repl_dedent(const char *text, size_t *width) {
+  repl_strings lines;
+  repl_buf buf;
+  char *result = NULL;
+  const char *common = NULL;
+  size_t common_len = 0;
+  size_t index = 0;
+  size_t end = strlen(text);
+  *width = 0;
+  while (end > 0 && (text[end - 1] == ' ' || text[end - 1] == '\t' || text[end - 1] == '\n' ||
+                     text[end - 1] == '\r')) {
+    end -= 1;
+  }
+  strings_init(&lines);
+  buf_init(&buf);
+  buf_add(&buf, text, end);
+  if (buf.used == 0) {
+    buf_free(&buf);
+    strings_free(&lines);
+    return repl_say("");
+  }
+  repl_split_lines(buf.data, &lines);
+  for (index = 0; index < lines.count; index += 1) {
+    const char *line = lines.items[index];
+    size_t own = 0;
+    if (repl_blank(line)) {
+      continue;
+    }
+    while (line[own] == ' ' || line[own] == '\t') {
+      own += 1;
+    }
+    if (common == NULL) {
+      common = line;
+      common_len = own;
+    } else {
+      size_t keep = 0;
+      while (keep < common_len && keep < own && common[keep] == line[keep]) {
+        keep += 1;
+      }
+      common_len = keep;
+    }
+  }
+  buf_reset(&buf);
+  for (index = 0; index < lines.count; index += 1) {
+    const char *line = lines.items[index];
+    if (index > 0) {
+      buf_char(&buf, '\n');
+    }
+    if (common_len == 0) {
+      buf_put(&buf, line);
+    } else if (strncmp(line, common, common_len) == 0) {
+      buf_put(&buf, line + common_len);
+    } else {
+      size_t skip = 0;
+      while (line[skip] == ' ' || line[skip] == '\t') {
+        skip += 1;
+      }
+      buf_put(&buf, line + skip);
+    }
+  }
+  *width = common_len;
+  result = repl_dup(buf.data, buf.used);
+  strings_free(&lines);
+  buf_free(&buf);
+  return result;
+}
+
+/**
+ * Ввод как тело функции: каждая непустая строка сдвигается на два пробела.
+ *
+ * Верхнего уровня «просто выражение» в языке нет: программа — это объявления
+ * (SPEC, раздел 5). Заводить для оболочки второй вход в парсер значило бы
+ * завести вторую грамматику, которая однажды разойдётся с первой. Обёртка
+ * намеренно НЕ тотальная: она может вызывать обычные функции, и объявлять её
+ * тотальной значило бы обещать завершение, которого никто не доказывал.
+ */
+static char *repl_wrap(const char *text, const char *name) {
+  repl_strings lines;
+  repl_buf buf;
+  char *result = NULL;
+  size_t index = 0;
+  strings_init(&lines);
+  buf_init(&buf);
+  repl_split_lines(text, &lines);
+  buf_put(&buf, "функция «");
+  buf_put(&buf, name);
+  buf_put(&buf, "»\n");
+  for (index = 0; index < lines.count; index += 1) {
+    if (index > 0) {
+      buf_char(&buf, '\n');
+    }
+    if (!repl_blank(lines.items[index])) {
+      buf_put(&buf, "  ");
+      buf_put(&buf, lines.items[index]);
+    }
+  }
+  result = repl_dup(buf.data, buf.used);
+  strings_free(&lines);
+  buf_free(&buf);
+  return result;
+}
+
+/**
+ * Разбор одного ввода отдельно от сессии.
+ *
+ * Нужен ровно для двух вещей: узнать, ЧТО объявлено (иначе нечего заменять при
+ * переобъявлении), и показать ошибку разбора на строке ввода, а не на строке
+ * собранной сессии. «использует» и «экспортирует» без заголовка модуля —
+ * синтаксическая ошибка, поэтому для них заголовок подставляется, а сдвиг строк
+ * возвращается вызывающему.
+ */
+static bool repl_parse_input(repl_session *session, const char *text, bool lexed, fl_value tokens, fl_value *program,
+                             repl_bads *bads, size_t *line_shift) {
+  repl_buf buf;
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  bool header_needed = false;
+  size_t index = 0;
+  *line_shift = 0;
+  if (lexed) {
+    const size_t first = token_first(tokens);
+    const char *word = NULL;
+    size_t bytes = 0;
+    if (first != (size_t)-1 && token_keyword(tokens.as.list.items[first], &word, &bytes)) {
+      header_needed = (bytes == 4 && memcmp(word, "uses", 4) == 0) ||
+                      (bytes == 7 && memcmp(word, "exports", 7) == 0);
+    }
+  }
+  buf_init(&buf);
+  if (header_needed) {
+    buf_put(&buf, "модуль «" REPL_MODULE "»\n");
+    *line_shift = 1;
+  }
+  buf_put(&buf, text);
+  args[0] = repl_value_text(buf.data, buf.used);
+  args[1] = repl_value_strings(&session->known);
+  buf_free(&buf);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
+    bads_say(bads, "разбор ввода прекращён");
+    return false;
+  }
+  if (val_field(parsed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST &&
+      diagnostics.as.list.count > 0) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      fl_value bad = diagnostics.as.list.items[index];
+      fl_value code = fl_nothing();
+      fl_value message = fl_nothing();
+      fl_value line = fl_nothing();
+      fl_value column = fl_nothing();
+      if (!val_field(bad, "код", &code) || !val_field(bad, "сообщение", &message)) {
+        continue;
+      }
+      val_field(bad, "строка", &line);
+      val_field(bad, "столбец", &column);
+      bads_push(bads, val_copy(code), val_copy(message), true,
+                line.tag == FL_NUMBER ? (size_t)line.as.number : 0,
+                column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
+    }
+    return false;
+  }
+  return val_field(parsed, "программа", program);
+}
+
+/** В программе только заголовок модуля: типов, функций и наследия нет. */
+static bool repl_header_only(fl_value program) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(program, "types", &items, &count);
+  if (count > 0) {
+    return false;
+  }
+  zn_field_items(program, "functions", &items, &count);
+  if (count > 0) {
+    return false;
+  }
+  zn_field_items(program, "legacy", &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *construct = NULL;
+    size_t bytes = 0;
+    if (!zn_field_text(items[index], "construct", &construct, &bytes)) {
+      return false;
+    }
+    if (bytes != 12 || memcmp(construct, "moduleHeader", 12) != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Слияние заголовка модуля из ввода или загруженного файла с заголовком сессии.
+ *
+ * Пути импортов пересчитываются относительно каталога сессии: файл, загруженный
+ * из другого каталога, ссылается на соседей по-своему, и без пересчёта его
+ * «использует» указывал бы в пустоту.
+ */
+static void repl_merge_header(repl_session *session, fl_value program, const char *from, char **module,
+                              repl_imports *imports, repl_strings *exports) {
+  const fl_value *legacy = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  size_t inner = 0;
+  *module = repl_say(session->module);
+  imports_init(imports);
+  strings_init(exports);
+  for (index = 0; index < session->imports.count; index += 1) {
+    imports_push(imports, import_copy(&session->imports.items[index]));
+  }
+  for (index = 0; index < session->exports.count; index += 1) {
+    strings_say(exports, session->exports.items[index]);
+  }
+  zn_field_items(program, "legacy", &legacy, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *construct = NULL;
+    size_t bytes = 0;
+    fl_value value = fl_nothing();
+    const fl_value *items = NULL;
+    size_t items_count = 0;
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    if (!zn_field_text(legacy[index], "construct", &construct, &bytes) || bytes != 12 ||
+        memcmp(construct, "moduleHeader", 12) != 0 || !zn_field(legacy[index], "value", &value)) {
+      continue;
+    }
+    if ((*module)[0] == '\0' && zn_field_text(value, "name", &name, &name_bytes)) {
+      free(*module);
+      *module = repl_dup(name, name_bytes);
+    }
+    zn_field_items(value, "imports", &items, &items_count);
+    for (inner = 0; inner < items_count; inner += 1) {
+      const char *category = NULL;
+      size_t category_bytes = 0;
+      const char *path = NULL;
+      size_t path_bytes = 0;
+      fl_value only = fl_nothing();
+      const fl_value *only_items = NULL;
+      size_t only_count = 0;
+      repl_import item;
+      size_t scan = 0;
+      bool replaced = false;
+      if (!zn_field_text(items[inner], "from", &path, &path_bytes)) {
+        continue;
+      }
+      zn_field_text(items[inner], "category", &category, &category_bytes);
+      {
+        char *own = repl_dup(path, path_bytes);
+        item.from = repl_rewrite_path(own, from, session->base);
+        free(own);
+      }
+      item.category = category == NULL ? repl_say("") : repl_dup(category, category_bytes);
+      strings_init(&item.only);
+      item.has_only = false;
+      if (zn_field(items[inner], "only", &only) && zn_items(only, &only_items, &only_count)) {
+        item.has_only = true;
+        for (scan = 0; scan < only_count; scan += 1) {
+          const char *word = NULL;
+          size_t word_bytes = 0;
+          if (zn_text(only_items[scan], &word, &word_bytes)) {
+            strings_add(&item.only, word, word_bytes);
+          }
+        }
+      }
+      for (scan = 0; scan < imports->count; scan += 1) {
+        if (strcmp(imports->items[scan].from, item.from) == 0) {
+          import_free(&imports->items[scan]);
+          imports->items[scan] = item;
+          replaced = true;
+          break;
+        }
+      }
+      if (!replaced) {
+        imports_push(imports, item);
+      }
+    }
+    {
+      const fl_value *names = NULL;
+      size_t names_count = 0;
+      zn_field_items(value, "exports", &names, &names_count);
+      for (inner = 0; inner < names_count; inner += 1) {
+        const char *word = NULL;
+        size_t word_bytes = 0;
+        if (zn_text(names[inner], &word, &word_bytes) && !strings_has(exports, word, word_bytes)) {
+          strings_add(exports, word, word_bytes);
+        }
+      }
+    }
+  }
+}
+
+/* ───────────────────── вычисление: печать в C, cc, запуск ──────────────── */
+
+/*
+ * Прогонщик сессии. Печатается вместе с ней и собирается вместе с ней; всё, что
+ * он делает, — вызывает одну функцию без аргументов и печатает значение
+ * поверхностью языка: да, нет, ничто, "текст", [1, 2], пустой список,
+ * {поле: значение}, Вариант(поле: значение). Печатать иначе значило бы учить
+ * человека второму словарю: то же самое пишут бэкенды («к строке» в emit/js) и
+ * оболочка на Node (formatValue в repl.mjs).
+ *
+ * Экранирование строки идёт числами (34 — кавычка, 92 — косая), а не escape-
+ * последовательностями: этот текст сам живёт в строковом литерале C, и вторая
+ * ступень экранирования сделала бы его нечитаемым.
+ */
+static const char REPL_RUNNER[] =
+    "#include \"flang_runtime.h\"\n"
+    "\n"
+    "#include <stdio.h>\n"
+    "#include <stdlib.h>\n"
+    "\n"
+    "extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,\n"
+    "                                 fl_value *result, fl_error *error);\n"
+    "\n"
+    "static void show_text(const char *utf8, size_t bytes) {\n"
+    "  size_t index = 0;\n"
+    "  putchar(34);\n"
+    "  for (index = 0; index < bytes; index += 1) {\n"
+    "    const unsigned char symbol = (unsigned char)utf8[index];\n"
+    "    if (symbol == 34 || symbol == 92) {\n"
+    "      putchar(92);\n"
+    "      putchar((char)symbol);\n"
+    "    } else if (symbol == 10) {\n"
+    "      putchar(92);\n"
+    "      putchar('n');\n"
+    "    } else if (symbol == 13) {\n"
+    "      putchar(92);\n"
+    "      putchar('r');\n"
+    "    } else if (symbol == 9) {\n"
+    "      putchar(92);\n"
+    "      putchar('t');\n"
+    "    } else if (symbol == 8) {\n"
+    "      putchar(92);\n"
+    "      putchar('b');\n"
+    "    } else if (symbol == 12) {\n"
+    "      putchar(92);\n"
+    "      putchar('f');\n"
+    "    } else if (symbol < 32) {\n"
+    "      printf(\"%c%c%04x\", 92, 'u', (unsigned)symbol);\n"
+    "    } else {\n"
+    "      putchar((char)symbol);\n"
+    "    }\n"
+    "  }\n"
+    "  putchar(34);\n"
+    "}\n"
+    "\n"
+    "static void show(fl_value value) {\n"
+    "  size_t index = 0;\n"
+    "  char number[FL_NUMBER_TEXT_MAX];\n"
+    "  switch (value.tag) {\n"
+    "    case FL_NOTHING:\n"
+    "      fputs(\"ничто\", stdout);\n"
+    "      return;\n"
+    "    case FL_FLAG:\n"
+    "      fputs(value.as.flag ? \"да\" : \"нет\", stdout);\n"
+    "      return;\n"
+    "    case FL_NUMBER:\n"
+    "      if (value.as.number == 0.0 && !(1.0 / value.as.number > 0.0)) {\n"
+    "        fputs(\"-0\", stdout);\n"
+    "        return;\n"
+    "      }\n"
+    "      fl_number_text(value.as.number, number);\n"
+    "      fputs(number, stdout);\n"
+    "      return;\n"
+    "    case FL_STRING:\n"
+    "      show_text(value.as.string.utf8, value.as.string.bytes);\n"
+    "      return;\n"
+    "    case FL_LIST:\n"
+    "      if (value.as.list.count == 0) {\n"
+    "        fputs(\"пустой список\", stdout);\n"
+    "        return;\n"
+    "      }\n"
+    "      putchar('[');\n"
+    "      for (index = 0; index < value.as.list.count; index += 1) {\n"
+    "        if (index > 0) {\n"
+    "          fputs(\", \", stdout);\n"
+    "        }\n"
+    "        show(value.as.list.items[index]);\n"
+    "      }\n"
+    "      putchar(']');\n"
+    "      return;\n"
+    "    case FL_RECORD:\n"
+    "      putchar('{');\n"
+    "      for (index = 0; index < value.as.record->count; index += 1) {\n"
+    "        if (index > 0) {\n"
+    "          fputs(\", \", stdout);\n"
+    "        }\n"
+    "        fputs(value.as.record->fields[index].name, stdout);\n"
+    "        fputs(\": \", stdout);\n"
+    "        show(value.as.record->fields[index].value);\n"
+    "      }\n"
+    "      putchar('}');\n"
+    "      return;\n"
+    "    case FL_VARIANT:\n"
+    "      fputs(value.as.variant->name, stdout);\n"
+    "      if (value.as.variant->count == 0) {\n"
+    "        return;\n"
+    "      }\n"
+    "      putchar('(');\n"
+    "      for (index = 0; index < value.as.variant->count; index += 1) {\n"
+    "        if (index > 0) {\n"
+    "          fputs(\", \", stdout);\n"
+    "        }\n"
+    "        fputs(value.as.variant->fields[index].name, stdout);\n"
+    "        fputs(\": \", stdout);\n"
+    "        show(value.as.variant->fields[index].value);\n"
+    "      }\n"
+    "      putchar(')');\n"
+    "      return;\n"
+    "  }\n"
+    "  fputs(\"ничто\", stdout);\n"
+    "}\n"
+    "\n"
+    "int main(int argc, char **argv) {\n"
+    "  fl_arena arena;\n"
+    "  fl_ctx ctx;\n"
+    "  fl_error error;\n"
+    "  fl_value result = fl_nothing();\n"
+    "  fl_value args[1];\n"
+    "  args[0] = fl_nothing();\n"
+    "  if (argc < 2) {\n"
+    "    fputs(\"прогонщик сессии: не названа функция\\n\", stderr);\n"
+    "    return 2;\n"
+    "  }\n"
+    "  fl_arena_init(&arena);\n"
+    "  fl_ctx_init(&ctx, &arena);\n"
+    "  /* Пределы приходят снаружи: рантайм собран заранее, и «--max-steps»\n"
+    "     оболочки иначе было бы нечем исполнить. Ноль означает «как собрано». */\n"
+    "  if (argc > 2 && strtoul(argv[2], NULL, 10) > 0) {\n"
+    "    ctx.max_steps = (size_t)strtoul(argv[2], NULL, 10);\n"
+    "  }\n"
+    "  if (argc > 3 && strtoul(argv[3], NULL, 10) > 0) {\n"
+    "    ctx.max_depth = (size_t)strtoul(argv[3], NULL, 10);\n"
+    "  }\n"
+    "  error.code = NULL;\n"
+    "  error.message = NULL;\n"
+    "  if (FL_PROGRAM_CALL(&ctx, argv[1], args, 0, &result, &error) != FL_OK) {\n"
+    "    fprintf(stderr, \"%s: %s\\n\", error.code == NULL ? \"FLANG_UNKNOWN\" : error.code,\n"
+    "            error.message == NULL ? \"\" : error.message);\n"
+    "    fl_arena_release(&arena);\n"
+    "    return 1;\n"
+    "  }\n"
+    "  show(result);\n"
+    "  putchar('\\n');\n"
+    "  fl_arena_release(&arena);\n"
+    "  return 0;\n"
+    "}\n";
+
+/** Аргумент для оболочки: одинарные кавычки не раскрывают ничего. */
+static void buf_shell(repl_buf *buf, const char *text) {
+  size_t index = 0;
+  buf_char(buf, '\'');
+  for (index = 0; text[index] != '\0'; index += 1) {
+    if (text[index] == '\'') {
+      buf_put(buf, "'\\''");
+    } else {
+      buf_char(buf, text[index]);
+    }
+  }
+  buf_char(buf, '\'');
+}
+
+/** Всё созданное во временном каталоге записывается, чтобы быть убранным. */
+static void repl_litter(repl_session *session, const char *name) {
+  char *path = repl_join(session->tmp_dir, name);
+  if (!strings_has(&session->litter, path, strlen(path))) {
+    strings_say(&session->litter, path);
+  }
+  free(path);
+}
+
+/** Число из «#define FL_MAX_TAIL_ARGS N» напечатанного заголовка рантайма. */
+static size_t repl_defined(const char *text, size_t bytes, const char *macro) {
+  repl_buf needle;
+  const char *found = NULL;
+  size_t value = 0;
+  size_t index = 0;
+  buf_init(&needle);
+  buf_put(&needle, "#define ");
+  buf_put(&needle, macro);
+  buf_char(&needle, ' ');
+  /* Заголовок приезжает строкой рантайма — она не обязана кончаться нулём,
+     поэтому ищем руками, а не strstr. */
+  for (index = 0; index + needle.used <= bytes; index += 1) {
+    if (memcmp(text + index, needle.data, needle.used) == 0) {
+      found = text + index + needle.used;
+      break;
+    }
+  }
+  if (found != NULL) {
+    while (*found >= '0' && *found <= '9') {
+      value = value * 10 + (size_t)(*found - '0');
+      found += 1;
+    }
+  }
+  buf_free(&needle);
+  return value;
+}
+
+/**
+ * Печать сессии в C и её сборка.
+ *
+ * Рантайм не печатается и не пересобирается: он уже стоит рядом с бинарником
+ * готовым архивом, а его заголовок берётся оттуда же. Собирается ровно сессия —
+ * два файла, — и это доли секунды вместо пересборки компилятора.
+ *
+ * Ширину отскока батута заголовок диктует свою (FL_MAX_TAIL_ARGS входит в
+ * fl_bounce), поэтому сессия, которой нужно больше, честно отвергается: собрать
+ * её с готовым рантаймом нельзя, а тихо переполнить массив — тем более.
+ */
+static bool repl_compile(repl_session *session, fl_value program, char **error) {
+  /* Прогонщик сессии — не тот, что печатается обычно, а наш маленький: ему
+     нужно вычислить одну функцию и напечатать значение поверхностью языка.
+     Своей оболочки сессии не нужно — «оболочка» здесь нет, и ста килобайт
+     чужого кода в неё не попадает. */
+  static const char *const names[11] = {"путь",              "есть путь",        "база",
+                                        "предел глубины",    "предел шагов",     "прогонщик",
+                                        "рантайм заголовок", "рантайм исходник", "исходник прогонщика",
+                                        "оболочка",          "исходник оболочки"};
+  fl_value values[11];
+  fl_value args[2];
+  fl_value emitted = fl_nothing();
+  fl_value files = fl_nothing();
+  fl_value failure = fl_nothing();
+  repl_buf command;
+  repl_strings sources;
+  size_t index = 0;
+  bool ok = true;
+  *error = NULL;
+  values[0] = repl_value_say("session");
+  values[1] = fl_flag(true);
+  values[2] = fl_number((double)FL_INDEX_BASE);
+  values[3] = fl_number((double)FL_MAX_DEPTH);
+  values[4] = fl_number((double)FL_MAX_STEPS);
+  values[5] = fl_flag(true);
+  values[6] = repl_value_say("");
+  values[7] = repl_value_say("");
+  values[8] = repl_value_say(REPL_RUNNER);
+  values[9] = fl_flag(false);
+  values[10] = repl_value_say("");
+  args[0] = program;
+  args[1] = repl_value_record(names, values, 11);
+  if (repl_call("Напечатать связанное", args, 2, &emitted) != FL_OK) {
+    *error = repl_say("печать сессии в C прекращена");
+    return false;
+  }
+  if (val_field(emitted, "ошибка", &failure) && !val_same(failure, "")) {
+    *error = val_copy(failure);
+    return false;
+  }
+  if (!val_field(emitted, "файлы", &files) || files.tag != FL_LIST) {
+    *error = repl_say("печать сессии в C не вернула файлов");
+    return false;
+  }
+  strings_init(&sources);
+  for (index = 0; index < files.as.list.count && ok; index += 1) {
+    fl_value path = fl_nothing();
+    fl_value content = fl_nothing();
+    const char *text = NULL;
+    size_t bytes = 0;
+    char *name = NULL;
+    if (!val_field(files.as.list.items[index], "путь", &path) ||
+        !val_field(files.as.list.items[index], "содержимое", &content) || !val_text(content, &text, &bytes)) {
+      continue;
+    }
+    name = val_copy(path);
+    if (strcmp(name, "flang_runtime.h") == 0) {
+      const size_t needed = repl_defined(text, bytes, "FL_MAX_TAIL_ARGS");
+      if (needed > FL_MAX_TAIL_ARGS) {
+        repl_buf say;
+        buf_init(&say);
+        buf_put(&say, "во взаимной рекурсии сессии ");
+        buf_number(&say, needed);
+        buf_put(&say, " аргументов, а установленный рантайм собран на ");
+        buf_number(&say, (size_t)FL_MAX_TAIL_ARGS);
+        buf_put(&say, ": проверить такую сессию оболочка может, вычислить — нет");
+        *error = repl_dup(say.data, say.used);
+        buf_free(&say);
+        ok = false;
+      }
+      free(name);
+      continue;
+    }
+    if (strcmp(name, "flang_runtime.c") == 0 || strcmp(name, "Makefile") == 0) {
+      free(name);
+      continue;
+    }
+    {
+      char *full = repl_join(session->tmp_dir, name);
+      FILE *stream = fopen(full, "wb");
+      if (stream == NULL) {
+        repl_buf say;
+        buf_init(&say);
+        buf_put(&say, "не удалось записать ");
+        buf_put(&say, full);
+        *error = repl_dup(say.data, say.used);
+        buf_free(&say);
+        ok = false;
+      } else {
+        const size_t length = strlen(name);
+        fwrite(text, 1, bytes, stream);
+        fclose(stream);
+        repl_litter(session, name);
+        if (length > 2 && strcmp(name + length - 2, ".c") == 0) {
+          strings_say(&sources, full);
+        }
+      }
+      free(full);
+    }
+    free(name);
+  }
+  if (!ok) {
+    strings_free(&sources);
+    return false;
+  }
+
+  buf_init(&command);
+  buf_shell(&command, session->cc);
+  buf_put(&command, " -std=c99 -I");
+  buf_shell(&command, session->include_dir);
+  buf_put(&command, " -o ");
+  {
+    char *binary = repl_join(session->tmp_dir, "session");
+    buf_shell(&command, binary);
+    repl_litter(session, "session");
+    free(binary);
+  }
+  for (index = 0; index < sources.count; index += 1) {
+    buf_char(&command, ' ');
+    buf_shell(&command, sources.items[index]);
+  }
+  buf_char(&command, ' ');
+  {
+    char *archive = repl_join(session->lib_dir, REPL_ARCHIVE);
+    buf_shell(&command, archive);
+    free(archive);
+  }
+  buf_put(&command, " -lm > ");
+  {
+    char *log = repl_join(session->tmp_dir, "cc.log");
+    buf_shell(&command, log);
+    repl_litter(session, "cc.log");
+    free(log);
+  }
+  buf_put(&command, " 2>&1");
+  if (system(command.data) != 0) {
+    /* Отказ cc — это внятное сообщение, а не молчаливый пропуск: без него
+       человек видел бы «ничего не произошло» и не знал бы, где искать. */
+    char *log = repl_join(session->tmp_dir, "cc.log");
+    size_t bytes = 0;
+    char *text = repl_read_file(log, &bytes);
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "cc не собрал сессию (");
+    buf_put(&say, session->cc);
+    buf_put(&say, "):\n");
+    buf_put(&say, text == NULL ? "вывод компилятора не прочитан" : text);
+    *error = repl_dup(say.data, say.used);
+    buf_free(&say);
+    free(text);
+    free(log);
+    ok = false;
+  }
+  buf_free(&command);
+  strings_free(&sources);
+  return ok;
+}
+
+/** Запуск собранной сессии; печатает значение или диагностику вычисления. */
+static bool repl_run(repl_session *session, const char *function) {
+  repl_buf command;
+  char *binary = repl_join(session->tmp_dir, "session");
+  char *out = repl_join(session->tmp_dir, "out.txt");
+  char *err = repl_join(session->tmp_dir, "err.txt");
+  size_t bytes = 0;
+  char *text = NULL;
+  bool ok = true;
+  buf_init(&command);
+  buf_shell(&command, binary);
+  buf_char(&command, ' ');
+  buf_shell(&command, function);
+  buf_char(&command, ' ');
+  buf_shell(&command, session->steps);
+  buf_char(&command, ' ');
+  buf_shell(&command, session->depth);
+  buf_put(&command, " > ");
+  buf_shell(&command, out);
+  buf_put(&command, " 2> ");
+  buf_shell(&command, err);
+  repl_litter(session, "out.txt");
+  repl_litter(session, "err.txt");
+  if (system(command.data) == 0) {
+    text = repl_read_file(out, &bytes);
+    if (text != NULL) {
+      fwrite(text, 1, bytes, stdout);
+    }
+  } else {
+    /* Предел шагов приходит сюда обычным FLANG_RECURSION_LIMIT рантайма. Текст
+       не подменяем: в нём названы функция, лимит и глубина. */
+    text = repl_read_file(err, &bytes);
+    if (text != NULL && bytes > 0) {
+      fwrite(text, 1, bytes, stderr);
+    } else {
+      fputs("FLANG_INTERNAL: собранная сессия прекратила работу без сообщения\n", stderr);
+    }
+    ok = false;
+  }
+  free(text);
+  buf_free(&command);
+  free(binary);
+  free(out);
+  free(err);
+  return ok;
+}
+
+/* ────────────────────────── принятие ввода в сессию ─────────────────────── */
+
+/** Сборка кандидата и его проверка целиком. */
+static bool repl_apply(repl_session *session, const char *module, const repl_imports *imports,
+                       const repl_strings *exports, const repl_decls *candidate, size_t fresh_first,
+                       size_t fresh_last, repl_bads *bads, fl_value *program, repl_strings *proven,
+                       repl_buf *source, repl_map *map) {
+  repl_view view;
+  bool has_program = false;
+  view.module = module;
+  view.imports = imports;
+  view.exports = exports;
+  view.decls = candidate;
+  view.fresh_first = fresh_first;
+  view.fresh_last = fresh_last;
+  repl_assemble(&view, NULL, 0, 0, source, map);
+  return repl_check(session, source->data, imports, bads, program, &has_program, proven);
+}
+
+/** Принятое становится сессией; всё, что заменено, освобождается здесь. */
+static void repl_commit(repl_session *session, char *module, repl_imports *imports, repl_strings *exports,
+                        repl_decls *candidate, repl_decls *dropped, fl_value program, repl_strings *proven) {
+  size_t index = 0;
+  free(session->module);
+  session->module = module;
+  imports_free(&session->imports);
+  session->imports = *imports;
+  imports_init(imports);
+  strings_free(&session->exports);
+  session->exports = *exports;
+  strings_init(exports);
+  for (index = 0; index < dropped->count; index += 1) {
+    decl_free(dropped->items[index]);
+  }
+  free(session->decls.items);
+  session->decls = *candidate;
+  decls_init(candidate);
+  strings_free(&session->known);
+  repl_known_of(program, &session->known);
+  strings_free(&session->total);
+  session->total = *proven;
+  strings_init(proven);
+}
+
+/**
+ * Что сказать про принятые объявления. Про функцию говорится главное: доказано
+ * ли её завершение. «Тотальная» без доказательства не бывает — такое объявление
+ * сюда не доходит.
+ */
+static void repl_report(const repl_nodes *nodes, const repl_strings *proven, const repl_strings *replaced,
+                        const char *from) {
+  size_t index = 0;
+  for (index = 0; index < replaced->count; index += 1) {
+    printf("заменено: %s\n", replaced->items[index]);
+  }
+  if (nodes->count > REPL_VERBOSE) {
+    /* Файл библиотеки — это два десятка объявлений; перечислять их построчно
+       значит залить экран. Считаем то, ради чего их и читают. */
+    size_t total = 0;
+    size_t plain = 0;
+    for (index = 0; index < nodes->count; index += 1) {
+      if (nodes->items[index].total == 1) {
+        total += 1;
+      } else if (nodes->items[index].total == 0) {
+        plain += 1;
+      }
+    }
+    printf("объявлений: %lu — с доказанным завершением %lu, обычных функций %lu, типов и прочего %lu\n",
+           (unsigned long)nodes->count, (unsigned long)total, (unsigned long)plain,
+           (unsigned long)(nodes->count - total - plain));
+  } else {
+    for (index = 0; index < nodes->count; index += 1) {
+      const repl_node *node = &nodes->items[index];
+      const int total =
+          node->total == 1 && proven != NULL && !strings_has(proven, node->name, strlen(node->name)) ? 0 : node->total;
+      printf("объявлено: %s%s\n", node->label,
+             total == 1 ? " — завершение доказано"
+                        : total == 0 ? " — завершение не доказано: вычисление ограничено лимитом шагов" : "");
+    }
+  }
+  if (from != NULL) {
+    printf("загружено из %s\n", from);
+  }
+}
+
+/**
+ * Объявления из ввода или из файла вливаются в сессию одинаково: разбираются,
+ * режутся на фрагменты, заменяют одноимённые прежние — и только после того, как
+ * собранная сессия прошла проверку целиком, становятся сессией. Отвергнутое не
+ * оставляет следов: сессия после отказа обязана быть точно такой, какой была.
+ */
+static bool repl_take(repl_session *session, fl_value program, const char *from_directory, const char *from_label,
+                      const char *text) {
+  repl_nodes nodes;
+  repl_decls fresh;
+  repl_decls candidate;
+  repl_decls dropped;
+  repl_strings replaced;
+  repl_strings proven;
+  repl_bads bads;
+  repl_buf source;
+  repl_map map;
+  repl_imports imports;
+  repl_strings exports;
+  fl_value linked = fl_nothing();
+  char *module = NULL;
+  char *error = NULL;
+  size_t fresh_first = 0;
+  size_t fresh_last = 0;
+  size_t index = 0;
+  bool ok = false;
+  nodes_init(&nodes);
+  decls_init(&fresh);
+  decls_init(&candidate);
+  decls_init(&dropped);
+  strings_init(&replaced);
+  strings_init(&proven);
+  bads_init(&bads);
+  buf_init(&source);
+  map_init(&map);
+  repl_merge_header(session, program, from_directory, &module, &imports, &exports);
+  repl_nodes_of(program, NULL, &nodes);
+  repl_split(text, &nodes, &fresh);
+  error = repl_merge(&session->decls, &fresh, &candidate, &dropped, &replaced, &fresh_first, &fresh_last);
+  if (error != NULL) {
+    bads_say(&bads, error);
+    free(error);
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+  } else if (repl_apply(session, module, &imports, &exports, &candidate, fresh_first, fresh_last, &bads, &linked,
+                        &proven, &source, &map)) {
+    repl_strings kept;
+    strings_init(&kept);
+    for (index = 0; index < proven.count; index += 1) {
+      strings_say(&kept, proven.items[index]);
+    }
+    repl_commit(session, module, &imports, &exports, &candidate, &dropped, linked, &proven);
+    module = NULL;
+    repl_report(&nodes, &kept, &replaced, from_label);
+    strings_free(&kept);
+    ok = true;
+  } else {
+    repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
+  }
+  if (!ok) {
+    for (index = 0; index < fresh.count; index += 1) {
+      decl_free(fresh.items[index]);
+    }
+    imports_free(&imports);
+    strings_free(&exports);
+  }
+  free(module);
+  free(fresh.items);
+  free(candidate.items);
+  free(dropped.items);
+  strings_free(&replaced);
+  strings_free(&proven);
+  bads_free(&bads);
+  buf_free(&source);
+  map_free(&map);
+  nodes_free(&nodes);
+  return ok;
+}
+
+/**
+ * Ввод, в котором есть только заголовок модуля, меняет заголовок сессии, а не
+ * список объявлений: «использует» в исходнике обязан стоять ровно один раз и
+ * ровно наверху, иначе связывание увидит не тот набор импортов.
+ */
+static bool repl_take_header(repl_session *session, fl_value program) {
+  repl_imports imports;
+  repl_strings exports;
+  repl_strings proven;
+  repl_strings was;
+  repl_bads bads;
+  repl_buf source;
+  repl_buf header;
+  repl_map map;
+  repl_decls dropped;
+  repl_decls candidate;
+  fl_value linked = fl_nothing();
+  char *module = NULL;
+  size_t index = 0;
+  size_t appeared = 0;
+  bool ok = false;
+  strings_init(&proven);
+  strings_init(&was);
+  bads_init(&bads);
+  buf_init(&source);
+  buf_init(&header);
+  map_init(&map);
+  decls_init(&dropped);
+  decls_init(&candidate);
+  repl_merge_header(session, program, session->base, &module, &imports, &exports);
+  if (repl_apply(session, module, &imports, &exports, &session->decls, session->decls.count, session->decls.count,
+                 &bads, &linked, &proven, &source, &map)) {
+    for (index = 0; index < session->decls.count; index += 1) {
+      decls_push(&candidate, session->decls.items[index]);
+    }
+    for (index = 0; index < session->known.count; index += 1) {
+      strings_say(&was, session->known.items[index]);
+    }
+    repl_commit(session, module, &imports, &exports, &candidate, &dropped, linked, &proven);
+    module = NULL;
+    for (index = 0; index < session->known.count; index += 1) {
+      if (!strings_has(&was, session->known.items[index], strlen(session->known.items[index]))) {
+        appeared += 1;
+      }
+    }
+    if (repl_header_text(session->module, &session->imports, &session->exports, &header)) {
+      printf("%s\n", header.data);
+    } else {
+      printf("\n");
+    }
+    /* Импорт сам по себе ничего не объявляет, поэтому докладываем не
+       «объявлено», а что именно стало видно: без этого числа непонятно,
+       подключилось ли хоть что-нибудь. */
+    printf("стало видно функций: %lu\n", (unsigned long)appeared);
+    ok = true;
+  } else {
+    repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
+    imports_free(&imports);
+    strings_free(&exports);
+  }
+  free(module);
+  free(dropped.items);
+  free(candidate.items);
+  strings_free(&was);
+  strings_free(&proven);
+  bads_free(&bads);
+  buf_free(&source);
+  buf_free(&header);
+  map_free(&map);
+  return ok;
+}
+
+/* ─────────────────────────────── вычисление ─────────────────────────────── */
+
+static bool repl_evaluate(repl_session *session, const char *text, size_t indent) {
+  repl_buf name;
+  repl_view view;
+  repl_buf source;
+  repl_map map;
+  repl_bads bads;
+  repl_strings proven;
+  fl_value program = fl_nothing();
+  char *tail = NULL;
+  char *error = NULL;
+  bool has_program = false;
+  bool ok = false;
+  buf_init(&name);
+  buf_init(&source);
+  map_init(&map);
+  bads_init(&bads);
+  strings_init(&proven);
+  /* Имя обёртки, не занятое ничем в сессии: столкнуться можно только нарочно. */
+  buf_put(&name, REPL_EXPR_NAME);
+  while (strings_has(&session->known, name.data, name.used)) {
+    buf_put(&name, "′");
+  }
+  tail = repl_wrap(text, name.data);
+  view.module = session->module;
+  view.imports = &session->imports;
+  view.exports = &session->exports;
+  view.decls = &session->decls;
+  view.fresh_first = session->decls.count;
+  view.fresh_last = session->decls.count;
+  repl_assemble(&view, tail, 1, 2 + indent, &source, &map);
+  if (!repl_check(session, source.data, &session->imports, &bads, &program, &has_program, &proven)) {
+    repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
+  } else if (session->why_no_eval != NULL) {
+    /* Вычислять нечем — но проверка прошла, и сказать об этом надо: молчание
+       читалось бы как «ничего не случилось». Чем именно нечем, сказано один раз
+       при запуске, а не на каждой строке. */
+    printf("проверено\n");
+    ok = true;
+  } else if (!repl_compile(session, program, &error)) {
+    fprintf(stderr, "FLANG_CLI: %s\n", error == NULL ? "сессия не собралась" : error);
+  } else {
+    ok = repl_run(session, name.data);
+  }
+  free(error);
+  free(tail);
+  buf_free(&name);
+  buf_free(&source);
+  map_free(&map);
+  bads_free(&bads);
+  strings_free(&proven);
+  return ok;
+}
+
+/* ─────────────────────────────── команды ────────────────────────────────── */
+
+static bool repl_command_list(repl_session *session) {
+  repl_buf header;
+  size_t index = 0;
+  buf_init(&header);
+  if (repl_header_text(session->module, &session->imports, &session->exports, &header)) {
+    printf("%s\n", header.data);
+  }
+  buf_free(&header);
+  if (session->decls.count == 0) {
+    printf("в сессии ничего не объявлено\n");
+    return true;
+  }
+  for (index = 0; index < session->decls.count; index += 1) {
+    const repl_decl *decl = session->decls.items[index];
+    const char *about = "";
+    size_t inner = 0;
+    bool proven = false;
+    for (inner = 0; inner < decl->names.count; inner += 1) {
+      if (strings_has(&session->total, decl->names.items[inner], strlen(decl->names.items[inner]))) {
+        proven = true;
+      }
+    }
+    /* Про завершение говорит не пометка в тексте, а множество доказанных имён. */
+    if (proven) {
+      about = " — завершение доказано";
+    } else if (strstr(decl->label, "функция") != NULL) {
+      about = " — обычная: завершение не доказано";
+    }
+    printf("%lu. %s%s\n", (unsigned long)(index + 1), decl->label, about);
+  }
+  return true;
+}
+
+static bool repl_command_source(repl_session *session) {
+  repl_view view;
+  repl_buf source;
+  repl_map map;
+  buf_init(&source);
+  map_init(&map);
+  view.module = session->module;
+  view.imports = &session->imports;
+  view.exports = &session->exports;
+  view.decls = &session->decls;
+  view.fresh_first = session->decls.count;
+  view.fresh_last = session->decls.count;
+  repl_assemble(&view, NULL, 0, 0, &source, &map);
+  while (source.used > 0 && (source.data[source.used - 1] == '\n' || source.data[source.used - 1] == ' ' ||
+                             source.data[source.used - 1] == '\t')) {
+    source.used -= 1;
+    source.data[source.used] = '\0';
+  }
+  printf("%s\n", source.used == 0 ? "сессия пуста" : source.data);
+  buf_free(&source);
+  map_free(&map);
+  return true;
+}
+
+static bool repl_command_save(repl_session *session, const char *path) {
+  repl_bads bads;
+  repl_imports imports;
+  repl_view view;
+  repl_buf source;
+  repl_map map;
+  char *full = NULL;
+  char *directory = NULL;
+  size_t index = 0;
+  bool ok = false;
+  bads_init(&bads);
+  if (path[0] == '\0') {
+    bads_say(&bads, "«.сохранить» требует путь к файлу");
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+    bads_free(&bads);
+    return false;
+  }
+  full = repl_resolve(session->base, path);
+  directory = repl_dirname(full);
+  /* Пути импортов пересчитываются относительно места файла, а не сессии: иначе
+     сохранённая в другой каталог сессия ссылалась бы на модули мимо них, и
+     «flang check» на ней падал бы — то есть сохранение врало бы. */
+  imports_init(&imports);
+  for (index = 0; index < session->imports.count; index += 1) {
+    repl_import item = import_copy(&session->imports.items[index]);
+    char *rewritten = repl_rewrite_path(item.from, session->base, directory);
+    free(item.from);
+    item.from = rewritten;
+    imports_push(&imports, item);
+  }
+  buf_init(&source);
+  map_init(&map);
+  view.module = session->module;
+  view.imports = &imports;
+  view.exports = &session->exports;
+  view.decls = &session->decls;
+  view.fresh_first = session->decls.count;
+  view.fresh_last = session->decls.count;
+  repl_assemble(&view, NULL, 0, 0, &source, &map);
+  if (source.used == 0) {
+    bads_say(&bads, "сохранять нечего: в сессии ничего не объявлено");
+  } else {
+    FILE *stream = NULL;
+    errno = 0;
+    stream = fopen(full, "wb");
+    if (stream == NULL) {
+      const int reason = errno;
+      repl_buf say;
+      buf_init(&say);
+      buf_put(&say, "не удалось записать ");
+      buf_put(&say, full);
+      if (reason != 0) {
+        buf_put(&say, ": ");
+        buf_put(&say, strerror(reason));
+      }
+      bads_push(&bads, repl_say("FLANG_CLI"), repl_dup(say.data, say.used), false, 0, 0);
+      buf_free(&say);
+    } else {
+      fwrite(source.data, 1, source.used, stream);
+      fclose(stream);
+      printf("сессия записана в %s (объявлений: %lu)\n", full, (unsigned long)session->decls.count);
+      ok = true;
+    }
+  }
+  if (!ok) {
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+  }
+  bads_free(&bads);
+  imports_free(&imports);
+  buf_free(&source);
+  map_free(&map);
+  free(full);
+  free(directory);
+  return ok;
+}
+
+/**
+ * Загрузка файла в сессию.
+ *
+ * Файл не «подключается», а разбирается на объявления и вливается в сессию —
+ * ровно как если бы его набрали руками. Поэтому загруженную функцию можно тут же
+ * переобъявить, а «.сохранить» вернёт всё это одним файлом. Подключение без
+ * копирования у языка уже есть, и это «использует «Модуль» из "…"».
+ */
+static bool repl_command_load(repl_session *session, const char *path) {
+  repl_bads bads;
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  char *full = NULL;
+  char *directory = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  size_t index = 0;
+  bool ok = false;
+  bads_init(&bads);
+  if (path[0] == '\0') {
+    bads_say(&bads, "«.загрузить» требует путь к файлу");
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+    bads_free(&bads);
+    return false;
+  }
+  full = repl_resolve(session->base, path);
+  {
+    const size_t length = strlen(full);
+    const bool json = length > 5 && strcmp(full + length - 5, ".json") == 0;
+    const bool fts = length > 4 && strcmp(full + length - 4, ".fts") == 0;
+    if (json || fts) {
+      repl_buf say;
+      buf_init(&say);
+      buf_put(&say, "оболочка загружает исходники flang, а ");
+      buf_put(&say, full);
+      buf_put(&say, json ? " — JSON с готовым AST" : " — модель FTS");
+      buf_put(&say, " — нет; для них есть «flang check» и «flang run»");
+      bads_push(&bads, repl_say("FLANG_CLI"), repl_dup(say.data, say.used), false, 0, 0);
+      buf_free(&say);
+      repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+      bads_free(&bads);
+      free(full);
+      return false;
+    }
+  }
+  errno = 0;
+  text = repl_read_file(full, &bytes);
+  if (text == NULL) {
+    /* Причину называет система, а не мы: «не удалось прочитать» без неё не
+       различает «нет файла» и «нет прав», а это разные починки. */
+    const int reason = errno;
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "не удалось прочитать ");
+    buf_put(&say, full);
+    if (reason != 0) {
+      buf_put(&say, ": ");
+      buf_put(&say, strerror(reason));
+    }
+    bads_push(&bads, repl_say("FLANG_CLI"), repl_dup(say.data, say.used), false, 0, 0);
+    buf_free(&say);
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+    bads_free(&bads);
+    free(full);
+    return false;
+  }
+  args[0] = repl_value_text(text, bytes);
+  args[1] = repl_value_strings(&session->known);
+  directory = repl_dirname(full);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
+    bads_say(&bads, "разбор файла прекращён");
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+  } else if (val_field(parsed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST &&
+             diagnostics.as.list.count > 0) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      fl_value bad = diagnostics.as.list.items[index];
+      fl_value code = fl_nothing();
+      fl_value message = fl_nothing();
+      fl_value line = fl_nothing();
+      if (!val_field(bad, "код", &code) || !val_field(bad, "сообщение", &message)) {
+        continue;
+      }
+      val_field(bad, "строка", &line);
+      bads_push(&bads, val_copy(code), val_copy(message), true,
+                line.tag == FL_NUMBER ? (size_t)line.as.number : 0, 0);
+    }
+    repl_print_bads(&bads, NULL, "файл", path, 0, 0);
+  } else if (val_field(parsed, "программа", &program)) {
+    ok = repl_take(session, program, directory, path, text);
+  }
+  bads_free(&bads);
+  free(text);
+  free(full);
+  free(directory);
+  return ok;
+}
+
+static void repl_reset(repl_session *session) {
+  free(session->module);
+  session->module = repl_say("");
+  imports_free(&session->imports);
+  strings_free(&session->exports);
+  decls_free(&session->decls);
+  strings_free(&session->known);
+  strings_free(&session->total);
+}
+
+/** Команда: разбор имени и довеска. Регистр латиницы не важен, как в эталоне. */
+static bool repl_command(repl_session *session, const char *line, bool *quit) {
+  repl_buf name;
+  const char *rest = line;
+  char *argument = NULL;
+  size_t end = 0;
+  bool ok = true;
+  buf_init(&name);
+  while (*rest != '\0' && *rest != ' ' && *rest != '\t') {
+    buf_char(&name, *rest >= 'A' && *rest <= 'Z' ? (char)(*rest - 'A' + 'a') : *rest);
+    rest += 1;
+  }
+  while (*rest == ' ' || *rest == '\t') {
+    rest += 1;
+  }
+  end = strlen(rest);
+  while (end > 0 && (rest[end - 1] == ' ' || rest[end - 1] == '\t')) {
+    end -= 1;
+  }
+  argument = repl_dup(rest, end);
+  if (strcmp(name.data, ".помощь") == 0 || strcmp(name.data, ".help") == 0 || strcmp(name.data, ".?") == 0) {
+    printf("%s\n", REPL_HELP);
+  } else if (strcmp(name.data, ".объявления") == 0 || strcmp(name.data, ".list") == 0) {
+    ok = repl_command_list(session);
+  } else if (strcmp(name.data, ".исходник") == 0 || strcmp(name.data, ".source") == 0) {
+    ok = repl_command_source(session);
+  } else if (strcmp(name.data, ".сохранить") == 0 || strcmp(name.data, ".save") == 0) {
+    ok = repl_command_save(session, argument);
+  } else if (strcmp(name.data, ".загрузить") == 0 || strcmp(name.data, ".load") == 0) {
+    ok = repl_command_load(session, argument);
+  } else if (strcmp(name.data, ".сбросить") == 0 || strcmp(name.data, ".reset") == 0) {
+    repl_reset(session);
+    printf("сессия сброшена: объявлений нет\n");
+  } else if (strcmp(name.data, ".выход") == 0 || strcmp(name.data, ".quit") == 0 ||
+             strcmp(name.data, ".exit") == 0) {
+    *quit = true;
+  } else {
+    repl_bads bads;
+    repl_buf say;
+    bads_init(&bads);
+    buf_init(&say);
+    buf_put(&say, "неизвестная команда «");
+    buf_put(&say, name.data);
+    buf_put(&say, "»; «.помощь» — список команд");
+    bads_push(&bads, repl_say("FLANG_CLI"), repl_dup(say.data, say.used), false, 0, 0);
+    repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
+    buf_free(&say);
+    bads_free(&bads);
+    ok = false;
+  }
+  free(argument);
+  buf_free(&name);
+  return ok;
+}
+
+/* ─────────────────────────────── приём ввода ────────────────────────────── */
+
+static bool repl_trimmed_empty(const char *text) {
+  size_t index = 0;
+  for (index = 0; text[index] != '\0'; index += 1) {
+    if (text[index] != ' ' && text[index] != '\t' && text[index] != '\n' && text[index] != '\r') {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Приём одного ввода: команда, объявление или выражение. Непредвиденный сбой не
+ * имеет права уронить оболочку — сессия остаётся прежней, а беда показывается
+ * диагностикой.
+ */
+static bool repl_submit(repl_session *session, const char *input, bool *quit) {
+  char *text = NULL;
+  size_t indent = 0;
+  fl_value tokens = fl_nothing();
+  fl_value program = fl_nothing();
+  repl_bads bads;
+  bool lexed = false;
+  bool ok = true;
+  size_t line_shift = 0;
+  repl_cycle();
+  if (repl_trimmed_empty(input)) {
+    return true;
+  }
+  {
+    const char *scan = input;
+    while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') {
+      scan += 1;
+    }
+    if (*scan == '.') {
+      char *own = repl_say(scan);
+      size_t end = strlen(own);
+      while (end > 0 && (own[end - 1] == ' ' || own[end - 1] == '\t' || own[end - 1] == '\n' ||
+                         own[end - 1] == '\r')) {
+        end -= 1;
+        own[end] = '\0';
+      }
+      ok = repl_command(session, own, quit);
+      free(own);
+      return ok;
+    }
+  }
+  text = repl_dedent(input, &indent);
+  lexed = repl_tokens(text, strlen(text), &tokens);
+  /* Ввод из одних комментариев — это ничто, а не программа без тела. Ошибку
+     лексера сюда не пускаем: её обязан показать разбор. */
+  if (lexed && token_first(tokens) == (size_t)-1) {
+    free(text);
+    return true;
+  }
+  if (!repl_is_declaration(lexed, tokens)) {
+    ok = repl_evaluate(session, text, indent);
+    free(text);
+    return ok;
+  }
+  bads_init(&bads);
+  if (!repl_parse_input(session, text, lexed, tokens, &program, &bads, &line_shift)) {
+    repl_print_bads(&bads, NULL, "ввод", NULL, line_shift, indent);
+    ok = false;
+  } else if (repl_header_only(program)) {
+    ok = repl_take_header(session, program);
+  } else {
+    ok = repl_take(session, program, session->base, NULL, text);
+  }
+  bads_free(&bads);
+  free(text);
+  return ok;
+}
+
+/* ─────────────────── продолжение многострочного ввода ───────────────────── */
+
+static bool repl_finished(repl_session *session, const char *line) {
+  fl_value tokens = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value parsed = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  repl_bads bads;
+  const bool lexed = repl_tokens(line, strlen(line), &tokens);
+  bool finished = true;
+  size_t line_shift = 0;
+  if (!repl_is_declaration(lexed, tokens)) {
+    fl_value args[2];
+    char *wrapped = repl_wrap(line, REPL_EXPR_NAME);
+    args[0] = repl_value_say(wrapped);
+    args[1] = repl_value_strings(&session->known);
+    free(wrapped);
+    if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
+      return false;
+    }
+    return !(val_field(parsed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST &&
+             diagnostics.as.list.count > 0);
+  }
+  bads_init(&bads);
+  if (!repl_parse_input(session, line, lexed, tokens, &program, &bads, &line_shift)) {
+    bads_free(&bads);
+    return false;
+  }
+  bads_free(&bads);
+  {
+    const size_t first = token_first(tokens);
+    const char *word = NULL;
+    size_t bytes = 0;
+    if (first != (size_t)-1 && token_keyword(tokens.as.list.items[first], &word, &bytes) &&
+        repl_in_list(REPL_BLOCKS, word, bytes)) {
+      /* Псевдоним («тип «Метр» это число») — единственное блочное слово, за
+         которым блока не бывает: продолжать его нечем. */
+      const fl_value *types = NULL;
+      size_t count = 0;
+      const char *kind = NULL;
+      size_t kind_bytes = 0;
+      zn_field_items(program, "types", &types, &count);
+      finished = count == 1 && zn_field_text(types[0], "kind", &kind, &kind_bytes) && kind_bytes == 5 &&
+                 memcmp(kind, "alias", 5) == 0;
+    }
+  }
+  return finished;
+}
+
+/**
+ * Нужен ли ещё ввод.
+ *
+ * Правило простое и оттого предсказуемое: пустая строка заканчивает ввод всегда,
+ * а всё, что заведомо не помещается в строку — заголовок объявления с блоком
+ * ниже, незакрытая скобка, «если» без «иначе», — продолжается до пустой строки.
+ * Автоматически завершать блок «как только он разобрался» нельзя: после тела
+ * функции законно идут «пример»ы, и оболочка обрубала бы их на полуслове.
+ *
+ * Ошибочная строка тоже уходит в продолжение — отличить «не дописано» от
+ * «написано неверно» по одной строке невозможно. Цена ошибки мала: пустая
+ * строка заканчивает ввод, и диагностика приходит целиком.
+ */
+static bool repl_needs_more(repl_session *session, const char *text) {
+  const char *scan = text;
+  const char *last = NULL;
+  if (repl_trimmed_empty(text)) {
+    return false;
+  }
+  while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') {
+    scan += 1;
+  }
+  if (*scan == '.') {
+    return false;
+  }
+  last = strrchr(text, '\n');
+  if (last != NULL && repl_blank(last + 1)) {
+    return false;
+  }
+  if (last != NULL) {
+    return true;
+  }
+  repl_cycle();
+  return !repl_finished(session, text);
+}
+
+/* ──────────────────────── запуск и завершение работы ────────────────────── */
+
+/*
+ * Временный каталог убирается за собой — сессия не должна оставлять мусора, и
+ * убирать его должно не «обычно», а всегда. Поэтому уборка висит на atexit:
+ * выход по «.выход», по концу ввода и по нехватке памяти проходит через неё
+ * одинаково.
+ */
+static repl_session *repl_open = NULL;
+
+static void repl_sweep(void) {
+  size_t index = 0;
+  if (repl_open == NULL) {
+    return;
+  }
+  for (index = 0; index < repl_open->litter.count; index += 1) {
+    remove(repl_open->litter.items[index]);
+  }
+  if (repl_open->tmp_dir != NULL) {
+    rmdir(repl_open->tmp_dir);
+  }
+  repl_open = NULL;
+}
+
+/* Ctrl-C бросает набранное, но не сессию: набранное дешевле повторить, чем
+   объявленное. Обработчик ставится без SA_RESTART именно ради этого — иначе
+   чтение строки продолжилось бы, будто ничего не нажимали. */
+static volatile sig_atomic_t repl_interrupted = 0;
+
+static void repl_on_interrupt(int number) {
+  (void)number;
+  repl_interrupted = 1;
+}
+
+typedef enum repl_read { REPL_LINE, REPL_EOF, REPL_INTERRUPT } repl_read;
+
+static repl_read repl_read_line(repl_buf *line) {
+  char chunk[4096];
+  buf_reset(line);
+  for (;;) {
+    if (fgets(chunk, (int)sizeof(chunk), stdin) != NULL) {
+      buf_put(line, chunk);
+      if (line->used > 0 && line->data[line->used - 1] == '\n') {
+        line->used -= 1;
+        line->data[line->used] = '\0';
+        if (line->used > 0 && line->data[line->used - 1] == '\r') {
+          line->used -= 1;
+          line->data[line->used] = '\0';
+        }
+        return REPL_LINE;
+      }
+      continue;
+    }
+    if (repl_interrupted) {
+      repl_interrupted = 0;
+      clearerr(stdin);
+      return REPL_INTERRUPT;
+    }
+    return line->used > 0 ? REPL_LINE : REPL_EOF;
+  }
+}
+
+/** Каталог под печать и сборку сессии; NULL — вычислять негде. */
+static bool repl_make_tmp(repl_session *session) {
+  const char *root = getenv("TMPDIR");
+  repl_buf pattern;
+  bool ok = false;
+  buf_init(&pattern);
+  buf_put(&pattern, root == NULL || root[0] == '\0' ? "/tmp" : root);
+  while (pattern.used > 1 && pattern.data[pattern.used - 1] == '/') {
+    pattern.used -= 1;
+    pattern.data[pattern.used] = '\0';
+  }
+  buf_put(&pattern, "/flang-repl-XXXXXX");
+  if (mkdtemp(pattern.data) != NULL) {
+    session->tmp_dir = repl_dup(pattern.data, pattern.used);
+    ok = true;
+  }
+  buf_free(&pattern);
+  return ok;
+}
+
+/**
+ * Чем вычислять. Ищется честно: компилятор C — в PATH, каталоги установки — от
+ * самого бинарника, и всё вместе переопределяется переменными окружения
+ * FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.
+ */
+static void repl_tools(repl_session *session, const char *self) {
+  char *self_dir = repl_self_dir(self);
+  const char *chosen = getenv("FLANG_CC");
+  repl_buf why;
+  buf_init(&why);
+  if (chosen != NULL && chosen[0] != '\0') {
+    session->cc = repl_in_path(chosen);
+  } else {
+    session->cc = repl_in_path("cc");
+    if (session->cc == NULL) {
+      session->cc = repl_in_path("gcc");
+    }
+    if (session->cc == NULL) {
+      session->cc = repl_in_path("clang");
+    }
+  }
+  session->include_dir = repl_find_dir("FLANG_INCLUDE_DIR", self_dir, "include", "flang_runtime.h");
+  session->lib_dir = repl_find_dir("FLANG_LIB_DIR", self_dir, "lib", REPL_ARCHIVE);
+  if (session->cc == NULL) {
+    buf_put(&why, "компилятора C нет (ни $FLANG_CC, ни cc, ни gcc, ни clang в PATH)");
+  }
+  if (session->include_dir == NULL) {
+    if (why.used > 0) {
+      buf_put(&why, "; ");
+    }
+    buf_put(&why, "не найден flang_runtime.h ($FLANG_INCLUDE_DIR, ../include или каталог самого бинарника)");
+  }
+  if (session->lib_dir == NULL) {
+    if (why.used > 0) {
+      buf_put(&why, "; ");
+    }
+    buf_put(&why, "не найден " REPL_ARCHIVE " ($FLANG_LIB_DIR, ../lib или каталог самого бинарника)");
+  }
+  if (why.used == 0 && !repl_make_tmp(session)) {
+    buf_put(&why, "не создан временный каталог (см. $TMPDIR)");
+  }
+  if (why.used > 0) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "вычислять нечем: ");
+    buf_put(&say, why.data);
+    buf_put(&say, ".\nРазбор, типы и завершаемость проверяются по-прежнему; выражение отвечает «проверено».");
+    session->why_no_eval = repl_dup(say.data, say.used);
+    buf_free(&say);
+  }
+  buf_free(&why);
+  free(self_dir);
+}
+
+static void repl_open_session(repl_session *session, const char *self) {
+  char buffer[4096];
+  session->base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  session->file = repl_resolve(session->base, REPL_FILE);
+  session->module = repl_say("");
+  imports_init(&session->imports);
+  strings_init(&session->exports);
+  decls_init(&session->decls);
+  strings_init(&session->known);
+  strings_init(&session->total);
+  strings_init(&session->litter);
+  session->cc = NULL;
+  session->include_dir = NULL;
+  session->lib_dir = NULL;
+  session->tmp_dir = NULL;
+  session->why_no_eval = NULL;
+  session->steps = repl_say("0");
+  session->depth = repl_say("0");
+  repl_tools(session, self);
+}
+
+static void repl_close_session(repl_session *session) {
+  repl_sweep();
+  free(session->base);
+  free(session->file);
+  free(session->module);
+  imports_free(&session->imports);
+  strings_free(&session->exports);
+  decls_free(&session->decls);
+  strings_free(&session->known);
+  strings_free(&session->total);
+  strings_free(&session->litter);
+  free(session->cc);
+  free(session->include_dir);
+  free(session->lib_dir);
+  free(session->tmp_dir);
+  free(session->why_no_eval);
+  free(session->steps);
+  free(session->depth);
+}
+
+/*
+ * Оболочка обращается к компилятору по именам его точек входа, и печатается она
+ * в КАЖДЫЙ прогонщик — бэкенд один на все программы. Если этой программой
+ * оказался не компилятор, честнее сказать это первой же строкой, чем делать
+ * вид, что оболочка работает: «Разбор исходника» ей всё равно взять неоткуда.
+ */
+static bool repl_is_compiler(void) {
+  fl_value arguments[2];
+  fl_value result = fl_nothing();
+  fl_error error;
+  repl_cycle();
+  arguments[0] = repl_value_say("");
+  arguments[1] = repl_value_list(NULL, 0);
+  error.code = NULL;
+  error.message = NULL;
+  return FL_PROGRAM_CALL(&repl_ctx, "Разбор исходника", arguments, 2, &result, &error) == FL_OK;
+}
+
+static const char REPL_PROMPT[] = "» ";
+static const char REPL_CONTINUATION[] = "… ";
+
+/**
+ * Терминал вокруг сессии: приглашения, склейка многострочного ввода и выбор
+ * потока для печати. Всё, что решает, чем является строка и что с ней делать,
+ * живёт выше — там же, где и в Node-версии.
+ *
+ * Многострочность собирается ровно одним правилом: строки копятся, пока
+ * `repl_needs_more` говорит «объявление не закончено», и пустая строка
+ * заканчивает ввод всегда. Остаток буфера отправляется при конце ввода — иначе
+ * `flang repl < сценарий.flang` терял бы последнее объявление файла, если автор
+ * не оставил в конце пустую строку.
+ */
+int fl_repl_main(int argc, char **argv, const char *self) {
+  repl_session session;
+  repl_buf buffer;
+  repl_buf line;
+  struct sigaction action;
+  const char *file = NULL;
+  const bool interactive = isatty(0) == 1;
+  bool failed = false;
+  bool quit = false;
+  int index = 0;
+
+  fl_arena_init(&repl_arena);
+  fl_ctx_init(&repl_ctx, &repl_arena);
+  if (!repl_is_compiler()) {
+    fputs("оболочка есть только у компилятора flang: в этой программе нет его точек входа\n"
+          "(«Разбор исходника», «Связать исходники», «Проверить типы»). Прогонщик по-прежнему\n"
+          "читает JSON со стандартного ввода.\n",
+          stderr);
+    fl_arena_release(&repl_arena);
+    return 2;
+  }
+  repl_open_session(&session, self);
+  repl_open = &session;
+  atexit(repl_sweep);
+
+  for (index = 1; index < argc; index += 1) {
+    if (strcmp(argv[index], "--max-steps") == 0 && index + 1 < argc) {
+      index += 1;
+      free(session.steps);
+      session.steps = repl_say(argv[index]);
+    } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
+      index += 1;
+      free(session.depth);
+      session.depth = repl_say(argv[index]);
+    } else if (argv[index][0] != '-') {
+      file = argv[index];
+    }
+  }
+
+  action.sa_handler = repl_on_interrupt;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = 0;
+  sigaction(SIGINT, &action, NULL);
+
+  /* Приглашения печатаются только человеку: под конвейером они попали бы в
+     вывод и испортили его тому, кто читает результат сценария. */
+  if (interactive) {
+    printf("%s\n", REPL_GREETING);
+  }
+  /* Про отсутствие вычислителя — один раз и в stderr: stdout принадлежит
+     результату сценария. */
+  if (session.why_no_eval != NULL) {
+    fprintf(stderr, "%s\n", session.why_no_eval);
+  }
+  if (file != NULL && !repl_command_load(&session, file)) {
+    failed = true;
+  }
+
+  buf_init(&buffer);
+  buf_init(&line);
+  if (interactive) {
+    fputs(REPL_PROMPT, stdout);
+    fflush(stdout);
+  }
+  for (;;) {
+    const repl_read got = repl_read_line(&line);
+    if (got == REPL_INTERRUPT) {
+      buf_reset(&buffer);
+      if (interactive) {
+        printf("\n%s", REPL_PROMPT);
+        fflush(stdout);
+      }
+      continue;
+    }
+    if (got == REPL_EOF) {
+      break;
+    }
+    if (buffer.used > 0) {
+      buf_char(&buffer, '\n');
+    }
+    buf_add(&buffer, line.data, line.used);
+    if (repl_needs_more(&session, buffer.data)) {
+      if (interactive) {
+        fputs(REPL_CONTINUATION, stdout);
+        fflush(stdout);
+      }
+      continue;
+    }
+    {
+      char *own = repl_dup(buffer.data, buffer.used);
+      buf_reset(&buffer);
+      if (!repl_submit(&session, own, &quit)) {
+        failed = true;
+      }
+      free(own);
+    }
+    fflush(stdout);
+    if (quit) {
+      break;
+    }
+    if (interactive) {
+      fputs(REPL_PROMPT, stdout);
+      fflush(stdout);
+    }
+  }
+  if (!quit && buffer.used > 0 && !repl_submit(&session, buffer.data, &quit)) {
+    failed = true;
+  }
+  fflush(stdout);
+
+  buf_free(&buffer);
+  buf_free(&line);
+  repl_close_session(&session);
+  fl_arena_release(&repl_arena);
+  /* Человеку код возврата не нужен — он видел ошибку и продолжил работать.
+     Конвейеру нужен: `flang repl < сценарий.flang` — это прогон сценария, и
+     молча отдать 0 после диагностики значило бы соврать вызывающему. */
+  return interactive || !failed ? 0 : 1;
+}

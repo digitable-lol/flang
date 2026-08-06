@@ -17,29 +17,48 @@ command -v vim >/dev/null || { echo "нужен vim"; exit 1; }
 
 fail=0
 
+# Тема, на которой проверяется различимость ролей, живёт в платном архиве
+# Digitable Workbench и в этом репозитории её нет и быть не должно: он открытый,
+# и класть сюда файл из поставки значило бы раздавать её часть даром. Путь к
+# каталогу с темой задаётся снаружи:
+#
+#   FTS_THEME_DIR=/путь/к/themes/vim tests/run.sh
+#
+# Без него проверка цветов пропускается — но пропуск объявляется вслух, чтобы
+# зелёный прогон без темы не читался как доказательство, что цвета в порядке.
+theme_rtp=''
+if [ -n "${FTS_THEME_DIR:-}" ] && [ -d "${FTS_THEME_DIR}" ]; then
+  theme_rtp="$FTS_THEME_DIR"
+fi
+
 # --- 1. Различимость ролей --------------------------------------------------
 # Порядок важен: сначала runtimepath и тема, потом буфер нужного типа, и только
 # затем сам тест — он уже ничего не настраивает и лишь смотрит на результат.
-# t_Co задаётся руками: в ex-режиме терминала нет, число цветов пустое, и тема
-# со своим `if &t_Co >= 256` не выставляет ничего. Без этой строки тест мерил бы
-# не подсветку, а отсутствие терминала — и падал бы всегда.
-FTS_TEST_REPORT="$report" vim -es -u NONE -N \
-  --cmd "set runtimepath^=$root" \
-  --cmd 'set t_Co=256' \
-  --cmd 'syntax on' \
-  --cmd 'set background=dark' \
-  --cmd 'silent! colorscheme digitable-focus-carbon' \
-  --cmd 'enew' \
-  --cmd 'set filetype=fts' \
-  --cmd "source $root/tests/distinct-colors.vim" \
-  </dev/null >/dev/null 2>&1 || true
-
-if [ ! -s "$report" ]; then
-  echo "ПРОВАЛ: тест не оставил отчёта — Vim не дошёл до конца скрипта"
-  fail=1
+if [ -z "$theme_rtp" ]; then
+  echo "ПРОПУЩЕНО: различимость цветов — тема не найдена, задайте FTS_THEME_DIR"
 else
-  cat "$report"
-  grep -q '^ПРОВАЛ' "$report" && fail=1
+  # t_Co задаётся руками: в ex-режиме терминала нет, число цветов пустое, и тема
+  # со своим `if &t_Co >= 256` не выставляет ничего. Без этой строки тест мерил
+  # бы не подсветку, а отсутствие терминала — и падал бы всегда.
+  FTS_TEST_REPORT="$report" vim -es -u NONE -N \
+    --cmd "set runtimepath^=$root" \
+    --cmd "set runtimepath^=$theme_rtp" \
+    --cmd 'set t_Co=256' \
+    --cmd 'syntax on' \
+    --cmd 'set background=dark' \
+    --cmd 'silent! colorscheme digitable-focus-carbon' \
+    --cmd 'enew' \
+    --cmd 'set filetype=fts' \
+    --cmd "source $root/tests/distinct-colors.vim" \
+    </dev/null >/dev/null 2>&1 || true
+
+  if [ ! -s "$report" ]; then
+    echo "ПРОВАЛ: тест не оставил отчёта — Vim не дошёл до конца скрипта"
+    fail=1
+  else
+    cat "$report"
+    grep -q '^ПРОВАЛ' "$report" && fail=1
+  fi
 fi
 
 # --- 2. Совпадение списков слов с грамматикой VS Code -----------------------

@@ -42,6 +42,7 @@
     "schema",
     "examples",
     "tools",
+    "editors",
     "flang/bin",
     "flang/src",
     "flang/stdlib",

@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * conc.mjs — модель конкурентности flang: словарь действий и планировщик эталона.
  *

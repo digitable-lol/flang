@@ -44,6 +44,13 @@ const SUFFIXES = ['.ts', '.mjs', '.js', '.cjs'];
 
 const read = relative => readFileSync(join(root, relative), 'utf8');
 
+// Начало файла — там, где заголовок либо есть, либо его нет. Намеренно не
+// «первые 2 КБ»: файл, который в своей же прозе цитирует строку
+// SPDX-License-Identifier, проходил бы проверку и с удалённым настоящим
+// заголовком. На двух других гейтах этой задачи так и вышло. Заголовок
+// стоит наверху или это не заголовок.
+const headerOf = relative => read(relative).split('\n').slice(0, 15).join('\n');
+
 const isExcluded = relative =>
   relative.includes('/vendor/')
   || relative.includes('/test/')
@@ -81,11 +88,11 @@ const missing = [];
 const mismatched = [];
 
 for (const relative of shipped) {
-  const head = read(relative).slice(0, 2048);
+  const head = headerOf(relative);
   const match = head.match(/SPDX-License-Identifier:\s*(\S+)/);
 
   if (!match) {
-    missing.push(`${relative}: нет SPDX-License-Identifier в первых 2 КБ`);
+    missing.push(`${relative}: нет SPDX-License-Identifier в начале файла`);
     continue;
   }
   if (match[1] !== declared) {
@@ -96,7 +103,7 @@ for (const relative of shipped) {
     continue;
   }
   if (!head.includes('SPDX-FileCopyrightText:')) {
-    missing.push(`${relative}: нет строки SPDX-FileCopyrightText в первых 2 КБ`);
+    missing.push(`${relative}: нет строки SPDX-FileCopyrightText в начале файла`);
   }
 }
 

@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 // emit/js.mjs — печать программы flang в JavaScript (SPEC.md, раздел 6).
 //
 // ── Зачем этот слой, если есть интерпретатор ───────────────────────────────

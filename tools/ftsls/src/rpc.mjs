@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * JSON-RPC 2.0 поверх stdio — транспорт Language Server Protocol.
  *

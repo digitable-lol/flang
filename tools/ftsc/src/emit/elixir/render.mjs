@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Сборка исходного текста Elixir: реестр модулей/структур/полей, структуры
  * (defstruct), утилиты (правила + свойства + примеры) и функторы между

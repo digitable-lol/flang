@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join, resolve } from "node:path"
 import { invokedDirectly } from "./invoked-directly.js"

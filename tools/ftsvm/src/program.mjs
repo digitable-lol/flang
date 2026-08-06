@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Навигация по IR (tools/ftsc/SPEC.md, раздел 4) и проверка входа.
  *

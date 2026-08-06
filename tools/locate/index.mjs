@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * `tools/locate` — общая разметка документа FTS и приведение диагностик
  * к координатам в файле.

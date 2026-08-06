@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 // emit/elixir.mjs — печать программы flang в Elixir.
 //
 // ── Зачем ──────────────────────────────────────────────────────────────────

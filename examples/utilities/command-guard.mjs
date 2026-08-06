@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import { assertVerified, certify } from "../../dist/src/index.js"
 import { loadDocument, loadJson, write } from "./common.mjs"
 

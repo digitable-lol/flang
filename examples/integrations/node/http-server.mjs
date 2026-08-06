@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import { createServer } from "node:http"
 import { pathToFileURL } from "node:url"
 import { execute } from "./service.mjs"

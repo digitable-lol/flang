@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import type { FtsDocument, FtsProposition, FtsStructure, FtsValue, PathSegment } from "./model.js"
 
 export function witnessDocument(options: {

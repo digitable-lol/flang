@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * `textDocument/hover` — тип поля, сигнатура утилиты, домен и кодомен морфизма.
  *

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * gacascade — каскадный двухуровневый генетический алгоритм GA0 → GA1 → GA2
  * для задачи назначения задач исполнителям.

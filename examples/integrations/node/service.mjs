@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import { assertVerified, certify, compile, validate } from "../../../dist/src/index.js"
 
 export function execute(operation, payload) {

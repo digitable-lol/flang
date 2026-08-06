@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 // emit/rust.mjs — печать программы flang в Rust.
 //
 // ── Зачем ──────────────────────────────────────────────────────────────────

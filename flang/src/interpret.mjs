@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 // interpret.mjs — вычисление AST flang (SPEC.md, раздел 5).
 //
 // ── Почему явный стек, а не рекурсия по стеку JS ──────────────────────────

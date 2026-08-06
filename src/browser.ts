@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 // Browser-safe public surface. Strict certificate production and verification
 // stay on the trusted server boundary because they use Node.js cryptography.
 export * from "./coverage.js"

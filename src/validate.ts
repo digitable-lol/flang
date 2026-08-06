@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import { analyzeCoverage } from "./coverage.js"
 import type { Diagnostic } from "./diagnostics.js"
 import { FtsError } from "./diagnostics.js"

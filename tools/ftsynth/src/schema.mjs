@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Схема задачи синтеза: что известно до поиска и какими «кубиками» разрешено
  * собирать правила.

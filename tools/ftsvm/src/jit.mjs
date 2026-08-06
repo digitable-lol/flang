@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * JIT: превращает утилиту IR в исходник JavaScript и создаёт из него функцию
  * через `new Function`.

@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 import type { FtsFunctor } from "./model.js"
 
 export const builtinFunctors: readonly FtsFunctor[] = Object.freeze([

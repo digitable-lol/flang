@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Карта покрытия правил: что срабатывает, где правила накладываются и — главное —
  * где не срабатывает НИЧЕГО.

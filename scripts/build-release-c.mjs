@@ -26,7 +26,7 @@
  * собирается — скрипт падает, и битый релиз не уезжает.
  */
 import { execFileSync } from "node:child_process"
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -41,7 +41,16 @@ console.log(`компилятор: ${источник}`)
 const программа = await loadProgram(источник)
 console.log(`связано функций: ${программа.functions.length}, типов: ${программа.types.length}`)
 
-const напечатано = emitC(программа, { cli: true })
+/*
+ * Пределы те же, с которыми эталон запускает компилятор на самом себе, и это
+ * не запас «на всякий случай». Умолчания бэкенда (10⁶ шагов, 10⁴ глубины)
+ * рассчитаны на обычную программу; компилятор разбирает 119 тысяч токенов и
+ * упирается в них на «Связать вызовы» — то есть релиз, собранный с
+ * умолчаниями, отвечает FLANG_RECURSION_LIMIT на любой настоящий вход и
+ * проходит только проверку на трёхстрочном модуле. Ровно так и уехал v0.4.1;
+ * нашлось это при слиянии, когда лимит шагов встретился с неподвижной точкой.
+ */
+const напечатано = emitC(программа, { cli: true, maxSteps: 40_000_000, maxDepth: 20_000 })
 
 rmSync(каталог, { recursive: true, force: true })
 mkdirSync(каталог, { recursive: true })
@@ -101,4 +110,27 @@ if (итог.ok !== true) {
   process.exit(1)
 }
 console.log(`\nсобранный компилятор ответил: ${ответ.trim()}`)
+
+/* Проба выше слишком дешёвая: на трёхстрочном модуле не видно ни пределов, ни
+   памяти. Настоящая проверка — дать бинарнику разобрать файл компилятора,
+   то есть тот самый вход, на котором умолчания и обрывались. */
+const тяжёлый = join(корень, "flang/self/parser.flang")
+const тяжкийЗапрос = JSON.stringify({
+  fn: "Число связанных функций",
+  args: [
+    { l: [{ r: [["путь", { s: "parser.flang" }], ["текст", { s: readFileSync(тяжёлый, "utf8") }]] }] },
+    { s: "parser.flang" },
+  ],
+})
+const тяжкийОтвет = execFileSync(join(каталог, "flang_cli"), [], {
+  input: `${тяжкийЗапрос}\n`,
+  env: { PATH: "/usr/bin:/bin" },
+  maxBuffer: 64 * 1024 * 1024,
+}).toString()
+const тяжкийИтог = JSON.parse(тяжкийОтвет)
+if (тяжкийИтог.ok !== true) {
+  console.error(`релиз не справился с настоящим входом (${тяжёлый}): ${тяжкийОтвет.slice(0, 200)}`)
+  process.exit(1)
+}
+console.log(`разобрал self/parser.flang: функций ${тяжкийИтог.value.n}`)
 console.log(existsSync(join(каталог, "flang_cli")) ? "релиз готов" : "релиз не готов")

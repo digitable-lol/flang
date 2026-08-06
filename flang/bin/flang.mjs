@@ -484,6 +484,13 @@ async function externalDiagnostics(program) {
   for (const [file, names] of [
     ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"]],
     ["../src/totality.mjs", ["checkTotality", "checkProgram", "analyze", "check"]],
+    /* Законы моноида проверяются ВЫЧИСЛЕНИЕМ, в отличие от всего, что стоит
+       выше: доказать равенство операций на всех значениях носителя нельзя, и
+       проверка идёт на конечной сетке. Место здесь же — потому что для автора
+       это такая же ошибка модели, как несходящийся тип; а разница между
+       «доказано» и «проверено на N значениях» живёт в документации и в тексте
+       сообщений, а не в том, какой командой их показывать. */
+    ["../src/monoid.mjs", ["checkMonoidLaws"]],
   ]) {
     try {
       const module = await import(new URL(file, import.meta.url).href)

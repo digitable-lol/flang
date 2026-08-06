@@ -122,6 +122,7 @@ export function checkTypes(program) {
 
   checkMorphisms(program, ctx)
   checkFunctors(program, ctx)
+  checkMonoids(program, ctx)
   checkSupervisors(program, ctx)
   checkRuns(program, ctx)
 
@@ -250,6 +251,114 @@ function checkMorphisms(program, ctx) {
  * отдельной сущностью, и утверждать, что объект принадлежит именно этой
  * категории, не на чем.
  */
+/**
+ * Моноид: то в нём, что ДОКАЗЫВАЕТСЯ.
+ *
+ * Здесь проверяется устройство, а не законы: операция обязана быть функцией
+ * двух аргументов носителя, возвращающей носитель; единица обязана быть
+ * значением носителя; обращение, если объявлено, — функцией носителя в
+ * носитель. Это утверждения обо всех входах, и берутся они из объявлений.
+ *
+ * Сами законы — ассоциативность, нейтральность, обратимость — так проверить
+ * НЕЛЬЗЯ: это утверждения о равенстве вычислений на всех значениях носителя, а
+ * равенство вычислений неразрешимо. Они проверяются на конечной сетке
+ * (`flang/src/monoid.mjs`), и путать одно с другим нельзя — ровно об этом
+ * раздел «Граница честности» в контракте.
+ *
+ * Отдельного понятия «группа» нет: группа это моноид с обращением. Второе
+ * слово развело бы две проверки, которые обязаны совпадать во всём, кроме
+ * одного закона.
+ */
+function checkMonoids(program, ctx) {
+  const моноиды = Array.isArray(program?.monoids) ? program.monoids : []
+  if (моноиды.length === 0) return
+
+  const видели = new Map()
+  for (const узел of моноиды) {
+    if (видели.has(узел.name)) {
+      ctx.report("FLANG_DUPLICATE_NAME", `моноид «${узел.name}» объявлен дважды`, узел)
+      continue
+    }
+    видели.set(узел.name, узел)
+
+    const носитель = узел.carrier
+    проверитьОперацию(узел, носитель, ctx)
+    проверитьЕдиницу(узел, носитель, ctx)
+    if (узел.inverse !== null) проверитьОбращение(узел, носитель, ctx)
+  }
+  ctx.monoids = видели
+}
+
+function проверитьОперацию(узел, носитель, ctx) {
+  const signature = ctx.signatures.get(узел.operation)
+  if (!signature) {
+    ctx.report("FLANG_UNKNOWN_NAME", `моноид «${узел.name}»: операции «${String(узел.operation)}» нет`, узел)
+    return
+  }
+  if (signature.params.length !== 2) {
+    ctx.report(
+      "FLANG_MONOID",
+      `моноид «${узел.name}»: операция «${signature.name}» принимает ${signature.params.length} арг., а обязана два — ` +
+        `операция моноида соединяет два значения носителя в одно`,
+      узел,
+    )
+    return
+  }
+  for (const [номер, параметр] of signature.params.entries()) {
+    if (!sameType(параметр.type, носитель)) {
+      ctx.report(
+        "FLANG_TYPE",
+        `моноид «${узел.name}»: аргумент ${номер + 1} операции «${signature.name}» имеет тип ${typeName(параметр.type)}, ` +
+          `а носитель объявлен как ${typeName(носитель)}`,
+        узел,
+      )
+    }
+  }
+  if (!sameType(signature.returns, носитель)) {
+    ctx.report(
+      "FLANG_TYPE",
+      `моноид «${узел.name}»: операция «${signature.name}» возвращает ${typeName(signature.returns)}, ` +
+        `а носитель объявлен как ${typeName(носитель)} — операция обязана не выводить из носителя`,
+      узел,
+    )
+  }
+}
+
+function проверитьЕдиницу(узел, носитель, ctx) {
+  const тип = inferExpr(узел.unit, new Map(), null, ctx, `моноид «${узел.name}»`)
+  if (тип.kind !== "unknown" && !sameType(тип, носитель)) {
+    ctx.report(
+      "FLANG_TYPE",
+      `моноид «${узел.name}»: единица имеет тип ${typeName(тип)}, а носитель объявлен как ${typeName(носитель)}`,
+      узел,
+    )
+  }
+}
+
+function проверитьОбращение(узел, носитель, ctx) {
+  const signature = ctx.signatures.get(узел.inverse)
+  if (!signature) {
+    ctx.report("FLANG_UNKNOWN_NAME", `моноид «${узел.name}»: обращения «${String(узел.inverse)}» нет`, узел)
+    return
+  }
+  if (signature.params.length !== 1) {
+    ctx.report(
+      "FLANG_MONOID",
+      `моноид «${узел.name}»: обращение «${signature.name}» принимает ${signature.params.length} арг., а обязано один`,
+      узел,
+    )
+    return
+  }
+  if (!sameType(signature.params[0].type, носитель) || !sameType(signature.returns, носитель)) {
+    ctx.report(
+      "FLANG_TYPE",
+      `моноид «${узел.name}»: обращение «${signature.name}» обязано вести из ${typeName(носитель)} в ${typeName(носитель)}, ` +
+        `а ведёт из ${typeName(signature.params[0].type)} в ${typeName(signature.returns)}`,
+      узел,
+    )
+  }
+}
+
 function checkFunctors(program, ctx) {
   const наследие = Array.isArray(program?.legacy) ? program.legacy : []
   const функторы = наследие.filter((узел) => узел?.construct === "functorFile")

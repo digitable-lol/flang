@@ -279,6 +279,7 @@ class Parser {
     /* Стрелки категорий и их композиции: отдельный список, потому что они
        проверяются иначе, чем функции, — стыковкой домена с кодоменом. */
     this.morphisms = []
+    this.monoids = []
     this.functions = []
     /* Конкурентность (flang/conc/SPEC.md): процесс — объявление, а не значение,
        поэтому у него собственный список, как у типов и функций. */
@@ -496,6 +497,7 @@ class Parser {
 
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
     if (this.morphisms.length > 0) program.morphisms = this.morphisms
+    if (this.monoids.length > 0) program.monoids = this.monoids
     if (this.processes.length > 0) program.processes = this.processes
     if (this.supervisors.length > 0) program.supervisors = this.supervisors
     if (this.runs.length > 0) program.runs = this.runs
@@ -586,6 +588,8 @@ class Parser {
         return this.parseChain()
       case "identity":
         return this.parseIdentity()
+      case "monoid":
+        return this.monoids.push(this.parseMonoid())
       case "process":
         return this.processes.push(this.parseProcess())
       case "supervision":
@@ -1495,6 +1499,71 @@ class Parser {
    * столкнулось бы с действием «остановить», а «передать выше» пришлось бы
    * занимать двумя словами ради одной строки объявления.
    */
+  /**
+   * Моноид: носитель, операция, единица — и необязательное обращение.
+   *
+   * Группы отдельной конструкцией нет намеренно. Группа — это моноид, у
+   * которого есть обращение, и заводить для неё второе слово значило бы
+   * развести две проверки, которые обязаны совпадать во всём, кроме одного
+   * закона. Здесь `обратный элемент` просто добавляет закон обратимости к
+   * уже проверяемым ассоциативности и нейтральности.
+   *
+   * Законы писать не нужно: их знает сам вид конструкции. Это и есть довод в
+   * пользу отдельного объявления вместо трёх функций с примерами — объявив
+   * моноид, автор получает проверку, о которой не просил отдельно и о которой
+   * легко забыть.
+   */
+  parseMonoid() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя моноида")
+    const node = { kind: "monoid", name, carrier: null, operation: null, unit: null, inverse: null, span: start.span }
+    this.endLine()
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("carrier")) {
+          const at = this.next()
+          if (node.carrier !== null) this.fail(`у моноида «${name}» больше одного носителя`, at)
+          node.carrier = this.parseTypeExpression()
+          this.endLine()
+          continue
+        }
+        if (this.atKw("operation")) {
+          const at = this.next()
+          if (node.operation !== null) this.fail(`у моноида «${name}» больше одной операции`, at)
+          node.operation = this.expectName("ожидалось имя функции-операции")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("identity")) {
+          const at = this.next()
+          if (node.unit !== null) this.fail(`у моноида «${name}» больше одной единицы`, at)
+          node.unit = this.parseExpression()
+          this.endLine()
+          continue
+        }
+        if (this.atKw("inverseElement")) {
+          const at = this.next()
+          if (node.inverse !== null) this.fail(`у моноида «${name}» больше одного обращения`, at)
+          node.inverse = this.expectName("ожидалось имя функции обращения")
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в моноиде ожидаются 'носитель', 'операция', 'единица' или 'обратный элемент'")
+      }
+      this.exitBlock()
+    }
+
+    /* Без любой из трёх частей это не моноид, и молчать об этом нельзя:
+       объявление, которое ничего не обещает, хуже отсутствующего. */
+    for (const [часть, значение] of [["носитель", node.carrier], ["операция", node.operation], ["единица", node.unit]]) {
+      if (значение === null) this.fail(`у моноида «${name}» не указан(а) ${часть}`, start)
+    }
+    return node
+  }
+
   parseSupervision() {
     const start = this.next()
     const name = this.expectName("ожидалось имя надзора")

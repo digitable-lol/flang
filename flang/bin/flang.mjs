@@ -13,6 +13,12 @@
  *   flang facts <файл> --facts f.json --claims '["…"]'
  *   flang ast   <файл>                             печать AST
  *   flang emit  <файл> --target c|go|js            печать в целевой язык
+ *   flang repl  [файл]                             интерактивная оболочка
+ *
+ * `repl` — единственная команда, которая не подчиняется контракту JSON: она
+ * разговаривает с человеком, а не с инструментом, и печатает значения
+ * поверхностью языка. Диагностика и здесь уходит в stderr, поэтому
+ * `flang repl < сценарий.flang 2>ошибки` разделяется как обычно.
  *
  * Файл — `.fts` (модель FTS, переводится мостом), `.json` (готовый AST) или
  * `.flang` (исходник; разбирается `parser.mjs`, как только он появится).
@@ -36,6 +42,7 @@ const HELP = `flang — полный язык поверх FTS
   flang ast   <файл> [--pretty]
   flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli]
                      [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
+  flang repl  [файл] [--max-steps N] [--max-depth N]
   flang version
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
@@ -43,6 +50,11 @@ const HELP = `flang — полный язык поверх FTS
 
 emit: цели берутся из src/emit (по одному модулю на язык); без --out файлы
 уходят в stdout вместе с путями, с --out записываются в каталог.
+
+repl: интерактивная оболочка. Объявления накапливаются в сессии, выражения
+вычисляются сразу, «.помощь» показывает команды. Файл в аргументе загружается
+в сессию при запуске. Это единственная команда с человеческим выводом вместо
+JSON.
 `
 
 export async function main(argv = process.argv.slice(2)) {
@@ -77,6 +89,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandFacts(options)
       case "emit":
         return await commandEmit(options)
+      case "repl":
+        return await commandRepl(options)
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${HELP}`)
         return 2
@@ -146,6 +160,90 @@ async function commandFacts(options) {
   writeJson(verdict, options.pretty, process.stdout)
   return verdict.ok ? 0 : 1
 }
+
+/* ─────────────────────────── интерактивная оболочка ─────────────────────── */
+
+/**
+ * `flang repl` — терминал вокруг сессии из `src/repl.mjs`.
+ *
+ * Здесь только терминал: приглашения, история, склейка многострочного ввода и
+ * выбор потока для печати. Всё, что решает, чем является строка и что с ней
+ * делать, живёт в ядре сессии и потому проверяется тестом без терминала.
+ *
+ * Многострочность собирается ровно одним правилом: строки копятся, пока
+ * `needsMore` говорит «объявление не закончено», и пустая строка заканчивает
+ * ввод всегда. Остаток буфера отправляется на вычисление при конце ввода —
+ * иначе `flang repl < сценарий.flang` терял бы последнее объявление файла,
+ * если автор не оставил в конце пустую строку.
+ */
+async function commandRepl(options) {
+  const { createSession, formatResult, GREETING } = await import(new URL("../src/repl.mjs", import.meta.url).href)
+  const { createInterface } = await import("node:readline")
+
+  const session = createSession({
+    base: process.cwd(),
+    maxSteps: options.maxSteps,
+    maxDepth: options.maxDepth,
+  })
+  /* Приглашения печатаются только человеку: под конвейером они попали бы в
+     вывод и испортили его тому, кто читает результат сценария. */
+  const interactive = process.stdin.isTTY === true
+  let failed = false
+
+  const print = (result) => {
+    const text = formatResult(result)
+    if (text === "") return
+    if (result.kind === "diagnostics") {
+      failed = true
+      process.stderr.write(`${text}\n`)
+      return
+    }
+    process.stdout.write(`${text}\n`)
+  }
+
+  if (interactive) process.stdout.write(`${GREETING}\n`)
+  if (options.file !== "-") print(await session.load(options.file))
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: interactive, historySize: 500 })
+  let buffer = []
+  const prompt = (text) => {
+    if (!interactive) return
+    rl.setPrompt(text)
+    rl.prompt()
+  }
+  /* Ctrl-C бросает набранное, но не сессию: набранное дешевле повторить, чем
+     объявленное. */
+  rl.on("SIGINT", () => {
+    buffer = []
+    if (interactive) process.stdout.write("\n")
+    prompt(REPL_PROMPT)
+  })
+
+  prompt(REPL_PROMPT)
+  for await (const line of rl) {
+    buffer.push(line)
+    const text = buffer.join("\n")
+    if (session.needsMore(text)) {
+      prompt(REPL_CONTINUATION)
+      continue
+    }
+    buffer = []
+    const result = await session.submit(text)
+    if (result.kind === "quit") break
+    print(result)
+    prompt(REPL_PROMPT)
+  }
+  if (buffer.length > 0) print(await session.submit(buffer.join("\n")))
+  rl.close()
+
+  /* Человеку код возврата не нужен — он видел ошибку и продолжил работать.
+     Конвейеру нужен: `flang repl < сценарий.flang` — это прогон сценария, и
+     молча отдать 0 после диагностики значило бы соврать вызывающему. */
+  return interactive || !failed ? 0 : 1
+}
+
+const REPL_PROMPT = "» "
+const REPL_CONTINUATION = "… "
 
 /* ────────────────────────────── печать в языки ──────────────────────────── */
 

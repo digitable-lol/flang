@@ -519,6 +519,26 @@ node flang/bin/flang.mjs run flang/examples/leetcode/035-search-insert-position.
 # print it — targets: c | go | rust | python | js
 node flang/bin/flang.mjs emit flang/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
+
+# play with the language: an interactive shell, optionally preloaded with a file
+node flang/bin/flang.mjs repl flang/stdlib/lists.flang
+```
+
+The shell accumulates declarations in a session and evaluates expressions against them. Every
+declaration goes the same road as `check` — parse, types, totality — so nothing gets in that the
+compiler would reject. `.помощь` lists the commands (`.объявления`, `.исходник`, `.сохранить`,
+`.загрузить`, `.сбросить`, `.выход`; the English `.help .list .source .save .load .reset .quit` work
+too), and a blank line ends a declaration:
+
+```
+» тотальная функция «Удвоить»
+…   принимает х: число
+…   возвращает число
+…   х умножить на 2
+…
+объявлено: тотальная функция «Удвоить» — завершение доказано
+» «Удвоить» от «Длина» от [1, 2, 3]
+6
 ```
 
 Any `.fts` model is a valid flang program, so the same commands take one directly:

@@ -699,9 +699,11 @@ flang test flang/conc/examples/counter.flang --pretty
 ```
 
 The contract is [`flang/conc/SPEC.md`](flang/conc/SPEC.md), and it names a seven-step plan of
-which **steps one and two are done**: the surface, the checks, and the reference scheduler.
-Supervision parses and is checked, but the scheduler does not yet apply strategies — a failed
-process stays stopped. Processes are not printed into any target — emitting such a program gives
+which **steps one, two and three are done**: the surface, the checks, the reference scheduler and
+supervision. Strategies are applied for real: a restart returns the state to the very same initial
+value, the failure threshold is counted in the scheduler's virtual time, and "escalate" reaches the
+supervisor one step up — or, if there is none above, stops the whole program with the outcome
+`"отказ дошёл доверху"`. Processes are not printed into any target — emitting such a program gives
 the handlers as ordinary functions and nothing more. The examples are in
 [`flang/conc/examples/`](flang/conc/examples).
 

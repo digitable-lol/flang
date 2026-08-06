@@ -1492,12 +1492,19 @@ class Parser {
    * ```
    * надзор «Приём заказов»
    *   процесс «Счётчик» стратегия «перезапустить»
+   *   надзор «Отгрузка» стратегия «перезапустить»
    *   порог отказов 3 за 5000 миллисекунд иначе «передать выше»
    * ```
    *
    * Стратегия пишется в ёлочках, а не словом: ключевое слово «остановить»
    * столкнулось бы с действием «остановить», а «передать выше» пришлось бы
    * занимать двумя словами ради одной строки объявления.
+   *
+   * Строка `надзор «X» стратегия «…»` внутри надзора — то, без чего стратегия
+   * «передать выше» не имеет смысла: передавать некому, пока надзор плоский.
+   * Новых слов она не занимает вовсе — `надзор` и `стратегия` уже ключевые, —
+   * и повторяет устройство OTP: супервизор надзирает за супервизорами, и
+   * перезапуск такого ребёнка перезапускает всё его поддерево.
    */
   /**
    * Моноид: носитель, операция, единица — и необязательное обращение.
@@ -1567,7 +1574,7 @@ class Parser {
   parseSupervision() {
     const start = this.next()
     const name = this.expectName("ожидалось имя надзора")
-    const node = { kind: "supervisor", name, watch: [], threshold: null, span: start.span }
+    const node = { kind: "supervisor", name, watch: [], nested: [], threshold: null, span: start.span }
 
     if (this.enterBlock()) {
       while (!this.atBlockEnd()) {
@@ -1579,6 +1586,15 @@ class Parser {
           this.expectKw("strategy", "после имени процесса ожидалось 'стратегия'")
           const strategy = this.expectName("ожидалось имя стратегии")
           node.watch.push({ process, strategy, span: at.span })
+          this.endLine()
+          continue
+        }
+        if (this.atKw("supervision")) {
+          const at = this.next()
+          const supervisor = this.expectName("ожидалось имя надзора под надзором")
+          this.expectKw("strategy", "после имени надзора ожидалось 'стратегия'")
+          const strategy = this.expectName("ожидалось имя стратегии")
+          node.nested.push({ supervisor, strategy, span: at.span })
           this.endLine()
           continue
         }
@@ -1596,12 +1612,15 @@ class Parser {
           continue
         }
         this.fail(
-          "не разобрана конструкция: в надзоре ожидаются 'процесс … стратегия …' или 'порог отказов …'",
+          "не разобрана конструкция: в надзоре ожидаются 'процесс … стратегия …', " +
+            "'надзор … стратегия …' или 'порог отказов …'",
         )
       }
       this.exitBlock()
     }
-    if (node.watch.length === 0) this.fail(`надзор «${name}» не называет ни одного процесса`, start)
+    if (node.watch.length === 0 && node.nested.length === 0) {
+      this.fail(`надзор «${name}» не называет ни одного процесса и ни одного надзора`, start)
+    }
     return node
   }
 
@@ -1613,6 +1632,7 @@ class Parser {
    *   семя 4172
    *   дано «Счётчик» принимает (вариант «прибавить» с «сколько» равным 2)
    *   ожидается «Счётчик» равен (запись «Счёт» с «всего» равным 5)
+   *   ожидается «Счётчик» стратегия «перезапустить» 1 раз
    * ```
    *
    * Слова `дано`, `ожидается` и `равен` — те же, что у обычного `пример`, и это
@@ -1620,6 +1640,12 @@ class Parser {
    * аппаратом, что и остальной язык. Отличие ровно одно — `семя`: без него
    * «ожидаемый итог» не имел бы смысла, потому что итогов у конкурентной
    * программы столько, сколько чередований.
+   *
+   * Вторая форма ожидания — про надзор. Одного состояния мало: «состояние равно
+   * начальному» верно и для процесса, которому вообще ничего не приходило, так
+   * что перезапуск по нему не отличить от бездействия. Форма `стратегия «X» N`
+   * называет, сколько раз надзор принял о процессе решение X, и новых слов не
+   * занимает: `стратегия` уже ключевое, «раз» — слово-пояснение.
    */
   parseRun() {
     const start = this.next()
@@ -1648,8 +1674,21 @@ class Parser {
         if (this.atKw("expected")) {
           const at = this.next()
           const process = this.expectName("ожидалось имя процесса")
-          if (!this.eatKw("cmpEq")) this.fail("ожидание записывается как 'ожидается «Процесс» равен значение'")
-          node.expected.push({ process, state: this.parseLiteralValue(), span: at.span })
+          if (this.eatKw("strategy")) {
+            const strategy = this.expectName("ожидалось имя стратегии")
+            const times = this.expectNumber("после имени стратегии ожидалось, сколько раз она применялась")
+            this.skipFillerWords()
+            node.expected.push({ kind: "strategy", process, strategy, times, span: at.span })
+            this.endLine()
+            continue
+          }
+          if (!this.eatKw("cmpEq")) {
+            this.fail(
+              "ожидание записывается как 'ожидается «Процесс» равен значение' " +
+                "или 'ожидается «Процесс» стратегия «…» N раз'",
+            )
+          }
+          node.expected.push({ kind: "state", process, state: this.parseLiteralValue(), span: at.span })
           this.endLine()
           continue
         }

@@ -245,12 +245,15 @@ Pattern := { "kind": "empty" }                                  пустой с�
                   "initial": "пустой счёт", "accepts": "Команда счёта",
                   "handler": "шаг счёта", "budget": 100000 | null }],
 "supervisors": [{ "kind": "supervisor", "name": "Учёт",
-                  "watch": [{ "process": "Счётчик", "strategy": "перезапустить" }],
+                  "watch":  [{ "process": "Счётчик", "strategy": "перезапустить" }],
+                  "nested": [{ "supervisor": "Смена", "strategy": "перезапустить" }],
                   "threshold": { "failures": 3, "window": 5000,
                                  "otherwise": "передать выше" } | null }],
 "runs":        [{ "kind": "run", "name": "…", "seed": 4172,
                   "inbox":    [{ "process": "Счётчик", "message": … }],
-                  "expected": [{ "process": "Счётчик", "state": … }] }]
+                  "expected": [{ "kind": "state",    "process": "Счётчик", "state": … },
+                               { "kind": "strategy", "process": "Счётчик",
+                                 "strategy": "перезапустить", "times": 1 }] }]
 ```
 
 Программе с процессами парсер приписывает сумму `«Действие»` — словарь языка, а

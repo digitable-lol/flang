@@ -21,7 +21,8 @@
  *   встроенные    отобразить/map, отфильтровать/filter, свёртка/fold,
  *                 длина/length, символ/char, подстрока/substring,
  *                 соединить/join, разделить/split, содержит/contains,
- *                 начинается с/begins with, к числу/to number, к строке/to text,
+ *                 начинается с/begins with, к числу/to number,
+ *                 к числу или беда/to number or failure, к строке/to text,
  *                 голова/head, хвост/tail, голова и хвост/head and tail,
  *                 пусто/empty, пустой список/empty list, список из/list of,
  *                 список/list, добавить/add, любое/any
@@ -124,6 +125,7 @@
  * Английской поверхности правило не мешает: латинские окончания не обрезаются.
  */
 
+import { withOutcomeType } from "./builtins.mjs"
 import { ACTION_TYPE } from "./conc.mjs"
 import { IO_TYPE_NAMES, IO_VARIANT_OWNER, withIoTypes } from "./io.mjs"
 import { FlangError, flangError, tokenize } from "./lexer.mjs"
@@ -214,6 +216,7 @@ const EXPRESSION_START = new Set([
   "head",
   "tail",
   "toNumber",
+  "toNumberOrFail",
   "toText",
   "char",
   "substring",
@@ -341,6 +344,10 @@ class Parser {
        неподвижная точка самоприменения сошлась бы к другому AST. */
     this.plans = []
     this.usesIo = false
+    /* Тип исхода `«Исход числа»` приписывается по тому же правилу и по той же
+       причине, что словарь ввода-вывода, — и с тем же условием: программа, в
+       которой формы `к числу или беда` нет, обязана дать побайтово прежний AST. */
+    this.usesOutcome = false
     this.legacy = []
     this.module = ""
     /* Стек областей видимости локальных имён и множество узлов `var`,
@@ -599,7 +606,8 @@ class Parser {
        хозяином, а не объявление автора. Разница одна — признак использования
        здесь считается по именам в тексте, а не по наличию объявления: функция,
        строящая поручение, обязана проверяться примерами и БЕЗ всякого плана. */
-    const готово = this.usesIo ? withIoTypes(program) : program
+    const сИсходом = this.usesOutcome ? withOutcomeType(program) : program
+    const готово = this.usesIo ? withIoTypes(сИсходом) : сИсходом
 
     /* Разворачивание `в монаде` — последним шагом разбора и внутри него.
        Место выбрано не для удобства: на выходе парсера обязана лежать
@@ -1554,6 +1562,15 @@ class Parser {
         return this.parseUnaryBuiltin("хвост")
       case "toNumber":
         return this.parseUnaryBuiltin("к числу")
+      case "toNumberOrFail": {
+        /* Не через parseUnaryBuiltin: у той формы «нет аргумента» значит «это
+           имя переменной», а фразой из четырёх слов переменную не назвать —
+           значит одинокая фраза это опечатка, и молчать о ней нельзя. */
+        const начало = this.next()
+        if (!this.startsExpression()) this.fail("у 'к числу или беда' ожидался аргумент")
+        this.usesOutcome = true
+        return { kind: "builtin", name: "к числу или беда", args: [this.parsePostfix()], span: начало.span }
+      }
       case "toText":
         return this.parseUnaryBuiltin("к строке")
       case "char": {

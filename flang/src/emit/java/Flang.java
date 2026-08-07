@@ -669,6 +669,27 @@ public final class Flang {
   }
 
   /**
+   * «к числу или беда»: отказ, ставший значением.
+   *
+   * Обоснование формы — в builtins.mjs, раздел «отказ, ставший значением».
+   * Разбор не повторяется, а переиспользуется: тексты обязаны совпасть с
+   * интерпретатором, и единственный способ гарантировать это — один разбор на
+   * обе формы. Отказать эта форма не может вовсе.
+   */
+  public static Value bToNumberOrFailure(Ctx ctx, Value source) {
+    try {
+      return Value.variant("Разобрано", new Field[] {new Field("значение", bToNumber(ctx, source))});
+    } catch (FlangError failure) {
+      return Value.variant(
+          "Не разобрано",
+          new Field[] {
+            new Field("код", Value.text(failure.code())),
+            new Field("сообщение", Value.text(failure.text()))
+          });
+    }
+  }
+
+  /**
    * «к строке».
    *
    * Признак печатается по-русски («да»/«нет»), «ничто» — словом «ничто»:

@@ -437,6 +437,21 @@ function $b_k_chislu(text) {
   return result
 }
 
+// Отказ «к числу», ставший значением (builtins.mjs, «отказ, ставший значением»).
+// Разбор не повторяется, а переиспользуется: тексты обязаны совпасть с
+// интерпретатором, и единственный способ гарантировать это — один разбор на обе
+// формы.
+function $b_k_chislu_ili_beda(text) {
+  try {
+    return new $FlangVariant("Разобрано", { "значение": $b_k_chislu(text) })
+  } catch (error) {
+    return new $FlangVariant("Не разобрано", {
+      "код": error?.code ?? "FLANG_BUILTIN_ARGS",
+      "сообщение": String(error?.message ?? ""),
+    })
+  }
+}
+
 // Признак печатается по-русски: поверхность языка знает «да» и «нет», а не
 // true и false (SPEC, раздел 5, таблица семантики).
 function $b_k_stroke(value) {
@@ -562,6 +577,11 @@ runtimeEntry("$b_simvoly", ["$expectString"], fromSource($b_simvoly))
 runtimeEntry("$b_soderzhit", ["$isList", "$equal", "$expectString"], fromSource($b_soderzhit))
 runtimeEntry("$b_nachinaetsya_s", ["$expectString"], fromSource($b_nachinaetsya_s))
 runtimeEntry("$b_k_chislu", ["$fail", "$expectString"], fromSource($b_k_chislu))
+runtimeEntry(
+  "$b_k_chislu_ili_beda",
+  ["$FlangVariant", "$b_k_chislu"],
+  fromSource($b_k_chislu_ili_beda),
+)
 runtimeEntry("$b_k_stroke", ["$fail", "$typeName"], fromSource($b_k_stroke))
 runtimeEntry("$b_pusto", ["$fail", "$isList", "$typeName"], fromSource($b_pusto))
 runtimeEntry("$b_golova", ["$fail", "$expectList"], fromSource($b_golova))
@@ -583,6 +603,7 @@ const BUILTIN_HELPERS = new Map([
   ["содержит", "$b_soderzhit"],
   ["начинается с", "$b_nachinaetsya_s"],
   ["к числу", "$b_k_chislu"],
+  ["к числу или беда", "$b_k_chislu_ili_beda"],
   ["к строке", "$b_k_stroke"],
   ["пусто", "$b_pusto"],
   ["голова", "$b_golova"],
@@ -603,6 +624,7 @@ const BUILTIN_ARITY = new Map([
   ["содержит", 2],
   ["начинается с", 2],
   ["к числу", 1],
+  ["к числу или беда", 1],
   ["к строке", 1],
   ["пусто", 1],
   ["голова", 1],

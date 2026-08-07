@@ -378,6 +378,8 @@ fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error);
 fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+/* Та же «к числу», но отказ возвращается значением «Не разобрано», а не статусом. */
+fl_status fl_b_k_chislu_ili_beda(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
 fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_pusto(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);

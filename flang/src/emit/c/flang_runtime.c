@@ -1532,6 +1532,34 @@ fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *err
   return FL_OK;
 }
 
+/*
+ * Отказ «к числу», ставший значением (builtins.mjs, «отказ, ставший значением»).
+ *
+ * Разбор не повторяется: он один и тот же, и вызывается прямо здесь. Иначе
+ * пришлось бы держать вторую копию правил разбора и второй набор текстов, и
+ * первое же расхождение оказалось бы незамеченным — сравнивать было бы не с
+ * чем. Здесь же текст отказа приходит ровно из `fl_b_k_chislu`.
+ *
+ * `inner` — свой fl_error, а не тот, что дан вызывающим: отказ разбора наружу
+ * не идёт вовсе, эта форма отказать не может. Сообщение живёт в арене (его
+ * строит fl_vformat), поэтому borrow-строкой брать его безопасно — арена та же.
+ */
+fl_status fl_b_k_chislu_ili_beda(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  static const char *const parsed_names[] = {"значение"};
+  static const char *const failed_names[] = {"код", "сообщение"};
+  fl_error inner;
+  fl_value number = fl_nothing();
+  fl_value failure[2];
+  inner.code = NULL;
+  inner.message = NULL;
+  if (fl_b_k_chislu(ctx, text, &number, &inner) == FL_OK) {
+    return fl_variant_new(ctx, "Разобрано", parsed_names, &number, 1, out, error);
+  }
+  failure[0] = fl_text_static(inner.code == NULL ? FL_CODE_BUILTIN_ARGS : inner.code);
+  failure[1] = fl_text_static(inner.message == NULL ? "" : inner.message);
+  return fl_variant_new(ctx, "Не разобрано", failed_names, failure, 2, out, error);
+}
+
 fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
   char text[FL_NUMBER_TEXT_MAX];
   switch (value.tag) {

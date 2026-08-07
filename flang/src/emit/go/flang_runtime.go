@@ -984,6 +984,29 @@ func BToNumber(ctx *Ctx, text Value) (Value, error) {
 	return Number(number), nil
 }
 
+// BToNumberOrFailure — «к числу или беда»: отказ, ставший значением
+// (builtins.mjs, раздел «отказ, ставший значением»).
+//
+// Разбор не повторяется, а переиспользуется: тексты обязаны совпасть с
+// интерпретатором, и единственный способ гарантировать это — один разбор на обе
+// формы. Отказать эта форма не может вовсе, поэтому ошибка наружу не идёт.
+func BToNumberOrFailure(ctx *Ctx, text Value) (Value, error) {
+	number, err := BToNumber(ctx, text)
+	if err == nil {
+		return Variant("Разобрано", []Field{{Name: "значение", Value: number}}), nil
+	}
+	code := CodeBuiltinArgs
+	message := err.Error()
+	if failure, ok := err.(*Error); ok {
+		code = failure.Code
+		message = failure.Message
+	}
+	return Variant("Не разобрано", []Field{
+		{Name: "код", Value: Text(code)},
+		{Name: "сообщение", Value: Text(message)},
+	}), nil
+}
+
 // BToString — «к строке». Признак печатается по-русски («да»/«нет»), «ничто» —
 // словом «ничто»: поверхность языка русская, и кодогенераторы обязаны это
 // повторять, а не печатать true/false (SPEC, раздел 5).

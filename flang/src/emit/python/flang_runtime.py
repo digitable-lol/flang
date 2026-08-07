@@ -1014,6 +1014,23 @@ def b_to_number(ctx, source):
     return Value(TAG_NUMBER, result)
 
 
+def b_to_number_or_failure(ctx, source):
+    """«к числу или беда»: отказ, ставший значением.
+
+    Обоснование формы — в builtins.mjs, раздел «отказ, ставший значением».
+    Разбор не повторяется, а переиспользуется: тексты обязаны совпасть с
+    интерпретатором, и единственный способ гарантировать это — один разбор на
+    обе формы. Отказать эта форма не может вовсе.
+    """
+    try:
+        return variant("Разобрано", {"значение": b_to_number(ctx, source)})
+    except FlangError as failure:
+        return variant(
+            "Не разобрано",
+            {"код": text(failure.code), "сообщение": text(failure.message)},
+        )
+
+
 def b_to_string(ctx, value):
     """«к строке».
 

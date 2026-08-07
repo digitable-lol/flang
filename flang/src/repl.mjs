@@ -56,7 +56,7 @@ import { createRuntime, isList, isRecord, isVariant } from "./interpret.mjs"
 import { tokenize } from "./lexer.mjs"
 import { importsOf, linkProgram, stampFile } from "./link.mjs"
 import { parse } from "./parser.mjs"
-import { checkTotality } from "./totality.mjs"
+import { checkTotality, markGuards } from "./totality.mjs"
 import { checkTypes } from "./types.mjs"
 
 /** Имя функции-обёртки, в которой вычисляется выражение. */
@@ -198,7 +198,10 @@ async function вычислить(с, ввод) {
   if (проверка.diagnostics.length > 0) return отказ(проверка.diagnostics, собранное.карта)
 
   try {
-    const значение = createRuntime(собранное.программа, с.пределы).call(имя, {})
+    /* Считается СТЕРЕЖЁННАЯ программа: оболочка обязана отказывать теми же
+       кодом и текстом, что напечатанный код, а не зависать там, где он
+       откажет. */
+    const значение = createRuntime(проверка.стережённая, с.пределы).call(имя, {})
     return { kind: "value", value: значение, text: formatValue(значение) }
   } catch (ошибка) {
     /* Лимит шагов приходит сюда обычным FLANG_RECURSION_LIMIT интерпретатора.
@@ -607,6 +610,12 @@ function проверить(программа) {
     diagnostics: [...типы.diagnostics, ...тотальность.diagnostics].filter((д) => д?.severity !== "warning"),
     тотальные: тотальность.total,
     сигнатуры: типы.types,
+    /* Та же программа с отметками меры: доказательство по числовой мере верно
+       для вещественных чисел, а числа flang — double, и понижение обязано
+       поставить на доказанном вызове сторожа. Отметку кладём здесь, потому что
+       здесь анализ уже позван: второй его прогон на каждое нажатие был бы
+       платой ни за что. */
+    стережённая: markGuards(программа, тотальность.guards),
   }
 }
 

@@ -1105,9 +1105,10 @@ attaching a solver to the verification conditions is an open task, not a feature
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
 - The totality analysis knows structural decrease and a numeric measure with a CONSTANT step.
   Anything with a non-constant step stays out: binary search halves the range, Euclid takes a
-  remainder, counting up grows — those still need a "fuel" list. The measure has a border of its
-  own: flang numbers are IEEE-754 doubles, and `x минус 1` equals x once |x| ≥ 2⁵⁴, so the measure
-  proof holds for numbers of ordinary magnitude rather than for every double.
+  remainder, counting up grows — those still need a "fuel" list. The measure itself is propped up
+  by a guard: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|, so the
+  compiler installs a decrease check on every call proven by a measure. No decrease means a
+  `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets — not a hang.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

@@ -439,6 +439,10 @@ export async function loadProgram(file) {
 }
 
 export async function loadProgramFromSource(source, file = "-") {
+  return await markMeasure(await readProgram(source, file))
+}
+
+async function readProgram(source, file) {
   if (file.endsWith(".json")) return JSON.parse(source)
   if (file.endsWith(".fts")) return fromFtsDocument(await compileFts(source))
   if (file.endsWith(".flang") || file.endsWith(".fl")) return await parseFlang(source, file)
@@ -447,6 +451,37 @@ export async function loadProgramFromSource(source, file = "-") {
   const trimmed = source.trimStart()
   if (trimmed.startsWith("{")) return JSON.parse(source)
   return fromFtsDocument(await compileFts(source))
+}
+
+/**
+ * Отметка меры — единственный шаг переднего края, который что-то приписывает
+ * к разобранному.
+ *
+ * Пометка `тотальная` обещает завершение, и с сегодняшнего дня обещание
+ * подкреплено сторожем в самой программе: там, где доказательство держится на
+ * числовой мере, вызов помечается, а понижение (`src/defunc.mjs`) ставит на
+ * этом месте проверку убывания. Отметку кладёт анализ — только он знает,
+ * какая позиция несёт доказательство (`src/totality.mjs`,
+ * `markMeasureGuards`).
+ *
+ * Место здесь, а не внутри восьми бэкендов, потому что стеречь надо ровно то,
+ * что доказано, а доказывает анализ, и звать его из бэкенда нельзя: копия
+ * понижения на самом языке (`self/defunc.flang`) анализа не видит — круг
+ * импортов. Оба понижения читают отметку, а кладёт её передний край, один на
+ * все команды: `run`, `emit`, `test`, `repl` получают одну и ту же программу.
+ *
+ * Молчаливого отказа здесь быть не должно, но и падать нельзя: `check` обязан
+ * работать в том объёме, который доступен сегодня (см. `externalDiagnostics`).
+ * Программа без числовой меры проходит насквозь тем же объектом.
+ */
+async function markMeasure(program) {
+  try {
+    const { markMeasureGuards } = await import(new URL("../src/totality.mjs", import.meta.url).href)
+    if (typeof markMeasureGuards !== "function") return program
+    return markMeasureGuards(program)
+  } catch {
+    return program
+  }
 }
 
 /** Ядро FTS + заголовок модуля ftsc: любой `.fts` репозитория должен читаться. */

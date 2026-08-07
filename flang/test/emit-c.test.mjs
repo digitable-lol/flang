@@ -35,6 +35,7 @@ import { fileURLToPath } from "node:url"
 import { errorCode, fromFtsDocument, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
+import { markMeasureGuards } from "../src/totality.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { globSync } from "./glob.mjs"
 
@@ -1355,6 +1356,38 @@ test("исходник flang через настоящий парсер соби
     [42],
     [null],
     ["строка"],
+  ])
+  t.diagnostic(`сверенных входов: ${points}`)
+})
+
+test("сторож меры: отказ у собранного C дословно тот же, что у интерпретатора", async (t) => {
+  /* Доказательство по мере верно для вещественных чисел, а числа flang —
+     IEEE-754 double: `н минус 1` при большом |н| равен н, спуск не идёт, и
+     `тотальная` обещала бы завершение там, где его нет. Понижение перед
+     печатью ставит на доказанном мерой аргументе проверку убывания
+     (`src/defunc.mjs`), а вычислитель зовёт то же понижение — значит отказ у
+     них обязан совпасть КОДОМ И ТЕКСТОМ, а не «по смыслу». Ради этого
+     совпадения сторож и выражен постусловием: код и текст едут в AST данными,
+     и оба движка читают одно поле.
+
+     Сетка — не выдумка: 2⁵⁴+4 и 1e308 это входы, где шаг ничего не меняет;
+     ±∞ и NaN — там же по другой причине; 0, 1, 7 и 2.5 — обычный спуск,
+     который сторож обязан пропустить неотличимо от программы без него. */
+  const program = markMeasureGuards(parse(`модуль «Счёт»
+
+тотальная функция «До нуля»
+  принимает н: число
+  возвращает число
+  если н не больше 0
+    то 0
+    иначе «До нуля» от (н минус 1)
+`))
+  const built = await build(program)
+  assert.match(built.source, /FLANG_MEASURE/u, "сторож не доехал до напечатанного C")
+
+  const points = compare(program, built, "До нуля", [
+    [0], [1], [7], [2.5], [-3],
+    [18014398509481988], [1e308], [Infinity], [-Infinity], [NaN],
   ])
   t.diagnostic(`сверенных входов: ${points}`)
 })

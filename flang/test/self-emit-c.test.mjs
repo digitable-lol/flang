@@ -39,7 +39,7 @@ import { emitC } from "../src/emit/c.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
-import { checkTotality } from "../src/totality.mjs"
+import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
 
@@ -222,6 +222,30 @@ test("программы репозитория: C совпадает с эта�
   for (const относительный of программыРепозитория) {
     сверить(относительный, await разобрать(относительный))
   }
+})
+
+test("сторож меры: обе реализации понижения ставят его одинаково", async (t) => {
+  /* Понижений два — эталон `src/defunc.mjs` и копия на самом языке, — и с
+     сегодняшнего дня они ставят не только диспетчеры, но и сторожа меры.
+     Программы выше приходят сюда БЕЗ отметок: отметку кладёт анализ
+     завершаемости (`markMeasureGuards`), а его в той сверке никто не звал, —
+     значит сторожа там не было ни у одной стороны, и расхождения такая сверка
+     поймать не могла бы.
+
+     Здесь отметка ставится явно. Расходиться есть чему: имена сторожей,
+     порядок первой встречи текстов, форма постусловия и место связки шага —
+     всё это наблюдаемо в напечатанном C. */
+  const отмеченные = ["flang/stdlib/numbers.flang", "flang/stdlib/strings.flang", "flang/examples/leetcode/070-climbing-stairs.flang"]
+  let сторожей = 0
+  for (const относительный of отмеченные) {
+    const ast = await разобрать(относительный)
+    const помеченная = markMeasureGuards(ast)
+    assert.notEqual(помеченная, ast, `${относительный}: числовой меры больше нет — программу переписали?`)
+    assert.match(emitC(помеченная).files.map((файл) => файл.content).join(""), /FLANG_MEASURE/u)
+    сверить(относительный, помеченная)
+    сторожей += checkTotality(ast).guards.length
+  }
+  t.diagnostic(`сверено программ со сторожами: ${отмеченные.length}, сторожей в них: ${сторожей}`)
 })
 
 test("сам эмиттер: печать своего собственного исходника совпадает побайтово", async () => {

@@ -42,6 +42,7 @@ import {
   valuesEqual,
   variant,
 } from "./builtins.mjs"
+import { guardDescent } from "./defunc.mjs"
 import { programTags } from "./tags.mjs"
 
 export { FlangError, FlangVariant, flangError, variant, valuesEqual, reifyValue }
@@ -97,10 +98,17 @@ export function evaluate(program, functionName, args, options = {}) {
 
 // ───────────────────────────── подготовка программы ─────────────────────────────
 
-function prepareProgram(program) {
-  if (program === null || typeof program !== "object" || Array.isArray(program)) {
+function prepareProgram(источник) {
+  if (источник === null || typeof источник !== "object" || Array.isArray(источник)) {
     throw flangError("FLANG_PARSE", "программа должна быть объектом AST flang")
   }
+  /* Сторожа меры ставит то же понижение, что зовут все восемь бэкендов
+     (`defunc.mjs`). Здесь оно позвано ради одного: вычислитель обязан
+     отказывать теми же кодом и текстом, что напечатанный код, — а
+     единственный способ добиться этого наверняка — считать одну и ту же
+     программу, а не две похожие. Программа без отметок меры проходит насквозь
+     тем же объектом. */
+  const program = guardDescent(источник)
   const functionList = program.functions ?? []
   if (!Array.isArray(functionList)) {
     throw flangError("FLANG_PARSE", "поле «functions» программы должно быть списком")

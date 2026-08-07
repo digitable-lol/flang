@@ -1205,7 +1205,7 @@ function renderFunction(fn, shared) {
 
   const doc = ["/**", ` * Функция flang «${fn.name}».`]
   if (fn.total) {
-    doc.push(" *", " * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).")
+    doc.push(" *", " * Тотальная: завершение доказано анализом завершаемости (totality.mjs).")
   } else {
     doc.push(
       " *",

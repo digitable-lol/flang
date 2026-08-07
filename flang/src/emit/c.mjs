@@ -652,7 +652,7 @@ function describeFunction(fn, shared) {
   lines.push(
     " *",
     fn.total
-      ? " * Тотальная: завершение доказано анализом структурного убывания (totality.mjs)."
+      ? " * Тотальная: завершение доказано анализом завершаемости (totality.mjs)."
       : " * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.",
   )
   if (shared.tailEdges.get(fn.name)?.has(fn.name) === true && fn.postconditions.length === 0) {

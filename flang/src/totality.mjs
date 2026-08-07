@@ -1,11 +1,16 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /**
- * totality.mjs — анализ структурного убывания для `тотальных` функций flang.
+ * totality.mjs — анализ завершаемости для `тотальных` функций flang.
  *
  * Задача модуля: превратить обещание «эта функция завершается» в проверенный
  * факт. Пометка `тотальная` ничего не гарантирует сама по себе — гарантию даёт
  * это доказательство (SPEC, раздел 1).
+ *
+ * Доказательств здесь два, и они независимы: структурное убывание (часть
+ * значения меньше значения) и убывание по числовой мере (число уменьшается на
+ * постоянный шаг и снизу ограничено). Общего у них одно — оба дают вполне
+ * обоснованный порядок, по которому цепочка вызовов обязана оборваться.
  *
  * ── Как устроено доказательство ────────────────────────────────────────────
  *
@@ -16,25 +21,82 @@
  * этому отношению.
  *
  * Каждому выражению внутри тотальной функции сопоставляется «происхождение» —
- * ответ на вопрос «частью какого параметра это значение является и насколько
- * глубоко разобранной частью»:
+ * ответ на два вопроса сразу: «частью какого параметра это значение является и
+ * насколько глубоко разобранной частью» и «насколько это значение меньше
+ * своего параметра как число»:
  *
- *   null                                 — про значение ничего не известно
- *   { param: i, name: "элементы", depth: 0 }  — это сам параметр i
- *   { param: i, name: "элементы", depth: k }  — часть параметра i, k разборов вглубь
+ *   null                                        — про значение ничего не известно
+ *   { param: i, depth: 0, step: 0 }             — это сам параметр i
+ *   { param: i, depth: k, step: null }          — часть параметра i, k разборов вглубь
+ *   { param: i, depth: null, step: −c }         — это `параметр i − c`, где c — число
  *
- * Происхождение растёт вглубь (`depth + 1`) там, где значение достаётся
- * из значения: `хвост`/`голова` от списка, привязки образца
- * «голова и хвост», поля варианта в образце, поле записи, элемент коллекции
- * в `отобразить`/`отфильтровать`/`свёртка`. Оно теряется (`null`) там, где
+ * `depth` растёт (`depth + 1`) там, где значение достаётся из значения:
+ * `хвост`/`голова` от списка, привязки образца «голова и хвост», поля варианта
+ * в образце, поле записи, элемент коллекции в
+ * `отобразить`/`отфильтровать`/`свёртка`. Оно теряется (`null`) там, где
  * значение строится: конструктор варианта, литерал списка, `добавить … к …`,
  * арифметика, результат любого вызова. `пусть` переносит происхождение
  * значения на имя; `если` и `разбор` объединяют ветви, беря минимальную
  * глубину при совпадающем параметре.
  *
- * Вызов f → g убывает на позиции j, если j-й аргумент имеет происхождение
- * `{ param: j, depth ≥ 1 }`: то есть на месте j-го параметра g стоит
- * собственная часть j-го параметра f.
+ * `step` двигается на `± литерал` в `плюс` и `минус` и теряется во всём
+ * остальном: разбор значения, умножение, деление, второй параметр вместо
+ * литерала. `если` и `разбор` берут по ветвям МАКСИМАЛЬНЫЙ шаг — то есть самое
+ * слабое из обещаний.
+ *
+ * Вызов f → g убывает на позиции j, если на месте j-го параметра g стоит
+ * либо собственная ЧАСТЬ j-го параметра f (`{ param: j, depth ≥ 1 }`), либо
+ * j-й параметр f, уменьшенный на постоянный шаг (`{ param: j, step < 0 }`) —
+ * и во втором случае при условии, что этот параметр ограничен снизу (ниже).
+ *
+ * ── Числовая мера: почему одного шага мало ─────────────────────────────────
+ *
+ * Структурное убывание самодостаточно: значения — конечные деревья, и цепочка
+ * частей обязана оборваться сама. У числа такого дна нет. `«Ф» от (н минус 1)`
+ * уменьшает н сколько угодно раз и не останавливается никогда: −1, −2, −3 …
+ * Поэтому одного шага для доказательства мало, и нужны ДВА условия сразу:
+ *
+ *   1. шаг строго отрицательный и ПОСТОЯННЫЙ (`минус <литерал>`);
+ *   2. в точке вызова параметр ограничен снизу числом.
+ *
+ * Тогда цепочка v₀ > v₁ > … с шагом ≥ δ > 0 и дном K оборвётся не позже чем
+ * через (v₀ − K)/δ вызовов. Убери любое условие — доказательства нет:
+ * без дна цепочка уходит в минус бесконечность, без постоянного шага
+ * (`н минус ш`, где ш — параметр) шаг может оказаться нулевым или
+ * отрицательным, и цепочка не убывает вовсе.
+ *
+ * Дно берётся из `если`: сравнение параметра с числовым литералом даёт в одной
+ * из ветвей нижнюю границу, и в этой ветви параметр помечается ограниченным.
+ * `н больше 0` и `н не меньше 0` дают границу в ветви `то`; `н меньше 0` и
+ * `н не больше 0` — в ветви `иначе`. Пометка ставится на ВСЕ имена, выведенные
+ * из того же параметра, потому что граница — свойство параметра, а не имени:
+ * после `пусть м равно (н минус 1)` в ветви с `н > 0` про `м` известно ровно
+ * столько же.
+ *
+ * РАВЕНСТВО границы не даёт, и это не упущение. База `если н равно 0` при шаге
+ * −1 завершается только для целого НЕОТРИЦАТЕЛЬНОГО входа: `«Ф» от (−5)` уйдёт
+ * в −6, −7, … мимо нуля, а `«Ф» от 0.5` — в −0.5, −1.5 … тоже мимо. Дробный
+ * шаг ломается ровно так же: `н минус 0.5` при базе `н равно 0` не завершается
+ * на входе 0.75.
+ * Отсюда решение: дело не в дробности шага, а в форме базы. Любой постоянный
+ * отрицательный шаг, включая `минус 0.5`, доказывается при базе-НЕРАВЕНСТВЕ, и
+ * никакой шаг не доказывается при базе-равенстве.
+ *
+ * ── Где это доказательство упирается в IEEE-754 ────────────────────────────
+ *
+ * Рассуждение выше верно для вещественных чисел. Числа flang — IEEE-754 double
+ * (SPEC, раздел 2), и там `x − 1` иногда равен `x`: при |x| ≥ 2⁵⁴ единица не
+ * помещается в мантиссу. Измерено: 18014398509481988 − 1 = 18014398509481988,
+ * и `«До нуля»` от этого числа не завершается. То же на ±∞ и на NaN.
+ *
+ * Закрыть это анализом нельзя: понадобилась бы верхняя граница на параметр, а
+ * её в `если н не больше 0` нет и взяться ей неоткуда. Поэтому граница
+ * доказательства названа здесь прямо: убывание по мере доказано на числах,
+ * которые ведут себя как вещественные, — на остальных двойных остаётся
+ * незакрытым. Это ЕДИНСТВЕННОЕ место, где `тотальная` опирается на свойство
+ * представления, а не только на форму программы; недостача записана в
+ * `flang/examples/leetcode/index.json` и проверяется программой в
+ * `flang/test/claims.test.mjs`.
  *
  * ── Циклы ──────────────────────────────────────────────────────────────────
  *
@@ -50,6 +112,12 @@
  * Каждое ребро где-то убывает, но пара (a, b) по кругу растёт, и цикл
  * бесконечен. Единая позиция даёт настоящую убывающую цепочку частей одного
  * значения, а она обязана оборваться.
+ *
+ * Способ убывания на общей позиции обязан совпадать тоже: структурная цепочка
+ * и числовая — разные порядки, и «часть на одном ребре, число на другом» не
+ * складывается ни в один из них. В типизированной программе такого не бывает
+ * (позиция не может быть и списком, и числом), но анализ завершаемости типов
+ * не читает и полагаться на них не вправе.
  *
  * ── Высший порядок: дефункционализация вместо неразрешимости ───────────────
  *
@@ -86,12 +154,15 @@
  *
  * ── Чего анализ не умеет (сознательно) ─────────────────────────────────────
  *
- * Лексикографическое убывание (Аккерман), убывание по числовому счётчику
- * (`n − 1`), убывание через результат другой функции («хвост от «Отсортировать»
- * от списка») и разные убывающие позиции у разных рекурсивных вызовов одной
- * функции — всё это отвергается. Анализ консервативен по построению: он
- * никогда не признаёт тотальной функцию, которая может зациклиться, и цена
- * этому — отказ части действительно завершающихся программ.
+ * Лексикографическое убывание (Аккерман), убывание через результат другой
+ * функции («хвост от «Отсортировать» от списка») и разные убывающие позиции у
+ * разных рекурсивных вызовов одной функции — всё это отвергается. Из числовых
+ * мер отвергается всё, кроме постоянного шага: `н минус ш` с параметром ш,
+ * Евклид (`остаток от`), двоичный поиск (`(низ плюс верх) делить на 2`) —
+ * шаг там не постоянен, и одного знака у него нет. Анализ консервативен по
+ * построению: он никогда не признаёт тотальной функцию, которая может
+ * зациклиться, и цена этому — отказ части действительно завершающихся
+ * программ.
  */
 
 import { programTags } from "./tags.mjs"
@@ -140,7 +211,7 @@ export function checkTotality(program) {
     const fn = functions.get(name)
     const params = paramNames(fn)
     const env = new Map()
-    params.forEach((paramName, index) => env.set(paramName, { param: index, name: paramName, depth: 0 }))
+    params.forEach((paramName, index) => env.set(paramName, parameterOrigin(index, paramName)))
     collectCalls(fn.body, env, { from: name, params, calls, tags, functions })
   }
 
@@ -254,7 +325,7 @@ function checkComponent(component, edges, failed, report) {
   if (inner.length === 0) return
 
   const decreasing = inner.map((edge) => ({ edge, positions: decreasingPositions(edge) }))
-  const silent = decreasing.filter((item) => item.positions.size === 0)
+  const silent = decreasing.filter((item) => item.positions.length === 0)
 
   if (silent.length > 0) {
     for (const { edge } of silent) {
@@ -265,13 +336,15 @@ function checkComponent(component, edges, failed, report) {
     return
   }
 
-  const common = [...decreasing[0].positions].filter((position) => decreasing.every((item) => item.positions.has(position)))
-  if (common.length > 0) return
+  /* Общая позиция ищется отдельно среди структурных убываний и отдельно среди
+     мер: смешать их значило бы склеить два несовместимых порядка (см. шапку). */
+  if (commonPositions(decreasing, false).length > 0) return
+  if (commonPositions(decreasing, true).length > 0) return
 
   // Каждое ребро где-то убывает, но общей позиции нет — см. контрпример
   // в шапке файла: такой цикл может быть бесконечным.
   const detail = decreasing
-    .map(({ edge, positions }) => `«${edge.from}» → «${edge.to}» убывает по ${[...positions].map((position) => argumentLabel(edge, position)).join(", ")}`)
+    .map(({ edge, positions }) => `«${edge.from}» → «${edge.to}» убывает по ${positions.map((item) => argumentLabel(edge, item.position)).join(", ")}`)
     .join("; ")
   report(
     "FLANG_NOT_TOTAL",
@@ -281,16 +354,31 @@ function checkComponent(component, edges, failed, report) {
   for (const name of component) failed.add(name)
 }
 
-/** Позиции, на которых вызов строго убывает. */
+/**
+ * Позиции, на которых вызов строго убывает, вместе со способом убывания:
+ * `measure: false` — часть значения, `measure: true` — числовая мера.
+ */
 function decreasingPositions(edge) {
-  const positions = new Set()
+  const positions = []
   edge.origins.forEach((origin, index) => {
-    if (!origin || origin.depth < 1) return
+    if (!origin) return
     if (origin.param !== index) return          // убывать обязан аргумент на своей позиции
     if (index >= edge.calleeParams.length) return
-    positions.add(index)
+    if (origin.depth !== null && origin.depth >= 1) positions.push({ position: index, measure: false })
+    /* Мера без нижней границы убыванием не считается: цепочка «минус один»
+       без дна бесконечна (шапка файла, «Числовая мера»). */
+    else if (origin.step !== null && origin.step < 0 && origin.bounded) positions.push({ position: index, measure: true })
   })
   return positions
+}
+
+/** Позиции заданного способа, убывающие на КАЖДОМ ребре компоненты. */
+function commonPositions(decreasing, measure) {
+  return decreasing[0].positions
+    .filter((item) => item.measure === measure)
+    .map((item) => item.position)
+    .filter((position) => decreasing.every(({ positions }) =>
+      positions.some((item) => item.measure === measure && item.position === position)))
 }
 
 function argumentLabel(edge, position) {
@@ -303,12 +391,15 @@ function explainNoDescent(edge, component) {
     const shown = describeExpr(edge.args[index])
     const callerParam = edge.params[index]
     if (!origin) return `аргумент ${index + 1} (${shown}) не выведен ни из одного параметра`
-    const source = `параметра «${origin.name}»`
+    const выведено = origin.depth !== null ? "часть" : "мера"
     if (origin.param !== index) {
-      return `аргумент ${index + 1} (${shown}) — часть ${source}, а сравнивается с параметром «${callerParam ?? "?"}» на своей позиции`
+      return `аргумент ${index + 1} (${shown}) — ${выведено} параметра «${origin.name}», а сравнивается с параметром «${callerParam ?? "?"}» на своей позиции`
     }
-    if (origin.depth === 0) return `аргумент ${index + 1} (${shown}) — это сам параметр «${origin.name}», а не его часть`
-    return `аргумент ${index + 1} (${shown}) убывает`
+    if (origin.depth !== null) {
+      if (origin.depth === 0) return `аргумент ${index + 1} (${shown}) — это сам параметр «${origin.name}», а не его часть`
+      return `аргумент ${index + 1} (${shown}) убывает`
+    }
+    return measureReason(origin, index, shown)
   })
   const действие = edge.applied === true ? "применение значения-функции" : "вызов"
   const cycle = edge.from === edge.to
@@ -316,6 +407,20 @@ function explainNoDescent(edge, component) {
     : `${действие} «${edge.to}» в цикле ${component.map((name) => `«${name}»`).join(" → ")}`
   const hint = "Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции"
   return `тотальная функция «${edge.from}»: ${cycle} не убывает — ${reasons.join("; ") || "у вызова нет аргументов"}. ${hint}`
+}
+
+/**
+ * Почему числовая мера не доказывает завершение. Разбор идёт по шагу, а не по
+ * границе, потому что чинить надо разное: нулевой и растущий шаг — это
+ * переписать вызов, отсутствие границы — дописать проверку.
+ */
+function measureReason(origin, index, shown) {
+  if (origin.step < 0) {
+    if (origin.bounded) return `аргумент ${index + 1} (${shown}) убывает по мере`
+    return `аргумент ${index + 1} (${shown}) уменьшает параметр «${origin.name}», но снизу «${origin.name}» ничем не ограничен: добавьте проверку вида «если ${origin.name} не больше 0»`
+  }
+  if (origin.step > 0) return `аргумент ${index + 1} (${shown}) увеличивает параметр «${origin.name}»`
+  return `аргумент ${index + 1} (${shown}) не уменьшает параметр «${origin.name}»: шаг нулевой`
 }
 
 /**
@@ -356,15 +461,131 @@ function stronglyConnectedComponents(nodes, edges) {
 /* Происхождение значений                                              */
 /* ------------------------------------------------------------------ */
 
+/** Параметр целиком: он и сам себе часть глубины ноль, и мера с шагом ноль. */
+function parameterOrigin(param, name) {
+  return { param, name, depth: 0, step: 0, bounded: false }
+}
+
+/**
+ * Разбор вглубь: результат строго меньше разбираемого значения. Числовая мера
+ * при этом теряется — про поле записи неизвестно, насколько оно меньше самой
+ * записи как ЧИСЛО, да и числом оно быть не обязано.
+ */
 function deeper(origin) {
-  return origin ? { param: origin.param, name: origin.name, depth: origin.depth + 1 } : null
+  if (!origin || origin.depth === null) return null
+  return { param: origin.param, name: origin.name, depth: origin.depth + 1, step: null, bounded: false }
+}
+
+/**
+ * Сдвиг меры на постоянное число. Структурное происхождение при этом теряется:
+ * `н минус 1` частью `н` не является. Признак «ограничен снизу» переезжает —
+ * он про ПАРАМЕТР, а не про выражение, и в этой точке программы он всё тот же.
+ */
+function shifted(origin, delta) {
+  if (!origin || origin.step === null) return null
+  return { param: origin.param, name: origin.name, depth: null, step: origin.step + delta, bounded: origin.bounded }
 }
 
 /** Объединение ветвей: общее происхождение — самое слабое из двух. */
 function join(left, right) {
   if (!left || !right) return null
   if (left.param !== right.param) return null
-  return { param: left.param, name: left.name, depth: Math.min(left.depth, right.depth) }
+  const depth = left.depth !== null && right.depth !== null
+    ? (left.depth < right.depth ? left.depth : right.depth)
+    : null
+  /* Самый слабый шаг — наибольший: если одна ветвь уменьшает на 3, а другая
+     на 1, обещать можно только «на 1». */
+  const step = left.step !== null && right.step !== null
+    ? (left.step > right.step ? left.step : right.step)
+    : null
+  if (depth === null && step === null) return null
+  return { param: left.param, name: left.name, depth, step, bounded: left.bounded && right.bounded }
+}
+
+/**
+ * Конечное число из литерала — или `null`, если это не литерал, не число или
+ * не конечное число.
+ *
+ * Конечность проверяется как `x − x === 0`: у ±∞ и NaN разность с самой собой
+ * не ноль. Это не красивость, а необходимость. `если н не больше NaN` ложно
+ * ВСЕГДА, значит ветвь `иначе` берётся всегда, и граница оттуда была бы
+ * выдумкой; `н не больше ∞` истинно для всех конечных, значит `иначе` берётся
+ * только на NaN, и граница снова была бы выдумкой.
+ */
+function finiteLiteral(expr) {
+  if (!expr || typeof expr !== "object" || expr.kind !== "literal") return null
+  const value = expr.value
+  if (typeof value !== "number") return null
+  return value - value === 0 ? value : null
+}
+
+/**
+ * Сдвиг меры арифметикой: `н минус 1`, `н плюс 1`, `1 плюс н`.
+ *
+ * `1 минус н` сюда не попадает намеренно: это не сдвиг `н`, а его отражение, и
+ * повторное применение меру не уменьшает. Умножение и деление тоже не сдвиги:
+ * `н делить на 2` при `н больше 0` не доходит до нуля никогда.
+ */
+function arithmeticShift(expr, left, right) {
+  if (expr.op === "sub") {
+    const value = finiteLiteral(expr.right)
+    return value === null ? null : shifted(left, 0 - value)
+  }
+  if (expr.op === "add") {
+    const value = finiteLiteral(expr.right)
+    if (value !== null) return shifted(left, value)
+    const first = finiteLiteral(expr.left)
+    return first === null ? null : shifted(right, first)
+  }
+  return null
+}
+
+/**
+ * Нижняя граница из условия `если`: `{ param, branch }` или `null`.
+ *
+ * Сравниваться обязаны ИМЯ и числовой литерал. Имя — потому что происхождение
+ * условия здесь не вычисляется заново (обход условия уже прошёл, и второй
+ * обход удвоил бы собранные вызовы); литерал — потому что `н больше м` границы
+ * не даёт: м само меняется от вызова к вызову.
+ *
+ * Равенство и неравенство в список не входят: `н равно 0` не ограничивает н
+ * ни с какой стороны (шапка файла, «Числовая мера»).
+ */
+function lowerBoundGuard(cond, env) {
+  if (!cond || typeof cond !== "object" || cond.kind !== "binary") return null
+  let name = null
+  let branch = null
+  if (cond.left?.kind === "var" && finiteLiteral(cond.right) !== null) {
+    name = cond.left.name
+    if (cond.op === "gt" || cond.op === "gte") branch = "then"
+    else if (cond.op === "lt" || cond.op === "lte") branch = "else"
+  } else if (cond.right?.kind === "var" && finiteLiteral(cond.left) !== null) {
+    name = cond.right.name
+    if (cond.op === "lt" || cond.op === "lte") branch = "then"
+    else if (cond.op === "gt" || cond.op === "gte") branch = "else"
+  }
+  if (branch === null) return null
+  const origin = env.get(name) ?? null
+  /* Сравнивалась мера — значит ограничен параметр, из которого она выведена.
+     Часть значения границы параметру не даёт: `голова список больше 0` — про
+     голову, а не про список. */
+  if (!origin || origin.step === null) return null
+  return { param: origin.param, branch }
+}
+
+/**
+ * Область видимости, в которой параметр помечен ограниченным снизу.
+ *
+ * Помечаются ВСЕ имена того же параметра: граница — свойство параметра в этой
+ * точке программы, и `пусть м равно (н минус 1)`, написанное до `если`, знает
+ * про `н больше 0` ровно столько же, сколько сам `н`.
+ */
+function boundedEnv(env, param) {
+  const inner = new Map()
+  for (const [name, origin] of env) {
+    inner.set(name, origin && origin.param === param ? { ...origin, bounded: true } : origin)
+  }
+  return inner
 }
 
 /**
@@ -390,7 +611,12 @@ function collectCalls(expr, env, state) {
     }
     case "if": {
       collectCalls(expr.cond, env, state)
-      return join(collectCalls(expr.then, env, state), collectCalls(expr.else, env, state))
+      /* Условие даёт нижнюю границу ровно одной ветви — в другой известно
+         только отрицание, а оно границы не даёт. */
+      const guard = lowerBoundGuard(expr.cond, env)
+      const thenEnv = guard?.branch === "then" ? boundedEnv(env, guard.param) : env
+      const elseEnv = guard?.branch === "else" ? boundedEnv(env, guard.param) : env
+      return join(collectCalls(expr.then, thenEnv, state), collectCalls(expr.else, elseEnv, state))
     }
     case "call": {
       const args = Array.isArray(expr.args) ? expr.args : []
@@ -434,10 +660,11 @@ function collectCalls(expr, env, state) {
       }
       return null
     }
-    case "binary":
-      collectCalls(expr.left, env, state)
-      collectCalls(expr.right, env, state)
-      return null
+    case "binary": {
+      const left = collectCalls(expr.left, env, state)
+      const right = collectCalls(expr.right, env, state)
+      return arithmeticShift(expr, left, right)
+    }
     case "construct":
     case "record":
       for (const value of Object.values(expr.fields ?? {})) collectCalls(value, env, state)

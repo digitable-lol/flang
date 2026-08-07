@@ -123,7 +123,7 @@ file. Shown here is only the function itself.
 /*
  * Функция flang «Место вставки».
  *
- * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param elementy — «элементы»: список: число
  * @param cel — «цель»: число
  * @return значение: число
@@ -161,7 +161,7 @@ fl_status mesto_vstavki_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value c
 ```go
 // MestoVstavki — функция flang «Место вставки».
 //
-// Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
 //
 // Параметр elementy — «элементы»: список: число.
 // Параметр cel — «цель»: число.
@@ -208,7 +208,7 @@ func MestoVstavki(ctx *rt.Ctx, elementy rt.Value, cel rt.Value) (rt.Value, error
 ```rust
 /// Функция flang «Место вставки».
 ///
-/// Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+/// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
 ///
 /// Параметр `elementy` — «элементы»: список: число.
 /// Параметр `cel` — «цель»: число.
@@ -242,7 +242,7 @@ pub fn funkciya_mesto_vstavki(ctx: &rt::Ctx, elementy: rt::Value, cel: rt::Value
 def fn_mesto_vstavki(ctx, elementy, cel):
     """Функция flang «Место вставки».
 
-    Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+    Тотальная: завершение доказано анализом завершаемости (totality.mjs).
 
     Параметр elementy — «элементы»: список: число.
     Параметр cel — «цель»: число.
@@ -269,7 +269,7 @@ def fn_mesto_vstavki(ctx, elementy, cel):
   /**
    * Функция flang «Место вставки».
    *
-   * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+   * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
    *
    * @param elementy «элементы»: список: число
    * @param cel «цель»: число
@@ -301,7 +301,7 @@ def fn_mesto_vstavki(ctx, elementy, cel):
     /// <summary>
     /// Функция flang «Место вставки».
     ///
-    /// Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+    /// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
     ///
     /// Параметр elementy — «элементы»: список: число.
     /// Параметр cel — «цель»: число.
@@ -338,7 +338,7 @@ def fn_mesto_vstavki(ctx, elementy, cel):
   @doc """
   Функция flang «Место вставки».
 
-  Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+  Тотальная: завершение доказано анализом завершаемости (totality.mjs).
 
   Параметр `elementy` — «элементы»: список: число.
   Параметр `cel` — «цель»: число.
@@ -371,7 +371,7 @@ def fn_mesto_vstavki(ctx, elementy, cel):
 /**
  * Функция flang «Место вставки».
  *
- * Тотальная: завершение доказано анализом структурного убывания (totality.mjs).
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  *
  * @param {Array<number>} elementy — «элементы»
  * @param {number} cel — «цель»
@@ -553,20 +553,25 @@ splits programs into two classes and has the compiler decide which one you are i
 
 |                              | `тотальная`                     | plain                      |
 |------------------------------|----------------------------------|----------------------------|
-| recursion                    | structurally decreasing only     | any                        |
+| recursion                    | decreasing: by value part or by numeric measure | any         |
 | termination                  | proven by the compiler           | not guaranteed             |
 | its examples                 | are guaranteed to finish         | may need a step limit      |
 | accepted by the fact-checker | yes                              | no                         |
 
-`тотальная` requires every recursive call to receive a structurally smaller argument — the tail
-of a list, a field of a variant. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and
-the file does not compile. Every existing `.fts` model lands in the total class by construction.
+`тотальная` requires every recursive call to receive a decreasing argument, and two kinds of
+decrease are accepted: structural — the tail of a list, a field of a variant or a record — and
+numeric, by measure. A measure is `н минус <number>` provided the parameter is bounded from below
+at the call site by an inequality check (`если н не больше 0`). Both conditions are required:
+without a constant step the chain may not decrease at all, without a floor it runs to minus
+infinity. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and the file does not
+compile. Every existing `.fts` model lands in the total class by construction.
 
-A number getting smaller is not structural decrease, and that used to keep whole classes of
-string code out of the total class. The built-in form `разложить … на символы` moves the border:
-a string becomes a list of one-character strings by code points, and the same walk becomes
-recursion over a tail, which is proven. `flang/examples/rosetta/reverse-string.flang` is total
-throughout because of it, emoji and Cyrillic included.
+Counting UP is not a measure and stays out of the total class: `«Числа от и до» от 1 и н` grows
+the start, and the end is a parameter rather than a number, so it cannot serve as a floor. String
+code crossed the border earlier and differently: the built-in form `разложить … на символы` turns
+a string into a list of one-character strings by code points, and the walk becomes recursion over
+a tail. `flang/examples/rosetta/reverse-string.flang` is total throughout because of it, emoji and
+Cyrillic included.
 
 This is not pedantry, and the reason is concrete. The embedded fact-checking mode
 ([`flang/src/factcheck.mjs`](flang/src/factcheck.mjs)) answers "does this claim hold about this
@@ -1095,8 +1100,11 @@ attaching a solver to the verification conditions is an open task, not a feature
   exists for one target out of eight (Node); emitting a program with a plan works for all eight.
 - No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
-- The totality analysis knows structural decrease only. A number getting smaller is not decrease,
-  so binary search has to carry a "fuel" list to be accepted.
+- The totality analysis knows structural decrease and a numeric measure with a CONSTANT step.
+  Anything with a non-constant step stays out: binary search halves the range, Euclid takes a
+  remainder, counting up grows — those still need a "fuel" list. The measure has a border of its
+  own: flang numbers are IEEE-754 doubles, and `x минус 1` equals x once |x| ≥ 2⁵⁴, so the measure
+  proof holds for numbers of ordinary magnitude rather than for every double.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

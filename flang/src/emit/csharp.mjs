@@ -755,7 +755,7 @@ function describeFunction(fn, shared) {
   const lines = [`Функция flang «${fn.name}».`, ""]
   lines.push(
     fn.total
-      ? "Тотальная: завершение доказано анализом структурного убывания (totality.mjs)."
+      ? "Тотальная: завершение доказано анализом завершаемости (totality.mjs)."
       : "Обычная (не тотальная): завершение не доказано, зацикливание ловится лимитом шагов.",
   )
   if (shared.tailEdges.get(fn.name)?.has(fn.name) === true && fn.postconditions.length === 0) {

@@ -27,8 +27,10 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
+import { fileURLToPath } from "node:url"
 
-import { evaluate } from "../src/interpret.mjs"
+import { createRuntime, evaluate } from "../src/interpret.mjs"
+import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
@@ -44,6 +46,26 @@ function проверить(исходник) {
   } catch (беда) {
     return { программа: null, беды: [беда?.code ?? "FLANG_PARSE"] }
   }
+}
+
+/*
+ * Парсер на flang — для одной-единственной улики: той, где язык уже умеет, а
+ * репозиторий ещё не вправе. `linkProgram` асинхронна, а улики синхронны,
+ * поэтому связывание идёт здесь, на верхнем уровне, один раз.
+ */
+const ПУТЬ_ПАРСЕРА = fileURLToPath(new URL("../self/parser.flang", import.meta.url))
+const { diagnostics: бедыПарсера, ...парсерНаFlang } = await linkProgram(
+  ПУТЬ_ПАРСЕРА,
+  readFileSync(ПУТЬ_ПАРСЕРА, "utf8"),
+  parse,
+)
+const средаПарсера = createRuntime(парсерНаFlang, { maxSteps: 150_000_000, maxDepth: 20_000 })
+
+/** Разбирает ли исходник ПАРСЕР НА FLANG (`self/parser.flang`), а не эталон. */
+function разбираетНаFlang(исходник) {
+  assert.deepEqual(бедыПарсера, [], "self/parser.flang не связался — проверять нечем")
+  const итог = средаПарсера.call("Разбор исходника", { исходник, внешние: [] })
+  return (итог["диагностики"] ?? []).length === 0
 }
 
 /**
@@ -94,6 +116,37 @@ const УЛИКИ = [
       const { программа } = проверить(исходник)
       if (программа === null) return true
       return !checkTotality(программа).total.has("До нуля")
+    },
+  },
+  {
+    чего: "функции первого класса в программах репозитория",
+    показ: () => {
+      /*
+       * Недостача особого рода: у ЯЗЫКА функции первого класса есть, и первая
+       * половина улики это подтверждает — иначе запись означала бы не то, что
+       * написано. Нет их у РЕПОЗИТОРИЯ: `self/parser.flang` новой формы не
+       * разбирает, а корпус сверки собирается по маске каталога, значит первый
+       * же файл stdlib или examples с `функция из числа в число` роняет
+       * неподвижную точку.
+       *
+       * Поэтому улика двойная: эталон обязан ПРИНЯТЬ программу, а парсер на
+       * flang — ОТКАЗАТЬ. Совпадут они — недостачи больше нет, и тест скажет,
+       * что запись пора убрать, а библиотеку из `stdlib-hof.test.mjs`
+       * перенести в `flang/stdlib/`.
+       */
+      /* Тег строит САМА программа: вычислитель отказывается применять тег,
+         которого ни одно место программы не берёт значением (HOF.md, «Дыра,
+         которую анализ закрыть не может»). Поэтому «Проба», а не «Применить»
+         с тегом снаружи. */
+      const исходник =
+        `модуль «Высший»\n\nтотальная функция «Удвоить»\n  принимает х: число\n  возвращает число\n  х плюс х\n\n` +
+        `тотальная функция «Применить»\n  принимает ф: функция из числа в число, х: число\n  возвращает число\n  ф от х\n\n` +
+        `тотальная функция «Проба»\n  принимает х: число\n  возвращает число\n  «Применить» от функция «Удвоить» и х\n`
+      const итог = проверить(исходник)
+      if (итог.программа === null || итог.беды.length > 0) return false
+      if (checkTotality(итог.программа).diagnostics.length > 0) return false
+      if (evaluate(итог.программа, "Проба", { х: 21 }) !== 42) return false
+      return !разбираетНаFlang(исходник)
     },
   },
   {

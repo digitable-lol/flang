@@ -58,39 +58,33 @@
 
 ---
 
-## Post text (≈230 words)
+## Post text
 
-> Flang is a functional language with an executable specification: examples live
-> in the source, are type-checked, and run as tests rather than sitting in
-> comments.
+> Flang is a functional language whose examples live in the source: they are
+> type-checked and executed as tests, not left in comments.
 >
-> Its one distinctive decision is that functions come in two classes and the
-> compiler decides which is which. Write `total` and the compiler has to prove
-> termination by structural descent — a recursive call must receive a
-> structurally smaller argument, a list tail or a field — or it refuses with
-> `FLANG_NOT_TOTAL`. Everything else is an ordinary function with unrestricted
-> recursion. The Rosetta Code set in the repo is 97 functions, 70 of them
-> proved, and the boundary is pinned by a test, so a solution that quietly stops
-> being proved breaks CI.
+> Its distinctive decision is that functions come in two classes and the
+> compiler decides which is which. Write `total` and it has to prove
+> termination by structural descent — each recursive call must receive a
+> structurally smaller argument — or it refuses with `FLANG_NOT_TOTAL`.
+> Everything else is an ordinary function with unrestricted recursion. The
+> Rosetta Code set in the repo is 97 functions, 70 of them proved, and a test
+> pins that number, so a solution that quietly stops being proved breaks CI.
 >
 > Programs are emitted to C, Go, Rust, Python, Java, C#, Elixir and JavaScript,
-> and the emitted code is differentially checked against the interpreter: same
-> values, same error codes, same error texts, on a grid built from the examples
-> plus deliberately wrong arguments. That check found defects the per-backend
-> tests missed — uncompilable C when a variant and a function shared a name, a
-> variant literal turning into a record in the Go backend.
+> and the emitted code is checked differentially against the interpreter: same
+> values, same error codes, same error texts, on a grid of the examples plus
+> deliberately wrong arguments. That found defects no single backend's tests
+> could see — uncompilable C when a variant and a function shared a name;
+> a variant literal turning into a record in Go. The compiler is itself written
+> in flang and reproduces its own emitted source byte-for-byte.
 >
-> The compiler is also written in flang and reproduces its own emitted source
-> byte-for-byte against the reference implementation.
+> What it lacks, in the repository's own words: no dictionaries or sets, no
+> indexed arrays, no exception handling, no laziness, no separate compilation.
+> A test keeps that list honest by failing when a listed gap stops being one.
 >
-> What it does not have, in the repository's own words: no dictionaries or sets,
-> no indexed arrays, no exception handling, no laziness, no separate
-> compilation. That list is kept honest by a test that fails when a listed gap
-> stops being a gap.
->
-> Caveats up front: one author, no outside users, and the documentation and
-> standard library are in Russian — the keywords have an equal English surface,
-> the prose does not.
+> Caveats: one author, no outside users, documentation and standard library in
+> Russian — the keywords have an equal English surface, the prose does not.
 
 Ссылки в первом комментарии, а не в тексте: репозиторий, набор Rosetta Code,
 `flang/examples/leetcode/index.json` (список недостач) и

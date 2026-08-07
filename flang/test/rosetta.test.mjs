@@ -39,13 +39,21 @@ const корень = fileURLToPath(new URL("../examples/rosetta/", import.meta.u
  * названы в шапках своих файлов, и обе обязаны остаться названными верно.
  */
 const ОЖИДАЕТСЯ = new Map([
+  ["ackermann-function.flang", { функций: 3, тотальных: 1 }],
   ["factorial.flang", { функций: 5, тотальных: 2 }],
   ["fibonacci.flang", { функций: 6, тотальных: 2 }],
   ["fizzbuzz.flang", { функций: 5, тотальных: 3 }],
+  ["fizzbuzz-english.flang", { функций: 5, тотальных: 3 }],
+  ["hundred-doors.flang", { функций: 9, тотальных: 5 }],
+  ["levenshtein-distance.flang", { функций: 7, тотальных: 7 }],
   ["merge-sort.flang", { функций: 8, тотальных: 8 }],
   ["palindrome.flang", { функций: 14, тотальных: 14 }],
   ["quicksort.flang", { функций: 5, тотальных: 4 }],
   ["reverse-string.flang", { функций: 4, тотальных: 4 }],
+  ["roman-numerals.flang", { функций: 10, тотальных: 10 }],
+  ["run-length-encoding.flang", { функций: 5, тотальных: 2 }],
+  ["primes-by-trial-division.flang", { функций: 6, тотальных: 2 }],
+  ["towers-of-hanoi.flang", { функций: 5, тотальных: 3 }],
 ])
 
 const файлы = globSync("*.flang", { cwd: корень }).sort()

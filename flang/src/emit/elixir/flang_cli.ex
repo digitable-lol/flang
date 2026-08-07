@@ -130,6 +130,16 @@ defmodule Flang.Cli do
       ответ:   {"ok":true,"value":…}
                {"ok":false,"code":"FLANG_TYPE","message":"…"}
 
+  У программы с процессами есть второй вид запроса — прогон:
+
+      запрос:  {"run":"имя прогона"}
+      ответ:   {"ok":true,"run":"…","исход":"покой","пробегов":4,
+                "состояния":[["Счётчик",…]],"живые":[…],"журнал":[…],"отказы":[]}
+
+  Ответ на прогон — ИТОГ, а не приговор: чередование выбирает планировщик BEAM,
+  и законен любой исход из тех, что даёт модель. Решает, сошлось ли, тот, кто
+  сравнивает этот итог с набором исходов эталона.
+
   Значения размечены тегами, потому что JSON беднее flang:
 
       null            «ничто»
@@ -279,10 +289,54 @@ defmodule Flang.Cli do
   end
 
   defp run_query(module, query) do
-    case Flang.Json.field(query, "fn") do
-      {:ok, name} when is_binary(name) and name != "" -> run_call(module, query, name)
-      _ -> failure("CLI", "в запросе нет имени функции")
+    case Flang.Json.field(query, "run") do
+      {:ok, name} when is_binary(name) and name != "" ->
+        run_concurrent(module, name)
+
+      _ ->
+        case Flang.Json.field(query, "fn") do
+          {:ok, name} when is_binary(name) and name != "" -> run_call(module, query, name)
+          _ -> failure("CLI", "в запросе нет ни имени функции, ни имени прогона")
+        end
     end
+  end
+
+  # Прогон конкурентной программы. `conc_run/1` печатается в модуль программы
+  # только тогда, когда в ней есть хоть один процесс, — поэтому вызов идёт через
+  # apply по переменной: прогонщик печатается байт в байт и обязан собираться и
+  # рядом с программой без процессов, где модуля `Flang.Conc` нет вовсе.
+  defp run_concurrent(module, name) do
+    if function_exported?(module, :conc_run, 1) do
+      case apply(module, :conc_run, [name]) do
+        {:error, message} -> failure("CLI", message)
+        result -> encode_run(result)
+      end
+    else
+      failure("CLI", "в программе нет процессов: прогонять нечего")
+    end
+  end
+
+  # Итог прогона. Ключи русские — те же, что у планировщика эталона (conc.mjs):
+  # сверять два итога проще, когда они называют одно одинаково.
+  defp encode_run(result) do
+    "{\"ok\":true,\"run\":" <>
+      Flang.Json.quote_string(result.run) <>
+      ",\"исход\":" <>
+      Flang.Json.quote_string(result.outcome) <>
+      ",\"пробегов\":" <>
+      Integer.to_string(result.turns) <>
+      ",\"состояния\":[" <>
+      Enum.map_join(result.states, ",", fn {name, value} ->
+        "[" <> Flang.Json.quote_string(name) <> "," <> encode_value(value) <> "]"
+      end) <>
+      "],\"живые\":[" <>
+      Enum.map_join(result.alive, ",", &Flang.Json.quote_string/1) <>
+      "],\"журнал\":[" <>
+      Enum.map_join(result.journal, ",", &Flang.Json.quote_string/1) <>
+      "],\"отказы\":[" <>
+      Enum.map_join(result.failures, ",", fn {name, code} ->
+        "[" <> Flang.Json.quote_string(name) <> "," <> Flang.Json.quote_string(code) <> "]"
+      end) <> "]}"
   end
 
   defp run_call(module, query, name) do

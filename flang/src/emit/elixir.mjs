@@ -92,11 +92,32 @@
 // идентификатор всегда несёт роль: fn_… у функции, v_… у конструктора варианта,
 // rec_… у фабрики записи, loop_… у тела рекурсивной функции.
 //
-// ── Три файла ──────────────────────────────────────────────────────────────
+// ── Три файла, а с процессами четыре ───────────────────────────────────────
 // Рантайм печатается отдельным flang_runtime.ex, программа — модулем по имени
 // модуля flang, прогонщик — flang_cli.ex. Рантайм и прогонщик печатаются байт в
 // байт из flang/src/emit/elixir/: так их проверяет сам компилятор Elixir прямо
 // в репозитории, а не только через тест печати.
+//
+// ── Конкурентность: то, ради чего эта цель первая ──────────────────────────
+// Модель конкурентности flang (flang/conc/SPEC.md) решает не писать свою BEAM, а
+// печатать в эту: процесс flang становится GenServer, надзор — деревом
+// супервизоров OTP, почтовый ящик — почтовым ящиком процесса. Вытеснение по
+// счёту редукций, куча со своим сборщиком у каждого процесса, планировщик на
+// каждое ядро, распределённость и горячая загрузка достаются при этом в
+// настоящем виде, а не в приблизительном.
+//
+// Печатается это четвёртым файлом (flang_conc.ex, тоже байт в байт) плюс тремя
+// функциями в модуле программы. Главная из них — `conc_plan/0`: она отдаёт
+// объявленные процессы, надзоры и прогоны ДАННЫМИ, а дерево из них строит
+// рантайм. Так сделано не из экономии: описание дерева — это ровно то, что
+// написано в исходнике, и печатать вместо него готовые модули супервизоров
+// значило бы размазать одно объявление по нескольким местам напечатанного кода.
+//
+// Ожидания прогона (`ожидается …`) в напечатанный код НЕ едут, и это не
+// упущение. Ожидание прогона — про одно чередование, выбранное семенем; на BEAM
+// чередование выбирает планировщик машины, и любое из возможных законно.
+// Проверять «получилось ровно то, что на семени 4172» напечатанная программа не
+// вправе — сверка идёт по НАБОРУ исходов и живёт в тесте (emit-elixir-conc).
 
 import { readFileSync } from "node:fs"
 
@@ -116,12 +137,16 @@ import { pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 const RUNTIME_DIRECTORY = new URL("./elixir/", import.meta.url)
 const RUNTIME_SOURCE = readFileSync(new URL("flang_runtime.ex", RUNTIME_DIRECTORY), "utf8")
 const CLI_SOURCE = readFileSync(new URL("flang_cli.ex", RUNTIME_DIRECTORY), "utf8")
+const CONC_SOURCE = readFileSync(new URL("flang_conc.ex", RUNTIME_DIRECTORY), "utf8")
 
 const RUNTIME_FILE = "flang_runtime.ex"
 const CLI_FILE = "flang_cli.ex"
+const CONC_FILE = "flang_conc.ex"
 
 /** Модули, которые печатает рантайм: имя модуля flang не имеет права их занять. */
-const RUNTIME_MODULES = ["Flang", "Flang.Rt", "Flang.Error", "Flang.Cli", "Flang.Json"]
+const RUNTIME_MODULES = [
+  "Flang", "Flang.Rt", "Flang.Error", "Flang.Cli", "Flang.Json", "Flang.Proc", "Flang.Conc",
+]
 
 /** Канонические имена встроенных форм → функции рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -177,7 +202,7 @@ const EX_RESERVED = [
 ]
 
 /* Имена функций, которые печатает сам бэкенд в модуле программы. */
-const DECLARED_BY_BACKEND = ["call", "new_context"]
+const DECLARED_BY_BACKEND = ["call", "new_context", "conc_plan", "conc_start", "conc_run"]
 
 /* Приставки ролей. Роль обязана входить в идентификатор: модуль Elixir — одно
    пространство имён, и вариант «Значение операнда» с функцией «Значение
@@ -515,7 +540,7 @@ export function emitElixir(program, options = {}) {
      «uchyotsklada» вместо «uchyot_sklada». Заодно только так ловится модуль,
      чьё имя занимает файл рантайма («flang runtime» → flang_runtime.ex). */
   const file = moduleName === null ? "flang_program" : safeIdent(snake(moduleName))
-  if (file === "flang_runtime" || file === "flang_cli") {
+  if (file === "flang_runtime" || file === "flang_cli" || file === "flang_conc") {
     throw flangError(
       "FLANG_PARSE",
       `модуль «${moduleName}» даёт файл «${file}.ex», занятый рантаймом бэкенда — переименуйте модуль`,
@@ -603,6 +628,14 @@ export function emitElixir(program, options = {}) {
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
 
+  /* Конкурентность печатается, только если в программе есть хоть один процесс:
+     иначе четвёртый файл и три функции в модуле стояли бы у всех, а нужны
+     единицам. Проверка типов к этому месту уже прошла, поэтому здесь ничего не
+     проверяется — только раскладывается объявленное. */
+  const processes = Array.isArray(program.processes) ? program.processes : []
+  const concurrent = processes.length > 0
+  if (concurrent) bodies.push(...renderConcurrency(program, processes, shared))
+
   const files = [
     {
       path: RUNTIME_FILE,
@@ -611,13 +644,20 @@ export function emitElixir(program, options = {}) {
     { path: `${file}.ex`, content: renderSource(moduleName, alias, bodies) },
   ]
 
+  if (concurrent) {
+    files.push({
+      path: CONC_FILE,
+      content: `${banner(moduleName, "конкурентность: процессы GenServer и супервизоры OTP")}\n${CONC_SOURCE}`,
+    })
+  }
+
   if (options.cli !== false) {
     files.push({
       path: CLI_FILE,
       content: `${banner(moduleName, "прогонщик: JSON на входе, JSON на выходе")}\n${CLI_SOURCE}`,
     })
   }
-  files.push({ path: "Makefile", content: renderMakefile(alias, file, options.cli !== false) })
+  files.push({ path: "Makefile", content: renderMakefile(alias, file, options.cli !== false, concurrent) })
   /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
      (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
      комментарии и в @moduledoc/@doc. Для elixirc это отказ разбора и там, и там
@@ -649,7 +689,7 @@ function banner(moduleName, what) {
   ].join("\n")
 }
 
-function renderMakefile(alias, file, cli) {
+function renderMakefile(alias, file, cli, concurrent) {
   return [
     "# Сгенерировано flang (бэкенд Elixir). Целей ровно столько, сколько нужно:",
     "# напечатанный код обязан собираться и запускаться без единой правки.",
@@ -668,7 +708,7 @@ function renderMakefile(alias, file, cli) {
     "",
     "build:",
     "\tmkdir -p _build",
-    `\t$(ELIXIRC) $(ELIXIRCFLAGS) -o _build ${RUNTIME_FILE} ${file}.ex${cli ? ` ${CLI_FILE}` : ""}`,
+    `\t$(ELIXIRC) $(ELIXIRCFLAGS) -o _build ${RUNTIME_FILE}${concurrent ? ` ${CONC_FILE}` : ""} ${file}.ex${cli ? ` ${CLI_FILE}` : ""}`,
     "",
     ...(cli
       ? [
@@ -1593,6 +1633,162 @@ function renderDispatch(shared) {
     "  end",
   )
   return lines.join("\n")
+}
+
+/* ═══════════════════════════ конкурентность ═══════════════════════════
+   Процессы, надзоры и прогоны печатаются ДАННЫМИ — одной функцией `conc_plan/0`.
+   Дерево супервизоров OTP строит из них рантайм (flang_conc.ex), и делает это по
+   тем же правилам, что планировщик эталона: печать здесь ничего не решает, она
+   только раскладывает объявленное.
+
+   Почему данными, а не модулями супервизоров. Надзор в flang — объявление, и
+   одно объявление обязано остаться одним местом в напечатанном коде. Печать
+   готовых `defmodule … use Supervisor` размазала бы его по трём модулям (у
+   одного надзора flang до трёх супервизоров OTP — см. flang_conc.ex), и правка
+   строки в исходнике перестала бы читаться как правка одной строки на выходе.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function renderConcurrency(program, processes, shared) {
+  const supervisors = Array.isArray(program.supervisors) ? program.supervisors : []
+  const runs = Array.isArray(program.runs) ? program.runs : []
+  const totals = new Set(
+    (program.functions ?? []).filter((fn) => fn?.total === true).map((fn) => fn.name),
+  )
+
+  const inboxes = []
+  const runEntries = runs.map((run, index) => {
+    const ident = `conc_inbox_${index + 1}`
+    inboxes.push(renderRunInbox(ident, run, shared))
+    return `        %{name: ${exstring(run.name)}, inbox: ${ident}()}`
+  })
+
+  const processEntries = processes.map((node) => {
+    /* Запас витков ставится ТОЛЬКО нетотальному обработчику. Про тотальный
+       доказано, что он завершится, и считать ему нечего — ровно так же решает
+       планировщик эталона (conc.mjs), и разойтись здесь было бы нельзя: от
+       этого зависит, каким кодом кончится отказ. */
+    const total = totals.has(node.handler)
+    const budget = !total && Number.isFinite(node.budget) ? Math.trunc(node.budget) : null
+    return [
+      "        %{",
+      `          name: ${exstring(node.name)},`,
+      `          handler: ${exstring(node.handler)},`,
+      `          initial: ${exstring(node.initial)},`,
+      `          total: ${total ? "true" : "false"},`,
+      `          budget: ${budget === null ? "nil" : String(budget)}`,
+      "        }",
+    ].join("\n")
+  })
+
+  const supervisorEntries = supervisors.map((node) => {
+    const watch = (node.watch ?? [])
+      .map((item) => `{${exstring(item.process)}, ${exstring(item.strategy)}}`)
+      .join(", ")
+    const nested = (node.nested ?? [])
+      .map((item) => `{${exstring(item.supervisor)}, ${exstring(item.strategy)}}`)
+      .join(", ")
+    const threshold = node.threshold === null || node.threshold === undefined
+      ? "nil"
+      : `%{failures: ${Math.trunc(node.threshold.failures)}, ` +
+        `window: ${Math.trunc(node.threshold.window)}, ` +
+        `otherwise: ${exstring(node.threshold.otherwise)}}`
+    return [
+      "        %{",
+      `          name: ${exstring(node.name)},`,
+      `          watch: [${watch}],`,
+      `          nested: [${nested}],`,
+      `          threshold: ${threshold}`,
+      "        }",
+    ].join("\n")
+  })
+
+  const plan = [
+    ...exdoc([
+      "Процессы, надзоры и прогоны программы — данными.",
+      "",
+      "Отсюда `Flang.Conc` строит дерево супервизоров OTP: процесс становится",
+      "GenServer, надзор — супервизором (а точнее, тремя: у OTP интенсивность",
+      "перезапусков принадлежит супервизору, а в flang стратегия названа за",
+      "каждым ребёнком по отдельности — см. flang_conc.ex).",
+      "",
+      "Запас витков стоит только у нетотального обработчика: про тотальный",
+      "завершение доказано, и считать ему нечего.",
+    ], "  "),
+    "  def conc_plan do",
+    "    %{",
+    `      processes: [\n${processEntries.join(",\n")}\n      ],`,
+    supervisorEntries.length === 0
+      ? "      supervisors: [],"
+      : `      supervisors: [\n${supervisorEntries.join(",\n")}\n      ],`,
+    runEntries.length === 0
+      ? "      runs: []"
+      : `      runs: [\n${runEntries.join(",\n")}\n      ]`,
+    "    }",
+    "  end",
+  ].join("\n")
+
+  const start = [
+    ...exdoc([
+      "Поднимает дерево процессов и надзоров и возвращает корневой супервизор.",
+      "",
+      "Это точка входа для настоящей работы: дальше программа живёт сама, а",
+      "сообщения ей шлют через `Flang.Conc.send_to/2` либо прямо в почтовый ящик",
+      "процесса BEAM. Дерево связывается с тем, кто позвал.",
+    ], "  "),
+    "  def conc_start do",
+    "    Flang.Conc.start(__MODULE__)",
+    "  end",
+  ].join("\n")
+
+  const run = [
+    ...exdoc([
+      "Один прогон программы: поднять дерево, разнести входные сообщения,",
+      "дождаться покоя, снять итог, погасить дерево.",
+      "",
+      "Ожидания прогона (`ожидается …`) сюда не напечатаны намеренно: они про",
+      "одно чередование, выбранное семенем, а на BEAM чередование выбирает",
+      "планировщик машины, и любое из возможных законно. Сверка идёт по НАБОРУ",
+      "исходов и живёт в тесте печати, а не в напечатанной программе.",
+    ], "  "),
+    "  def conc_run(name) do",
+    "    Flang.Conc.run(__MODULE__, name)",
+    "  end",
+  ].join("\n")
+
+  return [plan, ...inboxes, start, run]
+}
+
+/**
+ * Входные сообщения прогона — отдельной приватной функцией на прогон.
+ *
+ * Литерал значения печатается тем же `emitLiteral`, что и всюду: сообщение
+ * прогона — обычное значение языка, и печататься оно обязано одинаково, иначе
+ * «дано» в исходнике и «дано» в напечатанном коде разошлись бы на первом же
+ * варианте с полями.
+ */
+function renderRunInbox(ident, run, shared) {
+  const out = []
+  const pad = "    "
+  const ctx = {
+    shared,
+    temp() {
+      shared.counter += 1
+      return `t${shared.counter}`
+    },
+  }
+  const items = (run.inbox ?? []).map((entry) => {
+    const value = emitLiteral(entry.message, ctx, out, pad)
+    return `{${exstring(entry.process)}, ${value}}`
+  })
+  return [
+    `  # входные сообщения прогона «${run.name}»`,
+    `  defp ${ident} do`,
+    ...out,
+    ...(items.length === 0
+      ? [`${pad}[]`]
+      : [`${pad}[`, ...items.map((item, index) => `${pad}  ${item}${index + 1 < items.length ? "," : ""}`), `${pad}]`]),
+    "  end",
+  ].join("\n")
 }
 
 /* ── проверки, повторяющие интерпретатор ── */

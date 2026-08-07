@@ -658,7 +658,7 @@ in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented.
 
 ---
 
-## Concurrency: two steps of seven
+## Concurrency: four steps of seven
 
 Values are immutable by construction, so two computations looking at one value cannot interfere:
 there are no data races to lose, because there is nothing to build one out of. What the language
@@ -699,13 +699,31 @@ flang test flang/conc/examples/counter.flang --pretty
 ```
 
 The contract is [`flang/conc/SPEC.md`](flang/conc/SPEC.md), and it names a seven-step plan of
-which **steps one, two and three are done**: the surface, the checks, the reference scheduler and
-supervision. Strategies are applied for real: a restart returns the state to the very same initial
-value, the failure threshold is counted in the scheduler's virtual time, and "escalate" reaches the
-supervisor one step up — or, if there is none above, stops the whole program with the outcome
-`"отказ дошёл доверху"`. Processes are not printed into any target — emitting such a program gives
-the handlers as ordinary functions and nothing more. The examples are in
+which **the first four are done**: the surface, the checks, the reference scheduler, supervision
+and emission to Elixir. Strategies are applied for real: a restart returns the state to the very
+same initial value, the failure threshold is counted in the scheduler's virtual time, and
+"escalate" reaches the supervisor one step up — or, if there is none above, stops the whole program
+with the outcome `"отказ дошёл доверху"`. The examples are in
 [`flang/conc/examples/`](flang/conc/examples).
+
+No virtual machine is being written for this: the language already targets **Elixir**, so a flang
+process is printed as a BEAM process and supervision as an OTP supervisor tree. Preemption by
+reduction count, a heap with its own collector per process, a scheduler per core, distribution and
+hot code loading all come for real, not approximately.
+
+```bash
+flang emit flang/conc/examples/counter.flang --target elixir --out /tmp/counter
+cd /tmp/counter && make build
+echo '{"run":"два прибавления и доклад"}' | elixir -pa _build -e 'Flang.Cli.main(["SchyotchikIZhurnal"])'
+```
+
+The emitted program cannot be checked against the reference by value: the semantics is *any*
+interleaving of atomic handler runs, and the BEAM scheduler takes no seed. So the check is on the
+*set*: the reference sweeps a thousand seeds to build the set of outcomes and the set of delivery
+logs, and every outcome of a real BEAM run must land inside it. Both weak spots are covered — the
+set is shown to be saturated (half the seed grid gives the same set) and narrow (change one number
+in an outcome and it falls out). The other seven targets do not print processes yet: there, a
+program with `процесс` gives the handlers as ordinary functions and nothing more.
 
 ---
 

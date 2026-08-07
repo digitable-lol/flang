@@ -42,7 +42,14 @@
  *                 найти где/find where, по морфизму|затем по морфизму|
  *                 применить морфизм / by morphism|then by morphism|apply morphism,
  *                 следовательно|получаем/therefore, по закону/under law,
- *                 отображается в|в поле|в морфизм / maps to|to field|to morphism
+ *                 отображается в|отображаются в|в поле|в морфизм /
+ *                 maps to|map to|to field|to morphism
+ *   теоркат       после/after, цепочка/chain, сначала/first, затем/next,
+ *                 единица/identity, моноид/monoid, носитель/carrier,
+ *                 операция/operation, обратный элемент/inverse element,
+ *                 изоморфизм/isomorphism, прямой морфизм/forward morphism,
+ *                 обратный морфизм/inverse morphism, бифунктор/bifunctor,
+ *                 объекты/objects, морфизмы/morphisms
  *   конкурентность процесс/process, обрабатывает/handles, с запасом/with budget,
  *                 надзор/supervision, стратегия/strategy,
  *                 порог отказов/failure threshold, прогон/run, семя/seed
@@ -279,6 +286,11 @@ class Parser {
     /* Стрелки категорий и их композиции: отдельный список, потому что они
        проверяются иначе, чем функции, — стыковкой домена с кодоменом. */
     this.morphisms = []
+    /* Изоморфизм и бифунктор — тоже объявления времени компиляции, и лежат
+       отдельно от стрелок по той же причине: проверяются они не стыковкой
+       одной пары концов, а сличением нескольких объявлений между собой. */
+    this.isomorphisms = []
+    this.bifunctors = []
     this.monoids = []
     this.functions = []
     /* Конкурентность (flang/conc/SPEC.md): процесс — объявление, а не значение,
@@ -497,6 +509,8 @@ class Parser {
 
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
     if (this.morphisms.length > 0) program.morphisms = this.morphisms
+    if (this.isomorphisms.length > 0) program.isomorphisms = this.isomorphisms
+    if (this.bifunctors.length > 0) program.bifunctors = this.bifunctors
     if (this.monoids.length > 0) program.monoids = this.monoids
     if (this.processes.length > 0) program.processes = this.processes
     if (this.supervisors.length > 0) program.supervisors = this.supervisors
@@ -588,6 +602,10 @@ class Parser {
         return this.parseChain()
       case "identity":
         return this.parseIdentity()
+      case "isomorphism":
+        return this.isomorphisms.push(this.parseIsomorphism())
+      case "bifunctor":
+        return this.bifunctors.push(this.parseBifunctor())
       case "monoid":
         return this.monoids.push(this.parseMonoid())
       case "process":
@@ -2127,6 +2145,72 @@ class Parser {
     return undefined
   }
 
+  /**
+   * Изоморфизм: пара стрелок туда и обратно.
+   *
+   * ```flang
+   * изоморфизм «Заказ и накладная» из «Заказ» в «Накладная»
+   *   прямой морфизм «выписать»
+   *   обратный морфизм «по накладной»
+   * ```
+   *
+   * Почему `из … в …`, а не «между … и …». Концы у изоморфизма ровно те же, что
+   * у морфизма и функтора, и называть их третьим оборотом значило бы завести
+   * второе имя одному понятию. Порядок при этом значим: `прямой` ведёт из
+   * первого объекта во второй, `обратный` — обратно, и перепутать их нельзя,
+   * потому что проверка сличает концы (`checkIsomorphisms` в types.mjs).
+   *
+   * Почему `прямой морфизм` и `обратный морфизм` — фразы, а не слова «туда» и
+   * «обратно». Наречия сегодня свободны, но свободны случайно: это обычные
+   * слова языка, и ключевым делать их — значит запретить их в качестве имени
+   * навсегда ради двух строк объявления. Довод тот же, по которому в языке
+   * стоят `обратный элемент` и `разложить … на символы`.
+   *
+   * Строк `сохраняет …` здесь нет намеренно, ровно как у функтора: пара,
+   * которая не обращается, изоморфизмом не является, и разрешение на проверку
+   * закона продавало бы имя вместо содержания.
+   */
+  parseIsomorphism() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя изоморфизма")
+    this.expectKw("from", "у изоморфизма ожидалось 'из'")
+    const from = this.expectName("ожидался первый объект изоморфизма")
+    this.expectKw("to", "после первого объекта изоморфизма ожидалось 'в'")
+    const to = this.expectName("ожидался второй объект изоморфизма")
+    this.endLine()
+
+    const node = { kind: "isomorphism", name, from, to, forward: null, backward: null, span: start.span }
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("forwardMorphism")) {
+          const at = this.next()
+          if (node.forward !== null) this.fail(`у изоморфизма «${name}» больше одного прямого морфизма`, at)
+          node.forward = this.expectName("ожидалось имя прямого морфизма")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("inverseMorphism")) {
+          const at = this.next()
+          if (node.backward !== null) this.fail(`у изоморфизма «${name}» больше одного обратного морфизма`, at)
+          node.backward = this.expectName("ожидалось имя обратного морфизма")
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в изоморфизме ожидаются 'прямой морфизм' и 'обратный морфизм'")
+      }
+      this.exitBlock()
+    }
+
+    /* Одной стрелки мало по определению: изоморфизм — это ПАРА, и объявление с
+       одной половиной обещает обратимость, ничем её не подкрепляя. */
+    for (const [часть, значение] of [["прямой морфизм", node.forward], ["обратный морфизм", node.backward]]) {
+      if (значение === null) this.fail(`у изоморфизма «${name}» не указан ${часть}`, start)
+    }
+    return node
+  }
+
   parseTheorem() {
     const start = this.next()
     const value = {
@@ -2224,6 +2308,69 @@ class Parser {
     }
     if (this.module === "") this.module = name
     return { kind: "ftsLegacy", construct: "functorFile", value, span: start.span }
+  }
+
+  /**
+   * Бифунктор: функтор от двух входов сразу.
+   *
+   * ```flang
+   * бифунктор «Пара» из «Заказы» и «Счета» в «Пары»
+   *   объекты «Заказ» и «Счёт» отображаются в «Пара заказа и счёта»
+   *   морфизмы «отгрузить» и «выставить» отображаются в морфизм «пара отгрузки и выставления»
+   * ```
+   *
+   * Отличие от функтора ровно одно: ключ отображения — ПАРА, а не одно имя.
+   * Всё остальное — те же слова (`из … в …`, `отображается в`), и это не
+   * экономия, а условие читаемости: два похожих объявления обязаны читаться
+   * похоже, иначе разницу между ними начинают искать там, где её нет.
+   *
+   * Чего в объявлении НЕТ и почему. В контракте (flang/cat/SPEC.md) бифунктор
+   * записан в общем виде — `из «Значения» и «Значения» в «Значения»` с образом
+   * `«Пара А Б»`, где «А» и «Б» переменные типа. Так записать нельзя: в языке
+   * нет параметрических типов, и «Пара А Б» — это имя одной записи, а не
+   * семейство. Поэтому пары здесь конкретные, как конкретны объекты у функтора.
+   * Ограничение не бифунктора, а языка, и снимется оно вместе с параметрическим
+   * полиморфизмом; законы от этого не меняются ни одним словом.
+   */
+  parseBifunctor() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя бифунктора")
+    this.expectKw("from", "у бифунктора ожидалось 'из'")
+    const first = this.expectName("ожидалась первая исходная категория")
+    this.expectKw("and", "между исходными категориями бифунктора ожидалось 'и'")
+    const second = this.expectName("ожидалась вторая исходная категория")
+    this.expectKw("to", "у бифунктора ожидалось 'в'")
+    const to = this.expectName("ожидалась целевая категория")
+    this.endLine()
+
+    const node = { kind: "bifunctor", name, from: [first, second], to, objects: [], morphisms: [], span: start.span }
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.eatKw("objectPair")) {
+          const левый = this.expectName("ожидалось имя первого объекта пары")
+          this.expectKw("and", "между объектами пары ожидалось 'и'")
+          const правый = this.expectName("ожидалось имя второго объекта пары")
+          this.expectKw("mapsTo", "ожидалось 'отображаются в'")
+          node.objects.push({ from: [левый, правый], to: this.expectName("ожидался образ пары объектов") })
+          this.endLine()
+          continue
+        }
+        if (this.eatKw("morphismPair")) {
+          const левый = this.expectName("ожидалось имя первого морфизма пары")
+          this.expectKw("and", "между морфизмами пары ожидалось 'и'")
+          const правый = this.expectName("ожидалось имя второго морфизма пары")
+          this.expectKw("mapsToMorphism", "ожидалось 'отображаются в морфизм'")
+          node.morphisms.push({ from: [левый, правый], to: this.expectName("ожидался образ пары морфизмов") })
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в бифункторе ожидаются строки 'объекты … и …' и 'морфизмы … и …'")
+      }
+      this.exitBlock()
+    }
+    return node
   }
 
   // ── наследие FTS: скобочная поверхность ───────────────────────────────────

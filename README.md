@@ -1040,14 +1040,15 @@ attaching a solver to the verification conditions is an open task, not a feature
 
 **The language.**
 
-- Functions are first-class values in the language, but are not printed yet. The restriction was
-  lifted by defunctionalization (Reynolds, 1972): a function value is a tag, `функция «Удвоить»`,
-  and an application `ф от 5` is a dispatcher over a finite list of tags — so targets without
-  closures and the termination proof both survive (`flang/cat/HOF.md`). Parsing, type checking,
-  the termination analysis and the interpreter understand it; **the eight backends do not** —
-  an application yields `FLANG_PARSE: неизвестный вид выражения «apply»`. Until printing lands,
-  `отобразить` / `отфильтровать` / `свёртка`, which take a *body*, remain the only higher-order
-  forms that print.
+- Functions are first-class values in the language, and they print to all eight targets. The
+  restriction was lifted by defunctionalization (Reynolds, 1972): a function value is a tag,
+  `функция «Удвоить»`, and an application `ф от 5` is a dispatcher over a finite list of tags — so
+  targets without closures and the termination proof both survive (`flang/cat/HOF.md`). The
+  lowering is ONE pass before printing (`flang/src/defunc.mjs`): each backend receives a
+  first-order program, so none of the eight sees higher order at all. The printed code is built
+  with real toolchains and checked against the interpreter over a grid of inputs. What is still
+  missing is self-application: `self/` does not know the new form, so the repository's own
+  programs (`stdlib`, `examples`) do not use it.
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and the host executes it (`flang io`, `flang/src/host/node.mjs`).
   There are five orders — read a file, write a file, make a network request, read the clock,

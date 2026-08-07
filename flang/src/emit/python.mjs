@@ -97,6 +97,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { defunctionalize } from "../defunc.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -491,6 +492,12 @@ function createDeclarations(reserved) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitPython(program, options = {}) {
+  /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
+     восемь реализаций: после него в программе нет ни функций-значений, ни
+     применения, и печатается она теми же узлами, что и всё остальное. На
+     программе без высшего порядка проход тождествен — возвращает ТОТ ЖЕ объект,
+     — поэтому напечатанное не меняется ни на байт, и неподвижная точка цела. */
+  program = defunctionalize(program)
   const prepared = prepare(program)
   const base = options.indexBase === 0 ? 0 : 1
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000

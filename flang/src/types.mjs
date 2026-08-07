@@ -23,6 +23,9 @@
  */
 
 import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
+/* Проверка объявления `план` живёт в `io.mjs` вместе со словарём поручений, а
+   не здесь: она вся про ввод-вывод и ничего не знает об остальных типах. */
+import { checkPlans } from "./io.mjs"
 
 /** Тип-джокер: совместим со всем. Им гасятся каскады после первой ошибки. */
 const UNKNOWN = Object.freeze({ kind: "unknown" })
@@ -137,6 +140,7 @@ export function checkTypes(program) {
   checkMonoids(program, ctx)
   checkSupervisors(program, ctx)
   checkRuns(program, ctx)
+  checkPlans(program, ctx)
 
   return { ok: diagnostics.length === 0, diagnostics, types: ctx.signatures }
 }

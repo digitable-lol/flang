@@ -107,6 +107,7 @@
  */
 
 import { ACTION_TYPE } from "./conc.mjs"
+import { IO_TYPE_NAMES, IO_VARIANT_OWNER, withIoTypes } from "./io.mjs"
 import { FlangError, flangError, tokenize } from "./lexer.mjs"
 
 export { FlangError, flangError, tokenize }
@@ -168,6 +169,9 @@ const NOT_EXPRESSION = new Set([
   "failureThreshold",
   "seed",
   "budget",
+  /* Ввод-вывод: `план` — объявление, а не выражение. Без него тело функции,
+     упершееся в соседний план, жаловалось бы на «неожиданное», не назвав слова. */
+  "plan",
 ])
 
 /** Ключевые слова, которые в позиции выражения читаются как обычные имена. */
@@ -298,6 +302,13 @@ class Parser {
     this.processes = []
     this.supervisors = []
     this.runs = []
+    /* Ввод-вывод (flang/cat/SPEC.md): план — тоже объявление. Признак
+       `usesIo` ставится там, где в тексте встретилось имя из словаря
+       ввода-вывода; по нему словарь приписывается программе, и только по нему.
+       Программа без ввода-вывода обязана остаться побайтово прежней — иначе
+       неподвижная точка самоприменения сошлась бы к другому AST. */
+    this.plans = []
+    this.usesIo = false
     this.legacy = []
     this.module = ""
     /* Стек областей видимости локальных имён и множество узлов `var`,
@@ -515,8 +526,26 @@ class Parser {
     if (this.processes.length > 0) program.processes = this.processes
     if (this.supervisors.length > 0) program.supervisors = this.supervisors
     if (this.runs.length > 0) program.runs = this.runs
+    if (this.plans.length > 0) program.plans = this.plans
     if (this.legacy.length > 0) program.legacy = this.legacy
-    return program
+
+    /* Словарь ввода-вывода приписывается по тому же правилу и по той же
+       причине, что словарь действий выше: поручение — контракт между языком и
+       хозяином, а не объявление автора. Разница одна — признак использования
+       здесь считается по именам в тексте, а не по наличию объявления: функция,
+       строящая поручение, обязана проверяться примерами и БЕЗ всякого плана. */
+    return this.usesIo ? withIoTypes(program) : program
+  }
+
+  /** Имя из словаря ввода-вывода в тексте — признак того, что словарь нужен. */
+  noteIoType(name) {
+    if (IO_TYPE_NAMES.has(name)) this.usesIo = true
+    return name
+  }
+
+  noteIoVariant(name) {
+    if (IO_VARIANT_OWNER.has(name)) this.usesIo = true
+    return name
   }
 
   /**
@@ -614,6 +643,8 @@ class Parser {
         return this.supervisors.push(this.parseSupervision())
       case "run":
         return this.runs.push(this.parseRun())
+      case "plan":
+        return this.plans.push(this.parsePlan())
       case "theorem":
         return this.legacy.push(this.parseTheorem())
       case "functor":
@@ -811,10 +842,13 @@ class Parser {
     } else if (this.peek().kind === "keyword" && SCALAR_TYPES[this.peek().value] !== undefined) {
       type = { ...SCALAR_TYPES[this.next().value] }
     } else if (this.atName()) {
-      type = { kind: "named", name: this.expectName("ожидался тип") }
-      /* Применение параметрического типа: `«Возможно» от числа`. Поле `args`
-         дописывается только когда аргументы написаны, поэтому AST всех
-         существующих программ не меняется ни на байт. */
+      /* Две правки, легшие в одно место, и обе нужны целиком.
+
+         `noteIoType` помечает типы ввода-вывода, чтобы проверка плана знала,
+         на что смотреть. Применение параметрического типа (`«Возможно» от
+         числа`) дописывает `args` только когда аргументы написаны — поэтому
+         AST всех существующих программ не меняется ни на байт. */
+      type = { kind: "named", name: this.noteIoType(this.expectName("ожидался тип")) }
       if (this.atKw("of")) {
         this.next()
         type.args = this.parseTypeArguments()
@@ -1134,7 +1168,7 @@ class Parser {
     }
     if (this.atKw("variant")) {
       this.next()
-      const name = this.expectName("ожидалось имя варианта")
+      const name = this.noteIoVariant(this.expectName("ожидалось имя варианта"))
       return { kind: "variant", name, bind: this.parsePatternBind() }
     }
     if (this.at("number") || this.at("string")) {
@@ -1148,7 +1182,9 @@ class Parser {
       const name = this.expectName()
       /* Имя с прописной — вариант суммы, со строчной — связывание `любое`.
          Так же различает имена сам FTS: типы пишутся с прописной. */
-      if (/^\p{Lu}/u.test(name)) return { kind: "variant", name, bind: this.parsePatternBind() }
+      if (/^\p{Lu}/u.test(name)) {
+        return { kind: "variant", name: this.noteIoVariant(name), bind: this.parsePatternBind() }
+      }
       return { kind: "any", bind: name }
     }
     return this.fail("не разобрана конструкция: ожидался образец", token)
@@ -1305,7 +1341,12 @@ class Parser {
     if (token.kind === "name") {
       this.next()
       if (this.looksLikeConstruct()) {
-        return { kind: "construct", variant: token.value, fields: this.parseFieldAssignments(), span: token.span }
+        return {
+          kind: "construct",
+          variant: this.noteIoVariant(token.value),
+          fields: this.parseFieldAssignments(),
+          span: token.span,
+        }
       }
       return this.localVar(token.value, token.span)
     }
@@ -1416,7 +1457,7 @@ class Parser {
       }
       case "variant": {
         this.next()
-        const name = this.expectName("ожидалось имя варианта")
+        const name = this.noteIoVariant(this.expectName("ожидалось имя варианта"))
         return { kind: "construct", variant: name, fields: this.parseFieldAssignments(), span: token.span }
       }
       case "record": {
@@ -1791,6 +1832,73 @@ class Parser {
 
     if (node.seed === null) this.fail(`прогон «${name}» требует строку 'семя'`, start)
     if (node.expected.length === 0) this.fail(`прогон «${name}» требует хотя бы одну строку 'ожидается'`, start)
+    return node
+  }
+
+  // ── ввод-вывод: план ──────────────────────────────────────────────────────
+
+  /**
+   * План — объявление, а не значение, и три его строки уже знакомы читателю.
+   *
+   * ```
+   * план «Отчёт о ссылке»
+   *   состояние «Ход»
+   *   начинает с «Начать»
+   *   обрабатывает «Дальше»
+   * ```
+   *
+   * Ровно та же форма, что у процесса, минус `принимает`: тип сообщения плану
+   * называть не нужно — он всегда `«Отклик»`, потому что набор поручений закрыт
+   * (см. `src/io.mjs`). Из четырёх слов новое только `план`; остальные три —
+   * те же, что у процесса, и это не экономия, а утверждение: план и процесс
+   * устроены одинаково, и читать их надо одинаково.
+   */
+  parsePlan() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя плана")
+    /* План — это и есть использование ввода-вывода: словарь приписывается даже
+       тогда, когда ни одно имя из него в тексте не встретилось (шаг может
+       лежать в импортированном модуле). */
+    this.usesIo = true
+    const node = { kind: "plan", name, state: null, initial: null, handler: null, span: start.span }
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("state")) {
+          const at = this.next()
+          if (node.state !== null) this.fail(`у плана «${name}» больше одного состояния`, at)
+          node.state = this.expectName("ожидался тип состояния плана")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("startsWith")) {
+          const at = this.next()
+          if (node.initial !== null) this.fail(`у плана «${name}» больше одного начального состояния`, at)
+          node.initial = this.expectName("ожидалось имя начального состояния")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("handles")) {
+          const at = this.next()
+          if (node.handler !== null) this.fail(`у плана «${name}» больше одной функции шага`, at)
+          node.handler = this.expectName("ожидалось имя функции шага")
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в плане ожидаются 'состояние', 'начинает с' или 'обрабатывает'")
+      }
+      this.exitBlock()
+    }
+
+    for (const [поле, слово] of [
+      ["state", "состояние"],
+      ["initial", "начинает с"],
+      ["handler", "обрабатывает"],
+    ]) {
+      if (node[поле] === null) this.fail(`план «${name}» требует строку '${слово}'`, start)
+    }
     return node
   }
 

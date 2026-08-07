@@ -1026,9 +1026,14 @@ attaching a solver to the verification conditions is an open task, not a feature
   Higher-order work is covered by `отобразить` / `отфильтровать` / `свёртка`, which take a *body*
   rather than a function. The price is that exponential objects are inexpressible, and with them
   part of the category constructions.
-- Effects are described, not performed. The language is pure; work with a network or a file is
-  meant to be a description of an action that the host executes. The I/O monad is not
-  implemented, so today the host does that work — as `examples/library-api/host/` shows.
+- Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
+  равным …` builds a value, and the host executes it (`flang io`, `flang/src/host/node.mjs`).
+  There are five orders — read a file, write a file, make a network request, read the clock,
+  draw a random number — and the set is closed. There is no I/O monad, though: a monad needs
+  parametric polymorphism, so sequencing is expressed by a continuation machine where the
+  continuation is a declared value rather than a hidden closure. How that differs from a monad,
+  and what changes once polymorphism lands, is in `flang/cat/SPEC.md`. The execution layer
+  exists for one target out of eight (Node); emitting a program with a plan works for all eight.
 - No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
 - The totality analysis knows structural decrease only. A number getting smaller is not decrease,

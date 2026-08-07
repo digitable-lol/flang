@@ -44,6 +44,8 @@ const HELP = `flang — полный язык поверх FTS
   flang ast   <файл> [--pretty]
   flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli]
                      [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
+  flang io    <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
+                     [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
   flang repl  [файл] [--max-steps N] [--max-depth N]
   flang version
 
@@ -52,6 +54,10 @@ const HELP = `flang — полный язык поверх FTS
 
 emit: цели берутся из src/emit (по одному модулю на язык); без --out файлы
 уходят в stdout вместе с путями, с --out записываются в каталог.
+
+io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
+строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
+В выводе есть журнал выданных поручений и полученных откликов.
 
 repl: интерактивная оболочка. Объявления накапливаются в сессии, выражения
 вычисляются сразу, «.помощь» показывает команды. Файл в аргументе загружается
@@ -91,6 +97,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandFacts(options)
       case "emit":
         return await commandEmit(options)
+      case "io":
+        return await commandIo(options)
       case "repl":
         return await commandRepl(options)
       default:
@@ -161,6 +169,53 @@ async function commandFacts(options) {
      JSON уходит в stdout. Ненулевой код нужен, чтобы CI мог на нём падать. */
   writeJson(verdict, options.pretty, process.stdout)
   return verdict.ok ? 0 : 1
+}
+
+/**
+ * `flang io` — единственная команда, которая ДЕЙСТВИТЕЛЬНО что-то делает.
+ *
+ * Всё остальное в этом CLI чисто: разбирает, проверяет, вычисляет, печатает.
+ * Здесь программа впервые получает файл, сеть и часы — и получает их не сама, а
+ * от хозяина (`src/host/node.mjs`), которому эта команда и передаёт управление.
+ *
+ * Полномочия сужаются ключами (`--no-net`, `--no-write`, `--in-dir`), и это не
+ * украшение: чистый язык тем и ценен, что описание действия можно прочитать до
+ * того, как оно случилось. Отказ хозяина приходит программе откликом `«Сбой»`,
+ * а не падением — программа обязана уметь его встретить.
+ *
+ * В выводе есть журнал: какие поручения были выданы и что на них ответили. Это
+ * то же самое, что тест увидит от поддельного хозяина, — значит настоящий
+ * прогон и проверка без эффектов сравнимы напрямую.
+ */
+async function commandIo(options) {
+  const { runPlan, findPlan } = await import(new URL("../src/io.mjs", import.meta.url).href)
+  const { nodeHost } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
+
+  const program = await loadProgram(options.file)
+  const план = findPlan(program, options.planName)
+  const хозяин = nodeHost({
+    base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
+    разрешено: options.allow,
+    seed: options.seed,
+    внутриКорня: options.inDir === true,
+  })
+
+  const итог = await runPlan(program, план.name, хозяин, {
+    maxSteps: options.maxSteps,
+    maxDepth: options.maxDepth,
+    maxOrders: options.maxOrders,
+  })
+  writeJson(
+    {
+      plan: план.name,
+      result: итог.значение,
+      orders: итог.поручений,
+      log: итог.журнал,
+    },
+    options.pretty,
+    process.stdout,
+  )
+  return 0
 }
 
 /* ─────────────────────────── интерактивная оболочка ─────────────────────── */
@@ -614,6 +669,24 @@ function parseArgs(argv) {
       const steps = Number(require_(argv[++index], "--max-steps требует число"))
       if (!Number.isInteger(steps) || steps <= 0) throw usage("--max-steps должен быть целым положительным числом")
       options.maxSteps = steps
+    } else if (arg === "--plan") {
+      options.planName = require_(argv[++index], "--plan требует имя плана")
+    } else if (arg === "--seed") {
+      const seed = Number(require_(argv[++index], "--seed требует число"))
+      if (!Number.isFinite(seed)) throw usage("--seed должен быть числом")
+      options.seed = seed
+    } else if (arg === "--max-orders") {
+      const orders = Number(require_(argv[++index], "--max-orders требует число"))
+      if (!Number.isInteger(orders) || orders <= 0) throw usage("--max-orders должен быть целым положительным числом")
+      options.maxOrders = orders
+    } else if (arg === "--no-read" || arg === "--no-write" || arg === "--no-net" || arg === "--no-clock" || arg === "--no-random") {
+      /* Полномочия хозяина сужаются явно и по одному. Отдельного «разрешить»
+         нет: умолчание — «можно всё», потому что запуск программы ключом `io`
+         и есть согласие на её действия. Осмысленно только сужение. */
+      const поле = { "--no-read": "чтение", "--no-write": "запись", "--no-net": "сеть", "--no-clock": "время", "--no-random": "случайность" }[arg]
+      options.allow = { ...(options.allow ?? {}), [поле]: false }
+    } else if (arg === "--in-dir") {
+      options.inDir = true
     } else if (arg === "--pretty") {
       options.pretty = true
     } else if (arg.startsWith("--")) {

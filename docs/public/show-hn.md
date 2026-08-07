@@ -18,7 +18,20 @@
   допустимы только для чисел`;
 - печать во все восемь целей на одном модуле; C собран `cc -std=c99 -Wall
   -Wextra -Werror -pedantic` без предупреждений и дал те же значения, что
-  интерпретатор; Python и JavaScript — тоже.
+  интерпретатор; Python и JavaScript — тоже;
+- честная механика: `missing`, `claims`, `leetcode`, `stdlib`, `totality` —
+  **290 тестов, все зелёные**;
+- бэкенд C: `flang/test/emit-c.test.mjs` — **30 тестов зелёных**, и в его выводе
+  стоят две настоящие сборки: `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1)` и
+  `Ubuntu clang version 21.1.8` под `-std=c99 -Wall -Wextra -Werror -pedantic
+  -O2`, обе без предупреждений; valgrind — «in use at exit: 0 bytes in 0
+  blocks… ERROR SUMMARY: 0 errors»;
+- бэкенд JavaScript: `flang/test/emit-js.test.mjs` — **26 тестов зелёных**.
+
+Оговорка о том, как это запускалось: в свежем worktree нет ни `node_modules`, ни
+`dist`, а тесты бэкендов импортируют `dist/src/index.js`. Без `npm ci &&
+npm run build` они падают с `ERR_MODULE_NOT_FOUND`, и это легко принять за
+поломку. Сначала сборка, потом тесты.
 
 Что я НЕ перепроверял своим прогоном и что взято из репозитория (запустите
 `npm test` целиком и убедитесь сами):

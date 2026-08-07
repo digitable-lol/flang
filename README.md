@@ -666,8 +666,10 @@ would be nothing to check — equality of two computations is undecidable.
 
 Where the surface stops is stated as plainly: category names (`из «Продажи» в «Биллинг»`) remain
 a note for the reader, because a category is not declared as an entity and there is nothing to
-check membership against. Natural transformations, monads, monoids and bifunctors are described
-in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented.
+check membership against. Natural transformations are described in
+[`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented; monoids, groups, isomorphisms,
+bifunctors and monads are — and a monad also comes with the binding form `в монаде`
+([`flang/cat/MONAD.md`](flang/cat/MONAD.md)).
 
 ---
 
@@ -1113,10 +1115,13 @@ attaching a solver to the verification conditions is an open task, not a feature
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.
 
-**The category surface.** Morphisms, composition, chains, identities and functors are
-implemented. Natural transformations, monads, monoids, groups and bifunctors are specified in
-[`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not. Category names in a functor declaration are
-a note for the reader, not a checked claim.
+**The category surface.** Morphisms, composition, chains, identities, functors, bifunctors,
+isomorphisms, monoids, groups and monads are implemented; a monad also comes with the binding form
+`в монаде`. Natural transformations are specified in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and
+are not implemented. Category names in a functor declaration are a note for the reader, not a
+checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
+the endofunctor map is printed in place, so the parameter must occupy a whole field
+([`flang/cat/MONAD.md`](flang/cat/MONAD.md)).
 
 **Concurrency.** Six steps of seven. The missing one is the sixth — a scheduler in the C runtime:
 processes are printed only to Elixir, and the other seven targets turn a program with `процесс`

@@ -27,6 +27,11 @@ import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
 /* Проверка объявления `план` живёт в `io.mjs` вместе со словарём поручений, а
    не здесь: она вся про ввод-вывод и ничего не знает об остальных типах. */
 import { checkPlans } from "./io.mjs"
+/* Устройство монады читается из объявлений один раз и в одном месте: то же
+   самое `устройствоМонады` разворачивает форму `в монаде` внутри парсера.
+   Разойдись эти два чтения хоть на условие — компилятор доказывал бы одно, а
+   разворачивал другое. */
+import { устройствоМонады } from "./monad.mjs"
 
 /** Тип-джокер: совместим со всем. Им гасятся каскады после первой ошибки. */
 const UNKNOWN = Object.freeze({ kind: "unknown" })
@@ -139,6 +144,7 @@ export function checkTypes(program) {
   checkIsomorphisms(program, ctx)
   checkBifunctors(program, ctx)
   checkMonoids(program, ctx)
+  checkMonads(program, ctx)
   checkSupervisors(program, ctx)
   checkRuns(program, ctx)
   checkPlans(program, ctx)
@@ -371,6 +377,128 @@ function проверитьОбращение(узел, носитель, ctx) {
       "FLANG_TYPE",
       `моноид «${узел.name}»: обращение «${signature.name}» обязано вести из ${typeName(носитель)} в ${typeName(носитель)}, ` +
         `а ведёт из ${typeName(signature.params[0].type)} в ${typeName(signature.returns)}`,
+      узел,
+    )
+  }
+}
+
+/**
+ * Монада: устройство ДОКАЗЫВАЕТСЯ, законы проверяются вычислением.
+ *
+ * Граница здесь проходит там же, где у моноида, и по той же причине. Из
+ * объявлений решается всё, что говорит о ФОРМЕ: тип объявлен и параметричен;
+ * названный параметр у него есть; `возврат` ведёт из «А» в M«А»; `соединение`
+ * ведёт из M(M«А») в M«А» с одной и той же «А». Это утверждения обо всех
+ * входах, и сетка им не нужна.
+ *
+ * Сюда же попадает то, чего у моноида нет вовсе: **выводимость отображения**.
+ * Монада — эндофунктор плюс η и μ, а объявлены только η и μ; отображение
+ * компилятор берёт из устройства типа, и оно существует ровно тогда, когда
+ * параметр стоит в поле целиком. Поэтому «параметр внутри списка» — это отказ
+ * ЗДЕСЬ, а не сюрприз при разворачивании первого же блока `в монаде`.
+ *
+ * Законы (левая единица, правая, ассоциативность связывания) — равенства
+ * вычислений на всех значениях, и они проверяются на конечной сетке в
+ * `flang/src/monad.mjs`, как ассоциативность моноида. Путать нельзя: об этом
+ * раздел «Граница честности» в `flang/cat/SPEC.md`.
+ */
+function checkMonads(program, ctx) {
+  const монады = Array.isArray(program?.monads) ? program.monads : []
+  if (монады.length === 0) return
+
+  const видели = new Map()
+  for (const узел of монады) {
+    if (видели.has(узел.name)) {
+      ctx.report("FLANG_DUPLICATE_NAME", `монада «${узел.name}» объявлена дважды`, узел)
+      continue
+    }
+    видели.set(узел.name, узел)
+
+    const устройство = устройствоМонады(узел, program.types)
+    if (устройство.беда !== undefined) {
+      ctx.report("FLANG_MONAD", `монада «${узел.name}»: ${устройство.беда}`, узел)
+      continue
+    }
+    const позиция = (устройство.тип.typeParams ?? []).indexOf(узел.param)
+    проверитьВозврат(узел, позиция, ctx)
+    проверитьСоединение(узел, позиция, ctx)
+  }
+  ctx.monads = видели
+}
+
+/** Применение объявленного типа монады с нужной арностью — и ничто другое. */
+function применениеМонады(тип, узел, арность) {
+  return тип?.kind === "sum" && тип.name === узел.name && (тип.args ?? []).length === арность
+}
+
+function проверитьВозврат(узел, позиция, ctx) {
+  const signature = ctx.signatures.get(узел.unit)
+  const арность = (ctx.typeParams.get(узел.name) ?? []).length
+  if (!signature) {
+    ctx.report("FLANG_UNKNOWN_NAME", `монада «${узел.name}»: возврата «${String(узел.unit)}» нет`, узел)
+    return
+  }
+  if (signature.params.length !== 1) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: возврат «${signature.name}» принимает ${signature.params.length} арг., а обязан один — ` +
+        `возврат заворачивает одно значение в «${узел.name}»`,
+      узел,
+    )
+    return
+  }
+  if (!применениеМонады(signature.returns, узел, арность)) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: возврат «${signature.name}» возвращает ${typeName(signature.returns)}, ` +
+        `а обязан вернуть «${узел.name}»`,
+      узел,
+    )
+    return
+  }
+  const внутри = signature.returns.args[позиция]
+  if (!sameType(внутри, signature.params[0].type)) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: возврат «${signature.name}» принимает ${typeName(signature.params[0].type)}, ` +
+        `а кладёт на место «${узел.param}» тип ${typeName(внутри)} — это не «А» → «${узел.name}» от «А»`,
+      узел,
+    )
+  }
+}
+
+function проверитьСоединение(узел, позиция, ctx) {
+  const signature = ctx.signatures.get(узел.join)
+  const арность = (ctx.typeParams.get(узел.name) ?? []).length
+  if (!signature) {
+    ctx.report("FLANG_UNKNOWN_NAME", `монада «${узел.name}»: соединения «${String(узел.join)}» нет`, узел)
+    return
+  }
+  if (signature.params.length !== 1) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: соединение «${signature.name}» принимает ${signature.params.length} арг., а обязано один — ` +
+        `соединение сплющивает одну двойную вложенность`,
+      узел,
+    )
+    return
+  }
+  const принимает = signature.params[0].type
+  if (!применениеМонады(принимает, узел, арность) || !применениеМонады(принимает.args[позиция], узел, арность)) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: соединение «${signature.name}» принимает ${typeName(принимает)}, ` +
+        `а обязано принимать «${узел.name}» от («${узел.name}» от «${узел.param}»)`,
+      узел,
+    )
+    return
+  }
+  if (!sameType(signature.returns, принимает.args[позиция])) {
+    ctx.report(
+      "FLANG_MONAD",
+      `монада «${узел.name}»: соединение «${signature.name}» возвращает ${typeName(signature.returns)}, ` +
+        `а сплющивает ${typeName(принимает)} — снявшись на один слой, тип обязан стать ` +
+        `${typeName(принимает.args[позиция])}`,
       узел,
     )
   }
@@ -2181,10 +2309,29 @@ function callType(expr, env, expected, ctx, fnName) {
      аргумента, поэтому пустой список во второй позиции получает тип, решённый
      первой: `«Приписать» от 7 и []` даёт список числа. */
   const bindings = new Map()
+  /* Ожидание результата участвует и ДО аргументов, а не только после них — но
+     ТОЛЬКО как подсказка вложенному выводу, в решение оно здесь не входит.
+
+     Довод предъявлен программой, а не соображением. Форма `в монаде` над типом
+     с ДВУМЯ параметрами разворачивается в `соединение от (вариант «Успех» с
+     итог равным …)`, где у конструктора один параметр решается полем, а второй
+     не решается ничем: по бокам от него в этом выражении ничего нет. Ожидание
+     же его знает — оно приехало из `возвращает «Результат» от числа и строки`,
+     — и раньше не доезжало, потому что параметрический тип аргумента гасил
+     ожидание в null.
+
+     Почему это безопасно: подсказка не участвует ни в `matchAgainst`, ни в
+     `sameType` ниже — она лишь ДОБАВЛЯЕТ контекст, которого не было. Значит
+     принять эта строка может больше прежнего, а отвергнуть — ровно столько же.
+     Проверено сверкой с `self/types.flang` на всех программах репозитория и на
+     сломанных программах из тестов: расхождений ноль. */
+  const подсказка = new Map()
+  if (typeParams.length > 0 && expected) matchAgainst(signature.returns, expected, подсказка)
   args.forEach((arg, index) => {
     const param = signature.params[index]
     const wanted = param ? substitute(param.type, bindings) : null
-    const actual = inferExpr(arg, env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    const намёк = param && hasParams(wanted) ? substitute(param.type, new Map([...подсказка, ...bindings])) : wanted
+    const actual = inferExpr(arg, env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (!param) return
     if (typeParams.length > 0) matchAgainst(param.type, actual, bindings)
     const settled = substitute(param.type, bindings)
@@ -2365,13 +2512,19 @@ function constructType(expr, env, expected, ctx, fnName) {
   const declared = ctx.sums.get(owner).get(expr.variant)
   const typeParams = ctx.typeParams.get(owner) ?? []
   const bindings = new Map()
+  /* Ожидание — подсказка полю, а не решение за него; довод тот же, что в
+     `callType`, и тот же тому счёт. `вариант «Успех» с итог равным («Удалось»
+     от готово)` знает «Значение» по полю, а «Беда» не знает ниоткуда, кроме
+     ожидания: в самом выражении её нет. */
+  const подсказка = подсказкаИзОжидания({ kind: "sum", name: owner }, typeParams, expected)
   for (const [name, type] of declared) {
     if (!(name in given)) {
       ctx.report("FLANG_TYPE", `конструктор «${expr.variant}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
     const wanted = адресат !== null && name === "что" ? адресат.accepts : substitute(type, bindings)
-    const actual = inferExpr(given[name], env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    const намёк = hasParams(wanted) ? substitute(type, new Map([...подсказка, ...bindings])) : wanted
+    const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
     const settled = адресат !== null && name === "что" ? wanted : substitute(type, bindings)
     if (!sameType(actual, settled)) {
@@ -2398,13 +2551,15 @@ function recordType(expr, env, expected, ctx, fnName) {
   }
   const typeParams = ctx.typeParams.get(expr.type) ?? []
   const bindings = new Map()
+  const подсказка = подсказкаИзОжидания({ kind: "record", name: expr.type }, typeParams, expected)
   for (const [name, type] of fields) {
     if (!(name in given)) {
       if (type.optional !== true) ctx.report("FLANG_TYPE", `запись «${expr.type}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
     const wanted = substitute(type, bindings)
-    const actual = inferExpr(given[name], env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    const намёк = hasParams(wanted) ? substitute(type, new Map([...подсказка, ...bindings])) : wanted
+    const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
     const settled = substitute(type, bindings)
     if (!sameType(actual, settled)) {
@@ -2419,6 +2574,21 @@ function recordType(expr, env, expected, ctx, fnName) {
   }
   if (typeParams.length === 0) return { kind: "record", name: expr.type }
   return solvedResult({ kind: "record", name: expr.type }, typeParams, bindings, expected, `запись «${expr.type}»`, ctx, expr)
+}
+
+/**
+ * Что ожидание говорит о параметрах — до того, как поля скажут своё.
+ *
+ * Отдельно от `solvedResult`, потому что применяется РАНЬШЕ него и с другой
+ * силой: `solvedResult` решает тип целиком и вправе жаловаться, а это —
+ * односторонняя подсказка вложенному выводу, которая ни на что не жалуется и
+ * ничего не решает. Пустая карта — законный ответ.
+ */
+function подсказкаИзОжидания(base, typeParams, expected) {
+  const карта = new Map()
+  if (typeParams.length === 0 || !expected) return карта
+  matchAgainst({ ...base, args: typeParams.map((name) => ({ kind: "param", name })) }, expected, карта)
+  return карта
 }
 
 /**

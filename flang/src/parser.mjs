@@ -49,7 +49,9 @@
  *                 операция/operation, обратный элемент/inverse element,
  *                 изоморфизм/isomorphism, прямой морфизм/forward morphism,
  *                 обратный морфизм/inverse morphism, бифунктор/bifunctor,
- *                 объекты/objects, морфизмы/morphisms
+ *                 объекты/objects, морфизмы/morphisms,
+ *                 монада/monad, возврат/return, соединение/flatten,
+ *                 в монаде/in monad
  *   конкурентность процесс/process, обрабатывает/handles, с запасом/with budget,
  *                 надзор/supervision, стратегия/strategy,
  *                 порог отказов/failure threshold, прогон/run, семя/seed
@@ -125,6 +127,7 @@
 import { ACTION_TYPE } from "./conc.mjs"
 import { IO_TYPE_NAMES, IO_VARIANT_OWNER, withIoTypes } from "./io.mjs"
 import { FlangError, flangError, tokenize } from "./lexer.mjs"
+import { expandMonads } from "./monad.mjs"
 
 export { FlangError, flangError, tokenize }
 
@@ -188,6 +191,12 @@ const NOT_EXPRESSION = new Set([
   /* Ввод-вывод: `план` — объявление, а не выражение. Без него тело функции,
      упершееся в соседний план, жаловалось бы на «неожиданное», не назвав слова. */
   "plan",
+  /* Монада — объявление; `возврат` и `соединение` живут только внутри своих
+     блоков. Без этих трёх записей тело функции, упершееся в соседнюю монаду
+     или написавшее `возврат` вне блока, жаловалось бы на «неожиданное». */
+  "monad",
+  "monadUnit",
+  "monadJoin",
 ])
 
 /** Ключевые слова, которые в позиции выражения читаются как обычные имена. */
@@ -312,6 +321,13 @@ class Parser {
     this.isomorphisms = []
     this.bifunctors = []
     this.monoids = []
+    /* Монада — объявление времени компиляции, как моноид. Форма `в монаде`
+       разворачивается в обычные вызовы ДО того, как программа уйдёт из
+       парсера, поэтому список нужен здесь: разворачивание читает его.
+       `blocksInMonad` — счётчик написанных блоков: по нулю видно, что
+       разворачивать нечего, и программа уходит нетронутой. */
+    this.monads = []
+    this.blocksInMonad = 0
     this.functions = []
     /* Конкурентность (flang/conc/SPEC.md): процесс — объявление, а не значение,
        поэтому у него собственный список, как у типов и функций. */
@@ -571,6 +587,7 @@ class Parser {
     if (this.isomorphisms.length > 0) program.isomorphisms = this.isomorphisms
     if (this.bifunctors.length > 0) program.bifunctors = this.bifunctors
     if (this.monoids.length > 0) program.monoids = this.monoids
+    if (this.monads.length > 0) program.monads = this.monads
     if (this.processes.length > 0) program.processes = this.processes
     if (this.supervisors.length > 0) program.supervisors = this.supervisors
     if (this.runs.length > 0) program.runs = this.runs
@@ -582,7 +599,18 @@ class Parser {
        хозяином, а не объявление автора. Разница одна — признак использования
        здесь считается по именам в тексте, а не по наличию объявления: функция,
        строящая поручение, обязана проверяться примерами и БЕЗ всякого плана. */
-    return this.usesIo ? withIoTypes(program) : program
+    const готово = this.usesIo ? withIoTypes(program) : program
+
+    /* Разворачивание `в монаде` — последним шагом разбора и внутри него.
+       Место выбрано не для удобства: на выходе парсера обязана лежать
+       ПЕРВОПОРЯДКОВАЯ программа из раздела 5 SPEC, и тогда форму бесплатно
+       получают все восемь бэкендов, анализ завершаемости и обе реализации
+       самоприменения — им не нужно знать о ней ни строчки.
+
+       Признак считается разбором, а не обходом готового AST, — по тому же
+       правилу, что `usesIo` выше: программа без блоков обязана не платить за
+       форму ни одного лишнего обхода и вернуться ТЕМ ЖЕ объектом. */
+    return this.blocksInMonad > 0 ? expandMonads(готово) : готово
   }
 
   /** Имя из словаря ввода-вывода в тексте — признак того, что словарь нужен. */
@@ -689,6 +717,8 @@ class Parser {
         return this.bifunctors.push(this.parseBifunctor())
       case "monoid":
         return this.monoids.push(this.parseMonoid())
+      case "monad":
+        return this.monads.push(this.parseMonad())
       case "process":
         return this.processes.push(this.parseProcess())
       case "supervision":
@@ -1167,6 +1197,7 @@ class Parser {
       if (token.value === "filter") return this.parseFilter()
       if (token.value === "fold") return this.parseFold()
       if (token.value === "let") return this.parseStatements()
+      if (token.value === "inMonad") return this.parseInMonad()
     }
     return this.parseComparison()
   }
@@ -1829,6 +1860,138 @@ class Parser {
       if (значение === null) this.fail(`у моноида «${name}» не указан(а) ${часть}`, start)
     }
     return node
+  }
+
+  /**
+   * Монада: тип, параметр, по которому она монада, и две функции.
+   *
+   * ```
+   * монада «Возможно» от «А»
+   *   возврат «Обернуть»
+   *   соединение «Сплющить»
+   * ```
+   *
+   * Имя монады — это имя ТИПА, а не отдельное имя, как у моноида. Довод не в
+   * экономии строки: `в монаде «Возможно»` обязано однозначно называть, по
+   * какому типу связывать, и совпадение имён делает это очевидным без второй
+   * строки `эндофунктор «Возможно»`, которая стояла в контракте и повторяла бы
+   * имя строкой выше. Цена названа честно: два разных монадических устройства
+   * на одном типе объявить нельзя. Такого в репозитории нет, а понадобится —
+   * добавится строкой `носитель`, не ломая написанного.
+   *
+   * `от «А»` обязательно и при одном параметре. Угадывать «единственный
+   * параметр и есть тот самый» дешевле на один токен, но `«Результат» от
+   * «Значение» и «Беда»` — монада по ПЕРВОМУ параметру, а у соседнего языка с
+   * тем же типом первый — ошибка. Соглашение, которое в половине случаев
+   * неверно, хуже одного написанного слова.
+   */
+  parseMonad() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя типа монады")
+    this.expectKw("of", `у монады «${name}» не назван параметр: 'монада «${name}» от «А»'`)
+    const param = this.expectName("ожидалось имя параметра типа")
+    const node = { kind: "monad", name, param, unit: null, join: null, span: start.span }
+    this.endLine()
+
+    if (this.enterBlock()) {
+      while (!this.atBlockEnd()) {
+        this.skipNewlines()
+        if (this.atBlockEnd()) break
+        if (this.atKw("monadUnit")) {
+          const at = this.next()
+          if (node.unit !== null) this.fail(`у монады «${name}» больше одного возврата`, at)
+          node.unit = this.expectName("ожидалось имя функции возврата")
+          this.endLine()
+          continue
+        }
+        if (this.atKw("monadJoin")) {
+          const at = this.next()
+          if (node.join !== null) this.fail(`у монады «${name}» больше одного соединения`, at)
+          node.join = this.expectName("ожидалось имя функции соединения")
+          this.endLine()
+          continue
+        }
+        this.fail("не разобрана конструкция: в монаде ожидаются 'возврат' или 'соединение'")
+      }
+      this.exitBlock()
+    }
+
+    /* Без любой из двух функций это не монада: η и μ — и есть вся конструкция,
+       а объявление, которое ничего не обещает, хуже отсутствующего. */
+    for (const [часть, значение] of [["возврат", node.unit], ["соединение", node.join]]) {
+      if (значение === null) this.fail(`у монады «${name}» не указан(о) ${часть}`, start)
+    }
+    return node
+  }
+
+  /**
+   * Блок `в монаде` — связывание словами, оно же do-нотация.
+   *
+   * ```
+   * в монаде «Возможно»
+   *   пусть заказ равно «Найти заказ» от номер
+   *   пусть остаток равно «Проверить остаток» от заказ
+   *   возврат «Отгрузить» от заказ и остаток
+   * ```
+   *
+   * Каждое `пусть` — связывание: справа стоит значение В МОНАДЕ, а слева имя
+   * получает то, что лежит ВНУТРИ. Последняя строка `возврат` — то самое η,
+   * которое объявлено у монады: одно понятие названо одним словом в обоих
+   * местах, поэтому отдельное `вернуть` не заводится. Оно и не могло бы:
+   * `пусть вернуть равно …` стоит голым в `examples/rosetta/towers-of-hanoi.flang`,
+   * и ключевое слово сломало бы этот файл (см. таблицу в `lexer.mjs`).
+   *
+   * Узел `inMonad` — временный: он живёт от конца этой функции до конца
+   * `parseProgram`, где `expandMonads` заменяет его обычными вызовами. Наружу
+   * парсера он не выходит НИКОГДА, и это главное свойство формы: ни проверка
+   * типов, ни завершаемость, ни восемь бэкендов, ни самоприменение о нём не
+   * знают и знать не обязаны.
+   */
+  parseInMonad() {
+    const start = this.next()
+    const monad = this.expectName("ожидалось имя монады")
+    this.endLine()
+    if (!this.enterBlock()) this.fail(`у блока «в монаде «${monad}»» нет ни одной строки`, start)
+
+    const binds = []
+    let result = null
+    let глубина = 0
+    while (!this.atBlockEnd()) {
+      this.skipNewlines()
+      if (this.atBlockEnd()) break
+      if (result !== null) this.fail("после 'возврат' блок 'в монаде' заканчивается")
+      if (this.atKw("let")) {
+        const at = this.next()
+        const name = this.expectName("ожидалось имя связывания")
+        if (!this.eatKw("cmpEq") && !this.eatKw("is") && !this.eatPunct("=")) {
+          this.fail("после имени в 'пусть' ожидалось 'равно'")
+        }
+        /* Значение считается ДО связывания — как в обычном `пусть`: имя
+           появляется в области видимости только для строк ниже. */
+        const value = this.parseExpression()
+        this.endLine()
+        binds.push({ name, value, span: at.span })
+        this.pushScope([name])
+        глубина += 1
+        continue
+      }
+      if (this.atKw("monadUnit")) {
+        this.next()
+        result = this.parseExpression()
+        this.endLine()
+        continue
+      }
+      this.fail("не разобрана конструкция: в блоке 'в монаде' ожидаются 'пусть' или 'возврат'")
+    }
+    for (let шаг = 0; шаг < глубина; шаг += 1) this.popScope()
+    this.exitBlock()
+
+    /* Блок без `возврат` не собирается, и это доказывается разбором, а не
+       проверяется на входах: `пусть` даёт связывание, а результата у блока не
+       было бы вовсе — выражение обязано иметь значение. */
+    if (result === null) this.fail(`в блоке «в монаде «${monad}»» нет строки 'возврат'`, start)
+    this.blocksInMonad += 1
+    return { kind: "inMonad", monad, binds, result, span: start.span }
   }
 
   parseSupervision() {

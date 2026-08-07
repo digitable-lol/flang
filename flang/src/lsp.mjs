@@ -766,7 +766,6 @@ function описание(объявление, разбор) {
  */
 function описатьТип(тип) {
   if (тип === null || тип === undefined) return "не указан"
-  if (тип.kind === "fn") return `${описатьТип(тип.from)} → ${описатьТип(тип.to)}`
   return typeName(вНормальный(тип))
 }
 
@@ -775,6 +774,15 @@ function вНормальный(тип) {
   switch (тип.kind) {
     case "named": return { kind: "record", name: тип.name }
     case "list": return { kind: "list", of: вНормальный(тип.of) }
+    /* Тип функции печатается теми же словами, что в исходнике, — этим занят
+       `typeName`, и своих слов у редактора здесь по-прежнему ноль. Записей в
+       AST две (словесная и стрелочная), и обе сводятся к одной так же, как в
+       `types.mjs`. */
+    case "fn": return {
+      kind: "fn",
+      params: (Array.isArray(тип.params) ? тип.params : тип.from === undefined ? [] : [тип.from]).map(вНормальный),
+      returns: вНормальный(тип.returns === undefined ? тип.to : тип.returns),
+    }
     case "flag": return { kind: "boolean" }
     case "nothing": return { kind: "null" }
     default: return { kind: тип.kind }

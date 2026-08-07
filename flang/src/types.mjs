@@ -7,13 +7,14 @@
  * в формате ядра FTS (`{ code, message, severity, span }`, см. src/validate.ts)
  * и таблица сигнатур функций.
  *
- * Почему здесь нет Хиндли — Милнера. Функции в flang не являются значениями
- * первого класса (SPEC, раздел 3), поэтому единственные места, где тип
- * действительно неизвестен, — это локальное `пусть`, элемент списка,
- * накопитель свёртки и пустой список. Всё остальное задано объявленной
- * сигнатурой. Унификация с переменными типов дала бы ту же силу вывода, но
- * сообщения об ошибках стали бы говорить о «t7 против t12» вместо «ветви
- * «если» разных типов» — для языка, где типы объявляются, это чистый проигрыш.
+ * Почему здесь нет Хиндли — Милнера. Единственные места, где тип действительно
+ * неизвестен, — это локальное `пусть`, элемент списка, накопитель свёртки и
+ * пустой список. Всё остальное задано объявленной сигнатурой, и функции первого
+ * класса этого не изменили: значение-функция строится формой `функция «Имя»`,
+ * то есть по объявленной сигнатуре, а не выводится из тела. Унификация с
+ * переменными типов дала бы ту же силу вывода, но сообщения об ошибках стали
+ * бы говорить о «t7 против t12» вместо «ветви «если» разных типов» — для
+ * языка, где типы объявляются, это чистый проигрыш.
  * Поэтому проверка двунаправленная (bidirectional): `inferExpr(узел, среда,
  * ожидаемый)`. Ожидаемый тип течёт сверху вниз и решает единственный
  * по-настоящему неоднозначный случай — пустой список: `[]` в контексте
@@ -1455,8 +1456,15 @@ function hasParams(type) {
   if (!type) return false
   if (type.kind === "param") return true
   if (type.kind === "list") return hasParams(type.of)
+  if (type.kind === "fn") return fnParams(type).some(hasParams) || hasParams(type.returns)
   if (Array.isArray(type.args)) return type.args.some(hasParams)
   return false
+}
+
+/** Аргументы типа функции. Отсутствие поля и пустой список — одно и то же:
+ *  `функция в число` законна и означает функцию без аргументов. */
+function fnParams(type) {
+  return Array.isArray(type?.params) ? type.params : []
 }
 
 /** Подстановка: параметры → типы. Объекты пересоздаются только там, где что-то
@@ -1472,6 +1480,9 @@ function substitute(type, bindings) {
     return type.optional === true ? { ...bound, optional: true } : bound
   }
   if (type.kind === "list") return { ...type, of: substitute(type.of, bindings) }
+  if (type.kind === "fn") {
+    return { ...type, params: fnParams(type).map((item) => substitute(item, bindings)), returns: substitute(type.returns, bindings) }
+  }
   if (Array.isArray(type.args)) return { ...type, args: type.args.map((arg) => substitute(arg, bindings)) }
   return type
 }
@@ -1491,11 +1502,13 @@ function bindingsOf(type, ctx) {
  * против выведенного типа значения. Ответ — связывание параметров.
  *
  * Хиндли — Милнера здесь нет по той же причине, по которой его нет во всём
- * модуле (см. шапку): функции не значения первого класса, значит на каждом
- * вызове типы всех аргументов уже известны, и решать нечего — достаточно
- * пройти по объявленному типу и сложить, куда что встало. Это разрешимо,
- * линейно и, главное, говорит об ошибке настоящими именами: «ожидался
- * «Возможно» от числа, получен «Возможно» от строки», а не «t7 против t12».
+ * модуле (см. шапку): на каждом вызове типы всех аргументов уже известны, и
+ * решать нечего — достаточно пройти по объявленному типу и сложить, куда что
+ * встало. Функции-значения этого не меняют: тип тега берётся из сигнатуры
+ * названной функции, а полиморфную функцию значением брать запрещено
+ * (`fnrefType`) — иначе понадобился бы ранг 2. Это разрешимо, линейно и,
+ * главное, говорит об ошибке настоящими именами: «ожидался «Возможно» от
+ * числа, получен «Возможно» от строки», а не «t7 против t12».
  */
 function matchAgainst(declared, actual, bindings) {
   if (!declared || !actual) return true
@@ -1513,6 +1526,13 @@ function matchAgainst(declared, actual, bindings) {
   if (declared.kind === "unknown" || actual.kind === "unknown") return true
   if (declared.kind !== actual.kind) return false
   if (declared.kind === "list") return matchAgainst(declared.of, actual.of, bindings)
+  if (declared.kind === "fn") {
+    const left = fnParams(declared)
+    const right = fnParams(actual)
+    if (left.length !== right.length) return false
+    return left.every((item, index) => matchAgainst(item, right[index], bindings))
+      && matchAgainst(declared.returns, actual.returns, bindings)
+  }
   if (declared.kind === "record" || declared.kind === "sum") {
     if (declared.name !== actual.name) return false
     const left = Array.isArray(declared.args) ? declared.args : []
@@ -1627,6 +1647,22 @@ function normalizeType(node, ctx, at) {
     }
     return optional({ kind: "list", of: normalizeType(element, ctx, at) }, node)
   }
+  /* Тип функции (flang/cat/HOF.md). Читается ровно как написан — `функция из
+     числа в число`, — и никакой особой обработки ниже не требует: он
+     сравнивается, печатается и подставляется теми же функциями, что список,
+     потому что устроен так же — конструктор с детьми.
+
+     Записей в AST две: словесная даёт `{ params, returns }`, стрелочная
+     (`число → строка`) — прежние `{ from, to }`, потому что её узел сверяется
+     побайтово с `self/parser.flang`, а тот новой формы не знает. Долг сводится
+     здесь: наружу выходит один тип, и весь остальной модуль про две формы не
+     знает. */
+  if (kind === "fn") {
+    const written = Array.isArray(node.params) ? node.params : node.from === undefined ? [] : [node.from]
+    const params = written.map((item) => normalizeType(item, ctx, at))
+    const result = node.returns === undefined ? node.to : node.returns
+    return optional({ kind: "fn", params, returns: normalizeType(result, ctx, at) }, node)
+  }
   if (NAMED_KINDS.has(kind) || (kind === "" && isName(node.name))) {
     return optional(namedOrScalar(node.name ?? node.type, ctx, at, node.args), node)
   }
@@ -1726,6 +1762,18 @@ function sameType(a, b) {
   if (a.kind === "unknown" || b.kind === "unknown") return true
   if (a.kind !== b.kind) return false
   if (a.kind === "list") return sameType(a.of, b.of)
+  /*
+   * Функции сравниваются ИНВАРИАНТНО: и по аргументам, и по результату — на
+   * совпадение, а не на пригодность. Подтипов в flang нет вообще, `sameType`
+   * везде означает равенство, и заводить их ради одного вида типа значило бы
+   * получить два разных отношения совместимости в одном языке.
+   */
+  if (a.kind === "fn") {
+    const left = fnParams(a)
+    const right = fnParams(b)
+    if (left.length !== right.length) return false
+    return left.every((item, index) => sameType(item, right[index])) && sameType(a.returns, b.returns)
+  }
   /* Параметр равен только сам себе: внутри полиморфной функции «А» — это
      конкретный, но неизвестный тип, и подставить вместо неё число нельзя. */
   if (a.kind === "param") return a.name === b.name
@@ -1761,6 +1809,9 @@ export function typeName(type) {
     // числа. Сообщение об ошибке можно скопировать в объявление.
     case "record": case "sum": return `«${type.name}»${appliedTo(type)}`
     case "param": return `«${type.name}»`
+    // Печатается тем же оборотом, каким пишется в исходнике: «функция из числа
+    // и строки в признак». Сообщение об ошибке можно скопировать в объявление.
+    case "fn": return `функция${acceptedFrom(type)} в ${accusative(type.returns)}`
     default: return "неизвестный тип"
   }
 }
@@ -1768,6 +1819,12 @@ export function typeName(type) {
 function appliedTo(type) {
   if (!Array.isArray(type.args) || type.args.length === 0) return ""
   return ` от ${type.args.map(genitive).join(" и ")}`
+}
+
+function acceptedFrom(type) {
+  const params = fnParams(type)
+  if (params.length === 0) return ""
+  return ` из ${params.map(genitive).join(" и ")}`
 }
 
 const GENITIVE = new Map([["number", "числа"], ["string", "строки"], ["boolean", "признака"], ["null", "ничего"]])
@@ -1778,7 +1835,19 @@ function genitive(type) {
   if (type.kind === "list") return `списка ${genitive(type.of)}`
   if (type.kind === "record" || type.kind === "sum") return `«${type.name}»${appliedTo(type)}`
   if (type.kind === "param") return `«${type.name}»`
+  /* Вложенный тип функции берётся в скобки и остаётся в именительном падеже —
+     потому что в исходнике он и пишется так: `функция из (функция из числа в
+     число) в число`. Скобки там обязательны (иначе внутреннее `в` съело бы
+     внешнее), значит сообщение и исходник совпадают дословно. */
+  if (type.kind === "fn") return `(${typeName(type)})`
   return "неизвестного"
+}
+
+/** Винительный падеж после `в`: среди скаляров отличается только строка. */
+function accusative(type) {
+  if (type?.kind === "string" && type.optional !== true) return "строку"
+  if (type?.kind === "fn") return `(${typeName(type)})`
+  return typeName(type)
 }
 
 /** Скаляр ли: только по скалярам разрешено сравнение на равенство. */
@@ -1879,6 +1948,27 @@ function checkValue(value, type, label, ctx, at) {
       }
       return
     }
+    /*
+     * Значение-функция в примере. Записывается тегом — тем же `{ вариант: … }`,
+     * что и вариант без полей, потому что после дефункционализации это и ЕСТЬ
+     * вариант: `функция «Удвоить»` — конструктор тега «Удвоить» без захваченных
+     * полей. Проверяется здесь не форма, а тип: тег обязан называть объявленную
+     * функцию, и её сигнатура обязана совпасть с ожидаемой.
+     */
+    case "fn": {
+      const tag = isPlainObject(value) ? (value["вариант"] ?? value.variant) : null
+      if (!isName(tag)) { bad(); return }
+      const signature = ctx.signatures.get(tag)
+      if (!signature) {
+        ctx.report("FLANG_UNKNOWN_NAME", `${label}: функции «${tag}» нет`, at)
+        return
+      }
+      const actual = signatureType(signature)
+      if (!sameType(actual, type)) {
+        ctx.report("FLANG_TYPE", `${label}: «${tag}» имеет тип ${typeName(actual)}, а ожидался ${typeName(type)}`, at)
+      }
+      return
+    }
     case "sum": {
       if (!isPlainObject(value)) { bad(); return }
       const variantName = value["вариант"] ?? value.variant
@@ -1949,6 +2039,8 @@ function inferExpr(expr, env, expected, ctx, fnName) {
       return thenType.kind === "unknown" ? elseType : thenType
     }
     case "call": return callType(expr, env, expected, ctx, fnName)
+    case "fnref": return fnrefType(expr, ctx)
+    case "apply": return applyType(expr, env, ctx, fnName)
     case "binary": return binaryType(expr, env, ctx, fnName)
     case "construct": return constructType(expr, env, expected, ctx, fnName)
     case "record": return recordType(expr, env, expected, ctx, fnName)
@@ -2038,6 +2130,91 @@ function callType(expr, env, expected, ctx, fnName) {
   }
   reportUnsolved(typeParams, bindings, `вызов «${signature.name}»`, ctx, expr)
   return substitute(signature.returns, bindings)
+}
+
+/* ------------------------------------------------------------------ */
+/* Функции первого класса (flang/cat/HOF.md)                           */
+/* ------------------------------------------------------------------ */
+
+/** Сигнатура объявленной функции как тип значения. */
+function signatureType(signature) {
+  return { kind: "fn", params: signature.params.map((param) => param.type), returns: signature.returns }
+}
+
+/**
+ * `функция «Удвоить»` — тег функции как значение.
+ *
+ * Полиморфная функция значением стать НЕ МОЖЕТ, и это отказ, а не пропуск.
+ * `функция «Обернуть»` при `функция «Обернуть» от «А»` — это значение типа
+ * `∀А. «А» → «Возможно» от «А»`, то есть ранг 2, а вывод в модуле —
+ * одностороннее сопоставление первого порядка (шапка файла). Молчаливо взять
+ * такое значение значило бы выпустить наружу тип с несвязанным параметром, а
+ * он дальше сравнивался бы с чем попало.
+ */
+function fnrefType(expr, ctx) {
+  const signature = ctx.signatures.get(expr.name)
+  if (!signature) {
+    ctx.report("FLANG_UNKNOWN_NAME", `неизвестная функция «${String(expr.name)}»`, expr)
+    return UNKNOWN
+  }
+  const typeParams = signature.typeParams ?? []
+  if (typeParams.length > 0) {
+    ctx.report(
+      "FLANG_TYPE_PARAM",
+      `функция «${signature.name}» объявлена от ${countParams(typeParams.length)} и значением стать не может: ` +
+        `у значения тип один, а у неё их столько, сколько подстановок`,
+      expr,
+    )
+    return UNKNOWN
+  }
+  return signatureType(signature)
+}
+
+/**
+ * Применение значения-функции: `ф от 5`.
+ *
+ * Отличается от вызова по имени ровно тем, что тип берётся не из таблицы
+ * сигнатур, а из типа самого значения. Всё остальное — арность, типы
+ * аргументов, тип результата — проверяется теми же словами, потому что беда
+ * у пользователя та же самая.
+ */
+function applyType(expr, env, ctx, fnName) {
+  const target = inferExpr(expr.fn, env, null, ctx, fnName)
+  const args = Array.isArray(expr.args) ? expr.args : []
+  const где = appliedName(expr.fn)
+  if (target.kind !== "fn") {
+    if (target.kind !== "unknown") {
+      ctx.report("FLANG_APPLY", `применять можно только функцию, а ${где} имеет тип ${typeName(target)}`, expr)
+    }
+    for (const arg of args) inferExpr(arg, env, null, ctx, fnName)
+    return UNKNOWN
+  }
+  const params = fnParams(target)
+  if (args.length !== params.length) {
+    ctx.report(
+      "FLANG_APPLY",
+      `${где} имеет тип ${typeName(target)}: применяется к ${countArgs(params.length)}, а применено к ${countArgs(args.length)}`,
+      expr,
+    )
+  }
+  args.forEach((arg, index) => {
+    const wanted = params[index]
+    const actual = inferExpr(arg, env, wanted && !hasParams(wanted) ? wanted : null, ctx, fnName)
+    if (wanted === undefined) return
+    if (!sameType(actual, wanted)) {
+      ctx.report("FLANG_TYPE", `аргумент ${index + 1} применения ${где}: ожидался ${typeName(wanted)}, получен ${typeName(actual)}`, arg)
+    }
+  })
+  return target.returns ?? UNKNOWN
+}
+
+/** Как назвать применяемое в диагностике: у имени есть имя, у остального — вид. */
+function appliedName(node) {
+  if (node?.kind === "var" && isName(node.name)) return `«${node.name}»`
+  if (node?.kind === "field" && isName(node.field)) return `поле «${node.field}»`
+  if (node?.kind === "fnref" && isName(node.name)) return `«${node.name}»`
+  if (node?.kind === "call" && isName(node.name)) return `результат «${node.name}»`
+  return "применяемое"
 }
 
 function binaryType(expr, env, ctx, fnName) {

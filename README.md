@@ -648,8 +648,9 @@ declarations alone, with no grid and no solver:
 3. the image of an identity is the identity of the image (`FLANG_FUNCTOR_IDENTITY`).
 
 This is possible precisely because a morphism here is a *declaration*, not a value: its name,
-domain and codomain are known before anything runs. With first-class functions there is no such
-check — composition would be a computation, and equality of two computations is undecidable.
+domain and codomain are known before anything runs. It stayed a declaration even after functions
+became values (`flang/cat/HOF.md`): were composition a computation over function values, there
+would be nothing to check — equality of two computations is undecidable.
 
 Where the surface stops is stated as plainly: category names (`из «Продажи» в «Биллинг»`) remain
 a note for the reader, because a category is not declared as an entity and there is nothing to
@@ -662,9 +663,9 @@ in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented.
 
 Values are immutable by construction, so two computations looking at one value cannot interfere:
 there are no data races to lose, because there is nothing to build one out of. What the language
-lacked was a word for simultaneity. Because functions are not first-class values, a process
-cannot be spawned from a function — so **a process is a declaration**: a name, a state type, a
-starting function and a handler.
+lacked was a word for simultaneity. The language has no closures (what became a value is a
+function, not a closure), so a process cannot be spawned from a `fun () -> …` the way BEAM does —
+so **a process is a declaration**: a name, a state type, a starting function and a handler.
 
 ```flang
 процесс «Счётчик»
@@ -1039,11 +1040,14 @@ attaching a solver to the verification conditions is an open task, not a feature
 
 **The language.**
 
-- Functions are not first-class values. This is deliberate: without exponentials the language
-  still prints into targets that have no closures, and the termination analysis stays decidable.
-  Higher-order work is covered by `отобразить` / `отфильтровать` / `свёртка`, which take a *body*
-  rather than a function. The price is that exponential objects are inexpressible, and with them
-  part of the category constructions.
+- Functions are first-class values in the language, but are not printed yet. The restriction was
+  lifted by defunctionalization (Reynolds, 1972): a function value is a tag, `функция «Удвоить»`,
+  and an application `ф от 5` is a dispatcher over a finite list of tags — so targets without
+  closures and the termination proof both survive (`flang/cat/HOF.md`). Parsing, type checking,
+  the termination analysis and the interpreter understand it; **the eight backends do not** —
+  an application yields `FLANG_PARSE: неизвестный вид выражения «apply»`. Until printing lands,
+  `отобразить` / `отфильтровать` / `свёртка`, which take a *body*, remain the only higher-order
+  forms that print.
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and the host executes it (`flang io`, `flang/src/host/node.mjs`).
   There are five orders — read a file, write a file, make a network request, read the clock,

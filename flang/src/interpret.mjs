@@ -42,6 +42,7 @@ import {
   valuesEqual,
   variant,
 } from "./builtins.mjs"
+import { programTags } from "./tags.mjs"
 
 export { FlangError, FlangVariant, flangError, variant, valuesEqual, reifyValue }
 
@@ -140,7 +141,13 @@ function prepareProgram(program) {
     }
   }
 
-  return { functions, records, variants }
+  /* Теги, которые программа умеет строить (flang/src/tags.mjs). Считается
+     лениво: спрашивает о них только применение, а программ без функций-значений
+     подавляющее большинство. */
+  let tags = null
+  const knownTags = () => (tags ??= programTags(program, (name) => functions.has(name)))
+
+  return { functions, records, variants, knownTags }
 }
 
 function normalizeParams(fn) {
@@ -345,6 +352,26 @@ function evalExpr(machine, expr, env) {
       startSeq(machine, expr.args ?? [], env, { kind: "call", name: expr.name, span: expr.span }, expr.span)
       return
     }
+    /*
+     * Функции первого класса — дефункционализация (flang/cat/HOF.md).
+     *
+     * Значение-функция это ТЕГ, и представлен он вариантом без полей: захватывать
+     * в первой фазе нечего (замыканий в языке нет), а отдельный вид значения
+     * пришлось бы научить сериализации, сравнению и печати — при том что тег и
+     * есть вариант по смыслу, а не по совпадению. Ровно этим он станет в
+     * напечатанном C: структура с тегом и `switch` в `применить`.
+     */
+    case "fnref": {
+      requireName(expr.name, "fnref", "name", expr.span)
+      machine.value = variant(expr.name, {})
+      return
+    }
+    case "apply": {
+      /* Применяемое считается первым, аргументы за ним — тот же строгий порядок
+         слева направо, что у вызова по имени. */
+      startSeq(machine, [expr.fn, ...(expr.args ?? [])], env, { kind: "apply", span: expr.span }, expr.span)
+      return
+    }
     case "builtin": {
       if (!hasBuiltin(expr.name)) {
         throw flangError("FLANG_UNKNOWN_NAME", `неизвестная встроенная форма «${expr.name}»`, expr.span)
@@ -460,6 +487,37 @@ function finishSeq(machine, done, values) {
         )
       }
       applyFunction(machine, fn, values, done.span)
+      return
+    }
+    /* Диспетчер `применить(тег, аргументы)`. Тут он один на всю программу и
+       разбирает тег таблицей функций — в напечатанном C на его месте будет
+       `switch` по тем тегам, которые программа строит. */
+    case "apply": {
+      const [tag, ...args] = values
+      if (!isVariant(tag)) {
+        throw flangError("FLANG_APPLY", `применять можно только функцию, а получено ${describeValue(tag)}`, done.span)
+      }
+      const fn = machine.rt.functions.get(tag.variant)
+      if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${tag.variant}»`, done.span)
+      /* Тег, которого программа не строит, применить нельзя — обоснование в
+         `tags.mjs`. Это не придирка: снаружи можно подать тег обычной функции
+         или комбинатор Ω, и доказанная тотальность стала бы неправдой. */
+      if (!machine.rt.knownTags().has(tag.variant)) {
+        throw flangError(
+          "FLANG_APPLY",
+          `применить «${tag.variant}» нельзя: ни одно место программы не берёт эту функцию значением ` +
+            `(формой «функция «${tag.variant}»»), значит у диспетчера нет такого случая`,
+          done.span,
+        )
+      }
+      if (args.length !== fn.params.length) {
+        throw flangError(
+          "FLANG_APPLY",
+          `функция «${fn.name}» принимает ${fn.params.length} аргум., применена к ${args.length}`,
+          done.span,
+        )
+      }
+      applyFunction(machine, fn, args, done.span)
       return
     }
     default:

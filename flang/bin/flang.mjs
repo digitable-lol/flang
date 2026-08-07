@@ -27,12 +27,21 @@
  * Поддержка `.fts` здесь не «бонус», а тот же тезис, что и у моста: любая
  * существующая модель FTS — валидная программа flang.
  */
-import { realpathSync } from "node:fs"
+import { readFileSync, realpathSync } from "node:fs"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
+
+/*
+ * Версия читается из package.json, а не пишется здесь строкой. Написанная
+ * строкой, она и разошлась: пакет уехал на 0.4.5, формула Homebrew — на 0.4.5,
+ * а «flang version» до сих пор отвечал «0.1.0». Одно имя, два инструмента
+ * (Node и напечатанный в C бинарник) и три разные версии — это не мелочь, по
+ * версии человек решает, что у него установлено.
+ */
+const ВЕРСИЯ = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version
 
 const HELP = `flang — полный язык поверх FTS
 
@@ -79,7 +88,7 @@ export async function main(argv = process.argv.slice(2)) {
     return 0
   }
   if (options.command === "version" || options.command === "--version" || options.command === "-v") {
-    process.stdout.write("0.1.0\n")
+    process.stdout.write(`${ВЕРСИЯ}\n`)
     return 0
   }
 

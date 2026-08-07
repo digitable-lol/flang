@@ -1,27 +1,48 @@
 /*
- * Интерактивная оболочка flang: `flang repl`.
+ * Человеческий вход бинарника flang: `--help`, `--version`, `check`, `repl`.
+ *
+ * ── Зачем он вообще нужен ───────────────────────────────────────────────────
+ * `brew install flang` кладёт человеку бинарник с именем языка. Пока у этого
+ * бинарника был один вход — JSON со стандартного ввода, — поставивший язык не
+ * мог сделать им ничего: `flang --help` молчал и отвечал нулём, `flang check
+ * файл.flang` молчал и отвечал нулём. Инструмент, который на любую команду
+ * молчит и говорит «всё хорошо», хуже отсутствующего: человек уверен, что
+ * проверил, а не проверил ничего.
+ *
+ * Прогонщик при этом остался прогонщиком: без аргументов (и по явному `--json`)
+ * бинарник читает JSON со стандартного ввода ровно как прежде — этим контрактом
+ * живут тест формулы Homebrew, проба плагина asdf, `scripts/build-release-c.mjs`
+ * и всякий, кто зовёт программу на flang из чужого языка через трубу.
  *
  * ── Почему это отдельный файл печати ────────────────────────────────────────
- * Рядом лежит прогонщик (flang_cli.c), и у него есть обещание, которое эта
- * оболочка выполнить не может: напечатанный C ни от чего не зависит и ничего не
+ * Рядом лежит прогонщик (flang_cli.c), и у него есть обещание, которое этот
+ * файл выполнить не может: напечатанный C ни от чего не зависит и ничего не
  * спрашивает у мира — ни времени, ни случайности, ни окружения (проверка
  * «напечатанный C ни от чего не зависит и объясняет себя» в
- * flang/test/emit-c.test.mjs). Оболочка же обязана спросить: где `cc`, где
- * каталоги установки, есть ли человек на том конце. Значит ей нужны POSIX и
- * переменные окружения — и держать её в одном файле с прогонщиком значило бы
- * тихо лишить переносимости всё напечатанное, включая чужие программы, которым
- * оболочка не нужна вовсе.
+ * flang/test/emit-c.test.mjs). Человеческий же вход обязан спросить: где `cc`,
+ * где каталоги установки, есть ли человек на том конце, что лежит в файле,
+ * который он назвал. Значит ему нужны POSIX и переменные окружения — и держать
+ * его в одном файле с прогонщиком значило бы тихо лишить переносимости всё
+ * напечатанное, включая чужие программы, которым человеческий вход не нужен
+ * вовсе.
  *
  * Поэтому файла два, а бинарник один: `flang_cli` линкуется с обоими, и
- * прогонщик зовёт `fl_repl_main`, увидев в аргументах `repl`. Кто берёт
- * напечатанный C к себе в проект, берёт flang_cli.c без этого файла — и остаётся
- * с чистым C99.
+ * прогонщик зовёт `fl_human_main`, увидев в аргументах хоть что-нибудь, кроме
+ * `--json`. Кто берёт напечатанный C к себе в проект, берёт flang_cli.c без
+ * этого файла — и остаётся с чистым C99.
  *
  * Печатается этот файл по просьбе (`repl: true` у бэкенда), и просит его ровно
  * одно место — `scripts/build-release-c.mjs`, который собирает релиз самого
  * компилятора. У любой другой напечатанной программы нет точек входа, которые
  * оболочка зовёт, и возить ей сто с лишним килобайт кода, который она не может
  * исполнить, незачем.
+ *
+ * ── Одна дорога у проверки и у оболочки ─────────────────────────────────────
+ * `flang check` и приём объявления в сессию ходят одной и той же дорогой
+ * (`repl_check_sources`): связывание → типы → завершаемость, в том же порядке,
+ * что у точки входа «Проверить исходники». Это не экономия строк. Разойдись
+ * дороги — оболочка принимала бы то, что `flang check` отвергает, и человек
+ * узнавал бы об этом на сборке, а не при вводе.
  *
  * ── Почему сессия хранит ИСХОДНИК ───────────────────────────────────────────
  * Ровно тот же довод, что в `flang/src/repl.mjs`: сессия — это программа на
@@ -131,9 +152,59 @@ static char *repl_read_all(FILE *stream, size_t *length) {
 /** Сколько объявлений печатать поимённо, прежде чем перейти к счёту. */
 #define REPL_VERBOSE 6
 
+/*
+ * Версия языка. Живёт она в четырёх местах — здесь, в package.json, в формуле
+ * Homebrew и в заголовке страницы руководства, — и это не оплошность: бинарник
+ * собирается без Node и без brew, и прочитать чужой файл ему неоткуда.
+ * Расхождение ловят два теста: flang/test/manpage.test.mjs сверяет все четыре
+ * записи между собой, а flang/test/self-bootstrap.test.mjs спрашивает версию у
+ * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
+ * которой нет ни в одном релизе.
+ */
+#define FLANG_VERSION "0.4.5"
+
 static const char REPL_GREETING[] =
     "Оболочка flang. «.помощь» — команды, «.выход» — конец.\n"
     "Объявление заканчивается пустой строкой, выражение вычисляется сразу.";
+
+/*
+ * То же приветствие, когда вычислять нечем. Обещать вычисление и тут же, второй
+ * строкой в stderr, признаваться, что его не будет, — ровно тот способ врать,
+ * от которого этот файл и заводился: человек читает первое и не читает второе.
+ */
+static const char REPL_GREETING_NO_EVAL[] =
+    "Оболочка flang. «.помощь» — команды, «.выход» — конец.\n"
+    "Объявление заканчивается пустой строкой; выражение проверяется, но не вычисляется — почему, сказано ниже.";
+
+/*
+ * Справка бинарника — не справка оболочки: здесь перечислено то, что умеет
+ * ФАЙЛ, поставленный из brew или asdf, и ровно оно. Печати в остальные семь
+ * целей, запуска примеров и проверки суждений в этом бинарнике нет, поэтому
+ * их здесь нет тоже: справка, обещающая несуществующее, обходится дороже
+ * отсутствующей — по ней человек строит работу.
+ */
+static const char FLANG_HELP[] =
+    "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
+    "\n"
+    "  flang check <файл.flang>     разбор, типы, завершаемость; замечания с кодом и местом\n"
+    "  flang repl [<файл.flang>]    интерактивная оболочка; файл загружается в сессию\n"
+    "  flang --version              версия\n"
+    "  flang --help                 эта справка\n"
+    "  flang                        без аргументов — прогонщик: JSON на входе, JSON на выходе,\n"
+    "                               по запросу на строку (то же по явному «--json»)\n"
+    "\n"
+    "У оболочки ключи «--max-steps N» и «--max-depth N» — пределы вычисления.\n"
+    "\n"
+    "Вычислителя в бинарнике нет: в нём лексер, разбор, типы, завершаемость и печать в C.\n"
+    "Поэтому оболочка вычисляет так, как этот бинарник может, — печатает сессию в C,\n"
+    "собирает системным «cc» против lib/libkompilyator_flang.a и запускает. Нет «cc» —\n"
+    "оболочка не выключается, а проверяет разбор, типы и завершаемость и говорит об этом\n"
+    "при запуске. Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.\n"
+    "\n"
+    "Печать в остальные семь целей, запуск примеров и проверка суждений живут в полном\n"
+    "инструментарии, а ему нужен Node: npm install -g @digitable-lol/fts\n"
+    "\n"
+    "Подробности: man flang";
 
 static const char REPL_HELP[] =
     "Оболочка flang.\n"
@@ -1288,6 +1359,22 @@ static void repl_print_bad(const char *code, const char *message, const char *wh
     fprintf(stderr, "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line, message);
     return;
   }
+  /*
+   * `flang check`: файл человек назвал сам, поэтому место называется полностью —
+   * со столбцом. У «файла» выше столбца нет, и это не забывчивость: там файл
+   * втягивается в сессию командой «.загрузить», и та же строка обязана совпасть
+   * с оболочкой на Node дословно (сверка в flang/test/self-bootstrap.test.mjs).
+   * У проверки второй оболочки нет — она печатает то, что человеку полезнее.
+   */
+  if (strcmp(where, "проверка") == 0) {
+    if (column > 0) {
+      fprintf(stderr, "%s в файле %s, строка %lu, столбец %lu: %s\n", code, name == NULL ? "?" : name,
+              (unsigned long)line, (unsigned long)column, message);
+    } else {
+      fprintf(stderr, "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line, message);
+    }
+    return;
+  }
   if (strcmp(where, "модуль") == 0) {
     fprintf(stderr, "%s, заголовок модуля, строка %lu: %s\n", code, (unsigned long)line, message);
     return;
@@ -1400,15 +1487,61 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
 }
 
 /**
- * Список исходников для компилятора: сама сессия и всё, до чего дотягиваются её
- * «использует». Чтения файлов в языке нет и не будет — программа на flang не
- * имеет доступа к миру, — поэтому файлы читает оболочка и подаёт их списком.
+ * Замыкание по «использует»: к уже собранным (`paths`, `texts`) добавляется всё,
+ * до чего дотягивается очередь, и всё вместе едет компилятору списком. Чтения
+ * файлов в языке нет и не будет — программа на flang не имеет доступа к миру, —
+ * поэтому файлы читает этот файл.
+ *
+ * Вынесено из `repl_sources` не ради экономии строк: тем же замыканием живёт
+ * `flang check`. Разойдись они, и проверка файла видела бы не ту программу, что
+ * та же проверка в оболочке, — при одинаковом на вид ответе.
+ *
+ * `paths` и `texts` после возврата принадлежат вызывающему: по ним видно, из
+ * скольких файлов собралась программа, а знать это нужно, чтобы решить, можно
+ * ли назвать файл в диагностике (компилятор его не несёт).
  */
+static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_strings *queue) {
+  fl_value *items = NULL;
+  fl_value list = fl_nothing();
+  size_t index = 0;
+  for (index = 0; index < queue->count; index += 1) {
+    const char *path = queue->items[index];
+    char *text = NULL;
+    size_t bytes = 0;
+    if (strings_has(paths, path, strlen(path))) {
+      continue;
+    }
+    text = repl_read_file(path, &bytes);
+    if (text == NULL) {
+      /* Файла нет — молчим: об этом скажет сам компилятор, и скажет кодом
+         FLANG_IMPORT_NOT_FOUND, а не нашим пересказом. */
+      continue;
+    }
+    strings_say(paths, path);
+    strings_add(texts, text, bytes);
+    repl_imports_of(text, bytes, path, queue);
+    free(text);
+  }
+  {
+    fl_error error;
+    error.code = NULL;
+    error.message = NULL;
+    if (fl_list_alloc(&repl_ctx, paths->count, &items, &error) != FL_OK) {
+      repl_oom();
+    }
+    for (index = 0; index < paths->count; index += 1) {
+      items[index] = repl_source_value(paths->items[index], texts->items[index], strlen(texts->items[index]));
+    }
+    list = fl_list(items, paths->count);
+  }
+  return list;
+}
+
+/** Исходники сессии: сама сессия и замыкание её «использует». */
 static fl_value repl_sources(repl_session *session, const char *source, const repl_imports *imports) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
-  fl_value *items = NULL;
   fl_value list = fl_nothing();
   size_t index = 0;
   strings_init(&paths);
@@ -1421,54 +1554,29 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
     strings_say(&queue, full);
     free(full);
   }
-  for (index = 0; index < queue.count; index += 1) {
-    const char *path = queue.items[index];
-    char *text = NULL;
-    size_t bytes = 0;
-    if (strings_has(&paths, path, strlen(path))) {
-      continue;
-    }
-    text = repl_read_file(path, &bytes);
-    if (text == NULL) {
-      /* Файла нет — молчим: об этом скажет сам компилятор, и скажет кодом
-         FLANG_IMPORT_NOT_FOUND, а не нашим пересказом. */
-      continue;
-    }
-    strings_say(&paths, path);
-    strings_add(&texts, text, bytes);
-    repl_imports_of(text, bytes, path, &queue);
-    free(text);
-  }
-  {
-    fl_error error;
-    error.code = NULL;
-    error.message = NULL;
-    if (fl_list_alloc(&repl_ctx, paths.count, &items, &error) != FL_OK) {
-      repl_oom();
-    }
-    for (index = 0; index < paths.count; index += 1) {
-      items[index] = repl_source_value(paths.items[index], texts.items[index], strlen(texts.items[index]));
-    }
-    list = fl_list(items, paths.count);
-  }
+  list = repl_closure(&paths, &texts, &queue);
   strings_free(&paths);
   strings_free(&texts);
   strings_free(&queue);
   return list;
 }
 
-/* ─────────────────────── та же дорога, что у flang check ────────────────── */
+/* ─────────────────────── одна дорога: и check, и оболочка ───────────────── */
 
 /**
  * Разбор со связыванием → типы → завершаемость: ровно та пара проверок и в том
- * же порядке, что у `flang check` («Проверить исходники» связанного
- * компилятора). Разбита здесь на три вызова не ради удобства, а потому что
- * оболочке нужна ещё и сама связанная программа: по ней считаются имена,
- * видимые следующему вводу, и по ней же печатается C, когда вычисляется
- * выражение, — связывать второй раз ради этого было бы расточительством.
+ * же порядке, что у точки входа «Проверить исходники», то есть у `flang check`.
+ * Разбита здесь на три вызова не ради удобства, а потому что вызывающему нужна
+ * ещё и сама связанная программа: по ней считаются имена, видимые следующему
+ * вводу, по ней печатается C, когда вычисляется выражение, и по ней же
+ * `flang check` говорит человеку, что в файле насчитано, — связывать второй раз
+ * ради этого было бы расточительством.
+ *
+ * Дорога одна на оба человеческих входа нарочно: разойдись они, оболочка
+ * принимала бы объявление, которое `flang check` в том же файле отвергает.
  */
-static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
-                       fl_value *program, bool *has_program, repl_strings *proven) {
+static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
+                               bool *has_program, repl_strings *proven) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -1476,8 +1584,8 @@ static bool repl_check(repl_session *session, const char *source, const repl_imp
   fl_value diagnostics = fl_nothing();
   size_t index = 0;
   *has_program = false;
-  args[0] = repl_sources(session, source, imports);
-  args[1] = repl_value_say(session->file);
+  args[0] = sources;
+  args[1] = repl_value_say(entry);
   if (repl_call("Связать исходники", args, 2, &linked) != FL_OK) {
     bads_say(bads, "компилятор не связал сессию");
     return false;
@@ -1520,6 +1628,12 @@ static bool repl_check(repl_session *session, const char *source, const repl_imp
     }
   }
   return bads->count == 0;
+}
+
+/** Та же дорога для сессии: исходником служит собранный текст сессии. */
+static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
+                       fl_value *program, bool *has_program, repl_strings *proven) {
+  return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -3713,10 +3827,10 @@ static void repl_close_session(repl_session *session) {
 }
 
 /*
- * Оболочка обращается к компилятору по именам его точек входа, и печатается она
- * в КАЖДЫЙ прогонщик — бэкенд один на все программы. Если этой программой
- * оказался не компилятор, честнее сказать это первой же строкой, чем делать
- * вид, что оболочка работает: «Разбор исходника» ей всё равно взять неоткуда.
+ * Человеческий вход обращается к компилятору по именам его точек входа, и
+ * печатается он в КАЖДЫЙ прогонщик — бэкенд один на все программы. Если этой
+ * программой оказался не компилятор, честнее сказать это первой же строкой, чем
+ * делать вид, что всё работает: «Разбор исходника» взять всё равно неоткуда.
  */
 static bool repl_is_compiler(void) {
   fl_value arguments[2];
@@ -3728,6 +3842,162 @@ static bool repl_is_compiler(void) {
   error.code = NULL;
   error.message = NULL;
   return FL_PROGRAM_CALL(&repl_ctx, "Разбор исходника", arguments, 2, &result, &error) == FL_OK;
+}
+
+/* ═══════════════════════════ flang check <файл> ═══════════════════════════ */
+
+/**
+ * Сколько в связанной программе объявлений и сколько из них с доказанным
+ * завершением. Считается по САМОЙ программе, а не по тексту файла: `использует`
+ * втягивает чужие функции, и человеку полезно знать, сколько их проверено
+ * вместе с его собственными.
+ */
+static void check_count(fl_value program, size_t *functions, size_t *types, const repl_strings *proven,
+                        size_t *proved) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  *proved = 0;
+  zn_field_items(program, "functions", &items, &count);
+  *functions = count;
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    size_t bytes = 0;
+    if (zn_field_text(items[index], "name", &name, &bytes) && strings_has(proven, name, bytes)) {
+      *proved += 1;
+    }
+  }
+  zn_field_items(program, "types", &items, &count);
+  *types = count;
+}
+
+/**
+ * Диагностика проверки — человеку, а не инструменту: код, место, сообщение.
+ *
+ * Имя файла названо ровно тогда, когда оно известно. «Беда» компилятора несёт
+ * строку и столбец, но НЕ несёт файла (запись «Беда» в
+ * flang/self/bootstrap/compiler.flang), поэтому при одном исходнике файл
+ * очевиден, а при нескольких — нет, и назвать наугад хуже, чем не назвать:
+ * человек пойдёт править не тот файл. Про это сказано один раз перед списком, а
+ * не при каждом замечании.
+ */
+static void check_print_bads(const repl_bads *bads, const char *file, size_t sources) {
+  size_t index = 0;
+  if (sources > 1 && bads->count > 0) {
+    fprintf(stderr,
+            "место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов %lu, "
+            "а диагностика компилятора имени файла не несёт\n",
+            (unsigned long)sources);
+  }
+  for (index = 0; index < bads->count; index += 1) {
+    const repl_bad *bad = &bads->items[index];
+    if (!bad->has_at) {
+      repl_print_bad(bad->code, bad->message, NULL, NULL, 0, 0);
+    } else if (sources == 1) {
+      repl_print_bad(bad->code, bad->message, "проверка", file, bad->line, bad->column);
+    } else {
+      repl_print_bad(bad->code, bad->message, "ввод", NULL, bad->line, bad->column);
+    }
+  }
+}
+
+/**
+ * `flang check <файл>` — то, ради чего язык ставят: сказать до запуска, что
+ * программа разбирается, сходится по типам и завершается.
+ *
+ * Дорога та же, что у оболочки (`repl_check_sources`), и тот же порядок бед,
+ * что у точки входа «Проверить исходники». Отличается только подача: человеку —
+ * строками, а не JSON. JSON остаётся у прогонщика, и кто хочет разбирать вывод
+ * машиной, зовёт «Проверить исходники» через трубу, как раньше.
+ *
+ * Код возврата: 0 — замечаний нет, 1 — есть, 2 — файла нет или он не назван.
+ * Разделение то же, что у CLI на Node: ошибка вызова и ошибка программы — не
+ * одно и то же, и сценарий вправе их различать.
+ */
+static int check_file(const char *path) {
+  repl_bads bads;
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  repl_strings proven;
+  fl_value program = fl_nothing();
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  size_t functions = 0;
+  size_t types = 0;
+  size_t proved = 0;
+  bool has_program = false;
+  bool ok = false;
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    /* Код тот же, каким CLI помечает неверный вызов: файла нет — это ошибка
+       вызова, а не приговор программе, и путать их нельзя. */
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_init(&proven);
+  bads_init(&bads);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven);
+
+  if (has_program) {
+    check_count(program, &functions, &types, &proven, &proved);
+  }
+  /* Считать нечего, когда разбор не дошёл до объявлений; «функций 0» в этом
+     случае — не итог проверки, а утверждение о файле, которого никто не делал. */
+  if (has_program && (functions > 0 || types > 0)) {
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    /* Программа приезжает узлом («Значение»), а не записью C, поэтому поля у
+       неё достаются `zn_*`, как и у всего остального разобранного. */
+    if (zn_field_text(program, "module", &name, &name_bytes) && name_bytes > 0) {
+      printf("модуль «%.*s»", (int)name_bytes, name);
+    } else {
+      printf("без имени модуля");
+    }
+    printf(": функций %lu, из них с доказанным завершением %lu; типов %lu",
+           (unsigned long)functions, (unsigned long)proved, (unsigned long)types);
+    if (paths.count > 1) {
+      printf("; файлов вместе с импортами %lu", (unsigned long)paths.count);
+    }
+    printf("\n");
+  }
+  /* Потоки разные — stdout под ответ, stderr под диагностику, — и порядок между
+     ними держится только сбросом: под конвейером stdout копится блоками, и без
+     этой строки замечания приезжали бы раньше того, к чему относятся. */
+  fflush(stdout);
+  check_print_bads(&bads, path, paths.count);
+  fflush(stderr);
+  if (ok) {
+    printf("%s: проверено — разбор, типы, завершаемость; замечаний нет\n", path);
+  } else {
+    printf("%s: не проверено — замечаний %lu\n", path, (unsigned long)bads.count);
+  }
+  fflush(stdout);
+
+  bads_free(&bads);
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  strings_free(&proven);
+  free(text);
+  free(full);
+  return ok ? 0 : 1;
 }
 
 static const char REPL_PROMPT[] = "» ";
@@ -3744,7 +4014,7 @@ static const char REPL_CONTINUATION[] = "… ";
  * `flang repl < сценарий.flang` терял бы последнее объявление файла, если автор
  * не оставил в конце пустую строку.
  */
-int fl_repl_main(int argc, char **argv, const char *self) {
+static int repl_loop(int argc, char **argv, const char *self) {
   repl_session session;
   repl_buf buffer;
   repl_buf line;
@@ -3755,16 +4025,6 @@ int fl_repl_main(int argc, char **argv, const char *self) {
   bool quit = false;
   int index = 0;
 
-  fl_arena_init(&repl_arena);
-  fl_ctx_init(&repl_ctx, &repl_arena);
-  if (!repl_is_compiler()) {
-    fputs("оболочка есть только у компилятора flang: в этой программе нет его точек входа\n"
-          "(«Разбор исходника», «Связать исходники», «Проверить типы»). Прогонщик по-прежнему\n"
-          "читает JSON со стандартного ввода.\n",
-          stderr);
-    fl_arena_release(&repl_arena);
-    return 2;
-  }
   repl_open_session(&session, self);
   repl_open = &session;
   atexit(repl_sweep);
@@ -3789,9 +4049,12 @@ int fl_repl_main(int argc, char **argv, const char *self) {
   sigaction(SIGINT, &action, NULL);
 
   /* Приглашения печатаются только человеку: под конвейером они попали бы в
-     вывод и испортили его тому, кто читает результат сценария. */
+     вывод и испортили его тому, кто читает результат сценария. Приветствие
+     выбирается по тому, чем оболочка на самом деле располагает: обещать
+     вычисление, а следующей строкой признаваться, что вычислять нечем, значит
+     соврать первой строкой — её и прочтут. */
   if (interactive) {
-    printf("%s\n", REPL_GREETING);
+    printf("%s\n", session.why_no_eval == NULL ? REPL_GREETING : REPL_GREETING_NO_EVAL);
   }
   /* Про отсутствие вычислителя — один раз и в stderr: stdout принадлежит
      результату сценария. */
@@ -3857,9 +4120,69 @@ int fl_repl_main(int argc, char **argv, const char *self) {
   buf_free(&buffer);
   buf_free(&line);
   repl_close_session(&session);
-  fl_arena_release(&repl_arena);
   /* Человеку код возврата не нужен — он видел ошибку и продолжил работать.
      Конвейеру нужен: `flang repl < сценарий.flang` — это прогон сценария, и
      молча отдать 0 после диагностики значило бы соврать вызывающему. */
   return interactive || !failed ? 0 : 1;
+}
+
+/* ═════════════════════════ разбор аргументов ═════════════════════════════ */
+
+static bool human_word(const char *word, const char *full, const char *short_form, const char *bare) {
+  return strcmp(word, full) == 0 || (short_form != NULL && strcmp(word, short_form) == 0) ||
+         (bare != NULL && strcmp(word, bare) == 0);
+}
+
+/**
+ * Человеческий вход бинарника: сюда прогонщик передаёт управление, увидев в
+ * аргументах хоть что-нибудь.
+ *
+ * Неизвестная команда — отказ с кодом 2, а не молчание. Молчание и было прежней
+ * бедой: `flang chek файл.flang` с опечаткой читал пустой стандартный ввод,
+ * ничего не печатал и отвечал нулём, а человек уходил в уверенности, что
+ * проверил файл.
+ *
+ * Арена одна на весь вход и заводится здесь: и проверка файла, и оболочка зовут
+ * компилятор, и делить владение памятью между ними было бы нечем.
+ */
+int fl_human_main(int argc, char **argv, const char *self) {
+  const char *command = argc > 1 ? argv[1] : "";
+  int code = 0;
+
+  /*
+   * «Кто я» спрашивается ПЕРВЫМ, раньше даже справки, и стоит это нисколько
+   * (проба — разбор пустой строки). Иначе программа «Списки», собранная с этим
+   * файлом, на `--help` рассказывала бы про язык flang и называла бы его
+   * версию — то есть врала бы о себе там, где вопрос как раз о ней.
+   */
+  fl_arena_init(&repl_arena);
+  fl_ctx_init(&repl_ctx, &repl_arena);
+  if (!repl_is_compiler()) {
+    fputs("человеческие команды есть только у компилятора flang: в этой программе нет его точек\n"
+          "входа («Разбор исходника», «Связать исходники», «Проверить типы»). Прогонщик\n"
+          "по-прежнему читает JSON со стандартного ввода.\n",
+          stderr);
+    fl_arena_release(&repl_arena);
+    return 2;
+  }
+
+  if (human_word(command, "--help", "-h", "help")) {
+    printf("%s\n", FLANG_HELP);
+  } else if (human_word(command, "--version", "-v", "version")) {
+    printf("flang %s\n", FLANG_VERSION);
+  } else if (strcmp(command, "check") == 0) {
+    if (argc < 3) {
+      fputs("flang check: не назван файл. Пример: flang check модуль.flang\n", stderr);
+      code = 2;
+    } else {
+      code = check_file(argv[2]);
+    }
+  } else if (strcmp(command, "repl") == 0) {
+    code = repl_loop(argc - 1, argv + 1, self);
+  } else {
+    fprintf(stderr, "flang: неизвестная команда «%s». «flang --help» — что умеет бинарник.\n", command);
+    code = 2;
+  }
+  fl_arena_release(&repl_arena);
+  return code;
 }

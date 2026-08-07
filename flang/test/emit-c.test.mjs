@@ -1429,6 +1429,24 @@ test("оболочка печатается только по просьбе, и
   assert.doesNotMatch(прогонщик.content, /#include\s*<(signal|unistd)\.h>/u)
   assert.match(прогонщик.content, /#define FL_WITH_REPL 1/u, "просьба доезжает до прогонщика")
   assert.match(built.emitted.files.find((file) => file.path === "Makefile").content, /flang_repl\.o/u)
+
+  /*
+   * И главное: собранная так ЧУЖАЯ программа не выдаёт себя за flang. Файл один
+   * на все программы, справка в нём написана про язык, и `--help` у программы
+   * «Дерево» рассказал бы про flang и назвал бы его версию — то есть соврал бы
+   * о себе там, где вопрос как раз о ней. Поэтому первым делом спрашивается
+   * «кто я», и ответ здесь отрицательный.
+   */
+  for (const команда of ["--help", "--version", "check", "repl"]) {
+    const итог = spawnSync(built.cli, [команда], { input: "", encoding: "utf8" })
+    assert.equal(итог.status, 2, `«${команда}» у чужой программы обязан отказать`)
+    assert.equal(итог.stdout, "", `«${команда}» у чужой программы что-то напечатал: ${итог.stdout}`)
+    assert.match(итог.stderr, /человеческие команды есть только у компилятора flang/u)
+  }
+  /* А прогонщик у неё работает как прежде: контракт трубы не тронут. */
+  const ответ = spawnSync(built.cli, [], { input: '{"fn":"Сумма дерева","args":[{"v":"Лист","f":[["значение",{"n":"7"}]]}]}\n', encoding: "utf8" })
+  assert.equal(ответ.status, 0)
+  assert.deepEqual(JSON.parse(ответ.stdout), { ok: true, value: { n: "7" } })
 })
 
 /*

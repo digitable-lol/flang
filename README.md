@@ -48,9 +48,11 @@ brew install digitable-lol/tap/flang
 Or straight from the release archive, with nothing but `cc` and `make`:
 
 ```bash
-tar -xzf flang-*-c.tar.gz   # inside: C99 sources and a Makefile, nothing else
+tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 man page
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli                 # JSON in, JSON out, one request per line
+./flang_cli --help          # what it does: check, repl, --version
+./flang_cli check m.flang   # parse, types, totality — in words, not JSON
+./flang_cli                 # with no arguments: JSON in, JSON out, one request per line
 ```
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
@@ -65,7 +67,10 @@ lexer, parser, types, totality, printing to C. There is no evaluator among them 
 `flang repl` there evaluates the only honest way this binary can: it prints the session to C,
 builds it with the system `cc` against the runtime installed beside it, and runs that. Without a
 `cc` the shell does not switch off — it keeps checking parse, types and totality, and says so
-once. Running a program or its examples non-interactively still needs the full toolchain below.
+once. Checking a file needs nothing else: `flang check file.flang` runs parse, linking, types and
+totality and prints its findings in words — with a code and a place, not JSON. `flang --help`
+lists the commands and `man flang` describes them. Running a program or its examples
+non-interactively still needs the full toolchain below.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
 the language server, the MCP server and seven of the eight backends exist only in JavaScript. The

@@ -333,6 +333,12 @@ const ЧУЖИЕ = [null, "не то", 42, true, [], [1, "два"], { "поле"
  * аргументу. Выдуманная сетка проверяла бы фантазию автора теста, а сетка из
  * примеров — то, ради чего функция написана.
  */
+/** Объявлен ли параметр типом «функция»: `функция из числа в число`. */
+function fnTypedParam(fn, index) {
+  const param = fn.params?.[index]
+  return param !== null && typeof param === "object" && param.type?.kind === "fn"
+}
+
 function functionGrid(fn) {
   const params = fn.params.map((param) => (typeof param === "string" ? param : param.name))
   const examples = (fn.examples ?? []).filter((example) =>
@@ -343,6 +349,17 @@ function functionGrid(fn) {
 
   const seed = points.length > 0 ? points[0] : params.map(() => null)
   for (let index = 0; index < params.length; index += 1) {
+    /* Параметр типа «функция» порче не подвергается, и это не дырка, а
+       названное расхождение (`flang/cat/HOF.md`, «Одно расхождение, и оно
+       названо»): чужое значение на месте тега отвергают ОБЕ стороны, но
+       разными словами — интерпретатор `FLANG_APPLY`, напечатанный диспетчер
+       `FLANG_MATCH_NOT_EXHAUSTIVE`, — потому что «отказать вот с этим текстом»
+       в языке невыразимо. Проверяется оно дословно и отдельно, в
+       `flang/test/stdlib-hof.test.mjs` и `flang/test/hof-emit.test.mjs`;
+       здесь же сверяются тексты, и сверять их тут значило бы записать
+       расхождение в восьми местах вместо одного. Значения из примеров на этой
+       позиции остаются: тег там настоящий. */
+    if (fnTypedParam(fn, index)) continue
     for (const alien of ЧУЖИЕ) {
       const spoiled = [...seed]
       spoiled[index] = alien

@@ -539,8 +539,10 @@ Number is O(n²) because there are no bitwise operations.
 [`flang/examples/rosetta/`](flang/examples/rosetta) holds seven canonical Rosetta Code tasks,
 and its test pins the number of functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
-comment. The standard library ([`flang/stdlib/`](flang/stdlib): `lists`, `numbers`, `optional`,
-`result`, `strings`) is written the same way — 77 functions, of which 63 are proven total.
+comment. The standard library ([`flang/stdlib/`](flang/stdlib): `higher-order`, `lists`, `numbers`,
+`optional`, `result`, `strings`) is written the same way — 112 functions, of which 105 are proven
+total. `higher-order` is the one built on first-class functions: fold, map, filter, search, sort
+and composition take a function as an argument.
 
 ---
 

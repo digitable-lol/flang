@@ -674,6 +674,7 @@ class Parser {
   parseRecord() {
     const start = this.next()
     const name = this.expectName("ожидалось имя объекта")
+    const typeParams = this.parseTypeParams()
     const fields = []
     if (this.enterBlock()) {
       while (!this.atBlockEnd()) {
@@ -683,7 +684,54 @@ class Parser {
       }
       this.exitBlock()
     }
-    return { kind: "record", name, fields, span: start.span }
+    const node = { kind: "record", name, fields, span: start.span }
+    if (typeParams.length > 0) node.typeParams = typeParams
+    return node
+  }
+
+  /**
+   * Параметры типа у объявления: `тип «Возможно» от «А»`, `объект «Пара» от
+   * «А» и «Б»`, `функция «Обернуть» от «А»`.
+   *
+   * Новых ключевых слов здесь нет ни одного, и это решение, а не удача. `от`
+   * (`of`) и `и` (`and`) уже в таблице — значит ни одно имя в существующих
+   * .flang и .fts не перестаёт разбираться. Цену занятого слова репозиторий
+   * уже платил: «символы», «группа», «обратный», «на», «начальное», «порог» —
+   * каждое стоило переделки конструкции. Здесь платить нечем.
+   *
+   * Позиция однозначна: после имени объявления `от` сегодня не встречается
+   * нигде — там либо `это`, либо конец строки, либо блок. Поэтому старые
+   * исходники разбираются ровно как раньше, до последнего байта AST: поле
+   * `typeParams` появляется только когда параметры написаны.
+   */
+  parseTypeParams() {
+    if (!this.atKw("of")) return []
+    this.next()
+    const names = [this.expectName("ожидалось имя параметра типа")]
+    while (this.eatKw("and")) names.push(this.expectName("ожидалось имя параметра типа"))
+    return names
+  }
+
+  /**
+   * Аргументы типа при применении: `«Возможно» от числа`, `«Пара» от «А» и «Б»`.
+   *
+   * Разделитель `и` сталкивается с `и` — разделителем полей варианта
+   * (`вариант «В» содержит п: «Пара» от «А» и второе: строка`). Разводится
+   * заглядыванием на два токена: `и имя :` начинает новое поле, всё остальное
+   * — очередной аргумент типа. Спутать нельзя: за аргументом-типом двоеточие
+   * не идёт никогда, а за именем поля идёт всегда.
+   */
+  parseTypeArguments() {
+    const args = [this.parseTypeExpression()]
+    while (this.atKw("and") && !this.fieldFollowsAnd()) {
+      this.next()
+      args.push(this.parseTypeExpression())
+    }
+    return args
+  }
+
+  fieldFollowsAnd() {
+    return (this.at("name", 1) || this.at("string", 1)) && this.atPunct(":", 2)
   }
 
   parseRecordField() {
@@ -728,7 +776,15 @@ class Parser {
 
   parseTypeExpression() {
     let type
-    if (this.atKw("list") || this.atKw("listOf")) {
+    /* Скобки в типе. `«Возможно» от «Возможно» от числа` разбирается и без
+       них — применение правоассоциативно, — но читается скобками, и цена им
+       ноль: `(` в позиции типа сегодня всегда ошибка разбора, значит ни одна
+       существующая программа этого не заметит. */
+    if (this.atPunct("(")) {
+      this.next()
+      type = this.parseTypeExpression()
+      this.expectPunct(")")
+    } else if (this.atKw("list") || this.atKw("listOf")) {
       this.next()
       type = { kind: "list", of: this.parseTypeExpression() }
     } else if (this.atKw("state")) {
@@ -738,6 +794,13 @@ class Parser {
       type = { ...SCALAR_TYPES[this.next().value] }
     } else if (this.atName()) {
       type = { kind: "named", name: this.expectName("ожидался тип") }
+      /* Применение параметрического типа: `«Возможно» от числа`. Поле `args`
+         дописывается только когда аргументы написаны, поэтому AST всех
+         существующих программ не меняется ни на байт. */
+      if (this.atKw("of")) {
+        this.next()
+        type.args = this.parseTypeArguments()
+      }
     } else {
       this.fail("не разобрана конструкция: ожидался тип")
     }
@@ -753,12 +816,15 @@ class Parser {
   parseTypeDeclaration() {
     const start = this.next()
     const name = this.expectName("ожидалось имя типа")
+    const typeParams = this.parseTypeParams()
 
     if (this.atKw("alias") || this.atKw("is") || this.atPunct("=")) {
       this.next()
       const of = this.parseTypeExpression()
       this.endLine()
-      return { kind: "alias", name, of, span: start.span }
+      const alias = { kind: "alias", name, of, span: start.span }
+      if (typeParams.length > 0) alias.typeParams = typeParams
+      return alias
     }
 
     const variants = []
@@ -771,7 +837,9 @@ class Parser {
       this.exitBlock()
     }
     if (variants.length === 0) this.fail("не разобрана конструкция: тип без вариантов и без 'это'", start)
-    return { kind: "sum", name, variants, span: start.span }
+    const node = { kind: "sum", name, variants, span: start.span }
+    if (typeParams.length > 0) node.typeParams = typeParams
+    return node
   }
 
   parseVariantDeclaration() {
@@ -796,6 +864,11 @@ class Parser {
     const total = this.eatKw("total")
     this.expectKw("function", "ожидалось слово 'функция'")
     const name = this.expectName("ожидалось имя функции")
+    /* Параметры типа объявляются явно — `функция «Обернуть» от «А»`, — а не
+       выводятся из сигнатуры. Неявное правило «незнакомое имя типа считается
+       параметром» превращало бы опечатку в имени типа в молчаливо принятую
+       программу: `возвращает «Возможо»` перестало бы быть ошибкой. */
+    const typeParams = this.parseTypeParams()
 
     const params = []
     const examples = []
@@ -836,6 +909,7 @@ class Parser {
 
     if (body === null) this.fail(`функция «${name}» не содержит тела`, start)
     const node = { name, total, params, returns, body, examples }
+    if (typeParams.length > 0) node.typeParams = typeParams
     node.span = start.span
     return node
   }

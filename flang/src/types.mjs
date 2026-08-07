@@ -106,6 +106,13 @@ export function checkTypes(program) {
     aliasTypes: new Map(),   // имя псевдонима → развёрнутый тип (мемоизация)
     aliasOpen: new Set(),    // псевдонимы в процессе развёртывания — ловушка цикла
     signatures: new Map(),
+    /* Параметрический полиморфизм (flang/cat/POLY.md). `typeParams` — имена
+       параметров каждого объявленного типа; пустой массив у обычного типа,
+       поэтому проверка арности одна на всех. `paramScope` — параметры,
+       связанные тем объявлением, которое нормализуется прямо сейчас: имя
+       параметра важнее одноимённого типа, и только внутри своего объявления. */
+    typeParams: new Map(), // имя типа → массив имён его параметров
+    paramScope: null,      // Set<имя параметра> или null вне объявления
   }
 
   collectTypes(program, ctx)
@@ -974,6 +981,7 @@ function collectTypes(program, ctx) {
       ctx.report("FLANG_TYPE", `тип «${declaration.name}» объявлен дважды`, declaration)
       continue
     }
+    ctx.typeParams.set(declaration.name, typeParamsOf(declaration, ctx))
     if (declaration.kind === "sum") ctx.sums.set(declaration.name, new Map())
     /* Псевдоним (`тип «Числа» это список числа`) — не новый тип, а второе имя
        уже существующего. Своей таблицы полей у него нет и быть не может:
@@ -992,9 +1000,10 @@ function collectTypes(program, ctx) {
       if (ctx.aliases.get(declaration.name) === declaration) expandAlias(declaration.name, ctx)
       continue
     }
+    const restore = openParamScope(declaration.name, declaration, ctx)
     if (declaration.kind === "sum") {
       const variants = ctx.sums.get(declaration.name)
-      if (!variants) continue
+      if (!variants) { closeParamScope(ctx, restore); continue }
       for (const variant of declaration.variants ?? []) {
         if (!isName(variant?.name)) {
           ctx.report("FLANG_TYPE", `сумма «${declaration.name}» содержит вариант без имени`, declaration)
@@ -1015,10 +1024,190 @@ function collectTypes(program, ctx) {
         ctx.variantOwner.set(variant.name, declaration.name)
         variants.set(variant.name, fieldMap(variant.fields, ctx, declaration))
       }
+      closeParamScope(ctx, restore)
       continue
     }
     ctx.records.set(declaration.name, fieldMap(declaration.fields, ctx, declaration))
+    closeParamScope(ctx, restore)
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Параметрический полиморфизм: параметры типа и их подстановка        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Имена параметров объявления с проверкой самих имён. Возвращает всегда
+ * массив — у обычного объявления пустой, поэтому дальше по коду параметрический
+ * и обычный тип обрабатываются одним путём, без ветвления «а есть ли они».
+ *
+ * Параметр, названный именем объявленного типа, отвергается. Технически он
+ * работал бы — параметр в своей области перекрывает тип, — но читатель кода
+ * увидел бы `«Заказ»` в поле и понял бы его как заказ, а это был бы любой тип.
+ * Язык, где типы объявляются словами, обязан читаться однозначно.
+ */
+function typeParamsOf(declaration, ctx) {
+  const raw = Array.isArray(declaration?.typeParams) ? declaration.typeParams : []
+  const names = []
+  for (const name of raw) {
+    if (!isName(name)) {
+      ctx.report("FLANG_TYPE_PARAM", `объявление «${declaration.name}» содержит параметр типа без имени`, declaration)
+      continue
+    }
+    if (names.includes(name)) {
+      ctx.report("FLANG_TYPE_PARAM", `параметр типа «${name}» объявлен в «${declaration.name}» дважды`, declaration)
+      continue
+    }
+    if (SCALAR_ALIASES.has(name)) {
+      ctx.report("FLANG_TYPE_PARAM", `параметр типа «${name}» называется как встроенный тип`, declaration)
+      continue
+    }
+    names.push(name)
+  }
+  return names
+}
+
+/** Параметры, названные именем уже объявленного типа. Проверяется вторым
+ *  проходом: к этому моменту известны все имена типов, в том числе объявленных
+ *  ниже. */
+function checkParamShadowing(declaration, params, ctx) {
+  for (const name of params) {
+    if (ctx.records.has(name) || ctx.sums.has(name) || ctx.aliases.has(name)) {
+      ctx.report("FLANG_TYPE_PARAM", `параметр типа «${name}» в «${declaration.name}» называется как объявленный тип`, declaration)
+    }
+  }
+}
+
+function openParamScope(owner, declaration, ctx) {
+  const restore = ctx.paramScope
+  const params = ctx.typeParams.get(owner) ?? []
+  if (params.length > 0) checkParamShadowing(declaration, params, ctx)
+  ctx.paramScope = params.length > 0 ? new Set(params) : null
+  return restore
+}
+
+function closeParamScope(ctx, restore) {
+  ctx.paramScope = restore
+}
+
+/**
+ * Применение объявленного типа к аргументам с проверкой арности.
+ *
+ * `args` навешивается только когда аргументы есть, поэтому у обычного типа
+ * объект остаётся ровно прежним — `{ kind, name }`. Это не мелочь: на форме
+ * этого объекта держатся `sameType` и `typeName`, а через них — тексты сотен
+ * существующих диагностик.
+ */
+function applied(type, args, ctx, at) {
+  const expected = ctx.typeParams.get(type.name) ?? []
+  if (args.length !== expected.length) {
+    ctx.report(
+      "FLANG_TYPE_ARGS",
+      `тип «${type.name}» объявлен от ${countParams(expected.length)}, а применён к ${countArgs(args.length)}`,
+      at,
+    )
+    return UNKNOWN
+  }
+  if (args.length === 0) return type
+  return { ...type, args }
+}
+
+function countParams(n) {
+  if (n === 0) return "нуля параметров"
+  return `${n} ${n === 1 ? "параметра" : "параметров"}`
+}
+
+function countArgs(n) {
+  if (n === 0) return "нулю аргументов"
+  return `${n} ${n === 1 ? "аргументу" : "аргументам"}`
+}
+
+/** Есть ли в типе несвязанный параметр. Нужен там, где тип нельзя отдавать
+ *  вниз ожиданием: `expected` с параметром внутри сбил бы вывод пустого списка. */
+function hasParams(type) {
+  if (!type) return false
+  if (type.kind === "param") return true
+  if (type.kind === "list") return hasParams(type.of)
+  if (Array.isArray(type.args)) return type.args.some(hasParams)
+  return false
+}
+
+/** Подстановка: параметры → типы. Объекты пересоздаются только там, где что-то
+ *  действительно поменялось, — иначе мемоизация псевдонимов теряла бы смысл. */
+function substitute(type, bindings) {
+  if (!type || bindings.size === 0 || !hasParams(type)) return type
+  if (type.kind === "param") {
+    const bound = bindings.get(type.name)
+    if (bound === undefined) return type
+    /* Пометка «может отсутствовать» принадлежит месту применения, а не типу,
+       который туда подставили: `поле: «А» иногда является` остаётся
+       необязательным, чем бы «А» ни оказалась. */
+    return type.optional === true ? { ...bound, optional: true } : bound
+  }
+  if (type.kind === "list") return { ...type, of: substitute(type.of, bindings) }
+  if (Array.isArray(type.args)) return { ...type, args: type.args.map((arg) => substitute(arg, bindings)) }
+  return type
+}
+
+/** Связывание параметров объявления с аргументами применения. */
+function bindingsOf(type, ctx) {
+  const names = ctx.typeParams.get(type?.name) ?? []
+  const args = Array.isArray(type?.args) ? type.args : []
+  const bindings = new Map()
+  if (names.length !== args.length) return bindings
+  names.forEach((name, index) => bindings.set(name, args[index]))
+  return bindings
+}
+
+/**
+ * Первый порядок, одностороннее сопоставление: объявленный тип с параметрами
+ * против выведенного типа значения. Ответ — связывание параметров.
+ *
+ * Хиндли — Милнера здесь нет по той же причине, по которой его нет во всём
+ * модуле (см. шапку): функции не значения первого класса, значит на каждом
+ * вызове типы всех аргументов уже известны, и решать нечего — достаточно
+ * пройти по объявленному типу и сложить, куда что встало. Это разрешимо,
+ * линейно и, главное, говорит об ошибке настоящими именами: «ожидался
+ * «Возможно» от числа, получен «Возможно» от строки», а не «t7 против t12».
+ */
+function matchAgainst(declared, actual, bindings) {
+  if (!declared || !actual) return true
+  if (declared.kind === "param") {
+    /* Джокер ничего не сообщает: связать по нему значит зафиксировать
+       параметр случайной ошибкой выше и получить каскад. */
+    if (actual.kind === "unknown") return true
+    const known = bindings.get(declared.name)
+    if (known === undefined) {
+      bindings.set(declared.name, actual.optional === true ? { ...actual, optional: false } : actual)
+      return true
+    }
+    return sameType(known, actual)
+  }
+  if (declared.kind === "unknown" || actual.kind === "unknown") return true
+  if (declared.kind !== actual.kind) return false
+  if (declared.kind === "list") return matchAgainst(declared.of, actual.of, bindings)
+  if (declared.kind === "record" || declared.kind === "sum") {
+    if (declared.name !== actual.name) return false
+    const left = Array.isArray(declared.args) ? declared.args : []
+    const right = Array.isArray(actual.args) ? actual.args : []
+    if (left.length !== right.length) return false
+    return left.every((item, index) => matchAgainst(item, right[index], bindings))
+  }
+  return true
+}
+
+/**
+ * Параметры, которые сопоставление не определило. Оставлять их в результате
+ * нельзя: `«Возможно» от «А»` с несвязанной «А» дальше сравнивался бы с чем
+ * попало. Подставляем джокер (каскада не будет) и называем беду один раз.
+ */
+function reportUnsolved(names, bindings, label, ctx, at) {
+  const unsolved = names.filter((name) => !bindings.has(name))
+  for (const name of unsolved) {
+    ctx.report("FLANG_TYPE_PARAM", `${label}: параметр типа «${name}» не определяется ни по аргументам, ни по ожидаемому типу`, at)
+    bindings.set(name, UNKNOWN)
+  }
+  return unsolved.length === 0
 }
 
 function fieldMap(fields, ctx, at) {
@@ -1047,6 +1236,16 @@ function collectSignatures(program, ctx) {
       ctx.report("FLANG_TYPE", `функция «${fn.name}» объявлена дважды`, fn)
       continue
     }
+    /* Параметры типа функции живут ровно на время нормализации её сигнатуры:
+       в теле типов не пишут, значит и области там не нужно. В `ctx.typeParams`
+       они НЕ кладутся — та таблица про имена типов, а имя функции вправе
+       совпасть с именем типа, и одно затёрло бы другое. */
+    const typeParams = typeParamsOf(fn, ctx)
+    const restoreScope = ctx.paramScope
+    if (typeParams.length > 0) {
+      checkParamShadowing(fn, typeParams, ctx)
+      ctx.paramScope = new Set(typeParams)
+    }
     const params = []
     const seen = new Set()
     for (const param of fn.params ?? []) {
@@ -1061,12 +1260,15 @@ function collectSignatures(program, ctx) {
       seen.add(param.name)
       params.push({ name: param.name, type: normalizeType(param.type, ctx, fn) })
     }
-    ctx.signatures.set(fn.name, {
+    const signature = {
       name: fn.name,
       params,
       returns: normalizeType(fn.returns, ctx, fn),
       total: fn.total === true,
-    })
+    }
+    if (typeParams.length > 0) signature.typeParams = typeParams
+    ctx.paramScope = restoreScope
+    ctx.signatures.set(fn.name, signature)
   }
 }
 
@@ -1099,7 +1301,7 @@ function normalizeType(node, ctx, at) {
     return optional({ kind: "list", of: normalizeType(element, ctx, at) }, node)
   }
   if (NAMED_KINDS.has(kind) || (kind === "" && isName(node.name))) {
-    return optional(namedOrScalar(node.name ?? node.type, ctx, at), node)
+    return optional(namedOrScalar(node.name ?? node.type, ctx, at, node.args), node)
   }
   ctx.report("FLANG_TYPE", `неизвестный вид типа «${kind || String(node.kind)}»`, at)
   return UNKNOWN
@@ -1122,15 +1324,38 @@ function optional(type, node) {
   return { ...type, optional: true }
 }
 
-function namedOrScalar(name, ctx, at) {
-  if (SCALAR_ALIASES.has(name)) return SCALAR_ALIASES.get(name)
+function namedOrScalar(name, ctx, at, argNodes) {
+  const written = Array.isArray(argNodes) ? argNodes : []
+  if (SCALAR_ALIASES.has(name)) {
+    if (written.length > 0) ctx.report("FLANG_TYPE_ARGS", `встроенный тип «${name}» параметров не имеет`, at)
+    return SCALAR_ALIASES.get(name)
+  }
   if (!isName(name)) {
     ctx.report("FLANG_TYPE", "тип требует имени", at)
     return UNKNOWN
   }
-  if (ctx.records.has(name)) return { kind: "record", name }
-  if (ctx.sums.has(name)) return { kind: "sum", name }
-  if (ctx.aliases.has(name)) return expandAlias(name, ctx)
+  /* Параметр важнее объявленного типа, но только внутри своего объявления:
+     `paramScope` живёт ровно на время нормализации одного объявления. */
+  if (ctx.paramScope?.has(name)) {
+    if (written.length > 0) ctx.report("FLANG_TYPE_ARGS", `параметр типа «${name}» сам параметров не имеет`, at)
+    return { kind: "param", name }
+  }
+  const args = written.map((node) => normalizeType(node, ctx, at))
+  if (ctx.records.has(name)) return applied({ kind: "record", name }, args, ctx, at)
+  if (ctx.sums.has(name)) return applied({ kind: "sum", name }, args, ctx, at)
+  if (ctx.aliases.has(name)) {
+    const expected = ctx.typeParams.get(name) ?? []
+    if (args.length !== expected.length) {
+      ctx.report("FLANG_TYPE_ARGS", `псевдоним «${name}» объявлен от ${countParams(expected.length)}, а применён к ${countArgs(args.length)}`, at)
+      return UNKNOWN
+    }
+    /* Псевдоним — второе имя, а не новый тип: он разворачивается сразу, и
+       параметры подставляются здесь же. Отложить подстановку было бы негде —
+       развёрнутого типа с именем в языке не существует. */
+    const bindings = new Map()
+    expected.forEach((param, index) => bindings.set(param, args[index]))
+    return substitute(expandAlias(name, ctx), bindings)
+  }
   ctx.report("FLANG_UNKNOWN_NAME", `неизвестный тип «${name}»`, at)
   return UNKNOWN
 }
@@ -1153,7 +1378,12 @@ function expandAlias(name, ctx) {
     return UNKNOWN
   }
   ctx.aliasOpen.add(name)
+  /* Правая часть псевдонима видит СВОИ параметры, а не параметры того
+     объявления, откуда на псевдоним сослались: развёртывание ленивое, и без
+     сохранения области `тип «Пара» от «А» и «Б»` разворачивал бы «А» чужую. */
+  const restore = openParamScope(name, declaration, ctx)
   const type = normalizeType(declaration.of ?? declaration.type, ctx, declaration)
+  closeParamScope(ctx, restore)
   ctx.aliasOpen.delete(name)
   /* Цикл мог записать джокер, пока мы разворачивались, — не затираем его. */
   if (!ctx.aliasTypes.has(name)) ctx.aliasTypes.set(name, type)
@@ -1169,8 +1399,20 @@ function sameType(a, b) {
   if (a.kind === "unknown" || b.kind === "unknown") return true
   if (a.kind !== b.kind) return false
   if (a.kind === "list") return sameType(a.of, b.of)
-  if (a.kind === "record" || a.kind === "sum") return a.name === b.name
+  /* Параметр равен только сам себе: внутри полиморфной функции «А» — это
+     конкретный, но неизвестный тип, и подставить вместо неё число нельзя. */
+  if (a.kind === "param") return a.name === b.name
+  if (a.kind === "record" || a.kind === "sum") return a.name === b.name && sameArgs(a.args, b.args)
   return true
+}
+
+/** Аргументы применения. Отсутствие аргументов и пустой список — одно и то же:
+ *  так обычный тип сравнивается с обычным ровно как раньше. */
+function sameArgs(a, b) {
+  const left = Array.isArray(a) ? a : []
+  const right = Array.isArray(b) ? b : []
+  if (left.length !== right.length) return false
+  return left.every((item, index) => sameType(item, right[index]))
 }
 
 /* Экспортируется ради наведения в редакторе: сигнатуру функции там показывает
@@ -1188,9 +1430,17 @@ export function typeName(type) {
     // «список числа», а не «список число»: так тип пишется в исходнике
     // (SPEC, раздел 3), и сообщение можно скопировать в объявление.
     case "list": return `список ${genitive(type.of)}`
-    case "record": case "sum": return `«${type.name}»`
+    // Печатается тем же оборотом, каким пишется в исходнике: «Возможно» от
+    // числа. Сообщение об ошибке можно скопировать в объявление.
+    case "record": case "sum": return `«${type.name}»${appliedTo(type)}`
+    case "param": return `«${type.name}»`
     default: return "неизвестный тип"
   }
+}
+
+function appliedTo(type) {
+  if (!Array.isArray(type.args) || type.args.length === 0) return ""
+  return ` от ${type.args.map(genitive).join(" и ")}`
 }
 
 const GENITIVE = new Map([["number", "числа"], ["string", "строки"], ["boolean", "признака"], ["null", "ничего"]])
@@ -1199,7 +1449,8 @@ function genitive(type) {
   if (!type) return "неизвестного"
   if (GENITIVE.has(type.kind)) return GENITIVE.get(type.kind)
   if (type.kind === "list") return `списка ${genitive(type.of)}`
-  if (type.kind === "record" || type.kind === "sum") return `«${type.name}»`
+  if (type.kind === "record" || type.kind === "sum") return `«${type.name}»${appliedTo(type)}`
+  if (type.kind === "param") return `«${type.name}»`
   return "неизвестного"
 }
 
@@ -1287,7 +1538,9 @@ function checkValue(value, type, label, ctx, at) {
     case "record": {
       const fields = ctx.records.get(type.name)
       if (!isPlainObject(value) || !fields) { bad(); return }
-      for (const [name, fieldType] of fields) {
+      const bindings = bindingsOf(type, ctx)
+      for (const [name, declaredType] of fields) {
+        const fieldType = substitute(declaredType, bindings)
         if (!(name in value)) {
           if (fieldType.optional !== true) ctx.report("FLANG_TYPE", `${label}: не задано поле «${name}» записи «${type.name}»`, at)
           continue
@@ -1308,15 +1561,16 @@ function checkValue(value, type, label, ctx, at) {
         return
       }
       const declared = variants.get(variantName)
+      const bindings = bindingsOf(type, ctx)
       const payload = isPlainObject(value["поля"] ?? value.fields)
         ? (value["поля"] ?? value.fields)
         : omit(value, ["вариант", "variant"])
-      for (const [name, fieldType] of declared) {
+      for (const [name, declaredType] of declared) {
         if (!(name in payload)) {
           ctx.report("FLANG_TYPE", `${label}: вариант «${variantName}» требует поле «${name}»`, at)
           continue
         }
-        checkValue(payload[name], fieldType, `${label}.${name}`, ctx, at)
+        checkValue(payload[name], substitute(declaredType, bindings), `${label}.${name}`, ctx, at)
       }
       return
     }
@@ -1367,10 +1621,10 @@ function inferExpr(expr, env, expected, ctx, fnName) {
       }
       return thenType.kind === "unknown" ? elseType : thenType
     }
-    case "call": return callType(expr, env, ctx, fnName)
+    case "call": return callType(expr, env, expected, ctx, fnName)
     case "binary": return binaryType(expr, env, ctx, fnName)
-    case "construct": return constructType(expr, env, ctx, fnName)
-    case "record": return recordType(expr, env, ctx, fnName)
+    case "construct": return constructType(expr, env, expected, ctx, fnName)
+    case "record": return recordType(expr, env, expected, ctx, fnName)
     case "list": return listType(expr, env, expected, ctx, fnName)
     case "match": return matchType(expr, env, expected, ctx, fnName)
     case "fold": return foldType(expr, env, ctx, fnName)
@@ -1413,10 +1667,14 @@ function fieldType(expr, env, ctx, fnName) {
     ctx.report("FLANG_TYPE", `запись «${target.name}» не имеет поля «${String(expr.field)}»`, expr)
     return UNKNOWN
   }
-  return fields.get(expr.field)
+  /* Поле параметрической записи объявлено в параметрах, а прочитано у
+     конкретного применения: `«Пара» от числа и строки` даёт полю «первое»
+     число, а не «А». Подстановка — здесь, потому что здесь известно и то и
+     другое. */
+  return substitute(fields.get(expr.field), bindingsOf(target, ctx))
 }
 
-function callType(expr, env, ctx, fnName) {
+function callType(expr, env, expected, ctx, fnName) {
   const signature = ctx.signatures.get(expr.name)
   const args = Array.isArray(expr.args) ? expr.args : []
   if (!signature) {
@@ -1427,14 +1685,32 @@ function callType(expr, env, ctx, fnName) {
   if (args.length !== signature.params.length) {
     ctx.report("FLANG_TYPE", `функция «${signature.name}» принимает ${signature.params.length} арг. (${signature.params.map((p) => `«${p.name}»`).join(", ") || "нет"}), а вызвана с ${args.length}`, expr)
   }
+  const typeParams = signature.typeParams ?? []
+  /* Аргументы типа не пишутся, а выводятся — и решается это слева направо, в
+     порядке чтения. Уже связанное подставляется в ожидание следующего
+     аргумента, поэтому пустой список во второй позиции получает тип, решённый
+     первой: `«Приписать» от 7 и []` даёт список числа. */
+  const bindings = new Map()
   args.forEach((arg, index) => {
     const param = signature.params[index]
-    const actual = inferExpr(arg, env, param?.type ?? null, ctx, fnName)
-    if (param && !sameType(actual, param.type)) {
-      ctx.report("FLANG_TYPE", `аргумент «${param.name}» функции «${signature.name}»: ожидался ${typeName(param.type)}, получен ${typeName(actual)}`, arg)
+    const wanted = param ? substitute(param.type, bindings) : null
+    const actual = inferExpr(arg, env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    if (!param) return
+    if (typeParams.length > 0) matchAgainst(param.type, actual, bindings)
+    const settled = substitute(param.type, bindings)
+    if (!sameType(actual, settled)) {
+      ctx.report("FLANG_TYPE", `аргумент «${param.name}» функции «${signature.name}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, arg)
     }
   })
-  return signature.returns
+  if (typeParams.length === 0) return signature.returns
+  /* Что не решилось аргументами, решает ожидание: у `функция «Ничего» от «А»
+     возвращает «Возможно» от «А»` аргументов нет вовсе, и без этого шага она
+     была бы невызываема. */
+  if (typeParams.some((name) => !bindings.has(name)) && expected) {
+    matchAgainst(signature.returns, expected, bindings)
+  }
+  reportUnsolved(typeParams, bindings, `вызов «${signature.name}»`, ctx, expr)
+  return substitute(signature.returns, bindings)
 }
 
 function binaryType(expr, env, ctx, fnName) {
@@ -1496,7 +1772,7 @@ function checkOperand(node, env, want, ctx, fnName, op, side) {
   return actual
 }
 
-function constructType(expr, env, ctx, fnName) {
+function constructType(expr, env, expected, ctx, fnName) {
   const owner = ctx.variantOwner.get(expr.variant)
   const given = expr.fields ?? {}
   /* Действие с адресатом: адресат сверяется с объявленными процессами, а тип
@@ -1512,15 +1788,19 @@ function constructType(expr, env, ctx, fnName) {
     return UNKNOWN
   }
   const declared = ctx.sums.get(owner).get(expr.variant)
+  const typeParams = ctx.typeParams.get(owner) ?? []
+  const bindings = new Map()
   for (const [name, type] of declared) {
     if (!(name in given)) {
       ctx.report("FLANG_TYPE", `конструктор «${expr.variant}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
-    const wanted = адресат !== null && name === "что" ? адресат.accepts : type
-    const actual = inferExpr(given[name], env, wanted, ctx, fnName)
-    if (!sameType(actual, wanted)) {
-      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(wanted)}, получен ${typeName(actual)}`, given[name])
+    const wanted = адресат !== null && name === "что" ? адресат.accepts : substitute(type, bindings)
+    const actual = inferExpr(given[name], env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    if (typeParams.length > 0) matchAgainst(type, actual, bindings)
+    const settled = адресат !== null && name === "что" ? wanted : substitute(type, bindings)
+    if (!sameType(actual, settled)) {
+      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
     }
   }
   for (const name of Object.keys(given)) {
@@ -1529,10 +1809,11 @@ function constructType(expr, env, ctx, fnName) {
       inferExpr(given[name], env, null, ctx, fnName)
     }
   }
-  return { kind: "sum", name: owner }
+  if (typeParams.length === 0) return { kind: "sum", name: owner }
+  return solvedResult({ kind: "sum", name: owner }, typeParams, bindings, expected, `конструктор «${expr.variant}»`, ctx, expr)
 }
 
-function recordType(expr, env, ctx, fnName) {
+function recordType(expr, env, expected, ctx, fnName) {
   const fields = ctx.records.get(expr.type)
   const given = expr.fields ?? {}
   if (!fields) {
@@ -1540,14 +1821,19 @@ function recordType(expr, env, ctx, fnName) {
     for (const value of Object.values(given)) inferExpr(value, env, null, ctx, fnName)
     return UNKNOWN
   }
+  const typeParams = ctx.typeParams.get(expr.type) ?? []
+  const bindings = new Map()
   for (const [name, type] of fields) {
     if (!(name in given)) {
       if (type.optional !== true) ctx.report("FLANG_TYPE", `запись «${expr.type}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
-    const actual = inferExpr(given[name], env, type, ctx, fnName)
-    if (!sameType(actual, type)) {
-      ctx.report("FLANG_TYPE", `поле «${name}» записи «${expr.type}»: ожидался ${typeName(type)}, получен ${typeName(actual)}`, given[name])
+    const wanted = substitute(type, bindings)
+    const actual = inferExpr(given[name], env, hasParams(wanted) ? null : wanted, ctx, fnName)
+    if (typeParams.length > 0) matchAgainst(type, actual, bindings)
+    const settled = substitute(type, bindings)
+    if (!sameType(actual, settled)) {
+      ctx.report("FLANG_TYPE", `поле «${name}» записи «${expr.type}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
     }
   }
   for (const name of Object.keys(given)) {
@@ -1556,7 +1842,22 @@ function recordType(expr, env, ctx, fnName) {
       inferExpr(given[name], env, null, ctx, fnName)
     }
   }
-  return { kind: "record", name: expr.type }
+  if (typeParams.length === 0) return { kind: "record", name: expr.type }
+  return solvedResult({ kind: "record", name: expr.type }, typeParams, bindings, expected, `запись «${expr.type}»`, ctx, expr)
+}
+
+/**
+ * Тип построенного значения параметрического объявления: что не решили поля,
+ * решает ожидание. Без второго шага `вариант «Ничего»` не имел бы типа вообще
+ * — полей у него нет, а параметр есть. Это ровно тот случай, ради которого
+ * проверка двунаправленная.
+ */
+function solvedResult(base, typeParams, bindings, expected, label, ctx, at) {
+  if (typeParams.some((name) => !bindings.has(name)) && expected) {
+    matchAgainst({ ...base, args: typeParams.map((name) => ({ kind: "param", name })) }, expected, bindings)
+  }
+  reportUnsolved(typeParams, bindings, label, ctx, at)
+  return { ...base, args: typeParams.map((name) => bindings.get(name) ?? UNKNOWN) }
 }
 
 /**
@@ -1681,12 +1982,15 @@ function bindPattern(pattern, target, env, ctx, at, fnName) {
         return inner
       }
       const declared = variants.get(pattern.name)
+      /* Разбор `«Возможно» от числа` даёт полю варианта число, а не «А»:
+         аргументы применения известны из типа разбираемого значения. */
+      const bindings = bindingsOf(target, ctx)
       for (const [field, alias] of Object.entries(pattern.bind ?? {})) {
         if (!declared.has(field)) {
           ctx.report("FLANG_TYPE", `вариант «${pattern.name}» не имеет поля «${field}»`, at)
           continue
         }
-        if (isName(alias)) inner.set(alias, declared.get(field))
+        if (isName(alias)) inner.set(alias, substitute(declared.get(field), bindings))
       }
       return inner
     }

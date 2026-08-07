@@ -1093,11 +1093,14 @@ attaching a solver to the verification conditions is an open task, not a feature
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and the host executes it (`flang io`, `flang/src/host/node.mjs`).
   There are five orders — read a file, write a file, make a network request, read the clock,
-  draw a random number — and the set is closed. There is no I/O monad, though: a monad needs
-  parametric polymorphism, so sequencing is expressed by a continuation machine where the
-  continuation is a declared value rather than a hidden closure. How that differs from a monad,
-  and what changes once polymorphism lands, is in `flang/cat/SPEC.md`. The execution layer
-  exists for one target out of eight (Node); emitting a program with a plan works for all eight.
+  draw a random number — and the set is closed. There is no I/O monad, though, and the reason is
+  no longer polymorphism: parametric types are in the language, in self-application and in the
+  standard library (`«Возможно» от «А»` in `flang/stdlib/optional.flang`). What is missing is the
+  category layer: `checkFunctors` knows a type's name, not its application — phase 3 in
+  `flang/cat/POLY.md`. Until then, sequencing is expressed by a continuation machine where the
+  continuation is a declared value rather than a hidden closure; how that differs from a monad is
+  in `flang/cat/SPEC.md`. The execution layer exists for one target out of eight (Node); emitting
+  a program with a plan works for all eight.
 - No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
 - The totality analysis knows structural decrease and a numeric measure with a CONSTANT step.

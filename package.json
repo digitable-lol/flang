@@ -1,6 +1,6 @@
 {
   "name": "@digitable-lol/fts",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "flang: a checkable language with total and ordinary functions, emitted to C, Go, Rust, Python, Java, C#, Elixir and JavaScript, over the FTS executable-specification surface.",
   "type": "module",
   "license": "BSD-2-Clause",

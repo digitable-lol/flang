@@ -161,7 +161,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.4.6"
+#define FLANG_VERSION "0.4.7"
 
 static const char REPL_GREETING[] =
     "Оболочка flang. «.помощь» — команды, «.выход» — конец.\n"

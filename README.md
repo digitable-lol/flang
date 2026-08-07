@@ -659,7 +659,7 @@ in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented.
 
 ---
 
-## Concurrency: four steps of seven
+## Concurrency: six steps of seven
 
 Values are immutable by construction, so two computations looking at one value cannot interfere:
 there are no data races to lose, because there is nothing to build one out of. What the language
@@ -695,13 +695,32 @@ the place where checking stops. One seed gives one delivery log, byte for byte, 
 checked by re-running after re-parsing the source. Deadlock is a defined outcome
 (`исход: "покой"`), not a hang.
 
+One seed checks one interleaving, and the semantics is **any** of them. So a run can take a grid of
+seeds instead: on a grid `равен` becomes an invariant, and `любое из` names the set of reachable
+outcomes.
+
+```flang
+прогон «порядок в сборщике — одно из двух, и третьего не бывает»
+  семя от 1 до 1000
+  дано «Левый» принимает (вариант «тик» с «метка» равным "Л")
+  дано «Правый» принимает (вариант «тик» с «метка» равным "П")
+  ожидается «Левый» равен (запись «Счёт» с «всего» равным 1)
+  ожидается «Сборщик» любое из [
+    (запись «Метки» с «строки» равным ["Л", "П"]),
+    (запись «Метки» с «строки» равным ["П", "Л"])]
+```
+
+The set is checked both ways: no seed of the thousand left it, *and* every named value showed up
+somewhere. A one-way check gets weaker the wider the set, so padding it would silently weaken the
+run. A mismatch names the seed, and that seed replays the interleaving on its own.
+
 ```bash
 flang test flang/conc/examples/counter.flang --pretty
 ```
 
 The contract is [`flang/conc/SPEC.md`](flang/conc/SPEC.md), and it names a seven-step plan of
-which **the first four are done**: the surface, the checks, the reference scheduler, supervision
-and emission to Elixir. Strategies are applied for real: a restart returns the state to the very
+which **six are done**: the surface, the checks, the reference scheduler, supervision, emission to
+Elixir, the seed sweep and the measurement. Strategies are applied for real: a restart returns the state to the very
 same initial value, the failure threshold is counted in the scheduler's virtual time, and
 "escalate" reaches the supervisor one step up — or, if there is none above, stops the whole program
 with the outcome `"отказ дошёл доверху"`. The examples are in
@@ -725,6 +744,16 @@ logs, and every outcome of a real BEAM run must land inside it. Both weak spots 
 set is shown to be saturated (half the seed grid gives the same set) and narrow (change one number
 in an outcome and it falls out). The other seven targets do not print processes yet: there, a
 program with `процесс` gives the handlers as ordinary functions and nothing more.
+
+The model has been measured — `node --expose-gc flang/conc/bench.mjs` — and the numbers were chosen
+so as not to depend on machine load, because the machine available was a busy one. A flang process
+on BEAM takes **2768 bytes** against 2720 for a bare GenServer, so a node holds as many of them as
+it holds BEAM processes; delivering a message costs **106 reductions** against 19 for a bare
+GenServer — 5.5x, and that is the price of the model on top of the machine. A handler run is **17
+interpreter steps**, a send adds **9**: describing an action *is* building a value, and that is not
+free. The reference scheduler has a less pleasant finding of its own: it rebuilds the ready queue by
+scanning every process on every run, so a context switch costs O(number of processes) — about 12 ns
+per declared process.
 
 ---
 
@@ -1070,12 +1099,15 @@ implemented. Natural transformations, monads, monoids, groups and bifunctors are
 [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not. Category names in a functor declaration are
 a note for the reader, not a checked claim.
 
-**Concurrency.** Steps one and two of seven: the surface, the checks and the reference scheduler.
-Supervision is parsed and checked but not enforced; `породить` does not exist; a message addressee
-must be a literal. Emitting a program with processes prints the handlers as ordinary functions and
-nothing else — no processes, no scheduler, in any target. There is no seed sweep and no
-distribution. Numbers about capacity and cost are not quoted, because step seven — measuring — has
-not happened.
+**Concurrency.** Six steps of seven. The missing one is the sixth — a scheduler in the C runtime:
+processes are printed only to Elixir, and the other seven targets turn a program with `процесс`
+into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
+the declarations and there is no dynamic tree as in OTP; a message addressee must be a literal;
+there is no distribution. The seed grid checks a finite set of interleavings — a checked claim, not
+a proof — and it gives no freedom from deadlock. The measurement was taken on a busy machine (load
+average 18–76 with eight cores available), so every time figure in it is an upper bound quoted next to the load
+it was taken under; the figures that do not depend on load (interpreter steps, reductions, bytes)
+are given separately and repeat run to run.
 
 **The core written in flang.** It matches the TypeScript core byte for byte on every model in the
 corpus, and the places where it would not are known and written down:

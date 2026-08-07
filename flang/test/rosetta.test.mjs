@@ -40,8 +40,8 @@ const корень = fileURLToPath(new URL("../examples/rosetta/", import.meta.u
  */
 const ОЖИДАЕТСЯ = new Map([
   ["ackermann-function.flang", { функций: 3, тотальных: 1 }],
-  ["factorial.flang", { функций: 5, тотальных: 2 }],
-  ["fibonacci.flang", { функций: 6, тотальных: 2 }],
+  ["factorial.flang", { функций: 5, тотальных: 3 }],
+  ["fibonacci.flang", { функций: 6, тотальных: 4 }],
   ["fizzbuzz.flang", { функций: 5, тотальных: 3 }],
   ["fizzbuzz-english.flang", { функций: 5, тотальных: 3 }],
   ["hundred-doors.flang", { функций: 9, тотальных: 5 }],

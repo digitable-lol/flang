@@ -153,6 +153,36 @@ public sealed class Value
     public static bool VariantIs(Value value, string name) =>
         value.Tag == TagVariant && value.Str == name;
 
+    /*
+     * Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост»
+     * разбирают обе. У строки ровно два случая, пустая и «первый символ и
+     * остаток», третьего нет.
+     *
+     * Голова строки — одна КОДОВАЯ ТОЧКА, а не одна единица UTF-16: эмодзи
+     * занимает две, и посимвольный обход разорвал бы суррогатную пару,
+     * разойдясь с «длина» и «символы» (см. CodePointLength в Flang.cs).
+     */
+
+    /// <summary>Пустая ли цепочка: пустой список или пустая строка.</summary>
+    public static bool ChainEmpty(Value value) =>
+        value.Tag == TagString ? value.Str.Length == 0 : value.Tag == TagList && value.Items.Length == 0;
+
+    /// <summary>Непустая ли цепочка.</summary>
+    public static bool ChainCons(Value value) =>
+        value.Tag == TagString ? value.Str.Length > 0 : value.Tag == TagList && value.Items.Length > 0;
+
+    /// <summary>Ширина первой кодовой точки строки в единицах UTF-16.</summary>
+    private static int FirstPointWidth(string value) =>
+        char.IsHighSurrogate(value[0]) && value.Length > 1 ? 2 : 1;
+
+    /// <summary>Голова цепочки: первый элемент списка или первый символ строки.</summary>
+    public static Value ChainHead(Value value) =>
+        value.Tag == TagString ? Text(value.Str.Substring(0, FirstPointWidth(value.Str))) : value.Items[0];
+
+    /// <summary>Хвост цепочки: остаток списка или остаток строки.</summary>
+    public static Value ChainTail(Value value) =>
+        value.Tag == TagString ? Text(value.Str.Substring(FirstPointWidth(value.Str))) : List(value.Items[1..]);
+
     /// <summary>Имя типа значения для диагностик (typeName интерпретатора).</summary>
     public static string TypeName(Value value)
     {

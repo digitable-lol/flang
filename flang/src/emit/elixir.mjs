@@ -1452,10 +1452,13 @@ function emitMatch(node, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, out, pad, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе.
+       Различать их здесь нечем — у печати нет типов, — да и незачем: проверка
+       вида стоит одну ветку. */
     case "empty":
-      return `match?({:list, []}, ${subject})`
+      return `Flang.Rt.chain_empty?(${subject})`
     case "cons":
-      return `match?({:list, [_ | _]}, ${subject})`
+      return `Flang.Rt.chain_cons?(${subject})`
     case "variant":
       return `Flang.Rt.variant_is?(${subject}, ${exstring(pattern.name)})`
     case "literal": {
@@ -1480,14 +1483,15 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   switch (pattern.kind) {
     case "cons":
       if (pattern.head !== undefined && pattern.head !== null) {
-        bind(pattern.head, `Flang.Rt.b_head(${subject})`, `голова «${pattern.head}»`)
+        bind(pattern.head, `Flang.Rt.chain_head(${subject})`, `голова «${pattern.head}»`)
       }
       if (pattern.tail !== undefined && pattern.tail !== null) {
         /* Единственное место, где Elixir дешевле остальных целей: список
            односвязный, и «хвост» — тот же список без первой ячейки, без
            копирования. У интерпретатора (массив JS) он копирует, но значение от
-           этого не меняется — расходится только сложность, и в лучшую сторону. */
-        bind(pattern.tail, `Flang.Rt.b_tail(${subject})`, `хвост «${pattern.tail}»`)
+           этого не меняется — расходится только сложность, и в лучшую сторону.
+           У строки голова — одна кодовая точка, хвост — остаток. */
+        bind(pattern.tail, `Flang.Rt.chain_tail(${subject})`, `хвост «${pattern.tail}»`)
       }
       return undo
     case "variant": {

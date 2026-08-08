@@ -1398,10 +1398,13 @@ function emitBranch(branch, subject, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, out, pad, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе
+       (fl_chain_* в flang_runtime.c). Различать их здесь нечем — у печати нет
+       типов, — да и незачем: проверка тега стоит одну ветку. */
     case "empty":
-      return `fl_is_list(${subject}) && ${subject}.as.list.count == 0`
+      return `fl_chain_empty(${subject})`
     case "cons":
-      return `fl_is_list(${subject}) && ${subject}.as.list.count > 0`
+      return `fl_chain_cons(${subject})`
     case "variant":
       return `fl_variant_is(${subject}, ${cstring(pattern.name)})`
     case "literal": {
@@ -1425,11 +1428,12 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   switch (pattern.kind) {
     case "cons":
       if (pattern.head !== undefined && pattern.head !== null) {
-        bind(pattern.head, `${subject}.as.list.items[0]`, ` /* голова «${pattern.head}» */`)
+        bind(pattern.head, `fl_chain_head(${subject})`, ` /* голова «${pattern.head}» */`)
       }
       if (pattern.tail !== undefined && pattern.tail !== null) {
-        /* Хвост — срез, а не копия: значения неизменяемы, память общая. */
-        bind(pattern.tail, `fl_list_slice(${subject}, 1)`, ` /* хвост «${pattern.tail}» */`)
+        /* Хвост — срез, а не копия: значения неизменяемы, память общая. У
+           строки голова — одна кодовая точка, хвост — остаток. */
+        bind(pattern.tail, `fl_chain_tail(${subject})`, ` /* хвост «${pattern.tail}» */`)
       }
       return undo
     case "variant": {

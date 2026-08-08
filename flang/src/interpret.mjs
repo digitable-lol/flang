@@ -681,9 +681,22 @@ function stepMatch(machine, frame) {
 // (раздел 5) не вложены — вариант связывает поля именами, а не образцами.
 function matchPattern(pattern, value, span) {
   switch (pattern.kind) {
+    /* Строка разбирается теми же двумя образцами, что и список: пустая либо
+       «первый символ и остаток». По кодовым точкам, а не по единицам UTF-16, —
+       как «длина», «символ» и «символы» в builtins.mjs: иначе эмодзи
+       разваливалось бы пополам, и разбор строки расходился бы с её длиной. */
     case "empty":
+      if (typeof value === "string") return value.length === 0 ? [] : null
       return isList(value) && value.length === 0 ? [] : null
     case "cons": {
+      if (typeof value === "string") {
+        const points = Array.from(value)
+        if (points.length === 0) return null
+        const bindings = []
+        if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, points[0]])
+        if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, points.slice(1).join("")])
+        return bindings
+      }
       if (!isList(value) || value.length === 0) return null
       const bindings = []
       if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, value[0]])

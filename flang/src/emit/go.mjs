@@ -1389,10 +1389,13 @@ function emitBranch(branch, subject, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, out, pad, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе.
+       Различать их здесь нечем — у печати нет типов, — да и незачем: проверка
+       вида стоит одну ветку. */
     case "empty":
-      return `rt.IsList(${subject}) && len(${subject}.List) == 0`
+      return `rt.ChainEmpty(${subject})`
     case "cons":
-      return `rt.IsList(${subject}) && len(${subject}.List) > 0`
+      return `rt.ChainCons(${subject})`
     case "variant":
       return `rt.VariantIs(${subject}, ${gostring(pattern.name)})`
     case "literal": {
@@ -1417,11 +1420,12 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   switch (pattern.kind) {
     case "cons":
       if (pattern.head !== undefined && pattern.head !== null) {
-        bind(pattern.head, `${subject}.List[0]`, `голова «${pattern.head}»`)
+        bind(pattern.head, `rt.ChainHead(${subject})`, `голова «${pattern.head}»`)
       }
       if (pattern.tail !== undefined && pattern.tail !== null) {
-        /* Хвост — срез, а не копия: значения неизменяемы, память общая. */
-        bind(pattern.tail, `rt.List(${subject}.List[1:])`, `хвост «${pattern.tail}»`)
+        /* Хвост — срез, а не копия: значения неизменяемы, память общая. У
+           строки голова — одна кодовая точка, хвост — остаток. */
+        bind(pattern.tail, `rt.ChainTail(${subject})`, `хвост «${pattern.tail}»`)
       }
       return undo
     case "variant": {

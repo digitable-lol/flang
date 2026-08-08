@@ -309,6 +309,17 @@ fl_status fl_list_alloc(fl_ctx *ctx, size_t count, fl_value **items, fl_error *e
 /** Хвост списка — срез без копирования (значения неизменяемы, память общая). */
 fl_value fl_list_slice(fl_value list, size_t from);
 
+/**
+ * Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают
+ * обе. Голова строки — одна кодовая точка, хвост — остаток; оба среза, без
+ * копирования. Вызываются только после `fl_chain_cons`, поэтому пустого случая
+ * не проверяют.
+ */
+bool fl_chain_empty(fl_value value);
+bool fl_chain_cons(fl_value value);
+fl_value fl_chain_head(fl_value value);
+fl_value fl_chain_tail(fl_value value);
+
 fl_status fl_record_new(fl_ctx *ctx, const char *const *names, const fl_value *values, size_t count,
                         fl_value *out, fl_error *error);
 fl_status fl_variant_new(fl_ctx *ctx, const char *name, const char *const *names, const fl_value *values,

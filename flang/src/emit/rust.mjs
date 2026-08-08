@@ -1421,10 +1421,13 @@ function emitBranch(branch, subject, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, out, pad, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе.
+       Различать их здесь нечем — у печати нет типов, — да и незачем: проверка
+       вида стоит одну ветку. */
     case "empty":
-      return `rt::is_empty_list(&${subject})`
+      return `rt::chain_empty(&${subject})`
     case "cons":
-      return `rt::is_cons(&${subject})`
+      return `rt::chain_cons(&${subject})`
     case "variant":
       return `rt::variant_is(&${subject}, ${ruststring(pattern.name)})`
     case "literal": {
@@ -1449,11 +1452,12 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   switch (pattern.kind) {
     case "cons":
       if (pattern.head !== undefined && pattern.head !== null) {
-        bind(pattern.head, `rt::cons_head(&${subject})`, `голова «${pattern.head}»`)
+        bind(pattern.head, `rt::chain_head(&${subject})`, `голова «${pattern.head}»`)
       }
       if (pattern.tail !== undefined && pattern.tail !== null) {
-        /* Хвост — суффикс, а не копия: значения неизменяемы, память общая. */
-        bind(pattern.tail, `rt::cons_tail(&${subject})`, `хвост «${pattern.tail}»`)
+        /* Хвост — суффикс, а не копия: значения неизменяемы, память общая. У
+           строки голова — одна кодовая точка, хвост — остаток. */
+        bind(pattern.tail, `rt::chain_tail(&${subject})`, `хвост «${pattern.tail}»`)
       }
       return undo
     case "variant": {

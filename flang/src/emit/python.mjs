@@ -1337,10 +1337,13 @@ function emitBranch(branch, subject, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, out, pad, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе.
+       Различать их здесь нечем — у печати нет типов, — да и незачем: проверка
+       вида стоит одну ветку. */
     case "empty":
-      return `rt.is_list(${subject}) and len(${subject}.data) == 0`
+      return `rt.chain_empty(${subject})`
     case "cons":
-      return `rt.is_list(${subject}) and len(${subject}.data) > 0`
+      return `rt.chain_cons(${subject})`
     case "variant":
       return `rt.variant_is(${subject}, ${pystring(pattern.name)})`
     case "literal": {
@@ -1365,13 +1368,14 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   switch (pattern.kind) {
     case "cons":
       if (pattern.head !== undefined && pattern.head !== null) {
-        bind(pattern.head, `${subject}.data[0]`, `голова «${pattern.head}»`)
+        bind(pattern.head, `rt.chain_head(${subject})`, `голова «${pattern.head}»`)
       }
       if (pattern.tail !== undefined && pattern.tail !== null) {
         /* Хвост копирует, как и в JS: срез списка Python — новый список.
            Наблюдаемое значение то же, а «хвост» интерпретатора копирует ровно
-           так же, поэтому и сложность обхода у двух движков одна. */
-        bind(pattern.tail, `rt.list_of(${subject}.data[1:])`, `хвост «${pattern.tail}»`)
+           так же, поэтому и сложность обхода у двух движков одна. У строки
+           голова — один символ, хвост — остаток. */
+        bind(pattern.tail, `rt.chain_tail(${subject})`, `хвост «${pattern.tail}»`)
       }
       return undo
     case "variant": {

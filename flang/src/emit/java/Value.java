@@ -168,6 +168,48 @@ public final class Value {
     return value.tag == TAG_VARIANT;
   }
 
+  /*
+   * Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают
+   * обе. У строки ровно два случая, пустая и «первый символ и остаток»,
+   * третьего нет.
+   *
+   * Голова строки — одна КОДОВАЯ ТОЧКА, а не одна единица UTF-16: эмодзи
+   * занимает две, и посимвольный обход разорвал бы суррогатную пару, разойдясь
+   * с «длина» и «символы» (см. codePointLength в Flang.java).
+   */
+
+  /** Пустая ли цепочка: пустой список или пустая строка. */
+  public static boolean chainEmpty(Value value) {
+    if (value.tag == TAG_STRING) {
+      return value.str.isEmpty();
+    }
+    return value.tag == TAG_LIST && value.items.length == 0;
+  }
+
+  /** Непустая ли цепочка. */
+  public static boolean chainCons(Value value) {
+    if (value.tag == TAG_STRING) {
+      return !value.str.isEmpty();
+    }
+    return value.tag == TAG_LIST && value.items.length > 0;
+  }
+
+  /** Голова цепочки: первый элемент списка или первый символ строки. */
+  public static Value chainHead(Value value) {
+    if (value.tag == TAG_STRING) {
+      return text(new String(Character.toChars(value.str.codePointAt(0))));
+    }
+    return value.items[0];
+  }
+
+  /** Хвост цепочки: остаток списка или остаток строки. */
+  public static Value chainTail(Value value) {
+    if (value.tag == TAG_STRING) {
+      return text(value.str.substring(value.str.offsetByCodePoints(0, 1)));
+    }
+    return list(java.util.Arrays.copyOfRange(value.items, 1, value.items.length));
+  }
+
   /** Вариант ли значение с именно этим дискриминантом. */
   public static boolean variantIs(Value value, String name) {
     return value.tag == TAG_VARIANT && value.str.equals(name);

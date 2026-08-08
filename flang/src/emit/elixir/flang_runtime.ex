@@ -181,6 +181,33 @@ defmodule Flang.Rt do
   def variant_is?({:var, name, _}, name), do: true
   def variant_is?(_, _), do: false
 
+  @doc """
+  Пустая ли цепочка — образец «случай пусто».
+
+  Цепочка — список ЛИБО строка: образцы `пусто` и `голова и хвост` разбирают
+  обе. У строки ровно два случая, пустая и «первый символ и остаток», третьего
+  нет. Голова строки — одна КОДОВАЯ ТОЧКА, а не байт: строка Elixir хранится в
+  UTF-8, и байтовая нарезка разваливала бы эмодзи пополам, расходясь с «длина»
+  и «символы». `String.next_grapheme/1` здесь не годится по той же причине, по
+  какой не годится StringInfo в C#: он режет графемные кластеры.
+  """
+  def chain_empty?({:str, text}), do: text == ""
+  def chain_empty?({:list, items}), do: items == []
+  def chain_empty?(_), do: false
+
+  @doc "Непустая ли цепочка — образец «случай голова и хвост»."
+  def chain_cons?({:str, text}), do: text != ""
+  def chain_cons?({:list, items}), do: items != []
+  def chain_cons?(_), do: false
+
+  @doc "Голова цепочки: первый элемент списка или первый символ строки."
+  def chain_head({:str, text}), do: {:str, String.first(text)}
+  def chain_head({:list, [first | _]}), do: first
+
+  @doc "Хвост цепочки: остаток списка или остаток строки."
+  def chain_tail({:str, text}), do: {:str, String.slice(text, 1..-1//1)}
+  def chain_tail({:list, [_ | rest]}), do: {:list, rest}
+
   @doc "Имя типа значения для диагностик (typeName интерпретатора)."
   def type_name(:nothing), do: "ничто"
   def type_name({:str, _}), do: "строка"

@@ -2700,14 +2700,33 @@ function patternName(pattern) {
 function bindPattern(pattern, target, env, ctx, at, fnName) {
   const inner = new Map(env)
   switch (pattern?.kind) {
+    /*
+     * `пусто` и `голова и хвост` разбирают и список, и строку.
+     *
+     * Строка здесь не «ещё один список», а такая же цепочка: у неё есть пустой
+     * случай и есть «первый символ и остаток», третьего нет. Пока образцы
+     * работали только со списком, посимвольный проход обязан был начинаться с
+     * `разложить … на символы`, и это меняло сигнатуру: функция над строкой
+     * превращалась в функцию над `список строки`, а вызывающему приходилось
+     * помнить о разложении. Обратно строку собирали `соединить … по ""`.
+     *
+     * Что связывается: у строки голова — строка из ОДНОГО символа, хвост —
+     * строка из остальных. Отдельного типа символа в языке нет, и заводить его
+     * ради образца значило бы завести его везде.
+     */
     case "empty":
-      if (target.kind !== "unknown" && target.kind !== "list") {
-        ctx.report("FLANG_TYPE", `образец «пусто» применим к списку, а разбирается ${typeName(target)}`, at)
+      if (target.kind !== "unknown" && target.kind !== "list" && target.kind !== "string") {
+        ctx.report("FLANG_TYPE", `образец «пусто» применим к списку и строке, а разбирается ${typeName(target)}`, at)
       }
       return inner
     case "cons": {
+      if (target.kind === "string") {
+        if (isName(pattern.head)) inner.set(pattern.head, { kind: "string" })
+        if (isName(pattern.tail)) inner.set(pattern.tail, { kind: "string" })
+        return inner
+      }
       if (target.kind !== "unknown" && target.kind !== "list") {
-        ctx.report("FLANG_TYPE", `образец «голова и хвост» применим к списку, а разбирается ${typeName(target)}`, at)
+        ctx.report("FLANG_TYPE", `образец «голова и хвост» применим к списку и строке, а разбирается ${typeName(target)}`, at)
         return inner
       }
       const element = target.kind === "list" ? target.of : UNKNOWN
@@ -2758,9 +2777,9 @@ function bindPattern(pattern, target, env, ctx, at, fnName) {
 }
 
 /**
- * Исчерпывающность. Для суммы — все варианты; для списка — «пусто» и
- * «голова и хвост»; для признака — оба литерала; для остальных скаляров
- * перечислить значения нельзя, поэтому требуется «любое».
+ * Исчерпывающность. Для суммы — все варианты; для списка И ДЛЯ СТРОКИ —
+ * «пусто» и «голова и хвост»; для признака — оба литерала; для остальных
+ * скаляров перечислить значения нельзя, поэтому требуется «любое».
  */
 function reportExhaustiveness(expr, target, covered, caseCount, ctx) {
   if (covered.any) return
@@ -2778,12 +2797,17 @@ function reportExhaustiveness(expr, target, covered, caseCount, ctx) {
     }
     return
   }
-  if (target.kind === "list") {
+  if (target.kind === "list" || target.kind === "string") {
+    /* Строка исчерпывается теми же двумя случаями, что и список: пустая либо
+       «первый символ и остаток». Раньше она попадала в последнюю ветку — «не
+       исчерпать перечислением», — и это было правдой ровно до того дня, когда
+       образцы научились разбирать строку. */
     const missing = []
     if (!covered.empty) missing.push("«пусто»")
     if (!covered.cons) missing.push("«голова и хвост»")
     if (missing.length > 0) {
-      ctx.report("FLANG_MATCH_NOT_EXHAUSTIVE", `разбор списка не покрывает ${missing.join(" и ")}`, expr)
+      const что = target.kind === "list" ? "списка" : "строки"
+      ctx.report("FLANG_MATCH_NOT_EXHAUSTIVE", `разбор ${что} не покрывает ${missing.join(" и ")}`, expr)
     }
     return
   }

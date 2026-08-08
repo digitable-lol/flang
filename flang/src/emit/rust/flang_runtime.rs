@@ -257,17 +257,24 @@ pub fn is_list(value: &Value) -> bool {
     matches!(value, Value::List(_))
 }
 
-/// Пустой ли список — образец «случай пусто».
-pub fn is_empty_list(value: &Value) -> bool {
+/// Пустая ли цепочка — образец «случай пусто».
+///
+/// Цепочка — список ЛИБО строка: образцы `пусто` и `голова и хвост` разбирают
+/// обе. У строки ровно два случая, пустая и «первый символ и остаток»,
+/// третьего нет. По кодовым точкам: `chars()` в Rust идёт по ним, поэтому срез
+/// здесь совпадает с «символ» и «символы» без дополнительных усилий.
+pub fn chain_empty(value: &Value) -> bool {
     match value {
+        Value::Text(text) => text.is_empty(),
         Value::List(items) => items.is_empty(),
         _ => false,
     }
 }
 
-/// Непустой ли список — образец «случай голова и хвост».
-pub fn is_cons(value: &Value) -> bool {
+/// Непустая ли цепочка — образец «случай голова и хвост».
+pub fn chain_cons(value: &Value) -> bool {
     match value {
+        Value::Text(text) => !text.is_empty(),
         Value::List(items) => !items.is_empty(),
         _ => false,
     }
@@ -283,16 +290,25 @@ pub fn variant_is(value: &Value, name: &str) -> bool {
 
 /// Голова непустого списка. Образец уже проверил непустоту, поэтому «нет
 /// головы» здесь недостижимо; на всякий случай это «ничто», а не паника.
-pub fn cons_head(value: &Value) -> Value {
+pub fn chain_head(value: &Value) -> Value {
     match value {
+        Value::Text(source) => match source.chars().next() {
+            Some(point) => text(&point.to_string()),
+            None => Value::Nothing,
+        },
         Value::List(items) => items.get(0).cloned().unwrap_or(Value::Nothing),
         _ => Value::Nothing,
     }
 }
 
-/// Хвост непустого списка — суффикс без копирования (см. `Items::tail`).
-pub fn cons_tail(value: &Value) -> Value {
+/// Хвост непустой цепочки: у списка — суффикс без копирования (см.
+/// `Items::tail`), у строки — остаток после первой кодовой точки.
+pub fn chain_tail(value: &Value) -> Value {
     match value {
+        Value::Text(source) => match source.chars().next() {
+            Some(point) => text(&source[point.len_utf8()..]),
+            None => text(""),
+        },
         Value::List(items) => Value::List(items.tail()),
         _ => Value::List(Items::new(Vec::new())),
     }

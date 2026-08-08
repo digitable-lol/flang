@@ -125,6 +125,27 @@ function $isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof $FlangVariant)
 }
 
+/* Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают
+   обе. По кодовым точкам, а не по единицам UTF-16, — как «длина», «символ» и
+   «символы»: иначе эмодзи разваливалось бы пополам. */
+function $chainEmpty(value) {
+  if (typeof value === "string") return value.length === 0
+  return $isList(value) && value.length === 0
+}
+
+function $chainCons(value) {
+  if (typeof value === "string") return value.length > 0
+  return $isList(value) && value.length > 0
+}
+
+function $chainHead(value) {
+  return typeof value === "string" ? Array.from(value)[0] : value[0]
+}
+
+function $chainTail(value) {
+  return typeof value === "string" ? Array.from(value).slice(1).join("") : value.slice(1)
+}
+
 function $isScalar(value) {
   return value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean"
 }
@@ -540,6 +561,10 @@ runtimeEntry("$isList", [], fromSource($isList))
 runtimeEntry("$isVariant", ["$FlangVariant"], fromSource($isVariant))
 runtimeEntry("$isRecord", ["$FlangVariant"], fromSource($isRecord))
 runtimeEntry("$isScalar", [], fromSource($isScalar))
+runtimeEntry("$chainEmpty", ["$isList"], fromSource($chainEmpty))
+runtimeEntry("$chainCons", ["$isList"], fromSource($chainCons))
+runtimeEntry("$chainHead", [], fromSource($chainHead))
+runtimeEntry("$chainTail", [], fromSource($chainTail))
 runtimeEntry("$typeName", ["$isList", "$isVariant", "$isRecord"], fromSource($typeName))
 runtimeEntry("$describe", ["$isList", "$isVariant", "$isRecord"], fromSource($describe))
 runtimeEntry("$equal", ["$isScalar", "$isList", "$isVariant", "$isRecord", "$recordsEqual"], fromSource($equal))
@@ -1551,12 +1576,15 @@ function emitBranch(branch, subjectCode, ctx, out, pad, target) {
 /** Проверка дискриминанта; `null` — образец совпадает всегда. */
 function patternTest(pattern, subject, ctx, span) {
   switch (pattern.kind) {
+    /* Цепочка — список либо строка: `пусто` и `голова и хвост` разбирают обе.
+       Различать их здесь нечем — у печати нет типов, — да и незачем: проверка
+       вида стоит одну ветку. */
     case "empty":
-      ctx.use("$isList")
-      return `$isList(${subject}) && ${subject}.length === 0`
+      ctx.use("$chainEmpty")
+      return `$chainEmpty(${subject})`
     case "cons":
-      ctx.use("$isList")
-      return `$isList(${subject}) && ${subject}.length > 0`
+      ctx.use("$chainCons")
+      return `$chainCons(${subject})`
     case "variant":
       ctx.use("$isVariant")
       return `$isVariant(${subject}) && ${subject}.variant === ${JSON.stringify(pattern.name)}`
@@ -1579,8 +1607,14 @@ function bindPattern(pattern, subject, ctx, out, pad) {
   }
   switch (pattern.kind) {
     case "cons":
-      if (pattern.head !== undefined && pattern.head !== null) bind(pattern.head, `${subject}[0]`)
-      if (pattern.tail !== undefined && pattern.tail !== null) bind(pattern.tail, `${subject}.slice(1)`)
+      if (pattern.head !== undefined && pattern.head !== null) {
+        ctx.use("$chainHead")
+        bind(pattern.head, `$chainHead(${subject})`)
+      }
+      if (pattern.tail !== undefined && pattern.tail !== null) {
+        ctx.use("$chainTail")
+        bind(pattern.tail, `$chainTail(${subject})`)
+      }
       return undo
     case "variant": {
       const declared = pattern.bind ?? {}

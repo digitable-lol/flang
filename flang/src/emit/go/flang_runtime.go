@@ -158,6 +158,44 @@ func IsList(value Value) bool { return value.Tag == TagList }
 // IsRecord — запись ли значение.
 func IsRecord(value Value) bool { return value.Tag == TagRecord }
 
+// Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают
+// обе. У строки ровно два случая, пустая и «первый символ и остаток», третьего
+// нет. Голова строки — одна КОДОВАЯ ТОЧКА, а не байт: строка Go хранится в
+// UTF-8, и байтовая нарезка разваливала бы эмодзи пополам, расходясь с «длина»
+// и «символы».
+
+// ChainEmpty — пустая ли цепочка: пустой список или пустая строка.
+func ChainEmpty(value Value) bool {
+	if value.Tag == TagString {
+		return len(value.Str) == 0
+	}
+	return value.Tag == TagList && len(value.List) == 0
+}
+
+// ChainCons — непустая ли цепочка.
+func ChainCons(value Value) bool {
+	if value.Tag == TagString {
+		return len(value.Str) > 0
+	}
+	return value.Tag == TagList && len(value.List) > 0
+}
+
+// ChainHead — голова цепочки: первый элемент списка или первый символ строки.
+func ChainHead(value Value) Value {
+	if value.Tag == TagString {
+		return Text(string([]rune(value.Str)[:1]))
+	}
+	return value.List[0]
+}
+
+// ChainTail — хвост цепочки: остаток списка или остаток строки.
+func ChainTail(value Value) Value {
+	if value.Tag == TagString {
+		return Text(string([]rune(value.Str)[1:]))
+	}
+	return List(value.List[1:])
+}
+
 // IsVariant — вариант ли значение.
 func IsVariant(value Value) bool { return value.Tag == TagVariant }
 

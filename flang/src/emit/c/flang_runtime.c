@@ -507,6 +507,51 @@ fl_value fl_list_slice(fl_value list, size_t from) {
   return fl_list(list.as.list.items + from, list.as.list.count - from);
 }
 
+/*
+ * Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают
+ * обе. Причина одна на все восемь целей: у строки ровно два случая, пустая и
+ * «первый символ и остаток», третьего нет. До этих четырёх функций посимвольный
+ * проход обязан был начинаться с «разложить … на символы», и это меняло
+ * сигнатуру функции.
+ *
+ * Голова строки — строка из ОДНОЙ кодовой точки, а не байт: `fl_utf8_offset`
+ * считает точки, как «длина», «символ» и «символы». Байтовая нарезка разваливала
+ * бы эмодзи пополам, и разбор строки разошёлся бы с её длиной.
+ *
+ * Обе — срезы без копирования, как `fl_list_slice`: значения неизменяемы, память
+ * общая, и рекурсия по строке остаётся линейной.
+ */
+bool fl_chain_empty(fl_value value) {
+  if (value.tag == FL_STRING) {
+    return value.as.string.points == 0;
+  }
+  return value.tag == FL_LIST && value.as.list.count == 0;
+}
+
+bool fl_chain_cons(fl_value value) {
+  if (value.tag == FL_STRING) {
+    return value.as.string.points > 0;
+  }
+  return value.tag == FL_LIST && value.as.list.count > 0;
+}
+
+fl_value fl_chain_head(fl_value value) {
+  if (value.tag == FL_STRING) {
+    size_t stop = fl_utf8_offset(value.as.string.utf8, value.as.string.bytes, 1);
+    return fl_text_borrow(value.as.string.utf8, stop, 1);
+  }
+  return value.as.list.items[0];
+}
+
+fl_value fl_chain_tail(fl_value value) {
+  if (value.tag == FL_STRING) {
+    size_t start = fl_utf8_offset(value.as.string.utf8, value.as.string.bytes, 1);
+    return fl_text_borrow(value.as.string.utf8 + start, value.as.string.bytes - start,
+                          value.as.string.points - 1);
+  }
+  return fl_list_slice(value, 1);
+}
+
 static fl_status fl_fields_new(fl_ctx *ctx, const char *const *names, const fl_value *values, size_t count,
                                const fl_field **out, fl_error *error) {
   fl_field *fields = NULL;

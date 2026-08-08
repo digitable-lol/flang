@@ -578,7 +578,8 @@ test("хвост списка — срез, а не копия: длинный �
      Здесь значения неизменяемы и лежат под сборщиком мусора, поэтому хвост —
      срез, и наблюдаемо это неотличимо: значение то же, а времени меньше. */
   const built = build(listProgram)
-  assert.match(built.source, /\.List\[1:\]/u, "хвост обязан печататься срезом")
+  assert.match(built.source, /rt\.ChainTail\(/u, "хвост обязан браться срезом рантайма")
+  assert.match(built.runtime, /return List\(value\.List\[1:\]\)/u, "срез обязан быть сдвигом начала, а не копией")
   const long = Array.from({ length: 3000 }, (_, index) => index)
   const started = Date.now()
   const [answer] = ask(built, [{ fn: "Сумма", args: [encode(long)] }])
@@ -1117,6 +1118,36 @@ const stringProgram = {
     builtinFn("Добавить", "добавить", ["э", "с"]),
     builtinFn("Остаток", "остаток от", ["а", "б"]),
     builtinFn("Процент", "процентов от", ["п", "з"]),
+    /*
+     * Образцы по СТРОКЕ: `пусто` и `голова и хвост` разбирают её так же, как
+     * список. Функция написана AST вручную, а не через builtinFn, потому что
+     * проверяет не встроенную форму, а сам разбор: у строки голова — одна
+     * КОДОВАЯ ТОЧКА, и на «😀😀» рантайм, режущий по единицам UTF-16 или по
+     * байтам, развалит суррогатную пару. Сверка идёт с интерпретатором, так что
+     * расхождение поймается само.
+     */
+    {
+      name: "Развернуть",
+      total: true,
+      params: [{ name: "т", type: { kind: "string" } }],
+      returns: { kind: "string" },
+      body: {
+        kind: "match",
+        target: { kind: "var", name: "т" },
+        cases: [
+          { pattern: { kind: "empty" }, body: { kind: "literal", value: "" } },
+          {
+            pattern: { kind: "cons", head: "г", tail: "х" },
+            body: {
+              kind: "binary",
+              op: "concat",
+              left: { kind: "call", name: "Развернуть", args: [{ kind: "var", name: "х" }] },
+              right: { kind: "var", name: "г" },
+            },
+          },
+        ],
+      },
+    },
   ],
 }
 
@@ -1176,6 +1207,10 @@ test("строковые формы: кириллица, суррогатные 
   points += compare(stringProgram, built, "Остаток", [[7, 3], [7, 0], [-7, 3], [7.5, 2], ["a", 1]])
   /* Проценты: порядок (процент / 100) * значение виден на этих числах. */
   points += compare(stringProgram, built, "Процент", [[10, 10000.1], [20, 1 / 3], [5, 1e308], [0, 0], ["a", 1]])
+  /* Разбор строки образцами: пустая, один символ, суррогатная пара, а также
+     не-строки — у них ни один случай не подходит, и отказ обязан совпасть. */
+  points += compare(stringProgram, built, "Развернуть",
+    [...texts, ["а", "б"], [], 42, null].map((value) => [value]))
 
   const answers = ask(built, [
     { fn: "К строке", args: [encode(true)] },

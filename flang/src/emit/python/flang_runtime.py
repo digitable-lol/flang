@@ -187,6 +187,38 @@ def is_record(value):
     return value.tag == TAG_RECORD
 
 
+# Цепочка — список ЛИБО строка: образцы «пусто» и «голова и хвост» разбирают обе.
+# У строки ровно два случая, пустая и «первый символ и остаток», третьего нет.
+# По кодовым точкам: str Python и есть последовательность кодовых точек, поэтому
+# срез здесь совпадает с «символ» и «символы» без дополнительных усилий.
+def chain_empty(value):
+    """Пустая ли цепочка — пустой список или пустая строка."""
+    if value.tag == TAG_STRING:
+        return len(value.data) == 0
+    return value.tag == TAG_LIST and len(value.data) == 0
+
+
+def chain_cons(value):
+    """Непустая ли цепочка."""
+    if value.tag == TAG_STRING:
+        return len(value.data) > 0
+    return value.tag == TAG_LIST and len(value.data) > 0
+
+
+def chain_head(value):
+    """Голова цепочки: первый элемент списка или первый символ строки."""
+    if value.tag == TAG_STRING:
+        return text(value.data[0])
+    return value.data[0]
+
+
+def chain_tail(value):
+    """Хвост цепочки: остаток списка или остаток строки."""
+    if value.tag == TAG_STRING:
+        return text(value.data[1:])
+    return list_of(value.data[1:])
+
+
 def is_variant(value):
     """Вариант ли значение."""
     return value.tag == TAG_VARIANT

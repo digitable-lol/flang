@@ -1,4 +1,4 @@
-module «Quicksort in English»
+module «Quicksort»
 
 // Rosetta Code — Sorting algorithms/Quicksort, written on the ENGLISH keyword
 // surface. The same program as `quicksort.flang`, keyword for keyword; the two

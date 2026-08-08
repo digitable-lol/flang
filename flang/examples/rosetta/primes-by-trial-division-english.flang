@@ -1,4 +1,4 @@
-module «Primes by trial division in English»
+module «Primes by trial division»
 
 // Rosetta Code — Sequence of primes by trial division, written on the ENGLISH
 // keyword surface. The same program as `primes-by-trial-division.flang`,

@@ -1,4 +1,4 @@
-module «Ackermann function in English»
+module «Ackermann function»
 
 // Rosetta Code — Ackermann function, written on the ENGLISH keyword surface.
 // The same program as `ackermann-function.flang`, keyword for keyword; the two

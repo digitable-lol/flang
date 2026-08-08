@@ -1,4 +1,4 @@
-module «Fibonacci in English»
+module «Fibonacci»
 
 // Rosetta Code — Fibonacci sequence, written on the ENGLISH keyword surface.
 // The same program as `fibonacci.flang`, keyword for keyword; the two trees are

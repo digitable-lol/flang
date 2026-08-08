@@ -1,4 +1,4 @@
-module «Levenshtein distance in English»
+module «Levenshtein distance»
 
 // Rosetta Code — Levenshtein distance, written on the ENGLISH keyword surface.
 // The same program as `levenshtein-distance.flang`, keyword for keyword; the

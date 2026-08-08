@@ -1,4 +1,4 @@
-module «Run-length encoding in English»
+module «Run-length encoding»
 
 // Rosetta Code — Run-length encoding, written on the ENGLISH keyword surface.
 // The same program as `run-length-encoding.flang`, keyword for keyword; the two

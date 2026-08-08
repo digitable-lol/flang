@@ -1,4 +1,4 @@
-module «Roman numerals in English»
+module «Roman numerals»
 
 // Rosetta Code — Roman numerals/Encode and Roman numerals/Decode, written on
 // the ENGLISH keyword surface. The same program as `roman-numerals.flang`,

@@ -1,4 +1,4 @@
-module «Palindrome in English»
+module «Palindrome»
 
 // Rosetta Code — Palindrome detection, written on the ENGLISH keyword surface.
 // The same program as `palindrome.flang`, keyword for keyword; the two trees

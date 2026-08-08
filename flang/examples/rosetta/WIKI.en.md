@@ -5,7 +5,8 @@ below is the prose that goes **above** the code on the task page; the code goes
 inside `<syntaxhighlight lang="text">…</syntaxhighlight>`.
 
 The step-by-step publishing procedure — account, licence caveat, language page,
-order of operations — is in `docs/public/rosetta-как-выложить.md` (Russian).
+order of operations — is kept outside this repository, in the outreach
+materials: `flang-outreach/rosetta-как-выложить.md` (Russian).
 
 ## How to produce the code block
 

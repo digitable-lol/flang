@@ -75,47 +75,20 @@ docs/             documentation; README and SPEC files stay next to the code the
 
 <!-- КАРТА-КОНЕЦ -->
 
-**Why there are two FTS cores.** `src/` is the TypeScript reference; `flang/core/` is the same core
-rewritten in flang. It exists for the same reason `flang/self/` does — to free `fts` from Node — and
-the claim is not a promise but a byte comparison: `flang/test/core-parser.test.mjs` and
-`core-json.test.mjs` run both implementations over every `.fts` model in the repository and require
-identical output; `core-evaluate.test.mjs` compares evaluation the same way, `core-lexer.test.mjs`
-the token stream. When they disagree, TypeScript is
-the reference and flang is wrong; a deliberate divergence goes into the debt list of
-[`flang/core/SPEC.md`](flang/core/SPEC.md) rather than passing in silence — [`AGENTS.md`](AGENTS.md)
-says so explicitly.
-
-**Why the compiler is there twice.** `flang/src/` is JavaScript; `flang/self/` is the lexer, parser,
-type checker, totality analysis, defunctionalization and C backend written in flang. As long as the
-compiler exists only in JavaScript, "a language that runs everywhere" means "everywhere Node runs",
-which is a different sentence — the reasoning opens
-[`flang/self/SPEC.md`](flang/self/SPEC.md). `flang/self/` prints C99, the C builds into a binary,
-and that binary is what ships in the release, which is why the Homebrew install needs no Node. Done
-here does not mean "it compiled"; it means the fixed point: the JavaScript compiler prints
-`flang/self/*.flang` to C, the compiler built from that C prints the same files again, and the two
-C outputs must match byte for byte. `flang/test/self-bootstrap.test.mjs` guards the convergence.
-
-**Why `examples/` and `flang/examples/` are not the same thing.** `examples/` holds `.fts` models
-and one full project; the differential core checks pick them up by the `examples/**/*.fts` pattern,
-so a new model joins them without anyone editing a list. `flang/examples/` holds `.flang` programs —
-the corpus the eight backends are checked against, and it is wired into the run explicitly. Different
-extensions mean different parsers and different runs, which is why they are different directories.
-
 **How to tell what checks a file without opening it.** By its directory and extension: `src/` and
 `test/` go through `npm run test:core`, everything under `flang/` through `npm run test:flang`, each
 tool carries its own `tools/*/test/`, and `npm test` runs all three suites. A file you cannot
 immediately assign to one of those commands is filed in the wrong place.
 
-What those tools, the editor support and the benchmark harness actually do is covered further
-down, in [The rest of the repository](#the-rest-of-the-repository). Laying out **your own** project
-on FTS and flang is a separate document: [Раскладка проекта](docs/project-layout.ru.md).
+Laying out **your own** project on FTS and flang is a separate document:
+[Раскладка проекта](docs/project-layout.ru.md).
 
 ---
 
 ## Install
 
-**Installing flang does not need Node.** The compiler is written in flang itself and prints to C,
-so the release ships that C already printed: a C99 compiler is all it takes.
+**Installing flang needs a C99 compiler and nothing else.** The compiler is written in flang
+itself and prints to C, so the release ships that C already printed.
 
 ```bash
 brew install digitable-lol/tap/flang
@@ -190,7 +163,8 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang --target c -
 and is pasted verbatim, not written by hand. Seven backends emit the module, a runtime, a
 JSON-in/JSON-out driver, a build file and — where the target has one — a package manifest
 (`go.mod`, `Cargo.toml`, `flang.csproj`); the JavaScript backend emits a single self-contained
-file. Shown here is only the function itself.
+file. Two of the eight are shown here, and only the function itself; the other six read the same
+way — run the command and look.
 
 <details open>
 <summary><b>C</b> — <code>out-c/mesto_vstavki.c</code></summary>
@@ -227,215 +201,6 @@ fl_status mesto_vstavki_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value c
   *result = akk;
   return FL_OK;
 }
-```
-
-</details>
-
-<details>
-<summary><b>Go</b> — <code>out-go/flang/mesto_vstavki.go</code></summary>
-
-```go
-// MestoVstavki — функция flang «Место вставки».
-//
-// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-//
-// Параметр elementy — «элементы»: список: число.
-// Параметр cel — «цель»: число.
-// Результат — значение: число.
-func MestoVstavki(ctx *rt.Ctx, elementy rt.Value, cel rt.Value) (rt.Value, error) {
-	t1, e2 := rt.RequireList(ctx, elementy, "свёртка")
-	if e2 != nil {
-		return rt.Value{}, e2
-	}
-	// «акк»
-	akk := rt.Number(0.0)
-	for t3 := range t1 {
-		// «эл»
-		el := t1[t3]
-		t4, e5 := rt.Lt(ctx, el, cel)
-		if e5 != nil {
-			return rt.Value{}, e5
-		}
-		t6, e7 := rt.Cond(ctx, t4)
-		if e7 != nil {
-			return rt.Value{}, e7
-		}
-		var t8 rt.Value
-		if t6 {
-			t9, e10 := rt.Add(ctx, akk, rt.Number(1.0))
-			if e10 != nil {
-				return rt.Value{}, e10
-			}
-			t8 = t9
-		} else {
-			t8 = akk
-		}
-		akk = t8
-	}
-	return akk, nil
-}
-```
-
-</details>
-
-<details>
-<summary><b>Rust</b> — <code>out-rust/src/mesto_vstavki.rs</code></summary>
-
-```rust
-/// Функция flang «Место вставки».
-///
-/// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-///
-/// Параметр `elementy` — «элементы»: список: число.
-/// Параметр `cel` — «цель»: число.
-/// Результат — значение: число.
-pub fn funkciya_mesto_vstavki(ctx: &rt::Ctx, elementy: rt::Value, cel: rt::Value) -> Result<rt::Value, rt::Error> {
-    let t1 = rt::require_list(ctx, elementy.clone(), "свёртка")?;
-    // «акк»
-    let mut akk = rt::number(0.0);
-    // «эл»
-    for el in t1.iter().cloned() {
-        let t2 = rt::lt(ctx, el.clone(), cel.clone())?;
-        let t3 = rt::cond(ctx, t2)?;
-        let t4 = if t3 {
-            let t5 = rt::add(ctx, akk.clone(), rt::number(1.0))?;
-            t5
-        } else {
-            akk.clone()
-        };
-        akk = t4;
-    }
-    return Ok(akk);
-}
-```
-
-</details>
-
-<details>
-<summary><b>Python</b> — <code>out-python/mesto_vstavki.py</code></summary>
-
-```python
-def fn_mesto_vstavki(ctx, elementy, cel):
-    """Функция flang «Место вставки».
-
-    Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-
-    Параметр elementy — «элементы»: список: число.
-    Параметр cel — «цель»: число.
-    Результат — значение: число.
-    """
-    _t1 = rt.require_list(ctx, elementy, "свёртка")
-    # «акк»
-    akk = rt.number(0.0)
-    for el in _t1:
-        if rt.cond(ctx, rt.lt(ctx, el, cel)):
-            _t2 = rt.add(ctx, akk, rt.number(1.0))
-        else:
-            _t2 = akk
-        akk = _t2
-    return akk
-```
-
-</details>
-
-<details>
-<summary><b>Java</b> — <code>out-java/MestoVstavki.java</code></summary>
-
-```java
-  /**
-   * Функция flang «Место вставки».
-   *
-   * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-   *
-   * @param elementy «элементы»: список: число
-   * @param cel «цель»: число
-   * @return значение: число
-   */
-  public static Value fn_mesto_vstavki(Ctx ctx, Value elementy, Value cel) {
-    Value[] t1 = Flang.requireList(ctx, elementy, "свёртка");
-    // «акк»
-    Value akk = Value.number(0.0d);
-    for (Value el : t1) {
-      Value t2;
-      if (Flang.cond(ctx, Flang.lt(ctx, el, cel))) {
-        t2 = Flang.add(ctx, akk, Value.number(1.0d));
-      } else {
-        t2 = akk;
-      }
-      akk = t2;
-    }
-    return akk;
-  }
-```
-
-</details>
-
-<details>
-<summary><b>C#</b> — <code>out-csharp/MestoVstavki.cs</code></summary>
-
-```csharp
-    /// <summary>
-    /// Функция flang «Место вставки».
-    ///
-    /// Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-    ///
-    /// Параметр elementy — «элементы»: список: число.
-    /// Параметр cel — «цель»: число.
-    /// Результат — значение: число.
-    /// </summary>
-    public static Value FnMestoVstavki(Ctx ctx, Value elementy, Value cel)
-    {
-        Value[] t1 = Flang.RequireList(ctx, elementy, "свёртка");
-        // «акк»
-        Value akk = Value.Number(0.0d);
-        foreach (Value el in t1)
-        {
-            Value t2;
-            if (Flang.Cond(ctx, Flang.Lt(ctx, el, cel)))
-            {
-                t2 = Flang.Add(ctx, akk, Value.Number(1.0d));
-            }
-            else
-            {
-                t2 = akk;
-            }
-            akk = t2;
-        }
-        return akk;
-    }
-```
-
-</details>
-
-<details>
-<summary><b>Elixir</b> — <code>out-elixir/mesto_vstavki.ex</code></summary>
-
-```elixir
-  @doc """
-  Функция flang «Место вставки».
-
-  Тотальная: завершение доказано анализом завершаемости (totality.mjs).
-
-  Параметр `elementy` — «элементы»: список: число.
-  Параметр `cel` — «цель»: число.
-  Результат — значение: число.
-  """
-  def fn_mesto_vstavki(elementy, cel) do
-    t1 = Flang.Rt.require_list(elementy, "свёртка")
-    t2 = {:num, 0.0}
-    t3 =
-      Enum.reduce(t1, t2, fn el, akk ->
-        t4 =
-          if Flang.Rt.cond_flag(Flang.Rt.lt(el, cel)) do
-            t5 = {:num, 1.0}
-            Flang.Rt.add(akk, t5)
-          else
-            akk
-          end
-        t4
-      end)
-    t3
-  end
 ```
 
 </details>
@@ -499,19 +264,9 @@ The C backend additionally compiles under `gcc` *and* `clang` with
 `-std=c99 -Wall -Wextra -Werror -pedantic -O2` and is checked under `valgrind` for zero
 unreachable bytes.
 
-Backend tests need the real toolchain and skip explicitly when it is absent — a skipped test is
-not a passing test, so where the toolchain is supposed to exist (CI, a release machine) set
-`FTS_REQUIRE_TOOLCHAINS`: `1` demands every backend, `rust,go` demands the listed ones, and a
-missing compiler then fails by name instead of vanishing. `FTS_TOOLCHAIN_PATH` adds lookup
-directories.
-
 ---
 
 ## Why this exists
-
-The usual arrangement has a specification in one artifact and the implementation in another, and
-a promise that somebody keeps them in step. That promise fails silently: nothing breaks when the
-document and the code disagree.
 
 Here the rule is written once, in a form a domain expert can read
 (an excerpt from [`examples/utilities/discount.fts`](examples/utilities/discount.fts)):
@@ -658,288 +413,9 @@ Cyrillic included.
 This is not pedantry, and the reason is concrete. The embedded fact-checking mode
 ([`flang/src/factcheck.mjs`](flang/src/factcheck.mjs)) answers "does this claim hold about this
 data" — and a system that must answer yes or no is not allowed to hang. So it refuses to run a
-function that was not proven to terminate, before evaluating anything:
-
-```bash
-echo '{"н": 30}' | flang facts flang/examples/leetcode/509-fibonacci-number.flang \
-  --facts - --claims '["«Фибоначчи» от н равно 832040"]' --pretty
-```
-
-```json
-{
-  "claim": "«Фибоначчи» от н равно 832040",
-  "holds": false,
-  "why": "функция «Фибоначчи» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить"
-}
-```
-
-The same claim against a total function is verified, and the verdict carries its own derivation
-(`steps`: parse, totality check, which facts were read, what was computed, how it was compared):
-
-```bash
-echo '{"цены": [7, 1, 5, 3, 6, 4]}' | flang facts \
-  flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang \
-  --facts - --claims '["«Лучшая прибыль» от цены равно 5"]' --pretty
-```
-
-```json
-{ "ok": true, "results": [ { "holds": true,
-  "why": "«Лучшая прибыль» от факта «цены» = 5; требование «равно 5» выполнено", "status": "verified" } ] }
-```
-
-The mode has no file, network or clock access, and a hard step budget: the answer depends only
-on `(program, facts, claims, limits)`.
-
----
-
-## The category surface
-
-The semantics were already categorical; the surface used to be silent about it. A morphism is an
-arrow between objects, composition is written `после`, a long pipeline is written in reading
-order, and `единица` is the identity of an object. Only words — no `→`, no `∘`:
-
-```flang
-морфизм «отгрузить» из «Заказ» в «Отгрузка»
-морфизм «выставить» из «Отгрузка» в «Счёт»
-морфизм «оформить» это «выставить» после «отгрузить»
-единица «Заказ»
-
-цепочка «провести заказ»
-  сначала «отгрузить»
-  затем «выставить»
-```
-
-Wiring is checked by the compiler and belongs to the proven side: `«б» после «а»` assembles if
-and only if the codomain of `«а»` is the domain of `«б»`, and a chain assembles only if it does
-not break in the middle. A mismatch names both ends:
-
-```
-FLANG_COMPOSE_MISMATCH: композиция «оформить» не стыкуется:
-«выставить» приводит в «Счёт», а «отгрузить» ожидает «Заказ»
-```
-
-An arrow may carry a **law** — a promise checked by examples. What computes the arrow is a named
-function (`даёт`), not a body inside the declaration: a body in the arrow would mean a second
-expression parser, a second type inference and an eighth emitter across eight targets, while a
-named function says exactly the same and costs none of that.
-
-```flang
-морфизм «отгрузить» из «Заказ» в «Отгрузка»
-  даёт «Отгрузить заказ»
-  закон «номер отгрузки берётся из суммы заказа»
-    пример «обычный заказ»
-      дано заказ равно запись «Заказ» с сумма равным 500
-      ожидается запись «Отгрузка» с номер равным 500
-```
-
-The honesty boundary runs inside this single construct. The *shape* is **proven**: the function is
-declared, it takes exactly one input, and that input is the domain while the result is the codomain
-(`FLANG_MORPHISM_SHAPE`). The law itself is **checked on examples**, and it is `flang test` that
-checks it, not `flang check`: a law speaks about equality of computations, and examples are what
-that command runs. A broken law names itself in full — `морфизм «отгрузить», закон «номер отгрузки
-берётся из суммы заказа»`. The whole file:
-[`flang/examples/cat/order-shipment.flang`](flang/examples/cat/order-shipment.flang).
-
-With `даёт` in place, **invertibility of an isomorphism** is checked too — wherever both arrows are
-implemented: the round trip is computed over a grid of values the author already named in examples,
-and a counterexample is produced (`FLANG_ISO_NOT_INVERSE`). A pair where at least one arrow has no
-`даёт` stays the author's assumption and the check says nothing about it: there is nothing to
-compute, and calling zero values "checked" would substitute "we looked" for "proven".
-
-A functor maps objects and arrows, and the word is not granted without the guarantee — there is
-no opt-in flag for the laws, because a mapping that does not preserve composition is not a
-functor:
-
-```flang
-функтор «Электронное в бумажное» из «Продажи» в «Продажи»
-  объект «Заказ» отображается в «Заказ»
-  объект «Отгрузка» отображается в «Накладная»
-  объект «Счёт» отображается в «Счёт»
-  морфизм «отгрузить» отображается в морфизм «печатать»
-  морфизм «выставить» отображается в морфизм «подписать»
-  морфизм «оформить» отображается в морфизм «оформить бумажно»
-```
-
-Three laws are **proven** here, not sampled — statements about all inputs, derived from the
-declarations alone, with no grid and no solver:
-
-1. the image of an arrow runs from the image of its domain to the image of its codomain
-   (`FLANG_FUNCTOR_ARROW_MISMATCH`);
-2. the image of a composition is the composition of the images, in the same order
-   (`FLANG_FUNCTOR_COMPOSITION`);
-3. the image of an identity is the identity of the image (`FLANG_FUNCTOR_IDENTITY`).
-
-This is possible precisely because a morphism here is a *declaration*, not a value: its name,
-domain and codomain are known before anything runs. It stayed a declaration even after functions
-became values (`flang/cat/HOF.md`): were composition a computation over function values, there
-would be nothing to check — equality of two computations is undecidable.
-
-Where the surface stops is stated as plainly: category names (`из «Продажи» в «Биллинг»`) remain
-a note for the reader, because a category is not declared as an entity and there is nothing to
-check membership against. Natural transformations are described in
-[`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented; monoids, groups, isomorphisms,
-bifunctors and monads are — and a monad also comes with the binding form `в монаде`
-([`flang/cat/MONAD.md`](flang/cat/MONAD.md)).
-
----
-
-## Concurrency: seven steps of seven, and half of an eighth ahead
-
-Values are immutable by construction, so two computations looking at one value cannot interfere:
-there are no data races to lose, because there is nothing to build one out of. What the language
-lacked was a word for simultaneity. The language has no closures (what became a value is a
-function, not a closure), so a process cannot be spawned from a `fun () -> …` the way BEAM does —
-so **a process is a declaration**: a name, a state type, a starting function and a handler.
-
-```flang
-процесс «Счётчик»
-  состояние «Счёт»
-  начинает с «пустой счёт»
-  принимает «Команда счёта»
-  обрабатывает «шаг счёта»
-
-надзор «Учёт»
-  процесс «Счётчик» стратегия «перезапустить»
-  процесс «Журнал» стратегия «остановить»
-  порог отказов 3 за 5000 миллисекунд иначе «передать выше»
-
-прогон «два прибавления и доклад»
-  семя 4172
-  дано «Счётчик» принимает (вариант «прибавить» с «сколько» равным 2)
-  дано «Счётчик» принимает (вариант «прибавить» с «сколько» равным 3)
-  дано «Счётчик» принимает (вариант «доложить» с «повод» равным "итог: ")
-  ожидается «Счётчик» равен (запись «Счёт» с «всего» равным 5)
-  ожидается «Журнал» равен (запись «Записи» с «строки» равным ["итог: 5"])
-```
-
-The handler is an ordinary pure function returning "new state plus a list of actions"; sending a
-message is *described*, not performed — the scheduler performs it. A `прогон` is an example with
-a seed, and it runs in the same `flang test` output as ordinary examples: concurrency must not be
-the place where checking stops. One seed gives one delivery log, byte for byte, and that is
-checked by re-running after re-parsing the source. Deadlock is a defined outcome
-(`исход: "покой"`), not a hang.
-
-One seed checks one interleaving, and the semantics is **any** of them. So a run can take a grid of
-seeds instead: on a grid `равен` becomes an invariant, and `любое из` names the set of reachable
-outcomes.
-
-```flang
-прогон «порядок в сборщике — одно из двух, и третьего не бывает»
-  семя от 1 до 1000
-  дано «Левый» принимает (вариант «тик» с «метка» равным "Л")
-  дано «Правый» принимает (вариант «тик» с «метка» равным "П")
-  ожидается «Левый» равен (запись «Счёт» с «всего» равным 1)
-  ожидается «Сборщик» любое из [
-    (запись «Метки» с «строки» равным ["Л", "П"]),
-    (запись «Метки» с «строки» равным ["П", "Л"])]
-```
-
-The set is checked both ways: no seed of the thousand left it, *and* every named value showed up
-somewhere. A one-way check gets weaker the wider the set, so padding it would silently weaken the
-run. A mismatch names the seed, and that seed replays the interleaving on its own.
-
-```bash
-flang test flang/conc/examples/counter.flang --pretty
-```
-
-The contract is [`flang/conc/SPEC.md`](flang/conc/SPEC.md), and it names a seven-step plan of
-which **all seven are done**: the surface, the checks, the reference scheduler, supervision,
-emission to Elixir, the seed sweep, the scheduler in the C runtime and the measurement. Strategies are applied for real: a restart returns the state to the very
-same initial value, the failure threshold is counted in the scheduler's virtual time, and
-"escalate" reaches the supervisor one step up — or, if there is none above, stops the whole program
-with the outcome `"отказ дошёл доверху"`. The examples are in
-[`flang/conc/examples/`](flang/conc/examples).
-
-No virtual machine is being written for this: the language already targets **Elixir**, so a flang
-process is printed as a BEAM process and supervision as an OTP supervisor tree. Preemption by
-reduction count, a heap with its own collector per process, a scheduler per core, distribution and
-hot code loading all come for real, not approximately.
-
-```bash
-flang emit flang/conc/examples/counter.flang --target elixir --out /tmp/counter
-cd /tmp/counter && make build
-echo '{"run":"два прибавления и доклад"}' | elixir -pa _build -e 'Flang.Cli.main(["SchyotchikIZhurnal"])'
-```
-
-The emitted program cannot be checked against the reference by value: the semantics is *any*
-interleaving of atomic handler runs, and the BEAM scheduler takes no seed. So the check is on the
-*set*: the reference sweeps a thousand seeds to build the set of outcomes and the set of delivery
-logs, and every outcome of a real BEAM run must land inside it. Both weak spots are covered — the
-set is shown to be saturated (half the seed grid gives the same set) and narrow (change one number
-in an outcome and it falls out).
-
-The second target, C, has a scheduler of its own: it lives in the runtime
-(`flang/src/emit/c/flang_conc.c`), while processes, supervisors and runs are printed into the
-program as data. That scheduler *does* take a seed, so the check there is stricter than against
-BEAM — and it is exactly the one the contract asked for in the first place: **on one seed the
-delivery log matches the reference byte for byte** — 2400 matches over 90 distinct interleavings,
-six programs, twelve runs.
-
-```bash
-flang emit flang/conc/examples/counter.flang --target c --out /tmp/counter-c
-cd /tmp/counter-c && make
-echo '{"run":"два прибавления и доклад","seed":"4172"}' | ./flang_cli
-```
-
-Its mode is the checking one: a single thread, interleaving chosen by the seed. It does not occupy
-a second core and does not pretend to — and the price of a thread pool has been measured on two
-machines, because one would not have been enough: handing a run to another thread costs **2.2 µs
-against a 0.58 µs run** on a sixteen-core box and **15.9 µs against a 1.15 µs run** on an eight-core
-one — four to fourteen runs. Until a handler is more expensive than that threshold, a pool takes
-away more than it gives. The
-other six targets do not print processes at all: there, a program with `процесс` gives the handlers
-as ordinary functions and nothing more.
-
-The model has been measured — `node --expose-gc flang/conc/bench.mjs` — and the numbers were chosen
-so as not to depend on machine load, because the machine available was a busy one. A flang process
-on BEAM takes **2768 bytes** against 2720 for a bare GenServer, so a node holds as many of them as
-it holds BEAM processes; delivering a message costs **106 reductions** against 19 for a bare
-GenServer — 5.5x, and that is the price of the model on top of the machine. A handler run is **17
-interpreter steps**, a send adds **9**: describing an action *is* building a value, and that is not
-free. The reference scheduler has a less pleasant finding of its own: it rebuilds the ready queue by
-scanning every process on every run, so a context switch costs O(number of processes) — about 12 ns
-per declared process. In the C runtime the ready queue is kept as a list, and the same line reads
-**1.145 µs + 0.003 ns per process** (0.580 µs + 0.007 ns on the second machine): no slope within the
-measurement, and the log still matches the reference byte for byte — what got faster is the way the
-queue is obtained, not the queue.
-
----
-
-## The shell and the language server
-
-```bash
-flang repl flang/stdlib/lists.flang
-```
-
-The shell accumulates declarations in a session and evaluates expressions against them. Every
-declaration goes the same road as `check` — parse, types, totality — so nothing gets in that the
-compiler would reject. A blank line ends a declaration; `.помощь` lists the commands
-(`.объявления`, `.исходник`, `.сохранить`, `.загрузить`, `.сбросить`, `.выход`; the English
-`.help .list .source .save .load .reset .quit` work too). It is the one command with human output
-instead of JSON.
-
-```
-» тотальная функция «Удвоить»
-…   принимает х: число
-…   возвращает число
-…   х умножить на 2
-…
-объявлено: тотальная функция «Удвоить» — завершение доказано
-» «Удвоить» от «Длина» от [1, 2, 3]
-6
-```
-
-Totality is a verdict here, not a label: an ordinary function is announced as
-`завершение не доказано: вычисление ограничено лимитом шагов`, and exceeding the limit gives
-`FLANG_RECURSION_LIMIT`.
-
-The language server is [`flang/src/lsp.mjs`](flang/src/lsp.mjs), started over stdio by
-`node flang/bin/flang-lsp.mjs --stdio` (the package declares it as the `flang-lsp` binary). It
-gives the buffer exactly what `flang check` gives the file — the same diagnostics, the same codes,
-the same wording — plus completion, signature on hover and go-to-definition, including into
-imported modules. Renaming, quick fixes and formatting are absent on purpose: they would be a
-second implementation of the language beside the first. Editor setup and the full list of what it
-does and does not do are in [`editors/flang-lsp/README.md`](editors/flang-lsp/README.md).
+function that was not proven to terminate, before evaluating anything — `flang facts` answers with
+`holds: false` and says why. The mode has no file, network or clock access, and a hard step budget:
+the answer depends only on `(program, facts, claims, limits)`.
 
 ---
 
@@ -965,13 +441,6 @@ same run, so your local count may be higher; the promise is the corpus, not the 
 Diagnostics are compared separately, on 34 deliberately broken indentation models and 13 braced
 ones — code *and* message text.
 
-Byte equality is a strong statement, not a formality, because the JSON string exposes everything
-a looser comparison would hide: key insertion order, `5` versus `"5"` versus `да`, how a float is
-rendered, whether a name kept its guillemets, which diagnostic fired first and in which words.
-A reimplementation that is "morally the same" fails this test on its first document. (An early
-draft of the contract stored scalars as strings; the JSON printer refuted it immediately —
-`5`, `"5"` and `да` print differently and are indistinguishable as text.)
-
 ### The compiler, written in flang, and the fixed point
 
 [`flang/self/`](flang/self) is the flang compiler written in flang. Five layers, each with its
@@ -986,12 +455,6 @@ component of the result:
 | `self/totality.flang` |       124 | `src/totality.mjs` | the verdict: proven functions in the same order, diagnostics, `ok`   |
 | `self/emit-c.flang`   |       328 | `src/emit/c.mjs`   | the printed C — **byte for byte**, and it compiles without warnings  |
 
-The comparison lives in `flang/test/self-*.test.mjs` and does not run on well-formed files only:
-on a well-formed input the right answer is "no diagnostics", and that answer is also given by a
-function that does nothing. So the corpus includes deliberately broken programs and fuzzing over
-random sources, where the reference and the flang implementation must fail identically — same
-codes, same words, same place.
-
 Readiness is not "it built". It is the classical fixed point:
 
 ```
@@ -1001,51 +464,17 @@ Readiness is not "it built". It is the classical fixed point:
 ```
 
 **The fixed point has converged.** The reference, `flang₁` and `flang₂` print the compiler
-identically — all six files — which means the compiler understands the language the way the
+identically — all seven printed C files — which means the compiler understands the language the way the
 reference does, and no test suite substitutes for that. The check is
 `flang/test/self-bootstrap.test.mjs`, and it prints the result:
 
 ```
 ✔ шаги 2 и 3: flang₁ печатает сам себя, flang₂ печатает то же самое
-ℹ неподвижная точка сошлась: 6 файлов совпали побайтово у эталона, flang₁ и flang₂
+ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у эталона, flang₁ и flang₂
 ```
 
-This is what makes the Node-free release possible: the C in the release archive is printed from
-these sources. The reference implementation is not deleted, and will not be — convergence is
+This is where the release comes from: the C in the release archive is printed from these sources. The reference implementation is not deleted, and will not be — convergence is
 measured against it, and deleting it would delete the check.
-
-One decision is worth naming. The compiler does not require totality: unlike fact-checking it is
-allowed to hit a step limit and say so. So `flang/self/` permits ordinary functions where proving
-decrease would cost more than it buys (Tarjan's walk over the call graph, recursive descent over
-the token stream), and every such place must be named with its reason in the "Долги" section of
-[`flang/self/SPEC.md`](flang/self/SPEC.md). The FTS core in `flang/core/` gets no such relief.
-
-### Which means the core compiles to a native binary
-
-```bash
-flang emit flang/core/parser.flang --target c --out ./core-c
-make -C ./core-c
-```
-
-Measured on this machine (gcc 13.3, x86-64, `-std=c99 -Wall -Wextra -Werror -pedantic -O2`):
-
-- compiles with **zero warnings** — the flags are part of the backend's contract, not advice;
-- 671 616 bytes (633 048 stripped), linked against **`libc` and `libm` and nothing else** —
-  no Node, no runtime to install;
-- the largest model in the repository (`tools/gacascade/models/assignment.fts`, 19.5 KB of
-  source) is parsed in about 14 ms, process startup included;
-- its output was compared against `JSON.stringify(compile(...))` of the TypeScript core and is
-  identical byte for byte.
-
-The binary speaks the backend's JSON-in/JSON-out protocol, one request per line, so any language
-with pipes can call it without FFI:
-
-```bash
-node -e 'const fs=require("fs");
-  process.stdout.write(JSON.stringify({fn:"Скомпилировать",
-    args:[{s:fs.readFileSync("examples/utilities/discount.fts","utf8")}]})+"\n")' \
-| ./core-c/flang_cli
-```
 
 ---
 
@@ -1084,7 +513,7 @@ against, and deleting it would delete the check. Working on it takes a clone:
 ```bash
 npm install
 npm run build
-node scripts/build-release-c.mjs     # prints the release C and builds it without Node
+node scripts/build-release-c.mjs     # prints the release C and builds it
 ```
 
 The commands the language answers to:
@@ -1134,18 +563,6 @@ npm run test:flang    # the language: parser, types, totality, backends, the cor
 npm test              # everything: core, tools, flang
 ```
 
-The differential core checks (`flang/test/core-json.test.mjs`, `flang/test/core-parser.test.mjs`)
-run over every `.fts` model in the repository. `FTS_MODEL_PATH` (a `PATH`-style list of
-directories) adds model corpora from outside the repository; a directory that does not exist, is
-not a directory, or holds no `.fts` at all is an error rather than a silent skip. Either way the
-tests print the coverage they actually got — count and sources — so a run on a clean clone is
-told apart from a run with an external corpus by looking at the output:
-
-```bash
-node --test flang/test/core-json.test.mjs
-# ✔ корпус моделей найден — 50 моделей: только репозиторий, внешний корпус не подключён …
-```
-
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
 the same contract everywhere, which is what makes it usable from CI, editors and agents. The one
 exception is `flang repl`, which talks to a human.
@@ -1166,13 +583,8 @@ exception is `flang repl`, which talks to a human.
   interpretation or by JIT to JavaScript.
 - **[`tools/ftspec`](tools/ftspec/README.md)** — finds conflicts between specifications,
   constitution invariants and recorded decisions, before implementation starts.
-- Six more tools in [`tools/`](tools): the FTS language server `ftsls` (one LSP for VS Code,
-  Neovim, JetBrains, Zed, Emacs and Helix), the rule coverage map `ftsmap`, model synthesis from
-  historical decisions `ftsynth`, evolutionary search `gasearch`, the planning cascade `gacascade`
-  and the shared line/column binding `locate`.
-- **MCP server** — `fts-mcp` (or `fts mcp`) over stdio, ten read-only tools: `fts_compile`,
-  `fts_check`, `fts_test`, `fts_generate`, `fts_execute`, `fts_prove`, `fts_visualize`,
-  `fts_certify`, `fts_verify`, `fts_pipeline`. See [Agent integration](docs/agents.md).
+- Six more tools in [`tools/`](tools), each with its own README, and the read-only MCP server
+  `fts-mcp` over stdio — see [Agent integration](docs/agents.md).
 - **Editors** — syntax highlighting for `.fts` (Vim, VS Code, tree-sitter, Chroma, Linguist) in
   [`editors/`](editors/README.md), and the `.flang` language server in
   [`editors/flang-lsp`](editors/flang-lsp/README.md).
@@ -1207,7 +619,7 @@ is drawn in [`docs/overview.ru.md`](docs/overview.ru.md); the full lists are in
 
 - *proven* — statements about **all** inputs, established by the compiler: termination
   (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, and the
-  three functor laws above;
+  three functor laws;
 - *checked* — statements about a **finite** set: utility properties, declared examples,
   concurrency runs, and the agreement between the interpreter and the eight backends. "Checked on
   N inputs" is not "proven", and this page does not use one word for the other.
@@ -1275,27 +687,6 @@ a proof — and it gives no freedom from deadlock. The measurement was taken on 
 average 18–76 with eight cores available), so every time figure in it is an upper bound quoted next to the load
 it was taken under; the figures that do not depend on load (interpreter steps, reductions, bytes)
 are given separately and repeat run to run.
-
-**The core written in flang.** It matches the TypeScript core byte for byte on every model in the
-corpus, and the places where it would not are known and written down:
-
-- lexer: no NFC normalization, no block comments, no exponent notation (`1e3` reads as a name),
-  no escape unwrapping inside string literals, apostrophe does not open a string, "inside
-  quotes" is decided by parity rather than by an automaton, and an unclosed plain quote is not
-  diagnosed;
-- JSON printer: a lone surrogate is not escaped (there is no "character code" form in the
-  language), and number rendering is delegated to the built-in `к строке`, which every backend
-  must implement as ECMAScript `Number::toString` or byte equality breaks on the first fraction;
-- parser: diagnostics carry no line number and no column (the token stream does not carry
-  positions yet); for deeply unclosed brackets the diagnostic code matches but the message text
-  does not always; a document written as raw JSON is not parsed;
-- evaluator: document-level checks (`FTS_UNKNOWN_UTILITY`, `FTS_NO_UTILITIES`,
-  `FTS_UTILITY_INPUT_TYPE`) belong to a layer that sees the whole document and are not
-  implemented here.
-
-None of these are hit by any model in the corpus — which is exactly why they are listed rather
-than discovered by you. The TypeScript core stays the working implementation of FTS and the
-reference the rewrite is measured against: `flang/core/` reproduces it, and does not replace it.
 
 ## Status
 

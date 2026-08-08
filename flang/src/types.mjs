@@ -2178,6 +2178,7 @@ function checkExamples(fn, signature, ctx, чей = `функции «${fn.name}
   for (const example of fn.examples ?? []) {
     const label = isName(example?.name) ? `пример «${example.name}»` : "пример"
     const args = example?.args ?? {}
+    const bindings = solveExample(signature, example, ctx)
     for (const param of signature.params) {
       if (!(param.name in args)) {
         // Необязательный аргумент можно не задавать: отсутствие — это `ничто`,
@@ -2188,15 +2189,142 @@ function checkExamples(fn, signature, ctx, чей = `функции «${fn.name}
         }
         continue
       }
-      checkValue(args[param.name], param.type, `${label}: аргумент «${param.name}»`, ctx, example)
+      checkValue(args[param.name], substitute(param.type, bindings), `${label}: аргумент «${param.name}»`, ctx, example)
     }
     for (const given of Object.keys(args)) {
       if (!signature.params.some((param) => param.name === given)) {
         ctx.report("FLANG_UNKNOWN_NAME", `${label} ${чей} задаёт неизвестный аргумент «${given}»`, example)
       }
     }
-    checkValue(example?.expected, signature.returns, `${label}: ожидаемое значение`, ctx, example)
+    checkValue(example?.expected, substitute(signature.returns, bindings), `${label}: ожидаемое значение`, ctx, example)
   }
+}
+
+/**
+ * Подстановка для ОДНОГО примера полиморфной функции — фаза 2 `cat/POLY.md`.
+ *
+ * Зачем отдельный источник вывода. У вызова типы аргументов уже известны из
+ * выражений, и подстановку решает `callType`. У примера выражений нет вовсе:
+ * `дано ф равно функция «Удвоить»` — это ЗНАЧЕНИЕ, обычный JSON. Пока
+ * подстановку из значений никто не выводил, объявленный тип уходил в
+ * `checkValue` как написан, и выходило одно из двух, оба неверных:
+ *
+ *   • `ф: функция из «А» в «Б»` сравнивалось с `функция из числа в число`
+ *     буквально — пример полиморфной функции падал, хотя он верен;
+ *   • `значение: «А»` не проверялось вовсе — в примере годилось что угодно.
+ *
+ * Решение то же самое, что на вызове, и намеренно тем же кодом: вывести тип
+ * значения настолько, насколько он выводится, и сопоставить с объявленным
+ * (`matchAgainst`). Заводить здесь второе понимание подстановки значило бы
+ * получить два языка в одном — ровно тот довод, по которому примеры закона
+ * проверяются той же функцией, что примеры функции.
+ *
+ * Порядок источников — аргументы, потом ожидаемое значение — взят у `callType`
+ * и по той же причине: у `функция «Ничего» от «А» возвращает «Возможно» от «А»`
+ * аргументов нет вовсе, и без второго источника её пример был бы непроверяем.
+ * Обратный порядок был бы хуже: ожидаемое значение — то, что пример проверяет,
+ * и выводить по нему раньше, чем по входу, значит подгонять проверку под ответ.
+ *
+ * Нерешённое связывается джокером МОЛЧА, без `FLANG_TYPE_PARAM`. Отказ здесь
+ * означал бы «пример обязан определить каждый параметр», а это неправда:
+ * `дано значение равно ничто` про «А» не говорит ничего и вправе не говорить.
+ * Джокер `sameType` пропускает, значит непроверенным останется ровно то, про
+ * что значение промолчало, а не пример целиком.
+ */
+function solveExample(signature, example, ctx) {
+  const typeParams = signature.typeParams ?? []
+  const bindings = new Map()
+  if (typeParams.length === 0) return bindings
+  const args = example?.args ?? {}
+  for (const param of signature.params) {
+    if (!(param.name in args) || !hasParams(param.type)) continue
+    matchAgainst(param.type, exampleValueType(args[param.name], param.type, ctx), bindings)
+  }
+  if (typeParams.some((name) => !bindings.has(name)) && hasParams(signature.returns)) {
+    matchAgainst(signature.returns, exampleValueType(example?.expected, signature.returns, ctx), bindings)
+  }
+  for (const name of typeParams) {
+    if (!bindings.has(name)) bindings.set(name, UNKNOWN)
+  }
+  return bindings
+}
+
+/**
+ * Тип значения примера — настолько, насколько он из самого значения выводится.
+ * Джокер там, где не выводится, и это не лень, а единственный честный ответ:
+ * `[]` не говорит про тип элемента, `ничто` не говорит вообще ни про что.
+ *
+ * `hint` — объявленный тип на этом же месте. Он не проверяется здесь (проверит
+ * `checkValue`), а РАЗВОДИТ формы, которые в JSON записаны одинаково:
+ * `{ вариант: "Удвоить" }` — это функция-значение, если ждут функцию, и вариант
+ * суммы, если такой вариант объявлен. Без подсказки обе формы неразличимы, а
+ * второй способ записывать значения SPEC не фиксирует.
+ */
+function exampleValueType(value, hint, ctx) {
+  if (typeof value === "number" && Number.isFinite(value)) return NUMBER
+  if (typeof value === "string") return STRING
+  if (typeof value === "boolean") return BOOLEAN
+  if (value === null || value === undefined) return UNKNOWN
+  if (Array.isArray(value)) {
+    const inner = hint?.kind === "list" ? hint.of : null
+    /* Хватит первого элемента, который что-то сказал: разнотипный список — это
+       беда самого примера, и назовёт её `checkValue` по подставленному типу. */
+    for (const item of value) {
+      const found = exampleValueType(item, inner, ctx)
+      if (found.kind !== "unknown") return { kind: "list", of: found }
+    }
+    return { kind: "list", of: UNKNOWN }
+  }
+  if (!isPlainObject(value)) return UNKNOWN
+  const tag = value["вариант"] ?? value.variant
+  if (isName(tag)) {
+    if (hint?.kind === "fn" || !ctx.variantOwner.has(tag)) return fnValueType(tag, ctx)
+    return sumValueType(tag, value, hint, ctx)
+  }
+  if (hint?.kind === "record" && ctx.records.has(hint.name)) return recordValueType(value, hint, ctx)
+  return UNKNOWN
+}
+
+/** Тег функции как значение. Полиморфную функцию значением брать нельзя
+ *  (`fnrefType`), и здесь та же граница: у неё тип не один, а по подстановке. */
+function fnValueType(tag, ctx) {
+  const signature = ctx.signatures.get(tag)
+  if (!signature || (signature.typeParams ?? []).length > 0) return UNKNOWN
+  return signatureType(signature)
+}
+
+/** Аргументы применения суммы выводятся из полей варианта, а не из подсказки:
+ *  подсказка могла бы сама состоять из параметров и ничего бы не решила. */
+function sumValueType(tag, value, hint, ctx) {
+  const owner = ctx.variantOwner.get(tag)
+  const declared = ctx.sums.get(owner)?.get(tag)
+  if (!declared) return UNKNOWN
+  const names = ctx.typeParams.get(owner) ?? []
+  if (names.length === 0) return { kind: "sum", name: owner }
+  const payload = isPlainObject(value["поля"] ?? value.fields)
+    ? (value["поля"] ?? value.fields)
+    : omit(value, ["вариант", "variant"])
+  return { kind: "sum", name: owner, args: solveArgs(names, declared, payload, hint, owner, ctx) }
+}
+
+function recordValueType(value, hint, ctx) {
+  const names = ctx.typeParams.get(hint.name) ?? []
+  if (names.length === 0) return { kind: "record", name: hint.name }
+  return { kind: "record", name: hint.name, args: solveArgs(names, ctx.records.get(hint.name), value, hint, hint.name, ctx) }
+}
+
+/** Общее для суммы и записи: поля объявлены в ИМЕНАХ ПАРАМЕТРОВ владельца,
+ *  значит по значениям полей решается подстановка владельца, а не вызывающей
+ *  функции. Два пространства имён параметров смешивать нельзя: «А» функции и
+ *  «А» типа — разные «А». */
+function solveArgs(names, declared, payload, hint, owner, ctx) {
+  const solved = new Map()
+  const outer = hint?.name === owner ? bindingsOf(hint, ctx) : new Map()
+  for (const [name, fieldType] of declared ?? []) {
+    if (!isPlainObject(payload) || !(name in payload)) continue
+    matchAgainst(fieldType, exampleValueType(payload[name], substitute(fieldType, outer), ctx), solved)
+  }
+  return names.map((name) => solved.get(name) ?? UNKNOWN)
 }
 
 /**

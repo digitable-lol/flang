@@ -87,8 +87,8 @@ Laying out **your own** project on FTS and flang is a separate document:
 
 ## Install
 
-**Installing flang does not need Node.** The compiler is written in flang itself and prints to C,
-so the release ships that C already printed: a C99 compiler is all it takes.
+**Installing flang needs a C99 compiler and nothing else.** The compiler is written in flang
+itself and prints to C, so the release ships that C already printed.
 
 ```bash
 brew install digitable-lol/tap/flang
@@ -473,8 +473,7 @@ reference does, and no test suite substitutes for that. The check is
 ℹ неподвижная точка сошлась: 6 файлов совпали побайтово у эталона, flang₁ и flang₂
 ```
 
-This is what makes the Node-free release possible: the C in the release archive is printed from
-these sources. The reference implementation is not deleted, and will not be — convergence is
+This is where the release comes from: the C in the release archive is printed from these sources. The reference implementation is not deleted, and will not be — convergence is
 measured against it, and deleting it would delete the check.
 
 ---
@@ -514,7 +513,7 @@ against, and deleting it would delete the check. Working on it takes a clone:
 ```bash
 npm install
 npm run build
-node scripts/build-release-c.mjs     # prints the release C and builds it without Node
+node scripts/build-release-c.mjs     # prints the release C and builds it
 ```
 
 The commands the language answers to:

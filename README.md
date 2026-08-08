@@ -775,9 +775,11 @@ echo '{"run":"два прибавления и доклад","seed":"4172"}' | .
 ```
 
 Its mode is the checking one: a single thread, interleaving chosen by the seed. It does not occupy
-a second core and does not pretend to — and the price of a thread pool has been measured and named:
-a handler run costs **1.1 µs**, handing that run to another thread costs **15.9 µs**. Until a
-handler is more expensive than fifteen microseconds, a pool takes away more than it gives. The
+a second core and does not pretend to — and the price of a thread pool has been measured on two
+machines, because one would not have been enough: handing a run to another thread costs **2.2 µs
+against a 0.58 µs run** on a sixteen-core box and **15.9 µs against a 1.15 µs run** on an eight-core
+one — four to fourteen runs. Until a handler is more expensive than that threshold, a pool takes
+away more than it gives. The
 other six targets do not print processes at all: there, a program with `процесс` gives the handlers
 as ordinary functions and nothing more.
 
@@ -790,8 +792,9 @@ interpreter steps**, a send adds **9**: describing an action *is* building a val
 free. The reference scheduler has a less pleasant finding of its own: it rebuilds the ready queue by
 scanning every process on every run, so a context switch costs O(number of processes) — about 12 ns
 per declared process. In the C runtime the ready queue is kept as a list, and the same line reads
-**1.145 µs + 0.003 ns per process**: no slope within the measurement, and the log still matches the
-reference byte for byte — what got faster is the way the queue is obtained, not the queue.
+**1.145 µs + 0.003 ns per process** (0.580 µs + 0.007 ns on the second machine): no slope within the
+measurement, and the log still matches the reference byte for byte — what got faster is the way the
+queue is obtained, not the queue.
 
 ---
 
@@ -1152,8 +1155,8 @@ the endofunctor map is printed in place, so the parameter must occupy a whole fi
 
 **Concurrency.** All seven steps, but the sixth only halfway. The scheduler in the C runtime is
 the checking one: a single thread, interleaving by seed, matching the reference byte for byte;
-there is no working thread pool, and its price is named as a number (a 1.1 µs run against 15.9 µs
-to hand that run to another thread). Processes are printed only to Elixir and C, and the other six
+there is no working thread pool, and its price has been measured on two machines (handing a run to
+another thread costs four to fourteen runs, depending on the box). Processes are printed only to Elixir and C, and the other six
 targets turn a program with `процесс` into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
 the declarations and there is no dynamic tree as in OTP; a message addressee must be a literal;
 there is no distribution. The seed grid checks a finite set of interleavings — a checked claim, not

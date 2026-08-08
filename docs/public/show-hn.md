@@ -8,10 +8,17 @@
 я взял из репозитория, часть получил своим запуском. HN проверяет по ссылке за
 минуты, и одно расхождение стоит дороже всего остального.
 
-Что проверено МОИМ запуском 7 августа 2026:
+Что проверено МОИМ запуском 8 августа 2026:
 
-- набор Rosetta Code: 15 файлов, 97 функций, 70 тотальных, 222 примера, все
-  сходятся (`node --test flang/test/rosetta.test.mjs` — 31 тест зелёный);
+- набор Rosetta Code: 28 файлов, 184 функции, 140 тотальных, 424 примера, все
+  сходятся (`node --test flang/test/rosetta.test.mjs` — 73 теста зелёных);
+
+  Файлов вдвое больше, чем задач: каждая записана на обеих поверхностях, и
+  пары сверяются деревьями. Числа выросли ровно поэтому, а не потому, что
+  задач стало больше — задач по-прежнему четырнадцать. Прежняя запись здесь
+  говорила «15 файлов, 97 функций, 70 тотальных», и это было несогласовано
+  само с собой: функции считались по пятнадцати файлам, а тотальные — по
+  четырнадцати. Такое расхождение на HN находят за минуту.
 - `тотальная` на функции Аккермана даёт `FLANG_NOT_TOTAL` с текстом «рекурсивный
   вызов … не убывает»;
 - сравнения порядка для строк отвергаются: `FLANG_TYPE: сравнения порядка
@@ -81,7 +88,7 @@ npm run build` они падают с `ERR_MODULE_NOT_FOUND`, и это легк
 > termination by structural descent — each recursive call must receive a
 > structurally smaller argument — or it refuses with `FLANG_NOT_TOTAL`.
 > Everything else is an ordinary function with unrestricted recursion. The
-> Rosetta Code set in the repo is 97 functions, 70 of them proved, and a test
+> Rosetta Code set in the repo is 184 functions, 140 of them proved, and a test
 > pins that number, so a solution that quietly stops being proved breaks CI.
 >
 > Programs are emitted to C, Go, Rust, Python, Java, C#, Elixir and JavaScript,
@@ -119,7 +126,7 @@ npm run build` они падают с `ERR_MODULE_NOT_FOUND`, и это легк
 > ordinary source code that the compiler adjudicates, next to ordinary functions
 > in the same file — the two classes coexist rather than the whole language
 > being total. Second, and this is the part I actually care about, the
-> repository *measures* the boundary instead of describing it: 70 of 97
+> repository *measures* the boundary instead of describing it: 140 of 184
 > functions in the Rosetta Code set, and a test fails if that number moves in
 > either direction, because then the prose explaining why some function cannot
 > be proved has become false.

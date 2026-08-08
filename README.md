@@ -612,8 +612,10 @@ Two example sets are kept, and both are guarded by tests rather than by good int
 throughout; each carries a comment explaining not only the algorithm but where the language
 pushed back — why binary search needs a "fuel" list to be accepted as terminating, why Single
 Number is O(n²) because there are no bitwise operations.
-[`flang/examples/rosetta/`](flang/examples/rosetta) holds 15 canonical Rosetta Code tasks,
-and its test pins the number of functions each file proves total: the set exists to show the
+[`flang/examples/rosetta/`](flang/examples/rosetta) holds 14 canonical Rosetta Code tasks, each
+written twice — 28 files: once on the Russian surface and once on the English one, with a test
+comparing each pair as trees, up to a renaming of names. That test also pins the number of
+functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
 `lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`) is written the same way —

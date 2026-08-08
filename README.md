@@ -490,9 +490,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный Rust совпадает с интерпретатором
-ℹ программ: 31, функций: 154, сверенных входов: 2235, за 28 с
+ℹ программ: 35, функций: 214, сверенных входов: 3071, за 6 с
 ✔ примеры stdlib и leetcode сходятся у собранного Rust так же, как у интерпретатора
-ℹ сверенных примеров: 259
+ℹ сверенных примеров: 415
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with

@@ -464,13 +464,13 @@ Readiness is not "it built". It is the classical fixed point:
 ```
 
 **The fixed point has converged.** The reference, `flang₁` and `flang₂` print the compiler
-identically — all six files — which means the compiler understands the language the way the
+identically — all seven printed C files — which means the compiler understands the language the way the
 reference does, and no test suite substitutes for that. The check is
 `flang/test/self-bootstrap.test.mjs`, and it prints the result:
 
 ```
 ✔ шаги 2 и 3: flang₁ печатает сам себя, flang₂ печатает то же самое
-ℹ неподвижная точка сошлась: 6 файлов совпали побайтово у эталона, flang₁ и flang₂
+ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у эталона, flang₁ и flang₂
 ```
 
 This is where the release comes from: the C in the release archive is printed from these sources. The reference implementation is not deleted, and will not be — convergence is

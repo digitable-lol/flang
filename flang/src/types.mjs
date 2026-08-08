@@ -197,6 +197,7 @@ function checkMorphisms(program, ctx) {
       ctx.report("FLANG_DUPLICATE_NAME", `морфизм «${узел.name}» объявлен дважды`, узел)
       continue
     }
+    проверитьРеализацию(узел, ctx)
     стрелки.set(узел.name, { domain: узел.domain, codomain: узел.codomain })
   }
 
@@ -243,6 +244,89 @@ function checkMorphisms(program, ctx) {
   }
 
   ctx.morphisms = стрелки
+}
+
+/**
+ * Реализация стрелки: `даёт «Имя функции»`, и закон при ней.
+ *
+ * ЧТО ЗДЕСЬ ДОКАЗЫВАЕТСЯ — сличением объявлений, без сетки и без вычислений:
+ *
+ *   1. названная функция объявлена;
+ *   2. она принимает РОВНО один вход. Стрелка ведёт из одного объекта в один,
+ *      и функция двух аргументов ей не соответствует: произведение объектов
+ *      в языке есть (запись), и морфизм из пары пишется записью-доменом;
+ *   3. тип входа — домен, тип результата — кодомен. Это то самое место, ради
+ *      которого стрелка вообще нужна: имя «морфизм» без совпадения концов с
+ *      функцией было бы украшением.
+ *
+ * ЧЕГО ЗДЕСЬ НЕ ДОКАЗЫВАЕТСЯ: сам закон. Он говорит о равенстве вычислений и
+ * проверяется примерами автора при `flang test` (`compat.mjs`), а «проверено
+ * на N примерах» — не «доказано»; граница проходит там же, где у моноида.
+ *
+ * Имена законов сверяются на повтор: два закона под одним именем сделали бы
+ * отчёт неоднозначным ровно в тот момент, когда он нужен, — при падении.
+ */
+function проверитьРеализацию(узел, ctx) {
+  const законы = Array.isArray(узел.laws) ? узел.laws : []
+  const виделиЗакон = new Set()
+  for (const закон of законы) {
+    if (виделиЗакон.has(закон?.name)) {
+      ctx.report("FLANG_DUPLICATE_NAME", `у морфизма «${узел.name}» два закона с именем «${закон.name}»`, закон ?? узел)
+      continue
+    }
+    виделиЗакон.add(закон?.name)
+  }
+
+  if (typeof узел.gives !== "string" || узел.gives === "") return
+
+  const сигнатура = ctx.signatures.get(узел.gives)
+  if (сигнатура === undefined) {
+    ctx.report(
+      "FLANG_UNKNOWN_NAME",
+      `морфизм «${узел.name}» даёт «${узел.gives}»: такой функции нет`,
+      узел,
+    )
+    return
+  }
+
+  const входы = Array.isArray(сигнатура.params) ? сигнатура.params : []
+  if (входы.length !== 1) {
+    ctx.report(
+      "FLANG_MORPHISM_SHAPE",
+      `морфизм «${узел.name}» ведёт из одного объекта в один, а «${узел.gives}» ` +
+        `принимает ${входы.length}: стрелке нужна функция ровно от одного входа`,
+      узел,
+    )
+    return
+  }
+
+  /* Необъявленный конец уже назван выше своей диагностикой; нормализовать его
+     значило бы сказать о той же беде второй раз другими словами. */
+  const объявлен = (имя) => ctx.records.has(имя) || ctx.sums.has(имя) || ctx.aliases.has(имя)
+  if (объявлен(узел.domain) && !sameType(входы[0].type, normalizeType(узел.domain, ctx, узел))) {
+    ctx.report(
+      "FLANG_MORPHISM_SHAPE",
+      `морфизм «${узел.name}» ведёт из «${узел.domain}», а «${узел.gives}» ` +
+        `принимает ${typeName(входы[0].type)}`,
+      узел,
+    )
+  }
+  if (объявлен(узел.codomain) && !sameType(сигнатура.returns, normalizeType(узел.codomain, ctx, узел))) {
+    ctx.report(
+      "FLANG_MORPHISM_SHAPE",
+      `морфизм «${узел.name}» ведёт в «${узел.codomain}», а «${узел.gives}» ` +
+        `возвращает ${typeName(сигнатура.returns)}`,
+      узел,
+    )
+  }
+
+  /* Значения примеров закона — против той же сигнатуры и той же проверкой,
+     какой проверяются примеры функции. Иначе опечатка в имени входа доживала
+     бы до `flang test` и приходила бы туда невнятным отказом вычисления
+     вместо внятной ошибки модели. */
+  for (const закон of законы) {
+    checkExamples(закон, сигнатура, ctx, `закона «${закон?.name}» морфизма «${узел.name}»`)
+  }
 }
 
 /**
@@ -2081,7 +2165,16 @@ function checkFunction(fn, ctx) {
   checkExamples(fn, signature, ctx)
 }
 
-function checkExamples(fn, signature, ctx) {
+/**
+ * Примеры против сигнатуры.
+ *
+ * `чей` — родительный падеж владельца примера. У функции это она сама, у
+ * закона при стрелке — закон и морфизм: примеры закона проверяются той же
+ * функцией, что примеры функции, потому что это буквально одни и те же
+ * примеры той же сигнатуры, а второе понимание слов «дано» и «ожидается»
+ * означало бы два разных языка в одном.
+ */
+function checkExamples(fn, signature, ctx, чей = `функции «${fn.name}»`) {
   for (const example of fn.examples ?? []) {
     const label = isName(example?.name) ? `пример «${example.name}»` : "пример"
     const args = example?.args ?? {}
@@ -2091,7 +2184,7 @@ function checkExamples(fn, signature, ctx) {
         // а не пропуск. Ядро FTS считает так же (`requiredFields`
         // в `src/validate.ts` исключает поля с `| undefined`).
         if (param.type.optional !== true) {
-          ctx.report("FLANG_TYPE", `${label} функции «${fn.name}» не задаёт аргумент «${param.name}»`, example)
+          ctx.report("FLANG_TYPE", `${label} ${чей} не задаёт аргумент «${param.name}»`, example)
         }
         continue
       }
@@ -2099,7 +2192,7 @@ function checkExamples(fn, signature, ctx) {
     }
     for (const given of Object.keys(args)) {
       if (!signature.params.some((param) => param.name === given)) {
-        ctx.report("FLANG_UNKNOWN_NAME", `${label} функции «${fn.name}» задаёт неизвестный аргумент «${given}»`, example)
+        ctx.report("FLANG_UNKNOWN_NAME", `${label} ${чей} задаёт неизвестный аргумент «${given}»`, example)
       }
     }
     checkValue(example?.expected, signature.returns, `${label}: ожидаемое значение`, ctx, example)

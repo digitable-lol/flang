@@ -639,6 +639,34 @@ FLANG_COMPOSE_MISMATCH: композиция «оформить» не стык�
 «выставить» приводит в «Счёт», а «отгрузить» ожидает «Заказ»
 ```
 
+An arrow may carry a **law** — a promise checked by examples. What computes the arrow is a named
+function (`даёт`), not a body inside the declaration: a body in the arrow would mean a second
+expression parser, a second type inference and an eighth emitter across eight targets, while a
+named function says exactly the same and costs none of that.
+
+```flang
+морфизм «отгрузить» из «Заказ» в «Отгрузка»
+  даёт «Отгрузить заказ»
+  закон «номер отгрузки берётся из суммы заказа»
+    пример «обычный заказ»
+      дано заказ равно запись «Заказ» с сумма равным 500
+      ожидается запись «Отгрузка» с номер равным 500
+```
+
+The honesty boundary runs inside this single construct. The *shape* is **proven**: the function is
+declared, it takes exactly one input, and that input is the domain while the result is the codomain
+(`FLANG_MORPHISM_SHAPE`). The law itself is **checked on examples**, and it is `flang test` that
+checks it, not `flang check`: a law speaks about equality of computations, and examples are what
+that command runs. A broken law names itself in full — `морфизм «отгрузить», закон «номер отгрузки
+берётся из суммы заказа»`. The whole file:
+[`flang/examples/cat/order-shipment.flang`](flang/examples/cat/order-shipment.flang).
+
+With `даёт` in place, **invertibility of an isomorphism** is checked too — wherever both arrows are
+implemented: the round trip is computed over a grid of values the author already named in examples,
+and a counterexample is produced (`FLANG_ISO_NOT_INVERSE`). A pair where at least one arrow has no
+`даёт` stays the author's assumption and the check says nothing about it: there is nothing to
+compute, and calling zero values "checked" would substitute "we looked" for "proven".
+
 A functor maps objects and arrows, and the word is not granted without the guarantee — there is
 no opt-in flag for the laws, because a mapping that does not preserve composition is not a
 functor:
@@ -1147,8 +1175,12 @@ attaching a solver to the verification conditions is an open task, not a feature
 
 **The category surface.** Morphisms, composition, chains, identities, functors, bifunctors,
 isomorphisms, monoids, groups and monads are implemented; a monad also comes with the binding form
-`в монаде`. Natural transformations are specified in [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and
-are not implemented. Category names in a functor declaration are a note for the reader, not a
+`в монаде`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
+a broken law fails `flang test` naming both the arrow and the law. Isomorphism invertibility is
+checked wherever both arrows are named through `даёт`, and stays the author's assumption wherever
+at least one is not. The precondition (`требует`) is not implemented: it stands in the contract as
+intended, not as done. Natural transformations are specified in
+[`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
 checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
 the endofunctor map is printed in place, so the parameter must occupy a whole field
 ([`flang/cat/MONAD.md`](flang/cat/MONAD.md)).

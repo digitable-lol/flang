@@ -37,14 +37,14 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 ## FizzBuzz — `fizzbuzz.flang`, `fizzbuzz-english.flang`
 
 > Two things are on display here. First, the split into proved and ordinary
-> functions: classifying one number and mapping a list are both `тотальная`
+> functions: classifying one number and mapping a list are both `total function` / `тотальная функция`
 > (proved terminating), but **counting from 1 to 100 is not** — flang's
 > termination analysis accepts only structural descent (the tail of a list, a
 > field of a record or variant), and `n plus 1` is arithmetic, not a part of a
 > value. So the loop costs exactly one unproved function, and the compiler says
 > so instead of the author claiming otherwise. Second, there is no output: the
 > language is pure, so "print" means "return a list of strings", and the
-> `пример` blocks below check that list against the task.
+> `example` / `пример` blocks below check that list against the task.
 >
 > The second listing is the same program written with flang's English keyword
 > surface. Both surfaces parse to the same AST; here that was verified by
@@ -123,7 +123,7 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > Compare with the Roman numerals solution, where both directions are proved: the
 > repeat there is bounded by three, so a fold over a fixed list does the job.
 > The difference between the two files is not skill or luck, it is whether the
-> repetition has a bound known in advance. That is what the word `тотальная`
+> repetition has a bound known in advance. That is what the word `total` / `тотальная`
 > actually means: not "this code is good" but "the boundary has been named".
 
 ## Levenshtein distance — `levenshtein-distance.flang`
@@ -202,9 +202,9 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > pair (m, n) decreases lexicographically, and that order is well-founded. flang
 > does not do that reasoning: its analysis knows exactly one argument, "this is a
 > structural part of that", and numbers have no parts. So the function is marked
-> ordinary, and writing `тотальная` gives `FLANG_NOT_TOTAL`.
+> ordinary, and writing `total` / `тотальная` gives `FLANG_NOT_TOTAL`.
 >
-> Which is the thing worth taking away from the whole flang set: `тотальная`
+> Which is the thing worth taking away from the whole flang set: `total` / `тотальная`
 > does **not** mean "terminates". It means "termination was proved *by this
 > analysis*". The converse does not hold, and Ackermann is the standard witness.
 > No analysis accepts exactly the terminating programs; every real one draws the

@@ -563,7 +563,10 @@ decrease are accepted: structural — the tail of a list, a field of a variant o
 numeric, by measure. A measure is `н минус <number>` provided the parameter is bounded from below
 at the call site by an inequality check (`если н не больше 0`). Both conditions are required:
 without a constant step the chain may not decrease at all, without a floor it runs to minus
-infinity. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and the file does not
+infinity. A PARAMETER also works as the step (`н минус ш`) — provided it arrives in the call
+unchanged in its own position and is known to be strictly `ш больше 0`: the same number is then
+subtracted along the whole chain. Without the strict bound the step may be zero, and a changing
+step never reaches the floor at all — `ш`, `ш делить на 2`, … add up to less than `2ш`. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and the file does not
 compile. Every existing `.fts` model lands in the total class by construction.
 
 Counting UP is not a measure and stays out of the total class: `«Числа от и до» от 1 и н` grows
@@ -1105,9 +1108,12 @@ attaching a solver to the verification conditions is an open task, not a feature
   a program with a plan works for all eight.
 - No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
-- The totality analysis knows structural decrease and a numeric measure with a CONSTANT step.
-  Anything with a non-constant step stays out: binary search halves the range, Euclid takes a
-  remainder, counting up grows — those still need a "fuel" list. The measure itself is propped up
+- The totality analysis knows structural decrease and a numeric measure with a CONSTANT step —
+  either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
+  positive (`н минус ш` under `если ш не больше 0`). Anything whose step CHANGES from turn to turn
+  stays out: binary search halves the range, Euclid takes a remainder, counting up grows — those
+  still need a "fuel" list. Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
+  forever. The measure itself is propped up
   by a guard: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|, so the
   compiler installs a decrease check on every call proven by a measure. No decrease means a
   `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets — not a hang.

@@ -29,6 +29,7 @@
  *   { param: i, depth: 0, step: 0 }             — это сам параметр i
  *   { param: i, depth: k, step: null }          — часть параметра i, k разборов вглубь
  *   { param: i, depth: null, step: −c }         — это `параметр i − c`, где c — число
+ *   { param: i, step: 0, stepParam: k }         — это `параметр i − параметр k`
  *
  * `depth` растёт (`depth + 1`) там, где значение достаётся из значения:
  * `хвост`/`голова` от списка, привязки образца «голова и хвост», поля варианта
@@ -40,14 +41,18 @@
  * глубину при совпадающем параметре.
  *
  * `step` двигается на `± литерал` в `плюс` и `минус` и теряется во всём
- * остальном: разбор значения, умножение, деление, второй параметр вместо
- * литерала. `если` и `разбор` берут по ветвям МАКСИМАЛЬНЫЙ шаг — то есть самое
- * слабое из обещаний.
+ * остальном: разбор значения, умножение, деление. `если` и `разбор` берут по
+ * ветвям МАКСИМАЛЬНЫЙ шаг — то есть самое слабое из обещаний.
+ *
+ * `stepParam` — это `н минус ш`, где ш ПАРАМЕТР, а не литерал: шаг тогда
+ * заранее не известен, но вдоль цепочки вызовов он один и тот же (ниже, «Шаг
+ * параметром»).
  *
  * Вызов f → g убывает на позиции j, если на месте j-го параметра g стоит
  * либо собственная ЧАСТЬ j-го параметра f (`{ param: j, depth ≥ 1 }`), либо
- * j-й параметр f, уменьшенный на постоянный шаг (`{ param: j, step < 0 }`) —
- * и во втором случае при условии, что этот параметр ограничен снизу (ниже).
+ * j-й параметр f, уменьшенный на шаг (`{ param: j, step < 0 }` или
+ * `{ param: j, stepParam: k }`) — и во втором случае при условии, что этот
+ * параметр ограничен снизу (ниже).
  *
  * ── Числовая мера: почему одного шага мало ─────────────────────────────────
  *
@@ -56,14 +61,38 @@
  * уменьшает н сколько угодно раз и не останавливается никогда: −1, −2, −3 …
  * Поэтому одного шага для доказательства мало, и нужны ДВА условия сразу:
  *
- *   1. шаг строго отрицательный и ПОСТОЯННЫЙ (`минус <литерал>`);
+ *   1. шаг строго отрицательный и ОДИН И ТОТ ЖЕ вдоль всей цепочки;
  *   2. в точке вызова параметр ограничен снизу числом.
  *
  * Тогда цепочка v₀ > v₁ > … с шагом ≥ δ > 0 и дном K оборвётся не позже чем
- * через (v₀ − K)/δ вызовов. Убери любое условие — доказательства нет:
- * без дна цепочка уходит в минус бесконечность, без постоянного шага
- * (`н минус ш`, где ш — параметр) шаг может оказаться нулевым или
- * отрицательным, и цепочка не убывает вовсе.
+ * через (v₀ − K)/δ вызовов. Убери любое условие — доказательства нет: без дна
+ * цепочка уходит в минус бесконечность, а без постоянства шага дна мало.
+ * Именно постоянства, а не литеральности: убывающий, но тающий шаг —
+ * `н минус (н делить на 2)` — оставляет н положительным навсегда, и цепочка
+ * бесконечна при живом дне и строгом убывании на каждом витке.
+ *
+ * ── Шаг параметром: `н минус ш` ────────────────────────────────────────────
+ *
+ * Литерал — не единственный постоянный шаг. `«Ф» от (н минус ш) и ш` вычитает
+ * величину, которая заранее не известна, но вдоль цепочки НЕ МЕНЯЕТСЯ: ш
+ * приходит в вызов сам собой, на своём же месте. Если про него известно, что
+ * он строго больше нуля, доказательство то же самое, что выше: шаг δ = ш
+ * фиксирован и положителен, дно есть, цепочка не длиннее (v₀ − K)/ш.
+ *
+ * Отсюда три условия, и каждое обязательно:
+ *
+ *   1. шаг — ПАРАМЕТР (`н минус ш`), а не любое выражение: только у параметра
+ *      есть имя, по которому видно, что в вызов он едет неизменным;
+ *   2. на СВОЁЙ позиции в вызове стоит он сам (`«Ф» от (н минус ш) и ш`) —
+ *      иначе шаг от витка к витку разный. `«Ф» от (н минус ш) и (ш делить на 2)`
+ *      убывает каждый виток и не заканчивается никогда: сумма шагов ограничена
+ *      2ш, и до дна цепочка не доходит;
+ *   3. про шаг известно `ш > 0` — строго. `если ш меньше 0` даёт `ш ≥ 0`, а
+ *      нулевой шаг не двигает меру вовсе.
+ *
+ * Строгость границы шага — единственное место, где важна не только величина
+ * дна, но и знак сравнения, поэтому она и отслеживается отдельно от «ограничен
+ * снизу»: мере хватает любого дна, шагу нужен ноль слева от него.
  *
  * Дно берётся из `если`: сравнение параметра с числовым литералом даёт в одной
  * из ветвей нижнюю границу, и в этой ветви параметр помечается ограниченным.
@@ -168,12 +197,22 @@
  * Лексикографическое убывание (Аккерман), убывание через результат другой
  * функции («хвост от «Отсортировать» от списка») и разные убывающие позиции у
  * разных рекурсивных вызовов одной функции — всё это отвергается. Из числовых
- * мер отвергается всё, кроме постоянного шага: `н минус ш` с параметром ш,
- * Евклид (`остаток от`), двоичный поиск (`(низ плюс верх) делить на 2`) —
- * шаг там не постоянен, и одного знака у него нет. Анализ консервативен по
- * построению: он никогда не признаёт тотальной функцию, которая может
- * зациклиться, и цена этому — отказ части действительно завершающихся
- * программ.
+ * мер отвергается всё, где шаг МЕНЯЕТСЯ от витка к витку: Евклид
+ * (`а остаток от б`) и двоичный поиск (`(низ плюс верх) делить на 2`).
+ *
+ * И это не недосмотр, а честный ответ. Оба убывают строго и оба ограничены
+ * снизу, но убывание с дном цепочку не обрывает: 1, ½, ¼, … больше нуля
+ * всегда. У Евклида это видно на числах, а не в рассуждении: остатки от пары
+ * (φ, 1) — 0.618, 0.382, 0.236, … — не кончаются, потому что отношение
+ * иррационально. Что на double такая цепочка всё же оборвётся (соседние
+ * double отстоят друг от друга, и убывающая цепочка в конечном множестве
+ * конечна) — правда, но правда не про язык: длина такой цепочки не
+ * ограничена ничем разумным, а `тотальная` обещает завершение, а не
+ * конечность вселенной.
+ *
+ * Анализ консервативен по построению: он никогда не признаёт тотальной
+ * функцию, которая может зациклиться, и цена этому — отказ части
+ * действительно завершающихся программ.
  */
 
 import { programTags } from "./tags.mjs"
@@ -513,11 +552,33 @@ function decreasingPositions(edge) {
        без дна бесконечна (шапка файла, «Числовая мера»). Мера, за которой
        нельзя поставить сторожа, — тоже: доказательство по мере верно только
        вместе с ним (см. `visibleParams`). */
-    else if (origin.step !== null && origin.step < 0 && origin.bounded && edge.visible?.[index] === true) {
+    else if (origin.step !== null && origin.bounded && edge.visible?.[index] === true && stepDescends(origin, edge)) {
       positions.push({ position: index, measure: true })
     }
   })
   return positions
+}
+
+/** Уводит ли шаг меру вниз — постоянным числом или параметром. */
+function stepDescends(origin, edge) {
+  if (origin.stepParam === null) return origin.step < 0
+  return origin.step <= 0 && invariantStep(origin.stepParam, edge)
+}
+
+/**
+ * Приезжает ли шаг-параметр в вызов неизменным и положительным.
+ *
+ * Оба вопроса решаются в одном месте — по аргументу на позиции самого шага.
+ * Неизменность: там обязан стоять он сам, тогда на следующем витке шаг будет
+ * тем же числом. Положительность: она читается из происхождения этого же
+ * аргумента, то есть из области видимости В ТОЧКЕ ВЫЗОВА, а не там, где
+ * написано вычитание, — `если ш не больше 0` может стоять и после `пусть`.
+ */
+function invariantStep(param, edge) {
+  if (param >= edge.calleeParams.length) return false
+  const step = edge.origins[param]
+  if (!step || step.param !== param) return false
+  return step.depth === 0 && step.step === 0 && step.positive === true
 }
 
 /** Позиции заданного способа, убывающие на КАЖДОМ ребре компоненты. */
@@ -547,7 +608,7 @@ function explainNoDescent(edge, component) {
       if (origin.depth === 0) return `аргумент ${index + 1} (${shown}) — это сам параметр «${origin.name}», а не его часть`
       return `аргумент ${index + 1} (${shown}) убывает`
     }
-    return measureReason(origin, index, shown)
+    return measureReason(origin, index, shown, edge)
   })
   const действие = edge.applied === true ? "применение значения-функции" : "вызов"
   const cycle = edge.from === edge.to
@@ -562,13 +623,29 @@ function explainNoDescent(edge, component) {
  * границе, потому что чинить надо разное: нулевой и растущий шаг — это
  * переписать вызов, отсутствие границы — дописать проверку.
  */
-function measureReason(origin, index, shown) {
+function measureReason(origin, index, shown, edge) {
+  if (origin.stepParam !== null) return parametricReason(origin, index, shown, edge)
   if (origin.step < 0) {
     if (origin.bounded) return `аргумент ${index + 1} (${shown}) убывает по мере`
     return `аргумент ${index + 1} (${shown}) уменьшает параметр «${origin.name}», но снизу «${origin.name}» ничем не ограничен: добавьте проверку вида «если ${origin.name} не больше 0»`
   }
   if (origin.step > 0) return `аргумент ${index + 1} (${shown}) увеличивает параметр «${origin.name}»`
   return `аргумент ${index + 1} (${shown}) не уменьшает параметр «${origin.name}»: шаг нулевой`
+}
+
+/**
+ * То же самое для шага-параметра. Условий у него на одно больше, поэтому
+ * названы оба недостающих сразу: чинятся они в разных местах программы —
+ * дно приписывают к мере, а положительность и неизменность к шагу.
+ */
+function parametricReason(origin, index, shown, edge) {
+  const step = edge.params[origin.stepParam] ?? `#${origin.stepParam + 1}`
+  const head = `аргумент ${index + 1} (${shown}) уменьшает параметр «${origin.name}» на «${step}»`
+  if (!origin.bounded) {
+    return `${head}, но снизу «${origin.name}» ничем не ограничен: добавьте проверку вида «если ${origin.name} не больше 0»`
+  }
+  return `${head}, но про «${step}» не доказано, что он больше нуля и приходит в вызов неизменным: `
+    + `добавьте проверку вида «если ${step} не больше 0» и передавайте «${step}» аргументом ${origin.stepParam + 1} как есть`
 }
 
 /**
@@ -611,7 +688,7 @@ function stronglyConnectedComponents(nodes, edges) {
 
 /** Параметр целиком: он и сам себе часть глубины ноль, и мера с шагом ноль. */
 function parameterOrigin(param, name) {
-  return { param, name, depth: 0, step: 0, bounded: false }
+  return { param, name, depth: 0, step: 0, stepParam: null, bounded: false, positive: false }
 }
 
 /**
@@ -621,17 +698,38 @@ function parameterOrigin(param, name) {
  */
 function deeper(origin) {
   if (!origin || origin.depth === null) return null
-  return { param: origin.param, name: origin.name, depth: origin.depth + 1, step: null, bounded: false }
+  return { param: origin.param, name: origin.name, depth: origin.depth + 1, step: null, stepParam: null, bounded: false, positive: false }
 }
 
 /**
  * Сдвиг меры на постоянное число. Структурное происхождение при этом теряется:
- * `н минус 1` частью `н` не является. Признак «ограничен снизу» переезжает —
- * он про ПАРАМЕТР, а не про выражение, и в этой точке программы он всё тот же.
+ * `н минус 1` частью `н` не является. Признаки «ограничен снизу» и «больше
+ * нуля» переезжают — они про ПАРАМЕТР, а не про выражение, и в этой точке
+ * программы они всё те же.
  */
 function shifted(origin, delta) {
   if (!origin || origin.step === null) return null
-  return { param: origin.param, name: origin.name, depth: null, step: origin.step + delta, bounded: origin.bounded }
+  const step = origin.step + delta
+  /* Прибавка поверх шага-параметра может его перекрыть: про `н минус ш плюс 5`
+     нельзя обещать убывание, пока не известно, что ш больше пяти, — а известно
+     про ш только то, что он больше нуля. */
+  if (origin.stepParam !== null && step > 0) return null
+  return { param: origin.param, name: origin.name, depth: null, step, stepParam: origin.stepParam, bounded: origin.bounded, positive: origin.positive }
+}
+
+/**
+ * Сдвиг меры на ПАРАМЕТР: `н минус ш`.
+ *
+ * Вычитаемое обязано быть самим параметром (`depth === 0 && step === 0`), а не
+ * выражением от него: доказательству нужно, чтобы в вызов этот шаг приехал
+ * неизменным, а проверить это можно только по позиции параметра
+ * (`invariantStep`). Второе вычитание параметра сюда не попадает: два
+ * неизвестных шага не складываются в один, и обещать про их сумму нечего.
+ */
+function shiftedByParam(origin, step) {
+  if (!origin || origin.step === null || origin.stepParam !== null) return null
+  if (!step || step.depth !== 0 || step.step !== 0) return null
+  return { param: origin.param, name: origin.name, depth: null, step: origin.step, stepParam: step.param, bounded: origin.bounded, positive: origin.positive }
 }
 
 /** Объединение ветвей: общее происхождение — самое слабое из двух. */
@@ -642,12 +740,22 @@ function join(left, right) {
     ? (left.depth < right.depth ? left.depth : right.depth)
     : null
   /* Самый слабый шаг — наибольший: если одна ветвь уменьшает на 3, а другая
-     на 1, обещать можно только «на 1». */
-  const step = left.step !== null && right.step !== null
+     на 1, обещать можно только «на 1». Шаг-параметр обязан совпасть: `н минус ш`
+     в одной ветви и `н минус т` в другой — два разных обещания, и слабейшего
+     из двух среди них нет. */
+  const step = left.step !== null && right.step !== null && left.stepParam === right.stepParam
     ? (left.step > right.step ? left.step : right.step)
     : null
   if (depth === null && step === null) return null
-  return { param: left.param, name: left.name, depth, step, bounded: left.bounded && right.bounded }
+  return {
+    param: left.param,
+    name: left.name,
+    depth,
+    step,
+    stepParam: step === null ? null : left.stepParam,
+    bounded: left.bounded && right.bounded,
+    positive: left.positive && right.positive,
+  }
 }
 
 /**
@@ -668,16 +776,21 @@ function finiteLiteral(expr) {
 }
 
 /**
- * Сдвиг меры арифметикой: `н минус 1`, `н плюс 1`, `1 плюс н`.
+ * Сдвиг меры арифметикой: `н минус 1`, `н плюс 1`, `1 плюс н`, `н минус ш`.
  *
  * `1 минус н` сюда не попадает намеренно: это не сдвиг `н`, а его отражение, и
  * повторное применение меру не уменьшает. Умножение и деление тоже не сдвиги:
  * `н делить на 2` при `н больше 0` не доходит до нуля никогда.
+ *
+ * Вычитание ПАРАМЕТРА — сдвиг, а вычитание чего угодно другого — нет. Разница
+ * не в форме записи, а в том, что о шаге известно: `н минус (н делить на 2)`
+ * тоже уменьшает н каждый раз, но шаг там тает вместе с н, и цепочка
+ * бесконечна.
  */
 function arithmeticShift(expr, left, right) {
   if (expr.op === "sub") {
     const value = finiteLiteral(expr.right)
-    return value === null ? null : shifted(left, 0 - value)
+    return value === null ? shiftedByParam(left, right) : shifted(left, 0 - value)
   }
   if (expr.op === "add") {
     const value = finiteLiteral(expr.right)
@@ -689,7 +802,7 @@ function arithmeticShift(expr, left, right) {
 }
 
 /**
- * Нижняя граница из условия `если`: `{ param, branch }` или `null`.
+ * Нижняя граница из условия `если`: `{ param, branch, positive }` или `null`.
  *
  * Сравниваться обязаны ИМЯ и числовой литерал. Имя — потому что происхождение
  * условия здесь не вычисляется заново (обход условия уже прошёл, и второй
@@ -698,19 +811,31 @@ function arithmeticShift(expr, left, right) {
  *
  * Равенство и неравенство в список не входят: `н равно 0` не ограничивает н
  * ни с какой стороны (шапка файла, «Числовая мера»).
+ *
+ * `positive` — та же граница, прочитанная строго: «параметр БОЛЬШЕ НУЛЯ».
+ * Мере хватает любого дна, и знак сравнения ей безразличен; шагу-параметру
+ * нужен именно ноль слева, иначе шаг может оказаться нулевым. Поэтому
+ * `н больше 0` и `н не больше 0` дают `positive`, а `н не меньше 0` и
+ * `н меньше 0` — нет: они допускают ровно ноль.
  */
 function lowerBoundGuard(cond, env) {
   if (!cond || typeof cond !== "object" || cond.kind !== "binary") return null
   let name = null
   let branch = null
+  let strict = false
+  let bound = null
   if (cond.left?.kind === "var" && finiteLiteral(cond.right) !== null) {
     name = cond.left.name
+    bound = finiteLiteral(cond.right)
     if (cond.op === "gt" || cond.op === "gte") branch = "then"
     else if (cond.op === "lt" || cond.op === "lte") branch = "else"
+    strict = cond.op === "gt" || cond.op === "lte"
   } else if (cond.right?.kind === "var" && finiteLiteral(cond.left) !== null) {
     name = cond.right.name
+    bound = finiteLiteral(cond.left)
     if (cond.op === "lt" || cond.op === "lte") branch = "then"
     else if (cond.op === "gt" || cond.op === "gte") branch = "else"
+    strict = cond.op === "lt" || cond.op === "gte"
   }
   if (branch === null) return null
   const origin = env.get(name) ?? null
@@ -718,7 +843,15 @@ function lowerBoundGuard(cond, env) {
      Часть значения границы параметру не даёт: `голова список больше 0` — про
      голову, а не про список. */
   if (!origin || origin.step === null) return null
-  return { param: origin.param, branch }
+  /* «Больше нуля» читается только со сравнения САМОГО параметра. `н минус 1
+     больше 0` тоже значит `н > 0`, но перевод границы через сдвиг верен для
+     вещественных чисел, а сравнивает программа double: при большом |сдвиг|
+     между `fl(н + сдвиг) > K` и `н > K − сдвиг` помещается половина ulp, и
+     знак у н может оказаться другим. Мере эта разница безразлична — дно всё
+     равно остаётся дном, — а шагу нет, поэтому строгость берётся только там,
+     где округлять нечего. */
+  const exact = origin.step === 0 && origin.stepParam === null
+  return { param: origin.param, branch, positive: exact && (strict ? bound >= 0 : bound > 0) }
 }
 
 /**
@@ -728,10 +861,12 @@ function lowerBoundGuard(cond, env) {
  * точке программы, и `пусть м равно (н минус 1)`, написанное до `если`, знает
  * про `н больше 0` ровно столько же, сколько сам `н`.
  */
-function boundedEnv(env, param) {
+function boundedEnv(env, param, positive) {
   const inner = new Map()
   for (const [name, origin] of env) {
-    inner.set(name, origin && origin.param === param ? { ...origin, bounded: true } : origin)
+    inner.set(name, origin && origin.param === param
+      ? { ...origin, bounded: true, positive: origin.positive || positive }
+      : origin)
   }
   return inner
 }
@@ -748,6 +883,12 @@ function boundedEnv(env, param) {
  */
 function visibleParams(env, params) {
   return params.map((name, index) => {
+    /* Параметр БЕЗ имени не виден никогда, и это то же самое требование:
+       сторож сравнивает по имени, а называть тут нечего. Такой параметр бывает
+       только в AST, написанном руками (`"params": [{ "type": … }]`), но в
+       область видимости он попадает под ключом `undefined`, и безымянный `var`
+       его оттуда достаёт. */
+    if (typeof name !== "string") return false
     const origin = env.get(name)
     return origin !== undefined && origin !== null && origin.param === index
       && origin.depth === 0 && origin.step === 0
@@ -780,8 +921,8 @@ function collectCalls(expr, env, state) {
       /* Условие даёт нижнюю границу ровно одной ветви — в другой известно
          только отрицание, а оно границы не даёт. */
       const guard = lowerBoundGuard(expr.cond, env)
-      const thenEnv = guard?.branch === "then" ? boundedEnv(env, guard.param) : env
-      const elseEnv = guard?.branch === "else" ? boundedEnv(env, guard.param) : env
+      const thenEnv = guard?.branch === "then" ? boundedEnv(env, guard.param, guard.positive) : env
+      const elseEnv = guard?.branch === "else" ? boundedEnv(env, guard.param, guard.positive) : env
       return join(collectCalls(expr.then, thenEnv, state), collectCalls(expr.else, elseEnv, state))
     }
     case "call": {

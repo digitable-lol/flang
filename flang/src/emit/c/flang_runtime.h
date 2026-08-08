@@ -395,6 +395,7 @@ fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *er
 fl_status fl_b_pusto(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list, fl_value *out, fl_error *error);
 fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
 fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);

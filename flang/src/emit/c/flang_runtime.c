@@ -1649,6 +1649,29 @@ fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *erro
   return FL_OK;
 }
 
+/*
+ * «элемент N в СПИСОК»: обращение к массиву, без обхода.
+ *
+ * Список в C — указатель на массив плюс счётчик (`fl_value.as.list`), поэтому
+ * N-й элемент стоит одного сложения — столько же, сколько первый. Проверка
+ * границ и текст отказа повторяют вычислитель дословно: они сверяются
+ * дифференциально, и «похоже» тут не годится.
+ */
+fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list, fl_value *out, fl_error *error) {
+  double at = 0.0;
+  FL_TRY(fl_expect_integer(ctx, "элемент", index, "индекс", error));
+  FL_TRY(fl_expect_list(ctx, "элемент", list, "список", error));
+  at = index.as.number - (double)FL_INDEX_BASE;
+  if (at < 0.0 || at >= (double)list.as.list.count) {
+    char number[FL_NUMBER_TEXT_MAX];
+    fl_number_text(index.as.number, number);
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«элемент»: индекс %s вне списка длиной %lu", number,
+                   (unsigned long)list.as.list.count);
+  }
+  *out = list.as.list.items[(size_t)at];
+  return FL_OK;
+}
+
 fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
   FL_TRY(fl_expect_list(ctx, "хвост", value, "аргумент", error));
   if (value.as.list.count == 0) {

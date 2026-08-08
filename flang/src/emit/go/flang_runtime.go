@@ -1094,6 +1094,25 @@ func BHead(ctx *Ctx, value Value) (Value, error) {
 // В JS «хвост» копирует (массив нельзя разделить с суффиксом), и рекурсия
 // «голова и хвост» там квадратична; здесь она линейна, а наблюдаемое значение
 // то же самое.
+// BElement — «элемент N в СПИСОК». Список в Go — срез, поэтому N-й элемент
+// стоит того же, что первый: обхода нет. Границы и текст отказа повторяют
+// вычислитель дословно — их сверяет дифференциальная проверка.
+func BElement(ctx *Ctx, index, list Value) (Value, error) {
+	position, err := expectInteger("элемент", index, "индекс")
+	if err != nil {
+		return Nothing(), err
+	}
+	items, err := expectList("элемент", list, "список")
+	if err != nil {
+		return Nothing(), err
+	}
+	at := position - float64(ctx.IndexBase)
+	if at < 0 || at >= float64(len(items)) {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«элемент»: индекс %s вне списка длиной %d", NumberText(position), len(items))
+	}
+	return items[int(at)], nil
+}
 func BTail(ctx *Ctx, value Value) (Value, error) {
 	items, err := expectList("хвост", value, "аргумент")
 	if err != nil {

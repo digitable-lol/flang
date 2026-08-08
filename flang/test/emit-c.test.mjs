@@ -1151,6 +1151,7 @@ const stringProgram = {
     builtinFn("Пусто", "пусто", ["з"]),
     builtinFn("Голова", "голова", ["с"]),
     builtinFn("Хвост", "хвост", ["с"]),
+    builtinFn("Элемент", "элемент", ["и", "с"]),
     builtinFn("Добавить", "добавить", ["э", "с"]),
     builtinFn("Остаток", "остаток от", ["а", "б"]),
     builtinFn("Процент", "процентов от", ["п", "з"]),
@@ -1193,6 +1194,72 @@ const texts = ["", "привет", "мир 🌍", "ёжик", "a", "😀😀", "
   "  7  ", "ЁЖИК"]
 const indices = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 1.5, 100]
 
+/*
+ * Стоимость взятия по номеру — вопрос, который нельзя решить чтением кода.
+ *
+ * Форма `элемент N в СПИСОК` обещает ЗНАЧЕНИЕ, а не стоимость: у восьми целей
+ * разные структуры данных, и «быстро» верно не для всех. Проход по номеру
+ * сверху вниз делает ровно n взятий, поэтому время всего прохода — это n·(цена
+ * одного взятия). Удвоив n, получаем ответ прямо: время выросло вдвое —
+ * взятие постоянное; вчетверо — взятие линейное.
+ *
+ * Проход хвостовой, поэтому глубина стека в измерение не входит.
+ */
+const indexCostProgram = {
+  flang: 1,
+  module: "Стоимость",
+  functions: [
+    {
+      name: "Сумма по номеру",
+      total: true,
+      params: [
+        { name: "элементы", type: { kind: "list", of: { kind: "number" } } },
+        { name: "н", type: { kind: "number" } },
+        { name: "акк", type: { kind: "number" } },
+      ],
+      returns: { kind: "number" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "lte", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 0 } },
+        then: { kind: "var", name: "акк" },
+        else: {
+          kind: "call",
+          name: "Сумма по номеру",
+          args: [
+            { kind: "var", name: "элементы" },
+            { kind: "binary", op: "sub", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 1 } },
+            {
+              kind: "binary",
+              op: "add",
+              left: { kind: "var", name: "акк" },
+              right: {
+                kind: "builtin",
+                name: "элемент",
+                args: [{ kind: "var", name: "н" }, { kind: "var", name: "элементы" }],
+              },
+            },
+          ],
+        },
+      },
+    },
+  ],
+}
+
+test("стоимость взятия по номеру: массив в C, значит удвоение n удваивает время", async (t) => {
+  const built = await build(indexCostProgram)
+  assert.match(built.source, /fl_b_element\(/u, "взятие по номеру обязано печататься вызовом формы")
+  const времена = []
+  for (const n of [20_000, 40_000]) {
+    const список = Array.from({ length: n }, (_, номер) => номер + 1)
+    const начало = Date.now()
+    const [ответ] = ask(built, [{ fn: "Сумма по номеру", args: [encode(список), encode(n), encode(0)], depth: "8" }])
+    времена.push(Date.now() - начало)
+    assert.equal(ответ.ok, true, JSON.stringify(ответ))
+    assert.equal(decode(ответ.value), (n * (n + 1)) / 2)
+  }
+  t.diagnostic(`взятие по номеру (C): 20 000 за ${времена[0]} мс, 40 000 за ${времена[1]} мс`)
+})
+
 test("строковые формы: кириллица, суррогатные пары и границы индексов", async (t) => {
   const built = await build(stringProgram)
   let points = 0
@@ -1234,6 +1301,15 @@ test("строковые формы: кириллица, суррогатные 
   points += compare(stringProgram, built, "Пусто", [[""], ["а"], [[]], [[1]], [42], [null]])
   points += compare(stringProgram, built, "Голова", [[[]], [[1, 2]], ["строка"], [null]])
   points += compare(stringProgram, built, "Хвост", [[[]], [[1, 2]], ["строка"]])
+  /* «элемент N в СПИСОК»: сетка номеров та же, что у «символ», и по той же
+     причине — индексация у форм одна. Проверяются обе границы, дробный и
+     отрицательный номер, пустой список, не-список и не-число: тексты отказов
+     обязаны совпасть с вычислителем дословно, а не «по смыслу». */
+  const списки = [[], [1], [1, 2, 3], ["а", "б"], [[1], [2]]]
+  const сеткаЭлемента = []
+  for (const номер of indices) for (const список of списки) сеткаЭлемента.push([номер, список])
+  сеткаЭлемента.push([1, "строка"], [1, 42], [null, [1]], [1, null])
+  points += compare(stringProgram, built, "Элемент", сеткаЭлемента)
   points += compare(stringProgram, built, "Добавить", [[1, []], [1, [2]], [1, "строка"]])
   points += compare(stringProgram, built, "Остаток", [[7, 3], [7, 0], [-7, 3], [7.5, 2], ["a", 1]])
   /* Проценты: порядок (процент / 100) * значение виден на этих числах. */

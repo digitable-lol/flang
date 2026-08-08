@@ -1246,6 +1246,37 @@ pub fn b_tail(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     Ok(Value::List(items.tail()))
 }
 
+/// «элемент N в СПИСОК». Элементы лежат в `Vec` с началом, поэтому N-й стоит
+/// того же, что первый: обхода нет ни здесь, ни в `Items::get`. Границы и
+/// текст отказа повторяют вычислитель дословно — их сверяет дифференциальная
+/// проверка, и «похоже» тут не годится.
+pub fn b_element(ctx: &Ctx, index: Value, value: Value) -> Result<Value, Error> {
+    let position = expect_integer("элемент", &index, "индекс")?;
+    let items = expect_list("элемент", &value, "список")?;
+    let at = offset(position, ctx.index_base());
+    if at < 0.0 || at >= items.len() as f64 {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«элемент»: индекс {} вне списка длиной {}",
+                number_text(position),
+                items.len()
+            ),
+        ));
+    }
+    match items.get(at as usize) {
+        Some(item) => Ok(item.clone()),
+        None => Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«элемент»: индекс {} вне списка длиной {}",
+                number_text(position),
+                items.len()
+            ),
+        )),
+    }
+}
+
 /// «добавить … к …»: дописывает в конец, исходный список не меняется.
 /// Копия обязательна: «хвост» отдаёт суффикс чужого массива, и дописать в него
 /// значило бы испортить значение, на которое ещё кто-то смотрит.

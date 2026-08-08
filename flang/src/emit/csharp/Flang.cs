@@ -859,6 +859,26 @@ public static class Flang
     }
 
     /// <summary>
+    /// «элемент N в СПИСОК». Список flang здесь — массив, поэтому N-й элемент
+    /// стоит того же, что первый: обхода нет. Границы и текст отказа повторяют
+    /// вычислитель дословно — их сверяет дифференциальная проверка.
+    /// </summary>
+    public static Value BElement(Ctx ctx, Value index, Value value)
+    {
+        double position = ExpectInteger("элемент", index, "индекс");
+        Value[] items = ExpectList("элемент", value, "список");
+        double at = position - ctx.IndexBase;
+        if (at < 0 || at >= items.Length)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«элемент»: индекс " + Value.NumberText(position) + " вне списка длиной "
+                    + items.Length.ToString(CultureInfo.InvariantCulture));
+        }
+        return items[(int)at];
+    }
+
+    /// <summary>
     /// «добавить … к …»: дописывает в конец, исходный список не меняется.
     ///
     /// Копирует, как и в JS: значения flang неизменяемы, и разделить массив с

@@ -503,6 +503,18 @@ function $b_hvost(value) {
   return list.slice(1)
 }
 
+// Элемент по номеру. Массив JS — обращение по индексу без обхода; проверка
+// границ повторяет вычислитель дословно, включая текст отказа.
+function $b_element(index, value) {
+  $expectInteger("элемент", index, "индекс")
+  const list = $expectList("элемент", value, "список")
+  const at = index - $INDEX_BASE
+  if (at < 0 || at >= list.length) {
+    $fail("FLANG_BUILTIN_ARGS", `«элемент»: индекс ${index} вне списка длиной ${list.length}`)
+  }
+  return list[at]
+}
+
 function $b_dobavit(item, value) {
   const list = $expectList("добавить", value, "второй аргумент")
   return [...list, item]
@@ -611,6 +623,7 @@ runtimeEntry("$b_k_stroke", ["$fail", "$typeName"], fromSource($b_k_stroke))
 runtimeEntry("$b_pusto", ["$fail", "$isList", "$typeName"], fromSource($b_pusto))
 runtimeEntry("$b_golova", ["$fail", "$expectList"], fromSource($b_golova))
 runtimeEntry("$b_hvost", ["$fail", "$expectList"], fromSource($b_hvost))
+runtimeEntry("$b_element", ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"], fromSource($b_element))
 runtimeEntry("$b_dobavit", ["$expectList"], fromSource($b_dobavit))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
 runtimeEntry("$b_procentov_ot", ["$expectNumber"], fromSource($b_procentov_ot))
@@ -633,6 +646,7 @@ const BUILTIN_HELPERS = new Map([
   ["пусто", "$b_pusto"],
   ["голова", "$b_golova"],
   ["хвост", "$b_hvost"],
+  ["элемент", "$b_element"],
   ["добавить", "$b_dobavit"],
   ["остаток от", "$b_ostatok_ot"],
   ["процентов от", "$b_procentov_ot"],
@@ -654,6 +668,7 @@ const BUILTIN_ARITY = new Map([
   ["пусто", 1],
   ["голова", 1],
   ["хвост", 1],
+  ["элемент", 2],
   ["добавить", 2],
   ["остаток от", 2],
   ["процентов от", 2],

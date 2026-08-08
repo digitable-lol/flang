@@ -219,6 +219,7 @@ const EXPRESSION_START = new Set([
   "toNumberOrFail",
   "toText",
   "char",
+  "item",
   "substring",
   "join",
   "split",
@@ -1584,6 +1585,15 @@ class Parser {
         const position = this.parsePostfix()
         this.expectKw("to", "у 'символ' ожидалось 'в строке'")
         return { kind: "builtin", name: "символ", args: [position, this.parsePostfix()], span: token.span }
+      }
+      /* Порядок аргументов и предлог — как у «символ»: сначала номер, потом
+         то, из чего берём. Одно понятие — один оборот, и разойтись им негде,
+         потому что и здесь, и там дальше идёт `expectKw("to")`. */
+      case "item": {
+        this.next()
+        const position = this.parsePostfix()
+        this.expectKw("to", "у 'элемент' ожидалось 'в списке'")
+        return { kind: "builtin", name: "элемент", args: [position, this.parsePostfix()], span: token.span }
       }
       case "decompose": {
         this.next()

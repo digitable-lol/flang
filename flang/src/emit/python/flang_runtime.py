@@ -1117,6 +1117,24 @@ def b_tail(ctx, value):
     return Value(TAG_LIST, items[1:])
 
 
+def b_element(ctx, index, value):
+    """«элемент N в СПИСОК».
+
+    Список Python — массив, поэтому N-й элемент стоит того же, что первый:
+    обхода нет. Границы и текст отказа повторяют вычислитель дословно — их
+    сверяет дифференциальная проверка, и «похоже» тут не годится.
+    """
+    position = _expect_integer("элемент", index, "индекс")
+    items = _expect_list("элемент", value, "список")
+    at = position - ctx.index_base
+    if at < 0 or at >= len(items):
+        raise fail(
+            CODE_BUILTIN_ARGS,
+            f"«элемент»: индекс {number_text(position)} вне списка длиной {len(items)}",
+        )
+    return items[int(at)]
+
+
 def b_append(ctx, item, value):
     """«добавить … к …»: дописывает в конец, исходный список не меняется."""
     items = _expect_list("добавить", value, "второй аргумент")

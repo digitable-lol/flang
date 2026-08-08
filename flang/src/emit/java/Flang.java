@@ -752,6 +752,25 @@ public final class Flang {
   }
 
   /**
+   * «элемент N в СПИСОК».
+   *
+   * Список flang здесь — массив Java, поэтому N-й элемент стоит того же, что
+   * первый: обхода нет. Границы и текст отказа повторяют вычислитель дословно —
+   * их сверяет дифференциальная проверка, и «похоже» тут не годится.
+   */
+  public static Value bElement(Ctx ctx, Value index, Value value) {
+    double position = expectInteger("элемент", index, "индекс");
+    Value[] items = expectList("элемент", value, "список");
+    double at = position - ctx.indexBase;
+    if (at < 0 || at >= items.length) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«элемент»: индекс " + Value.numberText(position) + " вне списка длиной " + items.length);
+    }
+    return items[(int) at];
+  }
+
+  /**
    * «добавить … к …»: дописывает в конец, исходный список не меняется.
    *
    * Копирует, как и в JS: значения flang неизменяемы, и разделить массив с

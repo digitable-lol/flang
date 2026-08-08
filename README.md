@@ -676,7 +676,7 @@ bifunctors and monads are — and a monad also comes with the binding form `в �
 
 ---
 
-## Concurrency: six steps of seven
+## Concurrency: seven steps of seven, and half of an eighth ahead
 
 Values are immutable by construction, so two computations looking at one value cannot interfere:
 there are no data races to lose, because there is nothing to build one out of. What the language
@@ -736,8 +736,8 @@ flang test flang/conc/examples/counter.flang --pretty
 ```
 
 The contract is [`flang/conc/SPEC.md`](flang/conc/SPEC.md), and it names a seven-step plan of
-which **six are done**: the surface, the checks, the reference scheduler, supervision, emission to
-Elixir, the seed sweep and the measurement. Strategies are applied for real: a restart returns the state to the very
+which **all seven are done**: the surface, the checks, the reference scheduler, supervision,
+emission to Elixir, the seed sweep, the scheduler in the C runtime and the measurement. Strategies are applied for real: a restart returns the state to the very
 same initial value, the failure threshold is counted in the scheduler's virtual time, and
 "escalate" reaches the supervisor one step up — or, if there is none above, stops the whole program
 with the outcome `"отказ дошёл доверху"`. The examples are in
@@ -759,8 +759,27 @@ interleaving of atomic handler runs, and the BEAM scheduler takes no seed. So th
 *set*: the reference sweeps a thousand seeds to build the set of outcomes and the set of delivery
 logs, and every outcome of a real BEAM run must land inside it. Both weak spots are covered — the
 set is shown to be saturated (half the seed grid gives the same set) and narrow (change one number
-in an outcome and it falls out). The other seven targets do not print processes yet: there, a
-program with `процесс` gives the handlers as ordinary functions and nothing more.
+in an outcome and it falls out).
+
+The second target, C, has a scheduler of its own: it lives in the runtime
+(`flang/src/emit/c/flang_conc.c`), while processes, supervisors and runs are printed into the
+program as data. That scheduler *does* take a seed, so the check there is stricter than against
+BEAM — and it is exactly the one the contract asked for in the first place: **on one seed the
+delivery log matches the reference byte for byte** — 2400 matches over 90 distinct interleavings,
+six programs, twelve runs.
+
+```bash
+flang emit flang/conc/examples/counter.flang --target c --out /tmp/counter-c
+cd /tmp/counter-c && make
+echo '{"run":"два прибавления и доклад","seed":"4172"}' | ./flang_cli
+```
+
+Its mode is the checking one: a single thread, interleaving chosen by the seed. It does not occupy
+a second core and does not pretend to — and the price of a thread pool has been measured and named:
+a handler run costs **1.1 µs**, handing that run to another thread costs **15.9 µs**. Until a
+handler is more expensive than fifteen microseconds, a pool takes away more than it gives. The
+other six targets do not print processes at all: there, a program with `процесс` gives the handlers
+as ordinary functions and nothing more.
 
 The model has been measured — `node --expose-gc flang/conc/bench.mjs` — and the numbers were chosen
 so as not to depend on machine load, because the machine available was a busy one. A flang process
@@ -770,7 +789,9 @@ GenServer — 5.5x, and that is the price of the model on top of the machine. A 
 interpreter steps**, a send adds **9**: describing an action *is* building a value, and that is not
 free. The reference scheduler has a less pleasant finding of its own: it rebuilds the ready queue by
 scanning every process on every run, so a context switch costs O(number of processes) — about 12 ns
-per declared process.
+per declared process. In the C runtime the ready queue is kept as a list, and the same line reads
+**1.145 µs + 0.003 ns per process**: no slope within the measurement, and the log still matches the
+reference byte for byte — what got faster is the way the queue is obtained, not the queue.
 
 ---
 
@@ -1129,9 +1150,11 @@ checked claim. A list — and anything recursive, I/O included — cannot be dec
 the endofunctor map is printed in place, so the parameter must occupy a whole field
 ([`flang/cat/MONAD.md`](flang/cat/MONAD.md)).
 
-**Concurrency.** Six steps of seven. The missing one is the sixth — a scheduler in the C runtime:
-processes are printed only to Elixir, and the other seven targets turn a program with `процесс`
-into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
+**Concurrency.** All seven steps, but the sixth only halfway. The scheduler in the C runtime is
+the checking one: a single thread, interleaving by seed, matching the reference byte for byte;
+there is no working thread pool, and its price is named as a number (a 1.1 µs run against 15.9 µs
+to hand that run to another thread). Processes are printed only to Elixir and C, and the other six
+targets turn a program with `процесс` into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
 the declarations and there is no dynamic tree as in OTP; a message addressee must be a literal;
 there is no distribution. The seed grid checks a finite set of interleavings — a checked claim, not
 a proof — and it gives no freedom from deadlock. The measurement was taken on a busy machine (load

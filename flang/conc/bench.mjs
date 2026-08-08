@@ -73,6 +73,7 @@ import { fileURLToPath } from "node:url"
 import { runConcurrent } from "../src/conc.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { emitC } from "../src/emit/c.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { createRuntime } from "../src/interpret.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
@@ -339,6 +340,214 @@ function меркаОбъявления(процессов) {
   }
 }
 
+/* ═══════════ 3½. планировщик в рантайме C: пробег и очередь готовых ═══════ */
+
+/**
+ * Кольцо с ПРОГОНОМ в исходнике: планировщику C прогон приезжает данными плана,
+ * а не собирается на месте, как у эталона (`прогонИз`). Поэтому здесь та же
+ * программа, но с объявленным `прогон`.
+ */
+function кольцоСПрогоном(процессов, сообщений) {
+  const строки = кольцо(процессов, false).split("\n")
+  строки.push("прогон «мерка»", "  семя 1")
+  for (let раз = 0; раз < сообщений; раз += 1) строки.push("  дано «П1» принимает (вариант «тик»)")
+  строки.push(`  ожидается «П1» равен (запись «Счёт» с «всего» равным ${сообщений})`, "")
+  return строки.join("\n")
+}
+
+/**
+ * Цена пробега у планировщика в рантайме C, и главное — её зависимость от числа
+ * ОБЪЯВЛЕННЫХ процессов.
+ *
+ * У эталона эта зависимость линейна и измерена выше: очередь готовых
+ * пересобирается полным перебором на каждом пробеге. В C очередь готовых
+ * поддерживается списком, поэтому пробег обязан стоить O(готовых), а не
+ * O(объявленных), — и «обязан» здесь проверяется наклоном прямой, а не чтением
+ * кода.
+ *
+ * ── Чем это меряется и почему не тем же, чем эталон ────────────────────────
+ * `process.cpuUsage()` считает время НАШЕГО процесса, а работа идёт в чужом:
+ * этим прибором вышел бы ноль. Поэтому здесь настенные часы — и, чтобы они
+ * что-то значили, из замера вычитается второй замер той же программы с ящиком
+ * из одного сообщения. Разность убирает всё, что не пробег: запуск процесса,
+ * разбор запроса, вычисление P начальных состояний, выделение таблиц на P
+ * процессов. Берётся минимум из повторов — помеха может замер только удлинить.
+ */
+function меркаC(процессов, сообщений, запросов, повторов) {
+  const cc = findExecutable("cc") ?? findExecutable("gcc")
+  if (cc === null) return null
+  const каталог = mkdtempSync(join(tmpdir(), "flang-bench-c-"))
+  try {
+    const собрать = (сколько, куда) => {
+      const путь = join(каталог, куда)
+      mkdirSync(путь, { recursive: true })
+      const программа = parse(кольцоСПрогоном(процессов, сколько), "мерка.flang")
+      const напечатано = emitC(программа)
+      const исходники = []
+      for (const файл of напечатано.files) {
+        writeFileSync(join(путь, файл.path), файл.content)
+        if (файл.path.endsWith(".c")) исходники.push(файл.path)
+      }
+      const начало = Date.now()
+      execFileSync(cc, ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", ...исходники,
+                        "-o", "flang_cli", "-lm"], { cwd: путь, stdio: ["ignore", "pipe", "pipe"] })
+      return { бинарник: join(путь, "flang_cli"), мсСборки: Date.now() - начало }
+    }
+    const полный = собрать(сообщений, "full")
+    const пустой = собрать(1, "base")
+    const вход = `${Array.from({ length: запросов },
+      () => JSON.stringify({ run: "мерка", seed: "1", turns: String(сообщений * 4 + 16) })).join("\n")}\n`
+
+    /* Замеры чередуются, как и у эталона: помеха видит оба одинаково и из
+       разности уходит. */
+    let сПолным = Infinity
+    let сПустым = Infinity
+    const настенно = (что) => {
+      const было = process.hrtime.bigint()
+      что()
+      return Number(process.hrtime.bigint() - было) / 1e6
+    }
+    for (let раз = 0; раз < повторов; раз += 1) {
+      сПолным = Math.min(сПолным, настенно(() =>
+        execFileSync(полный.бинарник, { input: вход, stdio: ["pipe", "ignore", "pipe"] })))
+      сПустым = Math.min(сПустым, настенно(() =>
+        execFileSync(пустой.бинарник, { input: вход, stdio: ["pipe", "ignore", "pipe"] })))
+    }
+    const пробегов = запросов * (сообщений - 1)
+    return {
+      процессов,
+      мкснаПробег: ((сПолным - сПустым) * 1000) / пробегов,
+      мсПолный: сПолным,
+      мсПустой: сПустым,
+      мсСборки: полный.мсСборки,
+      пробегов,
+    }
+  } finally {
+    rmSync(каталог, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Во что обошёлся бы РАБОЧИЙ режим на потоках ОС — и почему проверочный режим
+ * сделан кооперативным.
+ *
+ * Контракт называет два режима: проверочный «одним потоком, чередование по
+ * семени» и рабочий «параллельно, сколько даёт среда». Сделан первый; довод
+ * «побайтовая сверка с потоками невозможна» верен, но недостаточен — надо ещё
+ * знать, СКОЛЬКО стоит второй. Здесь меряются три числа, и все три на той же
+ * машине и в тот же момент, что и пробег выше:
+ *
+ *   • передача работы между двумя потоками (mutex + condvar, туда и обратно) —
+ *     это то, что пул платил бы на каждом пробеге, если бы пробеги раздавались;
+ *   • взятие незанятого замка — это то, что планировщик платил бы за то, чтобы
+ *     просто СТАТЬ потокобезопасным, не раздавая ничего;
+ *   • заведение и уборка потока — цена «по потоку на процесс».
+ *
+ * Ни одно из трёх не берётся из головы и ни одно не берётся из чужих замеров:
+ * futex на разных ядрах и в разных виртуалках стоит по-разному, и число из
+ * статьи здесь ничего не решило бы.
+ *
+ * Это НЕ переносимый C99: pthread — POSIX. Поэтому мерка и стоит здесь, рядом с
+ * контрактом, а не в рантайме: рантайм обязан собираться где угодно.
+ */
+const ПОТОКИ_C = `#define _POSIX_C_SOURCE 200809L
+#include <pthread.h>
+#include <stdio.h>
+#include <time.h>
+
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t ping = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t pong = PTHREAD_COND_INITIALIZER;
+static long turn = 0;
+static long rounds = 200000;
+
+static double now_ns(void) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (double)ts.tv_sec * 1e9 + (double)ts.tv_nsec;
+}
+
+static void *nothing(void *ignored) { (void)ignored; return NULL; }
+
+static void *worker(void *ignored) {
+  long index = 0;
+  (void)ignored;
+  for (index = 0; index < rounds; index += 1) {
+    pthread_mutex_lock(&lock);
+    while (turn != 1) { pthread_cond_wait(&ping, &lock); }
+    turn = 0;
+    pthread_cond_signal(&pong);
+    pthread_mutex_unlock(&lock);
+  }
+  return NULL;
+}
+
+int main(void) {
+  pthread_t thread;
+  long index = 0;
+  double start = 0.0, handoff = 0.0, alone = 0.0, creation = 0.0;
+
+  pthread_create(&thread, NULL, worker, NULL);
+  start = now_ns();
+  for (index = 0; index < rounds; index += 1) {
+    pthread_mutex_lock(&lock);
+    turn = 1;
+    pthread_cond_signal(&ping);
+    while (turn != 0) { pthread_cond_wait(&pong, &lock); }
+    pthread_mutex_unlock(&lock);
+  }
+  handoff = (now_ns() - start) / (double)rounds;
+  pthread_join(thread, NULL);
+
+  start = now_ns();
+  for (index = 0; index < rounds; index += 1) {
+    pthread_mutex_lock(&lock);
+    turn += 1;
+    pthread_mutex_unlock(&lock);
+  }
+  alone = (now_ns() - start) / (double)rounds;
+
+  start = now_ns();
+  for (index = 0; index < 2000; index += 1) {
+    pthread_t one;
+    pthread_create(&one, NULL, nothing, NULL);
+    pthread_join(one, NULL);
+  }
+  creation = (now_ns() - start) / 2000.0;
+
+  printf("%.0f\\t%.0f\\t%.0f\\n", handoff, alone, creation);
+  return 0;
+}
+`
+
+function меркаПотоков(повторов) {
+  const cc = findExecutable("cc") ?? findExecutable("gcc")
+  if (cc === null) return null
+  const каталог = mkdtempSync(join(tmpdir(), "flang-bench-threads-"))
+  try {
+    writeFileSync(join(каталог, "потоки.c"), ПОТОКИ_C)
+    execFileSync(cc, ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", "-pthread",
+                      "потоки.c", "-o", "потоки"], { cwd: каталог, stdio: ["ignore", "pipe", "pipe"] })
+    let передача = Infinity
+    let замок = Infinity
+    let заведение = Infinity
+    for (let раз = 0; раз < повторов; раз += 1) {
+      const [п, з, зав] = execFileSync(join(каталог, "потоки"), { encoding: "utf8" }).trim().split("\t").map(Number)
+      передача = Math.min(передача, п)
+      замок = Math.min(замок, з)
+      заведение = Math.min(заведение, зав)
+    }
+    return { передача, замок, заведение }
+  } catch {
+    /* pthread может не собраться (не POSIX, нет -pthread) — это не поломка
+       мерки, а отсутствие того, что она мерит. Молчать об этом нельзя, но и
+       валить весь отчёт незачем. */
+    return null
+  } finally {
+    rmSync(каталог, { recursive: true, force: true })
+  }
+}
+
 /* ════════════════════════════ 4. настоящая BEAM ═══════════════════════════ */
 
 /**
@@ -583,6 +792,56 @@ for (const процессов of [2, 250, 500, 1000, 2000]) {
     `  прямая: ${сдвиг.toFixed(3)} мкс + ${(наклон * 1000).toFixed(1)} нс на процесс — ` +
       `переключение у эталона стоит O(числа процессов), а не O(1)`,
   )
+}
+скажи(``)
+
+скажи(`## Планировщик в рантайме C: тот же пробег, другая очередь готовых`)
+скажи(`(настенное время чужого процесса минус то же с ящиком из одного сообщения;`)
+скажи(` минимум из повторов, замеры чередуются — нагрузка названа в конце строки)`)
+{
+  const точкиC = []
+  for (const процессов of [2, 250, 500, 1000, 2000]) {
+    const м = меркаC(процессов, 2000, 5, 7)
+    if (м === null) {
+      скажи(`  компилятора C не нашлось — пропуск`)
+      break
+    }
+    точкиC.push([процессов, м.мкснаПробег])
+    скажи(
+      `  процессов ${String(процессов).padStart(4)}: ` +
+        `${м.мкснаПробег.toFixed(3)} мкс/пробег ` +
+        `(${м.пробегов} пробегов за ${м.мсПолный.toFixed(1)} мс против ${м.мсПустой.toFixed(1)} мс, ` +
+        `сборка ${м.мсСборки} мс, нагрузка ${нагрузка()})`,
+    )
+  }
+  if (точкиC.length > 1) {
+    const n = точкиC.length
+    const сумX = точкиC.reduce((с, [x]) => с + x, 0)
+    const сумY = точкиC.reduce((с, [, y]) => с + y, 0)
+    const сумXY = точкиC.reduce((с, [x, y]) => с + x * y, 0)
+    const сумXX = точкиC.reduce((с, [x]) => с + x * x, 0)
+    const наклон = (n * сумXY - сумX * сумY) / (n * сумXX - сумX * сумX)
+    const сдвиг = (сумY - наклон * сумX) / n
+    скажи(
+      `  прямая: ${сдвиг.toFixed(3)} мкс + ${(наклон * 1000).toFixed(3)} нс на процесс — ` +
+        `в C переключение стоит O(числа ГОТОВЫХ), а не O(числа объявленных)`,
+    )
+  }
+}
+скажи(``)
+
+скажи(`## Почему проверочный режим кооперативный, а не на потоках ОС`)
+скажи(`(pthread, не C99; минимум из повторов на той же машине и в тот же момент)`)
+{
+  const м = меркаПотоков(3)
+  if (м === null) {
+    скажи(`  pthread не собрался — мерить нечем`)
+  } else {
+    скажи(`  передача работы другому потоку (mutex+condvar): ${(м.передача / 1000).toFixed(2)} мкс`)
+    скажи(`  взять незанятый замок:                          ${м.замок.toFixed(0)} нс`)
+    скажи(`  завести и убрать поток:                         ${(м.заведение / 1000).toFixed(2)} мкс`)
+    скажи(`  нагрузка на момент замера: ${нагрузка()}`)
+  }
 }
 скажи(``)
 

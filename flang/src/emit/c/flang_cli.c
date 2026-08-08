@@ -15,6 +15,15 @@
  * Ответ  — одна строка:  {"ok":true,"value":…}
  *                    или {"ok":false,"code":"FLANG_TYPE","message":"…"}
  *
+ * У программы с процессами есть второй запрос — прогон:
+ *   {"run":"имя прогона","seed":"4172","turns":"10000"}
+ *   {"ok":true,"run":"…","исход":"покой","время":"4","пробегов":"4",
+ *    "состояния":[["Счётчик",…]],"живые":[…],"отказы":[…],"решения":[…],
+ *    "журнал":[{"время":"0","процесс":"…","исход":"обработано","код":"","сообщение":…}]}
+ * Семя обязательно в том смысле, что от него зависит ВСЁ чередование: при одном
+ * и том же семени журнал доставок совпадает с эталоном побайтово, и это
+ * проверяется, а не обещается.
+ *
  * Значения размечены тегами, потому что JSON беднее flang:
  *   null            «ничто»
  *   true / false    признак
@@ -75,6 +84,22 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
  */
 #ifdef FL_WITH_REPL
 extern int fl_human_main(int argc, char **argv, const char *self);
+#endif
+
+/*
+ * Второй запрос протокола — прогон конкурентной программы, и он есть только у
+ * той программы, в которой объявлен хоть один `процесс`. Без него ключ «run»
+ * остаётся неизвестным полем запроса, как и было: обещать прогон программе,
+ * которой нечего прогонять, значило бы врать в протоколе.
+ */
+#ifdef FL_WITH_CONC
+#include "flang_conc.h"
+
+#ifndef FL_PROGRAM_CONC_PLAN
+#define FL_PROGRAM_CONC_PLAN fl_program_conc_plan
+#endif
+
+extern const fl_conc_plan *FL_PROGRAM_CONC_PLAN(void);
 #endif
 
 /* ───────────────────────────── чтение входа ───────────────────────────── */
@@ -567,6 +592,111 @@ static void write_value(fl_value value) {
   fputs("null", stdout);
 }
 
+/* ───────────────────────────── прогон конкурентной программы ─────────────────────────────
+   Ответ отличается от ответа на вызов функции не украшением, а существом: у
+   конкурентной программы нет одного значения, есть исход, состояния всех
+   процессов и ЖУРНАЛ ДОСТАВОК — то самое чередование, которое обязано совпасть
+   с эталоном побайтово при том же семени (контракт, «Что проверяется и чем»,
+   пункт 2). Ради этого журнал и печатается целиком, а не сводкой. */
+
+#ifdef FL_WITH_CONC
+/* Число едет строкой по той же причине, что и в «n»: иначе потерялись бы NaN,
+   бесконечности и −0, а виртуальное время — обычное число flang. */
+static void write_number_text(double value) {
+  char number[FL_NUMBER_TEXT_MAX];
+  fl_number_text(value, number);
+  write_text(number, strlen(number));
+}
+
+static void write_name(const char *text) {
+  write_text(text == NULL ? "" : text, strlen(text == NULL ? "" : text));
+}
+
+static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_result *result) {
+  size_t index = 0;
+  bool first = true;
+  fputs("{\"ok\":true,\"run\":", stdout);
+  write_name(name);
+  fputs(",\"исход\":", stdout);
+  write_name(result->outcome);
+  fputs(",\"время\":", stdout);
+  write_number_text(result->time);
+  fputs(",\"пробегов\":", stdout);
+  write_number_text((double)result->turns);
+
+  /* Состояния — в порядке объявления процессов, том же, что у эталона. */
+  fputs(",\"состояния\":[", stdout);
+  for (index = 0; index < plan->process_count; index += 1) {
+    if (index > 0) {
+      putchar(',');
+    }
+    putchar('[');
+    write_name(plan->processes[index].name);
+    putchar(',');
+    write_value(result->states[index]);
+    putchar(']');
+  }
+
+  fputs("],\"живые\":[", stdout);
+  for (index = 0; index < plan->process_count; index += 1) {
+    if (!result->alive[index]) {
+      continue;
+    }
+    if (!first) {
+      putchar(',');
+    }
+    first = false;
+    write_name(plan->processes[index].name);
+  }
+
+  fputs("],\"отказы\":[", stdout);
+  for (index = 0; index < result->failure_count; index += 1) {
+    if (index > 0) {
+      putchar(',');
+    }
+    putchar('[');
+    write_name(plan->processes[result->failures[index].process].name);
+    putchar(',');
+    write_name(result->failures[index].code);
+    putchar(']');
+  }
+
+  fputs("],\"решения\":[", stdout);
+  for (index = 0; index < result->decision_count; index += 1) {
+    if (index > 0) {
+      putchar(',');
+    }
+    putchar('[');
+    write_name(plan->processes[result->decisions[index].process].name);
+    putchar(',');
+    write_name(result->decisions[index].supervisor);
+    putchar(',');
+    write_name(result->decisions[index].strategy);
+    putchar(']');
+  }
+
+  fputs("],\"журнал\":[", stdout);
+  for (index = 0; index < result->journal_count; index += 1) {
+    const fl_conc_entry *entry = &result->journal[index];
+    if (index > 0) {
+      putchar(',');
+    }
+    fputs("{\"время\":", stdout);
+    write_number_text(entry->time);
+    fputs(",\"процесс\":", stdout);
+    write_name(plan->processes[entry->process].name);
+    fputs(",\"исход\":", stdout);
+    write_name(entry->outcome);
+    fputs(",\"код\":", stdout);
+    write_name(entry->code);
+    fputs(",\"сообщение\":", stdout);
+    write_value(entry->message);
+    putchar('}');
+  }
+  fputs("]}\n", stdout);
+}
+#endif
+
 /* ───────────────────────────── запрос ───────────────────────────── */
 
 static void run_request(fl_arena *arena, const char *line, size_t bytes) {
@@ -579,6 +709,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   size_t name_bytes = 0;
   size_t count = 0;
   fl_status status = FL_OK;
+#ifdef FL_WITH_CONC
+  char *run = NULL;
+  double seed = 0.0;
+  double turns = 0.0;
+#endif
 
   fl_arena_reset(arena);
   fl_ctx_init(&ctx, arena);
@@ -620,6 +755,24 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         return;
       }
       ctx.max_steps = (size_t)steps;
+#ifdef FL_WITH_CONC
+    } else if (strcmp(key, "run") == 0) {
+      size_t run_bytes = 0;
+      if (!read_text(&reader, &run, &run_bytes)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое имя прогона\"}\n", stdout);
+        return;
+      }
+    } else if (strcmp(key, "seed") == 0) {
+      if (!read_number_text(&reader, &seed)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое семя\"}\n", stdout);
+        return;
+      }
+    } else if (strcmp(key, "turns") == 0) {
+      if (!read_number_text(&reader, &turns)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел пробегов\"}\n", stdout);
+        return;
+      }
+#endif
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
       if (!read_items(&reader, &list) || list.as.list.count > FL_MAX_ARGS) {
@@ -639,6 +792,23 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     }
     break;
   }
+#ifdef FL_WITH_CONC
+  if (run != NULL) {
+    const fl_conc_plan *plan = FL_PROGRAM_CONC_PLAN();
+    fl_conc_result outcome;
+    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, &outcome, &error) == FL_OK) {
+      write_run(plan, run, &outcome);
+      return;
+    }
+    fputs("{\"ok\":false,\"code\":", stdout);
+    write_name(error.code == NULL ? "FLANG_UNKNOWN" : error.code);
+    fputs(",\"message\":", stdout);
+    write_name(error.message);
+    fputs("}\n", stdout);
+    return;
+  }
+#endif
+
   if (name == NULL) {
     fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"в запросе нет имени функции\"}\n", stdout);
     return;

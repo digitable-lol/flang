@@ -91,6 +91,11 @@ const RUNTIME_HEADER = readFileSync(new URL("flang_runtime.h", RUNTIME_DIRECTORY
 const RUNTIME_SOURCE = readFileSync(new URL("flang_runtime.c", RUNTIME_DIRECTORY), "utf8")
 const CLI_SOURCE = readFileSync(new URL("flang_cli.c", RUNTIME_DIRECTORY), "utf8")
 const REPL_SOURCE = readFileSync(new URL("flang_repl.c", RUNTIME_DIRECTORY), "utf8")
+/* Планировщик конкурентности — тоже настоящие .c/.h рядом, а не строка здесь, и
+   по той же причине: его проверяет компилятор прямо в репозитории. Печатается
+   он ТОЛЬКО программе с процессами (см. renderConcurrency). */
+const CONC_HEADER = readFileSync(new URL("flang_conc.h", RUNTIME_DIRECTORY), "utf8")
+const CONC_SOURCE = readFileSync(new URL("flang_conc.c", RUNTIME_DIRECTORY), "utf8")
 
 /** Канонические имена встроенных форм → функции рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -496,6 +501,13 @@ export function emitC(program, options = {}) {
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
 
+  /* Конкурентность печатается только тому, у кого есть хоть один `процесс`.
+     Программе без процессов планировщик не нужен, и возить его ей значило бы
+     возить неисполнимый код; ровно так же решает бэкенд Elixir. */
+  const processes = Array.isArray(program.processes) ? program.processes : []
+  const concurrent = processes.length > 0
+  if (concurrent) bodies.push(renderConcurrency(program, processes, shared))
+
   const settings = [
     "/* Настройки этой программы; в самом рантайме те же имена объявлены через",
     "   #ifndef, поэтому он собирается и без этого блока. */",
@@ -515,9 +527,23 @@ export function emitC(program, options = {}) {
       path: "flang_runtime.c",
       content: `${banner(moduleName, "рантайм: реализация")}\n${RUNTIME_SOURCE}`,
     },
-    { path: `${file}.h`, content: renderHeader(file, moduleName, shared) },
-    { path: `${file}.c`, content: renderSource(file, moduleName, shared, bodies) },
   ]
+  if (concurrent) {
+    files.push(
+      {
+        path: "flang_conc.h",
+        content: `${banner(moduleName, "планировщик конкурентности: процессы, ящики, надзор")}\n${CONC_HEADER}`,
+      },
+      {
+        path: "flang_conc.c",
+        content: `${banner(moduleName, "планировщик конкурентности: реализация")}\n${CONC_SOURCE}`,
+      },
+    )
+  }
+  files.push(
+    { path: `${file}.h`, content: renderHeader(file, moduleName, shared, concurrent) },
+    { path: `${file}.c`, content: renderSource(file, moduleName, shared, bodies) },
+  )
 
   /*
    * Оболочка печатается по просьбе, и просьба эта осмысленна ровно у одной
@@ -539,6 +565,9 @@ export function emitC(program, options = {}) {
         banner(moduleName, "прогонщик: JSON на входе, JSON на выходе"),
         `#define FL_PROGRAM_CALL ${prefix}_call`,
         ...(repl ? ["#define FL_WITH_REPL 1"] : []),
+        ...(concurrent
+          ? ["#define FL_WITH_CONC 1", `#define FL_PROGRAM_CONC_PLAN ${prefix}_conc_plan`]
+          : []),
         "",
         CLI_SOURCE,
       ].join("\n"),
@@ -555,7 +584,7 @@ export function emitC(program, options = {}) {
       ].join("\n"),
     })
   }
-  files.push({ path: "Makefile", content: renderMakefile(file, options.cli !== false, repl) })
+  files.push({ path: "Makefile", content: renderMakefile(file, options.cli !== false, repl, concurrent) })
   /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
      (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
      комментарии — в шапку файла, в описание функции, в подпись поля, — а
@@ -580,7 +609,7 @@ function banner(moduleName, what) {
 
 /* ── заголовок модуля ── */
 
-function renderHeader(file, moduleName, shared) {
+function renderHeader(file, moduleName, shared, concurrent = false) {
   const guard = `${snake(file).toUpperCase()}_H`
   const lines = [
     banner(moduleName, "объявления: конструкторы значений и функции программы"),
@@ -588,6 +617,7 @@ function renderHeader(file, moduleName, shared) {
     `#define ${guard}`,
     "",
     '#include "flang_runtime.h"',
+    ...(concurrent ? ['#include "flang_conc.h"'] : []),
     "",
     "/*",
     " * Контракт вызова: функция кладёт результат в *result и возвращает FL_OK",
@@ -642,9 +672,19 @@ function renderHeader(file, moduleName, shared) {
     `fl_status ${shared.prefix}_call(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,`,
     "                    fl_value *result, fl_error *error);",
     "",
-    `#endif /* ${guard} */`,
-    "",
   )
+  if (concurrent) {
+    lines.push(
+      "/*",
+      " * Процессы, надзоры и прогоны программы — данными. Отсюда планировщик",
+      " * (flang_conc.c) берёт всё, что ему нужно знать о программе; сам он о ней",
+      " * не знает ничего, поэтому и печатается байт в байт для всех.",
+      " */",
+      `const fl_conc_plan *${shared.prefix}_conc_plan(void);`,
+      "",
+    )
+  }
+  lines.push(`#endif /* ${guard} */`, "")
   return lines.join("\n")
 }
 
@@ -750,7 +790,7 @@ function renderSource(file, moduleName, shared, bodies) {
   return [head.join("\n"), ...bodies.filter((body) => body.length > 0)].join("\n\n") + "\n"
 }
 
-function renderMakefile(file, cli, repl) {
+function renderMakefile(file, cli, repl, concurrent = false) {
   return [
     "# Сгенерировано flang (бэкенд C). Флаги здесь — часть контракта бэкенда:",
     "# сгенерированный код обязан собираться без единого предупреждения.",
@@ -758,7 +798,7 @@ function renderMakefile(file, cli, repl) {
     "CFLAGS ?= -std=c99 -Wall -Wextra -Werror -pedantic -O2",
     "LDLIBS ?= -lm",
     "",
-    `OBJECTS = flang_runtime.o ${file}.o`,
+    `OBJECTS = flang_runtime.o${concurrent ? " flang_conc.o" : ""} ${file}.o`,
     "",
     `all: lib${file}.a${cli ? " flang_cli" : ""}`,
     "",
@@ -1572,6 +1612,183 @@ function renderDispatch(shared) {
     "}",
   )
   return lines.join("\n")
+}
+
+/* ═══════════════════════════ конкурентность ═══════════════════════════
+   Процессы, надзоры и прогоны печатаются ДАННЫМИ — таблицами уровня файла, а не
+   кодом. Причина та же, по какой так сделано в Elixir: надзор в flang —
+   объявление, и одно объявление обязано остаться одним местом в напечатанном
+   коде. Печать готового планировщика на каждую программу размазала бы его по
+   файлу и превратила правку одной строки исходника в правку десятка строк
+   вывода — а сам планировщик (flang_conc.c) при этом обязан остаться одним и
+   тем же для всех программ, иначе сверять с эталоном пришлось бы не модель, а
+   каждую печать по отдельности.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function renderConcurrency(program, processes, shared) {
+  const prefix = shared.prefix
+  const supervisors = Array.isArray(program.supervisors) ? program.supervisors : []
+  const runs = Array.isArray(program.runs) ? program.runs : []
+  const totals = new Set(
+    (program.functions ?? []).filter((fn) => fn?.total === true).map((fn) => fn.name),
+  )
+  const lines = [
+    "/* ── План конкурентности: процессы, надзоры и прогоны данными ── */",
+    "",
+  ]
+
+  /* Запас витков ставится ТОЛЬКО нетотальному обработчику: про тотальный
+     доказано, что он завершится, и считать ему нечего — ровно так же решает
+     планировщик эталона, и разойтись здесь было бы нельзя, потому что от этого
+     зависит, каким кодом кончится отказ. */
+  lines.push(`static const fl_conc_process ${prefix}_conc_processes[] = {`)
+  processes.forEach((node, index) => {
+    const total = totals.has(node.handler)
+    const budget = !total && Number.isFinite(node.budget) ? Math.trunc(node.budget) : 0
+    const tail = index + 1 < processes.length ? "," : ""
+    lines.push(
+      `  { ${cstring(node.name)}, ${cstring(node.handler)}, ${cstring(node.initial)}, ` +
+        `${total ? "true" : "false"}, ${budget} }${tail}`,
+    )
+  })
+  lines.push("};", "")
+
+  /* Дети надзора — отдельными массивами: массив нулевой длины в C99 незаконен,
+     поэтому пустой список печатается как NULL, а не как `{}`. */
+  supervisors.forEach((node, index) => {
+    const watch = node.watch ?? []
+    const nested = node.nested ?? []
+    if (watch.length > 0) {
+      lines.push(
+        `static const fl_conc_child ${prefix}_conc_watch_${index + 1}[] = {`,
+        ...watch.map((item, at) =>
+          `  { ${cstring(item.process)}, ${cstring(item.strategy)} }${at + 1 < watch.length ? "," : ""}`),
+        "};",
+      )
+    }
+    if (nested.length > 0) {
+      lines.push(
+        `static const fl_conc_child ${prefix}_conc_nested_${index + 1}[] = {`,
+        ...nested.map((item, at) =>
+          `  { ${cstring(item.supervisor)}, ${cstring(item.strategy)} }${at + 1 < nested.length ? "," : ""}`),
+        "};",
+      )
+    }
+  })
+  if (supervisors.length > 0) {
+    lines.push("", `static const fl_conc_supervisor ${prefix}_conc_supervisors[] = {`)
+    supervisors.forEach((node, index) => {
+      const watch = node.watch ?? []
+      const nested = node.nested ?? []
+      const threshold = node.threshold ?? null
+      const tail = index + 1 < supervisors.length ? "," : ""
+      lines.push(
+        `  { ${cstring(node.name)},` +
+          ` ${watch.length === 0 ? "NULL" : `${prefix}_conc_watch_${index + 1}`}, ${watch.length},` +
+          ` ${nested.length === 0 ? "NULL" : `${prefix}_conc_nested_${index + 1}`}, ${nested.length},` +
+          ` ${threshold === null ? "false, 0.0, 0.0, NULL" : `true, ${cnumber(threshold.failures)}, ${cnumber(threshold.window)}, ${cstring(threshold.otherwise)}`} }${tail}`,
+      )
+    })
+    lines.push("};", "")
+  }
+
+  /* Входные сообщения прогона — функцией, а не таблицей: сообщение это значение
+     flang, а значения строятся в арене и до вызова не существуют. Печатается
+     оно тем же аппаратом литералов, что и всё остальное в программе. */
+  runs.forEach((run, index) => {
+    const inbox = run.inbox ?? []
+    if (inbox.length === 0) return
+    const body = []
+    const ctx = {
+      shared,
+      temp() {
+        shared.counter += 1
+        return `t${shared.counter}`
+      },
+    }
+    const values = inbox.map((entry) => emitMessage(entry.message, ctx, body, "  "))
+    lines.push(
+      `/* Кому адресованы входные сообщения прогона «${run.name}». */`,
+      `static const char *const ${prefix}_conc_targets_${index + 1}[] = {`,
+      ...inbox.map((entry, at) => `  ${cstring(entry.process)}${at + 1 < inbox.length ? "," : ""}`),
+      "};",
+      "",
+      `/* Сами сообщения прогона «${run.name}». */`,
+      `static fl_status ${prefix}_conc_inbox_${index + 1}(fl_ctx *ctx, fl_value *messages, fl_error *error) {`,
+    )
+    /* Скаляр и строка строятся без арены и без диагностики, поэтому у прогона
+       из одних скаляров оба параметра остались бы нетронутыми — а это
+       -Wunused-parameter, то есть несобираемый C под флагами контракта. */
+    if (body.length === 0) lines.push("  (void)ctx;", "  (void)error;")
+    lines.push(...body)
+    values.forEach((value, at) => lines.push(`  messages[${at}] = ${value};`))
+    lines.push("  return FL_OK;", "}", "")
+  })
+
+  if (runs.length > 0) {
+    lines.push(`static const fl_conc_run_spec ${prefix}_conc_runs[] = {`)
+    runs.forEach((run, index) => {
+      const inbox = run.inbox ?? []
+      const to = run.seedTo === null || run.seedTo === undefined ? run.seed : run.seedTo
+      const tail = index + 1 < runs.length ? "," : ""
+      lines.push(
+        `  { ${cstring(run.name)}, ${cnumber(run.seed)}, ${cnumber(to)},` +
+          ` ${inbox.length === 0 ? "NULL" : `${prefix}_conc_targets_${index + 1}`}, ${inbox.length},` +
+          ` ${inbox.length === 0 ? "NULL" : `${prefix}_conc_inbox_${index + 1}`} }${tail}`,
+      )
+    })
+    lines.push("};", "")
+  }
+
+  lines.push(
+    `static const fl_conc_plan ${prefix}_conc = {`,
+    `  ${prefix}_conc_processes, ${processes.length},`,
+    `  ${supervisors.length === 0 ? "NULL" : `${prefix}_conc_supervisors`}, ${supervisors.length},`,
+    `  ${runs.length === 0 ? "NULL" : `${prefix}_conc_runs`}, ${runs.length},`,
+    `  ${prefix}_call`,
+    "};",
+    "",
+    `const fl_conc_plan *${prefix}_conc_plan(void) {`,
+    `  return &${prefix}_conc;`,
+    "}",
+  )
+  return lines.join("\n")
+}
+
+/**
+ * Литерал входного сообщения прогона.
+ *
+ * Отдельно от `emitLiteral`, а не вместо него, по одной причине: вариант в AST
+ * записан объектом `{ variant, fields }` (так его читает `reifyValue`
+ * интерпретатора), и `emitLiteral` печатает такой объект ЗАПИСЬЮ с полями
+ * «variant» и «fields». Для сообщения прогона это была бы прямая ошибка —
+ * обработчик не сопоставил бы его ни с одним образцом, — а править сам
+ * `emitLiteral` значило бы менять печать всех программ подряд ради одного
+ * места, то есть трогать неподвижную точку самоприменения без нужды.
+ */
+function emitMessage(value, ctx, out, pad) {
+  if (Array.isArray(value)) {
+    return emitList(value.map((item) => (out2, pad2) => emitMessage(item, ctx, out2, pad2)), ctx, out, pad)
+  }
+  if (value !== null && typeof value === "object") {
+    const encoded = encodedVariant(value)
+    const source = encoded === null ? value : encoded.fields
+    const keys = Object.keys(source)
+    const values = keys.map((key) => emitMessage(source[key], ctx, out, pad))
+    return emitValues(keys, values, encoded === null ? null : encoded.variant, ctx, out, pad)
+  }
+  return emitLiteral(value, ctx, out, pad)
+}
+
+/** Объект ровно с двумя полями `variant` и `fields` — это вариант, а не запись. */
+function encodedVariant(value) {
+  if (value === null || Array.isArray(value)) return null
+  const keys = Object.keys(value)
+  if (keys.length !== 2 || !keys.includes("variant") || !keys.includes("fields")) return null
+  if (typeof value.variant !== "string" || value.variant === "") return null
+  const fields = value.fields
+  if (fields === null || typeof fields !== "object" || Array.isArray(fields)) return null
+  return { variant: value.variant, fields }
 }
 
 /* ── проверки, повторяющие интерпретатор ── */

@@ -1,0 +1,217 @@
+module «Palindrome in English»
+
+// Rosetta Code — Palindrome detection, written on the ENGLISH keyword surface.
+// The same program as `palindrome.flang`, keyword for keyword; the two trees
+// are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// A string reads the same in both directions. The extended statement asks to
+// ignore case and punctuation.
+//
+// The whole file is total: the compiler proved that no function here can loop
+// forever. That is worth explaining, because until recently it was impossible,
+// and the reason is instructive.
+//
+// Normalisation (drop the marks, fold the case) was always provable: it folds
+// over a LITERAL list — the alphabet and the set of marks are finite and
+// written right in the source — and occurrences are found by the built-in
+// `split`. A fold over a ready list is always total.
+//
+// But the one-line «compare with yourself backwards» had nothing to prove it
+// with. Reversing requires walking the string character by character, pattern
+// matching only works on a list («empty», «head and tail»), and the walk went
+// by position — that is, a NUMBER decreased, not a value. The termination
+// analysis does not count a numeric decrease as part of a value, and it is not
+// being pedantic: «size minus position» does shrink, but termination cannot be
+// justified by that without reasoning the compiler does not do.
+//
+// The form `decompose … into characters` closes exactly that: the string
+// becomes a list, a list has a tail, a fold over it is provable. The difference
+// between a string and a list, for the sake of which «Palindrome of a list» is
+// shown separately below, remains in the language — but it stopped costing
+// totality.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into a non-empty list»
+    given element equals 1
+    given items equals [2]
+    expected [1, 2]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Reverse list»
+  accepts items: list of number
+  returns list of number
+  example «Three items»
+    given items equals [1, 2, 3]
+    expected [3, 2, 1]
+  fold items starting with empty list as acc and elem → «Prepend» of elem and acc
+
+// Comparing lists is written by hand: the operator `equals` is allowed by the
+// type checker only over scalars (FLANG_TYPE: «only scalars can be compared for
+// equality»), although the language itself compares values structurally. The
+// recursion goes along the tails of both lists, and the decreasing position is
+// the same on every call — so the termination analysis accepts the function at
+// once.
+total function «Lists are equal»
+  accepts left: list of number, right: list of number
+  returns boolean
+  example «They agree»
+    given left equals [1, 2]
+    given right equals [1, 2]
+    expected true
+  example «Different lengths»
+    given left equals [1]
+    given right equals [1, 2]
+    expected false
+  match left
+    case empty
+      then empty right
+    case head h and tail t
+      match right
+        case empty
+          then false
+        case head h2 and tail t2
+          if h is not equal to h2
+            then false
+            else «Lists are equal» of t and t2
+
+// The palindrome test for a list — total. Exactly the same thought as for a
+// string, but a list has structure the compiler knows how to take apart.
+total function «Palindrome of a list»
+  accepts items: list of number
+  returns boolean
+  example «Symmetric»
+    given items equals [1, 2, 3, 2, 1]
+    expected true
+  example «Not symmetric»
+    given items equals [1, 2, 3]
+    expected false
+  example «The empty list is a palindrome»
+    given items equals empty list
+    expected true
+  «Lists are equal» of items and («Reverse list» of items)
+
+total function «Join strings»
+  accepts parts: list of string, separator: string
+  returns string
+  example «Three parts»
+    given parts equals ["а", "б", "в"]
+    given separator equals "-"
+    expected "а-б-в"
+  match parts
+    case empty
+      then ""
+    case head and tail
+      fold tail starting with head as acc and part → join (join acc with separator) with part
+
+total function «Replace»
+  accepts text: string, needle: string, replacement: string
+  returns string
+  example «Drop the spaces»
+    given text equals "а б в"
+    given needle equals " "
+    given replacement equals ""
+    expected "абв"
+  «Join strings» of (split text by needle) and replacement
+
+total function «Position of substring»
+  accepts text: string, part: string
+  returns number
+  example «In the middle»
+    given text equals "abcd"
+    given part equals "c"
+    expected 3
+  example «No occurrence»
+    given text equals "abc"
+    given part equals "z"
+    expected 0
+  if text contains part
+    then (length (head (split text by part))) plus 1
+    else 0
+
+total function «Lowercase letter»
+  accepts letter: string
+  returns string
+  example «A capital becomes small»
+    given letter equals "C"
+    expected "c"
+  example «A non-letter stays itself»
+    given letter equals "7"
+    expected "7"
+  let position equals «Position of substring» of "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and letter
+  if position equals 0
+    then letter
+    else substring "abcdefghijklmnopqrstuvwxyz" with position by position
+
+total function «To lower case»
+  accepts text: string
+  returns string
+  example «Mixed case»
+    given text equals "AbC"
+    expected "abc"
+  fold ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] starting with text as acc and letter
+    if acc contains letter
+      then «Replace» of acc and letter and («Lowercase letter» of letter)
+      else acc
+
+total function «Strip punctuation»
+  accepts text: string
+  returns string
+  example «Spaces and commas»
+    given text equals "a man, a plan"
+    expected "amanaplan"
+  fold [" ", ",", ".", "!", "?", ":", ";", "-"] starting with text as acc and mark
+    if acc contains mark
+      then «Replace» of acc and mark and ""
+      else acc
+
+total function «Normalise»
+  accepts text: string
+  returns string
+  example «Marks and case»
+    given text equals "A man, a plan, a canal: Panama!"
+    expected "amanaplanacanalpanama"
+  «Strip punctuation» of («To lower case» of text)
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — walking a string, which used to mean walking by position.
+// ─────────────────────────────────────────────────────────────────────────
+
+total function «Prepend string»
+  accepts element: string, items: list of string
+  returns list of string
+  example «Into a non-empty list»
+    given element equals "а"
+    given items equals ["б"]
+    expected ["а", "б"]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Reverse string»
+  accepts text: string
+  returns string
+  example «A word»
+    given text equals "abc"
+    expected "cba"
+  fold (decompose text into characters) starting with "" as acc and letter → join letter with acc
+
+total function «Palindrome»
+  accepts text: string
+  returns boolean
+  example «A palindromic word»
+    given text equals "довод"
+    expected true
+  example «Not a palindrome»
+    given text equals "довож"
+    expected false
+  example «A phrase with marks and case»
+    given text equals "A man, a plan, a canal: Panama!"
+    expected true
+  example «A phrase that is not a palindrome»
+    given text equals "race a car"
+    expected false
+  example «An empty string»
+    given text equals ""
+    expected true
+  let cleaned equals «Normalise» of text
+  cleaned equals («Reverse string» of cleaned)

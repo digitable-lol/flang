@@ -1,0 +1,74 @@
+module «Reverse a string in English»
+
+// Rosetta Code — Reverse a string, written on the ENGLISH keyword surface.
+// The same program as `reverse-string.flang`, keyword for keyword; the two
+// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// «asdf» → «fdsa».
+//
+// Everything in this file is total: the compiler proved that no function here
+// can loop forever. For a task about strings that is worth explaining, because
+// until recently it was not possible.
+//
+// Pattern matching («empty», «head and tail») only works on a list: a list has
+// a tail, and recursion on the tail provably decreases. A string has no tail,
+// so the walk went by position — and «size minus position» is a decreasing
+// NUMBER, which the analysis does not count as part of a value.
+//
+// The built-in form `decompose … into characters` removes exactly that: the
+// string becomes a list of one-character strings, and what follows is an
+// ordinary fold over a list that already exists.
+//
+// Unicode correctness comes for free: the decomposition goes by code points,
+// not by UTF-16 units, so Cyrillic and emoji do not fall apart.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into a non-empty list»
+    given element equals 1
+    given items equals [2, 3]
+    expected [1, 2, 3]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Reverse list»
+  accepts items: list of number
+  returns list of number
+  example «Three items»
+    given items equals [1, 2, 3]
+    expected [3, 2, 1]
+  example «Empty list»
+    given items equals empty list
+    expected empty list
+  fold items starting with empty list as acc and elem → «Prepend» of elem and acc
+
+total function «Characters»
+  accepts text: string
+  returns list of string
+  example «Three characters»
+    given text equals "abc"
+    expected ["a", "b", "c"]
+  example «Empty string»
+    given text equals ""
+    expected empty list
+  example «A character outside the BMP is one item, not two»
+    given text equals "а🙂"
+    expected ["а", "🙂"]
+  decompose text into characters
+
+total function «Reverse string»
+  accepts text: string
+  returns string
+  example «The example from the task»
+    given text equals "asdf"
+    expected "fdsa"
+  example «Empty string»
+    given text equals ""
+    expected ""
+  example «Cyrillic does not fall apart»
+    given text equals "привет"
+    expected "тевирп"
+  example «A character outside the BMP counts as one»
+    given text equals "аб🙂"
+    expected "🙂ба"
+  fold («Characters» of text) starting with "" as acc and letter → join letter with acc

@@ -27,6 +27,7 @@ import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
+import { связаноИмён, сверитьПоверхности } from "./surface-pair.mjs"
 
 const корень = fileURLToPath(new URL("../examples/rosetta/", import.meta.url))
 
@@ -40,21 +41,60 @@ const корень = fileURLToPath(new URL("../examples/rosetta/", import.meta.u
  */
 const ОЖИДАЕТСЯ = new Map([
   ["ackermann-function.flang", { функций: 3, тотальных: 1 }],
+  ["ackermann-function-english.flang", { функций: 3, тотальных: 1 }],
   ["factorial.flang", { функций: 5, тотальных: 3 }],
+  ["factorial-english.flang", { функций: 5, тотальных: 3 }],
   ["fibonacci.flang", { функций: 6, тотальных: 4 }],
+  ["fibonacci-english.flang", { функций: 6, тотальных: 4 }],
   ["fizzbuzz.flang", { функций: 5, тотальных: 3 }],
   ["fizzbuzz-english.flang", { функций: 5, тотальных: 3 }],
   ["hundred-doors.flang", { функций: 9, тотальных: 5 }],
+  ["hundred-doors-english.flang", { функций: 9, тотальных: 5 }],
   ["levenshtein-distance.flang", { функций: 7, тотальных: 7 }],
+  ["levenshtein-distance-english.flang", { функций: 7, тотальных: 7 }],
   ["merge-sort.flang", { функций: 8, тотальных: 8 }],
+  ["merge-sort-english.flang", { функций: 8, тотальных: 8 }],
   ["palindrome.flang", { функций: 14, тотальных: 14 }],
+  ["palindrome-english.flang", { функций: 14, тотальных: 14 }],
   ["quicksort.flang", { функций: 5, тотальных: 4 }],
+  ["quicksort-english.flang", { функций: 5, тотальных: 4 }],
   ["reverse-string.flang", { функций: 4, тотальных: 4 }],
+  ["reverse-string-english.flang", { функций: 4, тотальных: 4 }],
   ["roman-numerals.flang", { функций: 10, тотальных: 10 }],
+  ["roman-numerals-english.flang", { функций: 10, тотальных: 10 }],
   ["run-length-encoding.flang", { функций: 5, тотальных: 2 }],
+  ["run-length-encoding-english.flang", { функций: 5, тотальных: 2 }],
   ["primes-by-trial-division.flang", { функций: 6, тотальных: 2 }],
+  ["primes-by-trial-division-english.flang", { функций: 6, тотальных: 2 }],
   ["towers-of-hanoi.flang", { функций: 5, тотальных: 3 }],
+  ["towers-of-hanoi-english.flang", { функций: 5, тотальных: 3 }],
 ])
+
+/**
+ * Пары «русский листинг — английский»: на странице задачи стоят оба.
+ *
+ * Список задан руками, а не выведен из имени файла, ровно по той причине, по
+ * какой задана таблица выше: пара, потерянная опечаткой в имени, молча
+ * перестала бы проверяться, и на вики уехали бы два разных текста под видом
+ * одного. Ниже стоит и обратная проверка — что каждый `-english.flang` в
+ * каталоге попал в эту таблицу.
+ */
+const ПАРЫ = [
+  ["ackermann-function.flang", "ackermann-function-english.flang"],
+  ["factorial.flang", "factorial-english.flang"],
+  ["fibonacci.flang", "fibonacci-english.flang"],
+  ["fizzbuzz.flang", "fizzbuzz-english.flang"],
+  ["hundred-doors.flang", "hundred-doors-english.flang"],
+  ["levenshtein-distance.flang", "levenshtein-distance-english.flang"],
+  ["merge-sort.flang", "merge-sort-english.flang"],
+  ["palindrome.flang", "palindrome-english.flang"],
+  ["primes-by-trial-division.flang", "primes-by-trial-division-english.flang"],
+  ["quicksort.flang", "quicksort-english.flang"],
+  ["reverse-string.flang", "reverse-string-english.flang"],
+  ["roman-numerals.flang", "roman-numerals-english.flang"],
+  ["run-length-encoding.flang", "run-length-encoding-english.flang"],
+  ["towers-of-hanoi.flang", "towers-of-hanoi-english.flang"],
+]
 
 const файлы = globSync("*.flang", { cwd: корень }).sort()
 
@@ -107,3 +147,56 @@ for (const имя of файлы) {
     assert.ok(сошлось >= 5, `${имя}: примеров всего ${сошлось}`)
   })
 }
+
+/* ─────────────────────── две поверхности одной задачи ─────────────────────── */
+
+test("у каждого английского листинга есть пара в таблице", () => {
+  /* Файл `*-english.flang`, не попавший в ПАРЫ, не сверялся бы с русским вовсе:
+     он прошёл бы проверки выше сам по себе и разошёлся бы с оригиналом молча. */
+  const английские = файлы.filter((имя) => имя.endsWith("-english.flang")).sort()
+  assert.deepEqual(английские, ПАРЫ.map(([, английский]) => английский).sort())
+  for (const [русский, английский] of ПАРЫ) {
+    assert.ok(ОЖИДАЕТСЯ.has(русский), `${русский} нет в таблице границ`)
+    assert.ok(ОЖИДАЕТСЯ.has(английский), `${английский} нет в таблице границ`)
+  }
+})
+
+for (const [русский, английский] of ПАРЫ) {
+  test(`${русский} и ${английский} — одна программа, а не два похожих текста`, () => {
+    const первый = parse(readFileSync(new URL(русский, `file://${корень}`), "utf8"), русский)
+    const второй = parse(readFileSync(new URL(английский, `file://${корень}`), "utf8"), английский)
+
+    /* Главное: деревья совпадают с точностью до взаимно однозначного
+       переименования. Разбор поверхности не знает, и потому один и тот же
+       алгоритм на двух языках обязан дать одно и то же дерево. */
+    const словари = сверитьПоверхности(первый, второй)
+    assert.ok(связаноИмён(словари) > 0, "сверка не связала ни одного имени — она пустая")
+
+    /* И граница тотальности та же. Это следствие предыдущего, а не отдельный
+       факт, — но именно оно попадёт на вики словом `total`, поэтому пусть
+       ломается отдельным сообщением. */
+    const границаПервого = new Set(checkTotality(первый).total ?? [])
+    const границаВторого = new Set(checkTotality(второй).total ?? [])
+    assert.equal(первый.functions.length, второй.functions.length, "разное число функций")
+    assert.equal(
+      границаПервого.size,
+      границаВторого.size,
+      `доказанность разошлась: ${границаПервого.size} против ${границаВторого.size}`,
+    )
+  })
+}
+
+test("сверка поверхностей ловит расхождение, а не только совпадение", () => {
+  /* Проверка на проверку. Сверка, которая всё принимает, хуже отсутствующей:
+     она даёт уверенность, ничего не проверив. Поэтому здесь берётся настоящая
+     пара и в английский листинг вносится одна правка — та самая, какой
+     разъезжаются файлы при доработке одного из них. */
+  const русский = readFileSync(new URL("factorial.flang", `file://${корень}`), "utf8")
+  const английский = readFileSync(new URL("factorial-english.flang", `file://${корень}`), "utf8")
+  const испорченный = английский.replace("else n times («Factorial» of (n minus 1))", "else n times («Factorial» of (n minus 2))")
+  assert.notEqual(испорченный, английский, "правка не применилась — тест ничего не проверяет")
+  assert.throws(
+    () => сверитьПоверхности(parse(русский, "factorial.flang"), parse(испорченный, "порча")),
+    /1 ≠ 2/u,
+  )
+})

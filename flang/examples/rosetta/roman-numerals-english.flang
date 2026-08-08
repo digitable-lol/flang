@@ -1,0 +1,264 @@
+module «Roman numerals in English»
+
+// Rosetta Code — Roman numerals/Encode and Roman numerals/Decode, written on
+// the ENGLISH keyword surface. The same program as `roman-numerals.flang`,
+// keyword for keyword; the two trees are compared against each other by
+// `flang/test/rosetta.test.mjs`.
+//
+// Write a number in Roman numerals and read a Roman numeral back.
+//
+// Both tasks are in one module on purpose. Separately each is checked by
+// examples — «1990 gives MCMXC», «MCMXC gives 1990» — and that is exactly the
+// kind of check this project starts from: an example confirms a point, not a
+// rule. Together they give a CLAIM: writing and reading are inverse to each
+// other. It is written as the function «Round trip» and checked at the edges of
+// the range. Split the tasks into separate files and there would be nothing
+// left to check.
+//
+// ALL functions of the module are total, including both main ones. That is not
+// automatic: both writing and reading are usually written with a loop («while
+// the remainder is greater than zero»), and a loop over a number cannot be
+// proved in this language. Here there are none:
+//
+//   • writing goes by PLACES, of which there are exactly four, and each place
+//     is arithmetic without recursion; repeating a symbol (no more than three
+//     times) is a fold over the ready list [1, 2, 3];
+//   • reading goes over the LIST OF CHARACTERS produced by the built-in form
+//     `decompose … into characters`, and a fold over a ready list terminates by
+//     construction.
+//
+// The range is 1 to 3999, as in the task: classical notation does not cover
+// larger numbers without overbars.
+
+object «Roman parse»
+  «sum»: number
+  «maximum»: number
+
+// Repeating a symbol up to three times — a fold over the list [1, 2, 3]. That
+// list is enough because in Roman notation one symbol never stands more than
+// three times in a row. Writing this as recursion on «count minus 1» would be
+// more natural and would give FLANG_NOT_TOTAL: a number decreases, not a
+// structure.
+total function «Repeat symbol»
+  accepts symbol: string, count: number
+  returns string
+  example «Not once»
+    given symbol equals "I"
+    given count equals 0
+    expected ""
+  example «Three times»
+    given symbol equals "X"
+    given count equals 3
+    expected "XXX"
+  fold [1, 2, 3] starting with "" as acc and step
+    if step is at most count
+      then join acc with symbol
+      else acc
+
+// One digit of one place. Three symbols: the small one (I), the middle one (V)
+// and the small symbol of the NEXT place (X) — needed for the subtractive form
+// «nine». For hundreds these are C, D, M; for tens X, L, C; for units I, V, X.
+total function «Roman group»
+  accepts digit: number, small: string, middle: string, large: string
+  returns string
+  example «Zero is empty»
+    given digit equals 0
+    given small equals "I"
+    given middle equals "V"
+    given large equals "X"
+    expected ""
+  example «Three units»
+    given digit equals 3
+    given small equals "I"
+    given middle equals "V"
+    given large equals "X"
+    expected "III"
+  example «Four — subtraction»
+    given digit equals 4
+    given small equals "I"
+    given middle equals "V"
+    given large equals "X"
+    expected "IV"
+  example «Eight — a five and three»
+    given digit equals 8
+    given small equals "I"
+    given middle equals "V"
+    given large equals "X"
+    expected "VIII"
+  example «Nine — subtraction from the ten»
+    given digit equals 9
+    given small equals "X"
+    given middle equals "L"
+    given large equals "C"
+    expected "XC"
+  if digit equals 9
+    then join small with large
+    else
+      if digit equals 4
+        then join small with middle
+        else
+          if digit is at least 5
+            then join middle with («Repeat symbol» of small and (digit minus 5))
+            else «Repeat symbol» of small and digit
+
+// The digit of a place: the hundreds of 1990 are 9. The language has no integer
+// division, so the whole part is obtained by subtracting the remainder.
+total function «Digit of place»
+  accepts value: number, place: number
+  returns number
+  example «The hundreds of 1990»
+    given value equals 1990
+    given place equals 100
+    expected 9
+  example «The units of 1990»
+    given value equals 1990
+    given place equals 1
+    expected 0
+  example «The tens of 2008»
+    given value equals 2008
+    given place equals 10
+    expected 0
+  ((value minus (value modulo place)) divided by place) modulo 10
+
+total function «Thousands»
+  accepts value: number
+  returns number
+  example «2008 holds two thousands»
+    given value equals 2008
+    expected 2
+  example «999 holds none»
+    given value equals 999
+    expected 0
+  (value minus (value modulo 1000)) divided by 1000
+
+// The first task. Four places, not a single recursion — hence proved.
+total function «To Roman»
+  accepts value: number
+  returns string
+  example «1990 — from the task»
+    given value equals 1990
+    expected "MCMXC"
+  example «2008 — from the task»
+    given value equals 2008
+    expected "MMVIII"
+  example «1666 — from the task, every symbol once»
+    given value equals 1666
+    expected "MDCLXVI"
+  example «One»
+    given value equals 1
+    expected "I"
+  example «Four — subtraction»
+    given value equals 4
+    expected "IV"
+  example «3999 — the top of the range»
+    given value equals 3999
+    expected "MMMCMXCIX"
+  let thousands equals «Repeat symbol» of "M" and («Thousands» of value)
+  let hundreds equals «Roman group» of («Digit of place» of value and 100) and "C" and "D" and "M"
+  let tens equals «Roman group» of («Digit of place» of value and 10) and "X" and "L" and "C"
+  let ones equals «Roman group» of («Digit of place» of value and 1) and "I" and "V" and "X"
+  join (join (join thousands with hundreds) with tens) with ones
+
+total function «Value of a symbol»
+  accepts symbol: string
+  returns number
+  example «M»
+    given symbol equals "M"
+    expected 1000
+  example «I»
+    given symbol equals "I"
+    expected 1
+  example «Not a Roman symbol — zero»
+    given symbol equals "щ"
+    expected 0
+  if symbol equals "M"
+    then 1000
+    else
+      if symbol equals "D"
+        then 500
+        else
+          if symbol equals "C"
+            then 100
+            else
+              if symbol equals "L"
+                then 50
+                else
+                  if symbol equals "X"
+                    then 10
+                    else
+                      if symbol equals "V"
+                        then 5
+                        else
+                          if symbol equals "I" then 1 else 0
+
+total function «Prepend symbol»
+  accepts element: string, items: list of string
+  returns list of string
+  example «Into an empty list»
+    given element equals "I"
+    given items equals empty list
+    expected ["I"]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Reverse symbols»
+  accepts items: list of string
+  returns list of string
+  example «Three symbols»
+    given items equals ["I", "V", "X"]
+    expected ["X", "V", "I"]
+  fold items starting with empty list as acc and symbol → «Prepend symbol» of symbol and acc
+
+// The second task. It reads right to left: a symbol smaller than the maximum
+// already seen is subtracted (IV, IX, XL). The fold goes over a ready list of
+// characters, hence proved.
+//
+// A fold cannot look ahead, and that is exactly why the parse is turned around:
+// left to right one would have to know the next symbol, right to left only the
+// maximum already seen, and the fold carries that along.
+total function «From Roman»
+  accepts text: string
+  returns number
+  example «MCMXC — from the task»
+    given text equals "MCMXC"
+    expected 1990
+  example «MMVIII — from the task»
+    given text equals "MMVIII"
+    expected 2008
+  example «MDCLXVI — from the task»
+    given text equals "MDCLXVI"
+    expected 1666
+  example «MCMXCIX — three subtractions in a row»
+    given text equals "MCMXCIX"
+    expected 1999
+  example «An empty string — zero»
+    given text equals ""
+    expected 0
+  let parsed equals fold («Reverse symbols» of (decompose text into characters)) starting with (record «Roman parse» with «sum» equals 0 and «maximum» equals 0) as acc and symbol
+      let value equals «Value of a symbol» of symbol
+      if value is less than acc.«maximum»
+        then record «Roman parse» with «sum» equals (acc.«sum» minus value) and «maximum» equals acc.«maximum»
+        else record «Roman parse» with «sum» equals (acc.«sum» plus value) and «maximum» equals value
+  parsed.«sum»
+
+// A claim, not an example: writing and reading are inverse to each other.
+// Checked at the edges of the range and on numbers where every subtractive form
+// occurs.
+total function «Round trip»
+  accepts value: number
+  returns boolean
+  example «One»
+    given value equals 1
+    expected true
+  example «Four»
+    given value equals 4
+    expected true
+  example «1990»
+    given value equals 1990
+    expected true
+  example «1999 — three subtractions in a row»
+    given value equals 1999
+    expected true
+  example «3999 — the top edge»
+    given value equals 3999
+    expected true
+  («From Roman» of («To Roman» of value)) equals value

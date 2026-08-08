@@ -1,0 +1,96 @@
+module «Factorial in English»
+
+// Rosetta Code — Factorial, written on the ENGLISH keyword surface.
+//
+// The same program as `factorial.flang`, keyword for keyword. flang has TWO
+// equal surfaces — `тотальная функция` and `total function`, `свёртка … начиная
+// с` and `fold … starting with` — and both produce the same syntax tree. That
+// is not a claim about documentation: the table lives in `flang/src/lexer.mjs`,
+// and `flang/test/rosetta.test.mjs` compares the two trees of this very pair.
+//
+// n! = 1·2·…·n, with 0! = 1. The task asks for both a recursive and an
+// iterative version, and in flang the two differ by CLASS, not by style.
+//
+// The iterative one is a fold over [1..n]. A fold walks a list that already
+// exists, exactly once, so «Product» is total: termination is proved.
+//
+// The recursive one is «n times factorial of n−1». It is total too, but for a
+// different reason: what decreases is not structure but a NUMERIC MEASURE. The
+// step is constant (`minus 1`) and the guard `n is at most 1` pins n from
+// below; from those two facts the analysis bounds the calls by n−1.
+//
+// «Numbers from and to» stayed an ordinary function, and the difference is
+// instructive: it counts UP (`start plus 1`), the measure grows, and such a
+// chain has no floor — the end of the range is not a measure, because the
+// comparison is against a parameter rather than against a number.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into an empty list»
+    given element equals 1
+    given items equals empty list
+    expected [1]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Product»
+  accepts items: list of number
+  returns number
+  example «Product of four»
+    given items equals [1, 2, 3, 4]
+    expected 24
+  example «Product of the empty list is one»
+    given items equals empty list
+    expected 1
+  fold items starting with 1 as acc and elem → acc times elem
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — ordinary functions: recursion on a number.
+// ─────────────────────────────────────────────────────────────────────────
+
+function «Numbers from and to»
+  accepts start: number, finish: number
+  returns list of number
+  example «One to five»
+    given start equals 1
+    given finish equals 5
+    expected [1, 2, 3, 4, 5]
+  example «Empty range»
+    given start equals 1
+    given finish equals 0
+    expected empty list
+  if start is greater than finish
+    then empty list
+    else «Prepend» of start and («Numbers from and to» of (start plus 1) and finish)
+
+// The iterative version the task asks for: the product of a range.
+function «Factorial by product»
+  accepts n: number
+  returns number
+  example «Five factorial»
+    given n equals 5
+    expected 120
+  example «Zero factorial»
+    given n equals 0
+    expected 1
+  «Product» of («Numbers from and to» of 1 and n)
+
+// The recursive version the task asks for. Total by measure.
+total function «Factorial»
+  accepts n: number
+  returns number
+  example «Five factorial»
+    given n equals 5
+    expected 120
+  example «Ten factorial»
+    given n equals 10
+    expected 3628800
+  example «Zero factorial»
+    given n equals 0
+    expected 1
+  example «Twenty factorial is still exact in a double»
+    given n equals 20
+    expected 2432902008176640000
+  if n is at most 1
+    then 1
+    else n times («Factorial» of (n minus 1))

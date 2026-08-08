@@ -1,0 +1,175 @@
+module «100 doors in English»
+
+// Rosetta Code — 100 doors, written on the ENGLISH keyword surface. The same
+// program as `hundred-doors.flang`, keyword for keyword; the two trees are
+// compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// A hundred closed doors. On the first pass every door is touched, on the
+// second every second one, on the hundredth the hundredth. To touch is to
+// toggle. Which doors are left open?
+//
+// The answer is known: the doors whose numbers are perfect squares, because
+// divisors come in pairs and only a square has an unpaired one. Usually that is
+// written in a comment — here it is written as a FUNCTION and checked by an
+// example: «Doors and squares agree» computes both sides and compares the
+// lists. A claim about a task written in prose is bad precisely because it does
+// not break when it becomes false.
+//
+// Counting up to the limit is an ordinary function, for the same reason as in
+// `fizzbuzz.flang`: the termination analysis accepts decrease only by parts of
+// a value, and «n plus 1» is the result of arithmetic. Everything that walks an
+// ALREADY built list of numbers is proved: counting divisors, testing parity,
+// testing for a perfect square.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into an empty list»
+    given element equals 1
+    given items equals empty list
+    expected [1]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+// How many times a door was touched: as many times as its number has divisors
+// among the pass numbers. The list of passes arrives ready, so this is proved.
+total function «How many times touched»
+  accepts door: number, passes: list of number
+  returns number
+  example «Six has four divisors»
+    given door equals 6
+    given passes equals [1, 2, 3, 4, 5, 6]
+    expected 4
+  example «A prime has two divisors»
+    given door equals 7
+    given passes equals [1, 2, 3, 4, 5, 6, 7]
+    expected 2
+  fold passes starting with 0 as acc and pass
+    if (door modulo pass) equals 0
+      then acc plus 1
+      else acc
+
+// The door started closed, so it is left open on an odd number of toggles.
+total function «Door is open»
+  accepts door: number, passes: list of number
+  returns boolean
+  example «The fourth is open»
+    given door equals 4
+    given passes equals [1, 2, 3, 4]
+    expected true
+  example «The sixth is closed»
+    given door equals 6
+    given passes equals [1, 2, 3, 4, 5, 6]
+    expected false
+  example «The first is open — it was touched once»
+    given door equals 1
+    given passes equals [1]
+    expected true
+  ((«How many times touched» of door and passes) modulo 2) equals 1
+
+// A perfect square without taking a root: the language has no root, and a
+// search over an already built list is total.
+total function «Perfect square»
+  accepts value: number, candidates: list of number
+  returns boolean
+  example «Nine is a square»
+    given value equals 9
+    given candidates equals [1, 2, 3, 4]
+    expected true
+  example «Ten is not a square»
+    given value equals 10
+    given candidates equals [1, 2, 3, 4]
+    expected false
+  fold candidates starting with false as acc and root
+    if acc equals true
+      then true
+      else (root times root) equals value
+
+// Comparing two lists. The operator `equals` does not extend to lists —
+// FLANG_TYPE: «only scalars can be compared for equality». In examples the
+// comparison is structural, in an expression it is not, and that is worth
+// knowing in advance. The recursion goes along the tails of both lists, so it
+// is proved.
+total function «Lists agree»
+  accepts lefts: list of number, rights: list of number
+  returns boolean
+  example «They agree»
+    given lefts equals [1, 4, 9]
+    given rights equals [1, 4, 9]
+    expected true
+  example «Different values»
+    given lefts equals [1, 4]
+    given rights equals [1, 5]
+    expected false
+  example «Different lengths»
+    given lefts equals [1]
+    given rights equals [1, 4]
+    expected false
+  match lefts
+    case empty
+      match rights
+        case empty
+          then true
+        case head and tail
+          then false
+    case head hl and tail tl
+      match rights
+        case empty
+          then false
+        case head hr and tail tr
+          if hl equals hr
+            then «Lists agree» of tl and tr
+            else false
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — ordinary functions: everything that needs counting from 1 to a
+// limit.
+// ─────────────────────────────────────────────────────────────────────────
+
+function «Numbers from and to»
+  accepts start: number, finish: number
+  returns list of number
+  example «One to five»
+    given start equals 1
+    given finish equals 5
+    expected [1, 2, 3, 4, 5]
+  example «Empty range»
+    given start equals 5
+    given finish equals 1
+    expected empty list
+  if start is greater than finish
+    then empty list
+    else «Prepend» of start and («Numbers from and to» of (start plus 1) and finish)
+
+function «Open doors»
+  accepts doors: number
+  returns list of number
+  example «The task: one hundred doors»
+    given doors equals 100
+    expected [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+  example «Ten doors»
+    given doors equals 10
+    expected [1, 4, 9]
+  let numbers equals «Numbers from and to» of 1 and doors
+  filter numbers where door → «Door is open» of door and numbers
+
+function «Squares up to»
+  accepts limit: number
+  returns list of number
+  example «Squares up to one hundred»
+    given limit equals 100
+    expected [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+  let numbers equals «Numbers from and to» of 1 and limit
+  filter numbers where n → «Perfect square» of n and numbers
+
+// That very claim — not as prose but as a computation. The two sides are
+// computed in different ways: toggles on the left, squares on the right.
+function «Doors and squares agree»
+  accepts doors: number
+  returns boolean
+  example «They agree on one hundred doors»
+    given doors equals 100
+    expected true
+  example «And on twenty-five as well»
+    given doors equals 25
+    expected true
+  «Lists agree» of («Open doors» of doors) and («Squares up to» of doors)

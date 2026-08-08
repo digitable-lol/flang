@@ -1,0 +1,170 @@
+module «Merge sort in English»
+
+// Rosetta Code — Sorting algorithms/Merge sort, written on the ENGLISH keyword
+// surface. The same program as `merge-sort.flang`, keyword for keyword; the two
+// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// Split the list in half, sort the halves, merge them.
+//
+// Total throughout — and this is perhaps the most interesting solution in the
+// set, because neither of its two parts can be proved directly.
+//
+// Merging. The classical merge recurses now on the first list, now on the
+// second. The termination analysis demands ONE argument position that decreases
+// on EVERY recursive call (`totality.mjs` explains why the rule «every call
+// decreases somewhere» is wrong: two functions can shrink different arguments
+// in turn and grow together forever). A merge has two such positions, so
+// directly — FLANG_NOT_TOTAL.
+//
+// Splitting. Half of a list is not a structural part of it: «Take first» builds
+// a new list, and about a built value the analysis knows nothing. Again
+// FLANG_NOT_TOTAL.
+//
+// The common cure for both is fuel: alongside the real arguments travels a list
+// whose tail is taken at every step. It decreases structurally, so the recursion
+// is provably finite, and the algorithm itself guarantees that the fuel
+// suffices:
+//
+//   a merge takes exactly as many steps as there are items in total — the fuel
+//   is the concatenation of both lists;
+//   a split recurses log₂n deep and is given n — with room to spare.
+//
+// The trick is honest: the length of the fuel is a genuine upper bound on the
+// number of steps, and the proof rests on it rather than dodging it. But it is
+// a trick, and it shows what the language lacks: decrease by measure.
+//
+// The direct, readable, but ordinary sort is in the neighbouring
+// `quicksort.flang` — together the two files show the choice the language
+// leaves to the author.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into a non-empty list»
+    given element equals 1
+    given items equals [2, 3]
+    expected [1, 2, 3]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Concatenate lists»
+  accepts left: list of number, right: list of number
+  returns list of number
+  example «Two non-empty lists»
+    given left equals [1, 2]
+    given right equals [3]
+    expected [1, 2, 3]
+  fold right starting with left as acc and elem → add elem to acc
+
+total function «Take first»
+  accepts items: list of number, count: number
+  returns list of number
+  example «Take two»
+    given items equals [1, 2, 3, 4]
+    given count equals 2
+    expected [1, 2]
+  match items
+    case empty
+      then empty list
+    case head and tail
+      if count is at most 0
+        then empty list
+        else «Prepend» of head and («Take first» of tail and (count minus 1))
+
+total function «Drop first»
+  accepts items: list of number, count: number
+  returns list of number
+  example «Drop two»
+    given items equals [1, 2, 3, 4]
+    given count equals 2
+    expected [3, 4]
+  match items
+    case empty
+      then empty list
+    case head and tail
+      if count is at most 0
+        then items
+        else «Drop first» of tail and (count minus 1)
+
+// Merging with fuel. The decreasing position is the first one, the fuel, and it
+// decreases on both recursive calls; the real lists meanwhile shrink in turn,
+// as a merge should. Complexity O(n+m).
+total function «Merge with fuel»
+  accepts fuel: list of number, left: list of number, right: list of number
+  returns list of number
+  example «The fuel suffices»
+    given fuel equals [0, 0, 0, 0]
+    given left equals [1, 3]
+    given right equals [2, 4]
+    expected [1, 2, 3, 4]
+  match fuel
+    case empty
+      then «Concatenate lists» of left and right
+    case head f and tail rf
+      match left
+        case empty
+          then right
+        case head hl and tail tl
+          match right
+            case empty
+              then left
+            case head hr and tail tr
+              if hl is at most hr
+                then «Prepend» of hl and («Merge with fuel» of rf and tl and right)
+                else «Prepend» of hr and («Merge with fuel» of rf and left and tr)
+
+total function «Merge»
+  accepts left: list of number, right: list of number
+  returns list of number
+  example «Two sorted lists»
+    given left equals [1, 3, 5]
+    given right equals [2, 4, 6]
+    expected [1, 2, 3, 4, 5, 6]
+  example «One of them is empty»
+    given left equals empty list
+    given right equals [2, 4]
+    expected [2, 4]
+  «Merge with fuel» of («Concatenate lists» of left and right) and left and right
+
+// Splitting with fuel. Here log₂n of fuel is needed and n is given — the slack
+// is deliberate: computing the exact bound would be more correct but would
+// require a logarithm, which the language does not have, and an overestimate
+// does the proof no harm.
+total function «Merge sort with fuel»
+  accepts fuel: list of number, items: list of number
+  returns list of number
+  example «The fuel suffices»
+    given fuel equals [0, 0, 0, 0]
+    given items equals [4, 2, 3, 1]
+    expected [1, 2, 3, 4]
+  match fuel
+    case empty
+      then items
+    case head f and tail rf
+      let count equals length items
+      if count is at most 1
+        then items
+        else
+          let half equals (count minus (count modulo 2)) divided by 2
+          let left equals «Merge sort with fuel» of rf and («Take first» of items and half)
+          let right equals «Merge sort with fuel» of rf and («Drop first» of items and half)
+          «Merge» of left and right
+
+total function «Merge sort»
+  accepts items: list of number
+  returns list of number
+  example «A shuffled list»
+    given items equals [4, 65, 2, -31, 0, 99, 2, 83, 782, 1]
+    expected [-31, 0, 1, 2, 2, 4, 65, 83, 99, 782]
+  example «Empty list»
+    given items equals empty list
+    expected empty list
+  example «One item»
+    given items equals [7]
+    expected [7]
+  example «Stable under duplicates»
+    given items equals [5, 1, 5, 1, 5]
+    expected [1, 1, 5, 5, 5]
+  example «Already sorted»
+    given items equals [1, 2, 3, 4, 5, 6, 7, 8]
+    expected [1, 2, 3, 4, 5, 6, 7, 8]
+  «Merge sort with fuel» of items and items

@@ -38,23 +38,37 @@ const КАТАЛОГ = fileURLToPath(new URL("../flang/examples/rosetta/", impor
  * Соответствие «страница задачи → файл решения». Имена страниц взяты с самого
  * сайта и обязаны совпадать посимвольно: Rosetta Code различает регистр после
  * первой буквы, и «Sorting algorithms/Quicksort» — не то же, что «/QuickSort».
+ *
+ * У каждой задачи есть `ещё` — та же программа на английской поверхности.
+ * Причина не в вежливости к читателю, а в том, что он увидит без второго
+ * листинга: страницу, набранную словами, которых он не знает, и вывод, что
+ * язык ему недоступен. Русская запись — это ВЫБОР, а не ограничение, и
+ * показать это можно только двумя листингами рядом.
+ *
+ * Что оба листинга суть одна программа, проверено не глазами: сверкой деревьев
+ * в `flang/test/rosetta.test.mjs` (см. `flang/test/surface-pair.mjs`). Без неё
+ * правка одного файла молча разошлась бы со вторым, и на вики уехали бы две
+ * разные программы под видом одной.
+ *
+ * Римские числа стоят дважды — Encode и Decode решает один файл, и английская
+ * пара у них тоже одна.
  */
 const ЗАДАЧИ = [
   { страница: "FizzBuzz", файл: "fizzbuzz.flang", ещё: "fizzbuzz-english.flang" },
-  { страница: "Fibonacci sequence", файл: "fibonacci.flang" },
-  { страница: "Factorial", файл: "factorial.flang" },
-  { страница: "Towers of Hanoi", файл: "towers-of-hanoi.flang" },
-  { страница: "100 doors", файл: "hundred-doors.flang" },
-  { страница: "Roman numerals/Encode", файл: "roman-numerals.flang" },
-  { страница: "Roman numerals/Decode", файл: "roman-numerals.flang" },
-  { страница: "Run-length encoding", файл: "run-length-encoding.flang" },
-  { страница: "Levenshtein distance", файл: "levenshtein-distance.flang" },
-  { страница: "Sequence of primes by trial division", файл: "primes-by-trial-division.flang" },
-  { страница: "Sorting algorithms/Quicksort", файл: "quicksort.flang" },
-  { страница: "Sorting algorithms/Merge sort", файл: "merge-sort.flang" },
-  { страница: "Reverse a string", файл: "reverse-string.flang" },
-  { страница: "Palindrome detection", файл: "palindrome.flang" },
-  { страница: "Ackermann function", файл: "ackermann-function.flang" },
+  { страница: "Fibonacci sequence", файл: "fibonacci.flang", ещё: "fibonacci-english.flang" },
+  { страница: "Factorial", файл: "factorial.flang", ещё: "factorial-english.flang" },
+  { страница: "Towers of Hanoi", файл: "towers-of-hanoi.flang", ещё: "towers-of-hanoi-english.flang" },
+  { страница: "100 doors", файл: "hundred-doors.flang", ещё: "hundred-doors-english.flang" },
+  { страница: "Roman numerals/Encode", файл: "roman-numerals.flang", ещё: "roman-numerals-english.flang" },
+  { страница: "Roman numerals/Decode", файл: "roman-numerals.flang", ещё: "roman-numerals-english.flang" },
+  { страница: "Run-length encoding", файл: "run-length-encoding.flang", ещё: "run-length-encoding-english.flang" },
+  { страница: "Levenshtein distance", файл: "levenshtein-distance.flang", ещё: "levenshtein-distance-english.flang" },
+  { страница: "Sequence of primes by trial division", файл: "primes-by-trial-division.flang", ещё: "primes-by-trial-division-english.flang" },
+  { страница: "Sorting algorithms/Quicksort", файл: "quicksort.flang", ещё: "quicksort-english.flang" },
+  { страница: "Sorting algorithms/Merge sort", файл: "merge-sort.flang", ещё: "merge-sort-english.flang" },
+  { страница: "Reverse a string", файл: "reverse-string.flang", ещё: "reverse-string-english.flang" },
+  { страница: "Palindrome detection", файл: "palindrome.flang", ещё: "palindrome-english.flang" },
+  { страница: "Ackermann function", файл: "ackermann-function.flang", ещё: "ackermann-function-english.flang" },
 ]
 
 /**

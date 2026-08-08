@@ -1,0 +1,136 @@
+module «Run-length encoding in English»
+
+// Rosetta Code — Run-length encoding, written on the ENGLISH keyword surface.
+// The same program as `run-length-encoding.flang`, keyword for keyword; the two
+// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// Compress a string by replacing a run of equal characters with «how many» and
+// the character itself; and expand it back.
+//
+// What is interesting here is not the task but the DIFFERENCE between its two
+// halves.
+//
+// «Encode» is total. It walks the list of characters produced by the built-in
+// form `decompose … into characters`, and a fold over a list that already
+// exists terminates by construction. There is no counter in the control flow:
+// there is a counter, but it sits in the accumulator and does not decide how
+// many turns are left.
+//
+// «Decode» is ordinary. And the reason is not laziness: expanding MUST repeat a
+// character as many times as the number says, and «as many as the number says»
+// is an arbitrary number read from the input. Repeating n times can only be
+// done by recursing on «n minus 1», and the termination analysis does not
+// accept a decreasing number. There is nowhere to get a list of the right
+// length: to obtain one you would have to count up to n.
+//
+// Compare with `roman-numerals.flang`, where BOTH sides are proved: there the
+// repetition is bounded by three, and instead of counting there is a fold over
+// the ready list [1, 2, 3]. The difference between the two files is neither
+// skill nor luck — it is whether the repetition has a bound known in advance.
+// That is the real content of the word «total»: not «the program is good» but
+// «the bound is named».
+
+object «Packing»
+  «done»: string
+  «symbol»: string
+  «count»: number
+
+object «Unpacking»
+  «done»: string
+  «count»: number
+
+// One group: «3W». An empty group appears at the start of the fold, when there
+// was no previous character yet.
+total function «Group»
+  accepts symbol: string, count: number
+  returns string
+  example «Three W»
+    given symbol equals "W"
+    given count equals 3
+    expected "3W"
+  example «A zero count is empty»
+    given symbol equals ""
+    given count equals 0
+    expected ""
+  if count equals 0
+    then ""
+    else join (to text count) with symbol
+
+// The first half of the task. Proved.
+total function «Encode»
+  accepts text: string
+  returns string
+  example «The string from the task»
+    given text equals "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW"
+    expected "12W1B12W3B24W1B14W"
+  example «Single characters»
+    given text equals "abc"
+    expected "1a1b1c"
+  example «Empty string»
+    given text equals ""
+    expected ""
+  example «One character»
+    given text equals "A"
+    expected "1A"
+  let outcome equals fold (decompose text into characters) starting with (record «Packing» with «done» equals "" and «symbol» equals "" and «count» equals 0) as acc and symbol
+      if symbol equals acc.«symbol»
+        then record «Packing» with «done» equals acc.«done» and «symbol» equals acc.«symbol» and «count» equals (acc.«count» plus 1)
+        else record «Packing» with «done» equals (join acc.«done» with («Group» of acc.«symbol» and acc.«count»)) and «symbol» equals symbol and «count» equals 1
+  join outcome.«done» with («Group» of outcome.«symbol» and outcome.«count»)
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — ordinary functions: repetition by a number that has no bound.
+// ─────────────────────────────────────────────────────────────────────────
+
+function «Repeat symbol»
+  accepts symbol: string, count: number
+  returns string
+  example «Three times»
+    given symbol equals "W"
+    given count equals 3
+    expected "WWW"
+  example «Not once»
+    given symbol equals "W"
+    given count equals 0
+    expected ""
+  if count is at most 0
+    then ""
+    else join symbol with («Repeat symbol» of symbol and (count minus 1))
+
+// The second half of the task. Digits pile up in the accumulator, a letter
+// spends them. `to number` is safe here: a string is turned into a number only
+// after the check «this is a digit» — there is nothing in the language to catch
+// the failure of a built-in form.
+function «Decode»
+  accepts text: string
+  returns string
+  example «The string from the task»
+    given text equals "12W1B12W3B24W1B14W"
+    expected "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW"
+  example «Single characters»
+    given text equals "1a1b1c"
+    expected "abc"
+  example «Empty string»
+    given text equals ""
+    expected ""
+  let outcome equals fold (decompose text into characters) starting with (record «Unpacking» with «done» equals "" and «count» equals 0) as acc and symbol
+      if "0123456789" contains symbol
+        then record «Unpacking» with «done» equals acc.«done» and «count» equals ((acc.«count» times 10) plus (to number symbol))
+        else record «Unpacking» with «done» equals (join acc.«done» with («Repeat symbol» of symbol and acc.«count»)) and «count» equals 0
+  outcome.«done»
+
+// A claim: encoding and decoding are inverse to each other. Ordinary — because
+// it calls «Decode»; a function is no more total than what it calls.
+function «Round trip»
+  accepts text: string
+  returns boolean
+  example «The string from the task»
+    given text equals "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW"
+    expected true
+  example «No runs at all»
+    given text equals "abcdef"
+    expected true
+  example «Empty string»
+    given text equals ""
+    expected true
+  («Decode» of («Encode» of text)) equals text

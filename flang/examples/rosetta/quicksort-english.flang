@@ -1,0 +1,114 @@
+module «Quicksort in English»
+
+// Rosetta Code — Sorting algorithms/Quicksort, written on the ENGLISH keyword
+// surface. The same program as `quicksort.flang`, keyword for keyword; the two
+// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// Take a pivot, split the rest into smaller and not-smaller, sort both parts,
+// glue them back together.
+//
+// An ordinary function, and the reason is visible in the body. The recursion
+// receives not the tail of a list but the result of `filter` — a new list built
+// by computation. The termination analysis tracks the provenance of a value
+// («which parameter is this a part of»), and provenance is lost on everything
+// that is built: a list literal, `add … to …`, a variant constructor, the
+// result of any call. A filtered list is a built value, so nothing is known
+// about its size, so FLANG_NOT_TOTAL.
+//
+// Note: it is not that there is no decrease. There is one — the pivot is gone
+// and both parts are shorter. It is just a decrease by MEASURE (length), and
+// the analysis only knows decrease by STRUCTURE. That is exactly the difference
+// between «terminates» and «is proved to terminate».
+//
+// There is a way around it: carry «fuel» alongside the real arguments — a list
+// whose tail is taken at every step. That is how merge sort is written in the
+// neighbouring `merge-sort.flang`, and it is total throughout. Here there is
+// deliberately no fuel: the Rosetta Code task is about the algorithm, and the
+// reader should see quicksort, not the bookkeeping around it.
+//
+// A total sort with no tricks at all also exists in the language — insertion
+// sort: it recurses exactly on the tail, and the compiler proves it at once.
+// It is below, for comparison.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into a non-empty list»
+    given element equals 1
+    given items equals [2, 3]
+    expected [1, 2, 3]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Concatenate lists»
+  accepts left: list of number, right: list of number
+  returns list of number
+  example «Two non-empty lists»
+    given left equals [1, 2]
+    given right equals [3]
+    expected [1, 2, 3]
+  fold right starting with left as acc and elem → add elem to acc
+
+// Insertion sort — total. The recursion goes along the tail of the second
+// argument, that is along a genuine structural part of the value, and it is
+// proved without a single extra parameter. The price is O(n²).
+total function «Insert in order»
+  accepts value: number, items: list of number
+  returns list of number
+  example «Into the middle»
+    given value equals 2
+    given items equals [1, 3]
+    expected [1, 2, 3]
+  example «Into an empty list»
+    given value equals 2
+    given items equals empty list
+    expected [2]
+  match items
+    case empty
+      then [value]
+    case head and tail
+      if value is at most head
+        then «Prepend» of value and items
+        else «Prepend» of head and («Insert in order» of value and tail)
+
+total function «Insertion sort»
+  accepts items: list of number
+  returns list of number
+  example «Reverse order»
+    given items equals [5, 4, 3, 2, 1]
+    expected [1, 2, 3, 4, 5]
+  example «Empty list»
+    given items equals empty list
+    expected empty list
+  fold items starting with empty list as acc and elem → «Insert in order» of elem and acc
+
+// ─────────────────────────────────────────────────────────────────────────
+// Quicksort. Ordinary — for the reason in the module header.
+// ─────────────────────────────────────────────────────────────────────────
+
+function «Quicksort»
+  accepts items: list of number
+  returns list of number
+  example «A shuffled list»
+    given items equals [4, 65, 2, -31, 0, 99, 2, 83, 782, 1]
+    expected [-31, 0, 1, 2, 2, 4, 65, 83, 99, 782]
+  example «Empty list»
+    given items equals empty list
+    expected empty list
+  example «One item»
+    given items equals [7]
+    expected [7]
+  example «All duplicates»
+    given items equals [3, 3, 3]
+    expected [3, 3, 3]
+  example «Already sorted — the worst case for the head as pivot»
+    given items equals [1, 2, 3, 4, 5, 6]
+    expected [1, 2, 3, 4, 5, 6]
+  match items
+    case empty
+      then empty list
+    case head pivot and tail rest
+      let smaller equals filter rest where elem → elem is less than pivot
+      let larger equals filter rest where elem → elem is at least pivot
+      let left equals «Quicksort» of smaller
+      let right equals «Quicksort» of larger
+      «Concatenate lists» of left and («Prepend» of pivot and right)

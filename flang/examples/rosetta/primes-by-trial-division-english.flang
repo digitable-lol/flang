@@ -1,0 +1,141 @@
+module «Primes by trial division in English»
+
+// Rosetta Code — Sequence of primes by trial division, written on the ENGLISH
+// keyword surface. The same program as `primes-by-trial-division.flang`,
+// keyword for keyword; the two trees are compared against each other by
+// `flang/test/rosetta.test.mjs`.
+//
+// Primes up to a limit: take the first number left, declare it prime, throw
+// away everything divisible by it, repeat.
+//
+// ── Why NOT «Sieve of Eratosthenes» ───────────────────────────────────────
+// It is tempting to put this very program on the Sieve of Eratosthenes page,
+// and that would be untrue. A genuine sieve CROSSES OUT multiples, stepping
+// through an array by p; here every remaining number is divided by p with a
+// remainder, that is, trial division. The difference was analysed by Melissa E.
+// O'Neill, «The Genuine Sieve of Eratosthenes», Journal of Functional
+// Programming 19(1):95–106, 2009 (doi:10.1017/S0956796808007004).
+//
+// A genuine sieve needs an array with indexed writes, and the language has none.
+// So this program belongs on «Sequence of primes by trial division», where the
+// task explicitly allows «filtering operation, or a sieving operation».
+//
+// ── What the language shows here ──────────────────────────────────────────
+// The same algorithm is written TWICE, and the difference between the two
+// versions is the most instructive thing in the file.
+//
+// «Sift» is written the way such a thing is written everywhere: recursion on
+// the filtered remainder. The compiler answers FLANG_NOT_TOTAL, and it is right
+// literally: a filtered list is a BUILT value, and about a built value the
+// analysis knows nothing. There is a decrease here — by MEASURE (length) — and
+// the analysis can only do STRUCTURE.
+//
+// «Sift with fuel» is the same algorithm with one extra parameter. Fuel is a
+// list whose tail is taken at every turn; there are certainly no more turns
+// than there are numbers in the original list, so the fuel suffices, and the
+// tail of a list is something the analysis accepts. The same computation — and
+// a proved termination.
+//
+// The price of the trick is visible at once: fuel litters the signature. It
+// means nothing for the task and everything for the proof. Showing both
+// versions side by side is more honest than choosing one: the first is how the
+// task is solved, the second is what the proof costs.
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into an empty list»
+    given element equals 2
+    given items equals empty list
+    expected [2]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+// The same algorithm — with fuel. Proved.
+total function «Sift with fuel»
+  accepts fuel: list of number, candidates: list of number
+  returns list of number
+  example «Candidates up to thirty»
+    given fuel equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+  example «No candidates at all»
+    given fuel equals [1]
+    given candidates equals empty list
+    expected empty list
+  match fuel
+    case empty
+      then empty list
+    case head drop and tail onward
+      match candidates
+        case empty
+          then empty list
+        case head prime and tail others
+          let sifted equals filter others where n → (n modulo prime) is not equal to 0
+          «Prepend» of prime and («Sift with fuel» of onward and sifted)
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — ordinary functions.
+// ─────────────────────────────────────────────────────────────────────────
+
+// The same algorithm without fuel — the way it is actually written.
+// FLANG_NOT_TOTAL: the recursion receives the result of `filter`, not the tail
+// of its own argument.
+function «Sift»
+  accepts candidates: list of number
+  returns list of number
+  example «Candidates up to thirty»
+    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+  example «Empty list»
+    given candidates equals empty list
+    expected empty list
+  match candidates
+    case empty
+      then empty list
+    case head prime and tail others
+      let sifted equals filter others where n → (n modulo prime) is not equal to 0
+      «Prepend» of prime and («Sift» of sifted)
+
+function «Numbers from and to»
+  accepts start: number, finish: number
+  returns list of number
+  example «Two to ten»
+    given start equals 2
+    given finish equals 10
+    expected [2, 3, 4, 5, 6, 7, 8, 9, 10]
+  example «Empty range»
+    given start equals 5
+    given finish equals 1
+    expected empty list
+  if start is greater than finish
+    then empty list
+    else «Prepend» of start and («Numbers from and to» of (start plus 1) and finish)
+
+// The task.
+function «Primes up to»
+  accepts limit: number
+  returns list of number
+  example «Up to thirty»
+    given limit equals 30
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+  example «Up to one hundred»
+    given limit equals 100
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+  example «Up to one — none at all»
+    given limit equals 1
+    expected empty list
+  «Sift» of («Numbers from and to» of 2 and limit)
+
+// The same through the proved half. The fuel is the candidate list itself:
+// there are no more turns of the sieve than there are numbers in it.
+function «Primes up to, with fuel»
+  accepts limit: number
+  returns list of number
+  example «Up to thirty»
+    given limit equals 30
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+  example «Up to one hundred»
+    given limit equals 100
+    expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+  let candidates equals «Numbers from and to» of 2 and limit
+  «Sift with fuel» of candidates and candidates

@@ -1,0 +1,145 @@
+module «Towers of Hanoi in English»
+
+// Rosetta Code — Towers of Hanoi, written on the ENGLISH keyword surface. The
+// same program as `towers-of-hanoi.flang`, keyword for keyword; the two trees
+// are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// Move a tower of n disks from one peg to another using a third; one disk at a
+// time, and a larger disk may never rest on a smaller one.
+//
+// The task is interesting here for exactly one thing: it is usually written as
+// recursion on the NUMBER of disks, and then it cannot be proved in this
+// language — «n minus 1» is the result of arithmetic, not a part of a value.
+// But a tower is not a number, it is a stack. Write it as a list and the
+// recursion goes along the TAIL: lift the upper disks, move the bottom one, put
+// the upper ones back. The tail of a list is something the termination analysis
+// accepts, and «Move tower» is proved entirely, without a single extra
+// parameter and without fuel.
+//
+// This is the general technique of the language rather than a trick for one
+// task: where one usually counts «how many are left», here one keeps what is
+// left itself.
+//
+// The list runs BOTTOM UP: the head is the largest disk resting on the peg, the
+// tail is the stack above it. Otherwise the recursion would go along the wrong
+// part.
+//
+// One function stayed non-total — «Tower of», which builds the list [n … 1]
+// from the number n. It counts from n down to 1, that is, it runs into the same
+// boundary as «Numbers from and to» in `fizzbuzz.flang`. The task requires it
+// (the input is a number of disks), and hiding that would be dishonest.
+
+object «Move»
+  «disk»: number
+  «source»: string
+  «target»: string
+
+total function «Concatenate moves»
+  accepts lefts: list of «Move», rights: list of «Move»
+  returns list of «Move»
+  example «Empty on the left»
+    given lefts equals empty list
+    given rights equals [record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"]
+
+    expected [record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"]
+
+  example «Empty on the right»
+    given lefts equals [record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"]
+
+    given rights equals empty list
+    expected [record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"]
+
+  fold rights starting with lefts as acc and move → add move to acc
+
+// The solution itself. The head of the list is the bottom, largest disk; the
+// tail is everything standing on it. The recursion receives the tail, so
+// termination is proved.
+total function «Move tower»
+  accepts disks: list of number, source: string, target: string, spare: string
+  returns list of «Move»
+  example «An empty tower — not a single move»
+    given disks equals empty list
+    given source equals "A"
+    given target equals "C"
+    given spare equals "B"
+    expected empty list
+  example «One disk — one move»
+    given disks equals [1]
+    given source equals "A"
+    given target equals "C"
+    given spare equals "B"
+    expected [record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"]
+
+  example «Two disks — three moves»
+    given disks equals [2, 1]
+    given source equals "A"
+    given target equals "C"
+    given spare equals "B"
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "C")]
+  example «Three disks — the canonical seven moves»
+    given disks equals [3, 2, 1]
+    given source equals "A"
+    given target equals "C"
+    given spare equals "B"
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
+  match disks
+    case empty
+      then empty list
+    case head bottom and tail upper
+      let lift equals «Move tower» of upper and source and spare and target
+      let shift equals [record «Move» with «disk» equals bottom and «source» equals source and «target» equals target]
+
+      let restore equals «Move tower» of upper and spare and target and source
+      «Concatenate moves» of («Concatenate moves» of lift and shift) and restore
+
+// The number of moves without building the moves themselves: 2·k + 1 along the
+// tail. Proved as well, and it is a handy check — it must agree with the length
+// of the list of moves.
+total function «Number of moves»
+  accepts disks: list of number
+  returns number
+  example «An empty tower»
+    given disks equals empty list
+    expected 0
+  example «Three disks»
+    given disks equals [3, 2, 1]
+    expected 7
+  example «Five disks»
+    given disks equals [5, 4, 3, 2, 1]
+    expected 31
+  match disks
+    case empty
+      then 0
+    case head and tail
+      then (2 times («Number of moves» of tail)) plus 1
+
+// ─────────────────────────────────────────────────────────────────────────
+// Below — an ordinary function: counting by number rather than by structure.
+// ─────────────────────────────────────────────────────────────────────────
+
+// A tower of n disks: [n, n−1, …, 1], bottom up. Recursion on a number, hence
+// FLANG_NOT_TOTAL — the same boundary as «Numbers from and to» in
+// `fizzbuzz.flang`.
+function «Tower of»
+  accepts count: number
+  returns list of number
+  example «No disks»
+    given count equals 0
+    expected empty list
+  example «Three disks, bottom up»
+    given count equals 3
+    expected [3, 2, 1]
+  if count is at most 0
+    then empty list
+    else
+      let upper equals «Tower of» of (count minus 1)
+      fold upper starting with [count] as acc and disk → add disk to acc
+
+// The whole task: given a number of disks, give the list of moves.
+function «Towers of Hanoi»
+  accepts disks: number
+  returns list of «Move»
+  example «The task: three disks»
+    given disks equals 3
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
+  «Move tower» of («Tower of» of disks) and "A" and "C" and "B"

@@ -1,0 +1,175 @@
+module «Levenshtein distance in English»
+
+// Rosetta Code — Levenshtein distance, written on the ENGLISH keyword surface.
+// The same program as `levenshtein-distance.flang`, keyword for keyword; the
+// two trees are compared against each other by `flang/test/rosetta.test.mjs`.
+//
+// The least number of insertions, deletions and substitutions turning one
+// string into another. «kitten» → «sitting» costs three.
+//
+// The task was chosen deliberately: this is dynamic programming, that is,
+// exactly the class about which the list of the language's shortcomings says
+// literally «heaps, DP tables and two-dimensional grids break on this». A table
+// with random access does not exist in the language, and there is nothing to
+// replace it with. But Levenshtein does not need the WHOLE table: every row is
+// computed from the previous one, and only one has to be kept.
+//
+// And one row is a list. The language has lists, and a list has a tail. So the
+// whole solution is proved total, including the walk over both strings:
+//
+//   • the outer pass goes over the characters of the first string — a fold over
+//     a ready list produced by `decompose … into characters`;
+//   • the inner pass goes over the characters of the second string — recursion
+//     on the TAIL of that list, not on an index.
+//
+// The price is named honestly and it is real: every cell needs three
+// neighbours — left, above and diagonal. «Left» is carried as an argument,
+// «above» and «diagonal» are taken as the head and the second head of the
+// previous row. Because of that the previous row must be exactly one longer
+// than the remaining letters, and this is an invariant held by construction
+// rather than by a check: the language cannot express it. Break it and «head»
+// of an empty list will stop the computation, with nothing to catch it.
+
+object «Step»
+  «row»: list of number
+  «index»: number
+
+total function «Prepend»
+  accepts element: number, items: list of number
+  returns list of number
+  example «Into an empty list»
+    given element equals 1
+    given items equals empty list
+    expected [1]
+  example «Into a non-empty list»
+    given element equals 0
+    given items equals [1, 2]
+    expected [0, 1, 2]
+  fold items starting with [element] as acc and elem → add elem to acc
+
+total function «Minimum of three»
+  accepts one: number, two: number, three: number
+  returns number
+  example «The first is smaller»
+    given one equals 1
+    given two equals 2
+    given three equals 3
+    expected 1
+  example «The third is smaller»
+    given one equals 5
+    given two equals 4
+    given three equals 2
+    expected 2
+  let smaller equals if one is less than two then one else two
+  if smaller is less than three then smaller else three
+
+total function «Last»
+  accepts items: list of number
+  returns number
+  example «Three items»
+    given items equals [7, 8, 9]
+    expected 9
+  example «An empty list gives zero»
+    given items equals empty list
+    expected 0
+  fold items starting with 0 as acc and elem → elem
+
+// The zeroth row of the table: [0, 1, 2, … m]. Built by a fold over the letters
+// of the second string — not by counting up to m, hence proved.
+total function «Zero row»
+  accepts letters: list of string
+  returns list of number
+  example «Three letters»
+    given letters equals ["a", "b", "c"]
+    expected [0, 1, 2, 3]
+  example «An empty string»
+    given letters equals empty list
+    expected [0]
+  fold letters starting with [0] as acc and letter → add (length acc) to acc
+
+// The tail of the next row. `left` is the cell to the left, already computed;
+// `previous` is the previous row starting at the diagonal neighbour. The
+// recursion receives the tail of the list of letters, so termination is proved.
+total function «Onward along the row»
+  accepts left: number, previous: list of number, letters: list of string, letter: string
+  returns list of number
+  example «The letters ran out»
+    given left equals 1
+    given previous equals [0, 1]
+    given letters equals empty list
+    given letter equals "a"
+    expected empty list
+  example «One letter, a match»
+    given left equals 1
+    given previous equals [0, 1]
+    given letters equals ["a"]
+    given letter equals "a"
+    expected [0]
+  example «One letter, a substitution»
+    given left equals 1
+    given previous equals [0, 1]
+    given letters equals ["b"]
+    given letter equals "a"
+    expected [1]
+  match letters
+    case empty
+      then empty list
+    case head this and tail rest
+      let diagonal equals head previous
+      let above equals head (tail previous)
+      let cost equals if letter equals this then 0 else 1
+      let cell equals «Minimum of three» of (left plus 1) and (above plus 1) and (diagonal plus cost)
+      «Prepend» of cell and («Onward along the row» of cell and (tail previous) and rest and letter)
+
+total function «New row»
+  accepts previous: list of number, letter: string, letters: list of string, index: number
+  returns list of number
+  example «The first row for a against ab»
+    given previous equals [0, 1, 2]
+    given letter equals "a"
+    given letters equals ["a", "b"]
+    given index equals 1
+    expected [1, 0, 1]
+  «Prepend» of index and («Onward along the row» of index and previous and letters and letter)
+
+// The task. Proved total throughout.
+total function «Distance»
+  accepts left: string, right: string
+  returns number
+  example «kitten and sitting — from the task»
+    given left equals "kitten"
+    given right equals "sitting"
+    expected 3
+  example «rosettacode and raisethysword — from the task»
+    given left equals "rosettacode"
+    given right equals "raisethysword"
+    expected 8
+  example «Equal strings — zero»
+    given left equals "flang"
+    given right equals "flang"
+    expected 0
+  example «Empty on the left — the length of the second»
+    given left equals ""
+    given right equals "abc"
+    expected 3
+  example «Empty on the right — the length of the first»
+    given left equals "abc"
+    given right equals ""
+    expected 3
+  example «Both empty»
+    given left equals ""
+    given right equals ""
+    expected 0
+  example «The distance is symmetric: sitting and kitten»
+    given left equals "sitting"
+    given right equals "kitten"
+    expected 3
+  example «Cyrillic is counted by code points»
+    given left equals "кот"
+    given right equals "код"
+    expected 1
+  let letters equals decompose right into characters
+  let outcome equals fold (decompose left into characters) starting with (record «Step» with «row» equals («Zero row» of letters) and «index» equals 0) as acc and letter
+      let index equals acc.«index» plus 1
+      record «Step» with «row» equals («New row» of acc.«row» and letter and letters and index) and «index» equals index
+  «Last» of outcome.«row»

@@ -36,6 +36,82 @@ and draws the line between what is *proven* and what is *checked*, and
 
 ---
 
+## Where things live
+
+The layout follows from the section above, and it surprises on first sight: 13 directories at
+the root, several of the names repeated. There is `src/` and there is `flang/src/`; there is `test/`
+and `flang/test/`; there is `examples/` and `flang/examples/`. Two languages mean two
+implementations, two test runs and two example corpora. Merging them would erase the seam the
+checking runs along — each side is the reference the other is compared against, and with one
+directory there would be nothing left to compare.
+
+<!-- КАРТА-НАЧАЛО. Каталоги ниже сверяются с деревом: flang/test/readme-layout.test.mjs
+     падает, если названный каталог исчез или если появился каталог верхнего уровня,
+     о котором обе редакции README молчат. Правьте карту вместе с деревом. -->
+
+```
+src/              the FTS core in TypeScript — the reference everything else is true against
+test/             its test run; built into dist/ and executed from there
+flang/src/        the flang implementation in JavaScript — the reference for the language
+flang/self/       the same compiler, written in flang itself
+flang/core/       the same FTS core, written in flang: lexer, parser, evaluator, JSON printing
+flang/stdlib/     the standard library; its index is printed from the modules themselves
+flang/examples/   flang programs: leetcode, rosetta, cat, monad, io, web, errors
+flang/test/       the language test run — from the lexer to all eight backends
+flang/bin/        flang and flang-lsp: adapters over flang/src, never a home for meaning
+flang/cat/        the category-surface contract
+flang/conc/       the concurrency contract and its examples
+examples/         .fts models, and library-api — a whole REST service on FTS and flang
+schema/           the interchange format: JSON Schema for the document and the certificate
+tools/            9 tools built on top of the compiled core
+editors/          .fts syntax highlighting and the .flang language server
+web/              the same compiler as a page element — no server, no build step
+packaging/        Homebrew, asdf and the flang.1 man page
+scripts/          printing the library index, the changelog and the release C
+benchmarks/       the harness and a checked-in measurement baseline
+docs/             documentation; README and SPEC files stay next to the code they describe
+.github/          CI and the fts-check action
+```
+
+<!-- КАРТА-КОНЕЦ -->
+
+**Why there are two FTS cores.** `src/` is the TypeScript reference; `flang/core/` is the same core
+rewritten in flang. It exists for the same reason `flang/self/` does — to free `fts` from Node — and
+the claim is not a promise but a byte comparison: `flang/test/core-parser.test.mjs` and
+`core-json.test.mjs` run both implementations over every `.fts` model in the repository and require
+identical output; `core-evaluate.test.mjs` compares evaluation the same way, `core-lexer.test.mjs`
+the token stream. When they disagree, TypeScript is
+the reference and flang is wrong; a deliberate divergence goes into the debt list of
+[`flang/core/SPEC.md`](flang/core/SPEC.md) rather than passing in silence — [`AGENTS.md`](AGENTS.md)
+says so explicitly.
+
+**Why the compiler is there twice.** `flang/src/` is JavaScript; `flang/self/` is the lexer, parser,
+type checker, totality analysis, defunctionalization and C backend written in flang. As long as the
+compiler exists only in JavaScript, "a language that runs everywhere" means "everywhere Node runs",
+which is a different sentence — the reasoning opens
+[`flang/self/SPEC.md`](flang/self/SPEC.md). `flang/self/` prints C99, the C builds into a binary,
+and that binary is what ships in the release, which is why the Homebrew install needs no Node. Done
+here does not mean "it compiled"; it means the fixed point: the JavaScript compiler prints
+`flang/self/*.flang` to C, the compiler built from that C prints the same files again, and the two
+C outputs must match byte for byte. `flang/test/self-bootstrap.test.mjs` guards the convergence.
+
+**Why `examples/` and `flang/examples/` are not the same thing.** `examples/` holds `.fts` models
+and one full project; the differential core checks pick them up by the `examples/**/*.fts` pattern,
+so a new model joins them without anyone editing a list. `flang/examples/` holds `.flang` programs —
+the corpus the eight backends are checked against, and it is wired into the run explicitly. Different
+extensions mean different parsers and different runs, which is why they are different directories.
+
+**How to tell what checks a file without opening it.** By its directory and extension: `src/` and
+`test/` go through `npm run test:core`, everything under `flang/` through `npm run test:flang`, each
+tool carries its own `tools/*/test/`, and `npm test` runs all three suites. A file you cannot
+immediately assign to one of those commands is filed in the wrong place.
+
+What those tools, the editor support and the benchmark harness actually do is covered further
+down, in [The rest of the repository](#the-rest-of-the-repository). Laying out **your own** project
+on FTS and flang is a separate document: [Раскладка проекта](docs/project-layout.ru.md).
+
+---
+
 ## Install
 
 **Installing flang does not need Node.** The compiler is written in flang itself and prints to C,
@@ -406,7 +482,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-31 programs with 154 functions and 259 examples between them. For every function a grid of inputs
+35 programs with 214 functions and 415 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -532,17 +608,18 @@ flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --p
 ```
 
 Two example sets are kept, and both are guarded by tests rather than by good intentions.
-[`flang/examples/leetcode/`](flang/examples/leetcode) holds 26 solutions, 20 of them total
+[`flang/examples/leetcode/`](flang/examples/leetcode) holds 26 solutions, every one of them total
 throughout; each carries a comment explaining not only the algorithm but where the language
 pushed back — why binary search needs a "fuel" list to be accepted as terminating, why Single
 Number is O(n²) because there are no bitwise operations.
-[`flang/examples/rosetta/`](flang/examples/rosetta) holds seven canonical Rosetta Code tasks,
+[`flang/examples/rosetta/`](flang/examples/rosetta) holds 15 canonical Rosetta Code tasks,
 and its test pins the number of functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
-comment. The standard library ([`flang/stdlib/`](flang/stdlib): `higher-order`, `lists`, `numbers`,
-`optional`, `result`, `strings`) is written the same way — 112 functions, of which 105 are proven
-total. `higher-order` is the one built on first-class functions: fold, map, filter, search, sort
-and composition take a function as an argument.
+comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
+`lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`) is written the same way —
+9 modules, 135 functions, of which 131 are proven total. `higher-order` is the one built on
+first-class functions: fold, map, filter, search, sort and composition take a function as an
+argument.
 
 ---
 

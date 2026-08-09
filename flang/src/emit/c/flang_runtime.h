@@ -386,6 +386,7 @@ fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to,
 fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
 fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error);
 fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);

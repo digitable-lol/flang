@@ -569,6 +569,21 @@ public static class Flang
         return Value.List(points.ToArray());
     }
 
+    /// <summary>«код символа»: кодовая точка первого символа строки.</summary>
+    /// <remarks>
+    /// char.ConvertToUtf32 собирает суррогатную пару в одну точку; value[0]
+    /// отдал бы половину пары, и цель разошлась бы с эталоном на эмодзи.
+    /// </remarks>
+    public static Value BCharCode(Ctx ctx, Value source)
+    {
+        string value = ExpectString("код символа", source, "строка");
+        if (value.Length == 0)
+        {
+            throw Fail(FlangError.CodeBuiltinArgs, "«код символа»: строка пуста");
+        }
+        return Value.Number(char.ConvertToUtf32(value, 0));
+    }
+
     public static Value BSplit(Ctx ctx, Value source, Value separator)
     {
         string value = ExpectString("разделить", source, "строка");

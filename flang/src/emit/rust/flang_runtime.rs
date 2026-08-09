@@ -1067,6 +1067,18 @@ pub fn b_characters(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
     Ok(list(string.chars().map(|point| text(&point.to_string())).collect()))
 }
 
+/// «код символа»: кодовая точка первого символа строки.
+///
+/// `chars()` идёт по скалярам Unicode — та же нарезка, что у `b_characters`;
+/// `as_bytes()[0]` отдал бы первый байт UTF-8, а не символ.
+pub fn b_char_code(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
+    let string = expect_string("код символа", &source, "строка")?;
+    match string.chars().next() {
+        Some(point) => Ok(number(point as u32 as f64)),
+        None => Err(fail(CODE_BUILTIN_ARGS, "«код символа»: строка пуста".to_string())),
+    }
+}
+
 /// «содержит»: подстрока в строке либо значение в списке.
 pub fn b_contains(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {

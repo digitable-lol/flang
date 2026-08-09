@@ -1663,6 +1663,19 @@ class Parser {
         this.expectKw("intoCharacters", "у 'разложить' ожидалось 'на символы'")
         return { kind: "builtin", name: "символы", args: [text], span: token.span }
       }
+      /* `код символа СТРОКА` — форма из одного аргумента, как «длина» и «к
+         числу». Фраза уже склеена лексером в один токен, поэтому дальше идёт
+         обычное `parsePostfix`.
+
+         Не через `parseUnaryBuiltin`: у той формы «нет аргумента» значит «это
+         имя переменной», а фразой из двух слов переменную не назвать — значит
+         одинокая фраза это опечатка, и молчать о ней нельзя. Тот же довод и то
+         же устройство, что у `к числу или беда`. */
+      case "charCode": {
+        const начало = this.next()
+        if (!this.startsExpression()) this.fail("у 'код символа' ожидался аргумент")
+        return { kind: "builtin", name: "код символа", args: [this.parsePostfix()], span: начало.span }
+      }
       case "substring": {
         this.next()
         const text = this.parsePostfix()

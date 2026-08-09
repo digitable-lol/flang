@@ -430,6 +430,15 @@ function $b_simvoly(text) {
   return Array.from(text)
 }
 
+function $b_kod_simvola(text) {
+  $expectString("код символа", text, "строка")
+  /* Та же нарезка по кодовым точкам, что у «символы»: [...text] идёт по
+     точкам, а text.charCodeAt(0) отдал бы половину суррогатной пары. */
+  const first = Array.from(text)[0]
+  if (first === undefined) $fail("FLANG_BUILTIN_ARGS", "«код символа»: строка пуста")
+  return first.codePointAt(0)
+}
+
 function $b_soderzhit(left, right) {
   if ($isList(left)) return left.some((item) => $equal(item, right))
   const text = $expectString("содержит", left, "строка или список")
@@ -611,6 +620,7 @@ runtimeEntry("$b_podstroka", ["$fail", "$expectInteger", "$expectString", "$INDE
 runtimeEntry("$b_soedinit", ["$fail", "$isList", "$expectString", "$typeName"], fromSource($b_soedinit))
 runtimeEntry("$b_razdelit", ["$fail", "$expectString"], fromSource($b_razdelit))
 runtimeEntry("$b_simvoly", ["$expectString"], fromSource($b_simvoly))
+runtimeEntry("$b_kod_simvola", ["$fail", "$expectString"], fromSource($b_kod_simvola))
 runtimeEntry("$b_soderzhit", ["$isList", "$equal", "$expectString"], fromSource($b_soderzhit))
 runtimeEntry("$b_nachinaetsya_s", ["$expectString"], fromSource($b_nachinaetsya_s))
 runtimeEntry("$b_k_chislu", ["$fail", "$expectString"], fromSource($b_k_chislu))
@@ -638,6 +648,7 @@ const BUILTIN_HELPERS = new Map([
   ["соединить", "$b_soedinit"],
   ["разделить", "$b_razdelit"],
   ["символы", "$b_simvoly"],
+  ["код символа", "$b_kod_simvola"],
   ["содержит", "$b_soderzhit"],
   ["начинается с", "$b_nachinaetsya_s"],
   ["к числу", "$b_k_chislu"],
@@ -660,6 +671,7 @@ const BUILTIN_ARITY = new Map([
   ["соединить", 2],
   ["разделить", 2],
   ["символы", 1],
+  ["код символа", 1],
   ["содержит", 2],
   ["начинается с", 2],
   ["к числу", 1],

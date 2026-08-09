@@ -884,6 +884,22 @@ defmodule Flang.Rt do
     {:list, Enum.map(String.codepoints(value), fn point -> {:str, point} end)}
   end
 
+  @doc """
+  «код символа»: кодовая точка первого символа строки.
+
+  `String.to_charlist/1` даёт список кодовых точек, а не байт и не графем: то
+  же деление, что у `b_characters/1`. `binary_part/3` отдал бы первый байт
+  UTF-8, и цель разошлась бы с эталоном на всём, что вне ASCII.
+  """
+  def b_char_code(source) do
+    value = expect_string("код символа", source, "строка")
+
+    case String.to_charlist(value) do
+      [point | _] -> {:num, point * 1.0}
+      [] -> raise fail(@code_builtin_args, "«код символа»: строка пуста")
+    end
+  end
+
   @doc "«символ … в …». Индексация с 1 и включительно (SPEC, раздел 5)."
   def b_char(index, source) do
     position = expect_integer("символ", index, "индекс")

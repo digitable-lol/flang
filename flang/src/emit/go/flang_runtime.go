@@ -904,6 +904,22 @@ func BCharacters(ctx *Ctx, text Value) (Value, error) {
 	return List(items), nil
 }
 
+// BCharCode — «код символа»: кодовая точка первого символа строки.
+//
+// []rune идёт по кодовым точкам — та же нарезка, что у BCharacters; байтовый
+// source[0] отдал бы первый байт UTF-8, а не символ.
+func BCharCode(ctx *Ctx, text Value) (Value, error) {
+	source, err := expectString("код символа", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	runes := []rune(source)
+	if len(runes) == 0 {
+		return Nothing(), Fail(CodeBuiltinArgs, "«код символа»: строка пуста")
+	}
+	return Number(float64(runes[0])), nil
+}
+
 // BContains — «содержит»: подстрока в строке либо значение в списке.
 func BContains(ctx *Ctx, left, right Value) (Value, error) {
 	if left.Tag == TagList {

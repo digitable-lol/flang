@@ -4,9 +4,7 @@
   "repository": "https://github.com/digitable-lol/flang",
   "declared": "0.4.7",
   "latest": "0.4.7",
-  "unclassified": [
-    "flang/scripts"
-  ],
+  "unclassified": [],
   "releases": [
     {
       "version": "0.4.7",

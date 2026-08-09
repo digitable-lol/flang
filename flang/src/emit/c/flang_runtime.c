@@ -1448,6 +1448,21 @@ fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
   return FL_OK;
 }
 
+/* «код символа»: кодовая точка первого символа строки.
+
+   Декодер уже есть — тот же `fl_utf8_decode`, каким считаются пробелы в «к
+   числу»; байт utf8[0] отдал бы первую восьмёрку бит, а не символ. */
+fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  size_t width = 0;
+  FL_TRY(fl_expect_string(ctx, "код символа", text, "строка", error));
+  if (text.as.string.bytes == 0) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s", "«код символа»: строка пуста");
+  }
+  *out = fl_number(
+      (double)fl_utf8_decode(text.as.string.utf8, text.as.string.bytes, 0, &width));
+  return FL_OK;
+}
+
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
   if (left.tag == FL_LIST) {
     size_t index = 0;

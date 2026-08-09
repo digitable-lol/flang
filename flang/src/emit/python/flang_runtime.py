@@ -937,6 +937,18 @@ def b_characters(ctx, source):
     return Value(TAG_LIST, [Value(TAG_STRING, point) for point in value])
 
 
+def b_char_code(ctx, source):
+    """«код символа»: кодовая точка первого символа строки.
+
+    Строка в Python — последовательность кодовых точек, поэтому ord(value[0])
+    даёт ровно ту же точку, что Array.from(text)[0].codePointAt(0) в эталоне.
+    """
+    value = _expect_string("код символа", source, "строка")
+    if value == "":
+        raise fail(CODE_BUILTIN_ARGS, "«код символа»: строка пуста")
+    return Value(TAG_NUMBER, float(ord(value[0])))
+
+
 def b_contains(ctx, left, right):
     """«содержит»: подстрока в строке либо значение в списке."""
     if left.tag == TAG_LIST:

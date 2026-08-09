@@ -504,6 +504,20 @@ public final class Flang {
   }
 
   /**
+   * «код символа»: кодовая точка первого символа строки.
+   *
+   * codePointAt(0) собирает суррогатную пару обратно в одну точку; charAt(0)
+   * отдал бы половину пары, и Java разошлась бы с эталоном на эмодзи.
+   */
+  public static Value bCharCode(Ctx ctx, Value source) {
+    String value = expectString("код символа", source, "строка");
+    if (value.isEmpty()) {
+      throw fail(FlangError.CODE_BUILTIN_ARGS, "«код символа»: строка пуста");
+    }
+    return Value.number(value.codePointAt(0));
+  }
+
+  /**
    * «разделить … по …».
    *
    * Поиск разделителя идёт по единицам UTF-16, а не по кодовым точкам, — ровно

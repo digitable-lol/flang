@@ -64,6 +64,7 @@
     "clean": "node scripts/clean.mjs",
     "check": "tsc -p tsconfig.json --noEmit",
     "license:check": "node scripts/check-licensing.mjs",
+    "claims:check": "node flang/scripts/claim-guard.mjs",
     "changelog": "node scripts/build-changelog.mjs",
     "changelog:check": "node scripts/build-changelog.mjs --check && node scripts/build-changelog.mjs --self-test",
     "preflight": "node scripts/preflight.mjs",

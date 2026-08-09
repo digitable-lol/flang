@@ -2,80 +2,126 @@
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
 #
-# Прогон тяжёлого набора не здесь, а на большой машине.
+# scripts/test-remote.sh — прогон набора на машине, где есть все восемь тулчейнов.
 #
-#   scripts/test-remote.sh                 # npm test целиком
-#   scripts/test-remote.sh test:flang      # один набор
-#   scripts/test-remote.sh -- npm run check && npm test   # произвольная команда
+# ЗАЧЕМ. Тест бэкенда доказывает кодогенерацию тем, что настоящий компилятор
+# принял порождённый код. Восьми тулчейнов на ноутбуке обычно нет, и тесты
+# отсутствующих молча пропускаются — набор зелёный, а половина бэкендов не
+# проверена ни разу. Так ушёл выпуск 0.4.6 с дефектом кодогенерации Go.
 #
-# Зачем. Полный набор поднимает восемь тулчейнов сразу — beam, go, cc, dotnet,
-# rustc, javac — и на восьми ядрах локальной машины это десятки процессов и
-# load average в сотню: работать за ней в это время нельзя. На `dev` 256 ядер и
-# 499 ГБ, и тот же набор там никому не мешает. Локально остаются `npm run
-# check`, юнит-тесты без бэкендов и сверки поверхностей.
+# Лечится не уговорами, а местом прогона: на хосте, где стоят все восемь,
+# пропусков нет по построению, и там же прогон банально быстрее — ядер больше.
 #
-# Хост — алиас из ~/.ssh/config, переменная FLANG_REMOTE (по умолчанию `dev`).
+#   scripts/test-remote.sh                  весь набор (npm test)
+#   scripts/test-remote.sh test:backends    любой скрипт из package.json
+#   scripts/test-remote.sh --shell "cmd"    произвольная команда в копии
+#   scripts/test-remote.sh --sync           только синхронизировать
+#   scripts/test-remote.sh --info           что за хост и что на нём стоит
 #
-# Что уезжает. Рабочее дерево целиком, БЕЗ `node_modules`, `dist` и `output`:
-# они собираются на месте, и везти сотню мегабайт зря. Вместе с деревом уезжает
-# каталог `.git` — не для красоты: `flang/test/changelog.test.mjs` и
-# `scripts/build-changelog.mjs --check` читают теги и заголовки коммитов, и без
-# истории набор красный на ровном месте. Каталог берётся общий
-# (`--git-common-dir`), поэтому скрипт работает и из `git worktree`, где `.git`
-# — файл со ссылкой, а не каталог.
+# Хост: FLANG_REMOTE (по умолчанию dev — алиас из ~/.ssh/config).
+# Каталог на хосте: FLANG_REMOTE_DIR (по умолчанию ~/.cache/flang-remote/<имя>).
 #
-# Локальное дерево не меняется ничем из этого скрипта; на хосте меняется только
-# ~/$FLANG_REMOTE_DIR.
+# Каталог намеренно НЕ ~/projects/flang: там рабочий клон владельца со своими
+# ветками, и затирать его прогоном тестов недопустимо. Копия отдельная, её
+# содержимое одноразовое.
 
 set -euo pipefail
 
-HOST="${FLANG_REMOTE:-dev}"
-REMOTE_DIR="${FLANG_REMOTE_DIR:-flang-remote}"
-ROOT=$(git rev-parse --show-toplevel)
-GITDIR=$(cd -- "$(git rev-parse --git-common-dir)" && pwd)
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REMOTE="${FLANG_REMOTE:-dev}"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
+NAME=$(basename "$ROOT")
+REMOTE_DIR="${FLANG_REMOTE_DIR:-.cache/flang-remote/$NAME}"
 
-if [ "${1:-}" = -- ]; then
-  shift
-  CMD="$*"
+# FTS_REQUIRE_TOOLCHAINS=all — главное отличие удалённого прогона от местного:
+# отсутствие тулчейна там не пропуск, а провал. Ради этого всё и затевалось.
+REQUIRE="${FTS_REQUIRE_TOOLCHAINS:-all}"
+
+BOLD=$'\033[1m'; RED=$'\033[31m'; GRN=$'\033[32m'; DIM=$'\033[2m'; RST=$'\033[0m'
+say()  { printf '%s==> %s%s\n' "$BOLD" "$*" "$RST"; }
+info() { printf '    %s\n' "$*"; }
+die()  { printf '%sОШИБКА%s %s\n' "$RED" "$RST" "$*" >&2; exit 1; }
+
+command -v rsync >/dev/null 2>&1 || die "нужен rsync"
+ssh -o BatchMode=yes -o ConnectTimeout=10 "$REMOTE" true 2>/dev/null \
+  || die "хост «$REMOTE» недоступен по ssh без пароля. Задайте FLANG_REMOTE=<алиас> или пропишите алиас в ~/.ssh/config"
+
+# PATH для неинтерактивного ssh: Go, Rust и Elixir нередко лежат в /usr/local,
+# а ~/.local/bin в PATH добавляет только login shell, до которого мы не доходим.
+REMOTE_ENV='export PATH="$HOME/.local/bin:/usr/local/go/bin:/usr/local/cargo/bin:/usr/local/bin:/usr/bin:/bin"; export LC_ALL=C.UTF-8 LANG=C.UTF-8;'
+
+remote_run() { ssh "$REMOTE" "$REMOTE_ENV cd '$REMOTE_DIR' && $1"; }
+
+show_info() {
+  say "Хост $REMOTE"
+  ssh "$REMOTE" "$REMOTE_ENV"'
+    printf "    %s, %s ядер, %s ГБ RAM, свободно %s\n" \
+      "$(. /etc/os-release; echo "$PRETTY_NAME")" "$(nproc)" \
+      "$(free -g | awk "/^Mem:/{print \$2}")" "$(df -h / | awk "NR==2{print \$4}")"
+    printf "    %-12s %s\n" \
+      c        "$(cc --version 2>/dev/null | head -1 || echo НЕТ)" \
+      go       "$(go version 2>/dev/null || echo НЕТ)" \
+      rust     "$(rustc --version 2>/dev/null || echo НЕТ)" \
+      java     "$(javac --version 2>/dev/null || echo НЕТ)" \
+      csharp   "$(dotnet --version 2>/dev/null || echo НЕТ)" \
+      python   "$(python3 --version 2>/dev/null || echo НЕТ)" \
+      elixir   "$(elixir --version 2>/dev/null | tail -1 || echo НЕТ)" \
+      node     "$(node --version 2>/dev/null || echo НЕТ)"'
+}
+
+sync_tree() {
+  say "Синхронизация $ROOT → $REMOTE:$REMOTE_DIR"
+  ssh "$REMOTE" "mkdir -p '$REMOTE_DIR'"
+  # node_modules и dist не едут: они собираются на хосте своим npm ci и своим
+  # tsc. Копировать чужую сборку — это опять мерить не то, что думаешь.
+  rsync -a --delete --info=stats1 \
+    --exclude '.git/' --exclude 'node_modules/' --exclude 'dist/' \
+    --exclude '*.log' --exclude '.cache/' \
+    "$ROOT/" "$REMOTE:$REMOTE_DIR/" | sed 's/^/    /'
+}
+
+install_deps() {
+  say "Зависимости на хосте (npm ci)"
+  remote_run 'npm ci --no-audit --no-fund 2>&1 | tail -3' | sed 's/^/    /'
+}
+
+case "${1:-}" in
+  --info) show_info; exit 0 ;;
+  --sync) show_info; sync_tree; exit 0 ;;
+  --shell)
+    shift
+    [ $# -gt 0 ] || die "--shell без команды"
+    sync_tree
+    remote_run "$*"
+    exit $?
+    ;;
+  -h|--help)
+    sed -n '4,30p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+    ;;
+esac
+
+TARGET="${1:-test}"
+
+show_info
+sync_tree
+install_deps
+
+say "Прогон: npm run $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
+info "${DIM}отсутствие любого тулчейна на хосте — провал, а не пропуск${RST}"
+START=$(date +%s)
+set +e
+remote_run "FTS_REQUIRE_TOOLCHAINS='$REQUIRE' npm run --silent $TARGET"
+STATUS=$?
+set -e
+ELAPSED=$(( $(date +%s) - START ))
+
+printf '\n%s==> Итог%s\n' "$BOLD" "$RST"
+info "хост:  $REMOTE:$REMOTE_DIR"
+info "время: ${ELAPSED} с"
+if [ "$STATUS" -eq 0 ]; then
+  printf '    %sНАБОР ПРОЙДЕН%s — все восемь тулчейнов присутствовали, пропусков по тулчейнам не было\n' "$GRN" "$RST"
 else
-  CMD="npm run ${1:-test}"
-  [ $# -le 1 ] || { echo "лишние аргументы; для произвольной команды: -- <команда>" >&2; exit 2; }
-  [ "${1:-test}" != test ] || CMD="npm test"
+  printf '    %sНАБОР НЕ ПРОЙДЕН%s (код %d)\n' "$RED" "$RST" "$STATUS"
 fi
-
-echo "хост: $HOST, каталог: ~/$REMOTE_DIR, ветка: $BRANCH"
-echo "команда: $CMD"
-
-ssh "$HOST" "mkdir -p ~/$REMOTE_DIR"
-
-# Дерево. --delete, чтобы удалённая копия была копией, а не наслоением прогонов;
-# node_modules и dist исключены и потому защищены от --delete отдельно.
-rsync -az --delete \
-  --exclude .git --exclude node_modules --exclude dist --exclude output \
-  --filter 'protect node_modules' --filter 'protect dist' --filter 'protect output' \
-  "$ROOT/" "$HOST:$REMOTE_DIR/"
-
-# История. Уезжает общий каталог, а HEAD на хосте переставляется на нашу ветку:
-# в worktree HEAD общего каталога показывает на ЧУЖУЮ ветку (ту, что в основном
-# рабочем дереве), и без этой строки `git status` на хосте объявил бы все файлы
-# изменёнными, а `changelog:check` считал бы историю не от того коммита.
-rsync -az --delete "$GITDIR/" "$HOST:$REMOTE_DIR/.git/"
-ssh "$HOST" "cd $REMOTE_DIR \
-  && git config core.bare false \
-  && git symbolic-ref HEAD refs/heads/'$BRANCH' \
-  && git reset --mixed --quiet \
-  && git status --short"
-
-# Локаль задаётся явно, и это не вкусовщина. Неинтерактивный ssh приходит без
-# LANG, BEAM поднимается с native name encoding latin1 и предупреждает об этом
-# сам («Elixir … expects utf8»), а печать в Elixir на именах с кириллицей после
-# этого расходится с интерпретатором — 33 теста `emit-elixir` краснеют на ровном
-# месте. `ELIXIR_ERL_OPTIONS=+fnu` — та же страховка со стороны BEAM, на случай
-# хоста, где C.UTF-8 не собран.
-#
-# `npm install`, а не `ci`: package-lock в этом репозитории отстаёт от
-# package.json, и `ci` на нём падает до первого теста.
-ssh "$HOST" "cd $REMOTE_DIR \
-  && export LANG=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS=+fnu \
-  && npm install --no-audit --no-fund >/dev/null && $CMD"
+exit "$STATUS"

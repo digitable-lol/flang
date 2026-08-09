@@ -643,6 +643,14 @@ function renderProject(moduleName, cli) {
     "  <PropertyGroup>",
     `    <OutputType>${cli ? "Exe" : "Library"}</OutputType>`,
     "    <TargetFramework>net8.0</TargetFramework>",
+    /* Целевая платформа зафиксирована — напечатанный проект обязан быть
+       одинаковым на любой машине. Но зафиксированная платформа без RollForward
+       означает «не запускается там, где стоит только SDK новее»: на хосте с
+       одним лишь .NET 10 сборка проходит, а запуск падает с «Framework
+       Microsoft.NETCore.App 8.0.0 не найден». LatestMajor — штатный механизм
+       .NET ровно для этого: собрано под 8, выполняется на старшем из
+       установленных. Детерминизм вывода при этом не теряется. */
+    "    <RollForward>LatestMajor</RollForward>",
     "    <LangVersion>latest</LangVersion>",
     "    <Nullable>enable</Nullable>",
     "    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>",

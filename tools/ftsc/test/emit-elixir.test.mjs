@@ -113,6 +113,30 @@ test("emit(): вывод детерминирован — два вызова д
   }
 })
 
+/**
+ * Все примеры прошли — по сводке ExUnit, а не по одному её написанию.
+ *
+ * Сводку ExUnit переписали: до Elixir 1.19 это «3 tests, 0 failures», начиная
+ * с 1.19 — «Result: 3 passed». Проверка держалась за второе написание и на
+ * машине с Elixir 1.18 краснела там, где кодогенерация была исправна: ExUnit
+ * сообщал ноль падений, а тест объявлял провал. Ошибка того же рода, что и
+ * молчаливый пропуск, только зеркальная: результат не о том, что проверяли.
+ *
+ * Поэтому смотрим на смысл: тесты были и ни один не упал.
+ */
+function assertExUnitAllPassed(stdout, testFile) {
+  const modern = /Result:\s*(\d+)\s+passed(?:,\s*(\d+)\s+failed)?/u.exec(stdout)
+  if (modern) {
+    assert.ok(Number(modern[1]) > 0, `ExUnit не прогнал ни одного теста в ${testFile}:\n${stdout}`)
+    assert.equal(Number(modern[2] ?? 0), 0, `не все примеры прошли в ${testFile}:\n${stdout}`)
+    return
+  }
+  const legacy = /(\d+)\s+tests?,\s*(\d+)\s+failures?/u.exec(stdout)
+  assert.ok(legacy, `нет сводки ExUnit ни в одном из известных написаний:\n${stdout}`)
+  assert.ok(Number(legacy[1]) > 0, `ExUnit не прогнал ни одного теста в ${testFile}:\n${stdout}`)
+  assert.equal(Number(legacy[2]), 0, `не все примеры прошли в ${testFile}:\n${stdout}`)
+}
+
 /** Компилирует все .ex из <root>/lib одним вызовом elixirc в <root>/_build. */
 function compile(root) {
   const sources = []
@@ -144,7 +168,7 @@ test("discount/delivery/shop: сгенерированный Elixir реальн
         for (const testFile of testFiles) {
           const result = run(elixirBin, ["-pa", join(root, "_build"), testFile], { cwd: root })
           assert.equal(result.status, 0, `ExUnit упал для ${testFile}:\n${result.stdout}\n${result.stderr}`)
-          assert.match(result.stdout, /\d+ passed/u, `нет признака прогона тестов в выводе ExUnit:\n${result.stdout}`)
+          assertExUnitAllPassed(result.stdout, testFile)
         }
       } finally {
         await rm(root, { recursive: true, force: true })

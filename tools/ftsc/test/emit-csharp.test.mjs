@@ -146,6 +146,33 @@ async function detectCsharpToolchain() {
   return null
 }
 
+/**
+ * Целевая платформа проекта — та, что на машине есть, а не записанная навсегда.
+ *
+ * `net8.0` в этом файле был прибит константой. На машине, где стоит только
+ * SDK 10, такой проект собирается и падает при запуске: «Framework
+ * Microsoft.NETCore.App 8.0.0 не найден». Тест краснел не на кодогенерации, а
+ * на выборе платформы — то есть врал о том, что проверяет. Спрашиваем у самого
+ * dotnet, какие рантаймы установлены, и берём старший.
+ */
+async function dotnetTargetFramework() {
+  try {
+    const { stdout } = await execFileAsync("dotnet", ["--list-runtimes"], { timeout: 60000 })
+    const versions = [...String(stdout).matchAll(/^Microsoft\.NETCore\.App\s+(\d+)\./gmu)].map((m) => Number(m[1]))
+    if (versions.length) return `net${Math.max(...versions)}.0`
+  } catch {
+    // ниже — запасной путь через версию SDK
+  }
+  try {
+    const { stdout } = await execFileAsync("dotnet", ["--version"], { timeout: 60000 })
+    const major = Number(String(stdout).trim().split(".")[0])
+    if (Number.isFinite(major) && major >= 8) return `net${major}.0`
+  } catch {
+    // тулчейн уже найден выше, сюда попасть трудно; пусть будет прежнее значение
+  }
+  return "net8.0"
+}
+
 test("компиляция настоящим тулчейном C# и прогон FtsTests.cs", async (t) => {
   const toolchain = await detectCsharpToolchain()
   if (!toolchain) {
@@ -157,6 +184,7 @@ test("компиляция настоящим тулчейном C# и прог�
     return
   }
 
+  const targetFramework = toolchain === "dotnet" ? await dotnetTargetFramework() : "net8.0"
   const tmp = await mkdtemp(join(tmpdir(), "ftsc-cs-build-"))
   try {
     const allFiles = []
@@ -178,7 +206,7 @@ test("компиляция настоящим тулчейном C# и прог�
       if (toolchain === "dotnet") {
         await writeFile(
           join(dir, "app.csproj"),
-          `<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n`,
+          `<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>${targetFramework}</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n`,
           "utf8",
         )
         const { stdout } = await execFileAsync("dotnet", ["run", "--project", dir], { cwd: dir, timeout: 180000 })

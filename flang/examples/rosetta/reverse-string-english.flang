@@ -10,14 +10,17 @@ module «Reverse a string»
 // can loop forever. For a task about strings that is worth explaining, because
 // until recently it was not possible.
 //
-// Pattern matching («empty», «head and tail») only works on a list: a list has
-// a tail, and recursion on the tail provably decreases. A string has no tail,
-// so the walk went by position — and «size minus position» is a decreasing
-// NUMBER, which the analysis does not count as part of a value.
+// Pattern matching («empty», «head and tail») once worked on a list only: a
+// list has a tail, and recursion on the tail provably decreases. A string had
+// no tail, so the walk went by position — and «size minus position» is a
+// decreasing NUMBER, which the analysis does not count as part of a value.
 //
-// The built-in form `decompose … into characters` removes exactly that: the
-// string becomes a list of one-character strings, and what follows is an
-// ordinary fold over a list that already exists.
+// That was removed twice. First by the built-in form `decompose … into
+// characters`: the string becomes a list of one-character strings, and what
+// follows is an ordinary fold over a list that already exists — that is what
+// is written below. Then by the same two patterns, which now read a string as
+// well: it has exactly two cases, and it does have a tail. The first route is
+// shown here because the task needs the list in its own right.
 //
 // Unicode correctness comes for free: the decomposition goes by code points,
 // not by UTF-16 units, so Cyrillic and emoji do not fall apart.

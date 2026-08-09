@@ -2162,7 +2162,106 @@ function checkFunction(fn, ctx) {
     }
   }
 
+  checkMeasure(fn, env, ctx, where)
   checkExamples(fn, signature, ctx)
+}
+
+/**
+ * Объявленная мера `убывает …`.
+ *
+ * Проверяется ровно два свойства, и оба обязательны для доказательства.
+ *
+ * ЧИСЛО. Мера сравнивается с мерой (`<`) и с нулём, а сравнивать так можно
+ * только числа: мера-строка дала бы сторожа, чьё сравнение ничего не значит.
+ *
+ * ТОЛЬКО ПАРАМЕТРЫ. Мера вычисляется дважды — в точке вызова от параметров
+ * вызывающей и от аргументов вызова, — и оба раза обязана значить одно и то
+ * же. Имя, связанное `пусть` внутри тела, во второй точке уже не то же самое
+ * (а чаще его там просто нет), поэтому в мере законны только имена
+ * параметров. Это ограничение, а не недосмотр: снять его значило бы разрешить
+ * мере зависеть от места в теле, а она — свойство ВЫЗОВА.
+ *
+ * Тотальность меры отдельно не проверяется: `inferExpr` уже отверг бы вызов
+ * неизвестной функции, а вызов обычной внутри меры отвергнет анализ
+ * завершаемости тем же правилом, что и вызов из тела.
+ */
+function checkMeasure(fn, env, ctx, where) {
+  const measure = fn.decreases
+  if (measure === null || measure === undefined) return
+
+  if (fn.total !== true) {
+    ctx.report("FLANG_TYPE", `${where}: мера «убывает» объявлена у функции без пометки «тотальная» — доказывать нечего`, measure)
+    return
+  }
+
+  const actual = inferExpr(measure, env, NUMBER, ctx, fn.name)
+  if (!sameType(actual, NUMBER)) {
+    ctx.report("FLANG_TYPE", `${where}: мера «убывает» даёт ${typeName(actual)}, а мера обязана быть числом — она сравнивается с мерой и с нулём`, measure)
+  }
+
+  const params = new Set((fn.params ?? []).map((param) => param?.name).filter(isName))
+  for (const name of freeNames(measure)) {
+    if (params.has(name)) continue
+    ctx.report(
+      "FLANG_UNKNOWN_NAME",
+      `${where}: мера «убывает» упоминает «${name}», а это не параметр. Мера считается и от параметров функции, и от аргументов вызова, поэтому в ней законны только имена параметров`,
+      measure,
+    )
+  }
+}
+
+/**
+ * Свободные имена выражения — те `var`, что не связаны внутри него самого.
+ *
+ * Связывают четыре формы, и все они здесь перечислены поимённо, а не выведены
+ * из общего правила: общего правила у AST нет, и «связывает всё, где есть ключ
+ * name» приняло бы за связку поле записи.
+ */
+function freeNames(expr, bound = new Set(), found = new Set()) {
+  if (Array.isArray(expr)) {
+    for (const item of expr) freeNames(item, bound, found)
+    return found
+  }
+  if (expr === null || typeof expr !== "object") return found
+
+  if (expr.kind === "var") {
+    if (isName(expr.name) && !bound.has(expr.name)) found.add(expr.name)
+    return found
+  }
+  if (expr.kind === "let") {
+    freeNames(expr.value, bound, found)
+    const inner = isName(expr.name) ? new Set([...bound, expr.name]) : bound
+    freeNames(expr.in, inner, found)
+    return found
+  }
+  if (expr.kind === "map" || expr.kind === "filter" || expr.kind === "fold") {
+    freeNames(expr.over, bound, found)
+    freeNames(expr.init, bound, found)
+    const inner = new Set(bound)
+    if (isName(expr.item)) inner.add(expr.item)
+    if (isName(expr.acc)) inner.add(expr.acc)
+    freeNames(expr.body, inner, found)
+    return found
+  }
+  if (expr.kind === "match") {
+    freeNames(expr.target, bound, found)
+    for (const branch of expr.cases ?? []) {
+      const inner = new Set(bound)
+      const pattern = branch?.pattern
+      if (isName(pattern?.head)) inner.add(pattern.head)
+      if (isName(pattern?.tail)) inner.add(pattern.tail)
+      if (isName(pattern?.bind)) inner.add(pattern.bind)
+      for (const alias of Object.values(pattern?.bind ?? {})) if (isName(alias)) inner.add(alias)
+      freeNames(branch?.body, inner, found)
+    }
+    return found
+  }
+
+  for (const [key, value] of Object.entries(expr)) {
+    if (key === "span" || key === "kind" || key === "name" || key === "field" || key === "variant") continue
+    freeNames(value, bound, found)
+  }
+  return found
 }
 
 /**

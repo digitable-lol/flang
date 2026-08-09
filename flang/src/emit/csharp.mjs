@@ -645,6 +645,17 @@ function renderProject(moduleName, cli) {
     "  <PropertyGroup>",
     `    <OutputType>${cli ? "Exe" : "Library"}</OutputType>`,
     "    <TargetFramework>net8.0</TargetFramework>",
+    /* Напечатанная программа обязана запускаться там, где рантайм НОВЕЕ
+       заявленной цели, а не только ровно на ней. По умолчанию .NET требует
+       ту же основную версию: собранный под net8.0 проект на машине с одним
+       лишь .NET 10 собирается и падает при запуске — «You must install or
+       update .NET», хотя ничего в коде десятке не противоречит.
+       Поймано на dev (Ubuntu 26.04, .NET 10 без пакета восьмёрки): 30 из 36
+       проверок бэкенда красили набор, и это была не наша ошибка и не ошибка
+       машины, а обещание генератора, которое он не собирался держать.
+       Целью остаётся net8.0 — она задаёт язык и библиотеку, на которые мы
+       рассчитываем; RollForward снимает лишнее требование к рантайму. */
+    "    <RollForward>LatestMajor</RollForward>",
     "    <LangVersion>latest</LangVersion>",
     "    <Nullable>enable</Nullable>",
     "    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>",

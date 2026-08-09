@@ -178,7 +178,11 @@ test("компиляция настоящим тулчейном C# и прог�
       if (toolchain === "dotnet") {
         await writeFile(
           join(dir, "app.csproj"),
-          `<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n`,
+          /* RollForward — по той же причине, что и в самом эмиттере (см.
+             flang/src/emit/csharp.mjs, renderProject): без него проверка
+             требует ровно .NET 8 и краснеет на машине, где стоит только
+             десятка, — то есть меряет состав машины, а не печать. */
+          `<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n    <RollForward>LatestMajor</RollForward>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n`,
           "utf8",
         )
         const { stdout } = await execFileAsync("dotnet", ["run", "--project", dir], { cwd: dir, timeout: 180000 })

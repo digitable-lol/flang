@@ -1063,6 +1063,7 @@ class Parser {
     const examples = []
     let returns = null
     let body = null
+    let decreases = null
 
     this.pushScope([])
     if (this.enterBlock()) {
@@ -1085,6 +1086,17 @@ class Parser {
           this.endLine()
           continue
         }
+        /* Объявленная мера: `убывает б`. Стоит после `возвращает` и до тела,
+           потому что читается как часть подписи функции, а не как её шаг:
+           «что именно здесь становится меньше» — это обещание автора, и место
+           ему рядом с «что принимает» и «что возвращает». */
+        if (this.atKw("decreases")) {
+          const слово = this.next()
+          if (decreases !== null) this.fail("не разобрана конструкция: у функции больше одной меры", слово)
+          decreases = this.parseExpression()
+          this.endLine()
+          continue
+        }
         if (this.atKw("example")) {
           examples.push(this.parseExample())
           continue
@@ -1099,6 +1111,13 @@ class Parser {
     if (body === null) this.fail(`функция «${name}» не содержит тела`, start)
     const node = { name, total, params, returns, body, examples }
     if (typeParams.length > 0) node.typeParams = typeParams
+    /* Поле необязательное и появляется ТОЛЬКО у функции с мерой: программа без
+       `убывает` обязана давать побайтово прежний AST, иначе побайтовая
+       неподвижная точка самоприменения рухнула бы на первом же файле.
+       Имя поля — `decreases`, а не `measure`: `measure` уже занято отметкой,
+       которую анализ кладёт на УЗЕЛ АРГУМЕНТА, и одно имя на две разные вещи
+       читалось бы как одна. */
+    if (decreases !== null) node.decreases = decreases
     node.span = start.span
     return node
   }

@@ -16,13 +16,22 @@
  *                    или {"ok":false,"code":"FLANG_TYPE","message":"…"}
  *
  * У программы с процессами есть второй запрос — прогон:
- *   {"run":"имя прогона","seed":"4172","turns":"10000"}
+ *   {"run":"имя прогона","seed":"4172","turns":"10000","journal":"1"}
  *   {"ok":true,"run":"…","исход":"покой","время":"4","пробегов":"4",
  *    "состояния":[["Счётчик",…]],"живые":[…],"отказы":[…],"решения":[…],
  *    "журнал":[{"время":"0","процесс":"…","исход":"обработано","код":"","сообщение":…}]}
  * Семя обязательно в том смысле, что от него зависит ВСЁ чередование: при одном
  * и том же семени журнал доставок совпадает с эталоном побайтово, и это
  * проверяется, а не обещается.
+ *
+ * `journal` — наблюдение, и оно НЕОБЯЗАТЕЛЬНО. По умолчанию единица: прогон
+ * ведёт журнал целиком, иначе сверять с эталоном было бы нечего. `"journal":"0"`
+ * — рабочий режим: журнала нет ни в памяти, ни в ответе, и поля «журнал» в
+ * ответе тоже нет (пустой список означал бы «пробегов не было»). Разница не в
+ * удобстве вывода: запись журнала стоит памяти на КАЖДОМ пробеге, а арена
+ * рантайма не возвращает ничего, поэтому долгоживущий процесс с журналом течёт
+ * тем быстрее, чем дольше живёт. Наблюдаемое поведение от признака не зависит
+ * ничем — те же исходы, состояния и решения надзора при том же семени.
  *
  * Значения размечены тегами, потому что JSON беднее flang:
  *   null            «ничто»
@@ -675,25 +684,33 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
     putchar(']');
   }
 
-  fputs("],\"журнал\":[", stdout);
-  for (index = 0; index < result->journal_count; index += 1) {
-    const fl_conc_entry *entry = &result->journal[index];
-    if (index > 0) {
-      putchar(',');
+  /* Журнала может не быть вовсе — тогда поля нет, а не пустой список. Пустой
+     список означал бы «пробегов не было», и читатель, сверяющий журнал с
+     эталоном, сравнил бы пустоту с пустотой и промолчал. Отсутствие поля он
+     заметит сразу. */
+  putchar(']');
+  if (result->journal_kept) {
+    fputs(",\"журнал\":[", stdout);
+    for (index = 0; index < result->journal_count; index += 1) {
+      const fl_conc_entry *entry = &result->journal[index];
+      if (index > 0) {
+        putchar(',');
+      }
+      fputs("{\"время\":", stdout);
+      write_number_text(entry->time);
+      fputs(",\"процесс\":", stdout);
+      write_name(plan->processes[entry->process].name);
+      fputs(",\"исход\":", stdout);
+      write_name(entry->outcome);
+      fputs(",\"код\":", stdout);
+      write_name(entry->code);
+      fputs(",\"сообщение\":", stdout);
+      write_value(entry->message);
+      putchar('}');
     }
-    fputs("{\"время\":", stdout);
-    write_number_text(entry->time);
-    fputs(",\"процесс\":", stdout);
-    write_name(plan->processes[entry->process].name);
-    fputs(",\"исход\":", stdout);
-    write_name(entry->outcome);
-    fputs(",\"код\":", stdout);
-    write_name(entry->code);
-    fputs(",\"сообщение\":", stdout);
-    write_value(entry->message);
-    putchar('}');
+    putchar(']');
   }
-  fputs("]}\n", stdout);
+  fputs("}\n", stdout);
 }
 #endif
 
@@ -713,6 +730,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   char *run = NULL;
   double seed = 0.0;
   double turns = 0.0;
+  /* Журнал по умолчанию ВЕДЁТСЯ: прогон — основной способ звать эту программу, и
+     по журналу он сверяется с эталоном. Выключает его тот, кто знает, что зовёт
+     не прогон, а работу, — и знает, что платит за наблюдение памятью на каждом
+     пробеге. Умолчание наоборот сломало бы сверку молча. */
+  double journal = 1.0;
 #endif
 
   fl_arena_reset(arena);
@@ -772,6 +794,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел пробегов\"}\n", stdout);
         return;
       }
+    } else if (strcmp(key, "journal") == 0) {
+      if (!read_number_text(&reader, &journal)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак журнала\"}\n", stdout);
+        return;
+      }
 #endif
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
@@ -796,7 +823,7 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   if (run != NULL) {
     const fl_conc_plan *plan = FL_PROGRAM_CONC_PLAN();
     fl_conc_result outcome;
-    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, &outcome, &error) == FL_OK) {
+    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, journal != 0.0, &outcome, &error) == FL_OK) {
       write_run(plan, run, &outcome);
       return;
     }

@@ -23,13 +23,13 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.4.7/flang-0.4.7-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.4.8/flang-0.4.8-c.tar.gz"
   # Хеш архива, собранного `node scripts/build-release-c.mjs` и упакованного
   # `tar -czf`. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
   sha256 "3287ecb7ea1d789c1e6c4a5ca2e958656410825ec3e79ee475854681d96e6645"
   license "BSD-2-Clause"
-  version "0.4.7"
+  version "0.4.8"
 
   # Ни Node, ни каких-либо ещё зависимостей: в архиве C99 и Makefile.
   depends_on "make" => :build

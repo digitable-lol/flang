@@ -18,17 +18,19 @@ module «Palindrome»
 //
 // But the one-line «compare with yourself backwards» had nothing to prove it
 // with. Reversing requires walking the string character by character, pattern
-// matching only works on a list («empty», «head and tail»), and the walk went
-// by position — that is, a NUMBER decreased, not a value. The termination
+// matching worked on a list only back then («empty», «head and tail»), and the
+// walk went by position — that is, a NUMBER decreased, not a value. The termination
 // analysis does not count a numeric decrease as part of a value, and it is not
 // being pedantic: «size minus position» does shrink, but termination cannot be
 // justified by that without reasoning the compiler does not do.
 //
 // The form `decompose … into characters` closes exactly that: the string
-// becomes a list, a list has a tail, a fold over it is provable. The difference
-// between a string and a list, for the sake of which «Palindrome of a list» is
-// shown separately below, remains in the language — but it stopped costing
-// totality.
+// becomes a list, a list has a tail, a fold over it is provable. Later the same
+// two patterns learned to read a string as well — it has exactly two cases — so
+// the direct character-by-character walk now carries the same proof. The
+// difference between a string and a list, for the sake of which «Palindrome of
+// a list» is shown separately below, remains in the language — but it stopped
+// costing totality.
 
 total function «Prepend»
   accepts element: number, items: list of number

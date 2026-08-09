@@ -188,7 +188,14 @@ test("компиляция настоящим тулчейном C# и прог�
              При слиянии оставлен RollForward: он делает то же самое силами
              самого .NET, не требует пробы на каждый прогон и, главное, стоит
              в напечатанном проекте, а не только в тесте — то есть чинит и то,
-             что уезжает пользователю, а не только нашу проверку. */
+             что уезжает пользователю, а не только нашу проверку.
+
+             Само содержимое проекта здесь однажды пропало: при слиянии двух
+             веток осталось это объяснение и аргумент кодировки, а строка с
+             проектом исчезла — файл писался словом «utf8». На машине без
+             dotnet тест это пропускает, поэтому поймалось не проверкой, а
+             человеком, читавшим диф. */
+          `<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n    <RollForward>LatestMajor</RollForward>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n`,
           "utf8",
         )
         const { stdout } = await execFileAsync("dotnet", ["run", "--project", dir], { cwd: dir, timeout: 180000 })

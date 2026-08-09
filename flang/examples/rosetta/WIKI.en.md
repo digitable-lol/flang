@@ -29,7 +29,8 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > flang splits programs into two classes and the compiler decides which is
 > which: `тотальная функция` / `total function` is a function whose termination
 > the compiler has *proved* by structural descent, and `функция` / `function` is
-> everything else. Keywords come in two equal surfaces, Russian and English,
+> everything else. Keywords come in four equal surfaces — Russian, English,
+> Esperanto and Chinese — of which two are shown here,
 > which parse to the same AST. `пример` / `example` blocks are part of the
 > source: they are type-checked and executed, not comments.
 

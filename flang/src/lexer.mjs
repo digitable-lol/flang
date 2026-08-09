@@ -31,6 +31,41 @@
 
 const TAB_WIDTH = 2
 
+/** Знаки, каждый из которых — отдельный токен. */
+const PUNCT = "{}[]()<>:;,.?=|&+*%!"
+
+/**
+ * Полноширинные знаки → те же знаки обычной ширины.
+ *
+ * ЗАЧЕМ. На китайской поверхности `接受 元素：列表 数字` — это не украшение и не
+ * вопрос вкуса: полноширинное двоеточие U+FF1A стоит в китайском тексте там,
+ * где в европейском стоит `:`, и набирается той же клавишей в китайской
+ * раскладке. Без этой таблицы лексер отвечал на него «недопустимый символ '：'»,
+ * то есть китайский исходник надо было набирать наполовину в другой раскладке.
+ *
+ * ПОЧЕМУ ЭТО ВАЖНЕЕ, ЧЕМ УДОБСТВО. В китайском нет пробелов между словами, и
+ * знак — единственная естественная граница токена: `元素：列表` без таблицы
+ * прочиталось бы одним именем `元素列表`, если бы двоеточие просто выбрасывали.
+ * Полноширинный знак ДЕЛИТ поток так же, как узкий.
+ *
+ * ПОЧЕМУ ЗНАЧЕНИЕ ТОКЕНА — УЗКОЕ. Значение `punct` — часть контракта разбора:
+ * парсер сравнивает его с `":"`, `","`, `"("`. Оставить в токене полноширинный
+ * знак значило бы удвоить каждое такое сравнение во всём парсере и во всех
+ * восьми целях печати. Знак приводится к узкому здесь, один раз; `текст`
+ * токена образец у `punct` не хранит вовсе, поэтому потери записи нет — как её
+ * нет и у `->`, который тоже становится `→`.
+ *
+ * ЧТО ВЫПИСАНО. Блок U+FF01…U+FF5E — полноширинные двойники ASCII, ровно те,
+ * чей узкий двойник уже в наборе знаков. Правило одно и механическое, поэтому
+ * спорить не о чем: `：` это `:`, и ничего кроме. Отдельно НЕ выписаны `。`
+ * (U+3002) и `、` (U+3001): это не двойники ASCII, а свои знаки китайской
+ * пунктуации, и что они значат в языке — точку доступа к полю? разделитель
+ * списка? — решает владелец языка, а не таблица соответствий Unicode.
+ */
+const FULLWIDTH = new Map(
+  [...PUNCT].map((знак) => [String.fromCodePoint(знак.codePointAt(0) + 0xfee0), знак]),
+)
+
 const NAME_START = /[\p{ID_Start}_$]/u
 const NAME_PART = /[\p{ID_Continue}$\u200C\u200D-]/u
 const NUMBER = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/u
@@ -52,56 +87,102 @@ export function flangError(code, message, span) {
 
 /**
  * Таблица ключевых слов: канонический идентификатор → поверхности.
- * Русская и английская поверхности равноправны и дают один и тот же токен,
- * поэтому парсер ниже не знает, на каком языке написан исходник.
+ *
+ * Поверхностей четыре, и все равноправны: русская, английская, эсперантская и
+ * китайская дают один и тот же токен, поэтому парсер ниже не знает, на каком
+ * языке написан исходник. Слова в строке стоят в этом же порядке — русские,
+ * английские, эсперантские, китайские, — и порядок значим: первая победившая
+ * фраза остаётся за своим идентификатором.
+ *
+ * ── Чего в таблице НЕТ, и это решение, а не пропуск ─────────────────────────
+ *
+ * Слово поверхности — часть языка, а не подстановка из словаря, и там, где
+ * устоявшегося слова нет, строка молчит. Пять таких мест, каждое названо:
+ *
+ *   `module` без эсперанто. В эсперанто «modulo» называет И программный
+ *     модуль, И остаток от деления, а английское `modulo` таблица уже отдала
+ *     `opMod`. Одна фраза не вправе означать две конструкции, поэтому файл на
+ *     эсперанто пишет `module` по-английски (см. `examples/surfaces/*.eo.flang`).
+ *   `alias` («это») вообще без пары. Английской у него нет с самого начала, и
+ *     заводить эсперантскую и китайскую там, где нет английской, значило бы
+ *     решать за владельца, чем `тип X это Y` отличается от `является`.
+ *   `nested` без эсперанто. «Ingita» и «nestita» в эсперанто ходят обе, ни
+ *     одна не устоялась; выбрать одну — это решение о языке, а не перевод.
+ *   `supervision` без эсперанто. Слово нужно в смысле дерева надзора OTP;
+ *     эсперантского термина в этом смысле нет, а «kontrolado» и «prizorgado»
+ *     означают другое.
+ *   `opPercent` без китайского. Китайский процент — приставка (`百分之十`), а
+ *     конструкция языка постфиксная (`10 процентов от`). Постфиксного слова с
+ *     тем же смыслом нет, а переставить порядок значило бы поменять грамматику
+ *     конструкции ради одной поверхности.
+ *
+ * `plus` и `minus` стоят по одному разу: эсперантское слово здесь совпадает с
+ * английским буква в букву, и удваивать строку не за чем.
+ *
+ * ── Почему у китайской поверхности слова без пробелов ───────────────────────
+ * Склейка ключевых слов идёт по СЛОВАМ, а слово — это то, что лексер отделил
+ * пробелом или знаком. В китайском пробелов между словами нет, поэтому
+ * китайская фраза — всегда один токен (`起始于`, а не `起始 于`), и в исходнике
+ * пробел между ключевыми словами обязателен ровно так же, как между
+ * `тотальная` и `функция`. Полноширинные `：` `，` `（` `）` делят токены наравне
+ * с пробелом.
  */
-export const KEYWORDS = {
+const SURFACE_TABLE = {
   // ── документ и модульность ────────────────────────────────────────────────
-  module: ["модуль", "module"],
-  exports: ["экспортирует", "exports"],
-  uses: ["использует", "uses"],
-  category: ["категория", "category"],
-  object: ["объект", "структура", "object", "structure"],
-  record: ["запись", "record"],
-  type: ["тип", "type"],
-  variant: ["вариант", "variant"],
-  alias: ["это"],
-  nested: ["вложен объект", "вложена структура", "nested object", "nested structure"],
+  module: { ru: ["модуль"], en: ["module"], zh: ["模块"] },
+  exports: { ru: ["экспортирует"], en: ["exports"], eo: ["eksportas"], zh: ["导出"] },
+  uses: { ru: ["использует"], en: ["uses"], eo: ["uzas"], zh: ["使用"] },
+  category: { ru: ["категория"], en: ["category"], eo: ["kategorio"], zh: ["类别"] },
+  object: {
+    ru: ["объект", "структура"],
+    en: ["object", "structure"],
+    eo: ["objekto", "strukturo"],
+    zh: ["对象", "结构"],
+  },
+  record: { ru: ["запись"], en: ["record"], eo: ["rikordo"], zh: ["记录"] },
+  type: { ru: ["тип"], en: ["type"], eo: ["tipo"], zh: ["类型"] },
+  variant: { ru: ["вариант"], en: ["variant"], eo: ["varianto"], zh: ["变体"] },
+  alias: { ru: ["это"] },
+  nested: {
+    ru: ["вложен объект", "вложена структура"],
+    en: ["nested object", "nested structure"],
+    zh: ["嵌套对象", "嵌套结构"],
+  },
 
   // ── функции ───────────────────────────────────────────────────────────────
-  total: ["тотальная", "total"],
-  function: ["функция", "function"],
-  accepts: ["принимает", "accepts"],
-  returns: ["возвращает", "returns"],
-  example: ["пример", "example"],
-  given: ["дано", "given"],
-  expected: ["ожидается", "expected"],
+  total: { ru: ["тотальная"], en: ["total"], eo: ["totala"], zh: ["完全"] },
+  function: { ru: ["функция"], en: ["function"], eo: ["funkcio"], zh: ["函数"] },
+  accepts: { ru: ["принимает"], en: ["accepts"], eo: ["akceptas"], zh: ["接受"] },
+  returns: { ru: ["возвращает"], en: ["returns"], eo: ["redonas"], zh: ["返回"] },
+  example: { ru: ["пример"], en: ["example"], eo: ["ekzemplo"], zh: ["示例"] },
+  given: { ru: ["дано"], en: ["given"], eo: ["donite"], zh: ["给定"] },
+  expected: { ru: ["ожидается"], en: ["expected"], eo: ["atendata"], zh: ["期望"] },
 
   // ── выражения ─────────────────────────────────────────────────────────────
-  let: ["пусть", "let"],
-  if: ["если", "if"],
-  then: ["то", "then"],
-  else: ["иначе", "else"],
-  match: ["разбор", "match"],
-  case: ["случай", "case"],
-  of: ["от", "of"],
-  and: ["и", "and"],
-  with: ["с", "with"],
-  from: ["из", "from"],
-  only: ["только", "only"],
-  to: ["в", "к", "to", "into", "in", "onto"],
-  by: ["по", "by"],
-  at: ["у", "at"],
-  as: ["как", "as"],
-  where: ["где", "where"],
-  startingWith: ["начиная с", "starting with"],
+  let: { ru: ["пусть"], en: ["let"], eo: ["estu"], zh: ["令"] },
+  if: { ru: ["если"], en: ["if"], eo: ["se"], zh: ["如果"] },
+  then: { ru: ["то"], en: ["then"], eo: ["tiam"], zh: ["那么"] },
+  else: { ru: ["иначе"], en: ["else"], eo: ["alie"], zh: ["否则"] },
+  match: { ru: ["разбор"], en: ["match"], eo: ["kongruo"], zh: ["匹配"] },
+  case: { ru: ["случай"], en: ["case"], eo: ["kazo"], zh: ["情况"] },
+  of: { ru: ["от"], en: ["of"], eo: ["de"], zh: ["的"] },
+  and: { ru: ["и"], en: ["and"], eo: ["kaj"], zh: ["和"] },
+  with: { ru: ["с"], en: ["with"], eo: ["kun"], zh: ["带有"] },
+  from: { ru: ["из"], en: ["from"], eo: ["el"], zh: ["从"] },
+  only: { ru: ["только"], en: ["only"], eo: ["nur"], zh: ["仅"] },
+  to: { ru: ["в", "к"], en: ["to", "into", "in", "onto"], eo: ["al"], zh: ["到"] },
+  by: { ru: ["по"], en: ["by"], eo: ["per"], zh: ["按"] },
+  at: { ru: ["у"], en: ["at"], eo: ["ĉe"], zh: ["在"] },
+  as: { ru: ["как"], en: ["as"], eo: ["kiel"], zh: ["作为"] },
+  where: { ru: ["где"], en: ["where"], eo: ["kie"], zh: ["其中"] },
+  startingWith: { ru: ["начиная с"], en: ["starting with"], eo: ["komencante per"], zh: ["起始于"] },
 
   // ── встроенные формы ──────────────────────────────────────────────────────
-  map: ["отобразить", "map"],
-  filter: ["отфильтровать", "filter"],
-  fold: ["свёртка", "свертка", "fold"],
-  length: ["длина", "length"],
-  char: ["символ", "char"],
+  map: { ru: ["отобразить"], en: ["map"], eo: ["mapi"], zh: ["映射"] },
+  filter: { ru: ["отфильтровать"], en: ["filter"], eo: ["filtri"], zh: ["过滤"] },
+  fold: { ru: ["свёртка", "свертка"], en: ["fold"], eo: ["faldo"], zh: ["折叠"] },
+  length: { ru: ["длина"], en: ["length"], eo: ["longo"], zh: ["长度"] },
+  char: { ru: ["символ"], en: ["char"], eo: ["signo"], zh: ["字符"] },
   /* Разложение строки в список — форма из двух частей, `разложить … на
      символы`, а не одно слово «символы».
      
@@ -116,13 +197,13 @@ export const KEYWORDS = {
      «размер минус позиция» — число, а числа анализ завершаемости частью
      значения не считает. Разложив строку в список, тот же проход становится
      рекурсией по хвосту и доказывается. */
-  decompose: ["разложить", "decompose"],
-  intoCharacters: ["на символы", "into characters"],
-  substring: ["подстрока", "substring"],
-  join: ["соединить", "join"],
-  split: ["разделить", "split"],
-  contains: ["содержит", "contains"],
-  beginsWith: ["начинается с", "begins with"],
+  decompose: { ru: ["разложить"], en: ["decompose"], eo: ["malkomponi"], zh: ["分解"] },
+  intoCharacters: { ru: ["на символы"], en: ["into characters"], eo: ["en signojn"], zh: ["为字符"] },
+  substring: { ru: ["подстрока"], en: ["substring"], eo: ["subĉeno"], zh: ["子串"] },
+  join: { ru: ["соединить"], en: ["join"], eo: ["kunigi"], zh: ["连接"] },
+  split: { ru: ["разделить"], en: ["split"], eo: ["dividi"], zh: ["分割"] },
+  contains: { ru: ["содержит"], en: ["contains"], eo: ["enhavas"], zh: ["包含"] },
+  beginsWith: { ru: ["начинается с"], en: ["begins with"], eo: ["komenciĝas per"], zh: ["开始于"] },
   /* «к числу», чей отказ становится значением, а не концом вычисления
      (`builtins.mjs`, раздел «отказ, ставший значением»).
 
@@ -140,11 +221,16 @@ export const KEYWORDS = {
      Порядок в таблице значения не имеет — склейка жадная и длинные фразы идут
      первыми, — но запись стоит рядом с `к числу` нарочно: их поверхности
      пересекаются, и правку одной надо видеть вместе с другой. */
-  toNumberOrFail: ["к числу или беда", "to number or failure"],
-  toNumber: ["к числу", "to number"],
-  toText: ["к строке", "to text"],
-  head: ["голова", "head"],
-  tail: ["хвост", "tail"],
+  toNumberOrFail: {
+    ru: ["к числу или беда"],
+    en: ["to number or failure"],
+    eo: ["al nombro aŭ fiasko"],
+    zh: ["转数字或失败"],
+  },
+  toNumber: { ru: ["к числу"], en: ["to number"], eo: ["al nombro"], zh: ["转数字"] },
+  toText: { ru: ["к строке"], en: ["to text"], eo: ["al teksto"], zh: ["转文本"] },
+  head: { ru: ["голова"], en: ["head"], eo: ["kapo"], zh: ["头"] },
+  tail: { ru: ["хвост"], en: ["tail"], eo: ["vosto"], zh: ["尾"] },
   /* Взятие элемента списка по номеру: `элемент N в СПИСОК`.
 
      ПОЧЕМУ ТА ЖЕ ФОРМА, ЧТО У `символ N в СТРОКЕ`. Одно понятие называется
@@ -172,64 +258,74 @@ export const KEYWORDS = {
 
      `обратный элемент` моноида не ломается: склейка жадная и длинные фразы
      идут первыми, поэтому пара слов побеждает одиночное. Тоже под тестом. */
-  item: ["элемент", "item"],
-  headTail: ["голова и хвост", "head and tail"],
-  empty: ["пусто", "empty"],
-  emptyList: ["пустой список", "empty list"],
-  listOf: ["список из", "list of"],
-  list: ["список", "list"],
-  add: ["добавить", "add"],
-  any: ["любое", "any"],
+  item: { ru: ["элемент"], en: ["item"], eo: ["ero"], zh: ["元素"] },
+  headTail: { ru: ["голова и хвост"], en: ["head and tail"], eo: ["kapo kaj vosto"], zh: ["头和尾"] },
+  empty: { ru: ["пусто"], en: ["empty"], eo: ["malplena"], zh: ["空"] },
+  emptyList: { ru: ["пустой список"], en: ["empty list"], eo: ["malplena listo"], zh: ["空列表"] },
+  listOf: { ru: ["список из"], en: ["list of"], eo: ["listo de"], zh: ["列表由"] },
+  list: { ru: ["список"], en: ["list"], eo: ["listo"], zh: ["列表"] },
+  add: { ru: ["добавить"], en: ["add"], eo: ["aldoni"], zh: ["添加"] },
+  any: { ru: ["любое"], en: ["any"], eo: ["ajna"], zh: ["任意"] },
 
   // ── арифметика и сравнения ────────────────────────────────────────────────
-  opAdd: ["плюс", "plus"],
-  opSub: ["минус", "minus"],
-  opMul: ["умножить на", "times", "multiplied by"],
-  opDiv: ["делить на", "divided by"],
-  opMod: ["остаток от", "modulo"],
-  opPercent: ["процентов", "процента", "процент", "percent", "percents"],
-  cmpEq: ["равен", "равна", "равно", "равным", "равной", "равное", "equals", "equal to"],
-  cmpNeq: ["не равен", "не равна", "не равно", "is not equal to", "not equals"],
-  cmpGt: ["больше", "is greater than", "greater than"],
-  cmpLt: ["меньше", "is less than", "less than"],
-  cmpLte: ["не больше", "is at most", "at most"],
-  cmpGte: ["не меньше", "is at least", "at least"],
+  opAdd: { ru: ["плюс"], en: ["plus"], eo: ["plus"], zh: ["加"] },
+  opSub: { ru: ["минус"], en: ["minus"], eo: ["minus"], zh: ["减"] },
+  opMul: { ru: ["умножить на"], en: ["times", "multiplied by"], eo: ["fojoj"], zh: ["乘以"] },
+  opDiv: { ru: ["делить на"], en: ["divided by"], eo: ["dividite per"], zh: ["除以"] },
+  opMod: { ru: ["остаток от"], en: ["modulo"], eo: ["resto de"], zh: ["取余"] },
+  opPercent: { ru: ["процентов", "процента", "процент"], en: ["percent", "percents"], eo: ["procentoj", "procento"] },
+  cmpEq: {
+    ru: ["равен", "равна", "равно", "равным", "равной", "равное"],
+    en: ["equals", "equal to"],
+    eo: ["egalas"],
+    zh: ["等于"],
+  },
+  cmpNeq: {
+    ru: ["не равен", "не равна", "не равно"],
+    en: ["is not equal to", "not equals"],
+    eo: ["ne egalas"],
+    zh: ["不等于"],
+  },
+  cmpGt: { ru: ["больше"], en: ["is greater than", "greater than"], eo: ["pli granda ol"], zh: ["大于"] },
+  cmpLt: { ru: ["меньше"], en: ["is less than", "less than"], eo: ["pli malgranda ol"], zh: ["小于"] },
+  cmpLte: { ru: ["не больше"], en: ["is at most", "at most"], eo: ["ne pli granda ol"], zh: ["不大于"] },
+  cmpGte: { ru: ["не меньше"], en: ["is at least", "at least"], eo: ["ne pli malgranda ol"], zh: ["不小于"] },
 
   // ── значения и типы ───────────────────────────────────────────────────────
-  litTrue: ["да", "true", "yes"],
-  litFalse: ["нет", "false", "no"],
-  litNull: ["ничто", "null"],
-  tNumber: ["число", "числа", "числом", "числу", "number"],
+  litTrue: { ru: ["да"], en: ["true", "yes"], eo: ["vera", "jes"], zh: ["真"] },
+  litFalse: { ru: ["нет"], en: ["false", "no"], eo: ["malvera", "ne"], zh: ["假"] },
+  litNull: { ru: ["ничто"], en: ["null"], eo: ["nenio"], zh: ["无"] },
+  tNumber: { ru: ["число", "числа", "числом", "числу"], en: ["number"], eo: ["nombro"], zh: ["数字"] },
   /* «текст» и «text» намеренно не ключевые слова: это слишком частое имя поля
      (`вариант Слово содержит текст: строка` прямо из SPEC). Форму творительного
      падежа `текстом` ядро FTS понимает как тип, её и оставляем. */
-  tString: ["строка", "строки", "строкой", "строку", "текстом", "string"],
-  tFlag: ["признак", "признака", "признаком", "boolean", "flag"],
-  tMoney: ["деньги", "деньгами", "money"],
-  tDate: ["дата", "даты", "дату", "датой", "date"],
-  state: ["состояние", "состоянием", "state"],
-  is: ["является", "is"],
-  maybeIs: ["иногда является", "may be"],
+  tString: { ru: ["строка", "строки", "строкой", "строку", "текстом"], en: ["string"], eo: ["teksto"], zh: ["字符串"] },
+  tFlag: { ru: ["признак", "признака", "признаком"], en: ["boolean", "flag"], eo: ["bulea"], zh: ["布尔"] },
+  tMoney: { ru: ["деньги", "деньгами"], en: ["money"], eo: ["mono"], zh: ["金额"] },
+  tDate: { ru: ["дата", "даты", "дату", "датой"], en: ["date"], eo: ["dato"], zh: ["日期"] },
+  state: { ru: ["состояние", "состоянием"], en: ["state"], eo: ["stato"], zh: ["状态"] },
+  is: { ru: ["является"], en: ["is"], eo: ["estas"], zh: ["是"] },
+  maybeIs: { ru: ["иногда является"], en: ["may be"], eo: ["povas esti"], zh: ["可能是"] },
 
   // ── наследие FTS ──────────────────────────────────────────────────────────
-  utility: ["утилита", "utility"],
-  rule: ["правило", "rule"],
-  property: ["свойство", "property"],
-  result: ["результат", "result"],
-  startsWith: ["начинает с", "starts with"],
+  utility: { ru: ["утилита"], en: ["utility"], eo: ["utilaĵo"], zh: ["工具"] },
+  rule: { ru: ["правило"], en: ["rule"], eo: ["regulo"], zh: ["规则"] },
+  property: { ru: ["свойство"], en: ["property"], eo: ["propraĵo"], zh: ["属性"] },
+  result: { ru: ["результат"], en: ["result"], eo: ["rezulto"], zh: ["结果"] },
+  startsWith: { ru: ["начинает с"], en: ["starts with"], eo: ["komencas per"], zh: ["始于"] },
   /* «поля» — родительный падеж из оборота «10 процентов от поля сумма»:
      ядро FTS срезает его как служебное слово, значит и здесь оно служебное. */
-  field: ["поле", "поля", "field"],
-  morphism: ["морфизм", "morphism"],
+  field: { ru: ["поле", "поля"], en: ["field"], eo: ["kampo"], zh: ["字段"] },
+  morphism: { ru: ["морфизм"], en: ["morphism"], eo: ["morfismo"], zh: ["态射"] },
   /* Теоркат-поверхность (flang/cat/SPEC.md, шаг 1). Только слова: «после» —
      композиция в математическом порядке, «цепочка» с «сначала»/«затем» — она
      же в порядке чтения, потому что «в после (б после а)» читается наизнанку.
      Символов вроде «∘» здесь нет и не будет: их не набрать на клавиатуре. */
-  after: ["после", "after"],
-  chain: ["цепочка", "chain"],
-  firstStep: ["сначала", "first"],
-  nextStep: ["затем", "next"],
-  identity: ["единица", "identity"],
+  after: { ru: ["после"], en: ["after"], eo: ["post"], zh: ["之后"] },
+  chain: { ru: ["цепочка"], en: ["chain"], eo: ["ĉeno"], zh: ["链"] },
+  firstStep: { ru: ["сначала"], en: ["first"], eo: ["unue"], zh: ["首先"] },
+  nextStep: { ru: ["затем"], en: ["next"], eo: ["poste"], zh: ["然后"] },
+  identity: { ru: ["единица"], en: ["identity"], eo: ["identeco"], zh: ["恒等"] },
   /* Закон при стрелке (flang/cat/SPEC.md, «Категория и морфизм»). Стрелка
      сама по себе — объявление без вычисления, и проверять у неё нечего; `даёт`
      называет функцию, которая её считает, а `закон` открывает блок примеров,
@@ -256,8 +352,8 @@ export const KEYWORDS = {
      стоит ничего из этого и говорит ровно то же. Так уже сделано у моноида
      (`операция «Соединить»`) и у монады (`возврат «Обернуть»`), и решение 3
      контракта — «морфизм может быть реализован функцией» — это же и говорит. */
-  gives: ["даёт", "gives"],
-  lawBlock: ["закон", "law"],
+  gives: { ru: ["даёт"], en: ["gives"], eo: ["donas"], zh: ["给出"] },
+  lawBlock: { ru: ["закон"], en: ["law"], eo: ["leĝo"], zh: ["定律"] },
   /* Изоморфизм: пара стрелок туда и обратно (flang/cat/SPEC.md).
      Концы называются уже занятыми `из … в …` — теми же двумя словами, какими
      их называют морфизм и функтор. Третий предлог («между») читался бы не
@@ -271,9 +367,9 @@ export const KEYWORDS = {
      никогда — тем же доводом в языке появились `обратный элемент` и
      `разложить … на символы`. «Обратный морфизм» вдобавок ставится в один ряд
      с «обратным элементом» моноида: одно и то же слово об одном и том же. */
-  isomorphism: ["изоморфизм", "isomorphism"],
-  forwardMorphism: ["прямой морфизм", "forward morphism"],
-  inverseMorphism: ["обратный морфизм", "inverse morphism"],
+  isomorphism: { ru: ["изоморфизм"], en: ["isomorphism"], eo: ["izomorfio"], zh: ["同构"] },
+  forwardMorphism: { ru: ["прямой морфизм"], en: ["forward morphism"], eo: ["rekta morfismo"], zh: ["正向态射"] },
+  inverseMorphism: { ru: ["обратный морфизм"], en: ["inverse morphism"], eo: ["inversa morfismo"], zh: ["逆态射"] },
   /* Моноид: носитель, операция, единица — и необязательное обращение, с
      которым моноид становится группой. Отдельного слова «группа» нет, и это
      не экономия: группа И ЕСТЬ моноид с обращением, а два слова для одного
@@ -283,10 +379,10 @@ export const KEYWORDS = {
      имена в коде репозитория (57, 4 и множество мест). Резервировать их
      значило бы сломать чужой код — как уже случилось со словом «символы».
      Отсюда «носитель» вместо «на» и фраза «обратный элемент» вместо слова. */
-  monoid: ["моноид", "monoid"],
-  carrier: ["носитель", "carrier"],
-  operation: ["операция", "operation"],
-  inverseElement: ["обратный элемент", "inverse element"],
+  monoid: { ru: ["моноид"], en: ["monoid"], eo: ["monoido"], zh: ["幺半群"] },
+  carrier: { ru: ["носитель"], en: ["carrier"], eo: ["portanto"], zh: ["载体"] },
+  operation: { ru: ["операция"], en: ["operation"], eo: ["operacio"], zh: ["运算"] },
+  inverseElement: { ru: ["обратный элемент"], en: ["inverse element"], eo: ["inversa elemento"], zh: ["逆元"] },
   /* Монада: моноид в категории эндофункторов (flang/cat/MONAD.md). Четыре
      слова на всю конструкцию, и каждое проверено `grep -rowE` по .flang и .fts
      репозитория на ГОЛОЕ, не закавыченное вхождение — тем же счётом, каким уже
@@ -309,44 +405,45 @@ export const KEYWORDS = {
      Английское `join` занято встроенной формой `соединить`, поэтому μ
      по-английски пишется `flatten`: одна и та же фраза не вправе означать две
      конструкции. */
-  monad: ["монада", "monad"],
-  monadUnit: ["возврат", "return"],
-  monadJoin: ["соединение", "flatten"],
-  inMonad: ["в монаде", "in monad"],
-  theorem: ["теорема", "theorem"],
-  functor: ["функтор", "functor"],
+  monad: { ru: ["монада"], en: ["monad"], eo: ["monado"], zh: ["单子"] },
+  monadUnit: { ru: ["возврат"], en: ["return"], eo: ["redono"], zh: ["单位"] },
+  monadJoin: { ru: ["соединение"], en: ["flatten"], eo: ["platigo"], zh: ["压平"] },
+  inMonad: { ru: ["в монаде"], en: ["in monad"], eo: ["en monado"], zh: ["在单子中"] },
+  theorem: { ru: ["теорема"], en: ["theorem"], eo: ["teoremo"], zh: ["定理"] },
+  functor: { ru: ["функтор"], en: ["functor"], eo: ["funktoro"], zh: ["函子"] },
   /* Бифунктор: функтор от двух входов сразу (flang/cat/SPEC.md). Слова
      «бифунктор», «объекты» и «морфизмы» проверены `grep` по .flang и .fts вне
      комментариев, ёлочек и строк — ни одно не стоит в позиции имени.
      Множественное число заведено отдельными идентификаторами, а не добавлено
      к `object` и `morphism`: тогда `объекты «Х»` наверху файла разбиралось бы
      как объявление записи, и опечатка в одну букву молча меняла бы смысл. */
-  bifunctor: ["бифунктор", "bifunctor"],
-  objectPair: ["объекты", "objects"],
-  morphismPair: ["морфизмы", "morphisms"],
-  proposition: ["утверждение", "proposition"],
-  has: ["имеет", "has"],
-  inData: ["в данных", "in data"],
-  findWhere: ["найти где", "find where"],
-  byMorphism: [
-    "по морфизму",
-    "затем по морфизму",
-    "применить морфизм",
-    "затем применить морфизм",
-    "by morphism",
-    "then by morphism",
-    "apply morphism",
-    "then apply morphism",
-  ],
-  therefore: ["следовательно", "получаем", "therefore"],
-  law: ["по закону", "under law"],
+  bifunctor: { ru: ["бифунктор"], en: ["bifunctor"], eo: ["bifunktoro"], zh: ["双函子"] },
+  objectPair: { ru: ["объекты"], en: ["objects"], eo: ["objektoj"], zh: ["对象对"] },
+  morphismPair: { ru: ["морфизмы"], en: ["morphisms"], eo: ["morfismoj"], zh: ["态射对"] },
+  proposition: { ru: ["утверждение"], en: ["proposition"], eo: ["propozicio"], zh: ["命题"] },
+  has: { ru: ["имеет"], en: ["has"], eo: ["havas"], zh: ["具有"] },
+  inData: { ru: ["в данных"], en: ["in data"], eo: ["en datumoj"], zh: ["在数据中"] },
+  findWhere: { ru: ["найти где"], en: ["find where"], eo: ["trovi kie"], zh: ["查找其中"] },
+  byMorphism: {
+    ru: ["по морфизму", "затем по морфизму", "применить морфизм", "затем применить морфизм"],
+    en: ["by morphism", "then by morphism", "apply morphism", "then apply morphism"],
+    eo: ["per morfismo", "poste per morfismo"],
+    zh: ["按态射", "然后按态射"],
+  },
+  therefore: { ru: ["следовательно", "получаем"], en: ["therefore"], eo: ["sekve"], zh: ["因此"] },
+  law: { ru: ["по закону"], en: ["under law"], eo: ["laŭ leĝo"], zh: ["依定律"] },
   /* Множественное число — та же связка, что и единственное, ровно как `равен`,
      `равна` и `равное` дают один `cmpEq`. У бифунктора отображается ПАРА, и
      писать «пара объектов отображается» вместо «объекты отображаются» значило
      бы портить русский ради экономии одной строки таблицы. */
-  mapsTo: ["отображается в", "отображаются в", "maps to", "map to"],
-  mapsToField: ["отображается в поле", "maps to field"],
-  mapsToMorphism: ["отображается в морфизм", "отображаются в морфизм", "maps to morphism", "map to morphism"],
+  mapsTo: { ru: ["отображается в", "отображаются в"], en: ["maps to", "map to"], eo: ["mapiĝas al"], zh: ["映射到"] },
+  mapsToField: { ru: ["отображается в поле"], en: ["maps to field"], eo: ["mapiĝas al kampo"], zh: ["映射到字段"] },
+  mapsToMorphism: {
+    ru: ["отображается в морфизм", "отображаются в морфизм"],
+    en: ["maps to morphism", "map to morphism"],
+    eo: ["mapiĝas al morfismo"],
+    zh: ["映射到态射"],
+  },
 
   /* ── конкурентность (flang/conc/SPEC.md, шаг 1) ────────────────────────────
      Восемь слов на всю модель, и каждое проверено `grep -rn` по .flang и .fts
@@ -372,14 +469,14 @@ export const KEYWORDS = {
      парсер пропускает их как слова-пояснения (`skipFillerWords`). Занимать
      существительное ради читаемости одной строки — цена, которую платить не
      надо. */
-  process: ["процесс", "process"],
-  handles: ["обрабатывает", "handles"],
-  budget: ["с запасом", "with budget"],
-  supervision: ["надзор", "supervision"],
-  strategy: ["стратегия", "strategy"],
-  failureThreshold: ["порог отказов", "failure threshold"],
-  run: ["прогон", "run"],
-  seed: ["семя", "seed"],
+  process: { ru: ["процесс"], en: ["process"], eo: ["procezo"], zh: ["进程"] },
+  handles: { ru: ["обрабатывает"], en: ["handles"], eo: ["traktas"], zh: ["处理"] },
+  budget: { ru: ["с запасом"], en: ["with budget"], eo: ["kun buĝeto"], zh: ["带预算"] },
+  supervision: { ru: ["надзор"], en: ["supervision"], zh: ["监督"] },
+  strategy: { ru: ["стратегия"], en: ["strategy"], eo: ["strategio"], zh: ["策略"] },
+  failureThreshold: { ru: ["порог отказов"], en: ["failure threshold"], eo: ["sojlo de fiaskoj"], zh: ["失败阈值"] },
+  run: { ru: ["прогон"], en: ["run"], eo: ["rulo"], zh: ["运行"] },
+  seed: { ru: ["семя"], en: ["seed"], eo: ["semo"], zh: ["种子"] },
 
   /* ── ввод-вывод (flang/cat/SPEC.md, «Эффекты и HTTP») ──────────────────────
      ОДНО слово на всю модель, и это не рекорд ради рекорда: план объявляется
@@ -398,7 +495,93 @@ export const KEYWORDS = {
      Имена вариантов словаря ключевыми словами не становятся вовсе: они
      пишутся в ёлочках, а закавыченное имя ключевым словом стать не может
      никогда. Их занятость проверена отдельно — см. `src/io.mjs`. */
-  plan: ["план", "plan"],
+  plan: { ru: ["план"], en: ["plan"], eo: ["plano"], zh: ["计划"] },
+}
+
+/**
+ * Порядок поверхностей. Он же порядок слов в `KEYWORDS`, и он значим: первая
+ * победившая фраза остаётся за своим идентификатором.
+ */
+export const SURFACE_ORDER = ["ru", "en", "eo", "zh"]
+
+/**
+ * Плоская таблица — та, что была здесь всегда: идентификатор → все слова
+ * подряд. Собирается из `SURFACE_TABLE`, а не пишется руками, поэтому
+ * разъехаться они не могут. Слово, стоящее на двух поверхностях сразу
+ * (эсперантское `plus` — оно же английское), в списке остаётся одно.
+ */
+export const KEYWORDS = Object.fromEntries(
+  Object.entries(SURFACE_TABLE).map(([id, surfaces]) => [
+    id,
+    [...new Set(SURFACE_ORDER.flatMap((surface) => surfaces[surface] ?? []))],
+  ]),
+)
+
+/** Фраза → поверхность, на которой она написана. Общее слово отдаётся первой. */
+const PHRASE_SURFACE = new Map()
+for (const [id, surfaces] of Object.entries(SURFACE_TABLE)) {
+  for (const surface of SURFACE_ORDER) {
+    for (const phrase of surfaces[surface] ?? []) {
+      if (!PHRASE_SURFACE.has(phrase)) PHRASE_SURFACE.set(phrase, surface)
+    }
+  }
+  void id
+}
+
+/**
+ * Поверхность, на которой написана фраза, или `null`.
+ *
+ * `plus` и `minus` стоят и в английском столбце, и в эсперантском: слово одно
+ * и то же. Поверхность у него называется английской — не потому, что оно
+ * английское, а потому, что по одному такому слову поверхность файла не
+ * определяется, и спорить тут не о чем. Определяется она большинством
+ * (`surfaceOfTokens`), где общее слово голоса не меняет.
+ */
+export function surfaceOfPhrase(phrase) {
+  return PHRASE_SURFACE.get(phrase.toLowerCase()) ?? null
+}
+
+/**
+ * Слово понятия на заданной поверхности — то, которое показывают диагностики.
+ * Берётся первое: у понятия слов бывает несколько (`равен`, `равна`, `равно`),
+ * и первое в строке — то, которым понятие называют.
+ */
+export function wordOn(id, surface) {
+  return SURFACE_TABLE[id]?.[surface]?.[0] ?? null
+}
+
+/**
+ * Поверхность потока токенов — большинством голосов среди ключевых слов.
+ *
+ * Не «первое ключевое слово»: файл на эсперанто начинается с английского
+ * `module`, потому что эсперантского слова у этого понятия нет, и по первому
+ * слову вся диагностика файла говорила бы по-английски. Не «все слова одной
+ * поверхности» тоже: смешение законно ровно там, где на поверхности слова нет.
+ *
+ * Ничья и пустой поток дают `null` — тогда диагностика остаётся на русской
+ * поверхности, как и была.
+ */
+export function surfaceOfTokens(tokens) {
+  const счёт = new Map()
+  for (const token of tokens) {
+    if (token.kind !== "keyword") continue
+    const поверхность = surfaceOfPhrase(token.text ?? "")
+    if (поверхность === null) continue
+    счёт.set(поверхность, (счёт.get(поверхность) ?? 0) + 1)
+  }
+  let лучшая = null
+  let сколько = 0
+  let ничья = false
+  for (const [поверхность, голоса] of счёт) {
+    if (голоса > сколько) {
+      лучшая = поверхность
+      сколько = голоса
+      ничья = false
+    } else if (голоса === сколько) {
+      ничья = true
+    }
+  }
+  return ничья ? null : лучшая
 }
 
 const PHRASES = new Map()
@@ -623,11 +806,13 @@ export function tokenize(source) {
       push({ kind: "name", value: value.normalize("NFC"), quoted: false, span: start })
       continue
     }
-    if ("{}[]()<>:;,.?=|&+*%!".includes(character)) {
+    const narrow = PUNCT.includes(character) ? character : FULLWIDTH.get(character)
+    if (narrow !== undefined) {
       const start = here()
-      push({ kind: "punct", value: advance(), span: start })
-      if (character === "{" || character === "[" || character === "(") depth += 1
-      if (character === "}" || character === "]" || character === ")") depth = Math.max(0, depth - 1)
+      advance()
+      push({ kind: "punct", value: narrow, span: start })
+      if (narrow === "{" || narrow === "[" || narrow === "(") depth += 1
+      if (narrow === "}" || narrow === "]" || narrow === ")") depth = Math.max(0, depth - 1)
       continue
     }
 

@@ -651,15 +651,18 @@ attaching a solver to the verification conditions is an open task, not a feature
   a program with a plan works for all eight.
 - No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
   programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
-- The totality analysis knows structural decrease and a numeric measure with a CONSTANT step —
+- The totality analysis INFERS structural decrease and a numeric measure with a CONSTANT step —
   either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
-  positive (`н минус ш` under `если ш не больше 0`). Anything whose step CHANGES from turn to turn
-  stays out: binary search halves the range, Euclid takes a remainder, counting up grows — those
-  still need a "fuel" list. Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
-  forever. The measure itself is propped up
-  by a guard: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|, so the
-  compiler installs a decrease check on every call proven by a measure. No decrease means a
-  `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets — not a hang.
+  positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there
+  is nothing to infer it from, so the author NAMES the measure — a `убывает <expression>` line.
+  That is how binary search (`убывает верх минус низ плюс 1`), Euclid (`убывает б`) and counting up
+  (`убывает предел минус н`) are written; they no longer need a "fuel" list — see
+  `flang/examples/measure/`. Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
+  forever, so the guard on a declared measure checks three things at once — strict decrease,
+  non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
+  different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
+  decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets
+  — not a hang.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

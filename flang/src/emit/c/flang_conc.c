@@ -65,6 +65,10 @@ static double fl_conc_random(uint32_t *state) {
   return (double)(t ^ (t >> 14)) / 4294967296.0;
 }
 
+static fl_status fl_conc_memory(fl_ctx *ctx, fl_error *error) {
+  return fl_fail(ctx, error, FL_CODE_MEMORY, "кончилась память в планировщике конкурентности");
+}
+
 /* ───────────────────────────── растущие массивы ─────────────────────────────
    Арена ничего не отдаёт до конца вызова, поэтому рост — это «выделить вдвое и
    скопировать», а старое остаётся лежать. Для журнала прогона это ровно та
@@ -84,11 +88,163 @@ static void *fl_conc_grow(fl_ctx *ctx, void *items, size_t used, size_t *capacit
   return bigger;
 }
 
+/* ───────────────────────────── копия значения (шаг А2) ─────────────────────
+   Своя куча у процесса возможна ровно при одном условии: наружу из неё ничего
+   не смотрит. Значит сообщение, уходящее адресату, обязано переехать в ЕГО
+   кучу, а не остаться ссылкой в кучу отправителя, — иначе сброс кучи
+   отправителя оставил бы адресату указатель в пустоту.
+
+   Это и есть тот пункт границы честности, который выбор А0 вычеркнул:
+   «сообщения не копируются» больше не правда. Взамен правдой стало «процесс
+   живёт неограниченно», и разменяны они сознательно — цена копии измерена и
+   названа числом (`flang/conc/bench.mjs`, раздел «Цена отправки сообщения»).
+
+   Имена полей и имя варианта НЕ копируются: они приходят из модели, а не из
+   данных, лежат в .rodata и живут столько же, сколько программа
+   (`flang_runtime.h`, «Имена полей всегда заканчиваются нулём»). Копировать их
+   значило бы платить за каждое сообщение ещё и длиной его схемы. */
+
+static fl_status fl_conc_clone(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+
+static fl_status fl_conc_clone_fields(fl_ctx *ctx, const fl_field *fields, size_t count,
+                                      const fl_field **out, fl_error *error) {
+  fl_field *copy = NULL;
+  size_t index = 0;
+  if (count == 0) {
+    *out = NULL;
+    return FL_OK;
+  }
+  if (count > ((size_t)-1) / sizeof(fl_field)) {
+    return fl_conc_memory(ctx, error);
+  }
+  copy = (fl_field *)fl_arena_alloc(ctx->arena, count * sizeof(fl_field));
+  if (copy == NULL) {
+    return fl_conc_memory(ctx, error);
+  }
+  for (index = 0; index < count; index += 1) {
+    copy[index].name = fields[index].name;
+    FL_TRY(fl_conc_clone(ctx, fields[index].value, &copy[index].value, error));
+  }
+  *out = copy;
+  return FL_OK;
+}
+
+/**
+ * Глубокая копия значения в арену `ctx`. Значения flang — деревья: они
+ * неизменяемы, разделяются свободно и не содержат циклов, поэтому обход
+ * завершается, а глубину сторожит `fl_enter` тем же пределом и тем же кодом
+ * (`FLANG_RECURSION_LIMIT`), которым её сторожит всё остальное.
+ *
+ * Счёт витков на время копии выключен (`max_steps == 0` у контекста-приёмника):
+ * копирование — работа планировщика, а не программы, и приписывать её запасу
+ * обработчика значило бы сделать запас зависящим от размера сообщения.
+ */
+static fl_status fl_conc_clone(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  fl_status status = FL_OK;
+  FL_TRY(fl_enter(ctx, "копия значения", error));
+  switch (value.tag) {
+    case FL_NOTHING:
+    case FL_NUMBER:
+    case FL_FLAG:
+      *out = value;
+      break;
+    case FL_STRING: {
+      char *text = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);
+      if (text == NULL) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      if (value.as.string.bytes > 0) {
+        memcpy(text, value.as.string.utf8, value.as.string.bytes);
+      }
+      /* Ноль на конце копия ставит, хотя исходник мог быть срезом и не
+         заканчиваться им: лишний байт стоит меньше, чем правило «иногда с
+         нулём», и диагностики печатают строку через %s. */
+      text[value.as.string.bytes] = '\0';
+      *out = fl_text_borrow(text, value.as.string.bytes, value.as.string.points);
+      break;
+    }
+    case FL_LIST: {
+      fl_value *items = NULL;
+      size_t index = 0;
+      if (value.as.list.count == 0) {
+        *out = fl_list(NULL, 0);
+        break;
+      }
+      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      items = (fl_value *)fl_arena_alloc(ctx->arena, value.as.list.count * sizeof(fl_value));
+      if (items == NULL) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      for (index = 0; index < value.as.list.count; index += 1) {
+        status = fl_conc_clone(ctx, value.as.list.items[index], &items[index], error);
+        if (status != FL_OK) {
+          fl_leave(ctx);
+          return status;
+        }
+      }
+      /* Хвостовой запас копии НЕ передаётся: запас считает ячейки от базы
+         своего массива, а копия — другое выделение. Наблюдаемо это ничего не
+         меняет (`flang_runtime.h`: «Поле не наблюдаемо»). */
+      *out = fl_list(items, value.as.list.count);
+      break;
+    }
+    case FL_RECORD: {
+      fl_record *record = (fl_record *)fl_arena_alloc(ctx->arena, sizeof(fl_record));
+      if (record == NULL) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      record->count = value.as.record->count;
+      record->fields = NULL;
+      status = fl_conc_clone_fields(ctx, value.as.record->fields, value.as.record->count, &record->fields,
+                                    error);
+      if (status != FL_OK) {
+        fl_leave(ctx);
+        return status;
+      }
+      out->tag = FL_RECORD;
+      out->as.record = record;
+      break;
+    }
+    case FL_VARIANT: {
+      fl_variant *variant = (fl_variant *)fl_arena_alloc(ctx->arena, sizeof(fl_variant));
+      if (variant == NULL) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      variant->name = value.as.variant->name;
+      variant->count = value.as.variant->count;
+      variant->fields = NULL;
+      status = fl_conc_clone_fields(ctx, value.as.variant->fields, value.as.variant->count, &variant->fields,
+                                    error);
+      if (status != FL_OK) {
+        fl_leave(ctx);
+        return status;
+      }
+      out->tag = FL_VARIANT;
+      out->as.variant = variant;
+      break;
+    }
+  }
+  fl_leave(ctx);
+  return FL_OK;
+}
+
 /* ───────────────────────────── почтовый ящик ─────────────────────────────
    Кольцо, а не список: ящику нужны три движения — снять с головы, положить в
    хвост («отправить», «отложить») и вернуть в голову («продолжить»), — и все
    три обязаны стоить одинаково. Список дал бы то же самое ценой указателя на
-   каждое сообщение; кольцо обходится одним массивом. */
+   каждое сообщение; кольцо обходится одним массивом.
+
+   Массив ящика живёт в куче ТОГО ЖЕ процесса, что и сам ящик: он переезжает
+   вместе с сообщениями и сбрасывается вместе с половиной кучи. Поэтому здесь
+   арена, а не контекст, — контекст на пробеге указывает на черновик, и ящик,
+   выросший в черновике, не пережил бы пробега. */
 
 typedef struct fl_conc_box {
   fl_value *items;
@@ -97,9 +253,9 @@ typedef struct fl_conc_box {
   size_t count;
 } fl_conc_box;
 
-static bool fl_conc_box_grow(fl_ctx *ctx, fl_conc_box *box) {
+static bool fl_conc_box_grow(fl_arena *arena, fl_conc_box *box) {
   const size_t next = box->capacity == 0 ? 8 : box->capacity * 2;
-  fl_value *items = (fl_value *)fl_arena_alloc(ctx->arena, next * sizeof(fl_value));
+  fl_value *items = (fl_value *)fl_arena_alloc(arena, next * sizeof(fl_value));
   size_t index = 0;
   if (items == NULL) {
     return false;
@@ -113,8 +269,8 @@ static bool fl_conc_box_grow(fl_ctx *ctx, fl_conc_box *box) {
   return true;
 }
 
-static bool fl_conc_box_push(fl_ctx *ctx, fl_conc_box *box, fl_value value, bool front) {
-  if (box->count == box->capacity && !fl_conc_box_grow(ctx, box)) {
+static bool fl_conc_box_push(fl_arena *arena, fl_conc_box *box, fl_value value, bool front) {
+  if (box->count == box->capacity && !fl_conc_box_grow(arena, box)) {
     return false;
   }
   if (front) {
@@ -136,11 +292,31 @@ static fl_value fl_conc_box_shift(fl_conc_box *box) {
 
 /* ───────────────────────────── состояние прогона ───────────────────────────── */
 
+/**
+ * Процесс: состояние, ящик и СВОЯ КУЧА (шаг А2).
+ *
+ * Куча двумя половинами. Живое между пробегами — это ровно состояние и то, что
+ * осталось в ящике: обработчик чист и завершается, значит в момент, когда он
+ * вернул отклик, достижимо только `{новое состояние} ∪ {отправленное}`, а
+ * отправленное уже уехало адресатам. Поэтому после пробега живое переезжает в
+ * свободную половину, занятая сбрасывается целиком, и половины меняются местами.
+ *
+ * Сборщика здесь нет и не нужно: мусор не обходится, не помечается и не
+ * считается — он перестаёт существовать вместе с половиной. Цена переезда —
+ * O(состояние + ящик), а не O(кучи), и ровно это `RESILIENCE.md` называет
+ * «сборкой на процесс, которая вообще не сборщик».
+ *
+ * `initial` живёт НЕ здесь, а в арене вызывающего: перезапуск надзором обязан
+ * вернуть то же самое значение, что было при первом запуске, а половины кучи к
+ * тому времени сброшены обе.
+ */
 typedef struct fl_conc_slot {
   fl_value initial; /* вычислено ОДИН раз: перезапуск обязан вернуть то же самое */
   fl_value current;
   bool alive;
   fl_conc_box box;
+  fl_arena heap[2];
+  size_t live; /* половина, из которой идёт выдача прямо сейчас */
 } fl_conc_slot;
 
 typedef struct fl_conc_timer {
@@ -157,6 +333,11 @@ typedef struct fl_conc_link {
 
 typedef struct fl_conc_sched {
   fl_ctx *ctx;
+  /* Арена вызывающего — «дом». Держится отдельным полем, потому что на время
+     пробега `ctx->arena` указывает на черновик, и «арена вызывающего» перестаёт
+     быть тем же самым, что `ctx->arena`. Всё, что обязано пережить прогон
+     (журнал, отказы, решения, итоговые состояния), выделяется здесь. */
+  fl_arena *home;
   const fl_conc_plan *plan;
   fl_conc_slot *slots;
 
@@ -201,10 +382,63 @@ typedef struct fl_conc_sched {
   fl_conc_link *over_supervisor;
   bool *passed; /* защита от круга в надзоре: по надзору на один отказ */
 
+  /* Черновик пробега (шаг А2). Обработчик считает в нём и только в нём, и
+     сбрасывается он после КАЖДОГО пробега — значит всё, что пробег выделил и не
+     отдал наружу, не стоит ничего. Законно это ровно потому же, почему В2 умеет
+     снимать пробег по кванту: обработчик чист и возвращает состояние значением,
+     поэтому пока пробег не вернулся, наружу не ушло ничего. */
+  fl_arena draft;
+
+  /* Письма, ждущие срока («через»). Своя куча по той же причине, что у
+     процесса: отправитель сбросит свой черновик и свою половину задолго до
+     того, как таймер сработает. Половины две и здесь — сработавшие письма
+     мертвы, и куча складывается по оставшимся, а не растёт от числа таймеров. */
+  fl_arena post[2];
+  size_t post_live;
+
   double time;
   size_t turns;
   uint32_t random;
 } fl_conc_sched;
+
+/**
+ * Копия значения в названную арену. Контекст заводится местный: счёт витков
+ * выключен (копирование — работа планировщика, а не запаса обработчика), предел
+ * глубины взят у вызывающего, потому что глубина значения — то же дерево, что
+ * сторожит рекурсию везде.
+ */
+static bool fl_conc_keep(fl_conc_sched *sched, fl_arena *arena, fl_value value, fl_value *out) {
+  fl_ctx into;
+  fl_error unused;
+  into.arena = arena;
+  into.depth = 0;
+  into.max_depth = sched->ctx->max_depth;
+  into.steps = 0;
+  into.max_steps = 0;
+  unused.code = NULL;
+  unused.message = NULL;
+  return fl_conc_clone(&into, value, out, &unused) == FL_OK;
+}
+
+/**
+ * Копия текста диагностики в арену вызывающего. Текст отказа строит обработчик,
+ * то есть он лежит в черновике пробега и переживёт его только копией; а нужен
+ * он дольше — его читают журнал, список отказов и решение надзора.
+ */
+static const char *fl_conc_keep_text(fl_ctx *ctx, const char *text) {
+  size_t bytes = 0;
+  char *copy = NULL;
+  if (text == NULL) {
+    return "";
+  }
+  bytes = strlen(text);
+  copy = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
+  if (copy == NULL) {
+    return "";
+  }
+  memcpy(copy, text, bytes + 1);
+  return copy;
+}
 
 /* ───────────────────────────── поиск по имени ───────────────────────────── */
 
@@ -317,10 +551,23 @@ static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
  * в BEAM.
  */
 static bool fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_value message, bool front) {
+  fl_conc_slot *slot = NULL;
+  fl_arena *heap = NULL;
+  fl_value copy = fl_nothing();
   if (target == SIZE_MAX || !sched->slots[target].alive) {
     return true;
   }
-  if (!fl_conc_box_push(sched->ctx, &sched->slots[target].box, message, front)) {
+  slot = &sched->slots[target];
+  heap = &slot->heap[slot->live];
+  /* Копия — это и есть выбор А0. Сообщение переезжает в кучу АДРЕСАТА, потому
+     что куча отправителя будет стёрта, как только его пробег кончится, а
+     черновик — сразу после. Проверка «жив ли адресат» стоит раньше копии
+     намеренно: мёртвому не пишут, и платить за копию письма, которое некуда
+     положить, незачем. */
+  if (!fl_conc_keep(sched, heap, message, &copy)) {
+    return false;
+  }
+  if (!fl_conc_box_push(heap, &slot->box, copy, front)) {
     return false;
   }
   fl_conc_refresh(sched, target);
@@ -638,7 +885,19 @@ static fl_conc_entry *fl_conc_record(fl_conc_sched *sched, double when, size_t p
   entry->outcome = "обработано";
   entry->code = NULL;
   entry->reason = NULL;
-  entry->message = message;
+  /* Сообщение в журнале — КОПИЯ в арене вызывающего: подлинник лежит в куче
+     процесса и умрёт с ближайшим её сбросом, а журнал живёт до конца прогона.
+     Без журнала копии нет вовсе, и это не экономия на мелочи: копия сообщения
+     на каждом пробеге — ровно та цена наблюдения, которую снял шаг А1. Поле
+     заполняется «ничем», а не подлинником: указатель в сброшенную половину не
+     читает никто, но и лежать ему там незачем. */
+  if (sched->keep_journal) {
+    if (!fl_conc_keep(sched, sched->home, message, &entry->message)) {
+      return NULL;
+    }
+  } else {
+    entry->message = fl_nothing();
+  }
   return entry;
 }
 
@@ -661,6 +920,15 @@ static bool fl_conc_note_failure(fl_conc_sched *sched, size_t process, const cha
 }
 
 static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target, fl_value message) {
+  fl_value copy = fl_nothing();
+  /* Письмо ждёт срока дольше, чем живёт черновик пробега, в котором его
+     построили, — значит переезжает в почтовую кучу. Адресату оно достанется
+     ещё одной копией, уже в его собственную кучу (`fl_conc_deliver`): сюда его
+     кладут на хранение, а не в ящик. */
+  if (!fl_conc_keep(sched, &sched->post[sched->post_live], message, &copy)) {
+    return false;
+  }
+  message = copy;
   if (sched->timer_count == sched->timer_capacity) {
     fl_conc_timer *bigger = (fl_conc_timer *)fl_conc_grow(sched->ctx, sched->timers, sched->timer_count,
                                                           &sched->timer_capacity, sizeof(fl_conc_timer));
@@ -676,10 +944,31 @@ static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target,
   return true;
 }
 
+/**
+ * Сложить почтовую кучу: живое в ней — ровно те письма, что ещё ждут срока.
+ * Сработавшее письмо мертво в тот же миг, когда адресат получил свою копию, и
+ * без этого переезда «через» в цикле давал бы рост, которого А2 не терпит.
+ */
+static bool fl_conc_post_pack(fl_conc_sched *sched) {
+  fl_arena *to = &sched->post[1 - sched->post_live];
+  size_t index = 0;
+  for (index = 0; index < sched->timer_count; index += 1) {
+    fl_value moved = fl_nothing();
+    if (!fl_conc_keep(sched, to, sched->timers[index].message, &moved)) {
+      return false;
+    }
+    sched->timers[index].message = moved;
+  }
+  fl_arena_reset(&sched->post[sched->post_live]);
+  sched->post_live = 1 - sched->post_live;
+  return true;
+}
+
 /** Выдать все таймеры, чей срок наступил. Порядок при равном сроке — порядок
     постановки: два таймера на одно время не соревнуются. */
 static bool fl_conc_fire_timers(fl_conc_sched *sched) {
   size_t index = 0;
+  bool fired = false;
   while (index < sched->timer_count) {
     fl_conc_timer timer;
     if (sched->timers[index].time > sched->time) {
@@ -690,15 +979,54 @@ static bool fl_conc_fire_timers(fl_conc_sched *sched) {
     memmove(sched->timers + index, sched->timers + index + 1,
             (sched->timer_count - index - 1) * sizeof(fl_conc_timer));
     sched->timer_count -= 1;
+    fired = true;
     if (!fl_conc_deliver(sched, timer.target, timer.message, false)) {
       return false;
     }
   }
-  return true;
+  return fired ? fl_conc_post_pack(sched) : true;
 }
 
-static fl_status fl_conc_memory(fl_ctx *ctx, fl_error *error) {
-  return fl_fail(ctx, error, FL_CODE_MEMORY, "кончилась память в планировщике конкурентности");
+/**
+ * Переезд процесса в свободную половину его кучи — вторая половина шага А2.
+ *
+ * Копируется ровно живое: новое состояние и то, что осталось в ящике. Занятая
+ * половина сбрасывается целиком, половины меняются местами. Ящик переезжает
+ * вместе с сообщениями и получает массив ровно по числу оставшихся: держать
+ * прежнюю ёмкость незачем, следующий `push` возьмёт её у сброшенной половины
+ * бампом указателя, без обращения к malloc.
+ *
+ * Зовётся ПОСЛЕ каждого пробега и до того, как решает надзор: к этому моменту
+ * отправленное уже уехало адресатам копиями, отложенное лежит в своём ящике, а
+ * подлинники всего этого — в той половине, которую сейчас сбросят.
+ */
+static bool fl_conc_evacuate(fl_conc_sched *sched, size_t index, fl_value *state) {
+  fl_conc_slot *slot = &sched->slots[index];
+  fl_arena *to = &slot->heap[1 - slot->live];
+  fl_value moved = fl_nothing();
+  fl_value *items = NULL;
+  size_t at = 0;
+  if (!fl_conc_keep(sched, to, *state, &moved)) {
+    return false;
+  }
+  if (slot->box.count > 0) {
+    items = (fl_value *)fl_arena_alloc(to, slot->box.count * sizeof(fl_value));
+    if (items == NULL) {
+      return false;
+    }
+    for (at = 0; at < slot->box.count; at += 1) {
+      if (!fl_conc_keep(sched, to, slot->box.items[(slot->box.head + at) % slot->box.capacity], &items[at])) {
+        return false;
+      }
+    }
+  }
+  fl_arena_reset(&slot->heap[slot->live]);
+  slot->live = 1 - slot->live;
+  slot->box.items = items;
+  slot->box.capacity = slot->box.count;
+  slot->box.head = 0;
+  *state = moved;
+  return true;
 }
 
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
@@ -712,6 +1040,13 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   bool *alive = NULL;
   const char *outcome = "покой";
   size_t index = 0;
+  /* Кучи процессов покупают память у malloc сами и обязаны её вернуть: арена
+     вызывающего им не хозяйка. Значит у функции ровно один выход — `finish`, и
+     всякий ранний возврат ПОСЛЕ того, как кучи заведены, идёт через него.
+     Иначе прогон, кончившийся нехваткой памяти, оставлял бы за собой всё, что
+     успел купить, и проверка valgrind'ом нашла бы это первой. */
+  fl_status status = FL_OK;
+  bool heaps = false;
 
   if (ctx == NULL || plan == NULL || out == NULL) {
     return FL_INVALID_ARGUMENT;
@@ -731,6 +1066,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
 
   memset(&sched, 0, sizeof(sched));
   sched.ctx = ctx;
+  sched.home = ctx->arena;
   sched.plan = plan;
   sched.random = fl_conc_seed(seed);
   sched.keep_journal = journal;
@@ -745,6 +1081,22 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       subtree == NULL || states == NULL || alive == NULL) {
     return fl_conc_memory(ctx, error);
   }
+
+  /* Кучи заводятся ДО первого вычисления: с этой строки любой выход обязан
+     идти через `finish`. Начальное состояние при этом строится в арене
+     вызывающего, а не в куче процесса, — перезапуск надзором обязан вернуть то
+     же самое значение, а половины кучи к тому времени сброшены обе. */
+  for (index = 0; index < plan->process_count; index += 1) {
+    fl_arena_init(&sched.slots[index].heap[0]);
+    fl_arena_init(&sched.slots[index].heap[1]);
+    sched.slots[index].live = 0;
+  }
+  fl_arena_init(&sched.draft);
+  fl_arena_init(&sched.post[0]);
+  fl_arena_init(&sched.post[1]);
+  sched.post_live = 0;
+  heaps = true;
+
   /* Надзоров может не быть вовсе, а `fl_arena_alloc(…, 0)` — не то, о чём стоит
      договариваться: пустой план обходится без выделения. */
   if (plan->supervisor_count > 0) {
@@ -757,7 +1109,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     seen = (bool *)fl_arena_alloc(ctx->arena, plan->supervisor_count * sizeof(bool));
     if (sched.over_supervisor == NULL || sched.passed == NULL || sched.windows == NULL ||
         sched.window_count == NULL || sched.window_capacity == NULL || seen == NULL) {
-      return fl_conc_memory(ctx, error);
+      status = fl_conc_memory(ctx, error);
+      goto finish;
     }
     for (index = 0; index < plan->supervisor_count; index += 1) {
       sched.windows[index] = NULL;
@@ -772,7 +1125,10 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
      самое значение, что было при первом запуске. */
   for (index = 0; index < plan->process_count; index += 1) {
     fl_value initial = fl_nothing();
-    FL_TRY(plan->call(ctx, plan->processes[index].initial, NULL, 0, &initial, error));
+    status = plan->call(ctx, plan->processes[index].initial, NULL, 0, &initial, error);
+    if (status != FL_OK) {
+      goto finish;
+    }
     sched.slots[index].initial = initial;
     sched.slots[index].current = initial;
     sched.slots[index].alive = true;
@@ -789,12 +1145,17 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   if (spec->count > 0) {
     inbox = (fl_value *)fl_arena_alloc(ctx->arena, spec->count * sizeof(fl_value));
     if (inbox == NULL) {
-      return fl_conc_memory(ctx, error);
+      status = fl_conc_memory(ctx, error);
+      goto finish;
     }
-    FL_TRY(spec->build(ctx, inbox, error));
+    status = spec->build(ctx, inbox, error);
+    if (status != FL_OK) {
+      goto finish;
+    }
     for (index = 0; index < spec->count; index += 1) {
       if (!fl_conc_deliver(&sched, fl_conc_find(plan, spec->targets[index]), inbox[index], false)) {
-        return fl_conc_memory(ctx, error);
+        status = fl_conc_memory(ctx, error);
+        goto finish;
       }
     }
   }
@@ -812,7 +1173,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     fl_value actions = fl_list(NULL, 0);
     fl_conc_entry *entry = NULL;
     fl_error inner;
-    fl_status status = FL_OK;
+    fl_status called = FL_OK;
     const char *failed = NULL;
     const char *reason = NULL;
     const fl_conc_process *node = NULL;
@@ -822,7 +1183,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     fl_value args[2];
 
     if (!fl_conc_fire_timers(&sched)) {
-      return fl_conc_memory(ctx, error);
+      status = fl_conc_memory(ctx, error);
+      goto finish;
     }
     if (sched.ready_count == 0) {
       double due = 0.0;
@@ -861,7 +1223,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     sched.turns += 1;
     entry = fl_conc_record(&sched, sched.time, process, message);
     if (entry == NULL) {
-      return fl_conc_memory(ctx, error);
+      status = fl_conc_memory(ctx, error);
+      goto finish;
     }
 
     inner.code = NULL;
@@ -874,22 +1237,33 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     ctx->steps = 0;
     ctx->depth = 0;
     ctx->max_steps = node->total || node->budget == 0 ? FL_CONC_TOTAL_STEPS : node->budget;
-    status = plan->call(ctx, node->handler, args, 2, &response, &inner);
+    /* Пробег считает в ЧЕРНОВИКЕ и только в нём (шаг А2). Состояние и сообщение
+       читаются при этом из кучи процесса — чтение через границу арены ничем не
+       ограничено, ограничена запись: всё, что построит обработчик, ляжет в
+       черновик и переживёт пробег только копией. */
+    ctx->arena = &sched.draft;
+    called = plan->call(ctx, node->handler, args, 2, &response, &inner);
+    ctx->arena = sched.home;
     ctx->steps = saved_steps;
     ctx->max_steps = saved_max_steps;
     ctx->depth = saved_depth;
 
-    if (status != FL_OK) {
+    if (called != FL_OK) {
       /* Исчерпание запаса — определённый исход, а не зависание и не молчаливый
          обрыв: сообщение отвергнуто, процесс упал, дальше решает надзор. */
       const bool budget = !node->total && inner.code != NULL &&
                           strcmp(inner.code, FL_CODE_RECURSION_LIMIT) == 0;
       failed = budget ? "FLANG_BUDGET_EXHAUSTED" : (inner.code == NULL ? "FLANG_INTERNAL" : inner.code);
-      reason = inner.message == NULL ? "" : inner.message;
+      /* Текст построен в черновике — дальше он живёт копией. Код отказа
+         копировать не нужно: коды приходят из `FL_CODE_*` и лежат в .rodata. */
+      reason = fl_conc_keep_text(ctx, inner.message);
       entry->outcome = budget ? "запас исчерпан" : "отказ";
     } else if (fl_conc_read_response(ctx, response, node->handler, &state, &actions, &inner) != FL_OK) {
       failed = "FLANG_PROCESS";
-      reason = inner.message == NULL ? "" : inner.message;
+      /* Здесь текст построен уже в арене вызывающего (`ctx` возвращён), но
+         копия всё равно берётся: правило «текст отказа живёт копией» дешевле
+         разбора того, чей это был черновик. */
+      reason = fl_conc_keep_text(ctx, inner.message);
       entry->outcome = "отказ";
     }
 
@@ -910,7 +1284,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
           fl_conc_variant_field(item, "кому", &to);
           fl_conc_variant_field(item, "что", &what);
           if (!fl_conc_deliver(&sched, fl_conc_address(plan, to), what, false)) {
-            return fl_conc_memory(ctx, error);
+            status = fl_conc_memory(ctx, error);
+            goto finish;
           }
           continue;
         }
@@ -920,23 +1295,28 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
           fl_conc_variant_field(item, "что", &what);
           if (!fl_conc_timer_push(&sched, sched.time + (delay.tag == FL_NUMBER ? delay.as.number : 0.0),
                                   fl_conc_address(plan, to), what)) {
-            return fl_conc_memory(ctx, error);
+            status = fl_conc_memory(ctx, error);
+            goto finish;
           }
           continue;
         }
         if (strcmp(kind, "отложить") == 0) {
           /* За уже пришедшие, а не в голову: цена откладывания обязана быть
              видимой, иначе выборочный приём вернулся бы через заднюю дверь. */
-          if (!fl_conc_box_push(ctx, &sched.slots[process].box, message, false)) {
-            return fl_conc_memory(ctx, error);
+          if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
+                                &sched.slots[process].box, message, false)) {
+            status = fl_conc_memory(ctx, error);
+            goto finish;
           }
           fl_conc_refresh(&sched, process);
           entry->outcome = "отложено";
           continue;
         }
         if (strcmp(kind, "продолжить") == 0) {
-          if (!fl_conc_box_push(ctx, &sched.slots[process].box, message, true)) {
-            return fl_conc_memory(ctx, error);
+          if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
+                                &sched.slots[process].box, message, true)) {
+            status = fl_conc_memory(ctx, error);
+            goto finish;
           }
           fl_conc_refresh(&sched, process);
           entry->outcome = "продолжено";
@@ -970,15 +1350,39 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       fl_conc_refresh(&sched, process);
     }
 
+    /* Пробег кончился — и вот здесь шаг А2 берёт своё.
+
+       Живое у процесса — ровно состояние и ящик: обработчик чист, значит всё
+       остальное, что пробег построил, мусор в ту же наносекунду. Отправленное
+       уже уехало адресатам копиями, отложенное лежит в своём ящике, текст
+       отказа скопирован, сообщение журнала скопировано. Значит живое можно
+       перенести в свободную половину кучи, а занятую сбросить целиком — и
+       черновик следом.
+
+       Переезд идёт ДО надзора намеренно: надзор перезапускает процесс
+       начальным состоянием из арены вызывающего, и переносить его в кучу
+       незачем. */
+    {
+      fl_value moved = sched.slots[process].current;
+      if (!fl_conc_evacuate(&sched, process, &moved)) {
+        status = fl_conc_memory(ctx, error);
+        goto finish;
+      }
+      sched.slots[process].current = moved;
+      fl_arena_reset(&sched.draft);
+    }
+
     if (failed != NULL) {
       bool escalated = false;
       entry->code = failed;
       entry->reason = reason;
       if (!fl_conc_note_failure(&sched, process, failed, reason, entry->time)) {
-        return fl_conc_memory(ctx, error);
+        status = fl_conc_memory(ctx, error);
+        goto finish;
       }
       if (!fl_conc_supervise(&sched, process, failed, entry->time, &escalated, subtree, seen)) {
-        return fl_conc_memory(ctx, error);
+        status = fl_conc_memory(ctx, error);
+        goto finish;
       }
       if (escalated) {
         /* Отказ дошёл доверху: останавливается вся программа. Это исход, а не
@@ -993,8 +1397,16 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     }
   }
 
+  /* Итоговые состояния переезжают в арену вызывающего: кучи процессов сейчас
+     будут отданы системе, а `fl_conc_result` обязан оставаться годным до
+     ближайшего `fl_arena_reset` вызывающего — ровно как всякое другое значение
+     из рантайма (`flang_conc.h`, раздел «Память»). Копия здесь одна на процесс
+     и одна на прогон, а не на пробег. */
   for (index = 0; index < plan->process_count; index += 1) {
-    states[index] = sched.slots[index].current;
+    if (!fl_conc_keep(&sched, sched.home, sched.slots[index].current, &states[index])) {
+      status = fl_conc_memory(ctx, error);
+      goto finish;
+    }
     alive[index] = sched.slots[index].alive;
   }
   out->outcome = outcome;
@@ -1013,5 +1425,21 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   out->failure_count = sched.failure_count;
   out->decisions = sched.decisions;
   out->decision_count = sched.decision_count;
-  return FL_OK;
+
+finish:
+  /* Единственное место, где кучи возвращаются системе. Их у прогона три вида —
+     по две половины на процесс, черновик и почта, — и все они куплены у malloc
+     напрямую, поэтому арена вызывающего их не освободит. Пропуск этой строки
+     виден не рассуждением, а проверкой: `emit-c-conc.test.mjs` гоняет прогон
+     под valgrind'ом и требует ноль потерянных байт. */
+  if (heaps) {
+    for (index = 0; index < plan->process_count; index += 1) {
+      fl_arena_release(&sched.slots[index].heap[0]);
+      fl_arena_release(&sched.slots[index].heap[1]);
+    }
+    fl_arena_release(&sched.draft);
+    fl_arena_release(&sched.post[0]);
+    fl_arena_release(&sched.post[1]);
+  }
+  return status;
 }

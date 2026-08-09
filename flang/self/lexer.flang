@@ -241,8 +241,8 @@
 //
 // ЧТО ИМЕННО ВЫПИСАНО. Ровно те иероглифы, что стоят в таблице поверхностей
 // («Куски таблицы» ниже) и в примерах `flang/examples/surfaces/*.zh.flang` —
-// 183 знака. Не блок Unicode целиком: блок — это 20 976 знаков, из которых
-// языку нужны 183, а выписывать 20 976 знаков ради «на всякий случай» значит
+// 186 знаков. Не блок Unicode целиком: блок — это 20 976 знаков, из которых
+// языку нужны 186, а выписывать 20 976 знаков ради «на всякий случай» значит
 // утроить файл ради того, чего никто не написал.
 //
 // ПОЧЕМУ ЭТО НЕ РАЗЪЕДЕТСЯ МОЛЧА. Иероглиф, попавший в таблицу поверхности
@@ -252,7 +252,7 @@
 // Сверка идёт по каждой поверхности таблицы, а не по паре примеров.
 тотальная функция «Иероглифы»
   возвращает строка
-  "不且中串为么之乘于仅从令以任位体余作使例依值假元先全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除非项预题额首"
+  "不且中串为么之乘于交仅从令以任位体余作使例依值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // `\p{ID_Start}` образца, суженный до латиницы, кириллицы, надстрочных букв
 // эсперанто, иероглифов китайской поверхности, `_` и `$`.
@@ -265,13 +265,13 @@
 // чтобы такие проседания не проходили молча.
 тотальная функция «Начала имени»
   возвращает строка
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$不且中串为么之乘于仅从令以任位体余作使例依值假元先全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除非项预题额首"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$不且中串为么之乘于交仅从令以任位体余作使例依值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // `\p{ID_Continue}` образца плюс `$` и дефис — дефис там задан явно, поэтому
 // `не-ключевое` остаётся одним именем, а не тремя токенами.
 тотальная функция «Части имени»
   возвращает строка
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$0123456789-不且中串为么之乘于仅从令以任位体余作使例依值假元先全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除非项预题额首"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$0123456789-不且中串为么之乘于交仅从令以任位体余作使例依值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // Знаки, каждый из которых — отдельный токен. Набор дословно из образца.
 тотальная функция «Знаки»
@@ -992,7 +992,7 @@
     "|greater than:cmpGt|pli granda ol:cmpGt|大于:cmpGt|меньше:cmpLt|is less than:cmpLt|less than:cmpLt|pli malgranda ol:cmpLt|小于:cmpLt|не больше:cmpLte|is at most:cmpLte|at most:cmpLte|ne pli granda ol:cmpLte|不大于:cmpLte|не меньше:cmpGte|is at least:cmpGte|at least:cmpGte|ne pli malgranda ol:cmpGte|不小于:cmpGte|да:litTrue|true:litTrue|yes:litTrue|vera:litTrue|jes:litTrue|真:litTrue|нет:litFalse|false:litFalse|no:litFalse|malvera:litFalse|ne:litFalse|假:litFalse|ничто:litNull|null:litNull|nenio:litNull|无:litNull|число:tNumber|числа:tNumber|числом:tNumber|числу:tNumber|number:tNumber|nombro:tNumber|数字:tNumber|строка:tString|строки:tString|",
     "|строкой:tString|строку:tString|текстом:tString|string:tString|teksto:tString|字符串:tString|признак:tFlag|признака:tFlag|признаком:tFlag|boolean:tFlag|flag:tFlag|bulea:tFlag|布尔:tFlag|деньги:tMoney|деньгами:tMoney|money:tMoney|mono:tMoney|金额:tMoney|дата:tDate|даты:tDate|дату:tDate|датой:tDate|date:tDate|dato:tDate|日期:tDate|состояние:state|состоянием:state|state:state|stato:state|状态:state|является:is|is:is|estas:is|是:is|иногда является:maybeIs|may be:maybeIs|povas esti:maybeIs|可能是:maybeIs|утилита:utility|utility:utility|utilaĵo:utility|工具:utility|правило:rule|rule:rule|regulo:rule|规则:rule|свойство:property|property:property|",
     "|propraĵo:property|属性:property|результат:result|result:result|rezulto:result|结果:result|начинает с:startsWith|starts with:startsWith|komencas per:startsWith|始于:startsWith|поле:field|поля:field|field:field|kampo:field|字段:field|морфизм:morphism|morphism:morphism|morfismo:morphism|态射:morphism|после:after|after:after|post:after|之后:after|цепочка:chain|chain:chain|ĉeno:chain|链:chain|сначала:firstStep|first:firstStep|unue:firstStep|首先:firstStep|затем:nextStep|next:nextStep|poste:nextStep|然后:nextStep|единица:identity|identity:identity|identeco:identity|恒等:identity|даёт:gives|gives:gives|donas:gives|给出:gives|закон:lawBlock|law:lawBlock|",
-    "|leĝo:lawBlock|定律:lawBlock|изоморфизм:isomorphism|isomorphism:isomorphism|izomorfio:isomorphism|同构:isomorphism|прямой морфизм:forwardMorphism|forward morphism:forwardMorphism|rekta morfismo:forwardMorphism|正向态射:forwardMorphism|обратный морфизм:inverseMorphism|inverse morphism:inverseMorphism|inversa morfismo:inverseMorphism|逆态射:inverseMorphism|моноид:monoid|monoid:monoid|monoido:monoid|幺半群:monoid|носитель:carrier|carrier:carrier|portanto:carrier|载体:carrier|операция:operation|operation:operation|operacio:operation|运算:operation|обратный элемент:inverseElement|inverse element:inverseElement|inversa elemento:inverseElement|",
+    "|leĝo:lawBlock|定律:lawBlock|изоморфизм:isomorphism|isomorphism:isomorphism|izomorfio:isomorphism|同构:isomorphism|прямой морфизм:forwardMorphism|forward morphism:forwardMorphism|rekta morfismo:forwardMorphism|正向态射:forwardMorphism|обратный морфизм:inverseMorphism|inverse morphism:inverseMorphism|inversa morfismo:inverseMorphism|逆态射:inverseMorphism|вложение:embedding|embedding:embedding|嵌入:embedding|пересечение:intersection|intersection:intersection|komunaĵo:intersection|交集:intersection|моноид:monoid|monoid:monoid|monoido:monoid|幺半群:monoid|носитель:carrier|carrier:carrier|portanto:carrier|载体:carrier|операция:operation|operation:operation|operacio:operation|运算:operation|обратный элемент:inverseElement|inverse element:inverseElement|inversa elemento:inverseElement|",
     "|逆元:inverseElement|монада:monad|monad:monad|monado:monad|单子:monad|возврат:monadUnit|return:monadUnit|redono:monadUnit|单位:monadUnit|соединение:monadJoin|flatten:monadJoin|platigo:monadJoin|压平:monadJoin|в монаде:inMonad|in monad:inMonad|en monado:inMonad|在单子中:inMonad|теорема:theorem|theorem:theorem|teoremo:theorem|定理:theorem|функтор:functor|functor:functor|funktoro:functor|函子:functor|бифунктор:bifunctor|bifunctor:bifunctor|bifunktoro:bifunctor|双函子:bifunctor|объекты:objectPair|objects:objectPair|objektoj:objectPair|对象对:objectPair|морфизмы:morphismPair|morphisms:morphismPair|morfismoj:morphismPair|态射对:morphismPair|",
     "|утверждение:proposition|proposition:proposition|propozicio:proposition|命题:proposition|имеет:has|has:has|havas:has|具有:has|в данных:inData|in data:inData|en datumoj:inData|在数据中:inData|найти где:findWhere|find where:findWhere|trovi kie:findWhere|查找其中:findWhere|по морфизму:byMorphism|затем по морфизму:byMorphism|применить морфизм:byMorphism|затем применить морфизм:byMorphism|by morphism:byMorphism|then by morphism:byMorphism|apply morphism:byMorphism|then apply morphism:byMorphism|per morfismo:byMorphism|poste per morfismo:byMorphism|按态射:byMorphism|然后按态射:byMorphism|следовательно:therefore|получаем:therefore|therefore:therefore|",
     "|sekve:therefore|因此:therefore|по закону:law|under law:law|laŭ leĝo:law|依定律:law|отображается в:mapsTo|отображаются в:mapsTo|maps to:mapsTo|map to:mapsTo|mapiĝas al:mapsTo|映射到:mapsTo|отображается в поле:mapsToField|maps to field:mapsToField|mapiĝas al kampo:mapsToField|映射到字段:mapsToField|отображается в морфизм:mapsToMorphism|отображаются в морфизм:mapsToMorphism|maps to morphism:mapsToMorphism|map to morphism:mapsToMorphism|mapiĝas al morfismo:mapsToMorphism|映射到态射:mapsToMorphism|процесс:process|process:process|procezo:process|进程:process|обрабатывает:handles|handles:handles|traktas:handles|处理:handles|с запасом:budget|with budget:budget|",

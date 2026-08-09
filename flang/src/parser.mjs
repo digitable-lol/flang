@@ -52,7 +52,8 @@
  *                 обратный морфизм/inverse morphism, бифунктор/bifunctor,
  *                 объекты/objects, морфизмы/morphisms,
  *                 монада/monad, возврат/return, соединение/flatten,
- *                 в монаде/in monad
+ *                 в монаде/in monad,
+ *                 вложение/embedding, пересечение/intersection
  *   конкурентность процесс/process, обрабатывает/handles, с запасом/with budget,
  *                 надзор/supervision, стратегия/strategy,
  *                 порог отказов/failure threshold, прогон/run, семя/seed
@@ -337,6 +338,12 @@ class Parser {
        одной пары концов, а сличением нескольких объявлений между собой. */
     this.isomorphisms = []
     this.bifunctors = []
+    /* Отношения множеств (flang/cat/SETS.md) — по списку на слово, и по той же
+       причине, что у изоморфизма: вложение проверяется сличением объявлений, а
+       общая часть — сличением НЕСКОЛЬКИХ вложений сразу, и ни то ни другое не
+       ложится в таблицу стрелок. */
+    this.embeddings = []
+    this.intersections = []
     this.monoids = []
     /* Монада — объявление времени компиляции, как моноид. Форма `в монаде`
        разворачивается в обычные вызовы ДО того, как программа уйдёт из
@@ -643,6 +650,8 @@ class Parser {
     const program = { flang: 1, module: this.module, types: this.types, functions: this.functions }
     if (this.morphisms.length > 0) program.morphisms = this.morphisms
     if (this.isomorphisms.length > 0) program.isomorphisms = this.isomorphisms
+    if (this.embeddings.length > 0) program.embeddings = this.embeddings
+    if (this.intersections.length > 0) program.intersections = this.intersections
     if (this.bifunctors.length > 0) program.bifunctors = this.bifunctors
     if (this.monoids.length > 0) program.monoids = this.monoids
     if (this.monads.length > 0) program.monads = this.monads
@@ -772,6 +781,10 @@ class Parser {
         return this.parseIdentity()
       case "isomorphism":
         return this.isomorphisms.push(this.parseIsomorphism())
+      case "embedding":
+        return this.embeddings.push(this.parseEmbedding())
+      case "intersection":
+        return this.intersections.push(this.parseIntersection())
       case "bifunctor":
         return this.bifunctors.push(this.parseBifunctor())
       case "monoid":
@@ -2974,6 +2987,81 @@ class Parser {
       if (значение === null) this.fail(`у изоморфизма «${name}» не указан ${часть}`, start)
     }
     return node
+  }
+
+  /**
+   * Вложение: стрелка, которая ничего не склеивает, — «А» есть часть «Б».
+   *
+   * ```flang
+   * вложение «Срочные среди заказов» из «Срочный» в «Заказ» даёт «Срочный заказ»
+   * ```
+   *
+   * ПОЧЕМУ ЭТО СВОЯ КОНСТРУКЦИЯ, А НЕ ПОМЕТКА ПРИ МОРФИЗМЕ. Пометка при стрелке
+   * читалась бы как свойство стрелки, а утверждение здесь — про два МНОЖЕСТВА:
+   * «Срочный» есть часть «Заказа». Стрелка — способ это доказать, а не сама
+   * мысль; ровно поэтому у изоморфизма тоже своё слово, хотя и он «всего лишь
+   * пара стрелок».
+   *
+   * ПОЧЕМУ `даёт`, А НЕ ССЫЛКА НА ОБЪЯВЛЕННЫЙ МОРФИЗМ. Тем же словом стрелку
+   * реализует морфизм, и означает оно ровно то же — названную функцию от одного
+   * входа. Ссылка на морфизм по имени добавила бы второй способ сказать то же
+   * самое и потребовала бы разбирать, чьи концы главнее — свои или чужие.
+   *
+   * ПОЧЕМУ `даёт` НЕОБЯЗАТЕЛЕН. Вложение без реализации — законное объявление:
+   * так написаны все морфизмы наследия FTS, и запрещать объявлять то, чего ещё
+   * нет, ради проверки нельзя. Цена названа честно: без `даёт` инъективность
+   * проверять не на чем, и такое вложение остаётся допущением автора
+   * (flang/cat/SETS.md, «Граница честности»).
+   */
+  parseEmbedding() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя вложения")
+    this.expectKw("from", "у вложения ожидалось 'из'")
+    const from = this.expectName("ожидалась вложенная часть")
+    this.expectKw("to", "после вложенной части ожидалось 'в'")
+    const to = this.expectName("ожидалось объемлющее множество")
+    const node = { kind: "embedding", name, from, to, span: start.span }
+    if (this.atKw("gives")) {
+      this.next()
+      node.gives = this.expectName("после 'даёт' ожидалось имя функции")
+    }
+    this.endLine()
+    return node
+  }
+
+  /**
+   * Общая часть двух множеств одного объемлющего — расслоенное произведение.
+   *
+   * ```flang
+   * пересечение «Срочные оплаченные» из «Срочный» и «Оплаченный» в «Заказ»
+   * ```
+   *
+   * ОБЪЕМЛЮЩЕЕ МНОЖЕСТВО ОБЯЗАТЕЛЬНО, и это не украшение записи. Пересечение
+   * двух множеств, которые ни во что общее не вложены, бессмысленно: значения
+   * разных типов в языке несравнимы, и «общий элемент» не с чем сличать. В
+   * теоркате это ровно то же самое: общая часть — расслоенное произведение НАД
+   * общим объектом, и без него квадрата, который она замыкает, попросту нет.
+   *
+   * ПОЧЕМУ `и`, А НЕ ВТОРОЕ `из`. Стороны общей части равноправны — порядок
+   * между ними ничего не значит, — а `из … из …` читалось бы как две разные
+   * роли. Слово `и` в языке уже стоит и означает ровно соединение равных.
+   *
+   * ЧТО ЭТА СТРОКА НЕ ДЕЛАЕТ: она не объявляет тип. «Срочные оплаченные» здесь
+   * — имя общей части, а не запись с полями; объявить его типом — отдельное
+   * решение автора. Иначе одна строка молча заводила бы объект, полей которого
+   * никто не писал, и `разбор` по нему был бы разбором пустоты.
+   */
+  parseIntersection() {
+    const start = this.next()
+    const name = this.expectName("ожидалось имя общей части")
+    this.expectKw("from", "у пересечения ожидалось 'из'")
+    const left = this.expectName("ожидалась первая сторона пересечения")
+    this.expectKw("and", "между сторонами пересечения ожидалось 'и'")
+    const right = this.expectName("ожидалась вторая сторона пересечения")
+    this.expectKw("to", "после сторон пересечения ожидалось 'в'")
+    const within = this.expectName("ожидалось объемлющее множество пересечения")
+    this.endLine()
+    return { kind: "intersection", name, left, right, within, span: start.span }
   }
 
   parseTheorem() {

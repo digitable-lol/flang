@@ -142,6 +142,14 @@ const BINARY_OPS = {
   opPercent: "percent",
 }
 
+/**
+ * Литералы `да` и `нет`, из которых собран разворот логических операций.
+ * Функции, а не константы: узел со спаном обязан быть своим у каждой записи —
+ * общий объект утёк бы одним и тем же местом в диагностику двух разных строк.
+ */
+const TRUE_NODE = (token) => ({ kind: "literal", value: true, span: token.span })
+const FALSE_NODE = (token) => ({ kind: "literal", value: false, span: token.span })
+
 const COMPARISONS = {
   cmpEq: "eq",
   cmpNeq: "neq",
@@ -1269,12 +1277,80 @@ class Parser {
       if (token.value === "let") return this.parseStatements()
       if (token.value === "inMonad") return this.parseInMonad()
     }
-    return this.parseComparison()
+    return this.parseDisjunction()
+  }
+
+  /**
+   * Логические операции инфиксной записью: `или`, `и притом`, `не`.
+   *
+   * ПРИОРИТЕТЫ, СВЕРХУ ВНИЗ (от самого слабого к самому крепкому):
+   *
+   *     или          левоассоциативно
+   *     и притом     левоассоциативно
+   *     не           одноместное, справа
+   *     сравнения    равен, больше, не меньше, содержит, начинается с
+   *     плюс минус
+   *     умножить делить остаток процентов
+   *     от  .        применение и поле
+   *
+   * Порядок тот же, что во всех языках со словесной логикой, и спорное место
+   * ровно одно — `не а и притом б или ц`, где спорят все три сразу. Читается
+   * `((не а) и притом б) или ц`; это проверено программой, а не заявлено
+   * (`flang/test/infix-logic.test.mjs`).
+   *
+   * `не` крепче сравнений НЕ стоит: `не х равен 1` — это `не (х равен 1)`, а не
+   * `(не х) равен 1`. Второе чтение осмысленно только для признаков и почти
+   * всегда опечатка; первое — то, ради чего слово и заводилось.
+   *
+   * ЧЕМ ЭТО РАЗВОРАЧИВАЕТСЯ. Новых узлов AST нет ни одного: все три записи
+   * разворачиваются в `если`, дословно теми же тремя определениями, какими они
+   * уже написаны функциями в `flang/stdlib/logic.flang`:
+   *
+   *     а и притом б  →  если а то б иначе нет
+   *     а или б       →  если а то да иначе б
+   *     не а          →  если а то нет иначе да
+   *
+   * Это не экономия строк. Новый узел `binary` с операцией `and` пришлось бы
+   * научиться проверять типами, считать вычислителем, доказывать завершаемость
+   * и печатать в восьми целях — двадцать с лишним мест, каждое со своим тестом,
+   * ради формы, которая уже вся есть у `если`. А заодно `если` дарит правильную
+   * ленивость даром: `нет и притом (1 делить на 0)` не делит на ноль, потому
+   * что ветка `то` не считается. Вызов функции такого бы не дал.
+   *
+   * Проверка типов от разворота тоже выходит точной сама собой: у `если`
+   * условие обязано быть признаком, а ветки — одного типа, значит `х и притом
+   * б` при числовом `х` — ошибка типа без единого нового правила.
+   */
+  parseDisjunction() {
+    let left = this.parseConjunction()
+    while (this.atKw("or")) {
+      const token = this.next()
+      left = { kind: "if", cond: left, then: TRUE_NODE(token), else: this.parseConjunction(), span: token.span }
+    }
+    return left
+  }
+
+  parseConjunction() {
+    let left = this.parseNegation()
+    while (this.atKw("andAlso")) {
+      const token = this.next()
+      left = { kind: "if", cond: left, then: this.parseNegation(), else: FALSE_NODE(token), span: token.span }
+    }
+    return left
+  }
+
+  parseNegation() {
+    if (!this.atKw("not")) return this.parseComparison()
+    const token = this.next()
+    /* Справа снова `не`: двойное отрицание пишется и означает ровно себя. */
+    return { kind: "if", cond: this.parseNegation(), then: FALSE_NODE(token), else: TRUE_NODE(token), span: token.span }
   }
 
   parseIf() {
     const start = this.next()
-    const cond = this.parseComparison()
+    /* Условие — с самого верха логики: `если а и притом б` иначе не собралось
+       бы вовсе, а ради него слова и заводились. */
+    const cond = this.parseDisjunction()
     let then
     let alternative
 

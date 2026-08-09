@@ -168,6 +168,14 @@ typedef struct fl_conc_sched {
   bool *is_ready;
   size_t ready_count;
 
+  /* Журнал доставок. `keep_journal` — наблюдение, а не работа: в режиме прогона
+     он нужен целиком (по нему сверяются с эталоном побайтово), в рабочем режиме
+     не нужен вовсе, а платится за него памятью на КАЖДОМ пробеге, и арена не
+     возвращает ничего. Когда журнала нет, запись пробега всё равно нужна —
+     исход пробега дописывается уже после вызова обработчика, — но живёт она в
+     `scratch` и переписывается следующим пробегом. */
+  bool keep_journal;
+  fl_conc_entry scratch;
   fl_conc_entry *journal;
   size_t journal_count;
   size_t journal_capacity;
@@ -601,23 +609,37 @@ static bool fl_conc_supervise(fl_conc_sched *sched, size_t failed, const char *c
 
 /* ───────────────────────────── прогон ───────────────────────────── */
 
-static bool fl_conc_record(fl_conc_sched *sched, double when, size_t process, fl_value message) {
-  if (sched->journal_count == sched->journal_capacity) {
-    fl_conc_entry *bigger = (fl_conc_entry *)fl_conc_grow(sched->ctx, sched->journal, sched->journal_count,
-                                                          &sched->journal_capacity, sizeof(fl_conc_entry));
-    if (bigger == NULL) {
-      return false;
+/**
+ * Запись о пробеге. Возвращает место, куда пробег допишет свой исход, или NULL,
+ * если кончилась память.
+ *
+ * Место это одно из двух, и в этом весь шаг А1. С журналом — очередная ячейка
+ * растущего массива, которая останется лежать в арене до конца прогона. Без
+ * журнала — `scratch`, одна и та же ячейка на все пробеги: исход пробега нужен
+ * самому пробегу (по нему решает надзор), а хранить его после того, как пробег
+ * кончился, незачем, если никто не собирается читать журнал.
+ */
+static fl_conc_entry *fl_conc_record(fl_conc_sched *sched, double when, size_t process, fl_value message) {
+  fl_conc_entry *entry = &sched->scratch;
+  if (sched->keep_journal) {
+    if (sched->journal_count == sched->journal_capacity) {
+      fl_conc_entry *bigger = (fl_conc_entry *)fl_conc_grow(sched->ctx, sched->journal, sched->journal_count,
+                                                            &sched->journal_capacity, sizeof(fl_conc_entry));
+      if (bigger == NULL) {
+        return NULL;
+      }
+      sched->journal = bigger;
     }
-    sched->journal = bigger;
+    entry = &sched->journal[sched->journal_count];
+    sched->journal_count += 1;
   }
-  sched->journal[sched->journal_count].time = when;
-  sched->journal[sched->journal_count].process = process;
-  sched->journal[sched->journal_count].outcome = "обработано";
-  sched->journal[sched->journal_count].code = NULL;
-  sched->journal[sched->journal_count].reason = NULL;
-  sched->journal[sched->journal_count].message = message;
-  sched->journal_count += 1;
-  return true;
+  entry->time = when;
+  entry->process = process;
+  entry->outcome = "обработано";
+  entry->code = NULL;
+  entry->reason = NULL;
+  entry->message = message;
+  return entry;
 }
 
 static bool fl_conc_note_failure(fl_conc_sched *sched, size_t process, const char *code, const char *reason,
@@ -680,7 +702,7 @@ static fl_status fl_conc_memory(fl_ctx *ctx, fl_error *error) {
 }
 
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
-                      fl_conc_result *out, fl_error *error) {
+                      bool journal, fl_conc_result *out, fl_error *error) {
   fl_conc_sched sched;
   const fl_conc_run_spec *spec = NULL;
   fl_value *inbox = NULL;
@@ -711,6 +733,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   sched.ctx = ctx;
   sched.plan = plan;
   sched.random = fl_conc_seed(seed);
+  sched.keep_journal = journal;
   sched.slots = (fl_conc_slot *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(fl_conc_slot));
   sched.ready = (size_t *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(size_t));
   sched.is_ready = (bool *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(bool));
@@ -836,10 +859,10 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     message = fl_conc_box_shift(&sched.slots[process].box);
     fl_conc_refresh(&sched, process);
     sched.turns += 1;
-    if (!fl_conc_record(&sched, sched.time, process, message)) {
+    entry = fl_conc_record(&sched, sched.time, process, message);
+    if (entry == NULL) {
       return fl_conc_memory(ctx, error);
     }
-    entry = &sched.journal[sched.journal_count - 1];
 
     inner.code = NULL;
     inner.message = NULL;
@@ -979,6 +1002,11 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   out->turns = sched.turns;
   out->states = states;
   out->alive = alive;
+  /* Журнал отдаётся ровно тогда, когда его вели. Пустой массив вместо признака
+     врал бы: «ни одного пробега» и «пробеги были, но их не записывали» — разные
+     вещи, и читатель обязан их различать, иначе побайтовая сверка с эталоном
+     однажды сравнит пустоту с пустотой и промолчит. */
+  out->journal_kept = sched.keep_journal;
   out->journal = sched.journal;
   out->journal_count = sched.journal_count;
   out->failures = sched.failures;

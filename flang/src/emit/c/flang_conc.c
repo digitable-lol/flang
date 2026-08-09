@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 /*
@@ -317,11 +318,17 @@ typedef struct fl_conc_slot {
   fl_conc_box box;
   fl_arena heap[2];
   size_t live; /* половина, из которой идёт выдача прямо сейчас */
+  /* Сколько мест в ящике занято письмами, которые ещё не пришли («через»),
+     шаг А3. Место занимается в тот момент, когда действие выполнено, а не
+     когда таймер сработал: иначе переполнение случалось бы в тишине, между
+     пробегами, и отказывать было бы некому. */
+  size_t pending;
 } fl_conc_slot;
 
 typedef struct fl_conc_timer {
   double time;
   size_t target; /* индекс процесса; SIZE_MAX — адресат неизвестен, письмо пропадёт */
+  bool reserved; /* место в ящике адресата занято этим письмом (А3) */
   fl_value message;
 } fl_conc_timer;
 
@@ -440,6 +447,21 @@ static const char *fl_conc_keep_text(fl_ctx *ctx, const char *text) {
   return copy;
 }
 
+/**
+ * Текст отказа «ящик полон» (А3). Строится здесь, а не при печати программы,
+ * потому что называет ИМЯ адресата и объявленный им потолок, а знает их только
+ * план — и знает одинаково у эталона и у напечатанного C.
+ */
+static const char *fl_conc_full_text(fl_conc_sched *sched, size_t target) {
+  char buffer[256];
+  if (target == SIZE_MAX) {
+    return "ящик адресата полон";
+  }
+  snprintf(buffer, sizeof(buffer), "ящик процесса «%s» полон: объявлен на %lu",
+           sched->plan->processes[target].name, (unsigned long)sched->plan->processes[target].mailbox);
+  return fl_conc_keep_text(sched->ctx, buffer);
+}
+
 /* ───────────────────────────── поиск по имени ───────────────────────────── */
 
 size_t fl_conc_find(const fl_conc_plan *plan, const char *name) {
@@ -546,16 +568,48 @@ static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
 }
 
 /**
+ * Занят ли ящик процесса целиком (А3).
+ *
+ * Занятость — лежащие в ящике сообщения ПЛЮС письма в пути: иначе объявленный
+ * потолок не был бы потолком, потому что тысяча таймеров на один процесс
+ * переполнила бы ящик в тот момент, когда сработала бы, то есть вне пробега.
+ * Ноль в `mailbox` — ящик неограничен, и тогда полным он не бывает никогда.
+ */
+static bool fl_conc_box_full(const fl_conc_sched *sched, size_t target) {
+  const size_t limit = sched->plan->processes[target].mailbox;
+  if (limit == 0) {
+    return false;
+  }
+  return sched->slots[target].box.count + sched->slots[target].pending >= limit;
+}
+
+/** Исход доставки: три, и все три названы (см. `положить` в `conc.mjs`). */
+typedef enum fl_conc_post {
+  FL_CONC_POSTED = 0,  /* легло */
+  FL_CONC_NOBODY = 1,  /* адресата нет или он мёртв — не ошибка отправителя */
+  FL_CONC_FULL = 2,    /* ящик объявлен ограниченным и места в нём нет */
+  FL_CONC_NOMEM = 3    /* кончилась память */
+} fl_conc_post;
+
+/**
  * Положить сообщение в ящик. Мёртвому процессу писать некуда, и это не ошибка
  * отправителя: он не обязан знать, что адресат остановился, — ровно так же, как
- * в BEAM.
+ * в BEAM. Полный ящик — ошибка отправителя, и в этом всё отличие: адресат про
+ * своё переполнение ничего сделать не может, а отправитель может.
+ *
+ * `reserved` — место уже занято этим письмом при выполнении «через», значит
+ * потолок проверять не надо: он проверен тогда.
  */
-static bool fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_value message, bool front) {
+static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_value message, bool front,
+                                    bool reserved) {
   fl_conc_slot *slot = NULL;
   fl_arena *heap = NULL;
   fl_value copy = fl_nothing();
   if (target == SIZE_MAX || !sched->slots[target].alive) {
-    return true;
+    return FL_CONC_NOBODY;
+  }
+  if (!reserved && fl_conc_box_full(sched, target)) {
+    return FL_CONC_FULL;
   }
   slot = &sched->slots[target];
   heap = &slot->heap[slot->live];
@@ -565,13 +619,13 @@ static bool fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_value messag
      намеренно: мёртвому не пишут, и платить за копию письма, которое некуда
      положить, незачем. */
   if (!fl_conc_keep(sched, heap, message, &copy)) {
-    return false;
+    return FL_CONC_NOMEM;
   }
   if (!fl_conc_box_push(heap, &slot->box, copy, front)) {
-    return false;
+    return FL_CONC_NOMEM;
   }
   fl_conc_refresh(sched, target);
-  return true;
+  return FL_CONC_POSTED;
 }
 
 /* ───────────────────────────── чтение отклика ─────────────────────────────
@@ -919,7 +973,8 @@ static bool fl_conc_note_failure(fl_conc_sched *sched, size_t process, const cha
   return true;
 }
 
-static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target, fl_value message) {
+static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target, fl_value message,
+                               bool reserved) {
   fl_value copy = fl_nothing();
   /* Письмо ждёт срока дольше, чем живёт черновик пробега, в котором его
      построили, — значит переезжает в почтовую кучу. Адресату оно достанется
@@ -939,6 +994,7 @@ static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target,
   }
   sched->timers[sched->timer_count].time = when;
   sched->timers[sched->timer_count].target = target;
+  sched->timers[sched->timer_count].reserved = reserved;
   sched->timers[sched->timer_count].message = message;
   sched->timer_count += 1;
   return true;
@@ -980,7 +1036,13 @@ static bool fl_conc_fire_timers(fl_conc_sched *sched) {
             (sched->timer_count - index - 1) * sizeof(fl_conc_timer));
     sched->timer_count -= 1;
     fired = true;
-    if (!fl_conc_deliver(sched, timer.target, timer.message, false)) {
+    /* Место в ящике было занято ещё при выполнении «через», поэтому здесь оно
+       только освобождается и тут же заполняется: переполниться этот путь не
+       может по построению, и `FL_CONC_FULL` отсюда не возвращается никогда. */
+    if (timer.reserved) {
+      sched->slots[timer.target].pending -= 1;
+    }
+    if (fl_conc_deliver(sched, timer.target, timer.message, false, timer.reserved) == FL_CONC_NOMEM) {
       return false;
     }
   }
@@ -1027,6 +1089,58 @@ static bool fl_conc_evacuate(fl_conc_sched *sched, size_t index, fl_value *state
   slot->box.head = 0;
   *state = moved;
   return true;
+}
+
+/**
+ * Отказ, который процесс нажил САМ: ставится один раз, первый выигрывает.
+ *
+ * Сюда сходятся все виды, случающиеся уже ПОСЛЕ того, как обработчик вернулся:
+ * полный ящик адресата (А3) и нехватка памяти в куче (Г2). Разного поведения у
+ * двух отказов внутри одного списка действий быть не должно — иначе порядок
+ * действий начал бы решать, каким кодом упадёт процесс.
+ */
+static void fl_conc_own_failure(fl_conc_sched *sched, size_t process, fl_conc_entry *entry,
+                                const char **failed, const char **reason,
+                                const char *code, const char *text) {
+  if (*failed != NULL) {
+    return;
+  }
+  *failed = code;
+  *reason = text;
+  entry->outcome = "отказ";
+  sched->slots[process].alive = false;
+  fl_conc_refresh(sched, process);
+}
+
+/**
+ * Процесс отдаёт всё, что у него было (шаг Г2), — последнее средство.
+ *
+ * Зовётся ровно тогда, когда даже ПЕРЕЕЗД не удался: памяти не хватило на то,
+ * чтобы перенести живое в свободную половину. Тогда переносить нечего и некуда,
+ * и единственное, что можно вернуть, — начальное состояние: оно лежит в арене
+ * вызывающего, а не в куче процесса, и потому переживает сброс обеих половин.
+ *
+ * Что процесс при этом теряет, названо прямо: накопленное состояние и всё, что
+ * лежало в ящике. Это НЕ потеря данных по недосмотру — это единственное, что
+ * можно сделать, когда памяти нет: любая попытка сберечь их требует памяти.
+ * Надзор, поднимая процесс, и так вернул бы его к начальному состоянию; разница
+ * лишь в том, что здесь оно возвращается ещё до решения надзора, потому что
+ * иначе решать было бы не над чем.
+ *
+ * `pending` не обнуляется: письма в пути живут в почтовой куче, а не в этой, и
+ * своё место в ящике они по-прежнему занимают.
+ */
+static void fl_conc_surrender(fl_conc_sched *sched, size_t index) {
+  fl_conc_slot *slot = &sched->slots[index];
+  fl_arena_reset(&slot->heap[0]);
+  fl_arena_reset(&slot->heap[1]);
+  slot->live = 0;
+  slot->box.items = NULL;
+  slot->box.capacity = 0;
+  slot->box.head = 0;
+  slot->box.count = 0;
+  slot->current = slot->initial;
+  fl_conc_refresh(sched, index);
 }
 
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
@@ -1136,6 +1250,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     sched.slots[index].box.capacity = 0;
     sched.slots[index].box.head = 0;
     sched.slots[index].box.count = 0;
+    sched.slots[index].pending = 0;
     sched.is_ready[index] = false;
   }
   fl_conc_build_tree(&sched);
@@ -1153,8 +1268,18 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       goto finish;
     }
     for (index = 0; index < spec->count; index += 1) {
-      if (!fl_conc_deliver(&sched, fl_conc_find(plan, spec->targets[index]), inbox[index], false)) {
+      /* Переполнение «дано» отвергает проверка типов (`types.mjs`, `checkRuns`):
+         сколько сообщений названо, столько и ляжет, и посчитать это можно до
+         прогона. Здесь — определённое поведение на плане, собранном мимо неё. */
+      const fl_conc_post posted =
+        fl_conc_deliver(&sched, fl_conc_find(plan, spec->targets[index]), inbox[index], false, false);
+      if (posted == FL_CONC_NOMEM) {
         status = fl_conc_memory(ctx, error);
+        goto finish;
+      }
+      if (posted == FL_CONC_FULL) {
+        status = fl_fail(ctx, error, "FLANG_PROCESS", "«дано» переполняет ящик процесса «%s»",
+                         spec->targets[index]);
         goto finish;
       }
     }
@@ -1177,6 +1302,10 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     const char *failed = NULL;
     const char *reason = NULL;
     const fl_conc_process *node = NULL;
+    /* Успело ли новое состояние стать состоянием процесса. Пока не успело, оно
+       живёт в черновике, и черновик можно сбросить досрочно; как только успело —
+       нельзя, потому что `current` смотрит внутрь него до самого переезда. */
+    bool committed = false;
     size_t saved_steps = 0;
     size_t saved_max_steps = 0;
     size_t saved_depth = 0;
@@ -1270,6 +1399,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     if (failed == NULL) {
       size_t action = 0;
       sched.slots[process].current = state;
+      committed = true;
       /* Пробег обработчика стоит единицу виртуального времени. Без этого правила
          таймер не сработал бы никогда в программе, которой всё время есть чем
          заняться, — например, в той, что откладывает сообщения по кругу. */
@@ -1281,22 +1411,52 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
         fl_value what = fl_nothing();
         fl_value delay = fl_nothing();
         if (strcmp(kind, "отправить") == 0) {
+          fl_conc_post posted = FL_CONC_POSTED;
           fl_conc_variant_field(item, "кому", &to);
           fl_conc_variant_field(item, "что", &what);
-          if (!fl_conc_deliver(&sched, fl_conc_address(plan, to), what, false)) {
-            status = fl_conc_memory(ctx, error);
-            goto finish;
+          posted = fl_conc_deliver(&sched, fl_conc_address(plan, to), what, false, false);
+          /* Оба неудачных исхода — отказ ОТПРАВИТЕЛЯ, и по одному доводу: он
+             попросил положить сообщение, и положить его не вышло. Полный ящик
+             (А3) и нехватка памяти в куче адресата (Г2) отличаются кодом, а не
+             тем, кто отвечает. */
+          if (posted == FL_CONC_NOMEM) {
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                                "кончилась память в куче адресата");
+          } else if (posted == FL_CONC_FULL) {
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
+                                fl_conc_full_text(&sched, fl_conc_address(plan, to)));
           }
           continue;
         }
         if (strcmp(kind, "через") == 0) {
+          size_t target = SIZE_MAX;
+          bool reserve = false;
           fl_conc_variant_field(item, "задержка", &delay);
           fl_conc_variant_field(item, "кому", &to);
           fl_conc_variant_field(item, "что", &what);
+          target = fl_conc_address(plan, to);
+          /* Место занимается СЕЙЧАС, а не когда таймер сработает. Живость
+             адресата при этом не смотрится вовсе, и это нарочно: мёртвый
+             процесс может быть поднят надзором раньше срока письма, и тогда
+             незанятое место дало бы ящику переполниться мимо потолка. */
+          reserve = target != SIZE_MAX && plan->processes[target].mailbox != 0;
+          if (reserve && fl_conc_box_full(&sched, target)) {
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
+                                fl_conc_full_text(&sched, target));
+            continue;
+          }
+          if (reserve) {
+            sched.slots[target].pending += 1;
+          }
           if (!fl_conc_timer_push(&sched, sched.time + (delay.tag == FL_NUMBER ? delay.as.number : 0.0),
-                                  fl_conc_address(plan, to), what)) {
-            status = fl_conc_memory(ctx, error);
-            goto finish;
+                                  target, what, reserve)) {
+            /* Почтовая куча общая на прогон, но положить в неё просил ЭТОТ
+               процесс, и отвечает за это он же (Г2). */
+            if (reserve) {
+              sched.slots[target].pending -= 1;
+            }
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                                "кончилась память в почтовой куче");
           }
           continue;
         }
@@ -1305,8 +1465,9 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
              видимой, иначе выборочный приём вернулся бы через заднюю дверь. */
           if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
                                 &sched.slots[process].box, message, false)) {
-            status = fl_conc_memory(ctx, error);
-            goto finish;
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                                "кончилась память в собственной куче процесса");
+            continue;
           }
           fl_conc_refresh(&sched, process);
           entry->outcome = "отложено";
@@ -1315,8 +1476,9 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
         if (strcmp(kind, "продолжить") == 0) {
           if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
                                 &sched.slots[process].box, message, true)) {
-            status = fl_conc_memory(ctx, error);
-            goto finish;
+            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                                "кончилась память в собственной куче процесса");
+            continue;
           }
           fl_conc_refresh(&sched, process);
           entry->outcome = "продолжено";
@@ -1364,11 +1526,25 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
        незачем. */
     {
       fl_value moved = sched.slots[process].current;
-      if (!fl_conc_evacuate(&sched, process, &moved)) {
-        status = fl_conc_memory(ctx, error);
-        goto finish;
+      /* Пробег, кончившийся отказом, черновик уже не держит: состояние из него
+         никуда не поехало, текст отказа скопирован, сообщение журнала
+         скопировано. Значит черновик можно сбросить ДО переезда, а не после, —
+         и это не мелочь, а половина шага Г2: если пробег упал ИМЕННО по памяти,
+         то переезду она нужна прямо сейчас, а держит её брошенный черновик. */
+      if (failed != NULL && !committed) {
+        fl_arena_reset(&sched.draft);
       }
-      sched.slots[process].current = moved;
+      if (!fl_conc_evacuate(&sched, process, &moved)) {
+        /* Не хватило памяти даже на переезд. Это отказ ПРОЦЕССА, а не смерть
+           программы (Г2): куча своя, и распорядиться ею — его дело. Переносить
+           нечего и некуда, поэтому процесс отдаёт всё и возвращается к
+           начальному состоянию, которое лежит в арене вызывающего. */
+        fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                            "кончилась память при переезде кучи процесса");
+        fl_conc_surrender(&sched, process);
+      } else {
+        sched.slots[process].current = moved;
+      }
       fl_arena_reset(&sched.draft);
     }
 

@@ -674,7 +674,14 @@ attaching a solver to the verification conditions is an open task, not a feature
 
 **The category surface.** Morphisms, composition, chains, identities, functors, bifunctors,
 isomorphisms, monoids, groups and monads are implemented; a monad also comes with the binding form
-`в монаде`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
+`в монаде`. Set relations are said with two words: `вложение` is a subobject (an arrow that glues
+nothing together), `пересечение` is a pullback over the ambient set. The shape of both is proved by
+matching declarations; injectivity of an embedding is checked on the author's own values and, when
+the arrow glues, the message presents the counterexample; non-emptiness of a common part is
+confirmed by a witness. Universality of the common part stays the author's assumption, and the
+compiler draws no consequences from it ([`flang/cat/SETS.md`](flang/cat/SETS.md)). Union did NOT
+become a word: the coproduct is already in the language — it is `тип … вариант …` with exhaustive
+`разбор`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
 a broken law fails `flang test` naming both the arrow and the law. Isomorphism invertibility is
 checked wherever both arrows are named through `даёт`, and stays the author's assumption wherever
 at least one is not. The precondition (`требует`) is not implemented: it stands in the contract as

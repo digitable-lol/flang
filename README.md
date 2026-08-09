@@ -247,7 +247,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-35 programs with 214 functions and 417 examples between them. For every function a grid of inputs
+36 programs with 227 functions and 458 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -255,9 +255,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный Rust совпадает с интерпретатором
-ℹ программ: 35, функций: 214, сверенных входов: 3071, за 6 с
+ℹ программ: 36, функций: 227, сверенных входов: 3268, за 6 с
 ✔ примеры stdlib и leetcode сходятся у собранного Rust так же, как у интерпретатора
-ℹ сверенных примеров: 417
+ℹ сверенных примеров: 458
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -373,8 +373,9 @@ comparing each pair as trees, up to a renaming of names. That test also pins the
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
-`lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`) is written the same way —
-9 modules, 135 functions, of which 131 are proven total. `higher-order` is the one built on
+`lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
+way —
+10 modules, 148 functions, of which 144 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 
@@ -649,8 +650,12 @@ attaching a solver to the verification conditions is an open task, not a feature
   continuation is a declared value rather than a hidden closure; how that differs from a monad is
   in `flang/cat/SPEC.md`. The execution layer exists for one target out of eight (Node); emitting
   a program with a plan works for all eight.
-- No dictionaries, no arrays with random access, no bitwise operations. Table-driven dynamic
-  programming (Coin Change, Edit Distance) does not transfer; a dictionary is a list of pairs.
+- An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
+  a dictionary comes in two kinds: a list of pairs with linear lookup (`dictionary.flang`) and a
+  search tree whose priority is the hash of the key, O(log n) (`tree.flang`). What is missing is
+  WRITING by index: values are immutable, and "the list with its Nth replaced" would have to be
+  rebuilt whole. Until that exists, table-driven dynamic programming (Coin Change, Edit Distance)
+  does not transfer and a constant-time hash table cannot be built. No bitwise operations either.
 - The totality analysis knows structural decrease and a numeric measure with a CONSTANT step —
   either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
   positive (`н минус ш` under `если ш не больше 0`). Anything whose step CHANGES from turn to turn

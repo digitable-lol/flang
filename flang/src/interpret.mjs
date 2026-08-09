@@ -79,7 +79,7 @@ export function createRuntime(program, options = {}) {
           },
         }
         : runtime
-      return callFunction(local, name, args)
+      return callFunction(local, name, args, callOptions?.отчёт)
     },
     listFunctions() {
       return [...checked.functions.values()].map((fn) => ({
@@ -202,7 +202,17 @@ function positiveLimit(value, fallback, label) {
 
 // ───────────────────────────── вход в вычисление ─────────────────────────────
 
-function callFunction(rt, name, args) {
+/**
+ * Вызов функции.
+ *
+ * `отчёт` — необязательный объект, в который кладётся число сделанных витков.
+ * Заведён ради вытеснения (`conc.mjs`, шаг В2 карты): планировщику надо знать не
+ * только «упёрлось в предел», но и сколько именно витков пробег успел, — иначе
+ * задержку, ради которой вытеснение и делается, нечем измерить. Пишется в
+ * `finally`, а не после `run`: витки, потраченные пробегом, который упал, — это
+ * ровно те витки, которые интересны больше всего.
+ */
+function callFunction(rt, name, args, отчёт) {
   const fn = rt.functions.get(name)
   if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${name}»`)
   const values = bindArguments(fn, args)
@@ -215,8 +225,12 @@ function callFunction(rt, name, args) {
     current: fn.name,
     rt,
   }
-  applyFunction(machine, fn, values, fn.span)
-  return run(machine)
+  try {
+    applyFunction(machine, fn, values, fn.span)
+    return run(machine)
+  } finally {
+    if (отчёт !== undefined && отчёт !== null) отчёт.витки = machine.steps
+  }
 }
 
 function bindArguments(fn, args) {

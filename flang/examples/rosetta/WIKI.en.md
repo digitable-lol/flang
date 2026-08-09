@@ -1,8 +1,12 @@
 # Ready wiki text for Rosetta Code (English)
 
-Copy-paste material for the fifteen solutions in this directory. Every block
-below is the prose that goes **above** the code on the task page; the code goes
-inside `<syntaxhighlight lang="text">…</syntaxhighlight>`.
+Copy-paste material for the fifteen Rosetta Code **task pages** covered by this
+directory. Fifteen pages, fourteen programs, twenty-eight files: `Roman
+numerals/Encode` and `Roman numerals/Decode` are two pages served by one
+program, and every program is written twice, once on each of the two keyword
+surfaces shown here. Every block below is the prose that goes **above** the code
+on the task page; the code goes inside
+`<syntaxhighlight lang="text">…</syntaxhighlight>`.
 
 The step-by-step publishing procedure — account, licence caveat, language page,
 order of operations — is kept outside this repository, in the outreach
@@ -18,9 +22,9 @@ same thing. Strip them:
 grep -v '^[[:space:]]*//' flang/examples/rosetta/<file>.flang | cat -s
 ```
 
-Checked, not assumed: all fifteen files were stripped this way and re-run —
-222 examples, all still pass, no parse or type errors. The stripping is safe
-because none of the files has a trailing `//` comment on a code line.
+Checked, not assumed: all 28 files were stripped this way and re-run — 184
+functions, 424 examples, all still pass, no parse or type errors. The stripping
+is safe because none of the files has a trailing `//` comment on a code line.
 
 ## A paragraph to reuse on any page
 
@@ -28,23 +32,30 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 
 > flang splits programs into two classes and the compiler decides which is
 > which: `тотальная функция` / `total function` is a function whose termination
-> the compiler has *proved* by structural descent, and `функция` / `function` is
-> everything else. Keywords come in four equal surfaces — Russian, English,
-> Esperanto and Chinese — of which two are shown here,
-> which parse to the same AST. `пример` / `example` blocks are part of the
-> source: they are type-checked and executed, not comments.
+> the compiler has established, and `функция` / `function` is everything else.
+> Termination is established three ways: structural descent (a recursive call
+> receives a part of an argument — the tail of a list, a field of a variant), a
+> numeric parameter falling by a constant step toward a proven floor, or a
+> measure the author declares with `убывает` / `decreases`. The first two are
+> inferred; a declared measure is checked for shape before the run and enforced
+> by a guard on every recursive step, which refuses with `FLANG_MEASURE` rather
+> than looping. Keywords come in four equal surfaces — Russian, English,
+> Esperanto and Chinese — of which two are shown here, which parse to the same
+> AST. `пример` / `example` blocks are part of the source: they are type-checked
+> and executed, not comments.
 
 ---
 
 ## FizzBuzz — `fizzbuzz.flang`, `fizzbuzz-english.flang`
 
 > Two things are on display here. First, the split into proved and ordinary
-> functions: classifying one number and mapping a list are both `total function` / `тотальная функция`
-> (proved terminating), but **counting from 1 to 100 is not** — flang's
-> termination analysis accepts only structural descent (the tail of a list, a
-> field of a record or variant), and `n plus 1` is arithmetic, not a part of a
-> value. So the loop costs exactly one unproved function, and the compiler says
-> so instead of the author claiming otherwise. Second, there is no output: the
+> functions: 3 of the 5 functions are `total function` / `тотальная функция`,
+> including classifying one number and mapping a list, but **counting from 1 to
+> 100 is not**. Counting *up* is the one direction flang does not infer: the
+> analysis infers structural descent and a fall by a constant step, and `n plus
+> 1` is neither. It can be proved by declaring a measure (`убывает предел минус
+> н` — "decreases limit minus n"), and this listing deliberately does not, so
+> that the inferred boundary is what the reader sees. Second, there is no output: the
 > language is pure, so "print" means "return a list of strings", and the
 > `example` / `пример` blocks below check that list against the task.
 >
@@ -54,17 +65,22 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 
 ## Fibonacci sequence — `fibonacci.flang`
 
-> Both the iterative and the series form run into the same wall: they count. In
-> flang a recursive call has to receive a structurally smaller argument, and a
-> decremented number is not one, so 2 of the 6 functions here are proved
-> terminating and the rest are honestly marked as ordinary. Nothing about the
-> code is wrong — the compiler simply refuses to claim more than it can show.
+> 4 of the 6 functions here are proved terminating, Fibonacci itself included:
+> recursing on `n minus 1` under a check that bounds `n` from below is a fall by
+> a constant step, and that is inferred. What stays ordinary is the other
+> direction — counting *up* to build the series. The two forms differ in which
+> way the number moves, not in how clever the code is, and the compiler marks
+> the difference instead of the author asserting it.
 
 ## Factorial — `factorial.flang`
 
-> The same boundary as FizzBuzz, on the smallest possible example: `n × (n−1)!`
-> recurses on a number, and numbers have no structural parts, so factorial is an
-> ordinary function. The list-based helpers around it are proved.
+> The smallest example of the constant-step rule: `n × (n−1)!` recurses on a
+> number, and a number falling by a fixed step under a check that bounds it from
+> below is exactly what the analysis infers, so the recursive factorial is
+> proved — 3 of the 5 functions here are. The variant that builds `[1 … n]` and
+> multiplies the list is the one that stays ordinary, because building that list
+> counts *up*. The direct recursion is the provable one and the list detour is
+> not, which is the opposite of what one expects.
 
 ## Towers of Hanoi — `towers-of-hanoi.flang`
 
@@ -72,8 +88,10 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > prove terminating. Represent the tower as a *list* of disks instead — head is
 > the bottom, largest disk, tail is the stack on top of it — and the same
 > recursion now walks the tail of a list, which the analysis does accept. So the
-> solver is proved terminating with no extra parameter and no accounting; only
-> the convenience wrapper that builds `[n … 1]` from a number stays ordinary.
+> solver is proved terminating with no extra parameter and no accounting: 3 of
+> the 5 functions here are. What stays ordinary is the pair that turns a
+> *number* of disks into a tower — the wrapper that builds `[n … 1]` and the
+> entry point that calls it — because building that list counts up.
 > This is the general move in flang: keep the structure rather than a counter.
 
 ## 100 doors — `hundred-doors.flang`
@@ -117,22 +135,29 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 ## Run-length encoding — `run-length-encoding.flang`
 
 > The interesting part is the asymmetry. Encoding is proved terminating: it is a
-> fold over the list of characters. Decoding is **not**, and not for lack of
-> effort — decoding must repeat a character as many times as the input says, and
-> that count is an arbitrary number read from the data. Repeating n times means
-> recursing on `n − 1`, which flang does not accept.
+> fold over the list of characters. Decoding must repeat a character as many
+> times as the input says, and that count is an arbitrary number read from the
+> data — so the repeat recurses on `n − 1` under a check that bounds `n` from
+> below, which the constant-step rule proves. In this listing the two decoding
+> functions are nevertheless left as ordinary functions, and 2 of the 5 are
+> marked proved; the listing predates the constant-step rule and has not been
+> re-marked. The identical function in the standard library
+> (`«Повторить»` in `flang/stdlib/strings.flang`) *is* proved, and comparing the
+> two is a fair thing for a reader to do.
 >
-> Compare with the Roman numerals solution, where both directions are proved: the
-> repeat there is bounded by three, so a fold over a fixed list does the job.
-> The difference between the two files is not skill or luck, it is whether the
-> repetition has a bound known in advance. That is what the word `total` / `тотальная`
-> actually means: not "this code is good" but "the boundary has been named".
+> Compare with the Roman numerals solution, where the repeat is bounded by three
+> and is a fold over a fixed list. That word `total` / `тотальная` does not mean
+> "this code is good"; it means "the boundary has been named", and naming it
+> wrongly in either direction is the failure mode worth watching for.
 
 ## Levenshtein distance — `levenshtein-distance.flang`
 
-> Dynamic programming with no table. flang has no array with indexed access, so
-> the usual matrix is out of reach — but Levenshtein does not need the whole
-> matrix, only the previous row, and a row is a list. Lists have tails, and
+> Dynamic programming with no table. flang reads a list by index (`элемент N в
+> СПИСОК` / `element N in LIST`, constant time on seven of the eight targets)
+> but cannot *write* one: values are immutable, and replacing the N-th element
+> has no form in the language. That is what puts the usual matrix out of reach —
+> not reading a cell, updating one. Levenshtein does not need the whole
+> matrix anyway, only the previous row, and a row is a list. Lists have tails, and
 > tails are what the termination analysis accepts, so all seven functions here
 > are proved terminating, including both passes: the outer one is a fold over
 > the characters of the first string, the inner one recurses on the tail of the
@@ -151,9 +176,9 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 >
 > `«Просеять»` is written the way anyone would write it: recurse on the filtered
 > remainder. The compiler answers `FLANG_NOT_TOTAL`, and it is literally right —
-> a filtered list is a *constructed* value, and about constructed values the
-> analysis knows nothing. The list does get shorter, but that is descent by
-> *measure*, and the analysis only knows descent by *structure*.
+> a filtered list is a *constructed* value, not a part of the argument it was
+> built from, and inferred descent works on parts. The list does get shorter,
+> but nothing in the shape of the call says so.
 >
 > `«Просеять с топливом»` is the same algorithm with one extra parameter: fuel,
 > a list whose tail is taken on every step. There are never more steps than
@@ -189,8 +214,10 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > outside the BMP stays one element instead of splitting into a surrogate pair.
 > The proof exists because of one built-in form, `разложить … на символы`: it
 > turns a string into a list of one-character strings, and the walk becomes a
-> fold over a list instead of a walk over an index. Walking an index decreases a
-> *number*, which the analysis rejects.
+> fold over a list instead of a walk over an index. All four functions here are
+> proved, and the proof costs no declaration: a fold over a list is inferred,
+> whereas walking an index needs the author to declare a measure
+> (`убывает` / `decreases`) for the same result.
 
 ## Palindrome detection — `palindrome.flang`
 
@@ -202,9 +229,11 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 
 > This is the honest one. The Ackermann function **always terminates** — the
 > pair (m, n) decreases lexicographically, and that order is well-founded. flang
-> does not do that reasoning: its analysis knows exactly one argument, "this is a
-> structural part of that", and numbers have no parts. So the function is marked
-> ordinary, and writing `total` / `тотальная` gives `FLANG_NOT_TOTAL`.
+> does not do that reasoning: it infers descent in *one* argument at a time,
+> structurally or by a constant step, and a lexicographic pair is neither. So the
+> function is marked ordinary, and writing `total` / `тотальная` gives
+> `FLANG_NOT_TOTAL` — checked by running it, and the message names every one of
+> the three recursive calls and why each fails.
 >
 > Which is the thing worth taking away from the whole flang set: `total` / `тотальная`
 > does **not** mean "terminates". It means "termination was proved *by this
@@ -228,11 +257,16 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 
 Worth saying once on the language page rather than repeating per task.
 
-- **Tasks needing a dictionary or a set** (`Anagrams`, `Letter frequency`).
-  flang has neither, so grouping is quadratic; and letters cannot be sorted
-  directly, because ordering comparisons are rejected for strings —
-  `FLANG_TYPE: сравнения порядка допустимы только для чисел`. A letter-to-number
-  table would work but would stop being a solution to that task.
+- **Tasks needing a table indexed by position** (a genuine sieve, tabular
+  dynamic programming, a hash table). Reading a list by index is a built-in
+  form; *writing* one is not, because values are immutable, so anything that
+  updates a cell in place has no expression here. Dictionaries and sets do
+  exist — a list of pairs with linear lookup, a search tree with O(log n)
+  lookup and insert, and a set of strings — so grouping and counting are not
+  the obstacle they used to be.
+- **Ordering comparisons on strings** are rejected outright:
+  `FLANG_TYPE: сравнения порядка допустимы только для чисел`. Letters can still
+  be ordered through their code points, which are numbers.
 - **Tasks needing input from the user.** flang has I/O as of 2026-08-07, but it
   is *described*, not performed: a function builds a value describing an action
   and a host executes it. There is no "read from stdin" order in the closed set.

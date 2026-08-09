@@ -1648,10 +1648,14 @@ function renderConcurrency(program, processes, shared) {
   processes.forEach((node, index) => {
     const total = totals.has(node.handler)
     const budget = !total && Number.isFinite(node.budget) ? Math.trunc(node.budget) : 0
+    /* Ноль — «ящик неограничен», ровно как ноль в запасе значит «считать
+       нечего»: два разных смысла у нуля здесь не сталкиваются, потому что
+       размер ящика в ноль сообщений проверка типов не пропускает. */
+    const mailbox = Number.isFinite(node.mailbox) && node.mailbox > 0 ? Math.trunc(node.mailbox) : 0
     const tail = index + 1 < processes.length ? "," : ""
     lines.push(
       `  { ${cstring(node.name)}, ${cstring(node.handler)}, ${cstring(node.initial)}, ` +
-        `${total ? "true" : "false"}, ${budget} }${tail}`,
+        `${total ? "true" : "false"}, ${budget}, ${mailbox} }${tail}`,
     )
   })
   lines.push("};", "")

@@ -4,7 +4,9 @@
   "repository": "https://github.com/digitable-lol/flang",
   "declared": "0.4.7",
   "latest": "0.4.7",
-  "unclassified": [],
+  "unclassified": [
+    "flang/scripts"
+  ],
   "releases": [
     {
       "version": "0.4.7",
@@ -555,6 +557,10 @@
   ],
   "unreleased": {
     "entries": [
+      {
+        "text": "Утверждение о недостаче в комментарии стало проверяться прогоном",
+        "commit": "9bf853c"
+      },
       {
         "text": "Множество отказов процесса замкнуто на деле, а барьер замены держит целым пробег, а не сообщение",
         "commit": "d06111b"

@@ -314,7 +314,17 @@ export function checkTotality(program) {
     const params = paramNames(fn)
     const env = new Map()
     params.forEach((paramName, index) => env.set(paramName, parameterOrigin(index, paramName)))
-    collectCalls(fn.body, env, { from: name, params, calls, tags, functions })
+    const state = { from: name, params, calls, tags, functions }
+    collectCalls(fn.body, env, state)
+    /* Мера — тоже код, и код этот ИСПОЛНЯЕТСЯ: сторож считает её на каждом
+       витке. Не обойди её здесь — и `убывает «Медленно» от н`, где «Медленно»
+       обычная, дало бы тотальную функцию, которая виснет в собственном
+       доказательстве. Обходится тем же проходом и на тех же правах, поэтому и
+       самовызов из меры (`убывает «НОД» от а и б`) становится обычным ребром
+       цикла, каким он и является. */
+    if (fn.decreases !== null && typeof fn.decreases === "object") {
+      collectCalls(fn.decreases, env, { ...state, inMeasure: true })
+    }
   }
 
   const failed = new Set()
@@ -725,6 +735,26 @@ function measureOf(fn) {
  * самом входе, из-за которого доказательство и было отвергнуто.
  */
 function declareDescent(component, inner, functions, failed, report, descents) {
+  /* Мера, зовущая функцию СВОЕЙ ЖЕ компоненты, — это вечность, и сторож её не
+     ловит: чтобы проверить меру, её надо посчитать, а счёт снова войдёт в
+     цикл. Никакой отметки тут поставить нельзя, потому что ставить её было бы
+     некуда — беда не в вызове из тела, а в самой мере. */
+  const изМеры = inner.filter((edge) => edge.inMeasure === true)
+  if (изМеры.length > 0) {
+    for (const edge of изМеры) {
+      report(
+        "FLANG_NOT_TOTAL",
+        `тотальная функция «${edge.from}»: мера «убывает» зовёт «${edge.to}» из того же цикла. `
+          + "Посчитать такую меру нельзя — счёт снова войдёт в цикл, и сторожу нечего будет сравнивать. "
+          + "Мера обязана считаться вне рекурсии, которую доказывает",
+        edge.node,
+      )
+      failed.add(edge.from)
+    }
+    for (const name of component) failed.add(name)
+    return
+  }
+
   const собранное = []
   for (const edge of inner) {
     const текущая = measureOf(functions.get(edge.from))
@@ -1294,6 +1324,7 @@ function collectCalls(expr, env, state) {
         args,
         origins,
         visible: visibleParams(env, state.params),
+        inMeasure: state.inMeasure === true,
       })
       return null
     }
@@ -1324,6 +1355,7 @@ function collectCalls(expr, env, state) {
           origins,
           visible,
           applied: true,
+          inMeasure: state.inMeasure === true,
         })
       }
       return null

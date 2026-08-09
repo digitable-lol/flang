@@ -128,7 +128,7 @@
 import { withOutcomeType } from "./builtins.mjs"
 import { ACTION_TYPE } from "./conc.mjs"
 import { IO_TYPE_NAMES, IO_VARIANT_OWNER, withIoTypes } from "./io.mjs"
-import { FlangError, flangError, tokenize } from "./lexer.mjs"
+import { FlangError, flangError, keywordId, surfaceOfTokens, tokenize, wordOn } from "./lexer.mjs"
 import { expandMonads } from "./monad.mjs"
 
 export { FlangError, flangError, tokenize }
@@ -315,6 +315,11 @@ class Parser {
     this.external = external instanceof Set ? external : new Set(external ?? [])
     this.tokens = tokens
     this.index = 0
+    /* Поверхность файла — чтобы диагностика цитировала те слова, которые автор
+       мог написать. Считается один раз по всему потоку: разбор идёт слева
+       направо, а первая же ошибка бывает и на первой строке, когда «сколько
+       чего в файле» ещё неизвестно. */
+    this.surface = surfaceOfTokens(tokens)
     this.types = []
     /* Стрелки категорий и их композиции: отдельный список, потому что они
        проверяются иначе, чем функции, — стыковкой домена с кодоменом. */
@@ -497,7 +502,7 @@ class Parser {
   }
 
   expectKw(id, message) {
-    if (!this.atKw(id)) this.fail(message ?? `ожидалось ключевое слово «${id}»`)
+    if (!this.atKw(id)) this.fail(message ?? `ожидалось ключевое слово «${this.kw(id)}»`)
     return this.next()
   }
 
@@ -506,8 +511,45 @@ class Parser {
     return this.next()
   }
 
+  /** Слово понятия на поверхности файла; на своей поверхности — оно же. */
+  kw(id) {
+    return wordOn(id, this.surface ?? "ru") ?? wordOn(id, "ru") ?? id
+  }
+
+  /**
+   * Цитаты в диагностике — на поверхности файла, а не на русской.
+   *
+   * ЗАЧЕМ. Сообщение «у 'если' нет ветки 'то'» верно ровно для того, кто писал
+   * `если`. Автору китайского файла оно называет два слова, которых в его
+   * файле нет и быть не может: он писал `如果`, а `то` на его поверхности —
+   * `那么`. Диагностика, называющая слово с ЧУЖОЙ поверхности, не просто
+   * непереведена — она указывает не туда, и починить по ней нельзя.
+   *
+   * КАК. Правится не проза, а цитата. Слова поверхности в сообщениях парсера
+   * стоят в апострофах (`'если'`), имена и образцы записи — в ёлочках
+   * (`«Процесс»`, `«поле»`); поэтому переписываются ровно апострофы и ровно те
+   * из них, что целиком являются фразой таблицы. Всё остальное — образцы
+   * строк вроде `'ожидается «Процесс» равен значение'` — остаётся как есть:
+   * это не цитата одного слова, а показанная целиком строка исходника, и
+   * переписывать её по кускам значило бы выдумать её перевод.
+   *
+   * ЧТО ЭТО НЕ ДЕЛАЕТ. Прозу вокруг цитаты — «у … нет ветки …» — не переводит
+   * ничего. Язык диагностики в этом репозитории русский, и выбор другого — это
+   * решение владельца, а не следствие того, что в таблицу дописали столбец.
+   * Здесь исправлено то, что было ПРОСТО НЕВЕРНО: цитата чужого слова.
+   */
+  onSurface(message) {
+    if (this.surface === null || this.surface === "ru") return message
+    return message.replace(/'([^']{1,40})'/gu, (целиком, фраза) => {
+      const id = keywordId(фраза)
+      if (id === null) return целиком
+      const слово = wordOn(id, this.surface)
+      return слово === null ? целиком : `'${слово}'`
+    })
+  }
+
   fail(message, token = this.peek()) {
-    throw flangError("FLANG_PARSE", message, token.span)
+    throw flangError("FLANG_PARSE", this.onSurface(message), token.span)
   }
 
   /** Имя: «ёлочки», обычные кавычки или слово. Ключевое слово в позиции имени

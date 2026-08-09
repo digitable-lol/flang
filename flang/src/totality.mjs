@@ -314,7 +314,17 @@ export function checkTotality(program) {
     const params = paramNames(fn)
     const env = new Map()
     params.forEach((paramName, index) => env.set(paramName, parameterOrigin(index, paramName)))
-    collectCalls(fn.body, env, { from: name, params, calls, tags, functions })
+    const state = { from: name, params, calls, tags, functions }
+    collectCalls(fn.body, env, state)
+    /* Мера — тоже код, и код этот ИСПОЛНЯЕТСЯ: сторож считает её на каждом
+       витке. Не обойди её здесь — и `убывает «Медленно» от н`, где «Медленно»
+       обычная, дало бы тотальную функцию, которая виснет в собственном
+       доказательстве. Обходится тем же проходом и на тех же правах, поэтому и
+       самовызов из меры (`убывает «НОД» от а и б`) становится обычным ребром
+       цикла, каким он и является. */
+    if (fn.decreases !== null && typeof fn.decreases === "object") {
+      collectCalls(fn.decreases, env, { ...state, inMeasure: true })
+    }
   }
 
   const failed = new Set()
@@ -347,8 +357,9 @@ export function checkTotality(program) {
   }
 
   const guards = []
+  const descents = []
   for (const component of stronglyConnectedComponents([...totalNames], edges)) {
-    checkComponent(component, edges, failed, report, guards)
+    checkComponent(component, edges, failed, report, guards, descents, functions)
   }
 
   // Недоказанность заразна: если «А» зовёт «Б», а «Б» не доказана, то и
@@ -368,7 +379,13 @@ export function checkTotality(program) {
   const total = new Set([...totalNames].filter((name) => !failed.has(name)))
   /* Стеречь незачем то, что и так не доказано: у недоказанной функции гарантии
      нет, и завершение ей обеспечивает лимит шагов, а не мера. */
-  return { ok: diagnostics.length === 0, diagnostics, total, guards: guards.filter((guard) => total.has(guard.from)) }
+  return {
+    ok: diagnostics.length === 0,
+    diagnostics,
+    total,
+    guards: guards.filter((guard) => total.has(guard.from)),
+    descents: descents.filter((descent) => total.has(descent.from)),
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -402,7 +419,8 @@ export const MEASURE_CODE = "FLANG_MEASURE"
  */
 export function markMeasureGuards(program) {
   if (program === null || typeof program !== "object" || Array.isArray(program)) return program
-  return markGuards(program, checkTotality(program).guards)
+  const проверка = checkTotality(program)
+  return markGuards(program, проверка.guards, проверка.descents)
 }
 
 /**
@@ -412,13 +430,43 @@ export function markMeasureGuards(program) {
  * анализа ради одной отметки был бы платой ни за что: на связанном компиляторе
  * из 1275 функций это 40 мс на нажатие.
  */
-export function markGuards(program, guards) {
+export function markGuards(program, guards, descents = []) {
   if (program === null || typeof program !== "object" || Array.isArray(program)) return program
-  if (!Array.isArray(guards) || guards.length === 0) return program
+  const есть = (list) => Array.isArray(list) && list.length > 0
+  if (!есть(guards) && !есть(descents)) return program
 
   const marks = new Map()
   const measures = []
-  for (const guard of guards) {
+  /* Отметки объявленной меры едут отдельным полем от отметок постоянного шага,
+     и это не аккуратность ради аккуратности: сторожа у них РАЗНЫЕ. У
+     постоянного шага сторож числовой и оборачивает аргумент; у объявленной меры
+     он полиморфный и оборачивает вызов целиком (`defunc.mjs`). Свались обе
+     отметки в один список — понижение не смогло бы выбрать, какого сторожа
+     печатать, а различать их по форме узла значило бы выводить намерение из
+     следа вместо того, чтобы его назвать. */
+  const declared = []
+  const ключи = new Set()
+  for (const descent of descents ?? []) {
+    if (descent === null || typeof descent !== "object") continue
+    const node = descent.node
+    if (node === null || typeof node !== "object" || marks.has(node)) continue
+    /* Тройка текстов — один сторож: у него три постусловия, и вместе они
+       описывают одно место программы. Ключ поэтому тоже тройка целиком. */
+    const ключ = JSON.stringify(descent.messages)
+    if (!ключи.has(ключ)) {
+      ключи.add(ключ)
+      declared.push(descent.messages)
+    }
+    marks.set(node, {
+      descent: {
+        current: descent.current,
+        next: descent.next,
+        calleeParams: descent.calleeParams,
+        messages: descent.messages,
+      },
+    })
+  }
+  for (const guard of guards ?? []) {
     /* Помечается САМ АРГУМЕНТ, а не вызов с номером позиции. Номер пришлось бы
        понижению искать в списке, а список в flang читается только с головы —
        копия прохода на самом языке считала бы элементы вручную, и первое же
@@ -438,7 +486,14 @@ export function markGuards(program, guards) {
      и лишний полный обход платили ВСЕ программы, включая те, где меры нет
      вовсе. Список здесь читается одним полем: программа без меры не обходится
      ни разу, а порядок текстов задаёт анализ, а не порядок чужого обхода. */
-  return { ...applyMarks(program, marks), measures }
+  const отмечено = applyMarks(program, marks)
+  /* Поля появляются только непустыми. Пустое `measures` на программе, где мера
+     объявленная, а постоянного шага нет вовсе, добавило бы ключ там, где
+     раньше ключа не было, — а печать сверяется побайтово. */
+  const итог = { ...отмечено }
+  if (measures.length > 0) итог.measures = measures
+  if (declared.length > 0) итог.descents = declared
+  return итог
 }
 
 /**
@@ -475,6 +530,12 @@ function applyMarks(node, marks) {
   }
   const mark = marks.get(node)
   if (mark === undefined) return changed ? copy : node
+  /* Две отметки — два ключа. `measure` лежит на УЗЛЕ АРГУМЕНТА и несёт имя
+     параметра; `descent` лежит на УЗЛЕ ВЫЗОВА и несёт оба выражения меры.
+     Один ключ на обе значил бы, что понижение выясняет вид сторожа по тому,
+     какие поля внутри оказались, — то есть угадывает вместо того, чтобы
+     прочитать. */
+  if (mark.descent !== undefined) return { ...(changed ? copy : node), descent: mark.descent }
   return { ...(changed ? copy : node), measure: mark }
 }
 
@@ -530,7 +591,7 @@ function applyTargets(expr, arity, state) {
 /* Компоненты сильной связности и проверка цикла                       */
 /* ------------------------------------------------------------------ */
 
-function checkComponent(component, edges, failed, report, guards) {
+function checkComponent(component, edges, failed, report, guards, descents, functions) {
   const members = new Set(component)
   const inner = edges.filter((edge) => members.has(edge.from) && members.has(edge.to))
   // Компонента из одной функции без самовызова — не цикл: доказывать нечего.
@@ -539,11 +600,23 @@ function checkComponent(component, edges, failed, report, guards) {
   const decreasing = inner.map((edge) => ({ edge, positions: decreasingPositions(edge) }))
   const silent = decreasing.filter((item) => item.positions.length === 0)
 
+  /* Объявленная мера пробуется ПОСЛЕДНЕЙ, а не первой, и это важно: вывод
+     анализа для всякой программы без `убывает` обязан остаться прежним
+     байт в байт. Порядок «структура → постоянный шаг → объявленная мера»
+     означает ещё и то, что объявить меру там, где доказывает структура, не
+     значит начать платить за сторожа: дешёвое доказательство побеждает. */
+  const объявлена = component.every((name) => measureOf(functions.get(name)) !== null)
+
   if (silent.length > 0) {
+    if (объявлена) return declareDescent(component, inner, functions, failed, report, descents)
     for (const { edge } of silent) {
       report("FLANG_NOT_TOTAL", explainNoDescent(edge, component), edge.node)
       failed.add(edge.from)
     }
+    /* Мера объявлена не у всех — назвать недостающих обязательно: без этого
+       автор, написавший `убывает` у одной функции цикла, видит отказ и не
+       видит, что чинить. */
+    reportPartialMeasure(component, functions, report, inner[0].node)
     for (const name of component) failed.add(name)
     return
   }
@@ -576,6 +649,9 @@ function checkComponent(component, edges, failed, report, guards) {
     return
   }
 
+  // Ни один из двух даровых порядков не сошёлся — остаётся объявленная мера.
+  if (объявлена) return declareDescent(component, inner, functions, failed, report, descents)
+
   // Каждое ребро где-то убывает, но общей позиции нет — см. контрпример
   // в шапке файла: такой цикл может быть бесконечным.
   const detail = decreasing
@@ -586,7 +662,267 @@ function checkComponent(component, edges, failed, report, guards) {
     `в цикле ${component.map((name) => `«${name}»`).join(" → ")} нет аргумента, который убывает на каждом вызове: ${detail}. Нужен один и тот же убывающий аргумент на всех рёбрах цикла`,
     decreasing[0].edge.node,
   )
+  reportPartialMeasure(component, functions, report, decreasing[0].edge.node)
   for (const name of component) failed.add(name)
+}
+
+/* ------------------------------------------------------------------ */
+/* Объявленная мера: `убывает …`                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Объявленная мера функции — выражение из `убывает …` или `null`.
+ *
+ * Читается только у ТОТАЛЬНОЙ функции: у обычной доказывать нечего, и мера на
+ * ней — не обещание, а украшение (о нём говорит `types.mjs`).
+ */
+function measureOf(fn) {
+  if (!fn || fn.total !== true) return null
+  const measure = fn.decreases
+  return measure !== null && typeof measure === "object" ? measure : null
+}
+
+/**
+ * Принять компоненту по ОБЪЯВЛЕННОЙ мере.
+ *
+ * ── Зачем это вообще нужно ─────────────────────────────────────────────────
+ *
+ * Оба даровых порядка выше требуют, чтобы убывание было ВИДНО В ФОРМЕ вызова:
+ * часть значения — по разбору, числовая мера — по постоянному шагу. Целый класс
+ * обычных алгоритмов так не пишется: у Евклида шаг `а остаток от б` зависит от
+ * значений, у деления пополам — `(низ плюс верх) делить на 2`. Убывание там
+ * есть, но оно не в форме, а в арифметике, и синтаксический анализ его не
+ * видит и видеть не может.
+ *
+ * Классический ответ на это один и тот же во всех системах с тотальностью:
+ * автор НАЗЫВАЕТ меру, а система проверяет, что мера убывает (ACL2 `:measure`,
+ * Isabelle/HOL `function … termination`, Coq `Program Fixpoint {measure}`,
+ * Dafny и F* `decreases`). Здесь взята та же форма и ровно по той же причине:
+ * назвать меру человек может, вывести её машина не может.
+ *
+ * ── Чем это доказательство отличается от пересаженного ─────────────────────
+ *
+ * В перечисленных системах убывание меры доказывает ПРУВЕР: он умеет вывести
+ * `а остаток от б < б` из арифметики натуральных чисел. Пересадить сюда это
+ * нельзя — прувера у языка нет, а завести его значило бы завести вторую,
+ * несравнимо большую систему рядом с анализом на 1100 строк.
+ *
+ * Зато у языка УЖЕ ЕСТЬ ответ на ровно такой вопрос, и он придуман не здесь.
+ * Числовая мера с постоянным шагом доказывается на вещественных числах, а
+ * считается на double, и разрыв между доказательством и исполнением закрыт не
+ * ослаблением обещания, а СТОРОЖЕМ: каждый доказанный мерой вызов проверяет
+ * убывание на себе, и «тотальная» означает «завершается либо честно
+ * отказывает» (`flang/SPEC.md`, раздел 4). Объявленная мера встаёт в ту же
+ * колею: анализ проверяет ФОРМУ обещания, сторож проверяет само обещание.
+ * Договор с читателем от этого не меняется ни на слово — меняется только то,
+ * какая доля обещания проверена до запуска.
+ *
+ * ── Почему сторожу мало «стало меньше» ─────────────────────────────────────
+ *
+ * Строгое убывание с дном цепочку НЕ обрывает: 1, ½, ¼, … больше нуля всегда
+ * (шапка файла, «Чего анализ не умеет»). Именно на этом Евклид и был отвергнут:
+ * остатки пары (φ, 1) — 0.618, 0.382, 0.236 … — не кончаются.
+ *
+ * Поэтому сторож проверяет ТРИ вещи, а не одну: мера строго убыла, мера не
+ * ушла ниже нуля и мера ЦЕЛАЯ. Целость — это и есть то, чего не хватало:
+ * строго убывающая цепочка целых неотрицательных чисел не длиннее своего
+ * первого члена. Отсюда завершение следует уже не «когда-нибудь» (на double
+ * оборвалась бы и дробная цепочка, но за 2⁶² витков), а с честной оценкой
+ * сверху — за `мера` витков.
+ *
+ * И проверка попадает ровно туда, куда надо: Евклид от целых её проходит
+ * всегда, Евклид от (φ, 1) отказывает на первом же витке — то есть на том
+ * самом входе, из-за которого доказательство и было отвергнуто.
+ */
+function declareDescent(component, inner, functions, failed, report, descents) {
+  /* Мера, зовущая функцию СВОЕЙ ЖЕ компоненты, — это вечность, и сторож её не
+     ловит: чтобы проверить меру, её надо посчитать, а счёт снова войдёт в
+     цикл. Никакой отметки тут поставить нельзя, потому что ставить её было бы
+     некуда — беда не в вызове из тела, а в самой мере. */
+  const изМеры = inner.filter((edge) => edge.inMeasure === true)
+  if (изМеры.length > 0) {
+    for (const edge of изМеры) {
+      report(
+        "FLANG_NOT_TOTAL",
+        `тотальная функция «${edge.from}»: мера «убывает» зовёт «${edge.to}» из того же цикла. `
+          + "Посчитать такую меру нельзя — счёт снова войдёт в цикл, и сторожу нечего будет сравнивать. "
+          + "Мера обязана считаться вне рекурсии, которую доказывает",
+        edge.node,
+      )
+      failed.add(edge.from)
+    }
+    for (const name of component) failed.add(name)
+    return
+  }
+
+  const собранное = []
+  for (const edge of inner) {
+    const текущая = measureOf(functions.get(edge.from))
+    const следующая = measureOf(functions.get(edge.to))
+    /* `объявлена` это уже проверил по всей компоненте; повтор здесь — не
+       перестраховка, а условие того, что функция читается отдельно. */
+    if (текущая === null || следующая === null) return
+
+    /* Вызов без аргументов объявленной мерой не доказывается, и это не изъян
+       сторожа, а свойство такого вызова: мера считается от параметров, а
+       параметров у вызываемой нет — значит от витка к витку она одна и та же
+       и убыть не может никогда. Сказать это здесь честнее, чем поставить
+       сторожа, который откажет на первом же витке. */
+    if (edge.args.length === 0) {
+      report(
+        "FLANG_NOT_TOTAL",
+        `тотальная функция «${edge.from}»: вызов «${edge.to}» без аргументов объявленной мерой не доказывается — `
+          + "мера считается от аргументов, а их нет, и от витка к витку она одна и та же",
+        edge.node,
+      )
+      failed.add(edge.from)
+      for (const name of component) failed.add(name)
+      return
+    }
+
+    /* Мера вызывающей считается В ТОЧКЕ ВЫЗОВА, значит её имена обязаны быть
+       там видны под собой. Тот же вопрос и та же причина, что у сторожа
+       постоянного шага (`visibleParams`): `пусть н равно "…"` внутри тела
+       законен, и после него `н` — уже не тот `н`. */
+    const скрыто = hiddenMeasureNames(текущая, edge)
+    if (скрыто.length > 0) {
+      report(
+        "FLANG_NOT_TOTAL",
+        `тотальная функция «${edge.from}»: мера «убывает» считается в точке вызова «${edge.to}», `
+          + `а ${скрыто.map((имя) => `имя «${имя}»`).join(", ")} там перекрыто связыванием. `
+          + "Переименуйте связку или вынесите вызов из-под неё: сравнивать меру с чужим значением нельзя",
+        edge.node,
+      )
+      failed.add(edge.from)
+      for (const name of component) failed.add(name)
+      return
+    }
+
+    собранное.push({
+      node: edge.node,
+      from: edge.from,
+      to: edge.to,
+      current: текущая,
+      next: следующая,
+      calleeParams: edge.calleeParams,
+      args: edge.args,
+      messages: descentMessages(edge, текущая),
+    })
+  }
+  for (const descent of собранное) descents.push(descent)
+}
+
+/**
+ * Имена меры, перекрытые в точке вызова.
+ *
+ * Мера состоит только из параметров (это проверяет `types.mjs`), поэтому
+ * достаточно свериться с тем же `visible`, который считает сторож постоянного
+ * шага: параметр виден, если под своим именем лежит он сам.
+ */
+function hiddenMeasureNames(measure, edge) {
+  const скрыто = []
+  measureNames(measure, new Set(), скрыто)
+  const params = Array.isArray(edge.params) ? edge.params : []
+  return скрыто.filter((имя) => {
+    const index = params.indexOf(имя)
+    if (index < 0) return false            // не параметр — про это говорит types.mjs
+    return edge.visible?.[index] !== true
+  })
+}
+
+/** Имена, встречающиеся в мере. Мера — выражение без связывающих форм. */
+function measureNames(expr, seen, found) {
+  if (Array.isArray(expr)) {
+    for (const item of expr) measureNames(item, seen, found)
+    return found
+  }
+  if (expr === null || typeof expr !== "object") return found
+  if (expr.kind === "var") {
+    if (typeof expr.name === "string" && !seen.has(expr.name)) {
+      seen.add(expr.name)
+      found.push(expr.name)
+    }
+    return found
+  }
+  for (const [key, value] of Object.entries(expr)) {
+    if (key === "span" || key === "kind" || key === "name") continue
+    measureNames(value, seen, found)
+  }
+  return found
+}
+
+/**
+ * Подсказка на цикл, где мера объявлена не у всех.
+ *
+ * Молчать здесь нельзя: `убывает` у одной функции цикла из двух выглядит как
+ * работа сделанная, а отказ приходит про убывание аргумента — про совсем
+ * другое. Названы недостающие поимённо, потому что чинить надо именно их.
+ */
+function reportPartialMeasure(component, functions, report, node) {
+  const без = component.filter((name) => measureOf(functions.get(name)) === null)
+  if (без.length === 0 || без.length === component.length) return
+  report(
+    "FLANG_NOT_TOTAL",
+    `в цикле ${component.map((name) => `«${name}»`).join(" → ")} мера «убывает» объявлена не у всех: `
+      + `её нет у ${без.map((name) => `«${name}»`).join(", ")}. Мера доказывает цикл целиком или не доказывает его вовсе — `
+      + "объявите «убывает» у каждой функции цикла",
+    node,
+  )
+}
+
+/**
+ * Три текста отказа сторожа объявленной меры — по одному на нарушенное условие.
+ *
+ * Один текст на все три был бы дешевле на две строки и дороже для читателя:
+ * «мера не убыла» и «мера ушла ниже нуля» чинятся РАЗНЫМ. Первое — это вызов,
+ * который не сужает задачу; второе — почти всегда неверно выбранная мера
+ * (`верх минус низ` вместо `верх минус низ плюс 1`), и подсказать тут можно
+ * прямо. Третье — мера дробная, то есть тот самый случай, ради которого
+ * целость и проверяется.
+ *
+ * Едут они тремя постусловиями одного сторожа (`defunc.mjs`): постусловия
+ * проверяются по порядку, и отказ приходит от того, которое нарушено.
+ */
+function descentMessages(edge, measure) {
+  const где = `тотальная функция «${edge.from}»: мера на вызове «${edge.to}» — ${describeMeasure(measure)} — `
+  return {
+    less: `${где}не убыла. Завершение доказано тем, что она строго убывает; `
+      + "равенство цепочку не обрывает, а значит этот вызов может не кончиться никогда",
+    bound: `${где}ушла ниже нуля. Мера обязана оставаться неотрицательной: `
+      + "иначе цепочка уходит в минус бесконечность и убывание ничего не доказывает. "
+      + "Чаще всего это выбор меры, а не ошибка вызова — мере, которая на последнем витке "
+      + "становится −1, обычно не хватает «плюс 1»",
+    whole: `${где}перестала быть целой. Целость — это то, чем мера вообще что-то доказывает: `
+      + "строго убывающая цепочка целых неотрицательных чисел не длиннее своего первого члена, "
+      + "а дробная не обрывается вовсе (0.618, 0.382, 0.236 … больше нуля всегда). "
+      + "Отказ здесь честнее зацикливания",
+  }
+}
+
+/**
+ * Мера словами языка, а не именами узлов.
+ *
+ * Своя печать, а не `describeExpr`: тот зовут диагностики, которые уже
+ * проверяются тестами дословно, и знаки арифметики он печатает так, как они
+ * зовутся в AST (`sub`, `mod`). В тексте, который человек читает про СВОЮ
+ * меру, `«верх» sub «низ»` — насмешка.
+ */
+function describeMeasure(expr) {
+  if (!expr || typeof expr !== "object") return "?"
+  const знаки = { add: "плюс", sub: "минус", mul: "умножить на", div: "делить на", mod: "остаток от" }
+  switch (expr.kind) {
+    case "literal": return String(expr.value ?? "ничто")
+    case "var": return `«${String(expr.name)}»`
+    case "field": return `${describeMeasure(expr.target)}.${String(expr.field)}`
+    case "binary": {
+      const знак = знаки[expr.op]
+      if (знак === undefined) return describeExpr(expr)
+      return `${describeMeasure(expr.left)} ${знак} ${describeMeasure(expr.right)}`
+    }
+    case "builtin": return `${String(expr.name)} ${(expr.args ?? []).map(describeMeasure).join(" и ")}`
+    case "call": return `«${String(expr.name)}» от ${(expr.args ?? []).map(describeMeasure).join(" и ") || "ничего"}`
+    default: return describeExpr(expr)
+  }
 }
 
 /**
@@ -988,6 +1324,7 @@ function collectCalls(expr, env, state) {
         args,
         origins,
         visible: visibleParams(env, state.params),
+        inMeasure: state.inMeasure === true,
       })
       return null
     }
@@ -1018,6 +1355,7 @@ function collectCalls(expr, env, state) {
           origins,
           visible,
           applied: true,
+          inMeasure: state.inMeasure === true,
         })
       }
       return null

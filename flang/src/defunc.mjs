@@ -194,6 +194,17 @@ const GUARD_RESULT = "результат"
 /** Имя связки, в которую попадает посчитанный шаг меры. */
 const GUARD_STEP = "шаг"
 
+/** Основа имени сторожа ОБЪЯВЛЕННОЙ меры — он другой, поэтому и имя другое. */
+const DESCENT_NAME = "объявленная мера убывает"
+
+/** Имена связок сторожа объявленной меры. */
+const DESCENT_NEXT = "мера шага"
+const DESCENT_CURRENT = "мера витка"
+const DESCENT_ARG = "довод"
+
+/** Имя параметра типа полиморфного сторожа объявленной меры. */
+const DESCENT_TYPE = "Значение под сторожем"
+
 /**
  * Сторож на каждом вызове, чьё завершение доказано числовой мерой.
  *
@@ -266,28 +277,33 @@ export function guardDescent(program) {
      на первой же программе. Список приезжает полем от анализа, а не собирается
      обходом: обход платили бы все программы, а не только стережённые. */
   const messages = measuresOf(program)
-  if (messages.length === 0) return program
+  const declared = descentTextsOf(program)
+  if (messages.length === 0 && declared.length === 0) return program
 
   const taken = new Set()
   for (const fn of program.functions ?? []) {
     if (fn !== null && typeof fn === "object" && typeof fn.name === "string") taken.add(fn.name)
   }
-  const names = new Map()
-  for (const message of messages) {
-    let name = GUARD_NAME
-    for (let suffix = 2; taken.has(name); suffix += 1) name = `${GUARD_NAME} ${suffix}`
+  const выбрать = (основа) => {
+    let name = основа
+    for (let suffix = 2; taken.has(name); suffix += 1) name = `${основа} ${suffix}`
     taken.add(name)
-    names.set(message, name)
+    return name
   }
+  const names = new Map()
+  for (const message of messages) names.set(message, выбрать(GUARD_NAME))
+  const descentNames = new Map()
+  for (const messages of declared) descentNames.set(JSON.stringify(messages), выбрать(DESCENT_NAME))
 
-  /* Поручение израсходовано — и список, и отметки на узлах снимаются. Оставь
+  /* Поручение израсходовано — и списки, и отметки на узлах снимаются. Оставь
      их, и второй проход обернул бы сторожа сторожем. */
-  const { measures: _spent, ...rewritten } = installGuards(program, names)
+  const { measures: _spent, descents: _spentDeclared, ...rewritten } = installGuards(program, names, descentNames)
   return {
     ...rewritten,
     functions: [
       ...(rewritten.functions ?? []),
       ...messages.map((message) => renderGuard(names.get(message), message)),
+      ...declared.map((messages) => renderDescentGuard(descentNames.get(JSON.stringify(messages)), messages)),
     ],
   }
 }
@@ -316,7 +332,34 @@ function measureOf(node) {
  * смогла бы.
  */
 function measuresOf(program) {
-  const list = program.measures
+  return listOfTexts(program.measures)
+}
+
+/**
+ * Тройки текстов объявленной меры, без повторов.
+ *
+ * Тройкой, а не строкой: у сторожа объявленной меры три постусловия, и текст у
+ * каждого свой — «не убыла», «ушла ниже нуля», «перестала быть целой». Чинятся
+ * они разным, поэтому и говорятся врозь.
+ */
+function descentTextsOf(program) {
+  const list = program.descents
+  if (!Array.isArray(list)) return []
+  const found = []
+  const seen = new Set()
+  for (const item of list) {
+    if (item === null || typeof item !== "object" || Array.isArray(item)) continue
+    if (typeof item.less !== "string" || typeof item.bound !== "string" || typeof item.whole !== "string") continue
+    const key = JSON.stringify(item)
+    if (seen.has(key)) continue
+    seen.add(key)
+    found.push({ less: item.less, bound: item.bound, whole: item.whole })
+  }
+  return found
+}
+
+/** Непустые неповторяющиеся строки списка — или пусто, если это не список. */
+function listOfTexts(list) {
   if (!Array.isArray(list)) return []
   const found = []
   for (const item of list) {
@@ -326,17 +369,36 @@ function measuresOf(program) {
 }
 
 /**
+ * Отметка объявленной меры на узле вызова — или `null`.
+ *
+ * Проверяется по полям ровно так же, как отметка постоянного шага, и по той же
+ * причине: AST приходит и из `.json`, написанного руками. Кривая отметка — это
+ * отсутствие отметки, а не отказ печати.
+ */
+function descentOf(node) {
+  const mark = node.descent
+  if (mark === null || typeof mark !== "object" || Array.isArray(mark)) return null
+  const messages = mark.messages
+  if (messages === null || typeof messages !== "object" || Array.isArray(messages)) return null
+  if (typeof messages.less !== "string" || typeof messages.bound !== "string" || typeof messages.whole !== "string") return null
+  if (mark.current === null || typeof mark.current !== "object") return null
+  if (mark.next === null || typeof mark.next !== "object") return null
+  if (!Array.isArray(mark.calleeParams)) return null
+  return mark
+}
+
+/**
  * Обёртывание отмеченного аргумента. Копируется только путь до отметки —
  * как и в дефункционализации, и по той же причине.
  *
  * Отметка снимается: она поручение понижению, а не часть программы. Оставь её
  * — и второй проход обернул бы сторожа сторожем.
  */
-function installGuards(node, names) {
+function installGuards(node, names, descentNames = new Map()) {
   if (Array.isArray(node)) {
     let changed = false
     const items = node.map((item) => {
-      const next = installGuards(item, names)
+      const next = installGuards(item, names, descentNames)
       if (next !== item) changed = true
       return next
     })
@@ -345,17 +407,19 @@ function installGuards(node, names) {
   if (node === null || typeof node !== "object") return node
 
   const mark = measureOf(node)
+  const descent = descentOf(node)
   let changed = false
   const copy = {}
   for (const [key, value] of Object.entries(node)) {
-    if (key === "measure" && mark !== null) {
+    if ((key === "measure" && mark !== null) || (key === "descent" && descent !== null)) {
       changed = true
       continue
     }
-    const next = installGuards(value, names)
+    const next = installGuards(value, names, descentNames)
     if (next !== value) changed = true
     copy[key] = next
   }
+  if (descent !== null) return wrapDescent(copy, descent, descentNames.get(JSON.stringify(descent.messages)))
   if (mark === null) return changed ? copy : node
 
   /* Имя связки обязано отличаться от имени параметра — иначе `пусть шаг равно
@@ -419,6 +483,184 @@ function renderGuard(name, message) {
       },
     ],
     body: { kind: "var", name: "шаг" },
+    examples: [],
+  }
+}
+
+/* ── сторож ОБЪЯВЛЕННОЙ меры ──────────────────────────────────────────────── */
+
+const ЧИСЛО = (значение) => ({ kind: "literal", value: значение })
+const ИМЯ = (имя) => ({ kind: "var", name: имя })
+const ДВУЧЛЕН = (op, left, right) => ({ kind: "binary", op, left, right })
+
+/**
+ * Условие «мера убыла» — три проверки, и каждая обязательна.
+ *
+ *   шаг < мера      строгое убывание: цепочка с равенством не заканчивается;
+ *   шаг ≥ 0         дно: без него цепочка уходит в минус бесконечность;
+ *   шаг целое       вполне обоснованность: строго убывающая цепочка ЦЕЛЫХ
+ *                   неотрицательных чисел не длиннее своего первого члена, а
+ *                   дробная — обрывается только на зернистости double, то есть
+ *                   через десятки квинтиллионов витков. Ровно этим Евклид и был
+ *                   отвергнут раньше: остатки пары (φ, 1) убывают и не кончаются.
+ *
+ * Целость записана как `шаг минус (шаг остаток от 1) равно шаг`, а не
+ * округлением: округления в языке нет, а эта запись верна на всех конечных
+ * double и ложна на всех дробных. На NaN и ±бесконечности ложно уже первое
+ * сравнение, поэтому до неё дело не доходит.
+ *
+ * Записано вложенными `если`, а не конъюнкцией, по прозаичной причине:
+ * инфиксного `и` в языке нет (`flang/stdlib/logic.flang`), а вызывать
+ * `«Оба верны»` из напечатанного сторожа значило бы тащить в него зависимость
+ * от стандартной библиотеки.
+ */
+function descends(шаг, мера) {
+  const целое = ДВУЧЛЕН("eq", ДВУЧЛЕН("sub", шаг, ДВУЧЛЕН("mod", шаг, ЧИСЛО(1))), шаг)
+  const неотрицательна = { kind: "if", cond: ДВУЧЛЕН("gte", шаг, ЧИСЛО(0)), then: целое, else: ЧИСЛО(false) }
+  return { kind: "if", cond: ДВУЧЛЕН("lt", шаг, мера), then: неотрицательна, else: ЧИСЛО(false) }
+}
+
+/** Свежее имя: то же правило уступки, что у имени сторожа и диспетчера. */
+function freshName(основа, taken) {
+  let имя = основа
+  for (let suffix = 2; taken.has(имя); suffix += 1) имя = `${основа} ${suffix}`
+  taken.add(имя)
+  return имя
+}
+
+/** Все имена, встречающиеся в поддереве, — чтобы связка их не перекрыла. */
+function varNames(node, found = new Set()) {
+  if (Array.isArray(node)) {
+    for (const item of node) varNames(item, found)
+    return found
+  }
+  if (node === null || typeof node !== "object") return found
+  if (node.kind === "var" && typeof node.name === "string") found.add(node.name)
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "span") continue
+    varNames(value, found)
+  }
+  return found
+}
+
+/** Переименование `var` по словарю. Мера состоит только из имён параметров. */
+function renameVars(node, mapping) {
+  if (Array.isArray(node)) return node.map((item) => renameVars(item, mapping))
+  if (node === null || typeof node !== "object") return node
+  if (node.kind === "var" && mapping.has(node.name)) return { ...node, name: mapping.get(node.name) }
+  const copy = {}
+  for (const [key, value] of Object.entries(node)) copy[key] = renameVars(value, mapping)
+  return copy
+}
+
+/**
+ * Обёртка вызова, чьё завершение держится на ОБЪЯВЛЕННОЙ мере.
+ *
+ * ── Почему оборачивается вызов, а не аргумент ──────────────────────────────
+ *
+ * Сторож постоянного шага оборачивает АРГУМЕНТ: там убывает сам аргумент, он
+ * число, и сравнить его с параметром можно на месте. У объявленной меры
+ * убывает ВЫРАЖЕНИЕ от всех аргументов сразу, и ни на одном из них оно не
+ * лежит. Поэтому обёртка охватывает вызов целиком.
+ *
+ * ── Почему аргументы сперва связываются ────────────────────────────────────
+ *
+ * Мера следующего витка считается ОТ АРГУМЕНТОВ. Подставь в неё сами
+ * выражения — и каждый аргумент вычислялся бы дважды: один раз в мере, второй
+ * раз в вызове. На `а остаток от б` это мелочь, а на аргументе, внутри
+ * которого стоит ещё один рекурсивный вызов, — удвоение работы на каждом
+ * витке, то есть экспонента. Связка считает каждый аргумент ровно один раз, и
+ * мера с вызовом читают уже посчитанное.
+ *
+ * ── Почему сторож полиморфный ──────────────────────────────────────────────
+ *
+ * Ветка `иначе` обязана дать значение ТОГО ЖЕ типа, что и ветка `то`, а тип
+ * этот — тип аргумента, и он какой угодно. Числовой сторож постоянного шага
+ * сюда не годится. Полиморфный годится: параметр типа выводится из третьего
+ * аргумента (`значение: «…»`), и вернуть сторож обязан его же.
+ *
+ * Отказ приходит не из тела сторожа, а из его ПОСТУСЛОВИЯ — тем же приёмом,
+ * каким устроен сторож постоянного шага: код и текст едут в AST данными, и
+ * потому одинаковы у вычислителя и у всех восьми целей печати. Тело сторожа —
+ * тождество, и на исправном витке он не зовётся вовсе: вызов стоит в ветви,
+ * куда попадают только тогда, когда мера не убыла.
+ */
+function wrapDescent(call, descent, guardName) {
+  const args = Array.isArray(call.args) ? call.args : []
+  /* Арность не сошлась — про это говорит `types.mjs`, а стеречь несобранную
+     программу нечем: подставлять в меру нечего. */
+  if (typeof guardName !== "string" || args.length === 0 || args.length !== descent.calleeParams.length) return call
+
+  const taken = varNames(call)
+  varNames(descent.current, taken)
+  varNames(descent.next, taken)
+  for (const имя of descent.calleeParams) if (typeof имя === "string") taken.add(имя)
+
+  const связки = args.map((_, index) => freshName(`${DESCENT_ARG} ${index + 1}`, taken))
+  const витка = freshName(DESCENT_CURRENT, taken)
+  const шага = freshName(DESCENT_NEXT, taken)
+
+  const подстановка = new Map()
+  descent.calleeParams.forEach((имя, index) => {
+    if (typeof имя === "string") подстановка.set(имя, связки[index])
+  })
+
+  const шаг = ИМЯ(шага)
+  const мера = ИМЯ(витка)
+  const первый = ИМЯ(связки[0])
+  /* Стережётся ПЕРВЫЙ аргумент, и это не выбор из нескольких: доказательство
+     держится на мере, а не на позиции, поэтому позиция здесь — просто место,
+     куда встаёт проверка. Первая занята потому, что она есть всегда. */
+  const стережённый = {
+    kind: "if",
+    cond: descends(шаг, мера),
+    then: первый,
+    else: { kind: "call", name: guardName, args: [шаг, мера, первый], span: call.span },
+    span: call.span,
+  }
+
+  let тело = { ...call, args: связки.map((имя, index) => (index === 0 ? стережённый : ИМЯ(имя))) }
+  тело = { kind: "let", name: шага, value: renameVars(descent.next, подстановка), in: тело, span: call.span }
+  тело = { kind: "let", name: витка, value: descent.current, in: тело, span: call.span }
+  for (let index = args.length - 1; index >= 0; index -= 1) {
+    тело = { kind: "let", name: связки[index], value: args[index], in: тело, span: call.span }
+  }
+  return тело
+}
+
+/**
+ * Сторож объявленной меры: тождество с постусловием.
+ *
+ * Тотален и лист — как и сторож постоянного шага, и по той же причине: по
+ * признаку `total` восемь целей печатают комментарий, а Elixir ещё и решает,
+ * чем становится функция.
+ */
+function renderDescentGuard(name, messages) {
+  const значение = { kind: "named", name: DESCENT_TYPE }
+  const шаг = ИМЯ(GUARD_STEP)
+  const мера = ИМЯ("мера")
+  /* Постусловия смотрят на ПАРАМЕТРЫ, а не на результат: результат здесь —
+     стережённое значение какого угодно типа, и сравнивать его не с чем.
+     Три условия — три постусловия, и порядок их не случаен: он тот же, в каком
+     их проверяет быстрая ветвь (`descends`), поэтому нарушенным всегда
+     оказывается ровно то, о котором сторож и скажет. */
+  const условие = (bind, expr, message) => ({ name: DESCENT_NAME, bind, expr, code: MEASURE_CODE, message })
+  return {
+    name,
+    total: true,
+    typeParams: [DESCENT_TYPE],
+    params: [
+      { name: GUARD_STEP, type: { kind: "number" } },
+      { name: "мера", type: { kind: "number" } },
+      { name: "значение", type: значение },
+    ],
+    returns: значение,
+    postconditions: [
+      условие(GUARD_RESULT, ДВУЧЛЕН("lt", шаг, мера), messages.less),
+      условие(GUARD_RESULT, ДВУЧЛЕН("gte", шаг, ЧИСЛО(0)), messages.bound),
+      условие(GUARD_RESULT, ДВУЧЛЕН("eq", ДВУЧЛЕН("sub", шаг, ДВУЧЛЕН("mod", шаг, ЧИСЛО(1))), шаг), messages.whole),
+    ],
+    body: { kind: "var", name: "значение" },
     examples: [],
   }
 }

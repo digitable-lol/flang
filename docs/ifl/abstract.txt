@@ -1,0 +1,43 @@
+Printing Itself Byte for Byte: Self-Application and Declared Measures in flang
+
+Marat Zimnurov, Digitable, Russia
+
+flang is a small functional language with an interpreter in JavaScript and eight
+code generators: C, Go, Rust, Python, Java, C#, Elixir and JavaScript. This
+implementation report is about two properties that a machine, and not a
+paragraph, has to exhibit.
+
+The first is self-application. Six layers of the compiler -- lexer, parser, type
+checker, totality analysis, defunctionalisation and the C backend -- are written
+in flang itself: 17,370 lines that link into one program of 1,586 functions and
+170 types. The JavaScript reference prints that program into 5,814,671 bytes of
+C in seven files; the C builds under cc -std=c99 -Wall -Wextra -Werror -pedantic
+into flang1; flang1 prints the same sources; flang2, built from flang1's output,
+prints them a third time. All three printings are byte-identical. On a corpus of
+43 programs, flang1 also reproduces the reference's C, its linked AST, and its
+diagnostics and verdicts, on well-formed and on broken input alike. The whole
+criterion is one test file: 22 tests, 216 seconds on eight cores.
+
+The second is totality with a declared measure. A function marked total must be
+shown to terminate by structural descent, by a constant numeric step, or by a
+measure that its author writes down. The static analysis checks only the shape
+of that promise; the promise itself is kept by a guard emitted on every proven
+call, which fails with FLANG_MEASURE when the measure does not strictly
+decrease, falls below zero, or stops being an integer. "Total" therefore means
+"terminates or fails honestly", not "terminates": Euclid's algorithm on the
+golden-ratio pair fails on the first step, and that is the correct answer rather
+than a defect. We ran that program under the interpreter and under all eight
+backends -- nine executors, one 573-byte diagnostic, identical byte for byte.
+
+We are as precise about what is absent. The self-hosted binary checks programs
+and prints C; it has no evaluator and no second backend. Declared measures occur
+in exactly two programs in the repository and in none of the compiler's own
+1,586 functions, 549 of which are ordinary rather than total. The JavaScript
+backend emits neither a step limit nor a depth limit, so a non-terminating
+ordinary function hangs there instead of reporting FLANG_RECURSION_LIMIT. The
+closed failure set of the concurrency model is enforced by the interpreter
+alone: six of the eight backends drop processes silently, and the C runtime can
+report a memory failure that the set does not contain. Concurrency is printed by
+two backends of eight, and there is no thread-parallel runtime. Every number
+above is printed by one script in the repository, and the paper contains no
+number that this script does not print.

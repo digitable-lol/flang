@@ -1725,14 +1725,22 @@ test("деление на ноль даёт Infinity и NaN, равенство 
   compare(program, built, "Делить", divGrid)
   compare(program, built, "Остаток", divGrid)
 
-  const [infinity, minus, nothing] = ask(built, [
+  const [infinity, minus, nothing, plusZero, minusZero] = ask(built, [
     { fn: "Делить", args: [encode(1), encode(0)] },
     { fn: "Делить", args: [encode(1), encode(-0)] },
     { fn: "Делить", args: [encode(0), encode(0)] },
+    { fn: "Делить", args: [encode(1), encode(Infinity)] },
+    { fn: "Делить", args: [encode(1), encode(-Infinity)] },
   ])
   assert.equal(decode(infinity.value), Infinity, "деление на ноль обязано дать Infinity, а не ошибку")
   assert.equal(decode(minus.value), -Infinity, "знак нуля-делителя обязан доехать до знака бесконечности")
   assert.ok(Number.isNaN(decode(nothing.value)), "ноль на ноль обязан дать NaN")
+  /* Обратная сторона той же монеты: конечное на бесконечность — ноль СО ЗНАКОМ.
+     Здесь бэкенд молча терял знак на OTP 25, где компилятор сливал ветви
+     `do: -0.0, else: 0.0` в одну (см. Flang.Rt.neg_zero/0). Сетка выше это
+     ловит, но по имени не называет, а имя — половина починки. */
+  assert.ok(Object.is(decode(plusZero.value), 0), "1 / Infinity обязано дать 0")
+  assert.ok(Object.is(decode(minusZero.value), -0), "1 / −Infinity обязано дать именно −0, а не 0")
 
   const values = [0, -0, Number.NaN, 1, "1", true, null, [1, 2], [1, 2, 3], { "а": 1 }, { "а": 1, "б": 2 },
     variant("Лист", { "значение": 1 }), variant("Лист", { "значение": 2 }), variant("Узел", {})]
@@ -1785,7 +1793,8 @@ test("литералы — double, а не int: целых чисел в нап�
   const built = build(program)
   assert.match(built.source, /\{:num, 1\.0\}/u, "целое обязано печататься с точкой")
   assert.match(built.source, /\{:num, :nan\}/u, "NaN — атом, а не float: такого float на BEAM нет")
-  assert.match(built.source, /\{:num, -0\.0\}/u)
+  assert.match(built.source, /\{:num, Flang\.Rt\.neg_zero\(\)\}/u,
+    "−0 печатается вызовом: литерал `-0.0` компилятор до OTP 27 сливает с литералом `0.0`")
   assert.match(built.source, /\{:num, 1\.0e21\}/u, "экспонента Elixir требует точки в мантиссе и не терпит плюса")
   for (const fn of program.functions) {
     compare(program, built, fn.name, fn.params.length === 0 ? [[]] : [[2], [0.5], [-0]])
@@ -1960,8 +1969,9 @@ test("образцы-литералы, «любой» с привязкой и �
   const built = build(program)
   assert.match(built.source, /Flang\.Rt\.equal\(z, \{:num, 0\.0\}\)/u,
     "образец-литерал — это сравнение значений flang, а не образец Elixir")
-  assert.match(built.source, /Flang\.Rt\.equal\(z, \{:num, -0\.0\}\)/u,
-    "и −0 отличается от 0 именно потому, что сравнение своё, а не `case`")
+  assert.match(built.source, /Flang\.Rt\.equal\(z, \{:num, Flang\.Rt\.neg_zero\(\)\}\)/u,
+    "и −0 отличается от 0 именно потому, что сравнение своё, а не `case`, — а сам −0 приезжает " +
+      "вызовом: два литерала, `{:num, 0.0}` и `{:num, -0.0}`, компилятор до OTP 27 сливает в один")
   assert.match(built.source, /Flang\.Rt\.variant\("Есть", \[/u,
     "литерал { variant, fields } обязан стать вариантом, а не записью")
 

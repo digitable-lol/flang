@@ -121,6 +121,7 @@ const ВИДИМОСТЬ = new Map([
   ["flang/SPEC.md", false],
   ["flang/PLAN.md", false],
   ["flang/cat", false], // категорные заметки: HOF, MONAD, POLY
+  ["flang/scripts", false], // сторожа разработки: claim-guard сверяет прозу с лексером
   ["flang/test", false],
   ["docs", false],
   ["web", false], // демо-страница репозитория, в пакет не входит

@@ -123,6 +123,16 @@ def repair_delta(recs):
                      and all(p["г"]["verdict"][k] for k, _ in STAGES))
     print("  круг понадобился %d выборкам из %d; полностью выправил %d из них (%.0f%%)" % (
         len(used), len(both), fixed_full, pct(fixed_full, len(used) or 1)))
+    # Сколько раз модель, получив диагностику, вернула ТО ЖЕ САМОЕ — байт в байт.
+    same = 0
+    for p in used:
+        try:
+            a = open(p["в"]["path"], encoding="utf-8").read().strip()
+            b = open(p["г"]["path"], encoding="utf-8").read().strip()
+            same += 1 if a == b else 0
+        except Exception:
+            pass
+    print("  из них вернули программу байт в байт прежней: %d (%.0f%%)" % (same, pct(same, len(used) or 1)))
 
 
 def codes(recs):

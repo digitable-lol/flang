@@ -1,0 +1,5 @@
+def сумма_до(n: nat): nat =
+  if n = 0 then 0 else n + сумма_до(n - 1)
+
+example: сумма_до(0) = 0
+example: сумма_до(5) = 15

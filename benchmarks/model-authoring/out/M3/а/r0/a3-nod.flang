@@ -1,0 +1,10 @@
+function gcd(a, b) {
+  if (b == 0) {
+    return a;
+  } else {
+    return gcd(b, a % b);
+  }
+}
+
+print(gcd(12, 8)); // 4
+print(gcd(7, 0));  // 7

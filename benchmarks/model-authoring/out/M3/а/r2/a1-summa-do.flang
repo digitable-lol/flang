@@ -1,0 +1,5 @@
+def сумма_до(n: nat) -> nat:
+    return n * (n + 1) // 2
+
+assert сумма_до(0) == 0
+assert сумма_до(5) == 15

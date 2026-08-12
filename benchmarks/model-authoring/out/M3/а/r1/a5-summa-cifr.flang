@@ -1,0 +1,4 @@
+(λ (n)
+   (if (= n 0)
+       0
+       (+ (remainder n 10) (sum-digits (quotient n 10)))))

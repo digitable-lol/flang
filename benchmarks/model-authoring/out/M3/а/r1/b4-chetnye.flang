@@ -1,0 +1,7 @@
+(define (only-even elements)
+  (filter even? elements))
+
+(display (only-even '(1 2 3 4)))
+(newline)
+(display (only-even '()))
+(newline)

@@ -1,0 +1,10 @@
+function gcd(a, b) -> number
+  if b == 0 then
+    return a
+  else
+    return gcd(b, a % b)
+  end
+end
+
+-- Пример 1: gcd(12, 8) должно вернуть 4
+-- Пример 2: gcd(7, 0) должно вернуть 7

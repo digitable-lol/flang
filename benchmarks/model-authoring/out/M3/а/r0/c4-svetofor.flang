@@ -1,0 +1,15 @@
+module Светофор
+  type Свет = Красный | Жёлтый | Зелёный
+
+  function Можно ехать(свет: Свет): boolean
+    case свет
+      of Красный: return false
+      of Жёлтый: return false
+      of Зелёный: return true
+    end
+  end
+
+  example 1: Можно ехать(Красный) => false
+  example 2: Можно ехать(Жёлтый) => false
+  example 3: Можно ехать(Зелёный) => true
+end

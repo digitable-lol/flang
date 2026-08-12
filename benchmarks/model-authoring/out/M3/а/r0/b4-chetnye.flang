@@ -1,0 +1,5 @@
+(define (only-even elements)
+  (filter (lambda (x) (= (modulo x 2) 0)) elements))
+
+(only-even '(1 2 3 4)) ; [2, 4]
+(only-even '()) ; []

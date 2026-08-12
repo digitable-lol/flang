@@ -47,7 +47,8 @@ const HELP = `flang — полный язык поверх FTS
 
 Использование:
   flang check <файл> [--proof [--json]] [--pretty]
-  flang run   <файл> --function «Имя» --args '{"поле": 1}' [--pretty]
+  flang run   <файл> --function «Имя» --args '{"поле": 1}' [--max-steps N]
+                     [--max-depth N] [--pretty]
   flang test  <файл> [--pretty]
   flang facts <файл> --facts факты.json --claims '["…"]' [--steps N] [--pretty]
   flang ast   <файл> [--pretty]
@@ -178,7 +179,15 @@ async function commandRun(options) {
   const fn = (program.functions ?? []).find((item) => item.name === options.functionName)
   if (fn === undefined) throw fail("FLANG_UNKNOWN_NAME", `не найдена функция «${options.functionName}»`)
   const args = bindArguments(fn, options.args ?? {})
-  writeJson({ function: fn.name, args, result: evaluateFlang(program, fn.name, args) }, options.pretty, process.stdout)
+  /* Пределы обязаны дойти до вычислителя. `--max-steps` и `--max-depth`
+     разбираются на общем разборе ключей, поэтому `run` их ПРИНИМАЛ — и
+     выбрасывал: `evaluateFlang` звался без четвёртого аргумента. Ключ, который
+     принят и не действует, хуже отвергнутого: отвергнутый виден сразу, а этот
+     обещает работу и молчит. Видно это было только на большом входе — предел по
+     умолчанию (миллион шагов, около 33 000 витков числового цикла) поднять было
+     нечем, хотя тот же ключ действует у `repl` и у `emit`. */
+  const result = evaluateFlang(program, fn.name, args, interpretLimits(options))
+  writeJson({ function: fn.name, args, result }, options.pretty, process.stdout)
   return 0
 }
 
@@ -443,6 +452,20 @@ function emitOptions(options) {
   const result = {}
   if (options.cli !== undefined) result.cli = options.cli
   if (options.indexBase !== undefined) result.indexBase = options.indexBase
+  if (options.maxDepth !== undefined) result.maxDepth = options.maxDepth
+  if (options.maxSteps !== undefined) result.maxSteps = options.maxSteps
+  return result
+}
+
+/**
+ * Пределы вычислителя по тому же правилу «только если заданы»: умолчания живут
+ * в `interpret.mjs`, и подставлять их здесь значило бы завести второе место, где
+ * они записаны. Отдельно от `emitOptions` потому, что `cli` и `indexBase` —
+ * ключи ПЕЧАТИ: вычислителю их передавать нечего, и то, что он их сейчас молча
+ * игнорирует, — совпадение, а не разрешение.
+ */
+function interpretLimits(options) {
+  const result = {}
   if (options.maxDepth !== undefined) result.maxDepth = options.maxDepth
   if (options.maxSteps !== undefined) result.maxSteps = options.maxSteps
   return result

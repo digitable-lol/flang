@@ -120,7 +120,7 @@ function сложить(записи) {
     functions: 0,
     total: 0,
     ordinary: 0,
-    carriers: { composition: 0, structure: 0, step: 0, measure: 0 },
+    carriers: { composition: 0, structure: 0, exact: 0, step: 0, measure: 0 },
     unaccounted: 0,
     guardSites: 0,
     laws: { grid: 0, assumed: 0, gridValues: 0, gridPoints: 0 },
@@ -179,7 +179,7 @@ function печать(свод, поФайлам) {
       строки.push(
         `  ${запись.путь}: функций ${ф.functions}, тотальных ${ф.total} `
           + `(композиция ${ф.carriers.composition}, структура ${ф.carriers.structure}, `
-          + `шаг ${ф.carriers.step}, мера ${ф.carriers.measure}), сторожей ${ф.guardSites}, `
+          + `точный шаг ${ф.carriers.exact}, шаг ${ф.carriers.step}, мера ${ф.carriers.measure}), сторожей ${ф.guardSites}, `
           + `законов на сетке ${ф.laws.grid}, на веру ${ф.laws.assumed}`,
       )
     }
@@ -191,6 +191,7 @@ function печать(свод, поФайлам) {
     `чем несётся обещание «тотальная» (доказано — про ВСЕ входы):`,
     `  композицией (рекурсии нет):        ${и.carriers.composition}`,
     `  структурой (часть значения):       ${и.carriers.structure}`,
+    `  точным шагом (нат/целое, без сторожа): ${и.carriers.exact}`,
     `  постоянным шагом (число + сторож): ${и.carriers.step}`,
     `  объявленной мерой (+ сторож):      ${и.carriers.measure}`,
     `сторожей в рантайме: ${и.guardSites} мест у ${и.carriers.step + и.carriers.measure} функций`,

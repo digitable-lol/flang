@@ -40,10 +40,39 @@ import { устройствоМонады } from "./monad.mjs"
    которая ДОКАЗЫВАЕТСЯ сличением объявлений; вторая, которая считает на сетке,
    стоит рядом с моноидом и изоморфизмом — в `flang check`. */
 import { checkSetShapes } from "./sets.mjs"
+/* Уточнение числа (`нат`, `целое`) — это ИНТЕРВАЛ, а не новый вид значения, и
+   вся арифметика интервалов живёт своим файлом по той же причине, по какой там
+   же живут `план` и множества: разбор целиком про диапазоны и об остальных
+   типах не знает ничего. Обратной зависимости нет — `range.mjs` не импортирует
+   ничего вовсе, — и поэтому его же читает `totality.mjs`: граница, на которой
+   держится и уточнение, и доказательство убывания, названа в языке один раз. */
+import {
+  СЛОВО as СЛОВО_УТОЧНЕНИЯ,
+  ТОЧНО,
+  арифметика,
+  вместимо,
+  интервалЛитерала,
+  интервалТипа,
+  объединить as объединитьИнтервалы,
+  пересечь,
+  сужение,
+  уточнение,
+} from "./range.mjs"
 
 /** Тип-джокер: совместим со всем. Им гасятся каскады после первой ошибки. */
 const UNKNOWN = Object.freeze({ kind: "unknown" })
 const NUMBER = Object.freeze({ kind: "number" })
+/**
+ * Уточнения числа: тот же вид типа, тот же double, суженный диапазон.
+ *
+ * `refine` — слово автора, прочитанное парсером; `min` и `max` — то же самое,
+ * пересчитанное в интервал, чтобы сравнение и арифметика не разбирали слово
+ * второй раз. Держать два представления одного факта здесь можно ровно потому,
+ * что второе выводится из первого одной функцией (`уточнённое`) и нигде
+ * больше: слово идёт в диагностику, интервал — в проверку.
+ */
+const INTEGER = Object.freeze({ kind: "number", refine: "integer", ...уточнение("integer") })
+const NATURAL = Object.freeze({ kind: "number", refine: "natural", ...уточнение("natural") })
 const STRING = Object.freeze({ kind: "string" })
 const BOOLEAN = Object.freeze({ kind: "boolean" })
 const NOTHING = Object.freeze({ kind: "null" })
@@ -57,6 +86,11 @@ const NOTHING = Object.freeze({ kind: "null" })
  */
 const SCALAR_ALIASES = new Map([
   ["number", NUMBER], ["число", NUMBER], ["Число", NUMBER], ["Деньги", NUMBER],
+  /* Уточнения приходят сюда только из AST, написанного руками, и из моста FTS:
+     парсер кладёт их полем `refine` на виде `number`, а не отдельным именем
+     вида. Оба пути обязаны давать один тип, поэтому имена стоят здесь. */
+  ["integer", INTEGER], ["целое", INTEGER],
+  ["natural", NATURAL], ["нат", NATURAL],
   ["string", STRING], ["строка", STRING], ["Строка", STRING], ["Дата", STRING],
   ["boolean", BOOLEAN], ["признак", BOOLEAN], ["Признак", BOOLEAN], ["bool", BOOLEAN], ["flag", BOOLEAN],
   ["null", NOTHING], ["ничто", NOTHING], ["nothing", NOTHING], ["unit", NOTHING],
@@ -2096,7 +2130,7 @@ function normalizeType(node, ctx, at) {
   // а не тип значения: проверять по нему нечего, но и ошибкой он не является.
   // «иногда является состоянием» — тот же маркер, но необязательный.
   if (node.state === true) return optional(UNKNOWN, node)
-  if (SCALAR_ALIASES.has(kind)) return optional(SCALAR_ALIASES.get(kind), node)
+  if (SCALAR_ALIASES.has(kind)) return optional(уточнённое(SCALAR_ALIASES.get(kind), node), node)
   if (LIST_KINDS.has(kind)) {
     const element = node.of ?? node.item ?? node.элемент
     if (element === undefined) {
@@ -2143,6 +2177,27 @@ function optional(type, node) {
   if (node?.optional !== true) return type
   // UNKNOWN — замороженный синглтон, поэтому именно копия, а не мутация.
   return { ...type, optional: true }
+}
+
+/**
+ * Уточнение числа, прочитанное с узла типа: `{ kind: "number", refine: … }`.
+ *
+ * Стоит отдельной функцией и вызывается из ОДНОГО места, потому что это
+ * единственный переход «слово автора → интервал». Слово кладёт парсер, интервал
+ * считает `range.mjs`, а связь между ними существует ровно здесь: разведи их по
+ * двум местам — и тип начал бы обещать одно, а проверка требовать другое.
+ *
+ * Уточнение на не-числе — не ошибка и не молчание: у парсера такого узла нет
+ * вовсе (`refine` стоит только в `SCALAR_TYPES` у двух числовых слов), а
+ * написанный руками AST с `{"kind": "string", "refine": "natural"}` получает
+ * ровно строку. Жаловаться тут значило бы жаловаться на поле, которого этот вид
+ * типа не читает, — как никто не жалуется на `fts` у списка.
+ */
+function уточнённое(type, node) {
+  if (type.kind !== "number") return type
+  const интервал = уточнение(node?.refine)
+  if (интервал === null) return type
+  return { kind: "number", refine: node.refine, ...интервал }
 }
 
 function namedOrScalar(name, ctx, at, argNodes) {
@@ -2239,6 +2294,129 @@ function sameType(a, b) {
   return true
 }
 
+/**
+ * Годится ли значение типа `actual` там, где объявлен `expected`.
+ *
+ * ── Зачем рядом с `sameType` появилось второе отношение ────────────────────
+ *
+ * `sameType` симметричен и означает «один и тот же вид». Уточнение числа
+ * симметричным быть не может: `нат` годится там, где ждут `число`, а обратное —
+ * нет, иначе уточнение не значило бы ничего. Поэтому отношений здесь два, и
+ * каждое стоит там, где оно верно:
+ *
+ *   `sameType`  — СИММЕТРИЧНЫЕ места: ветви `если`, случаи `разбора`, две
+ *                 стороны сравнения. Там ни одна сторона не объявлена, обе
+ *                 выведены, и «кто кому подтип» вопрос без смысла. Число с
+ *                 числом там сходится всегда — как и сходилось.
+ *   `подходит`  — НАПРАВЛЕННЫЕ места: аргумент в параметр, тело в объявленный
+ *                 результат, значение в поле записи или варианта, значение
+ *                 примера в тип. Их семь, и они перечислены в шапке файла.
+ *
+ * Разница между «завести подтипы» и «сделать один вид типа уточняемым» здесь
+ * ровно та: подтипов у записей, сумм и списков по-прежнему нет — `подходит`
+ * отличается от `sameType` ТОЛЬКО на числах и на списках чисел. Дисциплина
+ * «типы объявляются, а не выводятся» от этого не меняется.
+ *
+ * Список ковариантен, и это не уступка: значения flang неизменяемы (SPEC,
+ * раздел 2), а у неизменяемого списка `список нат` годится всюду, где годится
+ * `список числа`. Функция контравариантна по аргументам — единственный
+ * порядок, при котором подстановка значения-функции остаётся верной: тот, кто
+ * применит `функция из числа в число`, вправе передать любое число, и функция,
+ * принимающая только `нат`, на её место не годится.
+ */
+function подходит(actual, expected) {
+  if (!sameType(actual, expected)) return false
+  return сужаемо(actual, expected)
+}
+
+/** Та же проверка без вида: вид уже сверен, осталось уточнение. */
+function сужаемо(actual, expected) {
+  if (!actual || !expected) return true
+  if (actual.kind === "unknown" || expected.kind === "unknown") return true
+  if (actual.kind !== expected.kind) return true
+  if (actual.kind === "number") return вместимо(интервалТипа(actual), интервалТипа(expected))
+  if (actual.kind === "list") return сужаемо(actual.of, expected.of)
+  if (actual.kind === "fn") {
+    const слева = fnParams(actual)
+    const справа = fnParams(expected)
+    if (слева.length !== справа.length) return true
+    return слева.every((item, index) => сужаемо(справа[index], item)) && сужаемо(actual.returns, expected.returns)
+  }
+  return true
+}
+
+/**
+ * Общий тип двух ветвей: самое слабое обещание из двух.
+ *
+ * Нужен там, где значение приходит из НЕСКОЛЬКИХ мест: ветви `если`, случаи
+ * `разбора`, элементы литерала списка. Без него `если … то 0 иначе н` при
+ * `н: число` получил бы интервал литерала — то есть обещание, которого одна из
+ * ветвей не даёт. Это была бы не неточность, а неправда: на ней держится
+ * доказательство убывания.
+ *
+ * На программах без уточнений возвращает ТОТ ЖЕ объект, что и раньше: у
+ * `числа` интервала нет, объединять нечего, и вывод не меняется ни на байт.
+ */
+function объединить(левый, правый) {
+  if (!левый || !правый) return левый ?? правый
+  if (левый === правый) return левый
+  if (левый.kind !== "number" || правый.kind !== "number") return левый
+  const интервал = объединитьИнтервалы(интервалТипа(левый), интервалТипа(правый))
+  if (интервал === null) return NUMBER
+  /* Слово уточнения выживает только когда обе ветви его дали — иначе печать
+     назвала бы `нат` то, чего автор не объявлял ни в одной из них. */
+  const refine = левый.refine === правый.refine ? левый.refine : undefined
+  return refine === undefined ? { kind: "number", ...интервал } : { kind: "number", refine, ...интервал }
+}
+
+/**
+ * Тип без уточнения: то же, но без обещания о диапазоне.
+ *
+ * Зовётся у накопителя свёртки, и только там. Накопитель — единственное место
+ * языка, где тип значения зависит от САМОГО СЕБЯ: `свёртка … начиная с 0 …
+ * акк плюс э` даёт накопителю то, что даст тело, а тело считается от
+ * накопителя. Правильный ответ на это — неподвижная точка, то есть второй
+ * проход; правильный отказ — снять уточнение и не обещать ничего. Взят отказ:
+ * второй проход был бы вторым ответом на тот же вопрос, а он однажды
+ * разойдётся с первым (та же причина, по которой ведомость не держит своего
+ * графа вызовов).
+ */
+function шире(type) {
+  if (!type || type.kind === "unknown") return type
+  if (type.kind === "number") return type.optional === true ? { ...NUMBER, optional: true } : NUMBER
+  if (type.kind === "list") return { ...type, of: шире(type.of) }
+  return type
+}
+
+/**
+ * Приписка к диагностике, когда виноват именно диапазон.
+ *
+ * Без неё сообщение «ожидался нат, получен число» верно и бесполезно: автор
+ * видит два слова и не видит, ЧЕМ его выражение вышло из диапазона. А выйти оно
+ * может ровно двумя способами, и чинятся они разным:
+ *
+ *   переполнением — сумма или произведение вышли за 2⁵³−1; чинится границей на
+ *   слагаемые (`если а не больше 1000`), а не переписыванием типа;
+ *   знаком — значение может стать отрицательным; чинится проверкой снизу.
+ *
+ * Пустая строка на всём, где уточнения нет вовсе, — то есть на каждой
+ * программе, написанной до этого типа.
+ */
+function подсказкаУточнения(actual, expected) {
+  const ждём = интервалТипа(expected)
+  if (ждём === null) return ""
+  const есть = интервалТипа(actual)
+  if (есть === null) {
+    return actual?.kind === "number"
+      ? `: про это выражение не известно, что оно целое и лежит в [${ждём.min}, ${ждём.max}] — `
+        + `границу видно из литералов и из проверок «если», а сумма и произведение выходят за 2⁵³−1 (${ТОЧНО})`
+      : ""
+  }
+  if (есть.min < ждём.min) return `: значение может быть ${есть.min}, а нужно не меньше ${ждём.min}`
+  if (есть.max > ждём.max) return `: значение может дойти до ${есть.max}, а нужно не больше ${ждём.max}`
+  return ""
+}
+
 /** Аргументы применения. Отсутствие аргументов и пустой список — одно и то же:
  *  так обычный тип сравнивается с обычным ровно как раньше. */
 function sameArgs(a, b) {
@@ -2256,7 +2434,12 @@ export function typeName(type) {
   if (!type) return "неизвестный тип"
   if (type.optional === true) return `${typeName({ ...type, optional: false })} или ничто`
   switch (type.kind) {
-    case "number": return "число"
+    /* Слово печатается только у ОБЪЯВЛЕННОГО уточнения. Выведенный интервал —
+       `1`, `н минус 1`, сумма двух `нат` — печатается «числом», и это не
+       небрежность: уточнение есть слово автора, а выведенный интервал есть
+       промежуточный факт анализа. Печатай его словом — и всякая диагностика про
+       литерал начала бы говорить «нат», а автор не писал этого слова нигде. */
+    case "number": return type.refine === undefined ? "число" : УТОЧНЕНИЕ_ИМЯ(type.refine)
     case "string": return "строка"
     case "boolean": return "признак"
     case "null": return "ничто"
@@ -2287,8 +2470,24 @@ function acceptedFrom(type) {
 
 const GENITIVE = new Map([["number", "числа"], ["string", "строки"], ["boolean", "признака"], ["null", "ничего"]])
 
+/** Слово уточнения в именительном. Одно место, откуда его берут обе печати. */
+const УТОЧНЕНИЕ_ИМЯ = (refine) => СЛОВО_УТОЧНЕНИЯ[refine] ?? "число"
+/**
+ * Тот же список в родительном — «список целого», «список нат».
+ *
+ * `нат` не склоняется (рабочее имя, взято как термин), `целое` склоняется как
+ * прилагательное. Падеж выписан руками, потому что вывести его нельзя: язык уже
+ * платил за попытку угадать форму слова числом (`строкой(сколько)` в
+ * flang/test/readme-layout.test.mjs) и получил проверку, требующую вписать
+ * безграмотное.
+ */
+const GENITIVE_УТОЧНЕНИЯ = new Map([["natural", "нат"], ["integer", "целого"]])
+
 function genitive(type) {
   if (!type) return "неизвестного"
+  if (type.kind === "number" && type.refine !== undefined) {
+    return GENITIVE_УТОЧНЕНИЯ.get(type.refine) ?? "числа"
+  }
   if (GENITIVE.has(type.kind)) return GENITIVE.get(type.kind)
   if (type.kind === "list") return `списка ${genitive(type.of)}`
   if (type.kind === "record" || type.kind === "sum") return `«${type.name}»${appliedTo(type)}`
@@ -2329,8 +2528,8 @@ function checkFunction(fn, ctx) {
     ctx.report("FLANG_TYPE", `${where} не имеет тела`, fn)
   } else {
     const actual = inferExpr(body, env, signature.returns, ctx, fn.name)
-    if (!sameType(actual, signature.returns)) {
-      ctx.report("FLANG_TYPE", `${where} объявлена как ${typeName(signature.returns)}, а тело даёт ${typeName(actual)}`, body)
+    if (!подходит(actual, signature.returns)) {
+      ctx.report("FLANG_TYPE", `${where} объявлена как ${typeName(signature.returns)}, а тело даёт ${typeName(actual)}${подсказкаУточнения(actual, signature.returns)}`, body)
     }
   }
 
@@ -2609,9 +2808,17 @@ function checkValue(value, type, label, ctx, at) {
   if (type.optional === true && (value === null || value === undefined)) return
   const bad = () => ctx.report("FLANG_TYPE", `${label} не соответствует типу ${typeName(type)}`, at)
   switch (type.kind) {
-    case "number":
-      if (typeof value !== "number" || !Number.isFinite(value)) bad()
+    case "number": {
+      if (typeof value !== "number" || !Number.isFinite(value)) { bad(); return }
+      /* Граница входа. Уточнение обещает диапазон, и обещание это держится тем,
+         что каждое место, где значение приходит В программу, диапазон
+         проверяет. Значение примера — одно из двух таких мест (второе — `flang
+         run --args`), и проверка здесь стоит ОДНА НА ЗНАЧЕНИЕ, а не одна на
+         виток: это то же различение, ради которого весь этап и делался. */
+      const ждём = интервалТипа(type)
+      if (ждём !== null && !вместимо(интервалЛитерала(value), ждём)) bad()
       return
+    }
     case "string":
       if (typeof value !== "string") bad()
       return
@@ -2658,7 +2865,7 @@ function checkValue(value, type, label, ctx, at) {
         return
       }
       const actual = signatureType(signature)
-      if (!sameType(actual, type)) {
+      if (!подходит(actual, type)) {
         ctx.report("FLANG_TYPE", `${label}: «${tag}» имеет тип ${typeName(actual)}, а ожидался ${typeName(type)}`, at)
       }
       return
@@ -2724,13 +2931,19 @@ function inferExpr(expr, env, expected, ctx, fnName) {
       if (!sameType(cond, BOOLEAN)) {
         ctx.report("FLANG_TYPE", `условие «если» должно быть признаком, а не ${typeName(cond)}`, expr.cond ?? expr)
       }
-      const thenType = inferExpr(expr.then, env, expected, ctx, fnName)
-      const elseType = inferExpr(expr.else, env, expected ?? thenType, ctx, fnName)
+      /* Второй источник границы после литерала — и тот, ради которого весь
+         разбор: `если н не больше 0 … иначе` в ветви `иначе` говорит н ≥ 1, и
+         ровно это делает `н минус 1` снова `натом`. Условие ПОВТОРНО НЕ
+         ОБХОДИТСЯ: интервалы читаются с узлов (`интервалВыражения`), потому что
+         второй обход удвоил бы диагностики условия. */
+      const thenType = inferExpr(expr.then, суженнаяСреда(expr.cond, "then", env), expected, ctx, fnName)
+      const elseEnv = суженнаяСреда(expr.cond, "else", env)
+      const elseType = inferExpr(expr.else, elseEnv, expected ?? thenType, ctx, fnName)
       if (!sameType(thenType, elseType)) {
         ctx.report("FLANG_TYPE", `ветви «если» разных типов: ${typeName(thenType)} и ${typeName(elseType)}`, expr)
         return expected ?? UNKNOWN
       }
-      return thenType.kind === "unknown" ? elseType : thenType
+      return thenType.kind === "unknown" ? elseType : объединить(thenType, elseType)
     }
     case "call": return callType(expr, env, expected, ctx, fnName)
     case "fnref": return fnrefType(expr, ctx)
@@ -2750,14 +2963,82 @@ function inferExpr(expr, env, expected, ctx, fnName) {
   }
 }
 
+/**
+ * Тип целого литерала — с интервалом, а печатью всё равно «число».
+ *
+ * В корпусе 1140 целых литералов, и это первый источник границы: без него
+ * `н минус 1` не уточнялся бы ничем, потому что про `1` не было бы известно
+ * ровно ничего. Слова уточнения у литерала нет (`refine` не ставится), поэтому
+ * ни одна существующая диагностика от этого не меняет ни буквы — проверено
+ * сверкой сообщений на всём корпусе и на сломанных программах.
+ */
+function числоЛитерала(value) {
+  const интервал = интервалЛитерала(value)
+  return интервал === null ? NUMBER : { kind: "number", ...интервал }
+}
+
 function literalType(expr, ctx) {
   const value = expr.value
-  if (typeof value === "number" && Number.isFinite(value)) return NUMBER
+  if (typeof value === "number" && Number.isFinite(value)) return числоЛитерала(value)
   if (typeof value === "string") return STRING
   if (typeof value === "boolean") return BOOLEAN
   if (value === null) return NOTHING
   ctx.report("FLANG_TYPE", `литерал ${JSON.stringify(value)} не является скаляром`, expr)
   return UNKNOWN
+}
+
+/**
+ * Интервал выражения, читаемый С УЗЛА, без повторного вывода типов.
+ *
+ * Условие `если` к этому моменту уже обойдено, и второй обход удвоил бы его
+ * диагностики. Поэтому здесь ровно два случая — литерал и имя, — и это не
+ * бедность: третьего источника границы в `если` у корпуса нет, а
+ * `н минус 1 больше 0` сознательно не переводится в `н > 1` (`range.mjs`,
+ * «Почему именно так, а не решателем»).
+ */
+function интервалВыражения(node, env) {
+  if (!node || typeof node !== "object") return null
+  if (node.kind === "literal") return интервалЛитерала(node.value)
+  if (node.kind === "var" && isName(node.name)) return интервалТипа(env.get(node.name))
+  return null
+}
+
+/**
+ * Область видимости внутри ветви `если`: те же имена, у чисел суженный интервал.
+ *
+ * Сужается ТОЛЬКО то, у чего интервал уже есть. Иначе `если х не больше 5` при
+ * `х: число` обещало бы, что х целое, — а он может быть 4.5, и всё
+ * доказательство, ради которого интервал существует, рассыпалось бы на первом
+ * же дробном входе. Уточнение бывает только у целых, и это условие проверяется
+ * здесь, а не подразумевается.
+ *
+ * Возвращает ТУ ЖЕ карту, когда сужать нечего: на программе без уточнений
+ * `сужение` даёт пустой список, и лишней копии среды не возникает.
+ */
+function суженнаяСреда(cond, ветвь, env) {
+  const правки = сужение(
+    cond,
+    ветвь,
+    (node) => интервалВыражения(node, env),
+    (node) => (node?.kind === "var" && isName(node.name) && env.has(node.name) ? node.name : null),
+  )
+  if (правки.length === 0) return env
+  let inner = null
+  for (const { имя, интервал, устанавливает } of правки) {
+    const было = (inner ?? env).get(имя)
+    if (!было || было.kind !== "number") continue
+    const прежний = интервалТипа(было)
+    if (прежний === null && устанавливает !== true) continue
+    const общее = пересечь(прежний, интервал)
+    if (общее === null) continue
+    inner ??= new Map(env)
+    /* Слово уточнения остаётся: `нат`, суженный проверкой до [1, ТОЧНО], — всё
+       ещё `нат`, и печатать его надо тем словом, которым автор его объявил. */
+    inner.set(имя, было.refine === undefined
+      ? { kind: "number", ...общее }
+      : { kind: "number", refine: было.refine, ...общее })
+  }
+  return inner ?? env
 }
 
 function varType(expr, env, ctx) {
@@ -2830,8 +3111,8 @@ function callType(expr, env, expected, ctx, fnName) {
     if (!param) return
     if (typeParams.length > 0) matchAgainst(param.type, actual, bindings)
     const settled = substitute(param.type, bindings)
-    if (!sameType(actual, settled)) {
-      ctx.report("FLANG_TYPE", `аргумент «${param.name}» функции «${signature.name}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, arg)
+    if (!подходит(actual, settled)) {
+      ctx.report("FLANG_TYPE", `аргумент «${param.name}» функции «${signature.name}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}${подсказкаУточнения(actual, settled)}`, arg)
     }
   })
   if (typeParams.length === 0) return signature.returns
@@ -2914,8 +3195,8 @@ function applyType(expr, env, ctx, fnName) {
     const wanted = params[index]
     const actual = inferExpr(arg, env, wanted && !hasParams(wanted) ? wanted : null, ctx, fnName)
     if (wanted === undefined) return
-    if (!sameType(actual, wanted)) {
-      ctx.report("FLANG_TYPE", `аргумент ${index + 1} применения ${где}: ожидался ${typeName(wanted)}, получен ${typeName(actual)}`, arg)
+    if (!подходит(actual, wanted)) {
+      ctx.report("FLANG_TYPE", `аргумент ${index + 1} применения ${где}: ожидался ${typeName(wanted)}, получен ${typeName(actual)}${подсказкаУточнения(actual, wanted)}`, arg)
     }
   })
   return target.returns ?? UNKNOWN
@@ -2933,9 +3214,15 @@ function appliedName(node) {
 function binaryType(expr, env, ctx, fnName) {
   const op = expr.op
   if (ARITHMETIC.has(op)) {
-    checkOperand(expr.left, env, NUMBER, ctx, fnName, op, "левый")
-    checkOperand(expr.right, env, NUMBER, ctx, fnName, op, "правый")
-    return NUMBER
+    const left = checkOperand(expr.left, env, NUMBER, ctx, fnName, op, "левый")
+    const right = checkOperand(expr.right, env, NUMBER, ctx, fnName, op, "правый")
+    /* Здесь и решается главный вопрос уточнения: `нат` плюс `нат` — это НЕ
+       `нат`, потому что 2⁵³−1 плюс 2⁵³−1 из диапазона выходит. Ответ на выход
+       за границу один и тот же во всех четырёх действиях: интервала нет, тип
+       снова `число`. Значит проверки в рантайме не появилось ни одной, а отказ,
+       если `нат` был объявлен, придёт на проверке типов — до запуска. */
+    const интервал = арифметика(op, интервалТипа(left), интервалТипа(right))
+    return интервал === null ? NUMBER : { kind: "number", ...интервал }
   }
   if (op === "concat") {
     checkOperand(expr.left, env, STRING, ctx, fnName, op, "левый")
@@ -3022,8 +3309,8 @@ function constructType(expr, env, expected, ctx, fnName) {
     const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
     const settled = адресат !== null && name === "что" ? wanted : substitute(type, bindings)
-    if (!sameType(actual, settled)) {
-      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
+    if (!подходит(actual, settled)) {
+      ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}${подсказкаУточнения(actual, settled)}`, given[name])
     }
   }
   for (const name of Object.keys(given)) {
@@ -3057,8 +3344,8 @@ function recordType(expr, env, expected, ctx, fnName) {
     const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
     const settled = substitute(type, bindings)
-    if (!sameType(actual, settled)) {
-      ctx.report("FLANG_TYPE", `поле «${name}» записи «${expr.type}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
+    if (!подходит(actual, settled)) {
+      ctx.report("FLANG_TYPE", `поле «${name}» записи «${expr.type}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}${подсказкаУточнения(actual, settled)}`, given[name])
     }
   }
   for (const name of Object.keys(given)) {
@@ -3120,7 +3407,9 @@ function listType(expr, env, expected, ctx, fnName) {
     }
     if (!sameType(actual, element)) {
       ctx.report("FLANG_TYPE", `список неоднороден: элемент ${index + 1} имеет тип ${typeName(actual)}, а список — ${typeName(element)}`, item)
+      return
     }
+    element = объединить(element, actual)
   })
   return { kind: "list", of: element ?? UNKNOWN }
 }
@@ -3151,7 +3440,7 @@ function matchType(expr, env, expected, ctx, fnName) {
     if (!result) result = bodyType
     else if (!sameType(result, bodyType)) {
       ctx.report("FLANG_TYPE", `случаи разбора разных типов: ${typeName(result)} и ${typeName(bodyType)}`, branch?.body ?? branch)
-    }
+    } else result = объединить(result, bodyType)
   }
 
   reportExhaustiveness(expr, target, covered, cases.length, ctx)
@@ -3364,7 +3653,10 @@ function filterType(expr, env, ctx, fnName) {
  */
 function foldType(expr, env, ctx, fnName) {
   const element = collectionOf(expr.over, env, ctx, fnName, "свёртка")
-  const accType = inferExpr(expr.init, env, null, ctx, fnName)
+  /* Уточнение снимается с накопителя, и только с него: тип накопителя зависит
+     от самого себя (см. `шире`). На программах без уточнений `шире` возвращает
+     тот же объект, поэтому вывод свёртки не меняется ни на байт. */
+  const accType = шире(inferExpr(expr.init, env, null, ctx, fnName))
   if (!isName(expr.acc) || !isName(expr.item)) {
     ctx.report("FLANG_BUILTIN_ARGS", "«свёртка» требует имён накопителя и элемента", expr)
     return accType
@@ -3394,8 +3686,8 @@ function builtinType(expr, env, ctx, fnName) {
   }
   const want = (index, type) => {
     const actual = inferExpr(args[index], env, type, ctx, fnName)
-    if (!sameType(actual, type)) {
-      ctx.report("FLANG_BUILTIN_ARGS", `аргумент ${index + 1} формы «${canonical}»: ожидался ${typeName(type)}, получен ${typeName(actual)}`, args[index] ?? expr)
+    if (!подходит(actual, type)) {
+      ctx.report("FLANG_BUILTIN_ARGS", `аргумент ${index + 1} формы «${canonical}»: ожидался ${typeName(type)}, получен ${typeName(actual)}${подсказкаУточнения(actual, type)}`, args[index] ?? expr)
     }
     return actual
   }

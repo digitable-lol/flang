@@ -241,8 +241,8 @@
 //
 // ЧТО ИМЕННО ВЫПИСАНО. Ровно те иероглифы, что стоят в таблице поверхностей
 // («Куски таблицы» ниже) и в примерах `flang/examples/surfaces/*.zh.flang` —
-// 188 знаков. Не блок Unicode целиком: блок — это 20 976 знаков, из которых
-// языку нужны 188, а выписывать 20 976 знаков ради «на всякий случай» значит
+// 190 знаков. Не блок Unicode целиком: блок — это 20 976 знаков, из которых
+// языку нужны 190, а выписывать 20 976 знаков ради «на всякий случай» значит
 // утроить файл ради того, чего никто не написал.
 //
 // ПОЧЕМУ ЭТО НЕ РАЗЪЕДЕТСЯ МОЛЧА. Иероглиф, попавший в таблицу поверхности
@@ -252,7 +252,7 @@
 // Сверка идёт по каждой поверхности таблицы, а не по паре примеров.
 тотальная функция «Иероглифы»
   возвращает строка
-  "不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
+  "不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数整文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能自行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // `\p{ID_Start}` образца, суженный до латиницы, кириллицы, надстрочных букв
 // эсперанто, иероглифов китайской поверхности, `_` и `$`.
@@ -265,13 +265,13 @@
 // чтобы такие проседания не проходили молча.
 тотальная функция «Начала имени»
   возвращает строка
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数整文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能自行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // `\p{ID_Continue}` образца плюс `$` и дефис — дефис там задан явно, поэтому
 // `не-ключевое` остаётся одним именем, а не тремя токенами.
 тотальная функция «Части имени»
   возвращает строка
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$0123456789-不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁĈĜĤĴŜŬabcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщъыьэюяёĉĝĥĵŝŭ_$0123456789-不且中串为么之乘于交仅从令以任位体余作使例依信值假元先入全其具况减出函分划列则别到割加包匹半单压双取受变叠可同后向否含命和回因在块型处大失头套如始子字完定对导射小尔尾属嵌工布带平并幺度开当录律态性恒情意或找折按据接数整文无日映是有望期本构果查模正此段添滤点然状理用由略的监真督码示种程空符等策算箱类素累终结给群者能自行表规解计记诸象败起转载过运返进连逆那配金链长阈除集非项预题额首"
 
 // Знаки, каждый из которых — отдельный токен. Набор дословно из образца.
 тотальная функция «Знаки»
@@ -971,7 +971,7 @@
 // порядок записи — это и есть правило разрешения конфликта у образца.
 //
 // Форма — не список пар, а строка `|фраза:идентификатор|…|`, и это не
-// экономия места. Словаря в языке нет, значит поиск по списку из 595 записей
+// экономия места. Словаря в языке нет, значит поиск по списку из 606 записей
 // стоил бы в среднем 297 сравнений на каждое слово исходника — на корпусе это
 // десятки миллионов сравнений. Строка же ищется одной встроенной «содержит»,
 // то есть одним `indexOf` рантайма. Ведущая `|` в ключе не даёт совпасть с
@@ -989,7 +989,7 @@
     "|код символа:charCode|character code:charCode|kodo de signo:charCode|字符码:charCode|разложить:decompose|decompose:decompose|malkomponi:decompose|分解:decompose|на символы:intoCharacters|into characters:intoCharacters|en signojn:intoCharacters|为字符:intoCharacters|подстрока:substring|substring:substring|subĉeno:substring|子串:substring|соединить:join|join:join|kunigi:join|连接:join|разделить:split|split:split|dividi:split|分割:split|содержит:contains|contains:contains|enhavas:contains|包含:contains|начинается с:beginsWith|begins with:beginsWith|komenciĝas per:beginsWith|开始于:beginsWith|к числу или беда:toNumberOrFail|to number or failure:toNumberOrFail|al nombro aŭ fiasko:toNumberOrFail|转数字或失败:toNumberOrFail|к числу:toNumber|",
     "|to number:toNumber|al nombro:toNumber|转数字:toNumber|к строке:toText|to text:toText|al teksto:toText|转文本:toText|голова:head|head:head|kapo:head|头:head|хвост:tail|tail:tail|vosto:tail|尾:tail|элемент:item|item:item|ero:item|元素:item|голова и хвост:headTail|head and tail:headTail|kapo kaj vosto:headTail|头和尾:headTail|пусто:empty|empty:empty|malplena:empty|空:empty|пустой список:emptyList|empty list:emptyList|malplena listo:emptyList|空列表:emptyList|список из:listOf|list of:listOf|listo de:listOf|列表由:listOf|список:list|list:list|listo:list|列表:list|добавить:add|add:add|aldoni:add|添加:add|любое:any|any:any|ajna:any|任意:any|плюс:opAdd|plus:opAdd|",
     "|加:opAdd|минус:opSub|minus:opSub|减:opSub|умножить на:opMul|times:opMul|multiplied by:opMul|fojoj:opMul|乘以:opMul|делить на:opDiv|divided by:opDiv|dividite per:opDiv|除以:opDiv|остаток от:opMod|modulo:opMod|resto de:opMod|取余:opMod|процентов:opPercent|процента:opPercent|процент:opPercent|percent:opPercent|percents:opPercent|procentoj:opPercent|procento:opPercent|равен:cmpEq|равна:cmpEq|равно:cmpEq|равным:cmpEq|равной:cmpEq|равное:cmpEq|equals:cmpEq|equal to:cmpEq|egalas:cmpEq|等于:cmpEq|не равен:cmpNeq|не равна:cmpNeq|не равно:cmpNeq|is not equal to:cmpNeq|not equals:cmpNeq|ne egalas:cmpNeq|不等于:cmpNeq|больше:cmpGt|is greater than:cmpGt|",
-    "|greater than:cmpGt|pli granda ol:cmpGt|大于:cmpGt|меньше:cmpLt|is less than:cmpLt|less than:cmpLt|pli malgranda ol:cmpLt|小于:cmpLt|не больше:cmpLte|is at most:cmpLte|at most:cmpLte|ne pli granda ol:cmpLte|不大于:cmpLte|не меньше:cmpGte|is at least:cmpGte|at least:cmpGte|ne pli malgranda ol:cmpGte|不小于:cmpGte|да:litTrue|true:litTrue|yes:litTrue|vera:litTrue|jes:litTrue|真:litTrue|нет:litFalse|false:litFalse|no:litFalse|malvera:litFalse|ne:litFalse|假:litFalse|ничто:litNull|null:litNull|nenio:litNull|无:litNull|число:tNumber|числа:tNumber|числом:tNumber|числу:tNumber|number:tNumber|nombro:tNumber|数字:tNumber|строка:tString|строки:tString|",
+    "|greater than:cmpGt|pli granda ol:cmpGt|大于:cmpGt|меньше:cmpLt|is less than:cmpLt|less than:cmpLt|pli malgranda ol:cmpLt|小于:cmpLt|не больше:cmpLte|is at most:cmpLte|at most:cmpLte|ne pli granda ol:cmpLte|不大于:cmpLte|не меньше:cmpGte|is at least:cmpGte|at least:cmpGte|ne pli malgranda ol:cmpGte|不小于:cmpGte|да:litTrue|true:litTrue|yes:litTrue|vera:litTrue|jes:litTrue|真:litTrue|нет:litFalse|false:litFalse|no:litFalse|malvera:litFalse|ne:litFalse|假:litFalse|ничто:litNull|null:litNull|nenio:litNull|无:litNull|число:tNumber|числа:tNumber|числом:tNumber|числу:tNumber|number:tNumber|nombro:tNumber|数字:tNumber|нат:tNatural|natural:tNatural|natura:tNatural|自然数:tNatural|целое:tInteger|целого:tInteger|целым:tInteger|целому:tInteger|integer:tInteger|entjero:tInteger|整数:tInteger|строка:tString|строки:tString|",
     "|строкой:tString|строку:tString|текстом:tString|string:tString|teksto:tString|字符串:tString|признак:tFlag|признака:tFlag|признаком:tFlag|boolean:tFlag|flag:tFlag|bulea:tFlag|布尔:tFlag|деньги:tMoney|деньгами:tMoney|money:tMoney|mono:tMoney|金额:tMoney|дата:tDate|даты:tDate|дату:tDate|датой:tDate|date:tDate|dato:tDate|日期:tDate|состояние:state|состоянием:state|state:state|stato:state|状态:state|является:is|is:is|estas:is|是:is|иногда является:maybeIs|may be:maybeIs|povas esti:maybeIs|可能是:maybeIs|утилита:utility|utility:utility|utilaĵo:utility|工具:utility|правило:rule|rule:rule|regulo:rule|规则:rule|свойство:property|property:property|",
     "|propraĵo:property|属性:property|результат:result|result:result|rezulto:result|结果:result|начинает с:startsWith|starts with:startsWith|komencas per:startsWith|始于:startsWith|поле:field|поля:field|field:field|kampo:field|字段:field|морфизм:morphism|morphism:morphism|morfismo:morphism|态射:morphism|после:after|after:after|post:after|之后:after|цепочка:chain|chain:chain|ĉeno:chain|链:chain|сначала:firstStep|first:firstStep|unue:firstStep|首先:firstStep|затем:nextStep|next:nextStep|poste:nextStep|然后:nextStep|единица:identity|identity:identity|identeco:identity|恒等:identity|даёт:gives|gives:gives|donas:gives|给出:gives|закон:lawBlock|law:lawBlock|",
     "|leĝo:lawBlock|定律:lawBlock|изоморфизм:isomorphism|isomorphism:isomorphism|izomorfio:isomorphism|同构:isomorphism|прямой морфизм:forwardMorphism|forward morphism:forwardMorphism|rekta morfismo:forwardMorphism|正向态射:forwardMorphism|обратный морфизм:inverseMorphism|inverse morphism:inverseMorphism|inversa morfismo:inverseMorphism|逆态射:inverseMorphism|вложение:embedding|embedding:embedding|嵌入:embedding|пересечение:intersection|intersection:intersection|komunaĵo:intersection|交集:intersection|моноид:monoid|monoid:monoid|monoido:monoid|幺半群:monoid|носитель:carrier|carrier:carrier|portanto:carrier|载体:carrier|операция:operation|operation:operation|operacio:operation|运算:operation|обратный элемент:inverseElement|inverse element:inverseElement|inversa elemento:inverseElement|",

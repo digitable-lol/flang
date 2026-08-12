@@ -165,6 +165,14 @@ const FTS_COMPARISONS = COMPARISONS
 
 const SCALAR_TYPES = {
   tNumber: { kind: "number" },
+  /* Уточнение числа едет ПОЛЕМ на том же виде типа, а не своим видом типа.
+     Это не экономия узлов, а условие, при котором восемь эмиттеров остаются
+     нетронутыми: каждый из них читает `kind` (`typeNote`), и новый вид прочёл
+     бы как безымянный. `{ kind: "number", refine: … }` они читают как число —
+     чем оно и является: значение остаётся IEEE-754 double, а `refine` говорит
+     только о диапазоне, в котором тип это значение держит. */
+  tInteger: { kind: "number", refine: "integer" },
+  tNatural: { kind: "number", refine: "natural" },
   tString: { kind: "string" },
   tFlag: { kind: "flag" },
   tMoney: { kind: "number", fts: "Деньги" },
@@ -174,6 +182,12 @@ const SCALAR_TYPES = {
 
 const FTS_TYPE_NAMES = {
   tNumber: "Число",
+  /* Ядро FTS уточнений не знает: его имена типов — пять слов из `src/parser.ts`,
+     и добавить туда шестое значило бы менять формат ядра ради типа, которого в
+     ядре нет. Наследие FTS поэтому называет уточнённое число «Числом» — как и
+     печатает его каждый эмиттер, и по той же причине. */
+  tInteger: "Число",
+  tNatural: "Число",
   tString: "Строка",
   tFlag: "Признак",
   tMoney: "Деньги",
@@ -212,7 +226,7 @@ const NOT_EXPRESSION = new Set([
 ])
 
 /** Ключевые слова, которые в позиции выражения читаются как обычные имена. */
-const SOFT_NAMES = new Set(["tNumber", "tString", "tFlag", "tMoney", "tDate", "litNull", "total"])
+const SOFT_NAMES = new Set(["tNumber", "tInteger", "tNatural", "tString", "tFlag", "tMoney", "tDate", "litNull", "total"])
 
 /** Ключевые слова, с которых выражение начаться может. */
 const EXPRESSION_START = new Set([

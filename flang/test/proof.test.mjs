@@ -84,7 +84,11 @@ export function расхождения(итог, результаты) {
   const имена = (список) => new Set((список ?? []).map((запись) => запись.from))
   const вЦикле = new Set((тотальность.cycles ?? []).flat())
   const сторожимые = new Set([...имена(тотальность.guards), ...имена(тотальность.descents)])
-  const структурные = new Set([...имена(тотальность.structures)].filter((имя) => !сторожимые.has(имя)))
+  /* Точный шаг стоит между структурой и сторожем: сторожа у него нет, поэтому
+     из `структурные` он вычитается так же, как вычитаются сторожимые. */
+  const точные = new Set([...имена(тотальность.exact)].filter((имя) => !сторожимые.has(имя)))
+  const структурные = new Set([...имена(тотальность.structures)]
+    .filter((имя) => !сторожимые.has(имя) && !точные.has(имя)))
   const мест = (тотальность.guards ?? []).length + (тотальность.descents ?? []).length
 
   const тотальных = итог.functions.filter((запись) => запись.total === true)
@@ -106,6 +110,7 @@ export function расхождения(итог, результаты) {
   const ожидаемо = {
     composition: тотальных.filter((запись) => !вЦикле.has(запись.name)).length,
     structure: тотальных.filter((запись) => структурные.has(запись.name)).length,
+    exact: тотальных.filter((запись) => точные.has(запись.name)).length,
     step: тотальных.filter((запись) => имена(тотальность.guards).has(запись.name)).length,
     measure: тотальных.filter((запись) => имена(тотальность.descents).has(запись.name)).length,
   }
@@ -117,7 +122,7 @@ export function расхождения(итог, результаты) {
       жалобы.push(`итог по «${носитель}» ${итог.totals.carriers[носитель]} не равен числу строк ${под(носитель)}`)
     }
   }
-  if (под("composition") + под("structure") + под("step") + под("measure") + безНосителя.length !== тотальных.length) {
+  if (под("composition") + под("structure") + под("exact") + под("step") + под("measure") + безНосителя.length !== тотальных.length) {
     жалобы.push(`носители не покрывают тотальные: ${тотальных.length} строк`)
   }
 

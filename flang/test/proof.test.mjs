@@ -226,20 +226,23 @@ test("свод по корпусу называет те же числа, что
   /* Числа замера (см. шапку flang/scripts/proof-ledger.mjs). Проверяются
      ЦЕЛИКОМ и точным равенством: свод, который «примерно сошёлся», мерить
      этапы не годится. */
-  assert.equal(и.functions, 2296, "функций в корпусе")
-  assert.equal(и.total, 1709, "тотальных")
+  assert.equal(и.functions, 2295, "функций в корпусе")
+  assert.equal(и.total, 1708, "тотальных")
   assert.equal(и.ordinary, 587, "обычных")
   assert.equal(и.carriers.composition, 1546, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 150, "несёт структура")
+  assert.equal(и.carriers.structure, 149, "несёт структура")
   assert.equal(и.carriers.step, 11, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 2, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
   assert.equal(и.guardSites, 14, "мест со сторожем")
   assert.equal(и.unaccounted, 0, "носитель обязан быть назван у каждой")
 
-  /* Рекурсия целиком: 163 функции корпуса входят в цикл, и каждая несёт своё. */
-  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 163, "рекурсивных всего")
+  /* Рекурсия целиком: 162 функции корпуса входят в цикл, и каждая несёт своё.
+     Было 163: у решения LeetCode 704 убран свой помощник «Элемент», обходивший
+     список звено за звеном (взятие по номеру пошло встроенной формой), а он
+     нёс завершение структурой. */
+  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 162, "рекурсивных всего")
   assert.equal(и.carriers.step + и.carriers.measure, 13, "функций на стороже")
-  assert.equal(и.carriers.composition + 163, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.composition + 162, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
   assert.equal(и.laws.grid, 6, "законов, посчитанных на сетке")

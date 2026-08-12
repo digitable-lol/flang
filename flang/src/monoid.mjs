@@ -34,7 +34,7 @@ import { valuesEqual } from "./builtins.mjs"
 import { createRuntime } from "./interpret.mjs"
 
 /** Больше этого числа значений в сетку не берём — см. шапку про кубический рост. */
-const ПРЕДЕЛ_СЕТКИ = 12
+export const ПРЕДЕЛ_СЕТКИ = 12
 
 /**
  * Значения для сетки: из примеров операции и обращения, плюс единица.

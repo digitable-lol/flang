@@ -848,6 +848,10 @@
   "unreleased": {
     "entries": [
       {
+        "text": "Напечатанный JavaScript сам считает глубину и витки: вместо RangeError и зависания — объявленный FLANG_RECURSION_LIMIT",
+        "commit": "06ba35a"
+      },
+      {
         "text": "Напечатанный TypeScript отвечает то же, что ядро: коды и тексты отказов сошлись на 966 входах из 966",
         "commit": "2480cad"
       },

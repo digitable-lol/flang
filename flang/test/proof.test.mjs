@@ -236,17 +236,23 @@ test("свод по корпусу называет те же числа, что
   assert.equal(и.ordinary, 587, "обычных")
   assert.equal(и.carriers.composition, 1548, "несёт композиция: рекурсии нет")
   assert.equal(и.carriers.structure, 149, "несёт структура")
-  assert.equal(и.carriers.step, 11, "несёт постоянный шаг")
+  /* Главное число этапа «уточнение числа»: функции, у которых сторож СНЯТ, а не
+     потерян. Носитель у них сменился со `step` на `exact`, и сумма
+     `exact + step` обязана остаться прежней — иначе доказательство не переехало,
+     а исчезло. Проверяется это строкой ниже, а не глазами. */
+  assert.equal(и.carriers.exact, 6, "несёт точный шаг: параметр объявлен нат")
+  assert.equal(и.carriers.step, 5, "несёт постоянный шаг: параметр объявлен числом")
+  assert.equal(и.carriers.exact + и.carriers.step, 11, "числовой мерой доказано столько же, сколько до уточнения")
   assert.equal(и.carriers.measure, 3, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
-  assert.equal(и.guardSites, 15, "мест со сторожем")
+  assert.equal(и.guardSites, 9, "мест со сторожем")
   assert.equal(и.unaccounted, 0, "носитель обязан быть назван у каждой")
 
   /* Рекурсия целиком: 164 функции корпуса входят в цикл, и каждая несёт своё.
      Плюс одна к прежним 163 — «НОД» из `flang/conc/examples/measure.flang`:
      первая в корпусе числовая мера У ОБРАБОТЧИКА ПРОЦЕССА, и заведена она не
      ради счёта, а ради шестого вида отказа (`flang/src/failures.mjs`). */
-  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 163, "рекурсивных всего")
-  assert.equal(и.carriers.step + и.carriers.measure, 14, "функций на стороже")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 163, "рекурсивных всего")
+  assert.equal(и.carriers.step + и.carriers.measure, 8, "функций на стороже")
   assert.equal(и.carriers.composition + 163, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
@@ -266,9 +272,10 @@ test("числа обзора языка сходятся со сводом, а 
   for (const фраза of [
     `тотальных функций ${и.total} из ${и.functions}`,
     `обещание ${и.carriers.composition} из них несёт композиция`,
-    `Рекурсивных ${и.carriers.structure + и.carriers.step + и.carriers.measure}`,
+    `Рекурсивных ${и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure}`,
     `у ${и.carriers.structure} убывание несёт структура`,
-    `у ${и.carriers.step + и.carriers.measure} остаётся сторож в ${и.guardSites} местах`,
+    `у ${и.carriers.exact} —`,
+    `Сторож остаётся у ${и.carriers.step + и.carriers.measure} функций в ${и.guardSites} местах`,
     `${и.carriers.step} на постоянном шаге и ${и.carriers.measure} на объявленной мере`,
   ]) {
     assert.ok(обзор.includes(фраза), `docs/overview.ru.md: свод изменился — впишите «${фраза}»`)

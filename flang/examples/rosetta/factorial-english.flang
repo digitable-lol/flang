@@ -19,6 +19,20 @@ module «Factorial»
 // step is constant (`minus 1`) and the guard `n is at most 1` pins n from
 // below; from those two facts the analysis bounds the calls by n−1.
 //
+// One more truth about it is worth reading here, because a single word shows it.
+// The parameter is declared `natural`, not `number`, and that is why the proof
+// no longer needs a runtime guard. While the type was `number`, `n minus 1`
+// could fail to change n at all: on a double with |n| ≥ 2⁵⁴ the one does not fit
+// in the mantissa, so the emitted code checked the descent on every turn.
+// `natural` is an integer in [0, 2⁵³−1], where adjacent integers are
+// distinguishable, so decreasing by one is a THEOREM. None of the eight targets
+// emits a guard; the ledger (`flang check --proof`) names the carrier of the
+// promise «точным шагом» — by exact step.
+//
+// The price is not freeness but honesty: `n times …` leaves the `natural` range,
+// so the RESULT stayed a `number`. The input is refined, not the output, and
+// that is exactly where a guard count could have gone negative.
+//
 // «Numbers from and to» stayed an ordinary function, and the difference is
 // instructive: it counts UP (`start plus 1`), the measure grows, and such a
 // chain has no floor — the end of the range is not a measure, because the
@@ -77,7 +91,7 @@ function «Factorial by product»
 
 // The recursive version the task asks for. Total by measure.
 total function «Factorial»
-  accepts n: number
+  accepts n: natural
   returns number
   example «Five factorial»
     given n equals 5

@@ -744,8 +744,9 @@ function checkComponent(component, edges, failed, report, guards, descents, func
        Позиция, объявленная `натом`, доказывается без сторожа — и платить
        сторожем за соседнюю позицию, объявленную `числом`, значило бы платить за
        то же обещание дважды. */
-    const точная = мерой.find((position) => теоремаНаПозиции(decreasing, position))
-    if (точная !== undefined) {
+    const точные = commonPositions(decreasing, true, true)
+    if (точные.length > 0) {
+      const точная = точные[0]
       for (const { edge } of decreasing) {
         exact.push({
           position: точная,
@@ -1062,16 +1063,42 @@ function decreasingPositions(edge) {
     if (!origin) return
     if (origin.param !== index) return          // убывать обязан аргумент на своей позиции
     if (index >= edge.calleeParams.length) return
-    if (origin.depth !== null && origin.depth >= 1) positions.push({ position: index, measure: false })
+    if (origin.depth !== null && origin.depth >= 1) positions.push({ position: index, measure: false, exact: false })
     /* Мера без нижней границы убыванием не считается: цепочка «минус один»
        без дна бесконечна (шапка файла, «Числовая мера»). Мера, за которой
        нельзя поставить сторожа, — тоже: доказательство по мере верно только
        вместе с ним (см. `visibleParams`). */
     else if (origin.step !== null && origin.bounded && edge.visible?.[index] === true && stepDescends(origin, edge)) {
-      positions.push({ position: index, measure: true })
+      /* `exact` считается здесь, а не отдельным проходом, потому что здесь под
+         рукой ПРОИСХОЖДЕНИЕ: величина шага и позиция шага-параметра живут в нём
+         и больше нигде. Второй проход пришлось бы кормить теми же данными
+         второй дорогой — и разойтись с этой на первом же несовпадении. */
+      positions.push({ position: index, measure: true, exact: точныйСпуск(origin, edge, index) })
     }
   })
   return positions
+}
+
+/**
+ * Убывание на этой позиции — ТЕОРЕМА, а не обещание под сторожем.
+ *
+ * Четыре условия из шапки файла (раздел «Когда сторож НЕ НУЖЕН»), и все четыре
+ * проверяются здесь, в одном месте: разложи их по двум — и однажды одно
+ * останется непроверенным, а «сторожа не нужно» перестанет быть доказательством.
+ */
+function точныйСпуск(origin, edge, index) {
+  /* Тип объявлен точным на ОБОИХ концах ребра. Не на одном: цепочка идёт по
+     всем звеньям компоненты, и звено, объявленное `числом`, вернуло бы значение
+     за границу мантиссы — там шаг снова перестаёт менять число. */
+  if (edge.exact?.[index] !== true || edge.calleeExact?.[index] !== true) return false
+  /* Шаг обязан быть целым. Дробный шаг внутри точной области убывает, но
+     значение перестаёт быть целым — то есть перестаёт быть `натом`, — и
+     полагаться на то, что это кто-то проверил, анализ завершаемости не вправе. */
+  if (!Number.isInteger(origin.step)) return false
+  /* Шаг-параметр (`н минус ш`) тоже объявлен точным — иначе про целость шага не
+     известно ничего. */
+  if (origin.stepParam !== null && edge.exact?.[origin.stepParam] !== true) return false
+  return true
 }
 
 /** Уводит ли шаг меру вниз — постоянным числом или параметром. */
@@ -1096,34 +1123,6 @@ function invariantStep(param, edge) {
   return step.depth === 0 && step.step === 0 && step.positive === true
 }
 
-/**
- * Убывание на этой позиции — теорема, а не обещание под сторожем.
- *
- * Четыре условия из шапки файла, раздел «Когда сторож НЕ НУЖЕН», и все четыре
- * проверяются здесь, в одном месте: разложи их по двум — и однажды одно из них
- * останется непроверенным, а обещание «сторожа не нужно» перестанет быть
- * доказательством.
- */
-function теоремаНаПозиции(decreasing, position) {
-  for (const { edge } of decreasing) {
-    /* Тип объявлен точным на ОБОИХ концах ребра. Не на одном: цепочка идёт по
-       всем звеньям компоненты, и звено, объявленное `числом`, вернуло бы
-       значение за границу мантиссы — там шаг снова перестаёт менять число. Все
-       звенья этим и покрыты: в компоненте с циклом у каждой функции есть
-       исходящее внутреннее ребро. */
-    if (edge.exact?.[position] !== true) return false
-    if (edge.calleeExact?.[position] !== true) return false
-    const origin = edge.origins[position]
-    if (!origin) return false
-    /* Шаг обязан быть целым. Дробный шаг внутри точной области убывает, но
-       значение перестаёт быть целым — а это уже другой тип, и полагаться на то,
-       что его кто-то проверил, анализ завершаемости не вправе. */
-    if (!Number.isInteger(origin.step)) return false
-    if (origin.stepParam !== null && edge.exact?.[origin.stepParam] !== true) return false
-  }
-  return true
-}
-
 /** Уточнение каждого параметра — по одному признаку на позицию. */
 function exactParams(fn) {
   return (Array.isArray(fn?.params) ? fn.params : []).map((param) => точныйТип(param?.type))
@@ -1136,13 +1135,22 @@ function объявленноеУточнение(fn, position) {
   return refine === "natural" || refine === "integer" ? refine : null
 }
 
-/** Позиции заданного способа, убывающие на КАЖДОМ ребре компоненты. */
-function commonPositions(decreasing, measure) {
+/**
+ * Позиции заданного способа, убывающие на КАЖДОМ ребре компоненты.
+ *
+ * `exact` сужает отбор до тех позиций, где убывание доказано точным шагом.
+ * Третьим доводом, а не третьим способом: способ у них тот же — числовая мера,
+ * — и различаются они только тем, нужен ли стороже. Заведи для этого отдельный
+ * способ, и «структура или мера» превратилось бы в «структура, мера или почти
+ * мера», а требование единого способа на всех рёбрах цикла — в три требования.
+ */
+function commonPositions(decreasing, measure, exact = false) {
+  const годится = (item, position) =>
+    item.measure === measure && item.position === position && (!exact || item.exact === true)
   return decreasing[0].positions
-    .filter((item) => item.measure === measure)
+    .filter((item) => годится(item, item.position))
     .map((item) => item.position)
-    .filter((position) => decreasing.every(({ positions }) =>
-      positions.some((item) => item.measure === measure && item.position === position)))
+    .filter((position) => decreasing.every(({ positions }) => positions.some((item) => годится(item, position))))
 }
 
 function argumentLabel(edge, position) {

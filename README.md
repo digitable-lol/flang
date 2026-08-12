@@ -254,9 +254,9 @@ with the real toolchain from nothing but what the backend emitted, and run as a 
 The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
-✔ stdlib и leetcode: собранный Rust совпадает с интерпретатором
-ℹ программ: 92, функций: 451, сверенных входов: 7568, за 21 с
-✔ примеры stdlib и leetcode сходятся у собранного Rust так же, как у интерпретатора
+✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
+ℹ программ: 92, функций: 451, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
 ℹ сверенных примеров: 1122
 ```
 

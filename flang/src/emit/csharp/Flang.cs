@@ -915,6 +915,27 @@ public static class Flang
         return Value.List(next);
     }
 
+    /// <summary>
+    /// «приписать … к …»: тот же список с элементом впереди.
+    ///
+    /// Копирует по той же причине, что <c>BAppend</c>, и постоянного времени
+    /// здесь быть не может: список — массив <c>Value[]</c>, ячейки ПЕРЕД началом
+    /// у него нет, а запасом ёмкости в общем массиве пришлось бы кому-то владеть,
+    /// тогда как значение flang по договору неизменяемо и разделяемо.
+    ///
+    /// Копия при этом ОДНА на вызов, а не одна на элемент, как у свёртки, которой
+    /// приписывание в начало писали до появления формы. Цена по всем восьми
+    /// целям — в SPEC, раздел «Стоимость встроенных форм».
+    /// </summary>
+    public static Value BPrepend(Ctx ctx, Value item, Value value)
+    {
+        Value[] items = ExpectList("приписать", value, "второй аргумент");
+        var next = new Value[items.Length + 1];
+        next[0] = item;
+        Array.Copy(items, 0, next, 1, items.Length);
+        return Value.List(next);
+    }
+
     /// <summary>«остаток от».</summary>
     public static Value BRemainder(Ctx ctx, Value left, Value right)
     {

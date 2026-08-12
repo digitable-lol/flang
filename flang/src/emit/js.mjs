@@ -529,6 +529,16 @@ function $b_dobavit(item, value) {
   return [...list, item]
 }
 
+// «приписать» копирует по той же причине, по которой копирует «хвост»: список
+// flang — массив JS, а у массива нет ячейки ПЕРЕД началом, и запаса спереди в
+// нём не завести. Постоянного времени здесь быть не может; одна копия на вызов —
+// может, и это ровно то, чего не было: приписывание писали свёрткой, а она
+// копирует на каждом элементе. Числа — в SPEC, «Стоимость встроенных форм».
+function $b_pripisat(item, value) {
+  const list = $expectList("приписать", value, "второй аргумент")
+  return [item, ...list]
+}
+
 function $b_ostatok_ot(left, right) {
   $expectNumber("остаток от", left, "делимое")
   $expectNumber("остаток от", right, "делитель")
@@ -635,6 +645,7 @@ runtimeEntry("$b_golova", ["$fail", "$expectList"], fromSource($b_golova))
 runtimeEntry("$b_hvost", ["$fail", "$expectList"], fromSource($b_hvost))
 runtimeEntry("$b_element", ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"], fromSource($b_element))
 runtimeEntry("$b_dobavit", ["$expectList"], fromSource($b_dobavit))
+runtimeEntry("$b_pripisat", ["$expectList"], fromSource($b_pripisat))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
 runtimeEntry("$b_procentov_ot", ["$expectNumber"], fromSource($b_procentov_ot))
 runtimeEntry("$Bounce", [], fromSource($Bounce))
@@ -659,6 +670,7 @@ const BUILTIN_HELPERS = new Map([
   ["хвост", "$b_hvost"],
   ["элемент", "$b_element"],
   ["добавить", "$b_dobavit"],
+  ["приписать", "$b_pripisat"],
   ["остаток от", "$b_ostatok_ot"],
   ["процентов от", "$b_procentov_ot"],
 ])
@@ -682,6 +694,7 @@ const BUILTIN_ARITY = new Map([
   ["хвост", 1],
   ["элемент", 2],
   ["добавить", 2],
+  ["приписать", 2],
   ["остаток от", 2],
   ["процентов от", 2],
 ])

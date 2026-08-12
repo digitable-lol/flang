@@ -650,6 +650,12 @@ attaching a solver to the verification conditions is an open task, not a feature
   continuation is a declared value rather than a hidden closure; how that differs from a monad is
   in `flang/cat/SPEC.md`. The execution layer exists for one target out of eight (Node); emitting
   a program with a plan works for all eight.
+- A list grows from both ends: `добавить … к …` appends, `приписать … к …` prepends. Both forms
+  promise a VALUE, not a cost, and the cost is named target by target in `flang/SPEC.md`: in C both
+  are constant (the arena's spare capacity is counted from both ends), in Elixir prepending is
+  constant (a BEAM list is singly linked), in the remaining six it is one copy per call. One copy,
+  not one per element: before `приписать` existed, prepending could only be written as a fold over
+  `добавить`, and that made building a list front to back CUBIC in its length.
 - An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
   a dictionary comes in two kinds: a list of pairs with linear lookup (`dictionary.flang`) and a
   search tree whose priority is the hash of the key, O(log n) (`tree.flang`). What is missing is

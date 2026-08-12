@@ -1154,6 +1154,24 @@ func BAppend(ctx *Ctx, item, value Value) (Value, error) {
 	return List(result), nil
 }
 
+// BPrepend — «приписать … к …»: тот же список с элементом впереди.
+// Копия, и постоянного времени здесь быть не может: срез Go не умеет смотреть на
+// ячейку ПЕРЕД своим началом, поэтому запаса спереди в нём не завести — для этого
+// список пришлось бы представлять не срезом, а записью с общим буфером. Зато
+// копия ОДНА на вызов, а не одна на элемент, как у свёртки, которой приписывание
+// в начало писали до появления формы. Цена по всем восьми целям — в SPEC, раздел
+// «Стоимость встроенных форм».
+func BPrepend(ctx *Ctx, item, value Value) (Value, error) {
+	items, err := expectList("приписать", value, "второй аргумент")
+	if err != nil {
+		return Nothing(), err
+	}
+	result := make([]Value, len(items)+1)
+	result[0] = item
+	copy(result[1:], items)
+	return List(result), nil
+}
+
 // BRemainder — «остаток от».
 func BRemainder(ctx *Ctx, left, right Value) (Value, error) {
 	a, err := expectNumber("остаток от", left, "делимое")

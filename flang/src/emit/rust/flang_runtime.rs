@@ -1300,6 +1300,23 @@ pub fn b_append(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> {
     Ok(list(result))
 }
 
+/// «приписать … к …»: тот же список с элементом впереди.
+///
+/// Копия, и постоянного времени здесь быть не может. `Items` смотрит в
+/// `Rc<Vec<Value>>` через `start`, то есть суффикс он отдаёт даром, а вот запас
+/// СПЕРЕДИ (как арена в бэкенде C) потребовал бы записи в общий буфер, значит
+/// внутренней изменяемости — а `as_slice` отдаёт заимствованный срез и с ней
+/// несовместим. Зато копия ОДНА на вызов, а не одна на элемент, как у свёртки,
+/// которой приписывание в начало писали до появления формы. Цена по всем восьми
+/// целям — в SPEC, раздел «Стоимость встроенных форм».
+pub fn b_prepend(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> {
+    let items = expect_list("приписать", &value, "второй аргумент")?;
+    let mut result: Vec<Value> = Vec::with_capacity(items.len().saturating_add(1));
+    result.push(item);
+    result.extend(items.iter().cloned());
+    Ok(list(result))
+}
+
 /// «остаток от».
 pub fn b_remainder(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     let a = expect_number("остаток от", &left, "делимое")?;

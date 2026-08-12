@@ -96,6 +96,7 @@ const BUILTIN_ALIASES = new Map([
   ["элемент", "элемент"], ["item", "элемент"],
   ["пусто", "пусто"], ["isEmpty", "пусто"],
   ["добавить", "добавить"], ["append", "добавить"],
+  ["приписать", "приписать"], ["prepend", "приписать"],
   // Арифметика приходит из парсера узлом `binary`, но в `builtins.mjs` те же
   // два действия есть и как формы: принимаем оба написания.
   ["остаток от", "остаток от"], ["modulo", "остаток от"],
@@ -3523,7 +3524,13 @@ function builtinType(expr, env, ctx, fnName) {
       }
       return BOOLEAN
     }
-    case "добавить": {
+    /* «добавить X к Y» и «приписать X к Y» отличаются только концом списка,
+       поэтому правило типов у них дословно одно: элемент, список того же
+       элемента, ответ — тот же список. Ветвь общая, а слово в диагностике
+       берётся из `canonical`: сказать «добавить», когда написано «приписать»,
+       значит отправить читателя искать не ту строку. */
+    case "добавить":
+    case "приписать": {
       // Порядок аргументов — как в поверхностном синтаксисе «добавить X к Y»:
       // сначала элемент, затем список.
       if (!arity(2)) return UNKNOWN
@@ -3531,11 +3538,11 @@ function builtinType(expr, env, ctx, fnName) {
       const list = inferExpr(args[1], env, { kind: "list", of: element }, ctx, fnName)
       if (list.kind === "unknown") return { kind: "list", of: element }
       if (list.kind !== "list") {
-        ctx.report("FLANG_BUILTIN_ARGS", `«добавить» добавляет в список, а второй аргумент — ${typeName(list)}`, args[1] ?? expr)
+        ctx.report("FLANG_BUILTIN_ARGS", `«${canonical}» добавляет в список, а второй аргумент — ${typeName(list)}`, args[1] ?? expr)
         return { kind: "list", of: element }
       }
       if (!sameType(element, list.of)) {
-        ctx.report("FLANG_BUILTIN_ARGS", `«добавить»: элемент имеет тип ${typeName(element)}, а список — ${typeName(list)}`, expr)
+        ctx.report("FLANG_BUILTIN_ARGS", `«${canonical}»: элемент имеет тип ${typeName(element)}, а список — ${typeName(list)}`, expr)
       }
       return list
     }

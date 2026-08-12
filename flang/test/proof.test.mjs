@@ -226,10 +226,10 @@ test("свод по корпусу называет те же числа, что
   /* Числа замера (см. шапку flang/scripts/proof-ledger.mjs). Проверяются
      ЦЕЛИКОМ и точным равенством: свод, который «примерно сошёлся», мерить
      этапы не годится. */
-  assert.equal(и.functions, 2296, "функций в корпусе")
-  assert.equal(и.total, 1709, "тотальных")
-  assert.equal(и.ordinary, 587, "обычных")
-  assert.equal(и.carriers.composition, 1546, "несёт композиция: рекурсии нет")
+  assert.equal(и.functions, 2292, "функций в корпусе")
+  assert.equal(и.total, 1704, "тотальных")
+  assert.equal(и.ordinary, 588, "обычных")
+  assert.equal(и.carriers.composition, 1541, "несёт композиция: рекурсии нет")
   assert.equal(и.carriers.structure, 150, "несёт структура")
   assert.equal(и.carriers.step, 11, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 2, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")

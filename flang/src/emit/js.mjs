@@ -45,16 +45,62 @@
 //     кадр, у которого есть постусловия, потому что они обязаны проверить
 //     именно свой результат.
 //
+// ── Пределы: и глубина, и шаги ─────────────────────────────────────────────
+// Раньше здесь стояло «лимитов `maxSteps`/`maxDepth` нет», и это была дыра, а не
+// упрощение. Обещание языка — «тотальная функция завершится ИЛИ ОТКАЖЕТ ЧЕСТНО»,
+// и набор видов отказа ЗАКРЫТ (failures.mjs). Без счётчиков напечатанный модуль
+// давал не отказ из набора, а `RangeError` с пустым `code` на нехвостовой
+// рекурсии и вечное вращение на хвостовой — в браузере это смерть вкладки.
+// Обещание держалось на интерпретаторе и не держалось на том, что собирал
+// пользователь. Теперь считают, как в остальных семи целях: шаг — это вход в
+// функцию, оборот цикла хвостового самовызова и отскок батута; глубину считает
+// каждая функция, лежащая на цикле графа вызовов (`recursive`).
+//
+// Знание `total: true` используется честно: оно доказывает завершение, но не
+// ограничивает глубину — тотальная «Сумма» на списке в миллион элементов уйдёт
+// на миллион кадров, — поэтому счётчик нужен обоим классам функций.
+//
+// Три вещи, которых у остальных целей нет, и каждая — следствие того, что
+// подпись напечатанной функции здесь и есть её интерфейс.
+//
+//   • Счётчики живут в области видимости модуля, а не едут параметром `ctx`:
+//     добавить `ctx` в подпись значило бы сломать всякого, кто модуль уже
+//     вызывает. Так же ambient они устроены в бэкенде Elixir (словарь процесса).
+//     Свежесть, которую там даёт прогонщик новым контекстом на каждый запрос,
+//     здесь даёт `$top` — граница расчёта на вызове извне.
+//
+//     Следствие, и оно единственное: границу ставит первая РЕКУРСИВНАЯ функция на
+//     пути, а не всякая. Если нерекурсивная функция зовёт рекурсивную в цикле, у
+//     каждого такого вызова бюджет витков свой, тогда как интерпретатор считает
+//     их все в один. Расхождение в безопасную сторону — напечатанный код может
+//     досчитать то, что интерпретатор объявил исчерпанным, но не наоборот, — и
+//     потому оставлено: чтобы закрыть его, границу пришлось бы ставить на каждую
+//     функцию модуля, включая те, которым счётчик глубины не нужен вовсе.
+//   • Возврат глубины стоит на самих `return` (`$leave`), а не в `finally`.
+//     Естественная форма — обернуть тело в `try … finally` — ВДВОЕ сокращает
+//     доступную глубину: кадр функции с `try` у V8 много больше обычного
+//     (замер холодными процессами: 7031 кадр против 8544). Отказ минует
+//     `return`, поэтому глубину на путях отказа чинит та же граница `$top`.
+//   • Стек хозяина может кончиться РАНЬШЕ объявленного предела, и это тот
+//     случай, где цель принципиально слабее остальных семи. У V8 холодный кадр
+//     этой формы влезает около 8,5 тысяч раз при пределе языка 10 000, в
+//     браузерах бывает меньше, а поднять стек изнутри модуля нечем: в Python
+//     это делает поток с заданным стеком, в JS такого рычага нет. Поэтому
+//     `$hostDepth` переводит переполнение стека в объявленный
+//     FLANG_RECURSION_LIMIT — код из набора, а текст называет хозяина, а не
+//     предел, до которого не добрались. Врать про предел нельзя, молчать тоже.
+//
 // ── Где печать намеренно расходится с интерпретатором ──────────────────────
 // Расхождения ровно четыре, и каждое — следствие того, что на выходе модуль, а
 // не вычислитель. Ни одно не меняет результат корректной программы.
 //
-//   1. Лимитов `maxSteps`/`maxDepth` нет. Счётчик шагов вокруг каждой операции
-//      стоил бы и скорости, и читаемости, а смысл печати — обычный модуль.
-//      Незавершающаяся обычная функция в JS даст зависание или RangeError, а не
-//      FLANG_RECURSION_LIMIT; нехвостовая рекурсия упирается в стек JS, а не в
-//      `maxDepth`. Для тотальных функций (SPEC, раздел 1) вопрос не стоит:
-//      их завершение доказано totality.mjs.
+//   1. Виток здесь крупнее витка интерпретатора: там это итерация машины, здесь
+//      — вход в функцию, оборот цикла и отскок батута. Значит при одном и том же
+//      пределе интерпретатор упирается ПЕРВЫМ, и расхождение одностороннее и
+//      безопасное: напечатанный код не объявит исчерпанным то, что интерпретатор
+//      досчитал. Глубина расходится в ту же сторону: интерпретатор
+//      переиспользует кадр любого хвостового вызова без постусловий, здесь кадр
+//      переиспользуется только у самовызова и у взаимной рекурсии (батут).
 //   2. Ошибки, которые видны статически, печать сообщает при печати, а
 //      интерпретатор — когда доберётся до узла: несвязанное имя, неизвестная
 //      функция или встроенная форма, её арность, неверное число аргументов,
@@ -553,9 +599,82 @@ class $Bounce {
   }
 }
 
-function $trampoline(result) {
-  while (result instanceof $Bounce) result = result.step(...result.args)
+function $trampoline(result, name) {
+  while (result instanceof $Bounce) {
+    // Отскок — виток: глубину батут не растит, и упереться ему больше не во что.
+    $step(name)
+    result = result.step(...result.args)
+  }
   return result
+}
+
+// Вход в функцию, способную к рекурсии.
+function $enter(name) {
+  $step(name)
+  if ($maxDepth > 0 && $depth + 1 > $maxDepth) {
+    $fail(
+      "FLANG_RECURSION_LIMIT",
+      `функция «${name}» превысила предел глубины вызовов (${$maxDepth}) на глубине ${$depth + 1}`,
+    )
+  }
+  $depth += 1
+}
+
+// Возврат из функции. Возвращает то, что ей дали, чтобы стоять прямо в `return`:
+// кадр с `try` у V8 вдвое больше обычного, и `finally` стоил бы половины глубины.
+function $leave(value) {
+  $depth -= 1
+  return value
+}
+
+// Граница расчёта: один кадр с `try` на вызов извне вместо `try` в каждом кадре
+// рекурсии. Обнуляет счётчики, переводит переполнение стека в объявленный отказ
+// и чинит глубину на путях отказа — их `$leave` не проходит.
+function $top(fn, args, name) {
+  $guarded = true
+  $depth = 0
+  $steps = 0
+  try {
+    return fn(...args)
+  } catch ($err) {
+    throw $hostDepth($err, name)
+  } finally {
+    $guarded = false
+  }
+}
+
+// Виток вычисления: вход в функцию, оборот цикла самовызова, отскок батута.
+// Считается отдельно от глубины: хвостовая рекурсия глубину не растит, но
+// завершаться от этого не начинает.
+function $step(name) {
+  $steps += 1
+  if ($maxSteps > 0 && $steps > $maxSteps) {
+    $fail(
+      "FLANG_RECURSION_LIMIT",
+      `функция «${name}» исчерпала лимит шагов (${$maxSteps}) на глубине вызовов ${$depth}`,
+    )
+  }
+}
+
+// Переполнение стека хозяина в объявленный отказ. Стек может кончиться раньше
+// предела языка, а `code` у RangeError пуст — в закрытый набор видов отказа он не
+// входит. Работа сведена к минимуму: кадр здесь уже без стека. Свой try/catch —
+// если стека не хватит даже на это; причина всё равно известна.
+//
+// Своё сообщение о стеке знают три движка ($STACK_OVERFLOW). У незнакомого
+// опираемся на глубину: на сотнях кадров RangeError — это стек, а на двух это
+// что-то другое (у движка есть свой предел длины строки), и подменять его
+// объявленным отказом было бы враньём. Опираться на одну лишь прозу движка
+// нельзя: замкнутость набора отказов не должна зависеть от его формулировок.
+function $hostDepth(error, name) {
+  try {
+    if (!(error instanceof RangeError)) return error
+    if (!$STACK_OVERFLOW.test(error.message) && $depth < 256) return error
+  } catch {}
+  return new $FlangError(
+    "FLANG_RECURSION_LIMIT",
+    `функция «${name}» исчерпала стек хозяина на глубине ${$depth}, не дойдя до предела глубины вызовов (${$maxDepth})`,
+  )
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -639,7 +758,16 @@ runtimeEntry("$b_dobavit", ["$expectList"], fromSource($b_dobavit))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
 runtimeEntry("$b_procentov_ot", ["$expectNumber"], fromSource($b_procentov_ot))
 runtimeEntry("$Bounce", [], fromSource($Bounce))
-runtimeEntry("$trampoline", ["$Bounce"], fromSource($trampoline))
+runtimeEntry("$trampoline", ["$Bounce", "$step"], fromSource($trampoline))
+/* Счётчики пределов. `$LIMITS` — не функция, а блок состояния: он печатается
+   особым случаем в renderRuntime, как `$INDEX_BASE`, потому что несёт значения
+   пределов, известные только при печати. */
+runtimeEntry("$enter", ["$fail", "$step", "$LIMITS"], fromSource($enter))
+runtimeEntry("$leave", ["$LIMITS"], fromSource($leave))
+runtimeEntry("$step", ["$fail", "$LIMITS"], fromSource($step))
+/* `$STACK_OVERFLOW` живёт в том же блоке `$LIMITS`, отдельной записи ему не надо. */
+runtimeEntry("$hostDepth", ["$FlangError", "$LIMITS"], fromSource($hostDepth))
+runtimeEntry("$top", ["$hostDepth", "$LIMITS"], fromSource($top))
 
 /** Канонические имена встроенных форм → помощники рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -855,6 +983,28 @@ function normalizePostconditions(fn) {
 
 /* ═══════════════════════════ анализ хвостовых вызовов ═══════════════════════════ */
 
+// ВСЕ вызовы тела, не только хвостовые: по этому графу считается, кто способен к
+// рекурсии и потому обязан считать глубину. Хвостовой граф для этого не годится —
+// нехвостовая рекурсия как раз и есть та, что растит стек хозяина. Постусловия
+// обходятся тоже: вызов из постусловия — такой же вызов.
+function allCallees(fn) {
+  const found = new Set()
+  const seen = new Set()
+  const walk = (node) => {
+    if (node === null || typeof node !== "object" || seen.has(node)) return
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item)
+      return
+    }
+    seen.add(node)
+    if (node.kind === "call" && typeof node.name === "string") found.add(node.name)
+    for (const value of Object.values(node)) walk(value)
+  }
+  walk(fn.body)
+  for (const property of fn.postconditions) walk(property.expr)
+  return found
+}
+
 // Хвостовые позиции тела. Функция с постусловиями хвостовых вызовов не имеет:
 // интерпретатор не переиспользует кадр, у которого есть что проверять после
 // возврата, и глубина у него растёт — печать обязана вести себя так же.
@@ -969,6 +1119,8 @@ export function emitJs(program, options = {}) {
   program = defunctionalize(program)
   const prepared = prepare(program)
   const base = options.indexBase === 0 ? 0 : 1
+  const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
+  const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
 
   /* Три пространства имён верхнего уровня, каждое со своей проверкой коллизий:
      типы (typedef), конструкторы вариантов и значения (функции, фабрики). Их
@@ -1018,6 +1170,19 @@ export function emitJs(program, options = {}) {
   const stepIdents = new Map()
   for (const name of cyclic.keys()) stepIdents.set(name, `${functionIdents.get(name)}$step`)
 
+  /* Граф ВСЕХ вызовов: кто способен к рекурсии и потому обязан считать глубину.
+     Ровно тот же расчёт, что у остальных семи целей. */
+  const callEdges = new Map()
+  for (const [name, fn] of prepared.functions) callEdges.set(name, allCallees(fn))
+  const recursive = new Set()
+  for (const component of stronglyConnected(prepared.functions, callEdges)) {
+    if (component.length >= 2) {
+      for (const name of component) recursive.add(name)
+      continue
+    }
+    if (callEdges.get(component[0])?.has(component[0])) recursive.add(component[0])
+  }
+
   const shared = {
     prepared,
     base,
@@ -1029,6 +1194,7 @@ export function emitJs(program, options = {}) {
     stepIdents,
     tailEdges,
     cyclic,
+    recursive,
     used: new Set(),
   }
 
@@ -1037,7 +1203,7 @@ export function emitJs(program, options = {}) {
   for (const sum of prepared.sums) sections.push(renderSum(sum, shared))
   for (const fn of prepared.functions.values()) sections.push(renderFunction(fn, shared))
 
-  const runtime = renderRuntime(shared.used, base)
+  const runtime = renderRuntime(shared.used, base, maxDepth, maxSteps)
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
   const head = [
     "// Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs). Не редактировать руками.",
@@ -1060,7 +1226,7 @@ export function emitJs(program, options = {}) {
   return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
 }
 
-function renderRuntime(used, base) {
+function renderRuntime(used, base, maxDepth, maxSteps) {
   const closure = new Set()
   const add = (name) => {
     if (closure.has(name)) return
@@ -1084,6 +1250,49 @@ function renderRuntime(used, base) {
         "// Индексация строк — с 1 и включительно с обоих концов (SPEC, раздел 5):",
         "// «первый символ» на языке предметной области это первый, а не нулевой.",
         `const $INDEX_BASE = ${base}`,
+      ].join("\n"),
+    )
+  }
+  if (closure.has("$LIMITS")) {
+    blocks.push(
+      [
+        "// Пределы вычисления — те же, что у интерпретатора. Без счётчиков модуль на",
+        "// незавершающейся функции крутился бы вечно (в браузере — смерть вкладки), а",
+        "// на глубокой рекурсии давал RangeError с пустым `code`: не отказ языка.",
+        `const $DEFAULT_MAX_DEPTH = ${maxDepth}`,
+        `const $DEFAULT_MAX_STEPS = ${maxSteps}`,
+        "let $maxDepth = $DEFAULT_MAX_DEPTH",
+        "let $maxSteps = $DEFAULT_MAX_STEPS",
+        "let $depth = 0",
+        "let $steps = 0",
+        "// Стоит ли на расчёте граница ($top). Вызов извне приходит с `false` и",
+        "// границу ставит; рекурсивные вызовы видят `true` и идут прямо в тело.",
+        "let $guarded = false",
+        "",
+        "// Как хозяин называет исчерпание стека: V8 и JavaScriptCore — «Maximum call",
+        "// stack size exceeded», SpiderMonkey — «too much recursion». Компилируется",
+        "// здесь, при загрузке: компиляция образца сама требует стека, которого на",
+        "// месте отказа уже нет — и тогда наружу шёл SyntaxError вместо отказа языка.",
+        "const $STACK_OVERFLOW = /call stack|too much recursion|recursion too deep/iu",
+        "",
+        "/**",
+        " * Свежий контекст вычисления: пределы и сброшенные счётчики.",
+        " *",
+        " * То же, что `new_context` у остальных семи целей, только контекст здесь —",
+        " * сам модуль. Не переданный предел берётся ПО УМОЛЧАНИЮ, а не остаётся с",
+        " * прошлого раза: контекст на то и свежий. Ноль или отрицательное значение",
+        " * снимает предел.",
+        " *",
+        " * @param {{maxDepth?: number, maxSteps?: number}} [limits]",
+        " * @returns {{maxDepth: number, maxSteps: number}}",
+        " */",
+        "export function $newContext(limits = {}) {",
+        "  $maxDepth = typeof limits.maxDepth === \"number\" ? limits.maxDepth : $DEFAULT_MAX_DEPTH",
+        "  $maxSteps = typeof limits.maxSteps === \"number\" ? limits.maxSteps : $DEFAULT_MAX_STEPS",
+        "  $depth = 0",
+        "  $steps = 0",
+        "  return { maxDepth: $maxDepth, maxSteps: $maxSteps }",
+        "}",
       ].join("\n"),
     )
   }
@@ -1202,6 +1411,17 @@ function renderFunction(fn, shared) {
      никто никогда не вернётся. */
   const selfTail = shared.tailEdges.get(fn.name)?.has(fn.name) === true
 
+  /* Счётчик глубины ставится ровно на тех, кто способен к рекурсии (компонента
+     сильной связности графа ВСЕХ вызовов), — как у остальных семи целей. Знание
+     `total: true` при этом используется честно: оно доказывает завершение, но не
+     ограничивает глубину (тотальная «Сумма» на списке в миллион элементов уйдёт
+     на миллион кадров), поэтому счётчик нужен обоим классам.
+
+     У батута тело печатается в `…$шаг`, а счётчик стоит на внешней функции:
+     возврат глубины внутри шага вернул бы не свою. */
+  const guard = shared.recursive.has(fn.name)
+  const leaves = guard && members === null
+
   const ctx = {
     shared,
     fn,
@@ -1211,6 +1431,12 @@ function renderFunction(fn, shared) {
     params: [],
     selfTail,
     members,
+    /* Возврат из тела обязан вернуть и глубину: `return $leave(x)`. */
+    leave(code) {
+      if (!leaves) return code
+      ctx.use("$leave")
+      return `$leave(${code})`
+    },
     use(name) {
       shared.used.add(name)
       return name
@@ -1275,7 +1501,7 @@ function renderFunction(fn, shared) {
         "  }",
       )
     }
-    body.push(`  return ${resultIdent}`)
+    body.push(`  return ${ctx.leave(resultIdent)}`)
   } else if (selfTail) {
     body.push("  for (;;) {")
     emitTail(fn.body, ctx, body, "    ")
@@ -1290,9 +1516,12 @@ function renderFunction(fn, shared) {
   } else {
     doc.push(
       " *",
-      " * Обычная (не тотальная) функция: её завершение не доказано. В интерпретаторе",
-      " * зацикливание ловит лимит шагов, здесь — только стек и терпение вызывающего.",
+      " * Обычная (не тотальная) функция: её завершение не доказано; зацикливание",
+      " * ловится лимитом шагов, как в интерпретаторе.",
     )
+  }
+  if (guard) {
+    doc.push(" *", " * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.")
   }
   if (selfTail) {
     doc.push(
@@ -1314,17 +1543,37 @@ function renderFunction(fn, shared) {
   }
   doc.push(` * @returns {${jsdocType(fn.returns, shared)}}`, " */")
 
-  if (members === null) {
-    return [doc.join("\n"), `export function ${ident}(${signature}) {`, ...body, "}"].join("\n")
+  const label = JSON.stringify(fn.name)
+
+  /* Преамбула счётчика: граница на вызов извне и подъём глубины. Возврат глубины
+     стоит на самих `return` (`$leave`), а не в `finally`, — так вдвое больше
+     доступной глубины, см. комментарий у `$leave`. */
+  const preamble = () => {
+    if (!guard) return []
+    ctx.use("$enter")
+    ctx.use("$leave")
+    ctx.use("$top")
+    return [`  if (!$guarded) return $top(${ident}, [${signature}], ${label})`, `  $enter(${label})`]
   }
 
-  /* Батут: наружу торчит обычная функция, внутри — шаг, возвращающий отскок. */
+  if (members === null) {
+    return [doc.join("\n"), `export function ${ident}(${signature}) {`, ...preamble(), ...body, "}"].join("\n")
+  }
+
+  /* Батут: наружу торчит обычная функция, внутри — шаг, возвращающий отскок.
+     Счётчик глубины стоит на внешней функции, а не на шаге: шаг кадра не растит,
+     и считать его глубиной значило бы считать то, чего нет. Ровно так же
+     расставлено в остальных семи целях. */
   const step = shared.stepIdents.get(fn.name)
   ctx.use("$trampoline")
+  const bounced = guard
+    ? `  return $leave($trampoline(${step}(${signature}), ${label}))`
+    : `  return $trampoline(${step}(${signature}), ${label})`
   return [
     doc.join("\n"),
     `export function ${ident}(${signature}) {`,
-    `  return $trampoline(${step}(${signature}))`,
+    ...preamble(),
+    bounced,
     "}",
     "",
     `/** Шаг батута для «${fn.name}»: значение либо отскок к соседу по взаимной рекурсии. */`,
@@ -1379,6 +1628,12 @@ function emitTail(expr, ctx, out, pad) {
         ctx.params.forEach((param, index) => {
           out.push(`${pad}${param} = ${temps[index]}`)
         })
+        /* Оборот цикла — тоже виток вычисления: незавершающийся хвостовой
+           самовызов глубину не растит, и упереться ему больше не во что. Без
+           этой строки «Вечность» крутилась бы вечно, а в браузере унесла бы с
+           собой вкладку. */
+        ctx.use("$step")
+        out.push(`${pad}$step(${JSON.stringify(ctx.fn.name)})`)
         out.push(`${pad}continue`)
         return
       }
@@ -1387,12 +1642,12 @@ function emitTail(expr, ctx, out, pad) {
         out.push(`${pad}return new $Bounce(${ctx.shared.stepIdents.get(node.name)}, [${args.join(", ")}])`)
         return
       }
-      out.push(`${pad}return ${ctx.shared.functionIdents.get(callee.name)}(${args.join(", ")})`)
+      out.push(`${pad}return ${ctx.leave(`${ctx.shared.functionIdents.get(callee.name)}(${args.join(", ")})`)}`)
       return
     }
     default: {
       const value = emitValue(node, ctx, out, pad)
-      out.push(`${pad}return ${value.code}`)
+      out.push(`${pad}return ${ctx.leave(value.code)}`)
     }
   }
 }

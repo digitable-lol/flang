@@ -49,12 +49,21 @@
 // Расхождения ровно четыре, и каждое — следствие того, что на выходе модуль, а
 // не вычислитель. Ни одно не меняет результат корректной программы.
 //
-//   1. Лимитов `maxSteps`/`maxDepth` нет. Счётчик шагов вокруг каждой операции
-//      стоил бы и скорости, и читаемости, а смысл печати — обычный модуль.
-//      Незавершающаяся обычная функция в JS даст зависание или RangeError, а не
-//      FLANG_RECURSION_LIMIT; нехвостовая рекурсия упирается в стек JS, а не в
-//      `maxDepth`. Для тотальных функций (SPEC, раздел 1) вопрос не стоит:
-//      их завершение доказано totality.mjs.
+//   1. Лимитов `maxSteps`/`maxDepth` нет — у программы БЕЗ процессов. Счётчик
+//      шагов вокруг каждой операции стоил бы и скорости, и читаемости, а смысл
+//      печати — обычный модуль. Незавершающаяся обычная функция в JS даст
+//      зависание или RangeError, а не FLANG_RECURSION_LIMIT; нехвостовая
+//      рекурсия упирается в стек JS, а не в `maxDepth`. Для тотальных функций
+//      (SPEC, раздел 1) вопрос не стоит: их завершение доказано totality.mjs.
+//      У программы С ПРОЦЕССАМИ запас витков объявлен автором, и «счётчика нет»
+//      означало бы там не свободу, а зависание вместо названного отказа —
+//      поэтому конкурентному модулю печатается `$tick`, и считает он вход в
+//      функцию, оборот хвостового цикла и шаг батута: та же единица, что в C
+//      (`fl_tick`). Единица крупнее витка интерпретатора, поэтому расхождение
+//      одностороннее и измерено — `flang/conc/SPEC.md`, «Планировщик в
+//      напечатанном JavaScript». Предел ГЛУБИНЫ и там остаётся у движка:
+//      `RangeError` планировщик называет кодом FLANG_RECURSION_LIMIT, чтобы
+//      дальше решал надзор, а не пользователь модуля.
 //   2. Ошибки, которые видны статически, печать сообщает при печати, а
 //      интерпретатор — когда доберётся до узла: несвязанное имя, неизвестная
 //      функция или встроенная форма, её арность, неверное число аргументов,
@@ -69,11 +78,20 @@
 //      значения (`variant`, `fields`) при этом совпадает с интерпретатором
 //      ровно, и сравнивать результаты двух движков можно структурно.
 
+import { readFileSync } from "node:fs"
+
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
-import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
+
+/* Планировщик конкурентности — настоящий .js рядом, а не строка здесь, и по той
+   же причине, по какой так сделано в C (`emit/c/flang_conc.c`): его читает
+   человек и проверяет разбором сам движок, когда загружает напечатанный модуль,
+   а не наши глаза сквозь кавычки шаблона. Печатается он ЦЕЛИКОМ и только той
+   программе, у которой есть процессы: обычной программе счётчик витков и
+   планировщик не нужны, и ни один её байт от этой правки не изменился. */
+const CONC_SOURCE = readFileSync(new URL("js/flang_conc.js", import.meta.url), "utf8")
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм печатаемого модуля.
@@ -955,12 +973,22 @@ function stronglyConnected(functions, tailEdges) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitJs(program, options = {}) {
-  /* Печать в цель без планировщика конкурентности невозможна, и молчать об этом
-     нельзя: до этого отказа шесть целей из восьми ТЕРЯЛИ процессы, печатали
-     обработчики обычными функциями и кончались кодом 0. Отказ стоит первым — до
-     всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
-     `требуетПланировщика`). */
-  требуетПланировщика(program, "js")
+  /* Конкурентность БЕРЁТСЯ ДО дефункционализации, и это не вкус: план
+     печатается по объявлениям исходной программы, а проход, который добавляет
+     функции, к процессам, надзорам и прогонам не прикасается. Читать их после
+     него значило бы зависеть от того, чего проход не обещал.
+
+     Раньше здесь стоял отказ `FLANG_NO_SCHEDULER`: печатать процессы было
+     нечем, и молчать об этом было хуже всего — программа собиралась и делала не
+     то, что написано. Теперь планировщик у цели есть (`js/flang_conc.js`), и
+     отказ снялся не тем, что его убрали, а тем, что он перестал быть правдой:
+     список целей с планировщиком выводится из таблицы возможностей в
+     `conc.mjs`, и сторож (`flang/test/emit-conc-refuse.test.mjs`) требует от
+     каждой цели каталога либо печатать процессы, либо отказывать. */
+  const processes = Array.isArray(program.processes) ? program.processes : []
+  const supervisors = Array.isArray(program.supervisors) ? program.supervisors : []
+  const runs = Array.isArray(program.runs) ? program.runs : []
+  const concurrent = processes.length > 0 || supervisors.length > 0 || runs.length > 0
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -1005,6 +1033,13 @@ export function emitJs(program, options = {}) {
   for (const [name, ident] of factoryIdents) claim(ident, `фабрика записи «${name}»`)
   for (const [name, ident] of variantIdents) claim(ident, `конструктор варианта «${name}»`)
   for (const [name, ident] of functionIdents) claim(ident, `функция «${name}»`)
+  /* Прогонщик конкурентности живёт в той же области видимости модуля, поэтому
+     его имена занимаются так же, как имена функций: программа с функцией
+     «conc run» обязана получить внятный отказ, а не молча потерять прогонщик. */
+  if (concurrent) {
+    claim("concPlan", "прогонщик конкурентности")
+    claim("concRun", "прогонщик конкурентности")
+  }
 
   /* Граф хвостовых вызовов: кто разворачивается в цикл, а кто — в батут. */
   const tailEdges = new Map()
@@ -1029,6 +1064,7 @@ export function emitJs(program, options = {}) {
     stepIdents,
     tailEdges,
     cyclic,
+    concurrent,
     used: new Set(),
   }
 
@@ -1037,13 +1073,26 @@ export function emitJs(program, options = {}) {
   for (const sum of prepared.sums) sections.push(renderSum(sum, shared))
   for (const fn of prepared.functions.values()) sections.push(renderFunction(fn, shared))
 
-  const runtime = renderRuntime(shared.used, base)
+  if (concurrent) {
+    /* Планировщик отказывает через `$fail`, как и всё остальное в модуле: код и
+       текст отказа — часть наблюдаемого поведения, а не украшение. */
+    shared.used.add("$fail")
+    sections.push(renderConcurrency(processes, supervisors, runs, program, shared))
+  }
+
+  const runtime = renderRuntime(shared.used, base, concurrent)
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
   const head = [
     "// Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs). Не редактировать руками.",
     moduleName === null ? "// Программа flang без имени модуля." : `// Модуль flang: «${moduleName}».`,
     "// Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.",
     "// Модуль самодостаточен — ни одной зависимости, работает и в Node, и в браузере.",
+    ...(concurrent
+      ? [
+        "// Программа с процессами: планировщик конкурентности напечатан внутрь модуля.",
+        "// Конкурентность есть, параллелизма нет и не будет — один поток (concRun, concPlan).",
+      ]
+      : []),
   ].join("\n")
 
   const parts = [head]
@@ -1060,7 +1109,7 @@ export function emitJs(program, options = {}) {
   return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
 }
 
-function renderRuntime(used, base) {
+function renderRuntime(used, base, concurrent = false) {
   const closure = new Set()
   const add = (name) => {
     if (closure.has(name)) return
@@ -1068,7 +1117,7 @@ function renderRuntime(used, base) {
     for (const need of RUNTIME.get(name)?.needs ?? []) add(need)
   }
   for (const name of used) add(name)
-  if (closure.size === 0) return ""
+  if (closure.size === 0 && !concurrent) return ""
 
   const blocks = [
     [
@@ -1090,6 +1139,9 @@ function renderRuntime(used, base) {
   for (const [name, entry] of RUNTIME) {
     if (closure.has(name)) blocks.push(entry.source)
   }
+  /* Планировщик — последним: он зовёт помощников рантайма, а объявления функций
+     в JS поднимаются, поэтому порядок здесь читательский, а не обязательный. */
+  if (concurrent) blocks.push(CONC_SOURCE.trimEnd())
   return blocks.join("\n\n")
 }
 
@@ -1248,7 +1300,18 @@ function renderFunction(fn, shared) {
   }
   const signature = ctx.params.join(", ")
 
+  /* Виток — вход в функцию, оборот хвостового цикла и шаг батута: те же три
+     места, что в C (`flang_runtime.c`, `fl_tick`/`fl_enter`), и по той же
+     причине. Без счёта витков обработчик с объявленным запасом не отказал бы, а
+     ЗАВИС — худший из исходов, и запас перестал бы что-либо значить.
+
+     Счёт ставится ТОЛЬКО конкурентному модулю. Обычная программа печатается
+     байт в байт так же, как до этой правки: запас есть у процесса, а не у
+     функции, и платить за него скоростью там, где процессов нет, незачем. */
+  const виток = shared.concurrent ? `  $tick(${JSON.stringify(fn.name)})` : null
+
   const body = []
+  if (виток !== null) body.push(виток)
   if (fn.postconditions.length > 0) {
     /* Постусловия проверяются после тела: результат уже вычислен. Первое же
        нарушение прерывает вычисление — как в интерпретаторе. */
@@ -1278,6 +1341,10 @@ function renderFunction(fn, shared) {
     body.push(`  return ${resultIdent}`)
   } else if (selfTail) {
     body.push("  for (;;) {")
+    /* Оборот цикла — виток: хвостовой самовызов глубину не растит, поэтому виток
+       на входе здесь ничего не поймает, и незавершающаяся функция без этого
+       счётчика крутилась бы вечно. */
+    if (виток !== null) body.push(`  ${виток}`)
     emitTail(fn.body, ctx, body, "    ")
     body.push("  }")
   } else {
@@ -1324,6 +1391,7 @@ function renderFunction(fn, shared) {
   return [
     doc.join("\n"),
     `export function ${ident}(${signature}) {`,
+    ...(виток === null ? [] : [виток]),
     `  return $trampoline(${step}(${signature}))`,
     "}",
     "",
@@ -1789,4 +1857,187 @@ function expectArity(name, got, span) {
   if (count === undefined || got === count) return
   const word = plural(count, "аргумент", "аргумента", "аргументов")
   throw flangError("FLANG_BUILTIN_ARGS", `«${name}» ожидает ${count} ${word}, получено ${got}`, span)
+}
+
+/* ═══════════════════════════ конкурентность ═══════════════════════════
+   Процессы, надзоры и прогоны печатаются ДАННЫМИ — одним объектом уровня
+   модуля, — а планировщик приезжает готовым (`js/flang_conc.js`). Тот же приём,
+   что в C и в Elixir, и по той же причине: надзор в flang — объявление, и одно
+   объявление обязано остаться одним местом в напечатанном коде. Печать готового
+   планировщика на каждую программу размазала бы его по файлу и превратила
+   правку одной строки исходника в правку десятка строк вывода — а сам
+   планировщик обязан остаться одним и тем же для всех программ, иначе сверять с
+   эталоном пришлось бы не модель, а каждую печать по отдельности.
+
+   Разница с C ровно одна, и она в пользу JavaScript: обработчик кладётся в план
+   САМОЙ ФУНКЦИЕЙ, а не именем. В C планировщику нужен диспетчер по имени
+   (`prefix_call`), потому что указателя на функцию с переменной арностью там не
+   выразить; здесь функция — значение, и второй словарь «имя → функция» рядом с
+   областью видимости модуля был бы лишней сущностью. Имя при этом всё равно
+   печатается рядом: журнал, отказы и сообщения об ошибках называют обработчик
+   так, как его назвал автор.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function renderConcurrency(processes, supervisors, runs, program, shared) {
+  const totals = new Set(
+    (program.functions ?? []).filter((fn) => fn?.total === true).map((fn) => fn.name),
+  )
+  /* Функция, которой в программе нет, — это отказ ПЕЧАТИ, а не пустое место в
+     плане: молча напечатать процесс без обработчика значило бы вернуться к тому
+     самому поведению, из-за которого шесть целей теряли процессы. */
+  const функция = (имя, роль, процесс) => {
+    const ident = shared.functionIdents.get(имя)
+    if (ident === undefined) {
+      throw flangError(
+        "FLANG_EMIT",
+        `${роль} «${имя}» процесса «${процесс}» в программе не объявлен: напечатать процесс нечем`,
+      )
+    }
+    return ident
+  }
+
+  const lines = [
+    "/* ── План конкурентности: процессы, надзоры и прогоны данными ── */",
+    "const $conc = {",
+    "  процессы: [",
+  ]
+  for (const node of processes) {
+    /* Запас витков ставится ТОЛЬКО нетотальному обработчику: про тотальный
+       доказано, что он завершится, и отсчитывать нечего — ровно так решает
+       планировщик эталона, и разойтись здесь было бы нельзя, потому что от этого
+       зависит, каким кодом кончится отказ. */
+    const total = totals.has(node.handler)
+    const budget = !total && Number.isFinite(node.budget) ? Math.trunc(node.budget) : 0
+    /* Ноль — «ящик неограничен», ровно как ноль в запасе значит «считать
+       нечего»: ящик в ноль сообщений проверка типов не пропускает, поэтому два
+       смысла нуля здесь не сталкиваются. */
+    const mailbox = Number.isFinite(node.mailbox) && node.mailbox > 0 ? Math.trunc(node.mailbox) : 0
+    lines.push(
+      "    {",
+      `      имя: ${jsstring(node.name)},`,
+      `      обработчик: ${jsstring(node.handler)},`,
+      `      вызвать: ${функция(node.handler, "обработчик", node.name)},`,
+      `      начало: ${jsstring(node.initial)},`,
+      `      завести: ${функция(node.initial, "начальное состояние", node.name)},`,
+      `      тотальный: ${total ? "true" : "false"},`,
+      `      запас: ${budget},`,
+      `      ящик: ${mailbox},`,
+      "    },",
+    )
+  }
+  lines.push("  ],", "  надзоры: [")
+  for (const node of supervisors) {
+    const watch = (node.watch ?? []).map((item) => `[${jsstring(item.process)}, ${jsstring(item.strategy)}]`)
+    const nested = (node.nested ?? []).map((item) => `[${jsstring(item.supervisor)}, ${jsstring(item.strategy)}]`)
+    const threshold = node.threshold ?? null
+    lines.push(
+      "    {",
+      `      имя: ${jsstring(node.name)},`,
+      `      процессы: [${watch.join(", ")}],`,
+      `      вложенные: [${nested.join(", ")}],`,
+      `      порог: ${
+        threshold === null
+          ? "null"
+          : `{ отказов: ${renderNumber(threshold.failures)}, окно: ${renderNumber(threshold.window)}, ` +
+            `иначе: ${jsstring(threshold.otherwise)} }`
+      },`,
+      "    },",
+    )
+  }
+  lines.push("  ],", "  прогоны: [")
+  for (const run of runs) {
+    const inbox = (run.inbox ?? []).map(
+      (entry) => `[${jsstring(entry.process)}, ${renderMessage(entry.message, shared)}]`,
+    )
+    const to = run.seedTo === null || run.seedTo === undefined ? run.seed : run.seedTo
+    lines.push(
+      "    {",
+      `      имя: ${jsstring(run.name)},`,
+      `      семя: ${renderNumber(run.seed)},`,
+      `      доСемени: ${renderNumber(to)},`,
+      /* Входные сообщения — ЗАМЫКАНИЕ, а не готовый список: значение строится
+         конструктором этого же модуля, и строить его при загрузке значило бы
+         платить за прогоны, которых никто не звал. Ровно по этой же причине
+         входной ящик в C печатается функцией, а не таблицей. */
+      `      вход: () => [${inbox.join(", ")}],`,
+      "    },",
+    )
+  }
+  lines.push("  ],", "}")
+  lines.push(
+    "",
+    "/**",
+    " * План конкурентности этого модуля: процессы, надзоры, прогоны.",
+    " *",
+    " * Отдаётся как есть, а не копией: план не меняется ни планировщиком, ни",
+    " * прогоном — состояние прогона живёт в самом прогоне.",
+    " */",
+    "export function concPlan() {",
+    "  return $conc",
+    "}",
+    "",
+    "/**",
+    " * Прогон объявленной программы: одно семя — один журнал доставок, побайтово.",
+    " *",
+    " * Конкурентность здесь есть, параллелизма нет: один поток. Наблюдаемая",
+    " * семантика от этого не беднее — набор возможных исходов определён",
+    " * чередованием, а не числом ядер, и чередование выбирает семя.",
+    " *",
+    " * @param {string} имя имя объявленного прогона",
+    " * @param {{ семя?: number, пробегов?: number, журнал?: boolean }} [настройки]",
+    " * @returns {object} исход, состояния, живые, отказы, решения, наверх, время,",
+    " *   пробегов, витки и — если не отключён признаком `журнал` — журнал доставок",
+    " */",
+    "export function concRun(имя, настройки = {}) {",
+    "  return $concПрогон($conc, имя, настройки)",
+    "}",
+  )
+  return lines.join("\n")
+}
+
+/**
+ * Литерал входного сообщения прогона.
+ *
+ * Отдельно от `renderLiteral`, а не вместо него, по одной причине: вариант в AST
+ * записан объектом `{ variant, fields }` (так его читает `reifyValue`
+ * интерпретатора), и `renderLiteral` напечатал бы такой объект ЗАПИСЬЮ с полями
+ * «variant» и «fields». Для сообщения прогона это была бы прямая ошибка —
+ * обработчик не сопоставил бы его ни с одним образцом, — а править сам
+ * `renderLiteral` значило бы менять печать всех программ подряд ради одного
+ * места. Ровно так же и по тому же доводу устроен `emitMessage` в c.mjs.
+ */
+function renderMessage(value, shared) {
+  if (Array.isArray(value)) return `[${value.map((item) => renderMessage(item, shared)).join(", ")}]`
+  if (value !== null && typeof value === "object") {
+    const encoded = encodedVariant(value)
+    if (encoded !== null) {
+      const ident = shared.variantIdents.get(encoded.variant)
+      if (ident === undefined) {
+        throw flangError(
+          "FLANG_EMIT",
+          `входное сообщение прогона называет вариант «${encoded.variant}», которого в программе нет`,
+        )
+      }
+      const fields = Object.keys(encoded.fields)
+      return fields.length === 0
+        ? `${ident}()`
+        : `${ident}({ ${fields.map((key) => `${jsstring(key)}: ${renderMessage(encoded.fields[key], shared)}`).join(", ")} })`
+    }
+    const keys = Object.keys(value)
+    return keys.length === 0
+      ? "{}"
+      : `{ ${keys.map((key) => `${jsstring(key)}: ${renderMessage(value[key], shared)}`).join(", ")} }`
+  }
+  return renderLiteral(value)
+}
+
+/** Объект ровно с двумя полями `variant` и `fields` — это вариант, а не запись. */
+function encodedVariant(value) {
+  if (value === null || Array.isArray(value)) return null
+  const keys = Object.keys(value)
+  if (keys.length !== 2 || !keys.includes("variant") || !keys.includes("fields")) return null
+  if (typeof value.variant !== "string" || value.variant === "") return null
+  const fields = value.fields
+  if (fields === null || typeof fields !== "object" || Array.isArray(fields)) return null
+  return { variant: value.variant, fields }
 }

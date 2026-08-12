@@ -183,6 +183,17 @@ async function commandRun(options) {
   const fn = (program.functions ?? []).find((item) => item.name === options.functionName)
   if (fn === undefined) throw fail("FLANG_UNKNOWN_NAME", `не найдена функция «${options.functionName}»`)
   const args = bindArguments(fn, options.args ?? {})
+  /* Граница входа. `нат` обещает целое из [0, 2⁵³−1], и держится обещание тем,
+     что значение проверяется ЗДЕСЬ — один раз, когда приходит извне, а не на
+     каждом витке цикла внутри. Без этой проверки уточнение обещало бы диапазон,
+     которого никто не гарантирует, и снятый сторож меры оказался бы снят
+     напрасно (`flang/src/range.mjs`). */
+  const внеДиапазона = await проверитьДиапазонВхода(program, fn.name, args)
+  if (внеДиапазона.length > 0) {
+    const беда = new Error(внеДиапазона[0].message)
+    беда.diagnostics = внеДиапазона
+    throw беда
+  }
   /* Пределы обязаны дойти до вычислителя. `--max-steps` и `--max-depth`
      разбираются на общем разборе ключей, поэтому `run` их ПРИНИМАЛ — и
      выбрасывал: `evaluateFlang` звался без четвёртого аргумента. Ключ, который
@@ -691,6 +702,21 @@ function structuralDiagnostics(program) {
     }
   }
   return diagnostics
+}
+
+/**
+ * Диапазон входных значений — через тот же поздний импорт, каким подключаются
+ * все проверки: `types.mjs` здесь не статическая зависимость (см. ниже), и
+ * заводить её ради одной команды значило бы поменять способ связи слоёв.
+ * Модуля нет или функции в нём нет — проверять нечем, и это не отказ команды.
+ */
+async function проверитьДиапазонВхода(program, name, args) {
+  try {
+    const { checkEntryRanges } = await import(new URL("../src/types.mjs", import.meta.url).href)
+    return typeof checkEntryRanges === "function" ? checkEntryRanges(program, name, args) : []
+  } catch {
+    return []
+  }
 }
 
 /**

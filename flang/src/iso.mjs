@@ -25,6 +25,12 @@
  * Но и хвастаться проверкой в этом случае нельзя: `checked` перечисляет ровно
  * те изоморфизмы, где сетка была не пуста.
  *
+ * МОЛЧАНИЕ ПРИ ЭТОМ НЕ БЕСПЛАТНО. Диагностики такому изоморфизму не нужно, а
+ * отчёту нужно: объявление, о котором не сказано ничего, читается как
+ * проверенное. Поэтому пропуски перечисляются в `assumed` — тем же полем и с
+ * той же оговоркой, что у `sets.mjs`. Список отдельный, а не пустая строчка в
+ * `checked`, чтобы слово «сетка» нельзя было прочитать про то, чего не считали.
+ *
  * ── Откуда берётся сетка ────────────────────────────────────────────────────
  * Оттуда же, откуда у моноида: из значений, которые автор уже написал. Для
  * объекта «А» это входы примеров прямой стрелки (она принимает «А») и
@@ -38,20 +44,22 @@ import { createRuntime } from "./interpret.mjs"
 /** Больше этого числа значений в сетку не берём: кругооборот линеен, но
  *  вычисление стрелки — нет, и «проверено» обязано означать одно и то же в
  *  разных прогонах. */
-const ПРЕДЕЛ_СЕТКИ = 12
+export const ПРЕДЕЛ_СЕТКИ = 12
 
 /**
  * Проверка обратимости всех изоморфизмов программы.
  *
  * @param {object} программа AST flang
  * @param {{ maxSteps?: number, maxDepth?: number }} [пределы]
- * @returns {{ diagnostics: Array<object>, checked: Array<{ isomorphism: string, values: number }> }}
+ * @returns {{ diagnostics: Array<object>, checked: Array<{ isomorphism: string, values: number }>,
+ *   assumed: Array<{ isomorphism: string, why: string }> }}
  */
 export function checkIsoLaws(программа, пределы = {}) {
   const изоморфизмы = Array.isArray(программа?.isomorphisms) ? программа.isomorphisms : []
   const diagnostics = []
   const checked = []
-  if (изоморфизмы.length === 0) return { diagnostics, checked }
+  const assumed = []
+  if (изоморфизмы.length === 0) return { diagnostics, checked, assumed }
 
   const стрелки = new Map()
   for (const узел of Array.isArray(программа?.morphisms) ? программа.morphisms : []) {
@@ -76,8 +84,14 @@ export function checkIsoLaws(программа, пределы = {}) {
     const обратная = стрелки.get(узел.backward)
     /* Стрелки нет или концы не сошлись — об этом уже сказала проверка типов.
        Второе сообщение о том же было бы шумом, а не помощью. */
-    if (прямая === undefined || обратная === undefined) continue
-    if (!реализована(прямая) || !реализована(обратная)) continue
+    if (прямая === undefined || обратная === undefined) {
+      assumed.push({ isomorphism: узел.name, why: "стрелка не объявлена: сверять нечего" })
+      continue
+    }
+    if (!реализована(прямая) || !реализована(обратная)) {
+      assumed.push({ isomorphism: узел.name, why: "у стрелки нет «даёт»: вычислять нечего" })
+      continue
+    }
 
     const сказать = (текст) => {
       diagnostics.push({
@@ -123,9 +137,10 @@ export function checkIsoLaws(программа, пределы = {}) {
        «проверено» о нуле значений — это ровно та подмена «доказано» на
        «посмотрели», от которой язык и отгораживается. */
     if (значенийВсего > 0) checked.push({ isomorphism: узел.name, values: значенийВсего })
+    else assumed.push({ isomorphism: узел.name, why: "у стрелок нет примеров: сетка пуста" })
   }
 
-  return { diagnostics, checked }
+  return { diagnostics, checked, assumed }
 }
 
 function реализована(стрелка) {

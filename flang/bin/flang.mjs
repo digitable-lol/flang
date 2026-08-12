@@ -46,7 +46,7 @@ const ВЕРСИЯ = JSON.parse(readFileSync(new URL("../../package.json", impor
 const HELP = `flang — полный язык поверх FTS
 
 Использование:
-  flang check <файл> [--pretty]
+  flang check <файл> [--proof [--json]] [--pretty]
   flang run   <файл> --function «Имя» --args '{"поле": 1}' [--pretty]
   flang test  <файл> [--pretty]
   flang facts <файл> --facts факты.json --claims '["…"]' [--steps N] [--pretty]
@@ -60,6 +60,14 @@ const HELP = `flang — полный язык поверх FTS
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+check --proof: ведомость доказательства. По каждой функции — чем несётся её
+обещание «тотальная» (композицией, структурой, постоянным шагом со сторожем,
+объявленной мерой со сторожем), по каждому закону — размер сетки, на которой
+смотрели, и отдельно то, что принято на веру. Слово «доказано» стоит только
+там, где утверждение про ВСЕ входы; «сетка N» — посчитано на N значениях автора
+и не является доказательством. Без --proof вывод check прежний. С --json
+ведомость едет полем «proof» в том же JSON, что и раньше.
 
 emit: цели берутся из src/emit (по одному модулю на язык); без --out файлы
 уходят в stdout вместе с путями, с --out записываются в каталог.
@@ -126,7 +134,8 @@ export async function main(argv = process.argv.slice(2)) {
 
 async function commandCheck(options) {
   const program = await loadProgram(options.file)
-  const diagnostics = [...structuralDiagnostics(program), ...(await externalDiagnostics(program))]
+  const внешнее = await externalChecks(program)
+  const diagnostics = [...structuralDiagnostics(program), ...внешнее.diagnostics]
   const result = {
     valid: diagnostics.length === 0,
     module: program.module ?? null,
@@ -135,10 +144,26 @@ async function commandCheck(options) {
     diagnostics,
   }
   if (!result.valid) {
+    /* Отказ печатается одинаково с ведомостью и без неё, и это не упрощение:
+       ведомость говорит, чем несётся обещание, а у программы с отказом обещания
+       нет — «доказано» в такой ведомости было бы неправдой про каждую строку. */
     writeJson(result, options.pretty, process.stderr)
     return 1
   }
-  writeJson(result, options.pretty, process.stdout)
+  /* Без ключа вывод обязан остаться байт в байт прежним: ведомость — добавление,
+     а не замена, и всё, что читает `flang check` сегодня, читает его и завтра. */
+  if (options.proof !== true) {
+    writeJson(result, options.pretty, process.stdout)
+    return 0
+  }
+
+  const { proofLedger, formatProofLedger } = await import(new URL("../src/proof.mjs", import.meta.url).href)
+  const ведомость = proofLedger(program, внешнее.results)
+  if (options.json === true) {
+    writeJson({ ...result, proof: ведомость }, options.pretty, process.stdout)
+    return 0
+  }
+  process.stdout.write(formatProofLedger(ведомость))
   return 0
 }
 
@@ -471,7 +496,7 @@ async function readProgram(source, file) {
  * все команды: `run`, `emit`, `test`, `repl` получают одну и ту же программу.
  *
  * Молчаливого отказа здесь быть не должно, но и падать нельзя: `check` обязан
- * работать в том объёме, который доступен сегодня (см. `externalDiagnostics`).
+ * работать в том объёме, который доступен сегодня (см. `externalChecks`).
  * Программа без числовой меры проходит насквозь тем же объектом.
  */
 async function markMeasure(program) {
@@ -577,30 +602,50 @@ function structuralDiagnostics(program) {
   return diagnostics
 }
 
-/** types.mjs и totality.mjs пишет соседний агент: подключаем, как только есть. */
-async function externalDiagnostics(program) {
+/**
+ * types.mjs и totality.mjs пишет соседний агент: подключаем, как только есть.
+ *
+ * Возвращаются НЕ ТОЛЬКО диагностики. Раньше возвращались только они, и всё
+ * остальное, что проверки успели посчитать, здесь же и терялось: `checkTotality`
+ * отдавал `guards`, `descents`, `structures` и `cycles` — чем именно доказано
+ * завершение каждой функции; законы отдавали `checked` и `assumed` — на какой
+ * сетке смотрели и что осталось допущением. Оболочка брала из результата один
+ * `diagnostics`, и по её выводу нельзя было отличить доказанное от посчитанного
+ * на двенадцати значениях. Ведомость (`--proof`) печатается из этих самых
+ * результатов, а не из второго прогона: считать монаду дважды значило бы платить
+ * за отчёт вычислением, а расходиться потом — числами.
+ *
+ * Наружу — затем, чтобы свод по корпусу (`flang/scripts/proof-ledger.mjs`) и
+ * проверка сходимости (`flang/test/proof.test.mjs`) считали ведомость ТЕМ ЖЕ
+ * путём, каким её печатает `flang check --proof`. Второй путь к тем же числам —
+ * второй ответ на один вопрос, и расходятся такие ответы молча.
+ */
+export async function externalChecks(program) {
   const diagnostics = []
-  for (const [file, names] of [
-    ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"]],
-    ["../src/totality.mjs", ["checkTotality", "checkProgram", "analyze", "check"]],
+  const results = {}
+  for (const [file, names, ключ] of [
+    ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"], "types"],
+    ["../src/totality.mjs", ["checkTotality", "checkProgram", "analyze", "check"], "totality"],
     /* Законы моноида проверяются ВЫЧИСЛЕНИЕМ, в отличие от всего, что стоит
        выше: доказать равенство операций на всех значениях носителя нельзя, и
        проверка идёт на конечной сетке. Место здесь же — потому что для автора
        это такая же ошибка модели, как несходящийся тип; а разница между
        «доказано» и «проверено на N значениях» живёт в документации и в тексте
        сообщений, а не в том, какой командой их показывать. */
-    ["../src/monoid.mjs", ["checkMonoidLaws"]],
+    ["../src/monoid.mjs", ["checkMonoidLaws"], "monoid"],
     /* Законы монады — там же и по той же причине, что законы моноида: равенство
        вычислений на всех значениях неразрешимо, значит проверка идёт на сетке,
        а для автора нарушенный закон — такая же ошибка модели, как несходящийся
        тип. Устройство монады при этом доказано раньше, в `checkTypes`. */
-    ["../src/monad.mjs", ["checkMonadLaws"]],
+    ["../src/monad.mjs", ["checkMonadLaws"], "monad"],
     /* Обратимость изоморфизма — там же и по той же причине. До появления
        `даёт` у морфизма её не проверял никто: у стрелки не было тела, и
        кругооборот было не на чем считать. Теперь есть — но только у той пары
        стрелок, где обе реализованы; остальные остаются допущением автора,
-       молча, и `flang check` о них не заговаривает. */
-    ["../src/iso.mjs", ["checkIsoLaws"]],
+       молча, и `flang check` о них не заговаривает. Не заговаривает — но и не
+       умалчивает: в ведомости они стоят строкой «на веру», потому что
+       объявление, о котором не сказано ничего, читается как проверенное. */
+    ["../src/iso.mjs", ["checkIsoLaws"], "iso"],
     /* Отношения множеств — там же и по тем же причинам. Инъективность вложения
        говорит обо всех ПАРАХ значений, непустота общей части — о всём
        множестве целиком; ни то ни другое не разрешимо, значит сетка. Устройство
@@ -608,18 +653,20 @@ async function externalDiagnostics(program) {
        только склейка у вложения — предъявленный контрпример; общая часть без
        свидетеля сюда не приходит вовсе и уходит в `assumed`, потому что «не
        нашли» — это не «нет» (flang/cat/SETS.md). */
-    ["../src/sets.mjs", ["checkSetLaws"]],
+    ["../src/sets.mjs", ["checkSetLaws"], "sets"],
   ]) {
     try {
       const module = await import(new URL(file, import.meta.url).href)
       const entry = names.map((name) => module[name]).find((value) => typeof value === "function")
       if (entry === undefined) continue
-      diagnostics.push(...normalizeDiagnostics(entry(program)))
+      const итог = entry(program)
+      results[ключ] = итог
+      diagnostics.push(...normalizeDiagnostics(итог))
     } catch {
       /* модуля ещё нет — check работает в объёме, который доступен сегодня */
     }
   }
-  return diagnostics
+  return { diagnostics, results }
 }
 
 function normalizeDiagnostics(value) {
@@ -752,6 +799,13 @@ function parseArgs(argv) {
       options.inDir = true
     } else if (arg === "--pretty") {
       options.pretty = true
+    } else if (arg === "--proof") {
+      options.proof = true
+    } else if (arg === "--json") {
+      /* `--json` осмысленен только рядом с `--proof`: без него `check` и так
+         печатает JSON, и запрещать ключ значило бы ломать вызов, который уже
+         верен. Ведомость же по умолчанию печатается человеку словами. */
+      options.json = true
     } else if (arg.startsWith("--")) {
       throw usage(`неизвестный ключ ${arg}`)
     } else {
@@ -760,6 +814,15 @@ function parseArgs(argv) {
   }
   options.command = positional[0] ?? "help"
   options.file = positional[1] ?? "-"
+  /* Ключи ведомости осмысленны только у `check`, и промолчать о них у остальных
+     команд нельзя: до этой правки `flang emit … --json` был отказом «неизвестный
+     ключ», и остаться ему отказом честнее, чем стать ничего не делающим ключом.
+     Молча проглоченный ключ — это вызов, который выглядит верным и не работает. */
+  for (const ключ of ["--proof", "--json"]) {
+    if (options[ключ === "--proof" ? "proof" : "json"] === true && options.command !== "check") {
+      throw usage(`${ключ} — ключ команды check, а не «${options.command}»`)
+    }
+  }
   return options
 }
 

@@ -279,10 +279,22 @@ const DESTRUCTORS = new Map([
  * Анализ завершаемости программы.
  *
  * @param {object} program AST модуля (SPEC, раздел 5)
- * @returns {{ ok: boolean, diagnostics: object[], total: Set<string> }}
+ * @returns {{ ok: boolean, diagnostics: object[], total: Set<string>,
+ *   guards: object[], descents: object[], structures: object[], cycles: string[][] }}
  *   `total` — функции, помеченные `тотальная`, для которых завершение
  *   доказано. Непомеченные функции не анализируются (за них отвечает лимит
  *   шагов интерпретатора), поэтому их в множестве нет никогда.
+ *   `cycles` — компоненты сильной связности, внутри которых есть цикл: ровно
+ *   те функции, у которых доказывать было ЧТО. Возвращаются потому, что без
+ *   них снаружи нельзя отличить «доказано композицией» (рекурсии нет, обещание
+ *   складывается из тотальных вызовов) от «доказано структурой» (рекурсия есть,
+ *   и убывает часть значения): и то и другое приходит сюда без единого сторожа
+ *   и без единой диагностики. Считать это второй раз снаружи значило бы
+ *   держать второй граф вызовов — и разойтись с этим на первом же `применить`.
+ *   `structures` — рёбра, доказанные структурным убыванием, с позицией и именем
+ *   аргумента, который убывает. По той же причине, что `cycles`: снаружи
+ *   назвать этот аргумент нечем, а «доказано структурой» без имени аргумента —
+ *   это отчёт, который нельзя перепроверить чтением программы.
  */
 export function checkTotality(program) {
   const diagnostics = []
@@ -358,8 +370,16 @@ export function checkTotality(program) {
 
   const guards = []
   const descents = []
+  const structures = []
+  const cycles = []
   for (const component of stronglyConnectedComponents([...totalNames], edges)) {
-    checkComponent(component, edges, failed, report, guards, descents, functions)
+    checkComponent(component, edges, failed, report, guards, descents, functions, structures)
+    /* Признак цикла — тот же самый, по которому `checkComponent` решает, есть
+       ли здесь что доказывать: хотя бы одно ребро внутри компоненты. Считается
+       он здесь заново, а не возвращается из `checkComponent`, чтобы порядок
+       проверок в ней не зависел от учёта. */
+    const members = new Set(component)
+    if (edges.some((edge) => members.has(edge.from) && members.has(edge.to))) cycles.push(component)
   }
 
   // Недоказанность заразна: если «А» зовёт «Б», а «Б» не доказана, то и
@@ -385,6 +405,11 @@ export function checkTotality(program) {
     total,
     guards: guards.filter((guard) => total.has(guard.from)),
     descents: descents.filter((descent) => total.has(descent.from)),
+    structures: structures.filter((item) => total.has(item.from)),
+    /* По той же причине, что и сторожа: у недоказанной компоненты обещания нет,
+       и называть её рекурсию «доказанной структурой» было бы неправдой. Цикл
+       берётся целиком или не берётся вовсе — половина компоненты не цикл. */
+    cycles: cycles.filter((component) => component.every((name) => total.has(name))),
   }
 }
 
@@ -591,7 +616,7 @@ function applyTargets(expr, arity, state) {
 /* Компоненты сильной связности и проверка цикла                       */
 /* ------------------------------------------------------------------ */
 
-function checkComponent(component, edges, failed, report, guards, descents, functions) {
+function checkComponent(component, edges, failed, report, guards, descents, functions, structures = []) {
   const members = new Set(component)
   const inner = edges.filter((edge) => members.has(edge.from) && members.has(edge.to))
   // Компонента из одной функции без самовызова — не цикл: доказывать нечего.
@@ -623,7 +648,20 @@ function checkComponent(component, edges, failed, report, guards, descents, func
 
   /* Общая позиция ищется отдельно среди структурных убываний и отдельно среди
      мер: смешать их значило бы склеить два несовместимых порядка (см. шапку). */
-  if (commonPositions(decreasing, false).length > 0) return
+  const структурой = commonPositions(decreasing, false)
+  if (структурой.length > 0) {
+    /* Сторожить здесь нечего: цепочка частей конечного дерева обрывается сама,
+       и рантайм об этом доказательстве не узнаёт ничего. Позиция называется
+       наружу не для сторожа, а для отчёта: «доказано структурой» без имени
+       убывающего аргумента нельзя перепроверить чтением программы. Позиция
+       ПЕРВАЯ общая — по той же причине, что у меры ниже: доказательство держится
+       на любой одной, и называть остальные значило бы обещать больше сделанного. */
+    const position = структурой[0]
+    for (const { edge } of decreasing) {
+      structures.push({ position, from: edge.from, to: edge.to, param: edge.params[position] ?? null })
+    }
+    return
+  }
 
   /* Доказано мерой — значит доказано на числах, а не на double. Разница между
      ними наблюдаема (шапка, «Где это доказательство упирается в IEEE-754»),
@@ -906,8 +944,12 @@ function descentMessages(edge, measure) {
  * проверяются тестами дословно, и знаки арифметики он печатает так, как они
  * зовутся в AST (`sub`, `mod`). В тексте, который человек читает про СВОЮ
  * меру, `«верх» sub «низ»` — насмешка.
+ *
+ * Наружу — потому что ведомость доказательства (`proof.mjs`) печатает меру тому
+ * же человеку и теми же словами: две печати одной меры разошлись бы, и автор
+ * читал бы про свою функцию две разные правды.
  */
-function describeMeasure(expr) {
+export function describeMeasure(expr) {
   if (!expr || typeof expr !== "object") return "?"
   const знаки = { add: "плюс", sub: "минус", mul: "умножить на", div: "делить на", mod: "остаток от" }
   switch (expr.kind) {

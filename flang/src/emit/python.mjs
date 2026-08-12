@@ -97,6 +97,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { snake } from "../../../tools/ftsc/src/naming.mjs"
@@ -496,6 +497,12 @@ function createDeclarations(reserved) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitPython(program, options = {}) {
+  /* Печать в цель без планировщика конкурентности невозможна, и молчать об этом
+     нельзя: до этого отказа шесть целей из восьми ТЕРЯЛИ процессы, печатали
+     обработчики обычными функциями и кончались кодом 0. Отказ стоит первым — до
+     всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
+     `требуетПланировщика`). */
+  требуетПланировщика(program, "python")
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На

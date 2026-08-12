@@ -46,7 +46,7 @@ import { fileURLToPath } from "node:url"
 import { runConcurrent, runConcurrentExamples, ACTION_TYPE_NAME, STRATEGIES } from "../src/conc.mjs"
 import { keywordId, tokenize } from "../src/lexer.mjs"
 import { parse } from "../src/parser.mjs"
-import { checkTotality } from "../src/totality.mjs"
+import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -856,9 +856,17 @@ test("взаимная блокировка обнаруживается пок�
 /* ─────────────────── примеры конкурентных программ ─────────────────────── */
 
 test("каждый пример flang/conc/examples проходит проверки и свои прогоны", () => {
+  /* Прогоняется ПОМЕЧЕННАЯ программа — той же отметкой меры, какую кладёт
+     передний край на каждую команду (`bin/flang.mjs`, `markMeasure`). Здесь стоял
+     голый разбор, и это была та же слепота, что у сторожа множества отказов:
+     сторожа меры ставит отметка, поэтому на непомеченной программе не бывает ни
+     одного `FLANG_MEASURE`, и прогон `measure.flang` — «дробь роняет процесс
+     мерой» — на ней не сходился (процесс досчитывал бессмыслицу вместо отказа).
+     Программа без числовой меры проходит отметку тем же объектом, поэтому для
+     остальных шести примеров не изменилось ничего. */
   let прогонов = 0
-  for (const имя of ["counter", "race", "budget", "mailbox", "supervision", "escalate", "backpressure"]) {
-    const программа = разобрать(имя)
+  for (const имя of ["counter", "race", "budget", "mailbox", "supervision", "escalate", "backpressure", "measure"]) {
+    const программа = markMeasureGuards(разобрать(имя))
     assert.deepEqual(checkTypes(программа).diagnostics, [], `${имя}: типы`)
     assert.deepEqual(checkTotality(программа).diagnostics, [], `${имя}: тотальность`)
 
@@ -869,7 +877,7 @@ test("каждый пример flang/conc/examples проходит прове�
       assert.ok(итог.passed, `${имя} / «${итог.run}»: ${JSON.stringify(итог)}`)
     }
   }
-  assert.ok(прогонов >= 11, `прогонов всего ${прогонов}`)
+  assert.ok(прогонов >= 13, `прогонов всего ${прогонов}`)
 })
 
 test("действия исполняются планировщиком, а не обработчиком: отправка доходит", () => {

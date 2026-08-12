@@ -663,6 +663,126 @@ test("хвостовой самовызов развёрнут в цикл: 100 
   t.diagnostic(`100 000 шагов пройдено обоими движками; дополнительно сверено входов: ${points}`)
 })
 
+/* Нехвостовой спуск по ЧИСЛУ, а не по списку: рекурсия по списку разбирает его
+   образцом «голова и хвост», и хвост — это новый массив, то есть на глубине N
+   она стоит O(N²) памяти. Здесь нужна глубина в десятки тысяч кадров и ноль
+   аллокаций, иначе кончится куча, а не стек, и мерить будет нечего. */
+const descentProgram = {
+  flang: 1,
+  module: "Спуск",
+  functions: [
+    {
+      name: "Спуск",
+      params: [{ name: "н", type: { kind: "number" } }],
+      returns: { kind: "number" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "lte", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 0 } },
+        then: { kind: "literal", value: 0 },
+        else: {
+          kind: "binary",
+          op: "add",
+          left: { kind: "literal", value: 1 },
+          right: {
+            kind: "call",
+            name: "Спуск",
+            args: [{ kind: "binary", op: "sub", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 1 } }],
+          },
+        },
+      },
+    },
+  ],
+}
+
+/* Незавершающаяся обычная функция: считает ВВЕРХ, дна у неё нет. Ловить её
+   глубиной нечем — хвостовой самовызов кадра не растит, — поэтому она и есть
+   проверка на предел ВИТКОВ. */
+const foreverProgram = {
+  flang: 1,
+  module: "Вечность",
+  functions: [
+    {
+      name: "Вечность",
+      params: [{ name: "н", type: { kind: "number" } }],
+      returns: { kind: "number" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "lt", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 0 } },
+        then: { kind: "literal", value: 0 },
+        else: {
+          kind: "call",
+          name: "Вечность",
+          args: [{ kind: "binary", op: "add", left: { kind: "var", name: "н" }, right: { kind: "literal", value: 1 } }],
+        },
+      },
+    },
+  ],
+}
+
+test("нехвостовая рекурсия глубже предела даёт FLANG_RECURSION_LIMIT у обоих движков", async (t) => {
+  /* Тот же тест, что у остальных семи целей, и здесь он был единственным
+     отсутствующим. У интерпретатора переполнение стека невозможно (стек в куче),
+     у JS — возможно и приходит RangeError, у которого `code` пуст. Отказ с пустым
+     кодом не входит в закрытый набор видов отказа, то есть обещание «тотальная
+     функция завершится ИЛИ ОТКАЖЕТ ЧЕСТНО» на нём не держится. Значит счётчик
+     обязателен, и его код с текстом обязаны совпасть с интерпретатором. */
+  const { module, content } = await build(listProgram)
+  assert.match(content, /\$enter\("Сумма"\)/u, "рекурсивная функция обязана считать глубину")
+  assert.match(content, /FLANG_RECURSION_LIMIT/u, "предел обязан давать объявленный код")
+
+  /* Предел взят низким намеренно: так упирается СЧЁТЧИК, а не стек хозяина, и
+     сверять с интерпретатором можно не только код, но и текст. */
+  module.$newContext({ maxDepth: 20, maxSteps: 10_000_000 })
+  const long = Array.from({ length: 40 }, (_, index) => index)
+  const points = compare(listProgram, module, "Сумма", [[long]], {
+    limits: { maxDepth: 20, maxSteps: 10_000_000 },
+  })
+  assert.equal(points, 1)
+
+  const byEmitted = outcome(() => module[exportName("Сумма")](long))
+  assert.equal(byEmitted.ok, false)
+  assert.equal(byEmitted.code, "FLANG_RECURSION_LIMIT")
+  assert.match(byEmitted.message, /^функция «Сумма» превысила предел глубины вызовов \(20\) на глубине 21$/u)
+
+  /* А теперь то же на пределах ПО УМОЛЧАНИЮ. Здесь стек хозяина кончается раньше
+     объявленного предела (у V8 холодных кадров меньше десяти тысяч, и поднять
+     стек изнутри модуля нечем), поэтому текст обязан назвать хозяина — но КОД
+     обязан остаться объявленным. Именно этого раньше и не было: наружу выходил
+     RangeError с `code === undefined`. */
+  const descent = await build(descentProgram)
+  const спуск = descent.module[exportName("Спуск")]
+  assert.equal(спуск(100), 100, "неглубокая рекурсия обязана считаться как раньше")
+  let raw = null
+  try {
+    спуск(200_000)
+    assert.fail("рекурсия на 200 000 кадров обязана отказать, а не досчитать")
+  } catch (error) {
+    raw = error
+  }
+  assert.equal(raw.code, "FLANG_RECURSION_LIMIT", `глубокая рекурсия обязана давать объявленный отказ: ${raw.message}`)
+  assert.ok(
+    !(raw instanceof RangeError),
+    `RangeError наружу выпускать нельзя — его код не входит в набор видов отказа: ${raw.message}`,
+  )
+  /* Счётчик обязан вернуться: иначе первый же отказ навсегда съел бы предел, и
+     следующий вызов отказал бы на пустом месте. */
+  assert.equal(спуск(100), 100, "после отказа глубина обязана вернуться к нулю")
+  const deep = { message: raw.message }
+
+  /* И предел ВИТКОВ: хвостовой самовызов глубину не растит, поэтому раньше
+     незавершающаяся функция крутилась вечно — в браузере это смерть вкладки. */
+  const forever = await build(foreverProgram)
+  const spun = outcome(() => forever.module[exportName("Вечность")](1))
+  assert.equal(spun.ok, false)
+  assert.equal(spun.code, "FLANG_RECURSION_LIMIT", "незавершающаяся функция обязана упереться в предел витков")
+  assert.deepEqual(
+    outcome(() => interpret(foreverProgram, "Вечность", [1])),
+    { ok: false, code: spun.code, message: spun.message },
+    "и код, и текст обязаны совпасть с интерпретатором",
+  )
+  t.diagnostic(`объявленный отказ на глубине ${deep.message.replace(/^.*глубине /u, "")}; витки: ${spun.message}`)
+})
+
 test("внутренний цикл не перехватывает continue хвостового самовызова", async () => {
   /* `отфильтровать` печатается как `for … of`, а хвостовой самовызов — как
      `continue`. Если бы `continue` оказался внутри цикла коллекции, функция
@@ -1001,6 +1121,11 @@ test("стоимость взятия по номеру: миллион взят
    */
   const n = 1_000_000
   const список = Array.from({ length: n }, (_, номер) => номер + 1)
+  /* Бюджет витков поднят явно: миллион взятий — это миллион оборотов цикла
+     хвостового самовызова, то есть миллион ВИТКОВ, а предел по умолчанию ровно
+     миллион. Упереться в него здесь — правильное поведение счётчика, а не сбой,
+     поэтому бюджет задаётся, как в emit-c.test.mjs («steps: String(бюджет)»). */
+  module.$newContext({ maxSteps: 10_000_000 })
   const начало = Date.now()
   assert.equal(считать(список, n, 0), (n * (n + 1)) / 2)
   t.diagnostic(`миллион взятий по номеру пройден за ${Date.now() - начало} мс`)

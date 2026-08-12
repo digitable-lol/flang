@@ -757,6 +757,33 @@ export async function externalChecks(program) {
       /* модуля ещё нет — check работает в объёме, который доступен сегодня */
     }
   }
+
+  /* Обязательства и ядро идут ПОСЛЕ остальных и отдельным шагом, а не строкой в
+     таблице выше, по двум причинам, и обе содержательные.
+     ПЕРВАЯ: обязательствам нужен результат анализа завершаемости — они читают у
+     него, чем доказана мера, чтобы не отвечать вторым графом вызовов на вопрос,
+     на который он уже ответил. Значит порядок здесь значим, а таблица выше
+     порядка не обещает.
+     ВТОРАЯ: ядру нужны обязательства. Цепочка «цель → предложенное
+     доказательство → вердикт» однонаправленна, и записать её тремя строками
+     таблицы, каждая из которых зовёт `entry(program)`, было бы неправдой о том,
+     что от чего зависит. */
+  try {
+    const { obligations } = await import(new URL("../src/obligations.mjs", import.meta.url).href)
+    const итог = obligations(program, results)
+    results.obligations = итог
+    diagnostics.push(...normalizeDiagnostics(итог))
+    try {
+      const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
+      const вердикты = checkProofs(program, итог.obligations)
+      results.proofs = вердикты
+      diagnostics.push(...normalizeDiagnostics(вердикты))
+    } catch {
+      /* ядра ещё нет — обязательства при этом уже посчитаны и видны */
+    }
+  } catch {
+    /* модуля ещё нет — check работает в объёме, который доступен сегодня */
+  }
   return { diagnostics, results }
 }
 

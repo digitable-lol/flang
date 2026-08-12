@@ -51,7 +51,7 @@ const HELP = `flang — полный язык поверх FTS
   flang test  <файл> [--pretty]
   flang facts <файл> --facts факты.json --claims '["…"]' [--steps N] [--pretty]
   flang ast   <файл> [--pretty]
-  flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli]
+  flang emit  <файл> --target <язык> [--out каталог] [--cli|--no-cli] [--no-check]
                      [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
   flang io    <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
                      [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
@@ -70,7 +70,11 @@ check --proof: ведомость доказательства. По каждо�
 ведомость едет полем «proof» в том же JSON, что и раньше.
 
 emit: цели берутся из src/emit (по одному модулю на язык); без --out файлы
-уходят в stdout вместе с путями, с --out записываются в каталог.
+уходят в stdout вместе с путями, с --out записываются в каталог. Печать сначала
+ПРОВЕРЯЕТ программу теми же проверками, что и check, и отказывается печатать
+непроверенное: «тотальная», надзор и типы обещают что-то только потому, что
+программа, которая обещания не держит, не собирается. --no-check снимает
+проверку — для отладки самой печати, когда смотрят на порождённый код.
 
 io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
 строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
@@ -134,8 +138,8 @@ export async function main(argv = process.argv.slice(2)) {
 
 async function commandCheck(options) {
   const program = await loadProgram(options.file)
-  const внешнее = await externalChecks(program)
-  const diagnostics = [...structuralDiagnostics(program), ...внешнее.diagnostics]
+  const внешнее = await checkProgram(program)
+  const diagnostics = внешнее.diagnostics
   const result = {
     valid: diagnostics.length === 0,
     module: program.module ?? null,
@@ -346,6 +350,27 @@ const REPL_CONTINUATION = "… "
  * (`использует … из "…"`). Печать напрямую из `parse` дала бы для ядра FTS,
  * разложенного по файлам, неполную программу — и первым признаком стала бы не
  * ошибка CLI, а несобирающийся C.
+ *
+ * ── Печать обязана спросить у проверки ──────────────────────────────────────
+ *
+ * Проверки зовутся здесь, а не только в `check`, и это не удобство, а сам
+ * договор языка. `тотальная` обещает завершение, надзор обещает разобранный
+ * отказ, тип обещает форму — и все три обещания стоят на том, что программа,
+ * которая их не держит, НЕ СОБИРАЕТСЯ. Пока `emit` проверок не звал, обещание
+ * кончалось на границе команды: `supervision.flang` без блока `надзор «Цех»`
+ * давал `check` с кодом 1 и `FLANG_UNCOVERED_FAILURE` — и он же давал
+ * `emit --target go` с кодом 0 и 80 155 байтами Go, которые собираются и
+ * запускаются. Отказ, о котором сказано «ошибка проверки», уезжал в
+ * промышленный компилятор.
+ *
+ * Цена измерена, и она нулевая: все 98 программ репозитория на языке проверку
+ * проходят, а те пять моделей `.fts`, что падают, падают на разборе — то есть
+ * `emit` отказывал на них и до правки, тем же кодом и в том же месте.
+ *
+ * `--no-check` оставлен для отладки самой печати: когда смотрят на порождённый
+ * код, а не на программу, требовать от программы правильности незачем. Ключ
+ * явный и называется в справке, потому что молча печатать непроверенное — это
+ * ровно то поведение, которое здесь исправляется.
  */
 async function commandEmit(options) {
   const targets = await emitTargets()
@@ -356,6 +381,23 @@ async function commandEmit(options) {
      сообщать о ней после минуты связывания модулей было бы издевательством. */
   const backend = await loadEmitter(options.target, targets)
   const program = await loadProgram(options.file)
+  if (options.check !== false) {
+    const { diagnostics } = await checkProgram(program)
+    if (diagnostics.length > 0) {
+      /* Диагностики уезжают в stderr целиком и в том же виде, в каком их
+         печатает `check`: инструмент, который читает вывод `check`, обязан
+         прочитать и этот отказ, не заводя второго разбора. Код возврата 1 —
+         ошибка модели, а не вызова. */
+      const первая = diagnostics[0]
+      const error = new Error(
+        `печать отменена: программа не проходит проверку (диагностик: ${diagnostics.length}, ` +
+          `первая — ${первая.code}: ${первая.message}). ` +
+          "Проверьте программу командой check; ключ --no-check печатает непроверенное для отладки самой печати",
+      )
+      error.diagnostics = diagnostics
+      throw error
+    }
+  }
   const files = emittedFiles(backend.emit(program, emitOptions(options)), options.target)
   const head = { target: options.target, module: program.module ?? null }
 
@@ -573,6 +615,32 @@ async function parseFlang(source, file) {
 }
 
 /* ───────────────────────────── проверки check ───────────────────────────── */
+
+/**
+ * Полный отказ или полное согласие проверки — одно место на все команды.
+ *
+ * Заведено потому, что до этой правки такого места не было вовсе: список
+ * проверок жил внутри `commandCheck`, и звать его умела ровно одна команда.
+ * `emit` брал программу тем же `loadProgram` и печатал её, не спросив ни у
+ * типов, ни у тотальности, ни у надзора, — а весь смысл проверок в том, что
+ * непроверенное НЕ ПЕЧАТАЕТСЯ. Пример, на котором это было видно:
+ * `flang/conc/examples/supervision.flang` без блока `надзор «Цех»` даёт `check`
+ * с кодом 1 и `FLANG_UNCOVERED_FAILURE`, а `emit --target go` до правки давал
+ * код 0 и 80 155 байт кода — то есть обещание Г1 (`flang/conc/RESILIENCE.md`)
+ * «непокрытый отказ — ошибка проверки» кончалось на границе команды `check` и
+ * не касалось того, что пойдёт компилятору.
+ *
+ * Возвращаются и `results`: ведомость доказательства (`--proof`) печатается из
+ * них же, и второй прогон проверок ради отчёта был бы платой за то, что уже
+ * посчитано (см. `externalChecks`).
+ *
+ * @param {object} program AST flang
+ * @returns {Promise<{diagnostics: object[], results: object}>}
+ */
+export async function checkProgram(program) {
+  const внешнее = await externalChecks(program)
+  return { diagnostics: [...structuralDiagnostics(program), ...внешнее.diagnostics], results: внешнее.results }
+}
 
 /** Минимум, который мост обязан гарантировать сам, не дожидаясь types.mjs. */
 function structuralDiagnostics(program) {
@@ -797,6 +865,12 @@ function parseArgs(argv) {
       options.allow = { ...(options.allow ?? {}), [поле]: false }
     } else if (arg === "--in-dir") {
       options.inDir = true
+    } else if (arg === "--no-check") {
+      /* Отказаться от проверки можно только явно, и только у `emit`: печать без
+         проверки — отладочный режим, а не второй способ печатать. Умолчания
+         «проверять» здесь нет отдельным ключом `--check` по той же причине, по
+         какой его нет у `--cli`: осмысленно только отступление от умолчания. */
+      options.check = false
     } else if (arg === "--pretty") {
       options.pretty = true
     } else if (arg === "--proof") {
@@ -822,6 +896,11 @@ function parseArgs(argv) {
     if (options[ключ === "--proof" ? "proof" : "json"] === true && options.command !== "check") {
       throw usage(`${ключ} — ключ команды check, а не «${options.command}»`)
     }
+  }
+  /* То же правило и той же ценой для `--no-check`: у `check` он был бы отказом
+     от самого себя, у `run` и `test` — обещанием, которого команда не даёт. */
+  if (options.check === false && options.command !== "emit") {
+    throw usage(`--no-check — ключ команды emit, а не «${options.command}»`)
   }
   return options
 }

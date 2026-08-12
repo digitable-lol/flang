@@ -28,6 +28,14 @@
  *      а не с константой, — иначе «расширяемость» пришлось бы принимать на
  *      слово.
  *
+ *   4. НЕПРОВЕРЕННОЕ НЕ ПЕЧАТАЕТСЯ. Печать зовёт те же проверки, что `check`, и
+ *      отказывается печатать программу, которую `check` отвергает. До этого
+ *      проверки жили только в `check`, и обещания языка кончались на границе
+ *      команды: `supervision.flang` без блока `надзор «Цех»` давал `check` с
+ *      кодом 1 и `FLANG_UNCOVERED_FAILURE`, а `emit --target go` — код 0 и
+ *      80 155 байт Go, которые собираются и запускаются. Отказ, про который
+ *      сказано «ошибка проверки», уезжал в промышленный компилятор.
+ *
  * ── Если компилятора C нет ──────────────────────────────────────────────────
  * Тесты, которым нужен `cc`, честно пропускаются через `missingToolchain`
  * (tools/ftsc/test/toolchain-guard.mjs) — тем же способом, что в
@@ -56,6 +64,7 @@ const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
 const emitDirectory = fileURLToPath(new URL("../src/emit/", import.meta.url))
 const lists = fileURLToPath(new URL("../stdlib/lists.flang", import.meta.url))
 const core = fileURLToPath(new URL("../core/", import.meta.url))
+const supervision = fileURLToPath(new URL("../conc/examples/supervision.flang", import.meta.url))
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 
 const workdir = await mkdtemp(join(tmpdir(), "flang-cli-emit-"))
@@ -81,12 +90,17 @@ async function emit(args) {
 
 /** Отказ: код возврата и разобранная диагностика из stderr. */
 async function emitFails(args) {
+  return callFails(["emit", ...args])
+}
+
+/** То же самое для любой команды: `--no-check` проверяется и у чужих. */
+async function callFails(args) {
   try {
-    await run("node", [cli, "emit", ...args], { maxBuffer: 64 * 1024 * 1024 })
+    await run("node", [cli, ...args], { maxBuffer: 64 * 1024 * 1024 })
   } catch (error) {
     return { code: error.code, stdout: error.stdout, report: JSON.parse(error.stderr) }
   }
-  return assert.fail(`ожидался отказ: flang emit ${args.join(" ")}`)
+  return assert.fail(`ожидался отказ: flang ${args.join(" ")}`)
 }
 
 /* ─────────────────────────── печать в каждую цель ───────────────────────── */
@@ -280,6 +294,87 @@ test("новый бэкенд в src/emit подхватывается без п
   const registry = await emitTargets()
   const { report } = await emitFails([lists, "--target", "такого-языка-нет"])
   assert.equal(report.diagnostics[0].message, `неизвестная цель «такого-языка-нет»; доступны: ${registry.join(", ")}`)
+})
+
+/* ─────────────────── печать не печатает непроверенного ──────────────────── */
+
+/**
+ * Улика — не выдумка, а ИЗЪЯТИЕ из живого примера репозитория.
+ *
+ * Берётся `flang/conc/examples/supervision.flang` и вынимается один блок:
+ * `надзор «Цех»` с его двумя строками. Программа остаётся той же во всём
+ * остальном, а обещание Г1 (`flang/conc/RESILIENCE.md`) в ней ломается:
+ * «Работник» умеет `остановить` с причиной из сообщения, надзирать над ним
+ * стало некому. Выдуманная программа доказывала бы, что отказ бывает; изъятие
+ * доказывает, что отказ ловится ровно там, где живёт настоящий пример.
+ */
+const БЕЗ_НАДЗОРА = (исходник) => {
+  const строки = исходник.split("\n")
+  const начало = строки.findIndex((строка) => строка.startsWith("надзор «Цех»"))
+  assert.notEqual(начало, -1, "в supervision.flang не стало блока «надзор «Цех»» — изъятию нечего изымать")
+  let конец = начало + 1
+  while (конец < строки.length && строки[конец].startsWith("  ")) конец += 1
+  assert.ok(конец - начало >= 3, "блок надзора короче ожидаемого — изъятие вырезало не то")
+  return [...строки.slice(0, начало), ...строки.slice(конец)].join("\n")
+}
+
+test("программу, которую check отвергает, emit не печатает вовсе", async () => {
+  const исходник = await readFile(supervision, "utf8")
+  const целая = join(await sandbox({ "надзор.flang": исходник }), "надзор.flang")
+  const порченая = join(await sandbox({ "надзор.flang": БЕЗ_НАДЗОРА(исходник) }), "надзор.flang")
+
+  /* Половина изъятия, без которой вторая ничего не значит: ЦЕЛАЯ программа
+     печатается. Иначе тест мог бы зеленеть от того, что не печатается ничего. */
+  const напечатано = await emit([целая, "--target", "go"])
+  assert.ok(напечатано.files.length > 0, "целая программа обязана печататься")
+
+  const { code, stdout, report } = await emitFails([порченая, "--target", "go"])
+  assert.equal(code, 1, "ошибка модели, а не вызова — код 1")
+  assert.equal(stdout, "", "отказ печати не имеет права оставить в stdout ни байта кода")
+  const коды = report.diagnostics.map((беда) => беда.code)
+  assert.ok(коды.includes("FLANG_UNCOVERED_FAILURE"), `в диагностике нет непокрытого отказа: ${коды.join(", ")}`)
+  assert.match(report.error, /печать отменена/u)
+  assert.match(report.error, /--no-check/u, "отказ обязан назвать ключ, которым его снимают")
+})
+
+test("отказ печати называет ТЕ ЖЕ диагностики, что и check, — а не свои", async () => {
+  /* Второе место, где решают, годна ли программа, разошлось бы с первым молча.
+     Сверяются коды и тексты, а не число: у `check` в выводе есть ещё и
+     `functions`, `types`, `module`, и требовать их от отказа печати незачем. */
+  const порченая = join(await sandbox({ "надзор.flang": БЕЗ_НАДЗОРА(await readFile(supervision, "utf8")) }), "надзор.flang")
+  const { report } = await emitFails([порченая, "--target", "go"])
+  let проверка
+  try {
+    await run("node", [cli, "check", порченая])
+    assert.fail("check обязан отвергнуть эту программу")
+  } catch (error) {
+    проверка = JSON.parse(error.stderr)
+  }
+  assert.deepEqual(
+    report.diagnostics.map((беда) => [беда.code, беда.message]),
+    проверка.diagnostics.map((беда) => [беда.code, беда.message]),
+  )
+})
+
+test("--no-check печатает непроверенное — и печатает то же, что печатал до проверки", async () => {
+  /* Ключ существует для отладки самой печати, поэтому проверяется не «команда
+     не упала», а то, что снята РОВНО проверка: байты совпадают с прямым вызовом
+     бэкенда на той же программе. Разойдись они — ключ был бы не отладочным
+     режимом, а вторым способом печатать. */
+  const порченая = join(await sandbox({ "надзор.flang": БЕЗ_НАДЗОРА(await readFile(supervision, "utf8")) }), "надзор.flang")
+  const напечатано = await emit([порченая, "--target", "go", "--no-check"])
+  assert.deepEqual(напечатано.files, emitGo(await loadProgram(порченая), {}).files)
+})
+
+test("--no-check у чужой команды — отказ вызова, а не ничего не делающий ключ", async () => {
+  /* То же правило и по той же причине, что у `--proof` и `--json`: молча
+     проглоченный ключ — это вызов, который выглядит верным и не работает. */
+  for (const команда of ["check", "run", "test", "ast"]) {
+    const { code, report } = await callFails([команда, lists, "--no-check"])
+    assert.equal(code, 2, `${команда} --no-check обязан быть ошибкой вызова`)
+    assert.equal(report.diagnostics[0].code, "FLANG_CLI")
+    assert.match(report.diagnostics[0].message, /--no-check — ключ команды emit/u)
+  }
 })
 
 /* ──────────────────────── связывание модулей при печати ─────────────────── */

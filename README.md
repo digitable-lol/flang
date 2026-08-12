@@ -247,7 +247,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-36 programs with 226 functions and 457 examples between them. For every function a grid of inputs
+92 programs with 451 functions and 1122 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -255,9 +255,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный Rust совпадает с интерпретатором
-ℹ программ: 36, функций: 226, сверенных входов: 3274, за 6 с
+ℹ программ: 92, функций: 451, сверенных входов: 7568, за 21 с
 ✔ примеры stdlib и leetcode сходятся у собранного Rust так же, как у интерпретатора
-ℹ сверенных примеров: 457
+ℹ сверенных примеров: 1122
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -363,10 +363,15 @@ flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --p
 ```
 
 Two example sets are kept, and both are guarded by tests rather than by good intentions.
-[`flang/examples/leetcode/`](flang/examples/leetcode) holds 26 solutions, every one of them total
-throughout; each carries a comment explaining not only the algorithm but where the language
-pushed back — why binary search needs a "fuel" list to be accepted as terminating, why Single
-Number is O(n²) because there are no bitwise operations.
+[`flang/examples/leetcode/`](flang/examples/leetcode) holds 82 solutions; 81 of them are total,
+as are 301 functions out of 303 — the single exception is deliberate and explained in the file
+(`202-happy-number.flang`: the "until the number repeats" loop does terminate, but the language
+has nothing to prove it with). Each carries a comment explaining not only the algorithm but where
+the language pushed back — why "is this character already in the window" is linear (there is no set
+in the language), why a dynamic-programming table costs a square (appending copies the list), why
+Single Number is O(n²) because there are no bitwise operations. Of the twelve tasks previously
+listed as inexpressible, eight are solved by this batch, and their entries in `index.json` have
+been rewritten.
 [`flang/examples/rosetta/`](flang/examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one, with a test
 comparing each pair as trees, up to a renaming of names. That test also pins the number of

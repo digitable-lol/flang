@@ -33,6 +33,7 @@ import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
+import { возможностиЦели } from "../src/conc.mjs"
 
 /*
  * Версия читается из package.json, а не пишется здесь строкой. Написанная
@@ -408,7 +409,19 @@ async function commandEmit(options) {
     }
   }
   const files = emittedFiles(backend.emit(program, emitOptions(options)), options.target)
-  const head = { target: options.target, module: program.module ?? null }
+  /* Возможности цели — ПОЛЕМ вывода, а не абзацем в спецификации. Инструменту
+     вокруг языка надо знать не «примерно одинаково везде», а что именно у этой
+     цели есть: конкурентность, параллелизм и чем это проверено. Проза не
+     краснеет, поле краснеет — таблица живёт в `conc.mjs` в одном месте, и
+     сторож (`flang/test/emit-conc-refuse.test.mjs`) сверяет её с поведением
+     каждой цели каталога. `null` значит «цели в таблице нет» и обязан быть
+     виден: подставить сюда «конкурентности нет» значило бы напечатать
+     утверждение, которого никто не проверял. */
+  const head = {
+    target: options.target,
+    module: program.module ?? null,
+    возможности: возможностиЦели(options.target),
+  }
 
   if (options.out === undefined) {
     /* Пути видны рядом с содержимым: одной программе соответствует несколько

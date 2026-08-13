@@ -28,7 +28,14 @@ import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
 import { INITIAL_CODE, UNCOVERED_CODE, достижимыеОтказы, отказыНачального } from "./failures.mjs"
 /* Проверка объявления `план` живёт в `io.mjs` вместе со словарём поручений, а
    не здесь: она вся про ввод-вывод и ничего не знает об остальных типах. */
-import { checkPlans } from "./io.mjs"
+import {
+  CONTINUATION_TYPE_NAME,
+  CONTINUE_DO,
+  CONTINUE_DONE,
+  checkPlans,
+  planResultIsShared,
+  planStateType,
+} from "./io.mjs"
 /* Устройство монады читается из объявлений один раз и в одном месте: то же
    самое `устройствоМонады` разворачивает форму `в монаде` внутри парсера.
    Разойдись эти два чтения хоть на условие — компилятор доказывал бы одно, а
@@ -133,6 +140,15 @@ export function checkTypes(program) {
        параметра важнее одноимённого типа, и только внутри своего объявления. */
     typeParams: new Map(), // имя типа → массив имён его параметров
     paramScope: null,      // Set<имя параметра> или null вне объявления
+    /* Тип состояния плана — ожидание для поля `потом` варианта «Сделать»
+       (`io.mjs`, `planStateType`). `null` значит «сверять нечем». */
+    planState: null,
+    /* Второй джокер словаря: `значение` варианта «Конец работы». Объявленного
+       типа у результата плана нет вовсе, поэтому образцом становится первое
+       встреченное значение — см. `planResultIsShared`. `planDone` хранит его тип
+       и узел, чтобы сообщение назвало оба места. */
+    planResultShared: false,
+    planDone: null,
   }
 
   collectTypes(program, ctx)
@@ -141,6 +157,12 @@ export function checkTypes(program) {
      сверяется с объявленными процессами прямо в теле обработчика, и знать о
      них к этому моменту уже надо. */
   checkProcesses(program, ctx)
+  /* Состояние плана — по той же причине и тем же порядком: поле `потом`
+     сверяется с ним прямо в теле функции шага, значит к обходу тел тип уже
+     обязан быть известен. Само объявление `план` проверяется ниже
+     (`checkPlans`), и диагностик здесь не выдаётся ни одной. */
+  ctx.planState = planStateType(program, ctx)
+  ctx.planResultShared = planResultIsShared(program)
 
   for (const fn of listFunctions(program)) {
     if (!isName(fn?.name)) continue
@@ -2065,6 +2087,46 @@ function collectSignatures(program, ctx) {
       seen.add(param.name)
       params.push({ name: param.name, type: normalizeType(param.type, ctx, fn) })
     }
+    /*
+     * `возвращает` обязательна — и это САМАЯ КРУПНАЯ из закрытых здесь дыр.
+     *
+     * Отсутствие этой строки означало не «вывести тип», а «выключить проверку».
+     * Механика в двух шагах: `normalizeType(null)` отдаёт джокер (`UNKNOWN`), а
+     * джокер по `sameType` совместим со ВСЕМ. Поэтому у функции без `возвращает`
+     * не сверялось ничего:
+     *
+     *   • тело с объявлением — сверять не с чем;
+     *   • КАЖДЫЙ её вызов — результат джокера годится в любое место;
+     *   • её собственные примеры — `ожидается "три"` на числовом теле проходило
+     *     `check` молча и падало только на `flang test`.
+     *
+     * Улика записана `flang/test/types.test.mjs`: одна программа, `«Сумма»` без
+     * `возвращает` складывает числа, её пример ожидает строку, а вызывающая
+     * функция объявлена строкой — `valid: true`, ноль диагностик. Та же
+     * программа с одной дописанной строкой `возвращает число` даёт ДВЕ
+     * диагностики. То есть «сильная статическая типизация» отключалась
+     * пропуском одной строки, и никто об этом не сообщал.
+     *
+     * Ничего не ломает, и это посчитано, а не предположено: все 2389 функций
+     * корпуса эту строку имеют, а все, кто строит узел функции внутри
+     * компилятора, задают `returns` явно — `compat.mjs` (мост из FTS),
+     * `defunc.mjs` (диспетчер и обёртки), `monoid.mjs` (единица моноида).
+     * Снисходительность была только у парсера (`parseFunction` начинает с
+     * `returns = null` и заполняет по `if`), и ничьей нужде она не отвечала.
+     *
+     * Джокер, ЗАПИСАННЫЙ явно, остаётся законным: мост из FTS переводит имена
+     * состояний в `{ kind: "unknown" }`, и это маркер доказательства, а не
+     * пропуск (см. `WILDCARD_KINDS`). Здесь ловится именно ПРОПУСК — разница
+     * между «сказано, что сказать нечего» и «не сказано ничего».
+     */
+    if (fn.returns === null || fn.returns === undefined) {
+      ctx.report(
+        "FLANG_TYPE",
+        `функция «${fn.name}» не объявляет, что возвращает: без строки «возвращает» ` +
+          "не сверяются ни тело, ни вызовы, ни примеры",
+        fn,
+      )
+    }
     const signature = {
       name: fn.name,
       params,
@@ -2999,6 +3061,12 @@ function constructType(expr, env, expected, ctx, fnName) {
     owner === ACTION_TYPE_NAME && ADDRESSED_ACTIONS.has(expr.variant) && ctx.processes?.size > 0
       ? addresseeOf(expr, ctx)
       : null
+  /* Продолжение плана: то же самое и по той же причине. Поле `потом` объявлено
+     джокером, а тип у него есть — состояние, названное в объявлении `план`
+     (`io.mjs`, `planStateType`). Без этой сверки `потом` не проверял никто, и
+     программа с чужим типом в нём проходила `check`, а падала у хозяина. */
+  const состояниеПлана =
+    owner === CONTINUATION_TYPE_NAME && expr.variant === CONTINUE_DO ? ctx.planState ?? null : null
   if (!owner) {
     ctx.report("FLANG_UNKNOWN_NAME", `неизвестный конструктор варианта «${String(expr.variant)}»`, expr)
     for (const value of Object.values(given)) inferExpr(value, env, null, ctx, fnName)
@@ -3017,13 +3085,43 @@ function constructType(expr, env, expected, ctx, fnName) {
       ctx.report("FLANG_TYPE", `конструктор «${expr.variant}» требует поле «${name}» (${typeName(type)})`, expr)
       continue
     }
-    const wanted = адресат !== null && name === "что" ? адресат.accepts : substitute(type, bindings)
+    /* Джокер словаря уступает место типу, известному из объявления: груз
+       действия — объявленному `принимает` адресата, продолжение плана —
+       объявленному `состояние`. Оба случая устроены одинаково, поэтому и
+       записаны одним оборотом. */
+    const изОбъявления =
+      адресат !== null && name === "что" ? адресат.accepts
+      : состояниеПлана !== null && name === "потом" ? состояниеПлана
+      : null
+    const wanted = изОбъявления ?? substitute(type, bindings)
     const намёк = hasParams(wanted) ? substitute(type, new Map([...подсказка, ...bindings])) : wanted
     const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
-    const settled = адресат !== null && name === "что" ? wanted : substitute(type, bindings)
+    const settled = изОбъявления ?? substitute(type, bindings)
     if (!sameType(actual, settled)) {
       ctx.report("FLANG_TYPE", `поле «${name}» варианта «${expr.variant}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
+    }
+    /* Результат плана: объявления нет, поэтому образцом становится первое
+       встреченное значение, а сверяются с ним остальные (`io.mjs`,
+       `planResultIsShared`). Утверждение — «у плана один результат», и оно
+       проверяемо без нового слова в языке. */
+    if (
+      ctx.planResultShared === true &&
+      owner === CONTINUATION_TYPE_NAME &&
+      expr.variant === CONTINUE_DONE &&
+      name === "значение" &&
+      actual.kind !== "unknown"
+    ) {
+      if (ctx.planDone === null) {
+        ctx.planDone = { type: actual, at: given[name] }
+      } else if (!sameType(actual, ctx.planDone.type)) {
+        ctx.report(
+          "FLANG_TYPE",
+          `у плана один результат, а «Конец работы» несёт то ${typeName(ctx.planDone.type)}, ` +
+            `то ${typeName(actual)}: хозяин получит значение, которого не ждёт`,
+          given[name],
+        )
+      }
     }
   }
   for (const name of Object.keys(given)) {

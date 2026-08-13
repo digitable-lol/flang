@@ -694,8 +694,14 @@ the endofunctor map is printed in place, so the parameter must occupy a whole fi
 **Concurrency.** All seven steps, but the sixth only halfway. The scheduler in the C runtime is
 the checking one: a single thread, interleaving by seed, matching the reference byte for byte;
 there is no working thread pool, and its price has been measured on two machines (handing a run to
-another thread costs four to fourteen runs, depending on the box). Processes are printed only to Elixir and C, and the other six
-targets turn a program with `процесс` into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
+another thread costs four to fourteen runs, depending on the box). Processes are printed to three targets out of eight — C, Elixir and JavaScript — while the other
+five REFUSE a program with `процесс` with the `FLANG_NO_SCHEDULER` code: they have nothing to print
+processes with, and printing the program without them would build something other than what was
+written. What each target has is not prose: the capability table (`конкурентность`, `параллелизм`,
+`причина`, `проверка`) is carried by the `возможности` field of the `emit` output. JavaScript will
+never have parallelism — one thread; what is promised is not parallelism but the same SET of possible
+outcomes, checked by a byte-for-byte comparison of the delivery journal against the reference over a
+seed grid (2800 matches, 146 distinct interleavings). There is no `породить`, so the process set is fixed by
 the declarations and there is no dynamic tree as in OTP; a message addressee must be a literal;
 there is no distribution. The seed grid checks a finite set of interleavings — a checked claim, not
 a proof — and it gives no freedom from deadlock. The measurement was taken on a busy machine (load

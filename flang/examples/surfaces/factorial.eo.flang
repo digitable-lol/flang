@@ -65,7 +65,7 @@ funkcio «Faktorialo per produto»
   «Produto» de («Nombroj de kaj ĝis» de 1 kaj n)
 
 totala funkcio «Faktorialo»
-  akceptas n: nombro
+  akceptas n: naturo
   redonas nombro
   ekzemplo «Kvin faktorialo»
     donite n egalas 5

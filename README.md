@@ -260,7 +260,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-92 programs with 451 functions and 1122 examples between them. For every function a grid of inputs
+93 programs with 464 functions and 1170 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -268,9 +268,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 92, функций: 451, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+ℹ программ: 93, функций: 464, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 1122
+ℹ сверенных примеров: 1170
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -391,9 +391,9 @@ comparing each pair as trees, up to a renaming of names. That test also pins the
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
-`lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
+`lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
 way —
-10 modules, 148 functions, of which 144 are proven total. `higher-order` is the one built on
+11 modules, 161 functions, of which 157 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 
@@ -699,6 +699,14 @@ attaching a solver to the verification conditions is an open task, not a feature
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
   decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets
   — not a hang.
+- The constant-step guard is DROPPED when the parameter is declared an exact natural (`нат` — a
+  whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
+  0 and a ceiling below which `н минус c` for whole c ≥ 1 is EXACTLY smaller than н. The proof
+  becomes complete, and the ledger names a fifth carrier of the promise — «точным шагом», the
+  only one without a guard. Measured on the corpus: 16 functions carried the promise by constant
+  step with a guard, 2 remain; guard sites 100 instead of 115, ZERO added — overflow is caught by
+  widening the type (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
+  example: `flang/examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

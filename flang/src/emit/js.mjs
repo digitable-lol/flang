@@ -1378,6 +1378,21 @@ function jsdocType(type, shared) {
   return type.optional === true ? `(${inner}|null)` : inner
 }
 
+/**
+ * Имена уточнённого числа. Приходят они сюда ИМЕНЕМ, а не видом: `нат` и
+ * `целое` не ключевые слова, и парсер разбирает их тем же именным узлом, каким
+ * разбирает «Возможно» (см. `SCALAR_ALIASES` в types.mjs). В JavaScript
+ * отдельного типа у них нет — значение то же самое число, — и написать в
+ * документации `*` значило бы сказать «неизвестно» там, где известно всё.
+ *
+ * Печать от этого не меняется ни на знак: уточнение живёт в типизаторе, а
+ * напечатанный код о нём не знает и знать не должен.
+ */
+const ЧИСЛОВЫЕ_ИМЕНА = new Set([
+  "нат", "натуральное", "nat", "naturo", "自然数",
+  "целое", "integer", "entjero", "整数",
+])
+
 function jsdocBase(type, shared) {
   switch (type.kind) {
     case "string":
@@ -1395,6 +1410,7 @@ function jsdocBase(type, shared) {
       if (name === null) return "*"
       if (shared.recordIdents.has(name)) return shared.recordIdents.get(name)
       if (shared.sumIdents.has(name)) return shared.sumIdents.get(name)
+      if (ЧИСЛОВЫЕ_ИМЕНА.has(name)) return "number"
       return "*"
     }
   }

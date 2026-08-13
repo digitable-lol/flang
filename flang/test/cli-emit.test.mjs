@@ -374,12 +374,15 @@ test("--no-check печатает непроверенное — и печата
 
 test("--no-check у чужой команды — отказ вызова, а не ничего не делающий ключ", async () => {
   /* То же правило и по той же причине, что у `--proof` и `--json`: молча
-     проглоченный ключ — это вызов, который выглядит верным и не работает. */
-  for (const команда of ["check", "run", "test", "ast"]) {
+     проглоченный ключ — это вызов, который выглядит верным и не работает.
+     `test` из этого списка ушёл: команда стала проверять программу, значит
+     обещание у неё есть и снимать его есть чем. Остальные не проверяют — у них
+     ключ по-прежнему обещание, которого команда не даёт. */
+  for (const команда of ["check", "run", "ast"]) {
     const { code, report } = await callFails([команда, lists, "--no-check"])
     assert.equal(code, 2, `${команда} --no-check обязан быть ошибкой вызова`)
     assert.equal(report.diagnostics[0].code, "FLANG_CLI")
-    assert.match(report.diagnostics[0].message, /--no-check — ключ команды emit/u)
+    assert.match(report.diagnostics[0].message, /--no-check — ключ команд emit и test/u)
   }
 })
 

@@ -699,6 +699,14 @@ attaching a solver to the verification conditions is an open task, not a feature
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
   decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets
   — not a hang.
+- The constant-step guard is DROPPED when the parameter is declared an exact natural (`нат` — a
+  whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
+  0 and a ceiling below which `н минус c` for whole c ≥ 1 is EXACTLY smaller than н. The proof
+  becomes complete, and the ledger names a fifth carrier of the promise — «точным шагом», the
+  only one without a guard. Measured on the corpus: 16 functions carried the promise by constant
+  step with a guard, 2 remain; guard sites 100 instead of 115, ZERO added — overflow is caught by
+  widening the type (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
+  example: `flang/examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

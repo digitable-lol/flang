@@ -68,6 +68,8 @@
     "proof:ledger": "node flang/scripts/proof-ledger.mjs",
     "changelog": "node scripts/build-changelog.mjs",
     "changelog:check": "node scripts/build-changelog.mjs --check && node scripts/build-changelog.mjs --self-test",
+    "bootstrap": "node scripts/bootstrap-c.mjs",
+    "bootstrap:check": "node scripts/bootstrap-c.mjs --check",
     "preflight": "node scripts/preflight.mjs",
     "pretest": "node scripts/preflight.mjs",
     "test": "npm run test:core && npm run test:tools && npm run test:flang",

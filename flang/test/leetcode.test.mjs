@@ -20,7 +20,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
 
-import { valuesEqual } from "../src/builtins.mjs"
+import { reifyValue, valuesEqual } from "../src/builtins.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
@@ -61,8 +61,15 @@ for (const file of files) {
       for (const example of fn.examples ?? []) {
         count += 1
         const actual = evaluate(program, fn.name, example.args)
+        /* `reifyValue` — по той же причине, что в `runExamples` (compat.mjs) и в
+           `stdlib.test.mjs`: вариант и запись лежат в AST записью JSON
+           (`{ variant, fields }`), а вычисление даёт `FlangVariant`. Без
+           овеществления любой пример, ожидающий вариант, объявлялся
+           провалившимся — и ровно из-за этого в решениях корпуса стояло
+           «значение варианта нельзя записать в «дано»». Записать можно:
+           расходилась не запись, а сравнение в этом файле. */
         assert.ok(
-          valuesEqual(actual, example.expected),
+          valuesEqual(actual, reifyValue(example.expected)),
           `«${fn.name}» / «${example.name}»: ожидалось ${JSON.stringify(example.expected)}, получено ${JSON.stringify(actual)}`,
         )
       }
@@ -250,6 +257,50 @@ const ПРОВЕРКИ = [
   ["704-binary-search.flang", "Двоичный поиск", { элементы: [1, 2, 3, 4, 5, 6, 7, 8, 9], цель: 1 }, 0],
   ["704-binary-search.flang", "Двоичный поиск", { элементы: [1, 2, 3, 4, 5, 6, 7, 8, 9], цель: 9 }, 8],
   ["704-binary-search.flang", "Двоичный поиск", { элементы: [1, 2, 3, 4, 5, 6, 7, 8, 9], цель: 10 }, -1],
+
+  /* Партия 2026-08-12: приёмы, которых в корпусе не было — окно, таблица
+     динамики, двоичный поиск по разделяющей позиции, сортировка слиянием,
+     заливка сетки, бор. Здесь проверяются входы, которых нет в примерах:
+     пустые, вырожденные и такие, где ответ приходит с последнего витка. */
+  ["003-longest-substring-without-repeating-characters.flang", "Длина без повторов", { текст: "aab" }, 2],
+  ["003-longest-substring-without-repeating-characters.flang", "Длина без повторов", { текст: "dvdf" }, 3],
+  ["003-longest-substring-without-repeating-characters.flang", "Длина без повторов", { текст: "  " }, 1],
+
+  ["004-median-of-two-sorted-arrays.flang", "Медиана двух", { первый: [], второй: [1] }, 1],
+  ["004-median-of-two-sorted-arrays.flang", "Медиана двух", { первый: [3], второй: [-2, -1] }, -1],
+  ["004-median-of-two-sorted-arrays.flang", "Медиана двух", { первый: [1, 1, 1, 1], второй: [1, 1, 1] }, 1],
+
+  ["076-minimum-window-substring.flang", "Наименьшее окно", { текст: "ab", нужное: "b" }, "b"],
+  ["076-minimum-window-substring.flang", "Наименьшее окно", { текст: "aa", нужное: "aa" }, "aa"],
+  ["076-minimum-window-substring.flang", "Наименьшее окно", { текст: "cabwefgewcwaefgcf", нужное: "cae" }, "cwae"],
+
+  ["139-word-break.flang", "Разрезается", { текст: "аб", слова: ["а", "б", "аб"] }, true],
+  ["139-word-break.flang", "Разрезается", { текст: "ааб", слова: ["аа", "б"] }, true],
+  ["139-word-break.flang", "Разрезается", { текст: "ааб", слова: ["аа"] }, false],
+
+  ["148-sort-list.flang", "Сортировка слиянием", { элементы: [3, 3, 3] }, [3, 3, 3]],
+  ["148-sort-list.flang", "Сортировка слиянием", { элементы: [5, 4, 3, 2, 1] }, [1, 2, 3, 4, 5]],
+
+  ["179-largest-number.flang", "Наибольшее число", { числа: [0, 0, 1] }, "100"],
+  ["179-largest-number.flang", "Наибольшее число", { числа: [432, 43243] }, "43243432"],
+
+  ["200-number-of-islands.flang", "Число островов", { сетка: [[1, 1, 1], [0, 1, 0], [1, 1, 1]] }, 1],
+  ["200-number-of-islands.flang", "Число островов", { сетка: [[1], [0], [1]] }, 2],
+
+  ["202-happy-number.flang", "Счастливое", { н: 23 }, true],
+  ["202-happy-number.flang", "Счастливое", { н: 11 }, false],
+
+  ["208-implement-trie-prefix-tree.flang", "Ответы бора", { слова: ["a", "ab", "abc"], слово: "ab", приставка: "abcd" }, [true, false]],
+  ["208-implement-trie-prefix-tree.flang", "Ответы бора", { слова: [], слово: "", приставка: "" }, [false, false]],
+
+  ["322-coin-change.flang", "Сдача", { монеты: [], цель: 0 }, 0],
+  ["322-coin-change.flang", "Сдача", { монеты: [], цель: 5 }, -1],
+  ["322-coin-change.flang", "Сдача", { монеты: [186, 419, 83, 408], цель: 415 }, 5],
+  ["322-coin-change.flang", "Сдача", { монеты: [186, 419, 83, 408], цель: 500 }, -1],
+
+  ["167-two-sum-ii-input-array-is-sorted.flang", "Две суммы в отсортированном", { элементы: [1, 1], цель: 2 }, [1, 2]],
+  ["198-house-robber.flang", "Ограбление", { деньги: [2, 1, 1, 2] }, 4],
+  ["148-sort-list.flang", "Слить упорядоченные", { первый: [], второй: [], готово: [] }, []],
 ]
 
 for (const [file, name, args, expected] of ПРОВЕРКИ) {

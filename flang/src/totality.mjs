@@ -1182,12 +1182,25 @@ function точнаяПозиция(position, decreasing, functions, имена)
   return true
 }
 
-/** Шаг ребра словами — для ведомости: «минус 1» или «минус «ш»». */
+/**
+ * Шаг ребра словами — для ведомости.
+ *
+ * Отдаётся СТРОКОЙ, а не числом или именем: у литерального шага это «1», у
+ * шага-параметра — «ш» в ёлочках, и решать, что из этого печатать, обязано
+ * одно место. Иначе выбор пришлось бы повторять в ведомости, а её близнец на
+ * самом языке повторил бы его третий раз — и тип «число или строка» пришлось бы
+ * заводить ради одного поля.
+ */
 function шагРебра(edge, position) {
   const origin = edge.origins[position]
-  if (!origin) return null
-  if (origin.stepParam === null) return -origin.step
-  return edge.params[origin.stepParam] ?? null
+  if (!origin) return "?"
+  if (origin.stepParam === null) return String(-origin.step)
+  const имя = edge.params[origin.stepParam]
+  return isName(имя) ? `«${имя}»` : "шаг"
+}
+
+function isName(значение) {
+  return typeof значение === "string" && значение.length > 0
 }
 
 /** Позиции заданного способа, убывающие на КАЖДОМ ребре компоненты. */

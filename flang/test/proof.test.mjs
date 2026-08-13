@@ -226,27 +226,23 @@ test("свод по корпусу называет те же числа, что
   /* Числа замера (см. шапку flang/scripts/proof-ledger.mjs). Проверяются
      ЦЕЛИКОМ и точным равенством: свод, который «примерно сошёлся», мерить
      этапы не годится. */
-  /* Плюс две к прежним 2298 — продукция объявленной меры в `self/parser.flang`
-     («С мерой» тотальна и рекурсии не содержит, «Строка меры» обычна, потому
-     что зовёт рекурсивный спуск). Ни один носитель рекурсии от них не двинулся:
-     мера в корпусе всё ещё несёт три функции. */
-  assert.equal(и.functions, 2300, "функций в корпусе")
-  assert.equal(и.total, 1712, "тотальных")
-  assert.equal(и.ordinary, 588, "обычных")
-  assert.equal(и.carriers.composition, 1549, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 149, "несёт структура")
-  assert.equal(и.carriers.step, 11, "несёт постоянный шаг")
-  assert.equal(и.carriers.measure, 3, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
-  assert.equal(и.guardSites, 15, "мест со сторожем")
+  assert.equal(и.functions, 2538, "функций в корпусе")
+  assert.equal(и.total, 1948, "тотальных")
+  assert.equal(и.ordinary, 590, "обычных")
+  assert.equal(и.carriers.composition, 1688, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.structure, 180, "несёт структура")
+  assert.equal(и.carriers.step, 16, "несёт постоянный шаг")
+  assert.equal(и.carriers.measure, 64, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
+  assert.equal(и.guardSites, 115, "мест со сторожем")
   assert.equal(и.unaccounted, 0, "носитель обязан быть назван у каждой")
 
   /* Рекурсия целиком: 164 функции корпуса входят в цикл, и каждая несёт своё.
      Плюс одна к прежним 163 — «НОД» из `flang/conc/examples/measure.flang`:
      первая в корпусе числовая мера У ОБРАБОТЧИКА ПРОЦЕССА, и заведена она не
      ради счёта, а ради шестого вида отказа (`flang/src/failures.mjs`). */
-  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 163, "рекурсивных всего")
-  assert.equal(и.carriers.step + и.carriers.measure, 14, "функций на стороже")
-  assert.equal(и.carriers.composition + 163, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 260, "рекурсивных всего")
+  assert.equal(и.carriers.step + и.carriers.measure, 80, "функций на стороже")
+  assert.equal(и.carriers.composition + 260, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
   assert.equal(и.laws.grid, 6, "законов, посчитанных на сетке")

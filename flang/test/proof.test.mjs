@@ -250,11 +250,11 @@ test("свод по корпусу называет те же числа, что
      статически. Две оставшиеся стоят по делу: у `«Числа до»` контракт ПРИНИМАЕТ
      отрицательное (это написано примером), а у `«Повторить»` вызывающий считает
      разность, неотрицательность которой статически не видна. */
-  assert.equal(и.functions, 2771, "функций в корпусе")
-  assert.equal(и.total, 2168, "тотальных")
+  assert.equal(и.functions, 2795, "функций в корпусе")
+  assert.equal(и.total, 2192, "тотальных")
   assert.equal(и.ordinary, 603, "обычных")
-  assert.equal(и.carriers.composition, 1885, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 199, "несёт структура")
+  assert.equal(и.carriers.composition, 1903, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.structure, 205, "несёт структура")
   assert.equal(и.carriers.exact, 18, "несёт точный шаг: объявленный «нат», сторожа нет")
   assert.equal(и.carriers.step, 2, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 64, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
@@ -269,9 +269,9 @@ test("свод по корпусу называет те же числа, что
 
      СТОРОЖ СЧИТАЕТСЯ НЕ ПО РЕКУРСИИ, А ПО НОСИТЕЛЮ: на стороже только два
      носителя из четырёх, и это второе число этапа — 66 функций, а не 80. */
-  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 283, "рекурсивных всего")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 289, "рекурсивных всего")
   assert.equal(и.carriers.step + и.carriers.measure, 66, "функций на стороже")
-  assert.equal(и.carriers.composition + 283, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.composition + 289, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Утверждения о поведении — то, чего до слоя доказательства в корпусе не было
      вовсе: высказать их было нечем. Числа названы поимённо и точным равенством,

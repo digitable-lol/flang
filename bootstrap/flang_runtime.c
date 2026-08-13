@@ -13,8 +13,22 @@
  * до кавычек-ёлочек, порядок операций в процентах — как в ядре FTS, а число
  * печатается по правилам ECMAScript Number::toString, а не «как выйдет у %g».
  *
- * Зависимости — только стандартная библиотека C99.
+ * Зависимости — только стандартная библиотека C99. Единственное исключение —
+ * стек: `fl_call_deep` и `fl_stack_room` спрашивают о нём POSIX (pthread,
+ * getrlimit), потому что в C99 стека нет вовсе, а обещание «завершится ИЛИ
+ * ОТКАЖЕТ ЧЕСТНО» без него не держится. Исключение обнесено проверкой платформы
+ * и выключается одним `-DFL_NO_POSIX_STACK`: тогда файл снова чистый C99, а
+ * сторож в `fl_enter` считает по FL_STACK_ROOM_FALLBACK.
  */
+#if !defined(FL_NO_POSIX_STACK) && (defined(__unix__) || defined(__unix) || \
+                                    (defined(__APPLE__) && defined(__MACH__)))
+/* Просить POSIX-объявления обязательно: под `-std=c99` их не видно. */
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
+#define FL_POSIX_STACK 1
+#endif
+
 #include "flang_runtime.h"
 
 #include <errno.h>
@@ -22,6 +36,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef FL_POSIX_STACK
+#include <pthread.h>
+#include <sys/resource.h>
+#endif
 
 /* ═════════════════════════════ арена ═════════════════════════════ */
 
@@ -188,9 +207,166 @@ void fl_arena_release(fl_arena *arena) {
   arena->reserved = 0;
 }
 
+/* ═════════════════════════════ стек ═════════════════════════════ */
+
+/*
+ * Сколько байт стека несёт расчёт. Ноль означает «ещё не спрашивали»; после
+ * первого вопроса здесь лежит ответ, и второй раз никто не спрашивает — на
+ * POSIX это системный вызов, а `fl_ctx_init` зовут на каждый запрос. Выключение
+ * сторожа этим нулём не делается и делаться не может: выключает его поле
+ * `ctx->stack_room` в конкретном контексте.
+ */
+static size_t fl_stack_known = 0;
+
+size_t fl_stack_wanted(size_t max_depth) {
+  size_t wanted = 0;
+  if (max_depth == 0) {
+    /* Предел выключен — стеком его не обеспечить; берём столько, сколько берём
+       по умолчанию, а дальше говорит сторож. */
+    return FL_STACK_MIN;
+  }
+  /* Умножение с проверкой: `--max-depth` приходит от пользователя, а
+     переполнение size_t дало бы КРОШЕЧНЫЙ стек там, где просили огромный. */
+  if (max_depth > FL_STACK_MAX / (size_t)FL_STACK_PER_FRAME) {
+    return FL_STACK_MAX;
+  }
+  wanted = max_depth * (size_t)FL_STACK_PER_FRAME + FL_STACK_MARGIN;
+  if (wanted < FL_STACK_MIN) {
+    return FL_STACK_MIN;
+  }
+  if (wanted > FL_STACK_MAX) {
+    return FL_STACK_MAX;
+  }
+  return wanted;
+}
+
+void fl_stack_room_set(size_t bytes) { fl_stack_known = bytes; }
+
+size_t fl_stack_room(void) {
+  if (fl_stack_known != 0) {
+    return fl_stack_known;
+  }
+#ifdef FL_POSIX_STACK
+  {
+    struct rlimit limit;
+    if (getrlimit(RLIMIT_STACK, &limit) == 0) {
+      if (limit.rlim_cur == RLIM_INFINITY) {
+        /* Стек без объявленного предела: врать про бесконечность нельзя, потому
+           что система всё равно во что-нибудь упрётся. Берём тот же потолок, до
+           которого доводит `fl_stack_wanted`. */
+        fl_stack_known = FL_STACK_MAX;
+        return fl_stack_known;
+      }
+      if ((size_t)limit.rlim_cur > FL_STACK_MARGIN) {
+        /* Отметку сторож снимает не на самом дне стека, а там, где начался
+           расчёт, и над ней уже лежат кадры main и разбора запроса. Их немного
+           (самый толстый кадр прогонщика — 416 байт), но списать на них полный
+           запас честнее, чем не списать ничего. */
+        fl_stack_known = (size_t)limit.rlim_cur - FL_STACK_MARGIN;
+        return fl_stack_known;
+      }
+    }
+  }
+#endif
+  fl_stack_known = FL_STACK_ROOM_FALLBACK;
+  return fl_stack_known;
+}
+
+#ifdef FL_POSIX_STACK
+typedef struct fl_deep_work {
+  void (*work)(void *);
+  void *state;
+} fl_deep_work;
+
+static void *fl_deep_entry(void *raw) {
+  fl_deep_work *carry = (fl_deep_work *)raw;
+  carry->work(carry->state);
+  return NULL;
+}
+#endif
+
+bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state) {
+#ifdef FL_POSIX_STACK
+  fl_deep_work carry;
+  pthread_attr_t attr;
+  pthread_t worker;
+  struct rlimit space;
+  size_t asked = stack_bytes;
+  if (work == NULL) {
+    return false;
+  }
+  carry.work = work;
+  carry.state = state;
+  /*
+   * Стек берётся отображением, и под пределом адресного пространства он ОТНИМАЕТ
+   * его у арены. Замер, который это и нашёл: под `ulimit -v 16384` восьми
+   * мегабайт стека хватало, чтобы прогон конкурентности перестал доходить до
+   * исхода — куча кончалась у планировщика, а не у процесса, и надзору было
+   * нечего разбирать (`emit-c-conc.test.mjs`, шаг Г2).
+   *
+   * Отсюда правило: под объявленным пределом адресного пространства стек берёт
+   * ЧЕТВЕРТЬ и не больше. Если четверти не хватает даже на системный минимум,
+   * поток не заводится вовсе — и программа считает ровно там же и с той же
+   * памятью, что до починки, а обещание держит сторож. Глубина, купленная ценой
+   * чужой памяти, была бы не починкой, а переносом отказа в другое место.
+   */
+  if (getrlimit(RLIMIT_AS, &space) == 0 && space.rlim_cur != RLIM_INFINITY) {
+    const size_t share = (size_t)(space.rlim_cur / 4);
+    if (asked > share) {
+      asked = share;
+    }
+    if (asked < FL_STACK_MIN) {
+      return false;
+    }
+  }
+  /*
+   * Уступка вниз, а не отказ. Стек берётся у системы отображением, и под
+   * `ulimit -v` (или в контейнере с пределом адресного пространства) большой
+   * кусок не дадут. Отказаться совсем значило бы потерять и то, что дают;
+   * поэтому просьба половинится до самого системного минимума, и лишь потом
+   * расчёт идёт на своём стеке — со сторожем, который и скажет правду.
+   */
+  for (;;) {
+    if (pthread_attr_init(&attr) != 0) {
+      return false;
+    }
+    /* Запас объявляется ДО запуска, и это не придирчивость к порядку строк:
+       поток спросит о нём в первом же `fl_ctx_init`. Объявить после
+       `pthread_join` значило бы сторожить весь расчёт по стеку ГЛАВНОГО потока,
+       то есть не воспользоваться заведённым ни на байт — снаружи это выглядит
+       как «починка не работает», а не как ошибка порядка. */
+    fl_stack_room_set(asked > FL_STACK_MARGIN ? asked - FL_STACK_MARGIN : asked);
+    if (pthread_attr_setstacksize(&attr, asked) == 0 &&
+        pthread_create(&worker, &attr, fl_deep_entry, &carry) == 0) {
+      pthread_attr_destroy(&attr);
+      return pthread_join(worker, NULL) == 0;
+    }
+    pthread_attr_destroy(&attr);
+    fl_stack_room_set(0); /* поток не завёлся — объявленного запаса нет */
+    if (asked <= FL_STACK_MIN) {
+      return false;
+    }
+    asked /= 2;
+    if (asked < FL_STACK_MIN) {
+      asked = FL_STACK_MIN;
+    }
+  }
+#else
+  (void)stack_bytes;
+  (void)work;
+  (void)state;
+  return false;
+#endif
+}
+
 /* ═════════════════════════════ контекст ═════════════════════════════ */
 
 void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
+  /* Отметка стека: адрес локальной этой самой функции. Всё, что расчёт займёт
+     под ней, сторож и меряет. Брать её здесь правильно потому, что `fl_ctx_init`
+     зовут ровно там, где расчёт начинается, — на запрос прогонщика, на сессию
+     оболочки, на вызов встраивающего. */
+  char here = 0;
   if (ctx == NULL) {
     return;
   }
@@ -199,6 +375,10 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   ctx->max_depth = FL_MAX_DEPTH;
   ctx->steps = 0;
   ctx->max_steps = FL_MAX_STEPS;
+  ctx->stack_base = &here;
+  ctx->stack_room = fl_stack_room();
+  ctx->stack_seen = 0;
+  ctx->stack_step = 0;
 }
 
 const char *fl_status_text(fl_status status) {
@@ -285,6 +465,54 @@ fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   return FL_OK;
 }
 
+/*
+ * Сторож стека: сколько его уже съедено и не пора ли отказать.
+ *
+ * Мерить нужно именно байты, а не кадры. Счётчик глубины считает кадры, а
+ * несёт их стек, и толщина кадра — свойство ПРОГРАММЫ: 352 байта у функции с
+ * одним параметром и 5 526 у функции с сорока связываниями. Один и тот же
+ * предел 10 000 в первом случае вдвое ниже стека, а во втором выше него в
+ * шесть с половиной раз — и вторая программа умирала по SIGSEGV.
+ *
+ * Запас под последним входом считается по САМОМУ ТОЛСТОМУ кадру, который эта
+ * программа уже показала, а не по числу из заголовка: между двумя проверками
+ * успевает лечь ровно такой кадр (а с вложенным телом «отобрать» или свёртки —
+ * несколько), и запас в четыре его толщины покрывает это с обеих сторон.
+ * Программе с тонким кадром это не стоит ничего: её запас тоже тонкий.
+ *
+ * `stack_seen` — верхняя отметка, и разматывание её не опускает. Значит после
+ * глубокого спуска толщина следующего кадра может быть посчитана крупнее, чем
+ * есть. Это ошибка в БЕЗОПАСНУЮ сторону — запас окажется больше нужного, а не
+ * меньше, — и опускать отметку на возврате незачем: `fl_leave` стоит на каждом
+ * кадре, и работа в нём стоит дороже, чем эта неточность.
+ */
+static bool fl_stack_spent(fl_ctx *ctx) {
+  char here = 0;
+  const char *point = &here;
+  size_t used = 0;
+  size_t reserve = 0;
+  if (ctx->stack_room == 0 || ctx->stack_base == NULL) {
+    return false; /* сторож выключен: так решил тот, кто знает, что делает */
+  }
+  /* Стек растёт вниз почти везде, но «почти» здесь не годится: разность берётся
+     по модулю, и направление роста перестаёт быть допущением. */
+  used = point < ctx->stack_base ? (size_t)(ctx->stack_base - point)
+                                 : (size_t)(point - ctx->stack_base);
+  if (used > ctx->stack_seen) {
+    const size_t step = used - ctx->stack_seen;
+    if (step > ctx->stack_step) {
+      ctx->stack_step = step;
+    }
+    ctx->stack_seen = used;
+  }
+  reserve = FL_STACK_MARGIN;
+  if (ctx->stack_step > (FL_STACK_MAX - reserve) / 4u) {
+    return true; /* кадр толще всего мыслимого стека — дальше идти некуда */
+  }
+  reserve += ctx->stack_step * 4u;
+  return used + reserve > ctx->stack_room;
+}
+
 fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
@@ -292,6 +520,19 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));
+  if (fl_stack_spent(ctx)) {
+    /*
+     * Стек хозяина кончился раньше объявленного предела. Отказ всё равно
+     * ОБЪЯВЛЕННЫЙ — код из закрытого набора, — а текст называет хозяина, а не
+     * предел, до которого не добрались: врать про предел нельзя, молчать тоже.
+     * Тот же текст и по той же причине печатает бэкенд JavaScript ($hostDepth),
+     * где поднять стек изнутри модуля нечем вовсе.
+     */
+    return fl_fail(ctx, error, FL_CODE_RECURSION_LIMIT,
+                   "функция «%s» исчерпала стек хозяина на глубине %lu, не дойдя до предела "
+                   "глубины вызовов (%lu)",
+                   function, (unsigned long)ctx->depth, (unsigned long)ctx->max_depth);
+  }
   ctx->depth += 1;
   if (ctx->depth > ctx->max_depth) {
     /* Текст дословно как у интерпретатора: сперва предел, потом достигнутая

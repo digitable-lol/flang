@@ -422,6 +422,15 @@ static bool fl_conc_keep(fl_conc_sched *sched, fl_arena *arena, fl_value value, 
   into.max_depth = sched->ctx->max_depth;
   into.steps = 0;
   into.max_steps = 0;
+  /* Сторож стека переезжает вместе с остальными пределами, и не для порядка:
+     `fl_conc_clone` рекурсивна по СТРУКТУРЕ значения, то есть кадры ест она
+     тоже. Оставить поля неинициализированными значило бы сторожить по мусору —
+     то есть либо отказать на ровном месте, либо не отказать вовсе. Отметка
+     берётся у вызывающего: копия идёт на его же стеке, ниже его отметки. */
+  into.stack_base = sched->ctx->stack_base;
+  into.stack_room = sched->ctx->stack_room;
+  into.stack_seen = sched->ctx->stack_seen;
+  into.stack_step = sched->ctx->stack_step;
   unused.code = NULL;
   unused.message = NULL;
   return fl_conc_clone(&into, value, out, &unused) == FL_OK;

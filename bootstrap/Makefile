@@ -1,8 +1,11 @@
 # Сгенерировано flang (бэкенд C). Флаги здесь — часть контракта бэкенда:
 # сгенерированный код обязан собираться без единого предупреждения.
+# -lpthread: расчёт идёт на потоке с заданным стеком, иначе объявленный
+# предел глубины не несётся стеком (flang_cli.c). С glibc 2.34 и новее он
+# уже в libc, но на старых системах без него не слинкуется.
 CC ?= cc
 CFLAGS ?= -std=c99 -Wall -Wextra -Werror -pedantic -O2
-LDLIBS ?= -lm
+LDLIBS ?= -lm -lpthread
 
 OBJECTS = flang_runtime.o kompilyator_flang.o
 

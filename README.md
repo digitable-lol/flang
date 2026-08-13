@@ -38,7 +38,7 @@ and draws the line between what is *proven* and what is *checked*, and
 
 ## Where things live
 
-The layout follows from the section above, and it surprises on first sight: 13 directories at
+The layout follows from the section above, and it surprises on first sight: 14 directories at
 the root, several of the names repeated. There is `src/` and there is `flang/src/`; there is `test/`
 and `flang/test/`; there is `examples/` and `flang/examples/`. Two languages mean two
 implementations, two test runs and two example corpora. Merging them would erase the seam the
@@ -52,6 +52,7 @@ directory there would be nothing left to compare.
 ```
 src/              the FTS core in TypeScript — the reference everything else is true against
 test/             its test run; built into dist/ and executed from there
+bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap», no Node
 flang/src/        the flang implementation in JavaScript — the reference for the language
 flang/self/       the same compiler, written in flang itself
 flang/core/       the same FTS core, written in flang: lexer, parser, evaluator, JSON printing
@@ -132,8 +133,20 @@ npm install -g @digitable-lol/fts
 That gives the commands used on this page: `flang` for the language, `fts` for models, `fts-mcp`
 for the MCP server, plus `ftsc`, `ftsvm` and `ftspec`. Inside a clone the same commands are
 `node flang/bin/flang.mjs` and `node dist/src/cli.js` — and a clone is what you need for anything
-newer than the last published release. The bootstrap problem stays with those who develop the
-language itself; see [Developing the language](#developing-the-language).
+newer than the last published release.
+
+**In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
+same compiler printed to C99, 7 files and 5,823,370 bytes:
+
+```bash
+git clone https://github.com/digitable-lol/flang && cd flang
+make -C bootstrap            # only cc and make; about 4 minutes of CPU
+bootstrap/flang_cli --version
+```
+
+What it is, what guards it and how it is updated: [`bootstrap/README.md`](bootstrap/README.md).
+Node is still needed for the reference implementation and seven of the eight backends, but not to
+build the compiler; see [Developing the language](#developing-the-language).
 
 ---
 
@@ -521,6 +534,19 @@ npm install
 npm run build
 node scripts/build-release-c.mjs     # prints the release C and builds it
 ```
+
+A change to the compiler in `flang/self/` must reprint the bootstrap point in the same commit, or
+`bootstrap/` starts building the previous compiler silently:
+
+```bash
+node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
+node scripts/bootstrap-c.mjs --check   # compare against the sources byte for byte, exit 1 on drift
+```
+
+The guard is the test «точка раскрутки `bootstrap/` совпадает с печатью текущих исходников,
+побайтово» in `flang/test/self-bootstrap.test.mjs`. It needs no C compiler, so it always runs —
+unlike the fixed point itself, which needs `cc` and which CI turns on with
+`FTS_REQUIRE_TOOLCHAINS=c`.
 
 The commands the language answers to:
 

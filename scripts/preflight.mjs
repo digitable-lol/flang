@@ -22,6 +22,26 @@
  *
  * Строгость включается сама, если задана FTS_REQUIRE_TOOLCHAINS: джоба, которая
  * тулчейн ставит, обязана падать сразу, а не через сорок минут прогона.
+ *
+ * ── Две строгости, и путать их нельзя ───────────────────────────────────────
+ * `FTS_REQUIRE_TOOLCHAINS=c` значит «в этой джобе обязан быть C», а не «обязаны
+ * быть все восемь». Пока эти две строгости были одной переменной `strict`, любой
+ * ИМЕННОЙ список красил прогон на отсутствии ЧУЖИХ тулчейнов: ветка
+ * `else if (strict)` ниже добавляла препятствие за каждую отсутствующую цель, и
+ * `FTS_REQUIRE_TOOLCHAINS=c` в CI останавливался на отсутствии Go, Rust и Java —
+ * ещё до первого теста. Следствие было хуже причины: требовать `c` в CI стало
+ * невозможно, а без этого требования самая сильная проверка репозитория —
+ * неподвижная точка самоприменения в `flang/test/self-bootstrap.test.mjs` —
+ * пропускалась молча на любой машине без `cc`.
+ *
+ * Поэтому строгостей ровно две, и они раздельны:
+ *   • `всеОбязаны` — «обязаны быть ВСЕ тулчейны». Включает только ключ
+ *     `--strict`. (FTS_REQUIRE_TOOLCHAINS=all даёт то же, но поимённо: за это
+ *     отвечает `toolchainRequired` для каждой цели, а не эта переменная.)
+ *   • `останов` — «нашлось препятствие — прогон не начинать, код 1». Её включает
+ *     и именной список: джоба, назвавшая тулчейн, обязана падать сразу.
+ * Отсутствие НЕназванного тулчейна при именном списке — не препятствие вовсе:
+ * это осознанный пропуск, и он честно назван в таблице выше.
  */
 import { spawnSync } from "node:child_process"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
@@ -29,11 +49,12 @@ import { basename, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { loadTargets, probeToolchain } from "../tools/ftsc/src/targets.mjs"
-import { requiredToolchains, toolchainRequired } from "../tools/ftsc/test/toolchain-guard.mjs"
+import { meansEverything, requiredToolchains, toolchainAbsenceBlocks, toolchainRequired } from "../tools/ftsc/test/toolchain-guard.mjs"
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)))
 const argv = new Set(process.argv.slice(2))
-const strict = argv.has("--strict") || requiredToolchains().length > 0
+const всеОбязаны = argv.has("--strict")
+const останов = всеОбязаны || requiredToolchains().length > 0
 const fast = argv.has("--fast")
 const withRegistry = argv.has("--registry")
 
@@ -280,12 +301,40 @@ if (absent.length === 0) {
 
 const required = requiredToolchains()
 if (required.length) {
-  console.log(`  ${paint(BOLD, "Требуются обязательно:")}     FTS_REQUIRE_TOOLCHAINS=${process.env.FTS_REQUIRE_TOOLCHAINS}`)
+  const названы = targets.filter((target) => toolchainRequired(target.id)).map((target) => target.id)
+  console.log(`  ${paint(BOLD, "Требуются обязательно:")}     FTS_REQUIRE_TOOLCHAINS=${process.env.FTS_REQUIRE_TOOLCHAINS} — ${названы.join(", ") || "ни одной цели"}`)
+  const прочие = targets.filter((target) => !toolchainRequired(target.id)).map((target) => target.id)
+  if (прочие.length) {
+    console.log(`  ${paint(BOLD, "Не требуются:")}              ${прочие.join(", ")} — их отсутствие прогон не остановит`)
+  }
+  /*
+   * Опечатка в списке — это тихая зелень того же рода, ради которой отчёт и
+   * заведён: `FTS_REQUIRE_TOOLCHAINS=cc` не требует НИЧЕГО, и джоба, думающая,
+   * что стережёт неподвижную точку, пропускает её молча. Имя, которое не совпало
+   * ни с одной целью, — препятствие, а не мелочь.
+   */
+  const известные = new Set(targets.map((target) => target.id))
+  const чужие = required.filter((имя) => !известные.has(имя) && !meansEverything(имя))
+  if (чужие.length) {
+    problems.push(
+      `FTS_REQUIRE_TOOLCHAINS называет несуществующие цели: ${чужие.join(", ")}; ` +
+        `есть только ${targets.map((target) => target.id).join(", ")}`,
+    )
+  }
 }
 
 for (const target of absent) {
-  if (toolchainRequired(target.id)) problems.push(`тулчейн «${target.id}» объявлен обязательным, но его нет`)
-  else if (strict) problems.push(`нет тулчейна «${target.id}»`)
+  /*
+   * Обязателен — препятствие всегда. Не назван — препятствие ТОЛЬКО при
+   * --strict: иначе именной список красил бы прогон за чужие тулчейны, и
+   * требовать один `c` в CI было бы нельзя. См. «Две строгости» в шапке.
+   */
+  if (!toolchainAbsenceBlocks(target.id, всеОбязаны)) continue
+  problems.push(
+    toolchainRequired(target.id)
+      ? `тулчейн «${target.id}» объявлен обязательным, но его нет`
+      : `нет тулчейна «${target.id}»`,
+  )
 }
 
 checkDependencies()
@@ -301,8 +350,8 @@ if (problems.length === 0) {
 console.log(`${paint(BOLD, "ИТОГ")}  препятствий: ${problems.length}`)
 for (const problem of problems) console.log(`    ${paint(RED, "•")} ${problem}`)
 console.log(
-  strict
+  останов
     ? `\nПрогон остановлен до начала: измерять на неполном наборе тулчейнов — значит получить\nзелёный набор, который ничего не проверил. Поставьте недостающее, укажите каталог в\nFTS_TOOLCHAIN_PATH или прогоните на хосте, где всё есть: scripts/test-remote.sh\n`
     : `\nЭто предупреждение, не остановка. Чтобы отсутствие тулчейна валило прогон:\nFTS_REQUIRE_TOOLCHAINS=all npm test — или прогон целиком на удалённом хосте:\nscripts/test-remote.sh\n`,
 )
-process.exit(strict ? 1 : 0)
+process.exit(останов ? 1 : 0)

@@ -109,6 +109,7 @@ const ВИДИМОСТЬ = new Map([
   ["flang/self", true], // компилятор, написанный на себе: из него печатается бинарник
   ["flang/conc", true], // модель процессов
   ["flang/examples", true], // примеры едут в пакете и открываются на портале
+  ["bootstrap", true], // точка раскрутки: из неё компилятор собирается без Node, «make -C bootstrap»
   ["src", true], // эталонное ядро FTS на TypeScript → dist/src
   ["tools", true], // ftsc, ftsvm, ftspec — отдельные команды
   ["editors", true], // подсветка для редакторов, тоже в пакете

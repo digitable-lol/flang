@@ -10,7 +10,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { missingToolchain, requiredToolchains, toolchainRequired } from "./toolchain-guard.mjs"
+import { meansEverything, missingToolchain, requiredToolchains, toolchainAbsenceBlocks, toolchainRequired } from "./toolchain-guard.mjs"
 
 /** Прогоняет тело при заданном значении переменной и возвращает окружение назад. */
 function withEnv(value, body) {
@@ -88,4 +88,59 @@ test("регистр и лишние пробелы значения не мен
     assert.equal(toolchainRequired("Rust"), true)
     assert.equal(toolchainRequired("java"), false)
   })
+})
+
+/* ───────────────── строгость распространяется на названных ───────────────── */
+
+/*
+ * Отчёт `scripts/preflight.mjs` решал ту же судьбу второй раз и решал иначе:
+ * одна переменная `strict` отвечала и на «обязан ли ЭТОТ тулчейн», и на «падать
+ * ли вообще», поэтому при любом заданном FTS_REQUIRE_TOOLCHAINS требовались ВСЕ
+ * тулчейны. `FTS_REQUIRE_TOOLCHAINS=c` в CI останавливал прогон на отсутствии Go,
+ * Rust и Java — до первого теста. Цена: требовать `c` было нельзя, а без этого
+ * неподвижная точка самоприменения пропускалась молча на любой машине без `cc`.
+ *
+ * Теперь решение одно и живёт в `toolchainAbsenceBlocks`. Тесты ниже — про то,
+ * ради чего оно заведено: именной список НЕ красит прогон за чужие тулчейны.
+ */
+const ВСЕ_ЦЕЛИ = ["c", "csharp", "elixir", "go", "java", "python", "rust", "typescript"]
+
+test("именной список останавливает прогон только за названный тулчейн", () => {
+  withEnv("c", () => {
+    /* То, ради чего починка: `c` обязателен, остальные семь — осознанный пропуск. */
+    assert.equal(toolchainAbsenceBlocks("c"), true, "отсутствие названного «c» обязано останавливать прогон")
+    for (const id of ВСЕ_ЦЕЛИ.filter((имя) => имя !== "c")) {
+      assert.equal(toolchainAbsenceBlocks(id), false, `отсутствие «${id}» не названо обязательным и красить прогон не должно`)
+    }
+  })
+})
+
+test("ключ --strict требует все цели, даже когда переменная называет одну", () => {
+  withEnv("c", () => {
+    for (const id of ВСЕ_ЦЕЛИ) {
+      assert.equal(toolchainAbsenceBlocks(id, true), true, `--strict обязан требовать «${id}»`)
+    }
+  })
+  withEnv(null, () => {
+    for (const id of ВСЕ_ЦЕЛИ) {
+      assert.equal(toolchainAbsenceBlocks(id, false), false, `без переменной и без --strict «${id}» пропускается`)
+      assert.equal(toolchainAbsenceBlocks(id, true), true, `--strict обязан требовать «${id}» и без переменной`)
+    }
+  })
+})
+
+test("FTS_REQUIRE_TOOLCHAINS=all останавливает прогон за любую цель без ключа --strict", () => {
+  for (const значение of ["1", "all", "true", "yes"]) {
+    withEnv(значение, () => {
+      assert.equal(meansEverything(значение), true, `«${значение}» — синоним «все»`)
+      for (const id of ВСЕ_ЦЕЛИ) {
+        assert.equal(toolchainAbsenceBlocks(id), true, `${значение}: «${id}» обязан останавливать прогон`)
+      }
+    })
+  }
+})
+
+test("имя цели синонимом «все» не считается: c, go и прочие называют себя", () => {
+  for (const id of ВСЕ_ЦЕЛИ) assert.equal(meansEverything(id), false, `«${id}» — имя цели, а не «все»`)
+  assert.equal(meansEverything(" ALL "), true, "регистр и пробелы смысла не меняют")
 })

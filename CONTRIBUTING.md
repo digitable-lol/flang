@@ -70,6 +70,23 @@ watchman that keeps quiet: the suite passes, and it passed against the old tree.
 A test skipped for a missing native toolchain is not a passing test. Set
 `FTS_REQUIRE_TOOLCHAINS` where the toolchain is supposed to exist — with it set,
 the preflight stops the run before it starts rather than forty minutes in.
+Strictness applies to the toolchains you **name**: `FTS_REQUIRE_TOOLCHAINS=c`
+means "C must be here", not "all eight must be here", so CI can require the one
+toolchain it installs. `--strict` is the separate switch that demands every one.
+
+Changes to the compiler in `flang/self/` must reprint the bootstrap point in the
+same commit:
+
+```
+node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
+node scripts/bootstrap-c.mjs --check   # compare it against the sources, exit 1 on drift
+```
+
+`bootstrap/` is the compiler printed to C99 — what makes `cc` and `make` enough to
+build flang without Node. It is an artifact, never edited by hand; the guard
+"точка раскрутки bootstrap/ совпадает с печатью текущих исходников, побайтово" in
+`flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so it
+runs everywhere. See `bootstrap/README.md`.
 
 Changes to the FTS surface must include:
 

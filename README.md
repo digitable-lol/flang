@@ -390,10 +390,10 @@ written twice — 28 files: once on the Russian surface and once on the English 
 comparing each pair as trees, up to a renaming of names. That test also pins the number of
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
-comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
+comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `hashmap`, `higher-order`,
 `lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
 way —
-11 modules, 161 functions, of which 157 are proven total. `higher-order` is the one built on
+12 modules, 185 functions, of which 181 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 
@@ -682,11 +682,15 @@ attaching a solver to the verification conditions is an open task, not a feature
   in `flang/cat/SPEC.md`. The execution layer exists for one target out of eight (Node); emitting
   a program with a plan works for all eight.
 - An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
-  a dictionary comes in two kinds: a list of pairs with linear lookup (`dictionary.flang`) and a
-  search tree whose priority is the hash of the key, O(log n) (`tree.flang`). What is missing is
-  WRITING by index: values are immutable, and "the list with its Nth replaced" would have to be
-  rebuilt whole. Until that exists, table-driven dynamic programming (Coin Change, Edit Distance)
-  does not transfer and a constant-time hash table cannot be built. No bitwise operations either.
+  a dictionary comes in three kinds: a list of pairs with linear lookup (`dictionary.flang`), a
+  search tree whose priority is the hash of the key, O(log n) (`tree.flang`), and a trie over the
+  digits of the hash with CONSTANT-time access (`hashmap.flang`, a HAMT: depth is bounded by the
+  fourteen digits of the hash for any number of keys). What is missing is WRITING by index: values
+  are immutable, and "the list with its Nth replaced" would have to be rebuilt whole. Until that
+  exists, table-driven dynamic programming (Coin Change, Edit Distance) does not transfer and a
+  BUCKETED hash table — the kind that needs an array with replacement by index — cannot be built;
+  a constant-time dictionary can, because a trie rewrites only the path to the key, not the whole
+  array. No bitwise operations either.
 - The totality analysis INFERS structural decrease and a numeric measure with a CONSTANT step —
   either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
   positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there

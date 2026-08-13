@@ -218,6 +218,32 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
     return new Set([...requested].filter((name) => exported.has(name)))
   }
 
+  /**
+   * Повтор ВНУТРИ одного файла — не дело связывания, но и глотать его нельзя.
+   *
+   * `merge` зовётся ровно один раз на файл (`load` возвращает `null` для уже
+   * загруженного, и `merge` стоит после `loaded.add`), поэтому `previous ===
+   * file` означает единственное: одно имя объявлено в этом файле дважды. Про
+   * два МОДУЛЯ здесь сказать нечего — модуль один, — и сообщение «объявлен в
+   * двух модулях: A и A» было бы ложью.
+   *
+   * Раньше такой повтор молча пропускался (`continue`), и от этого проверка
+   * пропадала целиком: `types.mjs` ловит «объявлена дважды» на СЛИТОЙ
+   * программе, а в слитой оставалось одно объявление из двух. Итог измерен
+   * уликой в `flang/test/link.test.mjs`: файл с двумя `функция «Ответ»` и одной
+   * строкой `использует` проходил `check` с `valid: true` и нулём диагностик,
+   * побеждало ВТОРОЕ тело, а пример первого не считался вовсе — `flang test`
+   * показывал ноль примеров. Тот же файл без строки `использует` честно
+   * отвергался: связывания не было, и `types.mjs` видел оба объявления.
+   *
+   * Значит достаточно НЕ ронять второе объявление. Тогда повтор внутри файла
+   * ловится одним и тем же кодом и одним и тем же текстом независимо от того,
+   * есть в файле импорты или нет, — а это ровно то свойство, которого не было.
+   * Отдельной диагностики здесь не добавляется намеренно: два сообщения об
+   * одной ошибке хуже одного.
+   */
+  const свой = (previous, file) => previous === file
+
   const merge = (program, file, visible) => {
     for (const type of program.types ?? []) {
       if (visible !== null && !visible.has(type.name)) continue
@@ -227,7 +253,8 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
            приписывается каждому файлу с процессами отдельно. Два таких файла
            дали бы «объявлен в двух модулях» — конфликт, которого нет: это одно
            и то же объявление, а не два разных. */
-        if (previous !== file && type.builtin !== true) {
+        if (type.builtin === true) continue
+        if (!свой(previous, file)) {
           diagnostics.push(
             diagnostic(
               "FLANG_DUPLICATE_NAME",
@@ -235,7 +262,9 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
               type.span,
             ),
           )
+          continue
         }
+        types.push(type)
         continue
       }
       originOfType.set(type.name, file)
@@ -245,7 +274,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
       if (visible !== null && !visible.has(fn.name)) continue
       const previous = originOfFunction.get(fn.name)
       if (previous !== undefined) {
-        if (previous !== file) {
+        if (!свой(previous, file)) {
           diagnostics.push(
             diagnostic(
               "FLANG_DUPLICATE_NAME",
@@ -253,7 +282,9 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
               fn.span,
             ),
           )
+          continue
         }
+        functions.push(fn)
         continue
       }
       originOfFunction.set(fn.name, file)
@@ -326,6 +357,33 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
      из `только`. Пересечение с `экспортирует` считается в merge. */
   const wanted = new Map()
 
+  /**
+   * Как называется модуль в каждом разобранном файле.
+   *
+   * Нужна ровно затем, чтобы сверка имени в `использует` не зависела от порядка
+   * обхода. Раньше сверка стояла на результате `load`, а `load` отдаёт `null`
+   * для уже загруженного файла — и потому ВТОРОЙ импорт того же файла не
+   * сверялся вовсе. Улика (`flang/test/link.test.mjs`): один и тот же
+   * `использует «Совсем не то имя» из "real.flang"` отвергался, если этот файл
+   * ещё не грузили, и проходил молча, если его уже притащил сосед. Одна и та же
+   * ложь про имя модуля — разный ответ компилятора, и разница только в порядке
+   * строк. Имя же известно всегда: файл разобран, заголовок прочитан.
+   */
+  const moduleOf = new Map()
+
+  /** Сверка имени в `использует` с заголовком файла. Одна на оба места вызова. */
+  const сверитьИмяМодуля = (target, written, headerSpan) => {
+    const настоящее = moduleOf.get(target)
+    if (настоящее === undefined || настоящее === "" || настоящее === written) return
+    diagnostics.push(
+      diagnostic(
+        "FLANG_IMPORT_NAME",
+        `модуль в ${target} называется «${настоящее}», а импортируется как «${written}»`,
+        headerSpan,
+      ),
+    )
+  }
+
   const load = async (file, text, isEntry) => {
     if (loaded.has(file)) return null
     /* Цикл импортов — ошибка, а не молчаливая остановка: иначе часть объявлений
@@ -357,6 +415,9 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
     }
 
     if (importsOf(program).length > 0) withImports.add(file)
+    /* Запоминается СРАЗУ после разбора, а не после слияния: сверять имя обязан и
+       тот, кто придёт к этому файлу вторым, — а он придёт раньше, чем `merge`. */
+    moduleOf.set(file, typeof program.module === "string" ? program.module : "")
 
     /* Заголовок модуля — место, куда указывают беды импорта: самих строк
        `использует` в AST нет (у записи импорта нет места), а заголовок стоит
@@ -371,6 +432,11 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
           diagnostics.push(
             diagnostic("FLANG_IMPORT_CYCLE", `циклический импорт: ${[...loading, target].join(" → ")}`, headerSpan),
           )
+        } else {
+          /* Файл уже привезён кем-то другим — но имя в ЭТОЙ строке `использует`
+             никто не сверял. Про цикл уже сказано, второй жалобой на тот же
+             импорт читателя грузить незачем, поэтому только в этой ветке. */
+          сверитьИмяМодуля(target, entry.category, headerSpan)
         }
         continue
       }
@@ -393,18 +459,13 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
       } else {
         wanted.set(target, null)
       }
-      const child = await load(target, imported, false)
+      await load(target, imported, false)
       /* Имя модуля в `использует` обязано совпадать с его заголовком: иначе
-         читатель видит одно имя, а получает объявления из другого файла. */
-      if (child !== null && child.module !== "" && child.module !== entry.category) {
-        diagnostics.push(
-          diagnostic(
-            "FLANG_IMPORT_NAME",
-            `модуль в ${target} называется «${child.module}», а импортируется как «${entry.category}»`,
-            headerSpan,
-          ),
-        )
-      }
+         читатель видит одно имя, а получает объявления из другого файла.
+         Сверяется по запомненному имени, а не по результату `load`: см.
+         `moduleOf`. Файл, который не разобрался, имени не оставил — про него уже
+         сказано кодом разбора, и молчать здесь правильно. */
+      сверитьИмяМодуля(target, entry.category, headerSpan)
     }
 
     loading.pop()

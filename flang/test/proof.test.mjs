@@ -250,11 +250,11 @@ test("свод по корпусу называет те же числа, что
      статически. Две оставшиеся стоят по делу: у `«Числа до»` контракт ПРИНИМАЕТ
      отрицательное (это написано примером), а у `«Повторить»` вызывающий считает
      разность, неотрицательность которой статически не видна. */
-  assert.equal(и.functions, 2762, "функций в корпусе")
-  assert.equal(и.total, 2159, "тотальных")
+  assert.equal(и.functions, 2771, "функций в корпусе")
+  assert.equal(и.total, 2168, "тотальных")
   assert.equal(и.ordinary, 603, "обычных")
-  assert.equal(и.carriers.composition, 1881, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 194, "несёт структура")
+  assert.equal(и.carriers.composition, 1885, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.structure, 199, "несёт структура")
   assert.equal(и.carriers.exact, 18, "несёт точный шаг: объявленный «нат», сторожа нет")
   assert.equal(и.carriers.step, 2, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 64, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
@@ -269,9 +269,9 @@ test("свод по корпусу называет те же числа, что
 
      СТОРОЖ СЧИТАЕТСЯ НЕ ПО РЕКУРСИИ, А ПО НОСИТЕЛЮ: на стороже только два
      носителя из четырёх, и это второе число этапа — 66 функций, а не 80. */
-  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 278, "рекурсивных всего")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 283, "рекурсивных всего")
   assert.equal(и.carriers.step + и.carriers.measure, 66, "функций на стороже")
-  assert.equal(и.carriers.composition + 278, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.composition + 283, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Утверждения о поведении — то, чего до слоя доказательства в корпусе не было
      вовсе: высказать их было нечем. Числа названы поимённо и точным равенством,
@@ -284,12 +284,12 @@ test("свод по корпусу называет те же числа, что
      наблюдение: файл с отвергнутым термом не проходит `flang check`, значит в
      дереве его быть не может. Отказ ядра проверяется на фикстуре внутри
      `flang/test/proof-kernel.test.mjs`, где ему и место. */
-  assert.equal(и.claims.total, 4, "утверждений высказано в корпусе")
-  assert.equal(и.claims.proved, 2, "доказано ядром: терм принят")
-  assert.equal(и.claims.grid, 1, "сетка: теоремы нет, есть примеры")
+  assert.equal(и.claims.total, 9, "утверждений высказано в корпусе")
+  assert.equal(и.claims.proved, 6, "доказано ядром: терм принят")
+  assert.equal(и.claims.grid, 2, "сетка: теоремы нет, есть примеры")
   assert.equal(и.claims.declared, 1, "объявлено, не доказано: ни теоремы, ни примеров")
   assert.equal(и.claims.refused, 0, "отвергнутый терм не проходит check, значит в дереве его нет")
-  assert.equal(и.claims.steps, 6, "шагов в принятых термах")
+  assert.equal(и.claims.steps, 14, "шагов в принятых термах")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
   assert.equal(и.laws.grid, 6, "законов, посчитанных на сетке")

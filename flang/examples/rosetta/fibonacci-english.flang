@@ -76,7 +76,7 @@ function «Fibonacci series»
   «Series by fuel» of («Numbers from and to» of 1 and count)
 
 total function «Fibonacci by steps»
-  accepts remaining: number, previous: number, current: number
+  accepts remaining: nat, previous: number, current: number
   returns number
   example «No steps left»
     given remaining equals 0
@@ -88,7 +88,7 @@ total function «Fibonacci by steps»
     else «Fibonacci by steps» of (remaining minus 1) and current and (previous plus current)
 
 total function «Fibonacci»
-  accepts n: number
+  accepts n: nat
   returns number
   example «The zeroth»
     given n equals 0

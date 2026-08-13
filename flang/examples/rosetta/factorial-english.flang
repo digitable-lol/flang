@@ -77,7 +77,7 @@ function «Factorial by product»
 
 // The recursive version the task asks for. Total by measure.
 total function «Factorial»
-  accepts n: number
+  accepts n: nat
   returns number
   example «Five factorial»
     given n equals 5

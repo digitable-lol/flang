@@ -260,7 +260,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-92 programs with 451 functions and 1122 examples between them. For every function a grid of inputs
+93 programs with 464 functions and 1170 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -268,9 +268,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 92, функций: 451, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+ℹ программ: 93, функций: 464, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 1122
+ℹ сверенных примеров: 1170
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -391,9 +391,9 @@ comparing each pair as trees, up to a renaming of names. That test also pins the
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `higher-order`,
-`lists`, `logic`, `numbers`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
+`lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `tree`) is written the same
 way —
-10 modules, 148 functions, of which 144 are proven total. `higher-order` is the one built on
+11 modules, 161 functions, of which 157 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 

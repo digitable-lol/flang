@@ -231,29 +231,34 @@ test("свод по корпусу называет те же числа, что
   /* Числа замера (см. шапку flang/scripts/proof-ledger.mjs). Проверяются
      ЦЕЛИКОМ и точным равенством: свод, который «примерно сошёлся», мерить
      этапы не годится. */
-  assert.equal(и.functions, 2314, "функций в корпусе")
-  assert.equal(и.total, 1727, "тотальных")
+  assert.equal(и.functions, 2319, "функций в корпусе")
+  assert.equal(и.total, 1732, "тотальных")
   assert.equal(и.ordinary, 587, "обычных")
-  assert.equal(и.carriers.composition, 1564, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.composition, 1567, "несёт композиция: рекурсии нет")
   assert.equal(и.carriers.structure, 149, "несёт структура")
   /* Главное число этапа «уточнение числа»: функции, у которых сторож СНЯТ, а не
      потерян. Носитель у них сменился со `step` на `exact`, и сумма
      `exact + step` обязана остаться прежней — иначе доказательство не переехало,
      а исчезло. Проверяется это строкой ниже, а не глазами. */
-  assert.equal(и.carriers.exact, 8, "несёт точный шаг: параметр объявлен нат")
-  assert.equal(и.carriers.step, 3, "несёт постоянный шаг: параметр объявлен числом")
-  assert.equal(и.carriers.exact + и.carriers.step, 11, "числовой мерой доказано столько же, сколько до уточнения")
+  assert.equal(и.carriers.exact, 12, "несёт точный шаг: параметр объявлен нат")
+  assert.equal(и.carriers.step, 1, "несёт постоянный шаг: параметр объявлен числом")
+  /* 13, а не 11: одиннадцать — это функции корпуса, которые несла числовая мера
+     до уточнения, и все одиннадцать переехали в `exact`. Плюс две новых из
+     нарочного образца `flang/examples/measure/natural.flang`, где обе половины
+     стоят рядом: одна на `числе` со сторожем, одна на `нат` без него. Единственная
+     функция под `step` в корпусе — это она и есть. */
+  assert.equal(и.carriers.exact + и.carriers.step, 13, "числовой мерой доказано: 11 прежних плюс две из образца")
   assert.equal(и.carriers.measure, 3, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
-  assert.equal(и.guardSites, 7, "мест со сторожем")
+  assert.equal(и.guardSites, 5, "мест со сторожем")
   assert.equal(и.unaccounted, 0, "носитель обязан быть назван у каждой")
 
   /* Рекурсия целиком: 164 функции корпуса входят в цикл, и каждая несёт своё.
      Плюс одна к прежним 163 — «НОД» из `flang/conc/examples/measure.flang`:
      первая в корпусе числовая мера У ОБРАБОТЧИКА ПРОЦЕССА, и заведена она не
      ради счёта, а ради шестого вида отказа (`flang/src/failures.mjs`). */
-  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 163, "рекурсивных всего")
-  assert.equal(и.carriers.step + и.carriers.measure, 6, "функций на стороже")
-  assert.equal(и.carriers.composition + 163, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 165, "рекурсивных всего")
+  assert.equal(и.carriers.step + и.carriers.measure, 4, "функций на стороже")
+  assert.equal(и.carriers.composition + 165, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
   assert.equal(и.laws.grid, 6, "законов, посчитанных на сетке")

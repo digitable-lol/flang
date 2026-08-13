@@ -325,7 +325,7 @@ test("программа без меры даёт побайтово прежн�
 
 test("примеры flang/examples/measure сходятся все до одного", () => {
   let всего = 0
-  for (const файл of ["euclid", "binary-search"]) {
+  for (const файл of ["euclid", "binary-search", "natural"]) {
     const путь = `${корень}flang/examples/measure/${файл}.flang`
     const исходник = readFileSync(путь, "utf8")
     const { типы, тотальность } = проверить(исходник)

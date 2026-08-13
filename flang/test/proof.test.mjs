@@ -226,23 +226,23 @@ test("свод по корпусу называет те же числа, что
   /* Числа замера (см. шапку flang/scripts/proof-ledger.mjs). Проверяются
      ЦЕЛИКОМ и точным равенством: свод, который «примерно сошёлся», мерить
      этапы не годится. */
-  assert.equal(и.functions, 2523, "функций в корпусе")
-  assert.equal(и.total, 1934, "тотальных")
-  assert.equal(и.ordinary, 589, "обычных")
-  assert.equal(и.carriers.composition, 1681, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 175, "несёт структура")
-  assert.equal(и.carriers.step, 14, "несёт постоянный шаг")
+  assert.equal(и.functions, 2538, "функций в корпусе")
+  assert.equal(и.total, 1948, "тотальных")
+  assert.equal(и.ordinary, 590, "обычных")
+  assert.equal(и.carriers.composition, 1688, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.structure, 180, "несёт структура")
+  assert.equal(и.carriers.step, 16, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 64, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
-  assert.equal(и.guardSites, 112, "мест со сторожем")
+  assert.equal(и.guardSites, 115, "мест со сторожем")
   assert.equal(и.unaccounted, 0, "носитель обязан быть назван у каждой")
 
   /* Рекурсия целиком: 164 функции корпуса входят в цикл, и каждая несёт своё.
      Плюс одна к прежним 163 — «НОД» из `flang/conc/examples/measure.flang`:
      первая в корпусе числовая мера У ОБРАБОТЧИКА ПРОЦЕССА, и заведена она не
      ради счёта, а ради шестого вида отказа (`flang/src/failures.mjs`). */
-  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 253, "рекурсивных всего")
-  assert.equal(и.carriers.step + и.carriers.measure, 78, "функций на стороже")
-  assert.equal(и.carriers.composition + 253, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.structure + и.carriers.step + и.carriers.measure, 260, "рекурсивных всего")
+  assert.equal(и.carriers.step + и.carriers.measure, 80, "функций на стороже")
+  assert.equal(и.carriers.composition + 260, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Законы: моноидов в корпусе .flang нет ни одного, и это тоже число. */
   assert.equal(и.laws.grid, 6, "законов, посчитанных на сетке")

@@ -29,7 +29,7 @@ test("в указателе перечислен каждый модуль би�
   /* Отдельная проверка, потому что предыдущая сравнивает целиком и в случае
      расхождения не скажет, ЧТО именно потерялось. */
   const указатель = readFileSync(ПУТЬ_УКАЗАТЕЛЯ, "utf8")
-  for (const модуль of ["dictionary", "lists", "logic", "numbers", "optional", "result", "sets", "strings"]) {
+  for (const модуль of ["dictionary", "higher-order", "lists", "logic", "numbers", "numtree", "optional", "result", "sets", "strings", "tree"]) {
     assert.ok(указатель.includes(`${модуль}.flang`), `в указателе нет ${модуль}.flang`)
   }
 })

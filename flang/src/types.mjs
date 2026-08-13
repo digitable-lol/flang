@@ -2762,7 +2762,16 @@ function literalType(expr, ctx) {
 
 function varType(expr, env, ctx) {
   if (!isName(expr.name) || !env.has(expr.name)) {
-    ctx.report("FLANG_UNKNOWN_NAME", `имя «${String(expr.name)}» не связано`, expr)
+    /* Тот же текст, что у `resolveLocal` в parser.mjs: одна беда — одно
+       сообщение, откуда бы она ни пришла. Инфиксная форма, написанная
+       префиксом, доезжает и сюда. */
+    ctx.report(
+      "FLANG_UNKNOWN_NAME",
+      `имя «${String(expr.name)}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; `
+        + "а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ "
+        + "значениями — «3.14 умножить на р», а не «умножить 3.14 на р»",
+      expr,
+    )
     return UNKNOWN
   }
   return env.get(expr.name)

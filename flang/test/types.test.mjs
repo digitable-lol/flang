@@ -394,7 +394,10 @@ test("несвязанное имя — FLANG_UNKNOWN_NAME, и span доходи
   assert.deepEqual(коды(result), ["FLANG_UNKNOWN_NAME"])
   assert.deepEqual(result.diagnostics[0], {
     code: "FLANG_UNKNOWN_NAME",
-    message: "имя «нету» не связано",
+    message:
+      "имя «нету» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; "
+      + "а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ "
+      + "значениями — «3.14 умножить на р», а не «умножить 3.14 на р»",
     severity: "error",
     span: { line: 7, column: 3 },
   })

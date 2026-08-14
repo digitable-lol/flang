@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /* ── планировщик конкурентности: процессы, ящики, надзор ──
    Печатается целиком и только программе, у которой есть процессы. Это ПОРТ
    эталона (`flang/src/conc.mjs`, `runConcurrent`) на представление значений

@@ -47,7 +47,7 @@
 
 import { OUTCOME_TYPE_NAME } from "./builtins.mjs"
 import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
-import { INITIAL_CODE, UNCOVERED_CODE, достижимыеОтказы, отказыНачального } from "./failures.mjs"
+import { INITIAL_CODE, UNCOVERED_CODE, достижимыеОтказы, отказыНачального, отказыСвязи } from "./failures.mjs"
 /* Проверка объявления `план` живёт в `io.mjs` вместе со словарём поручений, а
    не здесь: она вся про ввод-вывод и ничего не знает об остальных типах. */
 import {
@@ -203,13 +203,21 @@ const BUILTIN_ALIASES = new Map([
 /**
  * Проверка типов всей программы.
  *
+ * `настройки.размещение` — единственное, что приходит сюда НЕ из программы.
+ * Размещение процессов по узлам не свойство текста (`conc/DISTRIBUTED.md`:
+ * тот же исходник идёт на один узел и на два), поэтому оно и не в AST, а
+ * доводом: `flang check --размещение …` и подъём узла отдают сюда один и тот же
+ * файл. Без него проверка ведёт себя ровно как прежде, до диагностики: границы
+ * узла нет — представителей нет — седьмого вида отказа нет.
+ *
  * @param {object} program AST модуля (SPEC, раздел 5)
+ * @param {{размещение?: object}} [настройки] данные узла, которых в тексте нет
  * @returns {{ ok: boolean, diagnostics: object[], types: Map<string, object> }}
  *   `types` — сигнатура каждой функции: `{ params, returns, total }` уже в
  *   нормализованных типах, чтобы вызывающему коду не пришлось разбирать AST
  *   типов второй раз.
  */
-export function checkTypes(program) {
+export function checkTypes(program, настройки = {}) {
   const diagnostics = []
   const report = (code, message, node) => {
     diagnostics.push({ code, message, severity: "error", span: spanOf(node) })
@@ -276,7 +284,7 @@ export function checkTypes(program) {
   checkSupervisors(program, ctx)
   /* Полнота надзора — ПОСЛЕ надзора и до прогонов: ей нужна готовая таблица
      «кто под кем» (`ctx.supervisedProcesses`), которую заполняет проверка выше. */
-  checkFailureCoverage(program, ctx)
+  checkFailureCoverage(program, ctx, настройки?.размещение ?? null)
   checkRuns(program, ctx)
   checkPlans(program, ctx)
 
@@ -1599,18 +1607,34 @@ function checkSupervisors(program, ctx) {
  * той же мысли: у тотального обработчика с исчерпывающим разбором и без
  * частичных форм падать нечем, и требовать над ним надзора значило бы требовать
  * обряда. Надзор над ним не запрещён — он просто не обязателен.
+ *
+ * ── И то же самое ЧЕРЕЗ ГРАНИЦУ УЗЛА ───────────────────────────────────────
+ *
+ * Обещание выше кончалось на границе узла, и кончалось молча. Процесс,
+ * размещённый на другом узле, стоит здесь представителем и умеет ровно одно —
+ * отказать `FLANG_LINK_DOWN` (`conc/DISTRIBUTED.md`); надзор над ним — тот же
+ * самый обычный надзор, потому что представитель стоит в той же таблице
+ * процессов. Значит и сводить его надо той же проверкой, а не второй, похожей.
+ * Разница ровно одна: достижимость седьмого вида решает не текст, а размещение,
+ * и потому оно приходит доводом (`checkTypes`, `настройки.размещение`). Без
+ * довода этот проход не считает ничего.
+ *
+ * Складывать оба множества в ОДНУ диагностику важнее, чем кажется: процесс,
+ * который и сам может упасть, и живёт за границей, — это один непокрытый процесс
+ * с двумя причинами, а не две ошибки, и надзор ему нужен один.
  */
-function checkFailureCoverage(program, ctx) {
+function checkFailureCoverage(program, ctx, размещение = null) {
   const процессы = Array.isArray(program?.processes) ? program.processes : []
   if (процессы.length === 0) return
   const подНадзором = ctx.supervisedProcesses instanceof Map ? ctx.supervisedProcesses : new Map()
   const отказы = достижимыеОтказы(program)
+  const связь = размещение === null ? new Map() : отказыСвязи(program, размещение)
 
   /* Порядок объявления, а не порядок таблицы: диагностики одного исходника
      обязаны идти в одном и том же порядке, иначе их нельзя сверить. */
   for (const узел of процессы) {
-    const найденные = отказы.get(узел?.name)
-    if (найденные === undefined || найденные.length === 0) continue
+    const найденные = [...(отказы.get(узел?.name) ?? []), ...(связь.get(узел?.name) ?? [])]
+    if (найденные.length === 0) continue
     if (подНадзором.has(узел.name)) continue
 
     const перечень = найденные

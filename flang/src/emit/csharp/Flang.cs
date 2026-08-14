@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Операции языка flang для бэкенда C#: арифметика, доступ к полям, разбор,
 // встроенные формы, батут и глубокий стек.
 //

@@ -2358,7 +2358,8 @@ test("−0 не печатается литералом ни в одном фа�
 
   /* Ноль и минус ноль обязаны стоять в одном модуле РАЗНЫМИ формами: сливалась
      ровно эта пара, и разной её делает вызов, а не запись литерала. */
-  const source = emittedZero.files.find((file) => file.path === "znak_nulya.ex").content
+  const source = emittedZero.files
+    .find((file) => file.path.endsWith(".ex") && !file.path.startsWith("flang_")).content
   assert.match(source, /\{:num, 0\.0\}/u, "ноль остаётся литералом: сливать его не с чем")
   assert.match(source, /\{:num, Flang\.Rt\.neg_zero\(\)\}/u,
     "−0 печатается вызовом: у вызова свёртке констант не за что зацепиться")

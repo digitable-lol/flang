@@ -89,12 +89,19 @@
 //     доступную глубину: кадр функции с `try` у V8 много больше обычного
 //     (замер холодными процессами: 7031 кадр против 8544). Отказ минует
 //     `return`, поэтому глубину на путях отказа чинит та же граница `$top`.
-//   • Стек хозяина может кончиться РАНЬШЕ объявленного предела, и это тот
-//     случай, где цель принципиально слабее остальных семи. У V8 холодный кадр
-//     этой формы влезает около 8,5 тысяч раз при пределе языка 10 000, в
-//     браузерах бывает меньше, а поднять стек изнутри модуля нечем: в Python
-//     это делает поток с заданным стеком, в JS такого рычага нет. Поэтому
-//     `$hostDepth` переводит переполнение стека в объявленный
+//   • Стек хозяина кончался РАНЬШЕ объявленного предела, и здесь стояло, что
+//     поднять его изнутри модуля нечем: «в Python это делает поток с заданным
+//     стеком, в JS такого рычага нет». Это была неправда, и стоила она всего
+//     обещания: замер холодными процессами показал 7 386 кадров у самой тонкой
+//     рекурсивной функции и 1 379 у функции с сорока связываниями при
+//     объявленных 10 000 — то есть предела, который язык обещает, у этой цели
+//     не было НИ ДЛЯ ОДНОЙ программы. Рычаг тот же, что в Python и C: поток с
+//     явно заданным стеком (`worker_threads`, `resourceLimits.stackSizeMb`), и
+//     он стоит в `$callDeep` — под 10 000 кадров отводится 79 МиБ, и худшая из
+//     мерянных форм доходит до предела ЯЗЫКА и отказывает текстом эталона.
+//     Замеры и границы — у самого `$callDeep`, ниже по файлу.
+//     Где рычага нет (браузер; прямой вызов мимо `$callDeep`), обещание держит
+//     сторож: `$hostDepth` переводит переполнение стека в объявленный
 //     FLANG_RECURSION_LIMIT — код из набора, а текст называет хозяина, а не
 //     предел, до которого не добрались. Врать про предел нельзя, молчать тоже.
 //
@@ -704,6 +711,144 @@ function $hostDepth(error, name) {
   )
 }
 
+/* ═════════════════ стек под объявленный предел глубины ═════════════════════
+
+   Счётчик глубины считает КАДРЫ, а несёт их стек хозяина, и в этой цели его не
+   хватало НИКОГДА. Замер холодными процессами (Node 26.7, стек V8 по
+   умолчанию, предел языка 10 000): у функции с одним параметром и без
+   связываний влезает 7 386 кадров, у функции с сорока живыми связываниями —
+   1 379. То есть объявленных 10 000 кадров не существовало ни для одной
+   программы: до них не доходит даже самая тонкая, а отказ приходит не тот,
+   которым на том же входе отвечает интерпретатор.
+
+   Рычаг у цели всё-таки есть, и он тот же, что в Python
+   (`threading.stack_size`) и в C (`pthread_attr_setstacksize`): поток с ЯВНО
+   ЗАДАННЫМ стеком. В Node это `worker_threads` и `resourceLimits.stackSizeMb`.
+   Замер тем же способом — сколько кадров несёт стек заданного размера:
+
+       кадров            4 МиБ    8 МиБ   16 МиБ   32 МиБ   байт на кадр
+       0 связываний     29 226   60 067  121 748  245 109        ≈ 137
+       40 связываний     5 459   11 220   22 743   45 788        ≈ 733
+       200 связываний    1 207    2 483    5 034   10 137      ≈ 3 310
+
+   Цена кадра в расчёте — 8 КиБ: вдвое с лишним больше худшего измеренного, тем
+   же правилом, каким взяты 16 КиБ у `FL_STACK_PER_FRAME` в C. Под объявленные
+   10 000 кадров это 79 МиБ стека, и на них худшая из трёх форм доходит до
+   предела ЯЗЫКА (10 001) и отказывает текстом эталона.
+
+   Чего рычаг не делает, и об этом надо сказать прямо:
+
+     • в браузере его нет — `worker_threads` там не существует, стек Worker'а не
+       настраивается, и правду говорит сторож `$hostDepth`;
+     • прямой вызов экспортированной функции считает на стеке того, кто позвал:
+       рычаг работает только через `$callDeep`. Ровно так же устроен C —
+       библиотека, вызванная мимо `fl_call_deep`, считает на стеке вызывающего;
+     • выше 131 072 объявленных кадров стек упирается в потолок 1 ГиБ, и дальше
+       правду опять говорит сторож, а не объявленное число.
+*/
+
+// Сколько мегабайт стека просить под объявленный предел глубины. Ноль и
+// бесконечность значат «предела нет» — тогда просим потолок и оставляем ответ
+// сторожу.
+function $stackMb(maxDepth) {
+  const perFrame = 8192 // байт на кадр: вдвое с лишним больше худшего измеренного
+  const most = 1024 // МиБ: выше потолка глубина не покупается, а обещается
+  if (!Number.isFinite(maxDepth) || maxDepth <= 0) return most
+  return Math.min(most, Math.max(8, Math.ceil((maxDepth * perFrame) / 1048576)))
+}
+
+// Значение через границу потока. Структурное копирование несёт числа (вместе с
+// NaN, ±0 и бесконечностями), строки, признаки, «ничто», списки и записи как
+// есть, но теряет ПРОТОТИП: вариант приехал бы обычным объектом, и `$isVariant`
+// назвал бы его записью. Поэтому вид значения едет тегом, а не угадывается.
+function $wireOut(value) {
+  if (Array.isArray(value)) return ["l", value.map($wireOut)]
+  if (value instanceof $FlangVariant) return ["v", value.variant, $wireFields(value.fields)]
+  if (value !== null && typeof value === "object") return ["r", $wireFields(value)]
+  return ["s", value]
+}
+
+// Поля записи и варианта — списком пар: порядок полей часть значения.
+function $wireFields(fields) {
+  return Object.keys(fields).map((name) => [name, $wireOut(fields[name])])
+}
+
+function $wireIn(node) {
+  if (node[0] === "l") return node[1].map($wireIn)
+  if (node[0] === "v") return new $FlangVariant(node[1], $unwireFields(node[2]))
+  if (node[0] === "r") return $unwireFields(node[1])
+  return node[1]
+}
+
+function $unwireFields(pairs) {
+  const fields = {}
+  for (const pair of pairs) fields[pair[0]] = $wireIn(pair[1])
+  return fields
+}
+
+// Расчёт на своём стеке: рычага нет либо поток не завёлся. Считаем ровно там
+// же и с той же памятью, что до починки, — обещание держит сторож `$hostDepth`.
+// Глубина, купленная ценой падения, была бы не починкой, а переносом отказа.
+function $callHere(fn, args, limits) {
+  $newContext(limits)
+  return fn(...args)
+}
+
+// Что делает поток: зовёт функцию модуля и отвечает одним сообщением. Живёт
+// строкой, а не файлом, потому что модуль самодостаточен: класть рядом второй
+// файл значило бы, что напечатанное больше не переносится копированием.
+function $deepSource() {
+  return [
+    "import { parentPort, workerData } from \"node:worker_threads\"",
+    "const program = await import(workerData.module)",
+    "parentPort.postMessage(program.$deepEntry(program[workerData.name], workerData.args, workerData.limits))",
+  ].join("\n")
+}
+
+function $deepEntry(fn, args, limits) {
+  if (typeof fn !== "function") return { ok: false, broken: "в модуле нет такой функции" }
+  $newContext(limits ?? {})
+  try {
+    return { ok: true, value: $wireOut(fn(...args.map($wireIn))) }
+  } catch (err) {
+    if (err instanceof $FlangError) return { ok: false, code: err.code, message: err.message }
+    return { ok: false, alien: String((err && err.message) || err) }
+  }
+}
+
+async function $callDeep(fn, args = [], limits = {}) {
+  let Worker = null
+  try {
+    /* Имя модуля собирается на месте, а не стоит в тексте: статический
+       «node:worker_threads» сборщик для браузера попытался бы разрешить, тогда
+       как здесь его отсутствие — обычный ход дела, а не поломка. */
+    Worker = (await import(["node:", "worker_threads"].join(""))).Worker
+  } catch {
+    Worker = null
+  }
+  if (typeof Worker !== "function") return $callHere(fn, args, limits)
+  const depth = typeof limits.maxDepth === "number" ? limits.maxDepth : $DEFAULT_MAX_DEPTH
+  let worker = null
+  try {
+    worker = new Worker(new URL(`data:text/javascript,${encodeURIComponent($deepSource())}`), {
+      workerData: { module: import.meta.url, name: fn.name, args: args.map($wireOut), limits },
+      resourceLimits: { stackSizeMb: $stackMb(depth) },
+    })
+  } catch {
+    return $callHere(fn, args, limits)
+  }
+  const answer = await new Promise((done) => {
+    worker.on("message", done)
+    worker.on("error", (err) => done({ ok: false, broken: String((err && err.message) || err) }))
+    worker.on("exit", (code) => done({ ok: false, broken: `поток вышел с кодом ${code}` }))
+  })
+  await worker.terminate()
+  if (answer.ok === true) return $wireIn(answer.value)
+  if (answer.broken !== undefined) return $callHere(fn, args, limits)
+  if (answer.alien !== undefined) throw new Error(answer.alien)
+  throw new $FlangError(answer.code, answer.message)
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Реестр рантайма: имя → { нужные ему помощники, исходный текст }.
 
@@ -720,6 +865,15 @@ function runtimeEntry(name, needs, source) {
 
 function fromSource(fn) {
   return fn.toString()
+}
+
+/**
+ * То же, но помощник уезжает в модуль ЭКСПОРТОМ и с пояснением над ним.
+ * Экспортируется не всё подряд: экспорт — это обещание совместимости, и его
+ * получают только две точки входа глубокого расчёта.
+ */
+function exportedSource(doc, fn) {
+  return `${doc}\nexport ${fn.toString()}`
 }
 
 runtimeEntry("$FlangError", [], fromSource($FlangError))
@@ -795,6 +949,61 @@ runtimeEntry("$step", ["$fail", "$LIMITS"], fromSource($step))
 /* `$STACK_OVERFLOW` живёт в том же блоке `$LIMITS`, отдельной записи ему не надо. */
 runtimeEntry("$hostDepth", ["$FlangError", "$LIMITS"], fromSource($hostDepth))
 runtimeEntry("$top", ["$hostDepth", "$LIMITS"], fromSource($top))
+/* Стек под объявленный предел — рычаг цели, а не украшение: без него
+   объявленных 10 000 кадров нет ни у одной программы (см. шапку раздела). */
+runtimeEntry("$stackMb", [], fromSource($stackMb))
+runtimeEntry("$wireOut", ["$FlangVariant", "$wireFields"], fromSource($wireOut))
+runtimeEntry("$wireFields", ["$wireOut"], fromSource($wireFields))
+runtimeEntry("$wireIn", ["$FlangVariant", "$unwireFields"], fromSource($wireIn))
+runtimeEntry("$unwireFields", ["$wireIn"], fromSource($unwireFields))
+runtimeEntry("$callHere", ["$LIMITS"], fromSource($callHere))
+runtimeEntry("$deepSource", [], fromSource($deepSource))
+runtimeEntry(
+  "$deepEntry",
+  ["$LIMITS", "$FlangError", "$wireIn", "$wireOut"],
+  exportedSource(
+    [
+      "/**",
+      " * Точка входа расчёта в потоке с заданным стеком: её зовёт поток, который",
+      " * завёл `$callDeep`. Руками её звать незачем — вызов на своём стеке ничем не",
+      " * отличается от обычного вызова функции модуля.",
+      " *",
+      " * @param {Function} fn экспортированная функция этого модуля",
+      " * @param {Array} args аргументы в форме `$wireOut`",
+      " * @param {{maxDepth?: number, maxSteps?: number}} limits",
+      " */",
+    ].join("\n"),
+    $deepEntry,
+  ),
+)
+runtimeEntry(
+  "$callDeep",
+  ["$LIMITS", "$FlangError", "$deepEntry", "$deepSource", "$stackMb", "$wireIn", "$wireOut", "$callHere"],
+  exportedSource(
+    [
+      "/**",
+      " * Вычисление на стеке, отведённом ПОД ОБЪЯВЛЕННЫЙ ПРЕДЕЛ глубины.",
+      " *",
+      " * Прямой вызов `функция(x)` считает на стеке того, кто позвал, а его в",
+      " * JavaScript хватает не на 10 000 кадров, а на 7 386 у самой тонкой функции",
+      " * и на 1 379 у функции с сорока связываниями. Здесь расчёт уезжает в поток",
+      " * с явно заданным стеком (`worker_threads`), и объявленный предел",
+      " * становится достижимым: тот же вход даёт FLANG_RECURSION_LIMIT на глубине",
+      " * 10 001, тем же текстом, что интерпретатор.",
+      " *",
+      " * Где рычага нет — в браузере и там, где поток не завёлся, — расчёт идёт на",
+      " * своём стеке, как и раньше, а правду говорит сторож: отказ остаётся",
+      " * объявленным, только текст называет хозяина.",
+      " *",
+      " * @param {Function} fn экспортированная функция этого модуля",
+      " * @param {Array} args её аргументы",
+      " * @param {{maxDepth?: number, maxSteps?: number}} [limits]",
+      " * @returns {Promise<any>}",
+      " */",
+    ].join("\n"),
+    $callDeep,
+  ),
+)
 
 /** Канонические имена встроенных форм → помощники рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -1261,6 +1470,11 @@ export function emitJs(program, options = {}) {
     shared.used.add("$top")
     sections.push(renderConcurrency(processes, supervisors, runs, program, shared))
   }
+
+  /* Рычаг глубины печатается там, где глубине есть куда расти, — то есть при
+     рекурсии. Программе без единого цикла в графе вызовов он не нужен: у неё
+     глубина ограничена самим графом, и счётчика она не получает вовсе. */
+  if (recursive.size > 0) shared.used.add("$callDeep")
 
   const runtime = renderRuntime(shared.used, base, maxDepth, maxSteps, concurrent)
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null

@@ -4943,6 +4943,25 @@ fl_status kompilyator_flang_obyavlenie_naslediem(fl_ctx *ctx, fl_value r, fl_val
 fl_status kompilyator_flang_obyavlenie_teorkata(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Объявление стрелкой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_strelkoy(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать единицу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_edinicu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Разобрать пересечение».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

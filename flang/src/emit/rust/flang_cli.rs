@@ -375,7 +375,7 @@ fn write_value(out: &mut String, value: &rt::Value) {
         }
         rt::Value::List(items) => {
             out.push_str("{\"l\":[");
-            for (index, item) in items.iter().enumerate() {
+            for (index, item) in items.as_slice().iter().enumerate() {
                 if index > 0 {
                     out.push(',');
                 }

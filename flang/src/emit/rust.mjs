@@ -1512,7 +1512,12 @@ function emitFold(node, ctx, out, pad) {
     `${pad}// «${node.acc}»`,
     `${pad}let mut ${accIdent} = ${init};`,
     `${pad}// «${node.item}»`,
-    `${pad}for ${itemIdent} in ${list}.iter().cloned() {`,
+    /* Обход идёт по СНИМКУ, а не по заимствованию общего массива: внутри тела
+       исполняется код программы, и «добавить» к тому же списку обязано остаться
+       постоянным по времени (см. `Items::grown`), а не уходить на копию из-за
+       живого заимствования. Снимок стоит один проход, а сам обход и так
+       линейный. */
+    `${pad}for ${itemIdent} in ${list}.snapshot() {`,
   )
 
   const at = out.length
@@ -1539,7 +1544,8 @@ function emitLoop(node, ctx, out, pad) {
   out.push(
     `${pad}let mut ${items}: Vec<rt::Value> = Vec::with_capacity(${list}.len());`,
     `${pad}// «${node.item}»`,
-    `${pad}for ${itemIdent} in ${list}.iter().cloned() {`,
+    /* По снимку, а не по заимствованию: см. `emitFold`. */
+    `${pad}for ${itemIdent} in ${list}.snapshot() {`,
   )
 
   const at = out.length

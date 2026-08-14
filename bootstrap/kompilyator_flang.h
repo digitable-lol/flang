@@ -4952,6 +4952,15 @@ fl_status kompilyator_flang_obyavlenie_teorkata(fl_ctx *ctx, fl_value r, fl_valu
 fl_status kompilyator_flang_razobrat_peresechenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разобрать вложение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_vlozhenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Не решено ли».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

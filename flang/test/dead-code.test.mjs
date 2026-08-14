@@ -374,8 +374,10 @@ test("урезанное собирается компилятором C и от
     cwd: каталог,
     stdio: "pipe",
   })
+  /* Значения размечены тегами (flang_cli.c): число — строкой, список — «l». */
+  const число = (значение) => ({ n: String(значение) })
   const ответ = execFileSync(join(каталог, "проба"), {
-    input: `${JSON.stringify({ fn: "Сумма пробы", args: [[1, 2, 3, 40]] })}\n`,
+    input: `${JSON.stringify({ fn: "Сумма пробы", args: [{ l: [1, 2, 3, 40].map(число) }] })}\n`,
     encoding: "utf8",
   })
   assert.deepEqual(JSON.parse(ответ.trim()), { ok: true, value: { n: "46" } })
@@ -383,9 +385,10 @@ test("урезанное собирается компилятором C и от
   /* И то, ради чего всё: выброшенного в бинарнике нет. Прогонщик отвечает по
      имени, и раньше он отвечал на функции, которых автор не писал. */
   const мёртвый = JSON.parse(execFileSync(join(каталог, "проба"), {
-    input: `${JSON.stringify({ fn: "Двоичный поиск", args: [[1, 2], 1] })}\n`,
+    input: `${JSON.stringify({ fn: "Сортировать", args: [{ l: [число(2), число(1)] }] })}\n`,
     encoding: "utf8",
   }).trim())
   assert.equal(мёртвый.ok, false, "прогонщик всё ещё зовёт функцию, которой в программе нет")
   assert.equal(мёртвый.code, "FLANG_UNKNOWN_NAME")
+  assert.match(мёртвый.message, /Сортировать/u)
 })

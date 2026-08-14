@@ -27,7 +27,7 @@ class Flang < Formula
   # Хеш архива, собранного `node scripts/build-release-c.mjs` и упакованного
   # `tar -czf`. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
-  sha256 "3287ecb7ea1d789c1e6c4a5ca2e958656410825ec3e79ee475854681d96e6645"
+  sha256 "7ef6be88f8e71d3de0775da1aec7607177d81f4757e144d028b8f77d5f1aba1f"
   license "BSD-2-Clause"
   version "0.5.0"
 

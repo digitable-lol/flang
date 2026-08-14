@@ -2,11 +2,9 @@
   "version": 1,
   "package": "@digitable-lol/fts",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.4.8",
+  "declared": "0.5.0",
   "latest": "0.4.8",
-  "unclassified": [
-    "bootstrap"
-  ],
+  "unclassified": [],
   "releases": [
     {
       "version": "0.4.8",
@@ -849,6 +847,18 @@
   ],
   "unreleased": {
     "entries": [
+      {
+        "text": "Версия поднята до 0.5.0 во всех четырёх местах",
+        "commit": "d24494b"
+      },
+      {
+        "text": "Гейт лицензий снова зелёный: печатаемый планировщик JS остался без SPDX",
+        "commit": "d5be996"
+      },
+      {
+        "text": "Журнал изменений перепечатан: он разошёлся с историей ветки ещё до этой работы",
+        "commit": "eba4594"
+      },
       {
         "text": "Объявленный предел глубины в C стал пределом: было 1518 кадров и SIGSEGV, стало 10 001 и текст эталона",
         "commit": "468d165"

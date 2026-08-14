@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
 // Рантайм flang для бэкенда Rust.
 //
 // Этот файл печатается бэкендом как есть, байт в байт: он лежит рядом

@@ -161,6 +161,14 @@ fl_status kompilyator_flang_sozdat_vybor_uzla(fl_ctx *ctx, fl_value nomer, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_zamena_uzla(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
 
+/* Запись FTS «Сборка цепочки»: «р», «шаги». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_cepochki(fl_ctx *ctx, fl_value r, fl_value shagi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка звеньев»: «номер», «текущий», «узлы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_zvenev(fl_ctx *ctx, fl_value nomer, fl_value tekuschiy, fl_value uzly, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог разбора»: «программа», «диагностики». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_itog_razbora(fl_ctx *ctx, fl_value programma, fl_value diagnostiki, fl_value *out, fl_error *error);
@@ -2383,6 +2391,17 @@ fl_status kompilyator_flang_zamenit_nasledie(fl_ctx *ctx, fl_value r, fl_value n
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_dobavit_prochee(fl_ctx *ctx, fl_value r, fl_value klyuch, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить прочие».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_dobavit_prochie(fl_ctx *ctx, fl_value r, fl_value klyuch, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Есть в списке имён».
@@ -4935,7 +4954,7 @@ fl_status kompilyator_flang_obyavlenie_naslediem(fl_ctx *ctx, fl_value r, fl_val
 /*
  * Функция flang «Объявление теорката».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param r — «р»: «Разборщик»
  * @param identifikator — «идентификатор»: строка
  * @return значение: «Разборщик»
@@ -4945,7 +4964,7 @@ fl_status kompilyator_flang_obyavlenie_teorkata(fl_ctx *ctx, fl_value r, fl_valu
 /*
  * Функция flang «Объявление стрелкой».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param r — «р»: «Разборщик»
  * @param identifikator — «идентификатор»: строка
  * @return значение: «Разборщик»
@@ -4978,6 +4997,84 @@ fl_status kompilyator_flang_razobrat_peresechenie(fl_ctx *ctx, fl_value r, fl_va
  * @return значение: «Шаг»
  */
 fl_status kompilyator_flang_razobrat_vlozhenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Звено цепочки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка звеньев»
+ * @param shag — «шаг»: строка
+ * @param imya — «имя»: строка
+ * @param vsego — «всего»: число
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Сборка звеньев»
+ */
+fl_status kompilyator_flang_zveno_cepochki(fl_ctx *ctx, fl_value sborka, fl_value shag, fl_value imya, fl_value vsego, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Развернуть цепочку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shagi — «шаги»: список: строка
+ * @param imya — «имя»: строка
+ * @param mesto — «место»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_razvernut_cepochku(fl_ctx *ctx, fl_value shagi, fl_value imya, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать цепочку».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_razobrat_cepochku(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цепочки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_telo_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки цепочки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_oboyti_stroki_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка цепочки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_stroka_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка затем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param r — «р»: «Разборщик»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_stroka_zatem(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value nachalo, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Не решено ли».

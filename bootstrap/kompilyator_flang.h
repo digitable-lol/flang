@@ -93,9 +93,13 @@ fl_status kompilyator_flang_sozdat_sborka_pri_razbore(fl_ctx *ctx, fl_value teku
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_oblast(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сбор при разборе»: «модуль», «типы», «функции», «наследие». */
+/* Запись FTS «Объявление разбора»: «ключ», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyuch, fl_value uzel, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор при разборе»: «модуль», «типы», «функции», «наследие», «прочие». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
 /* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2368,6 +2372,17 @@ fl_status kompilyator_flang_dobavit_nasledie(fl_ctx *ctx, fl_value r, fl_value u
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_zamenit_nasledie(fl_ctx *ctx, fl_value r, fl_value nasledie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить прочее».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_dobavit_prochee(fl_ctx *ctx, fl_value r, fl_value klyuch, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Есть в списке имён».
@@ -4918,6 +4933,25 @@ fl_status kompilyator_flang_obyavlenie_tipom(fl_ctx *ctx, fl_value r, fl_value i
 fl_status kompilyator_flang_obyavlenie_naslediem(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Объявление теорката».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_teorkata(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать пересечение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_peresechenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Не решено ли».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -5028,6 +5062,48 @@ fl_status kompilyator_flang_diagnostiki_razborschika(fl_ctx *ctx, fl_value r, fl
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_razobrat_dokument(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи до наследия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_klyuchi_do_naslediya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узлы по ключу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prochie — «прочие»: список: «Объявление разбора»
+ * @param klyuch — «ключ»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_uzly_po_klyuchu(fl_ctx *ctx, fl_value prochie, fl_value klyuch, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле если непусто».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param klyuch — «ключ»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_pole_esli_nepusto(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value uzly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля объявлений».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param prochie — «прочие»: список: «Объявление разбора»
+ * @param klyuchi — «ключи»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_polya_obyavleniy(fl_ctx *ctx, fl_value polya, fl_value prochie, fl_value klyuchi, fl_value imena, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разбор токенов».

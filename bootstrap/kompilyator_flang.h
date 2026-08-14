@@ -5072,6 +5072,73 @@ fl_status kompilyator_flang_stroka_izomorfizma(fl_ctx *ctx, fl_value sborka, fl_
 fl_status kompilyator_flang_stroka_obratnogo_morfizma(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разобрать бифунктор».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_bifunktor(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело бифунктора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки бифунктора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка бифунктора».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка пары морфизмов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_pary_morfizmov(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пара бифунктора».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param beda_pervogo — «беда первого»: строка
+ * @param beda_i — «беда и»: строка
+ * @param beda_vtorogo — «беда второго»: строка
+ * @param slovo — «слово»: строка
+ * @param beda_slova — «беда слова»: строка
+ * @param beda_obraza — «беда образа»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_para_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value klyuch, fl_value beda_pervogo, fl_value beda_i, fl_value beda_vtorogo, fl_value slovo, fl_value beda_slova, fl_value beda_obraza, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Звено цепочки».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

@@ -149,10 +149,6 @@ fl_status kompilyator_flang_sozdat_sborka_primera(fl_ctx *ctx, fl_value r, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_poisk_zagolovka(fl_ctx *ctx, fl_value nomer, fl_value nayden, fl_value *out, fl_error *error);
 
-/* Запись FTS «Выбор узла»: «номер», «итог». */
-/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_vybor_uzla(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
-
 /* Запись FTS «Замена узла»: «номер», «итог». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_zamena_uzla(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
@@ -560,14 +556,6 @@ fl_status kompilyator_flang_sozdat_sbor_tochnyh(fl_ctx *ctx, fl_value indeks, fl
 /* Запись FTS «Сбор причин»: «индекс», «причины». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sbor_prichin(fl_ctx *ctx, fl_value indeks, fl_value prichiny, fl_value *out, fl_error *error);
-
-/* Запись FTS «Отбор имени»: «индекс», «значение». */
-/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_otbor_imeni(fl_ctx *ctx, fl_value indeks, fl_value znachenie, fl_value *out, fl_error *error);
-
-/* Запись FTS «Отбор аргумента»: «индекс», «значение». */
-/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_otbor_argumenta(fl_ctx *ctx, fl_value indeks, fl_value znachenie, fl_value *out, fl_error *error);
 
 /* Запись FTS «Сбор отметок»: «имена», «функции». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -4786,17 +4774,6 @@ fl_status kompilyator_flang_shag_poiska_zagolovka(fl_ctx *ctx, fl_value akk, fl_
  * @return значение: число
  */
 fl_status kompilyator_flang_nomer_poslednego_zagolovka(fl_ctx *ctx, fl_value nasledie, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Шаг выбора при разборе».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param akk — «акк»: «Выбор узла»
- * @param uzel — «узел»: «Значение»
- * @param mesto — «место»: число
- * @return значение: «Выбор узла»
- */
-fl_status kompilyator_flang_shag_vybora_pri_razbore(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value mesto, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Узел по номеру».
@@ -17040,6 +17017,16 @@ fl_status kompilyator_flang_soobschenie_ob_obychnoy(fl_ctx *ctx, fl_value vyzov,
 fl_status kompilyator_flang_cepochka_imyon(fl_ctx *ctx, fl_value imena, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Номер годится».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: число
+ * @param skolko — «сколько»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_nomer_goditsya(fl_ctx *ctx, fl_value nomer, fl_value skolko, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Имя по номеру».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -17048,17 +17035,6 @@ fl_status kompilyator_flang_cepochka_imyon(fl_ctx *ctx, fl_value imena, fl_value
  * @return значение: «Имя параметра»
  */
 fl_status kompilyator_flang_imya_po_nomeru(fl_ctx *ctx, fl_value parametry, fl_value indeks, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Шаг отбора имени».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param akk — «акк»: «Отбор имени»
- * @param parametr — «параметр»: «Имя параметра»
- * @param iskomyy — «искомый»: число
- * @return значение: «Отбор имени»
- */
-fl_status kompilyator_flang_shag_otbora_imeni(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value iskomyy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Параметр или».
@@ -17758,17 +17734,6 @@ fl_status kompilyator_flang_polozhitelnyy_sam_parametr(fl_ctx *ctx, fl_value pro
 fl_status kompilyator_flang_argument_po_nomeru_pri_analize(fl_ctx *ctx, fl_value argumenty, fl_value kotoryy, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Шаг отбора аргумента».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param akk — «акк»: «Отбор аргумента»
- * @param argument — «аргумент»: «Аргумент»
- * @param iskomyy — «искомый»: число
- * @return значение: «Отбор аргумента»
- */
-fl_status kompilyator_flang_shag_otbora_argumenta(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value iskomyy, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Имя видно».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -18352,26 +18317,6 @@ fl_status kompilyator_flang_otmetit_argument_vyzova(fl_ctx *ctx, fl_value uzel, 
  * @return значение: «Значение»
  */
 fl_status kompilyator_flang_uzel_po_nomeru_pri_analize(fl_ctx *ctx, fl_value uzly, fl_value kotoryy, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Шаг отбора узла».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param akk — «акк»: «Сбор отметки»
- * @param uzel — «узел»: «Значение»
- * @param iskomyy — «искомый»: число
- * @return значение: «Сбор отметки»
- */
-fl_status kompilyator_flang_shag_otbora_uzla(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value iskomyy, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Первый узел».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzly — «узлы»: список: «Значение»
- * @return значение: «Значение»
- */
-fl_status kompilyator_flang_pervyy_uzel(fl_ctx *ctx, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отметить в списке».

@@ -34,6 +34,10 @@ import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
 import { возможностиЦели } from "../src/conc.mjs"
+/* Граница входа. Импорт статический, а не «если модуль есть» (как в
+   `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
+   это проверка, которая не умеет краснеть. */
+import { checkArguments } from "../src/types.mjs"
 
 /*
  * Версия читается из package.json, а не пишется здесь строкой. Написанная
@@ -190,6 +194,18 @@ async function commandRun(options) {
   const fn = (program.functions ?? []).find((item) => item.name === options.functionName)
   if (fn === undefined) throw fail("FLANG_UNKNOWN_NAME", `не найдена функция «${options.functionName}»`)
   const args = bindArguments(fn, options.args ?? {})
+  /* ГРАНИЦА ВХОДА. Значения из `--args` приезжают JSON-ом и до этой проверки
+     объявленному типу не сверялись ничем: `«Факториал» принимает н: нат`
+     считался при −3 и при 2.5, а при 1e300 отказывал FLANG_RECURSION_LIMIT —
+     кодом, отведённым ОБЫЧНОЙ функции. Причина не в сообщении, а в том, что
+     доказательство завершения `тотальной` стоит НА ТИПЕ: у `нат` есть потолок
+     2^53−1, ниже которого `н минус 1` точно меньше `н`, и сторож убывания в
+     такую функцию не печатается вовсе. Значение вне типа выносит вместе с типом
+     и доказательство. Поэтому сверка стоит ДО вычисления, а не внутри него:
+     внутри она поймала бы ложь на той операции, которой не повезло первой, и
+     только на тех входах, до которых дошло исполнение. */
+  const вход = checkArguments(program, fn.name, args)
+  if (!вход.ok) throw failWith(вход.diagnostics)
   /* Пределы обязаны дойти до вычислителя. `--max-steps` и `--max-depth`
      разбираются на общем разборе ключей, поэтому `run` их ПРИНИМАЛ — и
      выбрасывал: `evaluateFlang` звался без четвёртого аргумента. Ключ, который
@@ -893,6 +909,13 @@ function errorResult(error) {
 function fail(code, message) {
   const error = new Error(message)
   error.diagnostics = [{ code, message, severity: "error" }]
+  return error
+}
+
+/** Отказ, у которого диагностик сразу несколько: врать может не один аргумент. */
+function failWith(diagnostics) {
+  const error = new Error(diagnostics[0].message)
+  error.diagnostics = diagnostics
   return error
 }
 

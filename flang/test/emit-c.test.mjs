@@ -1655,8 +1655,20 @@ test("детерминированность: две печати дают по�
 test("напечатанный C ни от чего не зависит и объясняет себя", async () => {
   const built = await build(treeProgram)
   const all = built.emitted.files.map((file) => file.content).join("\n")
-  assert.doesNotMatch(all, /#include\s*<(?!stdarg|stdbool|stddef|stdio|stdlib|string|math|errno)/u,
+  /* POSIX-заголовки вычёркиваются вместе со своим `#ifdef`, а не разрешаются
+     наравне с остальными, и разница здесь содержательная.
+     `<pthread.h>` и `<sys/resource.h>` появились ради объявленного предела
+     глубины: чтобы 10 000 кадров были не обещанием, а фактом, рантайм поднимает
+     стек через `setrlimit` и уходит в поток со своим размером стека. Это POSIX,
+     и переносимость держится ровно тем, что путь ОПЦИОНАЛЕН — блок стоит под
+     `#ifdef FL_POSIX_STACK`, и без макроса печатается тот же C99, что и раньше.
+     Разреши их списком — и завтра непортируемый заголовок приехал бы БЕЗ
+     охраны, а тест смолчал бы. Поэтому проверяется не «какие заголовки», а
+     «всё, что вне стандарта, живёт под охраной». */
+  const безPosix = all.replace(/#ifdef FL_POSIX_STACK[\s\S]*?#endif/gu, "")
+  assert.doesNotMatch(безPosix, /#include\s*<(?!stdarg|stdbool|stddef|stdio|stdlib|string|math|errno)/u,
     "кроме стандартной библиотеки C зависимостей быть не может")
+  assert.match(all, /#ifdef FL_POSIX_STACK/u, "путь POSIX обязан быть под макросом, а не разрешён списком")
   assert.doesNotMatch(all, /\bglib\b|\butf8proc\b|\biconv\b/u)
   assert.doesNotMatch(all, /\btime\(|\brand\(|\bgetenv\(/u, "ни времени, ни случайности, ни окружения")
   assert.match(built.source, /^\/\*\n \* Сгенерировано flang/u)

@@ -16333,6 +16333,102 @@ fl_status kompilyator_flang_proverit_telo(fl_ctx *ctx, fl_value funkciya, fl_val
 fl_status kompilyator_flang_sverit_telo(fl_ctx *ctx, fl_value telo, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Проверить постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_proverit_postusloviya(fl_ctx *ctx, fl_value funkciya, fl_value signatura, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловий».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param postusloviya — «постусловия»: список: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param gde — «где»: строка
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_shag_postusloviy(fl_ctx *ctx, fl_value postusloviya, fl_value funkciya, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить постусловие».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param gde — «где»: строка
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_proverit_postuslovie(fl_ctx *ctx, fl_value postuslovie, fl_value funkciya, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сверить постусловие».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param gde — «где»: строка
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_sverit_postuslovie(fl_ctx *ctx, fl_value postuslovie, fl_value funkciya, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сверить квантор».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param gde — «где»: строка
+ * @param metka — «метка»: строка
+ * @param mesto — «место»: «Значение»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_sverit_kvantor(fl_ctx *ctx, fl_value postuslovie, fl_value signatura, fl_value gde, fl_value metka, fl_value mesto, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Квантор назвал параметр».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @return значение
+ */
+fl_status kompilyator_flang_kvantor_nazval_parametr(fl_ctx *ctx, fl_value postuslovie, fl_value signatura, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть параметр по имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param parametry — «параметры»: список: «Параметр»
+ * @param iskomoe — «искомое»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_est_parametr_po_imeni(fl_ctx *ctx, fl_value parametry, fl_value iskomoe, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Проверить примеры».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.

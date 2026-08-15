@@ -265,8 +265,10 @@ test("напечатанный C даёт те же значения и те ж�
 })
 
 test("напечатанный JS даёт те же значения и те же тексты, что интерпретатор", async () => {
+  /* Модуль — первый файл; второй у цели JS — прогонщик (`flang_cli.js`), и
+     здесь он не нужен: функции зовутся прямо из модуля. */
   const напечатано = emitJs(программа, {})
-  assert.equal(напечатано.files.length, 1)
+  assert.deepEqual(напечатано.files.map((файл) => файл.path).slice(1), ["flang_cli.js"])
   const путь = join(песочница, `outcome-${напечатано.files[0].path}`)
   await writeFile(путь, напечатано.files[0].content, "utf8")
   const модуль = await import(pathToFileURL(путь).href)

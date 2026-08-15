@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Печать flang → Elixir, написанная на самом flang (`flang/self/emit-elixir.flang`).
  *
@@ -109,17 +111,26 @@ function напечатать(ast, опции = {}) {
  * первого расхождения: имя файла, номер строки и обе редакции.
  */
 function расхождение(имя, ast, опции = {}) {
-  let эталон
+  let эталон = null
+  let отказЭталона = null
   try {
     эталон = emitElixir(ast, опции)
   } catch (ошибка) {
-    return `${имя}: эталон отказал (${ошибка.message}) — сверять нечего`
+    отказЭталона = ошибка.message
   }
   let мой
   try {
     мой = напечатать(ast, опции)
   } catch (ошибка) {
     return `${имя}: печать на flang сорвалась: ${ошибка.message}`
+  }
+  /* Отказ — тоже наблюдаемое поведение, и сверяется он так же строго: у
+     ограниченного ящика печати в Elixir нет, и обе стороны обязаны сказать об
+     этом ОДНИМ И ТЕМ ЖЕ текстом. */
+  if (отказЭталона !== null) {
+    return мой.error === отказЭталона
+      ? null
+      : `${имя}: текст отказа разошёлся\n  эталон: ${JSON.stringify(отказЭталона)}\n  flang:  ${JSON.stringify(мой.error)}`
   }
   if (мой.error !== "") return `${имя}: печать на flang отказала: ${мой.error}`
   const пути = мой.files.map((файл) => файл.path)

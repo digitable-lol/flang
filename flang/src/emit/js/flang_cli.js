@@ -159,8 +159,9 @@ function encodeFields(fields, program) {
 
 /* ───────────────────────────── запрос ───────────────────────────── */
 
-function line(answer) {
-  return JSON.stringify(answer)
+/** Ответ — ровно одна строка на запрос, как у семи остальных целей. */
+function line(payload) {
+  return JSON.stringify(payload)
 }
 
 /** Отказ протокола: запрос не разобран. Код «CLI» — тот же, что у семи целей. */

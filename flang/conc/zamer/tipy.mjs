@@ -1,6 +1,7 @@
 /** Сколько стоит проверка типов на стенде: её в build.mjs нет, а в цепочке есть. */
 import { readFileSync } from "node:fs"
-const W = "/home/a/projects/flang/.claude/worktrees/agent-a0860b9ee28929af8"
+import { fileURLToPath } from "node:url"
+const W = process.env.FLANG ?? fileURLToPath(new URL("../../..", import.meta.url))
 const { parse } = await import(`${W}/flang/src/parser.mjs`)
 const типы = await import(`${W}/flang/src/types.mjs`)
 const проверить = типы.checkTypes

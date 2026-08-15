@@ -3,18 +3,27 @@
  * падает/уже падает. Двоичный поиск, каждый шаг — настоящая печать.
  */
 import { execFileSync } from "node:child_process"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
-const S = "/tmp/claude-1000/-home-a-projects-flang/9eb12cf5-ca30-4673-b8b0-88b76eecfdac/scratchpad/zamer"
-const W = "/home/a/projects/flang/.claude/worktrees/agent-a0860b9ee28929af8"
+/* Свой каталог — отсюда берётся и генератор, и корень дерева. Черновик стенда
+   кладётся в ZAMER (по умолчанию текущий каталог): на тридцати тысячах
+   сообщений это восемь мегабайт, и в дереве им не место. */
+const ЗДЕСЬ = fileURLToPath(new URL(".", import.meta.url))
+const FLANG = process.env.FLANG ?? fileURLToPath(new URL("../../..", import.meta.url))
+const ZAMER = process.env.ZAMER ?? process.cwd()
 
-const { parse } = await import(`${W}/flang/src/parser.mjs`)
-const { emitC } = await import(`${W}/flang/src/emit/c.mjs`)
+const { parse } = await import(`${FLANG}/flang/src/parser.mjs`)
+const { emitC } = await import(`${FLANG}/flang/src/emit/c.mjs`)
+
+const черновик = join(ZAMER, "probe.flang")
 
 function держит(n) {
-  execFileSync(process.execPath, [`${S}/gen.mjs`, `--n=${n}`, "--вид=ждут", `--out=${S}/probe.flang`], {
+  execFileSync(process.execPath, [join(ЗДЕСЬ, "gen.mjs"), `--n=${n}`, "--вид=ждут", `--out=${черновик}`], {
     env: { ...process.env, LC_ALL: "C.UTF-8" },
   })
-  const текст = execFileSync("cat", [`${S}/probe.flang`], { encoding: "utf8", maxBuffer: 1 << 30 })
+  const текст = readFileSync(черновик, "utf8")
   try {
     emitC(parse(текст, "probe.flang"))
     return { ok: true }

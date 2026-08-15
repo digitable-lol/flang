@@ -5,10 +5,10 @@
 # (загрузка двоичника, заведение N процессов, печать итога), из разности уходит.
 # $1 каталог, $2 пробегов мало, $3 пробегов много, $4 повторов, $5 журнал
 set -u
-S=/tmp/claude-1000/-home-a-projects-flang/9eb12cf5-ca30-4673-b8b0-88b76eecfdac/scratchpad/zamer
+source "$(dirname "${BASH_SOURCE[0]}")/obshchee.sh"
 DIR=$1; LOW=$2; HIGH=$3; REP=${4:-5}; J=${5:-0}
 echo "--- $DIR  пробегов $LOW и $HIGH, повторов $REP, журнал $J"
 echo "мало:"
-bash "$S/mera.sh" "$S/$DIR" "$LOW" "$J" "$REP"
+bash "$FLANG/flang/conc/zamer/mera.sh" "$(stend "$DIR")" "$LOW" "$J" "$REP"
 echo "много:"
-bash "$S/mera.sh" "$S/$DIR" "$HIGH" "$J" "$REP"
+bash "$FLANG/flang/conc/zamer/mera.sh" "$(stend "$DIR")" "$HIGH" "$J" "$REP"

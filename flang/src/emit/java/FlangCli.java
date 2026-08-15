@@ -349,11 +349,11 @@ public final class FlangCli {
         return;
       case Value.TAG_LIST:
         out.append("{\"l\":[");
-        for (int index = 0; index < value.items.length; index++) {
+        for (int index = 0; index < Value.size(value); index++) {
           if (index > 0) {
             out.append(',');
           }
-          encodeValue(out, value.items[index]);
+          encodeValue(out, Value.at(value, index));
         }
         out.append("]}");
         return;

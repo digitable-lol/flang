@@ -970,7 +970,196 @@ memory leaks that arose from failing to decrement a count». У нас счёт�
 
 ## 6. Что нужно критичным системам — и почему ответ там другой
 
-*(раздел 6.1 — требования стандартов — дописывается)*
+Этот раздел отвечает на вопрос владельца «код для ракет» — и ответ здесь не тот,
+что в разделе 5. Настоящие стандарты просят не «поменьше памяти», а **«ноль
+выделений после старта»**, и рекомендованный выше вариант Г им не годится по
+определению: он распределитель памяти времени выполнения.
+
+### 6.1. Что требуют настоящие стандарты
+
+**MISRA C — прямой запрет, и он же закрывает лазейку «напишем свой
+распределитель».**
+
+- **Директива 4.12: «Dynamic memory allocation shall not be used»**, категория
+  **Required**, анализ Undecidable. Не изменилась ни в MISRA C:2012, ни в
+  MISRA C:2023.
+- **Правило 21.3: «The memory allocation and deallocation functions of
+  `<stdlib.h>` shall not be used»**, категория **Required**. То есть директива
+  запрещает **приём**, а правило — его **стандартную реализацию**.
+- **Правило 17.2: «Functions shall not call themselves, either directly or
+  indirectly»** — рекурсия запрещена, категория Required. Это не смежная тема, а
+  та же самая: без рекурсии граф вызовов ациклический, и глубина стека считается
+  статически.
+- **Правило 18.8**: переменной длины массивы запрещены (иначе размер стека не
+  посчитать статически).
+
+**И вот главное.** Рабочая группа MISRA прямо отвечала на вопрос «а если я
+напишу свой пул-распределитель, это считается?» — ответ на форуме MISRA:
+
+> the headline rule is unambiguous — dynamic allocation shall not be used. This
+> applies to the standard library functions [malloc(), free(), etc] **but also
+> to any user-defined equivalent functions**.
+
+**Ответ MISRA на «сделаем распределитель поумнее» — «он тоже запрещён».**
+Именно поэтому весь раздел 5 к критичным системам не относится.
+
+Обоснование запрета (по разбору Bagnara и др., один из авторов MISRA C:2023,
+arXiv:2112.12823) — четыре пункта, и они ровно те, что перечислены в задании:
+исчерпание памяти, фрагментация («free memory can be filled by very small
+fragments»), **недетерминированное время** («variable and possibly long
+latency… **This is unacceptable for systems that have to meet hard real-time
+constraints**») и неопределённое поведение при неправильном использовании.
+
+**DO-178C (авионика) — НЕ запрещает, а требует доказательств.** Сам DO-178C
+объектный, а не кодировочный стандарт: динамическая память там нигде не
+запрещена. Требование живёт в §6.3.4.f (таблица A-5, объект 6) — «accuracy and
+consistency», куда входит анализ стека и памяти, — и в §11.8, который обязывает
+разработчика **написать свой кодировочный стандарт**. Запрет, таким образом,
+приезжает через MISRA или JSF++, которые в этот стандарт и вписывают.
+
+**DO-332** (дополнение по объектной технологии) добавляет к DO-178C ровно два
+объекта, и один из них — про динамическую память: **OO.A-7[OO10] / §OO.6.8.1**,
+«Verify the use of dynamic memory management is robust». В приложении
+**OO.D.1.6.1** перечислены семь уязвимостей, каждая с критерием:
+
+| | уязвимость | критерий |
+|---|---|---|
+| a | ambiguous references | распределитель отдаёт ссылку на годную и никем не занятую память |
+| b | fragmentation starvation | при достаточном объёме выделение не откажет из-за фрагментации |
+| c | deallocation starvation | выделение не откажет из-за недособранного мусора |
+| d | heap memory exhaustion | всей нужной приложению памяти хватит |
+| e | premature deallocation | объект освобождён только после того, как перестал использоваться |
+| f | lost update / stale reference | если менеджер двигает объекты, несогласованных ссылок не возникает |
+| g | time-bound allocation | выделение и освобождение укладываются в ограниченное время |
+
+И таблица **OO.D.1.6.3** — кто за что отвечает при пяти способах выделения
+(object pooling, stack, scope, manual heap, automatic heap/GC). Про сборщик
+мусора там сказано ровно то, чего и следовало ожидать: он снимает с прикладного
+кода почти всё, но перекладывает это на менеджер памяти, «which comes with
+major challenges for certification»; время сборки в общем случае непредсказуемо
+(риск g), а перемещение объектов задевает риск f.
+
+**А теперь что делают на практике.** Обзор AdaCore/Ferrous Systems (Comar,
+Dross, Gilcher, Moy, «Dynamic Memory Management in Critical Embedded Software»):
+
+> Given the difficulty of guaranteeing that these requirements are satisfied,
+> **many coding standards for critical software forbid heap allocation either
+> completely or after initialization. The most common pattern allowing heap
+> allocation in critical software consists in an initialization phase where
+> memory is dynamically allocated, and never deallocated.**
+
+И там же про сборщик мусора: «In cases where it applies, garbage collection
+clearly provides the best user experience. **But the cost of certifying the MMI
+prevents this technique from being used in many cases.**»
+
+**Остальные стандарты — то же самое, разными словами.**
+
+- **JSF++** (Lockheed Martin, бортовое ПО F-35), правило **AV 206**:
+  «**Allocation/deallocation from/to the free store (heap) shall not occur after
+  initialization.**» Обоснование — фрагментация и «non-deterministic delays».
+  Правило AV 119 запрещает рекурсию, с исключением: можно, если **доказано**,
+  что ресурсов хватит на максимальную глубину.
+- **«Power of 10» Хольцмана** (*IEEE Computer* 39(6), июнь 2006), правило 3:
+  «**Do not use dynamic memory allocation after initialization.**» Правило 1 —
+  никакой рекурсии, правило 2 — у каждого цикла статически проверяемый предел
+  витков. И вот ключевая фраза обоснования, ради которой весь раздел:
+
+  > **In the absence of recursion, an upper bound on the use of stack memory can
+  > be derived statically, thus making it possible to prove that an application
+  > will always live within its resource bounds.**
+
+  К правилу 1: «Avoiding recursion results in having an **acyclic function call
+  graph**, which code analyzers can exploit to prove limits on stack use and
+  boundedness of executions.»
+- **JPL D-60411** (тот же Хольцман), правило **5**: «There shall be no use of
+  dynamic memory allocation **after task initialization**» — и явно про
+  `malloc()`, `sbrk()`, `alloca()`.
+- **NASA F Prime** (полётное ПО JPL), сегодня: «**Flight Software coding
+  standards forbid dynamic memory allocation outside of system initialization.**
+  This is for safety and reliability reasons.»
+- **IEC 61508-3**, таблица B.1: «No dynamic objects» — HR (highly recommended)
+  на SIL 2–4. Но там есть примечание, и оно для нас важнее самого запрета:
+
+  > Measures 2 and 3a do not need to be applied **if a compiler is used which
+  > ensures that sufficient memory for all dynamic variables and objects will be
+  > allocated before runtime**, or which inserts runtime checks.
+
+  То есть **компилятор, доказывающий предел, снимает запрет.** Это ровно та
+  дверь, в которую мог бы войти flang.
+- **ISO 26262-6:2018**, таблица 6, строка 1b: «No dynamic objects or variables,
+  **or else online test during their creation**» — highly recommended для
+  ASIL B/C/D.
+
+**Итог по стандартам, коротко:** господствующая практика — не «умный
+распределитель», а **«не выделять ничего после старта»**. Для этого нужны ровно
+две вещи: нет выделений после инициализации и нет (или ограничена) рекурсия —
+вместе они делают граф вызовов ациклическим, а каждый кадр статически
+измеримым. Всё остальное в этих стандартах (массивы переменной длины, гибкие
+члены, указатели на функции, `alloca`) — следствия того же требования.
+
+Оговорка, чтобы не пересолить: новые стандарты для C++ смягчились. MISRA C++:2008
+правило 18-4-1 было Required и абсолютным, а в MISRA C++:2023 «Dynamic memory
+should not be used» — уже **Advisory**, зато рядом появилось Required «Dynamic
+memory shall be managed automatically». AUTOSAR C++14 (A18-5-5) требует не
+запрета, а доказанных свойств: ограниченное худшее время, отсутствие
+фрагментации, отсутствие исчерпания — и «an executable is supposed to define its
+maximal memory needs, **which are pre-allocated for this executable during its
+startup**».
+
+### Есть ли прецедент: язык, компилируемый в статически ограниченную память
+
+Есть, и он сильнее, чем можно было ожидать.
+
+**SCADE / Lustre — существующее доказательство.** Генератор кода KCG в SCADE
+Suite **квалифицирован по DO-178C уровня A / DO-330 TQL-1**, а исходный язык
+(Scade 6, потомок Lustre и Esterel) — декларативный потоковый. Ansys описывает
+свойства порождаемого кода дословно: «**static memory allocation, static bounded
+loops, no recursion**», «bounded memory and reaction time» — «guaranteed by
+construction». В производстве с 1999 года, сотня бортовых изделий.
+
+**То есть декларативный язык, компилируемый в статически ограниченную память и
+сертифицированный по высшему уровню, существует уже двадцать пять лет.** Цена:
+Scade — синхронный потоковый язык. Ни рекурсии, ни динамических структур данных,
+ни функций высшего порядка; программа — фиксированная сеть уравнений над
+потоками, работающая по такту.
+
+Что ещё стоит знать из этого ряда:
+
+- **Hume** (Hammond, Michaelson) — язык уровней: HW → FSM → Template → PR →
+  Full. **FSM-Hume** даёт жёсткую статическую оценку памяти, отказываясь от
+  рекурсии, высшего порядка и полиморфизма; **Template-Hume** разрешает только
+  предопределённые комбинаторы с известной стоимостью; **Full-Hume** —
+  полноценный язык без всяких гарантий. Замысел — не пять языков, а **лестница
+  переписывания**: писать вне уровней, анализировать, и «where analysis is
+  problematic… offending constructs are reformulated in a lower level».
+  **Это ровно та форма «пометки на функции», которую я предложил выше, — и она
+  уже опробована.**
+- **LFPL** (Hofmann, *Nordic J. Computing* 7(4), 2000) — самый резкий пример:
+  компилируется в C, **не содержащий `malloc` вовсе**, потому что «место» —
+  первоклассная величина, которую программа передаёт из рук в руки. Цена
+  названа честно: аффинная линейность (список нельзя использовать дважды,
+  разделения нет), только первый порядок, и **ни одна функция не может
+  возвращать больше, чем получила**. Плюс дыра: начальные данные всё-таки
+  создаёт `malloc`, а размер ячейки — максимум по всем типам программы.
+- **RAML** (Hoffmann) — выводит многочленную оценку по памяти и времени
+  автоматически, но **26 функций из 164 в CompCert (15,8 %) оценки не получают
+  вовсе**. Полезный ориентир: даже лучший в своём классе автоматический анализ
+  накрывает не всё.
+- **Ivory** (Galois, SMACCMPilot) и **Copilot** (Galois/NASA Langley) —
+  встроенные языки, где всё выделение снято в фазу метапрограммы, а остаток
+  работает без кучи и с постоянной памятью.
+- **`pragma Restrictions` в Ada** — самое близкое к «режиму» в промышленном
+  языке: `No_Allocators`, `No_Local_Allocators`,
+  **`No_Standard_Allocators_After_Elaboration`** — буквально правило 3 из «Power
+  of 10» как ключ языка.
+
+**И одна отрезвляющая вещь, которая касается нас напрямую.** Пометка `total` в
+Idris и Agda **не даёт никаких гарантий по памяти** — только по завершению.
+Тотальная функция может съесть гиперэкспоненту. **Это ровно про нашу
+`тотальная`**: 79 % корпуса доказанно завершается, и это НЕ означает, что 79 %
+корпуса укладывается в известную память. Ценность тотальности здесь другая и
+тоже большая: она делает **законным** применение отдельного анализа ресурсов,
+который на незавершающейся функции был бы бессмысленным.
 
 ### 6.2. Выразим ли у flang режим «вся память известна на этапе компиляции»
 

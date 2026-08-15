@@ -1276,3 +1276,154 @@ def b_percent_of(ctx, left, right):
     a = _expect_number("процентов от", left, "процент")
     b = _expect_number("процентов от", right, "значение")
     return Value(TAG_NUMBER, (a / 100) * b)
+
+
+# ───────────────────────────── граница входа ─────────────────────────────
+#
+# Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+# пришедшие снаружи, ДО вызова функции.
+#
+# Зачем это здесь, а не в самих функциях. Доказательство завершения `тотальной`
+# стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже которого `н минус 1`
+# точно меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+# Значение вне типа выносит вместе с типом и доказательство: `1e300 минус 1`
+# равно `1e300`, цепочка вечна, а ловить её нечем. Дверь одна и стоит она ДО
+# вычисления.
+#
+# Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+# `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+# подходит типу», каким сверяется `flang run --args`.
+
+# Виды объявленного типа. TYPE_UNKNOWN — значение-функция, параметр
+# полиморфизма и применение типа с аргументами: одной таблицы им мало, и они не
+# сверяются вовсе.
+TYPE_UNKNOWN = 0
+TYPE_NUMBER = 1
+TYPE_TEXT = 2
+TYPE_FLAG = 3
+TYPE_NULL = 4
+TYPE_LIST = 5
+TYPE_RECORD = 6
+TYPE_SUM = 7
+
+
+class EntryTable:
+    """Граница входа программы: типы, поля, варианты и параметры.
+
+    Поля и варианты лежат сплошными отрезками общих списков, а тип называет
+    своё начало и длину. Каждый тип — кортеж
+    (вид, имя, владелец, ничто, целое, отрезок, низ, верх, элемент,
+     поле с, полей, вариант с, вариантов);
+    поле — (имя, тип); вариант — (имя, поле с, полей);
+    параметр — (функция, имя, тип).
+    """
+
+    __slots__ = ("fields", "params", "types", "variants")
+
+    def __init__(self, types, fields, variants, params):
+        self.types = types
+        self.fields = fields
+        self.variants = variants
+        self.params = params
+
+
+def _check_number_type(spec, value, label):
+    name = spec[1]
+    if value.tag != TAG_NUMBER or not math.isfinite(value.data):
+        raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+    # Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    # порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    # беду.
+    if spec[4] and math.floor(value.data) != value.data:
+        raise fail(CODE_TYPE, f"{label}: {number_text(value.data)} не целое, а тип {name} — целый")
+    if spec[5] and (value.data < spec[6] or value.data > spec[7]):
+        raise fail(CODE_TYPE, f"{label}: {number_text(value.data)} вне {name}")
+
+
+def _check_fields(table, start, count, given, label, owner, of_variant):
+    for index in range(count):
+        name, at = table.fields[start + index]
+        if name not in given:
+            # Необязательное поле можно не задавать: отсутствие — это «ничто».
+            if table.types[at][3]:
+                continue
+            if of_variant:
+                raise fail(CODE_TYPE, f"{label}: вариант «{owner}» требует поле «{name}»")
+            raise fail(CODE_TYPE, f"{label}: не задано поле «{name}» записи «{owner}»")
+        _check_typed(table, at, given[name], f"{label}.{name}")
+
+
+def _check_typed(table, index, value, label):
+    if index < 0 or index >= len(table.types):
+        return
+    spec = table.types[index]
+    kind = spec[0]
+    name = spec[1]
+    owner = spec[2]
+    # Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+    # пропуск. Так же считает и ядро FTS.
+    if spec[3] and value.tag == TAG_NOTHING:
+        return
+    if kind == TYPE_UNKNOWN:
+        return
+    if kind == TYPE_NUMBER:
+        _check_number_type(spec, value, label)
+        return
+    if kind == TYPE_TEXT:
+        if value.tag != TAG_STRING:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_FLAG:
+        if value.tag != TAG_FLAG:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_NULL:
+        if value.tag != TAG_NOTHING:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_LIST:
+        if value.tag != TAG_LIST:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        for at, item in enumerate(value.data):
+            _check_typed(table, spec[8], item, f"{label}[{at}]")
+        return
+    if kind == TYPE_RECORD:
+        if value.tag != TAG_RECORD:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        _check_fields(table, spec[9], spec[10], value.data, label, owner, False)
+        # Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+        # сверх объявленных в ней взяться неоткуда.
+        declared = {table.fields[spec[9] + at][0] for at in range(spec[10])}
+        for given in value.data:
+            if given not in declared:
+                raise fail(CODE_TYPE, f"{label}: запись «{owner}» не имеет поля «{given}»")
+        return
+    if kind == TYPE_SUM:
+        if value.tag not in (TAG_VARIANT, TAG_RECORD):
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        found = None
+        if value.tag == TAG_VARIANT:
+            for at in range(spec[12]):
+                if table.variants[spec[11] + at][0] == value.name:
+                    found = table.variants[spec[11] + at]
+                    break
+        if found is None:
+            raise fail(CODE_TYPE, f"{label}: ожидался вариант типа «{owner}»")
+        _check_fields(table, found[1], found[2], value.data, label, found[0], True)
+        return
+
+
+def check_entry(table, name, args):
+    """Сверка набора значений с объявленными типами параметров функции.
+
+    Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+    параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+    видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у `checkValue`
+    эталона: расхождение здесь означало бы, что у языка два ответа на вопрос
+    «подходит ли значение типу».
+    """
+    declared = [param for param in table.params if param[0] == name]
+    if not declared or len(declared) != len(args):
+        return
+    for at, param in enumerate(declared):
+        _check_typed(table, param[2], args[at], f"вызов функции «{name}»: аргумент «{param[1]}»")

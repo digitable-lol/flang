@@ -5,6 +5,7 @@
  * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
  */
 #define FL_PROGRAM_CALL kompilyator_flang_call
+#define FL_PROGRAM_ENTRY kompilyator_flang_entry
 #define FL_WITH_REPL 1
 
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
@@ -100,6 +101,26 @@
 
 extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,
                                  fl_value *result, fl_error *error);
+
+/*
+ * Вторая связь с программой — её ГРАНИЦА ВХОДА: объявленные типы параметров,
+ * напечатанные данными (`<префикс>_entry`). Прогонщик сверяет по ним значения
+ * из JSON ДО вызова.
+ *
+ * Почему это здесь, а не внутри функций. Значения приходят СНАРУЖИ, а типов в
+ * напечатанном коде нет вовсе — и `«Факториал» принимает н: нат` спокойно
+ * считался при `н` равном −3 и 2.5. Хуже того, при 1e300 он упирался в
+ * FLANG_RECURSION_LIMIT: доказательство завершения `тотальной` стоит НА ТИПЕ (у
+ * `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно меньше `н`), и
+ * сторож убывания в такую функцию не печатается вовсе. Значение вне типа
+ * выносит вместе с типом и доказательство — цепочка вечна, ловить её нечем.
+ * Поэтому дверь стоит ДО вычисления и ровно одна.
+ */
+#ifndef FL_PROGRAM_ENTRY
+#define FL_PROGRAM_ENTRY fl_program_entry
+#endif
+
+extern const fl_entry_table *FL_PROGRAM_ENTRY(void);
 
 /*
  * Человеческий вход — соседний файл печати (flang_repl.c), и печатается он по
@@ -858,7 +879,12 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     return;
   }
 
-  status = FL_PROGRAM_CALL(&ctx, name, args, count, &result, &error);
+  /* Граница входа — ДО вызова: значение вне объявленного типа выносит вместе с
+     типом и доказательство завершения, и поймать вечную цепочку потом нечем. */
+  status = fl_check_entry(&ctx, FL_PROGRAM_ENTRY(), name, args, count, &error);
+  if (status == FL_OK) {
+    status = FL_PROGRAM_CALL(&ctx, name, args, count, &result, &error);
+  }
   if (status == FL_OK) {
     fputs("{\"ok\":true,\"value\":", stdout);
     write_value(result);

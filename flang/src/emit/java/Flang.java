@@ -853,4 +853,237 @@ public final class Flang {
     double b = expectNumber("процентов от", right, "значение");
     return Value.number((a / 100) * b);
   }
+
+  /* ───────────────────────────── граница входа ─────────────────────────────
+   *
+   * Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+   * пришедшие снаружи, ДО вызова функции.
+   *
+   * Зачем это здесь, а не в самих функциях. Доказательство завершения
+   * `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+   * которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+   * печатается вовсе. Значение вне типа выносит вместе с типом и
+   * доказательство: `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её
+   * нечем. Дверь одна и стоит она ДО вычисления.
+   *
+   * Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+   * `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+   * подходит типу», каким сверяется `flang run --args`.
+   */
+
+  /** Не сверяется: значение-функция, параметр полиморфизма, применение типа. */
+  public static final int TYPE_UNKNOWN = 0;
+  /** Число, включая уточнения `нат` и `целое`. */
+  public static final int TYPE_NUMBER = 1;
+  /** Строка. */
+  public static final int TYPE_TEXT = 2;
+  /** Признак. */
+  public static final int TYPE_FLAG = 3;
+  /** «ничто». */
+  public static final int TYPE_NULL = 4;
+  /** Список. */
+  public static final int TYPE_LIST = 5;
+  /** Запись. */
+  public static final int TYPE_RECORD = 6;
+  /** Сумма типов. */
+  public static final int TYPE_SUM = 7;
+
+  /** Поле записи или варианта: имя и место его типа в таблице типов. */
+  public record TypeField(String name, int type) {}
+
+  /** Вариант суммы: имя дискриминанта и отрезок его полей в общем массиве. */
+  public record TypeVariant(String name, int fieldFrom, int fieldCount) {}
+
+  /**
+   * Объявленный тип. Поля и варианты лежат сплошными отрезками общих массивов,
+   * а тип называет своё начало и длину.
+   */
+  public record TypeSpec(
+      int kind,
+      String name,
+      String owner,
+      boolean optional,
+      boolean integral,
+      boolean bounded,
+      double low,
+      double high,
+      int of,
+      int fieldFrom,
+      int fieldCount,
+      int variantFrom,
+      int variantCount) {}
+
+  /** Параметр функции: чей он, как называется и какого он типа. */
+  public record EntryParam(String function, String name, int type) {}
+
+  /** Граница входа программы целиком. */
+  public record EntryTable(
+      TypeSpec[] types, TypeField[] fields, TypeVariant[] variants, EntryParam[] params) {}
+
+  private static void checkNumberType(TypeSpec spec, Value value, String label) {
+    if (value.tag != Value.TAG_NUMBER || !Double.isFinite(value.num)) {
+      throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+    }
+    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+       порядок, и второй отказ на одном значении был бы вторым текстом про одну
+       беду. */
+    if (spec.integral() && Math.floor(value.num) != value.num) {
+      throw fail(
+          FlangError.CODE_TYPE,
+          label + ": " + Value.numberText(value.num) + " не целое, а тип " + spec.name() + " — целый");
+    }
+    if (spec.bounded() && (value.num < spec.low() || value.num > spec.high())) {
+      throw fail(
+          FlangError.CODE_TYPE, label + ": " + Value.numberText(value.num) + " вне " + spec.name());
+    }
+  }
+
+  private static void checkFields(
+      EntryTable table,
+      int from,
+      int count,
+      Field[] given,
+      String label,
+      String owner,
+      boolean ofVariant) {
+    for (int index = 0; index < count; index++) {
+      TypeField declared = table.fields()[from + index];
+      Field found = null;
+      for (Field field : given) {
+        if (field.name().equals(declared.name())) {
+          found = field;
+          break;
+        }
+      }
+      if (found == null) {
+        /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+        if (table.types()[declared.type()].optional()) {
+          continue;
+        }
+        if (ofVariant) {
+          throw fail(
+              FlangError.CODE_TYPE,
+              label + ": вариант «" + owner + "» требует поле «" + declared.name() + "»");
+        }
+        throw fail(
+            FlangError.CODE_TYPE,
+            label + ": не задано поле «" + declared.name() + "» записи «" + owner + "»");
+      }
+      checkTyped(table, declared.type(), found.value(), label + "." + declared.name());
+    }
+  }
+
+  private static void checkTyped(EntryTable table, int index, Value value, String label) {
+    if (index < 0 || index >= table.types().length) {
+      return;
+    }
+    TypeSpec spec = table.types()[index];
+    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+       пропуск. Так же считает и ядро FTS. */
+    if (spec.optional() && value.tag == Value.TAG_NOTHING) {
+      return;
+    }
+    String mismatch = label + " не соответствует типу " + spec.name();
+    switch (spec.kind()) {
+      case TYPE_NUMBER -> checkNumberType(spec, value, label);
+      case TYPE_TEXT -> {
+        if (value.tag != Value.TAG_STRING) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_FLAG -> {
+        if (value.tag != Value.TAG_FLAG) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_NULL -> {
+        if (value.tag != Value.TAG_NOTHING) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_LIST -> {
+        if (value.tag != Value.TAG_LIST) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        for (int at = 0; at < value.items.length; at++) {
+          checkTyped(table, spec.of(), value.items[at], label + "[" + at + "]");
+        }
+      }
+      case TYPE_RECORD -> {
+        if (value.tag != Value.TAG_RECORD) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        checkFields(table, spec.fieldFrom(), spec.fieldCount(), value.fields, label, spec.owner(), false);
+        /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+           сверх объявленных в ней взяться неоткуда. */
+        for (Field field : value.fields) {
+          boolean declared = false;
+          for (int at = 0; at < spec.fieldCount(); at++) {
+            if (table.fields()[spec.fieldFrom() + at].name().equals(field.name())) {
+              declared = true;
+              break;
+            }
+          }
+          if (!declared) {
+            throw fail(
+                FlangError.CODE_TYPE,
+                label + ": запись «" + spec.owner() + "» не имеет поля «" + field.name() + "»");
+          }
+        }
+      }
+      case TYPE_SUM -> {
+        if (value.tag != Value.TAG_VARIANT && value.tag != Value.TAG_RECORD) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        TypeVariant found = null;
+        if (value.tag == Value.TAG_VARIANT) {
+          for (int at = 0; at < spec.variantCount(); at++) {
+            if (table.variants()[spec.variantFrom() + at].name().equals(value.str)) {
+              found = table.variants()[spec.variantFrom() + at];
+              break;
+            }
+          }
+        }
+        if (found == null) {
+          throw fail(
+              FlangError.CODE_TYPE, label + ": ожидался вариант типа «" + spec.owner() + "»");
+        }
+        checkFields(
+            table, found.fieldFrom(), found.fieldCount(), value.fields, label, found.name(), true);
+      }
+      default -> {
+        /* TYPE_UNKNOWN: сверять нечем, и молчание здесь то же самое, каким
+           отвечает проверка значений эталона на джокер. */
+      }
+    }
+  }
+
+  /**
+   * Сверка набора значений с объявленными типами параметров функции.
+   *
+   * <p>Молчит там, где сверять нечем: имени в таблице нет, число значений с
+   * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
+   * приехал видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у
+   * {@code checkValue} эталона.
+   */
+  public static void checkEntry(EntryTable table, String name, Value[] args) {
+    int declared = 0;
+    for (EntryParam param : table.params()) {
+      if (param.function().equals(name)) {
+        declared++;
+      }
+    }
+    if (declared == 0 || declared != args.length) {
+      return;
+    }
+    int at = 0;
+    for (EntryParam param : table.params()) {
+      if (!param.function().equals(name)) {
+        continue;
+      }
+      checkTyped(
+          table, param.type(), args[at], "вызов функции «" + name + "»: аргумент «" + param.name() + "»");
+      at++;
+    }
+  }
 }

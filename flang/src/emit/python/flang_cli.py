@@ -159,6 +159,11 @@ def run_request(program, line):
         return failure("CLI", "неразборчивые аргументы")
 
     try:
+        # Граница входа — ДО вызова: значения приехали снаружи, программой не
+        # являются и сверяются с объявленными типами. Значение вне типа выносит
+        # вместе с типом и доказательство завершения `тотальной`, а поймать
+        # вечную цепочку потом нечем — сторожа в тотальной функции нет.
+        rt.check_entry(program.entry(), query["fn"], args)
         result = program.call(ctx, query["fn"], args)
     except rt.FlangError as error:
         return failure(error.code, error.message)

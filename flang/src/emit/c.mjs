@@ -93,6 +93,7 @@ import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../../../tools/ftsc/src/bidi.mjs"
 import { createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -423,6 +424,11 @@ function needsMath(value) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitC(program, options = {}) {
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на
+     границе интерпретатора видит его функцией. Сверять один и тот же вход двумя
+     разными типами значило бы, что у языка два ответа на один вопрос. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -524,6 +530,7 @@ export function emitC(program, options = {}) {
   }
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
+  bodies.push(renderEntry(входные, shared))
 
   /* Конкурентность печатается только тому, у кого есть хоть один `процесс`.
      Программе без процессов планировщик не нужен, и возить его ей значило бы
@@ -588,6 +595,7 @@ export function emitC(program, options = {}) {
       content: [
         banner(moduleName, "прогонщик: JSON на входе, JSON на выходе"),
         `#define FL_PROGRAM_CALL ${prefix}_call`,
+        `#define FL_PROGRAM_ENTRY ${prefix}_entry`,
         ...(repl ? ["#define FL_WITH_REPL 1"] : []),
         ...(concurrent
           ? ["#define FL_WITH_CONC 1", `#define FL_PROGRAM_CONC_PLAN ${prefix}_conc_plan`]
@@ -695,6 +703,13 @@ function renderHeader(file, moduleName, shared, concurrent = false) {
     " */",
     `fl_status ${shared.prefix}_call(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,`,
     "                    fl_value *result, fl_error *error);",
+    "",
+    "/*",
+    " * Объявленные типы параметров — данными. Прогонщик сверяет по ним значения,",
+    " * пришедшие снаружи, ДО вызова: доказательство завершения `тотальной` стоит",
+    " * на типе, и значение вне типа выносит вместе с типом и доказательство.",
+    " */",
+    `const fl_entry_table *${shared.prefix}_entry(void);`,
     "",
   )
   if (concurrent) {
@@ -1638,6 +1653,99 @@ function renderDispatch(shared) {
     '  return fl_fail(ctx, error, FL_CODE_UNKNOWN_NAME, "не найдена функция «%s»", name);',
     "}",
   )
+  return lines.join("\n")
+}
+
+/* ── граница входа: объявленные типы параметров данными ── */
+
+const ВИДЫ_ТИПА = new Map([
+  ["число", "FL_TYPE_NUMBER"],
+  ["строка", "FL_TYPE_STRING"],
+  ["признак", "FL_TYPE_FLAG"],
+  ["ничто", "FL_TYPE_NULL"],
+  ["список", "FL_TYPE_LIST"],
+  ["запись", "FL_TYPE_RECORD"],
+  ["сумма", "FL_TYPE_SUM"],
+])
+
+/**
+ * Объявленные типы параметров — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * Зачем она вообще. В напечатанной программе типов нет: прогонщик разбирает
+ * JSON и зовёт функцию. Поэтому `«Факториал» принимает н: нат` считался при `н`
+ * равном −3 и 2.5, а при 1e300 упирался в FLANG_RECURSION_LIMIT — код, который
+ * SPEC отводит ОБЫЧНОЙ функции. Тотальная отказывала пределом глубины потому,
+ * что доказательство её завершения СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1,
+ * ниже которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию
+ * не печатается вовсе. Значение вне типа выносит вместе с типом и
+ * доказательство, и ловить вечную цепочку нечем.
+ *
+ * Почему данными, а не кодом. Сверяет их один и тот же `fl_check_entry`
+ * (flang_runtime.c), напечатанный байт в байт для всех программ: разойдись
+ * восемь целей в понимании слов «значение подходит типу» — и разошлись бы они
+ * молча. Строит таблицу `таблицаВхода` из flang/src/types.mjs, то есть тот же
+ * файл, что отвечает на этот вопрос для `flang run --args`.
+ *
+ * Ссылки на типы — индексами, потому что тип элемента списка это тоже тип, а
+ * складывать их вложением значило бы печатать один и тот же `число` столько
+ * раз, сколько он встретился.
+ */
+function renderEntry(таблица, shared) {
+  const prefix = shared.prefix
+  const lines = [
+    "/*",
+    " * Граница входа: объявленные типы параметров данными. Прогонщик сверяет по",
+    " * ним значения, пришедшие снаружи, ДО вызова (fl_check_entry).",
+    " *",
+    " * Виды `неизвестно` (значение-функция, параметр полиморфизма, применение",
+    " * типа с аргументами) не сверяются — ровно как молчит о них проверка",
+    " * значений эталона.",
+    " */",
+  ]
+  if (таблица.параметры.length === 0) {
+    /* Массив нулевой длины в C99 незаконен, поэтому «сверять нечего» — это NULL
+       и ноль, а не пустой массив. */
+    lines.push(`static const fl_entry_table ${prefix}_entry_table = { NULL, 0, NULL, 0, NULL, 0, NULL, 0 };`)
+  } else {
+    if (таблица.поля.length > 0) {
+      lines.push(
+        `static const fl_type_field ${prefix}_entry_fields[] = {`,
+        ...таблица.поля.map((поле) => `  { ${cstring(поле.имя)}, ${поле.тип} },`),
+        "};",
+        "",
+      )
+    }
+    if (таблица.варианты.length > 0) {
+      lines.push(
+        `static const fl_type_variant ${prefix}_entry_variants[] = {`,
+        ...таблица.варианты.map((вариант) =>
+          `  { ${cstring(вариант.имя)}, ${вариант.полеС}, ${вариант.полей} },`),
+        "};",
+        "",
+      )
+    }
+    lines.push(
+      `static const fl_type ${prefix}_entry_types[] = {`,
+      ...таблица.типы.map((тип) =>
+        `  { ${ВИДЫ_ТИПА.get(тип.вид) ?? "FL_TYPE_UNKNOWN"}, ${cstring(тип.имя)}, ${cstring(тип.владелец)}, ` +
+        `${тип.ничто}, ${тип.целое}, ${тип.отрезок}, ${cnumber(тип.низ)}, ${cnumber(тип.верх)}, ` +
+        `${тип.элемент}, ${тип.полеС}, ${тип.полей}, ${тип.вариантС}, ${тип.вариантов} },`),
+      "};",
+      "",
+      `static const fl_entry_param ${prefix}_entry_params[] = {`,
+      ...таблица.параметры.map((параметр) =>
+        `  { ${cstring(параметр.функция)}, ${cstring(параметр.параметр)}, ${параметр.тип} },`),
+      "};",
+      "",
+      `static const fl_entry_table ${prefix}_entry_table = {`,
+      `  ${prefix}_entry_types, ${таблица.типы.length},`,
+      `  ${таблица.поля.length === 0 ? "NULL" : `${prefix}_entry_fields`}, ${таблица.поля.length},`,
+      `  ${таблица.варианты.length === 0 ? "NULL" : `${prefix}_entry_variants`}, ${таблица.варианты.length},`,
+      `  ${prefix}_entry_params, ${таблица.параметры.length}`,
+      "};",
+    )
+  }
+  lines.push("", `const fl_entry_table *${prefix}_entry(void) {`, `  return &${prefix}_entry_table;`, "}")
   return lines.join("\n")
 }
 

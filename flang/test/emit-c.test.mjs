@@ -36,6 +36,7 @@ import { errorCode, fromFtsDocument, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
+import { черезГраницу } from "./through-entry.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { globSync } from "./glob.mjs"
 
@@ -212,7 +213,9 @@ function compare(program, built, functionName, grid, options = {}) {
   const answers = ask(built, requests)
 
   points.forEach((args, index) => {
-    const byInterpreter = outcome(() => interpret(program, functionName, args, options.limits ?? {}))
+    /* Эталон для прогонщика — `flang run`, а не голый вычислитель: у входа
+       извне стоит граница объявленных типов (см. through-entry.mjs). */
+    const byInterpreter = черезГраницу(program, functionName, args, options.limits ?? {})
     const answer = answers[index]
     const byEmitted = answer.ok
       ? { ok: true, value: decode(answer.value) }

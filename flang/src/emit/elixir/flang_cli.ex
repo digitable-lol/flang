@@ -387,6 +387,11 @@ defmodule Flang.Cli do
   end
 
   defp invoke(module, name, args) do
+    # Граница входа — ДО вызова: значения приехали снаружи, программой не
+    # являются и сверяются с объявленными типами. Значение вне типа выносит
+    # вместе с типом и доказательство завершения `тотальной`, а поймать вечную
+    # цепочку потом нечем — сторожа в доказанно тотальной функции нет.
+    Flang.Rt.check_entry(apply(module, :entry, []), name, args)
     "{\"ok\":true,\"value\":" <> encode_value(apply(module, :call, [name, args])) <> "}"
   rescue
     error in Flang.Error -> failure(error.code, error.message)

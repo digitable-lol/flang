@@ -87,6 +87,7 @@ import { readFileSync } from "node:fs"
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, pascal } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -508,6 +509,11 @@ export function emitCsharp(program, options = {}) {
      всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
      `требуетПланировщика`). */
   требуетПланировщика(program, "csharp")
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на границе
+     интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы
+     молча. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -596,6 +602,7 @@ export function emitCsharp(program, options = {}) {
   }
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
+  bodies.push(renderEntry(входные))
 
   const files = []
   for (const [name, what] of RUNTIME_FILES) {
@@ -1613,6 +1620,72 @@ function renderDispatch(shared) {
     "    }",
   )
   return lines.join("\n")
+}
+
+/* ── граница входа: объявленные типы параметров данными ── */
+
+const ВИДЫ_ТИПА_CS = new Map([
+  ["число", "Flang.TypeNumber"],
+  ["строка", "Flang.TypeText"],
+  ["признак", "Flang.TypeFlag"],
+  ["ничто", "Flang.TypeNull"],
+  ["список", "Flang.TypeList"],
+  ["запись", "Flang.TypeRecord"],
+  ["сумма", "Flang.TypeSum"],
+])
+
+/**
+ * Объявленные типы параметров — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * В напечатанной программе типов нет: прогонщик разбирает JSON и зовёт функцию.
+ * Поэтому `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * 1e300 упирался в FLANG_RECURSION_LIMIT — код, отведённый ОБЫЧНОЙ функции.
+ * Тотальная отказывала пределом глубины потому, что доказательство её завершения
+ * СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно
+ * меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+ *
+ * Сверяет таблицу `Flang.CheckEntry` — один и тот же текст для всех программ, а
+ * строит её `таблицаВхода` из flang/src/types.mjs, то есть тот же файл, что
+ * отвечает на этот вопрос для `flang run --args`.
+ */
+function renderEntry(таблица) {
+  return [
+    "    // Граница входа: объявленные типы параметров данными. Прогонщик сверяет",
+    "    // по ним значения, пришедшие снаружи, ДО вызова (Flang.CheckEntry). Виды",
+    "    // Flang.TypeUnknown (значение-функция, параметр полиморфизма, применение",
+    "    // типа с аргументами) не сверяются — ровно как молчит о них проверка",
+    "    // значений эталона.",
+    "    private static readonly Flang.EntryTable EntryValue = new Flang.EntryTable(",
+    "        new Flang.TypeSpec[]",
+    "        {",
+    ...таблица.типы.map((запись) =>
+      `            new Flang.TypeSpec(${ВИДЫ_ТИПА_CS.get(запись.вид) ?? "Flang.TypeUnknown"}, ` +
+      `${csstring(запись.имя)}, ${csstring(запись.владелец)}, ${запись.ничто}, ${запись.целое}, ` +
+      `${запись.отрезок}, ${csnumber(запись.низ)}, ${csnumber(запись.верх)}, ${запись.элемент}, ` +
+      `${запись.полеС}, ${запись.полей}, ${запись.вариантС}, ${запись.вариантов}),`),
+    "        },",
+    "        new Flang.TypeField[]",
+    "        {",
+    ...таблица.поля.map((поле) => `            new Flang.TypeField(${csstring(поле.имя)}, ${поле.тип}),`),
+    "        },",
+    "        new Flang.TypeVariant[]",
+    "        {",
+    ...таблица.варианты.map((вариант) =>
+      `            new Flang.TypeVariant(${csstring(вариант.имя)}, ${вариант.полеС}, ${вариант.полей}),`),
+    "        },",
+    "        new Flang.EntryParam[]",
+    "        {",
+    ...таблица.параметры.map((параметр) =>
+      `            new Flang.EntryParam(${csstring(параметр.функция)}, ` +
+      `${csstring(параметр.параметр)}, ${параметр.тип}),`),
+    "        });",
+    "",
+    "    /// <summary>Объявленные типы параметров: по ним сверяется вход извне.</summary>",
+    "    public static Flang.EntryTable Entry()",
+    "    {",
+    "        return EntryValue;",
+    "    }",
+  ].join("\n")
 }
 
 /* ── проверки, повторяющие интерпретатор ── */

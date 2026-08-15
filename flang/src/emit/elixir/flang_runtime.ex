@@ -1382,4 +1382,203 @@ defmodule Flang.Rt do
     b = expect_number("процентов от", right, "значение")
     {:num, num_mul(num_div(a, 100.0), b)}
   end
+
+  # ───────────────────────────── граница входа ─────────────────────────────
+  #
+  # Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+  # пришедшие снаружи, ДО вызова функции.
+  #
+  # Зачем это здесь, а не в самих функциях. Доказательство завершения
+  # `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+  # которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+  # печатается вовсе. Значение вне типа выносит вместе с типом и
+  # доказательство: `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её
+  # нечем. Дверь одна и стоит она ДО вычисления.
+  #
+  # Таблица печатается бэкендом вместе с программой (`entry/0`), а строит её
+  # `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+  # подходит типу», каким сверяется `flang run --args`.
+  #
+  # Форма таблицы — кортеж {типы, поля, варианты, параметры}, где поля и
+  # варианты лежат сплошными отрезками, а тип называет своё начало и длину:
+  #
+  #   тип       {вид, имя, владелец, ничто?, целое?, отрезок?, низ, верх,
+  #              элемент, поле_с, полей, вариант_с, вариантов}
+  #   поле      {имя, тип}
+  #   вариант   {имя, поле_с, полей}
+  #   параметр  {функция, имя, тип}
+  #
+  # Списки переводятся в кортежи один раз при первом обращении: сверка ходит по
+  # ним по индексу, а у списка Elixir это линейно.
+
+  @doc """
+  Сверка набора значений с объявленными типами параметров функции.
+
+  Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+  параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+  видом `:unknown`. Тексты отказов дословно те же, что у `checkValue` эталона:
+  расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
+  значение типу».
+  """
+  def check_entry({types, fields, variants, params}, name, args) do
+    declared = Enum.filter(params, fn {function, _, _} -> function == name end)
+
+    if declared == [] or length(declared) != length(args) do
+      :ok
+    else
+      table = {List.to_tuple(types), List.to_tuple(fields), List.to_tuple(variants)}
+
+      declared
+      |> Enum.zip(args)
+      |> Enum.each(fn {{_, param, at}, value} ->
+        check_typed(table, at, value, "вызов функции «#{name}»: аргумент «#{param}»")
+      end)
+
+      :ok
+    end
+  end
+
+  defp check_typed({types, _, _} = table, index, value, label) do
+    if index < 0 or index >= tuple_size(types) do
+      :ok
+    else
+      spec = elem(types, index)
+      # Необязательный аргумент можно не задавать: отсутствие — это «ничто», а
+      # не пропуск. Так же считает и ядро FTS.
+      if elem(spec, 3) and value == :nothing do
+        :ok
+      else
+        check_kind(table, spec, value, label)
+      end
+    end
+  end
+
+  defp check_kind(table, spec, value, label) do
+    kind = elem(spec, 0)
+    name = elem(spec, 1)
+    owner = elem(spec, 2)
+
+    case kind do
+      :number -> check_number_type(spec, value, label, name)
+      :text -> want(match?({:str, _}, value), label, name)
+      :flag -> want(match?({:flag, _}, value), label, name)
+      :null -> want(value == :nothing, label, name)
+      :list -> check_list(table, spec, value, label, name)
+      :record -> check_record(table, spec, value, label, name, owner)
+      :sum -> check_sum(table, spec, value, label, name, owner)
+      _ -> :ok
+    end
+  end
+
+  defp want(true, _label, _name), do: :ok
+
+  defp want(false, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_number_type(spec, {:num, number}, label, name) when is_float(number) do
+    # Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    # порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    # беду.
+    cond do
+      elem(spec, 4) and Float.floor(number) != number ->
+        raise fail(@code_type, "#{label}: #{number_text(number)} не целое, а тип #{name} — целый")
+
+      elem(spec, 5) and (number < elem(spec, 6) or number > elem(spec, 7)) ->
+        raise fail(@code_type, "#{label}: #{number_text(number)} вне #{name}")
+
+      true ->
+        :ok
+    end
+  end
+
+  # `:nan`, `:inf` и `:ninf` — числа, которых у BEAM нет как значений с
+  # плавающей точкой; типу `число` они не подходят так же, как не подходят
+  # эталону (`Number.isFinite`).
+  defp check_number_type(_spec, _value, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_list(table, spec, {:list, items}, label, _name) do
+    items
+    |> Enum.with_index()
+    |> Enum.each(fn {item, at} -> check_typed(table, elem(spec, 8), item, "#{label}[#{at}]") end)
+
+    :ok
+  end
+
+  defp check_list(_table, _spec, _value, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_record(table, spec, {:rec, given}, label, _name, owner) do
+    check_fields(table, elem(spec, 9), elem(spec, 10), given, label, owner, false)
+    # Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+    # сверх объявленных в ней взяться неоткуда.
+    {_, fields, _} = table
+    from = elem(spec, 9)
+    count = elem(spec, 10)
+
+    Enum.each(given, fn {field, _} ->
+      known =
+        Enum.any?(0..(count - 1)//1, fn at -> elem(elem(fields, from + at), 0) == field end)
+
+      unless known do
+        raise fail(@code_type, "#{label}: запись «#{owner}» не имеет поля «#{field}»")
+      end
+    end)
+
+    :ok
+  end
+
+  defp check_record(_table, _spec, _value, label, name, _owner) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_sum(table, spec, {:var, tag, given}, label, _name, owner) do
+    {_, _, variants} = table
+
+    found =
+      Enum.find(elem(spec, 11)..(elem(spec, 11) + elem(spec, 12) - 1)//1, fn at ->
+        elem(elem(variants, at), 0) == tag
+      end)
+
+    if found == nil do
+      raise fail(@code_type, "#{label}: ожидался вариант типа «#{owner}»")
+    end
+
+    variant = elem(variants, found)
+    check_fields(table, elem(variant, 1), elem(variant, 2), given, label, elem(variant, 0), true)
+  end
+
+  defp check_sum(_table, _spec, {:rec, _}, label, _name, owner) do
+    raise fail(@code_type, "#{label}: ожидался вариант типа «#{owner}»")
+  end
+
+  defp check_sum(_table, _spec, _value, label, name, _owner) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_fields({types, fields, _} = table, from, count, given, label, owner, of_variant) do
+    Enum.each(0..(count - 1)//1, fn index ->
+      {field, at} = elem(fields, from + index)
+
+      case List.keyfind(given, field, 0) do
+        nil ->
+          # Необязательное поле можно не задавать: отсутствие — это «ничто».
+          unless elem(elem(types, at), 3) do
+            if of_variant do
+              raise fail(@code_type, "#{label}: вариант «#{owner}» требует поле «#{field}»")
+            else
+              raise fail(@code_type, "#{label}: не задано поле «#{field}» записи «#{owner}»")
+            end
+          end
+
+        {_, value} ->
+          check_typed(table, at, value, "#{label}.#{field}")
+      end
+    end)
+
+    :ok
+  end
 end

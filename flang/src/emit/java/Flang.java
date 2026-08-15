@@ -782,6 +782,54 @@ public final class Flang {
     return Value.list(java.util.Arrays.copyOfRange(list.items, 1, Value.size(list)));
   }
 
+  /*
+   * ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+   *
+   * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+   * ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает
+   * с отметкой «доказана», и печать зовёт эти методы. Сверка типа остаётся:
+   * expectList ловит не пустоту, а другой вид значения.
+   */
+
+  /** «разделить … по …» с доказанно непустым разделителем. */
+  public static Value bSplitProven(Ctx ctx, Value source, Value separator) {
+    String value = expectString("разделить", source, "строка");
+    String mark = expectString("разделить", separator, "разделитель");
+    java.util.ArrayList<Value> parts = new java.util.ArrayList<>();
+    int from = 0;
+    for (; ; ) {
+      int found = value.indexOf(mark, from);
+      if (found < 0) {
+        parts.add(Value.text(value.substring(from)));
+        break;
+      }
+      parts.add(Value.text(value.substring(from, found)));
+      from = found + mark.length();
+    }
+    return Value.list(parts.toArray(new Value[0]));
+  }
+
+  /** «код символа» доказанно непустой строки. */
+  public static Value bCharCodeProven(Ctx ctx, Value source) {
+    return Value.number(expectString("код символа", source, "строка").codePointAt(0));
+  }
+
+  /** «голова» доказанно непустого списка. */
+  public static Value bHeadProven(Ctx ctx, Value value) {
+    Value list = expectList("голова", value, "аргумент");
+    /* Ветвь пустого списка недостижима — непустота доказана при печати; читается
+       нулевой элемент ровно тем же способом, что в bHead, чтобы у двух дорог не
+       разошлось представление списка. */
+    return Value.size(list) == 0 ? Value.nothing() : Value.at(list, 0);
+  }
+
+  /** «хвост» доказанно непустого списка. */
+  public static Value bTailProven(Ctx ctx, Value value) {
+    Value list = expectList("хвост", value, "аргумент");
+    int n = Value.size(list);
+    return Value.list(java.util.Arrays.copyOfRange(list.items, n == 0 ? 0 : 1, n));
+  }
+
   /**
    * «элемент N в СПИСОК».
    *

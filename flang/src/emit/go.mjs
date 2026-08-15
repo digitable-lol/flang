@@ -118,7 +118,7 @@
 
 import { readFileSync } from "node:fs"
 
-import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
@@ -168,6 +168,16 @@ const BUILTIN_HELPERS = new Map([
   ["остаток от", "BRemainder"],
   ["процентов от", "BPercentOf"],
 ])
+
+/**
+ * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
+ *
+ * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
+ * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
+ * отметку и потому печатают одно и то же.
+ */
+const СУФФИКС_ДОКАЗАННОГО = "Proven"
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -1170,7 +1180,7 @@ function emitValue(expr, ctx, out, pad) {
       expectArity(canonical, args.length, node.span)
       const rendered = args.map((argument) => emitValue(argument, ctx, out, pad))
       out.push(`${pad}// «${canonical}»`)
-      return call(ctx, out, pad, `rt.${BUILTIN_HELPERS.get(canonical)}(${["ctx", ...rendered].join(", ")})`)
+      return call(ctx, out, pad, `rt.${помощникФормы(canonical, node, BUILTIN_HELPERS, СУФФИКС_ДОКАЗАННОГО)}(${["ctx", ...rendered].join(", ")})`)
     }
     case "binary": {
       const left = emitValue(node.left, ctx, out, pad)

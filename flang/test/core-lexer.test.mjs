@@ -22,6 +22,11 @@ import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { текстМодели, файлыКорпуса } from "./corpus.mjs"
+
+/* Заголовок `модуль …` знают файлы tools/**, а ядро — нет: тело модуля
+   вынимается тем же разборщиком, что в core-parser. */
+const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
 
 const источник = readFileSync(fileURLToPath(new URL("../core/lexer.flang", import.meta.url)), "utf8")
 const программа = parse(источник, "core/lexer.flang")
@@ -161,30 +166,41 @@ test("order-discount.fts: диагностик нет", () => {
   assert.deepEqual(диагностики(модель("web/demo/models/order-discount.fts")), [])
 })
 
-test("все модели репозитория лексируются молча", () => {
-  const модели = [
-    "web/demo/models/order-discount.fts",
-    "web/demo/models/order-discount.en.fts",
-    "web/demo/models/order-shipment.fts",
-    "examples/utilities/discount.fts",
-    "examples/real-world/credit-limit.fts",
-    "examples/real-world/customer-onboarding.fts",
-    "examples/real-world/order-shipment.fts",
-    "examples/real-world/invoices-table.fts",
-    "examples/task-status.fts",
-    "examples/socrates.fts",
-    "tools/ftsc/self/meta.fts",
-    "tools/ftsc/self/admission.fts",
-    "tools/ftsc/examples/models/delivery-price.fts",
-    "tools/gasearch/models/schedule.fts",
-    "tools/ftspec/examples/shop/constitution.fts",
-  ]
-  for (const путь of модели) {
-    const текст = модель(путь)
-    assert.deepEqual(коды(текст), [], `${путь}: неожиданные диагностики`)
-    const поток = токены(текст)
-    assert.ok(поток.length > 1, `${путь}: пустой поток токенов`)
-    assert.equal(поток.at(-1).variant, "Конец", `${путь}: поток не завершён «Конец»`)
+/*
+ * Все модели репозитория — это выборка по дереву, а не список руками.
+ *
+ * Список руками здесь и стоял: пятнадцать путей при пятидесяти четырёх файлах
+ * `.fts` в дереве. Имя обещало «все», тело проверяло чуть больше четверти, и
+ * новая модель в проверку не попадала молча — ни `globSync`, ни счёта файлов не
+ * было. Теперь корпус берётся тем же `файлыКорпуса()`, которым пользуются
+ * `core-parser` и `core-json`, а охват печатается и подпирается порогом: тест,
+ * чей охват может тихо схлопнуться к нулю, зелен ровно так же, как исправный.
+ *
+ * Файлы-функторы и заголовки чужих диалектов пропускаются тем же способом, что
+ * в `core-parser`: если `parseModuleFile` не признал файл модулем, документа
+ * ядра в нём нет.
+ */
+const корпусЛексера = файлыКорпуса().flatMap((запись) => {
+  const текст = текстМодели(запись)
+  try {
+    const разобранный = parseModuleFile(текст, запись.имя)
+    return разобранный.kind === "module" ? [{ имя: запись.имя, тело: разобранный.body }] : []
+  } catch {
+    return []
+  }
+})
+
+test("все модели репозитория лексируются молча", (t) => {
+  t.diagnostic(`моделей в сверке: ${корпусЛексера.length} из ${файлыКорпуса().length} файлов .fts`)
+  assert.ok(
+    корпусЛексера.length >= 40,
+    `моделей нашлось ${корпусЛексера.length}: выборка схлопнулась, и проверять стало нечего`,
+  )
+  for (const { имя, тело } of корпусЛексера) {
+    assert.deepEqual(коды(тело), [], `${имя}: неожиданные диагностики`)
+    const поток = токены(тело)
+    assert.ok(поток.length > 1, `${имя}: пустой поток токенов`)
+    assert.equal(поток.at(-1).variant, "Конец", `${имя}: поток не завершён «Конец»`)
   }
 })
 

@@ -141,9 +141,9 @@ fl_status kompilyator_flang_sozdat_shag_tipa(fl_ctx *ctx, fl_value r, fl_value t
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_schyot_oblastey(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сборка функции»: «р», «параметры», «примеры», «возвращает», «мера», «тело». */
+/* Запись FTS «Сборка функции»: «р», «имя», «параметры», «примеры», «возвращает», «мера», «постусловия», «тело». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sborka_funkcii(fl_ctx *ctx, fl_value r, fl_value parametry, fl_value primery, fl_value vozvraschaet, fl_value mera, fl_value telo, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_sborka_funkcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value parametry, fl_value primery, fl_value vozvraschaet, fl_value mera, fl_value postusloviya, fl_value telo, fl_value *out, fl_error *error);
 
 /* Запись FTS «Сборка примера»: «р», «вход», «ожидается», «есть ожидание». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -4551,6 +4551,26 @@ fl_status kompilyator_flang_stroka_mery(fl_ctx *ctx, fl_value sborka, fl_value *
  * @return значение: «Сборка функции»
  */
 fl_status kompilyator_flang_stroka_tela(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка функции»
+ * @return значение: «Сборка функции»
+ */
+fl_status kompilyator_flang_stroka_postusloviya(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Квантор постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка функции»
+ * @param r — «р»: «Разборщик»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг текста»
+ */
+fl_status kompilyator_flang_kvantor_postusloviya(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value nachalo, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка параметров».

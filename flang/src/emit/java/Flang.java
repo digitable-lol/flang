@@ -816,13 +816,13 @@ public final class Flang {
 
   /** «голова» доказанно непустого списка. */
   public static Value bHeadProven(Ctx ctx, Value value) {
-    return expectList("голова", value, "аргумент")[0];
+    return Value.at(expectList("голова", value, "аргумент"), 0);
   }
 
   /** «хвост» доказанно непустого списка. */
   public static Value bTailProven(Ctx ctx, Value value) {
-    Value[] items = expectList("хвост", value, "аргумент");
-    return Value.list(java.util.Arrays.copyOfRange(items, 1, items.length));
+    Value list = expectList("хвост", value, "аргумент");
+    return Value.list(java.util.Arrays.copyOfRange(list.items, 1, Value.size(list)));
   }
 
   /**

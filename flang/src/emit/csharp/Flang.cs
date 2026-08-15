@@ -928,15 +928,15 @@ public static class Flang
     /// <summary>«голова» доказанно непустого списка.</summary>
     public static Value BHeadProven(Ctx ctx, Value value)
     {
-        return ExpectList("голова", value, "аргумент")[0];
+        return Value.At(ExpectList("голова", value, "аргумент"), 0);
     }
 
     /// <summary>«хвост» доказанно непустого списка.</summary>
     public static Value BTailProven(Ctx ctx, Value value)
     {
-        Value[] items = ExpectList("хвост", value, "аргумент");
-        var next = new Value[items.Length - 1];
-        Array.Copy(items, 1, next, 0, next.Length);
+        Value list = ExpectList("хвост", value, "аргумент");
+        var next = new Value[Value.Size(list) - 1];
+        Array.Copy(list.Items, 1, next, 0, next.Length);
         return Value.List(next);
     }
 

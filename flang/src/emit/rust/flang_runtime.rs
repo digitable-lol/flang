@@ -1484,7 +1484,7 @@ pub fn b_head_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
        восемь целей разошлись бы поведением на ошибке доказательства. Пустое
        значение — то же, что вернул бы C, читая нулевой элемент пустого
        массива, и в отличие от него оно определено. */
-    Ok(items.get(0).cloned().unwrap_or(Value::Nothing))
+    Ok(items.get(0).unwrap_or(Value::Nothing))
 }
 
 pub fn b_tail_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {

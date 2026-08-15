@@ -45,6 +45,12 @@
 // string в C# — последовательность единиц UTF-16, а длина в flang считается в
 // кодовых точках (SPEC, раздел 5). Для кириллицы разницы нет, для эмодзи —
 // вдвое; поправка живёт в Flang.cs.
+//
+// ── Неизменяемость ─────────────────────────────────────────────────────────
+// Значения неизменяемы по договору. Ровно одно место пишет в уже созданный
+// массив — «добавить» (Flang.BAppend), и пишет оно ТОЛЬКО в ячейку за концом
+// списка, которой не владеет никто. Разбор приёма и доказательство
+// неизменяемости лежат при классе Grow.
 #nullable enable
 
 using System;
@@ -64,6 +70,45 @@ public sealed class Value
     public const int TagRecord = 5;
     public const int TagVariant = 6;
 
+    /// <summary>
+    /// Отметка «сколько ячеек общего массива уже занято» — одна на все списки,
+    /// которые этот массив делят.
+    ///
+    /// Нужна ровно одному месту — «добавить» (Flang.BAppend): без неё
+    /// накопление списка n вызовами стоит O(n²), потому что каждый вызов
+    /// копирует весь список. Это не теория: точка сетки
+    /// «Строить скобки» от 42 и 0 и 0 и "" и []
+    /// (022-generate-parentheses.flang) при объявленном пределе 5 000 000 шагов
+    /// упиралась в него 273 с вместо секунды — то есть предел шагов переставал
+    /// быть сроком. Тот же приём и по той же причине стоит в рантаймах C
+    /// (fl_b_dobavit), Rust (Items::grown), Go (Grow) и Java (Value.Grow).
+    ///
+    /// Инвариант, он же доказательство неизменяемости:
+    ///
+    ///     Filled только растёт, и занять ячейку с номером Filled вправе
+    ///     единственный список — тот, чей конец (Count) совпал с Filled.
+    ///
+    /// Значит ячейки 0…Count−1 не пишет никто и никогда, а ячейка за концом
+    /// занимается не более одного раза за жизнь массива: второе «добавить» к
+    /// тому же значению видит Filled больше своего конца и уходит на копию.
+    /// Ветвление
+    ///
+    ///     пусть «а» равно (добавить 1 к «с»)   ← занимает ячейку n, Filled=n+1
+    ///     пусть «б» равно (добавить 2 к «с»)   ← конец n ≠ Filled → копия
+    ///
+    /// даёт два независимых списка, и ни один не портит «с».
+    /// </summary>
+    public sealed class Grow
+    {
+        /// <summary>Сколько ячеек общего массива уже занято. Только растёт.</summary>
+        public int Filled;
+
+        internal Grow(int filled)
+        {
+            Filled = filled;
+        }
+    }
+
     /// <summary>Вид значения.</summary>
     public readonly int Tag;
 
@@ -76,8 +121,27 @@ public sealed class Value
     /// <summary>Строка либо имя варианта; у остальных видов пустая строка.</summary>
     public readonly string Str;
 
-    /// <summary>Элементы списка; у остальных видов пустой массив.</summary>
+    /// <summary>
+    /// ОБЩИЙ массив, в котором лежат элементы списка; у остальных видов пустой.
+    ///
+    /// Длина массива — это запас, а не длина списка: за концом списка в нём
+    /// могут лежать ячейки чужих списков либо пустое место. Длина списка —
+    /// Count, и читать элементы напрямую вправе только тот, кто её учитывает;
+    /// всем остальным — Size, At и Elements.
+    /// </summary>
     public readonly Value[] Items;
+
+    /// <summary>Число элементов ЭТОГО списка: Items[0…Count). У прочих ноль.</summary>
+    public readonly int Count;
+
+    /// <summary>
+    /// Отметка занятого у общего массива; null, когда запаса нет.
+    ///
+    /// Есть только у списков, которые выдало «добавить»: список из литерала,
+    /// «хвоста» или «отобразить» владеет своим массивом целиком, продлевать его
+    /// на месте некуда, и отметка ему не нужна.
+    /// </summary>
+    public readonly Grow? Spare;
 
     /// <summary>Поля записи или варианта в порядке объявления.</summary>
     public readonly Field[] Fields;
@@ -86,12 +150,21 @@ public sealed class Value
     private static readonly Field[] NoFields = Array.Empty<Field>();
 
     private Value(int tag, double num, bool bit, string str, Value[] items, Field[] fields)
+        : this(tag, num, bit, str, items, items.Length, null, fields)
+    {
+    }
+
+    private Value(
+        int tag, double num, bool bit, string str,
+        Value[] items, int count, Grow? spare, Field[] fields)
     {
         Tag = tag;
         Num = num;
         Bit = bit;
         Str = str;
         Items = items;
+        Count = count;
+        Spare = spare;
         Fields = fields;
     }
 
@@ -122,6 +195,41 @@ public sealed class Value
     /// <summary>Список. Массив переходит во владение и после этого не меняется.</summary>
     public static Value List(Value[] items) =>
         new Value(TagList, 0.0, false, "", items, NoFields);
+
+    /// <summary>
+    /// Список из первых count ячеек общего массива, с отметкой занятого.
+    /// Единственный, кто это зовёт, — «добавить» (Flang.BAppend); инвариант и
+    /// его разбор лежат при Grow.
+    /// </summary>
+    internal static Value Grown(Value[] cells, int count, Grow spare) =>
+        new Value(TagList, 0.0, false, "", cells, count, spare, NoFields);
+
+    /// <summary>Длина списка.</summary>
+    public static int Size(Value list) => list.Count;
+
+    /// <summary>Элемент списка по индексу от нуля; границы проверяет вызывающий.</summary>
+    public static Value At(Value list, int index) => list.Items[index];
+
+    /// <summary>
+    /// Элементы списка отдельным массивом ровно нужной длины.
+    ///
+    /// Нужен обходу — «свёртка», «отобразить» и «отфильтровать» печатаются как
+    /// `foreach (Value item in …)`, и пройти по общему массиву целиком значило
+    /// бы задеть чужие ячейки за концом списка. Копии нет там, где список
+    /// владеет массивом целиком, а это все списки, кроме выданных «добавить» с
+    /// запасом; сам обход и так линейный, поэтому копия класса сложности не
+    /// меняет.
+    /// </summary>
+    public static Value[] Elements(Value list)
+    {
+        if (list.Count == list.Items.Length)
+        {
+            return list.Items;
+        }
+        var exact = new Value[list.Count];
+        Array.Copy(list.Items, exact, list.Count);
+        return exact;
+    }
 
     /// <summary>Пустой список без выделения памяти.</summary>
     public static Value EmptyList() => new Value(TagList, 0.0, false, "", NoItems, NoFields);
@@ -165,11 +273,11 @@ public sealed class Value
 
     /// <summary>Пустая ли цепочка: пустой список или пустая строка.</summary>
     public static bool ChainEmpty(Value value) =>
-        value.Tag == TagString ? value.Str.Length == 0 : value.Tag == TagList && value.Items.Length == 0;
+        value.Tag == TagString ? value.Str.Length == 0 : value.Tag == TagList && value.Count == 0;
 
     /// <summary>Непустая ли цепочка.</summary>
     public static bool ChainCons(Value value) =>
-        value.Tag == TagString ? value.Str.Length > 0 : value.Tag == TagList && value.Items.Length > 0;
+        value.Tag == TagString ? value.Str.Length > 0 : value.Tag == TagList && value.Count > 0;
 
     /// <summary>Ширина первой кодовой точки строки в единицах UTF-16.</summary>
     private static int FirstPointWidth(string value) =>
@@ -181,7 +289,7 @@ public sealed class Value
 
     /// <summary>Хвост цепочки: остаток списка или остаток строки.</summary>
     public static Value ChainTail(Value value) =>
-        value.Tag == TagString ? Text(value.Str.Substring(FirstPointWidth(value.Str))) : List(value.Items[1..]);
+        value.Tag == TagString ? Text(value.Str.Substring(FirstPointWidth(value.Str))) : List(value.Items[1..value.Count]);
 
     /// <summary>Имя типа значения для диагностик (typeName интерпретатора).</summary>
     public static string TypeName(Value value)
@@ -224,7 +332,7 @@ public sealed class Value
                     ? value.Str
                     : value.Str + "(" + FieldNames(value.Fields) + ")";
             case TagList:
-                return "список из " + value.Items.Length.ToString(CultureInfo.InvariantCulture);
+                return "список из " + value.Count.ToString(CultureInfo.InvariantCulture);
             case TagRecord:
                 return "запись {" + FieldNames(value.Fields) + "}";
             case TagNothing:
@@ -298,11 +406,11 @@ public sealed class Value
         }
         if (left.Tag == TagList && right.Tag == TagList)
         {
-            if (left.Items.Length != right.Items.Length)
+            if (left.Count != right.Count)
             {
                 return false;
             }
-            for (int index = 0; index < left.Items.Length; index++)
+            for (int index = 0; index < left.Count; index++)
             {
                 if (!Equal(left.Items[index], right.Items[index]))
                 {

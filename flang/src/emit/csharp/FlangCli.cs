@@ -404,13 +404,13 @@ public static class FlangCli
                 return;
             case Value.TagList:
                 output.Append("{\"l\":[");
-                for (int index = 0; index < value.Items.Length; index++)
+                for (int index = 0; index < Value.Size(value); index++)
                 {
                     if (index > 0)
                     {
                         output.Append(',');
                     }
-                    EncodeValue(output, value.Items[index]);
+                    EncodeValue(output, Value.At(value, index));
                 }
                 output.Append("]}");
                 return;

@@ -223,7 +223,14 @@ public static class Flang
     /// </summary>
     public static Value NoMatch(Ctx ctx, Value value) => throw MatchFail(ctx, value);
 
-    /// <summary>«свёртка», «отобразить» и «отфильтровать» работают только со списком.</summary>
+    /// <summary>
+    /// «свёртка», «отобразить» и «отфильтровать» работают только со списком.
+    ///
+    /// Отдаётся массив ровно нужной длины (Value.Elements), а не общий массив
+    /// списка: за концом списка в общем массиве могут лежать чужие ячейки, а
+    /// обход печатается как `foreach (Value item in …)` и прошёл бы по ним
+    /// тоже.
+    /// </summary>
     public static Value[] RequireList(Ctx ctx, Value value, string label)
     {
         if (value.Tag != Value.TagList)
@@ -232,7 +239,7 @@ public static class Flang
                 FlangError.CodeType,
                 "«" + label + "» работает только со списком, получено " + Value.TypeName(value));
         }
-        return value.Items;
+        return Value.Elements(value);
     }
 
     /* ───────────────────────────── арифметика ───────────────────────────── */
@@ -396,7 +403,15 @@ public static class Flang
         return result;
     }
 
-    private static Value[] ExpectList(string name, Value value, string role)
+    /// <summary>
+    /// Проверка «это список» для встроенных форм.
+    ///
+    /// Возвращается само значение, а не его массив: у списка есть длина,
+    /// отдельная от длины общего массива (см. Value.Count), и встроенные формы
+    /// обязаны считать по ней. Копии здесь нет — «элемент N в …» стоит того же,
+    /// что «голова», как и обещано в SPEC.
+    /// </summary>
+    private static Value ExpectList(string name, Value value, string role)
     {
         if (value.Tag != Value.TagList)
         {
@@ -404,7 +419,7 @@ public static class Flang
                 FlangError.CodeBuiltinArgs,
                 "«" + name + "»: " + role + " должен быть списком, получено " + Value.TypeName(value));
         }
-        return value.Items;
+        return value;
     }
 
     /* ───────────────────────── строки в кодовых точках ───────────────────── */
@@ -453,7 +468,7 @@ public static class Flang
         }
         if (value.Tag == Value.TagList)
         {
-            return Value.Number(value.Items.Length);
+            return Value.Number(Value.Size(value));
         }
         throw Fail(
             FlangError.CodeBuiltinArgs,
@@ -517,9 +532,9 @@ public static class Flang
         {
             string separator = ExpectString("соединить", right, "разделитель");
             var output = new StringBuilder();
-            for (int index = 0; index < left.Items.Length; index++)
+            for (int index = 0; index < Value.Size(left); index++)
             {
-                Value item = left.Items[index];
+                Value item = Value.At(left, index);
                 if (item.Tag != Value.TagString)
                 {
                     throw Fail(
@@ -613,9 +628,9 @@ public static class Flang
     {
         if (left.Tag == Value.TagList)
         {
-            foreach (Value item in left.Items)
+            for (int index = 0; index < Value.Size(left); index++)
             {
-                if (Value.Equal(item, right))
+                if (Value.Equal(Value.At(left, index), right))
                 {
                     return Value.True;
                 }
@@ -834,7 +849,7 @@ public static class Flang
     {
         if (value.Tag == Value.TagList)
         {
-            return Value.Flag(value.Items.Length == 0);
+            return Value.Flag(Value.Size(value) == 0);
         }
         if (value.Tag == Value.TagString)
         {
@@ -848,12 +863,12 @@ public static class Flang
     /// <summary>«голова».</summary>
     public static Value BHead(Ctx ctx, Value value)
     {
-        Value[] items = ExpectList("голова", value, "аргумент");
-        if (items.Length == 0)
+        Value list = ExpectList("голова", value, "аргумент");
+        if (Value.Size(list) == 0)
         {
             throw Fail(FlangError.CodeBuiltinArgs, "«голова»: список пуст");
         }
-        return items[0];
+        return Value.At(list, 0);
     }
 
     /// <summary>
@@ -863,13 +878,13 @@ public static class Flang
     /// </summary>
     public static Value BTail(Ctx ctx, Value value)
     {
-        Value[] items = ExpectList("хвост", value, "аргумент");
-        if (items.Length == 0)
+        Value list = ExpectList("хвост", value, "аргумент");
+        if (Value.Size(list) == 0)
         {
             throw Fail(FlangError.CodeBuiltinArgs, "«хвост»: список пуст");
         }
-        var next = new Value[items.Length - 1];
-        Array.Copy(items, 1, next, 0, next.Length);
+        var next = new Value[Value.Size(list) - 1];
+        Array.Copy(list.Items, 1, next, 0, next.Length);
         return Value.List(next);
     }
 
@@ -881,38 +896,58 @@ public static class Flang
     public static Value BElement(Ctx ctx, Value index, Value value)
     {
         double position = ExpectInteger("элемент", index, "индекс");
-        Value[] items = ExpectList("элемент", value, "список");
+        Value list = ExpectList("элемент", value, "список");
+        int length = Value.Size(list);
         double at = position - ctx.IndexBase;
-        if (at < 0 || at >= items.Length)
+        if (at < 0 || at >= length)
         {
             throw Fail(
                 FlangError.CodeBuiltinArgs,
                 "«элемент»: индекс " + Value.NumberText(position) + " вне списка длиной "
-                    + items.Length.ToString(CultureInfo.InvariantCulture));
+                    + length.ToString(CultureInfo.InvariantCulture));
         }
-        return items[(int)at];
+        return Value.At(list, (int)at);
     }
 
     /// <summary>
     /// «добавить … к …»: дописывает в конец, исходный список не меняется.
     ///
-    /// Копирует, как и в JS: значения flang неизменяемы, и разделить массив с
-    /// суффиксом нельзя. Значит наращивание списка в цикле квадратично по
-    /// времени — ровно как у интерпретатора, где «добавить» это тоже
-    /// `[...список, элемент]`.
+    /// За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+    /// остальных случаях. Разбор приёма и доказательство неизменяемости лежат
+    /// при классе Value.Grow; тот же приём и по той же причине стоит в
+    /// рантаймах C (fl_b_dobavit), Rust (Items::grown), Go (BAppend) и Java.
     ///
-    /// По ПАМЯТИ, в отличие от бэкенда C, стены нет: там арена не отдаёт
-    /// промежуточные копии до конца запроса, и список из n элементов оставляет
-    /// порядка n² байт. Здесь промежуточная копия становится мусором сразу и
-    /// собирается в нулевом поколении, поэтому живой памяти всё время O(n).
+    /// Прежняя безусловная копия была ВЕРНА, но стоила O(длины) за вызов, а
+    /// значит накопление списка n вызовами — O(n²). Шаг напечатанного кода —
+    /// вход в функцию, и если один шаг стоит O(длины), предел шагов не
+    /// ограничивает работу ничем: точка «Строить скобки» от 42 и 0 и 0 и "" и []
+    /// при объявленных 5 000 000 шагов упиралась в предел 273 с вместо секунды.
+    ///
+    /// Просто дописать в общий массив нельзя: два «добавить» от одного значения
+    /// заняли бы одну ячейку и испортили бы друг друга. Разрешение спрашивается
+    /// у Grow, а не у длины массива.
     /// </summary>
     public static Value BAppend(Ctx ctx, Value item, Value value)
     {
-        Value[] items = ExpectList("добавить", value, "второй аргумент");
-        var next = new Value[items.Length + 1];
-        Array.Copy(items, next, items.Length);
-        next[items.Length] = item;
-        return Value.List(next);
+        Value list = ExpectList("добавить", value, "второй аргумент");
+        int end = Value.Size(list);
+        Value.Grow? spare = list.Spare;
+        if (spare is not null && end == spare.Filled && end < list.Items.Length)
+        {
+            list.Items[end] = item;
+            spare.Filled = end + 1;
+            return Value.Grown(list.Items, end + 1, spare);
+        }
+        /* Копия — с запасом, чтобы следующие «добавить» шли уже на месте. Запас
+           равен длине, то есть массив удваивается: за n «добавить»
+           перевыделений log₂n, а не n. У самого края int запаса брать не из
+           чего — там продление идёт впритык, и следующее «добавить» снова
+           копирует. */
+        int capacity = end < (int.MaxValue - 8) / 2 ? 2 * (end + 1) : end + 1;
+        var cells = new Value[capacity];
+        Array.Copy(list.Items, cells, end);
+        cells[end] = item;
+        return Value.Grown(cells, end + 1, new Value.Grow(end + 1));
     }
 
     /// <summary>«остаток от».</summary>

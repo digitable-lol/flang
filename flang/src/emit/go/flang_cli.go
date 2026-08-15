@@ -259,6 +259,20 @@ func runRequest(line string) string {
 		args[index] = value
 	}
 
+	// Граница входа — ДО вызова: значения приехали снаружи, программой не
+	// являются и сверяются с объявленными типами. Значение вне типа выносит
+	// вместе с типом и доказательство завершения `тотальной`, а поймать вечную
+	// цепочку потом нечем — сторожа в доказанно тотальной функции нет.
+	if err := rt.CheckEntry(flang.Entry(), query.Fn, args); err != nil {
+		var diagnostic *rt.Error
+		if found, ok := err.(*rt.Error); ok {
+			diagnostic = found
+		} else {
+			diagnostic = &rt.Error{Code: "FLANG_UNKNOWN", Message: err.Error()}
+		}
+		return failure(diagnostic.Code, diagnostic.Message)
+	}
+
 	result, err := flang.Call(ctx, query.Fn, args)
 	if err != nil {
 		var diagnostic *rt.Error

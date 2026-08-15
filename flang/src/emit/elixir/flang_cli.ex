@@ -259,8 +259,8 @@ defmodule Flang.Cli do
 
   def encode_value({:str, value}), do: "{\"s\":" <> Flang.Json.quote_string(value) <> "}"
 
-  def encode_value({:list, items}) do
-    "{\"l\":[" <> Enum.map_join(items, ",", &encode_value/1) <> "]}"
+  def encode_value({:list, _, _} = value) do
+    "{\"l\":[" <> Enum.map_join(Flang.Rt.items(value), ",", &encode_value/1) <> "]}"
   end
 
   def encode_value({:rec, fields}), do: "{\"r\":" <> encode_fields(fields) <> "}"

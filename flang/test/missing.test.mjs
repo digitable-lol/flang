@@ -261,27 +261,30 @@ const УЛИКИ = [
 
          Недостача языка тут не «нигде не сделано», а «сделано не везде»: язык
          обещает одинаковые ЗНАЧЕНИЯ, и обещать одинаковую стоимость не имеет
-         права, пока хоть одна цель строит новый список целиком. Поэтому улика
-         двусторонняя и пересчитывается на каждой починке: слева — те, кто ещё
-         копирует, справа — те, кто уже дописывает в запас. Починят ещё одну —
-         строка покраснеет, и её вместе с таблицей стоимости в SPEC придётся
-         переписать; починят последнюю — запись уйдёт из каталога.
+         права, пока хоть одна поверхность строит новый список целиком. Поэтому
+         улика двусторонняя и пересчитывается на каждой починке: слева — те, кто
+         ещё копирует, справа — те, кто уже дописывает в запас. Починят ещё
+         одну — строка покраснеет, и её вместе с таблицей стоимости в SPEC
+         придётся переписать; починят последнюю — запись уйдёт из каталога.
 
-         Счёт на сегодня: копируют вычислитель, JS, Java, C# и Elixir;
-         дописывают в запас C, Rust, Go и Python. */
+         Счёт на сегодня: копирует один ВЫЧИСЛИТЕЛЬ, и недостача держится
+         только им — он эталон стоимости, и программа на нём квадратична, как бы
+         быстро ни было у восьми целей. Дописывают в запас все восемь: C, Rust,
+         Go, Python, JS, Java, C#, а Elixir — своим приёмом (ячейка в голову
+         накопленного конца, `flang_runtime.ex`, moduledoc, раздел 5). */
       const источник = (путь) => readFileSync(new URL(путь, import.meta.url), "utf8")
       const копирует = [
         ["../src/builtins.mjs", "return [...list, args[0]]"],
-        ["../src/emit/js.mjs", "return [...list, item]"],
-        ["../src/emit/java/Flang.java", "java.util.Arrays.copyOf(items, items.length + 1)"],
-        ["../src/emit/csharp/Flang.cs", "var next = new Value[items.Length + 1];"],
-        ["../src/emit/elixir/flang_runtime.ex", "items ++ [item]"],
       ].every(([путь, образец]) => источник(путь).includes(образец))
       const наМесте = [
         ["../src/emit/c/flang_runtime.c", "fl_grow"],
         ["../src/emit/rust/flang_runtime.rs", "pub fn grown(&self, item: Value) -> Items {"],
         ["../src/emit/go/flang_runtime.go", "grow.Filled = end + 1"],
         ["../src/emit/python/flang_runtime.py", "value.data.append(item)"],
+        ["../src/emit/js.mjs", "function $view("],
+        ["../src/emit/java/Flang.java", "grow.filled = end + 1"],
+        ["../src/emit/csharp/Flang.cs", "spare.Filled = end + 1"],
+        ["../src/emit/elixir/flang_runtime.ex", "{:list, front, [item | back]}"],
       ].every(([путь, образец]) => источник(путь).includes(образец))
       return копирует && наМесте
     },

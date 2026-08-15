@@ -45,10 +45,22 @@ after(async () => {
 
 let serial = 0
 
-/** Печатает программу, кладёт файл на диск и загружает его как модуль. */
+/**
+ * Печатает программу, кладёт файл на диск и загружает его как модуль.
+ *
+ * Файлов у цели два: сама программа и прогонщик (`flang_cli.js`) — тот же, что
+ * у остальных семи целей. Здесь берётся ПЕРВЫЙ, и это не удобство порядка:
+ * модуль обязан оставаться самодостаточным и работать в браузере, поэтому
+ * прогонщика он не импортирует и без него полон. Прогонщик проверяется своим
+ * файлом (`emit-js-cli.test.mjs`) — настоящим запуском, а не чтением.
+ */
 async function build(program, options) {
   const emitted = emitJs(program, options)
-  assert.equal(emitted.files.length, 1, "одна программа — один файл")
+  assert.deepEqual(
+    emitted.files.map((file) => file.path).slice(1),
+    ["flang_cli.js"],
+    "одна программа — один модуль и один прогонщик",
+  )
   serial += 1
   const path = join(workdir, `m${serial}-${emitted.files[0].path}`)
   await writeFile(path, emitted.files[0].content, "utf8")
@@ -1537,7 +1549,19 @@ test("рантайм печатается по потребности, а не �
   assert.equal(module.nol(), 0)
   assert.doesNotMatch(content, /\$b_podstroka/u, "неиспользованные встроенные формы не печатаются")
   assert.doesNotMatch(content, /\$trampoline/u)
-  assert.ok(content.split("\n").length < 40, `тривиальная программа не должна тянуть весь рантайм: ${content.split("\n").length} строк`)
+  assert.doesNotMatch(content, /\$enter|\$step\b|\$top\b/u, "счётчики нужны рекурсии, а её здесь нет")
+
+  /* Меряется МОДУЛЬ, а не модуль вместе с таблицей прогонщика: обещание «рантайм
+     по потребности» — про рантайм. Таблица (`$PROGRAM`) — не рантайм, а связь с
+     соседним файлом, она печатается вместе с ним и снимается вместе с ним, и
+     цена её названа тут же строкой ниже, чтобы не росла молча. */
+  const голый = emitJs(trivial, { cli: false }).files[0].content
+  assert.ok(
+    голый.split("\n").length < 40,
+    `тривиальная программа не должна тянуть весь рантайм: ${голый.split("\n").length} строк`,
+  )
+  const цена = content.split("\n").length - голый.split("\n").length
+  assert.ok(цена < 40, `таблица прогонщика обязана оставаться дешёвой: ${цена} строк на одну функцию`)
 })
 
 test("имя файла берётся из имени модуля, но его можно задать", () => {

@@ -131,12 +131,20 @@ test("печать в Go даёт go.mod и пакеты", async () => {
   )
 })
 
-test("печать в JS даёт один модуль с экспортами", async () => {
+test("печать в JS даёт один модуль с экспортами и прогонщик", async () => {
   const result = await emit([lists, "--target", "js"])
   assert.equal(result.target, "js")
-  assert.equal(result.files.length, 1, "одна программа — один файл JS")
+  assert.deepEqual(result.files.map((file) => file.path).slice(1), ["flang_cli.js"])
   assert.ok(result.files[0].path.endsWith(".js"))
   assert.match(result.files[0].content, /export /u)
+})
+
+test("--no-cli снимает прогонщик у JS — остаётся один самодостаточный модуль", async () => {
+  const result = await emit([lists, "--target", "js", "--no-cli"])
+  assert.equal(result.files.length, 1, "без прогонщика у JS ровно один файл")
+  assert.ok(result.files[0].path.endsWith(".js"))
+  /* И таблица прогонщика тоже снимается: она есть только ради него. */
+  assert.doesNotMatch(result.files[0].content, /\$PROGRAM/u)
 })
 
 /* ──────────────────────── stdout, каталог, коды возврата ────────────────── */

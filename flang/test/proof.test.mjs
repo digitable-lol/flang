@@ -250,10 +250,10 @@ test("свод по корпусу называет те же числа, что
      статически. Две оставшиеся стоят по делу: у `«Числа до»` контракт ПРИНИМАЕТ
      отрицательное (это написано примером), а у `«Повторить»` вызывающий считает
      разность, неотрицательность которой статически не видна. */
-  assert.equal(и.functions, 2799, "функций в корпусе")
-  assert.equal(и.total, 2196, "тотальных")
-  assert.equal(и.ordinary, 603, "обычных")
-  assert.equal(и.carriers.composition, 1907, "несёт композиция: рекурсии нет")
+  assert.equal(и.functions, 3122, "функций в корпусе")
+  assert.equal(и.total, 2424, "тотальных")
+  assert.equal(и.ordinary, 698, "обычных")
+  assert.equal(и.carriers.composition, 2135, "несёт композиция: рекурсии нет")
   assert.equal(и.carriers.structure, 205, "несёт структура")
   assert.equal(и.carriers.exact, 18, "несёт точный шаг: объявленный «нат», сторожа нет")
   assert.equal(и.carriers.step, 2, "несёт постоянный шаг")

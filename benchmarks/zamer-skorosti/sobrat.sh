@@ -4,13 +4,21 @@
 #
 # Собирает всё, что нужно замеру, в один каталог.
 #
-#   base/       напечатанный C как есть
-#   bez-vhoda/  он же, но с вычеркнутыми fl_enter/fl_leave — то есть без счётчика
-#               шагов, без счётчика глубины и без сторожа стека. Вычеркнуты они
-#               макросом в файле МОДУЛЯ (рантайм при этом собирается обычным,
-#               иначе не собрался бы он сам), поэтому исчезает и сам вызов, а не
-#               только его тело.
-#   etalon      те же четыре задачи, написанные на C руками
+#   base/            напечатанный C как есть
+#   bez-schetchika/  он же без счётчика ШАГОВ: fl_tick вычеркнут макросом, то
+#                    есть исчезает и вызов, а не только его тело. Счётчик
+#                    глубины и сторож стека остаются — их убрать нельзя, ими
+#                    несётся объявленный предел глубины.
+#   bez-vhoda/       он же без ВСЕХ пределов: fl_tick, fl_enter и fl_leave
+#                    вычеркнуты все три.
+#   lto/             base, собранный с -flto: рантайм и модуль лежат в разных
+#                    единицах трансляции, и без межмодульной оптимизации ни один
+#                    fl_add не подставляется на место. Это правка одной строки
+#                    в Makefile, поэтому мерить её обязательно.
+#   etalon           те же четыре задачи, написанные на C руками
+#
+# Макросы ставятся в файле МОДУЛЯ, а не в рантайме: сам рантайм обязан
+# собираться обычным, иначе в нём нечего было бы звать.
 #
 # Использование: sobrat.sh КАТАЛОГ-СБОРКИ
 set -eu
@@ -28,26 +36,36 @@ node "$ROOT/flang/bin/flang.mjs" emit "$PROG/zadachi.flang" --target c --out "$O
   --max-steps 2000000000 > "$OUT/emit.json"
 make -C "$OUT/base" -j4 > "$OUT/base/make.log" 2>&1
 
-cp -r "$OUT/base" "$OUT/bez-vhoda"
-rm -f "$OUT"/bez-vhoda/*.o "$OUT"/bez-vhoda/flang_cli "$OUT"/bez-vhoda/*.a
-MOD="$OUT/bez-vhoda/zadachi_zamera.c"
-python3 - "$MOD" <<'PY'
+patch_module() {
+  local dir="$1"; shift
+  python3 - "$dir/zadachi_zamera.c" "$@" <<'PY'
 import sys
-path = sys.argv[1]
+path, *names = sys.argv[1:]
 text = open(path, encoding="utf-8").read()
 marker = '#include "zadachi_zamera.h"'
-patch = marker + """
-
-/* ЗАМЕР: входные проверки вычеркнуты целиком — ни шагов, ни глубины, ни стека. */
-#undef fl_enter
-#undef fl_leave
-#define fl_enter(ctx, function, error) FL_OK
-#define fl_leave(ctx) ((void)0)
-"""
 assert marker in text, "не найден include модуля"
-open(path, "w", encoding="utf-8").write(text.replace(marker, patch, 1))
+lines = ["", "/* ЗАМЕР: проверки вычеркнуты вместе с вызовами. */"]
+for name in names:
+    lines.append("#undef %s" % name)
+    if name == "fl_leave":
+        lines.append("#define fl_leave(ctx) ((void)0)")
+    else:
+        lines.append("#define %s(ctx, function, error) FL_OK" % name)
+open(path, "w", encoding="utf-8").write(text.replace(marker, marker + "\n".join(lines) + "\n", 1))
 PY
+}
+
+for variant in bez-schetchika bez-vhoda lto; do
+  cp -r "$OUT/base" "$OUT/$variant"
+  rm -f "$OUT/$variant"/*.o "$OUT/$variant"/flang_cli "$OUT/$variant"/*.a "$OUT/$variant"/make.log
+done
+
+patch_module "$OUT/bez-schetchika" fl_tick
+patch_module "$OUT/bez-vhoda" fl_tick fl_enter fl_leave
+
+make -C "$OUT/bez-schetchika" -j4 > "$OUT/bez-schetchika/make.log" 2>&1
 make -C "$OUT/bez-vhoda" -j4 > "$OUT/bez-vhoda/make.log" 2>&1
+make -C "$OUT/lto" -j4 CFLAGS="-std=c99 -Wall -Wextra -pedantic -O2 -flto" > "$OUT/lto/make.log" 2>&1
 
 cc -std=c99 -Wall -Wextra -O2 -o "$OUT/etalon" "$PROG/etalon.c" -lm
 

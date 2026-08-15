@@ -28,6 +28,7 @@ import {
   callBuiltin,
   describeValue,
   длинаСписка,
+  ячейкиСписка,
   элементСписка,
   элементыСписка,
   flangError,
@@ -761,9 +762,26 @@ function matchPattern(pattern, value, span) {
 
 // ── свёртка ──
 
+/*
+ * Границы обхода снимаются ОДИН РАЗ, на входе, и дальше не пересматриваются.
+ *
+ * Это не оптимизация ради оптимизации, а обязательное свойство: тело свёртки,
+ * «отобразить» и «отфильтровать» вправе позвать «добавить» — в том числе к тому
+ * самому списку, по которому идёт обход. Продление занимает ячейки ЗА концом
+ * вида (`builtins.mjs`, «Список с запасом»), и обход обязан их не увидеть,
+ * иначе свёртка по списку из трёх элементов не кончилась бы никогда.
+ *
+ * Снимок — это пара «ячейки и длина», а не копия: у вида ячейки общего массива,
+ * у обычного списка он сам. Копировать нечего — ячейки до конца вида не
+ * переписывает никто.
+ */
+function снимокОбхода(list) {
+  return { ячейки: ячейкиСписка(list), длина: длинаСписка(list) }
+}
+
 function stepFoldOver(machine, frame) {
   const list = requireList(machine.value, "свёртка", frame.node.span)
-  push(machine, { op: "foldInit", node: frame.node, env: frame.env, list })
+  push(machine, { op: "foldInit", node: frame.node, env: frame.env, обход: снимокОбхода(list) })
   pushEval(machine, frame.node.init, frame.env, frame.node.span)
 }
 
@@ -772,7 +790,7 @@ function stepFoldInit(machine, frame) {
     op: "foldStep",
     node: frame.node,
     env: frame.env,
-    list: frame.list,
+    обход: frame.обход,
     index: 0,
     acc: machine.value,
     started: false,
@@ -785,16 +803,13 @@ function stepFold(machine, frame) {
     frame.index += 1
   }
   frame.started = true
-  /* Длина берётся у ВИДА, а не у общего массива: тело свёртки вправе позвать
-     «добавить» и занять ячейки за концом того самого списка, по которому идёт
-     обход, — и обход обязан их не увидеть. */
-  if (frame.index >= длинаСписка(frame.list)) {
+  if (frame.index >= frame.обход.длина) {
     machine.value = frame.acc
     return
   }
   const env = Object.create(frame.env)
   env[frame.node.acc] = frame.acc
-  env[frame.node.item] = элементСписка(frame.list, frame.index)
+  env[frame.node.item] = frame.обход.ячейки[frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }
@@ -809,7 +824,7 @@ function stepLoopOver(machine, frame) {
     node: frame.node,
     env: frame.env,
     mode: frame.mode,
-    list,
+    обход: снимокОбхода(list),
     index: 0,
     out: [],
     started: false,
@@ -831,17 +846,17 @@ function stepLoop(machine, frame) {
       }
       // Тело фильтра — предикат; для отброшенных элементов ничего больше не
       // вычисляется (никакого «а вдруг пригодится»).
-      if (keep) frame.out.push(элементСписка(frame.list, frame.index))
+      if (keep) frame.out.push(frame.обход.ячейки[frame.index])
     }
     frame.index += 1
   }
   frame.started = true
-  if (frame.index >= длинаСписка(frame.list)) {
+  if (frame.index >= frame.обход.длина) {
     machine.value = frame.out
     return
   }
   const env = Object.create(frame.env)
-  env[frame.node.item] = элементСписка(frame.list, frame.index)
+  env[frame.node.item] = frame.обход.ячейки[frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }

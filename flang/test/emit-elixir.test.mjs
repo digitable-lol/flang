@@ -74,6 +74,7 @@ import { fileURLToPath } from "node:url"
 import { errorCode } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
+import { markMeasureGuards } from "../src/totality.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
 import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
@@ -323,11 +324,29 @@ function compare(program, built, functionName, grid, options = {}) {
 const stdlibDirectory = fileURLToPath(new URL("../stdlib/", import.meta.url))
 const leetcodeDirectory = fileURLToPath(new URL("../examples/leetcode/", import.meta.url))
 
+/**
+ * Корпус — тот же, что читает передний край: разобранный И ПОМЕЧЕННЫЙ.
+ *
+ * Здесь стоял голый `parse`, и это была не мелочь. Отметку меры кладёт CLI на
+ * каждую команду, включая `emit` (`bin/flang.mjs`, `markMeasure`), а понижение
+ * по этой отметке ставит сторожа ДО первого напечатанного байта
+ * (`src/defunc.mjs`, `guardDescent`). Значит сверка сравнивала с эталоном не ту
+ * программу, которую печатает настоящая команда, — и мимо неё проходило всё,
+ * что сторож добавляет.
+ *
+ * Измерено на этом корпусе: из 94 программ сторожа меры несут 43, печать от
+ * голого разбора теряет 363 512 байт Elixir, и слово `FLANG_MEASURE`
+ * встречается в ней 0 раз против 185 у помеченной.
+ *
+ * Уравнивание бесплатно там, где меры нет: у 51 программы без числовой меры
+ * печать совпала с прежней побайтово, ни одного изменившегося байта, —
+ * `markMeasureGuards` возвращает ТОТ ЖЕ объект, когда стеречь нечего.
+ */
 function loadPrograms() {
   const found = []
   for (const directory of [stdlibDirectory, leetcodeDirectory]) {
     for (const name of readdirSync(directory).filter((item) => item.endsWith(".flang")).sort()) {
-      found.push({ file: name, program: parse(readFileSync(directory + name, "utf8"), name) })
+      found.push({ file: name, program: markMeasureGuards(parse(readFileSync(directory + name, "utf8"), name)) })
     }
   }
   return found
@@ -2199,6 +2218,88 @@ test("функция, состоящая из одного хвостового 
     assert.equal(byInterpreter.code, "FLANG_RECURSION_LIMIT",
       `интерпретатор обязан остановиться там же: «${name}»`)
   }
+})
+
+/* ═════════════ 11б. сторож меры: отметка обязана ПОЯВИТЬСЯ ════════════════ */
+
+/**
+ * Программа, чьё доказательство держится на числовой мере.
+ *
+ * Она же у цели C (`emit-c.test.mjs`, «сторож меры»), и намеренно та же:
+ * сторож у всех восьми целей один и тот же, значит и вход, на котором он обязан
+ * сработать, обязан быть один.
+ */
+const measureSource = `модуль «Счёт»
+
+тотальная функция «До нуля»
+  принимает н: число
+  возвращает число
+  если н не больше 0
+    то 0
+    иначе «До нуля» от (н минус 1)
+`
+
+/** Сколько раз слово `FLANG_MEASURE` встречается во всём напечатанном. */
+function упоминанийМеры(program) {
+  const весь = emitElixir(program).files.map((file) => file.content).join("")
+  return (весь.match(/FLANG_MEASURE/gu) ?? []).length
+}
+
+test("сторож меры ПОЯВЛЯЕТСЯ в напечатанном Elixir, а не теряется обеими сторонами", () => {
+  /* Главная сверка двусторонняя, и этим слепа: снятая отметка теряется ОБЕИМИ
+     сторонами разом. Интерпретатор зовёт то же понижение, и на непомеченной
+     программе он досчитает ровно то, что досчитает непомеченный Elixir, —
+     сверка останется зелёной, а сторожа не будет ни у кого. Поэтому здесь
+     проверяется не совпадение, а ПОЯВЛЕНИЕ: без него изъятие отметки покрасило
+     бы только статическую улику, а главный тест смолчал бы. */
+  assert.equal(упоминанийМеры(parse(measureSource)), 0,
+    "у голого разбора сторожа меры нет вовсе — иначе улика ниже ничего не значит")
+  assert.equal(упоминанийМеры(markMeasureGuards(parse(measureSource))), 1,
+    "помеченная программа обязана печатать сторожа")
+
+  /* И то же самое на настоящем корпусе, которым идёт главная сверка: он
+     грузится помеченным (`loadPrograms`), и сторожа обязаны в нём БЫТЬ. */
+  let несут = 0
+  let всего = 0
+  for (const { program } of programs) {
+    const сколько = упоминанийМеры(program)
+    if (сколько > 0) несут += 1
+    всего += сколько
+  }
+  assert.ok(несут >= 43, `сторожа меры несут ${несут} программ корпуса из ${programs.length}, а несли 43`)
+  assert.ok(всего >= 185, `упоминаний сторожа в печати корпуса ${всего}, а было 185`)
+})
+
+test("сторож меры: отказ у собранного Elixir дословно тот же, что у интерпретатора", async (t) => {
+  if (!toolchain) {
+    missingToolchain(t, "elixir", "тулчейн Elixir не найден — пропуск")
+    return
+  }
+  /* Доказательство по мере верно для вещественных чисел, а числа flang —
+     IEEE-754 double: `н минус 1` при большом |н| равен н, спуск не идёт, и
+     `тотальная` обещала бы завершение там, где его нет. Понижение перед печатью
+     ставит на доказанном мерой аргументе проверку убывания (`src/defunc.mjs`),
+     а вычислитель зовёт то же понижение — значит отказ у них обязан совпасть
+     КОДОМ И ТЕКСТОМ, а не «по смыслу».
+
+     Сетка — не выдумка: 2⁵⁴+4 и 1e308 это входы, где шаг ничего не меняет;
+     ±∞ и NaN — там же по другой причине; 0, 1, 7 и 2.5 — обычный спуск,
+     который сторож обязан пропустить неотличимо от программы без него. */
+  const program = markMeasureGuards(parse(measureSource))
+  const built = build(program)
+  assert.match(built.source, /FLANG_MEASURE/u, "сторож не доехал до напечатанного Elixir")
+
+  const points = compare(program, built, "До нуля", [
+    [0], [1], [7], [2.5], [-3],
+    [18014398509481988], [1e308], [Infinity], [-Infinity], [NaN],
+  ])
+
+  /* Отказ обязан ПРИЙТИ С МАШИНЫ, а не только совпасть: на 2⁵⁴+4 шаг ничего не
+     меняет, и собранный Elixir обязан отказать шестым видом. */
+  const [ответ] = ask(built, [{ fn: "До нуля", args: [encode(18014398509481988)] }])
+  assert.equal(ответ.ok, false, "на входе, где мера не убывает, собранный Elixir обязан отказать")
+  assert.equal(ответ.code, "FLANG_MEASURE", `с машины пришёл ${ответ.code}, а не шестой вид отказа`)
+  t.diagnostic(`сверенных входов: ${points}, с машины пришёл ${ответ.code}`)
 })
 
 /* ══════════════════════════ 12. форма результата ═══════════════════════════ */

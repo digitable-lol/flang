@@ -25,9 +25,32 @@ class Flang < Formula
   homepage "https://github.com/digitable-lol/flang"
   url "https://github.com/digitable-lol/flang/releases/download/v0.5.0/flang-0.5.0-c.tar.gz"
   # Хеш архива, собранного `node scripts/build-release-c.mjs` и упакованного
-  # `tar -czf`. Пересчитывается при каждом релизе: brew сверяет его сам, и
+  # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
-  sha256 "7ef6be88f8e71d3de0775da1aec7607177d81f4757e144d028b8f77d5f1aba1f"
+  #
+  # Команда записана целиком и не сокращается до «tar -czf», потому что простой
+  # `tar -czf` даёт РАЗНЫЕ байты при одном и том же содержимом: он кладёт в архив
+  # время правки файлов, их права и владельца, а печать заводит файлы заново при
+  # каждом запуске. Измерено: две упаковки одного и того же каталога с разницей
+  # только во времени правки дали 705ba0fa… и 15c42377… и даже разный размер
+  # (671 284 и 671 275 байт). Хеш, который нельзя повторить, нельзя и проверить:
+  # ровно поэтому он и переезжал из релиза в релиз непересчитанным.
+  #
+  # Восемь имён перечислены поимённо, а не взяты точкой или звёздочкой: скрипт
+  # СОБИРАЕТ напечатанное прямо в том же каталоге, и `tar -czf … .` уносит
+  # пользователю ещё и flang_cli, *.o и libkompilyator_flang.a — 3 597 031 байт
+  # вместо 643 714, причём бинарник чужой машины.
+  #
+  #   node scripts/build-release-c.mjs
+  #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
+  #       --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - \
+  #       Makefile flang.1 flang_cli.c flang_repl.c flang_runtime.c \
+  #       flang_runtime.h kompilyator_flang.c kompilyator_flang.h \
+  #     | gzip -9n > output/flang-0.5.0-c.tar.gz
+  #
+  # Нужен GNU tar: у bsdtar (macOS) нет `--sort` и `--mtime`, и байты выйдут
+  # другими. На macOS это `gtar` из пакета `gnu-tar`.
+  sha256 "b4cf0f10ddd19ea7a59d31060d250cdc36fbb69b1dbd15ef14557378b4f47f34"
   license "BSD-2-Clause"
   version "0.5.0"
 

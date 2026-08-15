@@ -17318,6 +17318,32 @@ fl_status kompilyator_flang_dva_argumenta_soderzhit(fl_ctx *ctx, fl_value uzel, 
 fl_status kompilyator_flang_forma_k_chislu(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Форма к числу или беда».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: «Итог вывода»
+ */
+fl_status kompilyator_flang_forma_k_chislu_ili_beda(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исход числа как тип».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param uzel — «узел»: «Значение»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: «Итог вывода»
+ */
+fl_status kompilyator_flang_ishod_chisla_kak_tip(fl_ctx *ctx, fl_value tablicy, fl_value uzel, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Форма к строке».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.

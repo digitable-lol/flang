@@ -215,32 +215,7 @@ export function checkTypes(program) {
     diagnostics.push({ code, message, severity: "error", span: spanOf(node) })
   }
 
-  const ctx = {
-    report,
-    records: new Map(),      // имя записи → Map<поле, Тип>
-    sums: new Map(),         // имя суммы → Map<вариант, Map<поле, Тип>>
-    variantOwner: new Map(), // имя варианта → имя суммы
-    aliases: new Map(),      // имя псевдонима → объявление (узел `alias`)
-    aliasTypes: new Map(),   // имя псевдонима → развёрнутый тип (мемоизация)
-    aliasOpen: new Set(),    // псевдонимы в процессе развёртывания — ловушка цикла
-    signatures: new Map(),
-    /* Параметрический полиморфизм (flang/cat/POLY.md). `typeParams` — имена
-       параметров каждого объявленного типа; пустой массив у обычного типа,
-       поэтому проверка арности одна на всех. `paramScope` — параметры,
-       связанные тем объявлением, которое нормализуется прямо сейчас: имя
-       параметра важнее одноимённого типа, и только внутри своего объявления. */
-    typeParams: new Map(), // имя типа → массив имён его параметров
-    paramScope: null,      // Set<имя параметра> или null вне объявления
-    /* Тип состояния плана — ожидание для поля `потом` варианта «Сделать»
-       (`io.mjs`, `planStateType`). `null` значит «сверять нечем». */
-    planState: null,
-    /* Второй джокер словаря: `значение` варианта «Конец работы». Объявленного
-       типа у результата плана нет вовсе, поэтому образцом становится первое
-       встреченное значение — см. `planResultIsShared`. `planDone` хранит его тип
-       и узел, чтобы сообщение назвало оба места. */
-    planResultShared: false,
-    planDone: null,
-  }
+  const ctx = новыйКонтекст(report)
 
   collectTypes(program, ctx)
   collectSignatures(program, ctx)
@@ -281,6 +256,96 @@ export function checkTypes(program) {
   checkPlans(program, ctx)
 
   return { ok: diagnostics.length === 0, diagnostics, types: ctx.signatures }
+}
+
+/**
+ * Рабочие таблицы проверки. Выделены из `checkTypes` затем, что таблицы нужны и
+ * границе входа (`checkArguments`), а второй их набор был бы вторым ответом на
+ * вопрос «какие в программе типы» — и расходились бы эти ответы молча.
+ */
+function новыйКонтекст(report) {
+  return {
+    report,
+    records: new Map(),      // имя записи → Map<поле, Тип>
+    sums: new Map(),         // имя суммы → Map<вариант, Map<поле, Тип>>
+    variantOwner: new Map(), // имя варианта → имя суммы
+    aliases: new Map(),      // имя псевдонима → объявление (узел `alias`)
+    aliasTypes: new Map(),   // имя псевдонима → развёрнутый тип (мемоизация)
+    aliasOpen: new Set(),    // псевдонимы в процессе развёртывания — ловушка цикла
+    signatures: new Map(),
+    /* Параметрический полиморфизм (flang/cat/POLY.md). `typeParams` — имена
+       параметров каждого объявленного типа; пустой массив у обычного типа,
+       поэтому проверка арности одна на всех. `paramScope` — параметры,
+       связанные тем объявлением, которое нормализуется прямо сейчас: имя
+       параметра важнее одноимённого типа, и только внутри своего объявления. */
+    typeParams: new Map(), // имя типа → массив имён его параметров
+    paramScope: null,      // Set<имя параметра> или null вне объявления
+    /* Тип состояния плана — ожидание для поля `потом` варианта «Сделать»
+       (`io.mjs`, `planStateType`). `null` значит «сверять нечем». */
+    planState: null,
+    /* Второй джокер словаря: `значение` варианта «Конец работы». Объявленного
+       типа у результата плана нет вовсе, поэтому образцом становится первое
+       встреченное значение — см. `planResultIsShared`. `planDone` хранит его тип
+       и узел, чтобы сообщение назвало оба места. */
+    planResultShared: false,
+    planDone: null,
+  }
+}
+
+/**
+ * ГРАНИЦА ВХОДА: значения, пришедшие снаружи, против объявленных типов.
+ *
+ * Зачем это отдельная дверь, хотя типы и так проверены. `flang check` смотрит
+ * ПРОГРАММУ; аргументы вызова программой не являются — они приезжают JSON-ом из
+ * `--args`, и до этой проверки в них годилось что угодно. Улика была ровно
+ * такой: `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * `н` равном 1e300 упирался в FLANG_RECURSION_LIMIT — код, который SPEC отводит
+ * ОБЫЧНОЙ функции, исчерпавшей лимит. Тотальная функция отказывала пределом
+ * глубины потому, что доказательство её завершения СТОИТ НА ТИПЕ: у `нат` есть
+ * дно 0 и потолок 2^53−1, ниже потолка `н минус 1` точно меньше `н`, и сторож
+ * убывания в такую функцию не печатается вовсе (SPEC, «Точное натуральное»).
+ * Значение вне типа выносит вместе с типом и доказательство: 1e300 минус 1
+ * равно 1e300, цепочка вечна, а поймать её нечем — сторожа нет.
+ *
+ * Отсюда и место проверки: НЕ в вычислителе. Вычислитель ловил бы ложь на той
+ * операции, которой не повезло первой (у `«Сумма пары»` это «add», у
+ * `«Сумма списка»` — «длина»), то есть говорил бы о симптоме и только про те
+ * входы, до которых дошло исполнение. Дверь одна, и она здесь.
+ *
+ * Проверяет ровно тот же `checkValue`, которым проверяются значения примеров, —
+ * второе понимание слов «значение подходит типу» означало бы, что `пример … дано
+ * н равно −1` отвергается, а `--args '{"н": -1}'` принимается, хотя это одно и
+ * то же утверждение о значении.
+ *
+ * Диагностики программы (нет `возвращает`, сумма объявлена дважды) сюда НЕ
+ * попадают: их дело — `flang check`, и повторять их на каждом запуске значило бы
+ * менять смысл команды `run`. Собираются они в отброшенный список, потому что
+ * таблицы типов без этого прохода не заполнятся.
+ *
+ * @param {object} program AST модуля
+ * @param {string} functionName имя вызываемой функции
+ * @param {object} args значения аргументов по именам параметров
+ * @returns {{ ok: boolean, diagnostics: object[] }}
+ */
+export function checkArguments(program, functionName, args) {
+  const отброшенные = []
+  const ctx = новыйКонтекст((code, message, node) => {
+    отброшенные.push({ code, message, severity: "error", span: spanOf(node) })
+  })
+  collectTypes(program, ctx)
+  collectSignatures(program, ctx)
+
+  const signature = ctx.signatures.get(functionName)
+  if (signature === undefined) return { ok: true, diagnostics: [] }
+
+  const diagnostics = []
+  ctx.report = (code, message, node) => {
+    diagnostics.push({ code, message, severity: "error", span: spanOf(node) })
+  }
+  const узел = listFunctions(program).find((fn) => fn?.name === functionName) ?? null
+  const где = `вызов функции «${functionName}»`
+  сверитьАргументы(signature, args ?? {}, solveExample(signature, { args }, ctx), ctx, узел, где, где)
+  return { ok: diagnostics.length === 0, diagnostics }
 }
 
 /* ------------------------------------------------------------------ */
@@ -3086,24 +3151,40 @@ function checkExamples(fn, signature, ctx, чей = `функции «${fn.name}
     const label = isName(example?.name) ? `пример «${example.name}»` : "пример"
     const args = example?.args ?? {}
     const bindings = solveExample(signature, example, ctx)
-    for (const param of signature.params) {
-      if (!(param.name in args)) {
-        // Необязательный аргумент можно не задавать: отсутствие — это `ничто`,
-        // а не пропуск. Ядро FTS считает так же (`requiredFields`
-        // в `src/validate.ts` исключает поля с `| undefined`).
-        if (param.type.optional !== true) {
-          ctx.report("FLANG_TYPE", `${label} ${чей} не задаёт аргумент «${param.name}»`, example)
-        }
-        continue
-      }
-      checkValue(args[param.name], substitute(param.type, bindings), `${label}: аргумент «${param.name}»`, ctx, example)
-    }
-    for (const given of Object.keys(args)) {
-      if (!signature.params.some((param) => param.name === given)) {
-        ctx.report("FLANG_UNKNOWN_NAME", `${label} ${чей} задаёт неизвестный аргумент «${given}»`, example)
-      }
-    }
+    сверитьАргументы(signature, args, bindings, ctx, example, `${label} ${чей}`, label)
     checkValue(example?.expected, substitute(signature.returns, bindings), `${label}: ожидаемое значение`, ctx, example)
+  }
+}
+
+/**
+ * Набор значений против списка параметров: задан ли каждый, не задан ли лишний,
+ * годится ли значение по типу.
+ *
+ * Одна функция на два места — пример в исходнике и `--args` на границе входа, —
+ * потому что утверждение у них одно и то же: «эти значения подходят этой
+ * сигнатуре». Разойдись они, `дано н равно −1` при `н: нат` отвергалось бы, а
+ * `--args '{"н": -1}'` принималось.
+ *
+ * `подпись` называет владельца в сообщениях о пропущенном и лишнем аргументе,
+ * `метка` — начало пути внутрь значения («пример «Три»: аргумент «н»»).
+ */
+function сверитьАргументы(signature, args, bindings, ctx, at, подпись, метка) {
+  for (const param of signature.params) {
+    if (!(param.name in args)) {
+      // Необязательный аргумент можно не задавать: отсутствие — это `ничто`,
+      // а не пропуск. Ядро FTS считает так же (`requiredFields`
+      // в `src/validate.ts` исключает поля с `| undefined`).
+      if (param.type.optional !== true) {
+        ctx.report("FLANG_TYPE", `${подпись} не задаёт аргумент «${param.name}»`, at)
+      }
+      continue
+    }
+    checkValue(args[param.name], substitute(param.type, bindings), `${метка}: аргумент «${param.name}»`, ctx, at)
+  }
+  for (const given of Object.keys(args)) {
+    if (!signature.params.some((param) => param.name === given)) {
+      ctx.report("FLANG_UNKNOWN_NAME", `${подпись} задаёт неизвестный аргумент «${given}»`, at)
+    }
   }
 }
 

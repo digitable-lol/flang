@@ -197,9 +197,9 @@ fl_status kompilyator_flang_sozdat_sborka_strelki(fl_ctx *ctx, fl_value r, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sborka_zakona(fl_ctx *ctx, fl_value r, fl_value primery, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «шаги», «доказано», «новая». */
+/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «индукция», «шаги», «доказано», «новая». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value shagi, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value indukciya, fl_value shagi, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
 
 /* Запись FTS «Обрезка справа»: «готово», «пробелы». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -5383,6 +5383,17 @@ fl_status kompilyator_flang_uzly_po_klyuchu(fl_ctx *ctx, fl_value prochie, fl_va
 fl_status kompilyator_flang_pole_esli_nepusto(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Поле если есть».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param klyuch — «ключ»: строка
+ * @param uzel — «узел»: «Может быть узел при разборе»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_pole_esli_est(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Поля объявлений».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -6078,6 +6089,16 @@ fl_status kompilyator_flang_stroka_dopuscheniya_teoremy(fl_ctx *ctx, fl_value sb
 fl_status kompilyator_flang_stroka_utverzhdaem(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Строка индукции теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_indukcii_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строка шага теоремы».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -6216,6 +6237,77 @@ fl_status kompilyator_flang_obosnovanie_zakonom(fl_ctx *ctx, fl_value r, fl_valu
  * @return значение: «Шаг»
  */
 fl_status kompilyator_flang_obosnovanie_predpolozheniem(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать индукцию».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_indukciyu(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаи индукции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_sluchai_indukcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value uzly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать случай индукции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_sluchay_indukcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги случая».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_shagi_sluchaya(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги случая блоком».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_shagi_sluchaya_blokom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти шаги случая».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_oboyti_shagi_sluchaya(fl_ctx *ctx, fl_value r, fl_value imya, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать файл-функтор».

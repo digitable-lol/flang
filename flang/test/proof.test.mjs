@@ -257,11 +257,11 @@ test("свод по корпусу называет те же числа, что
      библиотека входит в неподвижную точку самоприменения целиком и слов слоя
      доказательства употреблять не имеет права. Шесть новых несёт композиция,
      две («Длина» и «Вставить по порядку») — структура; обычных среди них нет. */
-  assert.equal(и.functions, 2807, "функций в корпусе")
-  assert.equal(и.total, 2204, "тотальных")
+  assert.equal(и.functions, 2813, "функций в корпусе")
+  assert.equal(и.total, 2210, "тотальных")
   assert.equal(и.ordinary, 603, "обычных")
-  assert.equal(и.carriers.composition, 1913, "несёт композиция: рекурсии нет")
-  assert.equal(и.carriers.structure, 207, "несёт структура")
+  assert.equal(и.carriers.composition, 1915, "несёт композиция: рекурсии нет")
+  assert.equal(и.carriers.structure, 211, "несёт структура")
   assert.equal(и.carriers.exact, 18, "несёт точный шаг: объявленный «нат», сторожа нет")
   assert.equal(и.carriers.step, 2, "несёт постоянный шаг")
   assert.equal(и.carriers.measure, 64, "несёт объявленная мера — столько же, сколько «убывает» в корпусе")
@@ -276,9 +276,9 @@ test("свод по корпусу называет те же числа, что
 
      СТОРОЖ СЧИТАЕТСЯ НЕ ПО РЕКУРСИИ, А ПО НОСИТЕЛЮ: на стороже только два
      носителя из четырёх, и это второе число этапа — 66 функций, а не 80. */
-  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 291, "рекурсивных всего")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 295, "рекурсивных всего")
   assert.equal(и.carriers.step + и.carriers.measure, 66, "функций на стороже")
-  assert.equal(и.carriers.composition + 291, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.composition + 295, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Утверждения о поведении — то, чего до слоя доказательства в корпусе не было
      вовсе: высказать их было нечем. Числа названы поимённо и точным равенством,
@@ -300,9 +300,9 @@ test("свод по корпусу называет те же числа, что
      одной функции над списком сегодня доказать нельзя, сколько бы правил
      сведения ни прибавилось. Заказ лежит исполняемым списком в
      `flang/test/stdlib-claims.test.mjs`. */
-  assert.equal(и.claims.total, 17, "утверждений высказано в корпусе")
+  assert.equal(и.claims.total, 24, "утверждений высказано в корпусе")
   assert.equal(и.claims.proved, 6, "доказано ядром: терм принят")
-  assert.equal(и.claims.grid, 10, "сетка: теоремы нет, есть примеры")
+  assert.equal(и.claims.grid, 17, "сетка: теоремы нет, есть примеры")
   assert.equal(и.claims.declared, 1, "объявлено, не доказано: ни теоремы, ни примеров")
   assert.equal(и.claims.refused, 0, "отвергнутый терм не проходит check, значит в дереве его нет")
   assert.equal(и.claims.steps, 14, "шагов в принятых термах")

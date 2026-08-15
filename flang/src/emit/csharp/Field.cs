@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Поле записи или варианта: имя из модели и значение.
 //
 // Именно массив пар, а не Dictionary: порядок полей наблюдаем — он попадает в

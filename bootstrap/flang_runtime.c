@@ -4,6 +4,8 @@
  * Файл: рантайм: реализация.
  * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
  */
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Рантайм flang для бэкенда C — реализация.
  *

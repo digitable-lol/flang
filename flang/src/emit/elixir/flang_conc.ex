@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 defmodule Flang.Proc do
   @moduledoc """
   Процесс flang как процесс BEAM.

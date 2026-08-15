@@ -12,6 +12,8 @@
 #define FL_MAX_TAIL_ARGS 8
 #define FL_MAX_ARGS 9
 
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Рантайм flang для бэкенда C — заголовок.
  *

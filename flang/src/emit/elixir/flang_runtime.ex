@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 defmodule Flang.Error do
   @moduledoc """
   Диагностика flang: код и текст, дословно совпадающие с интерпретатором.

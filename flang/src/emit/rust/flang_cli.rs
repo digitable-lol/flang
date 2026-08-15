@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
 // Прогонщик программы flang: JSON на входе, JSON на выходе.
 //
 // Зачем он есть. Напечатанный крейт — это библиотека, и вызвать её можно только

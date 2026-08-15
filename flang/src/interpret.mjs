@@ -27,6 +27,9 @@
 import {
   callBuiltin,
   describeValue,
+  длинаСписка,
+  элементСписка,
+  элементыСписка,
   flangError,
   FlangError,
   FlangVariant,
@@ -35,6 +38,7 @@ import {
   isRecord,
   isScalar,
   isVariant,
+  материализовать,
   percentOf,
   reifyValue,
   remainderOf,
@@ -235,7 +239,11 @@ function callFunction(rt, name, args, отчёт) {
   }
   try {
     applyFunction(machine, fn, values, fn.span)
-    return run(machine)
+    /* Граница машины: наружу уходят обычные массивы, а не списки с запасом
+       (`builtins.mjs`, «Список с запасом»). Вид — приём вычислителя, и знать о
+       нём читателям значений не положено: сверка с восемью целями печати,
+       `flang run`, факт-чекинг и тесты сравнивают ЗНАЧЕНИЯ. */
+    return материализовать(run(machine))
   } finally {
     if (отчёт !== undefined && отчёт !== null) отчёт.витки = machine.steps
   }
@@ -709,7 +717,7 @@ function matchPattern(pattern, value, span) {
        разваливалось бы пополам, и разбор строки расходился бы с её длиной. */
     case "empty":
       if (typeof value === "string") return value.length === 0 ? [] : null
-      return isList(value) && value.length === 0 ? [] : null
+      return isList(value) && длинаСписка(value) === 0 ? [] : null
     case "cons": {
       if (typeof value === "string") {
         const points = Array.from(value)
@@ -719,10 +727,10 @@ function matchPattern(pattern, value, span) {
         if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, points.slice(1).join("")])
         return bindings
       }
-      if (!isList(value) || value.length === 0) return null
+      if (!isList(value) || длинаСписка(value) === 0) return null
       const bindings = []
-      if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, value[0]])
-      if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, value.slice(1)])
+      if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, элементСписка(value, 0)])
+      if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, элементыСписка(value, 1)])
       return bindings
     }
     case "variant": {
@@ -777,13 +785,16 @@ function stepFold(machine, frame) {
     frame.index += 1
   }
   frame.started = true
-  if (frame.index >= frame.list.length) {
+  /* Длина берётся у ВИДА, а не у общего массива: тело свёртки вправе позвать
+     «добавить» и занять ячейки за концом того самого списка, по которому идёт
+     обход, — и обход обязан их не увидеть. */
+  if (frame.index >= длинаСписка(frame.list)) {
     machine.value = frame.acc
     return
   }
   const env = Object.create(frame.env)
   env[frame.node.acc] = frame.acc
-  env[frame.node.item] = frame.list[frame.index]
+  env[frame.node.item] = элементСписка(frame.list, frame.index)
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }
@@ -820,17 +831,17 @@ function stepLoop(machine, frame) {
       }
       // Тело фильтра — предикат; для отброшенных элементов ничего больше не
       // вычисляется (никакого «а вдруг пригодится»).
-      if (keep) frame.out.push(frame.list[frame.index])
+      if (keep) frame.out.push(элементСписка(frame.list, frame.index))
     }
     frame.index += 1
   }
   frame.started = true
-  if (frame.index >= frame.list.length) {
+  if (frame.index >= длинаСписка(frame.list)) {
     machine.value = frame.out
     return
   }
   const env = Object.create(frame.env)
-  env[frame.node.item] = frame.list[frame.index]
+  env[frame.node.item] = элементСписка(frame.list, frame.index)
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }

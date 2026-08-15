@@ -164,12 +164,132 @@ export function isVariant(value) {
   return value instanceof FlangVariant
 }
 
+/**
+ * ── Список с запасом: «добавить» за амортизированное постоянное время ──────
+ *
+ * Список flang — это массив JS. Так значения совпадают с FtsValue ядра и
+ * сериализуются в JSON без потерь, и менять это нельзя. Но «добавить … к …»
+ * СТРОИЛО НОВЫЙ МАССИВ ЦЕЛИКОМ (`[...list, item]`), а значит накопление списка
+ * из н элементов стоило O(н²) — и это не теория, а измерение на этом самом
+ * вычислителе: 50 000 «добавить» — 14 375 мс, 100 000 — 48 668 мс,
+ * 200 000 — 229 634 мс. Показатель роста при удвоении 1,76 и 2,24, то есть
+ * квадрат. Из-за той же дыры у пяти целей печати предел шагов переставал быть
+ * СРОКОМ: 5 000 000 шагов на накопителе брались двадцать минут вместо секунды.
+ *
+ * Здесь тот же приём, каким это закрыто у C (`fl_b_dobavit`, «запас +
+ * заполнено»), Rust и Go (`Items` с концом поверх общего массива):
+ *
+ *   общий массив `буфер` — это ячейки, УЖЕ кем-то занятые; их число только
+ *   растёт, а занять ячейку `конец` вправе единственный список — тот, чей
+ *   `конец` совпал с `буфер.length`.
+ *
+ * Отсюда неизменяемость, а она в языке не пожелание: ячейки `0…конец−1` не
+ * переписывает никто и никогда, ячейку за концом занимают не более одного раза
+ * за жизнь буфера, поэтому ветвление
+ *
+ *     пусть один равно (добавить 1 к основа)   ← занял ячейку н, занято = н+1
+ *     пусть два  равно (добавить 2 к основа)   ← конец н ≠ занято → копия
+ *
+ * даёт два независимых списка, и «основа» после обоих та же самая. Удвоение
+ * запаса берёт на себя сам массив JS, поэтому за н «добавить» память
+ * перевыделяется log₂н раз, а не н.
+ *
+ * ГРАНИЦА. Наружу — вызывающему `createRuntime().call` — этот вид не выходит
+ * ВООБЩЕ: `материализовать` переводит его в обычный массив на выходе из
+ * вычисления (`interpret.mjs`). Значит ни один читатель значений (тесты, `flang
+ * run`, сверка с восемью целями печати, факт-чекинг) о нём не знает и знать не
+ * обязан, а внутри машины список ходит видом. Цена границы — один обход
+ * результата; цена её отсутствия — представление значений, о котором пришлось
+ * бы договариваться со всем деревом.
+ */
+export class Список {
+  constructor(буфер, конец) {
+    this.буфер = буфер
+    this.конец = конец
+  }
+}
+
 export function isList(value) {
-  return Array.isArray(value)
+  return Array.isArray(value) || value instanceof Список
+}
+
+/** Длина списка — постоянное время для обоих видов. */
+export function длинаСписка(значение) {
+  return значение instanceof Список ? значение.конец : значение.length
+}
+
+/** Элемент по номеру от нуля — постоянное время для обоих видов. */
+export function элементСписка(значение, номер) {
+  return значение instanceof Список ? значение.буфер[номер] : значение[номер]
+}
+
+/**
+ * Обычный массив с элементами списка, начиная с `начало`.
+ *
+ * Для плоского списка при `начало === 0` это ОН САМ, без копии, — поэтому
+ * менять полученное нельзя ни при каких обстоятельствах. Вызывается там, где
+ * обход всё равно стоит длины (`соединить`, `содержит`, `хвост`).
+ */
+export function элементыСписка(значение, начало = 0) {
+  if (значение instanceof Список) return значение.буфер.slice(начало, значение.конец)
+  return начало === 0 ? значение : значение.slice(начало)
+}
+
+/** Список, продлённый одним значением. Исходный не меняется — см. шапку выше. */
+function продлить(список, значение) {
+  /* Быстрый путь: наш конец — это и конец занятого, значит ячейка за концом
+     ничья, и занять её вправе только мы. */
+  if (список instanceof Список && список.конец === список.буфер.length) {
+    список.буфер[список.конец] = значение
+    return new Список(список.буфер, список.конец + 1)
+  }
+  const буфер = список instanceof Список ? список.буфер.slice(0, список.конец) : список.slice()
+  буфер.push(значение)
+  return new Список(буфер, буфер.length)
+}
+
+/**
+ * Значение без списков с запасом — обычными массивами, вглубь.
+ *
+ * Пересобирается только то, внутри чего вид действительно есть: программа, ни
+ * разу не позвавшая «добавить», не платит за границу ничем, кроме обхода
+ * результата.
+ */
+export function материализовать(значение) {
+  if (значение === null || значение === undefined || isScalar(значение)) return значение
+  if (значение instanceof Список) {
+    return значение.буфер.slice(0, значение.конец).map((элемент) => материализовать(элемент))
+  }
+  if (Array.isArray(значение)) {
+    let изменилось = false
+    const элементы = значение.map((элемент) => {
+      const новый = материализовать(элемент)
+      if (новый !== элемент) изменилось = true
+      return новый
+    })
+    return изменилось ? элементы : значение
+  }
+  if (значение instanceof FlangVariant) {
+    let изменилось = false
+    const поля = {}
+    for (const [имя, поле] of Object.entries(значение.fields)) {
+      поля[имя] = материализовать(поле)
+      if (поля[имя] !== поле) изменилось = true
+    }
+    return изменилось ? new FlangVariant(значение.variant, поля) : значение
+  }
+  if (!isRecord(значение)) return значение
+  let изменилось = false
+  const запись = {}
+  for (const [имя, поле] of Object.entries(значение)) {
+    запись[имя] = материализовать(поле)
+    if (запись[имя] !== поле) изменилось = true
+  }
+  return изменилось ? запись : значение
 }
 
 export function isRecord(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof FlangVariant)
+  return typeof value === "object" && value !== null && !isList(value) && !(value instanceof FlangVariant)
 }
 
 // Значение варианта в JSON. Классов JSON не знает, а значения ходят через JSON
@@ -202,6 +322,10 @@ function encodedVariant(value) {
 export function reifyValue(value) {
   if (value === undefined) return null
   if (isScalar(value) || isVariant(value)) return value
+  /* Список с запасом сюда приходить не может: JSON его не знает, а строит его
+     только «добавить» из уже приведённых значений. Пропускаем как есть — иначе
+     пришлось бы разворачивать вид ради обхода, который ничего не изменит. */
+  if (value instanceof Список) return value
   if (isList(value)) {
     let changed = false
     const items = value.map((item) => {
@@ -249,7 +373,7 @@ export function describeValue(value) {
     const fields = Object.keys(value.fields)
     return fields.length === 0 ? value.variant : `${value.variant}(${fields.join(", ")})`
   }
-  if (isList(value)) return `список из ${value.length}`
+  if (isList(value)) return `список из ${длинаСписка(value)}`
   if (isRecord(value)) return `запись {${Object.keys(value).join(", ")}}`
   if (value === null) return "ничто"
   if (value === true) return "да"
@@ -268,9 +392,10 @@ export function valuesEqual(left, right) {
     return Object.is(left, right)
   }
   if (isList(left) && isList(right)) {
-    if (left.length !== right.length) return false
-    for (let index = 0; index < left.length; index += 1) {
-      if (!valuesEqual(left[index], right[index])) return false
+    const длина = длинаСписка(left)
+    if (длина !== длинаСписка(right)) return false
+    for (let index = 0; index < длина; index += 1) {
+      if (!valuesEqual(элементСписка(left, index), элементСписка(right, index))) return false
     }
     return true
   }
@@ -374,7 +499,7 @@ const IMPLEMENTATIONS = {
     expectArity("длина", args, 1, span)
     const value = args[0]
     if (typeof value === "string") return Array.from(value).length
-    if (isList(value)) return value.length
+    if (isList(value)) return длинаСписка(value)
     throw flangError("FLANG_BUILTIN_ARGS", `«длина»: ожидается строка или список, получено ${typeName(value)}`, span)
   },
 
@@ -472,7 +597,7 @@ const IMPLEMENTATIONS = {
     // разделителем». Различаем по типу первого аргумента.
     if (isList(args[0])) {
       const separator = expectString("соединить", args[1], "разделитель", span)
-      const parts = args[0].map((item, index) => {
+      const parts = элементыСписка(args[0]).map((item, index) => {
         if (typeof item !== "string") {
           throw flangError(
             "FLANG_BUILTIN_ARGS",
@@ -501,7 +626,13 @@ const IMPLEMENTATIONS = {
 
   "содержит": (args, span) => {
     expectArity("содержит", args, 2, span)
-    if (isList(args[0])) return args[0].some((item) => valuesEqual(item, args[1]))
+    if (isList(args[0])) {
+      const длина = длинаСписка(args[0])
+      for (let номер = 0; номер < длина; номер += 1) {
+        if (valuesEqual(элементСписка(args[0], номер), args[1])) return true
+      }
+      return false
+    }
     const text = expectString("содержит", args[0], "строка или список", span)
     const part = expectString("содержит", args[1], "искомая подстрока", span)
     return text.includes(part)
@@ -570,7 +701,7 @@ const IMPLEMENTATIONS = {
   "пусто": (args, span) => {
     expectArity("пусто", args, 1, span)
     const value = args[0]
-    if (isList(value)) return value.length === 0
+    if (isList(value)) return длинаСписка(value) === 0
     if (typeof value === "string") return Array.from(value).length === 0
     throw flangError("FLANG_BUILTIN_ARGS", `«пусто»: ожидается строка или список, получено ${typeName(value)}`, span)
   },
@@ -578,20 +709,20 @@ const IMPLEMENTATIONS = {
   "голова": (args, span) => {
     expectArity("голова", args, 1, span)
     const list = expectList("голова", args[0], "аргумент", span)
-    if (list.length === 0) throw flangError("FLANG_BUILTIN_ARGS", "«голова»: список пуст", span)
-    return list[0]
+    if (длинаСписка(list) === 0) throw flangError("FLANG_BUILTIN_ARGS", "«голова»: список пуст", span)
+    return элементСписка(list, 0)
   },
 
-  // «хвост» копирует: список flang — массив JS (так значения совпадают с
-  // FtsValue ядра и сериализуются в JSON), а массив нельзя разделить с
-  // суффиксом без копирования. Значит рекурсия «голова и хвост» по длинному
-  // списку квадратична; для больших данных язык даёт линейные «свёртка»,
-  // «отобразить» и «отфильтровать», которые ничего не копируют.
+  // «хвост» копирует, и здесь это осталось: разделение с суффиксом — это второе
+  // поле вида (начало), а закрывалась дыра ПРИПИСЫВАНИЯ. Значит рекурсия
+  // «голова и хвост» по длинному списку по-прежнему квадратична; для больших
+  // данных язык даёт линейные «свёртка», «отобразить» и «отфильтровать»,
+  // которые ничего не копируют.
   "хвост": (args, span) => {
     expectArity("хвост", args, 1, span)
     const list = expectList("хвост", args[0], "аргумент", span)
-    if (list.length === 0) throw flangError("FLANG_BUILTIN_ARGS", "«хвост»: список пуст", span)
-    return list.slice(1)
+    if (длинаСписка(list) === 0) throw flangError("FLANG_BUILTIN_ARGS", "«хвост»: список пуст", span)
+    return элементыСписка(list, 1)
   },
 
   /*
@@ -617,19 +748,21 @@ const IMPLEMENTATIONS = {
     expectArity("элемент", args, 2, span)
     const index = expectInteger("элемент", args[0], "индекс", span)
     const list = expectList("элемент", args[1], "список", span)
+    const длина = длинаСписка(list)
     const at = index - indexBase(options)
-    if (at < 0 || at >= list.length) {
-      throw flangError("FLANG_BUILTIN_ARGS", `«элемент»: индекс ${index} вне списка длиной ${list.length}`, span)
+    if (at < 0 || at >= длина) {
+      throw flangError("FLANG_BUILTIN_ARGS", `«элемент»: индекс ${index} вне списка длиной ${длина}`, span)
     }
-    return list[at]
+    return элементСписка(list, at)
   },
 
   "добавить": (args, span) => {
     expectArity("добавить", args, 2, span)
     const list = expectList("добавить", args[1], "второй аргумент", span)
     // «добавить x к списку» читается как дописать в конец; исходный список не
-    // изменяется — значения flang неизменяемы.
-    return [...list, args[0]]
+    // изменяется — значения flang неизменяемы. За постоянное время, приёмом
+    // «занять ячейку за концом общего массива»: см. шапку «Список с запасом».
+    return продлить(list, args[0])
   },
 
   "остаток от": (args, span) => {

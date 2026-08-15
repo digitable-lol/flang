@@ -45,10 +45,22 @@ after(async () => {
 
 let serial = 0
 
-/** Печатает программу, кладёт файл на диск и загружает его как модуль. */
+/**
+ * Печатает программу, кладёт файл на диск и загружает его как модуль.
+ *
+ * Файлов у цели два: сама программа и прогонщик (`flang_cli.js`) — тот же, что
+ * у остальных семи целей. Здесь берётся ПЕРВЫЙ, и это не удобство порядка:
+ * модуль обязан оставаться самодостаточным и работать в браузере, поэтому
+ * прогонщика он не импортирует и без него полон. Прогонщик проверяется своим
+ * файлом (`emit-js-cli.test.mjs`) — настоящим запуском, а не чтением.
+ */
 async function build(program, options) {
   const emitted = emitJs(program, options)
-  assert.equal(emitted.files.length, 1, "одна программа — один файл")
+  assert.deepEqual(
+    emitted.files.map((file) => file.path).slice(1),
+    ["flang_cli.js"],
+    "одна программа — один модуль и один прогонщик",
+  )
   serial += 1
   const path = join(workdir, `m${serial}-${emitted.files[0].path}`)
   await writeFile(path, emitted.files[0].content, "utf8")
@@ -546,6 +558,61 @@ test("обход дерева-суммы: конструкторы вариан�
   const points = compare(treeProgram, module, "Сумма дерева", grid, { adapt: adaptTo(module) }) +
     compare(treeProgram, module, "Удвоить дерево", grid, { adapt: adaptTo(module) })
   t.diagnostic(`сверенных входов: ${points}`)
+})
+
+test("$callDeep: значение переживает границу потока — вариант остаётся вариантом", async (t) => {
+  /*
+   * Расчёт под объявленный предел глубины уезжает в поток с заданным стеком
+   * (`$callDeep`), и значение едет туда и обратно копированием. Копирование
+   * теряет ПРОТОТИП: вариант приехал бы обычной записью, разбор дискриминанта
+   * перестал бы находить случай, и модуль отвечал бы не то — молча. Поэтому вид
+   * значения едет тегом, а тег проверяется здесь: результат обязан совпасть с
+   * результатом прямого вызова СТРУКТУРНО и остаться экземпляром класса модуля.
+   */
+  const { module } = await build(treeProgram)
+  const лист = (n) => variant("Лист", { "значение": n })
+  const узел = (l, r) => variant("Узел", { "левое": l, "правое": r })
+  const adapt = adaptTo(module)
+
+  const входы = [
+    variant("Пустое", {}),
+    лист(5),
+    лист(-0),
+    лист(Number.NaN),
+    лист(Number.POSITIVE_INFINITY),
+    узел(узел(лист(1), лист(2)), узел(лист(3), лист(4))),
+  ]
+  for (const вход of входы) {
+    const свой = module.udvoitDerevo(adapt(вход))
+    const дальний = await module.$callDeep(module.udvoitDerevo, [adapt(вход)])
+    assert.ok(sameValue(свой, дальний), `${JSON.stringify(вход)}: поток вернул не то же значение`)
+    assert.equal(
+      Object.getPrototypeOf(дальний),
+      Object.getPrototypeOf(свой),
+      "вариант обязан вернуться вариантом этого же модуля, а не обычной записью",
+    )
+    /* И дискриминант обязан ЧИТАТЬСЯ, а не только совпадать по форме: значение
+       из потока должно годиться следующей функции модуля как своё. */
+    assert.equal(module.summaDereva(дальний), module.summaDereva(свой))
+  }
+
+  /* Отказ через границу тоже обязан остаться отказом языка, а не превратиться
+     в чужую ошибку без кода. */
+  const беда = await module.$callDeep(module.summaDereva, [42]).then(
+    (значение) => ({ значение }),
+    (ошибка) => ({ code: ошибка.code, message: ошибка.message }),
+  )
+  const своя = (() => {
+    try {
+      return { значение: module.summaDereva(42) }
+    } catch (ошибка) {
+      return { code: ошибка.code, message: ошибка.message }
+    }
+  })()
+  assert.deepEqual(беда, своя, "отказ из потока обязан быть тем же отказом языка — код и текст")
+  assert.equal(беда.code, "FLANG_MATCH_NOT_EXHAUSTIVE", `а не чужой ошибкой: ${JSON.stringify(беда)}`)
+
+  t.diagnostic(`через поток пронесено ${входы.length} значений, включая −0, NaN и бесконечность`)
 })
 
 /* ══════════════════════════ 4. взаимная рекурсия ═══════════════════════════ */
@@ -1482,7 +1549,19 @@ test("рантайм печатается по потребности, а не �
   assert.equal(module.nol(), 0)
   assert.doesNotMatch(content, /\$b_podstroka/u, "неиспользованные встроенные формы не печатаются")
   assert.doesNotMatch(content, /\$trampoline/u)
-  assert.ok(content.split("\n").length < 40, `тривиальная программа не должна тянуть весь рантайм: ${content.split("\n").length} строк`)
+  assert.doesNotMatch(content, /\$enter|\$step\b|\$top\b/u, "счётчики нужны рекурсии, а её здесь нет")
+
+  /* Меряется МОДУЛЬ, а не модуль вместе с таблицей прогонщика: обещание «рантайм
+     по потребности» — про рантайм. Таблица (`$PROGRAM`) — не рантайм, а связь с
+     соседним файлом, она печатается вместе с ним и снимается вместе с ним, и
+     цена её названа тут же строкой ниже, чтобы не росла молча. */
+  const голый = emitJs(trivial, { cli: false }).files[0].content
+  assert.ok(
+    голый.split("\n").length < 40,
+    `тривиальная программа не должна тянуть весь рантайм: ${голый.split("\n").length} строк`,
+  )
+  const цена = content.split("\n").length - голый.split("\n").length
+  assert.ok(цена < 40, `таблица прогонщика обязана оставаться дешёвой: ${цена} строк на одну функцию`)
 })
 
 test("имя файла берётся из имени модуля, но его можно задать", () => {

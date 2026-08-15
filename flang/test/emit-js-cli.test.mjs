@@ -31,7 +31,7 @@
  * первый тест покраснеет, а не промолчит.
  */
 import assert from "node:assert/strict"
-import { execFileSync } from "node:child_process"
+import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -477,6 +477,21 @@ test("отказы протокола: код CLI и те же тексты, ч�
     { ok: false, code: "CLI", message: "неразборчивые аргументы" },
     { ok: false, code: "CLI", message: "неизвестное поле запроса" },
   ])
+})
+
+test("модуля нет — отказ протокола и ненулевой код, а не стопка кадров хозяина", () => {
+  const built = build(programs[0].program)
+  const запуск = spawnSync(process.execPath, ["flang_cli.js", "./такого-модуля-нет.js"], {
+    cwd: built.directory,
+    input: "",
+    encoding: "utf8",
+  })
+  assert.equal(запуск.status, 1)
+  assert.deepEqual(JSON.parse(запуск.stdout.trim()), {
+    ok: false,
+    code: "CLI",
+    message: "не прочитан модуль программы «./такого-модуля-нет.js»",
+  })
 })
 
 test("неизвестное имя и не та арность — теми же словами, что у интерпретатора", () => {

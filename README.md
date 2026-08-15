@@ -176,8 +176,9 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang --target c -
 and is pasted verbatim, not written by hand. Seven backends emit the module, a runtime, a
 JSON-in/JSON-out driver, a build file and — where the target has one — a package manifest
 (`go.mod`, `Cargo.toml`, `flang.csproj`); the JavaScript backend emits a single self-contained
-file. Two of the eight are shown here, and only the function itself; the other six read the same
-way — run the command and look.
+module plus the same driver next to it (`flang_cli.js`, dropped by `--no-cli`) — the driver is
+what makes the declared call-depth limit real for an ordinary run. Two of the eight are shown
+here, and only the function itself; the other six read the same way — run the command and look.
 
 <details open>
 <summary><b>C</b> — <code>out-c/mesto_vstavki.c</code></summary>
@@ -247,8 +248,10 @@ export function mestoVstavki(elementy, cel) {
 }
 ```
 
-The JS backend inlines only the runtime helpers this module actually uses, so the output is one
-self-contained file that runs in Node and in the browser.
+The JS backend inlines only the runtime helpers this module actually uses, so the module itself
+stays one self-contained file that runs in Node and in the browser. The driver is emitted beside
+it as a separate file and is not part of the module: the browser does not need it, and under Node
+it is what makes the declared call-depth limit real.
 
 </details>
 

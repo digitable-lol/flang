@@ -312,8 +312,19 @@ async function serveDeep(programUrl, stackMb, requests) {
 /* ───────────────────────────── запуск ───────────────────────────── */
 
 async function main(argv) {
-  const programUrl = pathToFileURL(resolve(argv[2] ?? DEFAULT_PROGRAM)).href
-  const program = await import(programUrl)
+  const file = argv[2] ?? DEFAULT_PROGRAM
+  const programUrl = pathToFileURL(resolve(file)).href
+  let program = null
+  try {
+    program = await import(programUrl)
+  } catch {
+    /* Не найден или не разобрался — это ошибка вызова, а не запроса, и отвечать
+       на неё стопкой кадров хозяина незачем: ответ тот же, что у всякого другого
+       отказа протокола, и код возврата ненулевой. */
+    process.stdout.write(`${refusal(`не прочитан модуль программы «${file}»`)}\n`)
+    process.exitCode = 1
+    return
+  }
   if (program.$PROGRAM === undefined) {
     process.stdout.write(`${refusal("модуль напечатан без таблицы функций (--no-cli)")}\n`)
     process.exitCode = 1

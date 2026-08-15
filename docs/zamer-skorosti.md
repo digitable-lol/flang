@@ -533,3 +533,460 @@ for (;;) {
 предел, без которого напечатанная программа в C падала бы по SIGSEGV вместо
 `FLANG_RECURSION_LIMIT`. Это единственное место отчёта, где ответ — «оставить как
 есть», и он подкреплён тремя независимыми абляциями.
+
+## Как повторить
+
+Все скрипты лежат в `benchmarks/zamer-skorosti/`. Ни один не трогает репозиторий:
+всё собирается в указанный каталог.
+
+```bash
+# 1. Собрать восемь вариантов одной программы плюс эталон на C
+benchmarks/zamer-skorosti/sobrat.sh /tmp/zamer
+
+# 2. Время работы: пять задач, восемь сборок, чередование, 11 кругов
+node benchmarks/zamer-skorosti/rabota.mjs /tmp/zamer --кругов 11
+
+# 3. Пиковая память тех же задач
+node benchmarks/zamer-skorosti/pamyat.mjs /tmp/zamer
+
+# 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
+mkdir -p /tmp/zamer/qs
+node flang/bin/flang.mjs emit flang/examples/rosetta/quicksort.flang \
+  --target c --out /tmp/zamer/qs --max-steps 2000000000
+make -C /tmp/zamer/qs -j4
+benchmarks/zamer-skorosti/arena.sh /tmp/zamer/qs
+
+# 5. Время компиляции: итоги процессами, вместе с точками сравнения
+node benchmarks/zamer-skorosti/kompilyaciya.mjs --кругов 5
+
+# 6. Время компиляции: слагаемые внутри одного процесса
+node benchmarks/zamer-skorosti/faz.mjs flang/self/types.flang --повторов 7
+
+# 7. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
+npm run proof:ledger
+```
+
+Разовая проба одной задачи на трёх языках, с временем и памятью:
+
+```bash
+benchmarks/zamer-skorosti/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" дерево 100000
+```
+
+**Перед `node` в ручных прогонах ставьте `LC_ALL=C.UTF-8`** — имена задач
+записаны кириллицей, и без этого аргументы приезжают побитыми. Харнессы ставят
+её сами.
+
+## Приложение: тексты на Python и JavaScript
+
+Приложены целиком, чтобы сравнение можно было проверить, а не принять на веру.
+Текст на flang — `benchmarks/zamer-skorosti/programs/zadachi.flang` (432 строки),
+эталон на C — `benchmarks/zamer-skorosti/programs/etalon.c` (242 строки).
+
+### `zadachi.py`
+
+```python
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+"""Те же четыре задачи, что в zadachi.flang, на Python 3.
+
+Правило перевода — шаг в шаг:
+  • где flang печатается в цикл (хвостовой самовызов) — здесь цикл;
+  • где flang рекурсирует по-настоящему — здесь рекурсия;
+  • никаких библиотечных сокращений: ни sorted(), ни срезов вида lst[0::2].
+    Разрешены ровно те встроенные формы, которые есть и у flang: разделение
+    строки (str.split ↔ «разделить … по …») и перевод строки в число
+    (int ↔ «к числу»).
+
+Запуск:  python3 zadachi.py ЗАДАЧА РАЗМЕР
+         python3 zadachi.py коллатц 20000
+Печатает одно число — ту же контрольную сумму, что и остальные два языка.
+"""
+import sys
+
+A = 25173
+C = 13849
+M = 65536
+
+
+def chisla(skolko, zerno):
+    """«Числа»: хвостовой самовызов — значит цикл."""
+    out = []
+    x = zerno
+    for _ in range(skolko):
+        x = (A * x + C) % M
+        out.append(x)
+    return out
+
+
+def otpechatok(elementy):
+    """«Отпечаток»: свёртка."""
+    acc = 0
+    for e in elementy:
+        acc = (acc * 31 + e) % 1000003
+    return acc
+
+
+# ── задача 1: счёт на числах ────────────────────────────────────────────────
+
+
+def shagov_kollatca(n):
+    """«Шагов Коллатца»: хвостовой самовызов — цикл."""
+    nabrano = 0
+    while n > 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        nabrano += 1
+    return nabrano
+
+
+def kollatc(predel):
+    """«Сумма Коллатца»: тоже хвостовой, но вызов внутрь — настоящий."""
+    summa = 0
+    tekushchee = 1
+    while tekushchee <= predel:
+        summa += shagov_kollatca(tekushchee)
+        tekushchee += 1
+    return summa
+
+
+# ── задача 1-бис: НОД ───────────────────────────────────────────────────────
+# У flang эта задача записана дважды — с объявленной мерой (и сторожем в
+# рантайме) и без неё. Здесь запись одна: понятия «доказано» у Python нет, и
+# изображать его было бы подлогом. Ответ у всех записей один.
+
+
+def nod(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def nod_zadacha(predel):
+    summa = 0
+    tekushchee = 1
+    while tekushchee <= predel:
+        summa += nod(tekushchee, 40902)
+        tekushchee += 1
+    return summa
+
+
+# ── задача 2: сортировка слиянием ───────────────────────────────────────────
+
+
+def cherez_odin(elementy, s):
+    """«Через один»: каждый второй, начиная с позиции s."""
+    out = []
+    i = s
+    n = len(elementy)
+    while i < n:
+        out.append(elementy[i])
+        i += 2
+    return out
+
+
+def sliyanie(pervyy, vtoroy):
+    """«Слияние»: хвостовой самовызов — цикл с двумя указателями."""
+    out = []
+    i = 0
+    j = 0
+    n = len(pervyy)
+    m = len(vtoroy)
+    while i < n and j < m:
+        if pervyy[i] <= vtoroy[j]:
+            out.append(pervyy[i])
+            i += 1
+        else:
+            out.append(vtoroy[j])
+            j += 1
+    while i < n:
+        out.append(pervyy[i])
+        i += 1
+    while j < m:
+        out.append(vtoroy[j])
+        j += 1
+    return out
+
+
+def sortirovka(elementy):
+    """«Сортировка»: рекурсия настоящая — значит и здесь рекурсия."""
+    if len(elementy) <= 1:
+        return elementy
+    levaya = cherez_odin(elementy, 0)
+    pravaya = cherez_odin(elementy, 1)
+    return sliyanie(sortirovka(levaya), sortirovka(pravaya))
+
+
+# ── задача 3: обход дерева ──────────────────────────────────────────────────
+# Лист — None, узел — кортеж (ключ, слева, справа). Значения неизменяемы, как
+# у flang: вставка переписывает путь и возвращает новое дерево.
+
+
+def vstavit(derevo, novyy):
+    if derevo is None:
+        return (novyy, None, None)
+    kl, l, p = derevo
+    if novyy < kl:
+        return (kl, vstavit(l, novyy), p)
+    return (kl, l, vstavit(p, novyy))
+
+
+def sobrat_derevo(skolko, zerno):
+    derevo = None
+    x = zerno
+    for _ in range(skolko):
+        x = (A * x + C) % M
+        derevo = vstavit(derevo, x)
+    return derevo
+
+
+def summa_dereva(derevo):
+    if derevo is None:
+        return 0
+    kl, l, p = derevo
+    return (kl + summa_dereva(l)) + summa_dereva(p)
+
+
+def glubina_dereva(derevo):
+    if derevo is None:
+        return 0
+    _, l, p = derevo
+    gl = glubina_dereva(l)
+    gp = glubina_dereva(p)
+    return (gl if gl > gp else gp) + 1
+
+
+def obhod_dereva(skolko):
+    derevo = sobrat_derevo(skolko, 12345)
+    return summa_dereva(derevo) + 1000000 * glubina_dereva(derevo)
+
+
+# ── задача 4: разбор строк ──────────────────────────────────────────────────
+
+
+def udvoit_tekst(tekst, raz):
+    for _ in range(raz):
+        tekst = tekst + "," + tekst
+    return tekst
+
+
+def razbor_strok(raz):
+    tekst = udvoit_tekst("17,42,8,99,3,71,25,60,14,88", raz)
+    acc = 0
+    for kusok in tekst.split(","):
+        acc = (acc * 31 + int(kusok)) % 1000003
+    return acc
+
+
+# ── точки входа ─────────────────────────────────────────────────────────────
+
+
+def sortirovka_zadacha(skolko):
+    return otpechatok(sortirovka(chisla(skolko, 12345)))
+
+
+ZADACHI = {
+    "коллатц": kollatc,
+    "нод": nod_zadacha,
+    "сортировка": sortirovka_zadacha,
+    "дерево": obhod_dereva,
+    "строки": razbor_strok,
+}
+
+
+def main(argv):
+    if len(argv) != 3 or argv[1] not in ZADACHI:
+        sys.stderr.write("использование: zadachi.py {%s} РАЗМЕР\n" % "|".join(ZADACHI))
+        return 2
+    sys.setrecursionlimit(200000)
+    sys.stdout.write("%d\n" % ZADACHI[argv[1]](int(argv[2])))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
+```
+
+### `zadachi.mjs`
+
+```javascript
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
+/**
+ * Те же четыре задачи, что в zadachi.flang, на JavaScript (Node.js).
+ *
+ * Правило перевода — шаг в шаг, как и у zadachi.py:
+ *   • где flang печатается в цикл (хвостовой самовызов) — здесь цикл;
+ *   • где flang рекурсирует по-настоящему — здесь рекурсия;
+ *   • никаких библиотечных сокращений: ни Array.prototype.sort, ни filter по
+ *     индексу. Разрешены ровно те встроенные формы, которые есть и у flang:
+ *     String.prototype.split (↔ «разделить … по …») и Number (↔ «к числу»).
+ *
+ * Запуск:  LC_ALL=C.UTF-8 node zadachi.mjs ЗАДАЧА РАЗМЕР
+ * Печатает одно число — ту же контрольную сумму, что и остальные два языка.
+ */
+const A = 25173
+const C = 13849
+const M = 65536
+
+function chisla(skolko, zerno) {
+  const out = []
+  let x = zerno
+  for (let i = 0; i < skolko; i += 1) {
+    x = (A * x + C) % M
+    out.push(x)
+  }
+  return out
+}
+
+function otpechatok(elementy) {
+  let acc = 0
+  for (const e of elementy) acc = (acc * 31 + e) % 1000003
+  return acc
+}
+
+/* ── задача 1: счёт на числах ─────────────────────────────────────────────── */
+
+function shagovKollatca(n) {
+  let nabrano = 0
+  while (n > 1) {
+    n = n % 2 === 0 ? n / 2 : 3 * n + 1
+    nabrano += 1
+  }
+  return nabrano
+}
+
+function kollatc(predel) {
+  let summa = 0
+  for (let tekushchee = 1; tekushchee <= predel; tekushchee += 1) {
+    summa += shagovKollatca(tekushchee)
+  }
+  return summa
+}
+
+/* ── задача 1-бис: НОД ────────────────────────────────────────────────────── */
+/* У flang эта задача записана дважды — с объявленной мерой (и сторожем в
+   рантайме) и без неё. Здесь запись одна: понятия «доказано» у JavaScript нет,
+   и изображать его было бы подлогом. Ответ у всех записей один. */
+
+function nod(a, b) {
+  while (b !== 0) {
+    const ost = a % b
+    a = b
+    b = ost
+  }
+  return a
+}
+
+function nodZadacha(predel) {
+  let summa = 0
+  for (let tekushchee = 1; tekushchee <= predel; tekushchee += 1) summa += nod(tekushchee, 40902)
+  return summa
+}
+
+/* ── задача 2: сортировка слиянием ────────────────────────────────────────── */
+
+function cherezOdin(elementy, s) {
+  const out = []
+  for (let i = s; i < elementy.length; i += 2) out.push(elementy[i])
+  return out
+}
+
+function sliyanie(pervyy, vtoroy) {
+  const out = []
+  let i = 0
+  let j = 0
+  while (i < pervyy.length && j < vtoroy.length) {
+    if (pervyy[i] <= vtoroy[j]) {
+      out.push(pervyy[i])
+      i += 1
+    } else {
+      out.push(vtoroy[j])
+      j += 1
+    }
+  }
+  while (i < pervyy.length) {
+    out.push(pervyy[i])
+    i += 1
+  }
+  while (j < vtoroy.length) {
+    out.push(vtoroy[j])
+    j += 1
+  }
+  return out
+}
+
+function sortirovka(elementy) {
+  if (elementy.length <= 1) return elementy
+  const levaya = cherezOdin(elementy, 0)
+  const pravaya = cherezOdin(elementy, 1)
+  return sliyanie(sortirovka(levaya), sortirovka(pravaya))
+}
+
+/* ── задача 3: обход дерева ───────────────────────────────────────────────── */
+/* Лист — null, узел — массив [ключ, слева, справа]. Значения не правятся:
+   вставка переписывает путь и возвращает новое дерево, как у flang. */
+
+function vstavit(derevo, novyy) {
+  if (derevo === null) return [novyy, null, null]
+  const [kl, l, p] = derevo
+  if (novyy < kl) return [kl, vstavit(l, novyy), p]
+  return [kl, l, vstavit(p, novyy)]
+}
+
+function sobratDerevo(skolko, zerno) {
+  let derevo = null
+  let x = zerno
+  for (let i = 0; i < skolko; i += 1) {
+    x = (A * x + C) % M
+    derevo = vstavit(derevo, x)
+  }
+  return derevo
+}
+
+function summaDereva(derevo) {
+  if (derevo === null) return 0
+  return derevo[0] + summaDereva(derevo[1]) + summaDereva(derevo[2])
+}
+
+function glubinaDereva(derevo) {
+  if (derevo === null) return 0
+  const gl = glubinaDereva(derevo[1])
+  const gp = glubinaDereva(derevo[2])
+  return (gl > gp ? gl : gp) + 1
+}
+
+function obhodDereva(skolko) {
+  const derevo = sobratDerevo(skolko, 12345)
+  return summaDereva(derevo) + 1000000 * glubinaDereva(derevo)
+}
+
+/* ── задача 4: разбор строк ───────────────────────────────────────────────── */
+
+function udvoitTekst(tekst, raz) {
+  for (let i = 0; i < raz; i += 1) tekst = tekst + "," + tekst
+  return tekst
+}
+
+function razborStrok(raz) {
+  const tekst = udvoitTekst("17,42,8,99,3,71,25,60,14,88", raz)
+  let acc = 0
+  for (const kusok of tekst.split(",")) acc = (acc * 31 + Number(kusok)) % 1000003
+  return acc
+}
+
+/* ── точки входа ──────────────────────────────────────────────────────────── */
+
+const ZADACHI = {
+  "коллатц": kollatc,
+  "нод": nodZadacha,
+  "сортировка": (skolko) => otpechatok(sortirovka(chisla(skolko, 12345))),
+  "дерево": obhodDereva,
+  "строки": razborStrok,
+}
+
+const [, , zadacha, razmer] = process.argv
+if (zadacha === undefined || ZADACHI[zadacha] === undefined) {
+  process.stderr.write(`использование: node zadachi.mjs {${Object.keys(ZADACHI).join("|")}} РАЗМЕР\n`)
+  process.exit(2)
+}
+process.stdout.write(`${ZADACHI[zadacha](Number(razmer))}\n`)
+```

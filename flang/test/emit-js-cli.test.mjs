@@ -17,6 +17,14 @@
  * едут трубой, ответы сверяются с интерпретатором — тем же приёмом, каким
  * сверяются остальные семь целей (`emit-python.test.mjs`, `emit-c.test.mjs`).
  *
+ * Сверяются они ЧЕРЕЗ ГРАНИЦУ ВХОДА (`through-entry.mjs`), а не голым
+ * вычислителем, и по той же причине, что у семи остальных: у прогонщика, как у
+ * `flang run --args`, значения сначала сверяются с объявленными типами и только
+ * потом считаются. Голым вычислителем сверялось бы не то, что есть: на входе
+ * `null` там, где объявлена сумма «Связь», интерпретатор доходит до разбора и
+ * говорит FLANG_MATCH_NOT_EXHAUSTIVE, а прогонщик обязан отказать раньше и
+ * другими словами — про объявленный тип.
+ *
  * ── Набор программ ──────────────────────────────────────────────────────────
  * Не выдуманные фикстуры, а всё, что в репозитории написано на самом flang:
  * `flang/stdlib/*.flang` и `flang/examples/leetcode/*.flang`. Сетка входов
@@ -43,6 +51,7 @@ import { errorCode } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { emitJs } from "../src/emit/js.mjs"
+import { черезГраницу } from "./through-entry.mjs"
 
 const workdir = await mkdtemp(join(tmpdir(), "flang-emit-js-cli-"))
 after(async () => {
@@ -314,7 +323,7 @@ test("stdlib и leetcode: ответы прогонщика совпадают �
     const answers = ask(built, requests)
 
     plan.forEach((point, index) => {
-      const byInterpreter = outcome(() => interpret(program, point.name, point.args, ПРЕДЕЛЫ))
+      const byInterpreter = черезГраницу(program, point.name, point.args, ПРЕДЕЛЫ)
       const byEmitted = answerOutcome(answers[index])
       if (!byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT") {
         limited += 1

@@ -4,7 +4,7 @@
  *
  * Улика, с которой это начиналось (снята замером на живом файле дерева
  * flang/examples/measure/natural.flang, где «Факториал» принимает `н: нат`;
- * одинаково во всех семи целях с прогонщиком):
+ * одинаково во всех восьми целях с прогонщиком):
  *
  *   {"fn":"Факториал","args":[{"n":"-3"}]}     → {"ok":true,"value":{"n":"1"}}
  *   {"fn":"Факториал","args":[{"n":"2.5"}]}    → {"ok":true,"value":{"n":"3.75"}}
@@ -49,6 +49,7 @@ import { emitCsharp } from "../src/emit/csharp.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { emitJava } from "../src/emit/java.mjs"
+import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
@@ -376,6 +377,16 @@ test("Python: значение вне объявленного типа отве
   const каталог = разложить(напечатано.files)
   const свой = напечатано.files.find((файл) => файл.path.endsWith(".py") && !файл.path.startsWith("flang_"))
   сверить("Python", спросить(pythonBin, ["-B", "flang_cli.py", свой.path.replace(/\.py$/u, "")], { cwd: каталог }))
+})
+
+test("JavaScript: значение вне объявленного типа отвергается до вычисления", () => {
+  /* Единственная цель без пропуска: её тулчейн — тот самый Node, на котором
+     идёт этот тест. Модуль и прогонщик печатаются рядом, запускается прогонщик,
+     а модуль остаётся браузерным — граница живёт в соседнем файле. */
+  const напечатано = emitJs(программа, {})
+  const каталог = разложить(напечатано.files)
+  const модуль = напечатано.files[0].path
+  сверить("JavaScript", спросить(process.execPath, ["flang_cli.js", `./${модуль}`], { cwd: каталог }))
 })
 
 test("Elixir: значение вне объявленного типа отвергается до вычисления", (t) => {

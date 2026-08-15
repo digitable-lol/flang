@@ -717,6 +717,9 @@ const ОХВАТ = [
      фактах подписи `сумма: сотых` — дно, потолок и целость, — и третий из них
      ядро до этой работы не читало вовсе. */
   "flang/examples/money/exact-decimal.flang «Копеек в остатке»",
+  /* Операция моноида «Копейки». Сводится тем же правилом, каким сводится
+     «Сумма пары» над двумя `нат`: сумма неотрицательных неотрицательна. */
+  "flang/examples/money/exact-decimal.flang «Сложить копейки»",
   "flang/examples/rosetta/roman-numerals-english.flang «Value of a symbol»",
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
   "flang/proof/examples/corpus-natural.flang «Сумма пары»",

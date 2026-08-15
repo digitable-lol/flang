@@ -75,6 +75,14 @@ import { parse } from "../src/parser.mjs"
 import { emitCsharp } from "../src/emit/csharp.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
 import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import {
+  functionGrid,
+  loadPrograms,
+  ключТочки,
+  сверьУбегающих,
+  ПРЕДЕЛ_УБЕГАЮЩЕЙ,
+  ПРЕДЕЛЫ,
+} from "./corpus-grid.mjs"
 
 const dotnetBin = findExecutable("dotnet")
 const toolchain = dotnetBin !== null
@@ -316,74 +324,11 @@ function compare(program, built, functionName, grid, options = {}) {
 
 /* ══════════════════ 1. главный тест: stdlib и leetcode ══════════════════ */
 
-const stdlibDirectory = fileURLToPath(new URL("../stdlib/", import.meta.url))
-const leetcodeDirectory = fileURLToPath(new URL("../examples/leetcode/", import.meta.url))
-
-function loadPrograms() {
-  const found = []
-  for (const directory of [stdlibDirectory, leetcodeDirectory]) {
-    for (const name of readdirSync(directory).filter((item) => item.endsWith(".flang")).sort()) {
-      found.push({ file: name, program: parse(readFileSync(directory + name, "utf8"), name) })
-    }
-  }
-  return found
-}
-
+/* Корпус, сетка порчи, пределы и поимённый список убегающих точек — общие на
+   все шесть сверок и лежат в `flang/test/corpus-grid.mjs`. Раньше эти сто с
+   лишним строк были скопированы в шесть файлов побайтово: правило, написанное
+   шесть раз, шесть раз и расходится. */
 const programs = loadPrograms()
-
-/* Значения, которых функция заведомо не ждёт. Ими портятся аргументы примеров:
-   так проверяются не значения, а коды и тексты диагностик — вторая половина
-   наблюдаемого поведения, и та, в которой кодогенератор ошибается чаще. */
-const ЧУЖИЕ = [null, "не то", 42, true, [], [1, "два"], { "поле": 1 }, variant("Нет такого", {})]
-
-/**
- * Сетка одной функции: аргументы её примеров плюс их порча по одному
- * аргументу. Выдуманная сетка проверяла бы фантазию автора теста, а сетка из
- * примеров — то, ради чего функция написана.
- */
-/** Объявлен ли параметр типом «функция»: `функция из числа в число`. */
-function fnTypedParam(fn, index) {
-  const param = fn.params?.[index]
-  return param !== null && typeof param === "object" && param.type?.kind === "fn"
-}
-
-function functionGrid(fn) {
-  const params = fn.params.map((param) => (typeof param === "string" ? param : param.name))
-  const examples = (fn.examples ?? []).filter((example) =>
-    example.args !== null && typeof example.args === "object" &&
-    params.every((name) => Object.hasOwn(example.args, name)))
-  const points = examples.map((example) => params.map((name) => example.args[name]))
-  if (params.length === 0) return points
-
-  const seed = points.length > 0 ? points[0] : params.map(() => null)
-  for (let index = 0; index < params.length; index += 1) {
-    /* Параметр типа «функция» порче не подвергается, и это не дырка, а
-       названное расхождение (`flang/cat/HOF.md`, «Одно расхождение, и оно
-       названо»): чужое значение на месте тега отвергают ОБЕ стороны, но
-       разными словами — интерпретатор `FLANG_APPLY`, напечатанный диспетчер
-       `FLANG_MATCH_NOT_EXHAUSTIVE`, — потому что «отказать вот с этим текстом»
-       в языке невыразимо. Проверяется оно дословно и отдельно, в
-       `flang/test/stdlib-hof.test.mjs` и `flang/test/hof-emit.test.mjs`;
-       здесь же сверяются тексты, и сверять их тут значило бы записать
-       расхождение в восьми местах вместо одного. Значения из примеров на этой
-       позиции остаются: тег там настоящий. */
-    if (fnTypedParam(fn, index)) continue
-    for (const alien of ЧУЖИЕ) {
-      const spoiled = [...seed]
-      spoiled[index] = alien
-      points.push(spoiled)
-    }
-  }
-  return points
-}
-
-/* Пределы одинаковы у обоих движков. Шаг напечатанного кода — вход в функцию,
-   виток хвостового цикла и отскок батута, шаг интерпретатора — итерация его
-   машины, а их на одно применение функции приходится много. Значит при одном и
-   том же пределе счётчик C# всегда меньше, и упереться в лимит первым может
-   только интерпретатор. Такие точки сверяются по коду ошибки, а не по тексту:
-   текст содержит число шагов, а оно у двух счётчиков разное по построению. */
-const ПРЕДЕЛЫ = { maxSteps: 5_000_000, maxDepth: 10_000 }
 
 test("stdlib и leetcode: собранный C# совпадает с интерпретатором", async (t) => {
   if (!toolchain) {
@@ -395,56 +340,67 @@ test("stdlib и leetcode: собранный C# совпадает с интер
   let points = 0
   let functions = 0
   let limited = 0
+  const убежали = []
   const started = Date.now()
 
   for (const { file, program } of programs) {
     const built = build(program)
-    const requests = []
     const plan = []
     for (const fn of program.functions) {
       const grid = functionGrid(fn)
       if (grid.length === 0) continue
       functions += 1
       for (const args of grid) {
-        requests.push({
-          fn: fn.name,
-          args: args.map(encode),
-          depth: String(ПРЕДЕЛЫ.maxDepth),
-          steps: String(ПРЕДЕЛЫ.maxSteps),
-        })
-        plan.push({ name: fn.name, args })
+        /* Эталон спрашивается ПЕРВЫМ — до того, как построен запрос: его ответ
+           решает, каким бюджетом спрашивать напечатанный код. Один и тот же
+           `maxSteps` у двух счётчиков означает разное количество РАБОТЫ (шаг
+           напечатанного кода крупнее шага эталона в ~48,6 раза — измерено, см.
+           corpus-grid.mjs), а цена одного шага не ограничена: `добавить`
+           копирует список. На убегающих точках это разница в тысячи раз. */
+        const byInterpreter = outcome(() => interpret(program, fn.name, args, ПРЕДЕЛЫ))
+        const runaway = !byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT"
+        if (runaway) убежали.push(ключТочки(file, fn.name, args))
+        plan.push({ name: fn.name, args, byInterpreter, runaway })
       }
     }
-    assert.ok(requests.length > 0, `${file}: не из чего построить сетку — у функций нет примеров`)
-    const answers = ask(built, requests)
+    assert.ok(plan.length > 0, `${file}: не из чего построить сетку — у функций нет примеров`)
+    const answers = ask(built, plan.map((point) => ({
+      fn: point.name,
+      args: point.args.map(encode),
+      depth: String(ПРЕДЕЛЫ.maxDepth),
+      steps: String(point.runaway ? ПРЕДЕЛ_УБЕГАЮЩЕЙ : ПРЕДЕЛЫ.maxSteps),
+    })))
 
     plan.forEach((point, index) => {
-      const byInterpreter = outcome(() => interpret(program, point.name, point.args, ПРЕДЕЛЫ))
       const byEmitted = answerOutcome(answers[index])
-      if (!byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT") {
-        /* Точка, на которой интерпретатор исчерпал лимит. Текст диагностики
-           содержит число шагов, а счётчики у двух движков разные по построению
-           (см. ПРЕДЕЛЫ), поэтому сверяется только код — и только если
-           напечатанный код тоже остановился. */
+      if (point.runaway) {
+        /* Убегающая точка: значения нет ни у кого, сверяется отказ по пределу.
+           Требование при этом СТРОЖЕ прежнего — было «если напечатанный код
+           тоже остановился, то тем же кодом», стало «обязан остановиться».
+           Текст не сверяется: в нём стоит бюджет, а он у двух движков разный
+           по построению. */
         limited += 1
-        if (!byEmitted.ok) {
-          assert.equal(byEmitted.code, "FLANG_RECURSION_LIMIT",
-            `${file} / «${point.name}»: интерпретатор упёрся в лимит, C# дал ${describeOutcome(byEmitted)}`)
-        }
+        assert.ok(
+          !byEmitted.ok && byEmitted.code === "FLANG_RECURSION_LIMIT",
+          `${file} / «${point.name}» на входе ${JSON.stringify(point.args) ?? "?"}: эталон упёрся ` +
+            `в предел шагов, а при ${ПРЕДЕЛ_УБЕГАЮЩЕЙ} своих шагов собранный C# дал ${describeOutcome(byEmitted)}`,
+        )
         return
       }
       assert.ok(
-        sameOutcome(byInterpreter, byEmitted),
+        sameOutcome(point.byInterpreter, byEmitted),
         `${file} / «${point.name}» на входе ${JSON.stringify(point.args) ?? "?"}: ` +
-          `интерпретатор дал ${describeOutcome(byInterpreter)}, собранный C# дал ${describeOutcome(byEmitted)}`,
+          `интерпретатор дал ${describeOutcome(point.byInterpreter)}, собранный C# дал ${describeOutcome(byEmitted)}`,
       )
       points += 1
     })
   }
 
+  const оУбегающих = сверьУбегающих(убежали)
+
   t.diagnostic(
     `программ: ${programs.length}, функций: ${functions}, сверенных входов: ${points}` +
-      `${limited > 0 ? `, из них по лимиту шагов только по коду: ${limited}` : ""}` +
+      `${limited > 0 ? `, убегающих (сверены отказом по пределу): ${limited} — ${оУбегающих}` : ""}` +
       `, за ${Math.round((Date.now() - started) / 1000)} с`,
   )
   assert.ok(programs.length >= 25)

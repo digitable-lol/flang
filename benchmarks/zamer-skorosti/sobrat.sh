@@ -55,7 +55,7 @@ open(path, "w", encoding="utf-8").write(text.replace(marker, marker + "\n".join(
 PY
 }
 
-for variant in bez-schetchika bez-vhoda lto; do
+for variant in bez-schetchika bez-vhoda lto lto-bez-tipov; do
   cp -r "$OUT/base" "$OUT/$variant"
   rm -f "$OUT/$variant"/*.o "$OUT/$variant"/flang_cli "$OUT/$variant"/*.a "$OUT/$variant"/make.log
 done
@@ -63,9 +63,37 @@ done
 patch_module "$OUT/bez-schetchika" fl_tick
 patch_module "$OUT/bez-vhoda" fl_tick fl_enter fl_leave
 
+# Проверки типов в рантайме — те самые, которые тайпчекер уже сделал на
+# исходнике: fl_add смотрит теги обоих значений перед каждым сложением. Здесь
+# они выключены, чтобы стало видно, сколько стоит именно эта повторная работа,
+# а сколько — сама ширина значения.
+python3 - "$OUT/lto-bez-tipov/flang_runtime.c" <<'PY'
+import sys, re
+path = sys.argv[1]
+text = open(path, encoding="utf-8").read()
+for имя in ("fl_numbers", "fl_order"):
+    начало = text.index("static fl_status %s(" % имя)
+    открытая = text.index("{", начало)
+    глубина = 0
+    i = открытая
+    while True:
+        if text[i] == "{":
+            глубина += 1
+        elif text[i] == "}":
+            глубина -= 1
+            if глубина == 0:
+                break
+        i += 1
+    заголовок = text[начало:открытая]
+    подавление = "".join("  (void)%s;\n" % имя for имя in re.findall(r"(\w+)(?:,|\))", заголовок.split("(", 1)[1]))
+    text = text[:открытая] + "{\n" + подавление + "  return FL_OK;\n}" + text[i + 1:]
+open(path, "w", encoding="utf-8").write(text)
+PY
+
 make -C "$OUT/bez-schetchika" -j4 > "$OUT/bez-schetchika/make.log" 2>&1
 make -C "$OUT/bez-vhoda" -j4 > "$OUT/bez-vhoda/make.log" 2>&1
 make -C "$OUT/lto" -j4 CFLAGS="-std=c99 -Wall -Wextra -pedantic -O2 -flto" > "$OUT/lto/make.log" 2>&1
+make -C "$OUT/lto-bez-tipov" -j4 CFLAGS="-std=c99 -O2 -flto -Wno-unused" > "$OUT/lto-bez-tipov/make.log" 2>&1
 
 cc -std=c99 -Wall -Wextra -O2 -o "$OUT/etalon" "$PROG/etalon.c" -lm
 

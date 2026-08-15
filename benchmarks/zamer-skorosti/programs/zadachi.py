@@ -61,6 +61,27 @@ def kollatc(predel):
     return summa
 
 
+# ── задача 1-бис: НОД ───────────────────────────────────────────────────────
+# У flang эта задача записана дважды — с объявленной мерой (и сторожем в
+# рантайме) и без неё. Здесь запись одна: понятия «доказано» у Python нет, и
+# изображать его было бы подлогом. Ответ у всех записей один.
+
+
+def nod(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def nod_zadacha(predel):
+    summa = 0
+    tekushchee = 1
+    while tekushchee <= predel:
+        summa += nod(tekushchee, 40902)
+        tekushchee += 1
+    return summa
+
+
 # ── задача 2: сортировка слиянием ───────────────────────────────────────────
 
 
@@ -177,6 +198,7 @@ def sortirovka_zadacha(skolko):
 
 ZADACHI = {
     "коллатц": kollatc,
+    "нод": nod_zadacha,
     "сортировка": sortirovka_zadacha,
     "дерево": obhod_dereva,
     "строки": razbor_strok,

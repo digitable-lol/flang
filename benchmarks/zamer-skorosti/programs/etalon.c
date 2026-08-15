@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define A 25173.0
 #define C_ 13849.0
@@ -46,6 +47,24 @@ static double kollatc(long predel) {
   for (i = 1; i <= predel; i += 1) {
     summa += shagov_kollatca((double)i);
   }
+  return summa;
+}
+
+/* ── задача 1-бис: НОД ────────────────────────────────────────────────────── */
+
+static double nod(double a, double b) {
+  while (b != 0) {
+    double ost = fmod(a, b);
+    a = b;
+    b = ost;
+  }
+  return a;
+}
+
+static double nod_zadacha(long predel) {
+  double summa = 0;
+  long i;
+  for (i = 1; i <= predel; i += 1) summa += nod((double)i, 40902.0);
   return summa;
 }
 
@@ -211,6 +230,7 @@ int main(int argc, char **argv) {
   }
   n = strtol(argv[2], NULL, 10);
   if (strcmp(argv[1], "коллатц") == 0) printf("%.0f\n", kollatc(n));
+  else if (strcmp(argv[1], "нод") == 0) printf("%.0f\n", nod_zadacha(n));
   else if (strcmp(argv[1], "сортировка") == 0) printf("%.0f\n", sortirovka_zadacha(n));
   else if (strcmp(argv[1], "дерево") == 0) printf("%.0f\n", obhod_dereva(n));
   else if (strcmp(argv[1], "строки") == 0) printf("%.0f\n", razbor_strok(n));

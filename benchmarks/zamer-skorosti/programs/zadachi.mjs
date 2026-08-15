@@ -52,6 +52,26 @@ function kollatc(predel) {
   return summa
 }
 
+/* ── задача 1-бис: НОД ────────────────────────────────────────────────────── */
+/* У flang эта задача записана дважды — с объявленной мерой (и сторожем в
+   рантайме) и без неё. Здесь запись одна: понятия «доказано» у JavaScript нет,
+   и изображать его было бы подлогом. Ответ у всех записей один. */
+
+function nod(a, b) {
+  while (b !== 0) {
+    const ost = a % b
+    a = b
+    b = ost
+  }
+  return a
+}
+
+function nodZadacha(predel) {
+  let summa = 0
+  for (let tekushchee = 1; tekushchee <= predel; tekushchee += 1) summa += nod(tekushchee, 40902)
+  return summa
+}
+
 /* ── задача 2: сортировка слиянием ────────────────────────────────────────── */
 
 function cherezOdin(elementy, s) {
@@ -147,6 +167,7 @@ function razborStrok(raz) {
 
 const ZADACHI = {
   "коллатц": kollatc,
+  "нод": nodZadacha,
   "сортировка": (skolko) => otpechatok(sortirovka(chisla(skolko, 12345))),
   "дерево": obhodDereva,
   "строки": razborStrok,

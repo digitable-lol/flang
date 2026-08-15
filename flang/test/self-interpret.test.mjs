@@ -474,6 +474,36 @@ const сломанные = [
     types: [{ kind: "sum", name: "Т", variants: [{ name: "А", fields: [] }] }],
     functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "construct", variant: "Нет такого", fields: {} } }],
   }, "Ф", {}],
+  ["у двучлена нет правой половины", {
+    flang: 1,
+    module: "М",
+    functions: [{
+      name: "Ф",
+      params: [],
+      returns: { kind: "number" },
+      body: { kind: "binary", op: "add", left: { kind: "literal", value: 1 } },
+    }],
+  }, "Ф", {}],
+  ["у двучлена правая половина — «ничто»", {
+    flang: 1,
+    module: "М",
+    functions: [{
+      name: "Ф",
+      params: [],
+      returns: { kind: "number" },
+      body: { kind: "binary", op: "add", left: { kind: "literal", value: 1 }, right: null },
+    }],
+  }, "Ф", {}],
+  ["аргументы вызова не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "call", name: "Ф", args: 5 } }],
+  }, "Ф", {}],
+  ["элементы списка не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "list", items: "не список" } }],
+  }, "Ф", {}],
   ["неизвестная запись в конструкторе", {
     flang: 1,
     module: "М",
@@ -636,7 +666,7 @@ test("сломанные программы: код, текст и витки о
     счёт += 1
   }
   t.diagnostic(`сломанных программ ${счёт}`)
-  assert.ok(счёт >= 35, `сломанных программ всего ${счёт}`)
+  assert.ok(счёт >= 39, `сломанных программ всего ${счёт}`)
 })
 
 test("сломанные программы покрывают все коды отказа, какие выдаёт срез", () => {

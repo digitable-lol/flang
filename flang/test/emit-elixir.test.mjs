@@ -77,6 +77,7 @@ import { parse } from "../src/parser.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
 import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { черезГраницу } from "./through-entry.mjs"
 
 const elixirBin = findExecutable("elixir")
 const elixircBin = findExecutable("elixirc")
@@ -307,7 +308,7 @@ function compare(program, built, functionName, grid, options = {}) {
   const answers = ask(built, requests)
 
   points.forEach((args, index) => {
-    const byInterpreter = outcome(() => interpret(program, functionName, args, options.limits ?? {}))
+    const byInterpreter = черезГраницу(program, functionName, args, options.limits ?? {})
     const byEmitted = answerOutcome(answers[index])
     assert.ok(
       sameOutcome(byInterpreter, byEmitted),
@@ -423,7 +424,7 @@ test("stdlib и leetcode: собранный Elixir совпадает с инт
     const answers = ask(built, requests)
 
     plan.forEach((point, index) => {
-      const byInterpreter = outcome(() => interpret(program, point.name, point.args, ПРЕДЕЛЫ))
+      const byInterpreter = черезГраницу(program, point.name, point.args, ПРЕДЕЛЫ)
       const byEmitted = answerOutcome(answers[index])
       if (!byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT") {
         /* Точка, на которой интерпретатор исчерпал лимит. Текст диагностики

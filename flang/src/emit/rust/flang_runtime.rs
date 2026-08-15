@@ -1435,3 +1435,279 @@ pub fn b_percent_of(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Erro
     let b = expect_number("процентов от", &right, "значение")?;
     Ok(number((a / 100.0) * b))
 }
+
+// ───────────────────────────── граница входа ─────────────────────────────
+//
+// Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+// пришедшие снаружи, ДО вызова функции.
+//
+// Зачем это здесь, а не в самих функциях. Доказательство завершения
+// `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+// которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+// печатается вовсе. Значение вне типа выносит вместе с типом и доказательство:
+// `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её нечем — сторожа
+// нет. Поэтому дверь одна и стоит она ДО вычисления.
+//
+// Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+// `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+// подходит типу», каким сверяется `flang run --args`.
+
+/// Вид объявленного типа. `Unknown` — значение-функция, параметр полиморфизма
+/// и применение типа с аргументами: одной таблицы им мало, и они не сверяются.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TypeKind {
+    /// не сверяется
+    Unknown,
+    /// число, включая уточнения `нат` и `целое`
+    Number,
+    /// строка
+    Text,
+    /// признак
+    Flag,
+    /// «ничто»
+    Null,
+    /// список
+    List,
+    /// запись
+    Record,
+    /// сумма типов
+    Sum,
+}
+
+/// Поле записи или варианта: имя и место его типа в таблице типов.
+#[derive(Debug)]
+pub struct TypeField {
+    /// имя поля в исходной программе flang
+    pub name: &'static str,
+    /// индекс типа поля в `EntryTable::types`
+    pub type_at: usize,
+}
+
+/// Вариант суммы: имя дискриминанта и отрезок его полей в общем массиве.
+#[derive(Debug)]
+pub struct TypeVariant {
+    /// имя варианта
+    pub name: &'static str,
+    /// начало отрезка полей в `EntryTable::fields`
+    pub field_from: usize,
+    /// длина отрезка полей
+    pub field_count: usize,
+}
+
+/// Объявленный тип. Поля и варианты лежат сплошными отрезками общих массивов:
+/// так печать в каждой цели — это однородные списки, а не россыпь имён.
+#[derive(Debug)]
+pub struct Type {
+    /// вид типа
+    pub kind: TypeKind,
+    /// печатное имя типа: «нат», «список числа»
+    pub name: &'static str,
+    /// имя записи или суммы без кавычек — для текстов о полях
+    pub owner: &'static str,
+    /// «… или ничто»: отсутствие значения законно
+    pub optional: bool,
+    /// целое ли
+    pub integral: bool,
+    /// есть ли конечный отрезок (у `число` его нет)
+    pub bounded: bool,
+    /// нижняя граница отрезка
+    pub low: f64,
+    /// верхняя граница отрезка
+    pub high: f64,
+    /// тип элемента списка — индекс в `EntryTable::types`
+    pub of: usize,
+    /// начало отрезка полей записи в `EntryTable::fields`
+    pub field_from: usize,
+    /// длина отрезка полей записи
+    pub field_count: usize,
+    /// начало отрезка вариантов в `EntryTable::variants`
+    pub variant_from: usize,
+    /// длина отрезка вариантов
+    pub variant_count: usize,
+}
+
+/// Параметр функции: чей он, как называется и какого он типа.
+#[derive(Debug)]
+pub struct EntryParam {
+    /// имя функции flang
+    pub function: &'static str,
+    /// имя параметра
+    pub name: &'static str,
+    /// индекс типа в `EntryTable::types`
+    pub type_at: usize,
+}
+
+/// Граница входа программы целиком.
+#[derive(Debug)]
+pub struct EntryTable {
+    /// объявленные типы
+    pub types: &'static [Type],
+    /// поля записей и вариантов, сплошным массивом
+    pub fields: &'static [TypeField],
+    /// варианты сумм, сплошным массивом
+    pub variants: &'static [TypeVariant],
+    /// параметры функций в объявленном порядке
+    pub params: &'static [EntryParam],
+}
+
+fn check_number_type(spec: &Type, value: &Value, label: &str) -> Result<(), Error> {
+    let found = match value {
+        Value::Number(number) if number.is_finite() => *number,
+        _ => return Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name))),
+    };
+    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    беду. */
+    if spec.integral && found.floor() != found {
+        return Err(fail(
+            CODE_TYPE,
+            format!("{}: {} не целое, а тип {} — целый", label, number_text(found), spec.name),
+        ));
+    }
+    if spec.bounded && (found < spec.low || found > spec.high) {
+        return Err(fail(CODE_TYPE, format!("{}: {} вне {}", label, number_text(found), spec.name)));
+    }
+    Ok(())
+}
+
+fn check_fields(
+    table: &EntryTable,
+    from: usize,
+    count: usize,
+    given: &[Field],
+    label: &str,
+    owner: &str,
+    of_variant: bool,
+) -> Result<(), Error> {
+    for index in 0..count {
+        let declared = &table.fields[from + index];
+        match given.iter().find(|field| &*field.name == declared.name) {
+            /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+            None if table.types[declared.type_at].optional => continue,
+            None if of_variant => {
+                return Err(fail(
+                    CODE_TYPE,
+                    format!("{}: вариант «{}» требует поле «{}»", label, owner, declared.name),
+                ))
+            }
+            None => {
+                return Err(fail(
+                    CODE_TYPE,
+                    format!("{}: не задано поле «{}» записи «{}»", label, declared.name, owner),
+                ))
+            }
+            Some(found) => check_typed(
+                table,
+                declared.type_at,
+                &found.value,
+                &format!("{}.{}", label, declared.name),
+            )?,
+        }
+    }
+    Ok(())
+}
+
+fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> Result<(), Error> {
+    let spec = match table.types.get(index) {
+        Some(spec) => spec,
+        None => return Ok(()),
+    };
+    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+    пропуск. Так же считает и ядро FTS. */
+    if spec.optional && matches!(value, Value::Nothing) {
+        return Ok(());
+    }
+    let mismatch = || Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name)));
+    match spec.kind {
+        TypeKind::Number => check_number_type(spec, value, label),
+        TypeKind::Text => match value {
+            Value::Text(_) => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::Flag => match value {
+            Value::Flag(_) => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::Null => match value {
+            Value::Nothing => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::List => match value {
+            Value::List(items) => {
+                for (at, item) in items.iter().enumerate() {
+                    check_typed(table, spec.of, item, &format!("{}[{}]", label, at))?;
+                }
+                Ok(())
+            }
+            _ => mismatch(),
+        },
+        TypeKind::Record => match value {
+            Value::Record(fields) => {
+                check_fields(table, spec.field_from, spec.field_count, fields, label, spec.owner, false)?;
+                /* Лишнее поле — тоже несоответствие типу: запись flang тотальна,
+                и поля сверх объявленных в ней взяться неоткуда. */
+                for field in fields.iter() {
+                    let declared =
+                        (0..spec.field_count).any(|at| table.fields[spec.field_from + at].name == &*field.name);
+                    if !declared {
+                        return Err(fail(
+                            CODE_TYPE,
+                            format!("{}: запись «{}» не имеет поля «{}»", label, spec.owner, field.name),
+                        ));
+                    }
+                }
+                Ok(())
+            }
+            _ => mismatch(),
+        },
+        TypeKind::Sum => {
+            let data = match value {
+                Value::Variant(data) => Some(data),
+                Value::Record(_) => None,
+                _ => return mismatch(),
+            };
+            let found = data.and_then(|data| {
+                (0..spec.variant_count)
+                    .map(|at| &table.variants[spec.variant_from + at])
+                    .find(|variant| variant.name == &*data.name)
+                    .map(|variant| (variant, data))
+            });
+            match found {
+                None => Err(fail(CODE_TYPE, format!("{}: ожидался вариант типа «{}»", label, spec.owner))),
+                Some((variant, data)) => check_fields(
+                    table,
+                    variant.field_from,
+                    variant.field_count,
+                    &data.fields,
+                    label,
+                    variant.name,
+                    true,
+                ),
+            }
+        }
+        TypeKind::Unknown => Ok(()),
+    }
+}
+
+/// Сверка набора значений с объявленными типами параметров функции.
+///
+/// Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+/// параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+/// видом `Unknown`. Тексты отказов дословно те же, что у `checkValue` эталона:
+/// расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
+/// значение типу».
+pub fn check_entry(table: &EntryTable, name: &str, args: &[Value]) -> Result<(), Error> {
+    let declared = table.params.iter().filter(|param| param.function == name).count();
+    if declared == 0 || declared != args.len() {
+        return Ok(());
+    }
+    for (at, param) in table.params.iter().filter(|param| param.function == name).enumerate() {
+        check_typed(
+            table,
+            param.type_at,
+            &args[at],
+            &format!("вызов функции «{}»: аргумент «{}»", name, param.name),
+        )?;
+    }
+    Ok(())
+}

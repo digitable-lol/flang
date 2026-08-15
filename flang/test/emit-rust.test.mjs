@@ -56,6 +56,7 @@ import { parse } from "../src/parser.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
 import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { черезГраницу } from "./through-entry.mjs"
 
 /* rustup кладёт тулчейн в ~/.cargo/bin, а этого каталога нет ни в списке
    общеизвестных мест toolchain.mjs, ни, на серверах без входа в оболочку, в
@@ -287,7 +288,7 @@ function compare(program, built, functionName, grid, options = {}) {
   const answers = ask(built, requests)
 
   points.forEach((args, index) => {
-    const byInterpreter = outcome(() => interpret(program, functionName, args, options.limits ?? {}))
+    const byInterpreter = черезГраницу(program, functionName, args, options.limits ?? {})
     const byEmitted = answerOutcome(answers[index])
     assert.ok(
       sameOutcome(byInterpreter, byEmitted),
@@ -403,7 +404,7 @@ test("stdlib и leetcode: собранный Rust совпадает с инте
     const answers = ask(built, requests)
 
     plan.forEach((point, index) => {
-      const byInterpreter = outcome(() => interpret(program, point.name, point.args, ПРЕДЕЛЫ))
+      const byInterpreter = черезГраницу(program, point.name, point.args, ПРЕДЕЛЫ)
       const byEmitted = answerOutcome(answers[index])
       if (!byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT") {
         /* Точка, на которой интерпретатор исчерпал лимит. Текст диагностики

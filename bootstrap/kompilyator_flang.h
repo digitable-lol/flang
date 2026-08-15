@@ -101,9 +101,9 @@ fl_status kompilyator_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда». */
+/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value *out, fl_error *error);
 
 /* Запись FTS «Шаг»: «р», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2273,6 +2273,15 @@ fl_status kompilyator_flang_so_sborom(fl_ctx *ctx, fl_value r, fl_value sbor, fl
 fl_status kompilyator_flang_s_oblastyami(fl_ctx *ctx, fl_value r, fl_value oblasti, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «С исходом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_s_ishodom(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Есть беда».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -4119,6 +4128,18 @@ fl_status kompilyator_flang_imya_odnomestnoy_formy(fl_ctx *ctx, fl_value identif
 fl_status kompilyator_flang_slovo_odnomestnoy_formoy(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Слово исходом числа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param token — «токен»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_slovo_ishodom_chisla(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Слово символом».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -5469,6 +5490,50 @@ fl_status kompilyator_flang_pole_esli_est(fl_ctx *ctx, fl_value polya, fl_value 
  * @return значение: список: «Поле значения»
  */
 fl_status kompilyator_flang_polya_obyavleniy(fl_ctx *ctx, fl_value polya, fl_value prochie, fl_value klyuchi, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел типа исхода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_uzel_tipa_ishoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена типа исхода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_tipa_ishoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена, занятые типом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_zanyatye_tipom(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя исхода занято».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_imya_ishoda_zanyato(fl_ctx *ctx, fl_value tipy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Типы с исходом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Значение»
+ * @param nuzhen — «нужен»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_tipy_s_ishodom(fl_ctx *ctx, fl_value tipy, fl_value nuzhen, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разбор токенов».

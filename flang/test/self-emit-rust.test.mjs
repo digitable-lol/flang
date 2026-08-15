@@ -1,0 +1,668 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
+/**
+ * Печать flang → Rust, написанная на самом flang (`flang/self/emit-rust.flang`).
+ *
+ * Проверка здесь одна и она дифференциальная: для каждой программы репозитория
+ * файлы, которые печатает «Печать программы в Rust» на flang, обязаны совпасть
+ * с тем, что печатает эталон `flang/src/emit/rust.mjs`, **побайтово** — включая
+ * комментарии, пробелы, порядок временных имён и расстановку `mut` и приставки
+ * `_` у мёртвых имён.
+ *
+ * Слабее критерий делать нельзя. «Компилируется и работает» не отличает
+ * правильную печать от случайно похожей: два бэкенда могут давать разный Rust,
+ * который одинаково проходит сетку входов, и разойтись на первом же входе,
+ * которого в сетке не было. Побайтовое совпадение исключает это по построению.
+ *
+ * Тест МЕРЯЕТ, а не только падает: сверка корпуса проходит все программы до
+ * конца и печатает «совпало N из M, разошлось K, первое расхождение — вот
+ * такое». Пока близнец не дописан, тест краснеет честно и с числом.
+ *
+ * Настоящего тулчейна Rust здесь не нужно вовсе: сверяются две печати между
+ * собой. Сборку напечатанного крейта проверяет `flang/test/emit-rust.test.mjs`.
+ */
+import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
+import test from "node:test"
+import { fileURLToPath } from "node:url"
+
+import { fromFtsDocument } from "../src/compat.mjs"
+import { emitRust } from "../src/emit/rust.mjs"
+import { evaluate } from "../src/interpret.mjs"
+import { linkProgram } from "../src/link.mjs"
+import { parse } from "../src/parser.mjs"
+import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
+import { checkTypes } from "../src/types.mjs"
+import { globSync } from "./glob.mjs"
+
+const корень = fileURLToPath(new URL("../..", import.meta.url))
+const файл = fileURLToPath(new URL("../self/emit-rust.flang", import.meta.url))
+const исходник = readFileSync(файл, "utf8")
+
+const свой = parse(исходник, "self/emit-rust.flang")
+const связано = await linkProgram(файл, исходник, parse)
+const { diagnostics: диагностикиСвязывания, ...программа } = связано
+const типы = checkTypes(программа)
+const тотальность = checkTotality(программа)
+
+/**
+ * Лимит шагов поднят с миллиона до ста: печать — работа с целым AST сразу, и
+ * самая большая программа репозитория укладывается между шестьюдесятью и ста
+ * миллионами шагов. Лимит здесь не формальность: он ловит превращение печати в
+ * перебор. Глубина — по вложенности AST, поэтому её хватает штатной.
+ */
+const ШАГИ = { maxSteps: 100_000_000, maxDepth: 10_000 }
+const вызвать = (имя, аргументы) => evaluate(программа, имя, аргументы, ШАГИ)
+
+/* ─────────────────── перевод AST в значения flang ─────────────────── */
+
+/* Механический перевод JSON → «Значение» из `flang/core/json.flang`: повторяет
+   форму и порядок ключей и ничего не решает сам. Иначе тест проверял бы себя. */
+const вариантЗначения = (имя, поля = {}) => ({ variant: имя, fields: поля })
+
+function скаляр(значение) {
+  if (значение === null) return вариантЗначения("Скаляр ничто")
+  if (typeof значение === "string") return вариантЗначения("Скаляр строка", { значение })
+  if (typeof значение === "number") return вариантЗначения("Скаляр число", { значение })
+  if (typeof значение === "boolean") return вариантЗначения("Скаляр признак", { значение })
+  throw new Error(`не скаляр: ${String(значение)}`)
+}
+
+/* `undefined` пропускается ровно там, где его пропустил бы JSON.stringify:
+   ключа нет — это не «ключ со значением ничто», и эталон их различает. */
+function значение(узел) {
+  if (узел === undefined) return вариантЗначения("Значение скаляра", { скаляр: скаляр(null) })
+  if (Array.isArray(узел)) return вариантЗначения("Значение списка", { элементы: узел.map(значение) })
+  if (узел !== null && typeof узел === "object") {
+    return вариантЗначения("Значение записи", {
+      поля: Object.entries(узел)
+        .filter(([, вложенное]) => вложенное !== undefined)
+        .map(([ключ, вложенное]) => ({ ключ, значение: значение(вложенное) })),
+    })
+  }
+  return вариантЗначения("Значение скаляра", { скаляр: скаляр(узел) })
+}
+
+/* Рантайм печатается дословно и приходит параметром: читать файлы язык не
+   умеет и не должен. Берём те же самые файлы, что берёт эталон. */
+const рантайм = (имя) => readFileSync(new URL(`../src/emit/rust/${имя}`, import.meta.url), "utf8")
+const РАНТАЙМ = {
+  "рантайм исходник": рантайм("flang_runtime.rs"),
+  "исходник прогонщика": рантайм("flang_cli.rs"),
+}
+
+function настройки(опции = {}) {
+  return {
+    "путь": опции.path ?? "",
+    "есть путь": опции.path !== undefined,
+    "база": опции.indexBase === 0 ? 0 : 1,
+    "предел глубины": опции.maxDepth ?? 10_000,
+    "предел шагов": опции.maxSteps ?? 1_000_000,
+    "прогонщик": опции.cli !== false,
+    ...РАНТАЙМ,
+  }
+}
+
+/** Печать на flang: список файлов в той же форме, что у эталона. */
+function напечатать(ast, опции = {}) {
+  const итог = вызвать("Печать программы в Rust", { "программа": значение(ast), "настройки": настройки(опции) })
+  return { files: итог.файлы.map((файл) => ({ path: файл.путь, content: файл.содержимое })), error: итог.ошибка }
+}
+
+/** Файл реализации модуля: единственный .rs, который не принадлежит крейту. */
+function исходникМодуля(файлы) {
+  const служебные = new Set(["src/runtime.rs", "src/lib.rs", "src/cli.rs", "src/main.rs"])
+  return файлы.find((файл) => файл.path.endsWith(".rs") && !служебные.has(файл.path)).content
+}
+
+/**
+ * Побайтовая сверка с эталоном. Возвращает `null` при совпадении, иначе текст
+ * первого расхождения — тест сам решает, падать сразу или считать до конца.
+ */
+function расхождение(имя, ast, опции = {}) {
+  let эталон = null
+  try {
+    эталон = emitRust(ast, опции)
+  } catch (ошибка) {
+    return `${имя}: эталон отказал (${ошибка.message}) — сверять нечего`
+  }
+  let мой = null
+  try {
+    мой = напечатать(ast, опции)
+  } catch (ошибка) {
+    return `${имя}: печать на flang сорвалась: ${ошибка.message}`
+  }
+  if (мой.error !== "") return `${имя}: печать на flang отказала: ${мой.error}`
+
+  const путиЭталона = эталон.files.map((файл) => файл.path)
+  const путиМои = мой.files.map((файл) => файл.path)
+  if (путиЭталона.join("|") !== путиМои.join("|")) {
+    return `${имя}: набор файлов не совпал\n  эталон: ${путиЭталона.join(", ")}\n  flang:  ${путиМои.join(", ")}`
+  }
+  for (const [индекс, файл] of эталон.files.entries()) {
+    const наш = мой.files[индекс].content
+    if (наш === файл.content) continue
+    const слева = файл.content.split("\n")
+    const справа = наш.split("\n")
+    let строка = 0
+    while (строка < слева.length && строка < справа.length && слева[строка] === справа[строка]) строка += 1
+    return (
+      `${имя}: ${файл.path} разошёлся на строке ${строка + 1}\n` +
+      `  эталон: ${JSON.stringify(слева[строка])}\n` +
+      `  flang:  ${JSON.stringify(справа[строка])}`
+    )
+  }
+  return null
+}
+
+/** Побайтовая сверка, падающая на первом расхождении. */
+function сверить(имя, ast, опции = {}) {
+  const беда = расхождение(имя, ast, опции)
+  assert.equal(беда, null, беда ?? "")
+}
+
+/** Отказ печати: код и текст обязаны совпасть с тем, что бросает эталон. */
+function сверитьОтказ(имя, ast) {
+  let ожидаемое = null
+  try {
+    emitRust(ast)
+  } catch (ошибка) {
+    ожидаемое = ошибка.message
+  }
+  assert.notEqual(ожидаемое, null, `${имя}: эталон не отказал, сверять нечего`)
+  assert.equal(напечатать(ast).error, ожидаемое, `${имя}: текст отказа разошёлся`)
+}
+
+/* ─────────────────── программы репозитория ─────────────────── */
+
+/** Программа со связанными импортами: без них имена соседних модулей висят. */
+async function разобрать(относительный) {
+  const путь = join(корень, относительный)
+  const текст = readFileSync(путь, "utf8")
+  const связанное = await linkProgram(путь, текст, parse)
+  const { diagnostics: диагностики, ...ast } = связанное
+  assert.deepEqual(диагностики, [], `${относительный}: не связалось`)
+  return ast
+}
+
+const программыРепозитория = [
+  ...globSync("flang/stdlib/*.flang", { cwd: корень }),
+  ...globSync("flang/examples/*.flang", { cwd: корень }),
+  ...globSync("flang/examples/leetcode/*.flang", { cwd: корень }),
+  ...globSync("flang/core/*.flang", { cwd: корень }),
+  "flang/self/emit-c.flang",
+  "flang/self/emit-rust.flang",
+].sort()
+
+/** Считает совпавшие и расходящиеся; печатает первое расхождение целиком. */
+function свод(t, заголовок, расхождения, всего) {
+  const совпало = всего - расхождения.length
+  t.diagnostic(`${заголовок}: побайтово совпало ${совпало} из ${всего}, разошлось ${расхождения.length}`)
+  if (расхождения.length === 0) return
+  t.diagnostic(`первое расхождение:\n${расхождения[0]}`)
+  const прочие = расхождения.slice(1, 6).map((текст) => текст.split("\n")[0])
+  if (прочие.length > 0) t.diagnostic(`следом: ${прочие.join(" | ")}`)
+  assert.fail(
+    `${заголовок}: совпало ${совпало} из ${всего}, разошлось ${расхождения.length}.\n` +
+      `Первое расхождение:\n${расхождения[0]}`,
+  )
+}
+
+/* ─────────────────── проверки самой программы ─────────────────── */
+
+test("программа на flang разбирается, связывается, проходит типы и тотальность", () => {
+  assert.deepEqual(диагностикиСвязывания, [], "связывание дало диагностики")
+  assert.deepEqual(типы.diagnostics ?? [], [], "проверка типов дала диагностики")
+  assert.deepEqual(тотальность.diagnostics ?? [], [], "анализ тотальности дал диагностики")
+  assert.equal(свой.module, "Печать в Rust")
+})
+
+test("переиспользование, а не третья реализация транслитерации и обхода AST", () => {
+  /* Навигация по AST, таблицы имён, Тарьян и транслитерация уже доказаны
+     побайтово печатью в C. Второй реализации быть не должно: она разошлась бы
+     на первом же краевом входе — ровно так, как разошлись бы два бэкенда. */
+  assert.match(исходник, /использует «Печать в C» из "emit-c\.flang" только /u)
+  const свои = new Set(свой.functions.map((функция) => функция.name))
+  for (const имя of ["Взять поле", "Строка поля", "Вид узла", "Змейка", "Есть слово", "Компоненты связности"]) {
+    assert.ok(!свои.has(имя), `«${имя}» переписана заново вместо импорта`)
+    assert.ok(программа.functions.some((функция) => функция.name === имя), `«${имя}» не приехала импортом`)
+  }
+})
+
+/* ─────────────────── дифференциальная сверка ─────────────────── */
+
+test("программы репозитория: Rust совпадает с эталоном побайтово", async (t) => {
+  assert.ok(программыРепозитория.length >= 30, "программ стало подозрительно мало")
+  const беды = []
+  for (const относительный of программыРепозитория) {
+    const беда = расхождение(относительный, await разобрать(относительный))
+    if (беда !== null) беды.push(беда)
+  }
+  свод(t, "программы репозитория", беды, программыРепозитория.length)
+})
+
+test("сторож меры: обе реализации понижения ставят его одинаково", async (t) => {
+  /* Программы выше приходят БЕЗ отметок: отметку кладёт анализ завершаемости
+     (`markMeasureGuards`), а его в той сверке никто не звал. Здесь отметка
+     ставится явно — расходиться есть чему: имена сторожей, форма постусловия и
+     место связки шага наблюдаемы в напечатанном Rust. */
+  const отмеченные = [
+    "flang/stdlib/numbers.flang",
+    "flang/stdlib/strings.flang",
+    "flang/examples/leetcode/070-climbing-stairs.flang",
+  ]
+  const беды = []
+  let сторожей = 0
+  for (const относительный of отмеченные) {
+    const ast = await разобрать(относительный)
+    const помеченная = markMeasureGuards(ast)
+    assert.notEqual(помеченная, ast, `${относительный}: числовой меры больше нет — программу переписали?`)
+    assert.match(emitRust(помеченная).files.map((файл) => файл.content).join(""), /FLANG_MEASURE/u)
+    const беда = расхождение(относительный, помеченная)
+    if (беда !== null) беды.push(беда)
+    сторожей += checkTotality(ast).guards.length
+  }
+  t.diagnostic(`сверено программ со сторожами: ${отмеченные.length}, сторожей в них: ${сторожей}`)
+  свод(t, "программы со сторожами меры", беды, отмеченные.length)
+})
+
+test("модели FTS через compat: постусловия печатаются так же", async (t) => {
+  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
+  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
+  const беды = []
+  let сверено = 0
+  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
+    if (файлМодели.includes("node_modules")) continue
+    let документ
+    try {
+      документ = ядро.compile(
+        parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"),
+      )
+    } catch {
+      continue
+    }
+    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
+    const беда = расхождение(файлМодели, fromFtsDocument(документ))
+    if (беда !== null) беды.push(беда)
+    сверено += 1
+  }
+  assert.ok(сверено >= 10, `моделей с утилитами сверено ${сверено} — слишком мало`)
+  свод(t, "модели FTS", беды, сверено)
+})
+
+/* ─────────────────── случаи, которых в репозитории нет ─────────────────── */
+
+const имя = (name) => ({ kind: "var", name })
+const лит = (value) => ({ kind: "literal", value })
+
+const батут = {
+  flang: 1,
+  module: "Чётность",
+  functions: [
+    {
+      name: "Чётное",
+      total: true,
+      params: [{ name: "н", type: { kind: "number" } }],
+      returns: { kind: "boolean" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "eq", left: имя("н"), right: лит(0) },
+        then: лит(true),
+        else: { kind: "call", name: "Нечётное", args: [{ kind: "binary", op: "sub", left: имя("н"), right: лит(1) }] },
+      },
+    },
+    {
+      name: "Нечётное",
+      total: true,
+      params: [{ name: "н", type: { kind: "number" } }],
+      returns: { kind: "boolean" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "eq", left: имя("н"), right: лит(0) },
+        then: лит(false),
+        else: { kind: "call", name: "Чётное", args: [{ kind: "binary", op: "sub", left: имя("н"), right: лит(1) }] },
+      },
+    },
+  ],
+}
+
+test("взаимная хвостовая рекурсия: батут печатается так же", () => {
+  сверить("батут", батут)
+  const исходникRs = исходникМодуля(напечатать(батут).files)
+  assert.ok(исходникRs.includes("rt::trampoline(ctx, shag_chyotnoe"), "батута в выдаче нет")
+  assert.ok(исходникRs.includes("bounce.next = Some(shag_nechyotnoe);"), "отскока в выдаче нет")
+})
+
+test("батут без параметров: args гасится приставкой", () => {
+  const программаБезПараметров = {
+    flang: 1,
+    module: "Пинг",
+    functions: [
+      { name: "Пинг", params: [], returns: { kind: "number" }, body: { kind: "call", name: "Понг", args: [] } },
+      { name: "Понг", params: [], returns: { kind: "number" }, body: { kind: "call", name: "Пинг", args: [] } },
+    ],
+  }
+  сверить("батут без параметров", программаБезПараметров)
+  assert.ok(исходникМодуля(напечатать(программаБезПараметров).files).includes("_args: Vec<rt::Value>"), "args не погашен")
+})
+
+test("одноимённые вариант и функция дают разные идентификаторы", () => {
+  const программаСтолкновения = {
+    flang: 1,
+    module: "Вычислитель",
+    types: [
+      {
+        kind: "sum",
+        name: "Операнд",
+        variants: [
+          { name: "Значение операнда", fields: [{ name: "скаляр", type: { kind: "number" } }] },
+          { name: "Пусто", fields: [] },
+        ],
+      },
+    ],
+    functions: [
+      {
+        name: "Значение операнда",
+        total: true,
+        params: [{ name: "о", type: { kind: "name", name: "Операнд" } }],
+        returns: { kind: "number" },
+        body: {
+          kind: "match",
+          target: имя("о"),
+          cases: [
+            { pattern: { kind: "variant", name: "Значение операнда", bind: { "скаляр": "с" } }, body: имя("с") },
+            { pattern: { kind: "variant", name: "Пусто", bind: {} }, body: лит(0) },
+          ],
+        },
+      },
+    ],
+  }
+  сверить("вариант и функция одного имени", программаСтолкновения)
+  const текст = исходникМодуля(напечатать(программаСтолкновения).files)
+  assert.ok(текст.includes("pub fn variant_znachenie_operanda("), "конструктор варианта потерял роль")
+  assert.ok(текст.includes("pub fn funkciya_znachenie_operanda("), "функция потеряла свою роль")
+})
+
+test("хвостовой самовызов разворачивается в loop с переприсваиванием", () => {
+  const обмен = {
+    flang: 1,
+    module: "Обмен",
+    functions: [
+      {
+        name: "Обмен",
+        params: [{ name: "а" }, { name: "б" }],
+        returns: { kind: "number" },
+        body: {
+          kind: "if",
+          cond: { kind: "binary", op: "lte", left: имя("а"), right: лит(0) },
+          then: имя("б"),
+          else: { kind: "call", name: "Обмен", args: [имя("б"), имя("а")] },
+        },
+      },
+    ],
+  }
+  сверить("самовызов в цикл", обмен)
+  const текст = исходникМодуля(напечатать(обмен).files)
+  assert.ok(текст.includes("loop {"), "цикла нет")
+  assert.ok(текст.includes("continue;"), "переприсваивания нет")
+  assert.ok(текст.includes("mut a: rt::Value"), "параметр цикла не объявлен изменяемым")
+})
+
+test("мёртвый параметр цикла обязан получить приставку", () => {
+  /* `unused_assignments` под `-D warnings` — ошибка сборки: параметр цикла
+     переприсваивается, но никогда не читается. Гасить это `let _ = &имя;`
+     нельзя — заимствование пришлось бы ставить внутрь цикла. */
+  const мёртвый = {
+    flang: 1,
+    module: "Мёртвый",
+    functions: [
+      {
+        name: "Считалка",
+        params: [{ name: "н" }, { name: "мусор" }],
+        returns: { kind: "number" },
+        body: {
+          kind: "if",
+          cond: { kind: "binary", op: "lte", left: имя("н"), right: лит(0) },
+          then: лит(0),
+          else: {
+            kind: "call",
+            name: "Считалка",
+            args: [{ kind: "binary", op: "sub", left: имя("н"), right: лит(1) }, лит(1)],
+          },
+        },
+      },
+    ],
+  }
+  сверить("мёртвый параметр цикла", мёртвый)
+  const текст = исходникМодуля(напечатать(мёртвый).files)
+  assert.match(текст, /mut _musor: rt::Value/u, "мёртвый параметр цикла остался без приставки")
+})
+
+test("литералы всех видов: NaN, бесконечности, минус ноль, 1e21, вложенное", () => {
+  сверить("литералы", {
+    flang: 1,
+    module: "Литералы",
+    types: [
+      { kind: "record", name: "Точка", fields: [{ name: "х", type: { kind: "number" } }] },
+      { kind: "record", name: "Пустая", fields: [] },
+      { kind: "sum", name: "Сумма", variants: [{ name: "Нет", fields: [] }] },
+    ],
+    functions: [
+      {
+        name: "Всё",
+        params: [],
+        returns: { kind: "nothing" },
+        body: {
+          kind: "list",
+          items: [
+            лит(Number.NaN),
+            лит(Number.POSITIVE_INFINITY),
+            лит(Number.NEGATIVE_INFINITY),
+            лит(-0),
+            лит(1e21),
+            лит(0.1),
+            лит(null),
+            лит(true),
+            лит(false),
+            лит('а"б\\в?г\t\n'),
+            лит([1, [2, 3], { "поле": "значение" }]),
+            { kind: "record", type: "Точка", fields: { "х": лит(1) } },
+            { kind: "record", type: "Пустая", fields: {} },
+            { kind: "construct", variant: "Нет", fields: {} },
+            { kind: "list", items: [] },
+          ],
+        },
+      },
+    ],
+  })
+})
+
+test("минус ноль печатается литералом, а не сводится к нулю", () => {
+  /* `-0 >= 0` истинно, а `равен` работает через Object.is: на этом попадались
+     трое за день. Литерал — то место, где `−0` вылезает первым. */
+  const текст = исходникМодуля(
+    напечатать({
+      flang: 1,
+      module: "Ноль",
+      functions: [{ name: "Ф", params: [], returns: {}, body: лит(-0) }],
+    }).files,
+  )
+  assert.match(текст, /rt::number\(-0\.0\)/u, "минус ноль потерял знак")
+})
+
+test("формы, свёртки, отображения, фильтры и все виды образцов", () => {
+  сверить("формы и циклы", {
+    flang: 1,
+    module: "Формы",
+    functions: [
+      {
+        name: "Всё",
+        params: [
+          { name: "с", type: { kind: "list", of: { kind: "number" } } },
+          { name: "т", type: { kind: "string" } },
+        ],
+        returns: { kind: "number" },
+        body: {
+          kind: "let",
+          name: "сумма",
+          value: {
+            kind: "fold",
+            over: имя("с"),
+            init: лит(0),
+            acc: "а",
+            item: "э",
+            body: { kind: "binary", op: "add", left: имя("а"), right: имя("э") },
+          },
+          in: {
+            kind: "let",
+            name: "удв",
+            value: {
+              kind: "map",
+              over: имя("с"),
+              item: "э",
+              body: { kind: "binary", op: "mul", left: имя("э"), right: лит(2) },
+            },
+            in: {
+              kind: "let",
+              name: "чёт",
+              value: {
+                kind: "filter",
+                over: имя("с"),
+                item: "э",
+                body: {
+                  kind: "binary",
+                  op: "eq",
+                  left: { kind: "binary", op: "mod", left: имя("э"), right: лит(2) },
+                  right: лит(0),
+                },
+              },
+              in: {
+                kind: "match",
+                target: имя("с"),
+                cases: [
+                  { pattern: { kind: "empty" }, body: { kind: "builtin", name: "длина", args: [имя("т")] } },
+                  { pattern: { kind: "literal", value: [1] }, body: лит(1) },
+                  {
+                    pattern: { kind: "cons", head: "г", tail: "х" },
+                    body: {
+                      kind: "binary",
+                      op: "concat",
+                      left: { kind: "builtin", name: "к строке", args: [имя("сумма")] },
+                      right: { kind: "builtin", name: "подстрока", args: [имя("т"), лит(1), лит(1)] },
+                    },
+                  },
+                  { pattern: { kind: "any", bind: "прочее" }, body: имя("сумма") },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ],
+  })
+})
+
+test("постусловия: свой код, своё сообщение и текст по умолчанию", () => {
+  сверить("постусловия", {
+    flang: 1,
+    module: "Свойства",
+    functions: [
+      {
+        name: "Скидка",
+        params: [{ name: "с", type: { kind: "number" } }],
+        returns: { kind: "number" },
+        body: { kind: "binary", op: "percent", left: лит(10), right: имя("с") },
+        postconditions: [
+          {
+            name: "Не больше суммы",
+            expr: { kind: "binary", op: "lte", left: имя("результат"), right: имя("с") },
+            code: "FTS_UTILITY_PROPERTY",
+            message: "скидка больше суммы",
+          },
+          { name: "Неотрицательна", expr: { kind: "binary", op: "gte", left: имя("результат"), right: лит(0) } },
+        ],
+      },
+    ],
+  })
+})
+
+test("связывание полей варианта списком имён, а не записью", () => {
+  сверить("связка списком", {
+    flang: 1,
+    module: "Списком",
+    types: [{ kind: "sum", name: "С", variants: [{ name: "А", fields: [{ name: "поле", type: { kind: "number" } }] }] }],
+    functions: [
+      {
+        name: "Ф",
+        params: [{ name: "х" }],
+        returns: {},
+        body: {
+          kind: "match",
+          target: имя("х"),
+          cases: [{ pattern: { kind: "variant", name: "А", bind: ["поле"] }, body: имя("поле") }],
+        },
+      },
+    ],
+  })
+})
+
+test("настройки печати: путь, база индексации, предел глубины, без прогонщика", () => {
+  сверить("без модуля", { flang: 1, functions: [] })
+  сверить("без модуля, без прогонщика", { flang: 1, functions: [] }, { cli: false })
+  сверить("свой путь и база 0", { flang: 1, module: "Имя", functions: [] }, { path: "своё", indexBase: 0, maxDepth: 7 })
+  const свои = напечатать({ flang: 1, module: "Имя", functions: [] }, { path: "своё", indexBase: 0, maxDepth: 7 })
+  assert.ok(свои.files.some((файл) => файл.path === "src/своё.rs"), "свой путь не доехал")
+  const текст = исходникМодуля(свои.files)
+  assert.ok(текст.includes("ctx.set_index_base(0);"), "база индексации не доехала")
+  assert.ok(текст.includes("ctx.set_max_depth(7);"), "предел глубины не доехал")
+})
+
+/* ─────────────────── диагностики ─────────────────── */
+
+test("отказы печати: те же коды и тексты, что у эталона", () => {
+  const тело = (body) => ({ flang: 1, module: "М", functions: [{ name: "Ф", params: [], returns: {}, body }] })
+  сверитьОтказ("неизвестное имя", тело(имя("нет такого")))
+  сверитьОтказ("неизвестная функция", тело({ kind: "call", name: "Нету", args: [] }))
+  сверитьОтказ("неизвестная форма", тело({ kind: "builtin", name: "нету", args: [] }))
+  сверитьОтказ("арность формы", тело({ kind: "builtin", name: "подстрока", args: [лит("а")] }))
+  сверитьОтказ("неизвестная операция", тело({ kind: "binary", op: "xor", left: лит(1), right: лит(2) }))
+  сверитьОтказ("неизвестный вид выражения", тело({ kind: "нечто" }))
+  сверитьОтказ("неверная арность вызова", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [{ name: "а" }], returns: {}, body: { kind: "call", name: "Ф", args: [] } }],
+  })
+  сверитьОтказ("неизвестный вариант", {
+    flang: 1,
+    module: "М",
+    types: [{ kind: "sum", name: "С", variants: [{ name: "А", fields: [] }] }],
+    functions: [{ name: "Ф", params: [], returns: {}, body: { kind: "construct", variant: "Б", fields: {} } }],
+  })
+  сверитьОтказ("неизвестная запись", {
+    flang: 1,
+    module: "М",
+    types: [{ kind: "record", name: "Р", fields: [] }],
+    functions: [{ name: "Ф", params: [], returns: {}, body: { kind: "record", type: "Х", fields: {} } }],
+  })
+  сверитьОтказ("столкновение после транслитерации", {
+    flang: 1,
+    module: "М",
+    functions: [
+      { name: "Цена", params: [], returns: {}, body: лит(1) },
+      { name: "цена", params: [], returns: {}, body: лит(2) },
+    ],
+  })
+})
+
+test("конкурентность без планировщика: отказ дословно тот же", () => {
+  /* Отказ стоит до всякой работы: печатать процессы в Rust нечем, а молчание
+     потеряло бы их — обработчик стал бы обычной функцией, которую никто не
+     зовёт. */
+  сверитьОтказ("процессы без планировщика", {
+    flang: 1,
+    module: "Служба",
+    processes: [{ name: "Приёмник", state: {}, handlers: [] }],
+    functions: [{ name: "Ф", params: [], returns: {}, body: лит(1) }],
+  })
+})

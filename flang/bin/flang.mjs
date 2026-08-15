@@ -827,6 +827,19 @@ export async function externalChecks(program) {
     const итог = obligations(program, results)
     results.obligations = итог
     diagnostics.push(...normalizeDiagnostics(итог))
+    /* ПОИСК НАРУШЕНИЙ НА СЕТКЕ ПРИМЕРОВ. Стоит здесь, а не в таблице выше, по
+       той же причине, что и ядро: ему нужны обязательства — он ищет нарушение
+       КАЖДОГО названного утверждения по отдельности, а не «ошибку где-нибудь».
+       Диагностик не даёт ни одной, и это не забывчивость: нарушенное на примере
+       автора постусловие — это красный `flang test`, а место у примеров одно.
+       Работа поиска в другом: без него ведомость печатала «нарушений не
+       найдено», не посмотрев ни на один пример. */
+    try {
+      const { checkGrid } = await import(new URL("../src/grid.mjs", import.meta.url).href)
+      results.grid = checkGrid(program, итог.obligations)
+    } catch {
+      /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
+    }
     try {
       const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
       const вердикты = checkProofs(program, итог.obligations)

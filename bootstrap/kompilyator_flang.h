@@ -8681,6 +8681,32 @@ fl_status kompilyator_flang_kanonicheskoe_imya_formy(fl_ctx *ctx, fl_value imya,
 fl_status kompilyator_flang_pomoschniki_form(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Формы, снимаемые непустотой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_formy_snimaemye_nepustotoy(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_suffiks_dokazannogo_pomoschnika(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_pomoschnik_formy(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Арности форм».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

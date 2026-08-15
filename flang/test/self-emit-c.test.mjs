@@ -40,7 +40,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
-import { checkTypes } from "../src/types.mjs"
+import { checkTypes, markNonEmpty } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -246,6 +246,36 @@ test("сторож меры: обе реализации понижения ст
     сторожей += checkTotality(ast).guards.length
   }
   t.diagnostic(`сверено программ со сторожами: ${отмеченные.length}, сторожей в них: ${сторожей}`)
+})
+
+test("доказанная непустота: обе печати снимают сторожа в одних и тех же местах", async (t) => {
+  /* Та же слепота, что у сторожа меры, и то же лекарство. Программы выше
+     приходят сюда БЕЗ отметки `доказана`: её кладёт передний край
+     (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а `разобрать`
+     зовёт только разбор и связывание. Значит в той сверке ни одна сторона
+     сторожа не снимала, и расхождения такая сверка поймать не могла бы.
+
+     Здесь отметка ставится явно. Расходиться есть чему: имя доказанного
+     помощника, список форм, у которых он бывает, и само чтение отметки — всё
+     это наблюдаемо в напечатанном C, и всё это у эталона и у близнеца написано
+     порознь. */
+  const отмеченные = [
+    "flang/self/lexer.flang",
+    "flang/stdlib/strings.flang",
+    "flang/examples/leetcode/150-evaluate-reverse-polish-notation.flang",
+  ]
+  let снято = 0
+  for (const относительный of отмеченные) {
+    const ast = await разобрать(относительный)
+    const помеченная = markNonEmpty(ast)
+    assert.notEqual(помеченная, ast, `${относительный}: доказанных мест больше нет — программу переписали?`)
+    const код = emitC(помеченная).files.map((файл) => файл.content).join("")
+    const вызовов = код.split("_dokazano(").length - 1
+    assert.ok(вызовов > 0, `${относительный}: эталон не позвал ни одного помощника без сторожа`)
+    сверить(относительный, помеченная)
+    снято += вызовов
+  }
+  t.diagnostic(`сверено программ с доказанными местами: ${отмеченные.length}, вызовов без сторожа: ${снято}`)
 })
 
 test("сам эмиттер: печать своего собственного исходника совпадает побайтово", async () => {

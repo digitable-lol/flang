@@ -47,7 +47,7 @@ const ВЕРСИЯ = JSON.parse(readFileSync(new URL("../../package.json", impor
 const HELP = `flang — полный язык поверх FTS
 
 Использование:
-  flang check <файл> [--размещение узлы.json] [--proof [--json]] [--pretty]
+  flang check <файл> [--proof [--json]] [--размещение узлы.json] [--pretty]
   flang run   <файл> --function «Имя» --args '{"поле": 1}' [--max-steps N]
                      [--max-depth N] [--pretty]
   flang test  <файл> [--no-check] [--pretty]

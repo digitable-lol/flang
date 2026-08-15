@@ -328,6 +328,31 @@ function новыйКонтекст(report) {
  * @returns {{ ok: boolean, diagnostics: object[] }}
  */
 export function checkArguments(program, functionName, args) {
+  return проверкаВхода(program)(functionName, args)
+}
+
+/**
+ * Та же дверь, открытая заранее: таблицы типов строятся ОДИН раз, проверять ими
+ * можно сколько угодно наборов значений.
+ *
+ * Нужно это там, где значения снаружи приходят не по одному. Их три места, и
+ * все три — двери из того же ряда, что `--args`:
+ *
+ *   • `flang facts` — факты из файла становятся аргументами вызова, и утверждений
+ *     в одном прогоне бывают тысячи (2440 на корпусе self-facts);
+ *   • `flang io` — отклик хозяина приезжает на КАЖДОМ витке цикла поручений,
+ *     а витков по умолчанию до 10 000;
+ *   • `flang run` — один набор, и ему достаточно `checkArguments`.
+ *
+ * Пересобирать `collectTypes`+`collectSignatures` на каждый виток значило бы
+ * платить длиной программы за каждое значение. Отдельной ПРОВЕРКИ здесь нет:
+ * `checkArguments` — это вызов того, что возвращает эта функция, и понимание
+ * слов «значение подходит типу» остаётся ровно одно.
+ *
+ * @param {object} program AST модуля
+ * @returns {(functionName: string, args: object) => { ok: boolean, diagnostics: object[] }}
+ */
+export function проверкаВхода(program) {
   const отброшенные = []
   const ctx = новыйКонтекст((code, message, node) => {
     отброшенные.push({ code, message, severity: "error", span: spanOf(node) })
@@ -335,17 +360,19 @@ export function checkArguments(program, functionName, args) {
   collectTypes(program, ctx)
   collectSignatures(program, ctx)
 
-  const signature = ctx.signatures.get(functionName)
-  if (signature === undefined) return { ok: true, diagnostics: [] }
+  return function сверить(functionName, args) {
+    const signature = ctx.signatures.get(functionName)
+    if (signature === undefined) return { ok: true, diagnostics: [] }
 
-  const diagnostics = []
-  ctx.report = (code, message, node) => {
-    diagnostics.push({ code, message, severity: "error", span: spanOf(node) })
+    const diagnostics = []
+    ctx.report = (code, message, node) => {
+      diagnostics.push({ code, message, severity: "error", span: spanOf(node) })
+    }
+    const узел = listFunctions(program).find((fn) => fn?.name === functionName) ?? null
+    const где = `вызов функции «${functionName}»`
+    сверитьАргументы(signature, args ?? {}, solveExample(signature, { args }, ctx), ctx, узел, где, где)
+    return { ok: diagnostics.length === 0, diagnostics }
   }
-  const узел = listFunctions(program).find((fn) => fn?.name === functionName) ?? null
-  const где = `вызов функции «${functionName}»`
-  сверитьАргументы(signature, args ?? {}, solveExample(signature, { args }, ctx), ctx, узел, где, где)
-  return { ok: diagnostics.length === 0, diagnostics }
 }
 
 /* ------------------------------------------------------------------ */

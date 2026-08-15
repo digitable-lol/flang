@@ -18,11 +18,17 @@
  *      на часы и не бросает кости. Все зависимости — аргументы функции.
  *   4. ДЕТЕРМИНИЗМ. Факты замораживаются копией, порядок обхода — порядок
  *      объявления, ответ зависит только от (program, facts, claims, limits).
+ *   5. ФАКТ СВЕРЕН С ОБЪЯВЛЕННЫМ ТИПОМ ДО ВЫЧИСЛЕНИЯ. Факты приезжают снаружи
+ *      JSON-ом и становятся аргументами вызова; значение вне объявленного типа
+ *      выносит вместе с типом и доказательство, на котором стоит гарантия №1
+ *      (см. `resolveTerm`). Сверяет их та же `checkArguments`, которой
+ *      проверяются `--args` и значения примеров в исходнике.
  *
  * Это библиотека: ни `process.exit`, ни вывода в консоль — только возвращаемое
  * значение.
  */
 import { errorCode, evaluateFlang, flangError } from "./compat.mjs"
+import { проверкаВхода } from "./types.mjs"
 
 const DEFAULT_STEPS = 10000
 const DEFAULT_DEPTH = 100
@@ -43,10 +49,13 @@ export function checkFacts(program, options = {}) {
   const programError = validateProgram(program)
   const facts = programError === null ? freeze(clone(options.facts ?? {})) : {}
   const totality = programError === null ? new TotalityAnalysis(program) : null
+  /* Граница входа открывается один раз на прогон, а не на утверждение: таблицы
+     типов зависят от программы, а утверждений в одном вызове бывают тысячи. */
+  const проверитьВход = programError === null ? проверкаВхода(program) : null
 
   const results = claims.map((claim) =>
     programError === null
-      ? checkClaim({ program, facts, limits, evaluate, totality }, claim)
+      ? checkClaim({ program, facts, limits, evaluate, totality, проверитьВход }, claim)
       : refuse(String(claim), programError),
   )
   return { ok: results.every((result) => result.holds), results }
@@ -313,6 +322,39 @@ function resolveTerm(context, term, steps) {
     if (!(name in context.facts)) return { error: `не передан факт «${name}» для аргумента «${param.name}»` }
     args[param.name] = context.facts[name]
     steps.push({ kind: "факт", name, value: context.facts[name] })
+  }
+
+  /* ГРАНИЦА ВХОДА. Факты приезжают JSON-ом снаружи и становятся аргументами
+     вызова — тем же способом, каким приезжают значения `--args`, и до этой
+     сверки в них годилось что угодно. Цена была не косметическая; замерено на
+     `flang/examples/measure/natural.flang`, где «Факториал» принимает `н: нат`:
+
+       {"н": -3}     → holds: true, status: "verified", код 0. Факт-чекинг
+                       ПОДТВЕРЖДАЛ вычисление на значении, которого в типе нет;
+       {"н": 2.5}    → status: "refuted" — приговор «ложно», вынесенный там же;
+       {"н": 1e300}  → FLANG_RECURSION_LIMIT сразу после шага «тотальность: ok».
+
+     Третья строка — прямое нарушение гарантии №1 этого файла. Функция ТОТАЛЬНА,
+     её завершение доказано — и ответ всё равно не наступил, потому что
+     доказательство стоит НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого
+     `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+     печатается вовсе. Значение вне типа выносит вместе с типом доказательство:
+     1e300 минус 1 равно 1e300, цепочка вечна, ловить её нечем.
+     Поэтому сверка стоит ЗДЕСЬ, до `evaluate`: внутри вычисления ложь поймала
+     бы та операция, которой не повезло первой («сравнения порядка допустимы
+     только для чисел» — правда о `не больше` и ни слова о входе), и только на
+     тех входах, до которых дошло исполнение.
+     Проверка — та же самая, что у `--args` и у примеров в исходнике: второе
+     понимание слов «значение подходит типу» означало бы, что `пример … дано н
+     равно −1` отвергается, а факт `{"н": -1}` принимается. */
+  const вход = context.проверитьВход(term.function, args)
+  if (!вход.ok) {
+    steps.push({ kind: "вход", function: term.function, args, diagnostics: вход.diagnostics })
+    /* Имена в сообщении обязаны быть обоими: аргумент назван автором функции,
+       факт — вызывающей стороной, и править вызывающему свой файл фактов. */
+    const откуда = params.map((param, index) => `«${param.name}» ← факт «${term.facts[index]}»`).join(", ")
+    const тексты = вход.diagnostics.map((беда) => `${беда.code}: ${беда.message}`).join("; ")
+    return { error: `факты не подходят объявленным типам функции «${term.function}» (${откуда}): ${тексты}` }
   }
 
   try {

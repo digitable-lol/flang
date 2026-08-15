@@ -325,9 +325,25 @@ fl_status kompilyator_flang_sozdat_sborka(fl_ctx *ctx, fl_value sostoyanie, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_fayl(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
 
-/* Запись FTS «Настройки»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм заголовок», «рантайм исходник», «исходник прогонщика», «оболочка», «исходник оболочки». */
+/* Запись FTS «Поле входа»: «имя», «тип». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_nastroyki(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_zagolovok, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value obolochka, fl_value ishodnik_obolochki, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_pole_vhoda(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант входа»: «имя», «поле с», «полей». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_variant_vhoda(fl_ctx *ctx, fl_value imya, fl_value pole_s, fl_value poley, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тип входа»: «вид», «имя», «владелец», «ничто», «целое», «отрезок», «низ», «верх», «элемент», «поле с», «полей», «вариант с», «вариантов». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_tip_vhoda(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value vladelec, fl_value nichto, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр входа»: «функция», «параметр», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_parametr_vhoda(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм заголовок», «рантайм исходник», «исходник прогонщика», «оболочка», «исходник оболочки», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_nastroyki(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_zagolovok, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value obolochka, fl_value ishodnik_obolochki, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог печати»: «файлы», «ошибка». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -10351,6 +10367,97 @@ fl_status kompilyator_flang_vetka_dispetchera(fl_ctx *ctx, fl_value funkciya, fl
 fl_status kompilyator_flang_pechat_dispetchera(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Признак C».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_priznak_c(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_vid_tipa_vhoda(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_stroka_polya_vhoda(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_stroka_varianta_vhoda(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_stroka_tipa_vhoda(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_stroka_parametra_vhoda(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка границы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_shapka_granicy_vhoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Возврат границы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prefiks — «префикс»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_vozvrat_granicy_vhoda(fl_ctx *ctx, fl_value prefiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее»
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_pechat_granicy_vhoda(fl_ctx *ctx, fl_value obschee, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело границы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prefiks — «префикс»: строка
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_telo_granicy_vhoda(fl_ctx *ctx, fl_value prefiks, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Заголовок модуля».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -19175,5 +19282,12 @@ fl_status kompilyator_flang_chislo_svyazannyh_funkciy(fl_ctx *ctx, fl_value fayl
  */
 fl_status kompilyator_flang_call(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,
                     fl_value *result, fl_error *error);
+
+/*
+ * Объявленные типы параметров — данными. Прогонщик сверяет по ним значения,
+ * пришедшие снаружи, ДО вызова: доказательство завершения `тотальной` стоит
+ * на типе, и значение вне типа выносит вместе с типом и доказательство.
+ */
+const fl_entry_table *kompilyator_flang_entry(void);
 
 #endif /* KOMPILYATOR_FLANG_H */

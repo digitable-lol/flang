@@ -445,6 +445,222 @@ static fl_status fl_no_memory(fl_error *error) {
   return FL_ERROR;
 }
 
+/* ═════════════════════════════ граница входа ═════════════════════════════
+ *
+ * Значения, пришедшие СНАРУЖИ, против объявленных типов параметров. Таблица
+ * печатается вместе с программой (`<модуль>_entry`), а сверяет её этот код —
+ * один и тот же для всех программ, потому что второе понимание слов «значение
+ * подходит типу» разошлось бы с первым молча.
+ *
+ * Тексты отказов — дословно те же, что у `checkValue` в flang/src/types.mjs.
+ * Сверять их надо равенством строк: они и есть контракт, а не украшение.
+ */
+
+/* Текст в арену: метка пути внутрь значения строится на ходу («…[0]»). */
+static const char *fl_label(fl_ctx *ctx, const char *format, ...) {
+  va_list args;
+  const char *text = NULL;
+  va_start(args, format);
+  text = fl_vformat(ctx, format, args);
+  va_end(args);
+  return text;
+}
+
+static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t index, fl_value value,
+                                const char *label, fl_error *error);
+
+static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type, fl_value value, const char *label,
+                                      fl_error *error) {
+  char text[FL_NUMBER_TEXT_MAX];
+  if (value.tag != FL_NUMBER || !isfinite(value.as.number)) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+  }
+  fl_number_text(value.as.number, text);
+  /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+     порядок, и второй отказ на одном значении был бы вторым текстом про одну
+     беду. */
+  if (type->integral && floor(value.as.number) != value.as.number) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s: %s не целое, а тип %s — целый", label, text, type->name);
+  }
+  if (type->bounded && (value.as.number < type->low || value.as.number > type->high)) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s: %s вне %s", label, text, type->name);
+  }
+  return FL_OK;
+}
+
+/* Поле по имени среди полей записи или варианта; NULL — поля нет. */
+static const fl_field *fl_find_field(const fl_field *fields, size_t count, const char *name) {
+  size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    if (strcmp(fields[index].name, name) == 0) {
+      return &fields[index];
+    }
+  }
+  return NULL;
+}
+
+/*
+ * Объявленные поля против заданных. `owner` — имя записи либо имя варианта:
+ * сообщения о пропущенном поле у них разной формы, и обе выписаны здесь
+ * дословно, потому что сверяются они с эталоном равенством строк.
+ */
+static fl_status fl_check_fields(fl_ctx *ctx, const fl_entry_table *table, size_t from, size_t count,
+                                 const fl_field *given, size_t given_count, const char *label,
+                                 const char *owner, bool of_variant, fl_error *error) {
+  size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    const fl_type_field *declared = &table->fields[from + index];
+    const fl_field *found = fl_find_field(given, given_count, declared->name);
+    const char *inner = NULL;
+    if (found == NULL) {
+      /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+      if (table->types[declared->type].optional) {
+        continue;
+      }
+      if (of_variant) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s: вариант «%s» требует поле «%s»", label, owner,
+                       declared->name);
+      }
+      return fl_fail(ctx, error, FL_CODE_TYPE, "%s: не задано поле «%s» записи «%s»", label, declared->name,
+                     owner);
+    }
+    inner = fl_label(ctx, "%s.%s", label, declared->name);
+    if (inner == NULL) {
+      return fl_no_memory(error);
+    }
+    FL_TRY(fl_check_typed(ctx, table, declared->type, found->value, inner, error));
+  }
+  return FL_OK;
+}
+
+static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t index, fl_value value,
+                                const char *label, fl_error *error) {
+  const fl_type *type = NULL;
+  size_t item = 0;
+  if (index >= table->type_count) {
+    return FL_OK;
+  }
+  type = &table->types[index];
+  /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+     пропуск. Так же считает и ядро FTS. */
+  if (type->optional && value.tag == FL_NOTHING) {
+    return FL_OK;
+  }
+  switch (type->kind) {
+    case FL_TYPE_NUMBER:
+      return fl_check_number_type(ctx, type, value, label, error);
+    case FL_TYPE_STRING:
+      if (value.tag != FL_STRING) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      return FL_OK;
+    case FL_TYPE_FLAG:
+      if (value.tag != FL_FLAG) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      return FL_OK;
+    case FL_TYPE_NULL:
+      if (value.tag != FL_NOTHING) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      return FL_OK;
+    case FL_TYPE_LIST:
+      if (value.tag != FL_LIST) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      for (item = 0; item < value.as.list.count; item += 1) {
+        const char *inner = fl_label(ctx, "%s[%lu]", label, (unsigned long)item);
+        if (inner == NULL) {
+          return fl_no_memory(error);
+        }
+        FL_TRY(fl_check_typed(ctx, table, type->of, value.as.list.items[item], inner, error));
+      }
+      return FL_OK;
+    case FL_TYPE_RECORD: {
+      if (value.tag != FL_RECORD) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      FL_TRY(fl_check_fields(ctx, table, type->field_from, type->field_count, value.as.record->fields,
+                             value.as.record->count, label, type->owner, false, error));
+      /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+         сверх объявленных в ней взяться неоткуда. */
+      for (item = 0; item < value.as.record->count; item += 1) {
+        size_t at = 0;
+        bool declared = false;
+        for (at = 0; at < type->field_count; at += 1) {
+          if (strcmp(table->fields[type->field_from + at].name, value.as.record->fields[item].name) == 0) {
+            declared = true;
+            break;
+          }
+        }
+        if (!declared) {
+          return fl_fail(ctx, error, FL_CODE_TYPE, "%s: запись «%s» не имеет поля «%s»", label, type->owner,
+                         value.as.record->fields[item].name);
+        }
+      }
+      return FL_OK;
+    }
+    case FL_TYPE_SUM: {
+      const fl_type_variant *variant = NULL;
+      if (value.tag != FL_VARIANT && value.tag != FL_RECORD) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
+      }
+      if (value.tag == FL_VARIANT) {
+        for (item = 0; item < type->variant_count; item += 1) {
+          if (strcmp(table->variants[type->variant_from + item].name, value.as.variant->name) == 0) {
+            variant = &table->variants[type->variant_from + item];
+            break;
+          }
+        }
+      }
+      if (variant == NULL) {
+        return fl_fail(ctx, error, FL_CODE_TYPE, "%s: ожидался вариант типа «%s»", label, type->owner);
+      }
+      return fl_check_fields(ctx, table, variant->field_from, variant->field_count, value.as.variant->fields,
+                             value.as.variant->count, label, variant->name, true, error);
+    }
+    case FL_TYPE_UNKNOWN:
+    default:
+      return FL_OK;
+  }
+}
+
+fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *name, const fl_value *args,
+                         size_t count, fl_error *error) {
+  size_t index = 0;
+  size_t declared = 0;
+  size_t at = 0;
+  if (ctx == NULL || table == NULL || name == NULL) {
+    return FL_OK;
+  }
+  for (index = 0; index < table->param_count; index += 1) {
+    if (strcmp(table->params[index].function, name) == 0) {
+      declared += 1;
+    }
+  }
+  /* Сверять нечем: имени в таблице нет (о нём скажет диспетчер), параметров у
+     функции нет вовсе, либо число значений не сошлось с числом параметров —
+     это отдельный отказ, и он тоже принадлежит диспетчеру, чтобы текст про
+     арность был в программе один. */
+  if (declared == 0 || declared != count) {
+    return FL_OK;
+  }
+  for (index = 0; index < table->param_count; index += 1) {
+    const fl_entry_param *param = &table->params[index];
+    const char *label = NULL;
+    if (strcmp(param->function, name) != 0) {
+      continue;
+    }
+    label = fl_label(ctx, "вызов функции «%s»: аргумент «%s»", name, param->name);
+    if (label == NULL) {
+      return fl_no_memory(error);
+    }
+    FL_TRY(fl_check_typed(ctx, table, param->type, args[at], label, error));
+    at += 1;
+  }
+  return FL_OK;
+}
+
 fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;

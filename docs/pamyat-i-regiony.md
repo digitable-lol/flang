@@ -420,4 +420,293 @@ fl_status ..._sortirovka(fl_ctx *ctx, fl_value elementy, fl_value *result, fl_er
 
 ---
 
-*(документ продолжается: разделы 4–6)*
+## 4. Как регионы работают на самом деле, и где они ломаются
+
+### Как компилятор доказывает, что из области ничего не утекло
+
+Основа — Tofte и Talpin, POPL'94 («Implementation of the Typed Call-by-Value
+λ-calculus using a Stack of Regions») и журнальная версия в *Information and
+Computation* 132(2), 1997.
+
+Устройство в двух словах. К обычному типу приписывается **место** — переменная
+региона ρ. Тип функции несёт **латентный эффект** φ: множество пометок
+`put(ρ)` («эта функция кладёт что-то в ρ») и `get(ρ)` («читает из ρ»). Дальше
+всё держится на одном правиле — том самом, ради которого схема и существует:
+
+```
+      TE ⊢ e ⇒ e′ : µ, φ        φ′ = Observe(TE, µ)(φ)
+              {ρ1, …, ρk} = frv(φ \ φ′)
+———————————————————————————————————————————————————————
+   TE ⊢ e ⇒ letregion ρ1···ρk in e′ end : µ, φ′
+```
+
+По-человечески: **область ρ можно закрыть вокруг выражения тогда и только
+тогда, когда ρ не встречается свободно ни в типе результата, ни в типовом
+окружении.** Первое запрещает вернуть наружу указатель в область. Второе
+запрещает закрывать область, до содержимого которой ещё дотянется остальная
+программа через какое-нибудь имя в области видимости. Авторы формулируют это
+дословно: «ρ is purely local to the evaluation of e′, in the sense that the rest
+of the computation will not access any value stored in ρ».
+
+Теорема корректности — Theorem 4.1 в POPL'94. Интересна не столько она, сколько
+то, что при её доказательстве обычная схема «свойство сохраняется» **не
+сработала**. Цитата авторов: «no matter how we tried to define the notion of
+consistency, we were unable to prove such a preservation theorem… consistency,
+in an absolute sense, is not preserved — rather it decreases monotonically. The
+saving fact is that there is always enough consistency left!» Согласованность
+пришлось определить **относительно эффекта остатка программы**: представления
+обязаны совпадать только там, где остаток программы будет читать.
+
+**И самая важная тонкость, которую почти все пересказывают неверно.** Схема НЕ
+запрещает висячим указателям существовать. Она гарантирует только, что их
+никогда не разыменуют. Подпись к рисунку в статье 1997 года — дословно:
+«Notice the **dangling, but harmless, pointer**». Из-за этого добавление
+сборщика мусора потребовало **отдельного дополнительного условия**: сборщик
+ходит по указателям, и «безвредный» висячий указатель становится смертельным.
+В сегодняшнем MLKit это ключ `-gc`, который выключает флаг `dangling_pointers`.
+
+### Где ломается — это важнее плюсов
+
+**Корень всех бед — «Ground Rule» из руководства MLKit (§7.2):** «as long as a
+value variable is in scope, the value bound to it at runtime will remain
+allocated».
+
+**Регионы привязаны к области ВИДИМОСТИ, а не к ЖИВОСТИ.** Значение, которое
+больше никогда не понадобится, но чьё имя ещё в области видимости, не
+освобождается. Всё остальное — следствия.
+
+Пять задокументированных мест, где это выходит боком.
+
+**1. Значение живёт дольше области.** Канонический пример из руководства MLKit
+— решето Эратосфена: `let val rest = sift(x,xs) in sieve(cp rest, x::p) end`.
+Авторы пишут: «because `rest` is in scope at the recursive application of
+`sieve`, the list that is bound to `rest` will stay allocated for the duration
+of that call, **which is in fact the remainder of the entire computation!**»
+Лечение — переписать исходник, вынеся `let` внутрь вызова. Алгоритм тот же,
+семантика та же, память — O(1) против O(n).
+
+**2. Замыкание, захватившее значение из области.** Регион захваченного
+значения свободен в типе замыкания, значит `letregion` вокруг него поставить
+нельзя, значит **захваченное живёт столько же, сколько само замыкание** — и не
+по объектам, а регионами целиком. *Для flang это неприменимо: замыканий в языке
+нет (раздел 2).* Это единственный из пяти пунктов, который нас не касается.
+
+**3. Функции высшего порядка — самое жёсткое.** Region-полиморфной в схеме
+Tofte–Talpin может быть только функция, связанная через `letrec`. Параметр —
+не может. Из POPL'94 дословно: «all the results of the plus operation are put
+into one region, **because the operator is a lambda-bound parameter of the fold
+operation and hence cannot be region-polymorphic**». В версии 1997 года это
+развёрнуто с асимптотикой: `foldl (op ^) "" l` даёт **Θ(N²)** памяти, и чтобы
+получить Θ(N), надо «specialize `foldl` to `^`, uncurry the resulting function
+and turn it into a region endomorphism» — то есть **отказаться от свёртки и
+расписать её руками**.
+
+*Для flang это наполовину неприменимо, наполовину — да.* Встроенные
+`отобразить`/`отфильтровать`/`свёртка` принимают **тело**, а не функцию, и
+разворачиваются в цикл прямо в напечатанном C — параметра-функции там нет вовсе.
+Но дефункционализация проблему не снимает, а **переносит**: все теги одной
+арности идут через один диспетчер `применить N`, и унификация склеила бы регионы
+всех его случаев в один. Сегодня это ни на что не влияет — функции-значения не
+использует ни один исходник репозитория, кроме `flang/stdlib/higher-order.flang`.
+
+**4. Рекурсия, при которой область растёт без предела.** Пример из ретроспективы
+авторов (2004): `sumit` с аккумулятором. «Region inference would force the two
+branches of the conditional to put their results in the same region… **100 pairs
+would pile up in the region that contained the initial pair**». Костыль —
+storage mode analysis (`attop`/`atbot`/`sat`), и вот приговор ему от самих
+авторов: «**The storage mode analysis is probably not the best way of handling
+tail recursion; it is complicated and vulnerable to program changes.**»
+
+**5. Данные, разделяемые между областями, склеиваются унификацией.** Вывод
+регионов в MLKit построен на унификации, без подтипирования. Любое место, где
+два типа обязаны совпасть, сливает регионы. Пример из руководства: `if true
+then cp1 l else l` — «because the two branches of the conditional are required
+to have the same region-annotated type with place, `l` and `cp1 l` are **forced
+to be in the same regions**». Одна `as`-связка в образце меняет функцию из
+«кладёт в свежий регион» в «дописывает в регион аргумента» — и это не ошибка, а
+поведение по построению.
+
+Плюс отдельный класс, признанный в самой первой статье: **дисциплина стека
+проигрывает там, где времена жизни не вложены**. POPL'94: «creating a large
+argument for a function which only uses it for a small part of its activation
+leads to waste of memory». Проверено снаружи — Aiken, Fähndrich, Levien,
+PLDI'95: на их сетке «maximum storable values» для Appel(100) их схема даёт
+**306**, схема Tofte–Talpin — **20 709**.
+
+### Чем MLKit за это платит и когда честно сдаётся
+
+**Платит объёмом компилятора.** Замер по клону `github.com/melsman/mlkit`
+v4.7.22: `src/Compiler/Regions/` — **20 836 строк** SML в 38 файлах, то есть
+**35,7 %** всего компилятора (58 424 строки). Из одиннадцати печатаемых фаз
+компилятора **восемь** — региональные: spreading, region inference, multiplicity
+inference, K-нормализация, storage mode, dropping of regions, physical size
+inference, call conversion. Опубликованной цифры по доле регионов нет, эта
+измерена агентом на клоне.
+
+**Платит сложностью алгоритма.** Вывод разбит надвое ради завершаемости:
+алгоритм S (синтаксически направленный) — **O(n³)**, алгоритм R (неподвижная
+точка для полиморфной рекурсии) — **O(n⁴)**. На программе `simple` в 1 148
+строк это 11,73 с плюс 14,21 с (замер TOPLAS'98, HP 9000s700).
+
+**Платит неполнотой.** TOPLAS'98 дословно: «**The algorithm does not always
+infer principal types. The incompleteness of the algorithm has to do with the
+handling of polymorphic recursion.**» Существование главных типов для правил
+Tofte–Talpin — **открытая проблема** до сих пор.
+
+**А сдаётся он — зовёт сборщик.** Hallenberg, Elsman, Tofte, PLDI'02,
+«Combining Region Inference and Garbage Collection». Мотив в самой статье:
+«can a combination of garbage collection and region inference reduce the need
+for tuning programs?» Числа оттуда (Table 1 против Table 2, резидентная память):
+
+| программа | чистые регионы | регионы + сборщик | во сколько раз текло |
+|---|---|---|---|
+| logic | 171 МБ | 892 КБ | ≈ 196× |
+| tyan | 283 МБ | 2 800 КБ | ≈ 104× |
+| zebra | 10 МБ | 644 КБ | ≈ 16× |
+| lexgen | 27 МБ | 3 912 КБ | ≈ 7× |
+
+И Table 3 — кто именно освободил память: на `logic` вывод регионов утилизирует
+**0,1 %** мусора, остальные 99,9 % вычищает сборщик; на `tyan` — 7,7 % против
+92,3 %. Это не «регионы плюс лёгкая подстраховка», это «на этом классе программ
+регионы не работают вовсе».
+
+Отдельно стоит знать ещё две вещи из той же статьи, потому что они портят
+простую картину:
+
+- **быстрее всего по времени — чистые регионы без сборщика** («the fastest
+  execution is obtained by relying solely on region-based memory management»),
+  просто они текут;
+- **регионы плюс сборщик часто ХУЖЕ по памяти, чем один сборщик**: tyan −107 %,
+  vliw −45 %, mlyacc −38 %, «mostly due to waste in regions».
+
+Профиль самого компилятора MLKit при сборке (подпись к Figure 5 в PLDI'02):
+«The global region `r1` is by far the largest. **Without the garbage collector,
+region `r1` would grow without ever decreasing.**» Компилятор, написанный
+авторами схемы, под чистыми регионами течёт.
+
+### Что об этом сказали сами авторы
+
+Ретроспектива Tofte, Birkedal, Elsman, Hallenberg (*Higher-Order and Symbolic
+Computation* 17(3), 2004) — там есть раздел «что разочаровало», и первый пункт
+читается так:
+
+> **Unless combined with garbage collection, leaving region inference completely
+> to the compiler is probably not a good idea.** It makes region-annotated terms
+> unnecessary big and vulnerable to program changes.
+
+И общее ощущение:
+
+> here was a technology, which could produce astonishing results when it worked
+> well, but **it was too difficult to hit those precise points where the results
+> were good. Moreover, if it was difficult for the people who developed the
+> technology, what would be the chances of success with the average programmer?**
+
+Знаменитая история «10 строк из 58 000» (программа AnnoDomini) обычно
+пересказывается без второй половины. Полностью она такая: правкой десяти строк
+из 58 000 удалось убрать течи, **«On the other hand, it required a regions
+expert to locate and change the 10 lines»**, и компиляция этих 58 000 строк
+занимала полтора часа.
+
+Взгляд со стороны — команда Cyclone, PLDI'02: «Programming with the Kit is
+convenient, as the compiler automatically infers all region annotations.
+**However, small changes to a program can have drastic, unintuitive effects on
+object lifetimes. Thus, to program effectively, one must understand the analysis
+and try to control it indirectly by using certain idioms.**»
+
+### Куда пришла эта линия за тридцать лет
+
+```
+1994  чистый автоматический вывод
+1997  «It would probably be better to allow programmers to state their
+       intentions directly»                                    (IC 132(2))
+2002  добавили сборщик, потому что вывод один не тянет         (PLDI'02)
+2004  «leaving region inference completely to the compiler is
+       probably not a good idea»                               (ретроспектива)
+2024  добавили ЯВНЫЕ аннотации регионов и эффектов             (ReML, POPL'24)
+```
+
+MLKit жив (v4.7.22, релиз 1 августа 2026, поддерживает Мартин Эльсман), но
+сборщик в нём **выключен по умолчанию**, а свежая работа автора — ReML,
+расширение SML **явными** аннотациями регионов, с мотивировкой: сделать
+программы «robust to changes in the program source code and to compiler
+updates, including compiler optimisations».
+
+### Cyclone: та же дуга, только начатая с другого конца
+
+Cyclone (Jim, Grossman и др., USENIX'02, PLDI'02) — это регионы, **объявленные
+руками** и проверенные типами. Полезны три их вывода.
+
+**Первый: аннотаций нужно немного, но цифра «8 %» вводит в заблуждение.**
+Абстракт PLDI'02: перенос C на Cyclone требует правки около **8 %** строк, из
+которых лишь **6 %** — собственно региональные аннотации (Гроссман в
+диссертации сводит это к «одна явная аннотация примерно на 200 строк»). Но в
+поздней работе той же команды (*Sci. Comput. Program.* 62(2), 2006) есть
+таблица с драйверами Linux, и там доля изменённых строк — **36–57 %**.
+
+**Второй: они попробовали схему Tofte–Talpin и отступили.** Дословно, PLDI'02:
+«In our original Cyclone design, we tried to use TT-style effect variables.
+**However, we found that the approach does not work well in an explicitly typed
+language**» — и дальше две причины: инварианты алгоритма унификации трудно
+удержать в явно типизированном языке, а эффектные переменные в интерфейсах
+библиотек «making the libraries harder to understand and use».
+
+**Третий, и для нас главный: лексических регионов им не хватило.** ISMM'04,
+дословно: «**Unfortunately, LIFO arenas suffer from several well-known
+limitations that we encountered repeatedly. In particular, they are not suited
+to computations such as server and event loops.**» И механика провала: если
+объявить область внутри цикла, между витками нельзя пронести ничего; если
+снаружи — всё живёт до конца цикла; «**For loops that do not terminate, such as
+a server request loop or event loop, this is a disaster as the LIFO restriction
+can lead to unbounded storage requirements.**»
+
+Поэтому в Cyclone добавили уникальные указатели, `swap`, заимствование `alias`
+и — **подсчёт ссылок** (регион `` `RC `` с ручными `alias_refptr`/`drop_refptr`).
+Их же честный отчёт о цене: перенос BetaFTPD на подсчёт ссылок «required 21 % of
+the code to be changed, significantly more than the other ports… **we were
+forced to spend some time tracking down memory leaks that arose from failing to
+decrement a count**».
+
+Сегодня на сайте Cyclone написано: «Cyclone is no longer supported… Several of
+Cyclone's ideas have made their way into Rust.»
+
+### Rust — это регионы, только проверяемые, а не выводимые
+
+Не метафора: модуль в rustc называется буквально «Region inference (NLL)», а
+`'a: 'b` читается «регион `'a` переживает регион `'b`». Отличий от MLKit два, и
+оба принципиальные:
+
+1. **Rust не выводит, ГДЕ размещать.** `letregion` в MLKit решает и размещение,
+   и точку освобождения. Времена жизни в Rust только **проверяют**, что ссылка
+   не переживёт объект; куда положить объект, пишет программист (`Box`, `Vec`,
+   стек). Отсюда — нет ни multiplicity inference, ни storage mode analysis, ни
+   physical size inference, ни потерь на «region waste».
+2. **Вывод не пересекает границу функции.** Сигнатура — контракт; тело
+   вызываемого при проверке вызывающего не читается.
+
+Заплатил Rust за это владением и правилом «либо разделяешь, либо меняешь»
+(`&mut` не может быть разделён). Из-за этого двусвязный список, граф и любые
+внутренние алиасы требуют `Rc`/`RefCell`/`unsafe` — ровно та стена, в которую
+упёрся Cyclone. **Для flang эта цена нулевая: разделяемого изменяемого
+состояния в языке нет вовсе.** Но и выигрыш от неё нулевой по той же причине.
+
+### Главный вывод раздела — и он про flang
+
+Замеренная беда flang из раздела 1 — это **значение, которое мертво, но ещё в
+области видимости**: результат `Слить` на уровне k+1 больше не нужен, как только
+`Приписать в начало` его прочитала, но имя ещё живо, вызов ещё не вернулся.
+
+**Регионы привязаны к области видимости, а не к живости — по построению, а не по
+недоделке.** Ground Rule запрещает освобождать то, чьё имя в области видимости.
+Значит вывод регионов на нашем замере дал бы **мало или ничего** — это в точности
+форма примера с решетом из руководства MLKit и примера `sumit` из ретроспективы,
+то есть известный режим отказа, а не удачный случай.
+
+А мой опыт из раздела 3 сработал (486×) именно потому, что он **не** региональный
+в этом смысле: он опирается на живость (что достижимо из результата), а не на
+область видимости. Тем же свойством обладает и подсчёт ссылок.
+
+**Вывод регионов — не тот инструмент для той беды, которая у нас измерена.**
+
+---
+
+*(документ продолжается: разделы 5–6)*

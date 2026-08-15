@@ -23,7 +23,32 @@
  */
 import { errorCode } from "../src/compat.mjs"
 import { evaluate as interpret } from "../src/interpret.mjs"
-import { checkArguments } from "../src/types.mjs"
+import { сверкаТаблицей } from "../src/types.mjs"
+
+/**
+ * Сверка строится ПО ТАБЛИЦЕ, а не `checkArguments`, и разница между ними
+ * названа: таблица знает не всё. Значение-функция, параметр полиморфизма и
+ * применение типа с аргументами приезжают в неё джокером, потому что
+ * `checkArguments` решает параметры по самим значениям и называет тип решённым
+ * именем («список числа» там, где объявлен «список «А»»), а таблица решать не
+ * умеет. Сказать тот же отказ другим текстом хуже, чем промолчать.
+ *
+ * Что от этого проверяет набор: здесь — что семь целей делают ОДИН обход, а не
+ * семь похожих; в `emit-entry-types.test.mjs` — что этот обход отвечает
+ * дословно так же, как `checkArguments`, на всём, что таблица знает.
+ *
+ * Таблица строится один раз на программу: программ в сетке десятки, а точек —
+ * тысячи.
+ */
+const таблицы = new WeakMap()
+
+function поТаблице(program) {
+  const прежняя = таблицы.get(program)
+  if (прежняя !== undefined) return прежняя
+  const сверка = сверкаТаблицей(program)
+  таблицы.set(program, сверка)
+  return сверка
+}
 
 /** Имена параметров функции в объявленном порядке. */
 function имена(program, functionName) {
@@ -41,17 +66,12 @@ function имена(program, functionName) {
  * @returns {{ ok: true, value: unknown } | { ok: false, code: string, message: string }}
  */
 export function черезГраницу(program, functionName, args, limits = {}) {
-  const поИменам = {}
-  if (Array.isArray(args)) {
-    имена(program, functionName).forEach((имя, место) => {
-      поИменам[имя] = args[место]
-    })
-  } else {
-    Object.assign(поИменам, args ?? {})
-  }
-  const дверь = checkArguments(program, functionName, поИменам)
+  const поПорядку = Array.isArray(args)
+    ? args
+    : имена(program, functionName).map((имя) => (args ?? {})[имя])
+  const дверь = поТаблице(program)(functionName, поПорядку)
   if (!дверь.ok) {
-    return { ok: false, code: дверь.diagnostics[0].code, message: дверь.diagnostics[0].message }
+    return { ok: false, code: дверь.code, message: дверь.message }
   }
   try {
     return { ok: true, value: interpret(program, functionName, args, limits) }

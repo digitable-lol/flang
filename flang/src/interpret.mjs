@@ -408,7 +408,18 @@ function evalExpr(machine, expr, env) {
     case "apply": {
       /* Применяемое считается первым, аргументы за ним — тот же строгий порядок
          слева направо, что у вызова по имени. */
-      startSeq(machine, [expr.fn, ...(expr.args ?? [])], env, { kind: "apply", span: expr.span }, expr.span)
+      const args = expr.args ?? []
+      /* Проверка стоит ДО развёртки, и это не перестраховка. `startSeq` ловит
+         не-список у всех прочих видов узла, а здесь развёртка `...` случилась бы
+         раньше него — и на `args: 5` наружу уходил бы `TypeError: 5 is not
+         iterable`, то есть отказ ЧУЖОГО движка вместо диагностики flang. На
+         правильной программе это не видно вовсе (`args` там всегда список), и
+         нашлось чтением рядом с копией на flang: копия обязана отвечать тем же
+         кодом, а кода у падения движка нет. */
+      if (!Array.isArray(args)) {
+        throw flangError("FLANG_PARSE", "аргументы выражения должны быть списком", expr.span)
+      }
+      startSeq(machine, [expr.fn, ...args], env, { kind: "apply", span: expr.span }, expr.span)
       return
     }
     case "builtin": {

@@ -101,9 +101,9 @@ fl_status kompilyator_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход». */
+/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход», «ввод-вывод». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value vvod_vyvod, fl_value *out, fl_error *error);
 
 /* Запись FTS «Шаг»: «р», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2298,6 +2298,51 @@ fl_status kompilyator_flang_s_oblastyami(fl_ctx *ctx, fl_value r, fl_value oblas
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_s_ishodom(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «С вводом-выводом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_s_vvodom_vyvodom(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена типов ввода-вывода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_tipov_vvoda_vyvoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов ввода-вывода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_variantov_vvoda_vyvoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отметить тип ввода-вывода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_otmetit_tip_vvoda_vyvoda(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отметить вариант ввода-вывода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_otmetit_variant_vvoda_vyvoda(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Есть беда».
@@ -5749,6 +5794,114 @@ fl_status kompilyator_flang_stroka_ozhidaniya_progona(fl_ctx *ctx, fl_value sbor
 fl_status kompilyator_flang_ozhidanie_znacheniem(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value process, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разобрать план».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_plan(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Часть плана».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param klyuch — «ключ»: строка
+ * @param slovo — «слово»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_chast_plana(fl_ctx *ctx, fl_value r, fl_value uzel, fl_value imya, fl_value klyuch, fl_value slovo, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Части плана».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_chasti_plana(fl_ctx *ctx, fl_value r, fl_value uzel, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_plana(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_plana(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка плана одна».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param imya — «имя»: строка
+ * @param beda_povtora — «беда повтора»: строка
+ * @param beda_imeni — «беда имени»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_plana_odna(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value klyuch, fl_value imya, fl_value beda_povtora, fl_value beda_imeni, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_plana(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка начала плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_nachala_plana(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка шага плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_shaga_plana(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Звено цепочки».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -6028,6 +6181,84 @@ fl_status kompilyator_flang_est_tip_s_imenem(fl_ctx *ctx, fl_value tipy, fl_valu
  * @return значение: список: «Значение»
  */
 fl_status kompilyator_flang_tipy_s_deystviem(fl_ctx *ctx, fl_value tipy, fl_value nuzhen, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел типа поручения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_uzel_tipa_porucheniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел типа отклика».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_uzel_tipa_otklika(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел типа продолжения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_uzel_tipa_prodolzheniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты поручения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_varianty_porucheniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты отклика».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_varianty_otklika(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты продолжения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_varianty_prodolzheniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена, занятые типами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_zanyatye_tipami(fl_ctx *ctx, fl_value tipy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободен для словаря».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyato — «занято»: список: строка
+ * @param imya — «имя»: строка
+ * @param varianty — «варианты»: список: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svoboden_dlya_slovarya(fl_ctx *ctx, fl_value zanyato, fl_value imya, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Типы ввода-вывода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Значение»
+ * @param nuzhen — «нужен»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_tipy_vvoda_vyvoda(fl_ctx *ctx, fl_value tipy, fl_value nuzhen, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Узел типа исхода».

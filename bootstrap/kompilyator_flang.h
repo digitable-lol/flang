@@ -133,6 +133,10 @@ fl_status kompilyator_flang_sozdat_shag_tokena(fl_ctx *ctx, fl_value r, fl_value
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_shag_imyon(fl_ctx *ctx, fl_value r, fl_value imena, fl_value *out, fl_error *error);
 
+/* Запись FTS «Шаг категории»: «р», «имена», «равенства». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_shag_kategorii(fl_ctx *ctx, fl_value r, fl_value imena, fl_value ravenstva, fl_value *out, fl_error *error);
+
 /* Запись FTS «Шаг типа»: «р», «тип», «текст». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_shag_tipa(fl_ctx *ctx, fl_value r, fl_value tip, fl_value tekst, fl_value *out, fl_error *error);
@@ -5106,18 +5110,48 @@ fl_status kompilyator_flang_razobrat_kategoriyu(fl_ctx *ctx, fl_value r, fl_valu
 fl_status kompilyator_flang_telo_kategorii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Поля категории».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ravenstva — «равенства»: список: «Значение»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_polya_kategorii(fl_ctx *ctx, fl_value imya, fl_value imena, fl_value ravenstva, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Члены категории».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Хвостовой самовызов развёрнут в цикл: стек не растёт.
  *
+ * Взаимная хвостовая рекурсия с «Равенство или объявление»: вызовы идут через батут.
+ *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param r — «р»: «Разборщик»
  * @param imena — «имена»: список: строка
- * @return значение: «Шаг имён»
+ * @param ravenstva — «равенства»: список: «Значение»
+ * @return значение: «Шаг категории»
  */
-fl_status kompilyator_flang_chleny_kategorii(fl_ctx *ctx, fl_value r, fl_value imena, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_chleny_kategorii(fl_ctx *ctx, fl_value r, fl_value imena, fl_value ravenstva, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Равенство или объявление».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Члены категории»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imena — «имена»: список: строка
+ * @param ravenstva — «равенства»: список: «Значение»
+ * @return значение: «Шаг категории»
+ */
+fl_status kompilyator_flang_ravenstvo_ili_obyavlenie(fl_ctx *ctx, fl_value r, fl_value imena, fl_value ravenstva, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Член категории».
@@ -5127,6 +5161,15 @@ fl_status kompilyator_flang_chleny_kategorii(fl_ctx *ctx, fl_value r, fl_value i
  * @return значение
  */
 fl_status kompilyator_flang_chlen_kategorii(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Равенство категории».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_ravenstvo_kategorii(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка кончилась 2».
@@ -6130,6 +6173,15 @@ fl_status kompilyator_flang_diagnostiki_razborschika(fl_ctx *ctx, fl_value r, fl
 fl_status kompilyator_flang_razobrat_dokument(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Ключ морфизма».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_klyuch_morfizma(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Ключи до наследия».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -6733,6 +6785,64 @@ fl_status kompilyator_flang_stroka_pravila_utility(fl_ctx *ctx, fl_value sborka,
  * @return значение: «Шаг»
  */
 fl_status kompilyator_flang_razobrat_morfizm(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Стрелка или преобразование».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_strelka_ili_preobrazovanie(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать преобразование».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_preobrazovanie(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело преобразования».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Шаг узлов»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_telo_preobrazovaniya(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти компоненты».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Ещё компонента»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Шаг узлов»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_oboyti_komponenty(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ещё компонента».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Обойти компоненты»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_eschyo_komponenta(fl_ctx *ctx, fl_value r, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать композицию».

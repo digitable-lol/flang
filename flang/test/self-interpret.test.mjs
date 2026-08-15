@@ -474,6 +474,28 @@ const сломанные = [
     types: [{ kind: "sum", name: "Т", variants: [{ name: "А", fields: [] }] }],
     functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "construct", variant: "Нет такого", fields: {} } }],
   }, "Ф", {}],
+  ["поле «functions» не список", { flang: 1, module: "М", functions: "не список" }, "Ф", {}],
+  ["поле «functions» — «ничто»: пустая программа, а не отказ разбора", { flang: 1, module: "М", functions: null }, "Ф", {}],
+  ["поле «params» не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: 5, returns: { kind: "number" }, body: { kind: "literal", value: 1 } }],
+  }, "Ф", {}],
+  ["параметр без имени", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [{ type: { kind: "number" } }], returns: { kind: "number" }, body: { kind: "literal", value: 1 } }],
+  }, "Ф", {}],
+  ["поле «postconditions» не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "literal", value: 1 }, postconditions: 1 }],
+  }, "Ф", {}],
+  ["постусловие без «expr»", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: { kind: "number" }, body: { kind: "literal", value: 1 }, postconditions: [{ name: "П" }] }],
+  }, "Ф", {}],
   ["у двучлена нет правой половины", {
     flang: 1,
     module: "М",
@@ -666,7 +688,7 @@ test("сломанные программы: код, текст и витки о
     счёт += 1
   }
   t.diagnostic(`сломанных программ ${счёт}`)
-  assert.ok(счёт >= 39, `сломанных программ всего ${счёт}`)
+  assert.ok(счёт >= 45, `сломанных программ всего ${счёт}`)
 })
 
 test("сломанные программы покрывают все коды отказа, какие выдаёт срез", () => {

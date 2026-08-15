@@ -34,6 +34,7 @@ import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
 import { возможностиЦели } from "../src/conc.mjs"
+import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
    `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
    это проверка, которая не умеет краснеть. */
@@ -93,6 +94,13 @@ emit: цели берутся из src/emit (по одному модулю на
 непроверенное: «тотальная», надзор и типы обещают что-то только потому, что
 программа, которая обещания не держит, не собирается. --no-check снимает
 проверку — для отладки самой печати, когда смотрят на порождённый код.
+
+Печать отбрасывает недостижимое: в напечатанный код попадают функции входного
+файла и всё, до чего от них можно дойти, — импортированный модуль больше не
+едет целиком. Точками входа считаются ещё обработчик и начальное состояние
+процесса, шаг плана и имена из «экспортирует» входного модуля. Сколько функций
+выброшено, видно полем «отброшено»; проверка при этом идёт по полной программе,
+и ведомость доказательства не урезается.
 
 io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
 строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
@@ -471,7 +479,21 @@ async function commandEmit(options) {
       throw error
     }
   }
-  const files = emittedFiles(backend.emit(program, emitOptions(options)), options.target)
+  /* ── Печатается только достижимое от точки входа ──────────────────────────
+     Проверка выше идёт по ПОЛНОЙ программе и остаётся полной: непроверенное не
+     печатается, и ошибка в импортированном модуле обязана отменить печать, даже
+     если до кривой функции никто не доходит. А вот в напечатанный код она не
+     едет: `использует «Списки»` тянуло весь модуль, и у
+     `examples/import-check.flang` из 29 связанных функций вызывались 2 — 1535
+     строк и 68 110 байт мёртвого C из 1670 строк и 74 394 байт модуля.
+
+     Проход стоит здесь, а не в бэкенде, по той же причине, по какой здесь стоит
+     отметка меры: бэкенду отличить своё от привезённого нечем — связывание
+     кладёт все модули в один плоский список, — а какой файл был входом, знает
+     загрузчик. Одно место на все восемь целей (`src/reachable.mjs`). */
+  const кПечати = dropUnreachable(program, ownFunctionNames(program))
+  const отброшено = (program.functions?.length ?? 0) - (кПечати.functions?.length ?? 0)
+  const files = emittedFiles(backend.emit(кПечати, emitOptions(options)), options.target)
   /* Возможности цели — ПОЛЕМ вывода, а не абзацем в спецификации. Инструменту
      вокруг языка надо знать не «примерно одинаково везде», а что именно у этой
      цели есть: конкурентность, параллелизм и чем это проверено. Проза не
@@ -483,6 +505,11 @@ async function commandEmit(options) {
   const head = {
     target: options.target,
     module: program.module ?? null,
+    /* Ключ появляется, только когда что-то выброшено: у программы без импортов
+       вывод обязан остаться прежним до байта. Само число — не украшение: без
+       него «модуль стал меньше» пришлось бы выяснять сравнением байтов двух
+       печатей. */
+    ...(отброшено > 0 ? { отброшено } : {}),
     возможности: возможностиЦели(options.target),
   }
 
@@ -604,8 +631,36 @@ export async function loadProgram(file) {
   return loadProgramFromSource(source, file)
 }
 
+/**
+ * Имена функций, объявленных в САМОМ входном файле, — по загруженной программе.
+ *
+ * Это то, что печать зовёт точкой входа: связывание сливает функции всех модулей
+ * в один плоский список и происхождения в AST не оставляет (`link.mjs`), а знает
+ * его только загрузчик — он читал файлы.
+ *
+ * Хранится СБОКУ, а не полем AST, и это то же решение, что у имени файла в
+ * местах (`stampFile` в `src/link.mjs`): AST описывает программу, а не то, из
+ * каких файлов её собрали. Новое поле в AST — работа, которую обязаны сделать
+ * ОБЕ реализации языка, иначе побайтовая сверка связанной программы с близнецом
+ * (`self-bootstrap.test.mjs`) разошлась бы на первом же наборе.
+ *
+ * `null` значит «отбрасывать нечего»: вход не `.flang` (готовый AST, модель
+ * FTS), пришёл со стандартного ввода или не имеет ни одного `использует`.
+ */
+const СВОИ_ФУНКЦИИ = new WeakMap()
+
+export function ownFunctionNames(program) {
+  return СВОИ_ФУНКЦИИ.get(program) ?? null
+}
+
 export async function loadProgramFromSource(source, file = "-") {
-  return await markMeasure(await readProgram(source, file))
+  const { program, own } = await readProgram(source, file)
+  const отмеченная = await markMeasure(program)
+  /* Имена кладутся ПОСЛЕ отметки меры, а не до: там, где сторожа есть,
+     `markMeasureGuards` возвращает новый объект, и ключом обязана быть та
+     программа, которую получит вызывающий. */
+  if (own !== null) СВОИ_ФУНКЦИИ.set(отмеченная, own)
+  return отмеченная
 }
 
 /**
@@ -633,14 +688,14 @@ async function loadPlacement(file) {
 }
 
 async function readProgram(source, file) {
-  if (file.endsWith(".json")) return JSON.parse(source)
-  if (file.endsWith(".fts")) return fromFtsDocument(await compileFts(source))
+  if (file.endsWith(".json")) return { program: JSON.parse(source), own: null }
+  if (file.endsWith(".fts")) return { program: fromFtsDocument(await compileFts(source)), own: null }
   if (file.endsWith(".flang") || file.endsWith(".fl")) return await parseFlang(source, file)
   /* Формат не назван расширением — пробуем по содержимому, ничего не угадывая
      молча: если ни один разбор не удался, сообщаем обо всех попытках. */
   const trimmed = source.trimStart()
-  if (trimmed.startsWith("{")) return JSON.parse(source)
-  return fromFtsDocument(await compileFts(source))
+  if (trimmed.startsWith("{")) return { program: JSON.parse(source), own: null }
+  return { program: fromFtsDocument(await compileFts(source)), own: null }
 }
 
 /**
@@ -721,7 +776,9 @@ async function parseFlang(source, file) {
        побайтово прежним, иначе `ast` начнёт отличаться там, где ничего не
        менялось. */
     const single = parse(source, file)
-    if (importsOf(single).length === 0) return single
+    /* Файл без импортов — это и есть вся программа: отбрасывать в ней нечего,
+       и точки входа не запоминаются вовсе. */
+    if (importsOf(single).length === 0) return { program: single, own: null }
     const linked = await linkProgram(file, source, parse)
     if (linked.diagnostics.length > 0) {
       const error = new Error(linked.diagnostics[0].message)
@@ -729,12 +786,15 @@ async function parseFlang(source, file) {
       throw error
     }
     const { diagnostics: _ignored, ...program } = linked
-    return program
+    /* Одиночный разбор входа уже сделан выше — второй раз файл не читается и не
+       разбирается. Имена берутся из него: в СЛИТОЙ программе своё от
+       привезённого не отличить. */
+    return { program, own: (single.functions ?? []).map((fn) => fn.name) }
   }
 
   /* Ошибку самого разбора не заворачиваем: у неё уже есть код, сообщение и
      span — подменять их своим текстом значит потерять место ошибки. */
-  return parse(source, file)
+  return { program: parse(source, file), own: null }
 }
 
 /* ───────────────────────────── проверки check ───────────────────────────── */

@@ -51,7 +51,8 @@ import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
-import { emitTargets, loadEmitter, loadProgram } from "../bin/flang.mjs"
+import { emitTargets, loadEmitter, loadProgram, ownFunctionNames } from "../bin/flang.mjs"
+import { dropUnreachable } from "../src/reachable.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { emitJs } from "../src/emit/js.mjs"
@@ -505,6 +506,20 @@ test("ядро FTS из flang/core печатается в C и собирает
 тотальная функция «Версия ядра»
   возвращает строка
   "ядро FTS на flang"
+
+// Обе точки входа ядра зовутся отсюда, и это не оформление: печать отбрасывает
+// недостижимое (src/reachable.mjs), а входной файл, который ядро только
+// импортирует и никуда не зовёт, печатался бы одной функцией — и проверка
+// «ядро печатается в C и собирается» перестала бы проверять ядро.
+тотальная функция «Скомпилировать ядром»
+  принимает «исходник»: строка
+  возвращает строка
+  «Скомпилировать» от «исходник»
+
+тотальная функция «Примеры утилиты сошлись»
+  принимает «утилита»: «Утилита»
+  возвращает признак
+  «Все примеры сошлись» от «утилита»
 `,
   }), "ядро.flang")
 
@@ -520,13 +535,21 @@ test("ядро FTS из flang/core печатается в C и собирает
   }
   assert.ok(program.functions.length >= 200, `в ядре ожидались сотни функций, а их ${program.functions.length}`)
 
+  /* Печатается достижимое от точек входа входного файла — и это по-прежнему всё
+     ядро, а не огрызок: две его точки входа зовут почти всё, что в нём есть. */
+  const печатаемое = dropUnreachable(program, ownFunctionNames(program))
+  assert.ok(
+    печатаемое.functions.length >= 200,
+    `после отбрасывания недостижимого осталось ${печатаемое.functions.length} функций — ядро больше не печатается`,
+  )
+
   const directory = join(await sandbox(), "ядро-c")
   const written = await emit([entry, "--target", "c", "--out", directory])
   assert.deepEqual(
     written.files.map((file) => file.path),
-    emitC(program, {}).files.map((file) => file.path),
+    emitC(печатаемое, {}).files.map((file) => file.path),
   )
-  for (const file of emitC(program, {}).files) {
+  for (const file of emitC(печатаемое, {}).files) {
     assert.equal(await readFile(join(directory, file.path), "utf8"), file.content, `${file.path} расходится с emitC`)
   }
 

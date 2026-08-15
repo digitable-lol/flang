@@ -18127,34 +18127,22 @@ fl_status kompilyator_flang_tochnye_pozicii_uzla(fl_ctx *ctx, fl_value uzel, fl_
 fl_status kompilyator_flang_shag_tochnoy_pozicii(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value perechen, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Точные позиции имени».
+ * Функция flang «Пустое описание».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param opisaniya — «описания»: список: «Описание функции»
- * @param imya — «имя»: строка
- * @return значение: список: число
+ * @return значение: «Описание функции»
  */
-fl_status kompilyator_flang_tochnye_pozicii_imeni(fl_ctx *ctx, fl_value opisaniya, fl_value imya, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_pustoe_opisanie(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Число параметров при анализе».
+ * Функция flang «Описание имени».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param opisaniya — «описания»: список: «Описание функции»
  * @param imya — «имя»: строка
- * @return значение: число
+ * @return значение: «Описание функции»
  */
-fl_status kompilyator_flang_chislo_parametrov_pri_analize(fl_ctx *ctx, fl_value opisaniya, fl_value imya, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Параметры имени при анализе».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param opisaniya — «описания»: список: «Описание функции»
- * @param imya — «имя»: строка
- * @return значение: список: «Имя параметра»
- */
-fl_status kompilyator_flang_parametry_imeni_pri_analize(fl_ctx *ctx, fl_value opisaniya, fl_value imya, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_opisanie_imeni(fl_ctx *ctx, fl_value opisaniya, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Мера описания».
@@ -18714,10 +18702,9 @@ fl_status kompilyator_flang_otvergnut_cikl(fl_ctx *ctx, fl_value sostoyanie, fl_
  * @param ocenki — «оценки»: список: «Оценка»
  * @param vnutri — «внутри»: список: «Вызов»
  * @param opisaniya — «описания»: список: «Описание функции»
- * @param obyavlena — «объявлена»
  * @return значение: «Проверка»
  */
-fl_status kompilyator_flang_proverit_obschuyu_poziciyu(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value obyavlena, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_proverit_obschuyu_poziciyu(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить общую меру».
@@ -18728,10 +18715,9 @@ fl_status kompilyator_flang_proverit_obschuyu_poziciyu(fl_ctx *ctx, fl_value sos
  * @param ocenki — «оценки»: список: «Оценка»
  * @param vnutri — «внутри»: список: «Вызов»
  * @param opisaniya — «описания»: список: «Описание функции»
- * @param obyavlena — «объявлена»
  * @return значение: «Проверка»
  */
-fl_status kompilyator_flang_proverit_obschuyu_meru(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value obyavlena, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_proverit_obschuyu_meru(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить объявленную».
@@ -18742,10 +18728,9 @@ fl_status kompilyator_flang_proverit_obschuyu_meru(fl_ctx *ctx, fl_value sostoya
  * @param ocenki — «оценки»: список: «Оценка»
  * @param vnutri — «внутри»: список: «Вызов»
  * @param opisaniya — «описания»: список: «Описание функции»
- * @param obyavlena — «объявлена»
  * @return значение: «Проверка»
  */
-fl_status kompilyator_flang_proverit_obyavlennuyu(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value obyavlena, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_proverit_obyavlennuyu(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Стеречь меру».
@@ -19521,10 +19506,9 @@ fl_status kompilyator_flang_proverit_cikl(fl_ctx *ctx, fl_value sostoyanie, fl_v
  * @param ocenki — «оценки»: список: «Оценка»
  * @param vnutri — «внутри»: список: «Вызов»
  * @param opisaniya — «описания»: список: «Описание функции»
- * @param obyavlena — «объявлена»
  * @return значение: «Проверка»
  */
-fl_status kompilyator_flang_proverit_nemye(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value nemye, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value obyavlena, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_proverit_nemye(fl_ctx *ctx, fl_value sostoyanie, fl_value imena, fl_value nemye, fl_value ocenki, fl_value vnutri, fl_value opisaniya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить компоненту».

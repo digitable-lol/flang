@@ -122,17 +122,76 @@ class Value:
     Значения неизменяемы по договору: ни рантайм, ни напечатанный код не правят
     ни список, ни словарь после создания, поэтому «хвост» и «добавить» могут
     делить память с исходным значением там, где это ничего не меняет.
+
+    ── end: длина списка, когда список делит массив с другими ──────────────
+    Список бывает в двух состояниях, и различает их именно end.
+
+    * ТОЧНЫЙ (end is None) — data и есть содержимое, ровно своей длины. Так
+      выглядят литералы, «отобразить», «отфильтровать», «разделить», «символы»
+      и всё, что построено с нуля.
+    * РАСТУЩИЙ (end — целое) — содержимое это data[:end], а сам список data
+      общий: его конец могут занимать элементы уже ДРУГОГО списка. Так
+      выглядит только то, что выдало «добавить» (см. b_append).
+
+    Инвариант, он же доказательство неизменяемости: элементы data никто не
+    перезаписывает — единственная правка это append В КОНЕЦ, и право на неё
+    имеет ровно один список, тот, чей end совпал с len(data). После append
+    len(data) вырос, значит прежний владелец право потерял НАВСЕГДА (len только
+    растёт), а получил его ровно один новый список. Отсюда: ячейки внутри
+    списка не пишет никто, ячейка за концом занимается не более одного раза, а
+    ветвление двух «добавить» от одного значения даёт два независимых списка —
+    второе «добавить» видит end < len(data) и уходит на копию.
+
+    Зачем это нужно: без общего массива накопление списка n вызовами «добавить»
+    стоит O(n²), потому что каждый вызов копирует весь список. Тогда один шаг
+    вычисления стоит O(длины), и объявленный предел шагов перестаёт ограничивать
+    работу: точка «Строить скобки» от 42 и 0 и 0 и "" и [] при объявленных
+    5 000 000 шагов не отвечала и за 60 с. Тот же приём и по той же причине
+    стоит в бэкендах C (fl_b_dobavit), Rust (Items::grown) и Go (BAppend).
+
+    Читать содержимое списка напрямую через .data нельзя — только через
+    list_items (точная длина) или require_list (то же плюс запрет на рост под
+    ногами обхода).
     """
 
-    __slots__ = ("data", "name", "tag")
+    __slots__ = ("data", "end", "name", "tag")
 
-    def __init__(self, tag, data=None, name=""):
+    def __init__(self, tag, data=None, name="", end=None):
         self.tag = tag
         self.data = data
         self.name = name
+        self.end = end
 
     def __repr__(self):
         return f"<flang {type_name(self)}: {describe(self)}>"
+
+
+def list_items(value):
+    """Содержимое списка ровно своей длины.
+
+    У точного списка это сам data и стоит ничего. У растущего, который уже
+    потерял право на рост (за его концом лежит чужой элемент), содержимое
+    обрезается копией — один раз за жизнь значения: копия тут же становится
+    точной, и второе чтение снова стоит ничего.
+
+    Вызывать только на списке: тег проверяет вызывающий.
+    """
+    end = value.end
+    if end is None:
+        return value.data
+    items = value.data
+    if end == len(items):
+        return items
+    trimmed = items[:end]
+    value.data = trimmed
+    value.end = None
+    return trimmed
+
+
+def list_length(value):
+    """Длина списка. Вызывать только на списке: тег проверяет вызывающий."""
+    end = value.end
+    return len(value.data) if end is None else end
 
 
 NOTHING = Value(TAG_NOTHING)
@@ -161,7 +220,13 @@ def text(value):
 
 
 def list_of(items):
-    """Список из готового списка значений. Список переходит во владение."""
+    """Список из готового списка значений. Список переходит во владение.
+
+    Выдаётся ТОЧНЫМ (end is None), права дописывать в конец не получает: тот,
+    кто собрал items, мог оставить себе ссылку на них, и продление на месте
+    испортило бы ему значение. Право на рост раздаёт одно место — «добавить»,
+    и только своей же свежей копии (см. b_append).
+    """
     return Value(TAG_LIST, items)
 
 
@@ -198,18 +263,22 @@ def chain_empty(value):
     """Пустая ли цепочка — пустой список или пустая строка."""
     if value.tag == TAG_STRING:
         return len(value.data) == 0
-    return value.tag == TAG_LIST and len(value.data) == 0
+    return value.tag == TAG_LIST and list_length(value) == 0
 
 
 def chain_cons(value):
     """Непустая ли цепочка."""
     if value.tag == TAG_STRING:
         return len(value.data) > 0
-    return value.tag == TAG_LIST and len(value.data) > 0
+    return value.tag == TAG_LIST and list_length(value) > 0
 
 
 def chain_head(value):
-    """Голова цепочки: первый элемент списка или первый символ строки."""
+    """Голова цепочки: первый элемент списка или первый символ строки.
+
+    data[0] годится и у растущего списка: нулевая ячейка лежит внутри
+    содержимого всегда, когда цепочка непуста (это проверил chain_cons).
+    """
     if value.tag == TAG_STRING:
         return text(value.data[0])
     return value.data[0]
@@ -219,7 +288,7 @@ def chain_tail(value):
     """Хвост цепочки: остаток списка или остаток строки."""
     if value.tag == TAG_STRING:
         return text(value.data[1:])
-    return list_of(value.data[1:])
+    return list_of(list_items(value)[1:])
 
 
 def is_variant(value):
@@ -266,7 +335,7 @@ def describe(value):
             return value.name
         return value.name + "(" + ", ".join(value.data.keys()) + ")"
     if tag == TAG_LIST:
-        return "список из " + str(len(value.data))
+        return "список из " + str(list_length(value))
     if tag == TAG_RECORD:
         return "запись {" + ", ".join(value.data.keys()) + "}"
     if tag == TAG_NOTHING:
@@ -311,9 +380,11 @@ def equal(left, right):
             return left.data == right.data
         return True  # оба «ничто»
     if left.tag == TAG_LIST and right.tag == TAG_LIST:
-        if len(left.data) != len(right.data):
+        a_items = list_items(left)
+        b_items = list_items(right)
+        if len(a_items) != len(b_items):
             return False
-        return all(equal(a, b) for a, b in zip(left.data, right.data))
+        return all(equal(a, b) for a, b in zip(a_items, b_items))
     if left.tag == TAG_VARIANT and right.tag == TAG_VARIANT:
         return left.name == right.name and fields_equal(left.data, right.data)
     if left.tag == TAG_RECORD and right.tag == TAG_RECORD:
@@ -667,13 +738,28 @@ def match_fail(ctx, value):
 
 
 def require_list(ctx, value, label):
-    """«свёртка», «отобразить» и «отфильтровать» работают только со списком."""
+    """«свёртка», «отобразить» и «отфильтровать» работают только со списком.
+
+    Отдаёт содержимое, которое не вырастет под ногами обхода. Разница с
+    list_items здесь принципиальная: тело свёртки — ЧУЖОЙ код, и он вправе
+    позвать «добавить» к тому же значению, по которому идёт обход. У растущего
+    списка «добавить» дописывает в общий массив, и `for … in` увидел бы
+    дописанное — обход пошёл бы дальше собственного конца. Поэтому у растущего
+    берётся копия (она же снимает право на рост), а у точного — сам массив: его
+    вырасти нечему.
+    """
     if value.tag != TAG_LIST:
         raise fail(
             CODE_TYPE,
             f"«{label}» работает только со списком, получено {type_name(value)}",
         )
-    return value.data
+    end = value.end
+    if end is None:
+        return value.data
+    frozen = value.data[:end]
+    value.data = frozen
+    value.end = None
+    return frozen
 
 
 # ───────────────────────────── арифметика ─────────────────────────────
@@ -841,7 +927,7 @@ def _expect_list(name, value, role):
             CODE_BUILTIN_ARGS,
             f"«{name}»: {role} должен быть списком, получено {type_name(value)}",
         )
-    return value.data
+    return list_items(value)
 
 
 # ───────────────────────────── встроенные формы ─────────────────────────────
@@ -857,7 +943,7 @@ def b_length(ctx, value):
     if value.tag == TAG_STRING:
         return Value(TAG_NUMBER, float(len(value.data)))
     if value.tag == TAG_LIST:
-        return Value(TAG_NUMBER, float(len(value.data)))
+        return Value(TAG_NUMBER, float(list_length(value)))
     raise fail(
         CODE_BUILTIN_ARGS,
         f"«длина»: ожидается строка или список, получено {type_name(value)}",
@@ -906,7 +992,7 @@ def b_join(ctx, left, right):
     if left.tag == TAG_LIST:
         separator = _expect_string("соединить", right, "разделитель")
         parts = []
-        for index, item in enumerate(left.data):
+        for index, item in enumerate(list_items(left)):
             if item.tag != TAG_STRING:
                 raise fail(
                     CODE_BUILTIN_ARGS,
@@ -955,7 +1041,7 @@ def b_char_code(ctx, source):
 def b_contains(ctx, left, right):
     """«содержит»: подстрока в строке либо значение в списке."""
     if left.tag == TAG_LIST:
-        for item in left.data:
+        for item in list_items(left):
             if equal(item, right):
                 return TRUE
         return FALSE
@@ -1102,7 +1188,9 @@ def b_to_string(ctx, value):
 
 def b_empty(ctx, value):
     """«пусто»."""
-    if value.tag == TAG_LIST or value.tag == TAG_STRING:
+    if value.tag == TAG_LIST:
+        return TRUE if list_length(value) == 0 else FALSE
+    if value.tag == TAG_STRING:
         return TRUE if len(value.data) == 0 else FALSE
     raise fail(
         CODE_BUILTIN_ARGS,
@@ -1151,9 +1239,29 @@ def b_element(ctx, index, value):
 
 
 def b_append(ctx, item, value):
-    """«добавить … к …»: дописывает в конец, исходный список не меняется."""
+    """«добавить … к …»: дописывает в конец, исходный список не меняется.
+
+    За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+    остальных случаях. Разбор приёма и доказательство неизменяемости — при
+    классе Value, поле end. Безусловная копия была верна, но делала накопление
+    списка квадратичным, а вместе с ним и предел шагов — не сроком, а числом на
+    бумаге.
+
+    Голый items.append(item) здесь недопустим: у Python append амортизирован сам
+    по себе, но массив у списков ОБЩИЙ, и дописать в него вправе единственный
+    список — тот, чей end совпал с len. Разрешение спрашивается у end, а не у
+    длины массива.
+    """
+    if value.tag == TAG_LIST:
+        end = value.end
+        if end is not None and end == len(value.data):
+            value.data.append(item)
+            return Value(TAG_LIST, value.data, "", end + 1)
+    # Копия — и она сразу получает право дописывать в конец: за n «добавить»
+    # копий будет столько, сколько было ветвлений, а не n.
     items = _expect_list("добавить", value, "второй аргумент")
-    return Value(TAG_LIST, [*items, item])
+    grown = [*items, item]
+    return Value(TAG_LIST, grown, "", len(grown))
 
 
 def b_remainder(ctx, left, right):

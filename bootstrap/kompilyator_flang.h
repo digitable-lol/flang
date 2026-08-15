@@ -77,9 +77,9 @@ fl_status kompilyator_flang_sozdat_zamena(fl_ctx *ctx, fl_value chto, fl_value c
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_pachka(fl_ctx *ctx, fl_value tokeny, fl_value *out, fl_error *error);
 
-/* Запись FTS «Поток»: «т0», «т1», «т2», «кусок», «куски», «конец». */
+/* Запись FTS «Поток»: «т0», «т1», «т2», «т3», «кусок», «куски», «конец». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_potok(fl_ctx *ctx, fl_value t0, fl_value t1, fl_value t2, fl_value kusok, fl_value kuski, fl_value konec, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_potok(fl_ctx *ctx, fl_value t0, fl_value t1, fl_value t2, fl_value t3, fl_value kusok, fl_value kuski, fl_value konec, fl_value *out, fl_error *error);
 
 /* Запись FTS «Тяга»: «токен», «кусок», «куски». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2612,6 +2612,26 @@ fl_status kompilyator_flang_eto_vid(fl_ctx *ctx, fl_value r, fl_value vid, fl_va
 fl_status kompilyator_flang_eto_vid_1(fl_ctx *ctx, fl_value r, fl_value vid, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Это вид 2».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param vid — «вид»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_vid_2(fl_ctx *ctx, fl_value r, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это вид 3».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param vid — «вид»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_vid_3(fl_ctx *ctx, fl_value r, fl_value vid, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Это слово».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -4942,6 +4962,51 @@ fl_status kompilyator_flang_dopisat_v_zagolovok(fl_ctx *ctx, fl_value r, fl_valu
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_razobrat_kategoriyu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело категории».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_telo_kategorii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены категории».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imena — «имена»: список: строка
+ * @return значение: «Шаг имён»
+ */
+fl_status kompilyator_flang_chleny_kategorii(fl_ctx *ctx, fl_value r, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Член категории».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_chlen_kategorii(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка кончилась 2».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_stroka_konchilas_2(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать объявления».

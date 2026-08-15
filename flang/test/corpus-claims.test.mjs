@@ -485,6 +485,21 @@ test("охват: семь из десяти писать нельзя — он�
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const нельзя = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
   assert.equal(нельзя.length, 7, `закрытых стало ${нельзя.length}: ${нельзя.join("; ")}`)
+
+  /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт этой работы сказал
+     «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а `self`
+     вырос на его место — сумма при этом сошлась, и ошибку было не видно. Сумма,
+     сходящаяся при переложенном слагаемом, — это не проверка. */
+  const поКаталогам = Object.fromEntries(
+    закрытые.map((каталог) => [каталог, ОХВАТ.filter((строка) => строка.startsWith(каталог)).length]),
+  )
+  assert.deepEqual(поКаталогам, {
+    "flang/stdlib/": 0,
+    "flang/core/": 0,
+    "flang/examples/leetcode/": 1,
+    "flang/examples/measure/": 1,
+    "flang/self/": 5,
+  })
   /* И проверка, что запрет настоящий, а не поверье: ни у одной функции этих
      каталогов постусловия нет. Смотрится РАЗБОРОМ, а не поиском слова в тексте:
      `flang/self/lexer.flang` слово `обеспечивает` содержит — в таблице ключевых

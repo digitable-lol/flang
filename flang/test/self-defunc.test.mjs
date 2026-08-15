@@ -48,6 +48,7 @@ import { defunctionalize, guardDescent } from "../src/defunc.mjs"
 import { createRuntime } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
+import { markMeasureGuards } from "../src/totality.mjs"
 import { globSync } from "./glob.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -158,6 +159,42 @@ test("«Поставить сторожей» на flang совпадает с �
     if (беда !== null) беды.push(`${путь}: ${беда}`)
   }
   assert.deepEqual(беды, [], `сторожа разошлись с эталоном на ${беды.length} программах`)
+})
+
+/**
+ * То же самое, но на ПОМЕЧЕННЫХ программах — и вот почему это отдельная
+ * проверка, а не та же самая.
+ *
+ * Сторож ставится по отметке, а отметку кладёт анализ завершаемости
+ * (`totality.mjs`, `markMeasureGuards`); `parse` её не кладёт никогда. Значит
+ * проверка выше сравнивала два ТОЖДЕСТВЕННЫХ преобразования: программа без
+ * отметок проходит обе стороны неизменной, и совпасть они не могли не суметь.
+ * Ошибиться в том, КАК ставится сторож, она не мешала ничем.
+ *
+ * Улика измерена: из 172 разобранных программ корпуса отметки получают 46, и
+ * ровно на них обе стороны впервые делают работу, а не пропускают её.
+ */
+const ПОМЕЧЕННЫЕ = ПРОГРАММЫ
+  .map(({ путь, ast }) => ({ путь, ast: markMeasureGuards(ast) }))
+  .filter(({ ast }) => Array.isArray(ast.measures) || Array.isArray(ast.descents))
+
+test("помеченных программ в корпусе достаточно, иначе сверка сторожей пуста", () => {
+  assert.ok(ПОМЕЧЕННЫЕ.length >= 40, `помеченных программ всего ${ПОМЕЧЕННЫЕ.length}`)
+  for (const { путь, ast } of ПОМЕЧЕННЫЕ) {
+    assert.notEqual(guardDescent(ast), ast, `${путь}: понижение не тронуло помеченную программу`)
+  }
+})
+
+test("«Поставить сторожей» совпадает с эталоном на помеченных программах", (t) => {
+  const беды = []
+  for (const { путь, ast } of ПОМЕЧЕННЫЕ) {
+    const эталон = JSON.stringify(guardDescent(structuredClone(ast)))
+    const наш = JSON.stringify(изЗначения(вызвать("Поставить сторожей", { "программа": значение(ast) })))
+    const беда = расхождение(эталон, наш)
+    if (беда !== null) беды.push(`${путь}: ${беда}`)
+  }
+  t.diagnostic(`помеченных программ ${ПОМЕЧЕННЫЕ.length}`)
+  assert.deepEqual(беды.slice(0, 5), [], `сторожа разошлись с эталоном на ${беды.length} программах`)
 })
 
 test("программа без высшего порядка проходит понижение НЕИЗМЕННОЙ", () => {

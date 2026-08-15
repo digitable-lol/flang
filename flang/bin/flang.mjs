@@ -51,7 +51,7 @@ const ВЕРСИЯ = JSON.parse(readFileSync(new URL("../../package.json", impor
 const HELP = `flang — полный язык поверх FTS
 
 Использование:
-  flang check <файл> [--proof [--json]] [--pretty]
+  flang check <файл> [--proof [--json]] [--размещение узлы.json] [--pretty]
   flang run   <файл> --function «Имя» --args '{"поле": 1}' [--max-steps N]
                      [--max-depth N] [--pretty]
   flang test  <файл> [--no-check] [--pretty]
@@ -66,6 +66,12 @@ const HELP = `flang — полный язык поверх FTS
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+check --размещение: свести программу с РАЗМЕЩЕНИЕМ процессов по узлам
+(flang/conc/DISTRIBUTED.md). Процесс, размещённый на другом узле, стоит здесь
+представителем и умеет ровно одно — отказать FLANG_LINK_DOWN, когда связь
+потеряна; забытый над ним надзор становится ошибкой сборки, как и над местным
+процессом. Без ключа проверка считает, что узел один и границы нет.
 
 check --proof: ведомость доказательства. По каждой функции — чем несётся её
 обещание «тотальная» (композицией, структурой, постоянным шагом со сторожем,
@@ -150,7 +156,7 @@ export async function main(argv = process.argv.slice(2)) {
 
 async function commandCheck(options) {
   const program = await loadProgram(options.file)
-  const внешнее = await checkProgram(program)
+  const внешнее = await checkProgram(program, { размещение: await loadPlacement(options.placement) })
   const diagnostics = внешнее.diagnostics
   const result = {
     valid: diagnostics.length === 0,
@@ -602,6 +608,30 @@ export async function loadProgramFromSource(source, file = "-") {
   return await markMeasure(await readProgram(source, file))
 }
 
+/**
+ * Размещение процессов по узлам — данные узла, а не текст программы.
+ *
+ * Читается ровно тот файл, который отдают узлу (`flang/conc/bin/node.mjs
+ * --размещение`), и читается без единой поправки: проверка обязана видеть то же
+ * самое размещение, с каким программа поедет в работу. Второй формат означал бы
+ * второй способ ошибиться.
+ *
+ * Кривой JSON — отказ вызова (код 2), а не молчаливое «размещения нет»: ключ,
+ * который принят и не действует, обещает проверку и молчит.
+ */
+async function loadPlacement(file) {
+  if (file === undefined) return null
+  const текст = await readInput(file)
+  const размещение = parseJson(текст, "--размещение")
+  if (размещение === null || typeof размещение !== "object" || Array.isArray(размещение)) {
+    throw usage("--размещение: ожидался объект с полем «узлы»")
+  }
+  if (размещение.узлы === null || typeof размещение.узлы !== "object" || Array.isArray(размещение.узлы)) {
+    throw usage("--размещение: в файле нет поля «узлы» — это не размещение (см. flang/conc/DISTRIBUTED.md)")
+  }
+  return размещение
+}
+
 async function readProgram(source, file) {
   if (file.endsWith(".json")) return JSON.parse(source)
   if (file.endsWith(".fts")) return fromFtsDocument(await compileFts(source))
@@ -728,10 +758,11 @@ async function parseFlang(source, file) {
  * посчитано (см. `externalChecks`).
  *
  * @param {object} program AST flang
+ * @param {{размещение?: object}} [настройки] данные узла (см. `externalChecks`)
  * @returns {Promise<{diagnostics: object[], results: object}>}
  */
-export async function checkProgram(program) {
-  const внешнее = await externalChecks(program)
+export async function checkProgram(program, настройки = {}) {
+  const внешнее = await externalChecks(program, настройки)
   return { diagnostics: [...structuralDiagnostics(program), ...внешнее.diagnostics], results: внешнее.results }
 }
 
@@ -780,8 +811,17 @@ function structuralDiagnostics(program) {
  * проверка сходимости (`flang/test/proof.test.mjs`) считали ведомость ТЕМ ЖЕ
  * путём, каким её печатает `flang check --proof`. Второй путь к тем же числам —
  * второй ответ на один вопрос, и расходятся такие ответы молча.
+ *
+ * `настройки` едут проверкам вторым доводом и сегодня несут ровно одно поле —
+ * `размещение`. Это единственное, что проверка узнаёт не из программы: кто на
+ * каком узле живёт, решает эксплуатация, а не текст (`conc/DISTRIBUTED.md`), и
+ * от этого зависит седьмой вид отказа — `FLANG_LINK_DOWN` у представителя
+ * чужого процесса. Проверки, которым второй довод не нужен, его не заметят.
+ *
+ * @param {object} program AST flang
+ * @param {{размещение?: object}} [настройки] данные узла: сегодня — размещение
  */
-export async function externalChecks(program) {
+export async function externalChecks(program, настройки = {}) {
   const diagnostics = []
   const results = {}
   for (const [file, names, ключ] of [
@@ -820,7 +860,11 @@ export async function externalChecks(program) {
       const module = await import(new URL(file, import.meta.url).href)
       const entry = names.map((name) => module[name]).find((value) => typeof value === "function")
       if (entry === undefined) continue
-      const итог = entry(program)
+      /* Второй довод получает ТОЛЬКО проверка типов, и это не осторожность ради
+         осторожности: у законов моноида, монады, изоморфизма и множеств второй
+         довод свой — `пределы` сетки, — и подсунуть им туда размещение значило бы
+         молча смешать две разные настройки в одном месте. */
+      const итог = ключ === "types" ? entry(program, настройки) : entry(program)
       results[ключ] = итог
       diagnostics.push(...normalizeDiagnostics(итог))
     } catch {
@@ -1015,6 +1059,14 @@ function parseArgs(argv) {
       options.pretty = true
     } else if (arg === "--proof") {
       options.proof = true
+    } else if (arg === "--размещение" || arg === "--placement") {
+      /* Единственный ключ, который несёт проверке данные НЕ из программы. Кто на
+         каком узле живёт — решение эксплуатации (`conc/DISTRIBUTED.md`), и от
+         него зависит седьмой вид отказа: у процесса, размещённого на другом
+         узле, здесь стоит представитель, и он умеет отказать `FLANG_LINK_DOWN`.
+         Без ключа проверка ведёт себя ровно как прежде: одна машина, границы
+         узла нет, представителей нет. */
+      options.placement = require_(argv[++index], "--размещение требует файл JSON")
     } else if (arg === "--json") {
       /* `--json` осмысленен только рядом с `--proof`: без него `check` и так
          печатает JSON, и запрещать ключ значило бы ломать вызов, который уже
@@ -1043,6 +1095,12 @@ function parseArgs(argv) {
      сначала проверяют, значит обе умеют от проверки отказаться. */
   if (options.check === false && options.command !== "emit" && options.command !== "test") {
     throw usage(`--no-check — ключ команд emit и test, а не «${options.command}»`)
+  }
+  /* И то же правило для размещения, по той же причине: у остальных команд оно
+     ничего не значило бы, а ключ, который принят и не действует, обещает
+     проверку и молчит — ровно та беда, ради которой эта задача и делалась. */
+  if (options.placement !== undefined && options.command !== "check") {
+    throw usage(`--размещение — ключ команды check, а не «${options.command}»`)
   }
   return options
 }

@@ -399,11 +399,13 @@ public final class FlangCli {
   private static final class Program {
     private final java.lang.reflect.Method contextMethod;
     private final java.lang.reflect.Method callMethod;
+    private final java.lang.reflect.Method entryMethod;
 
     Program(String name) throws ReflectiveOperationException {
       Class<?> type = Class.forName(name);
       contextMethod = type.getMethod("newContext");
       callMethod = type.getMethod("call", Ctx.class, String.class, Value[].class);
+      entryMethod = type.getMethod("entry");
     }
 
     Ctx newContext() throws ReflectiveOperationException {
@@ -412,6 +414,10 @@ public final class FlangCli {
 
     Value call(Ctx ctx, String name, Value[] args) throws ReflectiveOperationException {
       return (Value) callMethod.invoke(null, ctx, name, args);
+    }
+
+    Flang.EntryTable entry() throws ReflectiveOperationException {
+      return (Flang.EntryTable) entryMethod.invoke(null);
     }
   }
 
@@ -463,6 +469,11 @@ public final class FlangCli {
 
     Value result;
     try {
+      /* Граница входа — ДО вызова: значения приехали снаружи, программой не
+         являются и сверяются с объявленными типами. Значение вне типа выносит
+         вместе с типом и доказательство завершения `тотальной`, а поймать
+         вечную цепочку потом нечем — сторожа в тотальной функции нет. */
+      Flang.checkEntry(program.entry(), (String) name, args);
       result = program.call(ctx, (String) name, args);
     } catch (java.lang.reflect.InvocationTargetException wrapped) {
       Throwable cause = wrapped.getCause();
@@ -479,6 +490,10 @@ public final class FlangCli {
             "стек JVM исчерпан раньше предела глубины flang");
       }
       return failure("CLI", cause == null ? "вычисление сорвалось" : String.valueOf(cause));
+    } catch (FlangError error) {
+      /* Граница входа зовётся прямо, а не отражением, поэтому её отказ приходит
+         сам собой, а не завёрнутым в InvocationTargetException. */
+      return failure(error.code(), error.text());
     } catch (ReflectiveOperationException error) {
       return failure("CLI", "программа не даёт вызова по имени");
     }

@@ -283,7 +283,7 @@ export function obligations(program, итоги = undefined) {
  * Неизвестный вид не выдумывается: сообщение обязано остаться правдой и на
  * дереве, собранном руками, где вида может не быть вовсе.
  */
-function какНаписан(тип) {
+export function какНаписан(тип) {
   if (тип === null || typeof тип !== "object") return "тип без объявления"
   switch (тип.kind) {
     case "number": return тип.fts === undefined ? "число" : тип.fts

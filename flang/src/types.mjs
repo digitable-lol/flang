@@ -4197,7 +4197,11 @@ function bindPattern(pattern, target, env, ctx, at, fnName) {
       return inner
     case "cons": {
       if (target.kind === "string") {
-        if (isName(pattern.head)) inner.set(pattern.head, { kind: "string" })
+        /* Голова строки — строка РОВНО ИЗ ОДНОГО символа, и это не оценка, а
+           определение образца (см. абзац выше). Отсюда `код символа` от неё
+           тотальна без единого условия: разбор уже сказал, что строка непуста.
+           Хвост длины не знает — он может оказаться пустым. */
+        if (isName(pattern.head)) inner.set(pattern.head, сДлиной(STRING, 1))
         if (isName(pattern.tail)) inner.set(pattern.tail, { kind: "string" })
         return inner
       }
@@ -4473,8 +4477,10 @@ function builtinType(expr, env, ctx, fnName) {
     case "символы": {
       if (!arity(1)) return { kind: "list", of: STRING }
       /* Длина сохраняется точно: сколько кодовых точек в строке, столько и
-         односимвольных строк в списке. */
-      return сДлиной({ kind: "list", of: STRING }, длинаНиз(want(0, STRING)))
+         односимвольных строк в списке. И каждый ЭЛЕМЕНТ — строка ровно из
+         одного символа: отсюда `код символа` от элемента такого списка
+         тотальна, сколько бы раз его ни перекладывали. */
+      return сДлиной({ kind: "list", of: сДлиной(STRING, 1) }, длинаНиз(want(0, STRING)))
     }
     /* Единственный мост из строки в число: кодовая точка первого символа.
        Из него в языке выводятся и порядок на строках, и хеш — оба тотальными

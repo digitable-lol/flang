@@ -20,10 +20,11 @@
  * поднимается вместе с работой и вниз не ходит — это и есть храповик.
  */
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { fromFtsDocument } from "../src/compat.mjs"
 import { emitJs } from "../src/emit/js.mjs"
@@ -662,6 +663,45 @@ test("одноимённые вариант и функция дают разн�
       },
     ],
   })
+})
+
+/* ─────────────────── то, ради чего слой существует ─────────────────── */
+
+test("самоприменение: близнец печатает свой исходник в JavaScript, и напечатанное работает", async (t) => {
+  /* Побайтовое совпадение уже проверено выше — этот файл входит в корпус. Здесь
+     проверяется другое и большее: напечатанное ГРУЗИТСЯ движком и СЧИТАЕТ. Байты
+     могут совпасть у двух одинаково сломанных печатей; загрузка и вычисление —
+     нет. Это же и есть заявленная цель работы, увиденная с той стороны: язык
+     печатает сам себя в среду, из которой уходит. */
+  const свой = напечатать(await разобрать("flang/self/emit-js.flang"))
+  assert.equal(свой.error, "", "печать собственного исходника отказала")
+  const [напечатанный] = свой.files
+  t.diagnostic(
+    `напечатано ${напечатанный.path}: ${напечатанный.content.length} байт, ` +
+      `${напечатанный.content.split("\n").length - 1} строк`,
+  )
+
+  const каталог = mkdtempSync(join(tmpdir(), "self-emit-js-"))
+  try {
+    const путь = join(каталог, напечатанный.path)
+    writeFileSync(путь, напечатанный.content, "utf8")
+    const модуль = await import(pathToFileURL(путь).href)
+    const экспорты = Object.keys(модуль)
+    t.diagnostic(`напечатанный модуль загрузился: ${экспорты.length} экспортов`)
+    assert.ok(экспорты.length > 400, `экспортов всего ${экспорты.length} — модуль обрезан?`)
+    assert.equal(typeof модуль.pechatProgrammy, "function", "точка входа не экспортирована")
+
+    /* Три функции, у которых в исходнике есть примеры: ответ напечатанного кода
+       обязан совпасть с тем, что обещает пример. Минус ноль здесь не случаен —
+       это ровно то место, где печать литерала расходится первой. */
+    assert.equal(модуль.chisloJS(-0), "-0", "напечатанный код потерял минус ноль")
+    assert.equal(модуль.chisloJS(1), "1")
+    assert.equal(модуль.paskal("Пара чисел"), "ParaChisel")
+    assert.equal(модуль.verblyud("Пара чисел"), "paraChisel")
+    assert.equal(модуль.bezopasnoeImya("1a"), "_1a")
+  } finally {
+    rmSync(каталог, { recursive: true, force: true })
+  }
 })
 
 /* ─────────────────── диагностики ─────────────────── */

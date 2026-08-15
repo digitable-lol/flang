@@ -34,11 +34,10 @@ import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { externalChecks, loadProgramFromSource } from "../bin/flang.mjs"
-import { ЛГАТЬ, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, искатьДоказательство } from "../proof/search.mjs"
+import { ЛГАТЬ, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, безТеоремы, искатьДоказательство } from "../proof/search.mjs"
 import { globSync } from "../test/glob.mjs"
 import { parse } from "../src/parser.mjs"
 import { proofLedger } from "../src/proof.mjs"
-import { безТеоремы } from "../scripts/proof-search.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 const текст = (путь) => readFileSync(`${корень}${путь}`, "utf8")

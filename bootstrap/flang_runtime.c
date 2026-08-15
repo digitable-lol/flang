@@ -82,6 +82,11 @@ void fl_arena_init(fl_arena *arena) {
   arena->chunks = NULL;
   arena->current = NULL;
   arena->reserved = 0;
+  arena->handed = 0;
+  arena->guard_chunk = NULL;
+  arena->guard_used = 0;
+  arena->staging = NULL;
+  arena->staging_size = 0;
 }
 
 void *fl_arena_alloc(fl_arena *arena, size_t size) {
@@ -96,6 +101,7 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     if (arena->current->capacity - arena->current->used >= wanted) {
       char *block = fl_chunk_data(arena->current) + arena->current->used;
       arena->current->used += wanted;
+      arena->handed += wanted;
       return block;
     }
     if (arena->current->next == NULL || arena->current->next->used != 0) {
@@ -141,6 +147,7 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     }
     arena->current = chunk;
     arena->reserved += header + capacity;
+    arena->handed += wanted;
     return fl_chunk_data(chunk);
   }
 }
@@ -154,6 +161,28 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
  * (`used`), и добавка обязана поместиться в тот же кусок. Ни то, ни другое не
  * «осторожность на всякий случай» — не выполнись любая, и продление затёрло бы
  * чужие данные.
+ *
+ * ── Третья проверка: продление не переходит границу области ────────────────
+ * Она появилась вместе с областью на вызов, и без неё область была бы
+ * НЕИСПРАВНОЙ — молча, на редком входе. Разбор целиком, потому что случай
+ * тонкий и найден рассуждением, а не тестом:
+ *
+ *   вызывающий накопил список, его массив — последняя выдача арены;
+ *   вызываемый открыл область (отметка встала ровно за массивом);
+ *   внутри области «добавить» к тому же списку берёт быстрый путь, видит, что
+ *   запас исчерпан, зовёт fl_arena_extend — продление ложится ВЫШЕ отметки, —
+ *   и тут же правит `grow->capacity` на месте, удваивая его;
+ *   область закрывается, откат забирает продлённую половину, а `grow` лежит
+ *   НИЖЕ отметки, и удвоенный `capacity` остаётся в нём навсегда.
+ *
+ * Дальше первое же «добавить» к этому списку проходит проверку
+ * `count < grow->capacity` и пишет в память, которую арена уже отдала кому-то
+ * другому. Это порча чужих данных, а не потеря своих.
+ *
+ * Лечится там, где рождается: продлевать блок, начало которого лежит ниже
+ * границы ближайшей открытой области, нельзя. Вызывающий тогда идёт медленным
+ * путём — копией с запасом, — и копия эта ложится выше отметки, то есть
+ * откатывается штатно.
  */
 bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t extra) {
   fl_chunk *chunk = NULL;
@@ -167,6 +196,15 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t ext
   if (chunk->used < taken || (const char *)block != fl_chunk_data(chunk) + (chunk->used - taken)) {
     return false; /* выдавали не это или выдавали не последним */
   }
+  /*
+   * Граница открытой области. Куски выдаются вперёд по цепочке, а откат
+   * возвращает и границу, и текущий кусок разом, — поэтому `guard_chunk`
+   * всегда стоит на текущем куске или раньше него. Значит другой кусок
+   * означает «блок выдан позже границы», и продлевать его можно.
+   */
+  if (arena->guard_chunk == chunk && (chunk->used - taken) < arena->guard_used) {
+    return false;
+  }
   if (size > ((size_t)-1) - extra) {
     return false;
   }
@@ -177,6 +215,7 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t ext
     return false; /* кусок кончился: пусть вызывающий выделит новый и скопирует */
   }
   chunk->used += added;
+  arena->handed += added;
   return true;
 }
 
@@ -189,6 +228,11 @@ void fl_arena_reset(fl_arena *arena) {
     chunk->used = 0;
   }
   arena->current = arena->chunks;
+  arena->handed = 0;
+  /* Открытых областей после сброса не бывает: сбрасывают между запросами, а не
+     посреди вызова. Граница снимается, иначе она сторожила бы пустоту. */
+  arena->guard_chunk = NULL;
+  arena->guard_used = 0;
 }
 
 void fl_arena_release(fl_arena *arena) {
@@ -202,9 +246,15 @@ void fl_arena_release(fl_arena *arena) {
     free(chunk);
     chunk = next;
   }
+  free(arena->staging);
   arena->chunks = NULL;
   arena->current = NULL;
   arena->reserved = 0;
+  arena->handed = 0;
+  arena->guard_chunk = NULL;
+  arena->guard_used = 0;
+  arena->staging = NULL;
+  arena->staging_size = 0;
 }
 
 /* ═════════════════════════════ стек ═════════════════════════════ */
@@ -548,6 +598,460 @@ void fl_leave(fl_ctx *ctx) {
   if (ctx != NULL && ctx->depth > 0) {
     ctx->depth -= 1;
   }
+}
+
+/* ═════════════════════════ область на вызов ═════════════════════════ */
+
+/*
+ * Сколько байт область обязана нарастить, чтобы откат стоило делать.
+ *
+ * Порог не взят с потолка — он равен куску арены. Ниже куска область не стоила
+ * арене НИ ОДНОЙ покупки у malloc: её мусор лежит в памяти, которая всё равно
+ * уже куплена, и откат вернул бы то, что и так вернётся ближайшему `reset`.
+ * Выше куска область и есть та причина, по которой арена растёт, — и вот тогда
+ * за перекладку результата есть чем платить.
+ *
+ * Замерено, а не выбрано: порог 8 КиБ на самом компиляторе flang, собранном в
+ * C, даёт 787,2 МиБ вместо 795,8 — то есть 1,1 % памяти за 23 % времени
+ * (3,8–4,0 с против 3,1–3,3). Кусок арены — та точка, где ещё платят за дело.
+ *
+ * Величина настраиваемая (-DFL_REGION_MIN=…), но умолчание привязано к
+ * устройству арены, а не к вкусу: поменяется кусок — поменяется и порог.
+ */
+#ifndef FL_REGION_MIN
+#define FL_REGION_MIN FL_CHUNK_MIN
+#endif
+
+/*
+ * Во сколько раз отданное обязано превысить переложенное: результат не больше
+ * ЧЕТВЕРТИ наросшего, то есть область отдаёт втрое больше, чем копирует.
+ *
+ * Четвёрка тоже замерена. Перекладка стоит `live` байт буфера, и буфер этот
+ * входит в пик кучи наравне с ареной — а куски арены откат системе НЕ
+ * возвращает. При «не больше половины» буфер сравним с отданным, и на двух
+ * настоящих программах это чистый убыток:
+ *
+ *   накопление списка через «добавить», миллион витков:
+ *       пик 96,1 → 126,6 МиБ, время 0,10 → 0,14 с;
+ *   сам компилятор flang, собранный в C, на flang/self/emit-c.flang:
+ *       пик 799,0 → 844,9 МиБ, время 3,1 → 3,5 с.
+ *
+ * При четверти оба возвращаются к прежним числам до цифры, а сортировка
+ * слиянием четырёх тысяч чисел теряет всего 2,2 → 3,5 МиБ при 1 655 МиБ без
+ * области. Ужесточать дальше незачем: восьмая уже отказывается там, где откат
+ * выгоден (проверка «четверть держит с обеих сторон» краснеет от сдвига
+ * константы в любую сторону).
+ */
+#ifndef FL_REGION_GAIN
+#define FL_REGION_GAIN (size_t)4
+#endif
+
+/*
+ * Предел глубины обхода при перекладке. Глубже область просто ОТКАЗЫВАЕТСЯ
+ * работать — она не имеет права ни падать по стеку, ни отказывать вычислению.
+ * Обход рекурсивный, кадр его тонок, тысяча кадров — сотня килобайт стека.
+ */
+#ifndef FL_REGION_DEPTH
+#define FL_REGION_DEPTH (size_t)1024
+#endif
+
+/*
+ * ── Обмер: сколько займёт копия ────────────────────────────────────────────
+ *
+ * Считает ровно то, что выделит перекладка, — теми же размерами и тем же
+ * округлением. Считает С БЮДЖЕТОМ и бросает счёт, как только бюджет перебран.
+ *
+ * Бюджет — не мелочь ради скорости, а то, чем ограничены три из четырёх
+ * известных изъянов приёма «копия наружу»:
+ *
+ *   • копия разворачивает разделяемый подграф в дерево (один и тот же подсписок,
+ *     положенный в результат десять раз, станет десятью копиями), и в худшем
+ *     случае это ЭКСПОНЕНТА. С бюджетом обход такого значения обрывается на
+ *     первых же байтах сверх бюджета — и область отказывается от отката, вместо
+ *     того чтобы взорваться;
+ *   • копия стоит O(размера результата), и у функции, которая возвращает много,
+ *     а мусорит мало, это чистый убыток. Бюджет запрещает такой случай по
+ *     построению;
+ *   • накопление растущего результата на каждом витке даёт квадрат. Как только
+ *     результат перерастает четверть мусора, копии прекращаются сами.
+ *
+ * Отсюда и величина бюджета: наросшее, делённое на FL_REGION_GAIN. Тогда работа
+ * области — и обмер, и обе перекладки — ограничена долей той работы, которую
+ * область уже проделала на выделении. Это и есть обещание: цена приёма не
+ * может превысить постоянного множителя от объёма, которым он распоряжается.
+ */
+static bool fl_region_take(size_t *total, size_t budget, size_t need) {
+  size_t rounded = 0;
+  /* Сперва сырой размер, потом округление: так округлять нечему переполниться —
+     бюджет заведомо меньше половины адресного пространства. */
+  if (need > budget) {
+    return false;
+  }
+  rounded = fl_round_up(need);
+  if (rounded > budget || *total > budget - rounded) {
+    return false;
+  }
+  *total += rounded;
+  return true;
+}
+
+static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
+                                  size_t *total);
+
+static bool fl_region_size(fl_value value, size_t budget, size_t depth, size_t *total) {
+  if (depth > FL_REGION_DEPTH) {
+    return false;
+  }
+  switch (value.tag) {
+    case FL_NOTHING:
+    case FL_NUMBER:
+    case FL_FLAG:
+      return true;
+    case FL_STRING:
+      /* Ноль на конце копия ставит всегда, хотя исходник мог быть срезом. */
+      if (value.as.string.bytes == (size_t)-1) {
+        return false;
+      }
+      return fl_region_take(total, budget, value.as.string.bytes + 1);
+    case FL_LIST: {
+      size_t index = 0;
+      if (value.as.list.count == 0) {
+        return true;
+      }
+      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+        return false;
+      }
+      if (!fl_region_take(total, budget, value.as.list.count * sizeof(fl_value))) {
+        return false;
+      }
+      for (index = 0; index < value.as.list.count; index += 1) {
+        if (!fl_region_size(value.as.list.items[index], budget, depth + 1, total)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    case FL_RECORD:
+      if (value.as.record == NULL) {
+        return false;
+      }
+      if (!fl_region_take(total, budget, sizeof(fl_record))) {
+        return false;
+      }
+      return fl_region_fields_size(value.as.record->fields, value.as.record->count, budget, depth, total);
+    case FL_VARIANT:
+      if (value.as.variant == NULL) {
+        return false;
+      }
+      if (!fl_region_take(total, budget, sizeof(fl_variant))) {
+        return false;
+      }
+      return fl_region_fields_size(value.as.variant->fields, value.as.variant->count, budget, depth, total);
+    default:
+      return false;
+  }
+}
+
+static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
+                                  size_t *total) {
+  size_t index = 0;
+  if (count == 0) {
+    return true;
+  }
+  if (fields == NULL || count > ((size_t)-1) / sizeof(fl_field)) {
+    return false;
+  }
+  if (!fl_region_take(total, budget, count * sizeof(fl_field))) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    if (!fl_region_size(fields[index].value, budget, depth + 1, total)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*
+ * ── Перекладка: копия значения в плоский буфер ─────────────────────────────
+ *
+ * Выдача — бамп указателя внутри буфера, и размер буфера посчитан обмером
+ * заранее ровно по тем же правилам. Значит переполниться буфер не может; если
+ * всё-таки переполнился, обмер разошёлся с копией, и область отказывается от
+ * отката вместо того, чтобы писать мимо.
+ *
+ * Имена полей и имя варианта НЕ копируются, и это не экономия, а свойство
+ * дерева: имя приходит из модели (`.rodata`) либо из разобранного запроса,
+ * который построен ДО вызова, то есть ниже любой отметки. Ни одно имя не
+ * рождается во время расчёта — единственный, кто их выделяет, это разбор
+ * запроса в прогонщике. Тот же довод записан в `fl_conc_clone`.
+ */
+typedef struct fl_pack {
+  char *base;
+  size_t size;
+  size_t used;
+} fl_pack;
+
+static void *fl_pack_alloc(fl_pack *pack, size_t size) {
+  const size_t wanted = fl_round_up(size == 0 ? 1 : size);
+  char *block = NULL;
+  if (wanted > pack->size - pack->used) {
+    return NULL;
+  }
+  block = pack->base + pack->used;
+  pack->used += wanted;
+  return block;
+}
+
+static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, size_t depth,
+                           const fl_field **out);
+
+static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value *out) {
+  if (depth > FL_REGION_DEPTH) {
+    return false;
+  }
+  switch (value.tag) {
+    case FL_NOTHING:
+    case FL_NUMBER:
+    case FL_FLAG:
+      *out = value;
+      return true;
+    case FL_STRING: {
+      char *text = (char *)fl_pack_alloc(pack, value.as.string.bytes + 1);
+      if (text == NULL) {
+        return false;
+      }
+      if (value.as.string.bytes > 0) {
+        memcpy(text, value.as.string.utf8, value.as.string.bytes);
+      }
+      text[value.as.string.bytes] = '\0';
+      *out = fl_text_borrow(text, value.as.string.bytes, value.as.string.points);
+      return true;
+    }
+    case FL_LIST: {
+      fl_value *items = NULL;
+      size_t index = 0;
+      if (value.as.list.count == 0) {
+        *out = fl_list(NULL, 0);
+        return true;
+      }
+      items = (fl_value *)fl_pack_alloc(pack, value.as.list.count * sizeof(fl_value));
+      if (items == NULL) {
+        return false;
+      }
+      for (index = 0; index < value.as.list.count; index += 1) {
+        if (!fl_pack_value(pack, value.as.list.items[index], depth + 1, &items[index])) {
+          return false;
+        }
+      }
+      /* Хвостовой запас копии не передаётся: `fl_grow` считает ячейки от базы
+         своего массива, а копия — другое выделение. Наблюдаемо это не меняет
+         ничего (flang_runtime.h: «Поле не наблюдаемо»). */
+      *out = fl_list(items, value.as.list.count);
+      return true;
+    }
+    case FL_RECORD: {
+      fl_record *record = (fl_record *)fl_pack_alloc(pack, sizeof(fl_record));
+      if (record == NULL) {
+        return false;
+      }
+      record->count = value.as.record->count;
+      record->fields = NULL;
+      if (!fl_pack_fields(pack, value.as.record->fields, value.as.record->count, depth, &record->fields)) {
+        return false;
+      }
+      out->tag = FL_RECORD;
+      out->as.record = record;
+      return true;
+    }
+    case FL_VARIANT: {
+      fl_variant *variant = (fl_variant *)fl_pack_alloc(pack, sizeof(fl_variant));
+      if (variant == NULL) {
+        return false;
+      }
+      variant->name = value.as.variant->name;
+      variant->count = value.as.variant->count;
+      variant->fields = NULL;
+      if (!fl_pack_fields(pack, value.as.variant->fields, value.as.variant->count, depth, &variant->fields)) {
+        return false;
+      }
+      out->tag = FL_VARIANT;
+      out->as.variant = variant;
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, size_t depth,
+                           const fl_field **out) {
+  fl_field *copy = NULL;
+  size_t index = 0;
+  if (count == 0) {
+    *out = NULL;
+    return true;
+  }
+  copy = (fl_field *)fl_pack_alloc(pack, count * sizeof(fl_field));
+  if (copy == NULL) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    copy[index].name = fields[index].name;
+    if (!fl_pack_value(pack, fields[index].value, depth + 1, &copy[index].value)) {
+      return false;
+    }
+  }
+  *out = copy;
+  return true;
+}
+
+/*
+ * Откат к отметке. Куски не отдаются системе — они помечаются пустыми, ровно
+ * как в `fl_arena_reset`, и ближайшая выдача берёт их снова. Оттого арена,
+ * которую откатывают, остаётся горячей в кэше, а растущая — покупает новое и
+ * гуляет по всей памяти; это и есть причина, по которой область не только
+ * бережёт память, но и УСКОРЯЕТ расчёт.
+ */
+static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
+  fl_chunk *chunk = NULL;
+  if (mark.chunk == NULL) {
+    /* На отметке арена была пуста: пусто всё, что после неё. */
+    for (chunk = arena->chunks; chunk != NULL; chunk = chunk->next) {
+      chunk->used = 0;
+    }
+    arena->current = arena->chunks;
+  } else {
+    mark.chunk->used = mark.used;
+    for (chunk = mark.chunk->next; chunk != NULL; chunk = chunk->next) {
+      chunk->used = 0;
+    }
+    arena->current = mark.chunk;
+  }
+  arena->handed = mark.handed;
+}
+
+/** Буфер под перекладку: живёт между вызовами, отдаётся в `fl_arena_release`. */
+static bool fl_region_staging(fl_arena *arena, size_t need) {
+  char *buffer = NULL;
+  if (arena->staging_size >= need) {
+    return true;
+  }
+  buffer = (char *)malloc(need);
+  if (buffer == NULL) {
+    return false;
+  }
+  free(arena->staging);
+  arena->staging = buffer;
+  arena->staging_size = need;
+  return true;
+}
+
+fl_mark fl_region_open(fl_ctx *ctx) {
+  fl_mark mark;
+  fl_arena *arena = ctx == NULL ? NULL : ctx->arena;
+  mark.chunk = NULL;
+  mark.used = 0;
+  mark.handed = 0;
+  mark.guard_chunk = NULL;
+  mark.guard_used = 0;
+  if (arena == NULL) {
+    return mark;
+  }
+  mark.chunk = arena->current;
+  mark.used = arena->current == NULL ? 0 : arena->current->used;
+  mark.handed = arena->handed;
+  mark.guard_chunk = arena->guard_chunk;
+  mark.guard_used = arena->guard_used;
+  arena->guard_chunk = mark.chunk;
+  arena->guard_used = mark.used;
+  return mark;
+}
+
+/*
+ * ── Закрытие области ───────────────────────────────────────────────────────
+ *
+ * Порядок такой и другим быть не может:
+ *
+ *   1. вернуть границу объемлющей области — ВСЕГДА, каким бы ни был исход;
+ *   2. на отказе не трогать ничего: текст диагностики лежит в арене выше
+ *      отметки, и откат стёр бы сообщение об ошибке;
+ *   3. обмерить результат с бюджетом в четверть наросшего;
+ *   4. переложить результат в буфер вне арены;
+ *   5. откатить арену;
+ *   6. переложить результат из буфера обратно, одним блоком.
+ *
+ * Шаги 3–6 могут не состояться — и тогда область просто НЕ ДЕЛАЕТ НИЧЕГО.
+ * Это главное её свойство: она вправе отказаться в любой момент до шага 5, и
+ * отказ не виден снаружи ничем, кроме памяти. Отказывается она, когда:
+ *
+ *   • область наросла меньше куска арены (платить не за что);
+ *   • результат больше четверти наросшего (см. FL_REGION_GAIN);
+ *   • результат не влез в бюджет — разделяемый подграф, большой ответ,
+ *     накопление (см. обмер выше);
+ *   • значение глубже FL_REGION_DEPTH;
+ *   • не дали буфера;
+ *   • обмер разошёлся с перекладкой (такого быть не должно, но проверка
+ *     дешевле доверия).
+ *
+ * Единственное место, где область всё-таки может отказать вычислению, — шаг 6:
+ * после отката память под копию уже нужна, и не дать её может только настоящее
+ * исчерпание. Тогда честный FLANG_MEMORY, а не тишина.
+ */
+fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value *result, fl_error *error) {
+  fl_arena *arena = ctx == NULL ? NULL : ctx->arena;
+  size_t grown = 0;
+  size_t live = 0;
+  fl_pack pack;
+  fl_value staged = fl_nothing();
+  fl_value moved = fl_nothing();
+  char *block = NULL;
+
+  if (arena == NULL) {
+    return status;
+  }
+  arena->guard_chunk = mark.guard_chunk;
+  arena->guard_used = mark.guard_used;
+  if (status != FL_OK || result == NULL) {
+    return status;
+  }
+
+  grown = arena->handed - mark.handed;
+  if (grown < (size_t)FL_REGION_MIN) {
+    return FL_OK;
+  }
+  if (!fl_region_size(*result, grown / FL_REGION_GAIN, 0, &live)) {
+    return FL_OK;
+  }
+  if (live == 0) {
+    /* Результат — скаляр либо пустой список: перекладывать нечего. */
+    fl_arena_rollback(arena, mark);
+    return FL_OK;
+  }
+  if (!fl_region_staging(arena, live)) {
+    return FL_OK;
+  }
+  pack.base = arena->staging;
+  pack.size = live;
+  pack.used = 0;
+  if (!fl_pack_value(&pack, *result, 0, &staged)) {
+    return FL_OK;
+  }
+
+  fl_arena_rollback(arena, mark);
+
+  block = (char *)fl_arena_alloc(arena, live);
+  if (block == NULL) {
+    return fl_no_memory(error);
+  }
+  pack.base = block;
+  pack.size = live;
+  pack.used = 0;
+  if (!fl_pack_value(&pack, staged, 0, &moved)) {
+    return fl_no_memory(error);
+  }
+  *result = moved;
+  return FL_OK;
 }
 
 /* ═════════════════════════════ UTF-8 ═════════════════════════════ */

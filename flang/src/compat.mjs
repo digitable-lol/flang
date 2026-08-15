@@ -24,7 +24,7 @@
  */
 import { FlangError, flangError, reifyValue, valuesEqual } from "./builtins.mjs"
 import { runConcurrentExamples } from "./conc.mjs"
-import { evaluate as interpret } from "./interpret.mjs"
+import { DEFAULT_MAX_STEPS, evaluate as interpret } from "./interpret.mjs"
 
 export { FlangError, flangError }
 
@@ -33,6 +33,41 @@ export const INPUT_PARAM = "вход"
 
 /** Имя, под которым постусловие видит результат функции. */
 export const RESULT_BINDING = "результат"
+
+/**
+ * Предел шагов, под которым считается ЗАКОН при стрелке.
+ *
+ * Число то же, что у вычислителя по умолчанию, и меняться ему незачем — но
+ * НАЗВАНО оно здесь, и это не украшение импорта. Контракт (`flang/cat/SPEC.md`,
+ * принятое решение 5) обещает, что закон у нетотального морфизма проверяется
+ * «под лимитом шагов». Пока предел был умолчанием вычислителя, обещание
+ * держалось случайно: смени кто-нибудь умолчание — и проверка закона поехала бы
+ * следом, ничего об этом не сказав. Тот же довод записан в `interpret.mjs` про
+ * предел глубины: число, которое нельзя назвать, свести не с чем.
+ */
+export const LAW_MAX_STEPS = DEFAULT_MAX_STEPS
+
+/**
+ * «Закон не досчитан» — код отдельный, и в этом всё дело.
+ *
+ * Закон говорит о равенстве вычислений, а морфизму разрешено быть нетотальным
+ * (контракт, решение 5: HTTP-обработчик редко тотален, а закон при нём нужен
+ * именно там). Значит проверка закона может кончиться тремя разными исходами, а
+ * не двумя: сошлось, не сошлось — и НЕ ДОСЧИТАЛОСЬ. Третий исход не «закон
+ * нарушен»: про закон в этом случае не известно ничего, и назвать его
+ * нарушенным значило бы утверждать больше, чем видели.
+ *
+ * До этого кода упор в предел приезжал в отчёт обычным `FLANG_RECURSION_LIMIT` —
+ * тем же, каким падает зациклившийся пример обычной функции. Прогон это и
+ * предъявил: морфизм с нетотальной реализацией давал
+ * `passed: false, code: FLANG_RECURSION_LIMIT`, и по отчёту нельзя было
+ * отличить опровергнутый закон от непроверенного.
+ *
+ * Молчаливым успехом это не становится и не должно: `passed` остаётся `false`,
+ * `flang test` по-прежнему кончается кодом 1. Не досчитанный закон — не
+ * пройденная проверка, а не «ну и ладно».
+ */
+export const LAW_LIMIT_CODE = "FLANG_LAW_LIMIT"
 
 /** Код диагностики у любой ошибки — своей, интерпретатора или ядра FTS. */
 export function errorCode(error) {
@@ -327,7 +362,17 @@ export function runExamples(program, evaluate = evaluateFlang) {
      Устройство стрелки при этом доказано раньше и в другом месте (`types.mjs`):
      функция объявлена, вход — домен, выход — кодомен. Здесь остаётся
      единственное, что доказать нельзя, — что обещание выполняется на тех
-     значениях, которые автор назвал сам. */
+     значениях, которые автор назвал сам.
+
+     ── Третий исход, и он про честность отчёта ──────────────────────────────
+     Реализация стрелки вправе быть НЕТОТАЛЬНОЙ, значит проверка вправе не
+     кончиться. Такой пример считается под названным пределом (`LAW_MAX_STEPS`),
+     а упор в предел уходит в отчёт своим кодом `FLANG_LAW_LIMIT`, а не общим
+     `FLANG_RECURSION_LIMIT`: «не досчитано» и «нарушено» — разные утверждения,
+     и по коду это обязано быть видно машине, а не по тексту человеку. */
+  const тотальные = new Set(
+    (program.functions ?? []).filter((фн) => фн?.total === true).map((фн) => фн.name),
+  )
   for (const узел of program.morphisms ?? []) {
     if (узел?.kind !== "morphism") continue
     if (typeof узел.gives !== "string" || узел.gives === "") continue
@@ -337,7 +382,7 @@ export function runExamples(program, evaluate = evaluateFlang) {
       const подпись = `морфизм «${узел.name}», закон «${закон.name}»`
       for (const пример of закон.examples ?? []) {
         try {
-          const actual = evaluate(program, узел.gives, пример.args)
+          const actual = evaluate(program, узел.gives, пример.args, { maxSteps: LAW_MAX_STEPS })
           results.push({
             function: подпись,
             example: пример.name,
@@ -346,13 +391,22 @@ export function runExamples(program, evaluate = evaluateFlang) {
             actual,
           })
         } catch (error) {
+          const код = errorCode(error)
+          const текст = error instanceof Error ? error.message : String(error)
+          /* Тотальность решает, чей это предел. У нетотальной реализации предел —
+             единственное, чем проверка может кончиться, и это про закон. У
+             ТОТАЛЬНОЙ упор в предел означает другое: доказанное завершение без
+             обещанного срока, — и подменять там код значило бы прятать редкую
+             беду за частой. Ровно так же различает три смысла одного и того же
+             предела планировщик (`conc.mjs`, `FLANG_BUDGET_EXHAUSTED`). */
+          const недосчитан = код === "FLANG_RECURSION_LIMIT" && !тотальные.has(узел.gives)
           results.push({
             function: подпись,
             example: пример.name,
             passed: false,
             expected: пример.expected,
-            error: error instanceof Error ? error.message : String(error),
-            code: errorCode(error),
+            error: недосчитан ? `закон не досчитан, а не нарушен: ${текст}` : текст,
+            code: недосчитан ? LAW_LIMIT_CODE : код,
           })
         }
       }

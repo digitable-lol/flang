@@ -12,14 +12,16 @@
  * загружается динамическим `import`. Никаких `eval` со срезанными углами —
  * проверяем ровно тот артефакт, который получит пользователь.
  *
- * Набор программ: все модели репозитория через `compat.mjs` (обещание §9
- * SPEC), рекурсия по списку, обход дерева-суммы, взаимная рекурсия, нарушение
- * постусловия, строковые формы на кириллице и суррогатных парах, и хвостовая
- * рекурсия на 100 000 шагов — последняя ловит ровно ту ошибку, ради которой
- * эмиттер разворачивает хвостовые самовызовы в цикл.
+ * Набор программ: весь корпус языка — 94 программы `stdlib/` и
+ * `examples/leetcode/` (раздел 12), все модели репозитория через `compat.mjs`
+ * (обещание §9 SPEC), рекурсия по списку, обход дерева-суммы, взаимная
+ * рекурсия, нарушение постусловия, строковые формы на кириллице и суррогатных
+ * парах, и хвостовая рекурсия на 100 000 шагов — последняя ловит ровно ту
+ * ошибку, ради которой эмиттер разворачивает хвостовые самовызовы в цикл.
  */
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
+import { readdirSync, readFileSync } from "node:fs"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -29,6 +31,7 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 import { errorCode, fromFtsDocument, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
+import { markMeasureGuards } from "../src/totality.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
 import { globSync } from "./glob.mjs"
@@ -1859,4 +1862,414 @@ test("точка сетки, на которой печать зависала: 
   assert.equal(сверху.message, эталон.message)
 
   t.diagnostic(`обе точки упёрлись в предел за ${ответ.мс} и ${сверху.мс} мс (было: не отвечало и за 90 000 мс)`)
+})
+
+/* ═════════════════ 13. корпус: stdlib и leetcode целиком ═══════════════════ */
+
+/**
+ * Корпус языка — 94 программы `stdlib/` и `examples/leetcode/` — у цели
+ * JavaScript не сверялся ничем. Шесть других целей гоняют на нём 488 функций и
+ * без малого девять тысяч входов каждая, а этот файл не читал ни одного
+ * каталога: программы выше собраны из AST руками либо приехали из моделей FTS.
+ *
+ * Разбор здесь ПОМЕЧЕННЫЙ, а не голый, и это не мелочь. Отметку меры кладёт
+ * передний край на каждую команду, включая `emit` (`bin/flang.mjs`,
+ * `markMeasure`), а понижение по этой отметке ставит сторожа ДО первого
+ * напечатанного байта (`src/defunc.mjs`, `guardDescent`). Голый `parse` сверял
+ * бы с эталоном не ту программу, которую печатает настоящая команда.
+ *
+ * Измерено на этом корпусе у цели JavaScript: из 94 программ сторожа меры
+ * несут 43 (две в `stdlib`, сорок одна в `examples/leetcode`), печать от
+ * голого разбора — 1 247 677 байт против 1 526 242 у помеченной, то есть
+ * 278 565 байт мимо сверки, и слово `FLANG_MEASURE` встречается в ней 0 раз
+ * против 185.
+ *
+ * Уравнивание бесплатно там, где меры нет: у 51 программы без числовой меры
+ * печать совпала с прежней ПОБАЙТОВО, ни одного изменившегося байта, —
+ * `markMeasureGuards` возвращает тот же объект, когда стеречь нечего.
+ */
+const stdlibDirectory = fileURLToPath(new URL("../stdlib/", import.meta.url))
+const leetcodeDirectory = fileURLToPath(new URL("../examples/leetcode/", import.meta.url))
+
+function loadPrograms() {
+  const found = []
+  for (const directory of [stdlibDirectory, leetcodeDirectory]) {
+    for (const name of readdirSync(directory).filter((item) => item.endsWith(".flang")).sort()) {
+      found.push({ file: name, program: markMeasureGuards(parse(readFileSync(directory + name, "utf8"), name)) })
+    }
+  }
+  return found
+}
+
+const corpusPrograms = loadPrograms()
+
+/* Печать одной программы стоит дороже её прогона, а тестов по корпусу два:
+   модуль строится один раз и переиспользуется. Счётчики пределов у модуля
+   глобальные, но `$top` обнуляет их на каждом вызове извне, поэтому общий
+   модуль не делает прогоны зависимыми друг от друга. */
+const builtCorpus = new Map()
+async function buildOnce(file, program) {
+  if (!builtCorpus.has(file)) builtCorpus.set(file, await build(program))
+  return builtCorpus.get(file)
+}
+
+/* Значения, которых функция заведомо не ждёт. Ими портятся аргументы примеров:
+   так проверяются не значения, а коды и тексты диагностик — вторая половина
+   наблюдаемого поведения, и та, в которой кодогенератор ошибается чаще.
+   Список тот же, что у остальных семи целей (`emit-go.test.mjs`). */
+const ЧУЖИЕ = [null, "не то", 42, true, [], [1, "два"], { "поле": 1 }, variant("Нет такого", {})]
+
+/** Объявлен ли параметр типом «функция»: `функция из числа в число`. */
+function fnTypedParam(fn, index) {
+  const param = fn.params?.[index]
+  return param !== null && typeof param === "object" && param.type?.kind === "fn"
+}
+
+/**
+ * Сетка одной функции: аргументы её примеров плюс их порча по одному
+ * аргументу. Выдуманная сетка проверяла бы фантазию автора теста, а сетка из
+ * примеров — то, ради чего функция написана.
+ *
+ * Параметр типа «функция» порче не подвергается: чужое значение на месте тега
+ * отвергают ОБЕ стороны, но разными словами, и это расхождение названо и
+ * проверяется дословно в `flang/test/hof-emit.test.mjs` (см. тот же отвод в
+ * `emit-go.test.mjs`).
+ */
+function functionGrid(fn) {
+  const params = fn.params.map((param) => (typeof param === "string" ? param : param.name))
+  const examples = (fn.examples ?? []).filter((example) =>
+    example.args !== null && typeof example.args === "object" &&
+    params.every((name) => Object.hasOwn(example.args, name)))
+  const points = examples.map((example) => params.map((name) => example.args[name]))
+  if (params.length === 0) return points
+
+  const seed = points.length > 0 ? points[0] : params.map(() => null)
+  for (let index = 0; index < params.length; index += 1) {
+    if (fnTypedParam(fn, index)) continue
+    for (const alien of ЧУЖИЕ) {
+      const spoiled = [...seed]
+      spoiled[index] = alien
+      points.push(spoiled)
+    }
+  }
+  return points
+}
+
+/* Пределы одинаковы у обоих движков — те же, что у остальных семи целей. Шаг
+   напечатанного кода это вход в функцию, виток хвостового цикла и отскок
+   батута, шаг интерпретатора — итерация его машины, а их на одно применение
+   функции приходится много. Значит при одном пределе счётчик JS всегда меньше,
+   и упереться в лимит первым может только интерпретатор. Такие точки сверяются
+   по коду ошибки, а не по тексту: текст содержит число шагов, а оно у двух
+   счётчиков разное по построению. */
+const ПРЕДЕЛЫ = { maxSteps: 5_000_000, maxDepth: 10_000 }
+
+/**
+ * Конструктор варианта, взятый у самого модуля.
+ *
+ * Вариант у напечатанного модуля — экземпляр ЕГО собственного класса
+ * (`$FlangVariant`), и класс этот не экспортируется: у модуля с нулём
+ * зависимостей другого выбора нет. Значит чужой вариант — тот самый
+ * `Нет такого` из `ЧУЖИЕ` — построить можно только через конструктор, который
+ * модуль печатает для СВОИХ вариантов, переименовав результат. Это ровно то,
+ * что делает разбор JSON у остальных семи целей: имя варианта там приезжает
+ * строкой и может быть любым.
+ *
+ * Вариант со СВОИМ именем модуль строит сам — конструктор для него напечатан
+ * (в том числе у тегов, которые заводит понижение высшего порядка, хотя в
+ * `types` программы сумм нет). Занимать нечего только там, где не напечатано ни
+ * одного конструктора: тогда чужой вариант на границе непредставим —
+ * интерпретатору он приезжает вариантом, а модулю тем, что модуль зовёт
+ * записью, и расходятся не движки, а два разных входа. Такие точки в прогон не
+ * идут, но и не прячутся: их 739 из 8799 (все — чужой `Нет такого` у программ
+ * без сумм), счёт им ведётся, назван в отчёте теста и ограничен сверху.
+ *
+ * Это не дырка в кодогенераторе, а граница языка JavaScript: у остальных семи
+ * целей значения приезжают через JSON, где имя варианта — строка, а здесь
+ * вызов идёт напрямую. Закрыть её могло бы только одно — экспорт самого класса
+ * (или общего конструктора `$variant`) из напечатанного модуля; сегодня его
+ * нет, и поэтому вариант, полученный от ОДНОГО напечатанного модуля, второй
+ * такой же модуль считает записью. Названо здесь, чинится не здесь.
+ */
+function borrowVariant(program, module) {
+  for (const type of program.types ?? []) {
+    if (type === null || typeof type !== "object" || type.kind !== "sum") continue
+    for (const item of type.variants ?? []) {
+      const constructor = module[pascal(item.name)]
+      if (typeof constructor === "function") return constructor
+    }
+  }
+  return null
+}
+
+/** Вариант, которого модулю нечем построить: точка с ним не проверяется. */
+const НЕПРЕДСТАВИМО = Symbol("чужой вариант у программы без сумм типов")
+
+function corpusAdapt(program, module) {
+  const borrowed = borrowVariant(program, module)
+  const walk = (value) => {
+    if (Array.isArray(value)) {
+      const items = value.map(walk)
+      return items.some((item) => item === НЕПРЕДСТАВИМО) ? НЕПРЕДСТАВИМО : items
+    }
+    if (value !== null && typeof value === "object") {
+      if (isVariantLike(value)) {
+        const fields = {}
+        for (const [key, item] of Object.entries(value.fields)) {
+          const built = walk(item)
+          if (built === НЕПРЕДСТАВИМО) return НЕПРЕДСТАВИМО
+          fields[key] = built
+        }
+        const constructor = module[pascal(value.variant)]
+        if (typeof constructor === "function") return constructor(fields)
+        if (borrowed === null) return НЕПРЕДСТАВИМО
+        const made = borrowed({})
+        made.variant = value.variant
+        made.fields = fields
+        return made
+      }
+      const record = {}
+      for (const [key, item] of Object.entries(value)) {
+        const built = walk(item)
+        if (built === НЕПРЕДСТАВИМО) return НЕПРЕДСТАВИМО
+        record[key] = built
+      }
+      return record
+    }
+    return value
+  }
+  return { walk, borrowed }
+}
+
+/**
+ * Две точки корпуса, которых прогон не считает, — и обе названы поимённо, с
+ * зубами. Обе в одной программе и обе об одном числе.
+ *
+ * `022-generate-parentheses` при испорченном `н = 42` это Каталан(42) ≈ 6·10²².
+ * Исключена здесь ЦЕНА, и это измерено, а не предположено: точку дождались до
+ * конца, и напечатанный JS дал на ней РОВНО ТОТ ЖЕ отказ, что интерпретатор, —
+ * `FLANG_RECURSION_LIMIT`, «функция «Строить скобки» исчерпала лимит шагов
+ * (5000000) на глубине вызовов 43», знак в знак. Только интерпретатор пришёл к
+ * нему за 1378 мс, а печать — за 1 290 026 мс, то есть за 21 минуту 30 секунд;
+ * двух таких точек хватило бы, чтобы семисекундный прогон стал сорокаминутным.
+ *
+ * Дорог не сам предел, а ход к нему: шаг печати ДОРОЖАЕТ по ходу, потому что
+ * накопитель копируется на каждом шаге. На той же точке: 10 000 шагов — 7 мс,
+ * 100 000 — 73 мс, 200 000 — 729 мс, 400 000 — 4257 мс; удвоение шагов даёт
+ * ушестерение времени. То же встаёт у Go, Rust, Python и Elixir; Java и C# ту
+ * же программу проходят. К уравниванию по мере это отношения не имеет: прогон с
+ * ГОЛЫМ `parse` встаёт ровно там же.
+ *
+ * Зубы: каждая точка обязана НАЙТИСЬ в сетке ровно один раз (иначе имя
+ * устарело и исключение стало бы прикрытием), а интерпретатор на ней обязан
+ * отказать пределом шагов — то есть исключается цена ожидания, а не
+ * разошедшийся ответ. Исключены ТОЧКИ, а не программа: из 56 точек
+ * `022-generate-parentheses` в прогон идут 48 (шесть остальных — чужой вариант,
+ * см. `borrowVariant`), а у Go, Rust, Python и Elixir не считается вся
+ * программа целиком.
+ */
+const ДОЛГИЕ_ТОЧКИ = [
+  { file: "022-generate-parentheses.flang", fn: "Строить скобки", args: [42, 0, 0, "", []] },
+  { file: "022-generate-parentheses.flang", fn: "Правильные скобки", args: [42] },
+]
+
+test("stdlib и leetcode: напечатанный JS совпадает с интерпретатором", async (t) => {
+  assert.ok(corpusPrograms.length >= 25, `программ на flang найдено слишком мало: ${corpusPrograms.length}`)
+
+  let points = 0
+  let functions = 0
+  let limited = 0
+  let skipped = 0
+  let unrepresentable = 0
+  const started = Date.now()
+
+  for (const { file, program } of corpusPrograms) {
+    const { module } = await buildOnce(file, program)
+    module.$newContext?.(ПРЕДЕЛЫ)
+    const { walk, borrowed } = corpusAdapt(program, module)
+    const hasSums = (program.types ?? []).some((type) => type !== null && typeof type === "object" && type.kind === "sum")
+    if (hasSums) {
+      assert.ok(borrowed !== null,
+        `${file}: программа объявляет сумму типов, а модуль не экспортирует ни одного конструктора`)
+    }
+
+    for (const fn of program.functions) {
+      const grid = functionGrid(fn)
+      if (grid.length === 0) continue
+      functions += 1
+      const emitted = module[exportName(fn.name)]
+      assert.equal(typeof emitted, "function", `${file}: модуль не экспортирует «${fn.name}»`)
+
+      for (const args of grid) {
+        const долгая = ДОЛГИЕ_ТОЧКИ.some((точка) =>
+          точка.file === file && точка.fn === fn.name && JSON.stringify(точка.args) === JSON.stringify(args))
+        if (долгая) {
+          /* Зуб исключения: интерпретатор на этой точке обязан отказать
+             ПРЕДЕЛОМ ШАГОВ. Значит исключается цена ожидания, а не разошедшийся
+             ответ, и если однажды точка станет считаться — тест это заметит. */
+          const byInterpreter = outcome(() => interpret(program, fn.name, args, ПРЕДЕЛЫ))
+          assert.equal(byInterpreter.ok, false, `${file} / «${fn.name}»: исключённая точка вдруг досчиталась`)
+          assert.equal(byInterpreter.code, "FLANG_RECURSION_LIMIT",
+            `${file} / «${fn.name}»: исключена точка, на которой интерпретатор даёт ${byInterpreter.code}`)
+          skipped += 1
+          continue
+        }
+        const adapted = args.map(walk)
+        if (adapted.some((value) => value === НЕПРЕДСТАВИМО)) {
+          /* Программа без сумм типов: построить вариант модулю нечем, и чужой
+             вариант на её границе непредставим (см. `borrowVariant`). Точка не
+             проверяется, но и не прячется — счёт ей ведётся, и он ограничен
+             сверху: растущая дыра обязана покраснеть. */
+          unrepresentable += 1
+          continue
+        }
+
+        const byInterpreter = outcome(() => interpret(program, fn.name, args, ПРЕДЕЛЫ))
+        const byEmitted = outcome(() => emitted(...adapted))
+        if (!byInterpreter.ok && byInterpreter.code === "FLANG_RECURSION_LIMIT") {
+          limited += 1
+          if (!byEmitted.ok) {
+            assert.equal(byEmitted.code, "FLANG_RECURSION_LIMIT",
+              `${file} / «${fn.name}»: интерпретатор упёрся в лимит, JS дал ${describeOutcome(byEmitted)}`)
+          }
+          continue
+        }
+        assert.ok(
+          sameOutcome(byInterpreter, byEmitted),
+          `${file} / «${fn.name}» на входе ${JSON.stringify(args) ?? "?"}: ` +
+            `интерпретатор дал ${describeOutcome(byInterpreter)}, напечатанный JS дал ${describeOutcome(byEmitted)}`,
+        )
+        points += 1
+      }
+    }
+  }
+
+  t.diagnostic(
+    `программ: ${corpusPrograms.length}, функций: ${functions}, сверенных входов: ${points}` +
+      `${limited > 0 ? `, из них по лимиту шагов только по коду: ${limited}` : ""}` +
+      `, непредставимых чужих вариантов: ${unrepresentable}, исключённых точек: ${skipped}` +
+      `, за ${Math.round((Date.now() - started) / 1000)} с`,
+  )
+  assert.ok(corpusPrograms.length >= 90, `программ корпуса ${corpusPrograms.length}, а было 94`)
+  assert.ok(functions >= 480, `функций со сверкой слишком мало: ${functions}`)
+  assert.ok(points > 7900, `сетка слишком редкая: ${points}`)
+  assert.equal(skipped, ДОЛГИЕ_ТОЧКИ.length,
+    `исключённых точек ${skipped} вместо ${ДОЛГИЕ_ТОЧКИ.length} — список исключений устарел`)
+  assert.ok(unrepresentable <= 739,
+    `непредставимых точек стало ${unrepresentable} против 739 — дыра растёт, а не закрывается`)
+})
+
+test("примеры stdlib и leetcode сходятся у напечатанного JS так же, как у интерпретатора", async (t) => {
+  let checked = 0
+  let unrepresentable = 0
+  for (const { file, program } of corpusPrograms) {
+    const { module } = await buildOnce(file, program)
+    module.$newContext?.(ПРЕДЕЛЫ)
+    const { walk } = corpusAdapt(program, module)
+    for (const fn of program.functions) {
+      const params = fn.params.map((param) => (typeof param === "string" ? param : param.name))
+      for (const example of fn.examples ?? []) {
+        if (!params.every((name) => Object.hasOwn(example.args ?? {}, name))) continue
+        const args = params.map((name) => example.args[name])
+        const adapted = args.map(walk)
+        if (adapted.some((value) => value === НЕПРЕДСТАВИМО)) {
+          unrepresentable += 1
+          continue
+        }
+        const byEmitted = outcome(() => module[exportName(fn.name)](...adapted))
+        assert.ok(byEmitted.ok,
+          `${file} / «${fn.name}» / «${example.name}»: напечатанный JS дал ${describeOutcome(byEmitted)}`)
+        assert.ok(
+          sameValue(byEmitted.value, interpret(program, fn.name, args)),
+          `${file} / «${fn.name}» / «${example.name}»: движки разошлись`,
+        )
+        assert.ok(
+          sameValue(byEmitted.value, example.expected),
+          `${file} / «${fn.name}» / «${example.name}»: ожидалось ${JSON.stringify(example.expected)}, ` +
+            `получено ${JSON.stringify(byEmitted.value)}`,
+        )
+        checked += 1
+      }
+    }
+  }
+  t.diagnostic(`сверенных примеров: ${checked}${unrepresentable > 0 ? `, непредставимых: ${unrepresentable}` : ""}`)
+  assert.ok(checked > 200, `примеров сверено слишком мало: ${checked}`)
+})
+
+/* ════════════ 13. сторож меры: отметка обязана ПОЯВИТЬСЯ ═══════════════════ */
+
+/**
+ * Программа, чьё доказательство держится на числовой мере.
+ *
+ * Она же у остальных семи целей (`emit-c.test.mjs`, «сторож меры», и далее), и
+ * намеренно та же: сторож у всех восьми целей один и тот же, значит и вход, на
+ * котором он обязан сработать, обязан быть один.
+ */
+const measureSource = `модуль «Счёт»
+
+тотальная функция «До нуля»
+  принимает н: число
+  возвращает число
+  если н не больше 0
+    то 0
+    иначе «До нуля» от (н минус 1)
+`
+
+/** Сколько раз слово `FLANG_MEASURE` встречается во всём напечатанном. */
+function упоминанийМеры(program) {
+  const весь = emitJs(program).files.map((file) => file.content).join("")
+  return (весь.match(/FLANG_MEASURE/gu) ?? []).length
+}
+
+test("сторож меры ПОЯВЛЯЕТСЯ в напечатанном JS, а не теряется обеими сторонами", () => {
+  /* Главная сверка двусторонняя, и этим слепа: снятая отметка теряется ОБЕИМИ
+     сторонами разом. Интерпретатор зовёт то же понижение, и на непомеченной
+     программе он досчитает ровно то, что досчитает непомеченный JS, — сверка
+     останется зелёной, а сторожа не будет ни у кого. Поэтому здесь проверяется
+     не совпадение, а ПОЯВЛЕНИЕ. */
+  assert.equal(упоминанийМеры(parse(measureSource)), 0,
+    "у голого разбора сторожа меры нет вовсе — иначе улика ниже ничего не значит")
+  assert.equal(упоминанийМеры(markMeasureGuards(parse(measureSource))), 1,
+    "помеченная программа обязана печатать сторожа")
+
+  /* И то же самое на настоящем корпусе, которым идёт главная сверка: он
+     грузится помеченным (`loadPrograms`), и сторожа обязаны в нём БЫТЬ. */
+  let несут = 0
+  let всего = 0
+  for (const { program } of corpusPrograms) {
+    const сколько = упоминанийМеры(program)
+    if (сколько > 0) несут += 1
+    всего += сколько
+  }
+  assert.ok(несут >= 43, `сторожа меры несут ${несут} программ корпуса из ${corpusPrograms.length}, а несли 43`)
+  assert.ok(всего >= 185, `упоминаний сторожа в печати корпуса ${всего}, а было 185`)
+})
+
+test("сторож меры: отказ у напечатанного JS дословно тот же, что у интерпретатора", async (t) => {
+  /* Доказательство по мере верно для вещественных чисел, а числа flang —
+     IEEE-754 double: `н минус 1` при большом |н| равен н, спуск не идёт, и
+     `тотальная` обещала бы завершение там, где его нет. Понижение перед печатью
+     ставит на доказанном мерой аргументе проверку убывания (`src/defunc.mjs`),
+     а вычислитель зовёт то же понижение — значит отказ у них обязан совпасть
+     КОДОМ И ТЕКСТОМ, а не «по смыслу».
+
+     Сетка — не выдумка: 2⁵⁴+4 и 1e308 это входы, где шаг ничего не меняет;
+     ±∞ и NaN — там же по другой причине; 0, 1, 7 и 2.5 — обычный спуск,
+     который сторож обязан пропустить неотличимо от программы без него. */
+  const program = markMeasureGuards(parse(measureSource))
+  const { module, content } = await build(program)
+  assert.match(content, /FLANG_MEASURE/u, "сторож не доехал до напечатанного JS")
+
+  const points = compare(program, module, "До нуля", [
+    [0], [1], [7], [2.5], [-3],
+    [18014398509481988], [1e308], [Infinity], [-Infinity], [NaN],
+  ])
+
+  /* Отказ обязан ПРИЙТИ С МАШИНЫ, а не только совпасть: на 2⁵⁴+4 шаг ничего не
+     меняет, и напечатанный модуль — тот самый артефакт, который получит
+     пользователь, — обязан отказать шестым видом. */
+  const ответ = outcome(() => module[exportName("До нуля")](18014398509481988))
+  assert.equal(ответ.ok, false, "на входе, где мера не убывает, напечатанный JS обязан отказать")
+  assert.equal(ответ.code, "FLANG_MEASURE", `с машины пришёл ${ответ.code}, а не шестой вид отказа`)
+  t.diagnostic(`сверенных входов: ${points}, с машины пришёл ${ответ.code}`)
 })

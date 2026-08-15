@@ -544,3 +544,49 @@ test("отказы печати: те же коды и тексты, что у �
   сверитьОтказ("имя модуля занято рантаймом", { flang: 1, module: "Flang", functions: [] })
   сверитьОтказ("файл занят рантаймом", { flang: 1, module: "flang runtime", functions: [] })
 })
+
+test("испорченный AST: те же отказы подготовки, что у эталона", () => {
+  /* Ни одна из этих программ не выходит из разборщика — их собирают руками
+     через `run --args`, мост FTS или чужой инструмент. Отказ здесь такой же
+     наблюдаемый, как печать, и повторяет `prepareProgram` интерпретатора. */
+  const тело = (body) => ({ flang: 1, module: "М", functions: [{ name: "Ф", params: [], returns: {}, body }] })
+  сверитьОтказ("программа не объект", [1, 2, 3])
+  сверитьОтказ("functions не список", { flang: 1, functions: "нет" })
+  сверитьОтказ("функция без имени", { flang: 1, functions: [{ params: [], returns: {}, body: лит(1) }] })
+  сверитьОтказ("функция объявлена дважды", {
+    flang: 1,
+    module: "М",
+    functions: [
+      { name: "Ф", params: [], returns: {}, body: лит(1) },
+      { name: "Ф", params: [], returns: {}, body: лит(2) },
+    ],
+  })
+  сверитьОтказ("функция без тела", { flang: 1, module: "М", functions: [{ name: "Ф", params: [], returns: {} }] })
+  сверитьОтказ("params не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: "нет", returns: {}, body: лит(1) }],
+  })
+  сверитьОтказ("параметр без имени", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [{ тип: 1 }], returns: {}, body: лит(1) }],
+  })
+  сверитьОтказ("postconditions не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: {}, body: лит(1), postconditions: "нет" }],
+  })
+  сверитьОтказ("постусловие без expr", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: {}, body: лит(1), postconditions: [{ name: "П" }] }],
+  })
+  сверитьОтказ("items не список", тело({ kind: "list", items: "нет" }))
+  сверитьОтказ("аргументы формы не список", тело({ kind: "builtin", name: "длина", args: "нет" }))
+  сверитьОтказ("аргументы вызова не список", {
+    flang: 1,
+    module: "М",
+    functions: [{ name: "Ф", params: [], returns: {}, body: { kind: "call", name: "Ф", args: "нет" } }],
+  })
+})

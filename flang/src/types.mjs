@@ -4715,7 +4715,14 @@ function recordType(expr, env, expected, ctx, fnName) {
     const actual = inferExpr(given[name], env, hasParams(намёк) ? null : намёк, ctx, fnName)
     if (typeParams.length > 0) matchAgainst(type, actual, bindings)
     const settled = substitute(type, bindings)
-    if (!sameType(actual, settled)) {
+    /* `годится`, а не `sameType`, и это НЕ косметика. `sameType` — равенство
+       формы, для которого `нат` и `число` один и тот же double; поле варианта
+       давно сверяется `годится`, а поле записи оставалось равенством, и из-за
+       этого `запись «Ящик» с вес равным (0 минус 1)` при `вес: нат` не давало
+       ни одной диагностики. Хуже: поле ОТМЫВАЛО значение — из записи оно
+       выходило уже с типом `нат`, и ядро доказательства читало объявленный тип
+       поля как факт «не меньше 0». То есть дыра позволяла доказать ложь. */
+    if (!годится(actual, settled)) {
       ctx.report("FLANG_TYPE", `поле «${name}» записи «${expr.type}»: ожидался ${typeName(settled)}, получен ${typeName(actual)}`, given[name])
     }
   }

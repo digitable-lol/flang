@@ -683,7 +683,7 @@ test("ЗАКАЗ 3: связанное имя В ЗАКЛЮЧЕНИИ по-пр�
   const примером = первый.refusals.find((о) => /база «Одиночка»/u.test(о.message))
   assert.ok(примером !== undefined, JSON.stringify(первый.refusals))
   assert.equal(примером.code, КОДЫ.induction)
-  assert.match(примером.message, /осталось свободным «глубина»/u)
+  assert.match(примером.message, /в заключении случая «Одиночка» свободны «глубина»/u)
 
   /* И допущением тоже нет: у `«Одиночка»` полей своего типа ноль. */
   const допущением = сглубиной.replace(

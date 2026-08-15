@@ -712,6 +712,11 @@ for (const запись of НЕ_БЕРЁТ) {
 const ОХВАТ = [
   "flang/examples/leetcode/013-roman-to-integer.flang «Значение цифры»",
   "flang/examples/measure/natural.flang «Сумма пары»",
+  /* Первая функция охвата, пришедшая НЕ от `нат`, а от точного десятичного, и
+     первая, где цель сводится не сложением, а ОСТАТКОМ. Держится она на трёх
+     фактах подписи `сумма: сотых` — дно, потолок и целость, — и третий из них
+     ядро до этой работы не читало вовсе. */
+  "flang/examples/money/exact-decimal.flang «Копеек в остатке»",
   "flang/examples/rosetta/roman-numerals-english.flang «Value of a symbol»",
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
   "flang/proof/examples/corpus-natural.flang «Сумма пары»",

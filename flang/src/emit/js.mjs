@@ -586,6 +586,37 @@ function $b_hvost(value) {
   return list.slice(1)
 }
 
+/* ── Доказанный путь тех же четырёх форм ───────────────────────────────────
+ *
+ * Частичная форма отказывает не всегда, а на пустом: `голова` пустого списка,
+ * `код символа` пустой строки, `разделить` по пустому разделителю. Там, где
+ * непустота ДОКАЗАНА проверкой типов (`src/types.mjs`, `длинаНиз`), узел
+ * приезжает с отметкой `доказана`, и печать зовёт эти помощники — те же
+ * действия без проверки, которой нечего ловить.
+ *
+ * Сверка типа остаётся: `$expectList` ловит НЕ пустоту, а другой вид значения,
+ * и его гарантирует не непустота, а сама проверка типов. Снимается ровно один
+ * сторож — тот, что назван в `ЧАСТИЧНЫЕ` (`src/failures.mjs`).
+ */
+function $b_golova_dokazano(value) {
+  return $expectList("голова", value, "аргумент")[0]
+}
+
+function $b_hvost_dokazano(value) {
+  return $expectList("хвост", value, "аргумент").slice(1)
+}
+
+function $b_razdelit_dokazano(text, separator) {
+  $expectString("разделить", text, "строка")
+  $expectString("разделить", separator, "разделитель")
+  return text.split(separator)
+}
+
+function $b_kod_simvola_dokazano(text) {
+  $expectString("код символа", text, "строка")
+  return Array.from(text)[0].codePointAt(0)
+}
+
 // Элемент по номеру. Массив JS — обращение по индексу без обхода; проверка
 // границ повторяет вычислитель дословно, включая текст отказа.
 function $b_element(index, value) {
@@ -780,6 +811,10 @@ runtimeEntry("$b_k_stroke", ["$fail", "$typeName"], fromSource($b_k_stroke))
 runtimeEntry("$b_pusto", ["$fail", "$isList", "$typeName"], fromSource($b_pusto))
 runtimeEntry("$b_golova", ["$fail", "$expectList"], fromSource($b_golova))
 runtimeEntry("$b_hvost", ["$fail", "$expectList"], fromSource($b_hvost))
+runtimeEntry("$b_golova_dokazano", ["$expectList"], fromSource($b_golova_dokazano))
+runtimeEntry("$b_hvost_dokazano", ["$expectList"], fromSource($b_hvost_dokazano))
+runtimeEntry("$b_razdelit_dokazano", ["$expectString"], fromSource($b_razdelit_dokazano))
+runtimeEntry("$b_kod_simvola_dokazano", ["$expectString"], fromSource($b_kod_simvola_dokazano))
 runtimeEntry("$b_element", ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"], fromSource($b_element))
 runtimeEntry("$b_dobavit", ["$expectList"], fromSource($b_dobavit))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
@@ -818,6 +853,31 @@ const BUILTIN_HELPERS = new Map([
   ["остаток от", "$b_ostatok_ot"],
   ["процентов от", "$b_procentov_ot"],
 ])
+
+/**
+ * Помощники тех же форм БЕЗ сторожа частичности.
+ *
+ * Выбираются по отметке `доказана` на узле — её кладёт передний край
+ * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов. Печать здесь
+ * ничего не доказывает и доказать не может: анализ живёт в `src/types.mjs`, а
+ * копия печати на самом языке его не видит вовсе (круг импортов), и обе
+ * стороны обязаны читать ОДНУ отметку, иначе разойдутся байтами.
+ */
+const ДОКАЗАННЫЕ_ПОМОЩНИКИ = new Map([
+  ["голова", "$b_golova_dokazano"],
+  ["хвост", "$b_hvost_dokazano"],
+  ["разделить", "$b_razdelit_dokazano"],
+  ["код символа", "$b_kod_simvola_dokazano"],
+])
+
+/** Помощник формы: со сторожем или без — по отметке анализа на узле. */
+function builtinHelper(canonical, node) {
+  if (node?.доказана === true) {
+    const доказанный = ДОКАЗАННЫЕ_ПОМОЩНИКИ.get(canonical)
+    if (доказанный !== undefined) return доказанный
+  }
+  return BUILTIN_HELPERS.get(canonical)
+}
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -1817,7 +1877,7 @@ function emitValue(expr, ctx, out, pad) {
       }
       expectArity(canonical, args.length, node.span)
       const rendered = emitOperands(args, ctx, out, pad)
-      const helper = ctx.use(BUILTIN_HELPERS.get(canonical))
+      const helper = ctx.use(builtinHelper(canonical, node))
       return { code: `${helper}(${rendered.join(", ")})`, pure: false }
     }
     case "binary": {

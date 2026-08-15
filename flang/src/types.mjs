@@ -2757,6 +2757,25 @@ function reportUnsolved(names, bindings, label, ctx, at) {
   return unsolved.length === 0
 }
 
+/**
+ * Объявленные поля записи или варианта: имя → тип.
+ *
+ * Пометка «может отсутствовать» приезжает сюда ДВУМЯ ДОРОГАМИ, и обе обязаны
+ * кончиться одним типом:
+ *
+ *   • мост из FTS (`compat.mjs`) читает `Телефон | undefined` и ставит
+ *     `optional: true` на САМ ТИП поля;
+ *   • парсер flang читает `телефон иногда является строкой` и ставит
+ *     `optional: true` на САМО ПОЛЕ (`parseRecordField`), потому что в AST
+ *     тип поля — это выражение типа, общее с параметрами и возвратами, а
+ *     «иногда» сказано не про строку, а про наличие поля.
+ *
+ * Ниже по коду про поля не знает никто: `checkValue`, конструктор записи и
+ * `таблицаВхода` спрашивают ровно тип. Значит пометку надо перенести на тип
+ * ЗДЕСЬ — иначе вторая дорога теряет её целиком, и `иногда является`,
+ * написанное на flang, требуется как обязательное: `--args '{"сумма":10}'`
+ * отвергалось словами «не задано поле «комментарий» записи «Анкета»».
+ */
 function fieldMap(fields, ctx, at) {
   const result = new Map()
   for (const field of fields ?? []) {
@@ -2768,7 +2787,7 @@ function fieldMap(fields, ctx, at) {
       ctx.report("FLANG_TYPE", `поле «${field.name}» объявлено дважды`, at)
       continue
     }
-    result.set(field.name, normalizeType(field.type, ctx, at))
+    result.set(field.name, optional(normalizeType(field.type, ctx, at), field))
   }
   return result
 }

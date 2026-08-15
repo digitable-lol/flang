@@ -197,6 +197,10 @@ fl_status kompilyator_flang_sozdat_sborka_strelki(fl_ctx *ctx, fl_value r, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sborka_zakona(fl_ctx *ctx, fl_value r, fl_value primery, fl_value *out, fl_error *error);
 
+/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «доказано», «новая». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
+
 /* Запись FTS «Обрезка справа»: «готово», «пробелы». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_obrezka_sprava(fl_ctx *ctx, fl_value gotovo, fl_value probely, fl_value *out, fl_error *error);
@@ -5973,11 +5977,32 @@ fl_status kompilyator_flang_stroka_zakona(fl_ctx *ctx, fl_value sborka, fl_value
 fl_status kompilyator_flang_razobrat_teoremu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «С теоремой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_s_teoremoy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Со значением теоремы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param r — «р»: «Разборщик»
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_so_znacheniem_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Тело теоремы».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
@@ -5989,37 +6014,90 @@ fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value 
  * Хвостовой самовызов развёрнут в цикл: стек не растёт.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_oboyti_stroki_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка теоремы».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_stroka_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка дано теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dano_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка данного объекта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dannogo_obekta(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка переменной теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_peremennoy_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка допущения теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dopuscheniya_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка утверждаем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_utverzhdaem(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка доказано».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dokazano(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка данных теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
- * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_stroka_dannyh_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_dannyh_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка морфизма теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
  * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_stroka_morfizma_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
 
@@ -6027,11 +6105,31 @@ fl_status kompilyator_flang_stroka_morfizma_teoremy(fl_ctx *ctx, fl_value sborka
  * Функция flang «Строка вывода теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
  * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_stroka_vyvoda_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова старой формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_slova_staroy_formy(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать теорему».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_sobrat_teoremu(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать файл-функтор».

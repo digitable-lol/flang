@@ -42,6 +42,8 @@ import { createRuntime } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import {
+  GREETING,
+  HELP,
   createSession,
   formatDiagnostic,
   formatResult,
@@ -541,6 +543,14 @@ test("значения печатаются поверхностью языка 
       `печать ${JSON.stringify(значение)}`,
     )
   }
+})
+
+test("справка и приветствие — тот же байт, что у эталона", () => {
+  /* Справка приходит и через `.помощь` в корпусе, но приветствие — нет: его
+     печатает терминал при запуске, и через `Принять` оно не проходит вовсе.
+     Без этой сверки два экрана текста лежали бы в слое непроверенными. */
+  assert.equal(зов("Справка оболочки", {}), HELP)
+  assert.equal(зов("Приветствие оболочки", {}), GREETING)
 })
 
 test("диагностика печатается кодом, местом и сообщением — тем же байтом", () => {

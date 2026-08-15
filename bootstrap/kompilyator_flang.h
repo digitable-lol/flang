@@ -5100,6 +5100,16 @@ fl_status kompilyator_flang_obyavlenie_strelkoy(fl_ctx *ctx, fl_value r, fl_valu
 fl_status kompilyator_flang_obyavlenie_paroy(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Объявление алгеброй».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_algebroy(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Разобрать единицу».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -5247,6 +5257,164 @@ fl_status kompilyator_flang_stroka_pary_morfizmov(fl_ctx *ctx, fl_value sborka, 
  * @return значение: «Сборка утилиты»
  */
 fl_status kompilyator_flang_para_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value klyuch, fl_value beda_pervogo, fl_value beda_i, fl_value beda_vtorogo, fl_value slovo, fl_value beda_slova, fl_value beda_obraza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать моноид».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_monoid(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Части моноида».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_chasti_monoida(fl_ctx *ctx, fl_value r, fl_value uzel, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_monoida(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_monoida(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_monoida(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка операции моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_operacii_monoida(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка единицы моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_edinicy_monoida(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка обращения моноида».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_obrascheniya_monoida(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать монаду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_monadu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Части монады».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_chasti_monady(fl_ctx *ctx, fl_value r, fl_value uzel, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело монады».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_monady(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки монады».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_monady(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка монады».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_monady(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка соединения монады».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_soedineniya_monady(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Звено цепочки».

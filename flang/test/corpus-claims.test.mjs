@@ -716,6 +716,8 @@ const ОХВАТ = [
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
   "flang/proof/examples/corpus-natural.flang «Сумма пары»",
   "flang/self/emit-c.flang «Байтов у символа»",
+  "flang/self/interpret.flang «Арность прочих»",
+  "flang/self/interpret.flang «Арность формы»",
   "flang/self/iso.flang «Предел сетки изоморфизма»",
   "flang/self/monad.flang «Предел сетки монады»",
   "flang/self/monad.flang «Предел стрелок»",
@@ -767,12 +769,12 @@ test("а «по объявленным типам» ведомость гово�
   assert.match(з.says, /^доказано по объявленным типам аргументов/u)
 })
 
-test("охват: двенадцать из пятнадцати НАПИСАНЫ — они в корпусе неподвижной точки", () => {
+test("охват: четырнадцать из семнадцати НАПИСАНЫ — они в корпусе неподвижной точки", () => {
   /* Каталоги — не список из головы: он снят с `исходникиFlang`
      (`flang/test/self-parser.test.mjs`), где и стоит корпус побайтовой сверки. */
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const нельзя = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
-  assert.equal(нельзя.length, 12, `закрытых стало ${нельзя.length}: ${нельзя.join("; ")}`)
+  assert.equal(нельзя.length, 14, `закрытых стало ${нельзя.length}: ${нельзя.join("; ")}`)
 
   /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт этой работы сказал
      «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а `self`
@@ -786,7 +788,7 @@ test("охват: двенадцать из пятнадцати НАПИСАН�
     "flang/core/": 0,
     "flang/examples/leetcode/": 1,
     "flang/examples/measure/": 1,
-    "flang/self/": 10,
+    "flang/self/": 12,
   })
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ, И ОН ПЕРЕВЁРНУТ. Раньше проверялось «ни у одной функции
      этих каталогов постусловия нет» — правда до 15 августа 2026, ложь после.

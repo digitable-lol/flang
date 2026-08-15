@@ -953,11 +953,14 @@ function renderFunction(fn, shared) {
     }
     body.push(`  *result = ${resultIdent};`, "  return FL_OK;")
   } else if (selfTail) {
+    /* Счёт витков стоит НЕ здесь, а на самом хвостовом самовызове (см. ветку
+       `call` в emitTail): вход в функцию уже посчитан fl_enter, и второй tick
+       в начале цикла считал бы его дважды. Измерено: на «Правильные скобки»
+       от 9 бэкенд C насчитывал 30 631 шаг там, где остальные семь целей
+       насчитывают 23 713, — ровно по одному лишнему шагу на каждый вход в
+       функцию с хвостовым самовызовом. Расхождение восьми целей между собой —
+       отказ, а не заметка (AGENTS.md). */
     body.push("  for (;;) {")
-    /* Оборот цикла — виток: хвостовой самовызов глубину не растит, поэтому
-       fl_enter здесь ничего не поймает, и незавершающаяся функция без этого
-       счётчика крутилась бы вечно. */
-    body.push(`    FL_TRY(fl_tick(ctx, ${cstring(fn.name)}, error));`)
     emitTail(fn.body, ctx, body, "    ")
     body.push("  }")
   } else {
@@ -1158,7 +1161,11 @@ function emitTail(expr, ctx, out, pad) {
         ctx.params.forEach((param, index) => {
           out.push(`${pad}${param} = ${temps[index]};`)
         })
-        out.push(`${pad}continue;`)
+        out.push(
+          `${pad}/* виток цикла — тоже шаг: незавершающийся самовызов обязан упереться в лимит */`,
+          `${pad}FL_TRY(fl_tick(ctx, ${cstring(ctx.fn.name)}, error));`,
+          `${pad}continue;`,
+        )
         return
       }
       if (ctx.members !== null && ctx.members.has(node.name)) {

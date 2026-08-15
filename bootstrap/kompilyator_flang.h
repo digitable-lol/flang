@@ -721,11 +721,12 @@ fl_status kompilyator_flang_variant_net_funkcii(fl_ctx *ctx, fl_value *out, fl_e
 fl_status kompilyator_flang_variant_est_chislo(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
 
-/* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
+/* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_vid_neizvestnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_vid_neotricatelnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_stroki(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_priznaka(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_nichego(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -11575,6 +11576,34 @@ fl_status kompilyator_flang_dno_tochnyh(fl_ctx *ctx, fl_value *result, fl_error 
  * @return значение: «Тип»
  */
 fl_status kompilyator_flang_tip_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value celoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип по концам».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param niz — «низ»: число
+ * @param verh — «верх»: число
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_tip_po_koncam(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Знак уцелел».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param niz — «низ»: число
+ * @param verh — «верх»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_znak_ucelel(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип неотрицательного».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_tip_neotricatelnogo(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отрезок годен».

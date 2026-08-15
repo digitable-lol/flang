@@ -137,7 +137,7 @@ function сложить(записи) {
        в `proved`: пятое слово ведомости отвечает на другой вопрос — сколькими
        утверждениями покрыт БЕСКОНЕЧНЫЙ носитель, — и свернув его, свод вернул бы
        ту самую потерю различий, ради устранения которой он и написан. */
-    claims: { total: 0, proved: 0, "proved-induction": 0, grid: 0, declared: 0, refused: 0, steps: 0 },
+    claims: { total: 0, proved: 0, "proved-induction": 0, "proved-declaration": 0, grid: 0, declared: 0, refused: 0, steps: 0 },
   }
   for (const { ведомость } of записи) {
     if (ведомость === null) continue
@@ -173,6 +173,11 @@ function сложить(записи) {
          ведомость одного файла (`proof.mjs`, `итоги_`), и расходиться этим двум
          счётам нельзя. */
       if (запись.verdict === "proved-induction") итог.claims["proved-induction"] += 1
+      /* И второе такое же уточнение, по той же причине: `proved-declaration`
+         отвечает на вопрос «сколько утверждений выведено ОДНИМ объявлением типа,
+         без единого написанного терма». Оно тоже считается дважды — в `proved` и
+         здесь, — потому что доказанность у них одна, а способ разный. */
+      if (запись.by === "declaration") итог.claims["proved-declaration"] += 1
       if (запись.verdict === "proved-induction") итог.claims.proved += 1
       else if (запись.verdict in итог.claims) итог.claims[запись.verdict] += 1
     }
@@ -233,8 +238,9 @@ function печать(свод, поФайлам) {
     `  на сетке: ${и.laws.grid}, значений в сетках ${и.laws.gridValues}, троек ${и.laws.gridPoints}`,
     `  на веру:  ${и.laws.assumed}`,
     `утверждения о поведении (постусловия и теоремы):`,
-    `  доказано ядром (терм принят):      ${и.claims.proved}`,
+    `  доказано ядром (обо ВСЕХ входах):  ${и.claims.proved}`,
     `  из них индукцией по объявленной сумме: ${и.claims["proved-induction"]}`,
+    `  из них по объявленному типу аргумента: ${и.claims["proved-declaration"]}`,
     `  сетка (примеры или закон):         ${и.claims.grid}`,
     `  объявлено, не доказано:            ${и.claims.declared}`,
     `  отвергнуто ядром:                  ${и.claims.refused}`,

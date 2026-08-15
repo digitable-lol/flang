@@ -343,6 +343,58 @@ const батут = {
   ],
 }
 
+/**
+ * Программа, где сторожа ОБА сразу. В репозитории такой нет ни одной: спуски
+ * есть у 41 программы корпуса, сторожа постоянного шага — у трёх, и множества
+ * эти не пересекаются. Значит сверка выше видела каждый вид поодиночке, а
+ * вместе — ни разу; а расходиться им есть где: имена сторожей раздаются из
+ * одного списка занятых, и порядок «сперва шаг, потом спуск» наблюдаем в
+ * напечатанном C.
+ */
+const обеМеры = {
+  flang: 1,
+  module: "Обе меры",
+  functions: [
+    {
+      name: "До нуля",
+      total: true,
+      params: [{ name: "н", type: { kind: "number" } }],
+      returns: { kind: "number" },
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "lte", left: имя("н"), right: лит(0) },
+        then: лит(0),
+        else: { kind: "call", name: "До нуля", args: [{ kind: "binary", op: "sub", left: имя("н"), right: лит(1) }] },
+      },
+    },
+    {
+      name: "НОД",
+      total: true,
+      params: [{ name: "а", type: { kind: "number" } }, { name: "б", type: { kind: "number" } }],
+      returns: { kind: "number" },
+      decreases: имя("б"),
+      body: {
+        kind: "if",
+        cond: { kind: "binary", op: "lte", left: имя("б"), right: лит(0) },
+        then: имя("а"),
+        else: { kind: "call", name: "НОД", args: [имя("б"), { kind: "binary", op: "mod", left: имя("а"), right: имя("б") }] },
+      },
+    },
+  ],
+}
+
+test("оба сторожа на одной программе: понижения ставят их одинаково и в том же порядке", () => {
+  const итог = checkTotality(обеМеры)
+  assert.equal(итог.guards.length, 1, "сторож постоянного шага обязан быть ровно один")
+  assert.equal(итог.descents.length, 1, "спуск обязан быть ровно один")
+  const помеченная = markMeasureGuards(обеМеры)
+  assert.ok(Array.isArray(помеченная.measures) && помеченная.measures.length === 1, "текст сторожа шага не доехал")
+  assert.ok(Array.isArray(помеченная.descents) && помеченная.descents.length === 1, "тройка спуска не доехала")
+  сверить("обе меры", помеченная)
+  const c = emitC(помеченная).files.map((файл) => файл.content).join("")
+  assert.match(c, /FLANG_MEASURE/u)
+})
+
 test("взаимная хвостовая рекурсия: батут печатается так же", () => {
   сверить("батут", батут)
   const исходникC = исходникМодуля(напечатать(батут).files)

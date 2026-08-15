@@ -891,6 +891,55 @@ public static class Flang
         return Value.List(next);
     }
 
+    /* ── Доказанный путь четырёх форм: то же без сторожа частичности ────────
+     *
+     * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+     * ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел
+     * приезжает с отметкой «доказана», и печать зовёт эти методы. Сверка типа
+     * остаётся: ExpectList ловит не пустоту, а другой вид значения. */
+
+    /// <summary>«разделить … по …» с доказанно непустым разделителем.</summary>
+    public static Value BSplitProven(Ctx ctx, Value source, Value separator)
+    {
+        string value = ExpectString("разделить", source, "строка");
+        string mark = ExpectString("разделить", separator, "разделитель");
+        var parts = new List<Value>();
+        int from = 0;
+        for (; ; )
+        {
+            int found = value.IndexOf(mark, from, StringComparison.Ordinal);
+            if (found < 0)
+            {
+                parts.Add(Value.Text(value.Substring(from)));
+                break;
+            }
+            parts.Add(Value.Text(value.Substring(from, found - from)));
+            from = found + mark.Length;
+        }
+        return Value.List(parts.ToArray());
+    }
+
+    /// <summary>«код символа» доказанно непустой строки.</summary>
+    public static Value BCharCodeProven(Ctx ctx, Value source)
+    {
+        return Value.Number(char.ConvertToUtf32(ExpectString("код символа", source, "строка"), 0));
+    }
+
+    /// <summary>«голова» доказанно непустого списка.</summary>
+    public static Value BHeadProven(Ctx ctx, Value value)
+    {
+        return ExpectList("голова", value, "аргумент")[0];
+    }
+
+    /// <summary>«хвост» доказанно непустого списка.</summary>
+    public static Value BTailProven(Ctx ctx, Value value)
+    {
+        Value[] items = ExpectList("хвост", value, "аргумент");
+        var next = new Value[items.Length - 1];
+        Array.Copy(items, 1, next, 0, next.Length);
+        return Value.List(next);
+    }
+
     /// <summary>
     /// «элемент N в СПИСОК». Список flang здесь — массив, поэтому N-й элемент
     /// стоит того же, что первый: обхода нет. Границы и текст отказа повторяют

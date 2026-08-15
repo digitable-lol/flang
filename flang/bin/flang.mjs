@@ -655,10 +655,10 @@ export function ownFunctionNames(program) {
 
 export async function loadProgramFromSource(source, file = "-") {
   const { program, own } = await readProgram(source, file)
-  const отмеченная = await markMeasure(program)
-  /* Имена кладутся ПОСЛЕ отметки меры, а не до: там, где сторожа есть,
-     `markMeasureGuards` возвращает новый объект, и ключом обязана быть та
-     программа, которую получит вызывающий. */
+  const отмеченная = await markNonEmpty(await markMeasure(program))
+  /* Имена кладутся ПОСЛЕ обеих отметок — меры и непустоты, — а не до: там, где
+     сторожа есть, `markMeasureGuards` и `markNonEmpty` возвращают новый объект,
+     и ключом обязана быть та программа, которую получит вызывающий. */
   if (own !== null) СВОИ_ФУНКЦИИ.set(отмеченная, own)
   return отмеченная
 }
@@ -724,6 +724,34 @@ async function markMeasure(program) {
     const { markMeasureGuards } = await import(new URL("../src/totality.mjs", import.meta.url).href)
     if (typeof markMeasureGuards !== "function") return program
     return markMeasureGuards(program)
+  } catch {
+    return program
+  }
+}
+
+/**
+ * Вторая отметка переднего края — и она про ДРУГОГО сторожа рантайма.
+ *
+ * Сторожей в напечатанном коде два (см. `flang/scripts/proof-ledger.mjs`):
+ * сторож меры и частичная форма. Первый ставится там, где завершение доказано
+ * и надзор остался за IEEE-754; второй — там, где встроенная форма определена
+ * не на всех значениях своего типа. Отметка выше говорит, где сторожа МЕРЫ
+ * ставить; эта — где сторожа частичной формы ставить НЕ НАДО, потому что её
+ * условие доказано (`src/types.mjs`, `markNonEmpty`).
+ *
+ * Идёт ПОСЛЕ отметки меры, и порядок здесь обязательный: отметка меры
+ * перестраивает дерево, а доказательство привязано к узлам того дерева,
+ * которое уезжает в печать. Поменяй порядок — отметка легла бы на узлы,
+ * выброшенные следующим шагом, и снялось бы ноль мест молча.
+ *
+ * Программа, где доказывать нечего, проходит насквозь тем же объектом: цена
+ * проверки типов платится только там, где частичные формы есть.
+ */
+async function markNonEmpty(program) {
+  try {
+    const { markNonEmpty: отметить } = await import(new URL("../src/types.mjs", import.meta.url).href)
+    if (typeof отметить !== "function") return program
+    return отметить(program)
   } catch {
     return program
   }

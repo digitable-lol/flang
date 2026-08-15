@@ -612,6 +612,17 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
 fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 
+/* ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+ *
+ * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+ * ДОКАЗАНА проверкой типов (`flang/src/types.mjs`, `длинаНиз`), узел приезжает
+ * с отметкой `доказана`, и печать зовёт эти функции. Сверка типа остаётся:
+ * `fl_expect_list` ловит не пустоту, а другой вид значения. */
+fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
+fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_golova_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+
 /* ───────────────────────────── батут ───────────────────────────── */
 
 /*

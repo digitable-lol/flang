@@ -599,6 +599,33 @@ test("связывание полей варианта списком имён, 
 test("настройки печати: путь, база индексации, предел глубины", () => {
   требовать("без модуля", { flang: 1, functions: [] })
   требовать("свой путь и база 0", { flang: 1, module: "Имя", functions: [] }, { path: "своё.js", indexBase: 0, maxDepth: 7 })
+  /* Пустая программа рантайма не печатает вовсе, поэтому база индексации и
+     пределы в ней невидимы: сверять там нечего. Нужна программа, которая
+     ДЕЙСТВИТЕЛЬНО берёт `$INDEX_BASE` (встроенная «символ») и считает глубину
+     (рекурсия), — только тогда оба блока попадают в вывод. */
+  const сИндексом = {
+    flang: 1,
+    module: "Индекс",
+    functions: [
+      {
+        name: "Первый",
+        params: [{ name: "т", type: { kind: "string" } }],
+        returns: { kind: "string" },
+        body: {
+          kind: "if",
+          cond: { kind: "binary", op: "eq", left: { kind: "builtin", name: "длина", args: [имя("т")] }, right: лит(0) },
+          then: лит(""),
+          else: { kind: "call", name: "Первый", args: [{ kind: "builtin", name: "символ", args: [лит(1), имя("т")] }] },
+        },
+      },
+    ],
+  }
+  требовать("база 1 и пределы по умолчанию", сИндексом)
+  требовать("база 0 и свои пределы", сИндексом, { indexBase: 0, maxDepth: 7, maxSteps: 13 })
+  const свои = напечатать(сИндексом, { indexBase: 0, maxDepth: 7, maxSteps: 13 }).files[0].content
+  assert.ok(свои.includes("const $INDEX_BASE = 0"), "база индексации не доехала")
+  assert.ok(свои.includes("const $DEFAULT_MAX_DEPTH = 7"), "предел глубины не доехал")
+  assert.ok(свои.includes("const $DEFAULT_MAX_STEPS = 13"), "предел шагов не доехал")
 })
 
 test("одноимённые вариант и функция дают разные идентификаторы", () => {

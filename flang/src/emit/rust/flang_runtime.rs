@@ -73,7 +73,7 @@
 // длиной 8, а не 5, а срез по байтовому индексу ещё и паниковал бы на границе
 // символа.
 
-use std::cell::Cell;
+use std::cell::{Cell, Ref, RefCell};
 use std::fmt;
 use std::rc::Rc;
 
@@ -132,26 +132,57 @@ pub struct Field {
     pub value: Value,
 }
 
-/// Элементы списка: общий массив плюс начало.
+/// Элементы списка: общий массив плюс начало и конец ЭТОГО списка.
 ///
 /// Начало — это и есть «хвост»: суффикс списка не копируется, а разделяется.
 /// Значения flang неизменяемы, поэтому разделять безопасно, а рекурсия «голова
 /// и хвост» из квадратичной становится линейной.
+///
+/// ── Конец, а не «до конца массива»: «добавить» за постоянное время ─────────
+///
+/// Раньше длина бралась как `data.len() - start`, а «добавить» копировало весь
+/// список. Копия ВЕРНА, но стоит O(длины) за вызов, и накопление списка n
+/// вызовами стоит O(n²). Это не теория: точка сетки
+/// `«Строить скобки» от 42 и 0 и 0 и "" и []` при объявленном пределе
+/// 5 000 000 шагов упиралась в предел через ДВАДЦАТЬ МИНУТ вместо секунды —
+/// от вечного цикла неотличимо. Тот же предел на той же точке напечатанный C
+/// берёт за 1,3 с, и именно потому, что там «добавить» сделано за постоянное
+/// время (`fl_b_dobavit` в `flang_runtime.c`, приём «запас + filled»).
+///
+/// Здесь тот же приём и тот же инвариант, только вместо арены — общий `Vec`:
+///
+///   длина общего массива — это число ячеек, УЖЕ кем-то занятых; оно только
+///   растёт, а занять ячейку `end` вправе единственный список — тот, у кого
+///   `end` совпал с этой длиной.
+///
+/// Отсюда неизменяемость: ячейки `start…end−1` не пишет никто и никогда, а
+/// ячейку за концом занимают не более одного раза за жизнь массива — второе
+/// «добавить» к тому же списку видит занято > своего конца и уходит на копию.
+/// Разветвление
+///
+///     пусть «а» равно (добавить 1 к «с»)   ← занимает ячейку n, занято = n+1
+///     пусть «б» равно (добавить 2 к «с»)   ← конец n ≠ занято → копия
+///
+/// даёт два независимых списка, и ни один не портит «с». Удвоение запаса берёт
+/// на себя сам `Vec`, поэтому за n «добавить» массив перевыделяется log₂n раз,
+/// а не n.
 #[derive(Debug, Clone)]
 pub struct Items {
-    data: Rc<Vec<Value>>,
+    data: Rc<RefCell<Vec<Value>>>,
     start: usize,
+    end: usize,
 }
 
 impl Items {
     /// Список из готового массива.
     pub fn new(data: Vec<Value>) -> Items {
-        Items { data: Rc::new(data), start: 0 }
+        let end = data.len();
+        Items { data: Rc::new(RefCell::new(data)), start: 0, end }
     }
 
     /// Число элементов.
     pub fn len(&self) -> usize {
-        self.data.len().saturating_sub(self.start)
+        self.end.saturating_sub(self.start)
     }
 
     /// Пуст ли список.
@@ -160,23 +191,60 @@ impl Items {
     }
 
     /// Элемент по индексу от нуля; `None` вместо паники за границей.
-    pub fn get(&self, index: usize) -> Option<&Value> {
-        self.data.get(self.start.checked_add(index)?)
+    ///
+    /// Отдаётся копия значения, а не ссылка: за концом этого списка в общем
+    /// массиве могут лежать чужие ячейки, и заимствование пришлось бы держать
+    /// живым дольше, чем нужно вызывающему. Копия значения flang — это один
+    /// инкремент счётчика ссылок.
+    pub fn get(&self, index: usize) -> Option<Value> {
+        let at = self.start.checked_add(index)?;
+        if at >= self.end {
+            return None;
+        }
+        self.data.borrow().get(at).cloned()
     }
 
-    /// Все элементы подряд.
-    pub fn as_slice(&self) -> &[Value] {
-        self.data.get(self.start..).unwrap_or(&[])
+    /// Все элементы подряд, под заимствованием общего массива.
+    ///
+    /// Заимствование держать МОЖНО ровно до тех пор, пока не исполняется код
+    /// программы: «добавить» на живом заимствовании уйдёт на копию (см.
+    /// `grown`), то есть сработает верно, но дороже. Там, где во время обхода
+    /// исполняется тело свёртки или «отобразить», берётся `snapshot`.
+    pub fn as_slice(&self) -> Ref<'_, [Value]> {
+        Ref::map(self.data.borrow(), |cells| cells.get(self.start..self.end).unwrap_or(&[]))
     }
 
-    /// Обход элементов.
-    pub fn iter(&self) -> std::slice::Iter<'_, Value> {
-        self.as_slice().iter()
+    /// Копия элементов: для обхода, внутри которого исполняется код программы.
+    pub fn snapshot(&self) -> Vec<Value> {
+        self.as_slice().to_vec()
     }
 
     /// Суффикс без первого элемента — сдвиг начала, а не копия.
     pub fn tail(&self) -> Items {
-        Items { data: Rc::clone(&self.data), start: self.start.saturating_add(1).min(self.data.len()) }
+        Items {
+            data: Rc::clone(&self.data),
+            start: self.start.saturating_add(1).min(self.end),
+            end: self.end,
+        }
+    }
+
+    /// Список, продлённый одним значением. За постоянное время, если ячейка за
+    /// концом ещё ничья; иначе — копией, и следующие «добавить» к ней снова
+    /// пойдут на месте.
+    pub fn grown(&self, item: Value) -> Items {
+        /* Быстрый путь: наш конец — это и конец занятого. Заимствование может
+        быть занято чужим обходом (`as_slice` в свёртке); тогда не паника, а
+        медленный путь: значение то же, цена выше. */
+        if let Ok(mut cells) = self.data.try_borrow_mut() {
+            if cells.len() == self.end && self.end < usize::MAX {
+                cells.push(item);
+                return Items { data: Rc::clone(&self.data), start: self.start, end: self.end + 1 };
+            }
+        }
+        let mut copy: Vec<Value> = Vec::with_capacity(self.len().saturating_add(1));
+        copy.extend(self.as_slice().iter().cloned());
+        copy.push(item);
+        Items::new(copy)
     }
 }
 
@@ -298,7 +366,7 @@ pub fn chain_head(value: &Value) -> Value {
             Some(point) => text(&point.to_string()),
             None => Value::Nothing,
         },
-        Value::List(items) => items.get(0).cloned().unwrap_or(Value::Nothing),
+        Value::List(items) => items.get(0).unwrap_or(Value::Nothing),
         _ => Value::Nothing,
     }
 }
@@ -386,7 +454,14 @@ pub fn equal(left: &Value, right: &Value) -> bool {
     }
     match (left, right) {
         (Value::List(a), Value::List(b)) => {
-            a.len() == b.len() && a.iter().zip(b.iter()).all(|(one, other)| equal(one, other))
+            if a.len() != b.len() {
+                return false;
+            }
+            /* Заимствования именованы, а не вложены в одно выражение: так
+            видно, что оба живут ровно до конца сравнения и ни одно из них не
+            переживает вызов кода программы (его тут и нет). */
+            let (left_cells, right_cells) = (a.as_slice(), b.as_slice());
+            left_cells.iter().zip(right_cells.iter()).all(|(one, other)| equal(one, other))
         }
         (Value::Variant(a), Value::Variant(b)) => a.name == b.name && fields_equal(&a.fields, &b.fields),
         (Value::Record(a), Value::Record(b)) => fields_equal(a, b),
@@ -1149,8 +1224,9 @@ pub fn b_substring(ctx: &Ctx, source: Value, from: Value, to: Value) -> Result<V
 pub fn b_join(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {
         let separator = expect_string("соединить", &right, "разделитель")?;
-        let mut parts: Vec<&str> = Vec::with_capacity(items.len());
-        for (index, item) in items.iter().enumerate() {
+        let cells = items.as_slice();
+        let mut parts: Vec<&str> = Vec::with_capacity(cells.len());
+        for (index, item) in cells.iter().enumerate() {
             match item {
                 Value::Text(part) => parts.push(part),
                 other => {
@@ -1206,7 +1282,8 @@ pub fn b_char_code(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
 /// «содержит»: подстрока в строке либо значение в списке.
 pub fn b_contains(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {
-        return Ok(flag(items.iter().any(|item| equal(item, &right))));
+        let cells = items.as_slice();
+        return Ok(flag(cells.iter().any(|item| equal(item, &right))));
     }
     let source = expect_string("содержит", &left, "строка или список")?;
     let part = expect_string("содержит", &right, "искомая подстрока")?;
@@ -1365,7 +1442,7 @@ pub fn b_empty(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
 pub fn b_head(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     let items = expect_list("голова", &value, "аргумент")?;
     match items.get(0) {
-        Some(item) => Ok(item.clone()),
+        Some(item) => Ok(item),
         None => Err(fail(CODE_BUILTIN_ARGS, "«голова»: список пуст".to_string())),
     }
 }
@@ -1401,7 +1478,7 @@ pub fn b_element(ctx: &Ctx, index: Value, value: Value) -> Result<Value, Error> 
         ));
     }
     match items.get(at as usize) {
-        Some(item) => Ok(item.clone()),
+        Some(item) => Ok(item),
         None => Err(fail(
             CODE_BUILTIN_ARGS,
             format!(
@@ -1414,14 +1491,14 @@ pub fn b_element(ctx: &Ctx, index: Value, value: Value) -> Result<Value, Error> 
 }
 
 /// «добавить … к …»: дописывает в конец, исходный список не меняется.
-/// Копия обязательна: «хвост» отдаёт суффикс чужого массива, и дописать в него
-/// значило бы испортить значение, на которое ещё кто-то смотрит.
+///
+/// За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+/// остальных случаях — разбор приёма и доказательство неизменяемости лежат при
+/// `Items::grown`. Прежняя безусловная копия была верна, но делала накопление
+/// списка квадратичным, и предел шагов переставал быть сроком.
 pub fn b_append(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> {
     let items = expect_list("добавить", &value, "второй аргумент")?;
-    let mut result: Vec<Value> = Vec::with_capacity(items.len().saturating_add(1));
-    result.extend(items.iter().cloned());
-    result.push(item);
-    Ok(list(result))
+    Ok(Value::List(items.grown(item)))
 }
 
 /// «остаток от».

@@ -1380,6 +1380,39 @@ pub fn b_tail(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     Ok(Value::List(items.tail()))
 }
 
+// ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+//
+// Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+// ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+// отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+// `expect_list` ловит не пустоту, а другой вид значения.
+pub fn b_split_proven(_ctx: &Ctx, source: Value, separator: Value) -> Result<Value, Error> {
+    let string = expect_string("разделить", &source, "строка")?;
+    let mark = expect_string("разделить", &separator, "разделитель")?;
+    Ok(list(string.split(mark).map(text).collect()))
+}
+
+pub fn b_char_code_proven(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
+    let string = expect_string("код символа", &source, "строка")?;
+    Ok(number(string.chars().next().unwrap_or('\0') as u32 as f64))
+}
+
+pub fn b_head_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let items = expect_list("голова", &value, "аргумент")?;
+    /* Ветвь `None` недостижима — непустота доказана при печати. Здесь не
+       `unwrap` и не `unreachable!`: паника из тотальной функции была бы отказом
+       вида, которого нет в множестве отказов языка (`src/failures.mjs`), и
+       восемь целей разошлись бы поведением на ошибке доказательства. Пустое
+       значение — то же, что вернул бы C, читая нулевой элемент пустого
+       массива, и в отличие от него оно определено. */
+    Ok(items.get(0).cloned().unwrap_or(Value::Nothing))
+}
+
+pub fn b_tail_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let items = expect_list("хвост", &value, "аргумент")?;
+    Ok(Value::List(items.tail()))
+}
+
 /// «элемент N в СПИСОК». Элементы лежат в `Vec` с началом, поэтому N-й стоит
 /// того же, что первый: обхода нет ни здесь, ни в `Items::get`. Границы и
 /// текст отказа повторяют вычислитель дословно — их сверяет дифференциальная

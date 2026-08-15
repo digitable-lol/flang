@@ -886,6 +886,53 @@ func BSplit(ctx *Ctx, text, separator Value) (Value, error) {
 	return List(items), nil
 }
 
+// ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+//
+// Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+// ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+// отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+// expectList ловит не пустоту, а другой вид значения.
+func BSplitProven(ctx *Ctx, text, separator Value) (Value, error) {
+	source, err := expectString("разделить", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	mark, err := expectString("разделить", separator, "разделитель")
+	if err != nil {
+		return Nothing(), err
+	}
+	parts := strings.Split(source, mark)
+	items := make([]Value, len(parts))
+	for index, part := range parts {
+		items[index] = Text(part)
+	}
+	return List(items), nil
+}
+
+func BCharCodeProven(ctx *Ctx, text Value) (Value, error) {
+	source, err := expectString("код символа", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	return Number(float64([]rune(source)[0])), nil
+}
+
+func BHeadProven(ctx *Ctx, value Value) (Value, error) {
+	items, err := expectList("голова", value, "аргумент")
+	if err != nil {
+		return Nothing(), err
+	}
+	return items[0], nil
+}
+
+func BTailProven(ctx *Ctx, value Value) (Value, error) {
+	items, err := expectList("хвост", value, "аргумент")
+	if err != nil {
+		return Nothing(), err
+	}
+	return List(items[1:]), nil
+}
+
 // BCharacters — «символы»: разложение строки в список односимвольных строк.
 //
 // []rune идёт по кодовым точкам, а не по байтам и не по единицам UTF-16, —

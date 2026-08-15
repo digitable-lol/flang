@@ -1129,6 +1129,34 @@ def b_tail(ctx, value):
     return Value(TAG_LIST, items[1:])
 
 
+# ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+#
+# Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+# ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+# отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+# _expect_list ловит не пустоту, а другой вид значения.
+def b_split_proven(ctx, source, separator):
+    """«разделить … по …» с доказанно непустым разделителем."""
+    value = _expect_string("разделить", source, "строка")
+    mark = _expect_string("разделить", separator, "разделитель")
+    return Value(TAG_LIST, [Value(TAG_STRING, part) for part in value.split(mark)])
+
+
+def b_char_code_proven(ctx, source):
+    """«код символа» доказанно непустой строки."""
+    return Value(TAG_NUMBER, float(ord(_expect_string("код символа", source, "строка")[0])))
+
+
+def b_head_proven(ctx, value):
+    """«голова» доказанно непустого списка."""
+    return _expect_list("голова", value, "аргумент")[0]
+
+
+def b_tail_proven(ctx, value):
+    """«хвост» доказанно непустого списка."""
+    return Value(TAG_LIST, _expect_list("хвост", value, "аргумент")[1:])
+
+
 def b_element(ctx, index, value):
     """«элемент N в СПИСОК».
 

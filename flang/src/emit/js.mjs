@@ -133,7 +133,7 @@
 
 import { readFileSync } from "node:fs"
 
-import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
@@ -855,29 +855,15 @@ const BUILTIN_HELPERS = new Map([
 ])
 
 /**
- * Помощники тех же форм БЕЗ сторожа частичности.
+ * Суффикс имени помощника БЕЗ сторожа частичности.
  *
- * Выбираются по отметке `доказана` на узле — её кладёт передний край
- * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов. Печать здесь
- * ничего не доказывает и доказать не может: анализ живёт в `src/types.mjs`, а
- * копия печати на самом языке его не видит вовсе (круг импортов), и обе
- * стороны обязаны читать ОДНУ отметку, иначе разойдутся байтами.
+ * Выбор делает `помощникФормы` (`src/builtins.mjs`) по отметке `доказана` на
+ * узле — её кладёт передний край (`bin/flang.mjs`, `markNonEmpty`) по выводу
+ * проверки типов. Печать здесь ничего не доказывает и доказать не может: анализ
+ * живёт в `src/types.mjs`, а копия печати на самом языке его не видит вовсе
+ * (круг импортов), и обе стороны обязаны читать ОДНУ отметку.
  */
-const ДОКАЗАННЫЕ_ПОМОЩНИКИ = new Map([
-  ["голова", "$b_golova_dokazano"],
-  ["хвост", "$b_hvost_dokazano"],
-  ["разделить", "$b_razdelit_dokazano"],
-  ["код символа", "$b_kod_simvola_dokazano"],
-])
-
-/** Помощник формы: со сторожем или без — по отметке анализа на узле. */
-function builtinHelper(canonical, node) {
-  if (node?.доказана === true) {
-    const доказанный = ДОКАЗАННЫЕ_ПОМОЩНИКИ.get(canonical)
-    if (доказанный !== undefined) return доказанный
-  }
-  return BUILTIN_HELPERS.get(canonical)
-}
+const СУФФИКС_ДОКАЗАННОГО = "_dokazano"
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -1877,7 +1863,7 @@ function emitValue(expr, ctx, out, pad) {
       }
       expectArity(canonical, args.length, node.span)
       const rendered = emitOperands(args, ctx, out, pad)
-      const helper = ctx.use(builtinHelper(canonical, node))
+      const helper = ctx.use(помощникФормы(canonical, node, BUILTIN_HELPERS, СУФФИКС_ДОКАЗАННОГО))
       return { code: `${helper}(${rendered.join(", ")})`, pure: false }
     }
     case "binary": {

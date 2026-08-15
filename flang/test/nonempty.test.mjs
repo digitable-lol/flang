@@ -33,7 +33,8 @@ import { emitJs } from "../src/emit/js.mjs"
 import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
-import { checkTypes, markNonEmpty, СНИМАЮТСЯ_НЕПУСТОТОЙ } from "../src/types.mjs"
+import { СНИМАЮТСЯ_НЕПУСТОТОЙ } from "../src/builtins.mjs"
+import { checkTypes, markNonEmpty } from "../src/types.mjs"
 
 const МОДУЛЬ = "модуль «М»\n\n"
 const проверить = (исходник) => checkTypes(parse(МОДУЛЬ + исходник))

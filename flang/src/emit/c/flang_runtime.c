@@ -1603,16 +1603,15 @@ static const char *fl_find(const char *haystack, size_t haystack_bytes, const ch
   return NULL;
 }
 
-fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error) {
+/* Само разделение, без единой проверки: обе внешние формы («разделить» и её
+   доказанный путь) проверяют своё и зовут это. Общее тело здесь потому, что
+   расхождение двух копий алгоритма было бы расхождением ОТВЕТА, а не только
+   сторожа. */
+static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error) {
   size_t count = 1;
   size_t index = 0;
   size_t start = 0;
   fl_value *items = NULL;
-  FL_TRY(fl_expect_string(ctx, "разделить", text, "строка", error));
-  FL_TRY(fl_expect_string(ctx, "разделить", separator, "разделитель", error));
-  if (separator.as.string.bytes == 0) {
-    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s", "«разделить»: разделитель не может быть пустым");
-  }
 
   for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
     if (memcmp(text.as.string.utf8 + index, separator.as.string.utf8, separator.as.string.bytes) == 0) {
@@ -1646,6 +1645,21 @@ fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value
   }
   *out = fl_list(items, count);
   return FL_OK;
+}
+
+fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error) {
+  FL_TRY(fl_expect_string(ctx, "разделить", text, "строка", error));
+  FL_TRY(fl_expect_string(ctx, "разделить", separator, "разделитель", error));
+  if (separator.as.string.bytes == 0) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s", "«разделить»: разделитель не может быть пустым");
+  }
+  return fl_razdelit_kuski(ctx, text, separator, out, error);
+}
+
+fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error) {
+  FL_TRY(fl_expect_string(ctx, "разделить", text, "строка", error));
+  FL_TRY(fl_expect_string(ctx, "разделить", separator, "разделитель", error));
+  return fl_razdelit_kuski(ctx, text, separator, out, error);
 }
 
 /*
@@ -1699,6 +1713,14 @@ fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *
   if (text.as.string.bytes == 0) {
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s", "«код символа»: строка пуста");
   }
+  *out = fl_number(
+      (double)fl_utf8_decode(text.as.string.utf8, text.as.string.bytes, 0, &width));
+  return FL_OK;
+}
+
+fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  size_t width = 0;
+  FL_TRY(fl_expect_string(ctx, "код символа", text, "строка", error));
   *out = fl_number(
       (double)fl_utf8_decode(text.as.string.utf8, text.as.string.bytes, 0, &width));
   return FL_OK;
@@ -1905,6 +1927,12 @@ fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *erro
   return FL_OK;
 }
 
+fl_status fl_b_golova_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  FL_TRY(fl_expect_list(ctx, "голова", value, "аргумент", error));
+  *out = value.as.list.items[0];
+  return FL_OK;
+}
+
 /*
  * «элемент N в СПИСОК»: обращение к массиву, без обхода.
  *
@@ -1933,6 +1961,12 @@ fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error
   if (value.as.list.count == 0) {
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s", "«хвост»: список пуст");
   }
+  *out = fl_list_slice(value, 1);
+  return FL_OK;
+}
+
+fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  FL_TRY(fl_expect_list(ctx, "хвост", value, "аргумент", error));
   *out = fl_list_slice(value, 1);
   return FL_OK;
 }

@@ -1201,6 +1201,41 @@ defmodule Flang.Rt do
     end
   end
 
+  # ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+  #
+  # Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+  # ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает
+  # с отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+  # expect_list ловит не пустоту, а другой вид значения.
+  #
+  # Образец без ветви на пустое — это и есть снятие сторожа: другой ветви у
+  # функции нет, и `FLANG_BUILTIN_ARGS` про пустоту она выдать не может.
+
+  @doc "«разделить … по …» с доказанно непустым разделителем."
+  def b_split_proven(source, separator) do
+    value = expect_string("разделить", source, "строка")
+    mark = expect_string("разделить", separator, "разделитель")
+    {:list, Enum.map(String.split(value, mark), fn part -> {:str, part} end)}
+  end
+
+  @doc "«код символа» доказанно непустой строки."
+  def b_char_code_proven(source) do
+    [point | _] = String.to_charlist(expect_string("код символа", source, "строка"))
+    {:num, point * 1.0}
+  end
+
+  @doc "«голова» доказанно непустого списка."
+  def b_head_proven(value) do
+    [first | _] = expect_list("голова", value, "аргумент")
+    first
+  end
+
+  @doc "«хвост» доказанно непустого списка."
+  def b_tail_proven(value) do
+    [_ | rest] = expect_list("хвост", value, "аргумент")
+    {:list, rest}
+  end
+
   @doc """
   «элемент N в СПИСОК».
 

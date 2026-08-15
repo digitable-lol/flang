@@ -43,6 +43,13 @@
  * Python. Обещать в протоколе то, чего файл не делает, хуже, чем не обещать:
  * процессы у цели гоняет планировщик, напечатанный внутрь самого модуля.
  *
+ * ── Граница входа ──────────────────────────────────────────────────────────
+ * Значения приезжают СНАРУЖИ, программой не являются и сверяются с
+ * объявленными типами параметров ДО вызова — той же дверью, что стоит у
+ * `flang run --args`, и теми же словами. Таблица типов печатается в модуле
+ * (`$PROGRAM.entry`), обход по ней — `checkEntry` ниже; зачем это нужно и
+ * почему не в самих функциях, сказано там же.
+ *
  * ── Какой модуль исполнять ─────────────────────────────────────────────────
  * Путь к файлу программы приходит первым аргументом командной строки: файл
  * называется по имени модуля flang, а прогонщик печатается байт в байт и знать
@@ -236,6 +243,13 @@ export function answer(program, request) {
     return failure("FLANG_TYPE", `функция «${name}» принимает ${fn.length} аргум., получено ${args.length}`)
   }
 
+  /* Граница входа — ДО вызова: значения приехали снаружи, программой не являются
+     и сверяются с объявленными типами. Значение вне типа выносит вместе с типом
+     и доказательство завершения `тотальной`, а поймать вечную цепочку потом
+     нечем — сторожа в тотальной функции нет. */
+  const refused = checkEntry(program, name, args)
+  if (refused !== null) return failure("FLANG_TYPE", refused)
+
   /* Свежий контекст на каждый запрос — как `new_context` у остальных семи. У
      программы без счётчиков его в модуле нет вовсе, и ставить нечего: глубина у
      неё ограничена графом вызовов, а витков она не считает. */
@@ -255,6 +269,158 @@ function parseLimit(value) {
   if (typeof value !== "string") return null
   const number = Number(value)
   return Number.isFinite(number) ? Math.trunc(number) : null
+}
+
+/* ───────────────────────────── граница входа ───────────────────────────── */
+
+/**
+ * ОБЪЯВЛЕННЫЕ ТИПЫ ПАРАМЕТРОВ СВЕРЯЮТСЯ ЗДЕСЬ, ДО ВЫЧИСЛЕНИЯ.
+ *
+ * Зачем это в прогонщике, а не в самих функциях модуля. У напечатанной
+ * программы два входа, и обещания у них разные: библиотечный (экспорт модуля) —
+ * это вычислитель, обязанный совпадать с интерпретатором значение в значение;
+ * прогонщик — вход ИЗВНЕ, и у него та же граница, что у `flang run --args`.
+ *
+ * Граница заведена не ради вежливого сообщения. Доказательство завершения
+ * `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже которого
+ * `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не печатается
+ * ВОВСЕ. Значение вне типа выносит вместе с типом и доказательство: `1e300`
+ * минус 1 равно `1e300`, цепочка вечна, а ловить её нечем. До этой двери
+ * `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при 1e300
+ * отказывал FLANG_RECURSION_LIMIT — кодом, отведённым ОБЫЧНОЙ функции.
+ *
+ * Таблицу печатает бэкенд вместе с модулем (`$PROGRAM.entry`), а строит её
+ * `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+ * подходит типу», каким сверяется `flang run --args`. Обход ниже — тот же, что
+ * напечатан в рантайме остальных семи целей, строка в строку; расхождение с ним
+ * ловится сеткой корпуса (`flang/test/emit-js-cli.test.mjs`).
+ *
+ * Форма таблицы — четыре плоских списка. Поля и варианты лежат сплошными
+ * отрезками общих списков, а тип называет своё начало и длину; ссылка на тип —
+ * ИНДЕКС, а не вложение, потому что тип бывает рекурсивным (у суммы «Дерево»
+ * поле варианта имеет тип «Дерево») и вложение такого типа не кончается.
+ *
+ * Виды: «число» (с отрезком и признаком целости — в них живут `нат` и `целое`),
+ * «строка», «признак», «ничто», «список», «запись», «сумма». Видом «неизвестно»
+ * приезжает и НЕ сверяется то, для чего таблицы мало: значение-функция,
+ * параметр полиморфизма и применение типа с аргументами. Молчание на нём — то
+ * же самое, каким отвечает на джокер проверка значений эталона.
+ *
+ * Отказ возвращается ТЕКСТОМ, а не исключением: код у него всегда один
+ * (FLANG_TYPE), и заводить ради него класс ошибки значило бы городить второй
+ * путь отказа рядом с тем, что уже есть.
+ */
+function checkEntry(program, name, args) {
+  const table = program.$PROGRAM.entry
+  const declared = table.params.filter((param) => param.fn === name)
+  /* Сверять нечем: имени в таблице нет, параметров у функции нет вовсе, либо
+     число значений не сошлось с числом параметров — это отдельный отказ, и он
+     принадлежит вызывающему, чтобы текст про арность был в программе один. */
+  if (declared.length === 0 || declared.length !== args.length) return null
+  for (const [at, param] of declared.entries()) {
+    const refusal = checkTyped(program, table, param.type, args[at],
+      `вызов функции «${name}»: аргумент «${param.name}»`)
+    if (refusal !== null) return refusal
+  }
+  return null
+}
+
+/** Значение против одного типа таблицы. `null` — подошло, строка — текст отказа. */
+function checkTyped(program, table, at, value, label) {
+  const spec = table.types[at]
+  if (spec === undefined) return null
+  /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+     пропуск. Так же считает и ядро FTS. */
+  if (spec.nothing && (value === null || value === undefined)) return null
+  const mismatch = `${label} не соответствует типу ${spec.name}`
+  switch (spec.kind) {
+    case "число":
+      return checkNumber(spec, value, label, mismatch)
+    case "строка":
+      return typeof value === "string" ? null : mismatch
+    case "признак":
+      return value === true || value === false ? null : mismatch
+    case "ничто":
+      return value === null || value === undefined ? null : mismatch
+    case "список": {
+      if (!Array.isArray(value)) return mismatch
+      for (const [index, item] of value.entries()) {
+        const refusal = checkTyped(program, table, spec.item, item, `${label}[${index}]`)
+        if (refusal !== null) return refusal
+      }
+      return null
+    }
+    case "запись": {
+      if (!isRecordValue(program, value)) return mismatch
+      const refusal = checkFields(program, table, spec.fieldAt, spec.fieldCount, value, label, spec.owner, false)
+      if (refusal !== null) return refusal
+      /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+         сверх объявленных в ней взяться неоткуда. */
+      const declared = []
+      for (let step = 0; step < spec.fieldCount; step += 1) declared.push(table.fields[spec.fieldAt + step].name)
+      for (const given of Object.keys(value)) {
+        if (!declared.includes(given)) return `${label}: запись «${spec.owner}» не имеет поля «${given}»`
+      }
+      return null
+    }
+    case "сумма": {
+      const asVariant = program.$PROGRAM.isVariant(value)
+      if (!asVariant && !isRecordValue(program, value)) return mismatch
+      let found = null
+      if (asVariant) {
+        for (let step = 0; step < spec.variantCount; step += 1) {
+          const item = table.variants[spec.variantAt + step]
+          if (item.name === value.variant) {
+            found = item
+            break
+          }
+        }
+      }
+      if (found === null) return `${label}: ожидался вариант типа «${spec.owner}»`
+      return checkFields(program, table, found.fieldAt, found.fieldCount, value.fields, label, found.name, true)
+    }
+    default:
+      /* «неизвестно» — молчание, а не забытый случай: см. шапку `checkEntry`. */
+      return null
+  }
+}
+
+/** Число: сначала само число, потом целость, потом отрезок — порядок эталона. */
+function checkNumber(spec, value, label, mismatch) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return mismatch
+  /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+     порядок, и второй отказ на одном значении был бы вторым текстом про одну
+     беду. */
+  if (spec.integer && !Number.isInteger(value)) {
+    return `${label}: ${value} не целое, а тип ${spec.name} — целый`
+  }
+  if (spec.range && (value < spec.low || value > spec.high)) {
+    return `${label}: ${value} вне ${spec.name}`
+  }
+  return null
+}
+
+/** Поля записи или варианта — сплошной отрезок общего списка полей. */
+function checkFields(program, table, at, count, given, label, owner, ofVariant) {
+  for (let step = 0; step < count; step += 1) {
+    const field = table.fields[at + step]
+    if (!Object.hasOwn(given, field.name)) {
+      /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+      if (table.types[field.type].nothing) continue
+      return ofVariant
+        ? `${label}: вариант «${owner}» требует поле «${field.name}»`
+        : `${label}: не задано поле «${field.name}» записи «${owner}»`
+    }
+    const refusal = checkTyped(program, table, field.type, given[field.name], `${label}.${field.name}`)
+    if (refusal !== null) return refusal
+  }
+  return null
+}
+
+/** Запись на проводе — простой объект: не «ничто», не список и не вариант. */
+function isRecordValue(program, value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    && !program.$PROGRAM.isVariant(value)
 }
 
 /* ───────────────────── стек под объявленный предел ───────────────────── */

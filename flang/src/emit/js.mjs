@@ -208,6 +208,7 @@ import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -1545,6 +1546,11 @@ export function emitJs(program, options = {}) {
   const supervisors = Array.isArray(program.supervisors) ? program.supervisors : []
   const runs = Array.isArray(program.runs) ? program.runs : []
   const concurrent = processes.length > 0 || supervisors.length > 0 || runs.length > 0
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на границе
+     интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы
+     молча. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -1677,7 +1683,7 @@ export function emitJs(program, options = {}) {
   if (cli) {
     shared.used.add("$FlangVariant")
     shared.used.add("$isVariant")
-    sections.push(renderProgramTable(shared, $stackMb(maxDepth)))
+    sections.push(renderProgramTable(shared, $stackMb(maxDepth), входные))
   }
 
   const runtime = renderRuntime(shared.used, base, maxDepth, maxSteps, concurrent)
@@ -1745,17 +1751,19 @@ function cliBanner(moduleName, path) {
  * `$callDeep`: предел глубины известен в момент печати, и второго расчёта, у
  * которого была бы возможность разойтись с первым, заводить незачем.
  */
-function renderProgramTable(shared, stackMb) {
+function renderProgramTable(shared, stackMb, входные) {
   const rows = [...shared.prepared.functions.keys()].map(
     (name) => `    [${JSON.stringify(name)}, ${shared.functionIdents.get(name)}],`,
   )
   return [
     "/**",
     " * Связь этого модуля с прогонщиком (`flang_cli.js`): имена flang → функции,",
-    " * фабрика и узнавание варианта, стек под объявленный предел глубины (МиБ).",
+    " * фабрика и узнавание варианта, стек под объявленный предел глубины (МиБ) и",
+    " * объявленные типы параметров — граница входа.",
     " * Прогонщик — соседний файл, а не часть модуля: в браузер он не едет.",
     " *",
-    " * @type {{functions: Map<string, Function>, variant: Function, isVariant: Function, stackMb: number}}",
+    " * @type {{functions: Map<string, Function>, variant: Function, isVariant: Function,"
+      + " stackMb: number, entry: object}}",
     " */",
     "export const $PROGRAM = {",
     "  functions: new Map([",
@@ -1764,8 +1772,70 @@ function renderProgramTable(shared, stackMb) {
     "  variant: (name, fields) => new $FlangVariant(name, fields),",
     "  isVariant: $isVariant,",
     `  stackMb: ${stackMb},`,
+    ...renderEntry(входные),
     "}",
   ].join("\n")
+}
+
+/**
+ * Граница входа — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * В напечатанном модуле типов нет: прогонщик разбирает JSON и зовёт функцию.
+ * Поэтому `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * 1e300 упирался в FLANG_RECURSION_LIMIT — код, отведённый ОБЫЧНОЙ функции.
+ * Тотальная отказывала пределом глубины потому, что доказательство её завершения
+ * СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно
+ * меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+ *
+ * Сверяет таблицу `checkEntry` из `js/flang_cli.js` — один и тот же текст для
+ * всех программ, а строит её `таблицаВхода` из flang/src/types.mjs, то есть тот
+ * же файл, что отвечает на этот вопрос для `flang run --args`.
+ *
+ * Здесь только ДАННЫЕ, и это не вкус: таблица уезжает в браузер вместе с
+ * модулем и ничего там не требует, а обход по ней живёт в прогонщике —
+ * соседнем файле, который в браузер не едет вовсе.
+ */
+function renderEntry(таблица) {
+  const список = (имя, строки) =>
+    (строки.length === 0 ? [`    ${имя}: [],`] : [`    ${имя}: [`, ...строки, "    ],"])
+  const строка = (поля) => `      { ${поля.join(", ")} },`
+  return [
+    "  /* Граница входа: объявленные типы параметров данными. Прогонщик сверяет",
+    "     по ним значения, пришедшие снаружи, ДО вызова (`checkEntry` в",
+    "     flang_cli.js); вид «неизвестно» не сверяется — одной таблицы ему мало. */",
+    "  entry: {",
+    ...список("types", таблица.типы.map((запись) =>
+      строка([
+        `kind: ${JSON.stringify(запись.вид)}`,
+        `name: ${JSON.stringify(запись.имя)}`,
+        `owner: ${JSON.stringify(запись.владелец)}`,
+        `nothing: ${запись.ничто}`,
+        `integer: ${запись.целое}`,
+        `range: ${запись.отрезок}`,
+        `low: ${renderNumber(запись.низ)}`,
+        `high: ${renderNumber(запись.верх)}`,
+        `item: ${запись.элемент}`,
+        `fieldAt: ${запись.полеС}`,
+        `fieldCount: ${запись.полей}`,
+        `variantAt: ${запись.вариантС}`,
+        `variantCount: ${запись.вариантов}`,
+      ]))),
+    ...список("fields", таблица.поля.map((поле) =>
+      строка([`name: ${JSON.stringify(поле.имя)}`, `type: ${поле.тип}`]))),
+    ...список("variants", таблица.варианты.map((вариант) =>
+      строка([
+        `name: ${JSON.stringify(вариант.имя)}`,
+        `fieldAt: ${вариант.полеС}`,
+        `fieldCount: ${вариант.полей}`,
+      ]))),
+    ...список("params", таблица.параметры.map((параметр) =>
+      строка([
+        `fn: ${JSON.stringify(параметр.функция)}`,
+        `name: ${JSON.stringify(параметр.параметр)}`,
+        `type: ${параметр.тип}`,
+      ]))),
+    "  },",
+  ]
 }
 
 function renderRuntime(used, base, maxDepth, maxSteps, concurrent = false) {

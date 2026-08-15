@@ -1499,8 +1499,13 @@ defmodule Flang.Rt do
     raise fail(@code_type, "#{label} не соответствует типу #{name}")
   end
 
-  defp check_list(table, spec, {:list, items}, label, _name) do
-    items
+  # Список здесь — очередь Окасаки `{:list, front, back}` (moduledoc, раздел 5),
+  # а не плоский список BEAM, поэтому элементы берутся через `items/1`: образец
+  # по двухместному `{:list, items}` отправлял бы КАЖДЫЙ настоящий список в
+  # отказ по типу.
+  defp check_list(table, spec, {:list, _front, _back} = value, label, _name) do
+    value
+    |> items()
     |> Enum.with_index()
     |> Enum.each(fn {item, at} -> check_typed(table, elem(spec, 8), item, "#{label}[#{at}]") end)
 

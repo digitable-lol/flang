@@ -1675,8 +1675,21 @@ test("стоимость взятия по номеру: массив, знач�
      молча. */
   const тело = /static Value BElement\([^)]*\)\s*\{([\s\S]*?)\n    \}/u.exec(built.runtime)?.[1]
   assert.ok(тело !== undefined, "в напечатанном рантайме не нашлось тела BElement")
-  assert.match(тело, /return items\[\(int\)at\];/u, "взятие обязано быть индексом массива")
+  assert.match(тело, /return Value\.At\(list, \(int\)at\);/u, "взятие обязано быть индексом массива")
   assert.doesNotMatch(тело, /\b(for|while|foreach|goto)\b/u, "во взятии по номеру появился обход — форма перестала быть постоянной")
+
+  /* Проверка идёт на ОДИН уровень ниже, и без этого она стала бы пустой. С тех
+     пор как у списка есть общий массив с запасом («добавить» за постоянное
+     время), сам индекс живёт в `Value.At`, а `BElement` только считает границы.
+     Смотреть на один `BElement` значило бы разрешить спрятать обход этажом
+     ниже — ровно тот способ протухнуть молча, ради которого этот тест и стоит
+     исходником, а не замером. */
+  const valueCs = built.emitted.files.find((файл) => файл.path === "Value.cs")?.content
+  assert.ok(valueCs !== undefined, "в напечатанном не нашлось Value.cs")
+  const строкаAt = /public static Value At\(Value list, int index\) =>([^\n;]*);/u.exec(valueCs)?.[1]
+  assert.ok(строкаAt !== undefined, "в Value.cs не нашлось At")
+  assert.match(строкаAt, /list\.Items\[index\]/u, "Value.At обязан быть индексом массива")
+  assert.doesNotMatch(строкаAt, /\b(for|while|foreach|goto)\b/u, "в Value.At появился обход — массив сменили на звенья")
 
   /* ЗАМЕР в шагах — и он проверяет НЕ то же, что проверка выше, поэтому стоят
      обе. Счётчик шагов считает витки самой программы и внутрь формы не смотрит:

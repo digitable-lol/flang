@@ -1713,7 +1713,12 @@ fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> 
         },
         TypeKind::List => match value {
             Value::List(items) => {
-                for (at, item) in items.iter().enumerate() {
+                /* `Items` — это вид на общий массив с запасом, а не `Vec`, и
+                своего `iter` у него нет: элементы берутся заимствованием
+                (`as_slice`). Держать его тут можно — граница входа кода
+                программы не исполняет, а значит и «добавить» на живом
+                заимствовании не случится. */
+                for (at, item) in items.as_slice().iter().enumerate() {
                     check_typed(table, spec.of, item, &format!("{}[{}]", label, at))?;
                 }
                 Ok(())

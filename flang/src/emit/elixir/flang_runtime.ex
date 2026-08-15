@@ -117,7 +117,7 @@ defmodule Flang.Rt do
 
   Ответ — держать порядок, но не держать его в одном звене:
 
-      {:list, front, back}   логический список = front ++ :lists.reverse(back)
+      {:list, front, back}   логический список = front ++ Enum.reverse(back)
 
   `добавить` кладёт элемент в голову `back` (одна ячейка, постоянное время и
   никакого копирования), а порядок остаётся тем же, потому что `back` хранится
@@ -144,7 +144,7 @@ defmodule Flang.Rt do
   вызова O(длины); `добавить` — постоянное время всегда, без «в среднем».
 
   За полный обход (`длина`, `соединить`, `свёртка`, вывод прогонщика) платится
-  один `++ :lists.reverse(back)` — O(длины) там, где обход и так O(длины).
+  один `++ Enum.reverse(back)` — O(длины) там, где обход и так O(длины).
   Единственное, что стало дороже: `элемент N` при N за границей `front` идёт по
   всему списку, а не по N звеньям. Это та же O(длины), которой `элемент` на
   BEAM и был для дальних N.
@@ -228,14 +228,14 @@ defmodule Flang.Rt do
   `отобразить`, равенство, вывод прогонщика.
   """
   def items({:list, front, []}), do: front
-  def items({:list, front, back}), do: front ++ :lists.reverse(back)
+  def items({:list, front, back}), do: front ++ Enum.reverse(back)
 
   # Первый элемент и остаток списка либо :empty. Разворот в первой клаузе — не
   # общий случай, а восстановление инварианта: он случается один раз на весь
   # накопленный конец, а не на каждый «хвост».
   defp pop({:list, [], []}), do: :empty
-  defp pop({:list, [], back}), do: pop({:list, :lists.reverse(back), []})
-  defp pop({:list, [first], back}) when back != [], do: {first, {:list, :lists.reverse(back), []}}
+  defp pop({:list, [], back}), do: pop({:list, Enum.reverse(back), []})
+  defp pop({:list, [first], back}) when back != [], do: {first, {:list, Enum.reverse(back), []}}
   defp pop({:list, [first | rest], back}), do: {first, {:list, rest, back}}
 
   @doc "Запись: поля в порядке объявления."

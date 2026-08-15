@@ -413,6 +413,21 @@ function* законыПрограммы(program, итоги) {
     })
   }
   for (const запись of итоги?.category?.checked ?? []) {
+    if (запись.transformation !== undefined) {
+      /* Предел здесь тоже по объектам: сетка берётся у образа каждого объекта,
+         на котором преобразование действует. */
+      yield закон("преобразование", запись.transformation, {
+        values: запись.values,
+        limit: ПРЕДЕЛЫ.категория * Math.max(запись.objects ?? 1, 1),
+        points: запись.squares,
+        pointsOf: "квадратов",
+        violations: запись.violations,
+        skipped: запись.skipped,
+        aborted: запись.aborted,
+        laws: "квадрат коммутирует",
+      })
+      continue
+    }
     /* Предел здесь на ОБЪЕКТ, а не на категорию: сетка своя у каждого объекта,
        и каждая упирается в потолок отдельно. Печатать один предел рядом с
        суммой значений значило бы врать в ту же сторону, в какую врал бы
@@ -536,8 +551,8 @@ function* наВеруПрограммы(итоги) {
      проверенное. */
   for (const запись of итоги?.category?.assumed ?? []) {
     yield {
-      kind: "категория",
-      name: запись.category ?? null,
+      kind: запись.transformation === undefined ? "категория" : "преобразование",
+      name: запись.category ?? запись.transformation ?? null,
       verdict: "assumed",
       why: запись.why,
       says: `на веру: ${запись.why}`,

@@ -848,6 +848,7 @@ const ВНЕ_ОХВАТА = [
   "flang/stdlib/higher-order.flang «Возвести в квадрат»",
   "flang/stdlib/higher-order.flang «Удвоить»",
   "flang/stdlib/higher-order.flang «Утроить»",
+  "flang/stdlib/logic.flang «Не так»",
   "flang/stdlib/numbers.flang «Знак»",
   "flang/stdlib/numbers.flang «Чётное»",
 ]

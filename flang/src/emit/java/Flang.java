@@ -215,14 +215,20 @@ public final class Flang {
     throw matchFail(ctx, value);
   }
 
-  /** «свёртка», «отобразить» и «отфильтровать» работают только со списком. */
+  /**
+   * «свёртка», «отобразить» и «отфильтровать» работают только со списком.
+   *
+   * Отдаётся массив ровно нужной длины (Value.elements), а не общий массив
+   * списка: за концом списка в общем массиве могут лежать чужие ячейки, а обход
+   * печатается как `for (Value item : …)` и прошёл бы по ним тоже.
+   */
   public static Value[] requireList(Ctx ctx, Value value, String label) {
     if (value.tag != Value.TAG_LIST) {
       throw fail(
           FlangError.CODE_TYPE,
           "«" + label + "» работает только со списком, получено " + Value.typeName(value));
     }
-    return value.items;
+    return Value.elements(value);
   }
 
   /* ───────────────────────────── арифметика ───────────────────────────── */
@@ -373,13 +379,21 @@ public final class Flang {
     return result;
   }
 
-  private static Value[] expectList(String name, Value value, String role) {
+  /**
+   * Проверка «это список» для встроенных форм.
+   *
+   * Возвращается само значение, а не его массив: у списка есть длина, отдельная
+   * от длины общего массива (см. Value.count), и встроенные формы обязаны
+   * считать по ней. Копии здесь нет — «элемент N в …» стоит того же, что
+   * «голова», как и обещано в SPEC.
+   */
+  private static Value expectList(String name, Value value, String role) {
     if (value.tag != Value.TAG_LIST) {
       throw fail(
           FlangError.CODE_BUILTIN_ARGS,
           "«" + name + "»: " + role + " должен быть списком, получено " + Value.typeName(value));
     }
-    return value.items;
+    return value;
   }
 
   /* ───────────────────────── строки в кодовых точках ───────────────────── */
@@ -408,7 +422,7 @@ public final class Flang {
       return Value.number(codePointLength(value.str));
     }
     if (value.tag == Value.TAG_LIST) {
-      return Value.number(value.items.length);
+      return Value.number(Value.size(value));
     }
     throw fail(
         FlangError.CODE_BUILTIN_ARGS,
@@ -462,8 +476,8 @@ public final class Flang {
     if (left.tag == Value.TAG_LIST) {
       String separator = expectString("соединить", right, "разделитель");
       StringBuilder out = new StringBuilder();
-      for (int index = 0; index < left.items.length; index++) {
-        Value item = left.items[index];
+      for (int index = 0; index < Value.size(left); index++) {
+        Value item = Value.at(left, index);
         if (item.tag != Value.TAG_STRING) {
           throw fail(
               FlangError.CODE_BUILTIN_ARGS,
@@ -548,8 +562,8 @@ public final class Flang {
   /** «содержит»: подстрока в строке либо значение в списке. */
   public static Value bContains(Ctx ctx, Value left, Value right) {
     if (left.tag == Value.TAG_LIST) {
-      for (Value item : left.items) {
-        if (Value.equal(item, right)) {
+      for (int index = 0; index < Value.size(left); index++) {
+        if (Value.equal(Value.at(left, index), right)) {
           return Value.TRUE;
         }
       }
@@ -730,7 +744,7 @@ public final class Flang {
   /** «пусто». */
   public static Value bEmpty(Ctx ctx, Value value) {
     if (value.tag == Value.TAG_LIST) {
-      return Value.flag(value.items.length == 0);
+      return Value.flag(Value.size(value) == 0);
     }
     if (value.tag == Value.TAG_STRING) {
       return Value.flag(value.str.isEmpty());
@@ -742,11 +756,11 @@ public final class Flang {
 
   /** «голова». */
   public static Value bHead(Ctx ctx, Value value) {
-    Value[] items = expectList("голова", value, "аргумент");
-    if (items.length == 0) {
+    Value list = expectList("голова", value, "аргумент");
+    if (Value.size(list) == 0) {
       throw fail(FlangError.CODE_BUILTIN_ARGS, "«голова»: список пуст");
     }
-    return items[0];
+    return Value.at(list, 0);
   }
 
   /**
@@ -758,11 +772,11 @@ public final class Flang {
    * даёт линейные «свёртка», «отобразить» и «отфильтровать».
    */
   public static Value bTail(Ctx ctx, Value value) {
-    Value[] items = expectList("хвост", value, "аргумент");
-    if (items.length == 0) {
+    Value list = expectList("хвост", value, "аргумент");
+    if (Value.size(list) == 0) {
       throw fail(FlangError.CODE_BUILTIN_ARGS, "«хвост»: список пуст");
     }
-    return Value.list(java.util.Arrays.copyOfRange(items, 1, items.length));
+    return Value.list(java.util.Arrays.copyOfRange(list.items, 1, Value.size(list)));
   }
 
   /**
@@ -774,37 +788,53 @@ public final class Flang {
    */
   public static Value bElement(Ctx ctx, Value index, Value value) {
     double position = expectInteger("элемент", index, "индекс");
-    Value[] items = expectList("элемент", value, "список");
+    Value list = expectList("элемент", value, "список");
+    int length = Value.size(list);
     double at = position - ctx.indexBase;
-    if (at < 0 || at >= items.length) {
+    if (at < 0 || at >= length) {
       throw fail(
           FlangError.CODE_BUILTIN_ARGS,
-          "«элемент»: индекс " + Value.numberText(position) + " вне списка длиной " + items.length);
+          "«элемент»: индекс " + Value.numberText(position) + " вне списка длиной " + length);
     }
-    return items[(int) at];
+    return Value.at(list, (int) at);
   }
 
   /**
    * «добавить … к …»: дописывает в конец, исходный список не меняется.
    *
-   * Копирует, как и в JS: значения flang неизменяемы, и разделить массив с
-   * суффиксом нельзя. Значит наращивание списка в цикле квадратично по времени —
-   * ровно как у интерпретатора, где «добавить» это тоже `[...список, элемент]`.
-   * Совпасть со сложностью интерпретатора здесь важнее, чем обогнать его.
+   * За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+   * остальных случаях. Разбор приёма и доказательство неизменяемости лежат при
+   * классе Value.Grow; тот же приём и по той же причине стоит в рантаймах C
+   * (fl_b_dobavit), Rust (Items::grown) и Go (BAppend).
    *
-   * По ПАМЯТИ, в отличие от бэкенда C, стены нет: там арена не отдаёт
-   * промежуточные копии до конца запроса, и список из n элементов оставляет
-   * порядка n² байт. Здесь каждая промежуточная копия становится мусором сразу
-   * и собирается в нулевом поколении, поэтому живой памяти всё время O(n).
-   * Сделать наращивание амортизированным, не меняя представления, нельзя:
-   * запасом ёмкости в общем массиве пришлось бы кому-то владеть, а значение
-   * flang по договору неизменяемо и разделяемо.
+   * Прежняя безусловная копия была ВЕРНА, но стоила O(длины) за вызов, а значит
+   * накопление списка n вызовами — O(n²). Шаг напечатанного кода — вход в
+   * функцию, и если один шаг стоит O(длины), предел шагов не ограничивает
+   * работу ничем: точка «Строить скобки» от 42 и 0 и 0 и "" и [] при
+   * объявленных 5 000 000 шагов упиралась в предел 63,7 с вместо секунды.
+   *
+   * Просто дописать в общий массив нельзя: два «добавить» от одного значения
+   * заняли бы одну ячейку и испортили бы друг друга. Разрешение спрашивается у
+   * Grow, а не у длины массива.
    */
   public static Value bAppend(Ctx ctx, Value item, Value value) {
-    Value[] items = expectList("добавить", value, "второй аргумент");
-    Value[] next = java.util.Arrays.copyOf(items, items.length + 1);
-    next[items.length] = item;
-    return Value.list(next);
+    Value list = expectList("добавить", value, "второй аргумент");
+    int end = Value.size(list);
+    Value.Grow grow = list.grow;
+    if (grow != null && end == grow.filled && end < list.items.length) {
+      list.items[end] = item;
+      grow.filled = end + 1;
+      return Value.grown(list.items, end + 1, grow);
+    }
+    /* Копия — с запасом, чтобы следующие «добавить» шли уже на месте. Запас
+       равен длине, то есть массив удваивается: за n «добавить» перевыделений
+       log₂n, а не n. У самого края int запаса брать не из чего — там продление
+       идёт впритык, и следующее «добавить» снова копирует. */
+    int capacity = end < (Integer.MAX_VALUE - 8) / 2 ? 2 * (end + 1) : end + 1;
+    Value[] cells = new Value[capacity];
+    System.arraycopy(list.items, 0, cells, 0, end);
+    cells[end] = item;
+    return Value.grown(cells, end + 1, new Value.Grow(end + 1));
   }
 
   /** «остаток от». */

@@ -37,7 +37,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 import { externalChecks, loadProgramFromSource } from "../bin/flang.mjs"
-import { ОБОСНОВАНИЯ, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, СЛОВАМИ, искатьДоказательство } from "../proof/search.mjs"
+import { ОБОСНОВАНИЯ, ПОИСК, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, СЛОВАМИ, искатьДоказательство } from "../proof/search.mjs"
 import { parse } from "../src/parser.mjs"
 import { proofLedger } from "../src/proof.mjs"
 import { ФАЙЛЫ } from "./proof-ledger.mjs"
@@ -176,7 +176,7 @@ for (const путь of список) {
 const сумма = (поле) => своды.reduce((всего, и) => всего + (Array.isArray(и[поле]) ? и[поле].length : и[поле]), 0)
 
 if (машине) {
-  console.log(JSON.stringify({ поиск: 1, пределы: { шагов: ПРЕДЕЛ_ШАГОВ, глубина: ПРЕДЕЛ_ГЛУБИНЫ }, файлы: своды }, null, 2))
+  console.log(JSON.stringify({ поиск: ПОИСК, пределы: { шагов: ПРЕДЕЛ_ШАГОВ, глубина: ПРЕДЕЛ_ГЛУБИНЫ }, файлы: своды }, null, 2))
 } else {
   console.log("── поиск доказательства: оракул предлагает, ядро принимает ──")
   console.log(

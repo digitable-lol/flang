@@ -197,9 +197,9 @@ fl_status kompilyator_flang_sozdat_sborka_strelki(fl_ctx *ctx, fl_value r, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sborka_zakona(fl_ctx *ctx, fl_value r, fl_value primery, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «доказано», «новая». */
+/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «шаги», «доказано», «новая». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value shagi, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
 
 /* Запись FTS «Обрезка справа»: «готово», «пробелы». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -6002,9 +6002,10 @@ fl_status kompilyator_flang_so_znacheniem_teoremy(fl_ctx *ctx, fl_value sborka, 
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
  * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Обойти строки теоремы».
@@ -6015,18 +6016,20 @@ fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value 
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
  * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_oboyti_stroki_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_oboyti_stroki_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка теоремы».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
  * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_stroka_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка дано теоремы».
@@ -6069,9 +6072,20 @@ fl_status kompilyator_flang_stroka_dopuscheniya_teoremy(fl_ctx *ctx, fl_value sb
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
  * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_stroka_utverzhdaem(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_utverzhdaem(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка шага теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_shaga_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка доказано».
@@ -6130,6 +6144,78 @@ fl_status kompilyator_flang_slova_staroy_formy(fl_ctx *ctx, fl_value znachenie, 
  * @return значение: «Шаг»
  */
 fl_status kompilyator_flang_sobrat_teoremu(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать шаг доказательства».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_shag_dokazatelstva(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это обоснование».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_obosnovanie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это шаг доказательства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_shag_dokazatelstva(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать обоснование».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_obosnovanie(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование примером».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_primerom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование законом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_zakonom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование предположением».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_predpolozheniem(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать файл-функтор».

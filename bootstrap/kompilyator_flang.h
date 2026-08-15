@@ -93,9 +93,13 @@ fl_status kompilyator_flang_sozdat_sborka_pri_razbore(fl_ctx *ctx, fl_value teku
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_oblast(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сбор при разборе»: «модуль», «типы», «функции», «наследие». */
+/* Запись FTS «Объявление разбора»: «ключ», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyuch, fl_value uzel, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор при разборе»: «модуль», «типы», «функции», «наследие», «прочие». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
 /* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -137,9 +141,9 @@ fl_status kompilyator_flang_sozdat_shag_tipa(fl_ctx *ctx, fl_value r, fl_value t
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_schyot_oblastey(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
 
-/* Запись FTS «Сборка функции»: «р», «параметры», «примеры», «возвращает», «мера», «тело». */
+/* Запись FTS «Сборка функции»: «р», «имя», «параметры», «примеры», «возвращает», «мера», «постусловия», «тело». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_sborka_funkcii(fl_ctx *ctx, fl_value r, fl_value parametry, fl_value primery, fl_value vozvraschaet, fl_value mera, fl_value telo, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_sborka_funkcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value parametry, fl_value primery, fl_value vozvraschaet, fl_value mera, fl_value postusloviya, fl_value telo, fl_value *out, fl_error *error);
 
 /* Запись FTS «Сборка примера»: «р», «вход», «ожидается», «есть ожидание». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -156,6 +160,14 @@ fl_status kompilyator_flang_sozdat_vybor_uzla(fl_ctx *ctx, fl_value nomer, fl_va
 /* Запись FTS «Замена узла»: «номер», «итог». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_zamena_uzla(fl_ctx *ctx, fl_value nomer, fl_value itog, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка цепочки»: «р», «шаги». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_cepochki(fl_ctx *ctx, fl_value r, fl_value shagi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка звеньев»: «номер», «текущий», «узлы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_zvenev(fl_ctx *ctx, fl_value nomer, fl_value tekuschiy, fl_value uzly, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог разбора»: «программа», «диагностики». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -176,6 +188,18 @@ fl_status kompilyator_flang_sozdat_sborka_primera_utility(fl_ctx *ctx, fl_value 
 /* Запись FTS «Сборка утилиты»: «р», «значение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sborka_utility(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка стрелки»: «р», «даёт», «есть даёт», «законы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_strelki(fl_ctx *ctx, fl_value r, fl_value dayot, fl_value est_dayot, fl_value zakony, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка закона»: «р», «примеры». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_zakona(fl_ctx *ctx, fl_value r, fl_value primery, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка теоремы»: «р», «значение», «переменные», «допущения», «утверждение», «индукция», «шаги», «доказано», «новая». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_sborka_teoremy(fl_ctx *ctx, fl_value r, fl_value znachenie, fl_value peremennye, fl_value dopuscheniya, fl_value utverzhdenie, fl_value indukciya, fl_value shagi, fl_value dokazano, fl_value novaya, fl_value *out, fl_error *error);
 
 /* Запись FTS «Обрезка справа»: «готово», «пробелы». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2370,6 +2394,28 @@ fl_status kompilyator_flang_dobavit_nasledie(fl_ctx *ctx, fl_value r, fl_value u
 fl_status kompilyator_flang_zamenit_nasledie(fl_ctx *ctx, fl_value r, fl_value nasledie, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Добавить прочее».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_dobavit_prochee(fl_ctx *ctx, fl_value r, fl_value klyuch, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить прочие».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_dobavit_prochie(fl_ctx *ctx, fl_value r, fl_value klyuch, fl_value uzly, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Есть в списке имён».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -4511,6 +4557,26 @@ fl_status kompilyator_flang_stroka_mery(fl_ctx *ctx, fl_value sborka, fl_value *
 fl_status kompilyator_flang_stroka_tela(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Строка постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка функции»
+ * @return значение: «Сборка функции»
+ */
+fl_status kompilyator_flang_stroka_postusloviya(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Квантор постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка функции»
+ * @param r — «р»: «Разборщик»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг текста»
+ */
+fl_status kompilyator_flang_kvantor_postusloviya(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строка параметров».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -4918,6 +4984,263 @@ fl_status kompilyator_flang_obyavlenie_tipom(fl_ctx *ctx, fl_value r, fl_value i
 fl_status kompilyator_flang_obyavlenie_naslediem(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Объявление теорката».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_teorkata(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление стрелкой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_strelkoy(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление парой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Разборщик»
+ */
+fl_status kompilyator_flang_obyavlenie_paroy(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать единицу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_edinicu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать пересечение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_peresechenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать вложение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_vlozhenie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать изоморфизм».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_izomorfizm(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело изоморфизма».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_izomorfizma(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки изоморфизма».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_izomorfizma(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка изоморфизма».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_izomorfizma(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка обратного морфизма».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param token — «токен»: «Токен»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_obratnogo_morfizma(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value imya, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать бифунктор».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_bifunktor(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело бифунктора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки бифунктора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_oboyti_stroki_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка бифунктора».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка пары морфизмов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_stroka_pary_morfizmov(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пара бифунктора».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param klyuch — «ключ»: строка
+ * @param beda_pervogo — «беда первого»: строка
+ * @param beda_i — «беда и»: строка
+ * @param beda_vtorogo — «беда второго»: строка
+ * @param slovo — «слово»: строка
+ * @param beda_slova — «беда слова»: строка
+ * @param beda_obraza — «беда образа»: строка
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_para_bifunktora(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value klyuch, fl_value beda_pervogo, fl_value beda_i, fl_value beda_vtorogo, fl_value slovo, fl_value beda_slova, fl_value beda_obraza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Звено цепочки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка звеньев»
+ * @param shag — «шаг»: строка
+ * @param imya — «имя»: строка
+ * @param vsego — «всего»: число
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Сборка звеньев»
+ */
+fl_status kompilyator_flang_zveno_cepochki(fl_ctx *ctx, fl_value sborka, fl_value shag, fl_value imya, fl_value vsego, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Развернуть цепочку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shagi — «шаги»: список: строка
+ * @param imya — «имя»: строка
+ * @param mesto — «место»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_razvernut_cepochku(fl_ctx *ctx, fl_value shagi, fl_value imya, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать цепочку».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_razobrat_cepochku(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цепочки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_telo_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки цепочки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_oboyti_stroki_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка цепочки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_stroka_cepochki(fl_ctx *ctx, fl_value sborka, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка затем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка цепочки»
+ * @param r — «р»: «Разборщик»
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка цепочки»
+ */
+fl_status kompilyator_flang_stroka_zatem(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Не решено ли».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -5028,6 +5351,59 @@ fl_status kompilyator_flang_diagnostiki_razborschika(fl_ctx *ctx, fl_value r, fl
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_razobrat_dokument(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи до наследия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_klyuchi_do_naslediya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узлы по ключу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prochie — «прочие»: список: «Объявление разбора»
+ * @param klyuch — «ключ»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_uzly_po_klyuchu(fl_ctx *ctx, fl_value prochie, fl_value klyuch, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле если непусто».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param klyuch — «ключ»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_pole_esli_nepusto(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value uzly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле если есть».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param klyuch — «ключ»: строка
+ * @param uzel — «узел»: «Может быть узел при разборе»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_pole_esli_est(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля объявлений».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param prochie — «прочие»: список: «Объявление разбора»
+ * @param klyuchi — «ключи»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_polya_obyavleniy(fl_ctx *ctx, fl_value polya, fl_value prochie, fl_value klyuchi, fl_value imena, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разбор токенов».
@@ -5422,6 +5798,126 @@ fl_status kompilyator_flang_stroka_pravila_utility(fl_ctx *ctx, fl_value sborka,
 fl_status kompilyator_flang_razobrat_morfizm(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разобрать композицию».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_kompoziciyu(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать стрелку».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_strelku(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка стрелки»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка стрелки»
+ */
+fl_status kompilyator_flang_telo_strelki(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка стрелки»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка стрелки»
+ */
+fl_status kompilyator_flang_oboyti_stroki_strelki(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка стрелки»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Сборка стрелки»
+ */
+fl_status kompilyator_flang_stroka_strelki(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка закона стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка стрелки»
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Сборка стрелки»
+ */
+fl_status kompilyator_flang_stroka_zakona_strelki(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать закон стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_zakon_strelki(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело закона стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка закона»
+ * @return значение: «Сборка закона»
+ */
+fl_status kompilyator_flang_telo_zakona_strelki(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти строки закона стрелки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sborka — «сборка»: «Сборка закона»
+ * @return значение: «Сборка закона»
+ */
+fl_status kompilyator_flang_oboyti_stroki_zakona_strelki(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка примера закона».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка закона»
+ * @return значение: «Сборка закона»
+ */
+fl_status kompilyator_flang_stroka_primera_zakona(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать морфизм наследия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_morfizm_naslediya(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Есть текст ключа».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -5492,13 +5988,35 @@ fl_status kompilyator_flang_stroka_zakona(fl_ctx *ctx, fl_value sborka, fl_value
 fl_status kompilyator_flang_razobrat_teoremu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «С теоремой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_s_teoremoy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Со значением теоремы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param r — «р»: «Разборщик»
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_so_znacheniem_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Тело теоремы».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Обойти строки теоремы».
@@ -5508,37 +6026,113 @@ fl_status kompilyator_flang_telo_teoremy(fl_ctx *ctx, fl_value sborka, fl_value 
  * Хвостовой самовызов развёрнут в цикл: стек не растёт.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_oboyti_stroki_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_oboyti_stroki_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка теоремы».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
- * @return значение: «Сборка утилиты»
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_stroka_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка дано теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dano_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка данного объекта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dannogo_obekta(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка переменной теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_peremennoy_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка допущения теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dopuscheniya_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка утверждаем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_utverzhdaem(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка индукции теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_indukcii_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка шага теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_shaga_teoremy(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка доказано».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
+ */
+fl_status kompilyator_flang_stroka_dokazano(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка данных теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
- * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @return значение: «Сборка теоремы»
  */
-fl_status kompilyator_flang_stroka_dannyh_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_dannyh_teoremy(fl_ctx *ctx, fl_value sborka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка морфизма теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
  * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_stroka_morfizma_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
 
@@ -5546,11 +6140,174 @@ fl_status kompilyator_flang_stroka_morfizma_teoremy(fl_ctx *ctx, fl_value sborka
  * Функция flang «Строка вывода теоремы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param sborka — «сборка»: «Сборка утилиты»
+ * @param sborka — «сборка»: «Сборка теоремы»
  * @param r — «р»: «Разборщик»
- * @return значение: «Сборка утилиты»
+ * @return значение: «Сборка теоремы»
  */
 fl_status kompilyator_flang_stroka_vyvoda_teoremy(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова старой формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_slova_staroy_formy(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать теорему».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sborka — «сборка»: «Сборка теоремы»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_sobrat_teoremu(fl_ctx *ctx, fl_value sborka, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать шаг доказательства».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_shag_dokazatelstva(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это обоснование».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_obosnovanie(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это шаг доказательства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_shag_dokazatelstva(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать обоснование».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_obosnovanie(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование примером».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_primerom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование законом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_zakonom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обоснование предположением».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_obosnovanie_predpolozheniem(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать индукцию».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_indukciyu(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаи индукции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_sluchai_indukcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value uzly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать случай индукции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_razobrat_sluchay_indukcii(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги случая».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param nachalo — «начало»: «Токен»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_shagi_sluchaya(fl_ctx *ctx, fl_value r, fl_value imya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги случая блоком».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_shagi_sluchaya_blokom(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти шаги случая».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param imya — «имя»: строка
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Шаг узлов»
+ */
+fl_status kompilyator_flang_oboyti_shagi_sluchaya(fl_ctx *ctx, fl_value r, fl_value imya, fl_value uzly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разобрать файл-функтор».

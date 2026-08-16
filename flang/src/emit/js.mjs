@@ -1984,6 +1984,10 @@ function jsdocType(type, shared) {
 const ЧИСЛОВЫЕ_ИМЕНА = new Set([
   "нат", "натуральное", "nat", "naturo", "自然数",
   "целое", "integer", "entjero", "整数",
+  /* Вес стоит здесь по тому же праву: значение — тот же `number`, и `+∞` в
+     JavaScript это обычный `Infinity`. Отрезок [0, +∞] живёт в типизаторе;
+     напечатанный код о нём не знает. */
+  "вес", "стоимость", "weight", "pezo", "权重",
 ])
 
 function jsdocBase(type, shared) {

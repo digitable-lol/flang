@@ -85,7 +85,7 @@ docs/             документация; README и SPEC остаются ря
 сказать, какой командой он проверяется, лежит не там.
 
 Как раскладывать **свой** проект на FTS и flang — отдельный документ:
-[Раскладка проекта](docs/project-layout.ru.md).
+[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
@@ -531,7 +531,7 @@ flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --p
 хранилище остаются хозяину на Node. Граница проведена по одному правилу — *если у куска логики
 может быть пример, он уезжает в модель или в модуль языка*, где пример выполняется набором, — а
 правила именования файлов, раскладки каталогов, нарезки на модули и прогона в CI, выведенные из
-этого проекта, собраны в [Раскладке проекта](docs/project-layout.ru.md).
+этого проекта, собраны в [Раскладке проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
@@ -628,7 +628,7 @@ npm test              # всё: ядро, инструменты, flang
 - **[`tools/ftspec`](tools/ftspec/README.md)** — находит конфликты между спецификациями,
   инвариантами конституции и принятыми решениями до того, как начата реализация.
 - Ещё шесть инструментов в [`tools/`](tools), у каждого свой README, и read-only MCP-сервер
-  `fts-mcp` поверх stdio — см. [Agent integration](docs/agents.md).
+  `fts-mcp` поверх stdio — см. [Agent integration](docs/rukovodstvo/agents.md).
 - **Редакторы** — подсветка `.fts` (Vim, VS Code, tree-sitter, Chroma, Linguist) в
   [`editors/`](editors/README.md) и языковой сервер `.flang` в
   [`editors/flang-lsp`](editors/flang-lsp/README.md).
@@ -636,11 +636,11 @@ npm test              # всё: ядро, инструменты, flang
   зафиксированная база на Apple M1 Max лежат в [`benchmarks/`](benchmarks/README.md).
 
 Дальше по теме: [Описание языка](docs/overview.ru.md) ·
-[Справочник языка](docs/language.ru.md) · [Как работает FTS](docs/how-it-works.ru.md) ·
-[Исполняемые утилиты](docs/executable-utilities.ru.md) ·
-[Прикладные примеры](docs/examples.ru.md) · [Раскладка проекта](docs/project-layout.ru.md) ·
-[Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md) ·
-[Architecture](docs/architecture.md) (en) · [Adoption](docs/adoption.md) (en) ·
+[Справочник языка](docs/rukovodstvo/language.ru.md) · [Как работает FTS](docs/rukovodstvo/how-it-works.ru.md) ·
+[Исполняемые утилиты](docs/rukovodstvo/executable-utilities.ru.md) ·
+[Прикладные примеры](docs/rukovodstvo/examples.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
+[Зачем нужен FTS и как его интегрировать](docs/rukovodstvo/why-and-integration.ru.md) ·
+[Architecture](docs/rukovodstvo/architecture.md) (en) · [Adoption](docs/rukovodstvo/adoption.md) (en) ·
 [спецификация flang](flang/SPEC.md) · [контракт ядра на flang](flang/core/SPEC.md) ·
 [контракт самоприменения](flang/self/SPEC.md) · [контракт теорката](flang/cat/SPEC.md) ·
 [контракт конкурентности](flang/conc/SPEC.md).

@@ -3,7 +3,7 @@
 /**
  * tree-sitter grammar for FTS.
  *
- * FTS has three surfaces that coexist in real files (see docs/language.ru.md
+ * FTS has three surfaces that coexist in real files (see docs/rukovodstvo/language.ru.md
  * and tools/ftsc/src/parse-module.mjs upstream):
  *
  *  1. The natural, indentation-significant surface (Russian and English

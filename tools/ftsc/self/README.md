@@ -59,7 +59,7 @@ node --test tools/ftsc/test/self-check.test.mjs
 ## Почему полный self-hosting сегодня невозможен
 
 Это не осторожная формулировка, а вывод из устройства ядра
-(`docs/language.ru.md`, `src/model.ts`, `src/utility.ts`):
+(`docs/rukovodstvo/language.ru.md`, `src/model.ts`, `src/utility.ts`):
 
 1. **Строк как данных нет.** `является строкой` — это *тип поля*. Значение
    строки можно сравнить на равенство (`eq`, `neq`), и на этом всё: в языке нет

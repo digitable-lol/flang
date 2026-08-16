@@ -83,7 +83,7 @@ tool carries its own `tools/*/test/`, and `npm test` runs all three suites. A fi
 immediately assign to one of those commands is filed in the wrong place.
 
 Laying out **your own** project on FTS and flang is a separate document:
-[Раскладка проекта](docs/project-layout.ru.md).
+[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
@@ -524,7 +524,7 @@ domain is two FTS models, parsing and data handling are five flang modules, and 
 stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
 have an example, it moves into a model or a module, where the example is executable* — and the
 naming, layout, module-splitting and CI conventions derived from that project are collected in
-[Раскладка проекта](docs/project-layout.ru.md).
+[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
@@ -620,21 +620,21 @@ exception is `flang repl`, which talks to a human.
 - **[`tools/ftspec`](tools/ftspec/README.md)** — finds conflicts between specifications,
   constitution invariants and recorded decisions, before implementation starts.
 - Six more tools in [`tools/`](tools), each with its own README, and the read-only MCP server
-  `fts-mcp` over stdio — see [Agent integration](docs/agents.md).
+  `fts-mcp` over stdio — see [Agent integration](docs/rukovodstvo/agents.md).
 - **Editors** — syntax highlighting for `.fts` (Vim, VS Code, tree-sitter, Chroma, Linguist) in
   [`editors/`](editors/README.md), and the `.flang` language server in
   [`editors/flang-lsp`](editors/flang-lsp/README.md).
 - **Benchmarks** — `npm run benchmark` (`benchmark:quick` for a short run); the harness and a
   checked-in Apple M1 Max baseline are in [`benchmarks/`](benchmarks/README.md).
 
-Further reading — in English: [Architecture](docs/architecture.md) ·
-[Adoption](docs/adoption.md) · [Agents](docs/agents.md).
+Further reading — in English: [Architecture](docs/rukovodstvo/architecture.md) ·
+[Adoption](docs/rukovodstvo/adoption.md) · [Agents](docs/rukovodstvo/agents.md).
 In Russian (the language surface is Russian, and so is most of the prose):
-[Описание языка](docs/overview.ru.md) · [Справочник языка](docs/language.ru.md) ·
-[Как это работает](docs/how-it-works.ru.md) ·
-[Исполняемые утилиты](docs/executable-utilities.ru.md) ·
-[Прикладные примеры](docs/examples.ru.md) · [Раскладка проекта](docs/project-layout.ru.md) ·
-[Зачем нужен FTS и как его интегрировать](docs/why-and-integration.ru.md) ·
+[Описание языка](docs/overview.ru.md) · [Справочник языка](docs/rukovodstvo/language.ru.md) ·
+[Как это работает](docs/rukovodstvo/how-it-works.ru.md) ·
+[Исполняемые утилиты](docs/rukovodstvo/executable-utilities.ru.md) ·
+[Прикладные примеры](docs/rukovodstvo/examples.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
+[Зачем нужен FTS и как его интегрировать](docs/rukovodstvo/why-and-integration.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md) ·
 [self-hosting contract](flang/self/SPEC.md) · [category contract](flang/cat/SPEC.md) ·
 [concurrency contract](flang/conc/SPEC.md).

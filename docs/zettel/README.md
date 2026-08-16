@@ -80,6 +80,11 @@
 - [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](bliznec-otstayot-ot-uehavshego-etalona.md)
 - [Измеренный ноль ценнее ненайденного правила](otritsatelnyy-rezultat-tsenen.md)
 - [Замер скорости проверяет себя контрольной суммой](kontrolnaya-summa-v-zamere.md)
+- [Переименование файла не краснеет, а тихо выключает проверку чисел в прозе](perenos-fayla-tiho-vyklyuchaet-storozha.md)
+
+## Устройство репозитория
+
+- [Старый проект FTS нельзя вынести дёшево: от него зависят все восемь генераторов кода flang](dva-proekta-svyazany-generatorami.md)
 
 ## Найденные ошибки
 

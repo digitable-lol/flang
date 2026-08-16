@@ -30,9 +30,9 @@ import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
-import { globSync } from "./glob.mjs"
+import * as ядро from "./fts-oracle.mjs"
+import { текстМодели, файлыКорпуса } from "./corpus.mjs"
 
-const root = fileURLToPath(new URL("../../", import.meta.url))
 const файл = new URL("../core/evaluate.flang", import.meta.url)
 const исходник = readFileSync(файл, "utf8")
 /* Модуль берёт типы документа из соседнего слоя печати («использует «Печать
@@ -47,8 +47,6 @@ const модуль = parse(исходник, "core/evaluate.flang")
 const типы = checkTypes(программа)
 const тотальность = checkTotality(программа)
 
-const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
 
 /* ───────────────────────── сборка значений контракта ────────────────────── */
 
@@ -673,25 +671,9 @@ function сетка(structure, u) {
 }
 
 function модели() {
-  const файлы = [
-    ...globSync("examples/**/*.fts", { cwd: root }),
-    ...globSync("web/demo/models/*.fts", { cwd: root }),
-    ...globSync("tools/ftsc/stdlib/**/*.fts", { cwd: root }),
-  ].sort()
-  const документы = []
-  for (const файлМодели of файлы) {
-    const разобранный = parseModuleFile(readFileSync(root + файлМодели, "utf8"), файлМодели)
-    /* Файлы-функторы документами FTS не являются — у них нет категории. */
-    if (разобранный.kind !== "module") continue
-    let документ
-    try {
-      документ = ядро.compile(разобранный.body)
-    } catch {
-      continue
-    }
-    документы.push({ файл: файлМодели, документ })
-  }
-  return документы
+  /* Отказ ядра не ловится намеренно: см. довод в core-json. Все файлы корпуса —
+     документы, отобранные один раз при переносе в фикстуры. */
+  return файлыКорпуса().map((запись) => ({ файл: запись.имя, документ: ядро.compile(текстМодели(запись)) }))
 }
 
 const документы = модели()

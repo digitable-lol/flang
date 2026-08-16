@@ -121,6 +121,10 @@ fl_status kompilyator_flang_sozdat_shag_flaga(fl_ctx *ctx, fl_value r, fl_value 
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_shag_uzlov(fl_ctx *ctx, fl_value r, fl_value uzly, fl_value *out, fl_error *error);
 
+/* Запись FTS «Концы объекта функтора»: «откуда», «куда», «перевод», «есть перевод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_koncy_obekta_funktora(fl_ctx *ctx, fl_value otkuda, fl_value kuda, fl_value perevod, fl_value est_perevod, fl_value *out, fl_error *error);
+
 /* Запись FTS «Шаг полей»: «р», «перечень». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_shag_poley(fl_ctx *ctx, fl_value r, fl_value perechen, fl_value *out, fl_error *error);
@@ -7295,6 +7299,17 @@ fl_status kompilyator_flang_stroka_funktora(fl_ctx *ctx, fl_value sborka, fl_val
  * @return значение: «Сборка утилиты»
  */
 fl_status kompilyator_flang_stroka_obekta_funktora(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело и узел объекта функтора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sborka — «сборка»: «Сборка утилиты»
+ * @param r — «р»: «Разборщик»
+ * @param koncy — «концы»: «Концы объекта функтора»
+ * @return значение: «Сборка утилиты»
+ */
+fl_status kompilyator_flang_telo_i_uzel_obekta_funktora(fl_ctx *ctx, fl_value sborka, fl_value r, fl_value koncy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тело объекта функтора».

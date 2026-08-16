@@ -99541,6 +99541,26 @@ fl_status kompilyator_flang_nasledie_vhoda(fl_ctx *ctx, fl_value programma, fl_v
 }
 
 /*
+ * Функция flang «Теоремы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Может быть узел»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_teoremy_vhoda(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
+  if (fl_variant_is(programma, "Нет узла")) {
+    *result = fl_list(NULL, 0);
+    return FL_OK;
+  } else if (fl_variant_is(programma, "Есть узел")) {
+    fl_value naydeno = fl_nothing();
+    FL_TRY(fl_variant_field(ctx, programma, "узел", &naydeno, error)); /* «узел» */
+    return kompilyator_flang_elementy_polya(ctx, naydeno, kompilyator_flang_text_713, result, error);
+  } else {
+    return fl_match_fail(ctx, programma, error);
+  }
+}
+
+/*
  * Функция flang «Связать исходники».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -99612,15 +99632,19 @@ fl_status kompilyator_flang_svyazat_ot_vhoda(fl_ctx *ctx, fl_value tablica, fl_v
   fl_value fl_t20123 = fl_nothing();
   FL_TRY(kompilyator_flang_nasledie_vhoda(ctx, fl_t20122, &fl_t20123, error));
   fl_value fl_t20124 = fl_nothing();
-  FL_TRY(kompilyator_flang_sobrat_programmu(ctx, fl_t20119, fl_t20120, fl_t20121, fl_t20123, &fl_t20124, error));
+  FL_TRY(fl_field_get(ctx, shag, "программа", &fl_t20124, error));
   fl_value fl_t20125 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, posle, "беды", &fl_t20125, error));
-  fl_value fl_t20127[2];
-  fl_t20127[0] = fl_t20124; /* «программа» */
-  fl_t20127[1] = fl_t20125; /* «диагностики» */
+  FL_TRY(kompilyator_flang_teoremy_vhoda(ctx, fl_t20124, &fl_t20125, error));
   fl_value fl_t20126 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_37, fl_t20127, 2, &fl_t20126, error));
-  *result = fl_t20126;
+  FL_TRY(kompilyator_flang_sobrat_programmu(ctx, fl_t20119, fl_t20120, fl_t20121, fl_t20123, fl_t20125, &fl_t20126, error));
+  fl_value fl_t20127 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, posle, "беды", &fl_t20127, error));
+  fl_value fl_t20129[2];
+  fl_t20129[0] = fl_t20126; /* «программа» */
+  fl_t20129[1] = fl_t20127; /* «диагностики» */
+  fl_value fl_t20128 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_37, fl_t20129, 2, &fl_t20128, error));
+  *result = fl_t20128;
   return FL_OK;
 }
 
@@ -99632,27 +99656,58 @@ fl_status kompilyator_flang_svyazat_ot_vhoda(fl_ctx *ctx, fl_value tablica, fl_v
  * @param tipy — «типы»: список: «Значение»
  * @param funkcii — «функции»: список: «Значение»
  * @param nasledie — «наследие»: список: «Значение»
+ * @param teoremy — «теоремы»: список: «Значение»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value *result, fl_error *error) {
-  fl_value *fl_t20128 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 5, &fl_t20128, error));
-  fl_value fl_t20129 = fl_nothing();
-  FL_TRY(kompilyator_flang_pole_chislom(ctx, kompilyator_flang_text_940, fl_number(1.0), &fl_t20129, error));
-  fl_t20128[0] = fl_t20129;
-  fl_value fl_t20130 = fl_nothing();
-  FL_TRY(kompilyator_flang_pole_teksta(ctx, kompilyator_flang_text_711, modul, &fl_t20130, error));
-  fl_t20128[1] = fl_t20130;
+fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value teoremy, fl_value *result, fl_error *error) {
+  fl_value *fl_t20130 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 5, &fl_t20130, error));
   fl_value fl_t20131 = fl_nothing();
-  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_941, tipy, &fl_t20131, error));
-  fl_t20128[2] = fl_t20131;
+  FL_TRY(kompilyator_flang_pole_chislom(ctx, kompilyator_flang_text_940, fl_number(1.0), &fl_t20131, error));
+  fl_t20130[0] = fl_t20131;
   fl_value fl_t20132 = fl_nothing();
-  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_942, funkcii, &fl_t20132, error));
-  fl_t20128[3] = fl_t20132;
+  FL_TRY(kompilyator_flang_pole_teksta(ctx, kompilyator_flang_text_711, modul, &fl_t20132, error));
+  fl_t20130[1] = fl_t20132;
   fl_value fl_t20133 = fl_nothing();
-  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_943, nasledie, &fl_t20133, error));
-  fl_t20128[4] = fl_t20133;
-  return kompilyator_flang_uzel_zapisi(ctx, fl_list(fl_t20128, 5), result, error);
+  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_941, tipy, &fl_t20133, error));
+  fl_t20130[2] = fl_t20133;
+  fl_value fl_t20134 = fl_nothing();
+  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_942, funkcii, &fl_t20134, error));
+  fl_t20130[3] = fl_t20134;
+  fl_value fl_t20135 = fl_nothing();
+  FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_943, nasledie, &fl_t20135, error));
+  fl_t20130[4] = fl_t20135;
+  fl_value fl_t20136 = fl_nothing();
+  FL_TRY(kompilyator_flang_teoremy_esli_est(ctx, fl_list(fl_t20130, 5), teoremy, &fl_t20136, error));
+  return kompilyator_flang_uzel_zapisi(ctx, fl_t20136, result, error);
+}
+
+/*
+ * Функция flang «Теоремы если есть».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param teoremy — «теоремы»: список: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_teoremy_esli_est(fl_ctx *ctx, fl_value polya, fl_value teoremy, fl_value *result, fl_error *error) {
+  fl_value fl_t20137 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, teoremy, &fl_t20137, error));
+  fl_value fl_t20138 = fl_nothing();
+  FL_TRY(fl_gt(ctx, fl_t20137, fl_number(0.0), &fl_t20138, error));
+  bool fl_t20139 = false;
+  FL_TRY(fl_cond(ctx, fl_t20138, &fl_t20139, error));
+  if (fl_t20139) {
+    fl_value fl_t20140 = fl_nothing();
+    FL_TRY(kompilyator_flang_pole_spiskom(ctx, kompilyator_flang_text_713, teoremy, &fl_t20140, error));
+    fl_value fl_t20141 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, fl_t20140, polya, &fl_t20141, error));
+    *result = fl_t20141;
+    return FL_OK;
+  } else {
+    *result = polya;
+    return FL_OK;
+  }
 }
 
 /*
@@ -99663,7 +99718,7 @@ fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_val
  * @return значение: «Значение»
  */
 fl_status kompilyator_flang_pustaya_programma(fl_ctx *ctx, fl_value modul, fl_value *result, fl_error *error) {
-  return kompilyator_flang_sobrat_programmu(ctx, modul, fl_list(NULL, 0), fl_list(NULL, 0), fl_list(NULL, 0), result, error);
+  return kompilyator_flang_sobrat_programmu(ctx, modul, fl_list(NULL, 0), fl_list(NULL, 0), fl_list(NULL, 0), fl_list(NULL, 0), result, error);
 }
 
 /*
@@ -99676,32 +99731,32 @@ fl_status kompilyator_flang_pustaya_programma(fl_ctx *ctx, fl_value modul, fl_va
  * @return значение: «Итог сборки»
  */
 fl_status kompilyator_flang_pechat_v_c_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t20134 = fl_nothing();
-  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20134, error));
-  const fl_value svyazano = fl_t20134; /* пусть «связано» */
-  fl_value fl_t20135 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20135, error));
-  fl_value fl_t20136 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t20135, &fl_t20136, error));
-  fl_value fl_t20137 = fl_nothing();
-  FL_TRY(fl_gt(ctx, fl_t20136, fl_number(0.0), &fl_t20137, error));
-  bool fl_t20138 = false;
-  FL_TRY(fl_cond(ctx, fl_t20137, &fl_t20138, error));
-  if (fl_t20138) {
-    fl_value fl_t20139 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20139, error));
-    fl_value fl_t20141[3];
-    fl_t20141[0] = fl_list(NULL, 0); /* «файлы» */
-    fl_t20141[1] = kompilyator_flang_text_173; /* «ошибка» */
-    fl_t20141[2] = fl_t20139; /* «диагностики» */
-    fl_value fl_t20140 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, kompilyator_flang_names_143, fl_t20141, 3, &fl_t20140, error));
-    *result = fl_t20140;
+  fl_value fl_t20142 = fl_nothing();
+  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20142, error));
+  const fl_value svyazano = fl_t20142; /* пусть «связано» */
+  fl_value fl_t20143 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20143, error));
+  fl_value fl_t20144 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t20143, &fl_t20144, error));
+  fl_value fl_t20145 = fl_nothing();
+  FL_TRY(fl_gt(ctx, fl_t20144, fl_number(0.0), &fl_t20145, error));
+  bool fl_t20146 = false;
+  FL_TRY(fl_cond(ctx, fl_t20145, &fl_t20146, error));
+  if (fl_t20146) {
+    fl_value fl_t20147 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20147, error));
+    fl_value fl_t20149[3];
+    fl_t20149[0] = fl_list(NULL, 0); /* «файлы» */
+    fl_t20149[1] = kompilyator_flang_text_173; /* «ошибка» */
+    fl_t20149[2] = fl_t20147; /* «диагностики» */
+    fl_value fl_t20148 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, kompilyator_flang_names_143, fl_t20149, 3, &fl_t20148, error));
+    *result = fl_t20148;
     return FL_OK;
   } else {
-    fl_value fl_t20142 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20142, error));
-    return kompilyator_flang_napechatat_svyazannoe(ctx, fl_t20142, nastroyki, result, error);
+    fl_value fl_t20150 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20150, error));
+    return kompilyator_flang_napechatat_svyazannoe(ctx, fl_t20150, nastroyki, result, error);
   }
 }
 
@@ -99714,22 +99769,22 @@ fl_status kompilyator_flang_pechat_v_c_ot_ishodnikov(fl_ctx *ctx, fl_value fayly
  * @return значение: «Итог сборки»
  */
 fl_status kompilyator_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t20143 = fl_nothing();
-  FL_TRY(kompilyator_flang_otmetit_mery(ctx, programma, &fl_t20143, error));
-  fl_value fl_t20144 = fl_nothing();
-  FL_TRY(kompilyator_flang_pechat_programmy(ctx, fl_t20143, nastroyki, &fl_t20144, error));
-  const fl_value itog = fl_t20144; /* пусть «итог» */
-  fl_value fl_t20145 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "файлы", &fl_t20145, error));
-  fl_value fl_t20146 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "ошибка", &fl_t20146, error));
-  fl_value fl_t20148[3];
-  fl_t20148[0] = fl_t20145; /* «файлы» */
-  fl_t20148[1] = fl_t20146; /* «ошибка» */
-  fl_t20148[2] = fl_list(NULL, 0); /* «диагностики» */
-  fl_value fl_t20147 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_143, fl_t20148, 3, &fl_t20147, error));
-  *result = fl_t20147;
+  fl_value fl_t20151 = fl_nothing();
+  FL_TRY(kompilyator_flang_otmetit_mery(ctx, programma, &fl_t20151, error));
+  fl_value fl_t20152 = fl_nothing();
+  FL_TRY(kompilyator_flang_pechat_programmy(ctx, fl_t20151, nastroyki, &fl_t20152, error));
+  const fl_value itog = fl_t20152; /* пусть «итог» */
+  fl_value fl_t20153 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "файлы", &fl_t20153, error));
+  fl_value fl_t20154 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "ошибка", &fl_t20154, error));
+  fl_value fl_t20156[3];
+  fl_t20156[0] = fl_t20153; /* «файлы» */
+  fl_t20156[1] = fl_t20154; /* «ошибка» */
+  fl_t20156[2] = fl_list(NULL, 0); /* «диагностики» */
+  fl_value fl_t20155 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_143, fl_t20156, 3, &fl_t20155, error));
+  *result = fl_t20155;
   return FL_OK;
 }
 
@@ -99742,50 +99797,50 @@ fl_status kompilyator_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programm
  * @return значение: «Итог проверки исходников»
  */
 fl_status kompilyator_flang_proverit_ishodniki(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t20149 = fl_nothing();
-  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20149, error));
-  const fl_value svyazano = fl_t20149; /* пусть «связано» */
-  fl_value fl_t20150 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20150, error));
-  fl_value fl_t20151 = fl_nothing();
-  FL_TRY(kompilyator_flang_proverit_tipy(ctx, fl_t20150, &fl_t20151, error));
-  const fl_value tipy = fl_t20151; /* пусть «типы» */
-  fl_value fl_t20152 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20152, error));
-  fl_value fl_t20153 = fl_nothing();
-  FL_TRY(kompilyator_flang_proverit_totalnost(ctx, fl_t20152, &fl_t20153, error));
-  const fl_value totalnost = fl_t20153; /* пусть «тотальность» */
-  fl_value fl_t20154 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20154, error));
-  fl_value fl_t20155 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, tipy, "диагностики", &fl_t20155, error));
-  fl_value fl_t20156 = fl_nothing();
-  FL_TRY(kompilyator_flang_slit_bedy(ctx, fl_t20154, fl_t20155, &fl_t20156, error));
   fl_value fl_t20157 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "диагностики", &fl_t20157, error));
+  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20157, error));
+  const fl_value svyazano = fl_t20157; /* пусть «связано» */
   fl_value fl_t20158 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t20157, "отобразить", &fl_t20158, error));
-  fl_value *fl_t20159 = NULL;
-  size_t fl_t20160 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t20158.as.list.count, &fl_t20159, error));
-  for (size_t fl_t20161 = 0; fl_t20161 < fl_t20158.as.list.count; fl_t20161 += 1) {
-    const fl_value d = fl_t20158.as.list.items[fl_t20161]; /* «д» */
-    fl_value fl_t20162 = fl_nothing();
-    FL_TRY(kompilyator_flang_beda_iz_analiza(ctx, d, &fl_t20162, error));
-    fl_t20159[fl_t20160] = fl_t20162;
-    fl_t20160 += 1;
-  }
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20158, error));
+  fl_value fl_t20159 = fl_nothing();
+  FL_TRY(kompilyator_flang_proverit_tipy(ctx, fl_t20158, &fl_t20159, error));
+  const fl_value tipy = fl_t20159; /* пусть «типы» */
+  fl_value fl_t20160 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20160, error));
+  fl_value fl_t20161 = fl_nothing();
+  FL_TRY(kompilyator_flang_proverit_totalnost(ctx, fl_t20160, &fl_t20161, error));
+  const fl_value totalnost = fl_t20161; /* пусть «тотальность» */
+  fl_value fl_t20162 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t20162, error));
   fl_value fl_t20163 = fl_nothing();
-  FL_TRY(kompilyator_flang_slit_bedy(ctx, fl_t20156, fl_list(fl_t20159, fl_t20160), &fl_t20163, error));
-  const fl_value vse = fl_t20163; /* пусть «все» */
-  fl_value fl_t20164 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, vse, &fl_t20164, error));
-  fl_value fl_t20166[2];
-  fl_t20166[0] = fl_t20164; /* «годно» */
-  fl_t20166[1] = vse; /* «диагностики» */
+  FL_TRY(fl_field_get(ctx, tipy, "диагностики", &fl_t20163, error));
+  fl_value fl_t20164 = fl_nothing();
+  FL_TRY(kompilyator_flang_slit_bedy(ctx, fl_t20162, fl_t20163, &fl_t20164, error));
   fl_value fl_t20165 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_144, fl_t20166, 2, &fl_t20165, error));
-  *result = fl_t20165;
+  FL_TRY(fl_field_get(ctx, totalnost, "диагностики", &fl_t20165, error));
+  fl_value fl_t20166 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t20165, "отобразить", &fl_t20166, error));
+  fl_value *fl_t20167 = NULL;
+  size_t fl_t20168 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t20166.as.list.count, &fl_t20167, error));
+  for (size_t fl_t20169 = 0; fl_t20169 < fl_t20166.as.list.count; fl_t20169 += 1) {
+    const fl_value d = fl_t20166.as.list.items[fl_t20169]; /* «д» */
+    fl_value fl_t20170 = fl_nothing();
+    FL_TRY(kompilyator_flang_beda_iz_analiza(ctx, d, &fl_t20170, error));
+    fl_t20167[fl_t20168] = fl_t20170;
+    fl_t20168 += 1;
+  }
+  fl_value fl_t20171 = fl_nothing();
+  FL_TRY(kompilyator_flang_slit_bedy(ctx, fl_t20164, fl_list(fl_t20167, fl_t20168), &fl_t20171, error));
+  const fl_value vse = fl_t20171; /* пусть «все» */
+  fl_value fl_t20172 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, vse, &fl_t20172, error));
+  fl_value fl_t20174[2];
+  fl_t20174[0] = fl_t20172; /* «годно» */
+  fl_t20174[1] = vse; /* «диагностики» */
+  fl_value fl_t20173 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, kompilyator_flang_names_144, fl_t20174, 2, &fl_t20173, error));
+  *result = fl_t20173;
   return FL_OK;
 }
 
@@ -99798,12 +99853,12 @@ fl_status kompilyator_flang_proverit_ishodniki(fl_ctx *ctx, fl_value fayly, fl_v
  * @return значение: строка
  */
 fl_status kompilyator_flang_pechat_svyazannogo_ast(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t20167 = fl_nothing();
-  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20167, error));
-  const fl_value svyazano = fl_t20167; /* пусть «связано» */
-  fl_value fl_t20168 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20168, error));
-  return kompilyator_flang_pechat_znacheniya(ctx, fl_t20168, result, error);
+  fl_value fl_t20175 = fl_nothing();
+  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20175, error));
+  const fl_value svyazano = fl_t20175; /* пусть «связано» */
+  fl_value fl_t20176 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20176, error));
+  return kompilyator_flang_pechat_znacheniya(ctx, fl_t20176, result, error);
 }
 
 /*
@@ -99815,16 +99870,16 @@ fl_status kompilyator_flang_pechat_svyazannogo_ast(fl_ctx *ctx, fl_value fayly, 
  * @return значение: число
  */
 fl_status kompilyator_flang_chislo_svyazannyh_funkciy(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t20169 = fl_nothing();
-  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20169, error));
-  const fl_value svyazano = fl_t20169; /* пусть «связано» */
-  fl_value fl_t20170 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20170, error));
-  fl_value fl_t20171 = fl_nothing();
-  FL_TRY(kompilyator_flang_elementy_polya(ctx, fl_t20170, kompilyator_flang_text_942, &fl_t20171, error));
-  fl_value fl_t20172 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t20171, &fl_t20172, error));
-  *result = fl_t20172;
+  fl_value fl_t20177 = fl_nothing();
+  FL_TRY(kompilyator_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t20177, error));
+  const fl_value svyazano = fl_t20177; /* пусть «связано» */
+  fl_value fl_t20178 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t20178, error));
+  fl_value fl_t20179 = fl_nothing();
+  FL_TRY(kompilyator_flang_elementy_polya(ctx, fl_t20178, kompilyator_flang_text_942, &fl_t20179, error));
+  fl_value fl_t20180 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t20179, &fl_t20180, error));
+  *result = fl_t20180;
   return FL_OK;
 }
 
@@ -113967,6 +114022,13 @@ fl_status kompilyator_flang_call(fl_ctx *ctx, const char *name, const fl_value *
     }
     return kompilyator_flang_nasledie_vhoda(ctx, args[0], result, error);
   }
+  if (strcmp(name, "Теоремы входа") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Теоремы входа", (unsigned long)1, (unsigned long)count);
+    }
+    return kompilyator_flang_teoremy_vhoda(ctx, args[0], result, error);
+  }
   if (strcmp(name, "Связать исходники") == 0) {
     if (count != 2) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
@@ -113982,11 +114044,18 @@ fl_status kompilyator_flang_call(fl_ctx *ctx, const char *name, const fl_value *
     return kompilyator_flang_svyazat_ot_vhoda(ctx, args[0], args[1], result, error);
   }
   if (strcmp(name, "Собрать программу") == 0) {
-    if (count != 4) {
+    if (count != 5) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
-                     "Собрать программу", (unsigned long)4, (unsigned long)count);
+                     "Собрать программу", (unsigned long)5, (unsigned long)count);
     }
-    return kompilyator_flang_sobrat_programmu(ctx, args[0], args[1], args[2], args[3], result, error);
+    return kompilyator_flang_sobrat_programmu(ctx, args[0], args[1], args[2], args[3], args[4], result, error);
+  }
+  if (strcmp(name, "Теоремы если есть") == 0) {
+    if (count != 2) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Теоремы если есть", (unsigned long)2, (unsigned long)count);
+    }
+    return kompilyator_flang_teoremy_esli_est(ctx, args[0], args[1], result, error);
   }
   if (strcmp(name, "Пустая программа") == 0) {
     if (count != 1) {
@@ -119495,6 +119564,7 @@ static const fl_entry_param kompilyator_flang_entry_params[] = {
   { "Таблица исходников", "файлы", 206 },
   { "Модуль входа", "программа", 203 },
   { "Наследие входа", "программа", 203 },
+  { "Теоремы входа", "программа", 203 },
   { "Связать исходники", "файлы", 206 },
   { "Связать исходники", "вход", 0 },
   { "Связать от входа", "таблица", 66 },
@@ -119503,6 +119573,9 @@ static const fl_entry_param kompilyator_flang_entry_params[] = {
   { "Собрать программу", "типы", 14 },
   { "Собрать программу", "функции", 14 },
   { "Собрать программу", "наследие", 14 },
+  { "Собрать программу", "теоремы", 14 },
+  { "Теоремы если есть", "поля", 15 },
+  { "Теоремы если есть", "теоремы", 14 },
   { "Пустая программа", "модуль", 0 },
   { "Печать в C от исходников", "файлы", 206 },
   { "Печать в C от исходников", "вход", 0 },
@@ -119521,7 +119594,7 @@ static const fl_entry_table kompilyator_flang_entry_table = {
   kompilyator_flang_entry_types, 208,
   kompilyator_flang_entry_fields, 494,
   kompilyator_flang_entry_variants, 47,
-  kompilyator_flang_entry_params, 4715
+  kompilyator_flang_entry_params, 4719
 };
 
 const fl_entry_table *kompilyator_flang_entry(void) {

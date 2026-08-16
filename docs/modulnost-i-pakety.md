@@ -162,7 +162,7 @@
 | где | файл | строк |
 |---|---|---|
 | эталон на JS | [`flang/src/link.mjs`](../flang/src/link.mjs) | 570 |
-| на самом flang | [`flang/self/bootstrap/compiler.flang`](../flang/self/bootstrap/compiler.flang) | 650 (68 функций) |
+| на самом flang | [`flang/self/bootstrap/compiler.flang`](../flang/self/bootstrap/compiler.flang) | 685 (70 функций) |
 | сторож | [`flang/test/link.test.mjs`](../flang/test/link.test.mjs) | 1242 |
 | сторож самораскрутки | [`flang/test/self-bootstrap.test.mjs`](../flang/test/self-bootstrap.test.mjs) | 1253 |
 
@@ -171,7 +171,7 @@
 `«Второй проход»` (:529). Тест «связывание на flang повторяет `src/link.mjs`»
 сверяет JSON связанной программы **побайтово** и диагностики по коду и тексту.
 Значит, цена любой правки модульности — это тройка «JS, flang, сторож», и
-перепечатка порождённого C (`bootstrap/kompilyator_flang.c`, 119 529 строк).
+перепечатка порождённого C (`bootstrap/kompilyator_flang.c`, 119 602 строки).
 
 Важное следствие для будущего хранилища: **чтения файлов в языке нет вовсе**.
 Исходники приезжают в компилятор на flang списком объектов

@@ -23049,6 +23049,15 @@ fl_status kompilyator_flang_modul_vhoda(fl_ctx *ctx, fl_value programma, fl_valu
 fl_status kompilyator_flang_nasledie_vhoda(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Теоремы входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Может быть узел»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_teoremy_vhoda(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Связать исходники».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -23076,9 +23085,20 @@ fl_status kompilyator_flang_svyazat_ot_vhoda(fl_ctx *ctx, fl_value tablica, fl_v
  * @param tipy — «типы»: список: «Значение»
  * @param funkcii — «функции»: список: «Значение»
  * @param nasledie — «наследие»: список: «Значение»
+ * @param teoremy — «теоремы»: список: «Значение»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value teoremy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Теоремы если есть».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param teoremy — «теоремы»: список: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_teoremy_esli_est(fl_ctx *ctx, fl_value polya, fl_value teoremy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Пустая программа».

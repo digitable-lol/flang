@@ -411,6 +411,15 @@ typedef struct fl_conc_link {
  * Иначе доставка сообщения могла бы не удаться из-за нехватки памяти В
  * ПЛАНИРОВЩИКЕ, а такого вида отказа модель не знает.
  */
+/** Замок с набивкой. Набивка не суеверие: `pthread_mutex_t` — сорок байт, то
+    есть в строку кэша их влезает полтора, и замки СОСЕДНИХ по номеру процессов
+    оказывались в одной строке. Процессы эти в рабочем режиме бегут на разных
+    ядрах, и строка гуляла бы между ними на каждом взятии. */
+typedef struct fl_conc_guard {
+  pthread_mutex_t lock;
+  char padding[64];
+} fl_conc_guard;
+
 typedef struct fl_conc_shard {
   pthread_mutex_t lock;
   size_t head;
@@ -430,7 +439,7 @@ typedef struct fl_conc_par {
   /* Пул замков, а не замок на процесс: замок ящика и кучи. Номер процесса
      берётся по остатку — ложное столкновение раз в `FL_CONC_LOCKS`, и стоит оно
      ожидания, а не ошибки. */
-  pthread_mutex_t *locks;
+  fl_conc_guard *locks;
   size_t lock_count;
   bool *seen; /* рабочий массив надзора: по одному на поток */
   unsigned char *state;   /* по процессу: покоится | в очереди | бежит */
@@ -603,7 +612,7 @@ static void fl_conc_big_unlock(fl_conc_sched *sched) {
 static void fl_conc_hold(fl_conc_sched *sched, size_t process) {
 #ifdef FL_CONC_THREADS
   if (sched->par != NULL) {
-    pthread_mutex_lock(&sched->par->locks[process & (sched->par->lock_count - 1u)]);
+    pthread_mutex_lock(&sched->par->locks[process & (sched->par->lock_count - 1u)].lock);
   }
 #else
   (void)sched;
@@ -614,7 +623,7 @@ static void fl_conc_hold(fl_conc_sched *sched, size_t process) {
 static void fl_conc_drop(fl_conc_sched *sched, size_t process) {
 #ifdef FL_CONC_THREADS
   if (sched->par != NULL) {
-    pthread_mutex_unlock(&sched->par->locks[process & (sched->par->lock_count - 1u)]);
+    pthread_mutex_unlock(&sched->par->locks[process & (sched->par->lock_count - 1u)].lock);
   }
 #else
   (void)sched;
@@ -2216,11 +2225,13 @@ size_t fl_conc_cores(void) {
  * возвращены, и «роздано» равно «выполнено» до единицы. Поэтому выполненных
  * пробегов ровно столько, сколько объявлено, и ни одним меньше.
  */
-static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want, double *from, bool *spent) {
+static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want, size_t used, double *from,
+                            bool *spent) {
   fl_conc_par *par = sched->par;
   size_t take = 0;
   *spent = false;
   pthread_mutex_lock(&par->big);
+  par->done += used;
   if (par->handed < max_turns) {
     take = max_turns - par->handed;
     if (take > want) {
@@ -2245,8 +2256,8 @@ static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want,
   return take;
 }
 
-/** Свести пачку: невыбранные пробеги вернуть, выполненные записать. Одним
-    заходом под замок, потому что вопрос к ним один — «сколько осталось». */
+/** Свести счёт: невыбранные пробеги вернуть, выполненные записать. Зовётся,
+    когда поток остаётся без работы, — то есть редко. */
 static void fl_conc_settle(fl_conc_sched *sched, size_t unused, size_t drained) {
   fl_conc_par *par = sched->par;
   if (unused == 0 && drained == 0) {
@@ -2360,6 +2371,14 @@ static void fl_conc_halt(fl_conc_par *par) {
  * Заодно счётчик перестал расти на каждом пробеге: `fl_conc_drain` считает у
  * себя в переменной и записывает раз на пачку.
  */
+/** Ломоть пробегов, взятый потоком у общего счёта, и что от него осталось.
+    Живёт дольше пачки — в этом весь смысл: общий замок берётся раз на ломоть. */
+typedef struct fl_conc_purse {
+  size_t left;  /* сколько пробегов ещё можно выполнить */
+  size_t used;  /* сколько выполнено с прошлого захода к общему счёту */
+  double clock; /* виртуальное время следующего пробега */
+} fl_conc_purse;
+
 typedef struct fl_conc_crew {
   fl_conc_sched *sched;
   size_t worker;
@@ -2385,8 +2404,8 @@ static void fl_conc_doze(void) {
  * остаток ломтя. Сообщение снимается из ящика ПОД ЗАМКОМ и ровно один раз:
  * снять его и не выполнить значило бы потерять письмо молча.
  */
-static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, size_t process, size_t left,
-                            double clock) {
+static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_purse *purse, size_t process,
+                            size_t max_turns, bool *spent) {
   fl_conc_par *par = sched->par;
   size_t drained = 0;
   /* Признак остановки внутри пачки НЕ спрашивается. Пачка не длиннее
@@ -2395,7 +2414,18 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, size_t pro
      названа в заголовке списком того, что перестало быть гарантией: отказ,
      дошедший доверху, останавливает программу не «в тот же миг», а к концу
      текущих пачек. */
-  while (drained < left) {
+  *spent = false;
+  while (drained < FL_CONC_BATCH) {
+    if (purse->left == 0) {
+      /* Ломоть кончился — новый берётся ЗДЕСЬ, а не на границе пачки: общий
+         замок обязан браться раз на тысячу пробегов, а не раз на шестьдесят
+         четыре. Выполненное с прошлого захода засчитывается тем же движением. */
+      purse->left = fl_conc_slice(sched, max_turns, FL_CONC_TURN_SLICE, purse->used, &purse->clock, spent);
+      purse->used = 0;
+      if (purse->left == 0) {
+        break;
+      }
+    }
     fl_value message = fl_nothing();
     bool got = false;
     bool escalated = false;
@@ -2409,8 +2439,10 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, size_t pro
       break;
     }
     drained += 1;
-    if (fl_conc_turn(sched, hand, process, message, clock + (double)(drained - 1), &escalated,
-                     &par->error) != FL_OK) {
+    purse->left -= 1;
+    purse->used += 1;
+    purse->clock += 1.0;
+    if (fl_conc_turn(sched, hand, process, message, purse->clock - 1.0, &escalated, &par->error) != FL_OK) {
       pthread_mutex_lock(&par->big);
       par->status = FL_ERROR;
       pthread_mutex_unlock(&par->big);
@@ -2446,6 +2478,7 @@ static void *fl_conc_worker(void *raw) {
   fl_conc_sched *sched = crew->sched;
   fl_conc_par *par = sched->par;
   fl_conc_hand hand;
+  fl_conc_purse purse;
   fl_ctx ctx;
   fl_arena draft;
   unsigned spins = 0;
@@ -2465,11 +2498,11 @@ static void *fl_conc_worker(void *raw) {
   hand.seen = par->seen == NULL ? NULL : &par->seen[crew->worker * sched->plan->supervisor_count];
   hand.worker = crew->worker;
 
+  purse.left = 0;
+  purse.used = 0;
+  purse.clock = 0.0;
   while (!fl_conc_stopped(par)) {
     size_t process = fl_conc_take(par, crew->worker);
-    size_t drained = 0;
-    size_t left = 0;
-    double clock = 0.0;
     /* Оба вида безделья — «работы нет» и «пробегов не досталось» — ведут в одно
        и то же место. Порознь они дали бы вечный круг: поток, которому не
        достаётся пробегов, снимал бы процесс со склада и клал обратно, никогда не
@@ -2493,23 +2526,10 @@ static void *fl_conc_worker(void *raw) {
       par->state[process] = FL_CONC_RUNNING;
       fl_conc_drop(sched, process);
 
-      /* Ломоть пробегов — на ПАЧКУ ЦЕЛИКОМ, а не «сколько писем в ящике сейчас».
-         Второе кажется бережливее и было измерено: на стенде, где процесс на
-         каждом пробеге пишет сам себе, в ящике всегда ровно одно письмо, —
-         значит ломоть выходил в один пробег, и за каждый пробег платили общим
-         замком и складом. Прогон на восьми потоках стал МЕДЛЕННЕЕ однопоточного
-         вдвое при 14 ядрах процессорного времени. Ровно та цена, которую замер
-         шага 6 назвал заранее: раздать другому потоку ПРОБЕГ в четыре–
-         четырнадцать раз дороже, чем выполнить его на месте.
-
-         Невыбранный остаток возвращается тут же по окончании пачки, поэтому на
-         точность предела щедрость ломтя не влияет. */
       bool spent = false;
-      left = fl_conc_slice(sched, crew->max_turns, FL_CONC_BATCH, &clock, &spent);
-      idled = left == 0;
-      drained = fl_conc_drain(sched, &hand, process, left, clock);
+      size_t drained = fl_conc_drain(sched, &hand, &purse, process, crew->max_turns, &spent);
       crew->executed += drained;
-      fl_conc_settle(sched, left - drained, drained);
+      idled = drained == 0;
       if (spent) {
         fl_conc_halt(par);
       }
@@ -2536,6 +2556,13 @@ static void *fl_conc_worker(void *raw) {
       continue;
     }
     spins = 0;
+    /* Ломоть возвращается ровно здесь: поток уходит спать, и держать за собой
+       пробеги, которые могли бы достаться соседу, ему больше незачем. Заодно это
+       и есть то мгновение, в которое «роздано» сходится с «выполнено», — а без
+       такого мгновения предел пробегов нельзя было бы объявить точным. */
+    fl_conc_settle(sched, purse.left, purse.used);
+    purse.left = 0;
+    purse.used = 0;
     {
       bool stop = false;
       pthread_mutex_lock(&par->idle_lock);
@@ -2677,15 +2704,15 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
        столкновение раз в четыре тысячи. Соседям по остатку от деления это стоит
        ожидания, а не ошибки: замок защищает ящик и кучу, а не порядок. */
     par.lock_count = FL_CONC_LOCKS;
-    par.locks = (pthread_mutex_t *)fl_arena_alloc(sched.home, par.lock_count * sizeof(pthread_mutex_t));
+    par.locks = (fl_conc_guard *)fl_arena_alloc(sched.home, par.lock_count * sizeof(fl_conc_guard));
     if (par.locks == NULL) {
       return fl_conc_memory(ctx, error);
     }
     for (index = 0; index < par.lock_count; index += 1) {
-      if (pthread_mutex_init(&par.locks[index], NULL) != 0) {
+      if (pthread_mutex_init(&par.locks[index].lock, NULL) != 0) {
         while (index > 0) {
           index -= 1;
-          pthread_mutex_destroy(&par.locks[index]);
+          pthread_mutex_destroy(&par.locks[index].lock);
         }
         return fl_fail(ctx, error, "FLANG_PROCESS", "не завёлся замок планировщика");
       }
@@ -3030,7 +3057,7 @@ finish:
   if (sched.par != NULL && par.ready) {
     sched.par = NULL;
     for (index = 0; index < par.lock_count; index += 1) {
-      pthread_mutex_destroy(&par.locks[index]);
+      pthread_mutex_destroy(&par.locks[index].lock);
     }
     for (index = 0; index < workers; index += 1) {
       pthread_mutex_destroy(&par.shards[index].lock);

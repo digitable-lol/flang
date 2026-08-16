@@ -20,12 +20,12 @@
 
 import { WASI } from 'node:wasi';
 import { readFile } from 'node:fs/promises';
-import { argv, env, exit, cwd } from 'node:process';
+import { argv, env, cwd } from 'node:process';
 
 const wasmPath = argv[2];
 if (!wasmPath) {
   process.stderr.write('использование: node scripts/wasm-run.mjs модуль.wasm [аргументы...]\n');
-  exit(2);
+  process.exitCode = 2;
 }
 
 const wasi = new WASI({
@@ -40,4 +40,15 @@ const wasi = new WASI({
 
 const module_ = await WebAssembly.compile(await readFile(wasmPath));
 const instance = await WebAssembly.instantiate(module_, wasi.getImportObject());
-exit(wasi.start(instance) ?? 0);
+
+/*
+ * Код возврата ставится полем, а НЕ `process.exit()`, и это не стилистика.
+ * Когда stdout — труба, Node пишет в неё асинхронно, а `process.exit()`
+ * обрывает процесс, не дожидаясь слива: вывод обрезается в случайном месте.
+ * Измерено на этом самом файле — 8 прогонов одного и того же модуля через
+ * `execFileSync` дали 171819 байт пять раз и 158167, 163072, 166220 остальные
+ * три, тогда как обычный бинарник давал 171819 все восемь раз. Обрыв был
+ * дефектом ПРОГОНЩИКА и выглядел как расхождение wasm с обычной сборкой, то
+ * есть ровно как то, что этот замер и должен был найти.
+ */
+process.exitCode = wasi.start(instance) ?? 0;

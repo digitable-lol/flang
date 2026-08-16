@@ -39,7 +39,7 @@
 
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
-import { mkdirSync, writeFileSync, rmSync, statSync } from "node:fs"
+import { mkdirSync, writeFileSync, rmSync, statSync, openSync, closeSync, readFileSync } from "node:fs"
 import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -54,6 +54,14 @@ const { functionGrid, loadPrograms, ПРЕДЕЛЫ, ПРЕДЕЛ_УБЕГАЮЩ�
 const args = process.argv.slice(2)
 const limit = args.includes("--limit") ? Number(args[args.indexOf("--limit") + 1]) : Infinity
 const keep = args.includes("--keep")
+/*
+ * Размер теневого стека wasm. По умолчанию wasm-ld даёт 64 КиБ, а рантайм без
+ * POSIX считает, что стека 1 МиБ (FL_STACK_ROOM_FALLBACK): сторож глубины
+ * пропускает вызов, для которого места нет, и теневой стек молча заезжает в
+ * кучу — в wasm под ним нет сторожевой страницы. Без флага замер меряет эту
+ * ловушку; с флагом — язык.
+ */
+const stack = args.includes("--stack") ? Number(args[args.indexOf("--stack") + 1]) : 0
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
 const WASM_CC = ["clang", "--target=wasm32-wasi"]
@@ -110,7 +118,7 @@ function build(program, name, index) {
      отдельном потоке (`fl_call_deep`) отключён самим рантаймом — платформенная
      часть закрыта проверкой `__unix__`, которой у wasm32-wasi нет. */
   const native = compile(NATIVE_CC, "cli_native", ["-lm", "-lpthread"])
-  const wasm = compile(WASM_CC, "cli.wasm", ["-lm"])
+  const wasm = compile(WASM_CC, "cli.wasm", stack > 0 ? ["-lm", `-Wl,-z,stack-size=${stack}`] : ["-lm"])
   return { directory, native, wasm, cliNative: join(directory, "cli_native"), cliWasm: join(directory, "cli.wasm") }
 }
 
@@ -120,11 +128,26 @@ function askNative(built, input) {
   return execFileSync(built.cliNative, { input, encoding: "utf8", maxBuffer: 512 * 1024 * 1024 })
 }
 
+/*
+ * Вывод wasm забирается ЧЕРЕЗ ФАЙЛ, а не через трубу, и это вынужденно.
+ * `node:wasi` пишет в трубу асинхронно и теряет хвост: 8 прогонов одного и того
+ * же модуля через трубу дали 171819 байт пять раз и 158167, 163072, 166220
+ * остальные три; тот же модуль в файл — 10 прогонов из 10 по 171819 байт, а
+ * обычный бинарник и через трубу давал 171819 все восемь раз. Через трубу
+ * сверка ловила бы собственный обрыв и называла бы его расхождением wasm.
+ */
 function askWasm(built, input) {
-  return execFileSync(process.execPath, ["--no-warnings", runner, built.cliWasm], {
-    input, encoding: "utf8", maxBuffer: 512 * 1024 * 1024,
-    env: { ...process.env, LC_ALL: "C.UTF-8" },
-  })
+  const путь = join(built.directory, "wasm.out")
+  const fd = openSync(путь, "w")
+  try {
+    execFileSync(process.execPath, ["--no-warnings", runner, built.cliWasm], {
+      input, stdio: ["pipe", fd, "pipe"],
+      env: { ...process.env, LC_ALL: "C.UTF-8" },
+    })
+  } finally {
+    closeSync(fd)
+  }
+  return readFileSync(путь, "utf8")
 }
 
 /* ── главная сверка ───────────────────────────────────────────────────────── */
@@ -192,6 +215,7 @@ for (const [index, { file, program }] of programs.entries()) {
 
 const сумма = (поле) => размеры.reduce((a, s) => a + s[поле], 0)
 console.log(JSON.stringify({
+  стекWasm: stack > 0 ? stack : "по умолчанию (wasm-ld: 64 КиБ)",
   программ: программ,
   всегоПрограмм: programs.length,
   сверенныхТочек: сверено,

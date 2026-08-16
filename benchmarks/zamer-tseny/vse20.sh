@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /home/a/projects/flang/.claude/worktrees/agent-a4daa59c6b3b8bbfc
 export LC_ALL=C.UTF-8
-V=".rab/vydelit.mjs"
+V="benchmarks/zamer-tseny/vydelit.mjs"
 node $V dictionary.flang   "Ключ связи"                  docs/zamer2/01-klyuch-svyazi.flang       "Замер2 01: Ключ связи"
 node $V hashmap.flang      "Ключ звена"                  docs/zamer2/02-klyuch-zvena.flang        "Замер2 02: Ключ звена"
 node $V hashmap.flang      "Вписать"                     docs/zamer2/03-vpisat.flang              "Замер2 03: Вписать"

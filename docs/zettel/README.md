@@ -73,6 +73,8 @@
 
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](chetyre-kuska-javascript.md)
 - [Побайтовая сверка с эталоном — главный метод проверки](bytovaya-sverka.md)
+- [Побайтовая сверка данных не видит зависимости от тождества объектов](sverka-ne-vidit-tozhdestva-obektov.md)
+- [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](vtoruyu-realizatsiyu-vozmestit-nechem.md)
 - [Снятая правка обязана красить тест](izyatie.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](proverki-perestayushchie-sravnivat.md)
 - [Бывают конфликты слияния, которых git не показывает](tikhie-konflikty-sliyaniya.md)

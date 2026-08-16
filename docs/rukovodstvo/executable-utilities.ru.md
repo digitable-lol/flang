@@ -42,7 +42,7 @@ FTS 0.2 позволяет описать чистую утилиту один �
       ожидается результат равен 3000
 ```
 
-Рабочий файл находится в [`examples/utilities/discount.fts`](../examples/utilities/discount.fts).
+Рабочий файл находится в [`examples/utilities/discount.fts`](../../examples/utilities/discount.fts).
 
 ## Цикл разработчика
 

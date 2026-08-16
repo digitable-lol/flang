@@ -4,7 +4,7 @@
 
 ## Форма регистрации клиента
 
-[`customer-onboarding.fts`](../examples/real-world/customer-onboarding.fts):
+[`customer-onboarding.fts`](../../examples/real-world/customer-onboarding.fts):
 
 ```fts
 категория «Регистрация клиента»
@@ -48,7 +48,7 @@ node examples/utilities/form-schema.mjs \
 
 ## Таблица счетов
 
-[`invoices-table.fts`](../examples/real-world/invoices-table.fts) содержит объект `«Строка счёта»`. Утилита строит колонки:
+[`invoices-table.fts`](../../examples/real-world/invoices-table.fts) содержит объект `«Строка счёта»`. Утилита строит колонки:
 
 ```bash
 node examples/utilities/table-columns.mjs \
@@ -72,7 +72,7 @@ node examples/utilities/table-columns.mjs \
 
 ## DDD command guard
 
-[`order-shipment.fts`](../examples/real-world/order-shipment.fts):
+[`order-shipment.fts`](../../examples/real-world/order-shipment.fts):
 
 ```fts
 категория «Исполнение заказа»
@@ -111,7 +111,7 @@ node examples/utilities/command-guard.mjs \
 
 ## Композиция кредитной политики
 
-[`credit-limit.fts`](../examples/real-world/credit-limit.fts) последовательно применяет два морфизма:
+[`credit-limit.fts`](../../examples/real-world/credit-limit.fts) последовательно применяет два морфизма:
 
 ```fts
 теорема «Лимит ЛМ-205 может быть установлен»

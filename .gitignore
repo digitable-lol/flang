@@ -20,6 +20,12 @@ bootstrap/*.o
 bootstrap/*.a
 bootstrap/flang_cli
 
+# Каталоги, куда README велит печатать код: «flang emit … --out ./out-c»,
+# и то же с out-js, out-python, out-go. Читатель, который выполнил команду со
+# страницы, получал их непомеченными в `git status`. Со слэшем — потому что это
+# всегда каталог, который создаёт сама команда.
+out-*/
+
 __pycache__/
 *.tgz
 .DS_Store

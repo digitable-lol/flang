@@ -543,4 +543,4 @@ flang. С появлением продукции долг закрыт, и вс
 - `flang/core/SPEC.md` — контракт ядра FTS, написанного на flang
 - `flang/self/SPEC.md` — контракт самоприменения и его долги
 - `flang/cat/SPEC.md` — контракт категорной поверхности
-- `docs/language.ru.md` — справочник синтаксиса FTS
+- `docs/rukovodstvo/language.ru.md` — справочник синтаксиса FTS

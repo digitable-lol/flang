@@ -13,7 +13,7 @@
 
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdtempSync, rmSync, symlinkSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -21,20 +21,23 @@ import test from "node:test"
 
 const ROOT = resolve(fileURLToPath(new URL("../../", import.meta.url)))
 
-// Те же цели, что объявлены в bin пакета. ftsc, ftsvm и ftspec стража не имели
-// и потому уцелели, но проверяются наравне: завтра страж может появиться и там.
-const КОМАНДЫ = [
-  { имя: "flang", файл: "flang/bin/flang.mjs" },
-  { имя: "fts", файл: "dist/src/cli.js" },
-  { имя: "ftsc", файл: "tools/ftsc/bin/ftsc.mjs" },
-  { имя: "ftsvm", файл: "tools/ftsvm/bin/ftsvm.mjs" },
-  { имя: "ftspec", файл: "tools/ftspec/bin/ftspec.mjs" },
-]
+// Те же цели, что объявлены в bin пакета, — и это не список руками: он
+// вычитывается из самого package.json. Пять команд из семи уехали вместе со
+// старым проектом FTS (тег `fts-pered-udaleniem`), и список, записанный здесь
+// константой, пережил бы это молча — проверка осталась бы зелёной, проверяя
+// команды, которых пакет больше не объявляет.
+const КОМАНДЫ = Object.entries(JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).bin)
+  .map(([имя, файл]) => ({ имя, файл: файл.replace(/^\.\//u, "") }))
+  .sort((а, б) => а.имя.localeCompare(б.имя))
 
 test("команды пакета отвечают при запуске через символьную ссылку", () => {
+  // Пустой или урезанный список — не «нечего проверять», а поломка: проверка,
+  // которой нечего перебирать, зелена ровно так же, как исправная.
+  assert.ok(КОМАНДЫ.length >= 2, `в bin пакета команд ${КОМАНДЫ.length} — package.json урезали?`)
   const каталог = mkdtempSync(join(tmpdir(), "flang-bin-"))
   try {
     for (const { имя, файл } of КОМАНДЫ) {
+      assert.ok(existsSync(join(ROOT, файл)), `bin «${имя}» указывает на ${файл}, которого в дереве нет`)
       const ссылка = join(каталог, имя)
       symlinkSync(join(ROOT, файл), ссылка)
 

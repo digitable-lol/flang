@@ -26,7 +26,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
@@ -238,31 +237,6 @@ test("программы репозитория: Python совпадает с э
     программыРепозитория.length,
     `совпало ${совпало} из ${программыРепозитория.length} (файлов ${файлов} из ${всего}); первое расхождение:\n${беды[0]}`,
   )
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async (t) => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  let сверено = 0
-  let совпало = 0
-  const беды = []
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"))
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    const отчёт = сверить(файлМодели, fromFtsDocument(документ))
-    сверено += 1
-    if (отчёт.совпало) совпало += 1
-    else if (отчёт.беда !== null && отчёт.беда !== undefined) беды.push(отчёт.беда)
-  }
-  assert.ok(сверено >= 10, `моделей с утилитами сверено ${сверено} — слишком мало`)
-  t.diagnostic(`моделей .fts побайтово совпало ${совпало} из ${сверено}`)
-  assert.equal(совпало, сверено, `совпало ${совпало} из ${сверено}; первое расхождение:\n${беды[0]}`)
 })
 
 test("сторож меры: обе реализации понижения ставят его одинаково", async (t) => {

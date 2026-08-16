@@ -15,17 +15,116 @@ import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { after, test } from "node:test"
 import { checkFacts } from "../src/factcheck.mjs"
-import { fromFtsDocument } from "../src/compat.mjs"
 
-const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)
 const CLI = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
 const run = promisify(execFile)
 
-const discountSource = await readFile(new URL("../../examples/utilities/discount.fts", import.meta.url), "utf8")
-const discount = fromFtsDocument(core.compile(discountSource))
-const discountEn = fromFtsDocument(
-  core.compile(await readFile(new URL("../../examples/utilities/discount.en.fts", import.meta.url), "utf8")),
-)
+/**
+ * Программа про скидку — собрана AST, а не разобрана из модели `.fts`.
+ *
+ * Раньше она приезжала из `examples/utilities/discount.fts` через ядро старого
+ * проекта и мост. Проект вынесен из репозитория (тег `fts-pered-udaleniem`), и
+ * читать стало нечего. Смысла проверок это не трогает: `flang facts` проверяется
+ * не форматом входа, а гарантиями режима — только тотальные функции, жёсткий
+ * лимит шагов, отсутствие эффектов, детерминизм и объяснимость отказа.
+ *
+ * Код и текст постусловия заданы здесь явно, как их задаёт автор в AST. Раньше
+ * их ставил мост из FTS («FTS_UTILITY_PROPERTY»), и проверка отказа заодно
+ * сверяла мост; сегодня она сверяет то, ради чего написана: код и текст едут
+ * ДАННЫМИ и доезжают до объяснения дословно.
+ */
+const КОД_СВОЙСТВА = "POSTUSLOVIE_AVTORA"
+
+const поле = (запись, имя) => ({ kind: "field", target: { kind: "var", name: запись }, field: имя })
+const лит = (значение) => ({ kind: "literal", value: значение })
+const бин = (op, left, right) => ({ kind: "binary", op, left, right })
+
+/** Правило FTS «добавить X процентов от поля»: (X / 100) * поле, порядок важен. */
+const процент = (сколько, запись, имя) => ({ kind: "binary", op: "percent", left: лит(сколько), right: поле(запись, имя) })
+
+function скидка({ модуль, объект, функция, вход, сумма, постоянный }) {
+  const шаг = (условие, добавка, дальше, номер) => ({
+    kind: "let",
+    name: `результат${номер}`,
+    value: {
+      kind: "if",
+      cond: условие,
+      then: бин("add", { kind: "var", name: `результат${номер - 1}` }, добавка),
+      else: { kind: "var", name: `результат${номер - 1}` },
+    },
+    in: дальше,
+  })
+  return {
+    flang: 1,
+    module: модуль,
+    types: [{
+      kind: "record",
+      name: объект,
+      fields: [
+        { name: сумма, type: { kind: "number" } },
+        { name: постоянный, type: { kind: "boolean" } },
+      ],
+    }],
+    functions: [{
+      name: функция,
+      total: true,
+      params: [{ name: вход, type: { kind: "record", name: объект } }],
+      returns: { kind: "number" },
+      body: {
+        kind: "let",
+        name: "результат0",
+        value: лит(0),
+        in: шаг(
+          бин("gte", поле(вход, сумма), лит(10000)),
+          процент(10, вход, сумма),
+          шаг(
+            бин("eq", поле(вход, постоянный), лит(true)),
+            процент(5, вход, сумма),
+            { kind: "var", name: "результат2" },
+            2,
+          ),
+          1,
+        ),
+      },
+      postconditions: [
+        {
+          name: "Скидка неотрицательна",
+          bind: "результат",
+          expr: бин("gte", { kind: "var", name: "результат" }, лит(0)),
+          code: КОД_СВОЙСТВА,
+          message: "нарушено свойство «Скидка неотрицательна» функции «Рассчитать скидку»",
+        },
+        {
+          name: "Скидка ограничена",
+          bind: "результат",
+          expr: бин("lte", { kind: "var", name: "результат" }, процент(20, вход, сумма)),
+          code: КОД_СВОЙСТВА,
+          message: "нарушено свойство «Скидка ограничена» функции «Рассчитать скидку»",
+        },
+      ],
+    }],
+  }
+}
+
+const discount = скидка({
+  модуль: "Продажи",
+  объект: "Покупка",
+  функция: "Рассчитать скидку",
+  вход: "покупка",
+  сумма: "сумма",
+  постоянный: "постоянный клиент",
+})
+
+/* Английская поверхность утверждений — та же программа английскими именами:
+   проверяется разбор утверждения, а не перевод имён (имена не переводятся). */
+const discountEn = скидка({
+  модуль: "Sales",
+  объект: "Purchase",
+  функция: "Calculate discount",
+  вход: "purchase",
+  сумма: "amount",
+  постоянный: "loyal customer",
+})
 
 const FACTS = {
   "покупка": { "сумма": 20000, "постоянный клиент": true },
@@ -151,7 +250,7 @@ test("нарушение свойства утилиты объясняется,
   const [result] = verdict.results
   assert.equal(result.status, "refused")
   assert.match(result.why, /нарушено свойство «Скидка неотрицательна»/u)
-  assert.match(result.why, /FTS_UTILITY_PROPERTY/u)
+  assert.match(result.why, new RegExp(КОД_СВОЙСТВА, "u"))
 })
 
 /* ──────────────────────────────── тотальность ───────────────────────────── */
@@ -288,9 +387,9 @@ async function cli(args) {
 }
 
 test("flang facts: подтверждённое утверждение — JSON в stdout и код 0", async () => {
-  const model = join(temporary, "discount.fts")
+  const model = join(temporary, "discount.json")
   const factsFile = join(temporary, "facts.json")
-  await writeFile(model, discountSource)
+  await writeFile(model, JSON.stringify(discount))
   await writeFile(factsFile, JSON.stringify(FACTS))
   const result = await cli([
     "facts",
@@ -308,7 +407,7 @@ test("flang facts: подтверждённое утверждение — JSON 
 })
 
 test("flang facts: опровергнутое утверждение — код 1, но JSON всё равно в stdout", async () => {
-  const model = join(temporary, "discount.fts")
+  const model = join(temporary, "discount.json")
   const factsFile = join(temporary, "facts.json")
   const result = await cli([
     "facts",
@@ -344,7 +443,7 @@ test("flang facts: лимит шагов передаётся ключом --ste
 })
 
 test("flang facts: без --claims — диагностика в stderr и код 2", async () => {
-  const model = join(temporary, "discount.fts")
+  const model = join(temporary, "discount.json")
   const result = await cli(["facts", model])
   assert.equal(result.code, 2)
   assert.equal(result.stdout, "")
@@ -353,7 +452,7 @@ test("flang facts: без --claims — диагностика в stderr и ко�
 })
 
 test("flang facts: неверный JSON в --claims — код 2 и внятная диагностика", async () => {
-  const model = join(temporary, "discount.fts")
+  const model = join(temporary, "discount.json")
   const result = await cli(["facts", model, "--claims", "[не json"])
   assert.equal(result.code, 2)
   assert.match(JSON.parse(result.stderr).error, /неверный JSON/u)

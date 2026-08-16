@@ -28,7 +28,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
@@ -333,25 +332,6 @@ test("сторож меры: обе реализации понижения ст
   assert.ok(сотметкой > 0, "ни одна программа не получила сторожа меры — сверять нечего")
   t.diagnostic(`программ со сторожем меры в выдаче: ${сотметкой} из ${отмеченные.length}`)
   свести(t, "программы со сторожем меры", случаи)
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async (t) => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  const случаи = []
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"))
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    случаи.push([файлМодели, fromFtsDocument(документ)])
-  }
-  assert.ok(случаи.length >= 10, `моделей с утилитами набрано ${случаи.length} — слишком мало`)
-  свести(t, "модели FTS", случаи)
 })
 
 /* ─────────────────── случаи, которых в репозитории нет ─────────────────── */

@@ -12,7 +12,7 @@
 |---|---|---|
 | `flang/src/emit/{c,go,rust,python,java,csharp,elixir,js}.mjs` | `tools/ftsc/src/naming.mjs` — транслитерация русских имён в имена целевого языка | 122 |
 | те же восемь | `tools/ftsc/src/bidi.mjs` — экранирование управляющих символов направления письма | 158 |
-| 41 файл `flang/test/` | `toolchain.mjs`, `parse-module.mjs`, `toolchain-guard.mjs`, `bidi-guard.mjs` | 427 |
+| 32 файла `flang/test/` | `toolchain.mjs`, `parse-module.mjs`, `toolchain-guard.mjs`, `bidi-guard.mjs` | 427 |
 | `flang/bin/flang.mjs`, функция `compileFts` | собранное ядро FTS `dist/src/index.js` | — |
 
 Итого связка — 795 строк в шести файлах плюс собранное ядро. Дублировать
@@ -25,12 +25,16 @@
 — они про язык и уедут вместе с ним.
 
 **Чем подтверждено.** Ветка `work/struktura` от `origin/main` = `17d6853`,
-2026-08-16. Считано `grep -rl` по всему дереву, не на глаз:
-`grep -rho "\.\./\.\./tools/ftsc/[A-Za-z0-9/._-]*" flang/` даёт 68 вхождений
-`../../tools/ftsc`, из них 16 на `toolchain.mjs`, 15 на `toolchain-guard.mjs`,
-14 на `parse-module.mjs`, 13 на `naming.mjs`, 8 на `bidi.mjs`.
-`grep -n "^import.*tools/ftsc" flang/src/emit/*.mjs` — 16 строк, по два импорта
-в каждом из восьми генераторов.
+2026-08-16. Считано `grep` по дереву, не на глаз:
+
+    grep -l "tools/ftsc" flang/test/*.mjs        → 32 файла
+    grep -l "dist/src"   flang/test/*.mjs        → 15 файлов
+    grep -l "^import.*tools/ftsc" flang/src/emit/*.mjs → 8 файлов
+
+Все 68 вхождений пути разложены по назначению: 16 на `toolchain.mjs`, 15 на
+`toolchain-guard.mjs`, 14 на `parse-module.mjs`, 13 на `naming.mjs`, 8 на
+`bidi.mjs`, по одному на `bidi-guard.mjs` и `stdlib/http/query.fts`. Восемь
+вхождений `naming.mjs` и восемь `bidi.mjs` — это ровно восемь генераторов.
 
 **Чем ограничено.** Это цена **разделения**, а не цена самого FTS. Держать FTS
 в подкаталоге стоит ноль. Числа верны на 17d6853; связка живёт в рабочем коде и

@@ -27,7 +27,7 @@
 
 | Цель | Файл | Что это |
 |---|---|---|
-| C | `flang/src/emit/c/flang_conc.c` (2049 строк) | свой планировщик, один поток |
+| C | `flang/src/emit/c/flang_conc.c` (3089 строк) | свой планировщик; рабочий режим — потоки берут процессы, у каждого поток свой склад готовых |
 | Elixir | `flang/src/emit/elixir/flang_conc.ex` | процесс flang = процесс BEAM (`use GenServer`) |
 | JavaScript | `flang/src/emit/js/flang_conc.js` (611 строк) | свой планировщик, один поток |
 

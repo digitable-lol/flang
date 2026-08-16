@@ -533,6 +533,10 @@ fl_status kompilyator_flang_sozdat_hod_razbora(fl_ctx *ctx, fl_value pokrytie, f
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_itog_svyazyvaniya(fl_ctx *ctx, fl_value imena, fl_value bedy, fl_value *out, fl_error *error);
 
+/* Запись FTS «Цель теоремы»: «функция», «постусловие». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_cel_teoremy(fl_ctx *ctx, fl_value funkciya, fl_value postuslovie, fl_value *out, fl_error *error);
+
 /* Запись FTS «Доказанное место»: «форма», «строка», «столбец». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_dokazannoe_mesto(fl_ctx *ctx, fl_value forma, fl_value stroka, fl_value stolbec, fl_value *out, fl_error *error);
@@ -18532,6 +18536,133 @@ fl_status kompilyator_flang_kvantor_nazval_parametr(fl_ctx *ctx, fl_value postus
  * @return значение
  */
 fl_status kompilyator_flang_est_parametr_po_imeni(fl_ctx *ctx, fl_value parametry, fl_value iskomoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить теоремы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param teoremy — «теоремы»: список: «Значение»
+ * @param funkcii — «функции»: список: «Значение»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_proverit_teoremy(fl_ctx *ctx, fl_value teoremy, fl_value funkcii, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить теорему».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param teorema — «теорема»: «Значение»
+ * @param funkcii — «функции»: список: «Значение»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_proverit_teoremu(fl_ctx *ctx, fl_value teorema, fl_value funkcii, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести с целью».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param teorema — «теорема»: «Значение»
+ * @param gipotezy — «гипотезы»: список: «Значение»
+ * @param celi — «цели»: список: «Цель теоремы»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_svesti_s_celyu(fl_ctx *ctx, fl_value teorema, fl_value gipotezy, fl_value celi, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять сигнатуру цели».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param teorema — «теорема»: «Значение»
+ * @param gipotezy — «гипотезы»: список: «Значение»
+ * @param cel — «цель»: «Цель теоремы»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_vzyat_signaturu_celi(fl_ctx *ctx, fl_value teorema, fl_value gipotezy, fl_value cel, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Среда гипотезы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param postuslovie — «постусловие»: «Значение»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_sreda_gipotezy(fl_ctx *ctx, fl_value signatura, fl_value postuslovie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цели с именем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param funkcii — «функции»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @param sobrannye — «собранные»: список: «Цель теоремы»
+ * @return значение: список: «Цель теоремы»
+ */
+fl_status kompilyator_flang_celi_s_imenem(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value sobrannye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Постусловия с именем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param postusloviya — «постусловия»: список: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param imya — «имя»: строка
+ * @param sobrannye — «собранные»: список: «Цель теоремы»
+ * @return значение: список: «Цель теоремы»
+ */
+fl_status kompilyator_flang_postusloviya_s_imenem(fl_ctx *ctx, fl_value postusloviya, fl_value funkciya, fl_value imya, fl_value sobrannye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить гипотезы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param gipotezy — «гипотезы»: список: «Значение»
+ * @param teorema — «теорема»: «Значение»
+ * @param gde — «где»: строка
+ * @param sreda — «среда»: «Имена»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_proverit_gipotezy(fl_ctx *ctx, fl_value gipotezy, fl_value teorema, fl_value gde, fl_value sreda, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сверить гипотезу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param gipoteza — «гипотеза»: «Значение»
+ * @param teorema — «теорема»: «Значение»
+ * @param gde — «где»: строка
+ * @param sreda — «среда»: «Имена»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_sverit_gipotezu(fl_ctx *ctx, fl_value gipoteza, fl_value teorema, fl_value gde, fl_value sreda, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить примеры».

@@ -1,1 +1,1 @@
-{"valid":true,"module":"Замер2 08: Максимум","functions":[{"name":"Большее","total":true},{"name":"Свернуть","total":true},{"name":"Максимум","total":true}],"types":[],"diagnostics":[]}
+{"valid":true,"module":"Замер2 15: Первый элемент или запасное","functions":[{"name":"Значение или запасное","total":true},{"name":"Первый элемент","total":true},{"name":"Первый элемент или запасное","total":true}],"types":["Возможно"],"diagnostics":[]}

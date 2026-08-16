@@ -305,6 +305,11 @@ function сложить(записи) {
          объявленной сумме» стала бы врать о каждом доказательстве по числу. */
       "proved-induction-algebra": 0,
       "proved-induction-segment": 0,
+      /* И ТРЕТИЙ НОСИТЕЛЬ, и он тоже держится на своём: тело-свёртка даёт
+         принцип по числу ВИТКОВ, а не по начальности списка. Сложи его с
+         объявленной суммой — и строка свода сказала бы, что доказательство
+         стоит на части значения, тогда как оно стоит на конечности обхода. */
+      "proved-induction-fold": 0,
       "proved-declaration": 0,
       "proved-by-type": 0,
       grid: 0,
@@ -383,7 +388,9 @@ function сложить(записи) {
         итог.claims["proved-induction"] += 1
         /* Носитель приезжает сюда из вердикта ядра, а не решается здесь заново:
            второй ответ на тот же вопрос разошёлся бы с первым молча. */
-        const носитель = запись.induction?.carrier === "segment" ? "segment" : "algebra"
+        const носитель = запись.induction?.carrier === "segment"
+          ? "segment"
+          : запись.induction?.carrier === "fold" ? "fold" : "algebra"
         итог.claims[`proved-induction-${носитель}`] += 1
       }
       /* И второе такое же уточнение, по той же причине: `proved-declaration`
@@ -472,6 +479,7 @@ function печать(свод, поФайлам) {
     `  из них индукцией: ${и.claims["proved-induction"]}`,
     `    по объявленной сумме (начальность): ${и.claims["proved-induction-algebra"]}`,
     `    по отрезку «нат» (конечность и строгий спуск): ${и.claims["proved-induction-segment"]}`,
+    `    по свёртке тела (конечность числа витков): ${и.claims["proved-induction-fold"]}`,
     `  из них без теоремы (цель сведена с телом): ${и.claims["proved-declaration"]}`,
     `    из них факт дал объявленный тип аргумента: ${и.claims["proved-by-type"]}`,
     `  сетка (примеры или закон):         ${и.claims.grid}`,

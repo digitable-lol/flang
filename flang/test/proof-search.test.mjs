@@ -34,6 +34,9 @@ import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { externalChecks, loadProgramFromSource } from "../bin/flang.mjs"
+/* Имя четвёртого хода читается у ядра, а не переписывается здесь строкой: две
+   копии одного слова расходятся молча, и проверка зеленела бы на чужом ходе. */
+import { ВЫЧИСЛЕНИЕМ } from "../proof/reduce.mjs"
 import { ЛГАТЬ, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, безТеоремы, искатьДоказательство } from "../proof/search.mjs"
 import { globSync } from "../test/glob.mjs"
 import { parse } from "../src/parser.mjs"
@@ -197,7 +200,7 @@ test("доказательство БЕЗ индукции: у функции б
     .find((о) => о.name === "шестёрка неотрицательна")
   assert.equal(
     обязательство.discharge?.rule,
-    "вычисление замкнутой цели",
+    ВЫЧИСЛЕНИЕМ,
     "цель у функции без параметров замкнута, и ядро обязано закрывать её САМО — четвёртым ходом",
   )
 

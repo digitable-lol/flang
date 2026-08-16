@@ -1077,8 +1077,6 @@ test("корпус самоприменения употребляет ровн�
     "flang/self/types.flang",
     "flang/self/types.flang",
     "flang/self/types.flang",
-    "flang/stdlib/lists.flang",
-    "flang/stdlib/tree.flang",
   ], "теоремы корпуса неподвижной точки разошлись — прогоните flang/test/self-parser.test.mjs")
   assert.deepEqual(постусловия.sort(), [
     "flang/examples/leetcode/013-roman-to-integer.flang",
@@ -1100,8 +1098,6 @@ test("корпус самоприменения употребляет ровн�
     "flang/self/types.flang",
     "flang/self/types.flang",
     "flang/self/types.flang",
-    "flang/stdlib/lists.flang",
-    "flang/stdlib/tree.flang",
   ], "утверждения корпуса неподвижной точки разошлись — прогоните flang/test/self-parser.test.mjs")
 })
 

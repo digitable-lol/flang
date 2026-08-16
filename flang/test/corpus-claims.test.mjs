@@ -1080,8 +1080,6 @@ const НАПИСАНО = [
   ["flang/self/sets.flang «Предел сетки множеств»", 1],
   ["flang/self/types.flang «Дно точных»", 1],
   ["flang/self/types.flang «Потолок точных»", 3],
-  ["flang/stdlib/lists.flang «Длина»", 1],
-  ["flang/stdlib/tree.flang «Глубина дерева»", 1],
 ]
 
 test("охват: шестнадцать из девятнадцати НАПИСАНЫ — они в корпусе неподвижной точки", () => {

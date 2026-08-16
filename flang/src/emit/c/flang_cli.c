@@ -326,30 +326,6 @@ static bool read_number_text(fl_reader *reader, double *out) {
   return true;
 }
 
-/**
- * Предел из запроса в `size_t`, и почему это отдельная функция.
- *
- * `(size_t)x` для отрицательного, бесконечного или нечислового `x` — поведение
- * НЕОПРЕДЕЛЁННОЕ, и на обычной машине даёт огромное число. Для `turns` это
- * значило бы «крутись почти вечно», для `processes` — хуже: предел числа
- * процессов и есть тотальность слоя, и снятый мусором из запроса он перестаёт
- * быть пределом. Поэтому такой запрос ОТВЕРГАЕТСЯ, а не округляется молча.
- *
- * Ноль и всё, что больше разрядной сетки, законны: ноль означает умолчание
- * планировщика, а слишком большое упирается в память задолго до предела.
- */
-static bool limit_from_number(double value, size_t *out) {
-  if (value != value || value < 0.0) {
-    return false;
-  }
-  if (value >= 18446744073709551616.0) {
-    *out = (size_t)-1;
-    return true;
-  }
-  *out = (size_t)value;
-  return true;
-}
-
 static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values, size_t *count) {
   size_t capacity = 8;
   size_t used = 0;
@@ -649,6 +625,30 @@ static void write_number_text(double value) {
 
 static void write_name(const char *text) {
   write_text(text == NULL ? "" : text, strlen(text == NULL ? "" : text));
+}
+
+/**
+ * Предел из запроса в `size_t`, и почему это отдельная функция.
+ *
+ * `(size_t)x` для отрицательного, бесконечного или нечислового `x` — поведение
+ * НЕОПРЕДЕЛЁННОЕ, и на обычной машине даёт огромное число. Для `turns` это
+ * значило бы «крутись почти вечно», для `processes` — хуже: предел числа
+ * процессов и есть тотальность слоя, и снятый мусором из запроса он перестаёт
+ * быть пределом. Поэтому такой запрос ОТВЕРГАЕТСЯ, а не округляется молча.
+ *
+ * Ноль и всё, что больше разрядной сетки, законны: ноль означает умолчание
+ * планировщика, а слишком большое упирается в память задолго до предела.
+ */
+static bool limit_from_number(double value, size_t *out) {
+  if (value != value || value < 0.0) {
+    return false;
+  }
+  if (value >= 18446744073709551616.0) {
+    *out = (size_t)-1;
+    return true;
+  }
+  *out = (size_t)value;
+  return true;
 }
 
 static void write_run(const char *name, const fl_conc_result *result) {

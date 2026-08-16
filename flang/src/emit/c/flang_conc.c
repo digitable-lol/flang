@@ -1454,7 +1454,17 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
      экземпляра то же, что у вида, значит накрытый вид накрывает и экземпляры, а
      `FLANG_UNCOVERED_FAILURE` считает по-прежнему по одному объявлению. */
   sched->over_process[born] = sched->over_process[proto];
-  fl_conc_index_put(sched, born);
+  /* Указатель обязан РАСТИ вместе с таблицей, и это не оптимизация: при
+     нагрузке выше половины линейная проба удлиняется, а при полной таблице
+     `fl_conc_index_put` не нашёл бы пустой ячейки никогда и завис бы навсегда.
+     Порог держится тот же, что при постройке: занято не больше половины. */
+  if ((sched->names_used + 1u) * 2u > sched->names_mask + 1u) {
+    if (!fl_conc_index_build(sched, sched->proc_count)) {
+      return false;
+    }
+  } else {
+    fl_conc_index_put(sched, born);
+  }
 
   /* Первое сообщение кладётся тем же путём, что всякое другое, и это не
      удобство, а необходимость: процесс без сообщения не побежит никогда —

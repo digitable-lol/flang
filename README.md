@@ -738,8 +738,9 @@ the endofunctor map is printed in place, so the parameter must occupy a whole fi
 the checking one: a single thread, interleaving by seed, matching the reference byte for byte;
 there is no working thread pool, and its price has been measured on two machines (handing a run to
 another thread costs four to fourteen runs, depending on the box). Processes are printed only to Elixir and C, and the other six
-targets turn a program with `процесс` into ordinary functions and nothing else. There is no `породить`, so the process set is fixed by
-the declarations and there is no dynamic tree as in OTP; a message addressee must be a literal;
+targets turn a program with `процесс` into ordinary functions and nothing else. `породить` spawns instances of declared
+kinds at run time — the reference and C only, not BEAM — and the parent names the child, because a described action cannot return
+anything; a message addressee must still be a literal, so you can only speak to a spawned process through the message it was born with;
 there is no distribution. The seed grid checks a finite set of interleavings — a checked claim, not
 a proof — and it gives no freedom from deadlock. The measurement was taken on a busy machine (load
 average 18–76 with eight cores available), so every time figure in it is an upper bound quoted next to the load

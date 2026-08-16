@@ -177,7 +177,16 @@ function checkDependencies() {
     line("OK", `package-lock.json совпадает с package.json (${pkg.version})`)
   }
 
-  if (!vendored) {
+  const объявлено = Object.keys(lock?.packages ?? {}).filter((путь) => путь.startsWith("node_modules/")).length
+
+  if (объявлено === 0) {
+    /* Зависимостей у пакета нет вовсе — и это состояние, а не беда. Требовать
+       `npm ci` там, где ставить нечего, значило бы красить прогон на чистом
+       клоне за то, что он чист. Единственная зависимость дерева была
+       `typescript`, и она ушла вместе со старым проектом FTS (тег
+       `fts-pered-udaleniem`): язык исходники не собирает, он их читает. */
+    line("OK", "зависимостей у пакета нет — ставить нечего")
+  } else if (!vendored) {
     line("FAIL", "нет node_modules/.package-lock.json — зависимости не установлены: npm ci")
     problems.push("зависимости не установлены")
   } else {
@@ -195,8 +204,7 @@ function checkDependencies() {
       for (const item of stale) line("FAIL", item)
       problems.push(`node_modules разошёлся с замком: ${stale.length} пакетов`)
     } else {
-      const count = Object.keys(lock?.packages ?? {}).filter((path) => path.startsWith("node_modules/")).length
-      line("OK", `node_modules совпадает с замком (${count} пакетов)`)
+      line("OK", `node_modules совпадает с замком (${объявлено} пакетов)`)
     }
   }
 

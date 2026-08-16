@@ -7,24 +7,28 @@
  * образец в package.json смотрит только в flang/test, и заводить ради одного
  * примера второй образец значило бы править файл, который правят все.
  *
- * Проверяется ровно то, что обещано в README проекта и в
- * docs/project-layout.ru.md: команды из README отрабатывают, модель проходит
- * check без предупреждений, а маршруты отвечают тем, что написано в моделях.
+ * Проверяется ровно то, что обещано в README проекта: команды из README
+ * отрабатывают, каждый модуль проходит check без диагностик и сходится со
+ * своими примерами, а маршруты отвечают тем, что написано в модулях языка.
  */
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { after, before, describe, it } from "node:test"
-import { compile } from "../../../dist/src/index.js"
-import { validate } from "../../../dist/src/validate.js"
 import { создатьСервер } from "../host/server.mjs"
 
 const корень = fileURLToPath(new URL("../../../", import.meta.url))
 const проект = fileURLToPath(new URL("../", import.meta.url))
 
-const МОДУЛИ = ["stdlib/text.flang", "lib/isbn.flang", "lib/query.flang", "lib/catalog.flang", "lib/api.flang"]
-const МОДЕЛИ = ["domain/late-fee.fts", "domain/loan-permission.fts"]
+const МОДУЛИ = [
+  "stdlib/text.flang",
+  "lib/isbn.flang",
+  "lib/query.flang",
+  "lib/catalog.flang",
+  "lib/fine.flang",
+  "lib/loan.flang",
+  "lib/api.flang",
+]
 
 /** `node flang/bin/flang.mjs <команда> <файл>` — та же команда, что в README. */
 function flang(команда, файл) {
@@ -33,16 +37,6 @@ function flang(команда, файл) {
     encoding: "utf8",
   })
   assert.equal(итог.status, 0, `flang ${команда} ${файл}: ${итог.stderr}`)
-  return JSON.parse(итог.stdout)
-}
-
-/** `node dist/src/cli.js <команда> <файл>` — она же для моделей FTS. */
-function fts(команда, файл) {
-  const итог = spawnSync(process.execPath, ["dist/src/cli.js", команда, `${проект}${файл}`], {
-    cwd: корень,
-    encoding: "utf8",
-  })
-  assert.equal(итог.status, 0, `fts ${команда} ${файл}: ${итог.stderr}`)
   return JSON.parse(итог.stdout)
 }
 
@@ -98,51 +92,6 @@ describe("пример «библиотека»: модули flang", () => {
       .functions.filter((функция) => (функция.examples ?? []).length === 0)
       .map((функция) => функция.name)
     assert.deepEqual(без, [], `функции без примеров: ${без.join(", ")}`)
-  })
-})
-
-describe("пример «библиотека»: модели FTS", () => {
-  for (const файл of МОДЕЛИ) {
-    it(`${файл} компилируется`, () => {
-      assert.equal(fts("check", файл).valid, true)
-    })
-  }
-
-  it("модель штрафов проходит проверку без единого предупреждения", async () => {
-    const документ = compile(await readFile(`${проект}domain/late-fee.fts`, "utf8"))
-    const итог = validate(документ)
-    assert.equal(итог.valid, true)
-    /* Дыра во входном пространстве и недостижимое свойство — предупреждения,
-       а не ошибки, и модель с ними осталась бы валидной. Проект держит планку
-       выше: остаться должны только сообщения уровня info. */
-    const заметное = итог.diagnostics.filter((строка) => строка.severity !== "info")
-    assert.deepEqual(заметное, [], JSON.stringify(заметное))
-  })
-
-  it("примеры утилиты выполняются", () => {
-    const итог = fts("test", "domain/late-fee.fts")
-    assert.equal(итог.valid, true)
-    assert.equal(итог.failed, 0)
-    assert.ok(итог.total >= 5)
-  })
-
-  it("теорема о выдаче доказывается на снимке и отвергается на встречном", () => {
-    const guard = (снимок) => {
-      const итог = spawnSync(
-        process.execPath,
-        ["examples/utilities/command-guard.mjs", `${проект}domain/loan-permission.fts`, `${проект}domain/${снимок}`],
-        { cwd: корень, encoding: "utf8" },
-      )
-      assert.equal(итог.status, 0, итог.stderr)
-      return JSON.parse(итог.stdout)
-    }
-    const разрешено = guard("loan-permission.context.json")
-    assert.equal(разрешено.allowed, true)
-    assert.equal(разрешено.command, "Выдать книгу разрешено")
-
-    const отказ = guard("loan-permission.blocked.context.json")
-    assert.equal(отказ.allowed, false)
-    assert.match(отказ.reason, /witness does not match context/u)
   })
 })
 
@@ -221,7 +170,7 @@ describe("пример «библиотека»: живой сервер", () =>
     assert.equal(тело.карточка, "Стругацкие. Улитка на склоне (1968)")
   })
 
-  it("POST /loans выдаёт книгу и прикладывает сертификат", async () => {
+  it("POST /loans выдаёт книгу, когда правило языка разрешило", async () => {
     const { код, тело } = await послать("/loans", {
       номер: "ВД-19",
       читатель: "Ковалёва А. П.",
@@ -230,8 +179,11 @@ describe("пример «библиотека»: живой сервер", () =>
       "читатель допущен": true,
     })
     assert.equal(код, 201)
-    assert.equal(тело.команда, "Выдать книгу разрешено")
-    assert.match(тело.отпечаток, /^sha256:[0-9a-f]{64}$/u)
+    /* Раньше ответ нёс СЕРТИФИКАТ: имя выведенной команды и отпечаток sha256.
+       Сертификатов язык не строит — правило стало обычной функцией
+       `Выдача разрешена` (lib/loan.flang). Что при этом потеряно, записано в
+       шапке того модуля, а не спрятано здесь. */
+    assert.equal(тело.разрешено, true)
 
     const полка = await взять("/books?shelf=yes")
     assert.equal(
@@ -241,7 +193,7 @@ describe("пример «библиотека»: живой сервер", () =>
     )
   })
 
-  it("POST /loans отказывает, когда снимок противоречит предпосылке теоремы", async () => {
+  it("POST /loans отказывает, когда правило языка не разрешило", async () => {
     const { код, тело } = await послать("/loans", {
       номер: "ВД-20",
       читатель: "Петров И. С.",
@@ -251,10 +203,15 @@ describe("пример «библиотека»: живой сервер", () =>
     })
     assert.equal(код, 403)
     assert.equal(тело.разрешено, false)
-    assert.match(тело.причина, /witness does not match context/u)
+    /* Раньше здесь сверялась причина отказа, названная СЕРТИФИКАТОМ («witness
+       does not match context»). Сертификатов язык не строит: правило стало
+       обычной функцией `Выдача разрешена` (lib/loan.flang), и отказ у неё
+       ровно один — «не разрешена». Что при этом потеряно, записано в шапке
+       того модуля. */
+    assert.equal(тело.ошибка, "выдача не разрешена")
   })
 
-  it("POST /returns берёт штраф ровно по domain/late-fee.fts", async () => {
+  it("POST /returns берёт штраф ровно по lib/fine.flang", async () => {
     const вовремя = await послать("/returns", { книга: "9785171183660", "дней просрочки": 0, "книга редкая": false })
     assert.equal(вовремя.код, 200)
     assert.equal(вовремя.тело.штраф, 0)

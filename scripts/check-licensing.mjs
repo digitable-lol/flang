@@ -49,7 +49,7 @@ import { dirname, join, resolve } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // Каталоги из package.json `files`, содержащие исходный код.
-const SHIPPED_DIRS = ['src/', 'flang/', 'tools/', 'examples/', 'editors/'];
+const SHIPPED_DIRS = ['flang/', 'examples/'];
 
 // Суффиксы всех восьми целей, а не только тех, на которых язык написан.
 // Рантайм бэкенда (`flang/src/emit/<цель>/*`) печатается в чужую программу

@@ -62,6 +62,17 @@ const keep = args.includes("--keep")
  * ловушку; с флагом — язык.
  */
 const stack = args.includes("--stack") ? Number(args[args.indexOf("--stack") + 1]) : 0
+/*
+ * Чем запускать wasm. `node` — через node:wasi (есть везде, где есть Node, но
+ * ТЕРЯЕТ хвост стандартного ввода за ~128 КиБ: см. wasm-run.mjs). `wasmtime` —
+ * настоящая среда WASI, ввод не теряет; ей нужен свой предел стека, потому что
+ * по умолчанию она даёт 512 КиБ и обрывает рекурсию раньше обычной сборки.
+ */
+const host = args.includes("--host") ? args[args.indexOf("--host") + 1] : "node"
+const wasmtime = args.includes("--wasmtime")
+  ? args[args.indexOf("--wasmtime") + 1]
+  : join(process.env.HOME ?? "", ".local", "bin", "wasmtime")
+const hostStack = args.includes("--host-stack") ? Number(args[args.indexOf("--host-stack") + 1]) : 8388608
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
 const WASM_CC = ["clang", "--target=wasm32-wasi"]
@@ -139,8 +150,11 @@ function askNative(built, input) {
 function askWasm(built, input) {
   const путь = join(built.directory, "wasm.out")
   const fd = openSync(путь, "w")
+  const [кмд, арг] = host === "wasmtime"
+    ? [wasmtime, ["run", "-W", `max-wasm-stack=${hostStack}`, built.cliWasm]]
+    : [process.execPath, ["--no-warnings", runner, built.cliWasm]]
   try {
-    execFileSync(process.execPath, ["--no-warnings", runner, built.cliWasm], {
+    execFileSync(кмд, арг, {
       input, stdio: ["pipe", fd, "pipe"],
       env: { ...process.env, LC_ALL: "C.UTF-8" },
     })
@@ -215,6 +229,7 @@ for (const [index, { file, program }] of programs.entries()) {
 
 const сумма = (поле) => размеры.reduce((a, s) => a + s[поле], 0)
 console.log(JSON.stringify({
+  среда: host === "wasmtime" ? `wasmtime, max-wasm-stack=${hostStack}` : "node:wasi",
   стекWasm: stack > 0 ? stack : "по умолчанию (wasm-ld: 64 КиБ)",
   программ: программ,
   всегоПрограмм: programs.length,

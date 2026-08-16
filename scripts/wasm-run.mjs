@@ -16,6 +16,11 @@
 
   Код возврата модуля становится кодом возврата этого процесса: сверка кодов
   отказа с обычной сборкой иначе была бы невозможна.
+
+  FLANG_WASM_PAMYAT=1 — напечатать в stderr, до скольки доросла линейная память
+  модуля. Это ЧЕСТНОЕ число для wasm, в отличие от RSS процесса: RSS меряет ещё
+  и сам Node (полсотни мегабайт), а у модуля вся память — одна линейная область,
+  и её размер виден прямо.
 */
 
 import { WASI } from 'node:wasi';
@@ -52,3 +57,9 @@ const instance = await WebAssembly.instantiate(module_, wasi.getImportObject());
  * есть ровно как то, что этот замер и должен был найти.
  */
 process.exitCode = wasi.start(instance) ?? 0;
+
+if (env.FLANG_WASM_PAMYAT === '1') {
+  const memory = instance.exports.memory;
+  const bytes = memory === undefined ? 0 : memory.buffer.byteLength;
+  process.stderr.write(`линейная память wasm: ${bytes} байт (${(bytes / 1048576).toFixed(1)} МиБ)\n`);
+}

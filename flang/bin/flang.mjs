@@ -22,17 +22,22 @@
  * поверхностью языка. Диагностика и здесь уходит в stderr, поэтому
  * `flang repl < сценарий.flang 2>ошибки` разделяется как обычно.
  *
- * Файл — `.fts` (модель FTS, переводится мостом), `.json` (готовый AST) или
- * `.flang` (исходник; разбирается `parser.mjs`, как только он появится).
- * Поддержка `.fts` здесь не «бонус», а тот же тезис, что и у моста: любая
- * существующая модель FTS — валидная программа flang.
+ * Файл — `.flang` (исходник) или `.json` (готовый AST).
+ *
+ * `.fts` язык читал до 16 августа 2026: модель старого проекта переводилась
+ * мостом в программу flang. Проект вынесен из репозитория (тег
+ * `fts-pered-udaleniem`), читать стало нечем, и `.fts` теперь ОТКАЗ с внятным
+ * текстом, а не падение на отсутствующем модуле. Разница здесь не косметическая:
+ * `await import("../../dist/src/index.js")` на несуществующем пути даёт
+ * ERR_MODULE_NOT_FOUND — сообщение про внутренности сборки, из которого
+ * пользователю не понять ни что случилось, ни что делать.
  */
 import { readFileSync, realpathSync } from "node:fs"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
-import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
+import { errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
 import { возможностиЦели } from "../src/conc.mjs"
 import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
@@ -65,7 +70,7 @@ const HELP = `flang — полный язык поверх FTS
   flang repl  [файл] [--max-steps N] [--max-depth N]
   flang version
 
-Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
+Файл: .flang (исходник) или .json (готовый AST).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
 
 check --размещение: свести программу с РАЗМЕЩЕНИЕМ процессов по узлам
@@ -692,15 +697,59 @@ async function loadPlacement(file) {
   return размещение
 }
 
+/**
+ * Отказ на `.fts` — отдельным кодом и с указанием, где искать.
+ *
+ * Кодом, а не общим FLANG_PARSE: инструмент, читающий диагностику машиной,
+ * обязан отличать «я не понял этот текст» от «этот формат больше не читается».
+ * Текст называет три вещи — что случилось, где взять старое и чем пользоваться
+ * сейчас, — потому что отказ без указания, что делать, стоит столько же,
+ * сколько молчание.
+ */
+const ФОРМАТ_УБРАН = (причина) =>
+  fail(
+    "FLANG_FTS_REMOVED",
+    `${причина}: старый проект FTS вынесен из этого репозитория. ` +
+      "Дерево с ним сохранено тегом «fts-pered-udaleniem» и живёт в github.com/digitable-lol/fts. " +
+      "Передайте .flang (исходник) или .json (готовый AST).",
+  )
+
+/**
+ * Документ FTS без расширения — тоже отказ, и вот почему это не педантизм.
+ *
+ * Разборщик языка САМ понимает поверхность FTS: `категория`, `объект`,
+ * `утилита` и всё их содержимое приезжают в `legacy` разобранными до правил,
+ * свойств и примеров. Функцию из утилиты при этом не делает никто — это делал
+ * мост из документа ядра, а ядра больше нет. Замерено на настоящей модели:
+ *
+ *     flang check модель-без-расширения  →  {"valid":true,"functions":[]}
+ *
+ * То есть команда отвечает «проверено» на файле, в котором объявлена утилита, и
+ * не проверяет из него НИЧЕГО. Зелёный ответ, который ничего не проверил, хуже
+ * красного: по нему нельзя догадаться, что случилось. Поэтому программа, где
+ * есть утилита наследия и нет ни одной функции, отвергается тем же кодом.
+ */
+function проверитьНеДокументFTS(program) {
+  const утилиты = (program?.legacy ?? []).filter((узел) => узел?.construct === "utility")
+  if (утилиты.length === 0) return program
+  if ((program?.functions ?? []).length > 0) return program
+  throw ФОРМАТ_УБРАН(
+    `в файле объявлены утилиты наследия FTS (${утилиты.length}) и ни одной функции языка, ` +
+      "а переводить утилиту в функцию больше нечем",
+  )
+}
+
 async function readProgram(source, file) {
   if (file.endsWith(".json")) return { program: JSON.parse(source), own: null }
-  if (file.endsWith(".fts")) return { program: fromFtsDocument(await compileFts(source)), own: null }
+  if (file.endsWith(".fts")) throw ФОРМАТ_УБРАН("формат .fts больше не читается")
   if (file.endsWith(".flang") || file.endsWith(".fl")) return await parseFlang(source, file)
   /* Формат не назван расширением — пробуем по содержимому, ничего не угадывая
-     молча: если ни один разбор не удался, сообщаем обо всех попытках. */
+     молча: JSON узнаётся по скобке, всё остальное отдаётся разбору flang. */
   const trimmed = source.trimStart()
   if (trimmed.startsWith("{")) return { program: JSON.parse(source), own: null }
-  return { program: fromFtsDocument(await compileFts(source)), own: null }
+  const разобрано = await parseFlang(source, file)
+  проверитьНеДокументFTS(разобрано.program)
+  return разобрано
 }
 
 /**
@@ -762,30 +811,6 @@ async function markNonEmpty(program) {
   }
 }
 
-/** Ядро FTS + заголовок модуля ftsc: любой `.fts` репозитория должен читаться. */
-export async function compileFts(source) {
-  const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  try {
-    return core.compile(source)
-  } catch (error) {
-    /* Файлы stdlib начинаются с заголовка `модуль …`, которого ядро не знает:
-       снимаем его тем же разбором, что и ftsc, и компилируем тело. */
-    const stripped = await stripModuleHeader(source)
-    if (stripped === null) throw error
-    return core.compile(stripped)
-  }
-}
-
-export async function stripModuleHeader(source) {
-  try {
-    const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-    const parsed = parseModuleFile(source, "-")
-    return parsed.kind === "module" ? parsed.body : null
-  } catch {
-    return null
-  }
-}
-
 async function parseFlang(source, file) {
   let parse
   try {
@@ -795,7 +820,7 @@ async function parseFlang(source, file) {
     throw fail(
       "FLANG_PARSE",
       `разбор исходников flang недоступен: ${error instanceof Error ? error.message : String(error)}. ` +
-        "Передайте .fts (модель FTS) или .json (готовый AST)",
+        "Передайте .json (готовый AST)",
     )
   }
   if (typeof parse !== "function") throw fail("FLANG_PARSE", "в parser.mjs нет функции разбора")

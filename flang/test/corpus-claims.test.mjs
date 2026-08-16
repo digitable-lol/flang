@@ -1300,6 +1300,10 @@ const ОХВАТ = [
   "flang/examples/rosetta/palindrome.flang «Позиция подстроки»",
   "flang/examples/rosetta/roman-numerals-english.flang «Value of a symbol»",
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
+  /* Прибавилась ОДНА функция, и прибавилась она вместе с формой тела: у
+     «Сколько всего» тело — свёртка, и до принципа по свёртке ядро не брало у
+     неё ничего. Утверждение при ней написано там же, где стоит функция. */
+  "flang/proof/examples/body-forms.flang «Сколько всего»",
   "flang/proof/examples/corpus-hof.flang «Считать где»",
   "flang/proof/examples/corpus-lists.flang «Считать вхождения»",
   "flang/proof/examples/corpus-natural.flang «Сумма пары»",

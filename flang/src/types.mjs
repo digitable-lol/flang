@@ -46,7 +46,7 @@
  */
 
 import { OUTCOME_TYPE_NAME } from "./builtins.mjs"
-import { ACTION_TYPE_NAME, ADDRESSED_ACTIONS, STRATEGIES } from "./conc.mjs"
+import { ACTION_PROCESS_FIELD, ACTION_TYPE_NAME, STRATEGIES } from "./conc.mjs"
 import { INITIAL_CODE, UNCOVERED_CODE, достижимыеОтказы, отказыНачального } from "./failures.mjs"
 /* Проверка объявления `план` живёт в `io.mjs` вместе со словарём поручений, а
    не здесь: она вся про ввод-вывод и ничего не знает об остальных типах. */
@@ -1415,12 +1415,18 @@ function namedOnly(name, ctx, at, label) {
  * варианта, и второй проход по тому же выражению удвоил бы диагностики.
  */
 function addresseeOf(expr, ctx) {
-  const адресат = (expr.fields ?? {})["кому"]
+  const поле = ACTION_PROCESS_FIELD[expr.variant]
+  /* У порождения тот же вопрос задаётся про ВИД, а не про адресата: `породить`
+     заводит экземпляр объявленного вида, и `принимает` этого вида — тип первого
+     сообщения. Слово в диагностике меняется вместе с полем, потому что «адресат
+     обязан быть литералом» про `вид` читалось бы как ошибка компилятора. */
+  const проИмя = поле === "вид" ? "вид порождаемого процесса" : "адресат"
+  const адресат = (expr.fields ?? {})[поле]
   if (адресат === undefined) return null
   if (адресат.kind !== "literal" || typeof адресат.value !== "string") {
     ctx.report(
       "FLANG_PROCESS",
-      `действие «${expr.variant}»: адресат обязан быть именем объявленного процесса, ` +
+      `действие «${expr.variant}»: ${проИмя} обязан быть именем объявленного процесса, ` +
         `записанным прямо здесь — вычисленное имя проверить нечем`,
       адресат,
     )
@@ -1431,7 +1437,9 @@ function addresseeOf(expr, ctx) {
     const известные = [...ctx.processes.keys()].map((имя) => `«${имя}»`).join(", ")
     ctx.report(
       "FLANG_UNKNOWN_PROCESS",
-      `действие «${expr.variant}» адресовано «${адресат.value}», но такой процесс не объявлен` +
+      `действие «${expr.variant}» ` +
+        (поле === "вид" ? `порождает «${адресат.value}»` : `адресовано «${адресат.value}»`) +
+        `, но такой процесс не объявлен` +
         (известные === "" ? "" : `; объявлены ${известные}`),
       expr,
     )
@@ -3673,7 +3681,7 @@ function constructType(expr, env, expected, ctx, fnName) {
      груза берётся у адресата, а не из словаря действий — там он джокер, потому
      что полиморфизма в языке нет. */
   const адресат =
-    owner === ACTION_TYPE_NAME && ADDRESSED_ACTIONS.has(expr.variant) && ctx.processes?.size > 0
+    owner === ACTION_TYPE_NAME && ACTION_PROCESS_FIELD[expr.variant] !== undefined && ctx.processes?.size > 0
       ? addresseeOf(expr, ctx)
       : null
   /* Продолжение плана: то же самое и по той же причине. Поле `потом` объявлено

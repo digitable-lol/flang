@@ -911,7 +911,14 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
 #ifdef FL_WITH_CONC
   if (run != NULL) {
     const fl_conc_plan *plan = FL_PROGRAM_CONC_PLAN();
-    fl_conc_result outcome;
+    /* Обнуление здесь не перестраховка, а следствие двух правок, встретившихся
+       в одном дереве: рабочий режим планировщика дал `fl_conc_run` пути, на
+       которых итог заполняется не целиком, а межмодульная оптимизация (`-flto`)
+       позволила компилятору увидеть это через границу файла. По отдельности ни
+       одна ветка не краснела; вместе — `-Werror=maybe-uninitialized` на
+       `outcome.outcome` и `outcome.time`. Стоит обнуление ноль тактов и снимает
+       вопрос целиком, а не глушит предупреждение. */
+    fl_conc_result outcome = {0};
     size_t turn_limit = 0;
     size_t process_limit = 0;
     size_t worker_count = 0;

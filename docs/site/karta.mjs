@@ -18,9 +18,9 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Язык',
     страницы: [
-      { адрес: 'yazyk.html', имя: 'Справка по языку', из: 'docs/language.ru.md' },
-      { адрес: 'primery.html', имя: 'Примеры', из: 'docs/examples.ru.md' },
-      { адрес: 'utility.html', имя: 'Исполняемые утилиты', из: 'docs/executable-utilities.ru.md' },
+      { адрес: 'yazyk.html', имя: 'Справка по языку', из: 'docs/rukovodstvo/language.ru.md' },
+      { адрес: 'primery.html', имя: 'Примеры', из: 'docs/rukovodstvo/examples.ru.md' },
+      { адрес: 'utility.html', имя: 'Исполняемые утилиты', из: 'docs/rukovodstvo/executable-utilities.ru.md' },
       { адрес: 'spec.html', имя: 'Спецификация языка', из: 'flang/SPEC.md' },
     ],
   },
@@ -33,12 +33,22 @@ export const РАЗДЕЛЫ = [
     ],
   },
   {
+    имя: 'Почему так',
+    страницы: [
+      { адрес: 'odin-istochnik.html', имя: 'Один источник правды', из: 'docs/rukovodstvo/single-source.ru.md' },
+      { адрес: 'totalnost.html', имя: 'Что даёт признак «тотальная»', из: 'docs/rukovodstvo/totality.ru.md' },
+      { адрес: 'dve-realizacii.html', имя: 'Две реализации и неподвижная точка', из: 'docs/rukovodstvo/two-implementations.ru.md' },
+      { адрес: 'razvitie.html', имя: 'Развитие языка', из: 'docs/rukovodstvo/developing.ru.md' },
+      { адрес: 'ogranicheniya.html', имя: 'Известные ограничения', из: 'docs/rukovodstvo/limits.ru.md' },
+    ],
+  },
+  {
     имя: 'Устройство',
     страницы: [
-      { адрес: 'kak-rabotaet.html', имя: 'Как это работает', из: 'docs/how-it-works.ru.md' },
-      { адрес: 'arhitektura.html', имя: 'Архитектура', из: 'docs/architecture.md' },
-      { адрес: 'raskladka.html', имя: 'Раскладка репозитория', из: 'docs/project-layout.ru.md' },
-      { адрес: 'zachem.html', имя: 'Зачем и встраивание', из: 'docs/why-and-integration.ru.md' },
+      { адрес: 'kak-rabotaet.html', имя: 'Как это работает', из: 'docs/rukovodstvo/how-it-works.ru.md' },
+      { адрес: 'arhitektura.html', имя: 'Архитектура', из: 'docs/rukovodstvo/architecture.md' },
+      { адрес: 'raskladka.html', имя: 'Раскладка репозитория', из: 'docs/rukovodstvo/project-layout.ru.md' },
+      { адрес: 'zachem.html', имя: 'Зачем и встраивание', из: 'docs/rukovodstvo/why-and-integration.ru.md' },
     ],
   },
   {

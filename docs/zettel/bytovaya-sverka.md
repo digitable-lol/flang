@@ -19,5 +19,8 @@
 по строкам: проверять придётся запуском и сравнением поведения, а это в разы
 медленнее и ловит меньше.
 
+**Тот же приём в другой области** — контрольная сумма в замере скорости:
+[[kontrolnaya-summa-v-zamere]].
+
 Связано: [[izyatie]], [[chetyre-kuska-javascript]],
-[[proverki-perestayushchie-sravnivat]]
+[[proverki-perestayushchie-sravnivat]], [[kontrolnaya-summa-v-zamere]]

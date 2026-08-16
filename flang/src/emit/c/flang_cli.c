@@ -326,6 +326,30 @@ static bool read_number_text(fl_reader *reader, double *out) {
   return true;
 }
 
+/**
+ * Предел из запроса в `size_t`, и почему это отдельная функция.
+ *
+ * `(size_t)x` для отрицательного, бесконечного или нечислового `x` — поведение
+ * НЕОПРЕДЕЛЁННОЕ, и на обычной машине даёт огромное число. Для `turns` это
+ * значило бы «крутись почти вечно», для `processes` — хуже: предел числа
+ * процессов и есть тотальность слоя, и снятый мусором из запроса он перестаёт
+ * быть пределом. Поэтому такой запрос ОТВЕРГАЕТСЯ, а не округляется молча.
+ *
+ * Ноль и всё, что больше разрядной сетки, законны: ноль означает умолчание
+ * планировщика, а слишком большое упирается в память задолго до предела.
+ */
+static bool limit_from_number(double value, size_t *out) {
+  if (value != value || value < 0.0) {
+    return false;
+  }
+  if (value >= 18446744073709551616.0) {
+    *out = (size_t)-1;
+    return true;
+  }
+  *out = (size_t)value;
+  return true;
+}
+
 static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values, size_t *count) {
   size_t capacity = 8;
   size_t used = 0;
@@ -840,7 +864,14 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   if (run != NULL) {
     const fl_conc_plan *plan = FL_PROGRAM_CONC_PLAN();
     fl_conc_result outcome;
-    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, (size_t)processes, journal != 0.0, &outcome,
+    size_t turn_limit = 0;
+    size_t process_limit = 0;
+    if (!limit_from_number(turns, &turn_limit) || !limit_from_number(processes, &process_limit)) {
+      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"предел в запросе отрицателен или не число\"}\n",
+            stdout);
+      return;
+    }
+    if (fl_conc_run(&ctx, plan, run, seed, turn_limit, process_limit, journal != 0.0, &outcome,
                     &error) == FL_OK) {
       write_run(run, &outcome);
       return;

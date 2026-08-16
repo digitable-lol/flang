@@ -611,17 +611,28 @@ static bool fl_conc_index_put(fl_conc_sched *sched, size_t process) {
 static bool fl_conc_index_build(fl_conc_sched *sched, size_t wanted) {
   size_t size = 16;
   size_t index = 0;
-  while (size < wanted * 2u) {
+  uint32_t *bigger = NULL;
+  /* Сравнение переписано с `size < wanted * 2` на деление, потому что
+     переполнялось именно произведение, а сторож стоял на удвоении `size`:
+     при `wanted` больше половины разрядной сетки произведение свернулось бы,
+     цикл не выполнился, таблица осталась бы на шестнадцати ячейках — и довод
+     «таблица не бывает полной» рухнул бы вместе с завершаемостью пробы. */
+  while (size / 2u < wanted) {
     if (size > ((size_t)-1) / 2u) {
       return false;
     }
     size *= 2u;
   }
-  sched->names = (uint32_t *)fl_arena_alloc(sched->home, size * sizeof(uint32_t));
-  if (sched->names == NULL) {
+  /* В местную переменную, а не сразу в поле: на нехватке памяти поле осталось
+     бы нулевым при непустой маске, и следующий же поиск адресата разыменовал
+     бы NULL. Сегодня оба вызывающих обрывают прогон немедленно, но полагаться
+     на это значит держать заряженную ошибку для следующей правки. */
+  bigger = (uint32_t *)fl_arena_alloc(sched->home, size * sizeof(uint32_t));
+  if (bigger == NULL) {
     return false;
   }
-  memset(sched->names, 0, size * sizeof(uint32_t));
+  memset(bigger, 0, size * sizeof(uint32_t));
+  sched->names = bigger;
   sched->names_mask = size - 1u;
   sched->names_used = 0;
   for (index = 0; index < sched->proc_count; index += 1) {
@@ -1339,9 +1350,16 @@ static void fl_conc_own_failure(fl_conc_sched *sched, size_t process, fl_conc_en
    не молчит и не перезаписывает — это отказ ПОРОЖДАЮЩЕГО (`FLANG_NAME_TAKEN`),
    и разбирает его надзор. Так же устроен `register/2` в BEAM. */
 
-/** Отказы порождения. Оба — отказы порождающего: он попросил, не вышло. */
+/** Отказы порождения. Все три — отказы порождающего: он попросил, не вышло. */
 static const char *const FL_CONC_NAME_TAKEN = "FLANG_NAME_TAKEN";
 static const char *const FL_CONC_PROCESS_LIMIT = "FLANG_PROCESS_LIMIT";
+/* Имя порождённого — АДРЕС, и адресом может быть не всякая строка. Пустая не
+   может: адресоваться к ней нечем. Строка с нулевым байтом внутри — тоже, и
+   вот почему это отказ, а не молчание: имя процесса живёт в рантайме C строкой
+   с нулём на конце, значит «а\0б» и «а» стали бы одним и тем же адресом, а у
+   эталона на JavaScript — разными. Расхождение вышло бы не в отказе, а в
+   ДОСТАВКЕ: письмо ушло бы не тому. Поэтому имя проверяется, а не усекается. */
+static const char *const FL_CONC_BAD_NAME = "FLANG_BAD_NAME";
 
 /** Копия имени порождённого в арену вызывающего с нулём на конце.
     В арену вызывающего, а не в кучу процесса: имя живёт столько же, сколько
@@ -1388,8 +1406,14 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
     return true;
   }
   if (name.tag != FL_STRING || name.as.string.bytes == 0) {
-    fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_PROCESS",
-                        "порождённому процессу нужно непустое имя");
+    fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_BAD_NAME,
+                        "имя порождённого процесса пусто, а адресоваться к пустому имени нечем");
+    return true;
+  }
+  if (memchr(name.as.string.utf8, '\0', name.as.string.bytes) != NULL) {
+    fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_BAD_NAME,
+                        "в имени порождённого процесса нулевой байт: имя процесса — адрес, "
+                        "и адрес обязан быть строкой без дыр");
     return true;
   }
   /* Предел — это тотальность слоя, а не осторожность: `породить` в цикле иначе
@@ -1430,9 +1454,12 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
      объявленного вида» было бы оборотом речи, а не утверждением. */
   sched->born[sched->born_count] = *fl_conc_node(sched, proto);
   sched->born[sched->born_count].name = text;
-  sched->born_count += 1;
-  sched->proc_count += 1;
 
+  /* Кучи заводятся ДО того, как счётчик процессов вырастет, и порядок этот не
+     косметика: освобождение в `finish` идёт ровно по `proc_count`, а память под
+     слоты приходит из арены НЕОБНУЛЁННОЙ. Процесс, попавший в счёт раньше, чем
+     его арены проинициализированы, был бы освобождён по мусорному указателю —
+     стоило бы кому-нибудь вставить между этими строками выход. */
   fl_arena_init_small(&sched->slots[born].heap[0], FL_CONC_HEAP_LEAST);
   fl_arena_init_small(&sched->slots[born].heap[1], FL_CONC_HEAP_LEAST);
   sched->slots[born].live = 0;
@@ -1454,6 +1481,9 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
      экземпляра то же, что у вида, значит накрытый вид накрывает и экземпляры, а
      `FLANG_UNCOVERED_FAILURE` считает по-прежнему по одному объявлению. */
   sched->over_process[born] = sched->over_process[proto];
+  /* Слот заведён целиком — только теперь процесс есть. */
+  sched->born_count += 1;
+  sched->proc_count += 1;
   /* Указатель обязан РАСТИ вместе с таблицей, и это не оптимизация: при
      нагрузке выше половины линейная проба удлиняется, а при полной таблице
      `fl_conc_index_put` не нашёл бы пустой ячейки никогда и завис бы навсегда.

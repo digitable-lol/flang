@@ -957,6 +957,19 @@ export async function externalChecks(program, настройки = {}) {
        приходит и уходит в `assumed`: сравнивать нечем, а молчать о непроверенном
        нельзя. */
     ["../src/setoid.mjs", ["checkCategoryLaws"], "category"],
+    /* Пять объявленных свойств — там же и по той же причине, и ПОРОЗНЬ, потому
+       что следствие у каждого своё. Порознь не для симметрии: разрешение
+       повторить, разрешение переписать и разрешение кешировать — три разных
+       разрешения, и один вердикт на пятерых прятал бы их за общим словом.
+       Устройство каждого при этом доказано раньше, в `checkTypes`.
+       Порядок значим ровно в одном месте: `monotone.mjs` спрашивает у
+       `partialorder.mjs`, здоров ли порядок, и спрашивает сам — здесь порядок
+       строк ничего не решает и решать не должен. */
+    ["../src/idempotent.mjs", ["checkIdempotence"], "idempotent"],
+    ["../src/commutative.mjs", ["checkCommutativity"], "commutative"],
+    ["../src/distributive.mjs", ["checkDistributivity"], "distributive"],
+    ["../src/partialorder.mjs", ["checkPartialOrder"], "order"],
+    ["../src/monotone.mjs", ["checkMonotonicity"], "monotone"],
   ]) {
     try {
       const module = await import(new URL(file, import.meta.url).href)

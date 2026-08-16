@@ -1288,6 +1288,9 @@ const ОХВАТ = [
   "flang/examples/leetcode/205-isomorphic-strings.flang «Первое место символа»",
   "flang/examples/leetcode/733-flood-fill.flang «Счёт незалитых»",
   "flang/examples/measure/natural.flang «Сумма пары»",
+  "flang/examples/money/exact-decimal.flang «Копеек в остатке»",
+  "flang/examples/money/exact-decimal.flang «Копеек в сумме»",
+  "flang/examples/money/exact-decimal.flang «Сложить копейки»",
   "flang/examples/paths/shortest-path.flang «Ближе»",
   "flang/examples/paths/shortest-path.flang «Дальше»",
   "flang/examples/paths/shortest-path.flang «Таймаут подряд»",
@@ -1531,7 +1534,7 @@ test("охват: двадцать утверждений НАПИСАНЫ, а �
      ловится вовсе — ловится этим числом. Считано прогоном на собранном дереве. */
   assert.equal(
     сПостусловием.reduce((сумма, [, сколько]) => сумма + сколько, 0),
-    29,
+    30,
     "строк `обеспечивает` в закрытых каталогах стало другое число — вписана или снята строка",
   )
 })
@@ -1566,4 +1569,9 @@ const ВНЕ_ОХВАТА = [
   "flang/stdlib/logic.flang «Не так»",
   "flang/stdlib/numbers.flang «Знак»",
   "flang/stdlib/numbers.flang «Чётное»",
+  /* «Сколько дополнить» переехала из `flang/proof/examples` в библиотеку
+     (`work/stdlib-grow`): запрет на слова доказательства в `flang/stdlib` снят
+     тем, что продукция `требует` написана и в близнеце парсера. Цель у неё
+     ПОТОЛОК, а не дно, поэтому строка стоит здесь, а не в охвате. */
+  "flang/stdlib/strings.flang «Сколько дополнить»",
 ]

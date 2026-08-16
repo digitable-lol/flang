@@ -1,0 +1,12 @@
+function count_symbol(text, symbol)
+    count = 0
+    for i = 1 to length(text)
+        if text[i] == symbol
+            count = count + 1
+        end if
+    end for
+    return count
+end function
+
+example1 = count_symbol("абракадабра", "а")
+example2 = count_symbol("", "а")

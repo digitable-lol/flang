@@ -1,0 +1,10 @@
+function Обратно(текст: string): string
+    var результат := ""
+    for i from length(текст) - 1 downto 0
+        результат := результат + текст[i]
+    return результат
+end
+
+// Примеры
+assert(Обратно("абв") == "вба")
+assert(Обратно("") == "")

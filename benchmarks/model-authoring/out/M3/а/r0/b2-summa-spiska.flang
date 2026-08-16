@@ -1,0 +1,9 @@
+(define (sum-list elements)
+  (if (null? elements)
+      0
+      (+ (car elements) (sum-list (cdr elements)))))
+
+(display (sum-list '(1 2 3)))
+(newline)
+(display (sum-list '()))
+(newline)

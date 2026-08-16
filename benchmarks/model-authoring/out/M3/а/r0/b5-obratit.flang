@@ -1,0 +1,9 @@
+function reverse_list(elements)
+    return reverse(elements)
+end
+
+-- Пример 1
+assert(reverse_list([1, 2, 3]) == [3, 2, 1])
+
+-- Пример 2
+assert(reverse_list([]) == [])

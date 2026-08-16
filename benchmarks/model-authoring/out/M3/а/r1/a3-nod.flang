@@ -1,0 +1,10 @@
+function gcd(a, b) {
+    if (b == 0) {
+        return a;
+    } else {
+        return gcd(b, a % b);
+    }
+}
+
+// Пример 1: gcd(12, 8) должно вернуть 4
+// Пример 2: gcd(7, 0) должно вернуть 7

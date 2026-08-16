@@ -1,0 +1,27 @@
+module reverse_list
+  function reverse_list(elements) result(reversed)
+    type(list), intent(in) :: elements
+    type(list) :: reversed
+    integer :: i, n
+
+    n = size(elements)
+    allocate(reversed%data(n))
+    do i = 1, n
+      reversed%data(i) = elements%data(n - i + 1)
+    end do
+    reversed%n = n
+  end function reverse_list
+end module reverse_list
+
+program test_reverse_list
+  use reverse_list
+  type(list) :: lst1, lst2, lst3
+
+  lst1 = list([1, 2, 3])
+  lst2 = reverse_list(lst1)
+  print *, "Reverse of [1, 2, 3] is:", lst2
+
+  lst3 = list([])
+  lst2 = reverse_list(lst3)
+  print *, "Reverse of empty list is:", lst2
+end program test_reverse_list

@@ -1,0 +1,19 @@
+(λ (elements value)
+   (λ (list)
+      (if (null? list)
+          #f
+          (if (= (car list) value)
+              #t
+              (list (cdr list))))))
+   (λ (elements value)
+      (if (null? elements)
+          #f
+          (if (= (car elements) value)
+              #t
+              (elements (cdr elements) value))))
+   (let ((elements '(1 2 3))
+         (value 2))
+      (elements elements value))
+   (let ((elements '(1 2 3))
+         (value 9))
+      (elements elements value)))

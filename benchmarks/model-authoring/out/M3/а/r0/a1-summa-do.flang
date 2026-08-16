@@ -1,0 +1,8 @@
+module SumTo
+  function sum_to(n: nat): nat
+    if n = 0 then 0 else n + sum_to(n - 1)
+  end
+end
+
+example sum_to(0) = 0
+example sum_to(5) = 15

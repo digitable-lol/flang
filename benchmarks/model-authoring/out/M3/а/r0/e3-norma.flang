@@ -1,0 +1,32 @@
+process "Лента" with state "Полка" (штук: number) {
+    initial "пустая полка" = {штук: 0};
+
+    message "Событие" with variants {
+        "положить" (сколько: number);
+        "закончить" ();
+    };
+
+    function "шаг ленты" (msg: "Событие") returns "Отклик" {
+        if (msg is "положить") {
+            return {состояние: {штук: state.штук + msg.сколько}, действия: "продолжить"};
+        } else if (msg is "закончить") {
+            return {состояние: state, действия: "остановить" with причин: "норма"};
+        } else {
+            error "Неизвестное сообщение";
+        }
+    };
+};
+
+supervisor "Склад" {
+    process "Лента" with strategy "перезапустить" and threshold 2 failures in 5000 ms else "остановить";
+};
+
+test {
+    seed 1;
+    run "Лента" with {
+        "положить" (7);
+        "закончить" ();
+    };
+    assert state.штук == 7;
+    assert failures == 0;
+};

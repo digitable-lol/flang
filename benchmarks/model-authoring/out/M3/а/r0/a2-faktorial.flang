@@ -1,0 +1,14 @@
+module factorial
+  function factorial(n: nat) : nat
+    if n == 0 then
+      return 1
+    else
+      return n * factorial(n - 1)
+    end if
+  end function
+
+  example
+    assert factorial(0) == 1
+    assert factorial(5) == 120
+  end example
+end module

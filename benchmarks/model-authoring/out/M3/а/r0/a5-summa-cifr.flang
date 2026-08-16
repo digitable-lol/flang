@@ -1,0 +1,5 @@
+define total sum_digits(n : Nat) : Nat =
+  if n == 0 then 0 else sum_digits(n / 10) + (n % 10)
+
+check sum_digits(7) == 7
+check sum_digits(123) == 6

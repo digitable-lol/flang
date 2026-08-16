@@ -1,0 +1,7 @@
+(println (length (list)))
+(println (length (list 7 8 9)))
+
+(define (length elements)
+  (if (null? elements)
+      0
+      (+ 1 (length (cdr elements)))))

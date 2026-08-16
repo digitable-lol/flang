@@ -1,0 +1,10 @@
+define total function max-or-zero (elements : list number) : number
+  if (empty? elements)
+    0
+  else
+    max (elements)
+  end
+end
+
+(max-or-zero [3 9 4]) --> 9
+(max-or-zero []) --> 0

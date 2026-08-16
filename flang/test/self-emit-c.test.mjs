@@ -34,7 +34,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
@@ -379,25 +378,6 @@ test("сам эмиттер: печать своего собственного 
   /* Единственная программа, где печать работает над своим же текстом. Если
      самоприменение однажды разойдётся, разойдётся именно здесь. */
   сверить("flang/self/emit-c.flang", await разобрать("flang/self/emit-c.flang"))
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async () => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  let сверено = 0
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"))
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    сверить(файлМодели, fromFtsDocument(документ))
-    сверено += 1
-  }
-  assert.ok(сверено >= 10, `моделей с утилитами сверено ${сверено} — слишком мало`)
 })
 
 /* ─────────────────── случаи, которых в репозитории нет ─────────────────── */

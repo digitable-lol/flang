@@ -21,4 +21,8 @@
 вычислением на границах**: ноль, минус ноль, бесконечность, NaN, 2⁵³. Двое
 агентов потеряли часы на утверждениях, оказавшихся ложными.
 
-Связано: [[u-double-net-zakonov]], [[otritsatelnyy-rezultat-tsenen]], [[nol-aksiom]]
+**Родственный класс — минус ноль**, всплывший трижды за сутки:
+[[minus-nol-klass]].
+
+Связано: [[u-double-net-zakonov]], [[otritsatelnyy-rezultat-tsenen]], [[nol-aksiom]],
+[[minus-nol-klass]]

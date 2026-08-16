@@ -77,6 +77,7 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](proverki-perestayushchie-sravnivat.md)
 - [Бывают конфликты слияния, которых git не показывает](tikhie-konflikty-sliyaniya.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](dva-yadra-ne-slivayutsya-tekstom.md)
+- [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](bliznec-otstayot-ot-uehavshego-etalona.md)
 - [Измеренный ноль ценнее ненайденного правила](otritsatelnyy-rezultat-tsenen.md)
 - [Замер скорости проверяет себя контрольной суммой](kontrolnaya-summa-v-zamere.md)
 

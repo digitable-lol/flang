@@ -39,3 +39,7 @@ research/
 
 # Аварийный дамп BEAM: остаётся после упавшего прогона тестов Elixir.
 erl_crash.dump
+
+# Собранный сайт документации: создаётся `node docs/site/build.mjs`,
+# в истории не нужен — источник лежит в docs/.
+docs/site/out/

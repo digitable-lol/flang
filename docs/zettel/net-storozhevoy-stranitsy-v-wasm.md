@@ -40,5 +40,5 @@ bounds`, `076-minimum-window-substring` с `function signature mismatch` в
 среды. Рекомендованное значение — 8 МиБ, и оно не круглое: это `FL_STACK_MIN`,
 столько же берёт обычная сборка.
 
-Связано: [[wasm-cherez-c-besplatno]], [[chestnye-otkazy]],
+Связано: [[wasm-cherez-c-besplatno]],
 [[pribor-vral-a-ne-predmet]]

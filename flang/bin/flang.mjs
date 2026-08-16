@@ -187,13 +187,23 @@ async function commandCheck(options) {
     return 0
   }
 
-  const { proofLedger, formatProofLedger } = await import(new URL("../src/proof.mjs", import.meta.url).href)
-  const ведомость = proofLedger(program, внешнее.results)
+  /* ВЕДОМОСТЬ СЧИТАЕТ СЛОЙ НА САМОМ FLANG, а не эталон на JavaScript, и это не
+     украшение отчёта. Пока «чем несётся обещание» считал `flang/src/proof.mjs`,
+     слова «язык отчитывается о собственной доказуемости» держались на чужом
+     языке: близнец был написан и сверен побайтово, но в рабочем пути его не
+     звал никто.
+
+     ЗАПАСНОГО ПУТИ К ЭТАЛОНУ ЗДЕСЬ НЕТ, и это то же условие, что у
+     обязательств: сорвётся слой — сорвётся команда. Тихий запасной путь
+     срабатывал бы молча, и рабочий путь снова считал бы эталоном, ничего об
+     этом не сказав. */
+  const { ведомость } = await import(new URL("../src/self.mjs", import.meta.url).href)
+  const отчёт = await ведомость(program, внешнее.results)
   if (options.json === true) {
-    writeJson({ ...result, proof: ведомость }, options.pretty, process.stdout)
+    writeJson({ ...result, proof: отчёт.значением }, options.pretty, process.stdout)
     return 0
   }
-  process.stdout.write(formatProofLedger(ведомость))
+  process.stdout.write(отчёт.словами)
   return 0
 }
 

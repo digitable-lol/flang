@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
-"""Те же четыре задачи, что в zadachi.flang, на Python 3.
+"""Те же пять задач, что в zadachi.flang, на Python 3.
 
 Правило перевода — шаг в шаг:
   • где flang печатается в цикл (хвостовой самовызов) — здесь цикл;

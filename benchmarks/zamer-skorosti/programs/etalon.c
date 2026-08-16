@@ -1,7 +1,7 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /*
- * Те же четыре задачи на обычном C — эталон «чего стоит эта задача, если
+ * Те же пять задач на обычном C — эталон «чего стоит эта задача, если
  * писать её руками».
  *
  * Он нужен ровно для одного: разложить отставание flang на две части. Между
@@ -225,7 +225,7 @@ static double razbor_strok(long raz) {
 int main(int argc, char **argv) {
   long n;
   if (argc != 3) {
-    fprintf(stderr, "использование: etalon {коллатц|сортировка|дерево|строки} РАЗМЕР\n");
+    fprintf(stderr, "использование: etalon {коллатц|нод|сортировка|дерево|строки} РАЗМЕР\n");
     return 2;
   }
   n = strtol(argv[2], NULL, 10);

@@ -19,6 +19,8 @@
  *
  * У программы с процессами есть второй запрос — прогон:
  *   {"run":"имя прогона","seed":"4172","turns":"10000","journal":"1"}
+ *   {"run":"имя прогона","workers":"8"}   рабочий режим: восемь потоков, и семя
+ *                   чередования больше НЕ определяет (см. flang_conc.h)
  *   {"ok":true,"run":"…","исход":"покой","время":"4","пробегов":"4",
  *    "состояния":[["Счётчик",…]],"живые":[…],"отказы":[…],"решения":[…],
  *    "журнал":[{"время":"0","процесс":"…","исход":"обработано","код":"","сообщение":…}]}
@@ -684,6 +686,14 @@ static void write_run(const char *name, const fl_conc_result *result) {
   write_number_text(result->time);
   fputs(",\"пробегов\":", stdout);
   write_number_text((double)result->turns);
+  /* Поле появляется РОВНО ТОГДА, когда прогон шёл больше чем одним потоком.
+     Печатать его всегда значило бы засорить вывод проверочного режима, по
+     которому идёт побайтовая сверка; не печатать никогда значило бы разменять
+     воспроизводимость молча. */
+  if (result->workers > 1) {
+    fputs(",\"рабочих\":", stdout);
+    write_number_text((double)result->workers);
+  }
 
   /* Состояния — в порядке объявления процессов, том же, что у эталона; за
      объявленными идут порождённые, в порядке рождения. Имена берутся из ИТОГА,
@@ -788,6 +798,17 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
      порождённых (`породить`, шаг Б1). Ноль — умолчание планировщика, ровно как
      у `turns`: это настройка запроса, а не потолок модели. */
   double processes = 0.0;
+  /* Сколько потоков ведут прогон. Ноль и единица — проверочный режим: один
+     поток, чередование по семени, побайтовая сверка с эталоном. Больше единицы —
+     рабочий: столько потоков ОС, и семя больше НЕ ОПРЕДЕЛЯЕТ чередования.
+     Умолчание — проверочный, и это не осторожность: воспроизводимость здесь
+     часть договора языка, и терять её молча, «потому что машина многоядерная»,
+     нельзя. Кто хочет ядер, говорит об этом вслух — и получает в ответе поле
+     «рабочих», чтобы не спутать один режим с другим.
+
+     Слово «все» просит столько потоков, сколько у машины ядер: «параллельно,
+     сколько даёт среда» из контракта — это число, а не оборот речи. */
+  double workers = 0.0;
   /* Журнал по умолчанию ВЕДЁТСЯ: прогон — основной способ звать эту программу, и
      по журналу он сверяется с эталоном. Выключает его тот, кто знает, что зовёт
      не прогон, а работу, — и знает, что платит за наблюдение памятью на каждом
@@ -857,6 +878,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел числа процессов\"}\n", stdout);
         return;
       }
+    } else if (strcmp(key, "workers") == 0) {
+      if (!read_number_text(&reader, &workers)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое число потоков\"}\n", stdout);
+        return;
+      }
     } else if (strcmp(key, "journal") == 0) {
       if (!read_number_text(&reader, &journal)) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак журнала\"}\n", stdout);
@@ -888,12 +914,14 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     fl_conc_result outcome;
     size_t turn_limit = 0;
     size_t process_limit = 0;
-    if (!limit_from_number(turns, &turn_limit) || !limit_from_number(processes, &process_limit)) {
+    size_t worker_count = 0;
+    if (!limit_from_number(turns, &turn_limit) || !limit_from_number(processes, &process_limit) ||
+        !limit_from_number(workers, &worker_count)) {
       fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"предел в запросе отрицателен или не число\"}\n",
             stdout);
       return;
     }
-    if (fl_conc_run(&ctx, plan, run, seed, turn_limit, process_limit, journal != 0.0, &outcome,
+    if (fl_conc_run(&ctx, plan, run, seed, turn_limit, process_limit, worker_count, journal != 0.0, &outcome,
                     &error) == FL_OK) {
       write_run(run, &outcome);
       return;

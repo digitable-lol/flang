@@ -78,6 +78,10 @@ static char *fl_chunk_data(fl_chunk *chunk) {
 }
 
 void fl_arena_init(fl_arena *arena) {
+  fl_arena_init_small(arena, FL_CHUNK_MIN);
+}
+
+void fl_arena_init_small(fl_arena *arena, size_t least) {
   if (arena == NULL) {
     return;
   }
@@ -89,6 +93,9 @@ void fl_arena_init(fl_arena *arena) {
   arena->guard_used = 0;
   arena->staging = NULL;
   arena->staging_size = 0;
+  /* Нулевой кусок не бывает, а кусок больше общего минимума и есть общий
+     минимум: мельчить умеем, крупнить незачем. */
+  arena->least = least == 0 || least > FL_CHUNK_MIN ? FL_CHUNK_MIN : fl_round_up(least);
 }
 
 void *fl_arena_alloc(fl_arena *arena, size_t size) {
@@ -114,7 +121,7 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
 
   {
     const size_t header = fl_round_up(sizeof(fl_chunk));
-    size_t capacity = FL_CHUNK_MIN;
+    size_t capacity = arena->least == 0 ? FL_CHUNK_MIN : arena->least;
     fl_chunk *chunk = NULL;
     if (capacity < wanted) {
       /*
@@ -150,6 +157,14 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     arena->current = chunk;
     arena->reserved += header + capacity;
     arena->handed += wanted;
+    /* Следующий кусок вдвое больше — до общего минимума и не дальше. Арена с
+       мелким первым куском обязана оставаться дешёвой для того, кто ничего не
+       считает, и не становиться дорогой для того, кто считает: без удвоения
+       процесс, накопивший мегабайт, купил бы его двумя тысячами походов к
+       malloc. С удвоением их одиннадцать. */
+    if (arena->least < FL_CHUNK_MIN) {
+      arena->least *= 2u;
+    }
     return fl_chunk_data(chunk);
   }
 }

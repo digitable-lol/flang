@@ -90,7 +90,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
-import { checkTypes, markNonEmpty, таблицаВхода } from "../src/types.mjs"
+import { checkTypes, markProven, таблицаВхода } from "../src/types.mjs"
 import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
 import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
 /* Вход, пределы печати и сверщик байтов — из одного места с точкой раскрутки
@@ -560,7 +560,7 @@ test("точка раскрутки bootstrap/ совпадает с печат�
      тест, а `scripts/bootstrap-c.mjs` через `loadProgram` — а он ставит обе.
      Забудь здесь вторую, и тест краснел бы на верной точке раскрутки, требуя
      перепечатать то, что и так перепечатано. */
-  const напечатано = emitC(markNonEmpty(markMeasureGuards(компилятор)), ПРЕДЕЛЫ)
+  const напечатано = emitC(markProven(markMeasureGuards(компилятор)), ПРЕДЕЛЫ)
   const беды = расхождения(напечатано.files)
   assert.deepEqual(
     беды,

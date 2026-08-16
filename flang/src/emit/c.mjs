@@ -146,7 +146,7 @@ const BUILTIN_HELPERS = new Map([
  * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
  *
  * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
- * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * (`bin/flang.mjs`, `markProven`) по выводу проверки типов, а копия печати на
  * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
  * отметку и потому печатают одно и то же.
  */
@@ -166,6 +166,36 @@ const BINARY_HELPERS = new Map([
   ["percent", "fl_percent"], ["gt", "fl_gt"], ["lt", "fl_lt"], ["gte", "fl_gte"], ["lte", "fl_lte"],
   ["concat", "fl_concat"],
 ])
+
+/**
+ * ── Операция, у которой тип обоих операндов ДОКАЗАН ──────────────────────────
+ *
+ * `fl_add` начинается с `fl_numbers`, а тот смотрит теги обоих значений — ту
+ * самую работу, которую вывод типов уже сделал на исходнике. Там, где он её
+ * сделал, отметка `числовая` стоит на узле (`src/types.mjs`, `markProven`), и
+ * печать ставит вместо вызова само выражение.
+ *
+ * Печать здесь НИЧЕГО НЕ ДОКАЗЫВАЕТ — она читает отметку, ровно как читает
+ * `доказана` у частичной формы. Иначе восьми целям пришлось бы завести по своему
+ * выводу типов, а копия печати на самом языке этого сделать не может.
+ *
+ * Выражения ниже — дословные тела помощников из `flang_runtime.c`, и это
+ * условие правильности, а не стиль: побайтовое совпадение ответов держится на
+ * том, что порядок действий и округление те же. Отсюда `fmod` у остатка (знак
+ * от делимого, без округления) и скобки у процента: `(левое / 100) * правое`
+ * переставить нельзя — меняется последний бит мантиссы.
+ */
+const ПРЯМАЯ_АРИФМЕТИКА = new Map([
+  ["add", (л, п) => `${л} + ${п}`],
+  ["sub", (л, п) => `${л} - ${п}`],
+  ["mul", (л, п) => `${л} * ${п}`],
+  ["div", (л, п) => `${л} / ${п}`],
+  ["mod", (л, п) => `fmod(${л}, ${п})`],
+  ["percent", (л, п) => `(${л} / 100.0) * ${п}`],
+])
+
+/** Сравнения порядка: в C они те же знаки, потому что оба операнда — double. */
+const ПРЯМОЙ_ПОРЯДОК = new Map([["gt", ">"], ["lt", "<"], ["gte", ">="], ["lte", "<="]])
 
 /* Ключевые слова C99 плюс имена, занятые рантаймом и сигнатурой функции.
    Попадание имени модели сюда — ошибка печати от createNamer, а не тихая
@@ -825,7 +855,7 @@ function renderSource(file, moduleName, shared, bodies) {
     "",
     "#include <string.h>",
   ]
-  if (shared.needsMath) head.push("#include <math.h> /* NAN и INFINITY: в программе есть неконечные литералы */")
+  if (shared.needsMath) head.push("#include <math.h> /* fmod, NAN и INFINITY: печать зовёт их по имени */")
   head.push("")
   if (shared.statics.length > 0) {
     head.push("/* Константы программы: имена полей и строковые литералы. */", ...shared.statics, "")
@@ -1287,6 +1317,23 @@ function emitValue(expr, ctx, out, pad) {
       return temp
     }
     case "binary": {
+      /* Доказанное место печатается выражением, а не вызовом помощника. Стоит
+         ДО вычисления операндов: `emitNumber` печатает их сам и по-своему —
+         числовым литералам вовсе незачем становиться `fl_value`, чтобы тут же
+         быть распакованными обратно. */
+      if (node.числовая === true) {
+        const арифметика = ПРЯМАЯ_АРИФМЕТИКА.get(node.op)
+        if (арифметика !== undefined) {
+          if (node.op === "mod") ctx.shared.needsMath = true
+          const л = emitNumber(node.left, ctx, out, pad)
+          return `fl_number(${арифметика(л, emitNumber(node.right, ctx, out, pad))})`
+        }
+        const знак = ПРЯМОЙ_ПОРЯДОК.get(node.op)
+        if (знак !== undefined) {
+          const л = emitNumber(node.left, ctx, out, pad)
+          return `fl_flag(${л} ${знак} ${emitNumber(node.right, ctx, out, pad)})`
+        }
+      }
       const left = emitValue(node.left, ctx, out, pad)
       const right = emitValue(node.right, ctx, out, pad)
       if (node.op === "eq" || node.op === "neq") {
@@ -1350,6 +1397,42 @@ function guardUnused(out, at, idents, pad) {
 function assignInto(expr, ctx, out, pad, target) {
   const value = emitValue(expr, ctx, out, pad)
   out.push(`${pad}${target} = ${value};`)
+}
+
+/**
+ * Число как выражение C типа `double` — для мест, где тип ДОКАЗАН.
+ *
+ * Три случая, и порядок между ними содержательный.
+ *
+ * ЧИСЛОВОЙ ЛИТЕРАЛ отдаётся самим числом: заворачивать `2` в `fl_number(2.0)`,
+ * чтобы следующей же строкой прочитать оттуда `.as.number`, — работа, которой
+ * незачем появляться даже в тексте. Побочный расход у `fl_number` есть: она
+ * лежит в рантайме, то есть в другой единице трансляции.
+ *
+ * ВЛОЖЕННАЯ ДОКАЗАННАЯ АРИФМЕТИКА складывается в одно выражение: `(а плюс б)
+ * умножить на в` печатается как `(a + b) * c`, а не как две упаковки в
+ * `fl_value` и две распаковки. Скобки ставятся здесь, на вложении, потому что
+ * приоритеты C и flang совпадать не обязаны.
+ *
+ * ВСЁ ОСТАЛЬНОЕ печатается обычным путём и распаковывается полем: значение уже
+ * доказано числом, и `.as.number` читает то поле объединения, которое в нём
+ * лежит.
+ */
+function emitNumber(expr, ctx, out, pad) {
+  const node = requireExpr(expr)
+  if (node.kind === "literal" && typeof node.value === "number") {
+    if (needsMath(node.value)) ctx.shared.needsMath = true
+    return cnumber(node.value)
+  }
+  if (node.kind === "binary" && node.числовая === true) {
+    const арифметика = ПРЯМАЯ_АРИФМЕТИКА.get(node.op)
+    if (арифметика !== undefined) {
+      if (node.op === "mod") ctx.shared.needsMath = true
+      const л = emitNumber(node.left, ctx, out, pad)
+      return `(${арифметика(л, emitNumber(node.right, ctx, out, pad))})`
+    }
+  }
+  return `${emitValue(node, ctx, out, pad)}.as.number`
 }
 
 /** Признак из значения: `если` и `отфильтровать` требуют именно признак. */

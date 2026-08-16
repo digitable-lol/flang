@@ -1,0 +1,71 @@
+# Публикация сайта документации на GitHub Pages.
+#
+# Сайт собирается из docs/ одной командой без единой зависимости — поэтому
+# здесь нет ни установки пакетов, ни кеша: `actions/setup-node` и `node`.
+#
+# Сборка ОТКАЗЫВАЕТ, если исходного файла нет, ссылка ведёт в никуда или
+# заметка не вписана в указатель базы знаний. Значит сломанный сайт до Pages
+# не доедет — он не соберётся.
+
+name: Сайт документации
+
+on:
+  push:
+    branches: [main]
+    # Гоняем только когда менялось то, из чего сайт собирается.
+    paths:
+      - 'docs/**'
+      - 'flang/SPEC.md'
+      - 'flang/proof/SPEC.md'
+      - 'flang/cat/SPEC.md'
+      - 'flang/conc/SPEC.md'
+      - '.github/workflows/pages.yml'
+  # Позволяет опубликовать вручную, не дожидаясь правки документов.
+  workflow_dispatch:
+
+# Один заход на публикацию за раз. Уже идущий не прерываем: недособранный
+# сайт хуже, чем сайт на минуту старее.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  sobrat:
+    name: Собрать
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Отдельным шагом до сборки: если ссылки битые, видно сразу и по имени,
+      # а не среди вывода сборки.
+      - name: Проверить ссылки
+        run: node docs/site/build.mjs --check
+
+      - name: Собрать
+        run: node docs/site/build.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site/out
+
+  opublikovat:
+    name: Опубликовать
+    needs: sobrat
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4

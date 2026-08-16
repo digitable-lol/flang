@@ -623,7 +623,20 @@ function readName(text: string, line?: SourceLine): { value: string; rest: strin
     throw naturalError("FTS_UNCLOSED_STRING", "не закрыта кавычка", line)
   }
   const match = source.match(/^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D-]*/u)
-  if (!match) throw naturalError("FTS_NATURAL_NAME", "ожидалось имя", line)
+  /* Прежнее «ожидалось имя» не показывало НИ ТОГО, что прочитано, ни того, чем
+     это лечится. Сюда доезжает `дано «вес» равно 1 и «срочная» равно нет`:
+     значением оказывается «1 и «срочная» равно нет», и одно это, поставленное
+     в сообщение, уже называет беду — в строке два утверждения вместо одного. */
+  if (!match) {
+    const показано = source.length > 40 ? `${source.slice(0, 40)}…` : source
+    throw naturalError(
+      "FTS_NATURAL_NAME",
+      `ожидалось имя, а стоит «${показано}»: имя пишется словом или в ёлочках, значение — числом, `
+        + "'да', 'нет', 'ничто' или именем; в строке помещается ровно одно утверждение — на каждое "
+        + "поле пишется своё 'дано', слово 'и' их не соединяет",
+      line,
+    )
+  }
   return { value: match[0].normalize("NFC"), rest: source.slice(match[0].length).trim() }
 }
 

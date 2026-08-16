@@ -76,6 +76,7 @@
 - [Снятая правка обязана красить тест](izyatie.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](proverki-perestayushchie-sravnivat.md)
 - [Бывают конфликты слияния, которых git не показывает](tikhie-konflikty-sliyaniya.md)
+- [Два ядра, выросшие порознь от одной точки, текстом не сливаются](dva-yadra-ne-slivayutsya-tekstom.md)
 - [Измеренный ноль ценнее ненайденного правила](otritsatelnyy-rezultat-tsenen.md)
 - [Замер скорости проверяет себя контрольной суммой](kontrolnaya-summa-v-zamere.md)
 

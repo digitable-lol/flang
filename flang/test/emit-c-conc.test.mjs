@@ -60,7 +60,12 @@ const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 const примеры = fileURLToPath(new URL("../conc/examples/", import.meta.url))
 const stdlib = fileURLToPath(new URL("../stdlib/", import.meta.url))
 
-const ПРОГРАММЫ = ["counter", "race", "mailbox", "supervision", "escalate", "budget", "backpressure"]
+/* `server` приехал шагом Б1 (`породить`) и стоит в этом списке не для счёта:
+   таблица процессов у него РАСТЁТ за прогон, а значит растут и очередь готовых,
+   и итоговые состояния, и номера в журнале. Побайтовая сверка с эталоном на
+   такой программе проверяет ровно то, чего порождение могло стоить, —
+   воспроизводимость по семени. */
+const ПРОГРАММЫ = ["counter", "race", "mailbox", "supervision", "escalate", "budget", "backpressure", "server"]
 
 /**
  * Сколько семян сверяется на каждый прогон.

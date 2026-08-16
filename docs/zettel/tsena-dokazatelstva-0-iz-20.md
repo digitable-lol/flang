@@ -30,7 +30,7 @@
 
 **Улики не пересказаны, а сохранены**: 20 файлов работы в `docs/zamer/` с
 настоящими текстами отказов. Ветка `work/zamer-tseny`, отчёт
-`docs/zamer-tseny-dokazatelstva.md`, 650 строк.
+`docs/zamer-tseny-dokazatelstva.md`, 654 строк.
 
 Связано: [[induktsii-net-u-vstroennykh-tipov]], [[uslovie-revolyutsii]],
 [[nevyskazyvaemoe-dorozhe]], [[otritsatelnyy-rezultat-tsenen]]

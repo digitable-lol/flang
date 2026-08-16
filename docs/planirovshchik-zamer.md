@@ -27,12 +27,12 @@
 
 | Цель | Файл | Что это |
 |---|---|---|
-| C | `flang/src/emit/c/flang_conc.c` (1630 строк) | свой планировщик, один поток |
+| C | `flang/src/emit/c/flang_conc.c` (2049 строк) | свой планировщик, один поток |
 | Elixir | `flang/src/emit/elixir/flang_conc.ex` | процесс flang = процесс BEAM (`use GenServer`) |
 | JavaScript | `flang/src/emit/js/flang_conc.js` (611 строк) | свой планировщик, один поток |
 
 Остальные пять целей из восьми (Go, Rust, Python, Java, C#) программу с
-процессами печатать **отказываются** — код `FLANG_NO_SCHEDULER`.
+процессами печатать **отказываются** — код `FLANG_CONC_UNSUPPORTED`.
 
 И главное, чего в описании задачи не было:
 
@@ -421,7 +421,7 @@ bash $F/yadra.sh b-пинг-0 4000000 8
 мерен.
 
 **Go, Rust, Python, Java, C#** — процессов нет, печать отказывает кодом
-`FLANG_NO_SCHEDULER`.
+`FLANG_CONC_UNSUPPORTED`.
 
 ---
 

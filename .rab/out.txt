@@ -1,1 +1,0 @@
-{"valid":true,"module":"Замер2 15: Первый элемент или запасное","functions":[{"name":"Значение или запасное","total":true},{"name":"Первый элемент","total":true},{"name":"Первый элемент или запасное","total":true}],"types":["Возможно"],"diagnostics":[]}

@@ -348,6 +348,18 @@ typedef struct fl_conc_sched {
   const fl_conc_plan *plan;
   fl_conc_slot *slots;
 
+  /* Сколько процессов в прогоне ВСЕГО: объявленные плюс порождённые (Б1).
+     Объявленные остаются лежать в `plan->processes`, то есть в .rodata, и сюда
+     не копируются — копия миллиона объявлений стоила бы 48 МБ на ровном месте.
+     Порождённые лежат в `born`, а `fl_conc_node` сводит два хранилища в один
+     сквозной номер: он и есть «порядок объявления», продлённый порядком
+     рождения. */
+  fl_conc_process *born;
+  size_t born_count;
+  size_t born_capacity;
+  size_t proc_count;
+  size_t proc_capacity; /* сколько слотов и признаков выделено под процессы */
+
   /* Очередь готовых: индексы процессов ПО ВОЗРАСТАНИЮ, то есть в порядке
      объявления. Держится списком, а не пересобирается перебором всех процессов
      на каждом пробеге, как у эталона: содержимое то же самое, стоимость
@@ -355,6 +367,24 @@ typedef struct fl_conc_sched {
   size_t *ready;
   bool *is_ready;
   size_t ready_count;
+
+  /* Указатель имён: имя процесса → его номер, открытая адресация. Заменил
+     перебор всей таблицы на каждую доставку — замер планировщика
+     (`docs/planirovshchik-zamer.md`, раздел 5) назвал цену перебора числом:
+     4,8 миллисекунды на одну доставку при миллионе объявленных процессов, то
+     есть 208 сообщений в секунду против полутора миллионов у BEAM.
+
+     Наблюдаемо не меняется НИЧЕГО: тот же адресат, та же очередь, тот же
+     журнал. Меняется только способ его найти, и это ровно тот случай, когда
+     побайтовая сверка с эталоном — не помеха правке, а её проверка.
+
+     Номер хранится `uint32_t`, а не `size_t`: при нагрузке в половину это
+     восемь байт на процесс вместо шестнадцати, а больше четырёх миллиардов
+     процессов не бывает — предел куда ниже (`FL_CONC_MAX_PROCESSES`). Ноль
+     означает «пусто», поэтому в ячейке лежит номер ПЛЮС ЕДИНИЦА. */
+  uint32_t *names;
+  size_t names_mask; /* размер таблицы минус один; размер — степень двойки */
+  size_t names_used;
 
   /* Журнал доставок. `keep_journal` — наблюдение, а не работа: в режиме прогона
      он нужен целиком (по нему сверяются с эталоном побайтово), в рабочем режиме
@@ -387,6 +417,7 @@ typedef struct fl_conc_sched {
 
   fl_conc_link *over_process;
   fl_conc_link *over_supervisor;
+  size_t *subtree; /* рабочий список поддерева надзора; растёт вместе со слотами */
   bool *passed; /* защита от круга в надзоре: по надзору на один отказ */
 
   /* Черновик пробега (шаг А2). Обработчик считает в нём и только в нём, и
@@ -405,8 +436,22 @@ typedef struct fl_conc_sched {
 
   double time;
   size_t turns;
+  size_t max_processes; /* сколько процессов прогон может завести всего (Б1) */
   uint32_t random;
 } fl_conc_sched;
+
+/**
+ * Процесс по сквозному номеру: сперва объявленные, потом порождённые.
+ *
+ * Одна функция на все обращения к таблице — потому что номер обязан значить
+ * одно и то же везде: в очереди готовых, в журнале, в итоговых состояниях, в
+ * дереве надзора. Разъехавшись здесь, они разъехались бы и в журнале, а журнал
+ * сверяется с эталоном побайтово.
+ */
+static const fl_conc_process *fl_conc_node(const fl_conc_sched *sched, size_t index) {
+  const size_t declared = sched->plan->process_count;
+  return index < declared ? &sched->plan->processes[index] : &sched->born[index - declared];
+}
 
 /**
  * Копия значения в названную арену. Контекст заводится местный: счёт витков
@@ -467,7 +512,7 @@ static const char *fl_conc_full_text(fl_conc_sched *sched, size_t target) {
     return "ящик адресата полон";
   }
   snprintf(buffer, sizeof(buffer), "ящик процесса «%s» полон: объявлен на %lu",
-           sched->plan->processes[target].name, (unsigned long)sched->plan->processes[target].mailbox);
+           fl_conc_node(sched, target)->name, (unsigned long)fl_conc_node(sched, target)->mailbox);
   return fl_conc_keep_text(sched->ctx, buffer);
 }
 
@@ -499,23 +544,149 @@ static size_t fl_conc_find_supervisor(const fl_conc_plan *plan, const char *name
   return SIZE_MAX;
 }
 
-/**
- * Адресат «отправить» — значение-строка, а строка в рантайме может быть срезом
- * и не заканчиваться нулём. Поэтому сравнение по длине и байтам, а не strcmp.
- */
-static size_t fl_conc_address(const fl_conc_plan *plan, fl_value name) {
+/* ───────────────────────────── указатель имён ─────────────────────────────
+   FNV-1a на 64 битах: три строки, ни одной таблицы, и переносится куда угодно
+   один в один — тот же довод, по которому выбран mulberry32. Качество
+   рассеивания здесь ни на что наблюдаемое не влияет: указатель отвечает на тот
+   же вопрос, что отвечал перебор, и отвечает тем же номером. */
+
+static uint64_t fl_conc_hash(const char *bytes, size_t count) {
+  uint64_t hash = 14695981039346656037ull;
   size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    hash ^= (uint64_t)(unsigned char)bytes[index];
+    hash *= 1099511628211ull;
+  }
+  return hash;
+}
+
+/** Совпадает ли имя процесса с байтами адреса. Строка-значение может быть
+    срезом и не заканчиваться нулём, поэтому длина и байты, а не strcmp. */
+static bool fl_conc_named(const fl_conc_sched *sched, size_t process, const char *bytes, size_t count) {
+  const char *candidate = fl_conc_node(sched, process)->name;
+  return strlen(candidate) == count && memcmp(candidate, bytes, count) == 0;
+}
+
+/**
+ * Положить процесс в указатель. `false` — имя уже занято, и тогда выигрывает
+ * ПЕРВЫЙ: то же правило, по которому работал перебор сверху и по которому
+ * строится дерево надзора. Место всегда находится, потому что нагрузка держится
+ * не выше половины (`fl_conc_index_build`).
+ */
+static bool fl_conc_index_put(fl_conc_sched *sched, size_t process) {
+  const char *bytes = fl_conc_node(sched, process)->name;
+  const size_t count = strlen(bytes);
+  size_t at = (size_t)(fl_conc_hash(bytes, count) & (uint64_t)sched->names_mask);
+  for (;;) {
+    const uint32_t taken = sched->names[at];
+    if (taken == 0u) {
+      sched->names[at] = (uint32_t)(process + 1);
+      sched->names_used += 1;
+      return true;
+    }
+    if (fl_conc_named(sched, (size_t)taken - 1, bytes, count)) {
+      return false;
+    }
+    at = (at + 1) & sched->names_mask;
+  }
+}
+
+/** Перестроить указатель под `wanted` имён. Размер — степень двойки, вдвое
+    больше нужного: половина пустых ячеек и есть та цена, за которую линейные
+    пробы остаются короткими. */
+static bool fl_conc_index_build(fl_conc_sched *sched, size_t wanted) {
+  size_t size = 16;
+  size_t index = 0;
+  while (size < wanted * 2u) {
+    if (size > ((size_t)-1) / 2u) {
+      return false;
+    }
+    size *= 2u;
+  }
+  sched->names = (uint32_t *)fl_arena_alloc(sched->home, size * sizeof(uint32_t));
+  if (sched->names == NULL) {
+    return false;
+  }
+  memset(sched->names, 0, size * sizeof(uint32_t));
+  sched->names_mask = size - 1u;
+  sched->names_used = 0;
+  for (index = 0; index < sched->proc_count; index += 1) {
+    fl_conc_index_put(sched, index);
+  }
+  return true;
+}
+
+/**
+ * Место под `wanted` процессов: слоты, признаки готовности, очередь готовых,
+ * связи надзора и рабочий список поддерева. Пять массивов растут ОДНОЙ ёмкостью
+ * — иначе номер процесса, годный в одном из них, оказался бы негодным в другом.
+ *
+ * Первый вызов берёт ровно столько, сколько объявлено: на миллионе процессов
+ * округление вверх до степени двойки стоило бы сотню мегабайт впустую. Дальше
+ * растёт удвоением, как журнал и всё прочее здесь.
+ */
+static bool fl_conc_reserve(fl_conc_sched *sched, size_t wanted) {
+  size_t next = sched->proc_capacity;
+  fl_conc_slot *slots = NULL;
+  size_t *ready = NULL;
+  bool *is_ready = NULL;
+  fl_conc_link *over = NULL;
+  size_t *subtree = NULL;
+  if (wanted <= sched->proc_capacity) {
+    return true;
+  }
+  if (next == 0) {
+    next = wanted;
+  }
+  while (next < wanted) {
+    if (next > ((size_t)-1) / 2u) {
+      return false;
+    }
+    next *= 2u;
+  }
+  slots = (fl_conc_slot *)fl_arena_alloc(sched->home, next * sizeof(fl_conc_slot));
+  ready = (size_t *)fl_arena_alloc(sched->home, next * sizeof(size_t));
+  is_ready = (bool *)fl_arena_alloc(sched->home, next * sizeof(bool));
+  over = (fl_conc_link *)fl_arena_alloc(sched->home, next * sizeof(fl_conc_link));
+  subtree = (size_t *)fl_arena_alloc(sched->home, next * sizeof(size_t));
+  if (slots == NULL || ready == NULL || is_ready == NULL || over == NULL || subtree == NULL) {
+    return false;
+  }
+  if (sched->proc_capacity > 0) {
+    memcpy(slots, sched->slots, sched->proc_capacity * sizeof(fl_conc_slot));
+    memcpy(ready, sched->ready, sched->ready_count * sizeof(size_t));
+    memcpy(is_ready, sched->is_ready, sched->proc_capacity * sizeof(bool));
+    memcpy(over, sched->over_process, sched->proc_capacity * sizeof(fl_conc_link));
+  }
+  sched->slots = slots;
+  sched->ready = ready;
+  sched->is_ready = is_ready;
+  sched->over_process = over;
+  sched->subtree = subtree;
+  sched->proc_capacity = next;
+  return true;
+}
+
+/**
+ * Адресат «отправить» — значение-строка. Раньше здесь стоял цикл по всей
+ * таблице процессов; теперь один хеш и короткая проба.
+ */
+static size_t fl_conc_address(const fl_conc_sched *sched, fl_value name) {
+  size_t at = 0;
   if (name.tag != FL_STRING) {
     return SIZE_MAX;
   }
-  for (index = 0; index < plan->process_count; index += 1) {
-    const char *candidate = plan->processes[index].name;
-    const size_t bytes = strlen(candidate);
-    if (bytes == name.as.string.bytes && memcmp(candidate, name.as.string.utf8, bytes) == 0) {
-      return index;
+  at = (size_t)(fl_conc_hash(name.as.string.utf8, name.as.string.bytes) & (uint64_t)sched->names_mask);
+  for (;;) {
+    const uint32_t taken = sched->names[at];
+    if (taken == 0u) {
+      return SIZE_MAX;
     }
+    if (fl_conc_named(sched, (size_t)taken - 1, name.as.string.utf8, name.as.string.bytes)) {
+      return (size_t)taken - 1;
+    }
+    at = (at + 1) & sched->names_mask;
   }
-  return SIZE_MAX;
 }
 
 /** Копия строки-значения в арену с нулём на конце: для журнала и диагностик. */
@@ -585,7 +756,7 @@ static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
  * Ноль в `mailbox` — ящик неограничен, и тогда полным он не бывает никогда.
  */
 static bool fl_conc_box_full(const fl_conc_sched *sched, size_t target) {
-  const size_t limit = sched->plan->processes[target].mailbox;
+  const size_t limit = fl_conc_node(sched, target)->mailbox;
   if (limit == 0) {
     return false;
   }
@@ -669,11 +840,11 @@ static bool fl_conc_variant_field(fl_value value, const char *name, fl_value *ou
   return false;
 }
 
-/** Известные действия — те же пять, что вводит язык суммой «Действие». */
+/** Известные действия — те же шесть, что вводит язык суммой «Действие». */
 static bool fl_conc_known_action(const char *name) {
   return strcmp(name, "отправить") == 0 || strcmp(name, "через") == 0 ||
          strcmp(name, "остановить") == 0 || strcmp(name, "отложить") == 0 ||
-         strcmp(name, "продолжить") == 0;
+         strcmp(name, "продолжить") == 0 || strcmp(name, "породить") == 0;
 }
 
 /**
@@ -782,6 +953,17 @@ static void fl_conc_subtree(fl_conc_sched *sched, size_t supervisor, bool *seen,
       *count += 1;
     }
   }
+  /* Порождённые (Б2). В `watch` их нет и быть не может — надзор объявлен в
+     исходнике, а они завелись на ходу, — поэтому они добавляются здесь, по
+     наследованной связи и в порядке рождения. Без этого перезапуск поддерева
+     поднимал бы вид и оставлял его экземпляры лежать. */
+  for (index = plan->process_count; index < sched->proc_count; index += 1) {
+    if (sched->over_process[index].supervisor != supervisor) {
+      continue;
+    }
+    out[*count] = index;
+    *count += 1;
+  }
   for (index = 0; index < node->nested_count; index += 1) {
     fl_conc_subtree(sched, fl_conc_find_supervisor(plan, node->nested[index].name), seen, out, count);
   }
@@ -856,7 +1038,7 @@ static void fl_conc_stop(fl_conc_sched *sched, size_t index) {
  * останавливается вся программа.
  */
 static bool fl_conc_supervise(fl_conc_sched *sched, size_t failed, const char *code, double when,
-                              bool *escalated, size_t *subtree, bool *seen) {
+                              bool *escalated, bool *seen) {
   const fl_conc_plan *plan = sched->plan;
   bool over_supervisor = false;
   size_t target = failed;
@@ -897,20 +1079,20 @@ static bool fl_conc_supervise(fl_conc_sched *sched, size_t failed, const char *c
       for (index = 0; index < plan->supervisor_count; index += 1) {
         seen[index] = false;
       }
-      fl_conc_subtree(sched, target, seen, subtree, &count);
+      fl_conc_subtree(sched, target, seen, sched->subtree, &count);
     } else {
-      subtree[0] = target;
+      sched->subtree[0] = target;
       count = 1;
     }
     for (index = 0; index < count; index += 1) {
-      if (!fl_conc_decide(sched, when, subtree[index], plan->supervisors[link.supervisor].name, strategy,
-                          code)) {
+      if (!fl_conc_decide(sched, when, sched->subtree[index], plan->supervisors[link.supervisor].name,
+                          strategy, code)) {
         return false;
       }
       if (strcmp(strategy, "перезапустить") == 0) {
-        fl_conc_restart(sched, subtree[index]);
+        fl_conc_restart(sched, sched->subtree[index]);
       } else {
-        fl_conc_stop(sched, subtree[index]);
+        fl_conc_stop(sched, sched->subtree[index]);
       }
     }
     return true;
@@ -1121,6 +1303,161 @@ static void fl_conc_own_failure(fl_conc_sched *sched, size_t process, fl_conc_en
   fl_conc_refresh(sched, process);
 }
 
+/* ───────────────────────────── порождение (шаг Б1) ─────────────────────────
+   `породить` заводит ЭКЗЕМПЛЯР ОБЪЯВЛЕННОГО ВИДА, а не произвольный код.
+   Отсюда всё остальное: множество видов остаётся конечным и известным на этапе
+   компиляции, замыканий не появляется, дефункционализация цела, анализ
+   достижимых отказов (Г1) считает по видам и потому знает про экземпляры ровно
+   то же, что про вид. Ровно это `flang/conc/RESILIENCE.md` и называет «самой
+   дешёвой большой победой».
+
+   Имя порождённому даёт РОДИТЕЛЬ, и это ответ на вопрос, из-за которого шаг
+   стоял: «породить» в контракте описан как «создать процесс и вернуть его имя»,
+   а вернуть что-либо описанное действие не может по построению — его исполняет
+   планировщик, а обработчик к этому времени уже вернулся. Значит имя не
+   возвращается, а НАЗЫВАЕТСЯ: адрес и так строка (`отправить`), и порождение не
+   заводит нового вида значений вовсе. У BEAM здесь pid — значение, которое
+   `spawn` возвращает выражением; у нас выражения нет, зато есть строка, и она
+   дешевле pid'а на всё: ни таблицы, ни счётчика поколений, ни вопроса о том,
+   что делать с pid'ом умершего.
+
+   Цена решения названа прямо: уникальность имени — дело программы. Занятое имя
+   не молчит и не перезаписывает — это отказ ПОРОЖДАЮЩЕГО (`FLANG_NAME_TAKEN`),
+   и разбирает его надзор. Так же устроен `register/2` в BEAM. */
+
+/** Отказы порождения. Оба — отказы порождающего: он попросил, не вышло. */
+static const char *const FL_CONC_NAME_TAKEN = "FLANG_NAME_TAKEN";
+static const char *const FL_CONC_PROCESS_LIMIT = "FLANG_PROCESS_LIMIT";
+
+/** Копия имени порождённого в арену вызывающего с нулём на конце.
+    В арену вызывающего, а не в кучу процесса: имя живёт столько же, сколько
+    таблица процессов, то есть весь прогон, а куча родителя сбрасывается в конце
+    того же пробега, на котором имя построено. */
+static const char *fl_conc_keep_name(fl_conc_sched *sched, fl_value name) {
+  char *text = (char *)fl_arena_alloc(sched->home, name.as.string.bytes + 1);
+  if (text == NULL) {
+    return NULL;
+  }
+  memcpy(text, name.as.string.utf8, name.as.string.bytes);
+  text[name.as.string.bytes] = '\0';
+  return text;
+}
+
+/**
+ * Завести процесс на ходу. Возвращает `false` только на нехватке памяти в арене
+ * вызывающего — на всём остальном отказывает ПОРОЖДАЮЩИЙ, и отказ уже поставлен.
+ *
+ * Внимание к порядку: `fl_conc_reserve` двигает массив слотов, а `fl_conc_grow`
+ * — массив порождённых. Значит указатель, взятый на процесс ДО этого вызова
+ * (`node` в пробеге), после него не годится. В пробеге `node` больше не
+ * читается — обработчик к этому времени вернулся, — и это единственная причина,
+ * по которой здесь можно расти.
+ */
+static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl_value name, fl_value first,
+                          fl_conc_entry *entry, const char **failed, const char **reason) {
+  size_t proto = SIZE_MAX;
+  size_t born = 0;
+  const char *text = NULL;
+  char buffer[256];
+  fl_conc_post posted = FL_CONC_POSTED;
+
+  /* Вид обязан быть объявленным процессом. Проверка типов это и требует
+     (`вид` — литерал, сверенный со списком объявленных), поэтому сюда попадает
+     только план, собранный мимо неё; но и на нём порождение обязано кончаться
+     названным отказом, а не тем, что о нём забыли. */
+  proto = fl_conc_address(sched, kind);
+  if (proto == SIZE_MAX || proto >= sched->plan->process_count) {
+    snprintf(buffer, sizeof(buffer), "породить нечего: вида «%s» среди объявленных процессов нет",
+             kind.tag == FL_STRING ? fl_conc_cstring(sched->ctx, kind) : "");
+    fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_PROCESS",
+                        fl_conc_keep_text(sched->ctx, buffer));
+    return true;
+  }
+  if (name.tag != FL_STRING || name.as.string.bytes == 0) {
+    fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_PROCESS",
+                        "порождённому процессу нужно непустое имя");
+    return true;
+  }
+  /* Предел — это тотальность слоя, а не осторожность: `породить` в цикле иначе
+     кончался бы исчерпанием памяти узла, то есть исходом без имени. */
+  if (sched->proc_count >= sched->max_processes) {
+    snprintf(buffer, sizeof(buffer), "предел числа процессов: объявлено и порождено %lu при пределе %lu",
+             (unsigned long)sched->proc_count, (unsigned long)sched->max_processes);
+    fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_PROCESS_LIMIT,
+                        fl_conc_keep_text(sched->ctx, buffer));
+    return true;
+  }
+  if (fl_conc_address(sched, name) != SIZE_MAX) {
+    snprintf(buffer, sizeof(buffer), "имя «%s» уже занято процессом",
+             fl_conc_cstring(sched->ctx, name));
+    fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_NAME_TAKEN,
+                        fl_conc_keep_text(sched->ctx, buffer));
+    return true;
+  }
+
+  text = fl_conc_keep_name(sched, name);
+  if (text == NULL) {
+    return false;
+  }
+  if (sched->born_count == sched->born_capacity) {
+    fl_conc_process *bigger = (fl_conc_process *)fl_conc_grow(
+      sched->ctx, sched->born, sched->born_count, &sched->born_capacity, sizeof(fl_conc_process));
+    if (bigger == NULL) {
+      return false;
+    }
+    sched->born = bigger;
+  }
+  if (!fl_conc_reserve(sched, sched->proc_count + 1)) {
+    return false;
+  }
+  born = sched->proc_count;
+  /* Экземпляр берёт у вида ВСЁ, кроме имени: обработчик, начальное состояние,
+     доказанность, запас витков, объявленный размер ящика. Иначе «экземпляр
+     объявленного вида» было бы оборотом речи, а не утверждением. */
+  sched->born[sched->born_count] = *fl_conc_node(sched, proto);
+  sched->born[sched->born_count].name = text;
+  sched->born_count += 1;
+  sched->proc_count += 1;
+
+  fl_arena_init(&sched->slots[born].heap[0]);
+  fl_arena_init(&sched->slots[born].heap[1]);
+  sched->slots[born].live = 0;
+  /* Начальное значение берётся у ВИДА, и берётся то же самое, что вычислено при
+     старте прогона: перезапуск порождённого обязан вернуть не «такое же», а то
+     же самое значение — ровно то обещание, которое модель даёт объявленным. */
+  sched->slots[born].initial = sched->slots[proto].initial;
+  sched->slots[born].current = sched->slots[proto].initial;
+  sched->slots[born].alive = true;
+  sched->slots[born].box.items = NULL;
+  sched->slots[born].box.capacity = 0;
+  sched->slots[born].box.head = 0;
+  sched->slots[born].box.count = 0;
+  sched->slots[born].pending = 0;
+  sched->is_ready[born] = false;
+  /* Надзор наследуется у вида (шаг Б2). Дерево надзора объявляется данными, и
+     объявление это одно на вид; приписывать экземпляру свой надзор было бы
+     вторым местом правды о том же самом. Отсюда и полнота: множество отказов
+     экземпляра то же, что у вида, значит накрытый вид накрывает и экземпляры, а
+     `FLANG_UNCOVERED_FAILURE` считает по-прежнему по одному объявлению. */
+  sched->over_process[born] = sched->over_process[proto];
+  fl_conc_index_put(sched, born);
+
+  /* Первое сообщение кладётся тем же путём, что всякое другое, и это не
+     удобство, а необходимость: процесс без сообщения не побежит никогда —
+     обработчик зовётся на сообщение, а не на рождение. Поэтому `породить`
+     несёт письмо, а не «начальное состояние»: начальное состояние у вида уже
+     объявлено (`начинает с`), а работа приезжает письмом. */
+  posted = fl_conc_deliver(sched, born, first, false, false);
+  if (posted == FL_CONC_NOMEM) {
+    fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CODE_MEMORY,
+                        "кончилась память в куче порождённого процесса");
+  } else if (posted == FL_CONC_FULL) {
+    fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_MAILBOX_FULL",
+                        fl_conc_full_text(sched, born));
+  }
+  return true;
+}
+
 /**
  * Процесс отдаёт всё, что у него было (шаг Г2), — последнее средство.
  *
@@ -1153,14 +1490,14 @@ static void fl_conc_surrender(fl_conc_sched *sched, size_t index) {
 }
 
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
-                      bool journal, fl_conc_result *out, fl_error *error) {
+                      size_t max_processes, bool journal, fl_conc_result *out, fl_error *error) {
   fl_conc_sched sched;
   const fl_conc_run_spec *spec = NULL;
   fl_value *inbox = NULL;
-  size_t *subtree = NULL;
   bool *seen = NULL;
   fl_value *states = NULL;
   bool *alive = NULL;
+  const char **names = NULL;
   const char *outcome = "покой";
   size_t index = 0;
   /* Кучи процессов покупают память у malloc сами и обязаны её вернуть: арена
@@ -1193,15 +1530,15 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   sched.plan = plan;
   sched.random = fl_conc_seed(seed);
   sched.keep_journal = journal;
-  sched.slots = (fl_conc_slot *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(fl_conc_slot));
-  sched.ready = (size_t *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(size_t));
-  sched.is_ready = (bool *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(bool));
-  sched.over_process = (fl_conc_link *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(fl_conc_link));
-  subtree = (size_t *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(size_t));
-  states = (fl_value *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(fl_value));
-  alive = (bool *)fl_arena_alloc(ctx->arena, plan->process_count * sizeof(bool));
-  if (sched.slots == NULL || sched.ready == NULL || sched.is_ready == NULL || sched.over_process == NULL ||
-      subtree == NULL || states == NULL || alive == NULL) {
+  sched.max_processes = max_processes == 0 ? FL_CONC_MAX_PROCESSES : max_processes;
+  sched.proc_count = plan->process_count;
+  if (!fl_conc_reserve(&sched, plan->process_count)) {
+    return fl_conc_memory(ctx, error);
+  }
+  /* Указатель имён строится ОДИН раз на прогон и дальше только дополняется
+     порождёнными. Строится он здесь, а не при первой доставке: доставка обязана
+     стоить одинаково на первом письме и на миллионном. */
+  if (!fl_conc_index_build(&sched, plan->process_count)) {
     return fl_conc_memory(ctx, error);
   }
 
@@ -1355,7 +1692,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       chosen = sched.ready_count - 1;
     }
     process = sched.ready[chosen];
-    node = &plan->processes[process];
+    node = fl_conc_node(&sched, process);
     message = fl_conc_box_shift(&sched.slots[process].box);
     fl_conc_refresh(&sched, process);
     sched.turns += 1;
@@ -1423,7 +1760,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
           fl_conc_post posted = FL_CONC_POSTED;
           fl_conc_variant_field(item, "кому", &to);
           fl_conc_variant_field(item, "что", &what);
-          posted = fl_conc_deliver(&sched, fl_conc_address(plan, to), what, false, false);
+          posted = fl_conc_deliver(&sched, fl_conc_address(&sched, to), what, false, false);
           /* Оба неудачных исхода — отказ ОТПРАВИТЕЛЯ, и по одному доводу: он
              попросил положить сообщение, и положить его не вышло. Полный ящик
              (А3) и нехватка памяти в куче адресата (Г2) отличаются кодом, а не
@@ -1433,7 +1770,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
                                 "кончилась память в куче адресата");
           } else if (posted == FL_CONC_FULL) {
             fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
-                                fl_conc_full_text(&sched, fl_conc_address(plan, to)));
+                                fl_conc_full_text(&sched, fl_conc_address(&sched, to)));
           }
           continue;
         }
@@ -1443,12 +1780,12 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
           fl_conc_variant_field(item, "задержка", &delay);
           fl_conc_variant_field(item, "кому", &to);
           fl_conc_variant_field(item, "что", &what);
-          target = fl_conc_address(plan, to);
+          target = fl_conc_address(&sched, to);
           /* Место занимается СЕЙЧАС, а не когда таймер сработает. Живость
              адресата при этом не смотрится вовсе, и это нарочно: мёртвый
              процесс может быть поднят надзором раньше срока письма, и тогда
              незанятое место дало бы ящику переполниться мимо потолка. */
-          reserve = target != SIZE_MAX && plan->processes[target].mailbox != 0;
+          reserve = target != SIZE_MAX && fl_conc_node(&sched, target)->mailbox != 0;
           if (reserve && fl_conc_box_full(&sched, target)) {
             fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
                                 fl_conc_full_text(&sched, target));
@@ -1491,6 +1828,18 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
           }
           fl_conc_refresh(&sched, process);
           entry->outcome = "продолжено";
+          continue;
+        }
+        if (strcmp(kind, "породить") == 0) {
+          fl_value form = fl_nothing();
+          fl_value born = fl_nothing();
+          fl_conc_variant_field(item, "вид", &form);
+          fl_conc_variant_field(item, "имя", &born);
+          fl_conc_variant_field(item, "что", &what);
+          if (!fl_conc_spawn(&sched, process, form, born, what, entry, &failed, &reason)) {
+            status = fl_conc_memory(ctx, error);
+            goto finish;
+          }
           continue;
         }
         if (strcmp(kind, "остановить") == 0) {
@@ -1565,7 +1914,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
         status = fl_conc_memory(ctx, error);
         goto finish;
       }
-      if (!fl_conc_supervise(&sched, process, failed, entry->time, &escalated, subtree, seen)) {
+      if (!fl_conc_supervise(&sched, process, failed, entry->time, &escalated, seen)) {
         status = fl_conc_memory(ctx, error);
         goto finish;
       }
@@ -1574,7 +1923,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
            зависание, и он назван — иначе прогон отличал бы «надзор не справился»
            от «работа кончилась» только по итоговым состояниям. */
         outcome = "отказ дошёл доверху";
-        for (index = 0; index < plan->process_count; index += 1) {
+        for (index = 0; index < sched.proc_count; index += 1) {
           sched.slots[index].alive = false;
         }
         break;
@@ -1586,17 +1935,31 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
      будут отданы системе, а `fl_conc_result` обязан оставаться годным до
      ближайшего `fl_arena_reset` вызывающего — ровно как всякое другое значение
      из рантайма (`flang_conc.h`, раздел «Память»). Копия здесь одна на процесс
-     и одна на прогон, а не на пробег. */
-  for (index = 0; index < plan->process_count; index += 1) {
+     и одна на прогон, а не на пробег.
+
+     Массив под них заводится ЗДЕСЬ, а не при старте: сколько процессов у
+     прогона, известно только теперь — порождённые (Б1) приписаны к тем же
+     номерам, что и объявленные, и в итоге стоят за ними. */
+  states = (fl_value *)fl_arena_alloc(ctx->arena, sched.proc_count * sizeof(fl_value));
+  alive = (bool *)fl_arena_alloc(ctx->arena, sched.proc_count * sizeof(bool));
+  names = (const char **)fl_arena_alloc(ctx->arena, sched.proc_count * sizeof(const char *));
+  if (states == NULL || alive == NULL || names == NULL) {
+    status = fl_conc_memory(ctx, error);
+    goto finish;
+  }
+  for (index = 0; index < sched.proc_count; index += 1) {
     if (!fl_conc_keep(&sched, sched.home, sched.slots[index].current, &states[index])) {
       status = fl_conc_memory(ctx, error);
       goto finish;
     }
     alive[index] = sched.slots[index].alive;
+    names[index] = fl_conc_node(&sched, index)->name;
   }
   out->outcome = outcome;
   out->time = sched.time;
   out->turns = sched.turns;
+  out->names = names;
+  out->process_count = sched.proc_count;
   out->states = states;
   out->alive = alive;
   /* Журнал отдаётся ровно тогда, когда его вели. Пустой массив вместо признака
@@ -1618,7 +1981,7 @@ finish:
      виден не рассуждением, а проверкой: `emit-c-conc.test.mjs` гоняет прогон
      под valgrind'ом и требует ноль потерянных байт. */
   if (heaps) {
-    for (index = 0; index < plan->process_count; index += 1) {
+    for (index = 0; index < sched.proc_count; index += 1) {
       fl_arena_release(&sched.slots[index].heap[0]);
       fl_arena_release(&sched.slots[index].heap[1]);
     }

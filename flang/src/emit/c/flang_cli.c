@@ -627,7 +627,7 @@ static void write_name(const char *text) {
   write_text(text == NULL ? "" : text, strlen(text == NULL ? "" : text));
 }
 
-static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_result *result) {
+static void write_run(const char *name, const fl_conc_result *result) {
   size_t index = 0;
   bool first = true;
   fputs("{\"ok\":true,\"run\":", stdout);
@@ -639,21 +639,23 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
   fputs(",\"пробегов\":", stdout);
   write_number_text((double)result->turns);
 
-  /* Состояния — в порядке объявления процессов, том же, что у эталона. */
+  /* Состояния — в порядке объявления процессов, том же, что у эталона; за
+     объявленными идут порождённые, в порядке рождения. Имена берутся из ИТОГА,
+     а не из плана: у прогона с `породить` процессов больше, чем в плане. */
   fputs(",\"состояния\":[", stdout);
-  for (index = 0; index < plan->process_count; index += 1) {
+  for (index = 0; index < result->process_count; index += 1) {
     if (index > 0) {
       putchar(',');
     }
     putchar('[');
-    write_name(plan->processes[index].name);
+    write_name(result->names[index]);
     putchar(',');
     write_value(result->states[index]);
     putchar(']');
   }
 
   fputs("],\"живые\":[", stdout);
-  for (index = 0; index < plan->process_count; index += 1) {
+  for (index = 0; index < result->process_count; index += 1) {
     if (!result->alive[index]) {
       continue;
     }
@@ -661,7 +663,7 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
       putchar(',');
     }
     first = false;
-    write_name(plan->processes[index].name);
+    write_name(result->names[index]);
   }
 
   fputs("],\"отказы\":[", stdout);
@@ -670,7 +672,7 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
       putchar(',');
     }
     putchar('[');
-    write_name(plan->processes[result->failures[index].process].name);
+    write_name(result->names[result->failures[index].process]);
     putchar(',');
     write_name(result->failures[index].code);
     putchar(']');
@@ -682,7 +684,7 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
       putchar(',');
     }
     putchar('[');
-    write_name(plan->processes[result->decisions[index].process].name);
+    write_name(result->names[result->decisions[index].process]);
     putchar(',');
     write_name(result->decisions[index].supervisor);
     putchar(',');
@@ -705,7 +707,7 @@ static void write_run(const fl_conc_plan *plan, const char *name, const fl_conc_
       fputs("{\"время\":", stdout);
       write_number_text(entry->time);
       fputs(",\"процесс\":", stdout);
-      write_name(plan->processes[entry->process].name);
+      write_name(result->names[entry->process]);
       fputs(",\"исход\":", stdout);
       write_name(entry->outcome);
       fputs(",\"код\":", stdout);
@@ -736,6 +738,10 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   char *run = NULL;
   double seed = 0.0;
   double turns = 0.0;
+  /* Сколько процессов прогону позволено завести всего, объявленных плюс
+     порождённых (`породить`, шаг Б1). Ноль — умолчание планировщика, ровно как
+     у `turns`: это настройка запроса, а не потолок модели. */
+  double processes = 0.0;
   /* Журнал по умолчанию ВЕДЁТСЯ: прогон — основной способ звать эту программу, и
      по журналу он сверяется с эталоном. Выключает его тот, кто знает, что зовёт
      не прогон, а работу, — и знает, что платит за наблюдение памятью на каждом
@@ -800,6 +806,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел пробегов\"}\n", stdout);
         return;
       }
+    } else if (strcmp(key, "processes") == 0) {
+      if (!read_number_text(&reader, &processes)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел числа процессов\"}\n", stdout);
+        return;
+      }
     } else if (strcmp(key, "journal") == 0) {
       if (!read_number_text(&reader, &journal)) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак журнала\"}\n", stdout);
@@ -829,8 +840,9 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   if (run != NULL) {
     const fl_conc_plan *plan = FL_PROGRAM_CONC_PLAN();
     fl_conc_result outcome;
-    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, journal != 0.0, &outcome, &error) == FL_OK) {
-      write_run(plan, run, &outcome);
+    if (fl_conc_run(&ctx, plan, run, seed, (size_t)turns, (size_t)processes, journal != 0.0, &outcome,
+                    &error) == FL_OK) {
+      write_run(run, &outcome);
       return;
     }
     fputs("{\"ok\":false,\"code\":", stdout);

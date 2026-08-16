@@ -142,7 +142,7 @@ test("условие ПОД СВЯЗЫВАТЕЛЕМ не берётся: под
     },
     right: { kind: "literal", value: true },
   }
-  const итог = свести(цель, [], [])
+  const итог = свести(цель, [], [], null, null, ПРЕДЕЛ_ВЕТВЛЕНИЯ)
   assert.equal(итог.ok, false, "ядро взяло условие из-под связывателя")
   assert.equal(/разбор цели по условию/u.test(итог.why), false, итог.why)
 })
@@ -157,7 +157,7 @@ test("предел ветвления назван числом и говори�
     терм = { kind: "if", cond: имя(н), then: терм, else: { kind: "var", name: `н${н}` } }
   }
   const цель = { kind: "binary", op: "gte", left: терм, right: { kind: "literal", value: 0 } }
-  const итог = свести(цель, [], [])
+  const итог = свести(цель, [], [], null, null, ПРЕДЕЛ_ВЕТВЛЕНИЯ)
   assert.equal(итог.ok, false)
   assert.match(итог.why, new RegExp(`предел ветвления \\(${ПРЕДЕЛ_ВЕТВЛЕНИЯ}\\)`, "u"), итог.why)
 })

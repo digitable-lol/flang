@@ -341,6 +341,10 @@ fl_status kompilyator_flang_sozdat_svezhee(fl_ctx *ctx, fl_value sostoyanie, fl_
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_itog(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
 
+/* Запись FTS «Число в C»: «состояние», «вывод», «число», «значение», «сверять». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_chislo_v_c(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value chislo, fl_value znachenie, fl_value sveryat, fl_value *out, fl_error *error);
+
 /* Запись FTS «Блок»: «состояние», «вывод». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_blok(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
@@ -11981,6 +11985,37 @@ fl_status kompilyator_flang_pechat_dokazannoy_arifmetiki(fl_ctx *ctx, fl_value u
 fl_status kompilyator_flang_pechat_dokazannogo_sravneniya(fl_ctx *ctx, fl_value uzel, fl_value operaciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Отказ арифметики».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_otkaz_arifmetiki(fl_ctx *ctx, fl_value operaciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сверка чисел».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: «Число в C»
+ * @param pravoe — «правое»: «Число в C»
+ * @param otkaz — «отказ»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_sverka_chisel(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value otkaz, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Условие сверки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: «Число в C»
+ * @param pravoe — «правое»: «Число в C»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_uslovie_sverki(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Печать числа в C».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -11990,7 +12025,7 @@ fl_status kompilyator_flang_pechat_dokazannogo_sravneniya(fl_ctx *ctx, fl_value 
  * @param kontekst — «контекст»: «Контекст»
  * @param sostoyanie — «состояние»: «Состояние»
  * @param otstup — «отступ»: строка
- * @return значение: «Итог»
+ * @return значение: «Число в C»
  */
 fl_status kompilyator_flang_pechat_chisla_v_c(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
 
@@ -12018,7 +12053,7 @@ fl_status kompilyator_flang_eto_dokazannaya_arifmetika(fl_ctx *ctx, fl_value uze
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param znachenie — «значение»: число
  * @param sostoyanie — «состояние»: «Состояние»
- * @return значение: «Итог»
+ * @return значение: «Число в C»
  */
 fl_status kompilyator_flang_pechat_gologo_chisla(fl_ctx *ctx, fl_value znachenie, fl_value sostoyanie, fl_value *result, fl_error *error);
 
@@ -12032,7 +12067,7 @@ fl_status kompilyator_flang_pechat_gologo_chisla(fl_ctx *ctx, fl_value znachenie
  * @param kontekst — «контекст»: «Контекст»
  * @param sostoyanie — «состояние»: «Состояние»
  * @param otstup — «отступ»: строка
- * @return значение: «Итог»
+ * @return значение: «Число в C»
  */
 fl_status kompilyator_flang_pechat_vlozhennoy_arifmetiki(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
 
@@ -12046,7 +12081,7 @@ fl_status kompilyator_flang_pechat_vlozhennoy_arifmetiki(fl_ctx *ctx, fl_value u
  * @param kontekst — «контекст»: «Контекст»
  * @param sostoyanie — «состояние»: «Состояние»
  * @param otstup — «отступ»: строка
- * @return значение: «Итог»
+ * @return значение: «Число в C»
  */
 fl_status kompilyator_flang_pechat_raspakovannogo_chisla(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
 

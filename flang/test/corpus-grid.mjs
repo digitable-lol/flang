@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url"
 import { variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
+import { markProven } from "../src/types.mjs"
 
 const stdlibDirectory = fileURLToPath(new URL("../stdlib/", import.meta.url))
 const leetcodeDirectory = fileURLToPath(new URL("../examples/leetcode/", import.meta.url))
@@ -57,6 +58,21 @@ const leetcodeDirectory = fileURLToPath(new URL("../examples/leetcode/", import.
  * меры ПОЯВЛЯЕТСЯ …». Иначе правка была бы непроверяемой: главная сверка
  * двусторонняя и этим слепа — снятая отметка теряется ОБЕИМИ сторонами разом,
  * и обе досчитают одно и то же.
+ *
+ * ── Вторая отметка, и довод у неё тот же ────────────────────────────────────
+ *
+ * `markProven` кладёт то, что доказал вывод типов: `доказана` у частичной формы
+ * и `числовая` у двуместной операции, где тип обоих операндов известен. Печать
+ * по этой отметке не ставит проверку, ответ которой известен заранее, — и без
+ * неё сверка снова сравнивала бы не ту программу, которую печатает настоящая
+ * команда. Порядок с отметкой меры обязателен и тот же, что на переднем крае
+ * (`bin/flang.mjs`): мера перестраивает дерево, а доказанное привязано к узлам
+ * того дерева, которое уезжает в печать.
+ *
+ * Ровно на этой сетке отметка и опасна, потому что половина её точек — ПОРЧА
+ * аргументов заведомо чужими значениями (`ЧУЖИЕ` ниже). Снятая проверка типа
+ * даёт не отказ, а неверный ответ, и сверка с интерпретатором ловит это
+ * значением, а не падением.
  */
 export function loadPrograms() {
   const found = []
@@ -64,7 +80,7 @@ export function loadPrograms() {
     for (const name of readdirSync(directory).filter((item) => item.endsWith(".flang")).sort()) {
       found.push({
         file: name,
-        program: markMeasureGuards(parse(readFileSync(directory + name, "utf8"), name)),
+        program: markProven(markMeasureGuards(parse(readFileSync(directory + name, "utf8"), name))),
       })
     }
   }

@@ -2066,19 +2066,37 @@ fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label, fl_val
   return FL_OK;
 }
 
+/*
+ * Отказ арифметики: текст живёт ЗДЕСЬ И ТОЛЬКО ЗДЕСЬ.
+ *
+ * Зовут его двое: `fl_numbers` ниже, когда проверку делает рантайм, и сам
+ * напечатанный код, когда проверку делает он (см. шапку в flang_runtime.h).
+ * Один текст на оба пути — иначе они разошлись бы молча в тот день, когда
+ * сообщение поправят в одном месте.
+ */
+fl_status fl_not_numbers(fl_ctx *ctx, const char *op, fl_value left, fl_value right, fl_error *error) {
+  const char *left_name = fl_type_name(ctx, left);
+  return fl_fail(ctx, error, FL_CODE_TYPE, "операция «%s» допустима только для чисел, получено %s и %s", op,
+                 left_name, fl_type_name(ctx, right));
+}
+
+/* Сообщение дословно как в ядре (src/utility.ts, compare). */
+fl_status fl_not_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *error) {
+  (void)left;
+  (void)right;
+  return fl_fail(ctx, error, FL_CODE_TYPE, "%s", "сравнения порядка допустимы только для чисел");
+}
+
 static fl_status fl_numbers(fl_ctx *ctx, const char *op, fl_value left, fl_value right, fl_error *error) {
   if (left.tag != FL_NUMBER || right.tag != FL_NUMBER) {
-    const char *left_name = fl_type_name(ctx, left);
-    return fl_fail(ctx, error, FL_CODE_TYPE, "операция «%s» допустима только для чисел, получено %s и %s", op,
-                   left_name, fl_type_name(ctx, right));
+    return fl_not_numbers(ctx, op, left, right, error);
   }
   return FL_OK;
 }
 
-/* Сообщение дословно как в ядре (src/utility.ts, compare). */
 static fl_status fl_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *error) {
   if (left.tag != FL_NUMBER || right.tag != FL_NUMBER) {
-    return fl_fail(ctx, error, FL_CODE_TYPE, "%s", "сравнения порядка допустимы только для чисел");
+    return fl_not_order(ctx, left, right, error);
   }
   return FL_OK;
 }

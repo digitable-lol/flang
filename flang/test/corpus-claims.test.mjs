@@ -722,12 +722,14 @@ const ОХВАТ = [
   "flang/self/monad.flang «Предел сетки монады»",
   "flang/self/monad.flang «Предел стрелок»",
   "flang/self/monoid.flang «Предел сетки моноида»",
+  "flang/self/obligations.flang «Версия обязательств»",
   "flang/self/parser.flang «Наименьшая основа»",
   "flang/self/parser.flang «Размер пачки»",
   "flang/self/proof-initial.flang «Алгебра»",
   "flang/self/proof-kernel.flang «Предел развёртки»",
   "flang/self/proof-kernel.flang «Точный потолок»",
   "flang/self/proof.flang «Версия ведомости»",
+  "flang/self/proofterm.flang «Версия ядра»",
   "flang/self/sets.flang «Предел сетки множеств»",
   "flang/self/types.flang «Потолок точных»",
 ]
@@ -772,12 +774,12 @@ test("а «по объявленным типам» ведомость гово�
   assert.match(з.says, /^доказано по объявленным типам аргументов/u)
 })
 
-test("охват: семнадцать из двадцати НАПИСАНЫ — они в корпусе неподвижной точки", () => {
+test("охват: девятнадцать из двадцати двух НАПИСАНЫ — они в корпусе неподвижной точки", () => {
   /* Каталоги — не список из головы: он снят с `исходникиFlang`
      (`flang/test/self-parser.test.mjs`), где и стоит корпус побайтовой сверки. */
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const нельзя = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
-  assert.equal(нельзя.length, 17, `закрытых стало ${нельзя.length}: ${нельзя.join("; ")}`)
+  assert.equal(нельзя.length, 19, `закрытых стало ${нельзя.length}: ${нельзя.join("; ")}`)
 
   /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт этой работы сказал
      «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а `self`
@@ -791,7 +793,7 @@ test("охват: семнадцать из двадцати НАПИСАНЫ �
     "flang/core/": 0,
     "flang/examples/leetcode/": 1,
     "flang/examples/measure/": 1,
-    "flang/self/": 15,
+    "flang/self/": 17,
   })
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ, И ОН ПЕРЕВЁРНУТ. Раньше проверялось «ни у одной функции
      этих каталогов постусловия нет» — правда до 15 августа 2026, ложь после.

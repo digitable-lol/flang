@@ -438,8 +438,12 @@ typedef struct fl_conc_par {
      платила бы за общий замок; спящий сам просыпается по сроку и обходит
      склады заново. Цена — задержка на хвосте прогона, и она измерена. */
   pthread_mutex_t idle_lock;
-  pthread_cond_t idle_wake;
   size_t idle;
+  /* Признак «прогону конец». Ходит ТОЛЬКО под `idle_lock`, и это не педантизм:
+     ThreadSanitizer нашёл здесь гонку, когда признак читали мимо замка. Гонка
+     была бы безобидной на всякой известной машине — один байт, — но «безобидная
+     гонка» это то, что говорят про гонку до первого раза. Замок берётся раз на
+     пачку пробегов, то есть на шестьдесят четыре, и стоит наносекунды. */
   bool stop;
 
   size_t handed;   /* сколько пробегов роздано из общего счёта */
@@ -2307,6 +2311,22 @@ static bool fl_conc_quiet(fl_conc_sched *sched, size_t max_turns) {
   return !found;
 }
 
+/** Кончен ли прогон. Раз на пачку, а не на пробег: замок дешёвый, но не даровой. */
+static bool fl_conc_stopped(fl_conc_par *par) {
+  bool stop = false;
+  pthread_mutex_lock(&par->idle_lock);
+  stop = par->stop;
+  pthread_mutex_unlock(&par->idle_lock);
+  return stop;
+}
+
+/** Объявить прогону конец. */
+static void fl_conc_halt(fl_conc_par *par) {
+  pthread_mutex_lock(&par->idle_lock);
+  par->stop = true;
+  pthread_mutex_unlock(&par->idle_lock);
+}
+
 typedef struct fl_conc_crew {
   fl_conc_sched *sched;
   size_t worker;
@@ -2335,7 +2355,13 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_cr
                             size_t left, double clock) {
   fl_conc_par *par = sched->par;
   size_t drained = 0;
-  while (drained < left && !par->stop) {
+  /* Признак остановки внутри пачки НЕ спрашивается. Пачка не длиннее
+     `FL_CONC_BATCH` пробегов, значит остановка опаздывает не больше чем на неё, а
+     завершаемость от этого не страдает: пробеги всё равно кончатся. Цена
+     названа в заголовке списком того, что перестало быть гарантией: отказ,
+     дошедший доверху, останавливает программу не «в тот же миг», а к концу
+     текущих пачек. */
+  while (drained < left) {
     fl_value message = fl_nothing();
     bool got = false;
     bool escalated = false;
@@ -2354,8 +2380,8 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_cr
                      &par->error) != FL_OK) {
       pthread_mutex_lock(&par->big);
       par->status = FL_ERROR;
-      par->stop = true;
       pthread_mutex_unlock(&par->big);
+      fl_conc_halt(par);
       break;
     }
     if (escalated) {
@@ -2364,8 +2390,8 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_cr
          от «работа кончилась» только по итоговым состояниям. */
       pthread_mutex_lock(&par->big);
       par->escalated = true;
-      par->stop = true;
       pthread_mutex_unlock(&par->big);
+      fl_conc_halt(par);
       break;
     }
   }
@@ -2406,7 +2432,7 @@ static void *fl_conc_worker(void *raw) {
   hand.seen = par->seen == NULL ? NULL : &par->seen[crew->worker * sched->plan->supervisor_count];
   hand.worker = crew->worker;
 
-  while (!par->stop) {
+  while (!fl_conc_stopped(par)) {
     size_t process = fl_conc_take(par, crew->worker);
     size_t drained = 0;
     size_t left = 0;
@@ -2423,8 +2449,8 @@ static void *fl_conc_worker(void *raw) {
       if (sched->timer_count > 0 && !fl_conc_fire_timers(sched, &ctx)) {
         pthread_mutex_lock(&par->big);
         par->status = FL_ERROR;
-        par->stop = true;
         pthread_mutex_unlock(&par->big);
+        fl_conc_halt(par);
         break;
       }
       idled = true;
@@ -2463,18 +2489,22 @@ static void *fl_conc_worker(void *raw) {
       continue;
     }
     spins = 0;
-    pthread_mutex_lock(&par->idle_lock);
-    par->idle += 1;
-    if (par->idle == par->workers && fl_conc_quiet(sched, crew->max_turns)) {
-      par->stop = true;
+    {
+      bool stop = false;
+      pthread_mutex_lock(&par->idle_lock);
+      par->idle += 1;
+      if (par->idle == par->workers && fl_conc_quiet(sched, crew->max_turns)) {
+        par->stop = true;
+      }
+      stop = par->stop;
+      pthread_mutex_unlock(&par->idle_lock);
+      if (!stop) {
+        fl_conc_doze();
+      }
+      pthread_mutex_lock(&par->idle_lock);
+      par->idle -= 1;
+      pthread_mutex_unlock(&par->idle_lock);
     }
-    pthread_mutex_unlock(&par->idle_lock);
-    if (!par->stop) {
-      fl_conc_doze();
-    }
-    pthread_mutex_lock(&par->idle_lock);
-    par->idle -= 1;
-    pthread_mutex_unlock(&par->idle_lock);
   }
 
   fl_arena_release(&draft);
@@ -2769,16 +2799,17 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       started += 1;
     }
     if (started == 0) {
-      par.stop = true;
       status = fl_fail(ctx, error, "FLANG_PROCESS", "не завёлся ни один поток планировщика");
       goto finish;
     }
-    /* Заведись не все — прогон идёт на тех, кто завёлся, и итог скажет,
-       сколько их. Молчать про это нельзя: «просили восемь, работал один» —
-       разница в скорости, а не в исходе, но узнать о ней надо не по секундомеру. */
-    if (started < workers) {
-      par.workers = started;
-    }
+    /* Заведись не все — прогон идёт на тех, кто завёлся, и итог скажет, сколько
+       их. Молчать про это нельзя: «просили восемь, работал один» — разница в
+       скорости, а не в исходе, но узнать о ней надо не по секундомеру.
+
+       `par.workers` при этом НЕ меняется, и это важно: по нему считается номер
+       склада (`процесс % потоков`). Сменить его посреди прогона значило бы
+       отправлять процессы на склад с номером, которого больше нет ни у кого, —
+       а обходят склады всё равно все, потому что подворовывание идёт по кругу. */
     for (index = 0; index < started; index += 1) {
       pthread_join(threads[index], NULL);
     }
@@ -2927,7 +2958,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   out->workers = workers < 1 ? 1 : workers;
 #ifdef FL_CONC_THREADS
   if (sched.par != NULL) {
-    out->workers = par.workers;
+    out->workers = started;
   }
 #endif
 

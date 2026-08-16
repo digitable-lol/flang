@@ -17,17 +17,19 @@
 # Использование: arena.sh КАТАЛОГ-С-БИНАРНИКОМ-quicksort
 set -u
 BIN="${1:?нужен каталог сборки quicksort}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 for N in 250 500 750 1000 1500; do
   node -e "
     const a = []
     let x = 12345
     for (let i = 0; i < $N; i += 1) { x = (25173 * x + 13849) % 65536; a.push({ n: String(x) }) }
     process.stdout.write(JSON.stringify({ fn: 'Сортировка вставками', args: [{ l: a }] }) + '\n')
-  " > /tmp/claude-1000/arena-req.json
+  " > "$TMP/arena-req.json"
   printf '%6d  ' "$N"
   ( ulimit -v 8388608
     /usr/bin/time -f "%M КиБ  %e с" env "$BIN/flang_cli" --json \
-      < /tmp/claude-1000/arena-req.json > /tmp/claude-1000/arena-otvet.json ) 2>&1 | tail -1 | tr -d '\n'
-  if grep -q '"ok":true' /tmp/claude-1000/arena-otvet.json; then echo "  досчитала"; else
-    echo "  ОТКАЗ: $(head -c 60 /tmp/claude-1000/arena-otvet.json)"; fi
+      < "$TMP/arena-req.json" > "$TMP/arena-otvet.json" ) 2>&1 | tail -1 | tr -d '\n'
+  if grep -q '"ok":true' "$TMP/arena-otvet.json"; then echo "  досчитала"; else
+    echo "  ОТКАЗ: $(head -c 60 "$TMP/arena-otvet.json")"; fi
 done

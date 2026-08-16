@@ -75,9 +75,28 @@ function «Fibonacci series»
     expected empty list
   «Series by fuel» of («Numbers from and to» of 1 and count)
 
+// A lemma that was UNSAYABLE before the word `requires`, and not because it is
+// hard to prove — because there was nothing to write it with.
+//
+// The statement "the result is at least 0" about this function is FALSE: the
+// accumulators are declared as numbers, and the input 0 / −7 / 9 yields −7. The
+// conditional form is true: IF the accumulators are non-negative, THEN so is the
+// result. A postcondition without a precondition could not say "if", and the
+// statement written without it would stand in the ledger as a grid — that is, a
+// falsehood would look counted.
+//
+// Two `requires`, not one over a conjunction, and this is not taste: discharge
+// goes one precondition at a time, and the non-negativity rule reads a list of
+// known terms rather than taking apart an `and`. Split in two, both are
+// discharged at both call sites — at the recursive one (`current` is known,
+// `previous plus current` is a sum of knowns) and at «Fibonacci» (`0` and `1`
+// are literals at least zero).
 total function «Fibonacci by steps»
   accepts remaining: nat, previous: number, current: number
   returns number
+  requires «previous is non-negative» previous is at least 0
+  requires «current is non-negative» current is at least 0
+  ensures «the Fibonacci step is non-negative» result is at least 0
   example «No steps left»
     given remaining equals 0
     given previous equals 7

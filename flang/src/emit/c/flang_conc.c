@@ -27,6 +27,20 @@
  */
 #define FL_CONC_TOTAL_STEPS 1000000
 
+/*
+ * Первый кусок кучи процесса. Половин две, значит с рождения процесс стоит
+ * килобайт, а не сто двадцать восемь: замер планировщика назвал старую цену
+ * числом — 131 062 байта на работающий процесс, ровно два куска по 64 КиБ, —
+ * притом что типичный процесс держит запись из двух полей.
+ *
+ * Полкилобайта, а не сто байт: в кусок обязаны поместиться состояние и первое
+ * кольцо ящика (восемь мест по `sizeof(fl_value)`), иначе первый же пробег
+ * купит второй кусок, и экономия обернётся лишним походом к malloc. Дальше
+ * кусок удваивается сам (`fl_arena_init_small`), поэтому процессу, которому
+ * нужны килобайты, эта константа ничего не стоит.
+ */
+#define FL_CONC_HEAP_LEAST (size_t)512u
+
 /** Нормальная причина остановки: она одна на всю модель — как `exit(:normal)`. */
 static const char *const FL_CONC_NORMAL = "норма";
 
@@ -1419,8 +1433,8 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
   sched->born_count += 1;
   sched->proc_count += 1;
 
-  fl_arena_init(&sched->slots[born].heap[0]);
-  fl_arena_init(&sched->slots[born].heap[1]);
+  fl_arena_init_small(&sched->slots[born].heap[0], FL_CONC_HEAP_LEAST);
+  fl_arena_init_small(&sched->slots[born].heap[1], FL_CONC_HEAP_LEAST);
   sched->slots[born].live = 0;
   /* Начальное значение берётся у ВИДА, и берётся то же самое, что вычислено при
      старте прогона: перезапуск порождённого обязан вернуть не «такое же», а то
@@ -1547,8 +1561,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
      вызывающего, а не в куче процесса, — перезапуск надзором обязан вернуть то
      же самое значение, а половины кучи к тому времени сброшены обе. */
   for (index = 0; index < plan->process_count; index += 1) {
-    fl_arena_init(&sched.slots[index].heap[0]);
-    fl_arena_init(&sched.slots[index].heap[1]);
+    fl_arena_init_small(&sched.slots[index].heap[0], FL_CONC_HEAP_LEAST);
+    fl_arena_init_small(&sched.slots[index].heap[1], FL_CONC_HEAP_LEAST);
     sched.slots[index].live = 0;
   }
   fl_arena_init(&sched.draft);

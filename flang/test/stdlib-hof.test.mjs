@@ -69,9 +69,9 @@ import { emitJava } from "../src/emit/java.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { camel, pascal } from "../src/naming.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))

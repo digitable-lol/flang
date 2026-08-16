@@ -97,8 +97,8 @@ import { ВИДЫ_ОТКАЗА, КОДЫ_ОТКАЗА } from "../src/failures.mj
 import { parse } from "../src/parser.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const elixirBin = findExecutable("elixir")
 const elixircBin = findExecutable("elixirc")

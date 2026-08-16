@@ -63,8 +63,8 @@ import { emitC } from "../src/emit/c.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 const goBin = findExecutable("go")

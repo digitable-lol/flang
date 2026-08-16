@@ -39,7 +39,7 @@ import { emitJava } from "../src/emit/java.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
+import { camel, pascal } from "../src/naming.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 
 

@@ -603,11 +603,17 @@ test("ошибка несёт span узла, если он есть", () => {
   }])
 })
 
-// ───────────────────────────── совместимость с ядром FTS ─────────────────────────────
+// ───────────────────────────── постусловия ─────────────────────────────
 
-// Ручной перевод examples/utilities/discount.fts в AST flang: правила утилиты —
-// последовательность «пусть результат равен если … то … иначе результат»,
-// свойства — постусловия. Ровно то, что обязан делать compat.mjs (SPEC, §9).
+// Программа с постусловиями, собранная AST: цепочка «пусть результат равен если
+// … то … иначе результат» и два свойства при ней.
+//
+// Раньше рядом стояли три проверки совместимости с ядром старого проекта: та же
+// программа сверялась с `executeUtility` эталона на шестнадцати суммах, её
+// примеры — с примерами модели, а перевод моста — с ручным AST. Эталон вынесен
+// из репозитория (тег `fts-pered-udaleniem`), и сверять стало не с чем. Сама
+// программа осталась: она даёт постусловие, которое НАРУШАЕТСЯ на настоящем
+// вычислении, а не в выдуманном примере.
 function программаСкидки() {
   const результат = пер("результат")
   const сумма = пер("сумма")
@@ -665,14 +671,7 @@ function программаСкидки() {
   }
 }
 
-async function ядро() {
-  // dist/src — собранное ядро FTS; тесту файловая система разрешена.
-  const модуль = await import("../../dist/src/index.js")
-  const { readFileSync } = await import("node:fs")
-  const источник = readFileSync(new URL("../../examples/utilities/discount.fts", import.meta.url), "utf8")
-  return { модуль, документ: модуль.compile(источник) }
-}
-
+/** Итог вызова: успех со значением или отказ с кодом. */
 function итог(действие) {
   try {
     return { ok: true, value: действие() }
@@ -681,46 +680,6 @@ function итог(действие) {
     return { ok: false, code: диагностика?.code ?? error?.code, message: error?.message }
   }
 }
-
-test("совместимость: discount.fts даёт те же значения, что executeUtility ядра", async () => {
-  const { модуль, документ } = await ядро()
-  const рантайм = createRuntime(программаСкидки())
-
-  const суммы = [0, 1, 100, 5000, 9999.99, 10000, 10000.01, 12345.67, 20000, 1e6, 1e15, 0.1, 1e-7, 1 / 3, -1, -20000]
-  let нарушений = 0
-  for (const сумма of суммы) {
-    for (const постоянный of [true, false]) {
-      const вход = { "сумма": сумма, "постоянный клиент": постоянный }
-      const ядерный = итог(() => модуль.executeUtility(документ, "Рассчитать скидку", вход))
-      const наш = итог(() => рантайм.call("Рассчитать скидку", вход))
-      assert.equal(наш.ok, ядерный.ok, `расхождение по успеху на ${JSON.stringify(вход)}: ${JSON.stringify(наш)}`)
-      if (ядерный.ok) {
-        assert.ok(
-          Object.is(наш.value, ядерный.value),
-          `${JSON.stringify(вход)}: ядро ${ядерный.value}, flang ${наш.value}`,
-        )
-      } else {
-        нарушений += 1
-        assert.equal(наш.code, ядерный.code, JSON.stringify(вход))
-        assert.equal(наш.message, ядерный.message, JSON.stringify(вход))
-      }
-    }
-  }
-  assert.ok(нарушений > 0, "сетка обязана содержать нарушение свойства")
-})
-
-test("совместимость: примеры из discount.fts проходят на обоих движках", async () => {
-  const { модуль, документ } = await ядро()
-  const рантайм = createRuntime(программаСкидки())
-  const утилита = документ.utilities.find((item) => item.name === "Рассчитать скидку")
-  assert.equal(утилита.examples.length, 3)
-  for (const пример of утилита.examples) {
-    const наш = рантайм.call("Рассчитать скидку", пример.input)
-    const ядерный = модуль.executeUtility(документ, "Рассчитать скидку", пример.input)
-    assert.ok(Object.is(наш, пример.expected), `${пример.name}: ожидалось ${пример.expected}, получено ${наш}`)
-    assert.ok(Object.is(наш, ядерный))
-  }
-})
 
 test("постусловие ловит нарушение и с кодом по умолчанию", () => {
   const программа = {
@@ -983,34 +942,3 @@ test("если парсер уже есть — прогоняем его AST ч
   }
 })
 
-test("если compat.mjs уже есть — его перевод совпадает с ручным и с ядром", async (t) => {
-  let compat
-  try {
-    compat = await import("../src/compat.mjs")
-  } catch {
-    return t.skip("flang/src/compat.mjs ещё не написан")
-  }
-  if (typeof compat.fromFtsDocument !== "function") return t.skip("compat.mjs не экспортирует fromFtsDocument()")
-
-  const { модуль, документ } = await ядро()
-  const переведённая = compat.fromFtsDocument(документ)
-  const мостовой = createRuntime(переведённая)
-  const ручной = createRuntime(программаСкидки())
-
-  for (const сумма of [0, 5000, 10000, 12345.67, 20000, 1e15, -20000]) {
-    for (const постоянный of [true, false]) {
-      const вход = { "сумма": сумма, "постоянный клиент": постоянный }
-      const ядерный = итог(() => модуль.executeUtility(документ, "Рассчитать скидку", вход))
-      // compat заворачивает вход утилиты в одну запись-параметр.
-      const мост = итог(() => мостовой.call("Рассчитать скидку", { [compat.INPUT_PARAM]: вход }))
-      const наш = итог(() => ручной.call("Рассчитать скидку", вход))
-      assert.deepEqual(
-        [мост.ok, мост.code, мост.value],
-        [ядерный.ok, ядерный.code, ядерный.value],
-        `мост разошёлся с ядром на ${JSON.stringify(вход)}`,
-      )
-      assert.deepEqual([мост.ok, мост.code], [наш.ok, наш.code], `мост разошёлся с ручным AST на ${JSON.stringify(вход)}`)
-      if (мост.ok) assert.ok(Object.is(мост.value, наш.value))
-    }
-  }
-})

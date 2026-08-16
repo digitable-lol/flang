@@ -14,7 +14,7 @@
 // ── Что здесь принципиально иначе, чем в бэкендах Python, Go и C ───────────
 // Общее сохранено намеренно, чтобы бэкенды читались как одна система: тот же
 // обход AST, то же решение арности при печати, тот же протокол прогонщика, та
-// же транслитерация имён через tools/ftsc/src/naming.mjs, и коллизия после
+// же транслитерация имён через flang/src/naming.mjs, и коллизия после
 // транслитерации — ошибка печати, а не тихое переименование.
 //
 // Расходится же Java с соседями там, где расходятся сами языки.
@@ -114,8 +114,8 @@ import { canonicalBuiltinName, flangError, hasBuiltin, помощникФорм�
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
-import { pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
+import { pascal, snake } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.

@@ -27,7 +27,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { defunctionalize } from "../src/defunc.mjs"
 import { emitJava } from "../src/emit/java.mjs"
 import { evaluate } from "../src/interpret.mjs"
@@ -270,29 +269,6 @@ test("программы репозитория: Java совпадает с эт
     `побайтово совпало ${совпало} из ${программыРепозитория.length}, разошлось ${разошлись.length}.\n` +
       `Первое расхождение:\n${разошлись[0]}`,
   )
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async (t) => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  let совпало = 0
-  const разошлись = []
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"))
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    const беда = расхождение(файлМодели, fromFtsDocument(документ))
-    if (беда === null) совпало += 1
-    else разошлись.push(беда)
-  }
-  t.diagnostic(`моделей совпало ${совпало}, разошлось ${разошлись.length}`)
-  assert.ok(совпало + разошлись.length >= 10, "моделей с утилитами слишком мало")
-  assert.equal(разошлись.length, 0, `моделей разошлось ${разошлись.length}.\nПервое расхождение:\n${разошлись[0]}`)
 })
 
 test("сторож меры: обе реализации понижения ставят его одинаково", async (t) => {

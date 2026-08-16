@@ -97,5 +97,4 @@ node flang/bin/flang.mjs repl
 ## Что дальше
 
 - [Зачем доказательства и как они устроены](dokazatelstva.html)
-- [Справка по языку](yazyk.html) — что в нём есть
-- [Примеры](primery.html) — включая 82 задачи с LeetCode и Rosetta Code
+- [Спецификация языка](spec.html) — что в нём есть

@@ -34,8 +34,8 @@
  *
  * ── Если тулчейна Rust нет ──────────────────────────────────────────────────
  * Тесты, которым нужен компилятор, честно пропускаются через `missingToolchain`
- * (tools/ftsc/test/toolchain-guard.mjs) — тем же способом, что у бэкендов Go и
- * .NET в tools/ftsc. Молчаливый пропуск, выглядящий как успех, недопустим:
+ * (flang/test/toolchain-guard.mjs) — тем же способом, что у всех восьми целей
+ * печати. Молчаливый пропуск, выглядящий как успех, недопустим:
  * `FTS_REQUIRE_TOOLCHAINS=rust` превращает пропуск в падение, а каталог с
  * тулчейном вне PATH указывается через `FTS_TOOLCHAIN_PATH`. Тесты, которым
  * компилятор не нужен (детерминированность печати, статические диагностики,
@@ -56,8 +56,8 @@ import { parse } from "../src/parser.mjs"
 import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 import {
   functionGrid,

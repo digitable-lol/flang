@@ -31,6 +31,7 @@ import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import * as ядро from "./fts-oracle.mjs"
 import { строкиОхвата, текстМодели, файлыКорпуса } from "./corpus.mjs"
 
 const файл = fileURLToPath(new URL("../core/parser.flang", import.meta.url))
@@ -45,8 +46,6 @@ const { diagnostics: диагностикиСвязывания, ...програ
 const типы = checkTypes(программа)
 const тотальность = checkTotality(программа)
 
-const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
 
 /**
  * Лимит шагов поднят с миллиона до четырёх: разбор — работа на порядок тяжелее
@@ -458,33 +457,19 @@ for (const [имя, src] of Object.entries(СЛОМАННЫЕ_СКОБКИ)) {
 /* ─────────────────── сквозная сверка на моделях репозитория ─────────────── */
 
 /**
- * Корпус тот же, что у печати JSON: все `.fts` репозитория плюс модели из
- * каталогов, явно перечисленных в `FTS_MODEL_PATH`. Охват печатается ниже
- * отдельным тестом — по выводу должно быть видно, сколько моделей проверено и
- * откуда они взяты (почему это обязательно — `flang/test/corpus.mjs`).
+ * Корпус тот же, что у печати JSON: модели `.fts` из фикстур языка. Охват
+ * печатается ниже отдельным тестом — по выводу должно быть видно, сколько
+ * моделей проверено (почему это обязательно — `flang/test/corpus.mjs`).
  */
 function модели() {
   const найденные = []
   for (const запись of файлы) {
     const { имя, источник } = запись
-    const текст = текстМодели(запись)
-    let тело = текст
-    try {
-      /* Файлы `tools/**` начинаются с заголовка `модуль …`, которого ядро не
-         знает; файлы-функторы документами FTS не являются вовсе. */
-      const разобранный = parseModuleFile(текст, имя)
-      if (разобранный.kind !== "module") continue
-      тело = разобранный.body
-    } catch {
-      continue
-    }
-    let документ
-    try {
-      документ = ядро.compile(тело)
-    } catch {
-      /* Не документ ядра (другой диалект, намеренно сломанная модель). */
-      continue
-    }
+    const тело = текстМодели(запись)
+    /* Отказ ядра здесь НЕ ловится намеренно: см. довод в core-json. Все файлы
+       корпуса — документы, отобранные один раз при переносе в фикстуры, и
+       отказ означает поломку, а не чужой диалект. */
+    const документ = ядро.compile(тело)
     /* Поверхность запоминается только затем, чтобы отдельно посчитать модели
        каждого диалекта: сверка для обоих одна и та же — побайтовая. */
     const первая = тело.replace(/^﻿/u, "").split(/\r?\n/u).map((строка) => строка.trim()).find((строка) => строка.length > 0 && !строка.startsWith("//"))

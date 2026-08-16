@@ -27,7 +27,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { defunctionalize } from "../src/defunc.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { evaluate } from "../src/interpret.mjs"
@@ -328,30 +327,6 @@ test("сторож меры: программа с ним печатается �
   }
   t.diagnostic(`программ с числовой мерой: ${отмеченные.length}, сторожей в них: ${сторожей}`)
   свод(t, "программы со сторожами меры", беды, отмеченные.length)
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async (t) => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  const беды = []
-  let сверено = 0
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(
-        parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"),
-      )
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    const беда = расхождение(файлМодели, fromFtsDocument(документ))
-    if (беда !== null) беды.push(беда)
-    сверено += 1
-  }
-  assert.ok(сверено >= 10, `моделей с утилитами сверено ${сверено} — слишком мало`)
-  свод(t, "модели FTS", беды, сверено)
 })
 
 /* ─────────────────── случаи, которых в репозитории нет ─────────────────── */

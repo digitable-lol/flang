@@ -39,9 +39,8 @@ npm install
 npm test
 ```
 
-`npm test` is three suites — `test:core` (the FTS core in TypeScript),
-`test:tools` (the tools in `tools/`), `test:flang` (the language). All three
-must pass.
+`npm test` is one suite — `flang/test/*.test.mjs`, the whole language. It must
+pass with zero failures.
 
 Before the run, `npm test` prints what it is actually going to check:
 
@@ -119,13 +118,6 @@ What this means when you write:
 
 None of them may be "fixed" by loosening the guard. The tree is the measurer.
 
-Changes to the FTS surface must include:
-
-- a canonical JSON representation;
-- parser and semantic-validation tests;
-- a schema update when the model changes;
-- an example for user-visible syntax.
-
 Changes to flang must include:
 
 - the corresponding section of `flang/SPEC.md`, updated in the same change;
@@ -133,7 +125,9 @@ Changes to flang must include:
 - matching behaviour in the interpreter and in every emitter — the emitter tests
   compare a compiled binary against the interpreter, so a divergence is a failure,
   not a note;
-- a debt entry in `flang/core/SPEC.md` when a divergence from the TypeScript core
-  is left in deliberately.
+- a debt entry in `flang/core/SPEC.md` when a divergence from the frozen answer
+  table (`flang/test/fts-oracle.mjs`) is left in deliberately.
 
-Do not add product-specific structures, filesystem access, or network access to the core library. Build integrations as separate packages over the public `FtsDocument` API.
+Do not add product-specific structures, filesystem access, or network access to
+the language. Build integrations as separate packages over the JSON that
+`flang ast` prints.

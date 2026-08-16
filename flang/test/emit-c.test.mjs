@@ -30,20 +30,15 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { after, test } from "node:test"
-import { fileURLToPath } from "node:url"
 
-import { errorCode, fromFtsDocument, INPUT_PARAM } from "../src/compat.mjs"
+import { errorCode, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 import { emitC } from "../src/emit/c.mjs"
-import { globSync } from "./glob.mjs"
 
-const root = fileURLToPath(new URL("../..", import.meta.url))
-const core = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
 
 const workdir = await mkdtemp(join(tmpdir(), "flang-emit-c-"))
 after(async () => {
@@ -229,171 +224,6 @@ function compare(program, built, functionName, grid, options = {}) {
   })
   return points.length
 }
-
-/* ══════════════════════════ 1. модели репозитория ═══════════════════════════ */
-
-async function loadModels() {
-  const files = [
-    ...globSync("examples/**/*.fts", { cwd: root }),
-    ...globSync("tools/ftsc/stdlib/**/*.fts", { cwd: root }),
-  ].sort()
-  const models = []
-  for (const file of files) {
-    const source = await readFile(join(root, file), "utf8")
-    /* Файлы-функторы не документы FTS: у них нет категории. */
-    const parsed = parseModuleFile(source, file)
-    if (parsed.kind !== "module") continue
-    models.push({ file, document: core.compile(parsed.body) })
-  }
-  return models
-}
-
-const models = await loadModels()
-
-/**
- * Сетка выводится из самой модели: значения примеров, все константы условий и
- * границы вокруг них (c−1, c, c+1) — именно там прячется разница между `>` и
- * `>=`. Выдуманная сетка проверяла бы фантазию автора теста, а не модель.
- */
-function collectConstants(utility) {
-  const numbers = new Set()
-  const strings = new Set()
-  const take = (value) => {
-    if (typeof value === "number") numbers.add(value)
-    if (typeof value === "string") strings.add(value)
-  }
-  const operand = (item) => {
-    if (item.kind === "value") take(item.value)
-    if (item.kind === "percent") numbers.add(item.percent)
-  }
-  take(utility.initial)
-  for (const rule of utility.rules) {
-    for (const condition of rule.when) operand(condition.value)
-    operand(rule.action.value)
-  }
-  for (const property of utility.properties) operand(property.value)
-  for (const example of utility.examples) for (const value of Object.values(example.input)) take(value)
-  return { numbers, strings }
-}
-
-function product(lists, limit) {
-  let combinations = [[]]
-  for (const list of lists) {
-    const next = []
-    for (const combination of combinations) {
-      for (const value of list) {
-        if (next.length >= limit) break
-        next.push([...combination, value])
-      }
-      if (next.length >= limit) break
-    }
-    combinations = next
-  }
-  return combinations
-}
-
-function inputGrid(structure, utility) {
-  const constants = collectConstants(utility)
-  const candidates = new Map()
-  for (const field of structure.fields) {
-    const values = new Set()
-    for (const example of utility.examples) {
-      if (field.name in example.input) values.add(example.input[field.name])
-    }
-    const type = field.type.replace(/\s*\|\s*undefined/gu, "").trim()
-    if (type === "Число" || type === "Деньги" || type === "number") {
-      for (const value of constants.numbers) {
-        values.add(value - 1)
-        values.add(value)
-        values.add(value + 1)
-      }
-      values.add(0)
-      values.add(1)
-      values.add(-1)
-    } else if (type === "Признак" || type === "boolean") {
-      values.add(true)
-      values.add(false)
-    } else if (type === "Строка" || type === "Дата" || type === "string") {
-      for (const value of constants.strings) values.add(value)
-      values.add("")
-    } else if (values.size === 0) {
-      values.add(true)
-    }
-    candidates.set(field.name, [...values].slice(0, 10))
-  }
-
-  const grid = utility.examples.map((example) => ({ ...example.input }))
-  const required = structure.fields.filter((field) => !field.type.includes("undefined"))
-  for (const combination of product(required.map((field) => candidates.get(field.name) ?? [null]), 2048)) {
-    const input = {}
-    required.forEach((field, index) => {
-      input[field.name] = combination[index]
-    })
-    grid.push(input)
-  }
-  return grid
-}
-
-test("все модели репозитория: собранный C совпадает с интерпретатором", async (t) => {
-  assert.ok(models.length > 0, "модели репозитория не найдены — тест бессмыслен")
-  let programs = 0
-  let functions = 0
-  let points = 0
-
-  for (const model of models) {
-    const program = fromFtsDocument(model.document)
-    if ((program.functions ?? []).length === 0) continue
-    const built = await build(program)
-    programs += 1
-
-    const byName = new Map(model.document.structures.map((structure) => [structure.name, structure]))
-    for (const utility of model.document.utilities) {
-      const structure = byName.get(utility.input)
-      const grid = inputGrid(structure, utility).map((input) => ({ [INPUT_PARAM]: input }))
-      points += compare(program, built, utility.name, grid)
-      functions += 1
-    }
-  }
-
-  t.diagnostic(`моделей: ${programs}, функций: ${functions}, сверенных входов: ${points}`)
-  assert.ok(programs >= 5, `моделей с утилитами слишком мало: ${programs}`)
-  assert.ok(points > 1000, `сетка слишком редкая: ${points}`)
-})
-
-test("примеры моделей считаются одинаково ядром FTS, интерпретатором и C", async (t) => {
-  let checked = 0
-  for (const model of models) {
-    const program = fromFtsDocument(model.document)
-    if ((program.functions ?? []).length === 0) continue
-    const built = await build(program)
-    const requests = []
-    const expected = []
-    for (const utility of model.document.utilities) {
-      for (const example of utility.examples) {
-        requests.push({ fn: utility.name, args: [encode(example.input)] })
-        expected.push({ utility, example })
-      }
-    }
-    if (requests.length === 0) continue
-    const answers = ask(built, requests)
-    answers.forEach((answer, index) => {
-      const { utility, example } = expected[index]
-      const byCore = outcome(() => core.executeUtility(model.document, utility.name, example.input))
-      const byInterpreter = outcome(() =>
-        interpret(program, utility.name, { [INPUT_PARAM]: example.input }))
-      const byEmitted = answer.ok
-        ? { ok: true, value: decode(answer.value) }
-        : { ok: false, code: answer.code, message: answer.message }
-      assert.ok(sameOutcome(byInterpreter, byEmitted), `${utility.name} / ${example.name}: движки разошлись`)
-      if (byCore.ok) {
-        assert.ok(sameValue(byCore.value, byEmitted.value), `${utility.name} / ${example.name}: ядро разошлось с C`)
-      }
-      checked += 1
-    })
-  }
-  t.diagnostic(`сверенных примеров: ${checked}`)
-  assert.ok(checked > 0)
-})
 
 /* ══════════════════════════ 2. рекурсия по списку ═══════════════════════════ */
 
@@ -1175,45 +1005,84 @@ test("внутренний цикл не перехватывает continue х�
 
 /* ══════════════════════════ 6. постусловия ═══════════════════════════ */
 
-const violatingSource = [
-  "категория «Проверка»",
-  "",
-  "  объект Вход",
-  "    сумма является числом",
-  "",
-  "  утилита «Только положительное»",
-  "    принимает Вход",
-  "    возвращает число",
-  "    начинает с 0",
-  "",
-  "    правило «Взять сумму»",
-  "      если сумма не меньше -1000",
-  "      то результат равен поле сумма",
-  "",
-  "    свойство «Неотрицательно»",
-  "      результат не меньше 0",
-  "",
-  "    пример «Ноль»",
-  "      дано сумма равна 0",
-  "      ожидается результат равен 0",
-  "",
-].join("\n")
+/**
+ * Программа с нарушаемым постусловием — собрана AST, а не разобрана из текста.
+ *
+ * Раньше она приезжала из модели `.fts` через мост, и сверялась с эталоном FTS:
+ * «код и текст обязаны совпасть с ядром дословно». Эталон вынесен из
+ * репозитория (тег `fts-pered-udaleniem`), и сверять стало не с чем.
+ *
+ * Само утверждение при этом никуда не делось и осталось проверяемым: код и
+ * текст постусловия едут в AST ДАННЫМИ, значит в напечатанном C они обязаны
+ * стоять литералами, а не выводиться из знания, зашитого в бэкенд. Код взят
+ * нарочно посторонний — такой, какого бэкенд знать не может ниоткуда, кроме
+ * этого AST.
+ */
+const АВТОРСКИЙ_КОД = "POSTUSLOVIE_AVTORA"
+const АВТОРСКИЙ_ТЕКСТ = "нарушено свойство «Неотрицательно» функции «Только положительное»"
 
-test("нарушение постусловия: код FTS_UTILITY_PROPERTY и текст ядра дословно", async () => {
-  const document = core.compile(violatingSource)
-  const program = fromFtsDocument(document)
+const violatingProgram = {
+  flang: 1,
+  module: "Проверка",
+  types: [{ kind: "record", name: "Вход", fields: [{ name: "сумма", type: { kind: "number" } }] }],
+  functions: [{
+    name: "Только положительное",
+    total: true,
+    params: [{ name: INPUT_PARAM, type: { kind: "record", name: "Вход" } }],
+    returns: { kind: "number" },
+    body: {
+      kind: "let",
+      name: "результат0",
+      value: { kind: "literal", value: 0 },
+      in: {
+        kind: "let",
+        name: "результат1",
+        value: {
+          kind: "if",
+          cond: {
+            kind: "binary",
+            op: "gte",
+            left: { kind: "field", target: { kind: "var", name: INPUT_PARAM }, field: "сумма" },
+            right: { kind: "literal", value: -1000 },
+          },
+          then: { kind: "field", target: { kind: "var", name: INPUT_PARAM }, field: "сумма" },
+          else: { kind: "var", name: "результат0" },
+        },
+        in: { kind: "var", name: "результат1" },
+      },
+    },
+    postconditions: [{
+      name: "Неотрицательно",
+      bind: "результат",
+      expr: {
+        kind: "binary",
+        op: "gte",
+        left: { kind: "var", name: "результат" },
+        right: { kind: "literal", value: 0 },
+      },
+      code: АВТОРСКИЙ_КОД,
+      message: АВТОРСКИЙ_ТЕКСТ,
+    }],
+  }],
+}
+
+test("нарушение постусловия: авторский код и текст едут в C литералами", async () => {
+  const program = violatingProgram
   const built = await build(program)
 
   /* Код и текст едут в AST данными — значит и в C они литералы, а не знание,
-     зашитое в бэкенд. */
-  assert.match(built.source, /"FTS_UTILITY_PROPERTY"/u)
+     зашитое в бэкенд. Знать этот код бэкенду неоткуда: он посторонний. */
+  assert.match(built.source, new RegExp(`"${АВТОРСКИЙ_КОД}"`, "u"))
 
-  const byCore = outcome(() => core.executeUtility(document, "Только положительное", { "сумма": -5 }))
   const [answer] = ask(built, [{ fn: "Только положительное", args: [encode({ "сумма": -5 })] }])
   assert.equal(answer.ok, false)
-  assert.equal(answer.code, "FTS_UTILITY_PROPERTY")
-  assert.equal(answer.code, byCore.code, "код обязан совпасть с ядром FTS")
-  assert.equal(answer.message, byCore.message, "текст обязан совпасть с ядром FTS дословно")
+  assert.equal(answer.code, АВТОРСКИЙ_КОД)
+  assert.equal(answer.message, АВТОРСКИЙ_ТЕКСТ, "текст постусловия обязан доехать дословно")
+
+  /* И то же самое — интерпретатором: обе стороны обязаны отказать одинаково. */
+  const наИнтерпретаторе = outcome(() => interpret(program, "Только положительное", { [INPUT_PARAM]: { "сумма": -5 } }))
+  assert.equal(наИнтерпретаторе.ok, false)
+  assert.equal(наИнтерпретаторе.code, АВТОРСКИЙ_КОД)
 
   const grid = [-5, -1, 0, 1, 5, -1001].map((value) => ({ [INPUT_PARAM]: { "сумма": value } }))
   compare(program, built, "Только положительное", grid)
@@ -1994,11 +1863,7 @@ test("сторож частичной формы: все восемь форм �
 /* ══════════════════════════ 11. форма результата ═══════════════════════════ */
 
 test("детерминированность: две печати дают побайтово одно и то же", async () => {
-  const programs = [listProgram, treeProgram, mutualProgram, countdownProgram, stringProgram, parse(flangSource)]
-  for (const model of models) {
-    const program = fromFtsDocument(model.document)
-    if ((program.functions ?? []).length > 0) programs.push(program)
-  }
+  const programs = [violatingProgram, listProgram, treeProgram, mutualProgram, countdownProgram, stringProgram, parse(flangSource)]
   for (const program of programs) {
     const first = emitC(program)
     const second = emitC(program)

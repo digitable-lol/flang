@@ -49,7 +49,7 @@
  *
  * ── Если тулчейна .NET нет ──────────────────────────────────────────────────
  * Тесты, которым нужен компилятор, честно пропускаются через `missingToolchain`
- * (tools/ftsc/test/toolchain-guard.mjs). Молчаливый пропуск, выглядящий как
+ * (flang/test/toolchain-guard.mjs). Молчаливый пропуск, выглядящий как
  * успех, недопустим: `FTS_REQUIRE_TOOLCHAINS=csharp` превращает пропуск в
  * падение, а каталог с `dotnet` вне PATH указывается в `FTS_TOOLCHAIN_PATH`.
  * Тесты, которым тулчейн не нужен (детерминированность печати, статические
@@ -75,8 +75,8 @@ import { parse } from "../src/parser.mjs"
 import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitCsharp } from "../src/emit/csharp.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 import {
   functionGrid,

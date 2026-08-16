@@ -38,7 +38,7 @@ and draws the line between what is *proven* and what is *checked*, and
 
 ## Where things live
 
-The layout follows from the section above, and it surprises on first sight: 14 directories at
+The layout follows from the section above, and it surprises on first sight: 15 directories at
 the root, several of the names repeated. There is `src/` and there is `flang/src/`; there is `test/`
 and `flang/test/`; there is `examples/` and `flang/examples/`. Two languages mean two
 implementations, two test runs and two example corpora. Merging them would erase the seam the
@@ -70,6 +70,7 @@ web/              the same compiler as a page element — no server, no build st
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          printing the library index, the changelog and the release C
 benchmarks/       the harness and a checked-in measurement baseline
+.claude/          developer assistant skills: knowledge-base rules
 docs/             documentation; README and SPEC files stay next to the code they describe
 .github/          CI and the fts-check action
 ```

@@ -944,9 +944,14 @@ static size_t fl_conc_lower(const size_t *ready, size_t count, size_t value) {
  * жизни или ящика — пропуск такого вызова означал бы, что журнал зависит не
  * только от семени, а это и есть та единственная ошибка, которой здесь нельзя.
  */
-static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
+static void fl_conc_refresh(fl_conc_sched *sched, size_t index, size_t via) {
   const bool wanted = sched->slots[index].alive && sched->slots[index].box.count > 0;
   size_t at = 0;
+  /* В сборке без потоков складов нет вовсе, и «на чей склад класть» — вопрос без
+     смысла. Параметр остаётся в подписи, чтобы у двух сборок был один и тот же
+     набор вызовов: разойдись они, разница между сборками перестала бы быть
+     одним выключателем. */
+  (void)via;
 #ifdef FL_CONC_THREADS
   /* Рабочий режим. Отсортированного списка здесь нет вовсе, и это не небрежность,
      а прямое следствие того, что размениваем: порядок в очереди готовых
@@ -969,7 +974,14 @@ static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
     par->state[index] = FL_CONC_QUEUED;
     par->next[index] = SIZE_MAX;
     {
-      fl_conc_shard *shard = &par->shards[index % par->workers];
+      /* Кладём на СВОЙ склад, а не на «склад номер процесса по остатку». Разница
+         измерена и велика: при раскладке по остатку все потоки пишут во все
+         склады, и на стенде «пары» (каждая пара — свой пинг-понг, ящик всегда с
+         одним письмом) шестнадцать потоков давали 1,15× при пятнадцати занятых
+         ядрах — то есть выигрыш от ядер ровно съедался толкотнёй на замках
+         складов. Свой склад пишет почти только его хозяин, а работу разбирают
+         подворовыванием. */
+      fl_conc_shard *shard = &par->shards[(via == SIZE_MAX ? index : via) % par->workers];
       pthread_mutex_lock(&shard->lock);
       if (shard->head == SIZE_MAX) {
         shard->head = index;
@@ -1030,7 +1042,7 @@ typedef enum fl_conc_post {
  * `reserved` — место уже занято этим письмом при выполнении «через», значит
  * потолок проверять не надо: он проверен тогда.
  */
-static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, const fl_ctx *guard, size_t target,
+static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, const fl_ctx *guard, size_t via, size_t target,
                                     fl_value message, bool front, bool reserved) {
   fl_conc_slot *slot = NULL;
   fl_arena *heap = NULL;
@@ -1064,7 +1076,7 @@ static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, const fl_ctx *guard, s
   } else if (!fl_conc_box_push(heap, &slot->box, copy, front)) {
     posted = FL_CONC_NOMEM;
   } else {
-    fl_conc_refresh(sched, target);
+    fl_conc_refresh(sched, target, via);
   }
   fl_conc_drop(sched, target);
   return posted;
@@ -1292,14 +1304,14 @@ static void fl_conc_restart(fl_conc_sched *sched, size_t index) {
   fl_conc_hold(sched, index);
   sched->slots[index].current = sched->slots[index].initial;
   sched->slots[index].alive = true;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
   fl_conc_drop(sched, index);
 }
 
 static void fl_conc_stop(fl_conc_sched *sched, size_t index) {
   fl_conc_hold(sched, index);
   sched->slots[index].alive = false;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
   fl_conc_drop(sched, index);
 }
 
@@ -1535,7 +1547,8 @@ static bool fl_conc_fire_timers(fl_conc_sched *sched, const fl_ctx *guard) {
       sched->slots[timer.target].pending -= 1;
       fl_conc_drop(sched, timer.target);
     }
-    if (fl_conc_deliver(sched, guard, timer.target, timer.message, false, timer.reserved) == FL_CONC_NOMEM) {
+    if (fl_conc_deliver(sched, guard, SIZE_MAX, timer.target, timer.message, false, timer.reserved) ==
+        FL_CONC_NOMEM) {
       fl_conc_big_unlock(sched);
       return false;
     }
@@ -1613,7 +1626,7 @@ static void fl_conc_own_failure(fl_conc_sched *sched, size_t process, fl_conc_en
      всякий, кто ему пишет, и читает под этим же замком. */
   fl_conc_hold(sched, process);
   sched->slots[process].alive = false;
-  fl_conc_refresh(sched, process);
+  fl_conc_refresh(sched, process, SIZE_MAX);
   fl_conc_drop(sched, process);
 }
 
@@ -1674,9 +1687,9 @@ static const char *fl_conc_keep_name(fl_conc_sched *sched, fl_value name) {
  * читается — обработчик к этому времени вернулся, — и это единственная причина,
  * по которой здесь можно расти.
  */
-static bool fl_conc_spawn(fl_conc_sched *sched, const fl_ctx *guard, size_t parent, fl_value kind,
-                          fl_value name, fl_value first, fl_conc_entry *entry, const char **failed,
-                          const char **reason) {
+static bool fl_conc_spawn(fl_conc_sched *sched, const fl_ctx *guard, size_t via, size_t parent,
+                          fl_value kind, fl_value name, fl_value first, fl_conc_entry *entry,
+                          const char **failed, const char **reason) {
   size_t proto = SIZE_MAX;
   size_t born = 0;
   const char *text = NULL;
@@ -1785,6 +1798,11 @@ static bool fl_conc_spawn(fl_conc_sched *sched, const fl_ctx *guard, size_t pare
   sched->slots[born].box.count = 0;
   sched->slots[born].pending = 0;
   sched->is_ready[born] = false;
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    sched->par->state[born] = FL_CONC_IDLE;
+  }
+#endif
   /* Надзор наследуется у вида (шаг Б2). Дерево надзора объявляется данными, и
      объявление это одно на вид; приписывать экземпляру свой надзор было бы
      вторым местом правды о том же самом. Отсюда и полнота: множество отказов
@@ -1812,7 +1830,7 @@ static bool fl_conc_spawn(fl_conc_sched *sched, const fl_ctx *guard, size_t pare
      обработчик зовётся на сообщение, а не на рождение. Поэтому `породить`
      несёт письмо, а не «начальное состояние»: начальное состояние у вида уже
      объявлено (`начинает с`), а работа приезжает письмом. */
-  posted = fl_conc_deliver(sched, guard, born, first, false, false);
+  posted = fl_conc_deliver(sched, guard, via, born, first, false, false);
   if (posted == FL_CONC_NOMEM) {
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CODE_MEMORY,
                         "кончилась память в куче порождённого процесса");
@@ -1854,7 +1872,7 @@ static void fl_conc_surrender(fl_conc_sched *sched, size_t index) {
   slot->box.head = 0;
   slot->box.count = 0;
   slot->current = slot->initial;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
 }
 
 /* ───────────────────────────── один пробег ─────────────────────────────
@@ -1983,7 +2001,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         fl_conc_post posted = FL_CONC_POSTED;
         fl_conc_variant_field(item, "кому", &to);
         fl_conc_variant_field(item, "что", &what);
-        posted = fl_conc_deliver(sched, ctx, fl_conc_address(sched, to), what, false, false);
+        posted = fl_conc_deliver(sched, ctx, hand->worker, fl_conc_address(sched, to), what, false, false);
         /* Оба неудачных исхода — отказ ОТПРАВИТЕЛЯ, и по одному доводу: он
            попросил положить сообщение, и положить его не вышло. Полный ящик
            (А3) и нехватка памяти в куче адресата (Г2) отличаются кодом, а не
@@ -2045,7 +2063,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         laid = fl_conc_box_push(&sched->slots[process].heap[sched->slots[process].live],
                                 &sched->slots[process].box, message, false);
         if (laid) {
-          fl_conc_refresh(sched, process);
+          fl_conc_refresh(sched, process, hand->worker);
         }
         fl_conc_drop(sched, process);
         if (!laid) {
@@ -2064,7 +2082,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         laid = fl_conc_box_push(&sched->slots[process].heap[sched->slots[process].live],
                                 &sched->slots[process].box, message, true);
         if (laid) {
-          fl_conc_refresh(sched, process);
+          fl_conc_refresh(sched, process, hand->worker);
         }
         fl_conc_drop(sched, process);
         if (!laid) {
@@ -2081,7 +2099,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         fl_conc_variant_field(item, "вид", &form);
         fl_conc_variant_field(item, "имя", &born);
         fl_conc_variant_field(item, "что", &what);
-        if (!fl_conc_spawn(sched, ctx, process, form, born, what, entry, &failed, &reason)) {
+        if (!fl_conc_spawn(sched, ctx, hand->worker, process, form, born, what, entry, &failed, &reason)) {
           return fl_conc_memory(ctx, error);
         }
         continue;
@@ -2093,7 +2111,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         text = fl_conc_cstring(sched, why);
         fl_conc_hold(sched, process);
         sched->slots[process].alive = false;
-        fl_conc_refresh(sched, process);
+        fl_conc_refresh(sched, process, SIZE_MAX);
         fl_conc_drop(sched, process);
         /* Нормальная остановка — не отказ, надзор о ней не узнаёт. Любая
            другая причина — отказ. */
@@ -2116,7 +2134,7 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
     }
     fl_conc_hold(sched, process);
     sched->slots[process].alive = false;
-    fl_conc_refresh(sched, process);
+    fl_conc_refresh(sched, process, SIZE_MAX);
     fl_conc_drop(sched, process);
   }
 
@@ -2540,7 +2558,7 @@ static void *fl_conc_worker(void *raw) {
          невозможно. */
       fl_conc_hold(sched, process);
       par->state[process] = FL_CONC_IDLE;
-      fl_conc_refresh(sched, process);
+      fl_conc_refresh(sched, process, crew->worker);
       fl_conc_drop(sched, process);
       if (drained > 0) {
         spins = 0;
@@ -2817,7 +2835,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
          сколько сообщений названо, столько и ляжет, и посчитать это можно до
          прогона. Здесь — определённое поведение на плане, собранном мимо неё. */
       const fl_conc_post posted =
-        fl_conc_deliver(&sched, ctx, fl_conc_find(plan, spec->targets[index]), inbox[index], false, false);
+        fl_conc_deliver(&sched, ctx, SIZE_MAX, fl_conc_find(plan, spec->targets[index]), inbox[index], false,
+                        false);
       if (posted == FL_CONC_NOMEM) {
         status = fl_conc_memory(ctx, error);
         goto finish;
@@ -2964,7 +2983,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       }
       process = sched.ready[chosen];
       message = fl_conc_box_shift(&sched.slots[process].box);
-      fl_conc_refresh(&sched, process);
+      fl_conc_refresh(&sched, process, SIZE_MAX);
       sched.turns += 1;
 
       status = fl_conc_turn(&sched, &hand, process, message, sched.time, &escalated, error);

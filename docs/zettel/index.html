@@ -1,0 +1,796 @@
+<title>Цеттелькастен flang</title>
+<style>
+  :root {
+    --ground:  #F4F6F8;
+    --surface: #FFFFFF;
+    --sunk:    #EAEEF3;
+    --ink:     #151A21;
+    --muted:   #586273;
+    --faint:   #8A93A2;
+    --rule:    #DEE3EA;
+    --rule-soft:#EBEEF2;
+    --accent:  #2F5AA8;
+    --accent-wash: #E7EDF8;
+
+    --k-fakt:   #1B6A55;
+    --k-fakt-w: #E2F0EA;
+    --k-err:    #9A3B32;
+    --k-err-w:  #F7E7E4;
+    --k-otkaz:  #87603A;
+    --k-otkaz-w:#F4EBE0;
+    --k-mysl:   #4A5A8C;
+    --k-mysl-w: #E9ECF6;
+
+    --serif: ui-serif, Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "DejaVu Sans", sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0F131A;
+      --surface: #161B24;
+      --sunk:    #12161E;
+      --ink:     #E2E7EF;
+      --muted:   #96A0B1;
+      --faint:   #6E7787;
+      --rule:    #242B36;
+      --rule-soft:#1C222C;
+      --accent:  #8FAEE8;
+      --accent-wash: #1A2231;
+
+      --k-fakt:   #5EC29C;
+      --k-fakt-w: #13251F;
+      --k-err:    #E08A7E;
+      --k-err-w:  #2A1A18;
+      --k-otkaz:  #C8A176;
+      --k-otkaz-w:#271F16;
+      --k-mysl:   #9AA9D6;
+      --k-mysl-w: #1A1F2C;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:  #0F131A;
+    --surface: #161B24;
+    --sunk:    #12161E;
+    --ink:     #E2E7EF;
+    --muted:   #96A0B1;
+    --faint:   #6E7787;
+    --rule:    #242B36;
+    --rule-soft:#1C222C;
+    --accent:  #8FAEE8;
+    --accent-wash: #1A2231;
+
+    --k-fakt:   #5EC29C;
+    --k-fakt-w: #13251F;
+    --k-err:    #E08A7E;
+    --k-err-w:  #2A1A18;
+    --k-otkaz:  #C8A176;
+    --k-otkaz-w:#271F16;
+    --k-mysl:   #9AA9D6;
+    --k-mysl-w: #1A1F2C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  /* ---------- header ---------- */
+
+  header.top {
+    padding: 3.5rem 0 1.75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    margin: 0 0 0.9rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4.6vw, 2.9rem);
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.85rem;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  /* ---------- summary strip ---------- */
+
+  .tally {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--surface);
+    margin: 2rem 0 0;
+    overflow: hidden;
+  }
+
+  .tally div {
+    flex: 1 1 140px;
+    padding: 0.85rem 1.1rem;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .tally div:last-child { border-right: none; }
+
+  .tally b {
+    display: block;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .tally span {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+  }
+
+  .t-fakt b  { color: var(--k-fakt); }
+  .t-err b   { color: var(--k-err); }
+  .t-otkaz b { color: var(--k-otkaz); }
+  .t-mysl b  { color: var(--k-mysl); }
+
+  /* ---------- toolbar ---------- */
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--ground);
+    padding: 1.1rem 0 0.9rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 2.5rem;
+  }
+
+  .toolbar-row {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  input[type="search"] {
+    flex: 1 1 240px;
+    min-width: 0;
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.5rem 0.75rem;
+  }
+  input[type="search"]::placeholder { color: var(--faint); }
+
+  .kinds { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+  .kbtn {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.42rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 110ms ease, color 110ms ease, border-color 110ms ease;
+  }
+  .kbtn:hover { border-color: var(--faint); }
+  .kbtn[aria-pressed="true"] { color: var(--surface); }
+  .kbtn[data-k="факт"][aria-pressed="true"]   { background: var(--k-fakt);  border-color: var(--k-fakt); }
+  .kbtn[data-k="ошибка"][aria-pressed="true"] { background: var(--k-err);   border-color: var(--k-err); }
+  .kbtn[data-k="отказ"][aria-pressed="true"]  { background: var(--k-otkaz); border-color: var(--k-otkaz); }
+  .kbtn[data-k="мысль"][aria-pressed="true"]  { background: var(--k-mysl);  border-color: var(--k-mysl); }
+
+  .count { font-size: 0.8rem; color: var(--faint); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  /* ---------- layout ---------- */
+
+  .body-grid {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  nav.rail { position: sticky; top: 6.2rem; }
+
+  nav.rail p {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 700;
+    margin: 0 0 0.7rem;
+  }
+
+  nav.rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+
+  nav.rail a {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.3;
+    padding: 0.32rem 0.5rem;
+    border-radius: 2px;
+    border-left: 2px solid transparent;
+  }
+  nav.rail a:hover, nav.rail a:focus-visible {
+    background: var(--accent-wash);
+    color: var(--ink);
+    border-left-color: var(--accent);
+  }
+  nav.rail a em {
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- groups & cards ---------- */
+
+  section.group { margin-bottom: 3.2rem; scroll-margin-top: 6.5rem; }
+  section.group[hidden] { display: none; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    letter-spacing: -0.005em;
+  }
+
+  .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+
+  article.card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--kind);
+    border-radius: 2px;
+    padding: 1.05rem 1.15rem 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    scroll-margin-top: 6.8rem;
+    transition: box-shadow 140ms ease, border-color 140ms ease;
+  }
+  article.card[hidden] { display: none; }
+
+  article.card.lit {
+    box-shadow: 0 0 0 3px var(--accent-wash), 0 0 0 4px var(--accent);
+  }
+
+  .card-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+
+  .chip {
+    font-size: 0.63rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.15em 0.45em;
+    border-radius: 2px;
+    color: var(--kind);
+    background: var(--kind-wash);
+    white-space: nowrap;
+  }
+
+  .slug {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--faint);
+    word-break: break-all;
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.06rem;
+    line-height: 1.32;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .gist { font-size: 0.9rem; line-height: 1.55; color: var(--muted); margin: 0; }
+  .gist strong { color: var(--ink); font-weight: 650; }
+
+  .evid {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    background: var(--sunk);
+    border-left: 2px solid var(--kind);
+    padding: 0.5rem 0.65rem;
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rel { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: auto; padding-top: 0.35rem; }
+
+  .rel a {
+    font-family: var(--mono);
+    font-size: 0.71rem;
+    text-decoration: none;
+    color: var(--accent);
+    background: var(--accent-wash);
+    padding: 0.16em 0.42em;
+    border-radius: 2px;
+    word-break: break-all;
+  }
+  .rel a:hover, .rel a:focus-visible { text-decoration: underline; }
+
+  .empty {
+    text-align: center;
+    color: var(--faint);
+    padding: 3rem 1rem;
+    font-size: 0.95rem;
+  }
+  .empty[hidden] { display: none; }
+
+  footer.page {
+    border-top: 1px solid var(--rule);
+    margin-top: 3rem;
+    padding-top: 1.6rem;
+    color: var(--faint);
+    font-size: 0.84rem;
+    line-height: 1.65;
+  }
+  footer.page code { font-family: var(--mono); font-size: 0.92em; color: var(--muted); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+
+  @media (max-width: 860px) {
+    .body-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    nav.rail { position: static; }
+    nav.rail ol { flex-direction: row; flex-wrap: wrap; }
+    nav.rail a { border-left: none; border: 1px solid var(--rule); }
+  }
+
+  @media (max-width: 560px) {
+    .shell { padding: 0 1rem 4rem; }
+    header.top { padding-top: 2.5rem; }
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="shell">
+
+<header class="top">
+  <p class="eyebrow">flang · база знаний</p>
+  <h1>Цеттелькастен flang</h1>
+  <p class="lede">Здесь лежит не то, что сделано — это говорит история коммитов, — а почему решили так: что померили, что оказалось ложным, какие пути отвергли и по какому доводу.</p>
+
+  <div class="tally">
+    <div><b id="n-all">43</b><span>заметки</span></div>
+    <div class="t-fakt"><b id="n-fakt">0</b><span>измерено</span></div>
+    <div class="t-err"><b id="n-err">0</b><span>ошибки</span></div>
+    <div class="t-otkaz"><b id="n-otkaz">0</b><span>отвергнуто</span></div>
+    <div class="t-mysl"><b id="n-mysl">0</b><span>понятийное</span></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-row">
+    <input type="search" id="q" placeholder="Искать по заголовку и тексту…" aria-label="Поиск по заметкам">
+    <div class="kinds" role="group" aria-label="Фильтр по типу заметки">
+      <button class="kbtn" data-k="факт" aria-pressed="false">факт</button>
+      <button class="kbtn" data-k="ошибка" aria-pressed="false">ошибка</button>
+      <button class="kbtn" data-k="отказ" aria-pressed="false">отказ</button>
+      <button class="kbtn" data-k="мысль" aria-pressed="false">мысль</button>
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<div class="body-grid">
+  <nav class="rail" aria-label="Темы">
+    <p>Темы</p>
+    <ol id="rail"></ol>
+  </nav>
+
+  <main id="main">
+    <p class="empty" id="empty" hidden>Ничего не нашлось. Попробуйте другое слово или снимите фильтр.</p>
+  </main>
+</div>
+
+<footer class="page">
+  <p><strong>Как читать.</strong> Заголовок каждой заметки — утверждение, а не тема. Начинайте с любой: ссылки внизу карточки ведут к соседям, и через два-три перехода собирается вся линия рассуждения.</p>
+  <p><strong>Типы.</strong> <span style="color:var(--k-fakt)">факт</span> — измерено прогоном, число с происхождением. <span style="color:var(--k-err)">ошибка</span> — найденный дефект и чему он учит. <span style="color:var(--k-otkaz)">отказ</span> — отвергнутый путь с доводом. <span style="color:var(--k-mysl)">мысль</span> — понятие или решение.</p>
+  <p>Исходники заметок — <code>docs/zettel/</code> в репозитории, ветка <code>work/zettel</code>. Пополняется навыком <code>flang-zettel</code>: каждая работа читает базу до начала и дописывает после.</p>
+</footer>
+
+</div>
+
+<script>
+const NOTES = [
+ {g:"Цель и рамки", n:[
+  {s:"tsel-yazyka",k:"мысль",t:"Цель flang — доказуемость, доступная обычному программисту",
+   d:"Языки, где программу можно доказать, существуют полвека: Coq, Agda, Idris, Lean. Все требуют математической подготовки уровня диссертации, поэтому на них пишут доказательства, а программы <strong>извлекают</strong> в OCaml. flang целится в то, чего никто не довёл: один язык, на котором и доказывают, и пишут сервисы, и который при этом читается.",
+   r:["chto-otlozheno","uslovie-revolyutsii","dokazano-ne-znachit-pravilno","resheniya-vladeltsa"]},
+  {s:"chto-otlozheno",k:"мысль",t:"Из восьми целей печати важна только C, остальное отложено",
+   d:"Цель C нужна ради самораскрутки: получить работающий компилятор, не имея ничего, кроме <code>cc</code>. Зависимость <strong>инструментальная, а не языковая</strong> — flang не надмножество C. Правило перед началом работы: приближает ли она доказуемость? Если нет, не начинать.",
+   r:["tsel-yazyka","chetyre-kuska-javascript","svoy-generator-mashinnogo-koda"]},
+  {s:"uslovie-revolyutsii",k:"мысль",t:"Революция наступит ровно тогда, когда доказательство станет дешевле тестов",
+   d:"Закрыть список к 1.0.0 — значит догнать существующее. Условие, при котором это становится большим, одно и оно измеримо. Сегодня доказательство стоит в 5–20 раз дороже тестов, поэтому доказывают только ядра ОС, криптографию и авионику. <strong>Все знают, что зависимые типы мощные; никто не сделал их дешёвыми.</strong>",
+   e:"Замер запущен впервые: 20 функций,\nна каждую и тесты, и доказательство.\nТри исхода: ядро закрыло само /\nписали теорему / не вышло.",
+   r:["uzkoe-mesto-ne-v-avtomatike","sila-coq-v-lemmakh","nevyskazyvaemoe-dorozhe"]},
+  {s:"dokazano-ne-znachit-pravilno",k:"мысль",t:"Разрыв между «доказано» и «правильно» — это спецификация",
+   d:"Доказательство говорит: код соответствует спецификации. Оно <strong>ничего</strong> не говорит о том, выражает ли спецификация ваше намерение. Отсюда: «смерть уязвимостей» — нет; «QA исчезает» — нет; «доказанный автопилот безопасен» — нет, автопилоты падают на восприятии, а это не логическая задача.",
+   r:["tsel-yazyka","uslovie-revolyutsii","razbor-gugla"]},
+  {s:"resheniya-vladeltsa",k:"мысль",t:"Развилки, которые владелец выбрал сам",
+   d:"Список объявлен суммой типов. Равенство морфизмов — через сетоиды (отвергнуты типы тождества и нормализация). Три типа чисел вместо одного. Распространение кода — адресация по содержимому. Ветки сводятся в одну. <strong>Тег и публикация — кнопка владельца</strong>, действие необратимо.",
+   r:["chto-otlozheno","pisat-prostym-yazykom","adresatsiya-po-soderzhimomu","tri-tipa-chisel"]},
+  {s:"pisat-prostym-yazykom",k:"мысль",t:"Отчёты пишутся простым инженерным языком, без проектного жаргона",
+   d:"Владелец просил дважды и резко. Жаргон, выработанный внутри проекта, для читателя — шум, и он перестаёт видеть суть отчёта.",
+   e:"печатник  → генератор кода\nсторож    → проверка в тесте\nизъятие   → снять правку и посмотреть\nфронтенд  → разбор языка\nсвод      → ветка сборки",
+   r:["resheniya-vladeltsa"]}
+ ]},
+
+ {g:"Числа", n:[
+  {s:"plavayushchaya-tochka",k:"мысль",t:"Биты плавающей точки точны; неточен перевод десятичной записи в двоичную",
+   d:"Частая ошибка — думать, что <code>double</code> хранит число приблизительно. <code>double</code> «0.1» хранит <strong>точное</strong> число 3602879701896397 / 2⁵⁵. Проблема в том, что это точное число — не 0.1. Округление произошло <strong>при чтении исходника</strong>, до всякой арифметики.",
+   e:"(0.1 + 0.2) + 0.3  =  0.6000000000000001\n 0.1 + (0.2 + 0.3) =  0.6",
+   r:["tochno-v-kakoy-sisteme","u-double-net-zakonov","tochnye-drobi-besplatny"]},
+  {s:"tochno-v-kakoy-sisteme",k:"мысль",t:"Вопрос не «точно или приблизительно», а «точно в какой системе счисления»",
+   d:"Двоичная точна для половин и четвертей, приблизительна для десятых. Десятичная точна для сотых — то есть для денег. <code>1/3</code> не выражается точно ни в одной. Когда предлагают «хранить число как пару целых» — это верно, и вопрос сразу становится конкретным: <strong>пара чего?</strong>",
+   r:["plavayushchaya-tochka","tochnye-drobi-besplatny","tri-tipa-chisel"]},
+  {s:"tochnye-drobi-besplatny",k:"факт",t:"Точные десятичные стоят ноль, а не в сто раз дороже",
+   d:"Измерено, и это опровергло исходную оценку «медленнее в 10–100 раз» — верную только для произвольной точности. Выбрано другое: <strong>целое число минорных единиц</strong>. Рубль пятьдесят — это 150, носитель тот же машинный <code>double</code>. Общее правило: новый тип дёшев, если он не новый вид значения.",
+   e:"тела функций печатаются побайтово так же\nотличие от «нат» — одна строка таблицы входа\nсекундомер, 41 чередованная пара:\n  сложение  0,997\n  умножение 0,990\nветка work/exact-decimal, вершина 6c408f8",
+   r:["tri-tipa-chisel","tochno-v-kakoy-sisteme","u-double-net-zakonov"]},
+  {s:"tri-tipa-chisel",k:"мысль",t:"Языку нужны три типа чисел с разными гарантиями",
+   d:"<code>число</code> — IEEE-754, законов никаких, для физики и графики. <code>сотых</code>/<code>тысячных</code> — целые минорные единицы, моноид и ассоциативность, для денег. <code>дробь</code> — числитель/знаменатель, плюс точное деление. <strong>Ядро проверяет, что взят правильный тип.</strong>",
+   e:"моноид над копейками — собирается\nмоноид над «число» — НЕ собирается:\nFLANG_MONOID_ASSOC: на 0.1, 0.1, 0.6\n  слева  0.8\n  справа 0.7999999999999999",
+   r:["tochnye-drobi-besplatny","u-double-net-zakonov","beskonechnost-zakonna-bez-vychitaniya"]},
+  {s:"u-double-net-zakonov",k:"факт",t:"У double ломается ассоциативность, а равенство даже не рефлексивно",
+   d:"Точнее, чем «законов нет»: коммутативность держится, ассоциативность нет, нейтральный элемент почти (<code>(−0)+0</code> даёт <code>+0</code>), дистрибутивности нет. <strong>Равенство на double — не отношение эквивалентности</strong>, потому что <code>NaN ≠ NaN</code>. А без рефлексивного равенства нельзя объявить категорию с равенством.",
+   r:["plavayushchaya-tochka","nan-dostizhim","beskonechnost-zakonna-bez-vychitaniya"]},
+  {s:"beskonechnost-zakonna-bez-vychitaniya",k:"мысль",t:"Бесконечность становится законной, если убрать вычитание",
+   d:"Беда не в бесконечности, а в трёх операциях: <code>∞−∞</code>, <code>0×∞</code>, <code>∞/∞</code> дают «не число». Уберите их — законы вернутся. Отрезок <code>[0, +∞]</code> по сложению — <strong>настоящий коммутативный моноид</strong>. Полезный тип: стоимости, расстояния, таймауты, ёмкости.",
+   r:["u-double-net-zakonov","tri-tipa-chisel","nan-dostizhim"]},
+  {s:"chisla-kak-kategoriya",k:"мысль",t:"Числа описываются категорией, но категория не вычисляет",
+   d:"Идея не самодеятельность: в теории категорий это <strong>объект натуральных чисел</strong> (Ловер, 1964). Но категория описывает структуру и законы — она не говорит процессору, как складывать. Строить числа из структуры значит тысячу вложенных «следующих» на число 1000. <strong>Категория — спецификация, а не реализация.</strong>",
+   r:["tochno-v-kakoy-sisteme","teorkat-perenosit-pravdu"]}
+ ]},
+
+ {g:"Доказательства", n:[
+  {s:"uzkoe-mesto-ne-v-avtomatike",k:"факт",t:"Узкое место прувера — сила правил, а не ненаписанные доказательства",
+   d:"Два независимых замера за день пришли к одному выводу с разных сторон. Поиск доказательств нашёл ноль из двадцати — не потому что плох (на контрольной задаче 11 из 11), а потому что <strong>искать нечем</strong>. Вывод: мерить, какие правила корпусу реально нужны, а не угадывать.",
+   e:"почему не берётся:\n  начинать не с чего     14\n  цепочки нет             6\nправил в ядре: 3",
+   r:["nevyskazyvaemoe-dorozhe","poisk-ne-imeet-prava-verit","usloviya-esli-dali-nol","otritsatelnyy-rezultat-tsenen"]},
+  {s:"nevyskazyvaemoe-dorozhe",k:"факт",t:"Невысказываемое утверждение дороже недоказуемого",
+   d:"Лемма про «Фибоначчи шагом» оказалась непредставимой: «результат не меньше 0» о ней <strong>ложно</strong>, верна условная форма, а слова <code>требует</code> в языке нет. Правило можно добавить. Невысказанное утверждение <strong>не существует вовсе</strong> — его нет ни в списке доказанных, ни в списке недоказанных.",
+   e:"вход 0/−7/9 даёт −7\nверно: ЕСЛИ накопители ≥ 0, ТО результат ≥ 0\nзаписать нечем\n«требует P, обеспечивает Q» = импликация P → Q",
+   r:["uzkoe-mesto-ne-v-avtomatike","uslovie-revolyutsii"]},
+  {s:"sila-coq-v-lemmakh",k:"мысль",t:"Сила Coq не в ядре, а в библиотеке доказанных лемм",
+   d:"Маленькое ядро — гордость, а не недостаток: доверять надо малому куску. Разрыв по правилам не в порядках. <strong>Настоящий разрыв в третьей строке</strong>: в Coq никто не доказывает с нуля, берут готовую лемму и опираются. Это накоплено за тридцать лет сотнями людей.",
+   e:"                   Coq / Lean   flang\nправил в ядре        ~15–20          3\nтактик                 ~200          1\nготовых лемм    десятки тысяч       ~30\n(числа по Coq — по памяти)",
+   r:["nol-aksiom","uslovie-revolyutsii","uzkoe-mesto-ne-v-avtomatike"]},
+  {s:"poisk-ne-imeet-prava-verit",k:"мысль",t:"Поиск доказательства не должен ничему верить",
+   d:"Оракул живёт вне ядра; отсекает не эвристика, а <strong>само ядро</strong>. Находка выдаётся текстом на языке, а не деревом, и проезжает обычный разборщик. Строка утверждения не сочиняется, а вырезается из исходника автора. <strong>Раз поиску не надо верить, его можно делать чем угодно</strong> — перебором, решателем, языковой моделью.",
+   r:["nol-aksiom","uzkoe-mesto-ne-v-avtomatike","z3-orakul-a-ne-sudya"]},
+  {s:"nol-aksiom",k:"мысль",t:"Ноль аксиом — проверяемое свойство, а не лозунг",
+   d:"Список <code>АКСИОМЫ</code> пуст, и это стоит отдельным тестом. Каждое правило заводится с двумя обязательствами: список случаев, который можно назвать целиком, и подделка, которая обязана быть отвергнута с называющим её кодом. <strong>Доказательство, опирающееся на аксиому, стоит ровно столько, сколько стоит аксиома.</strong>",
+   r:["sila-coq-v-lemmakh","yadro-dokazalo-lozh","nan-dostizhim"]}
+ ]},
+
+ {g:"Теория категорий", n:[
+  {s:"teorkat-perenosit-pravdu",k:"мысль",t:"Теоркат переносит правду между вещами; логика устанавливает её про одну вещь",
+   d:"Три следствия: <strong>один код на десять контейнеров</strong> (это всё функторы, вот одно доказательство на всех); <strong>свойства даром при сборке</strong> (композиция морфизмов переносит корректность по построению); <strong>параллелизм как следствие</strong> структуры, а не оптимизация. Чего не даёт: не доказывает программу и не создаёт свойств — моноид это имя для уже имеющихся.",
+   r:["chisla-kak-kategoriya","pervyy-zakon-krasneyushchiy-na-chestnoy-programme","u-double-net-zakonov"]},
+  {s:"pervyy-zakon-krasneyushchiy-na-chestnoy-programme",k:"факт",t:"Естественное преобразование ловит ошибку, которую не видит больше ничто в дереве",
+   d:"Два взгляда на одни данные — «в рублях» и «в копейках» — и перевод между ними. Забудьте про единицы <strong>ровно один раз</strong>, и файл не соберётся с контрпримером. И главное: <strong>ни одна другая проверка этого не видит</strong> — функция тотальна, типы сходятся, свой пример подгоняется, тесты зелёные.",
+   e:"ветка work/morphism-equality, вершина 4fd9cd6\nизъятие в 13 местах, каждое красит поимённо\n\nоговорка: ассоциативность краснеть на честной\nпрограмме пока не может — композиция\nразворачивается в применение",
+   r:["teorkat-perenosit-pravdu","izyatie"]}
+ ]},
+
+ {g:"Память", n:[
+  {s:"pamyat-na-kategoriyu-eto-regiony",k:"мысль",t:"Память «на категорию» — это регионы, техника с именем",
+   d:"Выделять память не на каждое значение, а на область целиком. Настоящая техника: MLKit, Cyclone, и по сути на этом стоят времена жизни Rust. <strong>Идея уже наполовину в дереве flang, просто не была так названа.</strong> Ловушка: компилятор должен доказать, что из области ничего не утекло.",
+   r:["arena-ne-otdayot","ne-vyvod-regionov","dlya-raket-pamyat-zapreshchena","chistota-ne-znachit-bez-pamyati"]},
+  {s:"arena-ne-otdayot",k:"факт",t:"Область памяти не отдаёт ничего до конца вызова: 1655 МиБ на сортировку 4000 чисел",
+   d:"Утечек нет вообще — valgrind даёт ноль байт в ноль блоков. Но область ничего не отдаёт до конца вызова. <strong>Это не цена доказуемости</strong>: без счётчика шагов те же 1653 МиБ, разница 0,1 %. Обычный дефект.",
+   e:"сортировка слиянием 4000 чисел\n  пик памяти     1655 МиБ\n  живой результат  125 КиБ\n  отношение     13 558×\n\nпрототип «область на вызов»:\n  1653 МиБ → 3,4 МиБ (486×)\n  время втрое быстрее, ~200–300 строк\nветка work/pamyat-regiony",
+   r:["pamyat-na-kategoriyu-eto-regiony","ne-vyvod-regionov","otritsatelnyy-rezultat-tsenen"]},
+  {s:"dlya-raket-pamyat-zapreshchena",k:"факт",t:"Для критичных систем стандарты запрещают динамическую память вообще",
+   d:"MISRA C Dir 4.12 и Rule 21.3 — обе Required, и рабочая группа прямо закрыла лазейку: запрет распространяется «also to any user-defined equivalent functions». <strong>Свою арену тоже нельзя.</strong> Практика отрасли: выделить при старте и никогда не освобождать. Правильный ответ — не регионы, а режим со статическим пределом.",
+   e:"42,2 % корпуса (1236 из 2930) уже получают\nоценку сверху многочленом\nоценка режима: ~2300–3700 строк\n\nвнимание: пометка «тотальная» памяти\nНЕ ограничивает — как total в Idris/Agda",
+   r:["pamyat-na-kategoriyu-eto-regiony","arena-ne-otdayot"]},
+  {s:"chistota-ne-znachit-bez-pamyati",k:"мысль",t:"Чистота означает «без изменения на месте», а не «без выделения памяти»",
+   d:"Лямбда-исчисление — модель на бумаге: там нет памяти, потому что нет и времени. Парадокс: чистые языки выделяют памяти <strong>больше</strong> обычных. Сборщик есть у всех; исключение — Lean 4 с подсчётом ссылок. <strong>Для flang подсчёт ссылок доказуемо корректен</strong>: грамматика значений замкнута, цикл построить нечем.",
+   e:"цена, которой нет в литературе:\nу строки в 32-байтном значении нет\nсвободного слота под владельца →\nлибо +25 % на каждое значение,\nлибо особая схема для строк",
+   r:["pamyat-na-kategoriyu-eto-regiony","igry-i-video-ne-nash-sluchay"]},
+  {s:"igry-i-video-ne-nash-sluchay",k:"мысль",t:"Игры и обработка видео — не наш случай, и причин ровно три",
+   d:"<strong>Бюджет кадра</strong>: 16 мс на кадр, пауза сборщика в 50 мс — видимый рывок. <strong>Копирование буферов</strong>: кадр Full HD около 8 МБ, а чистое ФП велит создавать новый. <strong>Упаковка чисел</strong>: 10–50 раз в тесном цикле. Реалистичный потолок — уровень хорошей JVM или Go, но не C.",
+   r:["chistota-ne-znachit-bez-pamyati","arena-ne-otdayot"]}
+ ]},
+
+ {g:"Процессы и конкурентность", n:[
+  {s:"beam-ne-obkhodit-os",k:"мысль",t:"BEAM не обходит операционную систему, и C зависит от неё ровно так же",
+   d:"Ядра процессора принадлежат ОС; чтобы получить ядро, надо попросить поток. Другой двери нет. <strong>«C же не зависит» — зависит:</strong> <code>printf</code> это системный вызов, <code>malloc</code> просит память у ядра. Своим бывает <strong>планировщик</strong>, и он у нас свой.",
+   r:["planirovshchik-desyatki-tysyach","net-porodit"]},
+  {s:"net-porodit",k:"факт",t:"В языке нет динамического порождения процессов",
+   d:"Набор процессов задаётся объявлениями в исходнике и печатается таблицей. <strong>Породить процесс во время работы нельзя.</strong> Без этого нельзя написать сервер, заводящий обработчик на запрос — основной сценарий, ради которого берут OTP. Ловушка: порождение при линейном переборе имён сделает хуже, а не лучше.",
+   r:["planirovshchik-desyatki-tysyach","beam-ne-obkhodit-os"]},
+  {s:"planirovshchik-desyatki-tysyach",k:"факт",t:"Планировщик тянет десятки тысяч процессов, не миллионы",
+   d:"На малом масштабе мы <strong>быстрее</strong> Erlang, на большом — в семь тысяч раз медленнее. Молчащий процесс в шесть раз дешевле, работающий — в пятьдесят раз дороже. <strong>Три стены, все в реализации, ни одной в модели</strong>; пункты 1 и 2 — по 40–190 строк и дают почти весь выигрыш.",
+   e:"                     flang    Erlang/OTP 29\nмолчащий процесс    399 б        2 648 б\nработавший      131 062 б        2 648 б\nсообщ/с, 2 проц.   2,5 млн      1,53 млн\nсообщ/с, 1 млн         208      1,53 млн\nядер                     1            все\nветка work/zamer-processov",
+   r:["net-porodit","beam-ne-obkhodit-os"]}
+ ]},
+
+ {g:"Самораскрутка и метод проверки", n:[
+  {s:"chetyre-kuska-javascript",k:"факт",t:"Самораскрутка меряется четырьмя кусками JavaScript, три закрыты",
+   d:"Пока связка на JavaScript, эталон выбросить нельзя. <strong>Цена оказалась вчетверо меньше опасений</strong>: предупреждали про 1500–3000 шагов на шаг, по факту +27 % по часам. Запасной путь к эталону <strong>убран из кода вовсе</strong> — иначе он тихо срабатывал бы и никто бы не заметил.",
+   e:"ядро доказательств   1020 из 7888 → 15 828 / 0\nинтерпретатор        2240 из 2317 → 2318 / 2318\nвычисления законов      0 из 4480 → 4480 / 4480\nсвязка                 1281 строка → в работе",
+   r:["bytovaya-sverka","chto-otlozheno","proverki-perestayushchie-sravnivat"]},
+  {s:"bytovaya-sverka",k:"мысль",t:"Побайтовая сверка с эталоном — главный метод проверки",
+   d:"Тест проверяет то, что автор придумал проверить. Сверка проверяет <strong>всё</strong>, что различает две реализации, включая то, о чём автор не подумал. <strong>Счёт шагов сверяется тоже</strong>, и это ловит то, чего не ловит значение. Где метод не работает: для машинного кода сравнивать не с чем.",
+   e:"порча «постусловие перестало отменять\nхвостовую оптимизацию»:\n  значение — правильное\n  шагов — 616 против 776\nбез счёта шагов прошла бы незамеченной",
+   r:["izyatie","chetyre-kuska-javascript","svoy-generator-mashinnogo-koda"]},
+  {s:"izyatie",k:"мысль",t:"Снятая правка обязана красить тест — иначе она ничего не держит",
+   d:"Снять правку, <strong>назвать покрасневший тест поимённо</strong>, вернуть, убедиться, что снова зелено. Если снятие ничего не меняет — работа не сделана, как бы хорошо она ни выглядела. Сильная форма — назвать вклад числом.",
+   e:"оба правила         43 функции\nбез правила формы   30\nбез правила свёртки 27\nбез обоих           17\n\nсумма нарочно не сходится:\nтрём функциям нужны ОБА правила сразу",
+   r:["bytovaya-sverka","proverki-perestayushchie-sravnivat","nol-aksiom"]},
+  {s:"proverki-perestayushchie-sravnivat",k:"ошибка",t:"Проверка, переставшая сравнивать, продолжает зеленеть",
+   d:"Самый опасный класс дефектов, потому что он <strong>не виден по цвету</strong>. Поймано трижды за один день. Как ловить: требовать от проверки называть <strong>число сравнённого</strong>. «Не найдено, искали прогоном на всех N» и «нарушений не искали» — разные ответы.",
+   e:"1. сверка сторожей меры сравнивала два\n   преобразования, ни одно не делало работу\n2. охват врал: 1490 примеров вместо 2318\n3. «умножение стало сводимым, и опора\n   ушла из-под проверки молча»",
+   r:["izyatie","bytovaya-sverka","tikhie-konflikty-sliyaniya","otritsatelnyy-rezultat-tsenen"]},
+  {s:"tikhie-konflikty-sliyaniya",k:"ошибка",t:"Бывают конфликты слияния, которых git не показывает",
+   d:"Текст сливается чисто, а смысл расходится. <strong>Рантаймы Java, C# и Rust перестали собираться вообще</strong> — 106 красных и ни одного намёка при слиянии. Правило: после слияния цели <strong>собирать её рантайм</strong>, а не только гонять тесты печати — тест сравнивает текст и зеленеет, когда собранный код уже мёртв.",
+   r:["proverki-perestayushchie-sravnivat","izyatie","yadro-dokazalo-lozh"]},
+  {s:"otritsatelnyy-rezultat-tsenen",k:"мысль",t:"Измеренный ноль ценнее ненайденного правила",
+   d:"Три работы за день закончились «ничего не добавлено» — и каждая была полезнее половины успешных. Такой результат <strong>экономит работу, которую делали бы не туда</strong>, и переводит часть «долга перед прувером» в «нашу ошибку в постановке». Агенту надо прямо говорить: честное «не вышло, потому что вот это» — результат не хуже доказательства.",
+   r:["izyatie","uzkoe-mesto-ne-v-avtomatike","usloviya-esli-dali-nol","nan-dostizhim"]}
+ ]},
+
+ {g:"Найденные ошибки", n:[
+  {s:"yadro-dokazalo-lozh",k:"ошибка",t:"Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал",
+   d:"Самая серьёзная из найденных, потому что била в само основание. При дробной границе <code>если н меньше 2.5</code> верх дна считался как <code>К минус 1</code>, то есть 1.5, а в базу попадает и <code>н = 2</code>. <strong>Ошибка сидела в свежем коде, написанном по всем правилам</strong> — поймало её слияние двух работ.",
+   e:"починено отказом, а не подгонкой:\nграница обязана быть целым числом\nFLANG_PROOF_INDUCTION_BRANCH\n+ рантайм независимо опровергает на н = 2",
+   r:["nol-aksiom","tikhie-konflikty-sliyaniya","pole-otmyvalo-znachenie"]},
+  {s:"pole-otmyvalo-znachenie",k:"ошибка",t:"Поле записи отмывало значение из-за симметричного сравнения типов",
+   d:"Поле записи сверялось через <code>sameType</code> — симметричное равенство формы, для которого <code>нат</code> и <code>число</code> один и тот же double. <strong>Опасно вдвойне:</strong> пробивается факт, который у ядра уже есть — ведомость говорит «доказано обо всех входах», а прогон той же программы отказывает.",
+   e:"запись «Ящик» с вес равным (0 минус 1)\nпри вес: нат → НОЛЬ диагностик\n\nцена починки измерена и не нулевая:\nломается self/monoid.flang",
+   r:["yadro-dokazalo-lozh","proverki-perestayushchie-sravnivat"]},
+  {s:"nan-dostizhim",k:"ошибка",t:"NaN достижим изнутри языка и делает «очевидные» правила ложными",
+   d:"<code>0 делить на 0</code> проходит проверку типов <strong>без единой диагностики</strong>. Просили правило «модуль числа неотрицателен» — выглядит очевидно, но модуль от NaN даёт NaN, а «NaN не меньше нуля» ложь. <strong>Прежде чем заказывать правило — проверить утверждение вычислением на границах.</strong>",
+   e:"у остатка от деления посылок не одна, а три:\n  знак делимого\n  конечность  (∞ остаток от 3 — не число)\n  целость     (2.5 остаток от 3 = 2.5 > потолка)",
+   r:["u-double-net-zakonov","otritsatelnyy-rezultat-tsenen","nol-aksiom","usloviya-esli-dali-nol"]}
+ ]},
+
+ {g:"Отвергнутые пути", n:[
+  {s:"ne-vyvod-regionov",k:"отказ",t:"Автоматический вывод регионов — мимо цели, а не дорого",
+   d:"Регионы в MLKit привязаны к области <strong>видимости</strong>; наша беда другая — значение уже мертво, но имя ещё в области видимости. Вывод регионов воспроизвёл бы <strong>известный режим отказа</strong> MLKit, а не удачный случай. Общий урок: «дорого» — слабый довод, его перебивают упорством; «мимо цели» — сильный.",
+   e:"у MLKit 20 836 строк региональной машинерии\n— 35,7 % компилятора, 8 фаз из 11, O(n⁴)\nна бенчмарке logic: утилизируют 0,1 % мусора\nи текут в 196 раз",
+   r:["pamyat-na-kategoriyu-eto-regiony","arena-ne-otdayot"]},
+  {s:"z3-orakul-a-ne-sudya",k:"отказ",t:"Z3 можно взять оракулом, нельзя судьёй",
+   d:"Довериться решателю значит доверить корректность двумстам тысячам строк чужого кода. <strong>Coq и Lean этого не делают намеренно.</strong> Правильная архитектура уже есть: поиск предлагает, ядро перепроверяет — в неё Z3 встраивается как ещё один источник гипотез и ничего не портит.",
+   r:["poisk-ne-imeet-prava-verit","nol-aksiom","razbor-gugla"]},
+  {s:"usloviya-esli-dali-nol",k:"отказ",t:"Чтение условий `если` закрывает ноль целей",
+   d:"Ветвь <code>иначе</code> читать нельзя: на NaN ложны обе стороны сравнения, а функции нужна ровно эта ветвь. <strong>Причина — идиома кода</strong>: всегда пишут «если мало то база иначе работа», и нужный факт всегда в запрещённой ветви. Позже ту же механику применили иначе — и на ней замкнулся «Факториал».",
+   e:"функций в корпусе    4009\nусловий «если»       3454\nиз них читаемых       199\nцелей это закрывает     0",
+   r:["otritsatelnyy-rezultat-tsenen","nan-dostizhim","uzkoe-mesto-ne-v-avtomatike"]}
+ ]},
+
+ {g:"Внешнее и объёмы", n:[
+  {s:"adresatsiya-po-soderzhimomu",k:"мысль",t:"Адресация по содержимому: версий нет, есть хеши",
+   d:"Идея владельца («библиотека Борхеса») совпала с устройством языка Unison: имя функции — хеш её текста. Версий нет, конфликтов зависимостей нет, откат бесплатен. <strong>flang подходит лучше среднего</strong>: язык чистый и функции тотальные, у функции нет скрытого состояния.",
+   e:"открытый вопрос, которого нет в литературе:\nвходят ли в хеш постусловия, теоремы и мера?\nвходят  → доказательство привязано к телу\nне входят → что значит «та же функция»?",
+   r:["resheniya-vladeltsa","tsel-yazyka"]},
+  {s:"razbor-gugla",k:"мысль",t:"Что в популярных рассказах о доказуемых языках верно, а что ложно",
+   d:"<strong>Верно:</strong> определение, примеры языков, три стены, самораскрутка как тест зрелости. Самое ценное — критика: bus factor = 1, нет изменения по индексу, сохранение семантики при переводе. <strong>Ложно:</strong> «смерть уязвимостей», «QA исчезает», «70 % уязвимостей» (это про память в C/C++), «объединение функций даёт рост в 100 раз» — направление неверное.",
+   e:"лесть, которую надо отсекать целиком:\n«Святой Грааль», «в один ряд с Кнутом»,\n«гарантированно топ-1», «многомиллионные гранты»\n\nизмеренная реальность: 3 правила, ~30 утверждений\nпротив ~15–20 правил и десятков тысяч лемм",
+   r:["dokazano-ne-znachit-pravilno","sila-coq-v-lemmakh","uslovie-revolyutsii","z3-orakul-a-ne-sudya"]},
+  {s:"svoy-generator-mashinnogo-koda",k:"факт",t:"Свой генератор машинного кода — примерно месяц, и на доказуемость не влияет",
+   d:"По темпу проекта наивный генератор — одна-две цели печати. <strong>Ловушка</strong>: весь метод стоит на побайтовой сверке, а для машинного кода сравнивать не с чем — проверять придётся запуском, а это в разы медленнее и ловит меньше.",
+   e:"QBE            ~15 000 строк C   ~70 % от GCC\nCranelift     > 100 000 строк   команда, годы\nнаивный      5 000–10 000 строк  подъёмно\n(числа по памяти)\n\nитог: ~месяц. Догнать C по скорости — годы.",
+   r:["bytovaya-sverka","chto-otlozheno","igry-i-video-ne-nash-sluchay"]}
+ ]}
+];
+
+const KIND_VAR = { "факт":"--k-fakt", "ошибка":"--k-err", "отказ":"--k-otkaz", "мысль":"--k-mysl" };
+const KIND_WASH = { "факт":"--k-fakt-w", "ошибка":"--k-err-w", "отказ":"--k-otkaz-w", "мысль":"--k-mysl-w" };
+
+const main = document.getElementById("main");
+const rail = document.getElementById("rail");
+const empty = document.getElementById("empty");
+const tally = { "факт":0, "ошибка":0, "отказ":0, "мысль":0 };
+let total = 0;
+
+const groupId = g => "g-" + g.replace(/[^\wа-яА-ЯёЁ]+/g, "-").toLowerCase();
+
+NOTES.forEach(grp => {
+  const sec = document.createElement("section");
+  sec.className = "group";
+  sec.id = groupId(grp.g);
+
+  const h2 = document.createElement("h2");
+  h2.textContent = grp.g;
+  sec.appendChild(h2);
+
+  const wrap = document.createElement("div");
+  wrap.className = "cards";
+
+  grp.n.forEach(note => {
+    total++; tally[note.k]++;
+
+    const card = document.createElement("article");
+    card.className = "card";
+    card.id = note.s;
+    card.style.setProperty("--kind", `var(${KIND_VAR[note.k]})`);
+    card.style.setProperty("--kind-wash", `var(${KIND_WASH[note.k]})`);
+    card.dataset.kind = note.k;
+    card.dataset.text = (note.t + " " + note.d + " " + (note.e || "") + " " + note.s).toLowerCase();
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = note.k;
+    const slug = document.createElement("span");
+    slug.className = "slug";
+    slug.textContent = note.s;
+    head.append(chip, slug);
+
+    const h3 = document.createElement("h3");
+    h3.textContent = note.t;
+
+    const gist = document.createElement("p");
+    gist.className = "gist";
+    gist.innerHTML = note.d;
+
+    card.append(head, h3, gist);
+
+    if (note.e) {
+      const pre = document.createElement("pre");
+      pre.className = "evid";
+      pre.textContent = note.e;
+      card.appendChild(pre);
+    }
+
+    if (note.r && note.r.length) {
+      const rel = document.createElement("div");
+      rel.className = "rel";
+      note.r.forEach(t => {
+        const a = document.createElement("a");
+        a.href = "#" + t;
+        a.textContent = "→ " + t;
+        rel.appendChild(a);
+      });
+      card.appendChild(rel);
+    }
+
+    wrap.appendChild(card);
+  });
+
+  sec.appendChild(wrap);
+  main.appendChild(sec);
+
+  const li = document.createElement("li");
+  const a = document.createElement("a");
+  a.href = "#" + sec.id;
+  const label = document.createElement("span");
+  label.textContent = grp.g;
+  const num = document.createElement("em");
+  num.textContent = grp.n.length;
+  a.append(label, num);
+  li.appendChild(a);
+  rail.appendChild(li);
+});
+
+document.getElementById("n-all").textContent = total;
+document.getElementById("n-fakt").textContent = tally["факт"];
+document.getElementById("n-err").textContent = tally["ошибка"];
+document.getElementById("n-otkaz").textContent = tally["отказ"];
+document.getElementById("n-mysl").textContent = tally["мысль"];
+
+const q = document.getElementById("q");
+const countEl = document.getElementById("count");
+const kbtns = [...document.querySelectorAll(".kbtn")];
+let activeKinds = new Set();
+
+function apply() {
+  const term = q.value.trim().toLowerCase();
+  let shown = 0;
+
+  document.querySelectorAll("section.group").forEach(sec => {
+    let visibleHere = 0;
+    sec.querySelectorAll("article.card").forEach(card => {
+      const okKind = activeKinds.size === 0 || activeKinds.has(card.dataset.kind);
+      const okText = !term || card.dataset.text.includes(term);
+      const ok = okKind && okText;
+      card.hidden = !ok;
+      if (ok) { visibleHere++; shown++; }
+    });
+    sec.hidden = visibleHere === 0;
+  });
+
+  empty.hidden = shown > 0;
+  countEl.textContent = shown === total ? "" : shown + " из " + total;
+}
+
+q.addEventListener("input", apply);
+
+kbtns.forEach(b => b.addEventListener("click", () => {
+  const k = b.dataset.k;
+  if (activeKinds.has(k)) { activeKinds.delete(k); b.setAttribute("aria-pressed", "false"); }
+  else { activeKinds.add(k); b.setAttribute("aria-pressed", "true"); }
+  apply();
+}));
+
+let litTimer = null;
+function lightUp(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  document.querySelectorAll(".card.lit").forEach(c => c.classList.remove("lit"));
+  if (el.hidden) { q.value = ""; activeKinds.clear(); kbtns.forEach(b => b.setAttribute("aria-pressed","false")); apply(); }
+  el.classList.add("lit");
+  clearTimeout(litTimer);
+  litTimer = setTimeout(() => el.classList.remove("lit"), 2200);
+}
+
+document.addEventListener("click", e => {
+  const a = e.target.closest(".rel a");
+  if (!a) return;
+  const id = a.getAttribute("href").slice(1);
+  lightUp(id);
+});
+
+window.addEventListener("hashchange", () => {
+  const id = location.hash.slice(1);
+  if (id) lightUp(id);
+});
+
+apply();
+if (location.hash) lightUp(location.hash.slice(1));
+</script>

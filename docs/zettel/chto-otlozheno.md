@@ -18,4 +18,4 @@ JavaScript. Выглядит как главная фича, но к цели я
 **Чем ограничено.** Отложено ≠ выброшено: шесть генераторов на самом flang
 написаны и сверены побайтово, они просто не приоритет.
 
-Связано: [[tsel-yazyka]], [[chetyre-kuska-javascript]]
+Связано: [[tsel-yazyka]], [[chetyre-kuska-javascript]], [[svoy-generator-mashinnogo-koda]]

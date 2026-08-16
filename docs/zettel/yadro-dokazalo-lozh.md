@@ -19,4 +19,4 @@
 не давала такой формы. Отсюда: свежие правила ядра надо проверять на стыках, а не
 только по одиночке.
 
-Связано: [[nol-aksiom]], [[tikhie-konflikty-sliyaniya]]
+Связано: [[nol-aksiom]], [[tikhie-konflikty-sliyaniya]], [[pole-otmyvalo-znachenie]]

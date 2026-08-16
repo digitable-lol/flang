@@ -415,6 +415,9 @@ typedef struct fl_conc_shard {
   pthread_mutex_t lock;
   size_t head;
   size_t tail;
+  /* По той же причине, что у `fl_conc_crew`: замок и голова соседнего склада не
+     должны попадать в ту же строку кэша, что у этого. */
+  char padding[64];
 } fl_conc_shard;
 
 typedef struct fl_conc_par {
@@ -446,9 +449,11 @@ typedef struct fl_conc_par {
      пачку пробегов, то есть на шестьдесят четыре, и стоит наносекунды. */
   bool stop;
 
-  size_t handed;   /* сколько пробегов роздано из общего счёта */
-  size_t executed; /* сколько выполнено на самом деле */
-  bool over;       /* пробеги кончились: исход «предел пробегов» */
+  size_t handed; /* сколько пробегов роздано из общего счёта */
+  size_t done;   /* сколько выполнено. Равенство `handed == done` значит, что
+                    невыбранных ломтей нет ни у кого, — а без этого «пробеги
+                    кончились» сказать нельзя: чужой ломоть ещё вернётся. */
+  bool over;     /* пробеги кончились: исход «предел пробегов» */
   bool escalated;  /* отказ дошёл доверху */
   fl_status status; /* первая беда, оборвавшая прогон */
   fl_error error;
@@ -2211,9 +2216,10 @@ size_t fl_conc_cores(void) {
  * возвращены, и «роздано» равно «выполнено» до единицы. Поэтому выполненных
  * пробегов ровно столько, сколько объявлено, и ни одним меньше.
  */
-static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want, double *from) {
+static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want, double *from, bool *spent) {
   fl_conc_par *par = sched->par;
   size_t take = 0;
+  *spent = false;
   pthread_mutex_lock(&par->big);
   if (par->handed < max_turns) {
     take = max_turns - par->handed;
@@ -2223,19 +2229,32 @@ static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want,
     *from = sched->time;
     par->handed += take;
     sched->time += (double)take;
+  } else if (par->handed == par->done) {
+    /* Пробегов нет И невыбранных ломтей ни у кого не осталось — вот теперь это
+       исход, а не «подожди, сосед вернёт». Без второго условия прогон кончался
+       бы раньше времени и недосчитывал бы пробегов; без ПЕРВОГО он не кончался
+       бы вовсе, и это не рассуждение, а найденное зависание: тридцать два
+       потока по кругу снимали процесс со склада, узнавали, что пробегов нет,
+       клали обратно — и ни разу не оказывались спящими все сразу. Прогон на
+       сто тысяч пробегов, идущий на шестнадцати потоках 0,115 секунды, на
+       тридцати двух не кончался и за минуту при полной загрузке ядер. */
+    par->over = true;
+    *spent = true;
   }
   pthread_mutex_unlock(&par->big);
   return take;
 }
 
-/** Вернуть невыбранные пробеги в общий счёт. */
-static void fl_conc_give_back(fl_conc_sched *sched, size_t unused) {
+/** Свести пачку: невыбранные пробеги вернуть, выполненные записать. Одним
+    заходом под замок, потому что вопрос к ним один — «сколько осталось». */
+static void fl_conc_settle(fl_conc_sched *sched, size_t unused, size_t drained) {
   fl_conc_par *par = sched->par;
-  if (unused == 0) {
+  if (unused == 0 && drained == 0) {
     return;
   }
   pthread_mutex_lock(&par->big);
   par->handed -= unused;
+  par->done += drained;
   sched->time -= (double)unused;
   pthread_mutex_unlock(&par->big);
 }
@@ -2248,7 +2267,16 @@ static size_t fl_conc_take(fl_conc_par *par, size_t worker) {
   for (step = 0; step < par->workers; step += 1) {
     fl_conc_shard *shard = &par->shards[(worker + step) % par->workers];
     size_t got = SIZE_MAX;
-    pthread_mutex_lock(&shard->lock);
+    /* На СВОЙ склад поток встаёт в очередь, на чужой — только пробует. Разница
+       не косметическая: когда работы мало, все потоки разом обходят все склады,
+       и очередь на чужой замок превращается в толпу, которая мешает тому
+       единственному, у кого работа есть. Не подворовалось — не беда: через
+       мгновение попробуем снова. */
+    if (step == 0) {
+      pthread_mutex_lock(&shard->lock);
+    } else if (pthread_mutex_trylock(&shard->lock) != 0) {
+      continue;
+    }
     if (shard->head != SIZE_MAX) {
       got = shard->head;
       shard->head = par->next[got];
@@ -2268,11 +2296,13 @@ static size_t fl_conc_take(fl_conc_par *par, size_t worker) {
  * Тихо ли стало настолько, что прогону конец. Зовётся из-под `idle_lock` тем
  * потоком, который уснул последним, — значит все ломти уже возвращены.
  *
- * Три исхода, и все три названы: пробеги кончились (`предел пробегов`); работы
- * нет и не будет (`покой`); работы нет, но есть таймер — тогда время прыгает
- * сразу к ближайшему сроку, и прогон продолжается.
+ * Два исхода: работы нет и не будет (`покой`) либо работы нет, но есть таймер —
+ * тогда время прыгает сразу к ближайшему сроку, и прогон продолжается. Третий,
+ * «пробеги кончились», решается не здесь, а там, где их раздают
+ * (`fl_conc_slice`): он не требует, чтобы спали все, и потому не зависит от
+ * того, сойдутся ли когда-нибудь тридцать два потока в одном мгновении.
  */
-static bool fl_conc_quiet(fl_conc_sched *sched, size_t max_turns) {
+static bool fl_conc_quiet(fl_conc_sched *sched) {
   fl_conc_par *par = sched->par;
   size_t index = 0;
   double due = 0.0;
@@ -2285,17 +2315,10 @@ static bool fl_conc_quiet(fl_conc_sched *sched, size_t max_turns) {
     }
     pthread_mutex_unlock(&par->shards[index].lock);
   }
-  pthread_mutex_lock(&par->big);
-  if (par->handed >= max_turns && !empty) {
-    /* Работа есть, а пробегов нет. Это исход, а не зависание. */
-    par->over = true;
-    pthread_mutex_unlock(&par->big);
-    return true;
-  }
   if (!empty) {
-    pthread_mutex_unlock(&par->big);
     return false;
   }
+  pthread_mutex_lock(&par->big);
   for (index = 0; index < sched->timer_count; index += 1) {
     if (!found || sched->timers[index].time < due) {
       due = sched->timers[index].time;
@@ -2327,11 +2350,22 @@ static void fl_conc_halt(fl_conc_par *par) {
   pthread_mutex_unlock(&par->idle_lock);
 }
 
+/**
+ * Своё у каждого потока. Набивка до строки кэша — не украшение и не суеверие:
+ * счётчики двух соседних потоков лежали в одной строке, и каждая запись в свой
+ * гоняла эту строку от ядра к ядру. Замер назвал цену: на тридцати двух потоках
+ * прогон, который на шестнадцати шёл 0,57 секунды, не кончался и за десять
+ * минут при двадцати трёх занятых ядрах.
+ *
+ * Заодно счётчик перестал расти на каждом пробеге: `fl_conc_drain` считает у
+ * себя в переменной и записывает раз на пачку.
+ */
 typedef struct fl_conc_crew {
   fl_conc_sched *sched;
   size_t worker;
   size_t max_turns;
   size_t executed;
+  char padding[64];
 } fl_conc_crew;
 
 /** Поспать сотню микросекунд. Кладущий на склад никого не будит — иначе доставка
@@ -2351,8 +2385,8 @@ static void fl_conc_doze(void) {
  * остаток ломтя. Сообщение снимается из ящика ПОД ЗАМКОМ и ровно один раз:
  * снять его и не выполнить значило бы потерять письмо молча.
  */
-static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_crew *crew, size_t process,
-                            size_t left, double clock) {
+static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, size_t process, size_t left,
+                            double clock) {
   fl_conc_par *par = sched->par;
   size_t drained = 0;
   /* Признак остановки внутри пачки НЕ спрашивается. Пачка не длиннее
@@ -2375,7 +2409,6 @@ static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_cr
       break;
     }
     drained += 1;
-    crew->executed += 1;
     if (fl_conc_turn(sched, hand, process, message, clock + (double)(drained - 1), &escalated,
                      &par->error) != FL_OK) {
       pthread_mutex_lock(&par->big);
@@ -2460,12 +2493,26 @@ static void *fl_conc_worker(void *raw) {
       par->state[process] = FL_CONC_RUNNING;
       fl_conc_drop(sched, process);
 
-      /* Ломоть пробегов — на пачку, и возвращается он тут же по её окончании.
-         Так объявленный предел остаётся точным: невыбранное не залёживается. */
-      left = fl_conc_slice(sched, crew->max_turns, FL_CONC_BATCH, &clock);
+      /* Ломоть пробегов — на ПАЧКУ ЦЕЛИКОМ, а не «сколько писем в ящике сейчас».
+         Второе кажется бережливее и было измерено: на стенде, где процесс на
+         каждом пробеге пишет сам себе, в ящике всегда ровно одно письмо, —
+         значит ломоть выходил в один пробег, и за каждый пробег платили общим
+         замком и складом. Прогон на восьми потоках стал МЕДЛЕННЕЕ однопоточного
+         вдвое при 14 ядрах процессорного времени. Ровно та цена, которую замер
+         шага 6 назвал заранее: раздать другому потоку ПРОБЕГ в четыре–
+         четырнадцать раз дороже, чем выполнить его на месте.
+
+         Невыбранный остаток возвращается тут же по окончании пачки, поэтому на
+         точность предела щедрость ломтя не влияет. */
+      bool spent = false;
+      left = fl_conc_slice(sched, crew->max_turns, FL_CONC_BATCH, &clock, &spent);
       idled = left == 0;
-      drained = fl_conc_drain(sched, &hand, crew, process, left, clock);
-      fl_conc_give_back(sched, left - drained);
+      drained = fl_conc_drain(sched, &hand, process, left, clock);
+      crew->executed += drained;
+      fl_conc_settle(sched, left - drained, drained);
+      if (spent) {
+        fl_conc_halt(par);
+      }
 
       /* Пачка кончилась. Процесс возвращается в покой, а если ящик непуст —
          сразу обратно на склад: решение принимается под тем же замком, под
@@ -2493,7 +2540,7 @@ static void *fl_conc_worker(void *raw) {
       bool stop = false;
       pthread_mutex_lock(&par->idle_lock);
       par->idle += 1;
-      if (par->idle == par->workers && fl_conc_quiet(sched, crew->max_turns)) {
+      if (par->idle == par->workers && fl_conc_quiet(sched)) {
         par->stop = true;
       }
       stop = par->stop;

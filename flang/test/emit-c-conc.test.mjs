@@ -569,16 +569,31 @@ test("проверка на утечки: valgrind не находит ни по
      отдаёт ничего до конца запроса, а ящики, журнал и таблицы растут удвоением.
      Программа с надзором вдобавок перезапускает процессы, то есть ходит по
      самым редким путям планировщика. */
-  const собрано = собрать("supervision", разобрать("supervision"))
-  const запросы = Array.from({ length: 20 }, (_, семя) => ({ run: разобрать("supervision").runs[0].name, seed: String(семя) }))
-  const прогон = spawnSync(
-    "valgrind",
-    ["--error-exitcode=9", "--leak-check=full", "--errors-for-leak-kinds=definite,indirect", собрано.cli],
-    { input: `${запросы.map((з) => JSON.stringify(з)).join("\n")}\n`, encoding: "utf8" },
-  )
-  assert.equal(прогон.status, 0, `valgrind нашёл беду:\n${прогон.stderr}`)
-  assert.match(прогон.stderr, /ERROR SUMMARY: 0 errors/u)
-  t.diagnostic(прогон.stderr.split("\n").filter((с) => /total heap usage|in use at exit/u.test(с)).join("; ").trim())
+  const проверить = (имя) => {
+    const собрано = собрать(имя, разобрать(имя))
+    const программа = разобрать(имя)
+    const запросы = []
+    for (const прогон of программа.runs) {
+      for (let семя = 0; семя < 20; семя += 1) запросы.push({ run: прогон.name, seed: String(семя) })
+    }
+    const прогон = spawnSync(
+      "valgrind",
+      ["--error-exitcode=9", "--leak-check=full", "--errors-for-leak-kinds=definite,indirect", собрано.cli],
+      { input: `${запросы.map((з) => JSON.stringify(з)).join("\n")}\n`, encoding: "utf8" },
+    )
+    assert.equal(прогон.status, 0, `${имя}: valgrind нашёл беду:\n${прогон.stderr}`)
+    assert.match(прогон.stderr, /ERROR SUMMARY: 0 errors/u)
+    return прогон.stderr.split("\n").filter((с) => /total heap usage|in use at exit/u.test(с)).join("; ").trim()
+  }
+
+  /* `supervision` ходит по путям надзора, `server` — по путям ПОРОЖДЕНИЯ (шаг
+     Б1), и второй здесь не для полноты: у порождённого процесса две своих кучи,
+     купленных у malloc посреди прогона, и вернуть их обязан тот же единственный
+     выход `finish`. Пропущенное освобождение видно не рассуждением, а вот этой
+     строкой. Заодно программа проходит и путь отказа `FLANG_NAME_TAKEN`, где
+     процесс заведён, а порождение не удалось. */
+  t.diagnostic(`supervision: ${проверить("supervision")}`)
+  t.diagnostic(`server: ${проверить("server")}`)
 })
 
 /**

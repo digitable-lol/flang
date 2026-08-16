@@ -20,8 +20,8 @@
  *   FTS_REQUIRE_TOOLCHAINS=rust,go  — обязательны только перечисленные
  *   переменная не задана            — прежнее поведение: честный пропуск
  *
- * Идентификаторы — это `id` бэкендов из tools/ftsc/src/emit/*.mjs:
- * c, csharp, elixir, go, java, python, rust, typescript.
+ * Идентификаторы — это `id` целей печати из flang/src/targets.mjs:
+ * c, csharp, elixir, go, java, js, python, rust.
  */
 import assert from "node:assert/strict"
 

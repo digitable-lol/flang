@@ -88,8 +88,8 @@ import { canonicalBuiltinName, flangError, hasBuiltin, помощникФорм�
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
-import { camel, pascal } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
+import { camel, pascal } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.

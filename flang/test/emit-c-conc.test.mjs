@@ -64,8 +64,8 @@ import { ВИДЫ_ОТКАЗА, КОДЫ_ОТКАЗА } from "../src/failures.mj
 import { parse } from "../src/parser.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitC } from "../src/emit/c.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 

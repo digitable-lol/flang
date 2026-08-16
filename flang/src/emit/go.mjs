@@ -13,7 +13,7 @@
 // ── Что здесь принципиально иначе, чем в бэкендах C и JS ────────────────────
 // Общее с C сохранено намеренно, чтобы два бэкенда читались как одна система:
 // тот же обход AST, то же решение арности при печати, тот же протокол
-// прогонщика, та же транслитерация имён через tools/ftsc/src/naming.mjs, и
+// прогонщика, та же транслитерация имён через flang/src/naming.mjs, и
 // коллизия после транслитерации — ошибка печати, а не тихое переименование.
 //
 // Расходится же Go с C ровно там, где расходятся сами языки.
@@ -122,8 +122,8 @@ import { canonicalBuiltinName, flangError, hasBuiltin, помощникФорм�
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
-import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
+import { camel, createNamer, pascal, snake } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.

@@ -19,7 +19,7 @@
 //
 //   • контракт возврата: статус + результат через указатель + необязательный
 //     выходной параметр с причиной; при ошибке *result НЕ трогается;
-//   • транслитерация имён — только через tools/ftsc/src/naming.mjs, и коллизия
+//   • транслитерация имён — только через flang/src/naming.mjs, и коллизия
 //     после транслитерации — ошибка печати, а не тихое переименование.
 //
 // Одно решение ftsc здесь сознательно НЕ повторено: сравнение чисел с
@@ -94,8 +94,8 @@ import { readFileSync } from "node:fs"
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../../../tools/ftsc/src/bidi.mjs"
-import { createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
+import { createNamer, pascal, snake } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.

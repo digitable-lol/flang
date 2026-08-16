@@ -42,8 +42,8 @@ import { emitC } from "../src/emit/c.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { parse } from "../src/parser.mjs"
 import { dropUnreachable, entryPoints, reachableFunctions } from "../src/reachable.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))

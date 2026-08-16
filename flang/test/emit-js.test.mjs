@@ -34,7 +34,7 @@ import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { parse } from "../src/parser.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitJs } from "../src/emit/js.mjs"
-import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
+import { camel, pascal } from "../src/naming.mjs"
 import { УБЕГАЮЩИЕ } from "./corpus-grid.mjs"
 import { globSync } from "./glob.mjs"
 

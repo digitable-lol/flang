@@ -5,7 +5,7 @@
  *
  * Тест бэкенда доказывает кодогенерацию единственным способом: настоящий
  * компилятор принял порождённый код. Компилятора может не быть, и тогда тест
- * пропускается (tools/ftsc/test/toolchain-guard.mjs). Беда в том, что итог
+ * пропускается (flang/test/toolchain-guard.mjs). Беда в том, что итог
  * прогона печатает только «skipped: 128» — число без имён. Оно читается как
  * «всё хорошо», и дважды за 7 августа 2026 это стоило ложного вывода:
  * выпуск 0.4.6 ушёл с дефектом кодогенерации Go, потому что локально Go не
@@ -48,8 +48,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { loadTargets, probeToolchain } from "../tools/ftsc/src/targets.mjs"
-import { meansEverything, requiredToolchains, toolchainAbsenceBlocks, toolchainRequired } from "../tools/ftsc/test/toolchain-guard.mjs"
+import { loadTargets, probeToolchain } from "../flang/src/targets.mjs"
+import { meansEverything, requiredToolchains, toolchainAbsenceBlocks, toolchainRequired } from "../flang/test/toolchain-guard.mjs"
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)))
 const argv = new Set(process.argv.slice(2))
@@ -245,7 +245,7 @@ function pad(text, width) {
 
 /* ── основной ход ─────────────────────────────────────────────────────────── */
 
-const targets = (await loadTargets()).sort((a, b) => a.id.localeCompare(b.id))
+const targets = loadTargets().sort((a, b) => a.id.localeCompare(b.id))
 const files = testFilesByTarget()
 
 console.log(`\n${paint(BOLD, `Бэкенды кодогенерации: ${targets.length} целей`)}`)

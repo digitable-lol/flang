@@ -59,7 +59,7 @@
  *
  * ── Если компилятора C нет ──────────────────────────────────────────────────
  * Тесты, которым он нужен, честно пропускаются через `missingToolchain`
- * (tools/ftsc/test/toolchain-guard.mjs) — тем же способом, что в
+ * (flang/test/toolchain-guard.mjs) — тем же способом, что в
  * `cli-emit.test.mjs`. `FTS_REQUIRE_TOOLCHAINS=c` превращает пропуск в падение —
  * и с 13 августа 2026 CI это и требует. Прежде не мог: узкий гейт при любом
  * заданном значении требовал ВСЕ восемь тулчейнов, поэтому `c` в CI красил прогон
@@ -91,8 +91,8 @@ import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
 import { checkTypes, markNonEmpty, таблицаВхода } from "../src/types.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 /* Вход, пределы печати и сверщик байтов — из одного места с точкой раскрутки
    `bootstrap/` и со скриптом релиза. Пределы попадают в напечатанный байт, и
    держать их тремя копиями значило ждать дня, когда одна отстанет. */

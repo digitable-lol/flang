@@ -1025,10 +1025,11 @@ function renderFunction(fn, shared) {
           ]),
         `  FL_TRY(fl_enter(ctx, ${cstring(fn.name)}, error));`,
         "  {",
+        "    const fl_mark region = fl_region_open(ctx);",
         `    const fl_status status = fl_trampoline(ctx, ${step}, ${args}, ${ctx.params.length}, ${cstring(fn.name)},`,
         "                                           result, error);",
         "    fl_leave(ctx);",
-        "    return status;",
+        "    return fl_region_close(ctx, region, status, result, error);",
         "  }",
         "}",
       ].join("\n"),
@@ -1052,7 +1053,10 @@ function renderFunction(fn, shared) {
 
   /* Счётчик глубины обязан уменьшаться и на ошибке, поэтому тело уезжает в
      отдельную функцию: единственная точка выхода — то, чего в C иначе не
-     получить, не разложив ранние возвраты по goto. */
+     получить, не разложив ранние возвраты по goto. Та же единственная точка
+     выхода несёт и область на вызов: отметку снимает `fl_region_open` до тела,
+     а `fl_region_close` после него перекладывает результат вниз и отдаёт всё
+     промежуточное (объяснение — в flang_runtime.c). */
   const inner = `${ident}_body`
   const signature = fn.params.map((param) => `fl_value ${snake(param.name)}`).join(", ")
   return [
@@ -1068,9 +1072,10 @@ function renderFunction(fn, shared) {
     `${declareFunction(fn, shared)} {`,
     `  FL_TRY(fl_enter(ctx, ${cstring(fn.name)}, error));`,
     "  {",
+    "    const fl_mark region = fl_region_open(ctx);",
     `    const fl_status status = ${inner}(ctx${ctx.params.length > 0 ? `, ${ctx.params.join(", ")}` : ""}, result, error);`,
     "    fl_leave(ctx);",
-    "    return status;",
+    "    return fl_region_close(ctx, region, status, result, error);",
     "  }",
     "}",
   ].join("\n")

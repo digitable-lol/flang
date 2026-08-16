@@ -970,6 +970,16 @@ export async function externalChecks(program, настройки = {}) {
     ["../src/distributive.mjs", ["checkDistributivity"], "distributive"],
     ["../src/partialorder.mjs", ["checkPartialOrder"], "order"],
     ["../src/monotone.mjs", ["checkMonotonicity"], "monotone"],
+    /* КВАДРАТ СВЯЗИ двух модулей — там же и по тем же причинам, и он последний
+       из этого ряда не случайно: остальные говорят о законах ВНУТРИ одного
+       модуля, а этот — о согласии двух. Функтор до сих пор проверялся сличением
+       имён (`checkFunctors` в types.mjs): концы сходятся, композиция и единицы
+       сохраняются. Про ДАННЫЕ не проверялось ничего, потому что перевода данных
+       в языке не было. С `объект «А» отображается в «Б» даёт «Ф»` он появился, и
+       вместе с ним — утверждение «перевести и сделать» = «сделать и перевести».
+       Равенство вычислений неразрешимо, значит сетка; связь без переводов сюда
+       не приходит вовсе и уходит в `assumed`. */
+    ["../src/functor.mjs", ["checkFunctorSquares"], "functor"],
   ]) {
     try {
       const module = await import(new URL(file, import.meta.url).href)

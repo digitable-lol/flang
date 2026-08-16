@@ -1,10 +1,12 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /* Сколько тел библиотеки ядро теперь умеет читать: `разбор` по параметру ИЛИ
    `свёртка` по параметру. Тело нормализуется — `пусть` перед формой это запись. */
 import { readFileSync, readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
-const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), "..")
+const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..")
 const { parse } = await import(join(КОРЕНЬ, "flang/src/parser.mjs"))
 const { нормализовать } = await import(join(КОРЕНЬ, "flang/proof/reduce.mjs"))
 const каталог = join(КОРЕНЬ, "flang/stdlib")

@@ -730,8 +730,11 @@ become a word: the coproduct is already in the language — it is `тип … в
 `разбор`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
 a broken law fails `flang test` naming both the arrow and the law. Isomorphism invertibility is
 checked wherever both arrows are named through `даёт`, and stays the author's assumption wherever
-at least one is not. The precondition (`требует`) is not implemented: it stands in the contract as
-intended, not as done. Natural transformations are specified in
+at least one is not. The precondition (`требует`) is implemented, and the caller discharges it, as
+in Dafny: inside the body it is a known fact the kernel reasons from, at every call site it is an
+obligation refused by name when unmet, and at the program boundary (`--args`, examples) it is
+computed because there is nothing to prove there. Its cost in the eight emit targets is zero
+bytes, measured by printing the same program with and without it. Natural transformations are specified in
 [`flang/cat/SPEC.md`](flang/cat/SPEC.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
 checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
 the endofunctor map is printed in place, so the parameter must occupy a whole field

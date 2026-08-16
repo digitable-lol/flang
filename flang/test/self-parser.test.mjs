@@ -304,7 +304,9 @@ const ПРОБЕЛЫ_РАЗБОРА = {
      `flang/examples/cat`; `к числу или беда` — `flang/examples/errors`; моноид
      и монада (7) — `flang/examples/cat/monoid-and-monad.flang`; процесс, надзор
      и прогон (9) — `flang/conc/examples`; `план` со словарём ввода-вывода —
-     `flang/examples/io`. Запись снимается вместе с долгом в
+     `flang/examples/io`; `требует` — девятое слово слоя доказательства,
+     продукция написана вместе со слиянием `work/trebuet`, а сверка на
+     `flang/proof/examples/precondition.flang` побайтовая. Запись снимается вместе с долгом в
      `flang/self/SPEC.md`, как и требует правило: пока слово стоит в этом
      списке, оно обязано быть пробелом, а не кладбищем. */
 }

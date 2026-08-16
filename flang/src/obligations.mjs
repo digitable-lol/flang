@@ -73,6 +73,19 @@ export function obligations(program, итоги = undefined) {
     const имя = String(fn?.name ?? "")
     const параметры = (fn?.params ?? []).map((п) => ({ name: п.name, type: п.type ?? null }))
     const примеры = Array.isArray(fn?.examples) ? fn.examples : []
+    /* ДОПУЩЕНИЯ ФУНКЦИИ — её собственные предусловия. Внутри тела они истинны,
+       и истинны не по обещанию: снял их КАЖДЫЙ вызывающий (`proofterm.mjs`,
+       `снятьПредусловия`), а вход, пришедший снаружи программы, проверил
+       вычислитель на границе (`interpret.mjs`, `bindArguments`). Поэтому в
+       обязательство они едут допущением, а не целью: доказывать их у этой
+       функции нечего — их доказывают у вызывающих, по одному разу на вызов.
+
+       Поле отдельное от `hypotheses`, а не общее с ним, и разница
+       содержательная: `hypotheses` — это `дано` ТЕОРЕМЫ, то есть допущения,
+       которые ввёл автор доказательства; `assumptions` — это `требует`
+       ФУНКЦИИ, то есть допущения, за которые заплатили вызывающие. Свалить их
+       в одно поле значило бы потерять, кто за какое допущение отвечает. */
+    const допущения = (Array.isArray(fn?.preconditions) ? fn.preconditions : []).map((п) => п.expr)
 
     for (const постусловие of fn?.postconditions ?? []) {
       /* Квантор: назвал автор — берём названный, не назвал — все параметры.
@@ -88,6 +101,7 @@ export function obligations(program, итоги = undefined) {
         vars: параметры,
         forall: по,
         hypotheses: [],
+        assumptions: допущения,
         goal: постусловие.expr,
         bind: постусловие.bind ?? null,
         /* Сетка, на которой утверждение уже посчитано без всякого
@@ -112,6 +126,7 @@ export function obligations(program, итоги = undefined) {
         vars: параметры,
         forall: null,
         hypotheses: [],
+        assumptions: допущения,
         goal: fn.decreases,
         bind: null,
         grid: 0,

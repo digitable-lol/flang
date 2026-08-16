@@ -148,6 +148,13 @@ function prepareProgram(источник) {
       // «свойства» утилиты FTS в постусловия функции (SPEC, раздел 9), иначе
       // нарушение свойства невозможно выразить. Если поля нет — список пуст.
       postconditions: normalizePostconditions(fn),
+      // Предусловия здесь ТОЛЬКО ради границы программы (`callFunction` ниже).
+      // Внутри программы их снимает вызывающий на проверке, и проверять их во
+      // время работы значило бы проверять доказанное — поэтому ни `applyFunction`,
+      // ни один из восьми бэкендов их не печатает. Снаружи доказывать нечего:
+      // значение пришло из JSON, и единственное, что о нём известно, — это то,
+      // что оно посчитается прямо сейчас.
+      preconditions: normalizePreconditions(fn),
       span: fn.span,
     })
   }
@@ -205,6 +212,29 @@ function normalizePostconditions(fn) {
   })
 }
 
+function normalizePreconditions(fn) {
+  const list = fn.preconditions ?? []
+  if (!Array.isArray(list)) {
+    throw flangError("FLANG_PARSE", `поле «preconditions» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return list.map((item) => {
+    if (item === null || typeof item !== "object" || item.expr === undefined) {
+      throw flangError("FLANG_PARSE", `предусловие функции «${fn.name}» должно содержать «expr»`, fn.span)
+    }
+    return {
+      name: item.name ?? "",
+      expr: item.expr,
+      /* `bind` у предусловия нет и быть не может: оно говорит о том, что было
+         ДО вызова, а результата до вызова не существует. Это единственное
+         поле, которым запись предусловия отличается от записи постусловия, и
+         отличие содержательное. */
+      code: typeof item.code === "string" ? item.code : "FLANG_PRECONDITION",
+      message: typeof item.message === "string" ? item.message : null,
+      span: item.span,
+    }
+  })
+}
+
 function positiveLimit(value, fallback, label) {
   if (value === undefined || value === null) return fallback
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
@@ -229,6 +259,7 @@ function callFunction(rt, name, args, отчёт) {
   const fn = rt.functions.get(name)
   if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${name}»`)
   const values = bindArguments(fn, args)
+  checkPreconditions(rt, fn, values)
 
   const machine = {
     work: [],
@@ -271,6 +302,59 @@ function bindArguments(fn, args) {
     }
     return normalizeInput(args[param.name])
   })
+}
+
+/**
+ * Предусловия на ГРАНИЦЕ ПРОГРАММЫ — единственное место, где они считаются.
+ *
+ * ── Почему здесь и только здесь ─────────────────────────────────────────────
+ * Предусловие снимает вызывающий: у каждого вызова ВНУТРИ программы оно уже
+ * доказано на проверке (`proofterm.mjs`, `снятьПредусловия`), и считать его во
+ * время работы значило бы считать доказанное — поэтому `applyFunction` о
+ * предусловиях не знает ничего, и ни один из восьми бэкендов их не печатает.
+ * Ровно в этом и состоит цена нововведения: ноль строк в рантайме.
+ *
+ * Но `callFunction` — не вызов внутри программы. Это ГРАНИЦА: сюда приходит
+ * `--args` из командной строки, значения примеров из `flang test` и всё, что
+ * связывает программу с внешним миром. Доказывать здесь нечего: значение
+ * пришло из JSON, вызывающего у него нет, и единственное, что о нём известно, —
+ * что оно посчитается прямо сейчас. Поэтому здесь стоит проверка, а отказ
+ * называет требование по имени.
+ *
+ * Граница ровно одна — та же, о которой говорит `normalizeInput` ниже, — и
+ * поэтому проверка ровно одна. Внутренние вызовы идут через `applyFunction` и
+ * сюда не заходят: это видно по тому, что `callFunction` зовут только
+ * `createRuntime().call` и ничего больше.
+ *
+ * ПОЧЕМУ СВОЯ МАШИНА, А НЕ КАДР. Кадр `pre` пришлось бы вплести в возврат и в
+ * хвостовую оптимизацию — то есть в те самые места, которые предусловие
+ * обязано было оставить нетронутыми. Здесь же считается замкнутое выражение при
+ * известном окружении, до того как тело начало работать: своя машина на это и
+ * заводится, и живёт она ровно один прогон.
+ */
+function checkPreconditions(rt, fn, values) {
+  const list = fn.preconditions ?? []
+  if (list.length === 0) return
+  const env = Object.create(null)
+  fn.params.forEach((param, index) => {
+    env[param.name] = values[index]
+  })
+  for (const property of list) {
+    const machine = { work: [], value: null, steps: 0, depth: 0, current: fn.name, rt }
+    pushEval(machine, property.expr, env, property.span)
+    const holds = run(machine)
+    if (typeof holds !== "boolean") {
+      throw flangError(
+        "FLANG_TYPE",
+        `предусловие «${property.name}» функции «${fn.name}» должно давать признак, получено ${typeName(holds)}`,
+        property.span,
+      )
+    }
+    if (!holds) {
+      const message = property.message ?? `не выполнено требование «${property.name}» функции «${fn.name}»`
+      throw flangError(property.code, message, property.span)
+    }
+  }
 }
 
 // Граница между JSON и машиной, и она ровно одна: сюда приходят аргументы

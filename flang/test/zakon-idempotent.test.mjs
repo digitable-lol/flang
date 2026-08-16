@@ -330,7 +330,7 @@ test("НАРУШЕНИЕ ОТБИРАЕТ РАЗРЕШЕНИЕ, и ведомо�
   })
   assert.equal(ведомость.permits, undefined, "разрешение пережило нарушение закона")
   const строка = ведомость.laws.find((з) => з.kind === "идемпотентность")
-  assert.equal(строка.verdict, "broken")
+  assert.equal(строка.verdict, "violated")
   assert.match(строка.says, /НАРУШЕНО/u)
   assert.ok(!/нарушений не найдено/u.test(строка.says), "ведомость сказала о нарушенном «нарушений не найдено»")
 })

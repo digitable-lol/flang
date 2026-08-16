@@ -159,9 +159,23 @@ total function «To Roman»
   let ones equals «Roman group» of («Digit of place» of value and 1) and "I" and "V" and "X"
   join (join (join thousands with hundreds) with tens) with ones
 
+// A claim about behaviour, not an example of it: the value of a symbol is never
+// negative — on ALL strings, not on the three written below. The kernel proves
+// this line instead of checking it: eight branches of choice end in eight
+// literals, every one of them at least zero, and "a choice between non-negative
+// values is non-negative" is a rule of `flang/proof/reduce.mjs` proved about
+// IEEE-754. That is why the ledger says "proved" here and not "grid, 3 values".
+//
+// This is true, not merely hoped for, and it rests on the eighth branch: an
+// unknown symbol yields ZERO, and the example «Not a Roman symbol — zero» is
+// exactly about it. Writing `is at least 1` here would be a lie on that very
+// example — and that is a check, not an argument: `flang/test/corpus-claims.test.mjs`
+// spoils the line in exactly that way and demands that "proved" disappear and
+// the run go red.
 total function «Value of a symbol»
   accepts symbol: string
   returns number
+  ensures «the value of a symbol is non-negative» result is at least 0
   example «M»
     given symbol equals "M"
     expected 1000

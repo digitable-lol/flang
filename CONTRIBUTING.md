@@ -88,6 +88,37 @@ build flang without Node. It is an artifact, never edited by hand; the guard
 `flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so it
 runs everywhere. See `bootstrap/README.md`.
 
+## Prose is checked, not trusted
+
+Documentation in this tree makes claims a machine can settle, and a claim nobody
+runs goes stale silently. Four guards run them instead. Each is a script you can
+run on its own and a test that also proves the guard itself can go red:
+
+```bash
+npm run claims:check   # "the language has no such form" — asked of the real lexer
+npm run counts:check   # every "N lines of `path`" and every ledger count, remeasured
+npm run codes:check    # every FLANG_* named in any .md must exist in the sources
+npm run emit:check     # "seven backends emit …, JavaScript emits one file", and the cost table
+```
+
+What this means when you write:
+
+- **Numbers.** Put the path in backticks next to the count — either order works:
+  `` `flang/src/parser.mjs`, 4001 lines `` or `` 4001 lines in `flang/src/parser.mjs` ``.
+  It will be remeasured against the tree. If you mean an approximation, write
+  `~3900` — the guard leaves those alone, on purpose. Both languages are read:
+  `строк` and `lines`, `в` and `in`.
+- **Diagnostic codes.** A `FLANG_*` in prose must exist in a non-test source file.
+  If it is a promise rather than a fact, mark it *объявлено, не сделано* in the
+  prose and add an entry with a reason to `ОБЪЯВЛЕНО_НЕ_СДЕЛАНО` in
+  `flang/scripts/code-guard.mjs`. That list goes red in both directions: once the
+  code exists, the entry must go.
+- **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
+  an exact snippet of the target's runtime in `flang/scripts/emit-guard.mjs`;
+  change the runtime and the guard demands the table be revisited.
+
+None of them may be "fixed" by loosening the guard. The tree is the measurer.
+
 Changes to the FTS surface must include:
 
 - a canonical JSON representation;

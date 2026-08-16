@@ -51,7 +51,8 @@ import { after, test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
-import { emitTargets, loadEmitter, loadProgram } from "../bin/flang.mjs"
+import { emitTargets, loadEmitter, loadProgram, ownFunctionNames } from "../bin/flang.mjs"
+import { dropUnreachable } from "../src/reachable.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { emitJs } from "../src/emit/js.mjs"
@@ -131,12 +132,20 @@ test("печать в Go даёт go.mod и пакеты", async () => {
   )
 })
 
-test("печать в JS даёт один модуль с экспортами", async () => {
+test("печать в JS даёт один модуль с экспортами и прогонщик", async () => {
   const result = await emit([lists, "--target", "js"])
   assert.equal(result.target, "js")
-  assert.equal(result.files.length, 1, "одна программа — один файл JS")
+  assert.deepEqual(result.files.map((file) => file.path).slice(1), ["flang_cli.js"])
   assert.ok(result.files[0].path.endsWith(".js"))
   assert.match(result.files[0].content, /export /u)
+})
+
+test("--no-cli снимает прогонщик у JS — остаётся один самодостаточный модуль", async () => {
+  const result = await emit([lists, "--target", "js", "--no-cli"])
+  assert.equal(result.files.length, 1, "без прогонщика у JS ровно один файл")
+  assert.ok(result.files[0].path.endsWith(".js"))
+  /* И таблица прогонщика тоже снимается: она есть только ради него. */
+  assert.doesNotMatch(result.files[0].content, /\$PROGRAM/u)
 })
 
 /* ──────────────────────── stdout, каталог, коды возврата ────────────────── */
@@ -309,7 +318,7 @@ test("новый бэкенд в src/emit подхватывается без п
  * доказывает, что отказ ловится ровно там, где живёт настоящий пример.
  *
  * Цель печати здесь `c`, а не `go`, и это не мелочь: программа с процессами
- * печатается только в цель с планировщиком (`FLANG_NO_SCHEDULER`, `conc.mjs`).
+ * печатается только в цель с планировщиком (`FLANG_CONC_UNSUPPORTED`, `conc.mjs`).
  * Взяв `go`, тест мерил бы не проверку, а отсутствие планировщика — и зеленел бы
  * по чужой причине. Историческое число «80 155 байт Go» в шапке файла остаётся:
  * это замер того дня, когда `emit` не звал ни проверок, ни этого отказа.
@@ -497,6 +506,20 @@ test("ядро FTS из flang/core печатается в C и собирает
 тотальная функция «Версия ядра»
   возвращает строка
   "ядро FTS на flang"
+
+// Обе точки входа ядра зовутся отсюда, и это не оформление: печать отбрасывает
+// недостижимое (src/reachable.mjs), а входной файл, который ядро только
+// импортирует и никуда не зовёт, печатался бы одной функцией — и проверка
+// «ядро печатается в C и собирается» перестала бы проверять ядро.
+тотальная функция «Скомпилировать ядром»
+  принимает «исходник»: строка
+  возвращает строка
+  «Скомпилировать» от «исходник»
+
+тотальная функция «Примеры утилиты сошлись»
+  принимает «утилита»: «Утилита»
+  возвращает признак
+  «Все примеры сошлись» от «утилита»
 `,
   }), "ядро.flang")
 
@@ -512,13 +535,21 @@ test("ядро FTS из flang/core печатается в C и собирает
   }
   assert.ok(program.functions.length >= 200, `в ядре ожидались сотни функций, а их ${program.functions.length}`)
 
+  /* Печатается достижимое от точек входа входного файла — и это по-прежнему всё
+     ядро, а не огрызок: две его точки входа зовут почти всё, что в нём есть. */
+  const печатаемое = dropUnreachable(program, ownFunctionNames(program))
+  assert.ok(
+    печатаемое.functions.length >= 200,
+    `после отбрасывания недостижимого осталось ${печатаемое.functions.length} функций — ядро больше не печатается`,
+  )
+
   const directory = join(await sandbox(), "ядро-c")
   const written = await emit([entry, "--target", "c", "--out", directory])
   assert.deepEqual(
     written.files.map((file) => file.path),
-    emitC(program, {}).files.map((file) => file.path),
+    emitC(печатаемое, {}).files.map((file) => file.path),
   )
-  for (const file of emitC(program, {}).files) {
+  for (const file of emitC(печатаемое, {}).files) {
     assert.equal(await readFile(join(directory, file.path), "utf8"), file.content, `${file.path} расходится с emitC`)
   }
 

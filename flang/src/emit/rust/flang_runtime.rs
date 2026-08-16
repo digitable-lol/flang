@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
 // Рантайм flang для бэкенда Rust.
 //
 // Этот файл печатается бэкендом как есть, байт в байт: он лежит рядом
@@ -71,7 +73,7 @@
 // длиной 8, а не 5, а срез по байтовому индексу ещё и паниковал бы на границе
 // символа.
 
-use std::cell::Cell;
+use std::cell::{Cell, Ref, RefCell};
 use std::fmt;
 use std::rc::Rc;
 
@@ -130,26 +132,57 @@ pub struct Field {
     pub value: Value,
 }
 
-/// Элементы списка: общий массив плюс начало.
+/// Элементы списка: общий массив плюс начало и конец ЭТОГО списка.
 ///
 /// Начало — это и есть «хвост»: суффикс списка не копируется, а разделяется.
 /// Значения flang неизменяемы, поэтому разделять безопасно, а рекурсия «голова
 /// и хвост» из квадратичной становится линейной.
+///
+/// ── Конец, а не «до конца массива»: «добавить» за постоянное время ─────────
+///
+/// Раньше длина бралась как `data.len() - start`, а «добавить» копировало весь
+/// список. Копия ВЕРНА, но стоит O(длины) за вызов, и накопление списка n
+/// вызовами стоит O(n²). Это не теория: точка сетки
+/// `«Строить скобки» от 42 и 0 и 0 и "" и []` при объявленном пределе
+/// 5 000 000 шагов упиралась в предел через ДВАДЦАТЬ МИНУТ вместо секунды —
+/// от вечного цикла неотличимо. Тот же предел на той же точке напечатанный C
+/// берёт за 1,3 с, и именно потому, что там «добавить» сделано за постоянное
+/// время (`fl_b_dobavit` в `flang_runtime.c`, приём «запас + filled»).
+///
+/// Здесь тот же приём и тот же инвариант, только вместо арены — общий `Vec`:
+///
+///   длина общего массива — это число ячеек, УЖЕ кем-то занятых; оно только
+///   растёт, а занять ячейку `end` вправе единственный список — тот, у кого
+///   `end` совпал с этой длиной.
+///
+/// Отсюда неизменяемость: ячейки `start…end−1` не пишет никто и никогда, а
+/// ячейку за концом занимают не более одного раза за жизнь массива — второе
+/// «добавить» к тому же списку видит занято > своего конца и уходит на копию.
+/// Разветвление
+///
+///     пусть «а» равно (добавить 1 к «с»)   ← занимает ячейку n, занято = n+1
+///     пусть «б» равно (добавить 2 к «с»)   ← конец n ≠ занято → копия
+///
+/// даёт два независимых списка, и ни один не портит «с». Удвоение запаса берёт
+/// на себя сам `Vec`, поэтому за n «добавить» массив перевыделяется log₂n раз,
+/// а не n.
 #[derive(Debug, Clone)]
 pub struct Items {
-    data: Rc<Vec<Value>>,
+    data: Rc<RefCell<Vec<Value>>>,
     start: usize,
+    end: usize,
 }
 
 impl Items {
     /// Список из готового массива.
     pub fn new(data: Vec<Value>) -> Items {
-        Items { data: Rc::new(data), start: 0 }
+        let end = data.len();
+        Items { data: Rc::new(RefCell::new(data)), start: 0, end }
     }
 
     /// Число элементов.
     pub fn len(&self) -> usize {
-        self.data.len().saturating_sub(self.start)
+        self.end.saturating_sub(self.start)
     }
 
     /// Пуст ли список.
@@ -158,23 +191,60 @@ impl Items {
     }
 
     /// Элемент по индексу от нуля; `None` вместо паники за границей.
-    pub fn get(&self, index: usize) -> Option<&Value> {
-        self.data.get(self.start.checked_add(index)?)
+    ///
+    /// Отдаётся копия значения, а не ссылка: за концом этого списка в общем
+    /// массиве могут лежать чужие ячейки, и заимствование пришлось бы держать
+    /// живым дольше, чем нужно вызывающему. Копия значения flang — это один
+    /// инкремент счётчика ссылок.
+    pub fn get(&self, index: usize) -> Option<Value> {
+        let at = self.start.checked_add(index)?;
+        if at >= self.end {
+            return None;
+        }
+        self.data.borrow().get(at).cloned()
     }
 
-    /// Все элементы подряд.
-    pub fn as_slice(&self) -> &[Value] {
-        self.data.get(self.start..).unwrap_or(&[])
+    /// Все элементы подряд, под заимствованием общего массива.
+    ///
+    /// Заимствование держать МОЖНО ровно до тех пор, пока не исполняется код
+    /// программы: «добавить» на живом заимствовании уйдёт на копию (см.
+    /// `grown`), то есть сработает верно, но дороже. Там, где во время обхода
+    /// исполняется тело свёртки или «отобразить», берётся `snapshot`.
+    pub fn as_slice(&self) -> Ref<'_, [Value]> {
+        Ref::map(self.data.borrow(), |cells| cells.get(self.start..self.end).unwrap_or(&[]))
     }
 
-    /// Обход элементов.
-    pub fn iter(&self) -> std::slice::Iter<'_, Value> {
-        self.as_slice().iter()
+    /// Копия элементов: для обхода, внутри которого исполняется код программы.
+    pub fn snapshot(&self) -> Vec<Value> {
+        self.as_slice().to_vec()
     }
 
     /// Суффикс без первого элемента — сдвиг начала, а не копия.
     pub fn tail(&self) -> Items {
-        Items { data: Rc::clone(&self.data), start: self.start.saturating_add(1).min(self.data.len()) }
+        Items {
+            data: Rc::clone(&self.data),
+            start: self.start.saturating_add(1).min(self.end),
+            end: self.end,
+        }
+    }
+
+    /// Список, продлённый одним значением. За постоянное время, если ячейка за
+    /// концом ещё ничья; иначе — копией, и следующие «добавить» к ней снова
+    /// пойдут на месте.
+    pub fn grown(&self, item: Value) -> Items {
+        /* Быстрый путь: наш конец — это и конец занятого. Заимствование может
+        быть занято чужим обходом (`as_slice` в свёртке); тогда не паника, а
+        медленный путь: значение то же, цена выше. */
+        if let Ok(mut cells) = self.data.try_borrow_mut() {
+            if cells.len() == self.end && self.end < usize::MAX {
+                cells.push(item);
+                return Items { data: Rc::clone(&self.data), start: self.start, end: self.end + 1 };
+            }
+        }
+        let mut copy: Vec<Value> = Vec::with_capacity(self.len().saturating_add(1));
+        copy.extend(self.as_slice().iter().cloned());
+        copy.push(item);
+        Items::new(copy)
     }
 }
 
@@ -296,7 +366,7 @@ pub fn chain_head(value: &Value) -> Value {
             Some(point) => text(&point.to_string()),
             None => Value::Nothing,
         },
-        Value::List(items) => items.get(0).cloned().unwrap_or(Value::Nothing),
+        Value::List(items) => items.get(0).unwrap_or(Value::Nothing),
         _ => Value::Nothing,
     }
 }
@@ -384,7 +454,14 @@ pub fn equal(left: &Value, right: &Value) -> bool {
     }
     match (left, right) {
         (Value::List(a), Value::List(b)) => {
-            a.len() == b.len() && a.iter().zip(b.iter()).all(|(one, other)| equal(one, other))
+            if a.len() != b.len() {
+                return false;
+            }
+            /* Заимствования именованы, а не вложены в одно выражение: так
+            видно, что оба живут ровно до конца сравнения и ни одно из них не
+            переживает вызов кода программы (его тут и нет). */
+            let (left_cells, right_cells) = (a.as_slice(), b.as_slice());
+            left_cells.iter().zip(right_cells.iter()).all(|(one, other)| equal(one, other))
         }
         (Value::Variant(a), Value::Variant(b)) => a.name == b.name && fields_equal(&a.fields, &b.fields),
         (Value::Record(a), Value::Record(b)) => fields_equal(a, b),
@@ -1147,8 +1224,9 @@ pub fn b_substring(ctx: &Ctx, source: Value, from: Value, to: Value) -> Result<V
 pub fn b_join(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {
         let separator = expect_string("соединить", &right, "разделитель")?;
-        let mut parts: Vec<&str> = Vec::with_capacity(items.len());
-        for (index, item) in items.iter().enumerate() {
+        let cells = items.as_slice();
+        let mut parts: Vec<&str> = Vec::with_capacity(cells.len());
+        for (index, item) in cells.iter().enumerate() {
             match item {
                 Value::Text(part) => parts.push(part),
                 other => {
@@ -1204,7 +1282,8 @@ pub fn b_char_code(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
 /// «содержит»: подстрока в строке либо значение в списке.
 pub fn b_contains(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {
-        return Ok(flag(items.iter().any(|item| equal(item, &right))));
+        let cells = items.as_slice();
+        return Ok(flag(cells.iter().any(|item| equal(item, &right))));
     }
     let source = expect_string("содержит", &left, "строка или список")?;
     let part = expect_string("содержит", &right, "искомая подстрока")?;
@@ -1363,7 +1442,7 @@ pub fn b_empty(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
 pub fn b_head(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     let items = expect_list("голова", &value, "аргумент")?;
     match items.get(0) {
-        Some(item) => Ok(item.clone()),
+        Some(item) => Ok(item),
         None => Err(fail(CODE_BUILTIN_ARGS, "«голова»: список пуст".to_string())),
     }
 }
@@ -1377,6 +1456,39 @@ pub fn b_tail(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     if items.is_empty() {
         return Err(fail(CODE_BUILTIN_ARGS, "«хвост»: список пуст".to_string()));
     }
+    Ok(Value::List(items.tail()))
+}
+
+// ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+//
+// Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+// ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+// отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+// `expect_list` ловит не пустоту, а другой вид значения.
+pub fn b_split_proven(_ctx: &Ctx, source: Value, separator: Value) -> Result<Value, Error> {
+    let string = expect_string("разделить", &source, "строка")?;
+    let mark = expect_string("разделить", &separator, "разделитель")?;
+    Ok(list(string.split(mark).map(text).collect()))
+}
+
+pub fn b_char_code_proven(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
+    let string = expect_string("код символа", &source, "строка")?;
+    Ok(number(string.chars().next().unwrap_or('\0') as u32 as f64))
+}
+
+pub fn b_head_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let items = expect_list("голова", &value, "аргумент")?;
+    /* Ветвь `None` недостижима — непустота доказана при печати. Здесь не
+       `unwrap` и не `unreachable!`: паника из тотальной функции была бы отказом
+       вида, которого нет в множестве отказов языка (`src/failures.mjs`), и
+       восемь целей разошлись бы поведением на ошибке доказательства. Пустое
+       значение — то же, что вернул бы C, читая нулевой элемент пустого
+       массива, и в отличие от него оно определено. */
+    Ok(items.get(0).unwrap_or(Value::Nothing))
+}
+
+pub fn b_tail_proven(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let items = expect_list("хвост", &value, "аргумент")?;
     Ok(Value::List(items.tail()))
 }
 
@@ -1399,7 +1511,7 @@ pub fn b_element(ctx: &Ctx, index: Value, value: Value) -> Result<Value, Error> 
         ));
     }
     match items.get(at as usize) {
-        Some(item) => Ok(item.clone()),
+        Some(item) => Ok(item),
         None => Err(fail(
             CODE_BUILTIN_ARGS,
             format!(
@@ -1412,14 +1524,14 @@ pub fn b_element(ctx: &Ctx, index: Value, value: Value) -> Result<Value, Error> 
 }
 
 /// «добавить … к …»: дописывает в конец, исходный список не меняется.
-/// Копия обязательна: «хвост» отдаёт суффикс чужого массива, и дописать в него
-/// значило бы испортить значение, на которое ещё кто-то смотрит.
+///
+/// За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+/// остальных случаях — разбор приёма и доказательство неизменяемости лежат при
+/// `Items::grown`. Прежняя безусловная копия была верна, но делала накопление
+/// списка квадратичным, и предел шагов переставал быть сроком.
 pub fn b_append(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> {
     let items = expect_list("добавить", &value, "второй аргумент")?;
-    let mut result: Vec<Value> = Vec::with_capacity(items.len().saturating_add(1));
-    result.extend(items.iter().cloned());
-    result.push(item);
-    Ok(list(result))
+    Ok(Value::List(items.grown(item)))
 }
 
 /// «остаток от».
@@ -1434,4 +1546,285 @@ pub fn b_percent_of(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Erro
     let a = expect_number("процентов от", &left, "процент")?;
     let b = expect_number("процентов от", &right, "значение")?;
     Ok(number((a / 100.0) * b))
+}
+
+// ───────────────────────────── граница входа ─────────────────────────────
+//
+// Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+// пришедшие снаружи, ДО вызова функции.
+//
+// Зачем это здесь, а не в самих функциях. Доказательство завершения
+// `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+// которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+// печатается вовсе. Значение вне типа выносит вместе с типом и доказательство:
+// `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её нечем — сторожа
+// нет. Поэтому дверь одна и стоит она ДО вычисления.
+//
+// Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+// `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+// подходит типу», каким сверяется `flang run --args`.
+
+/// Вид объявленного типа. `Unknown` — значение-функция, параметр полиморфизма
+/// и применение типа с аргументами: одной таблицы им мало, и они не сверяются.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TypeKind {
+    /// не сверяется
+    Unknown,
+    /// число, включая уточнения `нат` и `целое`
+    Number,
+    /// строка
+    Text,
+    /// признак
+    Flag,
+    /// «ничто»
+    Null,
+    /// список
+    List,
+    /// запись
+    Record,
+    /// сумма типов
+    Sum,
+}
+
+/// Поле записи или варианта: имя и место его типа в таблице типов.
+#[derive(Debug)]
+pub struct TypeField {
+    /// имя поля в исходной программе flang
+    pub name: &'static str,
+    /// индекс типа поля в `EntryTable::types`
+    pub type_at: usize,
+}
+
+/// Вариант суммы: имя дискриминанта и отрезок его полей в общем массиве.
+#[derive(Debug)]
+pub struct TypeVariant {
+    /// имя варианта
+    pub name: &'static str,
+    /// начало отрезка полей в `EntryTable::fields`
+    pub field_from: usize,
+    /// длина отрезка полей
+    pub field_count: usize,
+}
+
+/// Объявленный тип. Поля и варианты лежат сплошными отрезками общих массивов:
+/// так печать в каждой цели — это однородные списки, а не россыпь имён.
+#[derive(Debug)]
+pub struct Type {
+    /// вид типа
+    pub kind: TypeKind,
+    /// печатное имя типа: «нат», «список числа»
+    pub name: &'static str,
+    /// имя записи или суммы без кавычек — для текстов о полях
+    pub owner: &'static str,
+    /// «… или ничто»: отсутствие значения законно
+    pub optional: bool,
+    /// целое ли
+    pub integral: bool,
+    /// есть ли конечный отрезок (у `число` его нет)
+    pub bounded: bool,
+    /// нижняя граница отрезка
+    pub low: f64,
+    /// верхняя граница отрезка
+    pub high: f64,
+    /// тип элемента списка — индекс в `EntryTable::types`
+    pub of: usize,
+    /// начало отрезка полей записи в `EntryTable::fields`
+    pub field_from: usize,
+    /// длина отрезка полей записи
+    pub field_count: usize,
+    /// начало отрезка вариантов в `EntryTable::variants`
+    pub variant_from: usize,
+    /// длина отрезка вариантов
+    pub variant_count: usize,
+}
+
+/// Параметр функции: чей он, как называется и какого он типа.
+#[derive(Debug)]
+pub struct EntryParam {
+    /// имя функции flang
+    pub function: &'static str,
+    /// имя параметра
+    pub name: &'static str,
+    /// индекс типа в `EntryTable::types`
+    pub type_at: usize,
+}
+
+/// Граница входа программы целиком.
+#[derive(Debug)]
+pub struct EntryTable {
+    /// объявленные типы
+    pub types: &'static [Type],
+    /// поля записей и вариантов, сплошным массивом
+    pub fields: &'static [TypeField],
+    /// варианты сумм, сплошным массивом
+    pub variants: &'static [TypeVariant],
+    /// параметры функций в объявленном порядке
+    pub params: &'static [EntryParam],
+}
+
+fn check_number_type(spec: &Type, value: &Value, label: &str) -> Result<(), Error> {
+    let found = match value {
+        Value::Number(number) if number.is_finite() => *number,
+        _ => return Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name))),
+    };
+    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    беду. */
+    if spec.integral && found.floor() != found {
+        return Err(fail(
+            CODE_TYPE,
+            format!("{}: {} не целое, а тип {} — целый", label, number_text(found), spec.name),
+        ));
+    }
+    if spec.bounded && (found < spec.low || found > spec.high) {
+        return Err(fail(CODE_TYPE, format!("{}: {} вне {}", label, number_text(found), spec.name)));
+    }
+    Ok(())
+}
+
+fn check_fields(
+    table: &EntryTable,
+    from: usize,
+    count: usize,
+    given: &[Field],
+    label: &str,
+    owner: &str,
+    of_variant: bool,
+) -> Result<(), Error> {
+    for index in 0..count {
+        let declared = &table.fields[from + index];
+        match given.iter().find(|field| &*field.name == declared.name) {
+            /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+            None if table.types[declared.type_at].optional => continue,
+            None if of_variant => {
+                return Err(fail(
+                    CODE_TYPE,
+                    format!("{}: вариант «{}» требует поле «{}»", label, owner, declared.name),
+                ))
+            }
+            None => {
+                return Err(fail(
+                    CODE_TYPE,
+                    format!("{}: не задано поле «{}» записи «{}»", label, declared.name, owner),
+                ))
+            }
+            Some(found) => check_typed(
+                table,
+                declared.type_at,
+                &found.value,
+                &format!("{}.{}", label, declared.name),
+            )?,
+        }
+    }
+    Ok(())
+}
+
+fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> Result<(), Error> {
+    let spec = match table.types.get(index) {
+        Some(spec) => spec,
+        None => return Ok(()),
+    };
+    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+    пропуск. Так же считает и ядро FTS. */
+    if spec.optional && matches!(value, Value::Nothing) {
+        return Ok(());
+    }
+    let mismatch = || Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name)));
+    match spec.kind {
+        TypeKind::Number => check_number_type(spec, value, label),
+        TypeKind::Text => match value {
+            Value::Text(_) => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::Flag => match value {
+            Value::Flag(_) => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::Null => match value {
+            Value::Nothing => Ok(()),
+            _ => mismatch(),
+        },
+        TypeKind::List => match value {
+            Value::List(items) => {
+                /* `Items` — это вид на общий массив с запасом, а не `Vec`, и
+                своего `iter` у него нет: элементы берутся заимствованием
+                (`as_slice`). Держать его тут можно — граница входа кода
+                программы не исполняет, а значит и «добавить» на живом
+                заимствовании не случится. */
+                for (at, item) in items.as_slice().iter().enumerate() {
+                    check_typed(table, spec.of, item, &format!("{}[{}]", label, at))?;
+                }
+                Ok(())
+            }
+            _ => mismatch(),
+        },
+        TypeKind::Record => match value {
+            Value::Record(fields) => {
+                check_fields(table, spec.field_from, spec.field_count, fields, label, spec.owner, false)?;
+                /* Лишнее поле — тоже несоответствие типу: запись flang тотальна,
+                и поля сверх объявленных в ней взяться неоткуда. */
+                for field in fields.iter() {
+                    let declared =
+                        (0..spec.field_count).any(|at| table.fields[spec.field_from + at].name == &*field.name);
+                    if !declared {
+                        return Err(fail(
+                            CODE_TYPE,
+                            format!("{}: запись «{}» не имеет поля «{}»", label, spec.owner, field.name),
+                        ));
+                    }
+                }
+                Ok(())
+            }
+            _ => mismatch(),
+        },
+        TypeKind::Sum => {
+            let data = match value {
+                Value::Variant(data) => Some(data),
+                Value::Record(_) => None,
+                _ => return mismatch(),
+            };
+            let found = data.and_then(|data| {
+                (0..spec.variant_count)
+                    .map(|at| &table.variants[spec.variant_from + at])
+                    .find(|variant| variant.name == &*data.name)
+                    .map(|variant| (variant, data))
+            });
+            match found {
+                None => Err(fail(CODE_TYPE, format!("{}: ожидался вариант типа «{}»", label, spec.owner))),
+                Some((variant, data)) => check_fields(
+                    table,
+                    variant.field_from,
+                    variant.field_count,
+                    &data.fields,
+                    label,
+                    variant.name,
+                    true,
+                ),
+            }
+        }
+        TypeKind::Unknown => Ok(()),
+    }
+}
+
+/// Сверка набора значений с объявленными типами параметров функции.
+///
+/// Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+/// параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+/// видом `Unknown`. Тексты отказов дословно те же, что у `checkValue` эталона:
+/// расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
+/// значение типу».
+pub fn check_entry(table: &EntryTable, name: &str, args: &[Value]) -> Result<(), Error> {
+    let declared = table.params.iter().filter(|param| param.function == name).count();
+    if declared == 0 || declared != args.len() {
+        return Ok(());
+    }
+    for (at, param) in table.params.iter().filter(|param| param.function == name).enumerate() {
+        check_typed(
+            table,
+            param.type_at,
+            &args[at],
+            &format!("вызов функции «{}»: аргумент «{}»", name, param.name),
+        )?;
+    }
+    Ok(())
 }

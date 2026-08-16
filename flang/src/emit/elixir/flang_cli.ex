@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 defmodule Flang.Json do
   @moduledoc """
   Разбор и печать минимального подмножества JSON.
@@ -151,6 +154,33 @@ defmodule Flang.Cli do
       {"r":[["поле",…]]}                 запись (порядок полей сохраняется)
       {"v":"Имя","f":[["поле",…]]}       вариант
 
+  ## Кодировку протокола задаёт протокол, а не локаль хозяина
+
+  Протокол — это JSON в UTF-8, и русские имена функций, полей и вариантов ездят
+  по нему постоянно. А ввод-вывод BEAM — не байтовый: у устройства
+  `:standard_io` есть КОДИРОВКА, и берётся она из локали того, кто запустил
+  машину. Локаль кривая — устройство поднимается в `latin1`, и тогда `IO.write`
+  печатает всякий знак свыше U+00FF не байтами UTF-8, а последовательностью
+  `\\x{43D}`; на входе то же самое наоборот — байты UTF-8 читаются как знаки
+  latin1 и превращаются в кракозябры. Это не выдумка: `LC_CTYPE=UTF-8` (форма,
+  законная на macOS и не существующая в glibc) даёт ровно это, и `LC_ALL=C`
+  тоже. Ответ прогонщика переставал быть JSON — `JSON.parse` падает на
+  «Bad escaped character», — и вина при этом не программы и не входа, а
+  переменной окружения у хозяина.
+
+  Обходные пути (`LC_ALL=C.UTF-8`, `ELIXIR_ERL_OPTIONS=+fnu`) существуют, но
+  обход — это просьба к пользователю. Обещание языка звучит иначе: напечатанная
+  программа работает одинаково у всех. Поэтому прогонщик СНИМАЕТ перекодировку
+  вовсе — `:io.setopts(устройство, encoding: :latin1)` — и дальше читает и
+  пишет байты (`IO.binread/2`, `IO.binwrite/2`). «latin1» здесь читается не как
+  «кодировка latin1», а как «не переводить»: устройство отдаёт и принимает ровно
+  те байты, что пришли и уходят. А байты эти и есть UTF-8 — строка Elixir по
+  определению двоичная и уже в UTF-8, так что переводить между ними нечего.
+
+  Побочно чинится и надёжность: неверная последовательность UTF-8 во входе
+  теперь не роняет чтение, а доезжает до разбора JSON и получает честный ответ
+  «неразборчивый запрос».
+
   ## Почему здесь нет потока с большим стеком
 
   У бэкендов Python, Java и C# прогонщик считает вычисление в отдельном потоке с
@@ -256,8 +286,8 @@ defmodule Flang.Cli do
 
   def encode_value({:str, value}), do: "{\"s\":" <> Flang.Json.quote_string(value) <> "}"
 
-  def encode_value({:list, items}) do
-    "{\"l\":[" <> Enum.map_join(items, ",", &encode_value/1) <> "]}"
+  def encode_value({:list, _, _} = value) do
+    "{\"l\":[" <> Enum.map_join(Flang.Rt.items(value), ",", &encode_value/1) <> "]}"
   end
 
   def encode_value({:rec, fields}), do: "{\"r\":" <> encode_fields(fields) <> "}"
@@ -384,30 +414,77 @@ defmodule Flang.Cli do
   end
 
   defp invoke(module, name, args) do
+    # Граница входа — ДО вызова: значения приехали снаружи, программой не
+    # являются и сверяются с объявленными типами. Значение вне типа выносит
+    # вместе с типом и доказательство завершения `тотальной`, а поймать вечную
+    # цепочку потом нечем — сторожа в доказанно тотальной функции нет.
+    Flang.Rt.check_entry(apply(module, :entry, []), name, args)
     "{\"ok\":true,\"value\":" <> encode_value(apply(module, :call, [name, args])) <> "}"
   rescue
     error in Flang.Error -> failure(error.code, error.message)
   end
 
-  @doc "Цикл «строка запроса — строка ответа». Ответ ровно один на запрос."
-  def serve(module, source) do
-    Enum.each(source, fn line ->
-      request = String.trim(line)
+  @doc """
+  Снимает с устройства перекодировку: дальше это поток БАЙТОВ.
 
-      if request != "" do
-        # Явный «\n» через IO.write, а не IO.puts: разделитель строк в протоколе
-        # задан протоколом, а не платформой.
-        IO.write(run_request(module, request) <> "\n")
-      end
-    end)
+  Единственное место, где напечатанная программа спорит с окружением, и спорит
+  по делу — разбор в `@moduledoc`, «Кодировку протокола задаёт протокол».
+  `:latin1` здесь читается не как «кодировка latin1», а как «не переводить»:
+  устройство отдаёт и принимает ровно те байты, что пришли и уходят, а строка
+  Elixir двоична и уже в UTF-8, так что переводить между ними нечего.
+  """
+  def pin_bytes(device) do
+    :io.setopts(device, encoding: :latin1)
+    :ok
   end
+
+  @doc """
+  Цикл «строка запроса — строка ответа». Ответ ровно один на запрос.
+
+  Устройство здесь — процесс (`Process.group_leader/0`), а не `:stdio`:
+  `:io.setopts/2` эрлангова и алиаса `:stdio` не знает, а `IO.binread/2` и
+  `IO.binwrite/2` его всё равно разворачивают в тот же самый процесс. Одно имя
+  на всех трёх вызовах значит, что настройка ложится ровно на то устройство,
+  которым потом читают и пишут.
+  """
+  def serve(module, device) do
+    pin_bytes(device)
+    loop(module, device)
+  end
+
+  defp loop(module, device) do
+    case IO.binread(device, :line) do
+      :eof ->
+        :ok
+
+      {:error, reason} ->
+        raise Flang.Rt.fail("CLI", "ввод прогонщика не читается: " <> inspect(reason))
+
+      line ->
+        unless blank?(line) do
+          # Явный «\n» через IO.binwrite, а не IO.puts: и разделитель строк, и
+          # кодировка в протоколе заданы протоколом, а не платформой.
+          IO.binwrite(device, run_request(module, line) <> "\n")
+        end
+
+        loop(module, device)
+    end
+  end
+
+  # Пустая ли строка. Обрезать её незачем: `Flang.Json.parse/1` сам пропускает
+  # пробельные знаки и до, и после значения, поэтому конец строки доезжает до
+  # разбора как есть. Проверка идёт по БАЙТАМ, а не через String.trim/1: на этом
+  # уровне у прогонщика байты и только байты, а разделители протокола — ASCII.
+  defp blank?(<<symbol, rest::binary>>) when symbol in [?\s, ?\t, ?\n, ?\r], do: blank?(rest)
+  defp blank?(""), do: true
+  defp blank?(_), do: false
 
   @doc "Точка входа: `elixir -pa _build -e 'Flang.Cli.main([\"Модуль\"])'`."
   def main(argv) do
     name = List.first(argv) || @default_program
     module = Module.concat([name])
     {:module, ^module} = Code.ensure_loaded(module)
-    serve(module, IO.stream(:stdio, :line))
+    serve(module, Process.group_leader())
     :ok
   end
 end

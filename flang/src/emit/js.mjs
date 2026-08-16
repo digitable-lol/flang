@@ -8,11 +8,27 @@
 // Поэтому здесь печатается один ES-модуль с нулём зависимостей, работающий и в
 // Node, и в браузере.
 //
-// ── Один файл на программу ─────────────────────────────────────────────────
+// ── Один файл на программу, плюс прогонщик ─────────────────────────────────
 // AST flang (раздел 5) описывает ровно один модуль (`module`), а функции внутри
 // него свободно вызывают друг друга, в том числе взаимно рекурсивно. Разложить
 // их по файлам значило бы завести циклические импорты ради ничего и продублировать
-// рантайм-префикс в каждом файле. Поэтому одна программа — один файл.
+// рантайм-префикс в каждом файле. Поэтому одна ПРОГРАММА — один файл, и этот
+// файл по-прежнему самодостаточен и работает в браузере.
+//
+// Рядом печатается второй файл — прогонщик `flang_cli.js` (`js/flang_cli.js`),
+// тот же, что у остальных семи целей: JSON на входе, JSON на выходе. Он не
+// часть модуля и в браузер не едет; отменяется ключом `cli: false`. Без него у
+// цели не было двух вещей. Первая — способ позвать программу из чего угодно,
+// у чего есть труба, и сверить её с интерпретатором на тысячах входов одним
+// запуском процесса. Вторая важнее: объявленный предел глубины несёт стек, а
+// стека вызывающего в JavaScript не хватает НИ ОДНОЙ программе (7 386 кадров у
+// самой тонкой функции при обещанных 10 000). Рычаг у модуля есть — `$callDeep`
+// ниже, — но звать его надо руками, и ОБЫЧНЫЙ запуск объявленного предела не
+// имел. Прогонщик ставит рычаг на пути каждого запроса.
+//
+// Всё, что прогонщику нужно от конкретной программы, — таблица `$PROGRAM`
+// (`renderProgramTable`): имена flang → функции, фабрика варианта и размер
+// стека, посчитанный ЗДЕСЬ, при печати, по объявленному пределу глубины.
 //
 // ── Главное требование: совпадение с interpret.mjs ─────────────────────────
 // Сгенерированный код обязан давать тот же результат и те же коды ошибок, что
@@ -44,6 +60,56 @@
 //     упрощение, а точное повторение интерпретатора: он тоже не переиспользует
 //     кадр, у которого есть постусловия, потому что они обязаны проверить
 //     именно свой результат.
+//
+// ── Цена «добавить»: почему вид, а не массив ───────────────────────────────
+// Предел шагов, который не срабатывает вовсе, — не предел. Точка
+// `«Строить скобки» от 42 и 0 и 0 и "" и []`
+// (`flang/examples/leetcode/022-generate-parentheses.flang`) при объявленных
+// 5 000 000 шагов НЕ ОТВЕЧАЛА и за 90 с (снято по сроку), тогда как
+// интерпретатор упирается в предел за 919 мс, а починенная печать — за 0,8 с.
+// Считал счётчик верно — дорог был ШАГ: `добавить` печаталось
+// как `[...list, item]`, копия всего списка на каждый вызов, и накопление n слов
+// стоило O(n²). Шаг ценой O(длины) не ограничивает работу ничем.
+//
+// Приём C, Rust и Go — общий массив с отметкой «сколько ячеек занято» и список
+// как СРЕЗ этого массива — здесь не переносится дословно, и вот почему. Список
+// flang в этой цели — обычный массив JS, и это часть наблюдаемого протокола: его
+// читают тесты, прогонщик, сверки с интерпретатором и всякий, кто модуль
+// импортировал. А два массива JS с РАЗНОЙ длиной разделить хранилище не могут:
+// длина у массива — собственное свойство, элементы принадлежат самому объекту,
+// среза (вида на чужие ячейки) в языке нет. Значит любой способ, при котором
+// значение — обычный массив, обязан скопировать n элементов на каждое
+// `добавить`: Ω(n) на шаг, и это не недоделка, а доказуемая невозможность.
+//
+// Выход, не меняющий протокола ни на знак: значение остаётся МАССИВОМ по всем
+// наблюдениям, но перестаёт быть массивом по хранению — `добавить` отдаёт
+// `Proxy` над общим буфером (`$view`), у которого своя длина. Прокси над
+// массивом — массив для `Array.isArray`, для `length`, для чтения по индексу,
+// для перебора, для `JSON.stringify`, для расширения `[...x]`, для
+// `Object.keys`, для `deepStrictEqual` и для `Object.getPrototypeOf`: сверено
+// программой, «вид «добавить» неотличим от обычного массива» ниже по файлу
+// тестов. Отсюда правило занятия ячейки — ровно то же, что в Go и Rust:
+// дописать за конец вправе единственный список, тот, чей конец совпал с концом
+// буфера; всякий другой уходит на копию. Ветвление двух `добавить` от одного
+// значения даёт две независимых копии, ячейки внутри списка не пишет никто.
+//
+// Чем плачено. Чтение элемента у списка, ВЫДАННОГО `добавить`, идёт сквозь
+// ловушку прокси: 341 нс против 7 нс у обычного массива на замере 10⁶ чтений.
+// Класс сложности при этом не меняется (`элемент N` остаётся обращением по
+// индексу), а цена накопления падает классом: 200 000 `добавить` в напечатанном
+// модуле — 133 мс вместо больше 120 000 мс (снято по сроку); 50 000 — 45 мс
+// вместо 13 029. Обмен принят осознанно: до него всякая программа с
+// `добавить` в цикле была квадратичной, то есть медленнее не в 50 раз, а во
+// сколько угодно. Второе, чем плачено: вид держит буфер живым целиком — как
+// срез в Go, — поэтому короткий вид на длинный буфер не даёт освободить хвост.
+// Третье: `util.inspect` печатает вид как `Proxy([...])` вместе с ячейками
+// соседа — это видно только в сообщениях об ошибках, на значения не влияет.
+// Четвёртое, и это единственное, чем вид от массива ОТЛИЧИМ: запись в него
+// отвергается (в модуле, то есть в строгом режиме, — `TypeError`), тогда как в
+// массив, который отдавало прежнее `добавить`, чужая запись проходила. Значение
+// flang неизменяемо по договору, а пустить запись в общий буфер значило бы
+// испортить соседний список — отказ здесь честнее тишины. Проверено там же, где
+// и неотличимость.
 //
 // ── Пределы: и глубина, и шаги ─────────────────────────────────────────────
 // Раньше здесь стояло «лимитов `maxSteps`/`maxDepth` нет», и это была дыра, а не
@@ -89,12 +155,19 @@
 //     доступную глубину: кадр функции с `try` у V8 много больше обычного
 //     (замер холодными процессами: 7031 кадр против 8544). Отказ минует
 //     `return`, поэтому глубину на путях отказа чинит та же граница `$top`.
-//   • Стек хозяина может кончиться РАНЬШЕ объявленного предела, и это тот
-//     случай, где цель принципиально слабее остальных семи. У V8 холодный кадр
-//     этой формы влезает около 8,5 тысяч раз при пределе языка 10 000, в
-//     браузерах бывает меньше, а поднять стек изнутри модуля нечем: в Python
-//     это делает поток с заданным стеком, в JS такого рычага нет. Поэтому
-//     `$hostDepth` переводит переполнение стека в объявленный
+//   • Стек хозяина кончался РАНЬШЕ объявленного предела, и здесь стояло, что
+//     поднять его изнутри модуля нечем: «в Python это делает поток с заданным
+//     стеком, в JS такого рычага нет». Это была неправда, и стоила она всего
+//     обещания: замер холодными процессами показал 7 386 кадров у самой тонкой
+//     рекурсивной функции и 1 379 у функции с сорока связываниями при
+//     объявленных 10 000 — то есть предела, который язык обещает, у этой цели
+//     не было НИ ДЛЯ ОДНОЙ программы. Рычаг тот же, что в Python и C: поток с
+//     явно заданным стеком (`worker_threads`, `resourceLimits.stackSizeMb`), и
+//     он стоит в `$callDeep` — под 10 000 кадров отводится 79 МиБ, и худшая из
+//     мерянных форм доходит до предела ЯЗЫКА и отказывает текстом эталона.
+//     Замеры и границы — у самого `$callDeep`, ниже по файлу.
+//     Где рычага нет (браузер; прямой вызов мимо `$callDeep`), обещание держит
+//     сторож: `$hostDepth` переводит переполнение стека в объявленный
 //     FLANG_RECURSION_LIMIT — код из набора, а текст называет хозяина, а не
 //     предел, до которого не добрались. Врать про предел нельзя, молчать тоже.
 //
@@ -133,8 +206,9 @@
 
 import { readFileSync } from "node:fs"
 
-import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -147,6 +221,16 @@ import { camel, createNamer, pascal, snake } from "../../../tools/ftsc/src/namin
    собой не приносит — считает общий счётчик модуля (`$step`), а планировщик
    только ставит ему предел на время пробега. */
 const CONC_SOURCE = readFileSync(new URL("js/flang_conc.js", import.meta.url), "utf8")
+
+/* Прогонщик — тоже настоящий .js рядом, и по тем же причинам: его читает
+   человек, а разбирает движок. В отличие от планировщика он печатается ОТДЕЛЬНЫМ
+   файлом и байт в байт одинаково для любой программы — как `flang_cli.c` у C и
+   `flang_cli.py` у Python. Связь с конкретной программой у него ровно одна и она
+   в модуле: таблица `$PROGRAM`. */
+const CLI_SOURCE = readFileSync(new URL("js/flang_cli.js", import.meta.url), "utf8")
+
+/** Имя файла прогонщика — то же, что у семи остальных целей. */
+const CLI_FILE = "flang_cli.js"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм печатаемого модуля.
@@ -586,6 +670,37 @@ function $b_hvost(value) {
   return list.slice(1)
 }
 
+/* ── Доказанный путь тех же четырёх форм ───────────────────────────────────
+ *
+ * Частичная форма отказывает не всегда, а на пустом: `голова` пустого списка,
+ * `код символа` пустой строки, `разделить` по пустому разделителю. Там, где
+ * непустота ДОКАЗАНА проверкой типов (`src/types.mjs`, `длинаНиз`), узел
+ * приезжает с отметкой `доказана`, и печать зовёт эти помощники — те же
+ * действия без проверки, которой нечего ловить.
+ *
+ * Сверка типа остаётся: `$expectList` ловит НЕ пустоту, а другой вид значения,
+ * и его гарантирует не непустота, а сама проверка типов. Снимается ровно один
+ * сторож — тот, что назван в `ЧАСТИЧНЫЕ` (`src/failures.mjs`).
+ */
+function $b_golova_dokazano(value) {
+  return $expectList("голова", value, "аргумент")[0]
+}
+
+function $b_hvost_dokazano(value) {
+  return $expectList("хвост", value, "аргумент").slice(1)
+}
+
+function $b_razdelit_dokazano(text, separator) {
+  $expectString("разделить", text, "строка")
+  $expectString("разделить", separator, "разделитель")
+  return text.split(separator)
+}
+
+function $b_kod_simvola_dokazano(text) {
+  $expectString("код символа", text, "строка")
+  return Array.from(text)[0].codePointAt(0)
+}
+
 // Элемент по номеру. Массив JS — обращение по индексу без обхода; проверка
 // границ повторяет вычислитель дословно, включая текст отказа.
 function $b_element(index, value) {
@@ -598,9 +713,107 @@ function $b_element(index, value) {
   return list[at]
 }
 
+// Ключ свойства как индекс массива; −1, если ключ индексом не является.
+// Сверка `String(index) === key` обязательна: иначе " 1", "01" и "1e0" сошли бы
+// за единицу, а они — обычные строковые ключи, и элементами массива не являются.
+function $indexKey(key) {
+  if (typeof key !== "string") return -1
+  const index = Number(key)
+  return Number.isInteger(index) && index >= 0 && String(index) === key ? index : -1
+}
+
+// Виды «добавить»: вид → { ячейки, конец }. Отдельно от самого вида, потому что
+// спрашивают о нём по значению-ключу, а не сквозь ловушку: обращение к прокси
+// по служебному полю стоило бы столько же, сколько чтение элемента.
+const $VIEWS = new WeakMap()
+
+/**
+ * Список как ВИД на общий буфер: те же ячейки, своя длина.
+ *
+ * Зачем он нужен и почему обычным массивом обойтись нельзя — в шапке файла,
+ * раздел «Цена „добавить“». Коротко: два массива JS с разной длиной не могут
+ * разделить хранилище, поэтому «добавить» над обычным массивом стоит Ω(длины),
+ * а вид — постоянного времени.
+ *
+ * Ловушки отвечают ровно за одно: вид обязан быть НЕОТЛИЧИМ от обычного массива
+ * длиной `end`. Чтение за концом даёт `undefined`, а не ячейку соседа;
+ * перечисление ключей не показывает ничего сверх своей длины; запись
+ * отвергается — значение flang неизменяемо, а ячейки за концом принадлежат
+ * другому списку.
+ *
+ * @param {Array} cells — общий буфер; его длина и есть отметка «занято».
+ * @param {number} end — длина этого списка.
+ */
+function $view(cells, end) {
+  /* Вид на общий буфер: те же ячейки, своя длина. Так «добавить» стоит
+     постоянного времени, а не копии всего списка; обычным массивом это не
+     выразить — два массива JS с разной длиной не делят хранилище. Ловушки ниже
+     отвечают за одно: вид обязан быть НЕОТЛИЧИМ от массива длиной `end` — за
+     концом пусто, ключей сверх своей длины нет, запись отвергается. */
+  const view = new Proxy(cells, {
+    get(target, key) {
+      if (key === "length") return end
+      const index = $indexKey(key)
+      if (index >= 0) return index < end ? target[index] : undefined
+      return target[key]
+    },
+    has(target, key) {
+      if (key === "length") return true
+      const index = $indexKey(key)
+      if (index >= 0) return index < end
+      return key in target
+    },
+    ownKeys() {
+      const keys = []
+      for (let index = 0; index < end; index += 1) keys.push(String(index))
+      keys.push("length")
+      return keys
+    },
+    getOwnPropertyDescriptor(target, key) {
+      if (key === "length") return { value: end, writable: true, enumerable: false, configurable: false }
+      const index = $indexKey(key)
+      if (index >= 0) {
+        if (index >= end) return undefined
+        return { value: target[index], writable: true, enumerable: true, configurable: true }
+      }
+      return Object.getOwnPropertyDescriptor(target, key)
+    },
+    set: () => false,
+    defineProperty: () => false,
+    deleteProperty: () => false,
+  })
+  $VIEWS.set(view, { cells, end })
+  return view
+}
+
+/**
+ * «добавить … к …»: за постоянное время, когда ячейка за концом ещё ничья, и
+ * копией во всех остальных случаях.
+ *
+ * Инвариант, он же доказательство неизменяемости: длина буфера только растёт, и
+ * занять ячейку за концом вправе единственный список — тот, чей конец совпал с
+ * концом буфера. Значит ячейки внутри списка не пишет никто, а ячейка за концом
+ * занимается не более одного раза за жизнь буфера: второе «добавить» к тому же
+ * значению видит буфер длиннее своего конца и уходит на копию. Тот же приём и по
+ * той же причине стоит в `fl_b_dobavit` (C), `Items::grown` (Rust) и `BAppend`
+ * (Go).
+ *
+ * Голое `list.push(item)` здесь недопустимо ни при каких условиях: список,
+ * который отдали, мог остаться у кого-то ещё, и продление на месте испортило бы
+ * ЕГО значение. Разрешение спрашивается у отметки занятого, а не у длины.
+ */
 function $b_dobavit(item, value) {
   const list = $expectList("добавить", value, "второй аргумент")
-  return [...list, item]
+  const view = $VIEWS.get(list)
+  if (view !== undefined && view.end === view.cells.length) {
+    view.cells.push(item)
+    return $view(view.cells, view.cells.length)
+  }
+  /* Копия — из буфера напрямую, а не сквозь ловушки вида: копировать чтением по
+     одному элементу стоило бы вдесятеро дороже на ровном месте. */
+  const cells = view === undefined ? list.slice() : view.cells.slice(0, view.end)
+  cells.push(item)
+  return $view(cells, cells.length)
 }
 
 function $b_ostatok_ot(left, right) {
@@ -704,6 +917,144 @@ function $hostDepth(error, name) {
   )
 }
 
+/* ═════════════════ стек под объявленный предел глубины ═════════════════════
+
+   Счётчик глубины считает КАДРЫ, а несёт их стек хозяина, и в этой цели его не
+   хватало НИКОГДА. Замер холодными процессами (Node 26.7, стек V8 по
+   умолчанию, предел языка 10 000): у функции с одним параметром и без
+   связываний влезает 7 386 кадров, у функции с сорока живыми связываниями —
+   1 379. То есть объявленных 10 000 кадров не существовало ни для одной
+   программы: до них не доходит даже самая тонкая, а отказ приходит не тот,
+   которым на том же входе отвечает интерпретатор.
+
+   Рычаг у цели всё-таки есть, и он тот же, что в Python
+   (`threading.stack_size`) и в C (`pthread_attr_setstacksize`): поток с ЯВНО
+   ЗАДАННЫМ стеком. В Node это `worker_threads` и `resourceLimits.stackSizeMb`.
+   Замер тем же способом — сколько кадров несёт стек заданного размера:
+
+       кадров            4 МиБ    8 МиБ   16 МиБ   32 МиБ   байт на кадр
+       0 связываний     29 226   60 067  121 748  245 109        ≈ 137
+       40 связываний     5 459   11 220   22 743   45 788        ≈ 733
+       200 связываний    1 207    2 483    5 034   10 137      ≈ 3 310
+
+   Цена кадра в расчёте — 8 КиБ: вдвое с лишним больше худшего измеренного, тем
+   же правилом, каким взяты 16 КиБ у `FL_STACK_PER_FRAME` в C. Под объявленные
+   10 000 кадров это 79 МиБ стека, и на них худшая из трёх форм доходит до
+   предела ЯЗЫКА (10 001) и отказывает текстом эталона.
+
+   Чего рычаг не делает, и об этом надо сказать прямо:
+
+     • в браузере его нет — `worker_threads` там не существует, стек Worker'а не
+       настраивается, и правду говорит сторож `$hostDepth`;
+     • прямой вызов экспортированной функции считает на стеке того, кто позвал:
+       рычаг работает только через `$callDeep`. Ровно так же устроен C —
+       библиотека, вызванная мимо `fl_call_deep`, считает на стеке вызывающего;
+     • выше 131 072 объявленных кадров стек упирается в потолок 1 ГиБ, и дальше
+       правду опять говорит сторож, а не объявленное число.
+*/
+
+// Сколько мегабайт стека просить под объявленный предел глубины. Ноль и
+// бесконечность значат «предела нет» — тогда просим потолок и оставляем ответ
+// сторожу.
+function $stackMb(maxDepth) {
+  const perFrame = 8192 // байт на кадр: вдвое с лишним больше худшего измеренного
+  const most = 1024 // МиБ: выше потолка глубина не покупается, а обещается
+  if (!Number.isFinite(maxDepth) || maxDepth <= 0) return most
+  return Math.min(most, Math.max(8, Math.ceil((maxDepth * perFrame) / 1048576)))
+}
+
+// Значение через границу потока. Структурное копирование несёт числа (вместе с
+// NaN, ±0 и бесконечностями), строки, признаки, «ничто», списки и записи как
+// есть, но теряет ПРОТОТИП: вариант приехал бы обычным объектом, и `$isVariant`
+// назвал бы его записью. Поэтому вид значения едет тегом, а не угадывается.
+function $wireOut(value) {
+  if (Array.isArray(value)) return ["l", value.map($wireOut)]
+  if (value instanceof $FlangVariant) return ["v", value.variant, $wireFields(value.fields)]
+  if (value !== null && typeof value === "object") return ["r", $wireFields(value)]
+  return ["s", value]
+}
+
+// Поля записи и варианта — списком пар: порядок полей часть значения.
+function $wireFields(fields) {
+  return Object.keys(fields).map((name) => [name, $wireOut(fields[name])])
+}
+
+function $wireIn(node) {
+  if (node[0] === "l") return node[1].map($wireIn)
+  if (node[0] === "v") return new $FlangVariant(node[1], $unwireFields(node[2]))
+  if (node[0] === "r") return $unwireFields(node[1])
+  return node[1]
+}
+
+function $unwireFields(pairs) {
+  const fields = {}
+  for (const pair of pairs) fields[pair[0]] = $wireIn(pair[1])
+  return fields
+}
+
+// Расчёт на своём стеке: рычага нет либо поток не завёлся. Считаем ровно там
+// же и с той же памятью, что до починки, — обещание держит сторож `$hostDepth`.
+// Глубина, купленная ценой падения, была бы не починкой, а переносом отказа.
+function $callHere(fn, args, limits) {
+  $newContext(limits)
+  return fn(...args)
+}
+
+// Что делает поток: зовёт функцию модуля и отвечает одним сообщением. Живёт
+// строкой, а не файлом, потому что модуль самодостаточен: класть рядом второй
+// файл значило бы, что напечатанное больше не переносится копированием.
+function $deepSource() {
+  return [
+    "import { parentPort, workerData } from \"node:worker_threads\"",
+    "const program = await import(workerData.module)",
+    "parentPort.postMessage(program.$deepEntry(program[workerData.name], workerData.args, workerData.limits))",
+  ].join("\n")
+}
+
+function $deepEntry(fn, args, limits) {
+  if (typeof fn !== "function") return { ok: false, broken: "в модуле нет такой функции" }
+  $newContext(limits ?? {})
+  try {
+    return { ok: true, value: $wireOut(fn(...args.map($wireIn))) }
+  } catch (err) {
+    if (err instanceof $FlangError) return { ok: false, code: err.code, message: err.message }
+    return { ok: false, alien: String((err && err.message) || err) }
+  }
+}
+
+async function $callDeep(fn, args = [], limits = {}) {
+  let Worker = null
+  try {
+    /* Имя модуля собирается на месте, а не стоит в тексте: статический
+       «node:worker_threads» сборщик для браузера попытался бы разрешить, тогда
+       как здесь его отсутствие — обычный ход дела, а не поломка. */
+    Worker = (await import(["node:", "worker_threads"].join(""))).Worker
+  } catch {
+    Worker = null
+  }
+  if (typeof Worker !== "function") return $callHere(fn, args, limits)
+  const depth = typeof limits.maxDepth === "number" ? limits.maxDepth : $DEFAULT_MAX_DEPTH
+  let worker = null
+  try {
+    worker = new Worker(new URL(`data:text/javascript,${encodeURIComponent($deepSource())}`), {
+      workerData: { module: import.meta.url, name: fn.name, args: args.map($wireOut), limits },
+      resourceLimits: { stackSizeMb: $stackMb(depth) },
+    })
+  } catch {
+    return $callHere(fn, args, limits)
+  }
+  const answer = await new Promise((done) => {
+    worker.on("message", done)
+    worker.on("error", (err) => done({ ok: false, broken: String((err && err.message) || err) }))
+    worker.on("exit", (code) => done({ ok: false, broken: `поток вышел с кодом ${code}` }))
+  })
+  await worker.terminate()
+  if (answer.ok === true) return $wireIn(answer.value)
+  if (answer.broken !== undefined) return $callHere(fn, args, limits)
+  if (answer.alien !== undefined) throw new Error(answer.alien)
+  throw new $FlangError(answer.code, answer.message)
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Реестр рантайма: имя → { нужные ему помощники, исходный текст }.
 
@@ -720,6 +1071,15 @@ function runtimeEntry(name, needs, source) {
 
 function fromSource(fn) {
   return fn.toString()
+}
+
+/**
+ * То же, но помощник уезжает в модуль ЭКСПОРТОМ и с пояснением над ним.
+ * Экспортируется не всё подряд: экспорт — это обещание совместимости, и его
+ * получают только две точки входа глубокого расчёта.
+ */
+function exportedSource(doc, fn) {
+  return `${doc}\nexport ${fn.toString()}`
 }
 
 runtimeEntry("$FlangError", [], fromSource($FlangError))
@@ -780,8 +1140,26 @@ runtimeEntry("$b_k_stroke", ["$fail", "$typeName"], fromSource($b_k_stroke))
 runtimeEntry("$b_pusto", ["$fail", "$isList", "$typeName"], fromSource($b_pusto))
 runtimeEntry("$b_golova", ["$fail", "$expectList"], fromSource($b_golova))
 runtimeEntry("$b_hvost", ["$fail", "$expectList"], fromSource($b_hvost))
+runtimeEntry("$b_golova_dokazano", ["$expectList"], fromSource($b_golova_dokazano))
+runtimeEntry("$b_hvost_dokazano", ["$expectList"], fromSource($b_hvost_dokazano))
+runtimeEntry("$b_razdelit_dokazano", ["$expectString"], fromSource($b_razdelit_dokazano))
+runtimeEntry("$b_kod_simvola_dokazano", ["$expectString"], fromSource($b_kod_simvola_dokazano))
 runtimeEntry("$b_element", ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"], fromSource($b_element))
-runtimeEntry("$b_dobavit", ["$expectList"], fromSource($b_dobavit))
+runtimeEntry("$indexKey", [], fromSource($indexKey))
+/* `$VIEWS` — не функция, а состояние: одна таблица на модуль, как счётчики в
+   `$LIMITS`. Печатается строкой по той же причине, по какой печатается сама
+   таблица: значения у неё нет, есть объявление. */
+runtimeEntry(
+  "$VIEWS",
+  [],
+  [
+    "// Буферы «добавить»: вид → его буфер и длина. Слабая — вид, который никому",
+    "// больше не нужен, обязан уйти вместе со своей записью.",
+    "const $VIEWS = new WeakMap()",
+  ].join("\n"),
+)
+runtimeEntry("$view", ["$indexKey", "$VIEWS"], fromSource($view))
+runtimeEntry("$b_dobavit", ["$expectList", "$view", "$VIEWS"], fromSource($b_dobavit))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
 runtimeEntry("$b_procentov_ot", ["$expectNumber"], fromSource($b_procentov_ot))
 runtimeEntry("$Bounce", [], fromSource($Bounce))
@@ -795,6 +1173,61 @@ runtimeEntry("$step", ["$fail", "$LIMITS"], fromSource($step))
 /* `$STACK_OVERFLOW` живёт в том же блоке `$LIMITS`, отдельной записи ему не надо. */
 runtimeEntry("$hostDepth", ["$FlangError", "$LIMITS"], fromSource($hostDepth))
 runtimeEntry("$top", ["$hostDepth", "$LIMITS"], fromSource($top))
+/* Стек под объявленный предел — рычаг цели, а не украшение: без него
+   объявленных 10 000 кадров нет ни у одной программы (см. шапку раздела). */
+runtimeEntry("$stackMb", [], fromSource($stackMb))
+runtimeEntry("$wireOut", ["$FlangVariant", "$wireFields"], fromSource($wireOut))
+runtimeEntry("$wireFields", ["$wireOut"], fromSource($wireFields))
+runtimeEntry("$wireIn", ["$FlangVariant", "$unwireFields"], fromSource($wireIn))
+runtimeEntry("$unwireFields", ["$wireIn"], fromSource($unwireFields))
+runtimeEntry("$callHere", ["$LIMITS"], fromSource($callHere))
+runtimeEntry("$deepSource", [], fromSource($deepSource))
+runtimeEntry(
+  "$deepEntry",
+  ["$LIMITS", "$FlangError", "$wireIn", "$wireOut"],
+  exportedSource(
+    [
+      "/**",
+      " * Точка входа расчёта в потоке с заданным стеком: её зовёт поток, который",
+      " * завёл `$callDeep`. Руками её звать незачем — вызов на своём стеке ничем не",
+      " * отличается от обычного вызова функции модуля.",
+      " *",
+      " * @param {Function} fn экспортированная функция этого модуля",
+      " * @param {Array} args аргументы в форме `$wireOut`",
+      " * @param {{maxDepth?: number, maxSteps?: number}} limits",
+      " */",
+    ].join("\n"),
+    $deepEntry,
+  ),
+)
+runtimeEntry(
+  "$callDeep",
+  ["$LIMITS", "$FlangError", "$deepEntry", "$deepSource", "$stackMb", "$wireIn", "$wireOut", "$callHere"],
+  exportedSource(
+    [
+      "/**",
+      " * Вычисление на стеке, отведённом ПОД ОБЪЯВЛЕННЫЙ ПРЕДЕЛ глубины.",
+      " *",
+      " * Прямой вызов `функция(x)` считает на стеке того, кто позвал, а его в",
+      " * JavaScript хватает не на 10 000 кадров, а на 7 386 у самой тонкой функции",
+      " * и на 1 379 у функции с сорока связываниями. Здесь расчёт уезжает в поток",
+      " * с явно заданным стеком (`worker_threads`), и объявленный предел",
+      " * становится достижимым: тот же вход даёт FLANG_RECURSION_LIMIT на глубине",
+      " * 10 001, тем же текстом, что интерпретатор.",
+      " *",
+      " * Где рычага нет — в браузере и там, где поток не завёлся, — расчёт идёт на",
+      " * своём стеке, как и раньше, а правду говорит сторож: отказ остаётся",
+      " * объявленным, только текст называет хозяина.",
+      " *",
+      " * @param {Function} fn экспортированная функция этого модуля",
+      " * @param {Array} args её аргументы",
+      " * @param {{maxDepth?: number, maxSteps?: number}} [limits]",
+      " * @returns {Promise<any>}",
+      " */",
+    ].join("\n"),
+    $callDeep,
+  ),
+)
 
 /** Канонические имена встроенных форм → помощники рантайма. */
 const BUILTIN_HELPERS = new Map([
@@ -818,6 +1251,17 @@ const BUILTIN_HELPERS = new Map([
   ["остаток от", "$b_ostatok_ot"],
   ["процентов от", "$b_procentov_ot"],
 ])
+
+/**
+ * Суффикс имени помощника БЕЗ сторожа частичности.
+ *
+ * Выбор делает `помощникФормы` (`src/builtins.mjs`) по отметке `доказана` на
+ * узле — её кладёт передний край (`bin/flang.mjs`, `markNonEmpty`) по выводу
+ * проверки типов. Печать здесь ничего не доказывает и доказать не может: анализ
+ * живёт в `src/types.mjs`, а копия печати на самом языке его не видит вовсе
+ * (круг импортов), и обе стороны обязаны читать ОДНУ отметку.
+ */
+const СУФФИКС_ДОКАЗАННОГО = "_dokazano"
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -1137,7 +1581,7 @@ export function emitJs(program, options = {}) {
      функции, к процессам, надзорам и прогонам не прикасается. Читать их после
      него значило бы зависеть от того, чего проход не обещал.
 
-     Раньше здесь стоял отказ `FLANG_NO_SCHEDULER`: печатать процессы было
+     Раньше здесь стоял отказ `FLANG_CONC_UNSUPPORTED`: печатать процессы было
      нечем, и молчать об этом было хуже всего — программа собиралась и делала не
      то, что написано. Теперь планировщик у цели есть (`js/flang_conc.js`), и
      отказ снялся не тем, что его убрали, а тем, что он перестал быть правдой:
@@ -1148,6 +1592,11 @@ export function emitJs(program, options = {}) {
   const supervisors = Array.isArray(program.supervisors) ? program.supervisors : []
   const runs = Array.isArray(program.runs) ? program.runs : []
   const concurrent = processes.length > 0 || supervisors.length > 0 || runs.length > 0
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на границе
+     интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы
+     молча. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -1262,6 +1711,27 @@ export function emitJs(program, options = {}) {
     sections.push(renderConcurrency(processes, supervisors, runs, program, shared))
   }
 
+  /* Рычаг глубины печатается там, где глубине есть куда расти, — то есть при
+     рекурсии. Программе без единого цикла в графе вызовов он не нужен: у неё
+     глубина ограничена самим графом, и счётчика она не получает вовсе. */
+  if (recursive.size > 0) shared.used.add("$callDeep")
+
+  /* Таблица для прогонщика — единственное, что модуль знает о нём. Печатается
+     она вместе с ним и отменяется вместе с ним (`cli: false`): модулю, который
+     никто не зовёт по имени, таблица имён не нужна.
+
+     `$FlangVariant` и `$isVariant` затребованы ЯВНО, а не потому, что в
+     программе есть суммы: их там может не быть вовсе, а вариант всё равно
+     обязан доехать по проводу — и обязан быть узнан как вариант. Иначе
+     напечатанный код разобрал бы его как запись и ответил не тем отказом, чем
+     интерпретатор, ровно на тех входах, где сверка и ищет расхождения. */
+  const cli = options.cli !== false
+  if (cli) {
+    shared.used.add("$FlangVariant")
+    shared.used.add("$isVariant")
+    sections.push(renderProgramTable(shared, $stackMb(maxDepth), входные))
+  }
+
   const runtime = renderRuntime(shared.used, base, maxDepth, maxSteps, concurrent)
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
   const head = [
@@ -1269,6 +1739,9 @@ export function emitJs(program, options = {}) {
     moduleName === null ? "// Программа flang без имени модуля." : `// Модуль flang: «${moduleName}».`,
     "// Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.",
     "// Модуль самодостаточен — ни одной зависимости, работает и в Node, и в браузере.",
+    ...(cli
+      ? ["// Рядом напечатан прогонщик: node flang_cli.js ./<этот файл> — JSON на входе, JSON на выходе."]
+      : []),
     ...(concurrent
       ? [
         "// Программа с процессами: планировщик конкурентности напечатан внутрь модуля.",
@@ -1288,7 +1761,127 @@ export function emitJs(program, options = {}) {
      первым и проверить исполнением не могут: движок выполнит такой файл молча.
      Форма JS — `\uXXXX`, та же, что в литерале. */
   const files = [{ path, content: `${parts.join("\n\n")}\n` }]
+  /* Прогонщик — ВТОРЫМ файлом, и порядок здесь не вкус: модуль остаётся
+     `files[0]` для всех, кто берёт напечатанное программно (`flang/conc/bin`,
+     тесты печати, стенд распределённости). Байт в байт одинаков для любой
+     программы — как `flang_cli.c` и `flang_cli.py`; всё, что он знает об этой
+     программе, приехало таблицей `$PROGRAM` в модуле. */
+  if (cli) {
+    files.push({
+      path: CLI_FILE,
+      content: `${cliBanner(moduleName, path)}\n${CLI_SOURCE}`,
+    })
+  }
   return { files: escapeBidiInFiles(files, escapeBidiUnicode4) }
+}
+
+/** Шапка прогонщика: чей он и как его звать. Тело — байт в байт `js/flang_cli.js`. */
+function cliBanner(moduleName, path) {
+  return [
+    "// Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs). Не редактировать руками.",
+    moduleName === null ? "// Программа flang без имени модуля." : `// Модуль flang: «${moduleName}».`,
+    "// Файл: прогонщик — JSON на входе, JSON на выходе.",
+    `// Запуск: node ${CLI_FILE} ./${path}`,
+  ].join("\n")
+}
+
+/**
+ * Таблица, по которой прогонщик находит эту программу.
+ *
+ * Всё, что ему нужно, и ничего сверх: имена flang → функции модуля (арность он
+ * возьмёт у самой функции), фабрика варианта — построить вариант с ЛЮБЫМ именем
+ * иначе нечем, а `$isVariant` смотрит на прототип, — узнавание варианта на
+ * обратном пути, и размер стека под объявленный предел глубины.
+ *
+ * Стек посчитан ЗДЕСЬ, при печати, тем же `$stackMb`, каким его считает
+ * `$callDeep`: предел глубины известен в момент печати, и второго расчёта, у
+ * которого была бы возможность разойтись с первым, заводить незачем.
+ */
+function renderProgramTable(shared, stackMb, входные) {
+  const rows = [...shared.prepared.functions.keys()].map(
+    (name) => `    [${JSON.stringify(name)}, ${shared.functionIdents.get(name)}],`,
+  )
+  return [
+    "/**",
+    " * Связь этого модуля с прогонщиком (`flang_cli.js`): имена flang → функции,",
+    " * фабрика и узнавание варианта, стек под объявленный предел глубины (МиБ) и",
+    " * объявленные типы параметров — граница входа.",
+    " * Прогонщик — соседний файл, а не часть модуля: в браузер он не едет.",
+    " *",
+    " * @type {{functions: Map<string, Function>, variant: Function, isVariant: Function,"
+      + " stackMb: number, entry: object}}",
+    " */",
+    "export const $PROGRAM = {",
+    "  functions: new Map([",
+    ...rows,
+    "  ]),",
+    "  variant: (name, fields) => new $FlangVariant(name, fields),",
+    "  isVariant: $isVariant,",
+    `  stackMb: ${stackMb},`,
+    ...renderEntry(входные),
+    "}",
+  ].join("\n")
+}
+
+/**
+ * Граница входа — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * В напечатанном модуле типов нет: прогонщик разбирает JSON и зовёт функцию.
+ * Поэтому `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * 1e300 упирался в FLANG_RECURSION_LIMIT — код, отведённый ОБЫЧНОЙ функции.
+ * Тотальная отказывала пределом глубины потому, что доказательство её завершения
+ * СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно
+ * меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+ *
+ * Сверяет таблицу `checkEntry` из `js/flang_cli.js` — один и тот же текст для
+ * всех программ, а строит её `таблицаВхода` из flang/src/types.mjs, то есть тот
+ * же файл, что отвечает на этот вопрос для `flang run --args`.
+ *
+ * Здесь только ДАННЫЕ, и это не вкус: таблица уезжает в браузер вместе с
+ * модулем и ничего там не требует, а обход по ней живёт в прогонщике —
+ * соседнем файле, который в браузер не едет вовсе.
+ */
+function renderEntry(таблица) {
+  const список = (имя, строки) =>
+    (строки.length === 0 ? [`    ${имя}: [],`] : [`    ${имя}: [`, ...строки, "    ],"])
+  const строка = (поля) => `      { ${поля.join(", ")} },`
+  return [
+    "  /* Граница входа: объявленные типы параметров данными. Прогонщик сверяет",
+    "     по ним значения, пришедшие снаружи, ДО вызова (`checkEntry` в",
+    "     flang_cli.js); вид «неизвестно» не сверяется — одной таблицы ему мало. */",
+    "  entry: {",
+    ...список("types", таблица.типы.map((запись) =>
+      строка([
+        `kind: ${JSON.stringify(запись.вид)}`,
+        `name: ${JSON.stringify(запись.имя)}`,
+        `owner: ${JSON.stringify(запись.владелец)}`,
+        `nothing: ${запись.ничто}`,
+        `integer: ${запись.целое}`,
+        `range: ${запись.отрезок}`,
+        `low: ${renderNumber(запись.низ)}`,
+        `high: ${renderNumber(запись.верх)}`,
+        `item: ${запись.элемент}`,
+        `fieldAt: ${запись.полеС}`,
+        `fieldCount: ${запись.полей}`,
+        `variantAt: ${запись.вариантС}`,
+        `variantCount: ${запись.вариантов}`,
+      ]))),
+    ...список("fields", таблица.поля.map((поле) =>
+      строка([`name: ${JSON.stringify(поле.имя)}`, `type: ${поле.тип}`]))),
+    ...список("variants", таблица.варианты.map((вариант) =>
+      строка([
+        `name: ${JSON.stringify(вариант.имя)}`,
+        `fieldAt: ${вариант.полеС}`,
+        `fieldCount: ${вариант.полей}`,
+      ]))),
+    ...список("params", таблица.параметры.map((параметр) =>
+      строка([
+        `fn: ${JSON.stringify(параметр.функция)}`,
+        `name: ${JSON.stringify(параметр.параметр)}`,
+        `type: ${параметр.тип}`,
+      ]))),
+    "  },",
+  ]
 }
 
 function renderRuntime(used, base, maxDepth, maxSteps, concurrent = false) {
@@ -1817,7 +2410,7 @@ function emitValue(expr, ctx, out, pad) {
       }
       expectArity(canonical, args.length, node.span)
       const rendered = emitOperands(args, ctx, out, pad)
-      const helper = ctx.use(BUILTIN_HELPERS.get(canonical))
+      const helper = ctx.use(помощникФормы(canonical, node, BUILTIN_HELPERS, СУФФИКС_ДОКАЗАННОГО))
       return { code: `${helper}(${rendered.join(", ")})`, pure: false }
     }
     case "binary": {

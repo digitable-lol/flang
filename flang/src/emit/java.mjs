@@ -110,9 +110,10 @@
 
 import { readFileSync } from "node:fs"
 
-import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../../../tools/ftsc/src/bidi.mjs"
 import { pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -168,6 +169,16 @@ const BUILTIN_HELPERS = new Map([
   ["остаток от", "bRemainder"],
   ["процентов от", "bPercentOf"],
 ])
+
+/**
+ * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
+ *
+ * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
+ * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
+ * отметку и потому печатают одно и то же.
+ */
+const СУФФИКС_ДОКАЗАННОГО = "Proven"
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -541,6 +552,11 @@ export function emitJava(program, options = {}) {
      всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
      `требуетПланировщика`). */
   требуетПланировщика(program, "java")
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на границе
+     интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы
+     молча. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -634,6 +650,7 @@ export function emitJava(program, options = {}) {
   }
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
+  bodies.push(renderEntry(входные))
 
   const files = []
   for (const [name, what] of RUNTIME_FILES) {
@@ -1155,7 +1172,7 @@ function emitValue(expr, ctx, out, pad) {
         args.map((argument) => (out2, pad2) => emitValue(argument, ctx, out2, pad2)),
         ctx, out, pad,
       )
-      return `Flang.${BUILTIN_HELPERS.get(canonical)}(${["ctx", ...rendered].join(", ")})`
+      return `Flang.${помощникФормы(canonical, node, BUILTIN_HELPERS, СУФФИКС_ДОКАЗАННОГО)}(${["ctx", ...rendered].join(", ")})`
     }
     case "binary": {
       const [left, right] = emitOrdered([
@@ -1554,6 +1571,72 @@ function renderDispatch(shared) {
     "  }",
   )
   return lines.join("\n")
+}
+
+/* ── граница входа: объявленные типы параметров данными ── */
+
+const ВИДЫ_ТИПА_JAVA = new Map([
+  ["число", "Flang.TYPE_NUMBER"],
+  ["строка", "Flang.TYPE_TEXT"],
+  ["признак", "Flang.TYPE_FLAG"],
+  ["ничто", "Flang.TYPE_NULL"],
+  ["список", "Flang.TYPE_LIST"],
+  ["запись", "Flang.TYPE_RECORD"],
+  ["сумма", "Flang.TYPE_SUM"],
+])
+
+/**
+ * Объявленные типы параметров — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * В напечатанной программе типов нет: прогонщик разбирает JSON и зовёт функцию.
+ * Поэтому `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * 1e300 упирался в FLANG_RECURSION_LIMIT — код, отведённый ОБЫЧНОЙ функции.
+ * Тотальная отказывала пределом глубины потому, что доказательство её завершения
+ * СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно
+ * меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+ *
+ * Сверяет таблицу `Flang.checkEntry` — один и тот же текст для всех программ, а
+ * строит её `таблицаВхода` из flang/src/types.mjs, то есть тот же файл, что
+ * отвечает на этот вопрос для `flang run --args`.
+ */
+function renderEntry(таблица) {
+  return [
+    "  /* Граница входа: объявленные типы параметров данными. Прогонщик сверяет по",
+    "     ним значения, пришедшие снаружи, ДО вызова (Flang.checkEntry). Виды",
+    "     Flang.TYPE_UNKNOWN (значение-функция, параметр полиморфизма, применение",
+    "     типа с аргументами) не сверяются — ровно как молчит о них проверка",
+    "     значений эталона. */",
+    "  private static final Flang.EntryTable ENTRY =",
+    "      new Flang.EntryTable(",
+    "          new Flang.TypeSpec[] {",
+    ...таблица.типы.map((запись) =>
+      `            new Flang.TypeSpec(${ВИДЫ_ТИПА_JAVA.get(запись.вид) ?? "Flang.TYPE_UNKNOWN"}, ` +
+      `${javastring(запись.имя)}, ${javastring(запись.владелец)}, ${запись.ничто}, ${запись.целое}, ` +
+      `${запись.отрезок}, ${javanumber(запись.низ)}, ${javanumber(запись.верх)}, ${запись.элемент}, ` +
+      `${запись.полеС}, ${запись.полей}, ${запись.вариантС}, ${запись.вариантов}),`),
+    "          },",
+    "          new Flang.TypeField[] {",
+    ...таблица.поля.map((поле) => `            new Flang.TypeField(${javastring(поле.имя)}, ${поле.тип}),`),
+    "          },",
+    "          new Flang.TypeVariant[] {",
+    ...таблица.варианты.map((вариант) =>
+      `            new Flang.TypeVariant(${javastring(вариант.имя)}, ${вариант.полеС}, ${вариант.полей}),`),
+    "          },",
+    "          new Flang.EntryParam[] {",
+    ...таблица.параметры.map((параметр) =>
+      `            new Flang.EntryParam(${javastring(параметр.функция)}, ` +
+      `${javastring(параметр.параметр)}, ${параметр.тип}),`),
+    "          });",
+    "",
+    "  /**",
+    "   * Объявленные типы параметров: по ним сверяется вход извне.",
+    "   *",
+    "   * @return таблица границы входа",
+    "   */",
+    "  public static Flang.EntryTable entry() {",
+    "    return ENTRY;",
+    "  }",
+  ].join("\n")
 }
 
 /* ── проверки, повторяющие интерпретатор ── */

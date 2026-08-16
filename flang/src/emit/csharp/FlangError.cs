@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Диагностика flang: код и текст, дословно совпадающие с интерпретатором.
 //
 // ── Почему исключение, а не Result ─────────────────────────────────────────

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 """
 Рантайм flang для бэкенда Python.
 
@@ -119,17 +122,76 @@ class Value:
     Значения неизменяемы по договору: ни рантайм, ни напечатанный код не правят
     ни список, ни словарь после создания, поэтому «хвост» и «добавить» могут
     делить память с исходным значением там, где это ничего не меняет.
+
+    ── end: длина списка, когда список делит массив с другими ──────────────
+    Список бывает в двух состояниях, и различает их именно end.
+
+    * ТОЧНЫЙ (end is None) — data и есть содержимое, ровно своей длины. Так
+      выглядят литералы, «отобразить», «отфильтровать», «разделить», «символы»
+      и всё, что построено с нуля.
+    * РАСТУЩИЙ (end — целое) — содержимое это data[:end], а сам список data
+      общий: его конец могут занимать элементы уже ДРУГОГО списка. Так
+      выглядит только то, что выдало «добавить» (см. b_append).
+
+    Инвариант, он же доказательство неизменяемости: элементы data никто не
+    перезаписывает — единственная правка это append В КОНЕЦ, и право на неё
+    имеет ровно один список, тот, чей end совпал с len(data). После append
+    len(data) вырос, значит прежний владелец право потерял НАВСЕГДА (len только
+    растёт), а получил его ровно один новый список. Отсюда: ячейки внутри
+    списка не пишет никто, ячейка за концом занимается не более одного раза, а
+    ветвление двух «добавить» от одного значения даёт два независимых списка —
+    второе «добавить» видит end < len(data) и уходит на копию.
+
+    Зачем это нужно: без общего массива накопление списка n вызовами «добавить»
+    стоит O(n²), потому что каждый вызов копирует весь список. Тогда один шаг
+    вычисления стоит O(длины), и объявленный предел шагов перестаёт ограничивать
+    работу: точка «Строить скобки» от 42 и 0 и 0 и "" и [] при объявленных
+    5 000 000 шагов не отвечала и за 60 с. Тот же приём и по той же причине
+    стоит в бэкендах C (fl_b_dobavit), Rust (Items::grown) и Go (BAppend).
+
+    Читать содержимое списка напрямую через .data нельзя — только через
+    list_items (точная длина) или require_list (то же плюс запрет на рост под
+    ногами обхода).
     """
 
-    __slots__ = ("data", "name", "tag")
+    __slots__ = ("data", "end", "name", "tag")
 
-    def __init__(self, tag, data=None, name=""):
+    def __init__(self, tag, data=None, name="", end=None):
         self.tag = tag
         self.data = data
         self.name = name
+        self.end = end
 
     def __repr__(self):
         return f"<flang {type_name(self)}: {describe(self)}>"
+
+
+def list_items(value):
+    """Содержимое списка ровно своей длины.
+
+    У точного списка это сам data и стоит ничего. У растущего, который уже
+    потерял право на рост (за его концом лежит чужой элемент), содержимое
+    обрезается копией — один раз за жизнь значения: копия тут же становится
+    точной, и второе чтение снова стоит ничего.
+
+    Вызывать только на списке: тег проверяет вызывающий.
+    """
+    end = value.end
+    if end is None:
+        return value.data
+    items = value.data
+    if end == len(items):
+        return items
+    trimmed = items[:end]
+    value.data = trimmed
+    value.end = None
+    return trimmed
+
+
+def list_length(value):
+    """Длина списка. Вызывать только на списке: тег проверяет вызывающий."""
+    end = value.end
+    return len(value.data) if end is None else end
 
 
 NOTHING = Value(TAG_NOTHING)
@@ -158,7 +220,13 @@ def text(value):
 
 
 def list_of(items):
-    """Список из готового списка значений. Список переходит во владение."""
+    """Список из готового списка значений. Список переходит во владение.
+
+    Выдаётся ТОЧНЫМ (end is None), права дописывать в конец не получает: тот,
+    кто собрал items, мог оставить себе ссылку на них, и продление на месте
+    испортило бы ему значение. Право на рост раздаёт одно место — «добавить»,
+    и только своей же свежей копии (см. b_append).
+    """
     return Value(TAG_LIST, items)
 
 
@@ -195,18 +263,22 @@ def chain_empty(value):
     """Пустая ли цепочка — пустой список или пустая строка."""
     if value.tag == TAG_STRING:
         return len(value.data) == 0
-    return value.tag == TAG_LIST and len(value.data) == 0
+    return value.tag == TAG_LIST and list_length(value) == 0
 
 
 def chain_cons(value):
     """Непустая ли цепочка."""
     if value.tag == TAG_STRING:
         return len(value.data) > 0
-    return value.tag == TAG_LIST and len(value.data) > 0
+    return value.tag == TAG_LIST and list_length(value) > 0
 
 
 def chain_head(value):
-    """Голова цепочки: первый элемент списка или первый символ строки."""
+    """Голова цепочки: первый элемент списка или первый символ строки.
+
+    data[0] годится и у растущего списка: нулевая ячейка лежит внутри
+    содержимого всегда, когда цепочка непуста (это проверил chain_cons).
+    """
     if value.tag == TAG_STRING:
         return text(value.data[0])
     return value.data[0]
@@ -216,7 +288,7 @@ def chain_tail(value):
     """Хвост цепочки: остаток списка или остаток строки."""
     if value.tag == TAG_STRING:
         return text(value.data[1:])
-    return list_of(value.data[1:])
+    return list_of(list_items(value)[1:])
 
 
 def is_variant(value):
@@ -263,7 +335,7 @@ def describe(value):
             return value.name
         return value.name + "(" + ", ".join(value.data.keys()) + ")"
     if tag == TAG_LIST:
-        return "список из " + str(len(value.data))
+        return "список из " + str(list_length(value))
     if tag == TAG_RECORD:
         return "запись {" + ", ".join(value.data.keys()) + "}"
     if tag == TAG_NOTHING:
@@ -308,9 +380,11 @@ def equal(left, right):
             return left.data == right.data
         return True  # оба «ничто»
     if left.tag == TAG_LIST and right.tag == TAG_LIST:
-        if len(left.data) != len(right.data):
+        a_items = list_items(left)
+        b_items = list_items(right)
+        if len(a_items) != len(b_items):
             return False
-        return all(equal(a, b) for a, b in zip(left.data, right.data))
+        return all(equal(a, b) for a, b in zip(a_items, b_items))
     if left.tag == TAG_VARIANT and right.tag == TAG_VARIANT:
         return left.name == right.name and fields_equal(left.data, right.data)
     if left.tag == TAG_RECORD and right.tag == TAG_RECORD:
@@ -664,13 +738,28 @@ def match_fail(ctx, value):
 
 
 def require_list(ctx, value, label):
-    """«свёртка», «отобразить» и «отфильтровать» работают только со списком."""
+    """«свёртка», «отобразить» и «отфильтровать» работают только со списком.
+
+    Отдаёт содержимое, которое не вырастет под ногами обхода. Разница с
+    list_items здесь принципиальная: тело свёртки — ЧУЖОЙ код, и он вправе
+    позвать «добавить» к тому же значению, по которому идёт обход. У растущего
+    списка «добавить» дописывает в общий массив, и `for … in` увидел бы
+    дописанное — обход пошёл бы дальше собственного конца. Поэтому у растущего
+    берётся копия (она же снимает право на рост), а у точного — сам массив: его
+    вырасти нечему.
+    """
     if value.tag != TAG_LIST:
         raise fail(
             CODE_TYPE,
             f"«{label}» работает только со списком, получено {type_name(value)}",
         )
-    return value.data
+    end = value.end
+    if end is None:
+        return value.data
+    frozen = value.data[:end]
+    value.data = frozen
+    value.end = None
+    return frozen
 
 
 # ───────────────────────────── арифметика ─────────────────────────────
@@ -838,7 +927,7 @@ def _expect_list(name, value, role):
             CODE_BUILTIN_ARGS,
             f"«{name}»: {role} должен быть списком, получено {type_name(value)}",
         )
-    return value.data
+    return list_items(value)
 
 
 # ───────────────────────────── встроенные формы ─────────────────────────────
@@ -854,7 +943,7 @@ def b_length(ctx, value):
     if value.tag == TAG_STRING:
         return Value(TAG_NUMBER, float(len(value.data)))
     if value.tag == TAG_LIST:
-        return Value(TAG_NUMBER, float(len(value.data)))
+        return Value(TAG_NUMBER, float(list_length(value)))
     raise fail(
         CODE_BUILTIN_ARGS,
         f"«длина»: ожидается строка или список, получено {type_name(value)}",
@@ -903,7 +992,7 @@ def b_join(ctx, left, right):
     if left.tag == TAG_LIST:
         separator = _expect_string("соединить", right, "разделитель")
         parts = []
-        for index, item in enumerate(left.data):
+        for index, item in enumerate(list_items(left)):
             if item.tag != TAG_STRING:
                 raise fail(
                     CODE_BUILTIN_ARGS,
@@ -952,7 +1041,7 @@ def b_char_code(ctx, source):
 def b_contains(ctx, left, right):
     """«содержит»: подстрока в строке либо значение в списке."""
     if left.tag == TAG_LIST:
-        for item in left.data:
+        for item in list_items(left):
             if equal(item, right):
                 return TRUE
         return FALSE
@@ -1099,7 +1188,9 @@ def b_to_string(ctx, value):
 
 def b_empty(ctx, value):
     """«пусто»."""
-    if value.tag == TAG_LIST or value.tag == TAG_STRING:
+    if value.tag == TAG_LIST:
+        return TRUE if list_length(value) == 0 else FALSE
+    if value.tag == TAG_STRING:
         return TRUE if len(value.data) == 0 else FALSE
     raise fail(
         CODE_BUILTIN_ARGS,
@@ -1129,6 +1220,34 @@ def b_tail(ctx, value):
     return Value(TAG_LIST, items[1:])
 
 
+# ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+#
+# Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+# ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+# отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+# _expect_list ловит не пустоту, а другой вид значения.
+def b_split_proven(ctx, source, separator):
+    """«разделить … по …» с доказанно непустым разделителем."""
+    value = _expect_string("разделить", source, "строка")
+    mark = _expect_string("разделить", separator, "разделитель")
+    return Value(TAG_LIST, [Value(TAG_STRING, part) for part in value.split(mark)])
+
+
+def b_char_code_proven(ctx, source):
+    """«код символа» доказанно непустой строки."""
+    return Value(TAG_NUMBER, float(ord(_expect_string("код символа", source, "строка")[0])))
+
+
+def b_head_proven(ctx, value):
+    """«голова» доказанно непустого списка."""
+    return _expect_list("голова", value, "аргумент")[0]
+
+
+def b_tail_proven(ctx, value):
+    """«хвост» доказанно непустого списка."""
+    return Value(TAG_LIST, _expect_list("хвост", value, "аргумент")[1:])
+
+
 def b_element(ctx, index, value):
     """«элемент N в СПИСОК».
 
@@ -1148,9 +1267,29 @@ def b_element(ctx, index, value):
 
 
 def b_append(ctx, item, value):
-    """«добавить … к …»: дописывает в конец, исходный список не меняется."""
+    """«добавить … к …»: дописывает в конец, исходный список не меняется.
+
+    За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+    остальных случаях. Разбор приёма и доказательство неизменяемости — при
+    классе Value, поле end. Безусловная копия была верна, но делала накопление
+    списка квадратичным, а вместе с ним и предел шагов — не сроком, а числом на
+    бумаге.
+
+    Голый items.append(item) здесь недопустим: у Python append амортизирован сам
+    по себе, но массив у списков ОБЩИЙ, и дописать в него вправе единственный
+    список — тот, чей end совпал с len. Разрешение спрашивается у end, а не у
+    длины массива.
+    """
+    if value.tag == TAG_LIST:
+        end = value.end
+        if end is not None and end == len(value.data):
+            value.data.append(item)
+            return Value(TAG_LIST, value.data, "", end + 1)
+    # Копия — и она сразу получает право дописывать в конец: за n «добавить»
+    # копий будет столько, сколько было ветвлений, а не n.
     items = _expect_list("добавить", value, "второй аргумент")
-    return Value(TAG_LIST, [*items, item])
+    grown = [*items, item]
+    return Value(TAG_LIST, grown, "", len(grown))
 
 
 def b_remainder(ctx, left, right):
@@ -1165,3 +1304,154 @@ def b_percent_of(ctx, left, right):
     a = _expect_number("процентов от", left, "процент")
     b = _expect_number("процентов от", right, "значение")
     return Value(TAG_NUMBER, (a / 100) * b)
+
+
+# ───────────────────────────── граница входа ─────────────────────────────
+#
+# Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+# пришедшие снаружи, ДО вызова функции.
+#
+# Зачем это здесь, а не в самих функциях. Доказательство завершения `тотальной`
+# стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже которого `н минус 1`
+# точно меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+# Значение вне типа выносит вместе с типом и доказательство: `1e300 минус 1`
+# равно `1e300`, цепочка вечна, а ловить её нечем. Дверь одна и стоит она ДО
+# вычисления.
+#
+# Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+# `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+# подходит типу», каким сверяется `flang run --args`.
+
+# Виды объявленного типа. TYPE_UNKNOWN — значение-функция, параметр
+# полиморфизма и применение типа с аргументами: одной таблицы им мало, и они не
+# сверяются вовсе.
+TYPE_UNKNOWN = 0
+TYPE_NUMBER = 1
+TYPE_TEXT = 2
+TYPE_FLAG = 3
+TYPE_NULL = 4
+TYPE_LIST = 5
+TYPE_RECORD = 6
+TYPE_SUM = 7
+
+
+class EntryTable:
+    """Граница входа программы: типы, поля, варианты и параметры.
+
+    Поля и варианты лежат сплошными отрезками общих списков, а тип называет
+    своё начало и длину. Каждый тип — кортеж
+    (вид, имя, владелец, ничто, целое, отрезок, низ, верх, элемент,
+     поле с, полей, вариант с, вариантов);
+    поле — (имя, тип); вариант — (имя, поле с, полей);
+    параметр — (функция, имя, тип).
+    """
+
+    __slots__ = ("fields", "params", "types", "variants")
+
+    def __init__(self, types, fields, variants, params):
+        self.types = types
+        self.fields = fields
+        self.variants = variants
+        self.params = params
+
+
+def _check_number_type(spec, value, label):
+    name = spec[1]
+    if value.tag != TAG_NUMBER or not math.isfinite(value.data):
+        raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+    # Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    # порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    # беду.
+    if spec[4] and math.floor(value.data) != value.data:
+        raise fail(CODE_TYPE, f"{label}: {number_text(value.data)} не целое, а тип {name} — целый")
+    if spec[5] and (value.data < spec[6] or value.data > spec[7]):
+        raise fail(CODE_TYPE, f"{label}: {number_text(value.data)} вне {name}")
+
+
+def _check_fields(table, start, count, given, label, owner, of_variant):
+    for index in range(count):
+        name, at = table.fields[start + index]
+        if name not in given:
+            # Необязательное поле можно не задавать: отсутствие — это «ничто».
+            if table.types[at][3]:
+                continue
+            if of_variant:
+                raise fail(CODE_TYPE, f"{label}: вариант «{owner}» требует поле «{name}»")
+            raise fail(CODE_TYPE, f"{label}: не задано поле «{name}» записи «{owner}»")
+        _check_typed(table, at, given[name], f"{label}.{name}")
+
+
+def _check_typed(table, index, value, label):
+    if index < 0 or index >= len(table.types):
+        return
+    spec = table.types[index]
+    kind = spec[0]
+    name = spec[1]
+    owner = spec[2]
+    # Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+    # пропуск. Так же считает и ядро FTS.
+    if spec[3] and value.tag == TAG_NOTHING:
+        return
+    if kind == TYPE_UNKNOWN:
+        return
+    if kind == TYPE_NUMBER:
+        _check_number_type(spec, value, label)
+        return
+    if kind == TYPE_TEXT:
+        if value.tag != TAG_STRING:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_FLAG:
+        if value.tag != TAG_FLAG:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_NULL:
+        if value.tag != TAG_NOTHING:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        return
+    if kind == TYPE_LIST:
+        if value.tag != TAG_LIST:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        for at, item in enumerate(value.data):
+            _check_typed(table, spec[8], item, f"{label}[{at}]")
+        return
+    if kind == TYPE_RECORD:
+        if value.tag != TAG_RECORD:
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        _check_fields(table, spec[9], spec[10], value.data, label, owner, False)
+        # Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+        # сверх объявленных в ней взяться неоткуда.
+        declared = {table.fields[spec[9] + at][0] for at in range(spec[10])}
+        for given in value.data:
+            if given not in declared:
+                raise fail(CODE_TYPE, f"{label}: запись «{owner}» не имеет поля «{given}»")
+        return
+    if kind == TYPE_SUM:
+        if value.tag not in (TAG_VARIANT, TAG_RECORD):
+            raise fail(CODE_TYPE, f"{label} не соответствует типу {name}")
+        found = None
+        if value.tag == TAG_VARIANT:
+            for at in range(spec[12]):
+                if table.variants[spec[11] + at][0] == value.name:
+                    found = table.variants[spec[11] + at]
+                    break
+        if found is None:
+            raise fail(CODE_TYPE, f"{label}: ожидался вариант типа «{owner}»")
+        _check_fields(table, found[1], found[2], value.data, label, found[0], True)
+        return
+
+
+def check_entry(table, name, args):
+    """Сверка набора значений с объявленными типами параметров функции.
+
+    Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+    параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+    видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у `checkValue`
+    эталона: расхождение здесь означало бы, что у языка два ответа на вопрос
+    «подходит ли значение типу».
+    """
+    declared = [param for param in table.params if param[0] == name]
+    if not declared or len(declared) != len(args):
+        return
+    for at, param in enumerate(declared):
+        _check_typed(table, param[2], args[at], f"вызов функции «{name}»: аргумент «{param[1]}»")

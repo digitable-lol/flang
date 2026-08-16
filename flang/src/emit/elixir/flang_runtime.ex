@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 defmodule Flang.Error do
   @moduledoc """
   Диагностика flang: код и текст, дословно совпадающие с интерпретатором.
@@ -36,7 +39,9 @@ defmodule Flang.Rt do
   здесь не нужно вовсе.
 
   И ровно поэтому расхождения тем опаснее: их не видно ни компилятору, ни
-  читателю. Их четыре, и все четыре закрыты здесь.
+  читателю. Их пять, и все пять закрыты здесь. Пятое — не о значении, а о
+  СТОИМОСТИ: одинаковых значений мало, если объявленный предел шагов у этой цели
+  не срабатывает и за полторы минуты.
 
   ### 1. IEEE-754 против арифметики BEAM
 
@@ -94,6 +99,100 @@ defmodule Flang.Rt do
   затевалось. Словарь процесса локален процессу, поэтому два одновременных
   вычисления не мешают друг другу — в отличие от `:persistent_term` или ETS.
 
+  **Сколько это стоит — измерено, а не прикинуто, и обвинение со словаря
+  СНЯТО.** Точка замера: `«Считать» от 5 000 000` (хвостовой отсчёт, где шаг —
+  это счётчик да два действия), предел шагов снят.
+
+  | что | нс на шаг |
+  |---|---|
+  | как здесь (`Process.get`/`put`, 8 обращений к словарю на вызов) | 135 |
+  | сырые `:erlang.get`/`put` вместо обёрток `Process` | 122 |
+  | убывающий запас вместо счёта вверх (6 обращений вместо 8) | 121 |
+  | те же счётчики через `:counters` (изменяемый массив) | 213 |
+  | СЧЁТЧИК СНЯТ ЦЕЛИКОМ (тело `step`/`enter`/`leave` — `:ok`) | 85 |
+  | тот же «Считать», цель Go (счётчики — поля структуры) | 65 |
+
+  Отсюда три вывода, и все три — числа.
+
+  1. Счётчик стоит **50 нс на шаг**, и снять из них можно не больше 14: словарь
+     процесса — самая дешёвая изменяемая ячейка, какая на BEAM бывает.
+     `:counters` вчетверо дороже, ETS дороже ещё, а неизменяемое протаскивание
+     контекста в Elixir невозможно без монады через каждое выражение (в Go
+     дёшево ровно потому, что там ходит `*Ctx` — указатель, а не значение).
+  2. Даже счётчик, снятый ЦЕЛИКОМ, оставляет 85 нс против 65 у Go. Значит
+     разрыв с Go в словаре не живёт.
+  3. На настоящей программе счётчик и вовсе теряется. Документированная точка
+     `«Строить скобки» от 42` при 5 000 000 шагов идёт 8,5 с (1,7 мкс на шаг), а
+     в Go 1,93 с (0,39 мкс) — разрыв 4,3×. Из этих 1700 нс на счётчик приходится
+     около 50, и парный опыт (оба варианта считают ОДНОВРЕМЕННО, 12 пар) дал
+     самому дешёвому счётчику выигрыш 2,6% при 7 победах из 12, то есть
+     неотличимо от шума. Поэтому здесь ничего не меняется: смена представления
+     счётчиков — единственного, что стоит между незавершающейся программой и
+     памятью всего узла, — ради выигрыша, которого не видно за шумом, была бы
+     плохой сделкой.
+
+  Где живёт разрыв 4,3×, названо тем же замером (`:eprof` на той же точке):
+  в трёхуровневой развязке каждого действия над числами —
+  `add/2` → `arithmetic/3` → `num_add/2`, `lt/2` → `num_order/2` → `ordered/2`,
+  `eq/2` → `same_number/2` → `equal/2` — это вместе 43% профиля против 27% у
+  счётчиков, и к ним добавляется упаковка каждого числа в `{:num, float}`. Это
+  отдельный долг, и он назван здесь, чтобы следующий не искал заново.
+
+  ### 5. Предел шагов обязан быть сроком, а «добавить» пишет в КОНЕЦ
+
+  Шаг напечатанного кода — это вход в функцию. Значит объявленный предел
+  «5 000 000 шагов» ограничивает работу только тогда, когда ОДИН шаг стоит
+  постоянного времени; если шаг стоит O(длины), предел перестаёт быть сроком и
+  становится числом на бумаге. Улика измерена, а не придумана: точка
+  `«Строить скобки» от 42 и 0 и 0 и "" и []`
+  (`flang/examples/leetcode/022-generate-parentheses.flang`) при пределе
+  5 000 000 шагов и 10 000 кадров снималась по сроку 60 с и 90 с, тогда как
+  интерпретатор упирается в предел за 926 мс. Причина — `добавить`: список
+  BEAM односвязный и растёт с ГОЛОВЫ, поэтому `список ++ [элемент]` копирует
+  весь список, и накопление n элементов стоит O(n²).
+
+  У целей C, Go и Rust это чинится «массивом с запасом»: у общего массива есть
+  отметка «сколько занято», и продлить его вправе тот список, чей конец совпал с
+  отметкой. **Здесь этот приём неприменим вовсе** — ячейки списка BEAM не
+  перезаписывает никто, включая рантайм, и никакого «запаса за концом» у
+  односвязного списка не бывает. Приём «копить наоборот и развернуть в конце»
+  тоже не подходит в лоб: `добавить` — публичная форма языка с НАБЛЮДАЕМЫМ
+  порядком, а не внутренний накопитель, и вернуть перевёрнутый список нельзя.
+
+  Ответ — держать порядок, но не держать его в одном звене:
+
+      {:list, front, back}   логический список = front ++ Enum.reverse(back)
+
+  `добавить` кладёт элемент в голову `back` (одна ячейка, постоянное время и
+  никакого копирования), а порядок остаётся тем же, потому что `back` хранится
+  наоборот по определению. Это очередь Окасаки из двух списков, и она ложится
+  на flang точно: язык читает список с ГОЛОВЫ (`голова`, `хвост`, образец
+  «голова и хвост»), а `добавить` пишет в КОНЕЦ — то есть ровно `head`/`tail`
+  против `snoc`.
+
+  Неизменяемость доказывать нечем и не надо: ни одна ячейка ни одного списка
+  здесь не переписывается — BEAM этого не умеет. Два `добавить` от одного
+  значения дают `{f, [x | b]}` и `{f, [y | b]}`, у которых общий хвост `b` и
+  разные головы; исходное значение остаётся ровно тем же термом. В отличие от
+  C, Go и Rust ветвление не уходит на копию и стоит те же O(1). Отвечать здесь
+  надо не за неизменяемость, а за ПОРЯДОК, и за него отвечает тест «добавить не
+  портит исходный список: ветвление и хвост».
+
+  Инвариант, ради которого не пострадала `голова`: **`front` пуст только у
+  пустого списка.** Его держат три места — `list/1` (весь список сразу в
+  `front`), `b_append/2` (первый элемент пустого списка кладётся в `front`, а не
+  в `back`) и `pop/1` (когда `front` истощился, накопленный `back`
+  разворачивается один раз). Отсюда цена: `голова` и `пусто` — постоянное время,
+  как было; `хвост` — постоянное время в среднем (каждый элемент переезжает из
+  `back` в `front` не более одного раза за жизнь списка), в худшем случае одного
+  вызова O(длины); `добавить` — постоянное время всегда, без «в среднем».
+
+  За полный обход (`длина`, `соединить`, `свёртка`, вывод прогонщика) платится
+  один `++ Enum.reverse(back)` — O(длины) там, где обход и так O(длины).
+  Единственное, что стало дороже: `элемент N` при N за границей `front` идёт по
+  всему списку, а не по N звеньям. Это та же O(длины), которой `элемент` на
+  BEAM и был для дальних N.
+
   ## Представление значения
 
   Значения flang (SPEC, раздел 2) — скаляр, список, запись, вариант. Соблазн
@@ -107,7 +206,7 @@ defmodule Flang.Rt do
       {:num, float() | :nan | :inf | :ninf}
       {:flag, boolean()}
       {:str, binary()}
-      {:list, [value]}
+      {:list, [value], [value]}       начало и КОНЕЦ НАОБОРОТ — см. раздел 5
       {:rec, [{binary(), value}]}     порядок полей сохраняется
       {:var, binary(), [{binary(), value}]}
 
@@ -157,8 +256,31 @@ defmodule Flang.Rt do
   @doc "Строка."
   def text(value), do: {:str, value}
 
-  @doc "Список."
-  def list(items), do: {:list, items}
+  @doc """
+  Список из готового перечня элементов: всё сразу в начало, конец пуст.
+
+  Держит инвариант «`front` пуст только у пустого списка» (moduledoc, раздел 5).
+  """
+  def list(items), do: {:list, items, []}
+
+  @doc """
+  Элементы списка одним перечнем — сюда сходятся все обходы.
+
+  Здесь и только здесь накопленный `добавить`-ом конец разворачивается в
+  порядок языка. Цена — O(длины), и платится она в тех формах, которые и без
+  того идут по всему списку: `длина`, `соединить`, `содержит`, `свёртка`,
+  `отобразить`, равенство, вывод прогонщика.
+  """
+  def items({:list, front, []}), do: front
+  def items({:list, front, back}), do: front ++ Enum.reverse(back)
+
+  # Первый элемент и остаток списка либо :empty. Разворот в первой клаузе — не
+  # общий случай, а восстановление инварианта: он случается один раз на весь
+  # накопленный конец, а не на каждый «хвост».
+  defp pop({:list, [], []}), do: :empty
+  defp pop({:list, [], back}), do: pop({:list, Enum.reverse(back), []})
+  defp pop({:list, [first], back}) when back != [], do: {first, {:list, Enum.reverse(back), []}}
+  defp pop({:list, [first | rest], back}), do: {first, {:list, rest, back}}
 
   @doc "Запись: поля в порядке объявления."
   def record(fields), do: {:rec, fields}
@@ -174,7 +296,7 @@ defmodule Flang.Rt do
   def scalar?(_), do: false
 
   @doc "Список ли значение."
-  def list?({:list, _}), do: true
+  def list?({:list, _, _}), do: true
   def list?(_), do: false
 
   @doc "Вариант ли значение с именно этим дискриминантом."
@@ -192,28 +314,36 @@ defmodule Flang.Rt do
   какой не годится StringInfo в C#: он режет графемные кластеры.
   """
   def chain_empty?({:str, text}), do: text == ""
-  def chain_empty?({:list, items}), do: items == []
+  def chain_empty?({:list, front, back}), do: front == [] and back == []
   def chain_empty?(_), do: false
 
   @doc "Непустая ли цепочка — образец «случай голова и хвост»."
   def chain_cons?({:str, text}), do: text != ""
-  def chain_cons?({:list, items}), do: items != []
+  def chain_cons?({:list, front, back}), do: front != [] or back != []
   def chain_cons?(_), do: false
 
   @doc "Голова цепочки: первый элемент списка или первый символ строки."
   def chain_head({:str, text}), do: {:str, String.first(text)}
-  def chain_head({:list, [first | _]}), do: first
+
+  def chain_head({:list, _, _} = value) do
+    {first, _} = pop(value)
+    first
+  end
 
   @doc "Хвост цепочки: остаток списка или остаток строки."
   def chain_tail({:str, text}), do: {:str, String.slice(text, 1..-1//1)}
-  def chain_tail({:list, [_ | rest]}), do: {:list, rest}
+
+  def chain_tail({:list, _, _} = value) do
+    {_, rest} = pop(value)
+    rest
+  end
 
   @doc "Имя типа значения для диагностик (typeName интерпретатора)."
   def type_name(:nothing), do: "ничто"
   def type_name({:str, _}), do: "строка"
   def type_name({:num, _}), do: "число"
   def type_name({:flag, _}), do: "признак"
-  def type_name({:list, _}), do: "список"
+  def type_name({:list, _, _}), do: "список"
   def type_name({:var, name, _}), do: "вариант «" <> name <> "»"
   def type_name({:rec, _}), do: "запись"
   def type_name(_), do: "неизвестное значение"
@@ -227,7 +357,7 @@ defmodule Flang.Rt do
   def describe({:str, value}), do: quote_json(value)
   def describe({:var, name, []}), do: name
   def describe({:var, name, fields}), do: name <> "(" <> field_names(fields) <> ")"
-  def describe({:list, items}), do: "список из " <> Integer.to_string(length(items))
+  def describe({:list, front, back}), do: "список из " <> Integer.to_string(length(front) + length(back))
   def describe({:rec, fields}), do: "запись {" <> field_names(fields) <> "}"
   def describe(:nothing), do: "ничто"
   def describe({:flag, true}), do: "да"
@@ -300,7 +430,9 @@ defmodule Flang.Rt do
   def equal({:flag, a}, {:flag, b}), do: a === b
   def equal({:str, a}, {:str, b}), do: a === b
   def equal(:nothing, :nothing), do: true
-  def equal({:list, a}, {:list, b}) do
+  def equal({:list, _, _} = left, {:list, _, _} = right) do
+    a = items(left)
+    b = items(right)
     length(a) == length(b) and Enum.all?(Enum.zip(a, b), fn {x, y} -> equal(x, y) end)
   end
 
@@ -731,7 +863,7 @@ defmodule Flang.Rt do
   def match_fail(value), do: fail(@code_match, "разбор не покрывает значение " <> describe(value))
 
   @doc "«свёртка», «отобразить» и «отфильтровать» работают только со списком."
-  def require_list({:list, items}, _label), do: items
+  def require_list({:list, _, _} = value, _label), do: items(value)
 
   def require_list(value, label) do
     raise fail(@code_type, "«" <> label <> "» работает только со списком, получено " <> type_name(value))
@@ -871,9 +1003,13 @@ defmodule Flang.Rt do
     end
   end
 
-  defp expect_list(_name, {:list, items}, _role), do: items
+  defp expect_list(name, value, role), do: items(expect_list_value(name, value, role))
 
-  defp expect_list(name, value, role) do
+  # То же требование, но без разворота накопленного конца: формам, которым нужны
+  # только голова, остаток или продление, обход всего списка не нужен.
+  defp expect_list_value(_name, {:list, _, _} = value, _role), do: value
+
+  defp expect_list_value(name, value, role) do
     raise fail(
             @code_builtin_args,
             "«" <> name <> "»: " <> role <> " должен быть списком, получено " <> type_name(value)
@@ -892,7 +1028,7 @@ defmodule Flang.Rt do
 
   @doc "«длина»: строка в кодовых точках, список в элементах."
   def b_length({:str, value}), do: {:num, length(code_points(value)) * 1.0}
-  def b_length({:list, items}), do: {:num, length(items) * 1.0}
+  def b_length({:list, front, back}), do: {:num, (length(front) + length(back)) * 1.0}
 
   def b_length(value) do
     raise fail(@code_builtin_args, "«длина»: ожидается строка или список, получено " <> type_name(value))
@@ -909,7 +1045,7 @@ defmodule Flang.Rt do
   """
   def b_characters(source) do
     value = expect_string("символы", source, "строка")
-    {:list, Enum.map(String.codepoints(value), fn point -> {:str, point} end)}
+    list(Enum.map(String.codepoints(value), fn point -> {:str, point} end))
   end
 
   @doc """
@@ -980,9 +1116,9 @@ defmodule Flang.Rt do
 
   Различаются по типу первого аргумента, как в builtins.mjs.
   """
-  def b_join({:list, items}, right) do
+  def b_join({:list, _, _} = value, right) do
     separator = expect_string("соединить", right, "разделитель")
-    {:str, join_parts(items, separator, 1, "")}
+    {:str, join_parts(items(value), separator, 1, "")}
   end
 
   def b_join(left, right) do
@@ -1015,11 +1151,13 @@ defmodule Flang.Rt do
       raise fail(@code_builtin_args, "«разделить»: разделитель не может быть пустым")
     end
 
-    {:list, Enum.map(String.split(value, mark), fn part -> {:str, part} end)}
+    list(Enum.map(String.split(value, mark), fn part -> {:str, part} end))
   end
 
   @doc "«содержит»: подстрока в строке либо значение в списке."
-  def b_contains({:list, items}, right), do: {:flag, Enum.any?(items, fn item -> equal(item, right) end)}
+  def b_contains({:list, _, _} = value, right) do
+    {:flag, Enum.any?(items(value), fn item -> equal(item, right) end)}
+  end
 
   def b_contains(left, right) do
     value = expect_string("содержит", left, "строка или список")
@@ -1169,18 +1307,18 @@ defmodule Flang.Rt do
   end
 
   @doc "«пусто»."
-  def b_empty({:list, items}), do: {:flag, items == []}
+  def b_empty({:list, front, back}), do: {:flag, front == [] and back == []}
   def b_empty({:str, value}), do: {:flag, value == ""}
 
   def b_empty(value) do
     raise fail(@code_builtin_args, "«пусто»: ожидается строка или список, получено " <> type_name(value))
   end
 
-  @doc "«голова»."
+  @doc "«голова». Постоянное время: `pop/1` не разворачивает непустое начало."
   def b_head(value) do
-    case expect_list("голова", value, "аргумент") do
-      [] -> raise fail(@code_builtin_args, "«голова»: список пуст")
-      [first | _] -> first
+    case pop(expect_list_value("голова", value, "аргумент")) do
+      :empty -> raise fail(@code_builtin_args, "«голова»: список пуст")
+      {first, _} -> first
     end
   end
 
@@ -1193,11 +1331,60 @@ defmodule Flang.Rt do
   Go, Rust, Java и C# «хвост» копирует, и рекурсия «голова и хвост» по длинному
   списку выходит квадратичной. Наблюдаемое значение при этом то же самое —
   расходится только сложность, и расходится в лучшую сторону.
+
+  Постоянное время В СРЕДНЕМ, а не всегда: если начало списка истощилось, а
+  конец, накопленный «добавить», ещё нет, здесь разворачивается накопленное
+  (`pop/1`). Каждый элемент переезжает из конца в начало не более одного раза за
+  жизнь списка, поэтому n «хвостов» подряд стоят O(n) на всех, а не на каждого.
   """
   def b_tail(value) do
-    case expect_list("хвост", value, "аргумент") do
-      [] -> raise fail(@code_builtin_args, "«хвост»: список пуст")
-      [_ | rest] -> {:list, rest}
+    case pop(expect_list_value("хвост", value, "аргумент")) do
+      :empty -> raise fail(@code_builtin_args, "«хвост»: список пуст")
+      {_, rest} -> rest
+    end
+  end
+
+  # ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+  #
+  # Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+  # ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает
+  # с отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+  # expect_list ловит не пустоту, а другой вид значения.
+  #
+  # Образец без ветви на пустое — это и есть снятие сторожа: другой ветви у
+  # функции нет, и `FLANG_BUILTIN_ARGS` про пустоту она выдать не может.
+
+  @doc "«разделить … по …» с доказанно непустым разделителем."
+  def b_split_proven(source, separator) do
+    value = expect_string("разделить", source, "строка")
+    mark = expect_string("разделить", separator, "разделитель")
+    {:list, Enum.map(String.split(value, mark), fn part -> {:str, part} end)}
+  end
+
+  @doc "«код символа» доказанно непустой строки."
+  def b_char_code_proven(source) do
+    [point | _] = String.to_charlist(expect_string("код символа", source, "строка"))
+    {:num, point * 1.0}
+  end
+
+  @doc "«голова» доказанно непустого списка."
+  def b_head_proven(value) do
+    # Через `pop` и `expect_list_value`, как b_head: список этой цели — очередь
+    # Окасаки `{:list, начало, конец_наоборот}`, и разбирать его образцом
+    # `[first | _]` нельзя. Ветвь `:empty` недостижима — непустота доказана при
+    # печати, — но и она отвечает значением, а не падением: паника из тотальной
+    # функции была бы отказом вида, которого нет в множестве отказов языка.
+    case pop(expect_list_value("голова", value, "аргумент")) do
+      :empty -> :nothing
+      {first, _} -> first
+    end
+  end
+
+  @doc "«хвост» доказанно непустого списка."
+  def b_tail_proven(value) do
+    case pop(expect_list_value("хвост", value, "аргумент")) do
+      :empty -> {:list, [], []}
+      {_, rest} -> rest
     end
   end
 
@@ -1216,11 +1403,16 @@ defmodule Flang.Rt do
   вторая половина уже написана и уже проверена. Значение при этом то же самое:
   расходится только стоимость, и она измерена — SPEC, раздел «Стоимость
   встроенных форм».
+
+  С тех пор как «добавить» копит конец списка отдельно (moduledoc, раздел 5),
+  здесь платится ещё и за разворот накопленного: `items/1` идёт по всему списку.
+  Это та же O(длины), в которую «элемент» на BEAM упирался и раньше для дальних
+  N, — класс сложности формы не изменился.
   """
   def b_element(index, value) do
     position = expect_integer("элемент", index, "индекс")
-    items = expect_list("элемент", value, "список")
-    size = length(items)
+    cells = expect_list("элемент", value, "список")
+    size = length(cells)
     at = position - index_base()
 
     if at < 0.0 or at >= size do
@@ -1230,25 +1422,34 @@ defmodule Flang.Rt do
             )
     end
 
-    Enum.at(items, trunc(at))
+    Enum.at(cells, trunc(at))
   end
 
   @doc """
   «добавить … к …»: дописывает в конец, исходный список не меняется.
 
-  Список Elixir односвязный и растёт с ГОЛОВЫ, поэтому `++ [элемент]` копирует
-  весь список: наращивание в цикле квадратично по времени — ровно как у
-  интерпретатора, где «добавить» это тоже `[...список, элемент]`. Совпасть со
-  сложностью интерпретатора здесь важнее, чем обогнать его.
+  ПОСТОЯННОЕ ВРЕМЯ, и не «в среднем», а всегда: одна новая ячейка в голову
+  накопленного конца. Разбор приёма и довод, почему порядок при этом не
+  страдает, — в moduledoc, раздел 5.
 
-  По ПАМЯТИ, в отличие от бэкенда C, стены нет: там арена не отдаёт
-  промежуточные копии до конца запроса, и список из n элементов оставляет
-  порядка n² байт. Здесь промежуточная копия становится мусором сразу и
-  собирается сборщиком процесса, поэтому живой памяти всё время O(n).
+  Было `список ++ [элемент]` — копия всего списка на каждый вызов. Копия ВЕРНА,
+  но накопление n элементов стоило O(n²), и объявленный предел 5 000 000 шагов
+  переставал быть сроком: точка `«Строить скобки» от 42 и 0 и 0 и "" и []` не
+  отвечала и за 90 с там, где интерпретатор укладывается в 926 мс.
+
+  Первый элемент пустого списка кладётся в НАЧАЛО, а не в конец: этим держится
+  инвариант «начало пусто только у пустого списка», ради которого `голова` и
+  `пусто` остались формами постоянного времени.
+
+  Ветвление здесь дешевле, чем у C, Go и Rust: там второе «добавить» к одному и
+  тому же списку уходит на копию, а тут оба вызова дают по одной ячейке поверх
+  общего неизменяемого конца.
   """
   def b_append(item, value) do
-    items = expect_list("добавить", value, "второй аргумент")
-    {:list, items ++ [item]}
+    case expect_list_value("добавить", value, "второй аргумент") do
+      {:list, [], []} -> {:list, [item], []}
+      {:list, front, back} -> {:list, front, [item | back]}
+    end
   end
 
   @doc "«остаток от»."
@@ -1263,5 +1464,209 @@ defmodule Flang.Rt do
     a = expect_number("процентов от", left, "процент")
     b = expect_number("процентов от", right, "значение")
     {:num, num_mul(num_div(a, 100.0), b)}
+  end
+
+  # ───────────────────────────── граница входа ─────────────────────────────
+  #
+  # Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+  # пришедшие снаружи, ДО вызова функции.
+  #
+  # Зачем это здесь, а не в самих функциях. Доказательство завершения
+  # `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+  # которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+  # печатается вовсе. Значение вне типа выносит вместе с типом и
+  # доказательство: `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её
+  # нечем. Дверь одна и стоит она ДО вычисления.
+  #
+  # Таблица печатается бэкендом вместе с программой (`entry/0`), а строит её
+  # `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+  # подходит типу», каким сверяется `flang run --args`.
+  #
+  # Форма таблицы — кортеж {типы, поля, варианты, параметры}, где поля и
+  # варианты лежат сплошными отрезками, а тип называет своё начало и длину:
+  #
+  #   тип       {вид, имя, владелец, ничто?, целое?, отрезок?, низ, верх,
+  #              элемент, поле_с, полей, вариант_с, вариантов}
+  #   поле      {имя, тип}
+  #   вариант   {имя, поле_с, полей}
+  #   параметр  {функция, имя, тип}
+  #
+  # Списки переводятся в кортежи один раз при первом обращении: сверка ходит по
+  # ним по индексу, а у списка Elixir это линейно.
+
+  @doc """
+  Сверка набора значений с объявленными типами параметров функции.
+
+  Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+  параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+  видом `:unknown`. Тексты отказов дословно те же, что у `checkValue` эталона:
+  расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
+  значение типу».
+  """
+  def check_entry({types, fields, variants, params}, name, args) do
+    declared = Enum.filter(params, fn {function, _, _} -> function == name end)
+
+    if declared == [] or length(declared) != length(args) do
+      :ok
+    else
+      table = {List.to_tuple(types), List.to_tuple(fields), List.to_tuple(variants)}
+
+      declared
+      |> Enum.zip(args)
+      |> Enum.each(fn {{_, param, at}, value} ->
+        check_typed(table, at, value, "вызов функции «#{name}»: аргумент «#{param}»")
+      end)
+
+      :ok
+    end
+  end
+
+  defp check_typed({types, _, _} = table, index, value, label) do
+    if index < 0 or index >= tuple_size(types) do
+      :ok
+    else
+      spec = elem(types, index)
+      # Необязательный аргумент можно не задавать: отсутствие — это «ничто», а
+      # не пропуск. Так же считает и ядро FTS.
+      if elem(spec, 3) and value == :nothing do
+        :ok
+      else
+        check_kind(table, spec, value, label)
+      end
+    end
+  end
+
+  defp check_kind(table, spec, value, label) do
+    kind = elem(spec, 0)
+    name = elem(spec, 1)
+    owner = elem(spec, 2)
+
+    case kind do
+      :number -> check_number_type(spec, value, label, name)
+      :text -> want(match?({:str, _}, value), label, name)
+      :flag -> want(match?({:flag, _}, value), label, name)
+      :null -> want(value == :nothing, label, name)
+      :list -> check_list(table, spec, value, label, name)
+      :record -> check_record(table, spec, value, label, name, owner)
+      :sum -> check_sum(table, spec, value, label, name, owner)
+      _ -> :ok
+    end
+  end
+
+  defp want(true, _label, _name), do: :ok
+
+  defp want(false, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_number_type(spec, {:num, number}, label, name) when is_float(number) do
+    # Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    # порядок, и второй отказ на одном значении был бы вторым текстом про одну
+    # беду.
+    cond do
+      elem(spec, 4) and Float.floor(number) != number ->
+        raise fail(@code_type, "#{label}: #{number_text(number)} не целое, а тип #{name} — целый")
+
+      elem(spec, 5) and (number < elem(spec, 6) or number > elem(spec, 7)) ->
+        raise fail(@code_type, "#{label}: #{number_text(number)} вне #{name}")
+
+      true ->
+        :ok
+    end
+  end
+
+  # `:nan`, `:inf` и `:ninf` — числа, которых у BEAM нет как значений с
+  # плавающей точкой; типу `число` они не подходят так же, как не подходят
+  # эталону (`Number.isFinite`).
+  defp check_number_type(_spec, _value, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  # Список здесь — очередь Окасаки `{:list, front, back}` (moduledoc, раздел 5),
+  # а не плоский список BEAM, поэтому элементы берутся через `items/1`: образец
+  # по двухместному `{:list, items}` отправлял бы КАЖДЫЙ настоящий список в
+  # отказ по типу.
+  defp check_list(table, spec, {:list, _front, _back} = value, label, _name) do
+    value
+    |> items()
+    |> Enum.with_index()
+    |> Enum.each(fn {item, at} -> check_typed(table, elem(spec, 8), item, "#{label}[#{at}]") end)
+
+    :ok
+  end
+
+  defp check_list(_table, _spec, _value, label, name) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_record(table, spec, {:rec, given}, label, _name, owner) do
+    check_fields(table, elem(spec, 9), elem(spec, 10), given, label, owner, false)
+    # Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+    # сверх объявленных в ней взяться неоткуда.
+    {_, fields, _} = table
+    from = elem(spec, 9)
+    count = elem(spec, 10)
+
+    Enum.each(given, fn {field, _} ->
+      known =
+        Enum.any?(0..(count - 1)//1, fn at -> elem(elem(fields, from + at), 0) == field end)
+
+      unless known do
+        raise fail(@code_type, "#{label}: запись «#{owner}» не имеет поля «#{field}»")
+      end
+    end)
+
+    :ok
+  end
+
+  defp check_record(_table, _spec, _value, label, name, _owner) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_sum(table, spec, {:var, tag, given}, label, _name, owner) do
+    {_, _, variants} = table
+
+    found =
+      Enum.find(elem(spec, 11)..(elem(spec, 11) + elem(spec, 12) - 1)//1, fn at ->
+        elem(elem(variants, at), 0) == tag
+      end)
+
+    if found == nil do
+      raise fail(@code_type, "#{label}: ожидался вариант типа «#{owner}»")
+    end
+
+    variant = elem(variants, found)
+    check_fields(table, elem(variant, 1), elem(variant, 2), given, label, elem(variant, 0), true)
+  end
+
+  defp check_sum(_table, _spec, {:rec, _}, label, _name, owner) do
+    raise fail(@code_type, "#{label}: ожидался вариант типа «#{owner}»")
+  end
+
+  defp check_sum(_table, _spec, _value, label, name, _owner) do
+    raise fail(@code_type, "#{label} не соответствует типу #{name}")
+  end
+
+  defp check_fields({types, fields, _} = table, from, count, given, label, owner, of_variant) do
+    Enum.each(0..(count - 1)//1, fn index ->
+      {field, at} = elem(fields, from + index)
+
+      case List.keyfind(given, field, 0) do
+        nil ->
+          # Необязательное поле можно не задавать: отсутствие — это «ничто».
+          unless elem(elem(types, at), 3) do
+            if of_variant do
+              raise fail(@code_type, "#{label}: вариант «#{owner}» требует поле «#{field}»")
+            else
+              raise fail(@code_type, "#{label}: не задано поле «#{field}» записи «#{owner}»")
+            end
+          end
+
+        {_, value} ->
+          check_typed(table, at, value, "#{label}.#{field}")
+      end
+    end)
+
+    :ok
   end
 end

@@ -34,6 +34,11 @@ import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
 import { errorCode, evaluateFlang, fromFtsDocument, runExamples } from "../src/compat.mjs"
 import { возможностиЦели } from "../src/conc.mjs"
+import { dropUnreachable } from "../src/reachable.mjs"
+/* Граница входа. Импорт статический, а не «если модуль есть» (как в
+   `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
+   это проверка, которая не умеет краснеть. */
+import { checkArguments } from "../src/types.mjs"
 
 /*
  * Версия читается из package.json, а не пишется здесь строкой. Написанная
@@ -47,7 +52,7 @@ const ВЕРСИЯ = JSON.parse(readFileSync(new URL("../../package.json", impor
 const HELP = `flang — полный язык поверх FTS
 
 Использование:
-  flang check <файл> [--proof [--json]] [--pretty]
+  flang check <файл> [--proof [--json]] [--размещение узлы.json] [--pretty]
   flang run   <файл> --function «Имя» --args '{"поле": 1}' [--max-steps N]
                      [--max-depth N] [--pretty]
   flang test  <файл> [--no-check] [--pretty]
@@ -62,6 +67,12 @@ const HELP = `flang — полный язык поверх FTS
 
 Файл: .fts (модель FTS), .json (AST) или .flang (исходник).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+check --размещение: свести программу с РАЗМЕЩЕНИЕМ процессов по узлам
+(flang/conc/DISTRIBUTED.md). Процесс, размещённый на другом узле, стоит здесь
+представителем и умеет ровно одно — отказать FLANG_LINK_DOWN, когда связь
+потеряна; забытый над ним надзор становится ошибкой сборки, как и над местным
+процессом. Без ключа проверка считает, что узел один и границы нет.
 
 check --proof: ведомость доказательства. По каждой функции — чем несётся её
 обещание «тотальная» (композицией, структурой, постоянным шагом со сторожем,
@@ -83,6 +94,13 @@ emit: цели берутся из src/emit (по одному модулю на
 непроверенное: «тотальная», надзор и типы обещают что-то только потому, что
 программа, которая обещания не держит, не собирается. --no-check снимает
 проверку — для отладки самой печати, когда смотрят на порождённый код.
+
+Печать отбрасывает недостижимое: в напечатанный код попадают функции входного
+файла и всё, до чего от них можно дойти, — импортированный модуль больше не
+едет целиком. Точками входа считаются ещё обработчик и начальное состояние
+процесса, шаг плана и имена из «экспортирует» входного модуля. Сколько функций
+выброшено, видно полем «отброшено»; проверка при этом идёт по полной программе,
+и ведомость доказательства не урезается.
 
 io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
 строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
@@ -146,7 +164,7 @@ export async function main(argv = process.argv.slice(2)) {
 
 async function commandCheck(options) {
   const program = await loadProgram(options.file)
-  const внешнее = await checkProgram(program)
+  const внешнее = await checkProgram(program, { размещение: await loadPlacement(options.placement) })
   const diagnostics = внешнее.diagnostics
   const result = {
     valid: diagnostics.length === 0,
@@ -190,6 +208,18 @@ async function commandRun(options) {
   const fn = (program.functions ?? []).find((item) => item.name === options.functionName)
   if (fn === undefined) throw fail("FLANG_UNKNOWN_NAME", `не найдена функция «${options.functionName}»`)
   const args = bindArguments(fn, options.args ?? {})
+  /* ГРАНИЦА ВХОДА. Значения из `--args` приезжают JSON-ом и до этой проверки
+     объявленному типу не сверялись ничем: `«Факториал» принимает н: нат`
+     считался при −3 и при 2.5, а при 1e300 отказывал FLANG_RECURSION_LIMIT —
+     кодом, отведённым ОБЫЧНОЙ функции. Причина не в сообщении, а в том, что
+     доказательство завершения `тотальной` стоит НА ТИПЕ: у `нат` есть потолок
+     2^53−1, ниже которого `н минус 1` точно меньше `н`, и сторож убывания в
+     такую функцию не печатается вовсе. Значение вне типа выносит вместе с типом
+     и доказательство. Поэтому сверка стоит ДО вычисления, а не внутри него:
+     внутри она поймала бы ложь на той операции, которой не повезло первой, и
+     только на тех входах, до которых дошло исполнение. */
+  const вход = checkArguments(program, fn.name, args)
+  if (!вход.ok) throw failWith(вход.diagnostics)
   /* Пределы обязаны дойти до вычислителя. `--max-steps` и `--max-depth`
      разбираются на общем разборе ключей, поэтому `run` их ПРИНИМАЛ — и
      выбрасывал: `evaluateFlang` звался без четвёртого аргумента. Ключ, который
@@ -449,7 +479,21 @@ async function commandEmit(options) {
       throw error
     }
   }
-  const files = emittedFiles(backend.emit(program, emitOptions(options)), options.target)
+  /* ── Печатается только достижимое от точки входа ──────────────────────────
+     Проверка выше идёт по ПОЛНОЙ программе и остаётся полной: непроверенное не
+     печатается, и ошибка в импортированном модуле обязана отменить печать, даже
+     если до кривой функции никто не доходит. А вот в напечатанный код она не
+     едет: `использует «Списки»` тянуло весь модуль, и у
+     `examples/import-check.flang` из 29 связанных функций вызывались 2 — 1535
+     строк и 68 110 байт мёртвого C из 1670 строк и 74 394 байт модуля.
+
+     Проход стоит здесь, а не в бэкенде, по той же причине, по какой здесь стоит
+     отметка меры: бэкенду отличить своё от привезённого нечем — связывание
+     кладёт все модули в один плоский список, — а какой файл был входом, знает
+     загрузчик. Одно место на все восемь целей (`src/reachable.mjs`). */
+  const кПечати = dropUnreachable(program, ownFunctionNames(program))
+  const отброшено = (program.functions?.length ?? 0) - (кПечати.functions?.length ?? 0)
+  const files = emittedFiles(backend.emit(кПечати, emitOptions(options)), options.target)
   /* Возможности цели — ПОЛЕМ вывода, а не абзацем в спецификации. Инструменту
      вокруг языка надо знать не «примерно одинаково везде», а что именно у этой
      цели есть: конкурентность, параллелизм и чем это проверено. Проза не
@@ -461,6 +505,11 @@ async function commandEmit(options) {
   const head = {
     target: options.target,
     module: program.module ?? null,
+    /* Ключ появляется, только когда что-то выброшено: у программы без импортов
+       вывод обязан остаться прежним до байта. Само число — не украшение: без
+       него «модуль стал меньше» пришлось бы выяснять сравнением байтов двух
+       печатей. */
+    ...(отброшено > 0 ? { отброшено } : {}),
     возможности: возможностиЦели(options.target),
   }
 
@@ -582,19 +631,76 @@ export async function loadProgram(file) {
   return loadProgramFromSource(source, file)
 }
 
+/**
+ * Имена функций, объявленных в САМОМ входном файле, — по загруженной программе.
+ *
+ * Это то, что печать зовёт точкой входа: связывание сливает функции всех модулей
+ * в один плоский список и происхождения в AST не оставляет (`link.mjs`), а знает
+ * его только загрузчик — он читал файлы.
+ *
+ * Хранится СБОКУ, а не полем AST, и это то же решение, что у имени файла в
+ * местах (`stampFile` в `src/link.mjs`): AST описывает программу, а не то, из
+ * каких файлов её собрали. Новое поле в AST — работа, которую обязаны сделать
+ * ОБЕ реализации языка, иначе побайтовая сверка связанной программы с близнецом
+ * (`self-bootstrap.test.mjs`) разошлась бы на первом же наборе.
+ *
+ * `null` значит «отбрасывать нечего»: вход не `.flang` (готовый AST, модель
+ * FTS), пришёл со стандартного ввода или не имеет ни одного `использует`.
+ */
+const СВОИ_ФУНКЦИИ = new WeakMap()
+
+export function ownFunctionNames(program) {
+  return СВОИ_ФУНКЦИИ.get(program) ?? null
+}
+
 export async function loadProgramFromSource(source, file = "-") {
-  return await markMeasure(await readProgram(source, file))
+  const { program, own } = await readProgram(source, file)
+  /* Отметки две, и порядок между ними задан зависимостью: непустота — вывод
+     ПРОВЕРКИ ТИПОВ, и класть её надо на ту программу, которую печать увидит,
+     то есть уже со сторожами меры. Обе кладутся здесь, на переднем крае, по
+     одной причине: печать обязана получать одну и ту же программу от всех
+     команд, а копия печати на самом языке анализа не видит — круг импортов. */
+  const отмеченная = await markNonEmpty(await markMeasure(program))
+  /* Имена кладутся ПОСЛЕ отметок, а не до: там, где сторожа есть,
+     `markMeasureGuards` возвращает новый объект, и ключом обязана быть та
+     программа, которую получит вызывающий. */
+  if (own !== null) СВОИ_ФУНКЦИИ.set(отмеченная, own)
+  return отмеченная
+}
+
+/**
+ * Размещение процессов по узлам — данные узла, а не текст программы.
+ *
+ * Читается ровно тот файл, который отдают узлу (`flang/conc/bin/node.mjs
+ * --размещение`), и читается без единой поправки: проверка обязана видеть то же
+ * самое размещение, с каким программа поедет в работу. Второй формат означал бы
+ * второй способ ошибиться.
+ *
+ * Кривой JSON — отказ вызова (код 2), а не молчаливое «размещения нет»: ключ,
+ * который принят и не действует, обещает проверку и молчит.
+ */
+async function loadPlacement(file) {
+  if (file === undefined) return null
+  const текст = await readInput(file)
+  const размещение = parseJson(текст, "--размещение")
+  if (размещение === null || typeof размещение !== "object" || Array.isArray(размещение)) {
+    throw usage("--размещение: ожидался объект с полем «узлы»")
+  }
+  if (размещение.узлы === null || typeof размещение.узлы !== "object" || Array.isArray(размещение.узлы)) {
+    throw usage("--размещение: в файле нет поля «узлы» — это не размещение (см. flang/conc/DISTRIBUTED.md)")
+  }
+  return размещение
 }
 
 async function readProgram(source, file) {
-  if (file.endsWith(".json")) return JSON.parse(source)
-  if (file.endsWith(".fts")) return fromFtsDocument(await compileFts(source))
+  if (file.endsWith(".json")) return { program: JSON.parse(source), own: null }
+  if (file.endsWith(".fts")) return { program: fromFtsDocument(await compileFts(source)), own: null }
   if (file.endsWith(".flang") || file.endsWith(".fl")) return await parseFlang(source, file)
   /* Формат не назван расширением — пробуем по содержимому, ничего не угадывая
      молча: если ни один разбор не удался, сообщаем обо всех попытках. */
   const trimmed = source.trimStart()
-  if (trimmed.startsWith("{")) return JSON.parse(source)
-  return fromFtsDocument(await compileFts(source))
+  if (trimmed.startsWith("{")) return { program: JSON.parse(source), own: null }
+  return { program: fromFtsDocument(await compileFts(source)), own: null }
 }
 
 /**
@@ -623,6 +729,34 @@ async function markMeasure(program) {
     const { markMeasureGuards } = await import(new URL("../src/totality.mjs", import.meta.url).href)
     if (typeof markMeasureGuards !== "function") return program
     return markMeasureGuards(program)
+  } catch {
+    return program
+  }
+}
+
+/**
+ * Вторая отметка переднего края — и она про ДРУГОГО сторожа рантайма.
+ *
+ * Сторожей в напечатанном коде два (см. `flang/scripts/proof-ledger.mjs`):
+ * сторож меры и частичная форма. Первый ставится там, где завершение доказано
+ * и надзор остался за IEEE-754; второй — там, где встроенная форма определена
+ * не на всех значениях своего типа. Отметка выше говорит, где сторожа МЕРЫ
+ * ставить; эта — где сторожа частичной формы ставить НЕ НАДО, потому что её
+ * условие доказано (`src/types.mjs`, `markNonEmpty`).
+ *
+ * Идёт ПОСЛЕ отметки меры, и порядок здесь обязательный: отметка меры
+ * перестраивает дерево, а доказательство привязано к узлам того дерева,
+ * которое уезжает в печать. Поменяй порядок — отметка легла бы на узлы,
+ * выброшенные следующим шагом, и снялось бы ноль мест молча.
+ *
+ * Программа, где доказывать нечего, проходит насквозь тем же объектом: цена
+ * проверки типов платится только там, где частичные формы есть.
+ */
+async function markNonEmpty(program) {
+  try {
+    const { markNonEmpty: отметить } = await import(new URL("../src/types.mjs", import.meta.url).href)
+    if (typeof отметить !== "function") return program
+    return отметить(program)
   } catch {
     return program
   }
@@ -675,7 +809,9 @@ async function parseFlang(source, file) {
        побайтово прежним, иначе `ast` начнёт отличаться там, где ничего не
        менялось. */
     const single = parse(source, file)
-    if (importsOf(single).length === 0) return single
+    /* Файл без импортов — это и есть вся программа: отбрасывать в ней нечего,
+       и точки входа не запоминаются вовсе. */
+    if (importsOf(single).length === 0) return { program: single, own: null }
     const linked = await linkProgram(file, source, parse)
     if (linked.diagnostics.length > 0) {
       const error = new Error(linked.diagnostics[0].message)
@@ -683,12 +819,15 @@ async function parseFlang(source, file) {
       throw error
     }
     const { diagnostics: _ignored, ...program } = linked
-    return program
+    /* Одиночный разбор входа уже сделан выше — второй раз файл не читается и не
+       разбирается. Имена берутся из него: в СЛИТОЙ программе своё от
+       привезённого не отличить. */
+    return { program, own: (single.functions ?? []).map((fn) => fn.name) }
   }
 
   /* Ошибку самого разбора не заворачиваем: у неё уже есть код, сообщение и
      span — подменять их своим текстом значит потерять место ошибки. */
-  return parse(source, file)
+  return { program: parse(source, file), own: null }
 }
 
 /* ───────────────────────────── проверки check ───────────────────────────── */
@@ -712,10 +851,11 @@ async function parseFlang(source, file) {
  * посчитано (см. `externalChecks`).
  *
  * @param {object} program AST flang
+ * @param {{размещение?: object}} [настройки] данные узла (см. `externalChecks`)
  * @returns {Promise<{diagnostics: object[], results: object}>}
  */
-export async function checkProgram(program) {
-  const внешнее = await externalChecks(program)
+export async function checkProgram(program, настройки = {}) {
+  const внешнее = await externalChecks(program, настройки)
   return { diagnostics: [...structuralDiagnostics(program), ...внешнее.diagnostics], results: внешнее.results }
 }
 
@@ -764,8 +904,17 @@ function structuralDiagnostics(program) {
  * проверка сходимости (`flang/test/proof.test.mjs`) считали ведомость ТЕМ ЖЕ
  * путём, каким её печатает `flang check --proof`. Второй путь к тем же числам —
  * второй ответ на один вопрос, и расходятся такие ответы молча.
+ *
+ * `настройки` едут проверкам вторым доводом и сегодня несут ровно одно поле —
+ * `размещение`. Это единственное, что проверка узнаёт не из программы: кто на
+ * каком узле живёт, решает эксплуатация, а не текст (`conc/DISTRIBUTED.md`), и
+ * от этого зависит седьмой вид отказа — `FLANG_LINK_DOWN` у представителя
+ * чужого процесса. Проверки, которым второй довод не нужен, его не заметят.
+ *
+ * @param {object} program AST flang
+ * @param {{размещение?: object}} [настройки] данные узла: сегодня — размещение
  */
-export async function externalChecks(program) {
+export async function externalChecks(program, настройки = {}) {
   const diagnostics = []
   const results = {}
   for (const [file, names, ключ] of [
@@ -804,7 +953,11 @@ export async function externalChecks(program) {
       const module = await import(new URL(file, import.meta.url).href)
       const entry = names.map((name) => module[name]).find((value) => typeof value === "function")
       if (entry === undefined) continue
-      const итог = entry(program)
+      /* Второй довод получает ТОЛЬКО проверка типов, и это не осторожность ради
+         осторожности: у законов моноида, монады, изоморфизма и множеств второй
+         довод свой — `пределы` сетки, — и подсунуть им туда размещение значило бы
+         молча смешать две разные настройки в одном месте. */
+      const итог = ключ === "types" ? entry(program, настройки) : entry(program)
       results[ключ] = итог
       diagnostics.push(...normalizeDiagnostics(итог))
     } catch {
@@ -827,6 +980,19 @@ export async function externalChecks(program) {
     const итог = obligations(program, results)
     results.obligations = итог
     diagnostics.push(...normalizeDiagnostics(итог))
+    /* ПОИСК НАРУШЕНИЙ НА СЕТКЕ ПРИМЕРОВ. Стоит здесь, а не в таблице выше, по
+       той же причине, что и ядро: ему нужны обязательства — он ищет нарушение
+       КАЖДОГО названного утверждения по отдельности, а не «ошибку где-нибудь».
+       Диагностик не даёт ни одной, и это не забывчивость: нарушенное на примере
+       автора постусловие — это красный `flang test`, а место у примеров одно.
+       Работа поиска в другом: без него ведомость печатала «нарушений не
+       найдено», не посмотрев ни на один пример. */
+    try {
+      const { checkGrid } = await import(new URL("../src/grid.mjs", import.meta.url).href)
+      results.grid = checkGrid(program, итог.obligations)
+    } catch {
+      /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
+    }
     try {
       const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
       const вердикты = checkProofs(program, итог.obligations)
@@ -893,6 +1059,13 @@ function errorResult(error) {
 function fail(code, message) {
   const error = new Error(message)
   error.diagnostics = [{ code, message, severity: "error" }]
+  return error
+}
+
+/** Отказ, у которого диагностик сразу несколько: врать может не один аргумент. */
+function failWith(diagnostics) {
+  const error = new Error(diagnostics[0].message)
+  error.diagnostics = diagnostics
   return error
 }
 
@@ -979,6 +1152,14 @@ function parseArgs(argv) {
       options.pretty = true
     } else if (arg === "--proof") {
       options.proof = true
+    } else if (arg === "--размещение" || arg === "--placement") {
+      /* Единственный ключ, который несёт проверке данные НЕ из программы. Кто на
+         каком узле живёт — решение эксплуатации (`conc/DISTRIBUTED.md`), и от
+         него зависит седьмой вид отказа: у процесса, размещённого на другом
+         узле, здесь стоит представитель, и он умеет отказать `FLANG_LINK_DOWN`.
+         Без ключа проверка ведёт себя ровно как прежде: одна машина, границы
+         узла нет, представителей нет. */
+      options.placement = require_(argv[++index], "--размещение требует файл JSON")
     } else if (arg === "--json") {
       /* `--json` осмысленен только рядом с `--proof`: без него `check` и так
          печатает JSON, и запрещать ключ значило бы ломать вызов, который уже
@@ -1007,6 +1188,12 @@ function parseArgs(argv) {
      сначала проверяют, значит обе умеют от проверки отказаться. */
   if (options.check === false && options.command !== "emit" && options.command !== "test") {
     throw usage(`--no-check — ключ команд emit и test, а не «${options.command}»`)
+  }
+  /* И то же правило для размещения, по той же причине: у остальных команд оно
+     ничего не значило бы, а ключ, который принят и не действует, обещает
+     проверку и молчит — ровно та беда, ради которой эта задача и делалась. */
+  if (options.placement !== undefined && options.command !== "check") {
+    throw usage(`--размещение — ключ команды check, а не «${options.command}»`)
   }
   return options
 }

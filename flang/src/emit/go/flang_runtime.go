@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Рантайм flang для бэкенда Go.
 //
 // Этот файл печатается бэкендом как есть, байт в байт: он лежит рядом
@@ -109,6 +112,28 @@ type Field struct {
 	Value Value
 }
 
+// Grow — общая на все копии массива отметка «сколько ячеек уже занято».
+//
+// Нужна ровно одному месту — «добавить» (см. BAppend): без неё накопление
+// списка n вызовами стоит O(n²), потому что каждый вызов копирует весь список.
+// Это не теория: точка сетки «Строить скобки» от 42 и 0 и 0 и "" и [] при
+// объявленном пределе 5 000 000 шагов не отвечала и за 60 с — то есть предел
+// шагов переставал быть сроком. Тот же приём и по той же причине стоит в
+// бэкендах C (fl_b_dobavit) и Rust (Items::grown).
+//
+// Инвариант, он же доказательство неизменяемости: Filled только растёт, и
+// занять ячейку Filled вправе единственный список — тот, чей конец совпал с
+// Filled. Значит ячейки внутри списка не пишет никто, а ячейка за концом
+// занимается не более одного раза за жизнь массива: второе «добавить» к тому же
+// значению видит Filled больше своего конца и уходит на копию.
+type Grow struct {
+	// Total — ёмкость исходного выделения: по ней и по cap среза считается,
+	// на каком месте массива этот срез начинается.
+	Total int
+	// Filled — сколько ячеек массива уже занято.
+	Filled int
+}
+
 // Value — значение flang. Ровно одно представление на все виды: см. шапку файла.
 type Value struct {
 	Tag    Tag
@@ -117,6 +142,11 @@ type Value struct {
 	Str    string // строка либо имя варианта
 	List   []Value
 	Fields []Field
+	// Grow — отметка занятого у общего массива; nil, если запаса нет. Живёт
+	// только у списков, которые выдало «добавить»: срез чужого массива
+	// («хвост», литерал, отобразить) её не наследует, и продлить его на месте
+	// нельзя — только копией.
+	Grow *Grow
 }
 
 // Nothing возвращает «ничто».
@@ -886,6 +916,53 @@ func BSplit(ctx *Ctx, text, separator Value) (Value, error) {
 	return List(items), nil
 }
 
+// ── Доказанный путь четырёх форм: то же действие без сторожа частичности ────
+//
+// Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+// ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает с
+// отметкой «доказана», и печать зовёт эти функции. Сверка типа остаётся:
+// expectList ловит не пустоту, а другой вид значения.
+func BSplitProven(ctx *Ctx, text, separator Value) (Value, error) {
+	source, err := expectString("разделить", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	mark, err := expectString("разделить", separator, "разделитель")
+	if err != nil {
+		return Nothing(), err
+	}
+	parts := strings.Split(source, mark)
+	items := make([]Value, len(parts))
+	for index, part := range parts {
+		items[index] = Text(part)
+	}
+	return List(items), nil
+}
+
+func BCharCodeProven(ctx *Ctx, text Value) (Value, error) {
+	source, err := expectString("код символа", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	return Number(float64([]rune(source)[0])), nil
+}
+
+func BHeadProven(ctx *Ctx, value Value) (Value, error) {
+	items, err := expectList("голова", value, "аргумент")
+	if err != nil {
+		return Nothing(), err
+	}
+	return items[0], nil
+}
+
+func BTailProven(ctx *Ctx, value Value) (Value, error) {
+	items, err := expectList("хвост", value, "аргумент")
+	if err != nil {
+		return Nothing(), err
+	}
+	return List(items[1:]), nil
+}
+
 // BCharacters — «символы»: разложение строки в список односимвольных строк.
 //
 // []rune идёт по кодовым точкам, а не по байтам и не по единицам UTF-16, —
@@ -1141,17 +1218,40 @@ func BTail(ctx *Ctx, value Value) (Value, error) {
 }
 
 // BAppend — «добавить … к …»: дописывает в конец, исходный список не меняется.
-// Копия обязательна: «хвост» отдаёт срез чужого массива, и append дописал бы в
-// него, испортив значение, на которое ещё кто-то смотрит.
+//
+// За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+// остальных случаях. Разбор приёма и доказательство неизменяемости — при типе
+// Grow. Безусловная копия была верна, но делала накопление списка квадратичным,
+// а вместе с ним и предел шагов — не сроком, а числом на бумаге.
+//
+// Голый append(items, item) здесь недопустим: срез чужого массива с запасом
+// дописал бы в чужую ячейку, и два «добавить» от одного списка испортили бы
+// друг друга. Разрешение спрашивается у Grow, а не у cap.
 func BAppend(ctx *Ctx, item, value Value) (Value, error) {
 	items, err := expectList("добавить", value, "второй аргумент")
 	if err != nil {
 		return Nothing(), err
 	}
-	result := make([]Value, len(items)+1)
+	if grow := value.Grow; grow != nil {
+		// Начало среза в массиве: ёмкость исходного выделения минус ёмкость,
+		// оставшаяся от этого места до конца.
+		start := grow.Total - cap(items)
+		end := start + len(items)
+		if end == grow.Filled && end < grow.Total {
+			grown := items[:len(items)+1]
+			grown[len(items)] = item
+			grow.Filled = end + 1
+			return Value{Tag: TagList, List: grown, Grow: grow}, nil
+		}
+	}
+	// Копия — с запасом, чтобы следующие «добавить» шли уже на месте. Запас
+	// равен длине, то есть массив удваивается: за n «добавить» перевыделений
+	// log₂n, а не n.
+	capacity := 2 * (len(items) + 1)
+	result := make([]Value, len(items)+1, capacity)
 	copy(result, items)
 	result[len(items)] = item
-	return List(result), nil
+	return Value{Tag: TagList, List: result, Grow: &Grow{Total: capacity, Filled: len(result)}}, nil
 }
 
 // BRemainder — «остаток от».
@@ -1178,4 +1278,235 @@ func BPercentOf(ctx *Ctx, left, right Value) (Value, error) {
 		return Nothing(), err
 	}
 	return Number((percent / 100) * value), nil
+}
+
+// ───────────────────────────── граница входа ─────────────────────────────
+//
+// Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+// пришедшие снаружи, ДО вызова функции.
+//
+// Зачем это здесь, а не в самих функциях. Доказательство завершения
+// `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+// которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+// печатается вовсе. Значение вне типа выносит вместе с типом и доказательство:
+// `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её нечем. Поэтому
+// дверь одна и стоит она ДО вычисления.
+//
+// Таблицу печатает бэкенд вместе с программой (`Entry`), а строит её
+// `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+// подходит типу», каким сверяется `flang run --args`.
+
+// TypeKind — вид объявленного типа.
+type TypeKind uint8
+
+// Виды объявленного типа. TypeUnknown — значение-функция, параметр
+// полиморфизма и применение типа с аргументами: одной таблицы им мало, и они
+// не сверяются вовсе.
+const (
+	TypeUnknown TypeKind = iota
+	TypeNumber
+	TypeText
+	TypeFlag
+	TypeNull
+	TypeList
+	TypeRecord
+	TypeSum
+)
+
+// TypeField — поле записи или варианта: имя и место его типа в таблице типов.
+type TypeField struct {
+	Name string
+	Type int
+}
+
+// TypeVariant — вариант суммы: имя дискриминанта и отрезок его полей.
+type TypeVariant struct {
+	Name       string
+	FieldFrom  int
+	FieldCount int
+}
+
+// Type — объявленный тип. Поля и варианты лежат сплошными отрезками общих
+// массивов, а тип называет своё начало и длину.
+type Type struct {
+	Kind         TypeKind
+	Name         string // печатное имя типа: «нат», «список числа»
+	Owner        string // имя записи или суммы без кавычек — для текстов о полях
+	Optional     bool   // «… или ничто»: отсутствие значения законно
+	Integral     bool
+	Bounded      bool // есть ли конечный отрезок (у `число` его нет)
+	Low          float64
+	High         float64
+	Of           int // тип элемента списка
+	FieldFrom    int
+	FieldCount   int
+	VariantFrom  int
+	VariantCount int
+}
+
+// EntryParam — параметр функции: чей он, как называется и какого он типа.
+type EntryParam struct {
+	Function string
+	Name     string
+	Type     int
+}
+
+// EntryTable — граница входа программы целиком.
+type EntryTable struct {
+	Types    []Type
+	Fields   []TypeField
+	Variants []TypeVariant
+	Params   []EntryParam
+}
+
+func checkNumberType(spec *Type, value Value, label string) error {
+	if value.Tag != TagNumber || math.IsNaN(value.Num) || math.IsInf(value.Num, 0) {
+		return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
+	}
+	// Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+	// порядок, и второй отказ на одном значении был бы вторым текстом про одну беду.
+	if spec.Integral && math.Floor(value.Num) != value.Num {
+		return Fail(CodeType, "%s: %s не целое, а тип %s — целый", label, NumberText(value.Num), spec.Name)
+	}
+	if spec.Bounded && (value.Num < spec.Low || value.Num > spec.High) {
+		return Fail(CodeType, "%s: %s вне %s", label, NumberText(value.Num), spec.Name)
+	}
+	return nil
+}
+
+func checkFields(table *EntryTable, from, count int, given []Field, label, owner string, ofVariant bool) error {
+	for index := 0; index < count; index++ {
+		declared := table.Fields[from+index]
+		found := -1
+		for at, field := range given {
+			if field.Name == declared.Name {
+				found = at
+				break
+			}
+		}
+		if found < 0 {
+			// Необязательное поле можно не задавать: отсутствие — это «ничто».
+			if table.Types[declared.Type].Optional {
+				continue
+			}
+			if ofVariant {
+				return Fail(CodeType, "%s: вариант «%s» требует поле «%s»", label, owner, declared.Name)
+			}
+			return Fail(CodeType, "%s: не задано поле «%s» записи «%s»", label, declared.Name, owner)
+		}
+		inner := fmt.Sprintf("%s.%s", label, declared.Name)
+		if err := checkTyped(table, declared.Type, given[found].Value, inner); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkTyped(table *EntryTable, index int, value Value, label string) error {
+	if index < 0 || index >= len(table.Types) {
+		return nil
+	}
+	spec := &table.Types[index]
+	// Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+	// пропуск. Так же считает и ядро FTS.
+	if spec.Optional && value.Tag == TagNothing {
+		return nil
+	}
+	mismatch := func() error {
+		return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
+	}
+	switch spec.Kind {
+	case TypeNumber:
+		return checkNumberType(spec, value, label)
+	case TypeText:
+		if value.Tag != TagString {
+			return mismatch()
+		}
+	case TypeFlag:
+		if value.Tag != TagFlag {
+			return mismatch()
+		}
+	case TypeNull:
+		if value.Tag != TagNothing {
+			return mismatch()
+		}
+	case TypeList:
+		if value.Tag != TagList {
+			return mismatch()
+		}
+		for at, item := range value.List {
+			if err := checkTyped(table, spec.Of, item, fmt.Sprintf("%s[%d]", label, at)); err != nil {
+				return err
+			}
+		}
+	case TypeRecord:
+		if value.Tag != TagRecord {
+			return mismatch()
+		}
+		if err := checkFields(table, spec.FieldFrom, spec.FieldCount, value.Fields, label, spec.Owner, false); err != nil {
+			return err
+		}
+		// Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+		// сверх объявленных в ней взяться неоткуда.
+		for _, field := range value.Fields {
+			declared := false
+			for at := 0; at < spec.FieldCount; at++ {
+				if table.Fields[spec.FieldFrom+at].Name == field.Name {
+					declared = true
+					break
+				}
+			}
+			if !declared {
+				return Fail(CodeType, "%s: запись «%s» не имеет поля «%s»", label, spec.Owner, field.Name)
+			}
+		}
+	case TypeSum:
+		if value.Tag != TagVariant && value.Tag != TagRecord {
+			return mismatch()
+		}
+		found := -1
+		if value.Tag == TagVariant {
+			for at := 0; at < spec.VariantCount; at++ {
+				if table.Variants[spec.VariantFrom+at].Name == value.Str {
+					found = spec.VariantFrom + at
+					break
+				}
+			}
+		}
+		if found < 0 {
+			return Fail(CodeType, "%s: ожидался вариант типа «%s»", label, spec.Owner)
+		}
+		variant := table.Variants[found]
+		return checkFields(table, variant.FieldFrom, variant.FieldCount, value.Fields, label, variant.Name, true)
+	}
+	return nil
+}
+
+// CheckEntry сверяет набор значений с объявленными типами параметров функции.
+//
+// Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
+// параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
+// видом TypeUnknown. Тексты отказов дословно те же, что у `checkValue` эталона.
+func CheckEntry(table *EntryTable, name string, args []Value) error {
+	declared := 0
+	for _, param := range table.Params {
+		if param.Function == name {
+			declared++
+		}
+	}
+	if declared == 0 || declared != len(args) {
+		return nil
+	}
+	at := 0
+	for _, param := range table.Params {
+		if param.Function != name {
+			continue
+		}
+		label := fmt.Sprintf("вызов функции «%s»: аргумент «%s»", name, param.Name)
+		if err := checkTyped(table, param.Type, args[at], label); err != nil {
+			return err
+		}
+		at++
+	}
+	return nil
 }

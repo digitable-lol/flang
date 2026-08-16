@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Человеческий вход бинарника flang: `--help`, `--version`, `check`, `repl`.
  *
@@ -2700,11 +2702,19 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
      нужно вычислить одну функцию и напечатать значение поверхностью языка.
      Своей оболочки сессии не нужно — «оболочка» здесь нет, и ста килобайт
      чужого кода в неё не попадает. */
-  static const char *const names[11] = {"путь",              "есть путь",        "база",
+  /*
+   * Границы входа у сессии нет, и это не упущение. Таблица объявленных типов
+   * приходит от слоя типов, а сессия печатается здесь, в готовом бинарнике, где
+   * этого слоя под рукой нет. Пустые списки означают «сверять нечего»: сессия
+   * зовётся своим маленьким прогонщиком (REPL_RUNNER), а он в границу и не
+   * ходит — значения ему подаёт человек через ту же оболочку, а не сеть.
+   */
+  static const char *const names[15] = {"путь",              "есть путь",        "база",
                                         "предел глубины",    "предел шагов",     "прогонщик",
                                         "рантайм заголовок", "рантайм исходник", "исходник прогонщика",
-                                        "оболочка",          "исходник оболочки"};
-  fl_value values[11];
+                                        "оболочка",          "исходник оболочки", "типы входа",
+                                        "поля входа",        "варианты входа",   "параметры входа"};
+  fl_value values[15];
   fl_value args[2];
   fl_value emitted = fl_nothing();
   fl_value files = fl_nothing();
@@ -2725,8 +2735,12 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
   values[8] = repl_value_say(REPL_RUNNER);
   values[9] = fl_flag(false);
   values[10] = repl_value_say("");
+  values[11] = fl_list(NULL, 0);
+  values[12] = fl_list(NULL, 0);
+  values[13] = fl_list(NULL, 0);
+  values[14] = fl_list(NULL, 0);
   args[0] = program;
-  args[1] = repl_value_record(names, values, 11);
+  args[1] = repl_value_record(names, values, 15);
   if (repl_call("Напечатать связанное", args, 2, &emitted) != FL_OK) {
     *error = repl_say("печать сессии в C прекращена");
     return false;

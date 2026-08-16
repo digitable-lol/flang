@@ -121,9 +121,10 @@
 
 import { readFileSync } from "node:fs"
 
-import { canonicalBuiltinName, flangError, hasBuiltin } from "../builtins.mjs"
+import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
+import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../../../tools/ftsc/src/bidi.mjs"
 import { createNamer, snake } from "../../../tools/ftsc/src/naming.mjs"
 
@@ -168,6 +169,16 @@ const BUILTIN_HELPERS = new Map([
   ["остаток от", "b_remainder"],
   ["процентов от", "b_percent_of"],
 ])
+
+/**
+ * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
+ *
+ * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
+ * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
+ * отметку и потому печатают одно и то же.
+ */
+const СУФФИКС_ДОКАЗАННОГО = "_proven"
 
 /** Арность встроенных форм — проверяется при печати, а не в рантайме. */
 const BUILTIN_ARITY = new Map([
@@ -489,6 +500,11 @@ export function emitRust(program, options = {}) {
      всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
      `требуетПланировщика`). */
   требуетПланировщика(program, "rust")
+  /* Граница входа читает типы ДО дефункционализации: после неё параметр,
+     объявленный функцией, становится суммой тегов, а `checkArguments` на границе
+     интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы
+     молча. */
+  const входные = таблицаВхода(program)
   /* Дефункционализация — ОДИН проход на все восемь целей (src/defunc.mjs), а не
      восемь реализаций: после него в программе нет ни функций-значений, ни
      применения, и печатается она теми же узлами, что и всё остальное. На
@@ -571,6 +587,7 @@ export function emitRust(program, options = {}) {
   }
   for (const fn of prepared.functions.values()) bodies.push(renderFunction(fn, shared))
   bodies.push(renderDispatch(shared))
+  bodies.push(renderEntry(входные))
 
   const settings = renderContext(base, maxDepth, maxSteps)
   const withCli = options.cli !== false
@@ -1194,7 +1211,7 @@ function emitValue(expr, ctx, out, pad) {
       expectArity(canonical, args.length, node.span)
       const rendered = args.map((argument) => emitValue(argument, ctx, out, pad))
       out.push(`${pad}// «${canonical}»`)
-      return call(ctx, out, pad, `rt::${BUILTIN_HELPERS.get(canonical)}(${["ctx", ...rendered].join(", ")})`)
+      return call(ctx, out, pad, `rt::${помощникФормы(canonical, node, BUILTIN_HELPERS, СУФФИКС_ДОКАЗАННОГО)}(${["ctx", ...rendered].join(", ")})`)
     }
     case "binary": {
       const left = emitValue(node.left, ctx, out, pad)
@@ -1512,7 +1529,12 @@ function emitFold(node, ctx, out, pad) {
     `${pad}// «${node.acc}»`,
     `${pad}let mut ${accIdent} = ${init};`,
     `${pad}// «${node.item}»`,
-    `${pad}for ${itemIdent} in ${list}.iter().cloned() {`,
+    /* Обход идёт по СНИМКУ, а не по заимствованию общего массива: внутри тела
+       исполняется код программы, и «добавить» к тому же списку обязано остаться
+       постоянным по времени (см. `Items::grown`), а не уходить на копию из-за
+       живого заимствования. Снимок стоит один проход, а сам обход и так
+       линейный. */
+    `${pad}for ${itemIdent} in ${list}.snapshot() {`,
   )
 
   const at = out.length
@@ -1539,7 +1561,8 @@ function emitLoop(node, ctx, out, pad) {
   out.push(
     `${pad}let mut ${items}: Vec<rt::Value> = Vec::with_capacity(${list}.len());`,
     `${pad}// «${node.item}»`,
-    `${pad}for ${itemIdent} in ${list}.iter().cloned() {`,
+    /* По снимку, а не по заимствованию: см. `emitFold`. */
+    `${pad}for ${itemIdent} in ${list}.snapshot() {`,
   )
 
   const at = out.length
@@ -1616,6 +1639,74 @@ function renderDispatch(shared) {
     "}",
   )
   return lines.join("\n")
+}
+
+/* ── граница входа: объявленные типы параметров данными ── */
+
+const ВИДЫ_ТИПА_RUST = new Map([
+  ["число", "Number"],
+  ["строка", "Text"],
+  ["признак", "Flag"],
+  ["ничто", "Null"],
+  ["список", "List"],
+  ["запись", "Record"],
+  ["сумма", "Sum"],
+])
+
+/**
+ * Объявленные типы параметров — ТАБЛИЦЕЙ, а не кодом.
+ *
+ * В напечатанной программе типов нет: прогонщик разбирает JSON и зовёт функцию.
+ * Поэтому `«Факториал» принимает н: нат` считался при `н` равном −3 и 2.5, а при
+ * 1e300 упирался в FLANG_RECURSION_LIMIT — код, отведённый ОБЫЧНОЙ функции.
+ * Тотальная отказывала пределом глубины потому, что доказательство её завершения
+ * СТОИТ НА ТИПЕ: у `нат` есть потолок 2^53−1, ниже которого `н минус 1` точно
+ * меньше `н`, и сторож убывания в такую функцию не печатается вовсе.
+ *
+ * Сверяет таблицу `rt::check_entry` — один и тот же текст для всех программ, а
+ * строит её `таблицаВхода` из flang/src/types.mjs, то есть тот же файл, что
+ * отвечает на этот вопрос для `flang run --args`.
+ */
+function renderEntry(таблица) {
+  const тип = (запись) =>
+    `        rt::Type { kind: rt::TypeKind::${ВИДЫ_ТИПА_RUST.get(запись.вид) ?? "Unknown"}, ` +
+    `name: ${ruststring(запись.имя)}, owner: ${ruststring(запись.владелец)}, ` +
+    `optional: ${запись.ничто}, integral: ${запись.целое}, bounded: ${запись.отрезок}, ` +
+    `low: ${rustnumber(запись.низ)}, high: ${rustnumber(запись.верх)}, of: ${запись.элемент}, ` +
+    `field_from: ${запись.полеС}, field_count: ${запись.полей}, ` +
+    `variant_from: ${запись.вариантС}, variant_count: ${запись.вариантов} },`
+  return [
+    "/// Граница входа: объявленные типы параметров данными.",
+    "///",
+    "/// Прогонщик сверяет по ним значения, пришедшие снаружи, ДО вызова",
+    "/// (`rt::check_entry`). Виды `Unknown` (значение-функция, параметр",
+    "/// полиморфизма, применение типа с аргументами) не сверяются — ровно как",
+    "/// молчит о них проверка значений эталона.",
+    "static ENTRY: rt::EntryTable = rt::EntryTable {",
+    "    types: &[",
+    ...таблица.типы.map(тип),
+    "    ],",
+    "    fields: &[",
+    ...таблица.поля.map((поле) =>
+      `        rt::TypeField { name: ${ruststring(поле.имя)}, type_at: ${поле.тип} },`),
+    "    ],",
+    "    variants: &[",
+    ...таблица.варианты.map((вариант) =>
+      `        rt::TypeVariant { name: ${ruststring(вариант.имя)}, field_from: ${вариант.полеС}, ` +
+      `field_count: ${вариант.полей} },`),
+    "    ],",
+    "    params: &[",
+    ...таблица.параметры.map((параметр) =>
+      `        rt::EntryParam { function: ${ruststring(параметр.функция)}, ` +
+      `name: ${ruststring(параметр.параметр)}, type_at: ${параметр.тип} },`),
+    "    ],",
+    "};",
+    "",
+    "/// Объявленные типы параметров: по ним сверяется вход извне.",
+    "pub fn entry() -> &'static rt::EntryTable {",
+    "    &ENTRY",
+    "}",
+  ].join("\n")
 }
 
 /* ── проверки, повторяющие интерпретатор ── */

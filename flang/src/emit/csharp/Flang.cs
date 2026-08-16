@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Операции языка flang для бэкенда C#: арифметика, доступ к полям, разбор,
 // встроенные формы, батут и глубокий стек.
 //
@@ -223,7 +226,14 @@ public static class Flang
     /// </summary>
     public static Value NoMatch(Ctx ctx, Value value) => throw MatchFail(ctx, value);
 
-    /// <summary>«свёртка», «отобразить» и «отфильтровать» работают только со списком.</summary>
+    /// <summary>
+    /// «свёртка», «отобразить» и «отфильтровать» работают только со списком.
+    ///
+    /// Отдаётся массив ровно нужной длины (Value.Elements), а не общий массив
+    /// списка: за концом списка в общем массиве могут лежать чужие ячейки, а
+    /// обход печатается как `foreach (Value item in …)` и прошёл бы по ним
+    /// тоже.
+    /// </summary>
     public static Value[] RequireList(Ctx ctx, Value value, string label)
     {
         if (value.Tag != Value.TagList)
@@ -232,7 +242,7 @@ public static class Flang
                 FlangError.CodeType,
                 "«" + label + "» работает только со списком, получено " + Value.TypeName(value));
         }
-        return value.Items;
+        return Value.Elements(value);
     }
 
     /* ───────────────────────────── арифметика ───────────────────────────── */
@@ -396,7 +406,15 @@ public static class Flang
         return result;
     }
 
-    private static Value[] ExpectList(string name, Value value, string role)
+    /// <summary>
+    /// Проверка «это список» для встроенных форм.
+    ///
+    /// Возвращается само значение, а не его массив: у списка есть длина,
+    /// отдельная от длины общего массива (см. Value.Count), и встроенные формы
+    /// обязаны считать по ней. Копии здесь нет — «элемент N в …» стоит того же,
+    /// что «голова», как и обещано в SPEC.
+    /// </summary>
+    private static Value ExpectList(string name, Value value, string role)
     {
         if (value.Tag != Value.TagList)
         {
@@ -404,7 +422,7 @@ public static class Flang
                 FlangError.CodeBuiltinArgs,
                 "«" + name + "»: " + role + " должен быть списком, получено " + Value.TypeName(value));
         }
-        return value.Items;
+        return value;
     }
 
     /* ───────────────────────── строки в кодовых точках ───────────────────── */
@@ -453,7 +471,7 @@ public static class Flang
         }
         if (value.Tag == Value.TagList)
         {
-            return Value.Number(value.Items.Length);
+            return Value.Number(Value.Size(value));
         }
         throw Fail(
             FlangError.CodeBuiltinArgs,
@@ -517,9 +535,9 @@ public static class Flang
         {
             string separator = ExpectString("соединить", right, "разделитель");
             var output = new StringBuilder();
-            for (int index = 0; index < left.Items.Length; index++)
+            for (int index = 0; index < Value.Size(left); index++)
             {
-                Value item = left.Items[index];
+                Value item = Value.At(left, index);
                 if (item.Tag != Value.TagString)
                 {
                     throw Fail(
@@ -613,9 +631,9 @@ public static class Flang
     {
         if (left.Tag == Value.TagList)
         {
-            foreach (Value item in left.Items)
+            for (int index = 0; index < Value.Size(left); index++)
             {
-                if (Value.Equal(item, right))
+                if (Value.Equal(Value.At(left, index), right))
                 {
                     return Value.True;
                 }
@@ -834,7 +852,7 @@ public static class Flang
     {
         if (value.Tag == Value.TagList)
         {
-            return Value.Flag(value.Items.Length == 0);
+            return Value.Flag(Value.Size(value) == 0);
         }
         if (value.Tag == Value.TagString)
         {
@@ -848,12 +866,12 @@ public static class Flang
     /// <summary>«голова».</summary>
     public static Value BHead(Ctx ctx, Value value)
     {
-        Value[] items = ExpectList("голова", value, "аргумент");
-        if (items.Length == 0)
+        Value list = ExpectList("голова", value, "аргумент");
+        if (Value.Size(list) == 0)
         {
             throw Fail(FlangError.CodeBuiltinArgs, "«голова»: список пуст");
         }
-        return items[0];
+        return Value.At(list, 0);
     }
 
     /// <summary>
@@ -863,13 +881,70 @@ public static class Flang
     /// </summary>
     public static Value BTail(Ctx ctx, Value value)
     {
-        Value[] items = ExpectList("хвост", value, "аргумент");
-        if (items.Length == 0)
+        Value list = ExpectList("хвост", value, "аргумент");
+        if (Value.Size(list) == 0)
         {
             throw Fail(FlangError.CodeBuiltinArgs, "«хвост»: список пуст");
         }
-        var next = new Value[items.Length - 1];
-        Array.Copy(items, 1, next, 0, next.Length);
+        var next = new Value[Value.Size(list) - 1];
+        Array.Copy(list.Items, 1, next, 0, next.Length);
+        return Value.List(next);
+    }
+
+    /* ── Доказанный путь четырёх форм: то же без сторожа частичности ────────
+     *
+     * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+     * ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел
+     * приезжает с отметкой «доказана», и печать зовёт эти методы. Сверка типа
+     * остаётся: ExpectList ловит не пустоту, а другой вид значения. */
+
+    /// <summary>«разделить … по …» с доказанно непустым разделителем.</summary>
+    public static Value BSplitProven(Ctx ctx, Value source, Value separator)
+    {
+        string value = ExpectString("разделить", source, "строка");
+        string mark = ExpectString("разделить", separator, "разделитель");
+        var parts = new List<Value>();
+        int from = 0;
+        for (; ; )
+        {
+            int found = value.IndexOf(mark, from, StringComparison.Ordinal);
+            if (found < 0)
+            {
+                parts.Add(Value.Text(value.Substring(from)));
+                break;
+            }
+            parts.Add(Value.Text(value.Substring(from, found - from)));
+            from = found + mark.Length;
+        }
+        return Value.List(parts.ToArray());
+    }
+
+    /// <summary>«код символа» доказанно непустой строки.</summary>
+    public static Value BCharCodeProven(Ctx ctx, Value source)
+    {
+        return Value.Number(char.ConvertToUtf32(ExpectString("код символа", source, "строка"), 0));
+    }
+
+    /// <summary>«голова» доказанно непустого списка.</summary>
+    public static Value BHeadProven(Ctx ctx, Value value)
+    {
+        Value list = ExpectList("голова", value, "аргумент");
+        // Ветвь пустого списка недостижима — непустота доказана при печати; читается
+        // нулевой элемент тем же способом, что в BHead, чтобы у двух дорог не
+        // разошлось представление списка.
+        return Value.Size(list) == 0 ? Value.Nothing() : Value.At(list, 0);
+    }
+
+    /// <summary>«хвост» доказанно непустого списка.</summary>
+    public static Value BTailProven(Ctx ctx, Value value)
+    {
+        Value list = ExpectList("хвост", value, "аргумент");
+        int n = Value.Size(list);
+        var next = new Value[n == 0 ? 0 : n - 1];
+        if (n > 0)
+        {
+            Array.Copy(list.Items, 1, next, 0, next.Length);
+        }
         return Value.List(next);
     }
 
@@ -881,38 +956,58 @@ public static class Flang
     public static Value BElement(Ctx ctx, Value index, Value value)
     {
         double position = ExpectInteger("элемент", index, "индекс");
-        Value[] items = ExpectList("элемент", value, "список");
+        Value list = ExpectList("элемент", value, "список");
+        int length = Value.Size(list);
         double at = position - ctx.IndexBase;
-        if (at < 0 || at >= items.Length)
+        if (at < 0 || at >= length)
         {
             throw Fail(
                 FlangError.CodeBuiltinArgs,
                 "«элемент»: индекс " + Value.NumberText(position) + " вне списка длиной "
-                    + items.Length.ToString(CultureInfo.InvariantCulture));
+                    + length.ToString(CultureInfo.InvariantCulture));
         }
-        return items[(int)at];
+        return Value.At(list, (int)at);
     }
 
     /// <summary>
     /// «добавить … к …»: дописывает в конец, исходный список не меняется.
     ///
-    /// Копирует, как и в JS: значения flang неизменяемы, и разделить массив с
-    /// суффиксом нельзя. Значит наращивание списка в цикле квадратично по
-    /// времени — ровно как у интерпретатора, где «добавить» это тоже
-    /// `[...список, элемент]`.
+    /// За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+    /// остальных случаях. Разбор приёма и доказательство неизменяемости лежат
+    /// при классе Value.Grow; тот же приём и по той же причине стоит в
+    /// рантаймах C (fl_b_dobavit), Rust (Items::grown), Go (BAppend) и Java.
     ///
-    /// По ПАМЯТИ, в отличие от бэкенда C, стены нет: там арена не отдаёт
-    /// промежуточные копии до конца запроса, и список из n элементов оставляет
-    /// порядка n² байт. Здесь промежуточная копия становится мусором сразу и
-    /// собирается в нулевом поколении, поэтому живой памяти всё время O(n).
+    /// Прежняя безусловная копия была ВЕРНА, но стоила O(длины) за вызов, а
+    /// значит накопление списка n вызовами — O(n²). Шаг напечатанного кода —
+    /// вход в функцию, и если один шаг стоит O(длины), предел шагов не
+    /// ограничивает работу ничем: точка «Строить скобки» от 42 и 0 и 0 и "" и []
+    /// при объявленных 5 000 000 шагов упиралась в предел 273 с вместо секунды.
+    ///
+    /// Просто дописать в общий массив нельзя: два «добавить» от одного значения
+    /// заняли бы одну ячейку и испортили бы друг друга. Разрешение спрашивается
+    /// у Grow, а не у длины массива.
     /// </summary>
     public static Value BAppend(Ctx ctx, Value item, Value value)
     {
-        Value[] items = ExpectList("добавить", value, "второй аргумент");
-        var next = new Value[items.Length + 1];
-        Array.Copy(items, next, items.Length);
-        next[items.Length] = item;
-        return Value.List(next);
+        Value list = ExpectList("добавить", value, "второй аргумент");
+        int end = Value.Size(list);
+        Value.Grow? spare = list.Spare;
+        if (spare is not null && end == spare.Filled && end < list.Items.Length)
+        {
+            list.Items[end] = item;
+            spare.Filled = end + 1;
+            return Value.Grown(list.Items, end + 1, spare);
+        }
+        /* Копия — с запасом, чтобы следующие «добавить» шли уже на месте. Запас
+           равен длине, то есть массив удваивается: за n «добавить»
+           перевыделений log₂n, а не n. У самого края int запаса брать не из
+           чего — там продление идёт впритык, и следующее «добавить» снова
+           копирует. */
+        int capacity = end < (int.MaxValue - 8) / 2 ? 2 * (end + 1) : end + 1;
+        var cells = new Value[capacity];
+        Array.Copy(list.Items, cells, end);
+        cells[end] = item;
+        return Value.Grown(cells, end + 1, new Value.Grow(end + 1));
     }
 
     /// <summary>«остаток от».</summary>
@@ -929,5 +1024,403 @@ public static class Flang
         double a = ExpectNumber("процентов от", left, "процент");
         double b = ExpectNumber("процентов от", right, "значение");
         return Value.Number((a / 100) * b);
+    }
+
+    // ───────────────────────────── граница входа ─────────────────────────────
+    //
+    // Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+    // пришедшие снаружи, ДО вызова функции.
+    //
+    // Зачем это здесь, а не в самих функциях. Доказательство завершения
+    // `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+    // которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию
+    // не печатается вовсе. Значение вне типа выносит вместе с типом и
+    // доказательство: `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её
+    // нечем. Дверь одна и стоит она ДО вычисления.
+    //
+    // Таблицу печатает бэкенд вместе с программой (`Entry`), а строит её
+    // `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+    // подходит типу», каким сверяется `flang run --args`.
+
+    /// <summary>Не сверяется: значение-функция, параметр полиморфизма, применение типа.</summary>
+    public const int TypeUnknown = 0;
+    /// <summary>Число, включая уточнения `нат` и `целое`.</summary>
+    public const int TypeNumber = 1;
+    /// <summary>Строка.</summary>
+    public const int TypeText = 2;
+    /// <summary>Признак.</summary>
+    public const int TypeFlag = 3;
+    /// <summary>«ничто».</summary>
+    public const int TypeNull = 4;
+    /// <summary>Список.</summary>
+    public const int TypeList = 5;
+    /// <summary>Запись.</summary>
+    public const int TypeRecord = 6;
+    /// <summary>Сумма типов.</summary>
+    public const int TypeSum = 7;
+
+    /// <summary>Поле записи или варианта: имя и место его типа в таблице типов.</summary>
+    public readonly struct TypeField
+    {
+        /// <summary>Имя поля в исходной программе flang.</summary>
+        public readonly string Name;
+
+        /// <summary>Индекс типа поля в таблице типов.</summary>
+        public readonly int Type;
+
+        /// <summary>Собирает описание поля.</summary>
+        public TypeField(string name, int type)
+        {
+            Name = name;
+            Type = type;
+        }
+    }
+
+    /// <summary>Вариант суммы: имя дискриминанта и отрезок его полей.</summary>
+    public readonly struct TypeVariant
+    {
+        /// <summary>Имя варианта.</summary>
+        public readonly string Name;
+
+        /// <summary>Начало отрезка полей в общем массиве.</summary>
+        public readonly int FieldFrom;
+
+        /// <summary>Длина отрезка полей.</summary>
+        public readonly int FieldCount;
+
+        /// <summary>Собирает описание варианта.</summary>
+        public TypeVariant(string name, int fieldFrom, int fieldCount)
+        {
+            Name = name;
+            FieldFrom = fieldFrom;
+            FieldCount = fieldCount;
+        }
+    }
+
+    /// <summary>
+    /// Объявленный тип. Поля и варианты лежат сплошными отрезками общих
+    /// массивов, а тип называет своё начало и длину.
+    /// </summary>
+    public readonly struct TypeSpec
+    {
+        /// <summary>Вид типа.</summary>
+        public readonly int Kind;
+
+        /// <summary>Печатное имя типа: «нат», «список числа».</summary>
+        public readonly string Name;
+
+        /// <summary>Имя записи или суммы без кавычек — для текстов о полях.</summary>
+        public readonly string Owner;
+
+        /// <summary>«… или ничто»: отсутствие значения законно.</summary>
+        public readonly bool Optional;
+
+        /// <summary>Целое ли.</summary>
+        public readonly bool Integral;
+
+        /// <summary>Есть ли конечный отрезок (у `число` его нет).</summary>
+        public readonly bool Bounded;
+
+        /// <summary>Нижняя граница отрезка.</summary>
+        public readonly double Low;
+
+        /// <summary>Верхняя граница отрезка.</summary>
+        public readonly double High;
+
+        /// <summary>Тип элемента списка.</summary>
+        public readonly int Of;
+
+        /// <summary>Начало отрезка полей записи.</summary>
+        public readonly int FieldFrom;
+
+        /// <summary>Длина отрезка полей записи.</summary>
+        public readonly int FieldCount;
+
+        /// <summary>Начало отрезка вариантов.</summary>
+        public readonly int VariantFrom;
+
+        /// <summary>Длина отрезка вариантов.</summary>
+        public readonly int VariantCount;
+
+        /// <summary>Собирает описание типа.</summary>
+        public TypeSpec(
+            int kind,
+            string name,
+            string owner,
+            bool optional,
+            bool integral,
+            bool bounded,
+            double low,
+            double high,
+            int of,
+            int fieldFrom,
+            int fieldCount,
+            int variantFrom,
+            int variantCount)
+        {
+            Kind = kind;
+            Name = name;
+            Owner = owner;
+            Optional = optional;
+            Integral = integral;
+            Bounded = bounded;
+            Low = low;
+            High = high;
+            Of = of;
+            FieldFrom = fieldFrom;
+            FieldCount = fieldCount;
+            VariantFrom = variantFrom;
+            VariantCount = variantCount;
+        }
+    }
+
+    /// <summary>Параметр функции: чей он, как называется и какого он типа.</summary>
+    public readonly struct EntryParam
+    {
+        /// <summary>Имя функции flang.</summary>
+        public readonly string Function;
+
+        /// <summary>Имя параметра.</summary>
+        public readonly string Name;
+
+        /// <summary>Индекс типа в таблице типов.</summary>
+        public readonly int Type;
+
+        /// <summary>Собирает описание параметра.</summary>
+        public EntryParam(string function, string name, int type)
+        {
+            Function = function;
+            Name = name;
+            Type = type;
+        }
+    }
+
+    /// <summary>Граница входа программы целиком.</summary>
+    public sealed class EntryTable
+    {
+        /// <summary>Объявленные типы.</summary>
+        public readonly TypeSpec[] Types;
+
+        /// <summary>Поля записей и вариантов, сплошным массивом.</summary>
+        public readonly TypeField[] Fields;
+
+        /// <summary>Варианты сумм, сплошным массивом.</summary>
+        public readonly TypeVariant[] Variants;
+
+        /// <summary>Параметры функций в объявленном порядке.</summary>
+        public readonly EntryParam[] Params;
+
+        /// <summary>Собирает границу входа.</summary>
+        public EntryTable(TypeSpec[] types, TypeField[] fields, TypeVariant[] variants, EntryParam[] parameters)
+        {
+            Types = types;
+            Fields = fields;
+            Variants = variants;
+            Params = parameters;
+        }
+    }
+
+    private static void CheckNumberType(TypeSpec spec, Value value, string label)
+    {
+        if (value.Tag != Value.TagNumber || double.IsNaN(value.Num) || double.IsInfinity(value.Num))
+        {
+            throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
+        }
+        // Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+        // порядок, и второй отказ на одном значении был бы вторым текстом про
+        // одну беду.
+        if (spec.Integral && System.Math.Floor(value.Num) != value.Num)
+        {
+            throw Fail(
+                FlangError.CodeType,
+                label + ": " + Value.NumberText(value.Num) + " не целое, а тип " + spec.Name + " — целый");
+        }
+        if (spec.Bounded && (value.Num < spec.Low || value.Num > spec.High))
+        {
+            throw Fail(
+                FlangError.CodeType, label + ": " + Value.NumberText(value.Num) + " вне " + spec.Name);
+        }
+    }
+
+    private static void CheckFields(
+        EntryTable table, int from, int count, Field[] given, string label, string owner, bool ofVariant)
+    {
+        for (int index = 0; index < count; index++)
+        {
+            TypeField declared = table.Fields[from + index];
+            int found = -1;
+            for (int at = 0; at < given.Length; at++)
+            {
+                if (given[at].Name == declared.Name)
+                {
+                    found = at;
+                    break;
+                }
+            }
+            if (found < 0)
+            {
+                // Необязательное поле можно не задавать: отсутствие — это «ничто».
+                if (table.Types[declared.Type].Optional)
+                {
+                    continue;
+                }
+                if (ofVariant)
+                {
+                    throw Fail(
+                        FlangError.CodeType,
+                        label + ": вариант «" + owner + "» требует поле «" + declared.Name + "»");
+                }
+                throw Fail(
+                    FlangError.CodeType,
+                    label + ": не задано поле «" + declared.Name + "» записи «" + owner + "»");
+            }
+            CheckTyped(table, declared.Type, given[found].Value, label + "." + declared.Name);
+        }
+    }
+
+    private static void CheckTyped(EntryTable table, int index, Value value, string label)
+    {
+        if (index < 0 || index >= table.Types.Length)
+        {
+            return;
+        }
+        TypeSpec spec = table.Types[index];
+        // Необязательный аргумент можно не задавать: отсутствие — это «ничто», а
+        // не пропуск. Так же считает и ядро FTS.
+        if (spec.Optional && value.Tag == Value.TagNothing)
+        {
+            return;
+        }
+        string mismatch = label + " не соответствует типу " + spec.Name;
+        switch (spec.Kind)
+        {
+            case TypeNumber:
+                CheckNumberType(spec, value, label);
+                return;
+            case TypeText:
+                if (value.Tag != Value.TagString)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                return;
+            case TypeFlag:
+                if (value.Tag != Value.TagFlag)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                return;
+            case TypeNull:
+                if (value.Tag != Value.TagNothing)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                return;
+            case TypeList:
+                if (value.Tag != Value.TagList)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                for (int at = 0; at < value.Items.Length; at++)
+                {
+                    CheckTyped(table, spec.Of, value.Items[at], label + "[" + at + "]");
+                }
+                return;
+            case TypeRecord:
+                if (value.Tag != Value.TagRecord)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                CheckFields(table, spec.FieldFrom, spec.FieldCount, value.Fields, label, spec.Owner, false);
+                // Лишнее поле — тоже несоответствие типу: запись flang тотальна,
+                // и поля сверх объявленных в ней взяться неоткуда.
+                foreach (Field field in value.Fields)
+                {
+                    bool declared = false;
+                    for (int at = 0; at < spec.FieldCount; at++)
+                    {
+                        if (table.Fields[spec.FieldFrom + at].Name == field.Name)
+                        {
+                            declared = true;
+                            break;
+                        }
+                    }
+                    if (!declared)
+                    {
+                        throw Fail(
+                            FlangError.CodeType,
+                            label + ": запись «" + spec.Owner + "» не имеет поля «" + field.Name + "»");
+                    }
+                }
+                return;
+            case TypeSum:
+                if (value.Tag != Value.TagVariant && value.Tag != Value.TagRecord)
+                {
+                    throw Fail(FlangError.CodeType, mismatch);
+                }
+                int variant = -1;
+                if (value.Tag == Value.TagVariant)
+                {
+                    for (int at = 0; at < spec.VariantCount; at++)
+                    {
+                        if (table.Variants[spec.VariantFrom + at].Name == value.Str)
+                        {
+                            variant = spec.VariantFrom + at;
+                            break;
+                        }
+                    }
+                }
+                if (variant < 0)
+                {
+                    throw Fail(
+                        FlangError.CodeType, label + ": ожидался вариант типа «" + spec.Owner + "»");
+                }
+                CheckFields(
+                    table,
+                    table.Variants[variant].FieldFrom,
+                    table.Variants[variant].FieldCount,
+                    value.Fields,
+                    label,
+                    table.Variants[variant].Name,
+                    true);
+                return;
+            default:
+                // TypeUnknown: сверять нечем, и молчание здесь то же самое, каким
+                // отвечает проверка значений эталона на джокер.
+                return;
+        }
+    }
+
+    /// <summary>
+    /// Сверка набора значений с объявленными типами параметров функции.
+    /// Молчит там, где сверять нечем: имени в таблице нет, число значений с
+    /// числом параметров не сошлось (об этом скажет диспетчер своим текстом),
+    /// тип приехал видом TypeUnknown. Тексты отказов дословно те же, что у
+    /// <c>checkValue</c> эталона.
+    /// </summary>
+    public static void CheckEntry(EntryTable table, string name, Value[] args)
+    {
+        int declared = 0;
+        foreach (EntryParam param in table.Params)
+        {
+            if (param.Function == name)
+            {
+                declared++;
+            }
+        }
+        if (declared == 0 || declared != args.Length)
+        {
+            return;
+        }
+        int at = 0;
+        foreach (EntryParam param in table.Params)
+        {
+            if (param.Function != name)
+            {
+                continue;
+            }
+            CheckTyped(
+                table, param.Type, args[at], "вызов функции «" + name + "»: аргумент «" + param.Name + "»");
+            at++;
+        }
     }
 }

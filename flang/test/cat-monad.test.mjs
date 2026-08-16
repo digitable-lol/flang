@@ -46,7 +46,7 @@ import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { evaluate } from "../src/interpret.mjs"
-import { checkMonadLaws } from "../src/monad.mjs"
+import { checkMonadLaws, expandMonads } from "../src/monad.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
@@ -210,10 +210,24 @@ test("объявление монады доезжает до программы
 
 test("программа без блоков возвращается тем же объектом, а не копией", () => {
   /* Обещание то же, что у прохода дефункционализации, и цена ошибки та же:
-     лишняя копия сломала бы не побайтовую сверку AST, а доверие к ней. */
+     лишняя копия сломала бы не побайтовую сверку AST, а доверие к ней.
+
+     Раньше тождество не проверялось вовсе: `разобрать` звали один раз, и
+     сравнивать было не с чем — утверждалось «узла inMonad нет», а обещалось
+     «ТОТ ЖЕ объект». Проход, который на каждой программе без блоков отдавал бы
+     свежую копию, проходил тест зелёным. */
   const программа = разобрать(безБлока(ВОЗМОЖНО))
   assert.ok(программа.functions.every((фн) => typeof фн.body === "object"))
   assert.equal(JSON.stringify(программа).includes("inMonad"), false)
+
+  /* Тождество — по ссылке, и не только у программы: каждая функция и каждое
+     тело обязаны остаться теми же объектами. Копия, совпадающая побайтово,
+     здесь не годится: `deepEqual` её пропустил бы, а обещано именно «тот же». */
+  assert.equal(expandMonads(программа), программа, "проход отдал копию вместо той же программы")
+  assert.equal(expandMonads(программа).functions, программа.functions, "массив функций пересобран")
+  for (const [номер, фн] of программа.functions.entries()) {
+    assert.equal(expandMonads(программа).functions[номер], фн, `функция «${фн.name}» пересобрана`)
+  }
 })
 
 test("развёрнутое считает то же, что написанное руками", () => {

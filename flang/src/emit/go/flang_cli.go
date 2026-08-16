@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Прогонщик программы flang: JSON на входе, JSON на выходе.
 //
 // Зачем он есть. Напечатанный модуль на Go — это библиотека, и вызвать её можно
@@ -257,6 +260,20 @@ func runRequest(line string) string {
 			return failure("CLI", "неразборчивые аргументы")
 		}
 		args[index] = value
+	}
+
+	// Граница входа — ДО вызова: значения приехали снаружи, программой не
+	// являются и сверяются с объявленными типами. Значение вне типа выносит
+	// вместе с типом и доказательство завершения `тотальной`, а поймать вечную
+	// цепочку потом нечем — сторожа в доказанно тотальной функции нет.
+	if err := rt.CheckEntry(flang.Entry(), query.Fn, args); err != nil {
+		var diagnostic *rt.Error
+		if found, ok := err.(*rt.Error); ok {
+			diagnostic = found
+		} else {
+			diagnostic = &rt.Error{Code: "FLANG_UNKNOWN", Message: err.Error()}
+		}
+		return failure(diagnostic.Code, diagnostic.Message)
 	}
 
 	result, err := flang.Call(ctx, query.Fn, args)

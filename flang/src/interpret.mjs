@@ -27,6 +27,10 @@
 import {
   callBuiltin,
   describeValue,
+  длинаСписка,
+  ячейкиСписка,
+  элементСписка,
+  элементыСписка,
   flangError,
   FlangError,
   FlangVariant,
@@ -35,6 +39,7 @@ import {
   isRecord,
   isScalar,
   isVariant,
+  материализовать,
   percentOf,
   reifyValue,
   remainderOf,
@@ -235,7 +240,11 @@ function callFunction(rt, name, args, отчёт) {
   }
   try {
     applyFunction(machine, fn, values, fn.span)
-    return run(machine)
+    /* Граница машины: наружу уходят обычные массивы, а не списки с запасом
+       (`builtins.mjs`, «Список с запасом»). Вид — приём вычислителя, и знать о
+       нём читателям значений не положено: сверка с восемью целями печати,
+       `flang run`, факт-чекинг и тесты сравнивают ЗНАЧЕНИЯ. */
+    return материализовать(run(machine))
   } finally {
     if (отчёт !== undefined && отчёт !== null) отчёт.витки = machine.steps
   }
@@ -399,7 +408,18 @@ function evalExpr(machine, expr, env) {
     case "apply": {
       /* Применяемое считается первым, аргументы за ним — тот же строгий порядок
          слева направо, что у вызова по имени. */
-      startSeq(machine, [expr.fn, ...(expr.args ?? [])], env, { kind: "apply", span: expr.span }, expr.span)
+      const args = expr.args ?? []
+      /* Проверка стоит ДО развёртки, и это не перестраховка. `startSeq` ловит
+         не-список у всех прочих видов узла, а здесь развёртка `...` случилась бы
+         раньше него — и на `args: 5` наружу уходил бы `TypeError: 5 is not
+         iterable`, то есть отказ ЧУЖОГО движка вместо диагностики flang. На
+         правильной программе это не видно вовсе (`args` там всегда список), и
+         нашлось чтением рядом с копией на flang: копия обязана отвечать тем же
+         кодом, а кода у падения движка нет. */
+      if (!Array.isArray(args)) {
+        throw flangError("FLANG_PARSE", "аргументы выражения должны быть списком", expr.span)
+      }
+      startSeq(machine, [expr.fn, ...args], env, { kind: "apply", span: expr.span }, expr.span)
       return
     }
     case "builtin": {
@@ -709,7 +729,7 @@ function matchPattern(pattern, value, span) {
        разваливалось бы пополам, и разбор строки расходился бы с её длиной. */
     case "empty":
       if (typeof value === "string") return value.length === 0 ? [] : null
-      return isList(value) && value.length === 0 ? [] : null
+      return isList(value) && длинаСписка(value) === 0 ? [] : null
     case "cons": {
       if (typeof value === "string") {
         const points = Array.from(value)
@@ -719,10 +739,10 @@ function matchPattern(pattern, value, span) {
         if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, points.slice(1).join("")])
         return bindings
       }
-      if (!isList(value) || value.length === 0) return null
+      if (!isList(value) || длинаСписка(value) === 0) return null
       const bindings = []
-      if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, value[0]])
-      if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, value.slice(1)])
+      if (pattern.head !== undefined && pattern.head !== null) bindings.push([pattern.head, элементСписка(value, 0)])
+      if (pattern.tail !== undefined && pattern.tail !== null) bindings.push([pattern.tail, элементыСписка(value, 1)])
       return bindings
     }
     case "variant": {
@@ -753,9 +773,26 @@ function matchPattern(pattern, value, span) {
 
 // ── свёртка ──
 
+/*
+ * Границы обхода снимаются ОДИН РАЗ, на входе, и дальше не пересматриваются.
+ *
+ * Это не оптимизация ради оптимизации, а обязательное свойство: тело свёртки,
+ * «отобразить» и «отфильтровать» вправе позвать «добавить» — в том числе к тому
+ * самому списку, по которому идёт обход. Продление занимает ячейки ЗА концом
+ * вида (`builtins.mjs`, «Список с запасом»), и обход обязан их не увидеть,
+ * иначе свёртка по списку из трёх элементов не кончилась бы никогда.
+ *
+ * Снимок — это пара «ячейки и длина», а не копия: у вида ячейки общего массива,
+ * у обычного списка он сам. Копировать нечего — ячейки до конца вида не
+ * переписывает никто.
+ */
+function снимокОбхода(list) {
+  return { ячейки: ячейкиСписка(list), длина: длинаСписка(list) }
+}
+
 function stepFoldOver(machine, frame) {
   const list = requireList(machine.value, "свёртка", frame.node.span)
-  push(machine, { op: "foldInit", node: frame.node, env: frame.env, list })
+  push(machine, { op: "foldInit", node: frame.node, env: frame.env, обход: снимокОбхода(list) })
   pushEval(machine, frame.node.init, frame.env, frame.node.span)
 }
 
@@ -764,7 +801,7 @@ function stepFoldInit(machine, frame) {
     op: "foldStep",
     node: frame.node,
     env: frame.env,
-    list: frame.list,
+    обход: frame.обход,
     index: 0,
     acc: machine.value,
     started: false,
@@ -777,13 +814,13 @@ function stepFold(machine, frame) {
     frame.index += 1
   }
   frame.started = true
-  if (frame.index >= frame.list.length) {
+  if (frame.index >= frame.обход.длина) {
     machine.value = frame.acc
     return
   }
   const env = Object.create(frame.env)
   env[frame.node.acc] = frame.acc
-  env[frame.node.item] = frame.list[frame.index]
+  env[frame.node.item] = frame.обход.ячейки[frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }
@@ -798,7 +835,7 @@ function stepLoopOver(machine, frame) {
     node: frame.node,
     env: frame.env,
     mode: frame.mode,
-    list,
+    обход: снимокОбхода(list),
     index: 0,
     out: [],
     started: false,
@@ -820,17 +857,17 @@ function stepLoop(machine, frame) {
       }
       // Тело фильтра — предикат; для отброшенных элементов ничего больше не
       // вычисляется (никакого «а вдруг пригодится»).
-      if (keep) frame.out.push(frame.list[frame.index])
+      if (keep) frame.out.push(frame.обход.ячейки[frame.index])
     }
     frame.index += 1
   }
   frame.started = true
-  if (frame.index >= frame.list.length) {
+  if (frame.index >= frame.обход.длина) {
     machine.value = frame.out
     return
   }
   const env = Object.create(frame.env)
-  env[frame.node.item] = frame.list[frame.index]
+  env[frame.node.item] = frame.обход.ячейки[frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }

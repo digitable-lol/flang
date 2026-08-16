@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 /**
  * Операции языка flang для бэкенда Java: арифметика, доступ к полям, разбор,
  * встроенные формы, батут и глубокий стек.
@@ -215,14 +218,20 @@ public final class Flang {
     throw matchFail(ctx, value);
   }
 
-  /** «свёртка», «отобразить» и «отфильтровать» работают только со списком. */
+  /**
+   * «свёртка», «отобразить» и «отфильтровать» работают только со списком.
+   *
+   * Отдаётся массив ровно нужной длины (Value.elements), а не общий массив
+   * списка: за концом списка в общем массиве могут лежать чужие ячейки, а обход
+   * печатается как `for (Value item : …)` и прошёл бы по ним тоже.
+   */
   public static Value[] requireList(Ctx ctx, Value value, String label) {
     if (value.tag != Value.TAG_LIST) {
       throw fail(
           FlangError.CODE_TYPE,
           "«" + label + "» работает только со списком, получено " + Value.typeName(value));
     }
-    return value.items;
+    return Value.elements(value);
   }
 
   /* ───────────────────────────── арифметика ───────────────────────────── */
@@ -373,13 +382,21 @@ public final class Flang {
     return result;
   }
 
-  private static Value[] expectList(String name, Value value, String role) {
+  /**
+   * Проверка «это список» для встроенных форм.
+   *
+   * Возвращается само значение, а не его массив: у списка есть длина, отдельная
+   * от длины общего массива (см. Value.count), и встроенные формы обязаны
+   * считать по ней. Копии здесь нет — «элемент N в …» стоит того же, что
+   * «голова», как и обещано в SPEC.
+   */
+  private static Value expectList(String name, Value value, String role) {
     if (value.tag != Value.TAG_LIST) {
       throw fail(
           FlangError.CODE_BUILTIN_ARGS,
           "«" + name + "»: " + role + " должен быть списком, получено " + Value.typeName(value));
     }
-    return value.items;
+    return value;
   }
 
   /* ───────────────────────── строки в кодовых точках ───────────────────── */
@@ -408,7 +425,7 @@ public final class Flang {
       return Value.number(codePointLength(value.str));
     }
     if (value.tag == Value.TAG_LIST) {
-      return Value.number(value.items.length);
+      return Value.number(Value.size(value));
     }
     throw fail(
         FlangError.CODE_BUILTIN_ARGS,
@@ -462,8 +479,8 @@ public final class Flang {
     if (left.tag == Value.TAG_LIST) {
       String separator = expectString("соединить", right, "разделитель");
       StringBuilder out = new StringBuilder();
-      for (int index = 0; index < left.items.length; index++) {
-        Value item = left.items[index];
+      for (int index = 0; index < Value.size(left); index++) {
+        Value item = Value.at(left, index);
         if (item.tag != Value.TAG_STRING) {
           throw fail(
               FlangError.CODE_BUILTIN_ARGS,
@@ -548,8 +565,8 @@ public final class Flang {
   /** «содержит»: подстрока в строке либо значение в списке. */
   public static Value bContains(Ctx ctx, Value left, Value right) {
     if (left.tag == Value.TAG_LIST) {
-      for (Value item : left.items) {
-        if (Value.equal(item, right)) {
+      for (int index = 0; index < Value.size(left); index++) {
+        if (Value.equal(Value.at(left, index), right)) {
           return Value.TRUE;
         }
       }
@@ -730,7 +747,7 @@ public final class Flang {
   /** «пусто». */
   public static Value bEmpty(Ctx ctx, Value value) {
     if (value.tag == Value.TAG_LIST) {
-      return Value.flag(value.items.length == 0);
+      return Value.flag(Value.size(value) == 0);
     }
     if (value.tag == Value.TAG_STRING) {
       return Value.flag(value.str.isEmpty());
@@ -742,11 +759,11 @@ public final class Flang {
 
   /** «голова». */
   public static Value bHead(Ctx ctx, Value value) {
-    Value[] items = expectList("голова", value, "аргумент");
-    if (items.length == 0) {
+    Value list = expectList("голова", value, "аргумент");
+    if (Value.size(list) == 0) {
       throw fail(FlangError.CODE_BUILTIN_ARGS, "«голова»: список пуст");
     }
-    return items[0];
+    return Value.at(list, 0);
   }
 
   /**
@@ -758,11 +775,59 @@ public final class Flang {
    * даёт линейные «свёртка», «отобразить» и «отфильтровать».
    */
   public static Value bTail(Ctx ctx, Value value) {
-    Value[] items = expectList("хвост", value, "аргумент");
-    if (items.length == 0) {
+    Value list = expectList("хвост", value, "аргумент");
+    if (Value.size(list) == 0) {
       throw fail(FlangError.CODE_BUILTIN_ARGS, "«хвост»: список пуст");
     }
-    return Value.list(java.util.Arrays.copyOfRange(items, 1, items.length));
+    return Value.list(java.util.Arrays.copyOfRange(list.items, 1, Value.size(list)));
+  }
+
+  /*
+   * ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+   *
+   * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+   * ДОКАЗАНА проверкой типов (flang/src/types.mjs, «длинаНиз»), узел приезжает
+   * с отметкой «доказана», и печать зовёт эти методы. Сверка типа остаётся:
+   * expectList ловит не пустоту, а другой вид значения.
+   */
+
+  /** «разделить … по …» с доказанно непустым разделителем. */
+  public static Value bSplitProven(Ctx ctx, Value source, Value separator) {
+    String value = expectString("разделить", source, "строка");
+    String mark = expectString("разделить", separator, "разделитель");
+    java.util.ArrayList<Value> parts = new java.util.ArrayList<>();
+    int from = 0;
+    for (; ; ) {
+      int found = value.indexOf(mark, from);
+      if (found < 0) {
+        parts.add(Value.text(value.substring(from)));
+        break;
+      }
+      parts.add(Value.text(value.substring(from, found)));
+      from = found + mark.length();
+    }
+    return Value.list(parts.toArray(new Value[0]));
+  }
+
+  /** «код символа» доказанно непустой строки. */
+  public static Value bCharCodeProven(Ctx ctx, Value source) {
+    return Value.number(expectString("код символа", source, "строка").codePointAt(0));
+  }
+
+  /** «голова» доказанно непустого списка. */
+  public static Value bHeadProven(Ctx ctx, Value value) {
+    Value list = expectList("голова", value, "аргумент");
+    /* Ветвь пустого списка недостижима — непустота доказана при печати; читается
+       нулевой элемент ровно тем же способом, что в bHead, чтобы у двух дорог не
+       разошлось представление списка. */
+    return Value.size(list) == 0 ? Value.nothing() : Value.at(list, 0);
+  }
+
+  /** «хвост» доказанно непустого списка. */
+  public static Value bTailProven(Ctx ctx, Value value) {
+    Value list = expectList("хвост", value, "аргумент");
+    int n = Value.size(list);
+    return Value.list(java.util.Arrays.copyOfRange(list.items, n == 0 ? 0 : 1, n));
   }
 
   /**
@@ -774,37 +839,53 @@ public final class Flang {
    */
   public static Value bElement(Ctx ctx, Value index, Value value) {
     double position = expectInteger("элемент", index, "индекс");
-    Value[] items = expectList("элемент", value, "список");
+    Value list = expectList("элемент", value, "список");
+    int length = Value.size(list);
     double at = position - ctx.indexBase;
-    if (at < 0 || at >= items.length) {
+    if (at < 0 || at >= length) {
       throw fail(
           FlangError.CODE_BUILTIN_ARGS,
-          "«элемент»: индекс " + Value.numberText(position) + " вне списка длиной " + items.length);
+          "«элемент»: индекс " + Value.numberText(position) + " вне списка длиной " + length);
     }
-    return items[(int) at];
+    return Value.at(list, (int) at);
   }
 
   /**
    * «добавить … к …»: дописывает в конец, исходный список не меняется.
    *
-   * Копирует, как и в JS: значения flang неизменяемы, и разделить массив с
-   * суффиксом нельзя. Значит наращивание списка в цикле квадратично по времени —
-   * ровно как у интерпретатора, где «добавить» это тоже `[...список, элемент]`.
-   * Совпасть со сложностью интерпретатора здесь важнее, чем обогнать его.
+   * За постоянное время, когда ячейка за концом ещё ничья, и копией во всех
+   * остальных случаях. Разбор приёма и доказательство неизменяемости лежат при
+   * классе Value.Grow; тот же приём и по той же причине стоит в рантаймах C
+   * (fl_b_dobavit), Rust (Items::grown) и Go (BAppend).
    *
-   * По ПАМЯТИ, в отличие от бэкенда C, стены нет: там арена не отдаёт
-   * промежуточные копии до конца запроса, и список из n элементов оставляет
-   * порядка n² байт. Здесь каждая промежуточная копия становится мусором сразу
-   * и собирается в нулевом поколении, поэтому живой памяти всё время O(n).
-   * Сделать наращивание амортизированным, не меняя представления, нельзя:
-   * запасом ёмкости в общем массиве пришлось бы кому-то владеть, а значение
-   * flang по договору неизменяемо и разделяемо.
+   * Прежняя безусловная копия была ВЕРНА, но стоила O(длины) за вызов, а значит
+   * накопление списка n вызовами — O(n²). Шаг напечатанного кода — вход в
+   * функцию, и если один шаг стоит O(длины), предел шагов не ограничивает
+   * работу ничем: точка «Строить скобки» от 42 и 0 и 0 и "" и [] при
+   * объявленных 5 000 000 шагов упиралась в предел 63,7 с вместо секунды.
+   *
+   * Просто дописать в общий массив нельзя: два «добавить» от одного значения
+   * заняли бы одну ячейку и испортили бы друг друга. Разрешение спрашивается у
+   * Grow, а не у длины массива.
    */
   public static Value bAppend(Ctx ctx, Value item, Value value) {
-    Value[] items = expectList("добавить", value, "второй аргумент");
-    Value[] next = java.util.Arrays.copyOf(items, items.length + 1);
-    next[items.length] = item;
-    return Value.list(next);
+    Value list = expectList("добавить", value, "второй аргумент");
+    int end = Value.size(list);
+    Value.Grow grow = list.grow;
+    if (grow != null && end == grow.filled && end < list.items.length) {
+      list.items[end] = item;
+      grow.filled = end + 1;
+      return Value.grown(list.items, end + 1, grow);
+    }
+    /* Копия — с запасом, чтобы следующие «добавить» шли уже на месте. Запас
+       равен длине, то есть массив удваивается: за n «добавить» перевыделений
+       log₂n, а не n. У самого края int запаса брать не из чего — там продление
+       идёт впритык, и следующее «добавить» снова копирует. */
+    int capacity = end < (Integer.MAX_VALUE - 8) / 2 ? 2 * (end + 1) : end + 1;
+    Value[] cells = new Value[capacity];
+    System.arraycopy(list.items, 0, cells, 0, end);
+    cells[end] = item;
+    return Value.grown(cells, end + 1, new Value.Grow(end + 1));
   }
 
   /** «остаток от». */
@@ -819,5 +900,238 @@ public final class Flang {
     double a = expectNumber("процентов от", left, "процент");
     double b = expectNumber("процентов от", right, "значение");
     return Value.number((a / 100) * b);
+  }
+
+  /* ───────────────────────────── граница входа ─────────────────────────────
+   *
+   * Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+   * пришедшие снаружи, ДО вызова функции.
+   *
+   * Зачем это здесь, а не в самих функциях. Доказательство завершения
+   * `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+   * которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+   * печатается вовсе. Значение вне типа выносит вместе с типом и
+   * доказательство: `1e300 минус 1` равно `1e300`, цепочка вечна, а ловить её
+   * нечем. Дверь одна и стоит она ДО вычисления.
+   *
+   * Таблицу печатает бэкенд вместе с программой (`entry`), а строит её
+   * `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов «значение
+   * подходит типу», каким сверяется `flang run --args`.
+   */
+
+  /** Не сверяется: значение-функция, параметр полиморфизма, применение типа. */
+  public static final int TYPE_UNKNOWN = 0;
+  /** Число, включая уточнения `нат` и `целое`. */
+  public static final int TYPE_NUMBER = 1;
+  /** Строка. */
+  public static final int TYPE_TEXT = 2;
+  /** Признак. */
+  public static final int TYPE_FLAG = 3;
+  /** «ничто». */
+  public static final int TYPE_NULL = 4;
+  /** Список. */
+  public static final int TYPE_LIST = 5;
+  /** Запись. */
+  public static final int TYPE_RECORD = 6;
+  /** Сумма типов. */
+  public static final int TYPE_SUM = 7;
+
+  /** Поле записи или варианта: имя и место его типа в таблице типов. */
+  public record TypeField(String name, int type) {}
+
+  /** Вариант суммы: имя дискриминанта и отрезок его полей в общем массиве. */
+  public record TypeVariant(String name, int fieldFrom, int fieldCount) {}
+
+  /**
+   * Объявленный тип. Поля и варианты лежат сплошными отрезками общих массивов,
+   * а тип называет своё начало и длину.
+   */
+  public record TypeSpec(
+      int kind,
+      String name,
+      String owner,
+      boolean optional,
+      boolean integral,
+      boolean bounded,
+      double low,
+      double high,
+      int of,
+      int fieldFrom,
+      int fieldCount,
+      int variantFrom,
+      int variantCount) {}
+
+  /** Параметр функции: чей он, как называется и какого он типа. */
+  public record EntryParam(String function, String name, int type) {}
+
+  /** Граница входа программы целиком. */
+  public record EntryTable(
+      TypeSpec[] types, TypeField[] fields, TypeVariant[] variants, EntryParam[] params) {}
+
+  private static void checkNumberType(TypeSpec spec, Value value, String label) {
+    if (value.tag != Value.TAG_NUMBER || !Double.isFinite(value.num)) {
+      throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+    }
+    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+       порядок, и второй отказ на одном значении был бы вторым текстом про одну
+       беду. */
+    if (spec.integral() && Math.floor(value.num) != value.num) {
+      throw fail(
+          FlangError.CODE_TYPE,
+          label + ": " + Value.numberText(value.num) + " не целое, а тип " + spec.name() + " — целый");
+    }
+    if (spec.bounded() && (value.num < spec.low() || value.num > spec.high())) {
+      throw fail(
+          FlangError.CODE_TYPE, label + ": " + Value.numberText(value.num) + " вне " + spec.name());
+    }
+  }
+
+  private static void checkFields(
+      EntryTable table,
+      int from,
+      int count,
+      Field[] given,
+      String label,
+      String owner,
+      boolean ofVariant) {
+    for (int index = 0; index < count; index++) {
+      TypeField declared = table.fields()[from + index];
+      Field found = null;
+      for (Field field : given) {
+        if (field.name().equals(declared.name())) {
+          found = field;
+          break;
+        }
+      }
+      if (found == null) {
+        /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
+        if (table.types()[declared.type()].optional()) {
+          continue;
+        }
+        if (ofVariant) {
+          throw fail(
+              FlangError.CODE_TYPE,
+              label + ": вариант «" + owner + "» требует поле «" + declared.name() + "»");
+        }
+        throw fail(
+            FlangError.CODE_TYPE,
+            label + ": не задано поле «" + declared.name() + "» записи «" + owner + "»");
+      }
+      checkTyped(table, declared.type(), found.value(), label + "." + declared.name());
+    }
+  }
+
+  private static void checkTyped(EntryTable table, int index, Value value, String label) {
+    if (index < 0 || index >= table.types().length) {
+      return;
+    }
+    TypeSpec spec = table.types()[index];
+    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
+       пропуск. Так же считает и ядро FTS. */
+    if (spec.optional() && value.tag == Value.TAG_NOTHING) {
+      return;
+    }
+    String mismatch = label + " не соответствует типу " + spec.name();
+    switch (spec.kind()) {
+      case TYPE_NUMBER -> checkNumberType(spec, value, label);
+      case TYPE_TEXT -> {
+        if (value.tag != Value.TAG_STRING) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_FLAG -> {
+        if (value.tag != Value.TAG_FLAG) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_NULL -> {
+        if (value.tag != Value.TAG_NOTHING) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+      }
+      case TYPE_LIST -> {
+        if (value.tag != Value.TAG_LIST) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        for (int at = 0; at < value.items.length; at++) {
+          checkTyped(table, spec.of(), value.items[at], label + "[" + at + "]");
+        }
+      }
+      case TYPE_RECORD -> {
+        if (value.tag != Value.TAG_RECORD) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        checkFields(table, spec.fieldFrom(), spec.fieldCount(), value.fields, label, spec.owner(), false);
+        /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
+           сверх объявленных в ней взяться неоткуда. */
+        for (Field field : value.fields) {
+          boolean declared = false;
+          for (int at = 0; at < spec.fieldCount(); at++) {
+            if (table.fields()[spec.fieldFrom() + at].name().equals(field.name())) {
+              declared = true;
+              break;
+            }
+          }
+          if (!declared) {
+            throw fail(
+                FlangError.CODE_TYPE,
+                label + ": запись «" + spec.owner() + "» не имеет поля «" + field.name() + "»");
+          }
+        }
+      }
+      case TYPE_SUM -> {
+        if (value.tag != Value.TAG_VARIANT && value.tag != Value.TAG_RECORD) {
+          throw fail(FlangError.CODE_TYPE, mismatch);
+        }
+        TypeVariant found = null;
+        if (value.tag == Value.TAG_VARIANT) {
+          for (int at = 0; at < spec.variantCount(); at++) {
+            if (table.variants()[spec.variantFrom() + at].name().equals(value.str)) {
+              found = table.variants()[spec.variantFrom() + at];
+              break;
+            }
+          }
+        }
+        if (found == null) {
+          throw fail(
+              FlangError.CODE_TYPE, label + ": ожидался вариант типа «" + spec.owner() + "»");
+        }
+        checkFields(
+            table, found.fieldFrom(), found.fieldCount(), value.fields, label, found.name(), true);
+      }
+      default -> {
+        /* TYPE_UNKNOWN: сверять нечем, и молчание здесь то же самое, каким
+           отвечает проверка значений эталона на джокер. */
+      }
+    }
+  }
+
+  /**
+   * Сверка набора значений с объявленными типами параметров функции.
+   *
+   * <p>Молчит там, где сверять нечем: имени в таблице нет, число значений с
+   * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
+   * приехал видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у
+   * {@code checkValue} эталона.
+   */
+  public static void checkEntry(EntryTable table, String name, Value[] args) {
+    int declared = 0;
+    for (EntryParam param : table.params()) {
+      if (param.function().equals(name)) {
+        declared++;
+      }
+    }
+    if (declared == 0 || declared != args.length) {
+      return;
+    }
+    int at = 0;
+    for (EntryParam param : table.params()) {
+      if (!param.function().equals(name)) {
+        continue;
+      }
+      checkTyped(
+          table, param.type(), args[at], "вызов функции «" + name + "»: аргумент «" + param.name() + "»");
+      at++;
+    }
   }
 }

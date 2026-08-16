@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+
 defmodule Flang.Proc do
   @moduledoc """
   Процесс flang как процесс BEAM.
@@ -238,7 +241,9 @@ defmodule Flang.Proc do
 
   defp response_actions({:rec, fields}, spec) do
     case Flang.Rt.lookup(fields, "действия") do
-      {:ok, {:list, actions}} -> Enum.map(actions, fn action -> check_action(action, spec) end)
+      {:ok, {:list, _, _} = actions} ->
+        Enum.map(Flang.Rt.items(actions), fn action -> check_action(action, spec) end)
+
       _ -> raise Flang.Rt.fail("FLANG_PROCESS", actions_message(spec))
     end
   end

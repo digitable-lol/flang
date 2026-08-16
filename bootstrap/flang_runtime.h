@@ -12,6 +12,8 @@
 #define FL_MAX_TAIL_ARGS 8
 #define FL_MAX_ARGS 9
 
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Рантайм flang для бэкенда C — заголовок.
  *
@@ -482,6 +484,102 @@ bool fl_equal(fl_value left, fl_value right);
 /** Всегда возвращает FL_ERROR: `return fl_fail(ctx, error, FL_CODE_TYPE, "…", …);` */
 fl_status fl_fail(fl_ctx *ctx, fl_error *error, const char *code, const char *format, ...);
 
+/* ───────────────────────────── граница входа ─────────────────────────────
+ *
+ * Объявленные типы параметров — ДАННЫМИ. Прогонщик сверяет по ним значения,
+ * пришедшие снаружи, ДО вызова функции.
+ *
+ * Зачем это здесь, а не в самих функциях. Доказательство завершения
+ * `тотальной` стоит НА ТИПЕ: у `нат` есть дно 0 и потолок 2^53−1, ниже
+ * которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
+ * печатается вовсе. Значение вне типа выносит вместе с типом и доказательство:
+ * 1e300 минус 1 равно 1e300, цепочка вечна, а ловить её нечем — сторожа нет.
+ * Поэтому дверь одна и стоит она ДО вычисления; внутри функции проверять было
+ * бы уже поздно и не тем.
+ *
+ * Таблица печатается бэкендом вместе с программой (см. `<модуль>_entry`), а
+ * строит её `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов
+ * «значение подходит типу», каким сверяется `flang run --args`. Восемь целей
+ * читают одну таблицу, а не заводят восемь пониманий.
+ */
+
+typedef enum fl_type_kind {
+  /* Значение-функция, параметр полиморфизма и применение типа с аргументами:
+     одной таблицы им мало, поэтому они не сверяются вовсе. */
+  FL_TYPE_UNKNOWN = 0,
+  FL_TYPE_NUMBER,
+  FL_TYPE_STRING,
+  FL_TYPE_FLAG,
+  FL_TYPE_NULL,
+  FL_TYPE_LIST,
+  FL_TYPE_RECORD,
+  FL_TYPE_SUM
+} fl_type_kind;
+
+/* Поле записи или варианта: имя и индекс его типа в таблице типов. */
+typedef struct fl_type_field {
+  const char *name;
+  size_t type;
+} fl_type_field;
+
+/* Вариант суммы: имя дискриминанта и отрезок его полей в общем массиве. */
+typedef struct fl_type_variant {
+  const char *name;
+  size_t field_from;
+  size_t field_count;
+} fl_type_variant;
+
+/*
+ * Поля и варианты лежат СПЛОШНЫМИ ОТРЕЗКАМИ общих массивов, а тип называет
+ * начало и длину. Не ради экономии: массив нулевой длины в C99 незаконен, и
+ * отдельный массив на каждый тип означал бы россыпь имён вида `..._fields_3_2`
+ * — по одному на каждый вариант каждой суммы.
+ */
+typedef struct fl_type {
+  fl_type_kind kind;
+  const char *name;  /* печатное имя типа: «нат», «список числа», «Позиция» */
+  const char *owner; /* имя записи или суммы без кавычек — для текстов о полях */
+  bool optional;     /* «… или ничто»: отсутствие значения законно */
+  bool integral;     /* целое ли */
+  bool bounded;      /* есть ли конечный отрезок (у `число` его нет) */
+  double low;
+  double high;
+  size_t of;         /* тип элемента списка — индекс в той же таблице */
+  size_t field_from;
+  size_t field_count;
+  size_t variant_from;
+  size_t variant_count;
+} fl_type;
+
+typedef struct fl_entry_param {
+  const char *function; /* имя функции flang */
+  const char *name;     /* имя параметра */
+  size_t type;          /* индекс в таблице типов */
+} fl_entry_param;
+
+typedef struct fl_entry_table {
+  const fl_type *types;
+  size_t type_count;
+  const fl_type_field *fields;
+  size_t field_count;
+  const fl_type_variant *variants;
+  size_t variant_count;
+  const fl_entry_param *params;
+  size_t param_count;
+} fl_entry_table;
+
+/**
+ * Сверка набора значений с объявленными типами параметров функции.
+ *
+ * Молчит (FL_OK) там, где сверять нечем: имени в таблице нет, число значений с
+ * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
+ * приехал видом `неизвестно`. Тексты отказов дословно те же, что у
+ * `checkValue` эталона, потому что расхождение здесь означало бы, что у языка
+ * два ответа на вопрос «подходит ли значение типу».
+ */
+fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *name, const fl_value *args,
+                         size_t count, fl_error *error);
+
 /* ───────────────────────────── операции языка ───────────────────────────── */
 
 fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error);
@@ -527,6 +625,17 @@ fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list, fl_value *out
 fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
 fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+
+/* ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
+ *
+ * Частичная форма отказывает не всегда, а на пустом. Там, где непустота
+ * ДОКАЗАНА проверкой типов (`flang/src/types.mjs`, `длинаНиз`), узел приезжает
+ * с отметкой `доказана`, и печать зовёт эти функции. Сверка типа остаётся:
+ * `fl_expect_list` ловит не пустоту, а другой вид значения. */
+fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
+fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_golova_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 
 /* ───────────────────────────── батут ───────────────────────────── */
 

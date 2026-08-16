@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 // Прогонщик программы flang: JSON на входе, JSON на выходе.
 //
 // Зачем он есть. Напечатанный класс на C# — это библиотека, и вызвать её можно
@@ -404,13 +407,13 @@ public static class FlangCli
                 return;
             case Value.TagList:
                 output.Append("{\"l\":[");
-                for (int index = 0; index < value.Items.Length; index++)
+                for (int index = 0; index < Value.Size(value); index++)
                 {
                     if (index > 0)
                     {
                         output.Append(',');
                     }
-                    EncodeValue(output, value.Items[index]);
+                    EncodeValue(output, Value.At(value, index));
                 }
                 output.Append("]}");
                 return;
@@ -461,18 +464,22 @@ public static class FlangCli
     {
         private readonly MethodInfo contextMethod;
         private readonly MethodInfo callMethod;
+        private readonly MethodInfo entryMethod;
 
         public Program(string name)
         {
             Type type = Type.GetType(name, throwOnError: true)!;
             contextMethod = type.GetMethod("NewContext", Type.EmptyTypes)!;
             callMethod = type.GetMethod("Call", new[] { typeof(Ctx), typeof(string), typeof(Value[]) })!;
+            entryMethod = type.GetMethod("Entry", Type.EmptyTypes)!;
         }
 
         public Ctx NewContext() => (Ctx)contextMethod.Invoke(null, null)!;
 
         public Value Call(Ctx ctx, string name, Value[] args) =>
             (Value)callMethod.Invoke(null, new object[] { ctx, name, args })!;
+
+        public Flang.EntryTable Entry() => (Flang.EntryTable)entryMethod.Invoke(null, null)!;
     }
 
     /// <summary>Один запрос: разбор, вызов, ответ. Исключения наружу не выпускаются.</summary>
@@ -526,7 +533,18 @@ public static class FlangCli
         Value result;
         try
         {
+            // Граница входа — ДО вызова: значения приехали снаружи, программой не
+            // являются и сверяются с объявленными типами. Значение вне типа
+            // выносит вместе с типом и доказательство завершения `тотальной`, а
+            // поймать вечную цепочку потом нечем — сторожа в тотальной нет.
+            // Зовётся она ПРЯМО, а не отражением, поэтому её отказ приходит сам
+            // собой, а не завёрнутым в TargetInvocationException.
+            Flang.CheckEntry(program.Entry(), function, args);
             result = program.Call(ctx, function, args);
+        }
+        catch (FlangError error)
+        {
+            return Failure(error.Code, error.Text);
         }
         catch (TargetInvocationException wrapped) when (wrapped.InnerException is FlangError error)
         {

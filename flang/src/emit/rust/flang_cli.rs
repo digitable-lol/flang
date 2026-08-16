@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
 // Прогонщик программы flang: JSON на входе, JSON на выходе.
 //
 // Зачем он есть. Напечатанный крейт — это библиотека, и вызвать её можно только
@@ -375,7 +377,7 @@ fn write_value(out: &mut String, value: &rt::Value) {
         }
         rt::Value::List(items) => {
             out.push_str("{\"l\":[");
-            for (index, item) in items.iter().enumerate() {
+            for (index, item) in items.as_slice().iter().enumerate() {
                 if index > 0 {
                     out.push(',');
                 }
@@ -447,6 +449,14 @@ fn run_request(line: &str) -> String {
                 Err(_) => return failure("CLI", "неразборчивые аргументы"),
             }
         }
+    }
+
+    /* Граница входа — ДО вызова: значения приехали снаружи, программой не
+    являются и сверяются с объявленными типами. Значение вне типа выносит вместе
+    с типом и доказательство завершения `тотальной`, а поймать вечную цепочку
+    потом нечем — сторожа в доказанно тотальной функции нет. */
+    if let Err(error) = rt::check_entry(program::entry(), &name, &args) {
+        return failure(&error.code, &error.message);
     }
 
     match program::call(&ctx, &name, args) {

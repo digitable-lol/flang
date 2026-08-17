@@ -1313,6 +1313,15 @@ const ОХВАТ = [
   "flang/self/interpret.flang «Арность прочих»",
   "flang/self/interpret.flang «Арность формы»",
   "flang/self/iso.flang «Предел сетки изоморфизма»",
+  "flang/self/lsp.flang «Вид варианта»",
+  "flang/self/lsp.flang «Вид записи»",
+  "flang/self/lsp.flang «Вид объявления»",
+  "flang/self/lsp.flang «Вид переменной»",
+  "flang/self/lsp.flang «Вид поля»",
+  "flang/self/lsp.flang «Вид слова»",
+  "flang/self/lsp.flang «Вид суммы»",
+  "flang/self/lsp.flang «Вид функции»",
+  "flang/self/lsp.flang «Уровень»",
   "flang/self/monad.flang «Предел сетки монады»",
   "flang/self/monad.flang «Предел стрелок»",
   "flang/self/monoid.flang «Предел сетки моноида»",
@@ -1414,6 +1423,14 @@ const НАПИСАНЫ_В_ЗАКРЫТЫХ = [
   "flang/self/interpret.flang «Арность прочих»",
   "flang/self/interpret.flang «Арность формы»",
   "flang/self/iso.flang «Предел сетки изоморфизма»",
+  "flang/self/lsp.flang «Вид варианта»",
+  "flang/self/lsp.flang «Вид записи»",
+  "flang/self/lsp.flang «Вид объявления»",
+  "flang/self/lsp.flang «Вид переменной»",
+  "flang/self/lsp.flang «Вид поля»",
+  "flang/self/lsp.flang «Вид слова»",
+  "flang/self/lsp.flang «Вид суммы»",
+  "flang/self/lsp.flang «Вид функции»",
   "flang/self/monad.flang «Предел сетки монады»",
   "flang/self/monad.flang «Предел стрелок»",
   "flang/self/monoid.flang «Предел сетки моноида»",
@@ -1434,12 +1451,12 @@ const НАПИСАНЫ_В_ЗАКРЫТЫХ = [
   "flang/self/types.flang «Потолок точных»",
 ]
 
-test("охват: двадцать утверждений НАПИСАНЫ, а доказано ядром сорок семь", () => {
+test("охват: двадцать восемь утверждений НАПИСАНЫ, а доказано ядром пятьдесят шесть", () => {
   /* Каталоги — не список из головы: он снят с `исходникиFlang`
      (`flang/test/self-parser.test.mjs`), где и стоит корпус побайтовой сверки. */
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const доказано = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
-  assert.equal(доказано.length, 47, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
+  assert.equal(доказано.length, 56, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
 
   /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт прошлой работы
      сказал «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а
@@ -1453,7 +1470,7 @@ test("охват: двадцать утверждений НАПИСАНЫ, а �
     "flang/core/": 0,
     "flang/examples/leetcode/": 11,
     "flang/examples/measure/": 1,
-    "flang/self/": 29,
+    "flang/self/": 38,
   })
 
   /* НАПИСАННОЕ ОБЯЗАНО БЫТЬ ДОКАЗАННЫМ. Обратное неверно и неверно намеренно:
@@ -1467,7 +1484,7 @@ test("охват: двадцать утверждений НАПИСАНЫ, а �
   }
   assert.equal(
     доказано.length - НАПИСАНЫ_В_ЗАКРЫТЫХ.length,
-    27,
+    28,
     "заказ на письмо: столько функций закрытых каталогов ядро уже доказывает, а утверждения при них не написано",
   )
 
@@ -1548,7 +1565,7 @@ test("охват: двадцать утверждений НАПИСАНЫ, а �
      ловится вовсе — ловится этим числом. Считано прогоном на собранном дереве. */
   assert.equal(
     сПостусловием.reduce((сумма, [, сколько]) => сумма + сколько, 0),
-    30,
+    38,
     "строк `обеспечивает` в закрытых каталогах стало другое число — вписана или снята строка",
   )
 })

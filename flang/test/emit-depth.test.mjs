@@ -50,7 +50,7 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdirSync, writeFileSync } from "node:fs"
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from "node:fs"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -69,6 +69,17 @@ import { missingToolchain } from "./toolchain-guard.mjs"
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 const goBin = findExecutable("go")
 const rustcBin = findExecutable("rustc")
+
+/*
+ * WebAssembly — не девятая цель печати, а ТА ЖЕ цель C на другой тройке
+ * (`docs/wasm-cherez-c.md`, §11), поэтому её проверки живут здесь, рядом с
+ * остальными пределами глубины, а не отдельным файлом. Нужны ровно два предмета:
+ * clang (цель wasm32 в нём есть всегда) и wasi-libc — без второго линковка не
+ * дойдёт до дела.
+ */
+const clangBin = findExecutable("clang")
+const WASI_SYSROOT = process.env.WASI_SYSROOT ?? "/usr"
+const wasmГотов = clangBin !== null && existsSync(join(WASI_SYSROOT, "lib/wasm32-wasi/libc.a"))
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
 const GO_ENV = { ...process.env, GOFLAGS: "-mod=mod", GOPROXY: "off", GOSUMDB: "off" }
@@ -248,6 +259,176 @@ test("C: обещание держится и под пределом адрес
     глубины.push(`${предел} КиБ → ${ответ.message.replace(/^.*?глубине (\d+).*$/u, "$1")}`)
   }
   t.diagnostic(`отказ объявленный на всей лестнице: ${глубины.join("; ")}`)
+})
+
+/* ═══════════════════════ C, собранный в WebAssembly ═══════════════════════ */
+
+/*
+ * ── Улика, ради которой этот раздел написан ─────────────────────────────────
+ *
+ * Тот же бэкенд C, та же программа, другая тройка — и обещание переставало
+ * держаться. Замер в НАСТОЯЩЕМ Chrome (151.0.7922.34, `web/wasm/`): при
+ * объявленном пределе 10 000 и спуске на 1000 глубина 30 отвечала
+ * FLANG_RECURSION_LIMIT, а глубина 60 УБИВАЛА ВКЛАДКУ. Под `node:wasi` тот же
+ * двоичный файл на глубине 65 отвечал `RuntimeError: function signature
+ * mismatch`, на 70 — `memory access out of bounds`.
+ *
+ * Причина не в потере сторожа, а в его КАЛИБРОВКЕ. Сторож стека считал по
+ * FL_STACK_ROOM_FALLBACK — мегабайту, — а `wasm-ld` отводит теневой стек 64 КиБ:
+ * расхождение в шестнадцать раз, и в окне между «сторож молчит» и «стек кончился»
+ * программа получала отказ, которого в замкнутом множестве
+ * `flang/src/failures.mjs` нет. Сторожевой страницы у WebAssembly нет вовсе, и
+ * теневой стек не падал, а заезжал в кучу и молча портил данные.
+ *
+ * ── Чем это чинится, и почему проверять надо именно ЭТО ─────────────────────
+ *
+ * Не константой. Константа («поставим предел 40») — та же догадка, только с
+ * другой стороны: толщина кадра у программ различается в шестнадцать раз, и
+ * число, годное тонкой, убивает толстую. Чинится ЗАМЕРОМ: настоящий размер
+ * теневого стека виден из самого модуля, потому что его границы объявляет
+ * компоновщик (`fl_wasm_room` в `flang_runtime.c`). Отсюда и главная проверка
+ * ниже: глубина обязана МЕНЯТЬСЯ вслед за `-Wl,-z,stack-size`, и меняться без
+ * второго флага, который надо не забыть согласовать с первым.
+ */
+
+function собратьWasm(печать, имя, лишние) {
+  const путь = join(печать.каталог, имя)
+  execFileSync(
+    clangBin,
+    ["--target=wasm32-wasi", `--sysroot=${WASI_SYSROOT}`, "-std=c99", "-O2", ...лишние, ...печать.файлы, "-o", путь, "-lm"],
+    { cwd: печать.каталог, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  )
+  return путь
+}
+
+/**
+ * Спрашивает модуль под `node:wasi` и различает ТРИ исхода, а не два.
+ *
+ * Третий — «ловушка» — и он тут весь смысл. Ловушка WebAssembly это не отказ
+ * программы и не её ответ: это `RuntimeError` от движка, у которого нет ни кода
+ * отказа, ни текста эталона. Считать её отказом значило бы зазеленить ровно тот
+ * дефект, ради которого раздел написан.
+ */
+async function спроситьWasm(модуль, запрос) {
+  const { WASI } = await import("node:wasi")
+  const вход = join(рабочий, "wasm-vhod.json")
+  const выход = join(рабочий, "wasm-vyhod.json")
+  writeFileSync(вход, `${JSON.stringify(запрос)}\n`, "utf8")
+  writeFileSync(выход, "", "utf8")
+  const fdВход = openSync(вход, "r")
+  const fdВыход = openSync(выход, "w")
+  try {
+    const wasi = new WASI({
+      version: "preview1",
+      args: [модуль],
+      stdin: fdВход,
+      stdout: fdВыход,
+      returnOnExit: true,
+    })
+    const скомпилировано = await WebAssembly.compile(readFileSync(модуль))
+    const экземпляр = await WebAssembly.instantiate(скомпилировано, wasi.getImportObject())
+    wasi.start(экземпляр)
+  } catch (беда) {
+    return { вид: "ловушка", чем: String(беда?.message ?? беда).split("\n")[0] }
+  } finally {
+    closeSync(fdВход)
+    closeSync(fdВыход)
+  }
+  const строка = readFileSync(выход, "utf8").split("\n").find((с) => с.length > 0)
+  if (строка === undefined) return { вид: "молчание" }
+  const ответ = JSON.parse(строка)
+  return ответ.ok
+    ? { вид: "значение", значение: ответ.value }
+    : { вид: "отказ", code: ответ.code, message: ответ.message }
+}
+
+test("wasm: предел глубины откалиброван ПО СТЕКУ, а не по числу из заголовка", async (t) => {
+  if (!wasmГотов) return missingToolchain(t, "c", "clang с wasi-libc не найден — пропуск")
+  const печать = напечататьC()
+
+  /*
+   * Две сборки ОДНОЙ И ТОЙ ЖЕ программы, отличающиеся ровно одним флагом
+   * компоновки. Если бы предел считался константой, обе дали бы одну глубину;
+   * он считается замером, и глубина обязана вырасти вслед за стеком. Это и есть
+   * разница между «починили» и «подогнали число».
+   */
+  const какЕсть = собратьWasm(печать, "cli-wasm-default.wasm", [])
+  const просторный = собратьWasm(печать, "cli-wasm-1m.wasm", ["-Wl,-z,stack-size=1048576"])
+
+  const тесный = await спроситьWasm(какЕсть, ЗАПРОС)
+  assert.equal(тесный.вид, "отказ", `wasm обязан ОТКАЗАТЬ, а не ${JSON.stringify(тесный)}`)
+  assert.equal(тесный.code, "FLANG_RECURSION_LIMIT", "код из закрытого набора видов отказа")
+  assert.match(
+    тесный.message,
+    /^функция «Спуск» исчерпала стек хозяина на глубине \d+, не дойдя до предела глубины вызовов \(10000\)$/u,
+    "текст обязан называть хозяина, а не предел, до которого не добрались",
+  )
+
+  const широкий = await спроситьWasm(просторный, ЗАПРОС)
+  assert.equal(широкий.вид, "отказ", `wasm обязан ОТКАЗАТЬ и на просторном стеке: ${JSON.stringify(широкий)}`)
+  assert.equal(широкий.code, "FLANG_RECURSION_LIMIT")
+
+  const глубина = (ответ) => Number(/на глубине (\d+)/u.exec(ответ.message)?.[1])
+  const было = глубина(тесный)
+  const стало = глубина(широкий)
+  assert.ok(
+    стало > было * 4,
+    `стек вырос в 16 раз — глубина обязана вырасти вместе с ним, а не остаться константой: ${было} → ${стало}`,
+  )
+
+  t.diagnostic(
+    `теневой стек 64 КиБ → глубина ${было}, 1 МиБ → ${стало}; предел прочитан из двоичного файла, а не вписан`,
+  )
+})
+
+test("wasm: ИЗЪЯТИЕ замера — вместо отказа возвращается ловушка движка", async (t) => {
+  if (!wasmГотов) return missingToolchain(t, "c", "clang с wasi-libc не найден — пропуск")
+  const печать = напечататьC()
+
+  /*
+   * Долг, каким он был: сторож на месте, но считает по запасному мегабайту,
+   * которого в wasm нет. Отказ обязан ПЕРЕСТАТЬ быть отказом — иначе тест выше
+   * зеленел бы и без починки, то есть не проверял бы ничего.
+   */
+  const слепой = собратьWasm(печать, "cli-wasm-blind.wasm", ["-DFL_NO_WASM_STACK"])
+  const мёртвый = await спроситьWasm(слепой, ЗАПРОС)
+  assert.equal(
+    мёртвый.вид,
+    "ловушка",
+    `без замера теневого стека модуль обязан попасть в ловушку, иначе тест беззуб: ${JSON.stringify(мёртвый)}`,
+  )
+  assert.ok(
+    /out of bounds|unreachable|signature mismatch|call stack/iu.test(мёртвый.чем),
+    `ловушка обязана быть про память или стек, а не про что попало: ${мёртвый.чем}`,
+  )
+
+  t.diagnostic(`изъятие: без замера — «${мёртвый.чем}», то есть шестой вид отказа мимо закрытого множества`)
+})
+
+test("wasm: предел, до которого стек доносит, даёт текст эталона ДОСЛОВНО", async (t) => {
+  if (!wasmГотов) return missingToolchain(t, "c", "clang с wasi-libc не найден — пропуск")
+  const печать = напечататьC()
+  /* Мелкий предел на просторном стеке: тут упирается ОБЪЯВЛЕННОЕ ЧИСЛО, а не
+     хозяин, — значит текст обязан совпасть с интерпретатором побайтово, как он
+     совпадает у обычной сборки. Сверять при этом надо с эталоном на ТОМ ЖЕ
+     пределе, а не с общим: число входит в текст. */
+  const мелкий = 30
+  const эталонМелкого = (() => {
+    try {
+      interpret(программа, "Спуск", [ПРЕДЕЛ * 4], { maxDepth: мелкий, maxSteps: 1_000_000_000 })
+    } catch (беда) {
+      return { code: беда.code, message: беда.message }
+    }
+    return assert.fail("эталон обязан упереться в предел глубины и на мелком пределе")
+  })()
+
+  const модуль = собратьWasm(печать, "cli-wasm-textual.wasm", ["-Wl,-z,stack-size=1048576"])
+  const ответ = await спроситьWasm(модуль, { ...ЗАПРОС, depth: String(мелкий) })
+  assert.equal(ответ.вид, "отказ", `wasm обязан отказать: ${JSON.stringify(ответ)}`)
+  assert.equal(ответ.code, эталонМелкого.code)
+  assert.equal(ответ.message, эталонМелкого.message, "текст отказа обязан совпасть с эталоном дословно")
+
+  t.diagnostic(`wasm и интерпретатор сошлись побайтово: «${ответ.message}»`)
 })
 
 /* ══════════════════════════════ Rust ══════════════════════════════ */

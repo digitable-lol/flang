@@ -69,6 +69,8 @@ import { устройствоМонады } from "./monad.mjs"
    которая ДОКАЗЫВАЕТСЯ сличением объявлений; вторая, которая считает на сетке,
    стоит рядом с моноидом и изоморфизмом — в `flang check`. */
 import { checkSetShapes } from "./sets.mjs"
+/* Разбор тега в значении — одно определение на все слои (`tags.mjs`). */
+import { tagOfValue } from "./tags.mjs"
 /* Словарь пяти объявляемых свойств — оттуда же, откуда его читает слой законов.
    Второй список здесь разошёлся бы с первым молча, и разошлись бы вместе с ним
    вердикты: устройство сверялось бы по одному словарю, закон — по другому. */
@@ -495,6 +497,10 @@ export function checkTypes(program, настройки = {}) {
   checkFailureCoverage(program, ctx, настройки?.размещение ?? null)
   checkRuns(program, ctx)
   checkPlans(program, ctx)
+  /* Теоремы — ПОСЛЕДНИМИ, и порядок здесь не вкусовщина: гипотеза читается в
+     среде ПАРАМЕТРОВ той функции, чьё постусловие теорема закрывает, а таблицу
+     сигнатур заполняет сбор объявлений выше. Раньше её ставить некуда. */
+  checkTheorems(program, ctx)
 
   return {
     ok: diagnostics.length === 0,
@@ -502,11 +508,20 @@ export function checkTypes(program, настройки = {}) {
     types: ctx.signatures,
     /* Узлы частичных форм, чьё условие ДОКАЗАНО. Отдаётся наружу, а не
        приписывается к дереву здесь: приписывать — работа переднего края
-       (`bin/flang.mjs`, `markNonEmpty`), ровно как у отметки меры, и по той же
+       (`bin/flang.mjs`, `markProven`), ровно как у отметки меры, и по той же
        причине — печать обязана получать одну и ту же программу от всех команд.
        Пустое множество на программе без частичных форм — это ноль стоимости:
        поле есть всегда, а обход по нему не делается. */
     доказаны: new Set([...ctx.частичные].filter(([, доказано]) => доказано).map(([узел]) => узел)),
+    /* Узлы двуместных операций, у которых тип ОБОИХ операндов доказан числом.
+       Отдаётся тем же способом и по той же причине, что `доказаны`: приписывать
+       к дереву — работа переднего края, а не проверки типов.
+
+       ЗАЧЕМ. `fl_add` в рантайме начинается с проверки тегов обоих значений —
+       той самой работы, которую этот файл уже проделал на исходнике и до сих пор
+       выбрасывал. Замер назвал цену этой второй проверки: от 1,09 до 3,15 раза
+       (`docs/zamer-skorosti.md`). */
+    числа: new Set([...ctx.числовые].filter(([, доказано]) => доказано).map(([узел]) => узел)),
   }
 }
 
@@ -548,6 +563,11 @@ function новыйКонтекст(report) {
        в эту сторону: снятая по ошибке проверка — это отказ, которого больше
        никто не поймает. */
     частичные: new Map(),
+    /* Места арифметики и сравнений, у которых ОБА операнда выведены числом.
+       Копится тем же согласием и по той же причине, что `частичные`: один узел
+       может быть выведен дважды, и хватит одного обхода без доказательства,
+       чтобы места здесь не было. */
+    числовые: new Map(),
   }
 }
 
@@ -962,11 +982,20 @@ function вариантомЛи(значение) {
 }
 
 /**
- * Программа с отметкой на тех местах частичных форм, чьё условие доказано.
+ * Программа с отметками на тех местах, про которые вывод типов что-то ДОКАЗАЛ.
+ *
+ * Отметок две, и обе про одно и то же — про проверку, которую печать может не
+ * печатать, потому что её ответ известен заранее:
+ *
+ *   `доказана`  — у частичной формы (`голова`, `хвост`, `разделить`,
+ *                 `код символа`) доказано условие: длина не ноль;
+ *   `числовая`  — у двуместной операции доказан тип ОБОИХ операндов: число.
+ *                 `fl_add` в рантайме начинается со сверки тегов, и это ровно
+ *                 та работа, которую этот файл уже сделал на исходнике.
  *
  * Форма та же, что у отметки меры (`totality.mjs`, `markMeasureGuards`), и
  * граница между слоями та же: анализ ЗНАЕТ, что доказано, и говорит это
- * отметкой; печать отметку читает и выбирает помощника, ничего не доказывая.
+ * отметкой; печать отметку читает и выбирает, что печатать, ничего не доказывая.
  * Иначе восьми бэкендам пришлось бы звать проверку типов, а копия печати на
  * самом языке этого сделать не может — круг импортов.
  *
@@ -974,41 +1003,50 @@ function вариантомЛи(значение) {
  * невидимой на программах, где ни одно место не снято, иначе печать разошлась
  * бы там, где ничего не менялось.
  */
-export function markNonEmpty(program) {
+export function markProven(program) {
   if (program === null || typeof program !== "object" || Array.isArray(program)) return program
-  /* Дешёвая разведка перед дорогим выводом: программа, где ни одной из четырёх
-     доказуемых форм нет, проверку типов второй раз не платит. Таких в корпусе
-     большинство, а вывод на самой большой программе стоит 22 мс. */
-  if (!встречаетсяДоказуемая(program)) return program
-  const доказаны = checkTypes(program).доказаны
-  if (доказаны.size === 0) return program
-  return приписатьДоказанные(program, доказаны)
+  /* Дешёвая разведка перед дорогим выводом: программа, где ни одного доказуемого
+     места нет, проверку типов второй раз не платит. Арифметика встречается почти
+     везде, поэтому с добавлением второй отметки таких программ стало мало — цена
+     вывода на самой большой программе репозитория 22 мс против 17 секунд `cc`. */
+  if (!встречаетсяДоказуемое(program)) return program
+  const { доказаны, числа } = checkTypes(program)
+  if (доказаны.size === 0 && числа.size === 0) return program
+  return приписатьДоказанные(program, доказаны, числа)
 }
 
-function встречаетсяДоказуемая(узел) {
-  if (Array.isArray(узел)) return узел.some((элемент) => встречаетсяДоказуемая(элемент))
+/* Двуместные операции, у которых проверка тегов в рантайме есть и снимается
+   доказанным типом. `concat` сюда не входит: он работает со строками, и
+   снимать там нечего — склейка всё равно идёт в рантайм за памятью. Равенство
+   тоже: оно сравнимо со всем и проверки тегов не делает вовсе. */
+const СНИМАЮТСЯ_ЧИСЛОМ = new Set([...ARITHMETIC, ...ORDERING])
+
+function встречаетсяДоказуемое(узел) {
+  if (Array.isArray(узел)) return узел.some((элемент) => встречаетсяДоказуемое(элемент))
   if (узел === null || typeof узел !== "object") return false
   if (узел.kind === "builtin" && СНИМАЮТСЯ_НЕПУСТОТОЙ.includes(BUILTIN_ALIASES.get(узел.name))) return true
+  if (узел.kind === "binary" && СНИМАЮТСЯ_ЧИСЛОМ.has(узел.op)) return true
   for (const [ключ, значение] of Object.entries(узел)) {
     if (ключ === "span" || ключ === "meta") continue
-    if (значение !== null && typeof значение === "object" && встречаетсяДоказуемая(значение)) return true
+    if (значение !== null && typeof значение === "object" && встречаетсяДоказуемое(значение)) return true
   }
   return false
 }
 
 /**
- * Обход с подстановкой поля `доказана` на названных узлах.
+ * Обход с подстановкой полей `доказана` и `числовая` на названных узлах.
  *
- * Свой, а не общий с `applyMarks` из `totality.mjs`: там отметка кладёт одно из
- * двух полей и решает какое по форме самой отметки, здесь поле ровно одно и
- * значение у него одно. Общая функция обязана была бы знать про обе, и знание о
- * непустоте переехало бы в файл про завершаемость.
+ * Свой, а не общий с `applyMarks` из `totality.mjs`: там отметка решает по форме
+ * самой отметки, какое из двух полей класть, а здесь наборы узлов разные и
+ * пересечься не могут — частичная форма и двуместная операция это разные виды
+ * узла. Общая функция обязана была бы знать про все три, и знание о непустоте
+ * переехало бы в файл про завершаемость.
  */
-function приписатьДоказанные(узел, доказаны) {
+function приписатьДоказанные(узел, доказаны, числа) {
   if (Array.isArray(узел)) {
     let менялось = false
     const items = узел.map((элемент) => {
-      const next = приписатьДоказанные(элемент, доказаны)
+      const next = приписатьДоказанные(элемент, доказаны, числа)
       if (next !== элемент) менялось = true
       return next
     })
@@ -1018,12 +1056,13 @@ function приписатьДоказанные(узел, доказаны) {
   let менялось = false
   const копия = {}
   for (const [ключ, значение] of Object.entries(узел)) {
-    const next = приписатьДоказанные(значение, доказаны)
+    const next = приписатьДоказанные(значение, доказаны, числа)
     if (next !== значение) менялось = true
     копия[ключ] = next
   }
-  if (!доказаны.has(узел)) return менялось ? копия : узел
-  return { ...(менялось ? копия : узел), доказана: true }
+  if (доказаны.has(узел)) return { ...(менялось ? копия : узел), доказана: true }
+  if (числа.has(узел)) return { ...(менялось ? копия : узел), числовая: true }
+  return менялось ? копия : узел
 }
 
 /* ------------------------------------------------------------------ */
@@ -5136,6 +5175,94 @@ function checkPostconditions(fn, signature, env, ctx, where) {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Теоремы                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Гипотеза теоремы `дано <утверждение>`.
+ *
+ * ЧТО БЫЛО ДО ЭТОЙ ПРОВЕРКИ. Гипотеза не типизировалась ВОВСЕ: слова `theorems`
+ * в этом файле не было ни одного, и `дано свет плюс "строка"`, `дано 5`,
+ * `дано "строка"` проходили `flang check` с ответом `valid: true` и нулём
+ * диагностик. Ловилось только несвязанное имя, и ловил его парсер — то есть
+ * область видимости проверялась, а тип не проверялся ничем.
+ *
+ * ТИПИЗИРУЕТСЯ ВООБЩЕ И ДАЁТ ПРИЗНАК — теми же двумя проверками и по тем же
+ * доводам, что у постусловия (`checkPostconditions`) и предусловия
+ * (`checkPreconditions`). Выражение гипотезы — обычное выражение языка и
+ * читается общими правилами. Признаком оно обязано быть потому, что едет в ядро
+ * ДОПУЩЕНИЕМ (`obligations.mjs`, `цель.hypotheses`; `proofterm.mjs`,
+ * `проверитьЦепочку` кладёт его в «известно» первой строкой), а допустить можно
+ * только то, что бывает истинным и ложным. `свет плюс "строка"` не является
+ * утверждением ни о чём, и допущением ему быть нечем.
+ *
+ * ПОЧЕМУ СРЕДА — ПАРАМЕТРЫ ФУНКЦИИ, А НЕ ОБЪЯВЛЕНИЯ САМОЙ ТЕОРЕМЫ. Это среда, в
+ * которой гипотеза действительно окажется: обязательство едет к ядру с
+ * `vars` = параметры функции, а `дано имя: тип` теоремы сверяется с параметром
+ * по имени и по типу отдельно (`obligations.mjs`, `FLANG_PROOF_UNKNOWN_VAR` и
+ * `FLANG_PROOF_VAR_TYPE`). Читать объявления теоремы вторым источником значило
+ * бы получить два ответа на вопрос «какого типа здесь имя» и второе сообщение о
+ * том же изъяне — а проверять то, чего не будет при вычислении, худший вид
+ * проверки.
+ *
+ * `результат` СВЯЗАН, и связан ровно так же, как в постусловии: имя берётся из
+ * узла постусловия, тип — объявленный тип возврата. Парсер держит это имя в
+ * области видимости всей теоремы (`RESULT_BINDING`), и не связать его здесь
+ * значило бы отказать типизатором тому, что разбор принял.
+ *
+ * ТЕОРЕМА БЕЗ ЦЕЛИ ПРОПУСКАЕТСЯ, и дырой это не является: теорему, которая не
+ * закрывает ни одного постусловия либо закрывает сразу два, обязательственный
+ * слой отвергает поимённо (`FLANG_PROOF_NO_GOAL`, `FLANG_PROOF_AMBIGUOUS`).
+ * Среды у неё нет — брать типы неоткуда, — и вторая жалоба о той же теореме
+ * ничего не добавила бы.
+ */
+function checkTheorems(program, ctx) {
+  const theorems = Array.isArray(program?.theorems) ? program.theorems : []
+  if (theorems.length === 0) return
+
+  /* Указатель «постусловие → функция, у которой оно объявлено». Строится по
+     ИМЕНИ постусловия — тем же ключом, каким сводит теорему с целью
+     `obligations.mjs`; разойдись ключи, типизатор читал бы гипотезу в среде
+     одной функции, а ядро проверяло бы её у другой. */
+  const поИмени = new Map()
+  for (const fn of program?.functions ?? []) {
+    for (const post of fn?.postconditions ?? []) {
+      const имя = String(post?.name ?? "")
+      if (!поИмени.has(имя)) поИмени.set(имя, [])
+      поИмени.get(имя).push({ fn, post })
+    }
+  }
+
+  for (const theorem of theorems) {
+    if (theorem === null || typeof theorem !== "object") continue
+    const given = Array.isArray(theorem.given) ? theorem.given : []
+    if (given.length === 0) continue
+    const цели = поИмени.get(String(theorem.name ?? "")) ?? []
+    if (цели.length !== 1) continue
+    const signature = ctx.signatures.get(цели[0].fn.name)
+    if (!signature) continue
+
+    const env = new Map()
+    for (const param of signature.params) env.set(param.name, param.type)
+    const bind = isName(цели[0].post.bind) ? цели[0].post.bind : DEFAULT_RESULT_BINDING
+    env.set(bind, signature.returns)
+
+    const where = `теорема «${String(theorem.name ?? "")}»`
+    for (const гипотеза of given) {
+      if (гипотеза === null || typeof гипотеза !== "object") continue
+      const actual = inferExpr(гипотеза.expr, env, BOOLEAN, ctx, цели[0].fn.name)
+      if (sameType(actual, BOOLEAN)) continue
+      ctx.report(
+        "FLANG_TYPE",
+        `${where}: гипотеза даёт ${typeName(actual)}, а гипотеза обязана быть признаком`
+          + " — она едет к ядру допущением, и допустить можно только то, что бывает истинным и ложным",
+        гипотеза.expr ?? theorem,
+      )
+    }
+  }
+}
+
 /**
  * Примеры против сигнатуры.
  *
@@ -5265,7 +5392,7 @@ function exampleValueType(value, hint, ctx) {
   if (!isPlainObject(value)) return UNKNOWN
   const tag = value["вариант"] ?? value.variant
   if (isName(tag)) {
-    if (hint?.kind === "fn" || !ctx.variantOwner.has(tag)) return fnValueType(tag, ctx)
+    if (hint?.kind === "fn" || !ctx.variantOwner.has(tag)) return fnValueType(tag, value, ctx)
     return sumValueType(tag, value, hint, ctx)
   }
   if (hint?.kind === "record" && ctx.records.has(hint.name)) return recordValueType(value, hint, ctx)
@@ -5274,10 +5401,21 @@ function exampleValueType(value, hint, ctx) {
 
 /** Тег функции как значение. Полиморфную функцию значением брать нельзя
  *  (`fnrefType`), и здесь та же граница: у неё тип не один, а по подстановке. */
-function fnValueType(tag, ctx) {
-  const signature = ctx.signatures.get(tag)
-  if (!signature || (signature.typeParams ?? []).length > 0) return UNKNOWN
-  return signatureType(signature)
+function fnValueType(tag, value, ctx) {
+  /* Имя в значении уже КАНОНИЧЕСКОЕ («Сложить с второе»), потому что разбор
+     свернул тег примера ещё в `literalValue`. Значит имя функции надо
+     восстановить, и делает это то же определение, каким пользуются вычислитель
+     и печать. */
+  const тег = tagOfValue(tag, value?.["поля"] ?? value?.fields, (имя) => {
+    const найдена = ctx.signatures.get(имя)
+    if (!найдена || (найдена.typeParams ?? []).length > 0) return null
+    return найдена.params.map((param) => param.name)
+  })
+  if (тег === null) return UNKNOWN
+  const signature = ctx.signatures.get(тег.name)
+  if (тег.captured.length === 0) return signatureType(signature)
+  const остались = signature.params.filter((param) => !тег.captured.includes(param.name))
+  return { kind: "fn", params: остались.map((param) => param.type), returns: signature.returns }
 }
 
 /** Аргументы применения суммы выводятся из полей варианта, а не из подсказки:
@@ -5378,12 +5516,15 @@ function checkValue(value, type, label, ctx, at) {
     case "fn": {
       const tag = isPlainObject(value) ? (value["вариант"] ?? value.variant) : null
       if (!isName(tag)) { bad(); return }
-      const signature = ctx.signatures.get(tag)
-      if (!signature) {
+      /* Имя в значении КАНОНИЧЕСКОЕ: у тега с захватом это «Сложить с второе», а
+         не «Сложить». Восстанавливает имя функции то же определение, каким
+         пользуются вычислитель и печать, — иначе пример с захватом отвергался бы
+         словами «функции нет», хотя функция есть. */
+      const actual = fnValueType(tag, value, ctx)
+      if (actual.kind !== "fn") {
         ctx.report("FLANG_UNKNOWN_NAME", `${label}: функции «${tag}» нет`, at)
         return
       }
-      const actual = signatureType(signature)
       if (!sameType(actual, type)) {
         ctx.report("FLANG_TYPE", `${label}: «${tag}» имеет тип ${typeName(actual)}, а ожидался ${typeName(type)}`, at)
       }
@@ -5472,7 +5613,7 @@ function inferExpr(expr, env, expected, ctx, fnName) {
       return объединить(thenType, elseType)
     }
     case "call": return callType(expr, env, expected, ctx, fnName)
-    case "fnref": return fnrefType(expr, ctx)
+    case "fnref": return fnrefType(expr, env, ctx, fnName)
     case "apply": return applyType(expr, env, ctx, fnName)
     case "binary": return binaryType(expr, env, ctx, fnName)
     case "construct": return constructType(expr, env, expected, ctx, fnName)
@@ -5642,7 +5783,29 @@ function signatureType(signature) {
  * такое значение значило бы выпустить наружу тип с несвязанным параметром, а
  * он дальше сравнивался бы с чем попало.
  */
-function fnrefType(expr, ctx) {
+/**
+ * Значение-функция, целиком или с захватом: `функция «Ф»`, `функция «Ф» с п равным з`.
+ *
+ * ── Захват именем, а не позицией — и это отступление от `flang/cat/HOF.md` ──
+ *
+ * HOF.md описывал фазу 4 приставкой: `функция «Сложить» от 1` прижимает ПЕРВЫЙ
+ * аргумент. Отступление сделано замером, а не вкусом: в дереве 56 однопараметровых
+ * функций-переходников, чьё тело есть вызов двухпараметровой с одной прижатой
+ * стороной, и приставке из них годятся 9 — остальным 47 прижимать надо второй
+ * аргумент. Имя про позицию не знает вовсе, поэтому годится всем 56, а платы за
+ * это нет: слова `с` и `равным` уже заняты присвоением полей, поэтому новых слов
+ * поверхности у фазы по-прежнему НОЛЬ.
+ *
+ * ── Почему порядок захвата обязан совпадать с порядком объявления ───────────
+ *
+ * Тег представлен вариантом, и имя этого варианта наблюдаемо: его печатает C,
+ * его же строит вычислитель, его же сворачивает разбор в значение примера
+ * (`literalValue`). Разбор объявлений не видит и порядка параметров знать не
+ * может, поэтому имя он собирает по НАПИСАННОМУ порядку. Позволь писать в любом
+ * порядке — и `с б равным 2 и а равным 1` дало бы значению второе имя, а
+ * диспетчеру второй случай на тот же самый тег.
+ */
+function fnrefType(expr, env, ctx, fnName) {
   const signature = ctx.signatures.get(expr.name)
   if (!signature) {
     ctx.report("FLANG_UNKNOWN_NAME", `неизвестная функция «${String(expr.name)}»`, expr)
@@ -5658,7 +5821,55 @@ function fnrefType(expr, ctx) {
     )
     return UNKNOWN
   }
-  return signatureType(signature)
+
+  const fields = expr.fields
+  const written = fields === null || typeof fields !== "object" || Array.isArray(fields) ? [] : Object.keys(fields)
+  if (written.length === 0) return signatureType(signature)
+
+  const params = signature.params
+  const объявлены = new Map(params.map((param) => [param.name, param]))
+  let сбой = false
+  for (const имя of written) {
+    const param = объявлены.get(имя)
+    if (param === undefined) {
+      ctx.report(
+        "FLANG_APPLY",
+        `функция «${signature.name}» не имеет параметра «${имя}»: захватить можно только объявленное ` +
+          `(${params.map((item) => `«${item.name}»`).join(", ") || "параметров нет"})`,
+        expr,
+      )
+      сбой = true
+      continue
+    }
+    const actual = inferExpr(fields[имя], env, param.type && !hasParams(param.type) ? param.type : null, ctx, fnName)
+    if (!годится(actual, param.type)) {
+      ctx.report(
+        "FLANG_TYPE",
+        `захват «${имя}» функции «${signature.name}»: ожидался ${typeName(param.type)}, получен ${typeName(actual)}`,
+        fields[имя],
+      )
+    }
+  }
+  if (сбой) return UNKNOWN
+
+  const порядком = params.filter((param) => written.includes(param.name)).map((param) => param.name)
+  if (порядком.join(" ") !== written.join(" ")) {
+    ctx.report(
+      "FLANG_APPLY",
+      `захват функции «${signature.name}» записан не в порядке объявления: ожидалось ` +
+        `${порядком.map((имя) => `«${имя}»`).join(", ")}, а написано ${written.map((имя) => `«${имя}»`).join(", ")}. ` +
+        `Имя тега собирается по написанному, и два порядка дали бы одному значению два имени`,
+      expr,
+    )
+    return UNKNOWN
+  }
+
+  /* Захватить всё можно, и это не вырождение: тип `функция в число` — законный
+     тип с нулём аргументов (`parseFunctionType`, «включая нуль»), а диспетчер
+     нулевой арности отличается от прочих только тем, что аргументов у него нет
+     вовсе. Запрещать тут нечего. */
+  const остались = params.filter((param) => !written.includes(param.name))
+  return { kind: "fn", params: остались.map((param) => param.type), returns: signature.returns }
 }
 
 /**
@@ -5708,11 +5919,30 @@ function appliedName(node) {
   return "применяемое"
 }
 
+/**
+ * Доказано ли, что значение этого типа — ЧИСЛО, и ничто иное.
+ *
+ * `optional` исключён отдельно и не для порядка: `число?` — это тот же `число`
+ * плюс «ничто», и значение такого типа приезжает в работу с тегом FL_NOTHING.
+ * Снять с него проверку значило бы прочитать чужое поле объединения вместо
+ * отказа — то есть обменять отказ на неверный ответ.
+ */
+function доказаноЧисло(тип) {
+  return тип?.kind === "number" && тип.optional !== true
+}
+
 function binaryType(expr, env, ctx, fnName) {
   const op = expr.op
+  /* Место двуместной операции: доказаны ли числом ОБА операнда. Согласием, а не
+     перезаписью — см. `ctx.числовые`. */
+  const место = (левый, правый) => {
+    const доказано = доказаноЧисло(левый) && доказаноЧисло(правый)
+    ctx.числовые.set(expr, (ctx.числовые.get(expr) ?? true) && доказано)
+  }
   if (ARITHMETIC.has(op)) {
     const left = checkOperand(expr.left, env, NUMBER, ctx, fnName, op, "левый")
     const right = checkOperand(expr.right, env, NUMBER, ctx, fnName, op, "правый")
+    место(left, right)
     /* Отрезок результата считается по отрезкам операндов. Ждут здесь по-прежнему
        `число` — самый широкий из трёх, — поэтому НИ ОДНА написанная программа не
        получает новой диагностики: арифметика принимает ровно столько же, сколько
@@ -5752,6 +5982,7 @@ function binaryType(expr, env, ctx, fnName) {
   if (ORDERING.has(op)) {
     const left = inferExpr(expr.left, env, null, ctx, fnName)
     const right = inferExpr(expr.right, env, left, ctx, fnName)
+    место(left, right)
     /*
      * Упорядочены ТОЛЬКО числа. Это не выбор проверки типов, а факт про язык:
      * порядок задан в одном месте — `compare` ядра FTS (`src/utility.ts`), и

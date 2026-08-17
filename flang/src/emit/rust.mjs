@@ -14,7 +14,7 @@
 // ── Что здесь принципиально иначе, чем в бэкендах C, Go и JS ────────────────
 // Общее сохранено намеренно, чтобы четыре бэкенда читались как одна система:
 // тот же обход AST, то же решение арности при печати, тот же протокол
-// прогонщика, та же транслитерация имён через tools/ftsc/src/naming.mjs, и
+// прогонщика, та же транслитерация имён через flang/src/naming.mjs, и
 // коллизия после транслитерации — ошибка печати, а не тихое переименование.
 //
 // Расходится же Rust с остальными ровно там, где расходятся сами языки.
@@ -125,8 +125,8 @@ import { canonicalBuiltinName, flangError, hasBuiltin, помощникФорм�
 import { требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../../../tools/ftsc/src/bidi.mjs"
-import { createNamer, snake } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
+import { createNamer, snake } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.
@@ -174,7 +174,7 @@ const BUILTIN_HELPERS = new Map([
  * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
  *
  * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
- * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * (`bin/flang.mjs`, `markProven`) по выводу проверки типов, а копия печати на
  * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
  * отметку и потому печатают одно и то же.
  */

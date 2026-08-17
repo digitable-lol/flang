@@ -12,14 +12,43 @@
  * Порядок объявления процессов — единственный порядок, в котором они
  * перечисляются где бы то ни было: очередь готовых, итоговые состояния, отчёт.
  * Один порядок на всё — условие того, чтобы журнал зависел от семени и больше
- * ни от чего.
+ * ни от чего. Всё это — про ПРОВЕРОЧНЫЙ режим; что из этого перестаёт быть
+ * правдой в рабочем, перечислено в шапке `flang_conc.h`.
+ *
+ * ── Один пробег на два режима ──────────────────────────────────────────────
+ * Режима два, а тело пробега одно — `fl_conc_turn`. Это не про экономию строк:
+ * два тела разъехались бы на первой же правке, и разъехались бы молча, потому
+ * что побайтовая сверка с эталоном смотрит только на первое. Режимы отличаются
+ * ровно тем, ЧТО и в каком порядке выбирается на пробег, — и больше ничем.
  */
+/*
+ * Потоки берутся у POSIX ровно тем же способом, каким их уже берёт рантайм под
+ * стек (`flang_runtime.c`, `FL_POSIX_STACK`): проверкой платформы и одним
+ * выключателем. `-DFL_CONC_NO_THREADS` возвращает файл в чистый C99 — тогда
+ * рабочего режима нет вовсе, а просьба о нём получает НАЗВАННЫЙ отказ, а не
+ * молчаливое исполнение одним потоком.
+ */
+#if !defined(FL_CONC_NO_THREADS) && (defined(__unix__) || defined(__unix) || \
+                                     (defined(__APPLE__) && defined(__MACH__)))
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
+#define FL_CONC_THREADS 1
+#endif
+
 #include "flang_conc.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef FL_CONC_THREADS
+#include <pthread.h>
+#include <sched.h>
+#include <time.h>
+#include <unistd.h>
+#endif
 
 /*
  * Запас витков тотального обработчика: завершение доказано, предел формален.
@@ -354,6 +383,93 @@ typedef struct fl_conc_link {
   const char *strategy;
 } fl_conc_link;
 
+/* ───────────────────────────── рабочий режим ─────────────────────────────
+   Всё, чего нет в проверочном режиме, собрано здесь и живёт ровно тогда, когда
+   `workers` больше единицы. В проверочном режиме `sched->par` равен NULL, все
+   замки — пустые вызовы, и машинного кода от этого раздела не остаётся ни
+   байта: проверка `par == NULL` предсказывается всегда одинаково.
+
+   Признак процесса ходит ТОЛЬКО под замком процесса, и он же не даёт одному
+   процессу бежать на двух потоках: перевести «в очереди» в «бежит» может ровно
+   тот поток, который снял его со склада. */
+/* Сколько замков в пуле. Степень двойки: номер берётся побитовым И. */
+#define FL_CONC_LOCKS ((size_t)4096u)
+
+#define FL_CONC_IDLE 0u    /* покоится: ящик пуст либо процесс мёртв */
+#define FL_CONC_QUEUED 1u  /* лежит на складе готовых, ждёт своего потока */
+#define FL_CONC_RUNNING 2u /* его вычерпывает поток */
+
+#ifdef FL_CONC_THREADS
+/**
+ * Склад готовых одного потока. Очередь, а не стопка: стопка отдавала бы одному
+ * процессу пачку за пачкой и заморила бы соседей, а «любое чередование» — это
+ * не «какое попало».
+ *
+ * Связывается склад ЧЕРЕЗ САМИ ПРОЦЕССЫ (`par->next`), а не своим массивом, и
+ * это не мелочь: процесс лежит не больше чем на одном складе, значит одного
+ * поля на процесс хватает навсегда, и класть на склад никогда не нужно памяти.
+ * Иначе доставка сообщения могла бы не удаться из-за нехватки памяти В
+ * ПЛАНИРОВЩИКЕ, а такого вида отказа модель не знает.
+ */
+/** Замок с набивкой. Набивка не суеверие: `pthread_mutex_t` — сорок байт, то
+    есть в строку кэша их влезает полтора, и замки СОСЕДНИХ по номеру процессов
+    оказывались в одной строке. Процессы эти в рабочем режиме бегут на разных
+    ядрах, и строка гуляла бы между ними на каждом взятии. */
+typedef struct fl_conc_guard {
+  pthread_mutex_t lock;
+  char padding[64];
+} fl_conc_guard;
+
+typedef struct fl_conc_shard {
+  pthread_mutex_t lock;
+  size_t head;
+  size_t tail;
+  /* По той же причине, что у `fl_conc_crew`: замок и голова соседнего склада не
+     должны попадать в ту же строку кэша, что у этого. */
+  char padding[64];
+} fl_conc_shard;
+
+typedef struct fl_conc_par {
+  size_t workers;
+  /* Общее хозяйство: счёт пробегов, журнал, отказы, решения, таймеры, таблица
+     имён, арена вызывающего. Замок РЕКУРСИВНЫЙ, потому что диагностику строят и
+     из-под него (`fl_conc_spawn`), и снаружи, а два разных способа сказать одно
+     и то же — это ошибка, которая ждёт своей правки. */
+  pthread_mutex_t big;
+  /* Пул замков, а не замок на процесс: замок ящика и кучи. Номер процесса
+     берётся по остатку — ложное столкновение раз в `FL_CONC_LOCKS`, и стоит оно
+     ожидания, а не ошибки. */
+  fl_conc_guard *locks;
+  size_t lock_count;
+  bool *seen; /* рабочий массив надзора: по одному на поток */
+  unsigned char *state;   /* по процессу: покоится | в очереди | бежит */
+  size_t *next;           /* по процессу: связь склада */
+  fl_conc_shard *shards;  /* по потоку */
+
+  /* Сон и пробуждение. Кладущий на склад НИКОГО не будит — иначе доставка
+     платила бы за общий замок; спящий сам просыпается по сроку и обходит
+     склады заново. Цена — задержка на хвосте прогона, и она измерена. */
+  pthread_mutex_t idle_lock;
+  size_t idle;
+  /* Признак «прогону конец». Ходит ТОЛЬКО под `idle_lock`, и это не педантизм:
+     ThreadSanitizer нашёл здесь гонку, когда признак читали мимо замка. Гонка
+     была бы безобидной на всякой известной машине — один байт, — но «безобидная
+     гонка» это то, что говорят про гонку до первого раза. Замок берётся раз на
+     пачку пробегов, то есть на шестьдесят четыре, и стоит наносекунды. */
+  bool stop;
+
+  size_t handed; /* сколько пробегов роздано из общего счёта */
+  size_t done;   /* сколько выполнено. Равенство `handed == done` значит, что
+                    невыбранных ломтей нет ни у кого, — а без этого «пробеги
+                    кончились» сказать нельзя: чужой ломоть ещё вернётся. */
+  bool over;     /* пробеги кончились: исход «предел пробегов» */
+  bool escalated;  /* отказ дошёл доверху */
+  fl_status status; /* первая беда, оборвавшая прогон */
+  fl_error error;
+  bool ready;      /* завелось ли всё: замки, потоки, память */
+} fl_conc_par;
+#endif
+
 typedef struct fl_conc_sched {
   fl_ctx *ctx;
   /* Арена вызывающего — «дом». Держится отдельным полем, потому что на время
@@ -454,7 +570,66 @@ typedef struct fl_conc_sched {
   size_t turns;
   size_t max_processes; /* сколько процессов прогон может завести всего (Б1) */
   uint32_t random;
+
+  /* Рабочий режим. NULL — проверочный, и тогда ни одного замка не берётся. */
+#ifdef FL_CONC_THREADS
+  fl_conc_par *par;
+#endif
 } fl_conc_sched;
+
+/* ───────────────────────────── замки ─────────────────────────────
+   Четыре пары на весь файл, и в проверочном режиме все четыре — пустое место.
+   Порядок взятия один и тот же везде: ОБЩИЙ → ПРОЦЕСС → СКЛАД. Вверх по нему не
+   берут никогда, поэтому взаимной блокировки нет по построению, а не по
+   везению. */
+
+#ifdef FL_CONC_THREADS
+#define FL_CONC_PAR(sched) ((sched)->par)
+#else
+#define FL_CONC_PAR(sched) ((void *)0)
+#endif
+
+static void fl_conc_big_lock(fl_conc_sched *sched) {
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    pthread_mutex_lock(&sched->par->big);
+  }
+#else
+  (void)sched;
+#endif
+}
+
+static void fl_conc_big_unlock(fl_conc_sched *sched) {
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    pthread_mutex_unlock(&sched->par->big);
+  }
+#else
+  (void)sched;
+#endif
+}
+
+static void fl_conc_hold(fl_conc_sched *sched, size_t process) {
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    pthread_mutex_lock(&sched->par->locks[process & (sched->par->lock_count - 1u)].lock);
+  }
+#else
+  (void)sched;
+  (void)process;
+#endif
+}
+
+static void fl_conc_drop(fl_conc_sched *sched, size_t process) {
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    pthread_mutex_unlock(&sched->par->locks[process & (sched->par->lock_count - 1u)].lock);
+  }
+#else
+  (void)sched;
+  (void)process;
+#endif
+}
 
 /**
  * Процесс по сквозному номеру: сперва объявленные, потом порождённые.
@@ -475,23 +650,28 @@ static const fl_conc_process *fl_conc_node(const fl_conc_sched *sched, size_t in
  * глубины взят у вызывающего, потому что глубина значения — то же дерево, что
  * сторожит рекурсию везде.
  */
-static bool fl_conc_keep(fl_conc_sched *sched, fl_arena *arena, fl_value value, fl_value *out) {
+static bool fl_conc_keep(const fl_ctx *guard, fl_arena *arena, fl_value value, fl_value *out) {
   fl_ctx into;
   fl_error unused;
   into.arena = arena;
   into.depth = 0;
-  into.max_depth = sched->ctx->max_depth;
+  into.max_depth = guard->max_depth;
   into.steps = 0;
   into.max_steps = 0;
   /* Сторож стека переезжает вместе с остальными пределами, и не для порядка:
      `fl_conc_clone` рекурсивна по СТРУКТУРЕ значения, то есть кадры ест она
      тоже. Оставить поля неинициализированными значило бы сторожить по мусору —
      то есть либо отказать на ровном месте, либо не отказать вовсе. Отметка
-     берётся у вызывающего: копия идёт на его же стеке, ниже его отметки. */
-  into.stack_base = sched->ctx->stack_base;
-  into.stack_room = sched->ctx->stack_room;
-  into.stack_seen = sched->ctx->stack_seen;
-  into.stack_step = sched->ctx->stack_step;
+     берётся у вызывающего: копия идёт на его же стеке, ниже его отметки.
+
+     Отсюда и параметр вместо `sched->ctx`: в рабочем режиме копию делает поток,
+     а у потока СВОЙ стек. Сторожить его по отметке главного потока значило бы
+     сторожить по числу, не имеющему к нему никакого отношения, — то есть либо
+     отказывать на ровном месте, либо не отказывать вовсе. */
+  into.stack_base = guard->stack_base;
+  into.stack_room = guard->stack_room;
+  into.stack_seen = guard->stack_seen;
+  into.stack_step = guard->stack_step;
   unused.code = NULL;
   unused.message = NULL;
   return fl_conc_clone(&into, value, out, &unused) == FL_OK;
@@ -502,14 +682,19 @@ static bool fl_conc_keep(fl_conc_sched *sched, fl_arena *arena, fl_value value, 
  * то есть он лежит в черновике пробега и переживёт его только копией; а нужен
  * он дольше — его читают журнал, список отказов и решение надзора.
  */
-static const char *fl_conc_keep_text(fl_ctx *ctx, const char *text) {
+static const char *fl_conc_keep_text(fl_conc_sched *sched, const char *text) {
   size_t bytes = 0;
   char *copy = NULL;
   if (text == NULL) {
     return "";
   }
   bytes = strlen(text);
-  copy = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
+  /* Арена вызывающего одна на прогон, а в рабочем режиме потоков много — значит
+     выдача из неё идёт под общим замком. Тексты отказов редки (их строит только
+     упавший пробег), поэтому в горячий путь этот замок не попадает. */
+  fl_conc_big_lock(sched);
+  copy = (char *)fl_arena_alloc(sched->home, bytes + 1);
+  fl_conc_big_unlock(sched);
   if (copy == NULL) {
     return "";
   }
@@ -529,7 +714,7 @@ static const char *fl_conc_full_text(fl_conc_sched *sched, size_t target) {
   }
   snprintf(buffer, sizeof(buffer), "ящик процесса «%s» полон: объявлен на %lu",
            fl_conc_node(sched, target)->name, (unsigned long)fl_conc_node(sched, target)->mailbox);
-  return fl_conc_keep_text(sched->ctx, buffer);
+  return fl_conc_keep_text(sched, buffer);
 }
 
 /* ───────────────────────────── поиск по имени ───────────────────────────── */
@@ -716,13 +901,16 @@ static size_t fl_conc_address(const fl_conc_sched *sched, fl_value name) {
   }
 }
 
-/** Копия строки-значения в арену с нулём на конце: для журнала и диагностик. */
-static const char *fl_conc_cstring(fl_ctx *ctx, fl_value value) {
+/** Копия строки-значения в арену вызывающего с нулём на конце: для журнала и
+    диагностик. Замок — по той же причине, что у `fl_conc_keep_text`. */
+static const char *fl_conc_cstring(fl_conc_sched *sched, fl_value value) {
   char *text = NULL;
   if (value.tag != FL_STRING) {
     return "";
   }
-  text = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);
+  fl_conc_big_lock(sched);
+  text = (char *)fl_arena_alloc(sched->home, value.as.string.bytes + 1);
+  fl_conc_big_unlock(sched);
   if (text == NULL) {
     return "";
   }
@@ -756,9 +944,56 @@ static size_t fl_conc_lower(const size_t *ready, size_t count, size_t value) {
  * жизни или ящика — пропуск такого вызова означал бы, что журнал зависит не
  * только от семени, а это и есть та единственная ошибка, которой здесь нельзя.
  */
-static void fl_conc_refresh(fl_conc_sched *sched, size_t index) {
+static void fl_conc_refresh(fl_conc_sched *sched, size_t index, size_t via) {
   const bool wanted = sched->slots[index].alive && sched->slots[index].box.count > 0;
   size_t at = 0;
+  /* В сборке без потоков складов нет вовсе, и «на чей склад класть» — вопрос без
+     смысла. Параметр остаётся в подписи, чтобы у двух сборок был один и тот же
+     набор вызовов: разойдись они, разница между сборками перестала бы быть
+     одним выключателем. */
+  (void)via;
+#ifdef FL_CONC_THREADS
+  /* Рабочий режим. Отсортированного списка здесь нет вовсе, и это не небрежность,
+     а прямое следствие того, что размениваем: порядок в очереди готовых
+     наблюдаем только через семя, а семя в этом режиме ничего не выбирает.
+     Взамен уходит и цена порядка — `memmove` половины списка на каждое
+     изменение, измеренная как 0,172 нс на каждый готовый процесс.
+
+     Зовётся только с ВЗЯТЫМ замком этого процесса: признак и ящик ходят под ним
+     вместе, иначе один поток решал бы «готов» по ящику, который другой в это
+     время опустошает.
+
+     Снимать со склада переставший быть готовым не нужно и нечем: поток,
+     добравшись до него, увидит пустой ящик и вернёт его в покой. Лишний обход
+     склада дешевле, чем удаление из середины очереди. */
+  if (sched->par != NULL) {
+    fl_conc_par *par = sched->par;
+    if (!wanted || par->state[index] != FL_CONC_IDLE) {
+      return;
+    }
+    par->state[index] = FL_CONC_QUEUED;
+    par->next[index] = SIZE_MAX;
+    {
+      /* Кладём на СВОЙ склад, а не на «склад номер процесса по остатку». Разница
+         измерена и велика: при раскладке по остатку все потоки пишут во все
+         склады, и на стенде «пары» (каждая пара — свой пинг-понг, ящик всегда с
+         одним письмом) шестнадцать потоков давали 1,15× при пятнадцати занятых
+         ядрах — то есть выигрыш от ядер ровно съедался толкотнёй на замках
+         складов. Свой склад пишет почти только его хозяин, а работу разбирают
+         подворовыванием. */
+      fl_conc_shard *shard = &par->shards[(via == SIZE_MAX ? index : via) % par->workers];
+      pthread_mutex_lock(&shard->lock);
+      if (shard->head == SIZE_MAX) {
+        shard->head = index;
+      } else {
+        par->next[shard->tail] = index;
+      }
+      shard->tail = index;
+      pthread_mutex_unlock(&shard->lock);
+    }
+    return;
+  }
+#endif
   if (wanted == sched->is_ready[index]) {
     return;
   }
@@ -807,15 +1042,26 @@ typedef enum fl_conc_post {
  * `reserved` — место уже занято этим письмом при выполнении «через», значит
  * потолок проверять не надо: он проверен тогда.
  */
-static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_value message, bool front,
-                                    bool reserved) {
+static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, const fl_ctx *guard, size_t via, size_t target,
+                                    fl_value message, bool front, bool reserved) {
   fl_conc_slot *slot = NULL;
   fl_arena *heap = NULL;
   fl_value copy = fl_nothing();
-  if (target == SIZE_MAX || !sched->slots[target].alive) {
+  fl_conc_post posted = FL_CONC_POSTED;
+  if (target == SIZE_MAX) {
+    return FL_CONC_NOBODY;
+  }
+  /* Замок адресата берётся ЗДЕСЬ и держится до конца доставки: ящик и куча
+     адресата — единственное, что отправитель у него трогает, и трогает он их
+     ровно тогда, когда владелец может вычерпывать тот же ящик. В проверочном
+     режиме это пустой вызов. */
+  fl_conc_hold(sched, target);
+  if (!sched->slots[target].alive) {
+    fl_conc_drop(sched, target);
     return FL_CONC_NOBODY;
   }
   if (!reserved && fl_conc_box_full(sched, target)) {
+    fl_conc_drop(sched, target);
     return FL_CONC_FULL;
   }
   slot = &sched->slots[target];
@@ -825,14 +1071,15 @@ static fl_conc_post fl_conc_deliver(fl_conc_sched *sched, size_t target, fl_valu
      черновик — сразу после. Проверка «жив ли адресат» стоит раньше копии
      намеренно: мёртвому не пишут, и платить за копию письма, которое некуда
      положить, незачем. */
-  if (!fl_conc_keep(sched, heap, message, &copy)) {
-    return FL_CONC_NOMEM;
+  if (!fl_conc_keep(guard, heap, message, &copy)) {
+    posted = FL_CONC_NOMEM;
+  } else if (!fl_conc_box_push(heap, &slot->box, copy, front)) {
+    posted = FL_CONC_NOMEM;
+  } else {
+    fl_conc_refresh(sched, target, via);
   }
-  if (!fl_conc_box_push(heap, &slot->box, copy, front)) {
-    return FL_CONC_NOMEM;
-  }
-  fl_conc_refresh(sched, target);
-  return FL_CONC_POSTED;
+  fl_conc_drop(sched, target);
+  return posted;
 }
 
 /* ───────────────────────────── чтение отклика ─────────────────────────────
@@ -1048,15 +1295,24 @@ static bool fl_conc_decide(fl_conc_sched *sched, double when, size_t process, co
   return true;
 }
 
+/* Решение надзора трогает ЧУЖОЙ процесс, а чужой процесс в рабочем режиме
+   может в это время бежать на другом потоке. Замок делает решение атомарным по
+   отношению к его пробегу: либо пробег успел целиком, либо решение легло целиком.
+   Что при этом теряется — порядок между решением и пробегом, — названо в шапке
+   заголовка: это одно из законных чередований, а не потерянное обновление. */
 static void fl_conc_restart(fl_conc_sched *sched, size_t index) {
+  fl_conc_hold(sched, index);
   sched->slots[index].current = sched->slots[index].initial;
   sched->slots[index].alive = true;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
+  fl_conc_drop(sched, index);
 }
 
 static void fl_conc_stop(fl_conc_sched *sched, size_t index) {
+  fl_conc_hold(sched, index);
   sched->slots[index].alive = false;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
+  fl_conc_drop(sched, index);
 }
 
 /**
@@ -1129,34 +1385,26 @@ static bool fl_conc_supervise(fl_conc_sched *sched, size_t failed, const char *c
 /* ───────────────────────────── прогон ───────────────────────────── */
 
 /**
- * Запись о пробеге. Возвращает место, куда пробег допишет свой исход, или NULL,
- * если кончилась память.
+ * Начать запись о пробеге. Возвращает `false`, если кончилась память.
  *
- * Место это одно из двух, и в этом весь шаг А1. С журналом — очередная ячейка
- * растущего массива, которая останется лежать в арене до конца прогона. Без
- * журнала — `scratch`, одна и та же ячейка на все пробеги: исход пробега нужен
- * самому пробегу (по нему решает надзор), а хранить его после того, как пробег
- * кончился, незачем, если никто не собирается читать журнал.
+ * Запись всегда своя у пробега (`scratch`), а в журнал она уезжает КОПИЕЙ, уже
+ * дописанной, — `fl_conc_journal_add`. Раньше запись заводилась прямо в
+ * массиве журнала, и в проверочном режиме это было верно; в рабочем указатель в
+ * растущий массив пережил бы ровно до того мига, когда журнал вырос бы у соседа
+ * по потоку. Порядок записей в журнале от этого не изменился ни в одном
+ * проверочном прогоне: пробеги там идут по одному.
+ *
+ * Копия САМОГО СООБЩЕНИЯ делается здесь, а не при дописывании: подлинник лежит
+ * в куче процесса, а к концу пробега та половина уже сброшена переездом.
  */
-static fl_conc_entry *fl_conc_record(fl_conc_sched *sched, double when, size_t process, fl_value message) {
-  fl_conc_entry *entry = &sched->scratch;
-  if (sched->keep_journal) {
-    if (sched->journal_count == sched->journal_capacity) {
-      fl_conc_entry *bigger = (fl_conc_entry *)fl_conc_grow(sched->ctx, sched->journal, sched->journal_count,
-                                                            &sched->journal_capacity, sizeof(fl_conc_entry));
-      if (bigger == NULL) {
-        return NULL;
-      }
-      sched->journal = bigger;
-    }
-    entry = &sched->journal[sched->journal_count];
-    sched->journal_count += 1;
-  }
-  entry->time = when;
-  entry->process = process;
-  entry->outcome = "обработано";
-  entry->code = NULL;
-  entry->reason = NULL;
+static bool fl_conc_record(fl_conc_sched *sched, const fl_ctx *guard, fl_conc_entry *scratch, double when,
+                           size_t process, fl_value message) {
+  bool ok = true;
+  scratch->time = when;
+  scratch->process = process;
+  scratch->outcome = "обработано";
+  scratch->code = NULL;
+  scratch->reason = NULL;
   /* Сообщение в журнале — КОПИЯ в арене вызывающего: подлинник лежит в куче
      процесса и умрёт с ближайшим её сбросом, а журнал живёт до конца прогона.
      Без журнала копии нет вовсе, и это не экономия на мелочи: копия сообщения
@@ -1164,13 +1412,40 @@ static fl_conc_entry *fl_conc_record(fl_conc_sched *sched, double when, size_t p
      заполняется «ничем», а не подлинником: указатель в сброшенную половину не
      читает никто, но и лежать ему там незачем. */
   if (sched->keep_journal) {
-    if (!fl_conc_keep(sched, sched->home, message, &entry->message)) {
-      return NULL;
-    }
+    /* Арена вызывающего одна на прогон — значит под общим замком. В рабочем
+       режиме это единственное место, где журнал стоит захвата замка на КАЖДОМ
+       пробеге; потому умолчание рабочего режима — журнала не вести. */
+    fl_conc_big_lock(sched);
+    ok = fl_conc_keep(guard, sched->home, message, &scratch->message);
+    fl_conc_big_unlock(sched);
   } else {
-    entry->message = fl_nothing();
+    scratch->message = fl_nothing();
   }
-  return entry;
+  return ok;
+}
+
+/** Дописать готовую запись в журнал. Общее хозяйство — под общим замком. */
+static bool fl_conc_journal_add(fl_conc_sched *sched, const fl_conc_entry *entry) {
+  bool ok = true;
+  if (!sched->keep_journal) {
+    return true;
+  }
+  fl_conc_big_lock(sched);
+  if (sched->journal_count == sched->journal_capacity) {
+    fl_conc_entry *bigger = (fl_conc_entry *)fl_conc_grow(sched->ctx, sched->journal, sched->journal_count,
+                                                          &sched->journal_capacity, sizeof(fl_conc_entry));
+    if (bigger == NULL) {
+      ok = false;
+    } else {
+      sched->journal = bigger;
+    }
+  }
+  if (ok) {
+    sched->journal[sched->journal_count] = *entry;
+    sched->journal_count += 1;
+  }
+  fl_conc_big_unlock(sched);
+  return ok;
 }
 
 static bool fl_conc_note_failure(fl_conc_sched *sched, size_t process, const char *code, const char *reason,
@@ -1191,31 +1466,37 @@ static bool fl_conc_note_failure(fl_conc_sched *sched, size_t process, const cha
   return true;
 }
 
-static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target, fl_value message,
-                               bool reserved) {
+static bool fl_conc_timer_push(fl_conc_sched *sched, const fl_ctx *guard, double when, size_t target,
+                               fl_value message, bool reserved) {
   fl_value copy = fl_nothing();
+  bool ok = true;
   /* Письмо ждёт срока дольше, чем живёт черновик пробега, в котором его
      построили, — значит переезжает в почтовую кучу. Адресату оно достанется
      ещё одной копией, уже в его собственную кучу (`fl_conc_deliver`): сюда его
      кладут на хранение, а не в ящик. */
-  if (!fl_conc_keep(sched, &sched->post[sched->post_live], message, &copy)) {
-    return false;
+  /* Почтовая куча и список таймеров — общее хозяйство: под общим замком. */
+  fl_conc_big_lock(sched);
+  if (!fl_conc_keep(guard, &sched->post[sched->post_live], message, &copy)) {
+    ok = false;
   }
-  message = copy;
-  if (sched->timer_count == sched->timer_capacity) {
+  if (ok && sched->timer_count == sched->timer_capacity) {
     fl_conc_timer *bigger = (fl_conc_timer *)fl_conc_grow(sched->ctx, sched->timers, sched->timer_count,
                                                           &sched->timer_capacity, sizeof(fl_conc_timer));
     if (bigger == NULL) {
-      return false;
+      ok = false;
+    } else {
+      sched->timers = bigger;
     }
-    sched->timers = bigger;
   }
-  sched->timers[sched->timer_count].time = when;
-  sched->timers[sched->timer_count].target = target;
-  sched->timers[sched->timer_count].reserved = reserved;
-  sched->timers[sched->timer_count].message = message;
-  sched->timer_count += 1;
-  return true;
+  if (ok) {
+    sched->timers[sched->timer_count].time = when;
+    sched->timers[sched->timer_count].target = target;
+    sched->timers[sched->timer_count].reserved = reserved;
+    sched->timers[sched->timer_count].message = copy;
+    sched->timer_count += 1;
+  }
+  fl_conc_big_unlock(sched);
+  return ok;
 }
 
 /**
@@ -1223,12 +1504,12 @@ static bool fl_conc_timer_push(fl_conc_sched *sched, double when, size_t target,
  * Сработавшее письмо мертво в тот же миг, когда адресат получил свою копию, и
  * без этого переезда «через» в цикле давал бы рост, которого А2 не терпит.
  */
-static bool fl_conc_post_pack(fl_conc_sched *sched) {
+static bool fl_conc_post_pack(fl_conc_sched *sched, const fl_ctx *guard) {
   fl_arena *to = &sched->post[1 - sched->post_live];
   size_t index = 0;
   for (index = 0; index < sched->timer_count; index += 1) {
     fl_value moved = fl_nothing();
-    if (!fl_conc_keep(sched, to, sched->timers[index].message, &moved)) {
+    if (!fl_conc_keep(guard, to, sched->timers[index].message, &moved)) {
       return false;
     }
     sched->timers[index].message = moved;
@@ -1240,9 +1521,13 @@ static bool fl_conc_post_pack(fl_conc_sched *sched) {
 
 /** Выдать все таймеры, чей срок наступил. Порядок при равном сроке — порядок
     постановки: два таймера на одно время не соревнуются. */
-static bool fl_conc_fire_timers(fl_conc_sched *sched) {
+static bool fl_conc_fire_timers(fl_conc_sched *sched, const fl_ctx *guard) {
   size_t index = 0;
   bool fired = false;
+  /* Список таймеров и почтовая куча — общее хозяйство. Замок держится и на
+     время доставки: в рабочем режиме порядок взятия «общий → процесс», и
+     доставка берёт замок процесса из-под него, а не наоборот. */
+  fl_conc_big_lock(sched);
   while (index < sched->timer_count) {
     fl_conc_timer timer;
     if (sched->timers[index].time > sched->time) {
@@ -1258,13 +1543,22 @@ static bool fl_conc_fire_timers(fl_conc_sched *sched) {
        только освобождается и тут же заполняется: переполниться этот путь не
        может по построению, и `FL_CONC_FULL` отсюда не возвращается никогда. */
     if (timer.reserved) {
+      fl_conc_hold(sched, timer.target);
       sched->slots[timer.target].pending -= 1;
+      fl_conc_drop(sched, timer.target);
     }
-    if (fl_conc_deliver(sched, timer.target, timer.message, false, timer.reserved) == FL_CONC_NOMEM) {
+    if (fl_conc_deliver(sched, guard, SIZE_MAX, timer.target, timer.message, false, timer.reserved) ==
+        FL_CONC_NOMEM) {
+      fl_conc_big_unlock(sched);
       return false;
     }
   }
-  return fired ? fl_conc_post_pack(sched) : true;
+  if (fired && !fl_conc_post_pack(sched, guard)) {
+    fl_conc_big_unlock(sched);
+    return false;
+  }
+  fl_conc_big_unlock(sched);
+  return true;
 }
 
 /**
@@ -1280,13 +1574,15 @@ static bool fl_conc_fire_timers(fl_conc_sched *sched) {
  * отправленное уже уехало адресатам копиями, отложенное лежит в своём ящике, а
  * подлинники всего этого — в той половине, которую сейчас сбросят.
  */
-static bool fl_conc_evacuate(fl_conc_sched *sched, size_t index, fl_value *state) {
+static bool fl_conc_evacuate(fl_conc_sched *sched, const fl_ctx *guard, size_t index, fl_value *state) {
   fl_conc_slot *slot = &sched->slots[index];
   fl_arena *to = &slot->heap[1 - slot->live];
   fl_value moved = fl_nothing();
   fl_value *items = NULL;
   size_t at = 0;
-  if (!fl_conc_keep(sched, to, *state, &moved)) {
+  /* Замок берётся у ВЫЗЫВАЮЩЕГО (`fl_conc_turn`): переезд читает и ящик, и обе
+     половины кучи, а писать в ящик может любой отправитель. */
+  if (!fl_conc_keep(guard, to, *state, &moved)) {
     return false;
   }
   if (slot->box.count > 0) {
@@ -1295,7 +1591,7 @@ static bool fl_conc_evacuate(fl_conc_sched *sched, size_t index, fl_value *state
       return false;
     }
     for (at = 0; at < slot->box.count; at += 1) {
-      if (!fl_conc_keep(sched, to, slot->box.items[(slot->box.head + at) % slot->box.capacity], &items[at])) {
+      if (!fl_conc_keep(guard, to, slot->box.items[(slot->box.head + at) % slot->box.capacity], &items[at])) {
         return false;
       }
     }
@@ -1326,8 +1622,12 @@ static void fl_conc_own_failure(fl_conc_sched *sched, size_t process, fl_conc_en
   *failed = code;
   *reason = text;
   entry->outcome = "отказ";
+  /* Свой собственный процесс, но замок берётся и здесь: жизнь процесса читает
+     всякий, кто ему пишет, и читает под этим же замком. */
+  fl_conc_hold(sched, process);
   sched->slots[process].alive = false;
-  fl_conc_refresh(sched, process);
+  fl_conc_refresh(sched, process, SIZE_MAX);
+  fl_conc_drop(sched, process);
 }
 
 /* ───────────────────────────── порождение (шаг Б1) ─────────────────────────
@@ -1387,13 +1687,25 @@ static const char *fl_conc_keep_name(fl_conc_sched *sched, fl_value name) {
  * читается — обработчик к этому времени вернулся, — и это единственная причина,
  * по которой здесь можно расти.
  */
-static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl_value name, fl_value first,
-                          fl_conc_entry *entry, const char **failed, const char **reason) {
+static bool fl_conc_spawn(fl_conc_sched *sched, const fl_ctx *guard, size_t via, size_t parent,
+                          fl_value kind, fl_value name, fl_value first, fl_conc_entry *entry,
+                          const char **failed, const char **reason) {
   size_t proto = SIZE_MAX;
   size_t born = 0;
   const char *text = NULL;
   char buffer[256];
   fl_conc_post posted = FL_CONC_POSTED;
+
+  /* Порождение целиком идёт под ОБЩИМ замком: оно двигает таблицу процессов,
+     таблицу имён и счёт процессов — то есть всё, о чём одновременно спрашивает
+     каждая доставка. Замок рекурсивный, поэтому диагностика (`fl_conc_keep_text`,
+     `fl_conc_cstring`) берёт его же изнутри и не встаёт сама на себя.
+
+     Дорого ли это: да, и это названо числом в замере. Прогон, который только и
+     делает, что плодит процессы, упирается в один замок и по ядрам не
+     разъезжается. Прогон, в котором порождение — событие, а не занятие, платит
+     за него ровно там, где оно случается. */
+  fl_conc_big_lock(sched);
 
   /* Вид обязан быть объявленным процессом. Проверка типов это и требует
      (`вид` — литерал, сверенный со списком объявленных), поэтому сюда попадает
@@ -1402,20 +1714,23 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
   proto = fl_conc_address(sched, kind);
   if (proto == SIZE_MAX || proto >= sched->plan->process_count) {
     snprintf(buffer, sizeof(buffer), "породить нечего: вида «%s» среди объявленных процессов нет",
-             kind.tag == FL_STRING ? fl_conc_cstring(sched->ctx, kind) : "");
+             kind.tag == FL_STRING ? fl_conc_cstring(sched, kind) : "");
     fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_PROCESS",
-                        fl_conc_keep_text(sched->ctx, buffer));
+                        fl_conc_keep_text(sched, buffer));
+    fl_conc_big_unlock(sched);
     return true;
   }
   if (name.tag != FL_STRING || name.as.string.bytes == 0) {
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_BAD_NAME,
                         "имя порождённого процесса пусто, а адресоваться к пустому имени нечем");
+    fl_conc_big_unlock(sched);
     return true;
   }
   if (memchr(name.as.string.utf8, '\0', name.as.string.bytes) != NULL) {
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_BAD_NAME,
                         "в имени порождённого процесса нулевой байт: имя процесса — адрес, "
                         "и адрес обязан быть строкой без дыр");
+    fl_conc_big_unlock(sched);
     return true;
   }
   /* Предел — это тотальность слоя, а не осторожность: `породить` в цикле иначе
@@ -1424,30 +1739,36 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
     snprintf(buffer, sizeof(buffer), "предел числа процессов: объявлено и порождено %lu при пределе %lu",
              (unsigned long)sched->proc_count, (unsigned long)sched->max_processes);
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_PROCESS_LIMIT,
-                        fl_conc_keep_text(sched->ctx, buffer));
+                        fl_conc_keep_text(sched, buffer));
+    fl_conc_big_unlock(sched);
     return true;
   }
   if (fl_conc_address(sched, name) != SIZE_MAX) {
     snprintf(buffer, sizeof(buffer), "имя «%s» уже занято процессом",
-             fl_conc_cstring(sched->ctx, name));
+             fl_conc_cstring(sched, name));
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CONC_NAME_TAKEN,
-                        fl_conc_keep_text(sched->ctx, buffer));
+                        fl_conc_keep_text(sched, buffer));
+    fl_conc_big_unlock(sched);
     return true;
   }
 
   text = fl_conc_keep_name(sched, name);
   if (text == NULL) {
+    fl_conc_big_unlock(sched);
     return false;
   }
   if (sched->born_count == sched->born_capacity) {
     fl_conc_process *bigger = (fl_conc_process *)fl_conc_grow(
       sched->ctx, sched->born, sched->born_count, &sched->born_capacity, sizeof(fl_conc_process));
     if (bigger == NULL) {
-      return false;
+      fl_conc_big_unlock(sched);
+      fl_conc_big_unlock(sched);
+    return false;
     }
     sched->born = bigger;
   }
   if (!fl_conc_reserve(sched, sched->proc_count + 1)) {
+    fl_conc_big_unlock(sched);
     return false;
   }
   born = sched->proc_count;
@@ -1477,6 +1798,11 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
   sched->slots[born].box.count = 0;
   sched->slots[born].pending = 0;
   sched->is_ready[born] = false;
+#ifdef FL_CONC_THREADS
+  if (sched->par != NULL) {
+    sched->par->state[born] = FL_CONC_IDLE;
+  }
+#endif
   /* Надзор наследуется у вида (шаг Б2). Дерево надзора объявляется данными, и
      объявление это одно на вид; приписывать экземпляру свой надзор было бы
      вторым местом правды о том же самом. Отсюда и полнота: множество отказов
@@ -1492,6 +1818,7 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
      Порог держится тот же, что при постройке: занято не больше половины. */
   if ((sched->names_used + 1u) * 2u > sched->names_mask + 1u) {
     if (!fl_conc_index_build(sched, sched->proc_count)) {
+      fl_conc_big_unlock(sched);
       return false;
     }
   } else {
@@ -1503,7 +1830,7 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
      обработчик зовётся на сообщение, а не на рождение. Поэтому `породить`
      несёт письмо, а не «начальное состояние»: начальное состояние у вида уже
      объявлено (`начинает с`), а работа приезжает письмом. */
-  posted = fl_conc_deliver(sched, born, first, false, false);
+  posted = fl_conc_deliver(sched, guard, via, born, first, false, false);
   if (posted == FL_CONC_NOMEM) {
     fl_conc_own_failure(sched, parent, entry, failed, reason, FL_CODE_MEMORY,
                         "кончилась память в куче порождённого процесса");
@@ -1511,6 +1838,7 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
     fl_conc_own_failure(sched, parent, entry, failed, reason, "FLANG_MAILBOX_FULL",
                         fl_conc_full_text(sched, born));
   }
+  fl_conc_big_unlock(sched);
   return true;
 }
 
@@ -1534,6 +1862,8 @@ static bool fl_conc_spawn(fl_conc_sched *sched, size_t parent, fl_value kind, fl
  */
 static void fl_conc_surrender(fl_conc_sched *sched, size_t index) {
   fl_conc_slot *slot = &sched->slots[index];
+  /* Замок берётся у ВЫЗЫВАЮЩЕГО (`fl_conc_turn`, переезд кучи): здесь сбрасываются
+     обе половины кучи, и писать в них в это время нельзя никому. */
   fl_arena_reset(&slot->heap[0]);
   fl_arena_reset(&slot->heap[1]);
   slot->live = 0;
@@ -1542,11 +1872,741 @@ static void fl_conc_surrender(fl_conc_sched *sched, size_t index) {
   slot->box.head = 0;
   slot->box.count = 0;
   slot->current = slot->initial;
-  fl_conc_refresh(sched, index);
+  fl_conc_refresh(sched, index, SIZE_MAX);
 }
 
+/* ───────────────────────────── один пробег ─────────────────────────────
+   Тело пробега ОДНО на оба режима, и это главное решение всей многоядерности.
+   Режимы отличаются тем, ЧТО и в каком порядке выбирается на пробег; что при
+   этом делается — обязано совпадать до буквы, иначе побайтовая сверка с
+   эталоном проверяла бы один планировщик, а работал бы другой. */
+
+/** Всё, что у пробега своё, а не общее. В проверочном режиме такой ровно один. */
+typedef struct fl_conc_hand {
+  fl_ctx *ctx;      /* контекст этого потока: свой стек, свой сторож глубины */
+  fl_arena *draft;  /* черновик пробега; свой у каждого потока */
+  /* Куда вернуть арену контекста после вызова обработчика. В проверочном режиме
+     это дом: отклик разбирается в арене вызывающего, как было всегда. В рабочем
+     — черновик: арена вызывающего одна на прогон, писать в неё без общего замка
+     нельзя, а текст отказа и так живёт дальше только копией. */
+  fl_arena *rest;
+  fl_conc_entry entry; /* запись пробега; в журнал уезжает копией */
+  bool *seen;          /* рабочий массив надзора */
+  size_t worker;
+} fl_conc_hand;
+
+/**
+ * Пробег: доставленное сообщение отдать обработчику, разобрать отклик, выполнить
+ * действия, переселить кучу, разобрать отказ надзором.
+ *
+ * `when` — виртуальное время этого пробега; кто его назначает, зависит от
+ * режима. `escalated` — отказ дошёл доверху, дальше прогону конца.
+ */
+static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t process, fl_value message,
+                              double when, bool *escalated, fl_error *error) {
+  fl_ctx *ctx = hand->ctx;
+  const fl_conc_plan *plan = sched->plan;
+  fl_value response = fl_nothing();
+  fl_value state = fl_nothing();
+  fl_value actions = fl_list(NULL, 0);
+  fl_conc_entry *entry = &hand->entry;
+  fl_error inner;
+  fl_status called = FL_OK;
+  const char *failed = NULL;
+  const char *reason = NULL;
+  const fl_conc_process *node = fl_conc_node(sched, process);
+  /* Успело ли новое состояние стать состоянием процесса. Пока не успело, оно
+     живёт в черновике, и черновик можно сбросить досрочно; как только успело —
+     нельзя, потому что `current` смотрит внутрь него до самого переезда. */
+  bool committed = false;
+  size_t saved_steps = 0;
+  size_t saved_max_steps = 0;
+  size_t saved_depth = 0;
+  fl_value args[2];
+
+  *escalated = false;
+  if (!fl_conc_record(sched, ctx, entry, when, process, message)) {
+    return fl_conc_memory(ctx, error);
+  }
+
+  inner.code = NULL;
+  inner.message = NULL;
+  /* Состояние читается под замком процесса: писать в него может ещё и надзор
+     (`fl_conc_restart`), а значение flang — шестнадцать байт, которые машина не
+     читает одним движением. Прочитать половину старого и половину нового
+     значило бы получить указатель, которого никогда не было. */
+  fl_conc_hold(sched, process);
+  args[0] = sched->slots[process].current;
+  fl_conc_drop(sched, process);
+  args[1] = message;
+  saved_steps = ctx->steps;
+  saved_max_steps = ctx->max_steps;
+  saved_depth = ctx->depth;
+  ctx->steps = 0;
+  ctx->depth = 0;
+  ctx->max_steps = node->total || node->budget == 0 ? FL_CONC_TOTAL_STEPS : node->budget;
+  /* Пробег считает в ЧЕРНОВИКЕ и только в нём (шаг А2). Состояние и сообщение
+     читаются при этом из кучи процесса — чтение через границу арены ничем не
+     ограничено, ограничена запись: всё, что построит обработчик, ляжет в
+     черновик и переживёт пробег только копией. */
+  ctx->arena = hand->draft;
+  called = plan->call(ctx, node->handler, args, 2, &response, &inner);
+  ctx->arena = hand->rest;
+  ctx->steps = saved_steps;
+  ctx->max_steps = saved_max_steps;
+  ctx->depth = saved_depth;
+
+  if (called != FL_OK) {
+    /* Исчерпание запаса — определённый исход, а не зависание и не молчаливый
+       обрыв: сообщение отвергнуто, процесс упал, дальше решает надзор. */
+    const bool budget = !node->total && inner.code != NULL &&
+                        strcmp(inner.code, FL_CODE_RECURSION_LIMIT) == 0;
+    failed = budget ? "FLANG_BUDGET_EXHAUSTED" : (inner.code == NULL ? "FLANG_INTERNAL" : inner.code);
+    /* Текст построен в черновике — дальше он живёт копией. Код отказа
+       копировать не нужно: коды приходят из `FL_CODE_*` и лежат в .rodata. */
+    reason = fl_conc_keep_text(sched, inner.message);
+    entry->outcome = budget ? "запас исчерпан" : "отказ";
+  } else if (fl_conc_read_response(ctx, response, node->handler, &state, &actions, &inner) != FL_OK) {
+    failed = "FLANG_PROCESS";
+    /* Копия берётся и здесь: правило «текст отказа живёт копией» дешевле
+       разбора того, чей это был черновик. */
+    reason = fl_conc_keep_text(sched, inner.message);
+    entry->outcome = "отказ";
+  }
+
+  if (failed == NULL) {
+    size_t action = 0;
+    fl_conc_hold(sched, process);
+    sched->slots[process].current = state;
+    fl_conc_drop(sched, process);
+    committed = true;
+    /* Пробег обработчика стоит единицу виртуального времени. Без этого правила
+       таймер не сработал бы никогда в программе, которой всё время есть чем
+       заняться, — например, в той, что откладывает сообщения по кругу.
+
+       В рабочем режиме время назначается заранее, пачкой на весь ломоть
+       пробегов (`fl_conc_slice`), а не здесь: иначе общий счётчик двигался бы
+       на каждом пробеге и стал бы той самой стенкой, ради снятия которой всё
+       и затевалось. */
+    if (FL_CONC_PAR(sched) == NULL) {
+      sched->time += 1.0;
+    }
+    for (action = 0; action < actions.as.list.count; action += 1) {
+      const fl_value item = actions.as.list.items[action];
+      const char *kind = item.as.variant->name;
+      fl_value to = fl_nothing();
+      fl_value what = fl_nothing();
+      fl_value delay = fl_nothing();
+      if (strcmp(kind, "отправить") == 0) {
+        fl_conc_post posted = FL_CONC_POSTED;
+        fl_conc_variant_field(item, "кому", &to);
+        fl_conc_variant_field(item, "что", &what);
+        posted = fl_conc_deliver(sched, ctx, hand->worker, fl_conc_address(sched, to), what, false, false);
+        /* Оба неудачных исхода — отказ ОТПРАВИТЕЛЯ, и по одному доводу: он
+           попросил положить сообщение, и положить его не вышло. Полный ящик
+           (А3) и нехватка памяти в куче адресата (Г2) отличаются кодом, а не
+           тем, кто отвечает. */
+        if (posted == FL_CONC_NOMEM) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                              "кончилась память в куче адресата");
+        } else if (posted == FL_CONC_FULL) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
+                              fl_conc_full_text(sched, fl_conc_address(sched, to)));
+        }
+        continue;
+      }
+      if (strcmp(kind, "через") == 0) {
+        size_t target = SIZE_MAX;
+        bool reserve = false;
+        bool full = false;
+        fl_conc_variant_field(item, "задержка", &delay);
+        fl_conc_variant_field(item, "кому", &to);
+        fl_conc_variant_field(item, "что", &what);
+        target = fl_conc_address(sched, to);
+        /* Место занимается СЕЙЧАС, а не когда таймер сработает. Живость
+           адресата при этом не смотрится вовсе, и это нарочно: мёртвый
+           процесс может быть поднят надзором раньше срока письма, и тогда
+           незанятое место дало бы ящику переполниться мимо потолка. */
+        reserve = target != SIZE_MAX && fl_conc_node(sched, target)->mailbox != 0;
+        if (reserve) {
+          fl_conc_hold(sched, target);
+          full = fl_conc_box_full(sched, target);
+          if (!full) {
+            sched->slots[target].pending += 1;
+          }
+          fl_conc_drop(sched, target);
+        }
+        if (full) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
+                              fl_conc_full_text(sched, target));
+          continue;
+        }
+        if (!fl_conc_timer_push(sched, ctx, sched->time + (delay.tag == FL_NUMBER ? delay.as.number : 0.0),
+                                target, what, reserve)) {
+          /* Почтовая куча общая на прогон, но положить в неё просил ЭТОТ
+             процесс, и отвечает за это он же (Г2). */
+          if (reserve) {
+            fl_conc_hold(sched, target);
+            sched->slots[target].pending -= 1;
+            fl_conc_drop(sched, target);
+          }
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                              "кончилась память в почтовой куче");
+        }
+        continue;
+      }
+      if (strcmp(kind, "отложить") == 0) {
+        /* За уже пришедшие, а не в голову: цена откладывания обязана быть
+           видимой, иначе выборочный приём вернулся бы через заднюю дверь. */
+        bool laid = false;
+        fl_conc_hold(sched, process);
+        laid = fl_conc_box_push(&sched->slots[process].heap[sched->slots[process].live],
+                                &sched->slots[process].box, message, false);
+        if (laid) {
+          fl_conc_refresh(sched, process, hand->worker);
+        }
+        fl_conc_drop(sched, process);
+        if (!laid) {
+          /* Замок снят ДО отказа намеренно: `fl_conc_own_failure` берёт его сам,
+             а взять невозвратный замок дважды значит встать навсегда. */
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                              "кончилась память в собственной куче процесса");
+          continue;
+        }
+        entry->outcome = "отложено";
+        continue;
+      }
+      if (strcmp(kind, "продолжить") == 0) {
+        bool laid = false;
+        fl_conc_hold(sched, process);
+        laid = fl_conc_box_push(&sched->slots[process].heap[sched->slots[process].live],
+                                &sched->slots[process].box, message, true);
+        if (laid) {
+          fl_conc_refresh(sched, process, hand->worker);
+        }
+        fl_conc_drop(sched, process);
+        if (!laid) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                              "кончилась память в собственной куче процесса");
+          continue;
+        }
+        entry->outcome = "продолжено";
+        continue;
+      }
+      if (strcmp(kind, "породить") == 0) {
+        fl_value form = fl_nothing();
+        fl_value born = fl_nothing();
+        fl_conc_variant_field(item, "вид", &form);
+        fl_conc_variant_field(item, "имя", &born);
+        fl_conc_variant_field(item, "что", &what);
+        if (!fl_conc_spawn(sched, ctx, hand->worker, process, form, born, what, entry, &failed, &reason)) {
+          return fl_conc_memory(ctx, error);
+        }
+        continue;
+      }
+      if (strcmp(kind, "остановить") == 0) {
+        fl_value why = fl_nothing();
+        const char *text = NULL;
+        fl_conc_variant_field(item, "почему", &why);
+        text = fl_conc_cstring(sched, why);
+        fl_conc_hold(sched, process);
+        sched->slots[process].alive = false;
+        fl_conc_refresh(sched, process, SIZE_MAX);
+        fl_conc_drop(sched, process);
+        /* Нормальная остановка — не отказ, надзор о ней не узнаёт. Любая
+           другая причина — отказ. */
+        if (strcmp(text, FL_CONC_NORMAL) == 0) {
+          entry->outcome = "остановлено";
+        } else {
+          failed = "FLANG_STOPPED";
+          reason = text;
+          entry->outcome = "отказ";
+        }
+        continue;
+      }
+    }
+  } else {
+    /* Пробег, кончившийся отказом, всё равно был пробегом: время идёт и здесь.
+       Иначе окно порога отказов не двигалось бы у процесса, который только и
+       делает, что падает. */
+    if (FL_CONC_PAR(sched) == NULL) {
+      sched->time += 1.0;
+    }
+    fl_conc_hold(sched, process);
+    sched->slots[process].alive = false;
+    fl_conc_refresh(sched, process, SIZE_MAX);
+    fl_conc_drop(sched, process);
+  }
+
+  /* Пробег кончился — и вот здесь шаг А2 берёт своё.
+
+     Живое у процесса — ровно состояние и ящик: обработчик чист, значит всё
+     остальное, что пробег построил, мусор в ту же наносекунду. Отправленное
+     уже уехало адресатам копиями, отложенное лежит в своём ящике, текст
+     отказа скопирован, сообщение журнала скопировано. Значит живое можно
+     перенести в свободную половину кучи, а занятую сбросить целиком — и
+     черновик следом.
+
+     Переезд идёт ДО надзора намеренно: надзор перезапускает процесс
+     начальным состоянием из арены вызывающего, и переносить его в кучу
+     незачем. */
+  {
+    fl_value moved = sched->slots[process].current;
+    bool evacuated = false;
+    /* Пробег, кончившийся отказом, черновик уже не держит: состояние из него
+       никуда не поехало, текст отказа скопирован, сообщение журнала
+       скопировано. Значит черновик можно сбросить ДО переезда, а не после, —
+       и это не мелочь, а половина шага Г2: если пробег упал ИМЕННО по памяти,
+       то переезду она нужна прямо сейчас, а держит её брошенный черновик. */
+    if (failed != NULL && !committed) {
+      fl_arena_reset(hand->draft);
+    }
+    /* Замок держится на весь переезд: он читает ящик и сбрасывает половину
+       кучи, а писать в ящик может любой отправитель. */
+    fl_conc_hold(sched, process);
+    evacuated = fl_conc_evacuate(sched, ctx, process, &moved);
+    if (evacuated) {
+      sched->slots[process].current = moved;
+    } else {
+      /* Не хватило памяти даже на переезд. Это отказ ПРОЦЕССА, а не смерть
+         программы (Г2): куча своя, и распорядиться ею — его дело. Переносить
+         нечего и некуда, поэтому процесс отдаёт всё и возвращается к
+         начальному состоянию, которое лежит в арене вызывающего. */
+      fl_conc_surrender(sched, process);
+    }
+    fl_conc_drop(sched, process);
+    if (!evacuated) {
+      fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                          "кончилась память при переезде кучи процесса");
+    }
+    fl_arena_reset(hand->draft);
+  }
+
+  if (failed != NULL) {
+    entry->code = failed;
+    entry->reason = reason;
+  }
+  /* Запись уезжает в журнал ЗДЕСЬ, уже дописанной. В проверочном режиме порядок
+     от этого не меняется ничем — пробеги идут по одному; в рабочем порядок
+     записей есть порядок ЗАВЕРШЕНИЯ пробегов, и это записано в заголовке
+     списком того, что перестало быть гарантией. */
+  if (!fl_conc_journal_add(sched, entry)) {
+    return fl_conc_memory(ctx, error);
+  }
+
+  if (failed != NULL) {
+    /* Надзор — общее хозяйство целиком: он пишет решения, двигает окна порогов
+       и топчется по рабочим массивам поддерева. Под общим замком, и только под
+       ним; замки процессов берутся уже из-под него (`fl_conc_restart`). */
+    bool broke = false;
+    fl_conc_big_lock(sched);
+    if (!fl_conc_note_failure(sched, process, failed, reason, entry->time)) {
+      broke = true;
+    } else if (!fl_conc_supervise(sched, process, failed, entry->time, escalated, hand->seen)) {
+      broke = true;
+    }
+    fl_conc_big_unlock(sched);
+    if (broke) {
+      return fl_conc_memory(ctx, error);
+    }
+  }
+  return FL_OK;
+}
+
+/* ───────────────────────────── рабочий режим: потоки ─────────────────────── */
+
+size_t fl_conc_cores(void) {
+#ifdef FL_CONC_THREADS
+  const long online = sysconf(_SC_NPROCESSORS_ONLN);
+  if (online <= 0) {
+    return 1;
+  }
+  return (size_t)online > (size_t)FL_CONC_MAX_WORKERS ? (size_t)FL_CONC_MAX_WORKERS : (size_t)online;
+#else
+  return 0;
+#endif
+}
+
+#ifdef FL_CONC_THREADS
+
+/**
+ * Ломоть пробегов из общего счёта.
+ *
+ * Пробеги роздают ПАЧКОЙ, и это единственное, что держит общий замок вне
+ * горячего пути: брать его на каждый пробег значило бы поставить вместо очереди
+ * готовых один замок и упереться в него на четвёртом ядре.
+ *
+ * Предел при этом держится ТОЧНО, а не приблизительно, и вот чем. Ломоть
+ * берётся на одну пачку и возвращается сразу по её окончании; поток, которому
+ * пробегов не досталось, не кончает прогон, а КЛАДЁТ ПРОЦЕСС ОБРАТНО и идёт
+ * спать. Прогон кончается только тогда, когда спят все, — а тогда все ломти уже
+ * возвращены, и «роздано» равно «выполнено» до единицы. Поэтому выполненных
+ * пробегов ровно столько, сколько объявлено, и ни одним меньше.
+ */
+static size_t fl_conc_slice(fl_conc_sched *sched, size_t max_turns, size_t want, size_t used, double *from,
+                            bool *spent) {
+  fl_conc_par *par = sched->par;
+  size_t take = 0;
+  *spent = false;
+  pthread_mutex_lock(&par->big);
+  par->done += used;
+  if (par->handed < max_turns) {
+    take = max_turns - par->handed;
+    if (take > want) {
+      take = want;
+    }
+    *from = sched->time;
+    par->handed += take;
+    sched->time += (double)take;
+  } else if (par->handed == par->done) {
+    /* Пробегов нет И невыбранных ломтей ни у кого не осталось — вот теперь это
+       исход, а не «подожди, сосед вернёт». Без второго условия прогон кончался
+       бы раньше времени и недосчитывал бы пробегов; без ПЕРВОГО он не кончался
+       бы вовсе, и это не рассуждение, а найденное зависание: тридцать два
+       потока по кругу снимали процесс со склада, узнавали, что пробегов нет,
+       клали обратно — и ни разу не оказывались спящими все сразу. Прогон на
+       сто тысяч пробегов, идущий на шестнадцати потоках 0,115 секунды, на
+       тридцати двух не кончался и за минуту при полной загрузке ядер. */
+    par->over = true;
+    *spent = true;
+  }
+  pthread_mutex_unlock(&par->big);
+  return take;
+}
+
+/** Свести счёт: невыбранные пробеги вернуть, выполненные записать. Зовётся,
+    когда поток остаётся без работы, — то есть редко. */
+static void fl_conc_settle(fl_conc_sched *sched, size_t unused, size_t drained) {
+  fl_conc_par *par = sched->par;
+  if (unused == 0 && drained == 0) {
+    return;
+  }
+  pthread_mutex_lock(&par->big);
+  par->handed -= unused;
+  par->done += drained;
+  sched->time -= (double)unused;
+  pthread_mutex_unlock(&par->big);
+}
+
+/** Снять процесс со склада: сперва со своего, потом у соседей. SIZE_MAX — пусто
+    везде. Подворовывание — не украшение: без него поток, чьи процессы замолчали,
+    стоял бы рядом с занятым соседом. */
+static size_t fl_conc_take(fl_conc_par *par, size_t worker) {
+  size_t step = 0;
+  for (step = 0; step < par->workers; step += 1) {
+    fl_conc_shard *shard = &par->shards[(worker + step) % par->workers];
+    size_t got = SIZE_MAX;
+    /* На СВОЙ склад поток встаёт в очередь, на чужой — только пробует. Разница
+       не косметическая: когда работы мало, все потоки разом обходят все склады,
+       и очередь на чужой замок превращается в толпу, которая мешает тому
+       единственному, у кого работа есть. Не подворовалось — не беда: через
+       мгновение попробуем снова. */
+    if (step == 0) {
+      pthread_mutex_lock(&shard->lock);
+    } else if (pthread_mutex_trylock(&shard->lock) != 0) {
+      continue;
+    }
+    if (shard->head != SIZE_MAX) {
+      got = shard->head;
+      shard->head = par->next[got];
+      if (shard->head == SIZE_MAX) {
+        shard->tail = SIZE_MAX;
+      }
+    }
+    pthread_mutex_unlock(&shard->lock);
+    if (got != SIZE_MAX) {
+      return got;
+    }
+  }
+  return SIZE_MAX;
+}
+
+/**
+ * Тихо ли стало настолько, что прогону конец. Зовётся из-под `idle_lock` тем
+ * потоком, который уснул последним, — значит все ломти уже возвращены.
+ *
+ * Два исхода: работы нет и не будет (`покой`) либо работы нет, но есть таймер —
+ * тогда время прыгает сразу к ближайшему сроку, и прогон продолжается. Третий,
+ * «пробеги кончились», решается не здесь, а там, где их раздают
+ * (`fl_conc_slice`): он не требует, чтобы спали все, и потому не зависит от
+ * того, сойдутся ли когда-нибудь тридцать два потока в одном мгновении.
+ */
+static bool fl_conc_quiet(fl_conc_sched *sched) {
+  fl_conc_par *par = sched->par;
+  size_t index = 0;
+  double due = 0.0;
+  bool found = false;
+  bool empty = true;
+  for (index = 0; index < par->workers; index += 1) {
+    pthread_mutex_lock(&par->shards[index].lock);
+    if (par->shards[index].head != SIZE_MAX) {
+      empty = false;
+    }
+    pthread_mutex_unlock(&par->shards[index].lock);
+  }
+  if (!empty) {
+    return false;
+  }
+  pthread_mutex_lock(&par->big);
+  for (index = 0; index < sched->timer_count; index += 1) {
+    if (!found || sched->timers[index].time < due) {
+      due = sched->timers[index].time;
+      found = true;
+    }
+  }
+  /* Тишина: скачок сразу к ближайшему сроку. Таймер на пять секунд в проверке не
+     ждёт пяти секунд — он ждёт, когда планировщику станет нечего делать. */
+  if (found && due > sched->time) {
+    sched->time = due;
+  }
+  pthread_mutex_unlock(&par->big);
+  return !found;
+}
+
+/** Кончен ли прогон. Раз на пачку, а не на пробег: замок дешёвый, но не даровой. */
+static bool fl_conc_stopped(fl_conc_par *par) {
+  bool stop = false;
+  pthread_mutex_lock(&par->idle_lock);
+  stop = par->stop;
+  pthread_mutex_unlock(&par->idle_lock);
+  return stop;
+}
+
+/** Объявить прогону конец. */
+static void fl_conc_halt(fl_conc_par *par) {
+  pthread_mutex_lock(&par->idle_lock);
+  par->stop = true;
+  pthread_mutex_unlock(&par->idle_lock);
+}
+
+/**
+ * Своё у каждого потока. Набивка до строки кэша — не украшение и не суеверие:
+ * счётчики двух соседних потоков лежали в одной строке, и каждая запись в свой
+ * гоняла эту строку от ядра к ядру. Замер назвал цену: на тридцати двух потоках
+ * прогон, который на шестнадцати шёл 0,57 секунды, не кончался и за десять
+ * минут при двадцати трёх занятых ядрах.
+ *
+ * Заодно счётчик перестал расти на каждом пробеге: `fl_conc_drain` считает у
+ * себя в переменной и записывает раз на пачку.
+ */
+/** Ломоть пробегов, взятый потоком у общего счёта, и что от него осталось.
+    Живёт дольше пачки — в этом весь смысл: общий замок берётся раз на ломоть. */
+typedef struct fl_conc_purse {
+  size_t left;  /* сколько пробегов ещё можно выполнить */
+  size_t used;  /* сколько выполнено с прошлого захода к общему счёту */
+  double clock; /* виртуальное время следующего пробега */
+} fl_conc_purse;
+
+typedef struct fl_conc_crew {
+  fl_conc_sched *sched;
+  size_t worker;
+  size_t max_turns;
+  size_t executed;
+  char padding[64];
+} fl_conc_crew;
+
+/** Поспать сотню микросекунд. Кладущий на склад никого не будит — иначе доставка
+    платила бы за общий замок на каждом письме, — поэтому спящий просыпается сам
+    и обходит склады заново. Цена — задержка на хвосте прогона, и она измерена. */
+static void fl_conc_doze(void) {
+  struct timespec pause;
+  pause.tv_sec = 0;
+  pause.tv_nsec = 100000L;
+  nanosleep(&pause, NULL);
+}
+
+/**
+ * Вычерпать ящик процесса: до `left` пробегов подряд, не отпуская процесс.
+ *
+ * Возвращает, сколько пробегов израсходовано, — по нему возвращается невыбранный
+ * остаток ломтя. Сообщение снимается из ящика ПОД ЗАМКОМ и ровно один раз:
+ * снять его и не выполнить значило бы потерять письмо молча.
+ */
+static size_t fl_conc_drain(fl_conc_sched *sched, fl_conc_hand *hand, fl_conc_purse *purse, size_t process,
+                            size_t max_turns, bool *spent) {
+  fl_conc_par *par = sched->par;
+  size_t drained = 0;
+  /* Признак остановки внутри пачки НЕ спрашивается. Пачка не длиннее
+     `FL_CONC_BATCH` пробегов, значит остановка опаздывает не больше чем на неё, а
+     завершаемость от этого не страдает: пробеги всё равно кончатся. Цена
+     названа в заголовке списком того, что перестало быть гарантией: отказ,
+     дошедший доверху, останавливает программу не «в тот же миг», а к концу
+     текущих пачек. */
+  *spent = false;
+  while (drained < FL_CONC_BATCH) {
+    if (purse->left == 0) {
+      /* Ломоть кончился — новый берётся ЗДЕСЬ, а не на границе пачки: общий
+         замок обязан браться раз на тысячу пробегов, а не раз на шестьдесят
+         четыре. Выполненное с прошлого захода засчитывается тем же движением. */
+      purse->left = fl_conc_slice(sched, max_turns, FL_CONC_TURN_SLICE, purse->used, &purse->clock, spent);
+      purse->used = 0;
+      if (purse->left == 0) {
+        break;
+      }
+    }
+    fl_value message = fl_nothing();
+    bool got = false;
+    bool escalated = false;
+    fl_conc_hold(sched, process);
+    if (sched->slots[process].alive && sched->slots[process].box.count > 0) {
+      message = fl_conc_box_shift(&sched->slots[process].box);
+      got = true;
+    }
+    fl_conc_drop(sched, process);
+    if (!got) {
+      break;
+    }
+    drained += 1;
+    purse->left -= 1;
+    purse->used += 1;
+    purse->clock += 1.0;
+    if (fl_conc_turn(sched, hand, process, message, purse->clock - 1.0, &escalated, &par->error) != FL_OK) {
+      pthread_mutex_lock(&par->big);
+      par->status = FL_ERROR;
+      pthread_mutex_unlock(&par->big);
+      fl_conc_halt(par);
+      break;
+    }
+    if (escalated) {
+      /* Отказ дошёл доверху: останавливается вся программа. Это исход, а не
+         зависание, и он назван — иначе прогон отличал бы «надзор не справился»
+         от «работа кончилась» только по итоговым состояниям. */
+      pthread_mutex_lock(&par->big);
+      par->escalated = true;
+      pthread_mutex_unlock(&par->big);
+      fl_conc_halt(par);
+      break;
+    }
+  }
+  return drained;
+}
+
+/**
+ * Один поток рабочего режима.
+ *
+ * Берёт ГОТОВЫЙ ПРОЦЕСС и вычерпывает его ящик пачкой до `FL_CONC_BATCH`
+ * сообщений — ровно то, ради чего рабочий режим раздаёт процессы, а не пробеги:
+ * передача работы другому потоку платится один раз на пачку. Пока процесс у
+ * потока, никто другой его не запускает — за этим следит признак под замком
+ * процесса, и потому состояние и куча процесса на время пробега снова
+ * однопоточны, как в проверочном режиме.
+ */
+static void *fl_conc_worker(void *raw) {
+  fl_conc_crew *crew = (fl_conc_crew *)raw;
+  fl_conc_sched *sched = crew->sched;
+  fl_conc_par *par = sched->par;
+  fl_conc_hand hand;
+  fl_conc_purse purse;
+  fl_ctx ctx;
+  fl_arena draft;
+  unsigned spins = 0;
+
+  fl_arena_init(&draft);
+  /* Отметку стека каждый поток снимает СВОЮ: стек у него свой, и сторожить
+     глубину по отметке главного потока значило бы сторожить по числу, не
+     имеющему к этому стеку отношения. */
+  fl_ctx_init(&ctx, &draft);
+  ctx.max_depth = sched->ctx->max_depth;
+  hand.ctx = &ctx;
+  hand.draft = &draft;
+  /* В рабочем режиме отклик разбирается в ЧЕРНОВИКЕ: арена вызывающего одна на
+     прогон, и писать в неё без общего замка нельзя. Текст отказа от этого не
+     страдает — он и так живёт дальше только копией. */
+  hand.rest = &draft;
+  hand.seen = par->seen == NULL ? NULL : &par->seen[crew->worker * sched->plan->supervisor_count];
+  hand.worker = crew->worker;
+
+  purse.left = 0;
+  purse.used = 0;
+  purse.clock = 0.0;
+  while (!fl_conc_stopped(par)) {
+    size_t process = fl_conc_take(par, crew->worker);
+    /* Оба вида безделья — «работы нет» и «пробегов не досталось» — ведут в одно
+       и то же место. Порознь они дали бы вечный круг: поток, которому не
+       достаётся пробегов, снимал бы процесс со склада и клал обратно, никогда не
+       засыпая, и тогда «все спят» не наступило бы никогда. */
+    bool idled = false;
+
+    if (process == SIZE_MAX) {
+      /* Сперва посмотреть таймеры — их мог поставить сосед. Спрашивать про них
+         замком на каждом холостом круге дорого, а счётчик читается и так. */
+      if (sched->timer_count > 0 && !fl_conc_fire_timers(sched, &ctx)) {
+        pthread_mutex_lock(&par->big);
+        par->status = FL_ERROR;
+        pthread_mutex_unlock(&par->big);
+        fl_conc_halt(par);
+        break;
+      }
+      idled = true;
+    } else {
+      /* Процесс снят со склада — значит он мой, и до конца пачки только мой. */
+      fl_conc_hold(sched, process);
+      par->state[process] = FL_CONC_RUNNING;
+      fl_conc_drop(sched, process);
+
+      bool spent = false;
+      size_t drained = fl_conc_drain(sched, &hand, &purse, process, crew->max_turns, &spent);
+      crew->executed += drained;
+      idled = drained == 0;
+      if (spent) {
+        fl_conc_halt(par);
+      }
+
+      /* Пачка кончилась. Процесс возвращается в покой, а если ящик непуст —
+         сразу обратно на склад: решение принимается под тем же замком, под
+         которым ящик пополняют, поэтому «положили и не разбудили» здесь
+         невозможно. */
+      fl_conc_hold(sched, process);
+      par->state[process] = FL_CONC_IDLE;
+      fl_conc_refresh(sched, process, crew->worker);
+      fl_conc_drop(sched, process);
+      if (drained > 0) {
+        spins = 0;
+      }
+    }
+
+    if (!idled) {
+      continue;
+    }
+    spins += 1;
+    if (spins < 32) {
+      sched_yield();
+      continue;
+    }
+    spins = 0;
+    /* Ломоть возвращается ровно здесь: поток уходит спать, и держать за собой
+       пробеги, которые могли бы достаться соседу, ему больше незачем. Заодно это
+       и есть то мгновение, в которое «роздано» сходится с «выполнено», — а без
+       такого мгновения предел пробегов нельзя было бы объявить точным. */
+    fl_conc_settle(sched, purse.left, purse.used);
+    purse.left = 0;
+    purse.used = 0;
+    {
+      bool stop = false;
+      pthread_mutex_lock(&par->idle_lock);
+      par->idle += 1;
+      if (par->idle == par->workers && fl_conc_quiet(sched)) {
+        par->stop = true;
+      }
+      stop = par->stop;
+      pthread_mutex_unlock(&par->idle_lock);
+      if (!stop) {
+        fl_conc_doze();
+      }
+      pthread_mutex_lock(&par->idle_lock);
+      par->idle -= 1;
+      pthread_mutex_unlock(&par->idle_lock);
+    }
+  }
+
+  fl_arena_release(&draft);
+  return NULL;
+}
+#endif /* FL_CONC_THREADS */
+
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
-                      size_t max_processes, bool journal, fl_conc_result *out, fl_error *error) {
+                      size_t max_processes, size_t workers, bool journal, fl_conc_result *out,
+                      fl_error *error) {
   fl_conc_sched sched;
   const fl_conc_run_spec *spec = NULL;
   fl_value *inbox = NULL;
@@ -1556,6 +2616,12 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   const char **names = NULL;
   const char *outcome = "покой";
   size_t index = 0;
+#ifdef FL_CONC_THREADS
+  fl_conc_par par;
+  fl_conc_crew *crew = NULL;
+  pthread_t *threads = NULL;
+  size_t started = 0;
+#endif
   /* Кучи процессов покупают память у malloc сами и обязаны её вернуть: арена
      вызывающего им не хозяйка. Значит у функции ровно один выход — `finish`, и
      всякий ранний возврат ПОСЛЕ того, как кучи заведены, идёт через него.
@@ -1588,15 +2654,110 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   sched.keep_journal = journal;
   sched.max_processes = max_processes == 0 ? FL_CONC_MAX_PROCESSES : max_processes;
   sched.proc_count = plan->process_count;
-  if (!fl_conc_reserve(&sched, plan->process_count)) {
+  if (sched.max_processes < plan->process_count) {
+    sched.max_processes = plan->process_count;
+  }
+  if (workers > FL_CONC_MAX_WORKERS) {
+    return fl_fail(ctx, error, "FLANG_PROCESS", "потоков просят больше объявленного предела %lu",
+                   (unsigned long)FL_CONC_MAX_WORKERS);
+  }
+#ifndef FL_CONC_THREADS
+  /* Сборка без потоков. Молча исполнить рабочий режим одним потоком было бы
+     худшим из ответов: заказчик получил бы воспроизводимость, о которой не
+     просил, и решил бы, что многоядерность работает. */
+  if (workers > 1) {
+    return fl_fail(ctx, error, "FLANG_PROCESS",
+                   "рабочий (многопоточный) режим в этой сборке выключен: собрано с FL_CONC_NO_THREADS");
+  }
+#endif
+
+  /* ── Сколько места занять сразу ──────────────────────────────────────────
+     В проверочном режиме таблицы растут по мере надобности, как росли всегда.
+     В рабочем они покупаются СРАЗУ на объявленный предел числа процессов, и это
+     не расточительность, а условие правильности: переезд таблицы на новое место
+     оставил бы соседний поток читать старое. Плата названа и измерена — адресное
+     пространство под слоты плюс байт признака на процесс, — а трогается из неё
+     только то, где процессы действительно завелись. Отсюда правило для
+     вызывающего: в рабочем режиме предел `processes` ставят по делу, а не с
+     запасом в сто раз. */
+  if (!fl_conc_reserve(&sched, workers > 1 ? sched.max_processes : plan->process_count)) {
     return fl_conc_memory(ctx, error);
   }
   /* Указатель имён строится ОДИН раз на прогон и дальше только дополняется
      порождёнными. Строится он здесь, а не при первой доставке: доставка обязана
      стоить одинаково на первом письме и на миллионном. */
-  if (!fl_conc_index_build(&sched, plan->process_count)) {
+  if (!fl_conc_index_build(&sched, workers > 1 ? sched.max_processes : plan->process_count)) {
     return fl_conc_memory(ctx, error);
   }
+#ifdef FL_CONC_THREADS
+  if (workers > 1) {
+    const size_t born_room = sched.max_processes - plan->process_count;
+    memset(&par, 0, sizeof(par));
+    par.workers = workers;
+    /* Массив порождённых тоже не имеет права переезжать: `fl_conc_node` читает
+       его из любого потока. */
+    if (born_room > 0) {
+      sched.born = (fl_conc_process *)fl_arena_alloc(sched.home, born_room * sizeof(fl_conc_process));
+      if (sched.born == NULL) {
+        return fl_conc_memory(ctx, error);
+      }
+      sched.born_capacity = born_room;
+    }
+    par.state = (unsigned char *)fl_arena_alloc(sched.home, sched.max_processes);
+    par.next = (size_t *)fl_arena_alloc(sched.home, sched.max_processes * sizeof(size_t));
+    par.shards = (fl_conc_shard *)fl_arena_alloc(sched.home, workers * sizeof(fl_conc_shard));
+    crew = (fl_conc_crew *)fl_arena_alloc(sched.home, workers * sizeof(fl_conc_crew));
+    threads = (pthread_t *)fl_arena_alloc(sched.home, workers * sizeof(pthread_t));
+    if (plan->supervisor_count > 0) {
+      par.seen = (bool *)fl_arena_alloc(sched.home, workers * plan->supervisor_count * sizeof(bool));
+    }
+    if (par.state == NULL || par.next == NULL || par.shards == NULL || crew == NULL || threads == NULL ||
+        (plan->supervisor_count > 0 && par.seen == NULL)) {
+      return fl_conc_memory(ctx, error);
+    }
+    memset(par.state, FL_CONC_IDLE, sched.max_processes);
+    /* Замков ПУЛ, а не по замку на процесс. Замок стоит сорок байт, и на четырёх
+       миллионах процессов это сто шестьдесят мегабайт, которые пришлось бы ещё и
+       завести по одному; пул в четыре тысячи стоит килобайты и даёт ложное
+       столкновение раз в четыре тысячи. Соседям по остатку от деления это стоит
+       ожидания, а не ошибки: замок защищает ящик и кучу, а не порядок. */
+    par.lock_count = FL_CONC_LOCKS;
+    par.locks = (fl_conc_guard *)fl_arena_alloc(sched.home, par.lock_count * sizeof(fl_conc_guard));
+    if (par.locks == NULL) {
+      return fl_conc_memory(ctx, error);
+    }
+    for (index = 0; index < par.lock_count; index += 1) {
+      if (pthread_mutex_init(&par.locks[index].lock, NULL) != 0) {
+        while (index > 0) {
+          index -= 1;
+          pthread_mutex_destroy(&par.locks[index].lock);
+        }
+        return fl_fail(ctx, error, "FLANG_PROCESS", "не завёлся замок планировщика");
+      }
+    }
+    for (index = 0; index < workers; index += 1) {
+      par.shards[index].head = SIZE_MAX;
+      par.shards[index].tail = SIZE_MAX;
+      pthread_mutex_init(&par.shards[index].lock, NULL);
+    }
+    {
+      /* Общий замок ВОЗВРАТНЫЙ: диагностику строят и из-под него, и снаружи. */
+      pthread_mutexattr_t kind;
+      pthread_mutexattr_init(&kind);
+      pthread_mutexattr_settype(&kind, PTHREAD_MUTEX_RECURSIVE);
+      pthread_mutex_init(&par.big, &kind);
+      pthread_mutexattr_destroy(&kind);
+    }
+    pthread_mutex_init(&par.idle_lock, NULL);
+    par.status = FL_OK;
+    par.error.code = NULL;
+    par.error.message = NULL;
+    par.ready = true;
+    /* С этой строки планировщик в рабочем режиме, и все замки перестают быть
+       пустыми вызовами. Ставится она ПОСЛЕ того, как всё заведено. */
+    sched.par = &par;
+  }
+#endif
 
   /* Кучи заводятся ДО первого вычисления: с этой строки любой выход обязан
      идти через `finish`. Начальное состояние при этом строится в арене
@@ -1674,7 +2835,8 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
          сколько сообщений названо, столько и ляжет, и посчитать это можно до
          прогона. Здесь — определённое поведение на плане, собранном мимо неё. */
       const fl_conc_post posted =
-        fl_conc_deliver(&sched, fl_conc_find(plan, spec->targets[index]), inbox[index], false, false);
+        fl_conc_deliver(&sched, ctx, SIZE_MAX, fl_conc_find(plan, spec->targets[index]), inbox[index], false,
+                        false);
       if (posted == FL_CONC_NOMEM) {
         status = fl_conc_memory(ctx, error);
         goto finish;
@@ -1691,287 +2853,141 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     max_turns = FL_CONC_MAX_TURNS;
   }
 
-  for (;;) {
-    size_t chosen = 0;
-    size_t process = 0;
-    fl_value message = fl_nothing();
-    fl_value response = fl_nothing();
-    fl_value state = fl_nothing();
-    fl_value actions = fl_list(NULL, 0);
-    fl_conc_entry *entry = NULL;
-    fl_error inner;
-    fl_status called = FL_OK;
-    const char *failed = NULL;
-    const char *reason = NULL;
-    const fl_conc_process *node = NULL;
-    /* Успело ли новое состояние стать состоянием процесса. Пока не успело, оно
-       живёт в черновике, и черновик можно сбросить досрочно; как только успело —
-       нельзя, потому что `current` смотрит внутрь него до самого переезда. */
-    bool committed = false;
-    size_t saved_steps = 0;
-    size_t saved_max_steps = 0;
-    size_t saved_depth = 0;
-    fl_value args[2];
+#ifdef FL_CONC_THREADS
+  if (sched.par != NULL) {
+    /* ── Рабочий режим ──────────────────────────────────────────────────────
+       Чередование выбирает не семя, а планировщик ОС. Всё, что при этом
+       перестаёт быть гарантией, перечислено в шапке `flang_conc.h`, и итог
+       прогона называет режим вслух полем `workers`, чтобы читатель не мог
+       принять один режим за другой.
 
-    if (!fl_conc_fire_timers(&sched)) {
-      status = fl_conc_memory(ctx, error);
-      goto finish;
+       Начальные сообщения уже лежат в ящиках, и `fl_conc_deliver` при их
+       раскладке уже разложил процессы по складам: доставка и пробуждение — одно
+       и то же действие, и второго списка «кто готов» здесь нет вовсе. */
+    for (index = 0; index < workers; index += 1) {
+      crew[index].sched = &sched;
+      crew[index].worker = index;
+      crew[index].max_turns = max_turns;
+      crew[index].executed = 0;
     }
-    if (sched.ready_count == 0) {
-      double due = 0.0;
-      bool found = false;
-      for (index = 0; index < sched.timer_count; index += 1) {
-        if (!found || sched.timers[index].time < due) {
-          due = sched.timers[index].time;
-          found = true;
-        }
-      }
-      if (!found) {
+    for (index = 0; index < workers; index += 1) {
+      pthread_attr_t attr;
+      const size_t room = fl_stack_room();
+      int made = -1;
+      if (pthread_attr_init(&attr) != 0) {
         break;
       }
-      /* Тишина: скачок сразу к ближайшему сроку. Таймер на пять секунд в
-         проверке не ждёт пяти секунд — он ждёт, когда планировщику станет
-         нечего делать. */
-      if (due > sched.time) {
-        sched.time = due;
+      /* Стек потоку даётся тот же, под который объявлен предел глубины: сторож
+         в `fl_ctx_init` спросит `fl_stack_room()` и получит то же число, что у
+         главного потока. Дать меньше значило бы объявить предел, которого стек
+         не несёт, — ровно та ошибка, которую рантайм уже однажды нашёл. */
+      if (room > 0) {
+        (void)pthread_attr_setstacksize(&attr, room + FL_STACK_MARGIN);
       }
-      continue;
+      made = pthread_create(&threads[index], &attr, fl_conc_worker, &crew[index]);
+      pthread_attr_destroy(&attr);
+      if (made != 0) {
+        break;
+      }
+      started += 1;
     }
-    if (sched.turns >= max_turns) {
-      outcome = "предел пробегов";
-      break;
-    }
-
-    /* Единственное место, где решает семя. Всё остальное определено. */
-    chosen = (size_t)floor(fl_conc_random(&sched.random) * (double)sched.ready_count);
-    if (chosen >= sched.ready_count) {
-      chosen = sched.ready_count - 1;
-    }
-    process = sched.ready[chosen];
-    node = fl_conc_node(&sched, process);
-    message = fl_conc_box_shift(&sched.slots[process].box);
-    fl_conc_refresh(&sched, process);
-    sched.turns += 1;
-    entry = fl_conc_record(&sched, sched.time, process, message);
-    if (entry == NULL) {
-      status = fl_conc_memory(ctx, error);
+    if (started == 0) {
+      status = fl_fail(ctx, error, "FLANG_PROCESS", "не завёлся ни один поток планировщика");
       goto finish;
     }
+    /* Заведись не все — прогон идёт на тех, кто завёлся, и итог скажет, сколько
+       их. Молчать про это нельзя: «просили восемь, работал один» — разница в
+       скорости, а не в исходе, но узнать о ней надо не по секундомеру.
 
-    inner.code = NULL;
-    inner.message = NULL;
-    args[0] = sched.slots[process].current;
-    args[1] = message;
-    saved_steps = ctx->steps;
-    saved_max_steps = ctx->max_steps;
-    saved_depth = ctx->depth;
-    ctx->steps = 0;
-    ctx->depth = 0;
-    ctx->max_steps = node->total || node->budget == 0 ? FL_CONC_TOTAL_STEPS : node->budget;
-    /* Пробег считает в ЧЕРНОВИКЕ и только в нём (шаг А2). Состояние и сообщение
-       читаются при этом из кучи процесса — чтение через границу арены ничем не
-       ограничено, ограничена запись: всё, что построит обработчик, ляжет в
-       черновик и переживёт пробег только копией. */
-    ctx->arena = &sched.draft;
-    called = plan->call(ctx, node->handler, args, 2, &response, &inner);
-    ctx->arena = sched.home;
-    ctx->steps = saved_steps;
-    ctx->max_steps = saved_max_steps;
-    ctx->depth = saved_depth;
-
-    if (called != FL_OK) {
-      /* Исчерпание запаса — определённый исход, а не зависание и не молчаливый
-         обрыв: сообщение отвергнуто, процесс упал, дальше решает надзор. */
-      const bool budget = !node->total && inner.code != NULL &&
-                          strcmp(inner.code, FL_CODE_RECURSION_LIMIT) == 0;
-      failed = budget ? "FLANG_BUDGET_EXHAUSTED" : (inner.code == NULL ? "FLANG_INTERNAL" : inner.code);
-      /* Текст построен в черновике — дальше он живёт копией. Код отказа
-         копировать не нужно: коды приходят из `FL_CODE_*` и лежат в .rodata. */
-      reason = fl_conc_keep_text(ctx, inner.message);
-      entry->outcome = budget ? "запас исчерпан" : "отказ";
-    } else if (fl_conc_read_response(ctx, response, node->handler, &state, &actions, &inner) != FL_OK) {
-      failed = "FLANG_PROCESS";
-      /* Здесь текст построен уже в арене вызывающего (`ctx` возвращён), но
-         копия всё равно берётся: правило «текст отказа живёт копией» дешевле
-         разбора того, чей это был черновик. */
-      reason = fl_conc_keep_text(ctx, inner.message);
-      entry->outcome = "отказ";
+       `par.workers` при этом НЕ меняется, и это важно: по нему считается номер
+       склада (`процесс % потоков`). Сменить его посреди прогона значило бы
+       отправлять процессы на склад с номером, которого больше нет ни у кого, —
+       а обходят склады всё равно все, потому что подворовывание идёт по кругу. */
+    for (index = 0; index < started; index += 1) {
+      pthread_join(threads[index], NULL);
     }
-
-    if (failed == NULL) {
-      size_t action = 0;
-      sched.slots[process].current = state;
-      committed = true;
-      /* Пробег обработчика стоит единицу виртуального времени. Без этого правила
-         таймер не сработал бы никогда в программе, которой всё время есть чем
-         заняться, — например, в той, что откладывает сообщения по кругу. */
-      sched.time += 1.0;
-      for (action = 0; action < actions.as.list.count; action += 1) {
-        const fl_value item = actions.as.list.items[action];
-        const char *kind = item.as.variant->name;
-        fl_value to = fl_nothing();
-        fl_value what = fl_nothing();
-        fl_value delay = fl_nothing();
-        if (strcmp(kind, "отправить") == 0) {
-          fl_conc_post posted = FL_CONC_POSTED;
-          fl_conc_variant_field(item, "кому", &to);
-          fl_conc_variant_field(item, "что", &what);
-          posted = fl_conc_deliver(&sched, fl_conc_address(&sched, to), what, false, false);
-          /* Оба неудачных исхода — отказ ОТПРАВИТЕЛЯ, и по одному доводу: он
-             попросил положить сообщение, и положить его не вышло. Полный ящик
-             (А3) и нехватка памяти в куче адресата (Г2) отличаются кодом, а не
-             тем, кто отвечает. */
-          if (posted == FL_CONC_NOMEM) {
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
-                                "кончилась память в куче адресата");
-          } else if (posted == FL_CONC_FULL) {
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
-                                fl_conc_full_text(&sched, fl_conc_address(&sched, to)));
-          }
-          continue;
-        }
-        if (strcmp(kind, "через") == 0) {
-          size_t target = SIZE_MAX;
-          bool reserve = false;
-          fl_conc_variant_field(item, "задержка", &delay);
-          fl_conc_variant_field(item, "кому", &to);
-          fl_conc_variant_field(item, "что", &what);
-          target = fl_conc_address(&sched, to);
-          /* Место занимается СЕЙЧАС, а не когда таймер сработает. Живость
-             адресата при этом не смотрится вовсе, и это нарочно: мёртвый
-             процесс может быть поднят надзором раньше срока письма, и тогда
-             незанятое место дало бы ящику переполниться мимо потолка. */
-          reserve = target != SIZE_MAX && fl_conc_node(&sched, target)->mailbox != 0;
-          if (reserve && fl_conc_box_full(&sched, target)) {
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
-                                fl_conc_full_text(&sched, target));
-            continue;
-          }
-          if (reserve) {
-            sched.slots[target].pending += 1;
-          }
-          if (!fl_conc_timer_push(&sched, sched.time + (delay.tag == FL_NUMBER ? delay.as.number : 0.0),
-                                  target, what, reserve)) {
-            /* Почтовая куча общая на прогон, но положить в неё просил ЭТОТ
-               процесс, и отвечает за это он же (Г2). */
-            if (reserve) {
-              sched.slots[target].pending -= 1;
-            }
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
-                                "кончилась память в почтовой куче");
-          }
-          continue;
-        }
-        if (strcmp(kind, "отложить") == 0) {
-          /* За уже пришедшие, а не в голову: цена откладывания обязана быть
-             видимой, иначе выборочный приём вернулся бы через заднюю дверь. */
-          if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
-                                &sched.slots[process].box, message, false)) {
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
-                                "кончилась память в собственной куче процесса");
-            continue;
-          }
-          fl_conc_refresh(&sched, process);
-          entry->outcome = "отложено";
-          continue;
-        }
-        if (strcmp(kind, "продолжить") == 0) {
-          if (!fl_conc_box_push(&sched.slots[process].heap[sched.slots[process].live],
-                                &sched.slots[process].box, message, true)) {
-            fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
-                                "кончилась память в собственной куче процесса");
-            continue;
-          }
-          fl_conc_refresh(&sched, process);
-          entry->outcome = "продолжено";
-          continue;
-        }
-        if (strcmp(kind, "породить") == 0) {
-          fl_value form = fl_nothing();
-          fl_value born = fl_nothing();
-          fl_conc_variant_field(item, "вид", &form);
-          fl_conc_variant_field(item, "имя", &born);
-          fl_conc_variant_field(item, "что", &what);
-          if (!fl_conc_spawn(&sched, process, form, born, what, entry, &failed, &reason)) {
-            status = fl_conc_memory(ctx, error);
-            goto finish;
-          }
-          continue;
-        }
-        if (strcmp(kind, "остановить") == 0) {
-          fl_value why = fl_nothing();
-          const char *text = NULL;
-          fl_conc_variant_field(item, "почему", &why);
-          text = fl_conc_cstring(ctx, why);
-          sched.slots[process].alive = false;
-          fl_conc_refresh(&sched, process);
-          /* Нормальная остановка — не отказ, надзор о ней не узнаёт. Любая
-             другая причина — отказ. */
-          if (strcmp(text, FL_CONC_NORMAL) == 0) {
-            entry->outcome = "остановлено";
-          } else {
-            failed = "FLANG_STOPPED";
-            reason = text;
-            entry->outcome = "отказ";
-          }
-          continue;
-        }
-      }
-    } else {
-      /* Пробег, кончившийся отказом, всё равно был пробегом: время идёт и здесь.
-         Иначе окно порога отказов не двигалось бы у процесса, который только и
-         делает, что падает. */
-      sched.time += 1.0;
-      sched.slots[process].alive = false;
-      fl_conc_refresh(&sched, process);
+    for (index = 0; index < started; index += 1) {
+      sched.turns += crew[index].executed;
     }
-
-    /* Пробег кончился — и вот здесь шаг А2 берёт своё.
-
-       Живое у процесса — ровно состояние и ящик: обработчик чист, значит всё
-       остальное, что пробег построил, мусор в ту же наносекунду. Отправленное
-       уже уехало адресатам копиями, отложенное лежит в своём ящике, текст
-       отказа скопирован, сообщение журнала скопировано. Значит живое можно
-       перенести в свободную половину кучи, а занятую сбросить целиком — и
-       черновик следом.
-
-       Переезд идёт ДО надзора намеренно: надзор перезапускает процесс
-       начальным состоянием из арены вызывающего, и переносить его в кучу
-       незачем. */
-    {
-      fl_value moved = sched.slots[process].current;
-      /* Пробег, кончившийся отказом, черновик уже не держит: состояние из него
-         никуда не поехало, текст отказа скопирован, сообщение журнала
-         скопировано. Значит черновик можно сбросить ДО переезда, а не после, —
-         и это не мелочь, а половина шага Г2: если пробег упал ИМЕННО по памяти,
-         то переезду она нужна прямо сейчас, а держит её брошенный черновик. */
-      if (failed != NULL && !committed) {
-        fl_arena_reset(&sched.draft);
-      }
-      if (!fl_conc_evacuate(&sched, process, &moved)) {
-        /* Не хватило памяти даже на переезд. Это отказ ПРОЦЕССА, а не смерть
-           программы (Г2): куча своя, и распорядиться ею — его дело. Переносить
-           нечего и некуда, поэтому процесс отдаёт всё и возвращается к
-           начальному состоянию, которое лежит в арене вызывающего. */
-        fl_conc_own_failure(&sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
-                            "кончилась память при переезде кучи процесса");
-        fl_conc_surrender(&sched, process);
-      } else {
-        sched.slots[process].current = moved;
-      }
-      fl_arena_reset(&sched.draft);
+    /* Виртуальное время в рабочем режиме — счёт выполненных пробегов. Роздано
+       могло быть больше (ломоть берётся на пачку), но всё лишнее возвращено, и
+       врать про «время», которого не было, незачем. */
+    if (sched.time > (double)sched.turns) {
+      sched.time = (double)sched.turns;
     }
-
-    if (failed != NULL) {
+    if (par.status != FL_OK) {
+      *error = par.error;
+      status = par.status;
+      goto finish;
+    }
+    if (par.escalated) {
+      outcome = "отказ дошёл доверху";
+      for (index = 0; index < sched.proc_count; index += 1) {
+        sched.slots[index].alive = false;
+      }
+    } else if (par.over) {
+      outcome = "предел пробегов";
+    }
+  } else
+#endif
+  {
+    /* ── Проверочный режим ──────────────────────────────────────────────────
+       Тот же самый, каким был: один поток, чередование по семени, побайтовая
+       сверка с эталоном. Ниже не изменено ничего, кроме того, что тело пробега
+       уехало в `fl_conc_turn` и зовётся оттуда обоими режимами. */
+    fl_conc_hand hand;
+    hand.ctx = ctx;
+    hand.draft = &sched.draft;
+    hand.rest = sched.home;
+    hand.seen = seen;
+    hand.worker = 0;
+    for (;;) {
+      size_t chosen = 0;
+      size_t process = 0;
+      fl_value message = fl_nothing();
       bool escalated = false;
-      entry->code = failed;
-      entry->reason = reason;
-      if (!fl_conc_note_failure(&sched, process, failed, reason, entry->time)) {
+
+      if (!fl_conc_fire_timers(&sched, ctx)) {
         status = fl_conc_memory(ctx, error);
         goto finish;
       }
-      if (!fl_conc_supervise(&sched, process, failed, entry->time, &escalated, seen)) {
-        status = fl_conc_memory(ctx, error);
+      if (sched.ready_count == 0) {
+        double due = 0.0;
+        bool found = false;
+        for (index = 0; index < sched.timer_count; index += 1) {
+          if (!found || sched.timers[index].time < due) {
+            due = sched.timers[index].time;
+            found = true;
+          }
+        }
+        if (!found) {
+          break;
+        }
+        /* Тишина: скачок сразу к ближайшему сроку. Таймер на пять секунд в
+           проверке не ждёт пяти секунд — он ждёт, когда планировщику станет
+           нечего делать. */
+        if (due > sched.time) {
+          sched.time = due;
+        }
+        continue;
+      }
+      if (sched.turns >= max_turns) {
+        outcome = "предел пробегов";
+        break;
+      }
+
+      /* Единственное место, где решает семя. Всё остальное определено. */
+      chosen = (size_t)floor(fl_conc_random(&sched.random) * (double)sched.ready_count);
+      if (chosen >= sched.ready_count) {
+        chosen = sched.ready_count - 1;
+      }
+      process = sched.ready[chosen];
+      message = fl_conc_box_shift(&sched.slots[process].box);
+      fl_conc_refresh(&sched, process, SIZE_MAX);
+      sched.turns += 1;
+
+      status = fl_conc_turn(&sched, &hand, process, message, sched.time, &escalated, error);
+      if (status != FL_OK) {
         goto finish;
       }
       if (escalated) {
@@ -2004,7 +3020,7 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
     goto finish;
   }
   for (index = 0; index < sched.proc_count; index += 1) {
-    if (!fl_conc_keep(&sched, sched.home, sched.slots[index].current, &states[index])) {
+    if (!fl_conc_keep(ctx, sched.home, sched.slots[index].current, &states[index])) {
       status = fl_conc_memory(ctx, error);
       goto finish;
     }
@@ -2029,6 +3045,15 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   out->failure_count = sched.failure_count;
   out->decisions = sched.decisions;
   out->decision_count = sched.decision_count;
+  /* Сколько потоков вело прогон. Единица — журнал повторяется по семени; больше
+     единицы — не повторяется, и читатель обязан узнать об этом из итога, а не
+     из документации. */
+  out->workers = workers < 1 ? 1 : workers;
+#ifdef FL_CONC_THREADS
+  if (sched.par != NULL) {
+    out->workers = started;
+  }
+#endif
 
 finish:
   /* Единственное место, где кучи возвращаются системе. Их у прогона три вида —
@@ -2045,5 +3070,20 @@ finish:
     fl_arena_release(&sched.post[0]);
     fl_arena_release(&sched.post[1]);
   }
+#ifdef FL_CONC_THREADS
+  /* Замки возвращаются системе так же, как кучи: под valgrind'ом незакрытый
+     замок виден недостижимой памятью, и проверка нашла бы его первой. */
+  if (sched.par != NULL && par.ready) {
+    sched.par = NULL;
+    for (index = 0; index < par.lock_count; index += 1) {
+      pthread_mutex_destroy(&par.locks[index].lock);
+    }
+    for (index = 0; index < workers; index += 1) {
+      pthread_mutex_destroy(&par.shards[index].lock);
+    }
+    pthread_mutex_destroy(&par.big);
+    pthread_mutex_destroy(&par.idle_lock);
+  }
+#endif
   return status;
 }

@@ -52,8 +52,8 @@ import { emitJava } from "../src/emit/java.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const источник = fileURLToPath(new URL("../examples/measure/natural.flang", import.meta.url))
 const натуральное = parse(readFileSync(источник, "utf8"), "examples/measure/natural.flang")

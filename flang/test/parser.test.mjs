@@ -835,7 +835,9 @@ test("файл-функтор ftsc сохраняется целиком", () =>
 })
 
 test("старая скобочная поверхность разбирается в ftsLegacy", () => {
-  const source = readFileSync(`${repository}examples/socrates.fts`, "utf8")
+  /* Модель переехала в фикстуры языка вместе со всем корпусом .fts: старый
+     проект вынесен из репозитория (тег `fts-pered-udaleniem`). */
+  const source = readFileSync(`${repository}flang/test/fixtures/fts/examples/socrates.fts`, "utf8")
   const result = program(source)
   const document = result.legacy.find((node) => node.construct === "bracedDocument")
   assert.equal(document.value.category, "ClassicalLogic")
@@ -851,7 +853,10 @@ test("старая скобочная поверхность разбирает�
 
 // ── обратная совместимость и детерминированность ────────────────────────────
 
-const corpus = [...ftsFiles(`${repository}examples`), ...ftsFiles(`${repository}tools`)]
+/* Корпус моделей переехал в фикстуры языка: старый проект вынесен из
+   репозитория (тег `fts-pered-udaleniem`), и раскладывать выборку по двум
+   исчезнувшим каталогам стало нечему. Каталог тот же, что у core-*.test.mjs. */
+const corpus = ftsFiles(`${repository}flang/test/fixtures/fts`)
 
 test("в репозитории есть модели для проверки совместимости", () => {
   assert.ok(corpus.length >= 20, `найдено моделей: ${corpus.length}`)

@@ -38,7 +38,7 @@
  *
  * ── Если компилятора C нет ──────────────────────────────────────────────────
  * Тесты, которым нужен `cc`, честно пропускаются через `missingToolchain`
- * (tools/ftsc/test/toolchain-guard.mjs) — тем же способом, что в
+ * (flang/test/toolchain-guard.mjs) — тем же способом, что в
  * flang/test/emit-go.test.mjs. `FTS_REQUIRE_TOOLCHAINS=c` превращает пропуск в
  * падение, каталог с компилятором вне PATH указывается в `FTS_TOOLCHAIN_PATH`.
  */
@@ -57,8 +57,8 @@ import { emitC } from "../src/emit/c.mjs"
 import { emitGo } from "../src/emit/go.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { parse } from "../src/parser.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))

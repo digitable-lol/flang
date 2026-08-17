@@ -45,7 +45,7 @@
  *
  * ── Если JDK не найден ──────────────────────────────────────────────────────
  * Тесты, которым нужен компилятор, честно пропускаются через `missingToolchain`
- * (tools/ftsc/test/toolchain-guard.mjs). Молчаливый пропуск, выглядящий как
+ * (flang/test/toolchain-guard.mjs). Молчаливый пропуск, выглядящий как
  * успех, недопустим: `FTS_REQUIRE_TOOLCHAINS=java` превращает пропуск в
  * падение. Тесты, которым JDK не нужен (детерминированность печати, статические
  * диагностики, форма выдачи), идут всегда.
@@ -69,8 +69,8 @@ import { parse } from "../src/parser.mjs"
 import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { emitJava } from "../src/emit/java.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 import {
   functionGrid,

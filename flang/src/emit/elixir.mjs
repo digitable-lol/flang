@@ -127,8 +127,8 @@ import { readFileSync } from "node:fs"
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
-import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../../../tools/ftsc/src/bidi.mjs"
-import { pascal, snake } from "../../../tools/ftsc/src/naming.mjs"
+import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
+import { pascal, snake } from "../naming.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.
@@ -180,7 +180,7 @@ const BUILTIN_HELPERS = new Map([
  * Суффикс имени помощника БЕЗ сторожа частичности (`помощникФормы`).
  *
  * Печать здесь ничего не доказывает: отметку `доказана` кладёт передний край
- * (`bin/flang.mjs`, `markNonEmpty`) по выводу проверки типов, а копия печати на
+ * (`bin/flang.mjs`, `markProven`) по выводу проверки типов, а копия печати на
  * самом языке анализа не видит вовсе — круг импортов. Обе стороны читают одну
  * отметку и потому печатают одно и то же.
  */

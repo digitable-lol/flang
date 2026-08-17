@@ -76,7 +76,7 @@ import { errorCode } from "../src/compat.mjs"
 import { defunctionalize } from "../src/defunc.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
-import { programTags } from "../src/tags.mjs"
+import { programTags, tagVariant } from "../src/tags.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { emitC } from "../src/emit/c.mjs"
@@ -87,9 +87,9 @@ import { emitJava } from "../src/emit/java.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
-import { camel, pascal } from "../../tools/ftsc/src/naming.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
-import { missingToolchain } from "../../tools/ftsc/test/toolchain-guard.mjs"
+import { camel, pascal } from "../src/naming.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
+import { missingToolchain } from "./toolchain-guard.mjs"
 import { globSync } from "./glob.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 
@@ -283,8 +283,14 @@ test("диспетчер печатается на каждую арность �
      вычислитель: разойдись они — и напечатанное считало бы не то, что
      доказано. Источник у всех трёх один (`tags.mjs`), и вот это проверка, что
      он действительно один. */
-  const имена = new Set(программа.functions.map((фн) => фн.name))
-  const теги = [...programTags(программа, (имя) => имена.has(имя))].sort()
+  /* Спрашивается `tags.mjs` тем же способом, каким его спрашивает печать: не
+     «объявлено ли имя», а «какие у функции параметры». С фазы 4 тег — это имя
+     ВМЕСТЕ с набором захваченного, и предиката «объявлено ли» списку случаев
+     уже не хватает: у одной функции тегов может быть несколько. */
+  const параметры = new Map(программа.functions.map((фн) => [фн.name, (фн.params ?? []).map((п) => п.name ?? п)]))
+  const теги = [...programTags(программа, (имя) => параметры.get(имя) ?? null).values()]
+    .map((тег) => tagVariant(тег.name, тег.captured))
+    .sort()
   const случаи = диспетчеры.flatMap((фн) => фн.body.cases.map((ветвь) => ветвь.pattern.name)).sort()
   assert.deepEqual(случаи, теги)
   assert.deepEqual(теги, ["Сложить", "Удвоить", "Умножить", "Утроить"])

@@ -1042,7 +1042,9 @@ test("четыре утверждения корпуса доказаны инд
   }
 })
 
-test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать пять раз", async () => {
+test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать один раз", async () => {
+test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать раз", async () => {
+test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать два раза", async () => {
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ НА ВСЕ ВОСЕМЬ СЛОВ, и он был правдой ровно до того дня,
      когда у слоя доказательства появилась продукция в `flang/self/parser.flang`
      (15 августа 2026). Продукция есть — запрет на `обеспечивает` стал ложью, и
@@ -1065,9 +1067,7 @@ test("корпус самоприменения употребляет ровн�
      ядром (`work/self-obligations`), и сборка `work/svodka3` довела до
      ТРИДЦАТИ: версия формата обязательств в `self/obligations.flang`,
      версия формата вердиктов в `self/proofterm.flang`, подробность оболочки в
-     `self/repl/repl.flang`; пятая — слой законов (`work/zakony-blizneci-1`) —
-     довела до ТРИДЦАТИ ПЯТИ: два предела сетки и глубины в `self/functor.flang`
-     и три в `self/setoid.flang` — и ШЕСТЬ утверждений, которые ядро берёт НЕ этой
+     `self/repl/repl.flang` — и ШЕСТЬ утверждений, которые ядро берёт НЕ этой
      целью, а правилом потолка и правилом тождества (`work/kernel-conditions`
      назвал их поимённо: `stdlib/higher-order.flang` три, `stdlib/logic.flang`
      одно, `stdlib/numbers.flang` два). Последние шесть — причина, по которой
@@ -1147,8 +1147,17 @@ test("корпус самоприменения употребляет ровн�
            параметром, то есть ровно те, ради которых квантор и заведён. */
         if (без.startsWith("обеспечивает ") || /^для всех .+ обеспечивает /u.test(без)) постусловия.push(`${каталог}/${имя}`)
         if (без.startsWith("утверждаем ")) теоремы.push(`${каталог}/${имя}`)
+        /* ДЫРА В САМОМ СТОРОЖЕ, НАЙДЕННАЯ ВЕТКОЙ `work/claims-core`: обоснование
+           шага стоит НЕ в начале строки, а после `то` (`то по свойству «…»`,
+           `то по примеру «…»`), и сторож, смотревший только на начало, не видел
+           его вовсе. Запрет на `по свойству` был из-за этого зелёным на дефекте:
+           написанное `то по свойству «…»` в закрытом каталоге проезжало молча.
+           Поэтому перед сличением снимается ведущее `то `. Пересчитано прогоном
+           на собранном дереве: находок от этого прибавилось НОЛЬ — дыра была в
+           стороже, а не в корпусе, и сторож теперь запрещает делом, а не словом. */
+        const начало = без.startsWith("то ") ? без.slice(3).trim() : без
         for (const слово of [...запрещённые, ...теоремные.filter((с) => с === "нет")]) {
-          if (без.startsWith(`${слово} `) || без === слово) найдено.push(`${каталог}/${имя}: ${без.slice(0, 60)}`)
+          if (начало.startsWith(`${слово} `) || начало === слово) найдено.push(`${каталог}/${имя}: ${без.slice(0, 60)}`)
         }
       }
     }
@@ -1156,55 +1165,32 @@ test("корпус самоприменения употребляет ровн�
   assert.deepEqual(найдено, [], "`по свойству` ядро отвергает всегда — в корпусе ему делать нечего")
   assert.deepEqual(теоремы.sort(), [
     "flang/self/types.flang",
-    "flang/self/types.flang",
-    "flang/self/types.flang",
   ], "теоремы корпуса неподвижной точки разошлись — прогоните flang/test/self-parser.test.mjs")
   assert.deepEqual(постусловия.sort(), [
     "flang/examples/leetcode/013-roman-to-integer.flang",
     "flang/examples/measure/natural.flang",
     "flang/self/emit-c.flang",
-    /* Слой законов (`work/zakony-blizneci-1`): два предела в `self/functor.flang`
-       и три в `self/setoid.flang`. Сверка разборщика прогнана после них целиком
-       и зелена. `self/bounded.flang` в списке нет вовсе — постусловий у него
-       ноль: там, где сосед объявляет предел числом, ограниченность объявляет
-       многочлен списком, а утверждения о списках стоят O(длины) и живут в
-       `flang/proof/examples/`, а не здесь. */
-    "flang/self/functor.flang",
-    "flang/self/functor.flang",
-    "flang/self/interpret.flang",
     "flang/self/interpret.flang",
     "flang/self/iso.flang",
-    "flang/self/monad.flang",
     "flang/self/monad.flang",
     "flang/self/monoid.flang",
     "flang/self/obligations.flang",
     "flang/self/parser.flang",
-    "flang/self/parser.flang",
     "flang/self/proof-initial.flang",
-    "flang/self/proof-kernel.flang",
     "flang/self/proof-kernel.flang",
     "flang/self/proof.flang",
     "flang/self/proofterm.flang",
-    "flang/self/setoid.flang",
-    "flang/self/setoid.flang",
-    "flang/self/setoid.flang",
     "flang/self/sets.flang",
     /* «Потолок точных» несёт ТРИ строки, «Дно точных» одну (`work/lemmy`):
        утверждение о границах точной сетки говорит и про дно, и про потолок, и
        про их порядок. Список считает СТРОКИ, а не функции. */
-    "flang/self/types.flang",
-    "flang/self/types.flang",
-    "flang/self/types.flang",
     "flang/self/types.flang",
     /* Библиотека. Два утверждения `numbers.flang` — первые постусловия
        `flang/stdlib` за всё время: до них каталог не имел в ведомости ни одной
        строки о поведении, хотя функций в нём 185. Сверка разборщика прогнана
        после каждого из них, а не в конце (`self-parser.test.mjs`). */
     "flang/stdlib/higher-order.flang",
-    "flang/stdlib/higher-order.flang",
-    "flang/stdlib/higher-order.flang",
     "flang/stdlib/logic.flang",
-    "flang/stdlib/numbers.flang",
     "flang/stdlib/numbers.flang",
     /* «Сколько дополнить» переехала в библиотеку (`work/stdlib-grow`) вместе со
        своим утверждением: слово `требует` разбирается теперь и близнецом, и

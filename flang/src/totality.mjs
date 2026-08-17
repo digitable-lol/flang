@@ -719,12 +719,20 @@ function applyMarks(node, marks) {
  */
 function tagsByArity(program, functions) {
   const byArity = new Map()
-  for (const name of programTags(program, (имя) => functions.has(имя))) {
-    const arity = paramNames(functions.get(name)).length
+  const параметры = (имя) => (functions.has(имя) ? paramNames(functions.get(имя)) : null)
+  for (const тег of programTags(program, параметры).values()) {
+    /* Арность ОСТАВШАЯСЯ, а не объявленная: захваченное уже лежит в теге, и
+       применяют такой тег к тому, что осталось. Считай по объявленной — и
+       `функция «Сложить» с второе равным 2` попала бы в диспетчер на двоих,
+       где её позвали бы с лишним аргументом. */
+    const arity = параметры(тег.name).length - тег.captured.length
     if (!byArity.has(arity)) byArity.set(arity, [])
-    byArity.get(arity).push(name)
+    byArity.get(arity).push(тег.name)
   }
-  for (const names of byArity.values()) names.sort()
+  /* В рёбра едут ИМЕНА, а не теги: ребро ведёт к функции, и захват на то, кто
+     кого зовёт, не влияет. Повтор снимается — один и тот же вызываемый,
+     пришедший двумя тегами, обязан дать одно ребро, а не два. */
+  for (const [arity, names] of byArity) byArity.set(arity, [...new Set(names)].sort())
   return byArity
 }
 
@@ -1639,11 +1647,18 @@ function collectCalls(expr, env, state) {
       })
       return null
     }
-    case "fnref":
+    case "fnref": {
       /* Тег — построенное значение, а не часть параметра: `функция «Ф»` не
          достаёт ничего ни из чего. Само по себе построение тега вызовом не
-         является — вызов случится там, где тег применят. */
+         является — вызов случится там, где тег применят.
+
+         А вот ЗАХВАЧЕННОЕ обойти обязательно: `функция «Ф» с а равным («Г» от 1)`
+         зовёт «Г» прямо здесь, при постройке тега, и ребро «кто строит» → «Г»
+         настоящее. Пропусти его — и рекурсия, спрятанная в захвате, осталась бы
+         невидимой для анализа. */
+      for (const value of Object.values(expr.fields ?? {})) collectCalls(value, env, state)
       return null
+    }
     case "apply": {
       const args = Array.isArray(expr.args) ? expr.args : []
       /* Применяемое обходится ради вызовов внутри него (`(«Выбрать» от 1) от 5`),

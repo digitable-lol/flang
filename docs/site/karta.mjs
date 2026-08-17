@@ -16,11 +16,18 @@ export const РАЗДЕЛЫ = [
     ],
   },
   {
+    // Раздел стоит вторым намеренно: заходящий второй раз ищет не «что это
+    // такое», а «что приехало с прошлого раза», и искать это в конце списка
+    // ему пришлось бы дольше, чем читать.
+    имя: 'Что изменилось',
+    страницы: [
+      { адрес: 'izmeneniya.html', имя: 'Что изменилось', из: 'docs/site/izmeneniya.md' },
+      { адрес: 'zhurnal.html', имя: 'Журнал изменений', из: 'CHANGELOG.md' },
+    ],
+  },
+  {
     имя: 'Язык',
     страницы: [
-      { адрес: 'yazyk.html', имя: 'Справка по языку', из: 'docs/rukovodstvo/language.ru.md' },
-      { адрес: 'primery.html', имя: 'Примеры', из: 'docs/rukovodstvo/examples.ru.md' },
-      { адрес: 'utility.html', имя: 'Исполняемые утилиты', из: 'docs/rukovodstvo/executable-utilities.ru.md' },
       { адрес: 'spec.html', имя: 'Спецификация языка', из: 'flang/SPEC.md' },
     ],
   },
@@ -45,10 +52,7 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Устройство',
     страницы: [
-      { адрес: 'kak-rabotaet.html', имя: 'Как это работает', из: 'docs/rukovodstvo/how-it-works.ru.md' },
-      { адрес: 'arhitektura.html', имя: 'Архитектура', из: 'docs/rukovodstvo/architecture.md' },
       { адрес: 'raskladka.html', имя: 'Раскладка репозитория', из: 'docs/rukovodstvo/project-layout.ru.md' },
-      { адрес: 'zachem.html', имя: 'Зачем и встраивание', из: 'docs/rukovodstvo/why-and-integration.ru.md' },
     ],
   },
   {

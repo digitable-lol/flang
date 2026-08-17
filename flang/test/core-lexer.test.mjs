@@ -24,16 +24,12 @@ import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { текстМодели, файлыКорпуса } from "./corpus.mjs"
 
-/* Заголовок `модуль …` знают файлы tools/**, а ядро — нет: тело модуля
-   вынимается тем же разборщиком, что в core-parser. */
-const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-
 const источник = readFileSync(fileURLToPath(new URL("../core/lexer.flang", import.meta.url)), "utf8")
 const программа = parse(источник, "core/lexer.flang")
 const типы = checkTypes(программа)
 const тотальность = checkTotality(программа)
 
-const модель = (имя) => readFileSync(fileURLToPath(new URL(`../../${имя}`, import.meta.url)), "utf8")
+const модель = (имя) => readFileSync(fileURLToPath(new URL(`./fixtures/fts/${имя}`, import.meta.url)), "utf8")
 
 const вызвать = (имя, аргументы) => evaluate(программа, имя, аргументы)
 const разметка = (текст) => вызвать("Разметка", { исходник: текст })
@@ -176,19 +172,12 @@ test("order-discount.fts: диагностик нет", () => {
  * `core-parser` и `core-json`, а охват печатается и подпирается порогом: тест,
  * чей охват может тихо схлопнуться к нулю, зелен ровно так же, как исправный.
  *
- * Файлы-функторы и заголовки чужих диалектов пропускаются тем же способом, что
- * в `core-parser`: если `parseModuleFile` не признал файл модулем, документа
- * ядра в нём нет.
+ * Отбора здесь больше нет: файлы-функторы (не документы ядра) отсеяны один раз,
+ * при переносе корпуса в фикстуры, и заголовок `модуль …` с тел уже снят — см.
+ * `corpus.mjs`. Раньше это делалось на каждом прогоне разборщиком заголовка из
+ * старого проекта.
  */
-const корпусЛексера = файлыКорпуса().flatMap((запись) => {
-  const текст = текстМодели(запись)
-  try {
-    const разобранный = parseModuleFile(текст, запись.имя)
-    return разобранный.kind === "module" ? [{ имя: запись.имя, тело: разобранный.body }] : []
-  } catch {
-    return []
-  }
-})
+const корпусЛексера = файлыКорпуса().map((запись) => ({ имя: запись.имя, тело: текстМодели(запись) }))
 
 test("все модели репозитория лексируются молча", (t) => {
   t.diagnostic(`моделей в сверке: ${корпусЛексера.length} из ${файлыКорпуса().length} файлов .fts`)

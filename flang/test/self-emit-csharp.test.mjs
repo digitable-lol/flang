@@ -24,7 +24,6 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { fromFtsDocument } from "../src/compat.mjs"
 import { emitCsharp } from "../src/emit/csharp.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
@@ -45,12 +44,22 @@ const типы = checkTypes(программа)
 const тотальность = checkTotality(программа)
 
 /**
- * Лимит шагов поднят с миллиона до ста: печать в C# — работа с целым AST сразу,
+ * Лимит шагов поднят с миллиона до двухсот: печать в C# — работа с целым AST сразу,
  * и самая большая программа репозитория укладывается между шестьюдесятью и ста
  * миллионами шагов. Лимит здесь не формальность: он ловит превращение печати в
  * перебор. Глубина — по вложенности AST, поэтому её хватает штатной.
+ *
+ * ПОДНЯТ СО СТА ДО ДВУХСОТ МИЛЛИОНОВ, и число измерено, а не прикинуто. Печать
+ * `flang/self/emit-c.flang` — самая дорогая из ста с лишним программ
+ * репозитория — стоит 131 257 648 витков после того, как в этот файл прибавилось
+ * двадцать функций (`work/skorost`: доказанная арифметика печатается выражением,
+ * а сверку тега печать ставит сама). До прибавки она укладывалась в сто
+ * миллионов, и запаса там было около 20 % — любое следующее пополнение выбило бы
+ * лимит независимо от того, чем именно. Двести миллионов — это 1,5 запаса над
+ * замером; сторожем лимит при этом быть не перестаёт: превращение печати в
+ * перебор он поймает так же.
  */
-const ШАГИ = { maxSteps: 100_000_000, maxDepth: 10_000 }
+const ШАГИ = { maxSteps: 200_000_000, maxDepth: 10_000 }
 const вызвать = (имя, аргументы) => evaluate(программа, имя, аргументы, ШАГИ)
 
 /* ─────────────────── перевод AST в значения flang ─────────────────── */
@@ -264,25 +273,6 @@ test("сам эмиттер: печать своего собственного 
   /* Единственная программа, где печать работает над своим же текстом. Если
      самоприменение однажды разойдётся, разойдётся именно здесь. */
   сверить("flang/self/emit-csharp.flang", await разобрать("flang/self/emit-csharp.flang"))
-})
-
-test("модели FTS через compat: постусловия печатаются так же", async (t) => {
-  const ядро = await import(new URL("../../dist/src/index.js", import.meta.url).href)
-  const { parseModuleFile } = await import(new URL("../../tools/ftsc/src/parse-module.mjs", import.meta.url).href)
-  const набор = []
-  for (const файлМодели of globSync("**/*.fts", { cwd: корень }).sort()) {
-    if (файлМодели.includes("node_modules")) continue
-    let документ
-    try {
-      документ = ядро.compile(parseModuleFile(join(корень, файлМодели)).source ?? readFileSync(join(корень, файлМодели), "utf8"))
-    } catch {
-      continue
-    }
-    if (!Array.isArray(документ?.utilities) || документ.utilities.length === 0) continue
-    набор.push([файлМодели, fromFtsDocument(документ)])
-  }
-  assert.ok(набор.length >= 10, `моделей с утилитами найдено ${набор.length} — слишком мало`)
-  прогнать(t, "модели FTS", набор)
 })
 
 /* ─────────────────── случаи, которых в репозитории нет ─────────────────── */

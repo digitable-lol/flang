@@ -24,7 +24,7 @@
 вот число. Дорого стоит не доказуемость, а неоптимизированный генератор кода:
 [[medlennee-python-v-1-4]] и [[chto-daet-bolshe-vsego-za-menshuyu-rabotu]].
 
-Ветка `work/zamer-skorosti`, отчёт `docs/zamer-skorosti.md`, 1081 строка, стенды
+Ветка `work/zamer-skorosti`, отчёт `docs/zamer-skorosti.md`, 1224 строка, стенды
 в `benchmarks/zamer-skorosti/`.
 
 Связано: [[medlennee-python-v-1-4]], [[uslovie-revolyutsii]],

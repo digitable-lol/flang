@@ -1,4 +1,14 @@
-# Раскладка проекта на FTS и flang
+# Раскладка проекта на flang
+
+> **Читайте с поправкой на 16 августа 2026.** Документ писался, когда в
+> репозитории жили два языка: FTS для предметной области и flang для всего
+> остального. Старый проект вынесен (тег `fts-pered-udaleniem`, дом —
+> github.com/digitable-lol/fts), обе модели примера переписаны на самом языке
+> (`lib/fine.flang`, `lib/loan.flang`), и слоя `domain/` больше нет. Правила
+> раскладки от этого не изменились — изменилось, чем написан верхний слой:
+> везде, где ниже сказано «FTS» и `.fts`, сегодня стоит `.flang`. Что при этом
+> потеряно, названо в шапке `lib/loan.flang`: право выдать книгу принималось
+> доказательством с сертификатом, а стало обычной функцией.
 
 Этот документ не список пожеланий. Каждое правило здесь выведено из работающего
 примера — [`examples/library-api`](../../examples/library-api/README.md), REST-сервиса
@@ -9,9 +19,8 @@
 
 ```
 examples/library-api/
-  domain/    FTS   предметная область: тариф штрафа, право выдать книгу
+  lib/       flang чистые функции над данными проекта, включая предметные правила
   stdlib/    flang библиотека проекта: не знает про предметную область
-  lib/       flang чистые функции над данными проекта
   host/      Node  HTTP, хранилище, всё, чего в языке нет
   test/            прогон целиком
 ```
@@ -325,8 +334,6 @@ flang, её место не здесь, а в `flang/stdlib` — с шапкой
 **Команды, которыми проверяется проект:**
 
 ```bash
-node dist/src/cli.js   check examples/library-api/domain/late-fee.fts
-node dist/src/cli.js   test  examples/library-api/domain/late-fee.fts
 node flang/bin/flang.mjs check examples/library-api/lib/api.flang
 node flang/bin/flang.mjs test  examples/library-api/lib/api.flang
 node --test examples/library-api/test/library-api.test.mjs

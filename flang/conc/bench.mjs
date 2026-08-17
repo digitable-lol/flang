@@ -76,7 +76,7 @@ import { checkTypes } from "../src/types.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { createRuntime } from "../src/interpret.mjs"
-import { findExecutable } from "../../tools/ftsc/src/toolchain.mjs"
+import { findExecutable } from "../src/toolchain.mjs"
 
 const толькоЭталон = process.argv.includes("--эталон")
 /* Отдельный ключ для шага В1: цена вытеснения меряется на большой машине

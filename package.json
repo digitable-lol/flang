@@ -1,7 +1,7 @@
 {
   "name": "@digitable-lol/fts",
   "version": "0.5.0",
-  "description": "flang: a checkable language with total and ordinary functions, emitted to C, Go, Rust, Python, Java, C#, Elixir and JavaScript, over the FTS executable-specification surface.",
+  "description": "flang: проверяемый язык с тотальными и обычными функциями, ядром доказательств на нуле аксиом и печатью в C, Go, Rust, Python, Java, C#, Elixir и JavaScript.",
   "type": "module",
   "license": "BSD-2-Clause",
   "repository": {
@@ -14,55 +14,32 @@
   },
   "bin": {
     "flang": "./flang/bin/flang.mjs",
-    "flang-lsp": "./flang/bin/flang-lsp.mjs",
-    "fts": "./dist/src/cli.js",
-    "fts-mcp": "./dist/src/mcp.js",
-    "ftsc": "./tools/ftsc/bin/ftsc.mjs",
-    "ftsvm": "./tools/ftsvm/bin/ftsvm.mjs",
-    "ftspec": "./tools/ftspec/bin/ftspec.mjs"
-  },
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./browser": {
-      "types": "./dist/src/browser.d.ts",
-      "import": "./dist/src/browser.js"
-    },
-    "./schema": "./schema/document.schema.json",
-    "./proof-schema": "./schema/proof-certificate.schema.json",
-    "./package.json": "./package.json"
+    "flang-lsp": "./flang/bin/flang-lsp.mjs"
   },
   "files": [
-    "dist/src",
-    "docs",
-    "flang",
-    "schema",
-    "examples",
-    "tools",
-    "editors",
     "flang/bin",
     "flang/src",
-    "flang/stdlib",
     "flang/core",
+    "flang/stdlib",
     "flang/examples",
+    "flang/cat",
+    "flang/conc",
+    "flang/proof",
     "flang/SPEC.md",
-    "!**/test",
-    "!**/*.test.mjs",
+    "flang/core/SPEC.md",
+    "bootstrap",
+    "packaging/flang.1",
     "README.md",
     "README.ru.md",
     "CONTRIBUTING.md",
     "CHANGELOG.md",
     "changelog.json",
-    "LICENSE"
+    "LICENSE",
+    "LICENSE-RU.md",
+    "!**/test",
+    "!**/*.test.mjs"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "clean": "node scripts/clean.mjs",
-    "check": "tsc -p tsconfig.json --noEmit",
     "license:check": "node scripts/check-licensing.mjs",
     "claims:check": "node flang/scripts/claim-guard.mjs",
     "counts:check": "node flang/scripts/count-guard.mjs",
@@ -73,48 +50,31 @@
     "word:occupancy": "node flang/scripts/word-occupancy.mjs",
     "changelog": "node scripts/build-changelog.mjs",
     "changelog:check": "node scripts/build-changelog.mjs --check && node scripts/build-changelog.mjs --self-test",
+    "izmeneniya": "node scripts/build-izmeneniya.mjs",
+    "izmeneniya:check": "node scripts/build-izmeneniya.mjs --check",
+    "site": "node docs/site/build.mjs",
+    "site:check": "node docs/site/build.mjs --check",
     "bootstrap": "node scripts/bootstrap-c.mjs",
     "bootstrap:check": "node scripts/bootstrap-c.mjs --check",
     "preflight": "node scripts/preflight.mjs",
     "pretest": "node scripts/preflight.mjs",
-    "test": "npm run test:core && npm run test:tools && npm run test:flang",
+    "test": "node --test flang/test/*.test.mjs",
     "test:remote": "bash scripts/test-remote.sh",
-    "test:source": "node --experimental-strip-types --test test/**/*.test.ts",
-    "test:core": "npm run build && node --test dist/test/*.test.js",
-    "test:tools": "node --test tools/*/test/*.test.mjs",
-    "test:tools:core": "node --test tools/ftsc/test/core.test.mjs tools/ftsc/test/self-check.test.mjs tools/ftsc/test/toolchain-guard.test.mjs tools/ftspec/test/*.test.mjs tools/ftsvm/test/*.test.mjs",
     "pretest:backends": "node scripts/preflight.mjs",
-    "test:backends": "npm run build && node --test tools/ftsc/test/emit-*.test.mjs",
-    "test:flang": "node --test flang/test/*.test.mjs",
-    "test:fast": "npm run test:core && npm run test:tools:core",
-    "test:ftsc": "npm run build && node --test tools/ftsc/test/*.test.mjs",
-    "test:ftsvm": "npm run build && node --test tools/ftsvm/test/*.test.mjs",
-    "test:ftspec": "npm run build && node --test tools/ftspec/test/*.test.mjs",
-    "benchmark": "npm run build && node scripts/benchmark.mjs",
-    "benchmark:quick": "npm run build && node scripts/benchmark.mjs --quick",
-    "benchmark:ftsvm": "npm run build && node tools/ftsvm/bin/ftsvm.mjs bench",
-    "prepublishOnly": "npm test",
-    "prepare": "npm run build",
-    "site": "node docs/site/build.mjs",
-    "site:check": "node docs/site/build.mjs --check"
+    "test:backends": "node --test flang/test/emit-*.test.mjs flang/test/self-emit-*.test.mjs",
+    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": ">=20"
-  },
-  "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^5.9.0"
   },
   "keywords": [
     "flang",
     "programming-language",
     "totality-checking",
-    "domain-specific-language",
-    "russian-language",
     "formal-methods",
     "proof-carrying-data",
     "category-theory",
-    "mcp",
+    "russian-language",
     "ai-agents"
   ]
 }

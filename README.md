@@ -1,6 +1,6 @@
 **English** · [Русский](README.ru.md)
 
-# FTS and flang — a specification that runs, and prints itself into your language
+# flang — a language whose specification runs, and prints itself into your language
 
 A written specification drifts from the code the day after it is merged. This repository takes
 the other route: the specification **is** the program. You write the rules once, run them, test
@@ -12,23 +12,25 @@ The authoring surface is Russian; an English surface exists and lexes to the sam
 (`функция` / `function`, `свёртка` / `fold`). The prose below is English, the code is not
 translated — names in a specification belong to the domain that wrote them.
 
-## How FTS and flang relate
+## Where the language came from
 
-- **FTS** (`.fts`) — an indentation-based executable specification language for domain objects,
-  deterministic utilities, examples, checked properties, morphisms and machine-checkable evidence.
-  Its reference implementation is the TypeScript core in [`src/`](src).
-- **[`flang`](flang/SPEC.md)** (`.flang`) — the full language FTS grew into: sum types, lists,
-  strings as data, recursion, pattern matching, module linking, a category surface, a concurrency
-  surface and eight code generators. Its implementation is [`flang/src/`](flang/src).
+**[`flang`](flang/SPEC.md)** (`.flang`) grew out of FTS — an indentation-based executable
+specification language with domain objects, deterministic utilities, examples and checked
+properties. The language added sum types, lists, strings as data, recursion, pattern matching,
+module linking, a category surface, a concurrency surface and eight code generators. Its
+implementation is [`flang/src/`](flang/src).
 
-FTS is the total subset of flang: every existing `.fts` model is a valid flang program. That is
-not a slogan but a differential test — both engines run every utility of every model over a grid
-of inputs, and both the values and the error codes must agree. The run prints its own numbers:
+**The older project was taken out of this repository on 16 August 2026.** Its home is
+[digitable-lol/fts](https://github.com/digitable-lol/fts); the state on the day it left is kept
+under the `fts-pered-udaleniem` tag. What is left here is the language alone: 179 thousand lines
+went, and with them the TypeScript reference core, nine tools built on it, `.fts` highlighting for
+four editors and a GitHub Action. The language no longer reads `.fts` and says so plainly —
+`FLANG_FTS_REMOVED`, naming where the removed part can be found.
 
-```
-сверка: файлов 22, документов 20, из них с утилитами 13; утилит 24, входов 23084,
-из них с ошибкой 773 (коды: FTS_UTILITY_PROPERTY), расхождений 0
-```
+The FTS surface itself stayed IN THE LANGUAGE: the parser reads `категория`, `объект` and
+`утилита` into legacy nodes, and a corpus of fifty-three models lives as fixtures
+(`flang/test/fixtures/fts/`), holding up the checks over the four `flang/core/*.flang` programs —
+the largest in the tree.
 
 Two documents carry the rest: [`docs/overview.ru.md`](docs/overview.ru.md) describes the language
 and draws the line between what is *proven* and what is *checked*, and
@@ -38,51 +40,43 @@ and draws the line between what is *proven* and what is *checked*, and
 
 ## Where things live
 
-The layout follows from the section above, and it surprises on first sight: 15 directories at
-the root, several of the names repeated. There is `src/` and there is `flang/src/`; there is `test/`
-and `flang/test/`; there is `examples/` and `flang/examples/`. Two languages mean two
-implementations, two test runs and two example corpora. Merging them would erase the seam the
-checking runs along — each side is the reference the other is compared against, and with one
-directory there would be nothing left to compare.
+There are 10 directories at the root, and the layout is plain: nearly everything about the
+language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
+point, packaging, measurements, documentation and one full-size example project.
 
 <!-- КАРТА-НАЧАЛО. Каталоги ниже сверяются с деревом: flang/test/readme-layout.test.mjs
      падает, если названный каталог исчез или если появился каталог верхнего уровня,
      о котором обе редакции README молчат. Правьте карту вместе с деревом. -->
 
 ```
-src/              the FTS core in TypeScript — the reference everything else is true against
-test/             its test run; built into dist/ and executed from there
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap», no Node
 flang/src/        the flang implementation in JavaScript — the reference for the language
 flang/self/       the same compiler, written in flang itself
-flang/core/       the same FTS core, written in flang: lexer, parser, evaluator, JSON printing
+flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/stdlib/     the standard library; its index is printed from the modules themselves
 flang/examples/   flang programs: leetcode, rosetta, cat, monad, io, web, errors
 flang/test/       the language test run — from the lexer to all eight backends
 flang/bin/        flang and flang-lsp: adapters over flang/src, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         .fts models, and library-api — a whole REST service on FTS and flang
-schema/           the interchange format: JSON Schema for the document and the certificate
-tools/            9 tools built on top of the compiled core
-editors/          .fts syntax highlighting and the .flang language server
-web/              the same compiler as a page element — no server, no build step
+examples/         library-api — a whole REST service on flang and Node
+editors/          the .flang language server and a github-linguist submission stub
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          printing the library index, the changelog and the release C
-benchmarks/       the harness and a checked-in measurement baseline
+benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
 .claude/          developer assistant skills: knowledge-base rules
 docs/             documentation; README and SPEC files stay next to the code they describe
-.github/          CI and the fts-check action
+.github/          CI and the npm release
 ```
 
 <!-- КАРТА-КОНЕЦ -->
 
-**How to tell what checks a file without opening it.** By its directory and extension: `src/` and
-`test/` go through `npm run test:core`, everything under `flang/` through `npm run test:flang`, each
-tool carries its own `tools/*/test/`, and `npm test` runs all three suites. A file you cannot
-immediately assign to one of those commands is filed in the wrong place.
+**How to tell what checks a file without opening it.** There is one run: `npm test` executes
+`flang/test/*.test.mjs`, and everything is checked there — from the lexer to all eight backends,
+including the `examples/library-api/` project (wired in through an adapter file). A file you
+cannot immediately assign to a check is filed in the wrong place.
 
-Laying out **your own** project on FTS and flang is a separate document:
+Laying out **your own** project is a separate document:
 [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
@@ -131,10 +125,10 @@ self-hosted compiler — the one in the release — prints to **C and nothing el
 npm install -g @digitable-lol/fts
 ```
 
-That gives the commands used on this page: `flang` for the language, `fts` for models, `fts-mcp`
-for the MCP server, plus `ftsc`, `ftsvm` and `ftspec`. Inside a clone the same commands are
-`node flang/bin/flang.mjs` and `node dist/src/cli.js` — and a clone is what you need for anything
-newer than the last published release.
+That gives the two commands used on this page: `flang` for the language and `flang-lsp` for the
+editor language server. Inside a clone they are `node flang/bin/flang.mjs` and
+`node flang/bin/flang-lsp.mjs` — and a clone is what you need for anything newer than the last
+published release.
 
 **In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
 same compiler printed to C99, 7 files and 5,823,370 bytes:
@@ -425,41 +419,41 @@ What to run when you change the compiler, how the bootstrap point is guarded, an
 of commands the language answers to — [Developing the
 language](docs/rukovodstvo/developing.md).
 
+**The language no longer reads `.fts` models.** It did until 16 August 2026 — through a bridge to
+the older project's TypeScript core; the project left the repository, and the bridge lost its
+other side. The refusal is explicit and says where the removed part now lives:
+
+```bash
+flang check model.fts
+# {"diagnostics":[{"code":"FLANG_FTS_REMOVED","message":"формат .fts больше не читается: …
+#   … github.com/digitable-lol/fts …"}]}
+```
+
 ---
 
 ## The rest of the repository
 
-- **Library** — `compile`, `validate`, `executeUtility`, `testUtilities`, `generateTypeScript`,
-  `certify`, `verifyCertificate`, `pipeline`. No runtime dependencies, no I/O from the library
-  API. The interchange format is [`schema/document.schema.json`](schema/document.schema.json);
-  the `./browser` entrypoint gives parsing, validation and visualization without Node.js
-  cryptography, so strict certificate decisions stay on the server.
-- **[`tools/ftsc`](tools/ftsc/README.md)** — the project compiler: trees of `.fts` modules,
-  checked functors between categories, code generation for eight languages (C, Rust, C#, Java,
-  Elixir, Go, Python, TypeScript).
-- **[`tools/ftsvm`](tools/ftsvm/README.md)** — executes utilities from the `ftsc` IR by
-  interpretation or by JIT to JavaScript.
-- **[`tools/ftspec`](tools/ftspec/README.md)** — finds conflicts between specifications,
-  constitution invariants and recorded decisions, before implementation starts.
-- Six more tools in [`tools/`](tools), each with its own README, and the read-only MCP server
-  `fts-mcp` over stdio — see [Agent integration](docs/rukovodstvo/agents.md).
-- **Editors** — syntax highlighting for `.fts` (Vim, VS Code, tree-sitter, Chroma, Linguist) in
-  [`editors/`](editors/README.md), and the `.flang` language server in
-  [`editors/flang-lsp`](editors/flang-lsp/README.md).
-- **Benchmarks** — `npm run benchmark` (`benchmark:quick` for a short run); the harness and a
-  checked-in Apple M1 Max baseline are in [`benchmarks/`](benchmarks/README.md).
+- **A full-size example** — [`examples/library-api`](examples/library-api/README.md): a REST
+  service on flang and Node, six routes, storage, response codes. It answers one question: what
+  goes where, and why there.
+- **Editors** — the `.flang` language server in
+  [`editors/flang-lsp`](editors/flang-lsp/README.md). There is no `.flang` syntax highlighting in
+  the tree at all, and that is a named debt, not a forgotten task.
+- **Measurements** — the speed harness and the model-authoring measurement in
+  [`benchmarks/`](benchmarks).
 
 All documentation, with an index — [`docs/README.md`](docs/README.md): the guide, measurement
 reports, the knowledge base and the conference submission.
 
-Further reading — in English: [Architecture](docs/rukovodstvo/architecture.md) ·
-[Adoption](docs/rukovodstvo/adoption.md) · [Agents](docs/rukovodstvo/agents.md).
-In Russian (the language surface is Russian, and so is most of the prose):
-[Описание языка](docs/overview.ru.md) · [Справочник языка](docs/rukovodstvo/language.ru.md) ·
-[Как это работает](docs/rukovodstvo/how-it-works.ru.md) ·
-[Исполняемые утилиты](docs/rukovodstvo/executable-utilities.ru.md) ·
-[Прикладные примеры](docs/rukovodstvo/examples.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
-[Зачем нужен FTS и как его интегрировать](docs/rukovodstvo/why-and-integration.ru.md) ·
+**What is no longer here.** Until 16 August 2026 this repository carried a second project, FTS:
+the TypeScript reference core, nine tools built on it (`ftsc`, `ftsvm`, `ftspec` and the rest), an
+MCP server, `.fts` highlighting for four editors, a demo page and a GitHub Action. All of it was
+taken out — 357 files, 180 thousand lines — and lives at
+[digitable-lol/fts](https://github.com/digitable-lol/fts); the state on the day it left is kept
+under the `fts-pered-udaleniem` tag.
+
+Further reading — in Russian (the language surface is Russian, and so is most of the prose):
+[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md) ·
 [self-hosting contract](flang/self/SPEC.md) · [category contract](flang/cat/SPEC.md) ·
 [concurrency contract](flang/conc/SPEC.md).

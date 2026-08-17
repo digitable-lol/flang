@@ -64,7 +64,7 @@ import { pathToFileURL } from "node:url"
 
 import { evaluate as interpret } from "../src/interpret.mjs"
 import { emitJs } from "../src/emit/js.mjs"
-import { camel } from "../../tools/ftsc/src/naming.mjs"
+import { camel } from "../src/naming.mjs"
 import {
   functionGrid,
   loadPrograms,

@@ -48,7 +48,7 @@ import {
   variant,
 } from "./builtins.mjs"
 import { guardDescent } from "./defunc.mjs"
-import { programTags } from "./tags.mjs"
+import { programTags, tagKey, tagOfValue, tagVariant } from "./tags.mjs"
 
 export { FlangError, FlangVariant, flangError, variant, valuesEqual, reifyValue }
 
@@ -173,9 +173,10 @@ function prepareProgram(источник) {
      лениво: спрашивает о них только применение, а программ без функций-значений
      подавляющее большинство. */
   let tags = null
-  const knownTags = () => (tags ??= programTags(program, (name) => functions.has(name)))
+  const paramsOf = (name) => (functions.has(name) ? functions.get(name).params.map((param) => param.name) : null)
+  const knownTags = () => (tags ??= programTags(program, paramsOf))
 
-  return { functions, records, variants, knownTags }
+  return { functions, records, variants, knownTags, paramsOf }
 }
 
 function normalizeParams(fn) {
@@ -486,7 +487,23 @@ function evalExpr(machine, expr, env) {
      */
     case "fnref": {
       requireName(expr.name, "fnref", "name", expr.span)
-      machine.value = variant(expr.name, {})
+      const fields = expr.fields ?? {}
+      const keys = Object.keys(fields)
+      /* Захваченное — это выражения, и считаются они ЗДЕСЬ, при постройке тега,
+         а не при его применении. Иначе `функция «Ф» с а равным («Г» от 1)`
+         звало бы «Г» на каждом применении тега вместо одного раза, и порядок
+         вычисления разошёлся бы с напечатанным кодом, где захват стоит полем
+         конструктора.
+
+         Имя варианта — каноническое (`tags.mjs`), то же самое, какое строит
+         печать и какое сворачивает разбор в значение примера. Без захвата это
+         имя функции, буква в букву как было до фазы 4. */
+      const имя = tagVariant(expr.name, keys)
+      if (keys.length === 0) {
+        machine.value = variant(имя, {})
+        return
+      }
+      startSeq(machine, keys.map((key) => fields[key]), env, { kind: "fnref", name: имя, keys, span: expr.span }, expr.span)
       return
     }
     case "apply": {
@@ -602,6 +619,15 @@ function finishSeq(machine, done, values) {
       machine.value = variant(done.name, fields)
       return
     }
+    /* Тег с захватом собран: поля посчитаны, имя уже каноническое. */
+    case "fnref": {
+      const fields = {}
+      done.keys.forEach((key, index) => {
+        fields[key] = values[index]
+      })
+      machine.value = variant(done.name, fields)
+      return
+    }
     case "binary": {
       machine.value = applyBinary(done.op, values[0], values[1], done.span)
       return
@@ -631,12 +657,20 @@ function finishSeq(machine, done, values) {
       if (!isVariant(tag)) {
         throw flangError("FLANG_APPLY", `применять можно только функцию, а получено ${describeValue(tag)}`, done.span)
       }
-      const fn = machine.rt.functions.get(tag.variant)
+      /* Имя тега — каноническое, и по нему восстанавливается имя функции
+         вместе с набором захваченного (`tags.mjs`). Без захвата это по-прежнему
+         имя функции, и путь тот же, что был до фазы 4. */
+      const тег = tagOfValue(tag.variant, tag.fields, machine.rt.paramsOf)
+      const fn = тег === null ? undefined : machine.rt.functions.get(тег.name)
       if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${tag.variant}»`, done.span)
       /* Тег, которого программа не строит, применить нельзя — обоснование в
          `tags.mjs`. Это не придирка: снаружи можно подать тег обычной функции
-         или комбинатор Ω, и доказанная тотальность стала бы неправдой. */
-      if (!machine.rt.knownTags().has(tag.variant)) {
+         или комбинатор Ω, и доказанная тотальность стала бы неправдой.
+
+         Сверяется тег ЦЕЛИКОМ, вместе с захваченным: программа, берущая
+         `функция «Ф»`, не берёт тем самым `функция «Ф» с а равным 1` — у них
+         разная оставшаяся арность, и случая на второй у диспетчера нет. */
+      if (!machine.rt.knownTags().has(tagKey(тег.name, тег.captured))) {
         throw flangError(
           "FLANG_APPLY",
           `применить «${tag.variant}» нельзя: ни одно место программы не берёт эту функцию значением ` +
@@ -644,12 +678,25 @@ function finishSeq(machine, done, values) {
           done.span,
         )
       }
-      if (args.length !== fn.params.length) {
+      const осталось = fn.params.length - тег.captured.length
+      if (args.length !== осталось) {
         throw flangError(
           "FLANG_APPLY",
-          `функция «${fn.name}» принимает ${fn.params.length} аргум., применена к ${args.length}`,
+          `функция «${fn.name}» принимает ${осталось} аргум., применена к ${args.length}`,
           done.span,
         )
+      }
+      /* Аргументы собираются В ПОРЯДКЕ ОБЪЯВЛЕНИЯ: захваченное берётся из полей
+         тега, остальное — из применения, по очереди. Ровно это же собирает и
+         случай напечатанного диспетчера. */
+      if (тег.captured.length > 0) {
+        const собрано = []
+        let следующий = 0
+        for (const param of fn.params) {
+          собрано.push(тег.captured.includes(param.name) ? tag.fields[param.name] : args[следующий++])
+        }
+        applyFunction(machine, fn, собрано, done.span)
+        return
       }
       applyFunction(machine, fn, args, done.span)
       return

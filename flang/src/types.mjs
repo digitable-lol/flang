@@ -69,6 +69,8 @@ import { устройствоМонады } from "./monad.mjs"
    которая ДОКАЗЫВАЕТСЯ сличением объявлений; вторая, которая считает на сетке,
    стоит рядом с моноидом и изоморфизмом — в `flang check`. */
 import { checkSetShapes } from "./sets.mjs"
+/* Разбор тега в значении — одно определение на все слои (`tags.mjs`). */
+import { tagOfValue } from "./tags.mjs"
 /* Словарь пяти объявляемых свойств — оттуда же, откуда его читает слой законов.
    Второй список здесь разошёлся бы с первым молча, и разошлись бы вместе с ним
    вердикты: устройство сверялось бы по одному словарю, закон — по другому. */
@@ -5357,7 +5359,7 @@ function exampleValueType(value, hint, ctx) {
   if (!isPlainObject(value)) return UNKNOWN
   const tag = value["вариант"] ?? value.variant
   if (isName(tag)) {
-    if (hint?.kind === "fn" || !ctx.variantOwner.has(tag)) return fnValueType(tag, ctx)
+    if (hint?.kind === "fn" || !ctx.variantOwner.has(tag)) return fnValueType(tag, value, ctx)
     return sumValueType(tag, value, hint, ctx)
   }
   if (hint?.kind === "record" && ctx.records.has(hint.name)) return recordValueType(value, hint, ctx)
@@ -5366,10 +5368,21 @@ function exampleValueType(value, hint, ctx) {
 
 /** Тег функции как значение. Полиморфную функцию значением брать нельзя
  *  (`fnrefType`), и здесь та же граница: у неё тип не один, а по подстановке. */
-function fnValueType(tag, ctx) {
-  const signature = ctx.signatures.get(tag)
-  if (!signature || (signature.typeParams ?? []).length > 0) return UNKNOWN
-  return signatureType(signature)
+function fnValueType(tag, value, ctx) {
+  /* Имя в значении уже КАНОНИЧЕСКОЕ («Сложить с второе»), потому что разбор
+     свернул тег примера ещё в `literalValue`. Значит имя функции надо
+     восстановить, и делает это то же определение, каким пользуются вычислитель
+     и печать. */
+  const тег = tagOfValue(tag, value?.["поля"] ?? value?.fields, (имя) => {
+    const найдена = ctx.signatures.get(имя)
+    if (!найдена || (найдена.typeParams ?? []).length > 0) return null
+    return найдена.params.map((param) => param.name)
+  })
+  if (тег === null) return UNKNOWN
+  const signature = ctx.signatures.get(тег.name)
+  if (тег.captured.length === 0) return signatureType(signature)
+  const остались = signature.params.filter((param) => !тег.captured.includes(param.name))
+  return { kind: "fn", params: остались.map((param) => param.type), returns: signature.returns }
 }
 
 /** Аргументы применения суммы выводятся из полей варианта, а не из подсказки:
@@ -5470,12 +5483,15 @@ function checkValue(value, type, label, ctx, at) {
     case "fn": {
       const tag = isPlainObject(value) ? (value["вариант"] ?? value.variant) : null
       if (!isName(tag)) { bad(); return }
-      const signature = ctx.signatures.get(tag)
-      if (!signature) {
+      /* Имя в значении КАНОНИЧЕСКОЕ: у тега с захватом это «Сложить с второе», а
+         не «Сложить». Восстанавливает имя функции то же определение, каким
+         пользуются вычислитель и печать, — иначе пример с захватом отвергался бы
+         словами «функции нет», хотя функция есть. */
+      const actual = fnValueType(tag, value, ctx)
+      if (actual.kind !== "fn") {
         ctx.report("FLANG_UNKNOWN_NAME", `${label}: функции «${tag}» нет`, at)
         return
       }
-      const actual = signatureType(signature)
       if (!sameType(actual, type)) {
         ctx.report("FLANG_TYPE", `${label}: «${tag}» имеет тип ${typeName(actual)}, а ожидался ${typeName(type)}`, at)
       }
@@ -5564,7 +5580,7 @@ function inferExpr(expr, env, expected, ctx, fnName) {
       return объединить(thenType, elseType)
     }
     case "call": return callType(expr, env, expected, ctx, fnName)
-    case "fnref": return fnrefType(expr, ctx)
+    case "fnref": return fnrefType(expr, env, ctx, fnName)
     case "apply": return applyType(expr, env, ctx, fnName)
     case "binary": return binaryType(expr, env, ctx, fnName)
     case "construct": return constructType(expr, env, expected, ctx, fnName)
@@ -5734,7 +5750,29 @@ function signatureType(signature) {
  * такое значение значило бы выпустить наружу тип с несвязанным параметром, а
  * он дальше сравнивался бы с чем попало.
  */
-function fnrefType(expr, ctx) {
+/**
+ * Значение-функция, целиком или с захватом: `функция «Ф»`, `функция «Ф» с п равным з`.
+ *
+ * ── Захват именем, а не позицией — и это отступление от `flang/cat/HOF.md` ──
+ *
+ * HOF.md описывал фазу 4 приставкой: `функция «Сложить» от 1` прижимает ПЕРВЫЙ
+ * аргумент. Отступление сделано замером, а не вкусом: в дереве 56 однопараметровых
+ * функций-переходников, чьё тело есть вызов двухпараметровой с одной прижатой
+ * стороной, и приставке из них годятся 9 — остальным 47 прижимать надо второй
+ * аргумент. Имя про позицию не знает вовсе, поэтому годится всем 56, а платы за
+ * это нет: слова `с` и `равным` уже заняты присвоением полей, поэтому новых слов
+ * поверхности у фазы по-прежнему НОЛЬ.
+ *
+ * ── Почему порядок захвата обязан совпадать с порядком объявления ───────────
+ *
+ * Тег представлен вариантом, и имя этого варианта наблюдаемо: его печатает C,
+ * его же строит вычислитель, его же сворачивает разбор в значение примера
+ * (`literalValue`). Разбор объявлений не видит и порядка параметров знать не
+ * может, поэтому имя он собирает по НАПИСАННОМУ порядку. Позволь писать в любом
+ * порядке — и `с б равным 2 и а равным 1` дало бы значению второе имя, а
+ * диспетчеру второй случай на тот же самый тег.
+ */
+function fnrefType(expr, env, ctx, fnName) {
   const signature = ctx.signatures.get(expr.name)
   if (!signature) {
     ctx.report("FLANG_UNKNOWN_NAME", `неизвестная функция «${String(expr.name)}»`, expr)
@@ -5750,7 +5788,55 @@ function fnrefType(expr, ctx) {
     )
     return UNKNOWN
   }
-  return signatureType(signature)
+
+  const fields = expr.fields
+  const written = fields === null || typeof fields !== "object" || Array.isArray(fields) ? [] : Object.keys(fields)
+  if (written.length === 0) return signatureType(signature)
+
+  const params = signature.params
+  const объявлены = new Map(params.map((param) => [param.name, param]))
+  let сбой = false
+  for (const имя of written) {
+    const param = объявлены.get(имя)
+    if (param === undefined) {
+      ctx.report(
+        "FLANG_APPLY",
+        `функция «${signature.name}» не имеет параметра «${имя}»: захватить можно только объявленное ` +
+          `(${params.map((item) => `«${item.name}»`).join(", ") || "параметров нет"})`,
+        expr,
+      )
+      сбой = true
+      continue
+    }
+    const actual = inferExpr(fields[имя], env, param.type && !hasParams(param.type) ? param.type : null, ctx, fnName)
+    if (!годится(actual, param.type)) {
+      ctx.report(
+        "FLANG_TYPE",
+        `захват «${имя}» функции «${signature.name}»: ожидался ${typeName(param.type)}, получен ${typeName(actual)}`,
+        fields[имя],
+      )
+    }
+  }
+  if (сбой) return UNKNOWN
+
+  const порядком = params.filter((param) => written.includes(param.name)).map((param) => param.name)
+  if (порядком.join(" ") !== written.join(" ")) {
+    ctx.report(
+      "FLANG_APPLY",
+      `захват функции «${signature.name}» записан не в порядке объявления: ожидалось ` +
+        `${порядком.map((имя) => `«${имя}»`).join(", ")}, а написано ${written.map((имя) => `«${имя}»`).join(", ")}. ` +
+        `Имя тега собирается по написанному, и два порядка дали бы одному значению два имени`,
+      expr,
+    )
+    return UNKNOWN
+  }
+
+  /* Захватить всё можно, и это не вырождение: тип `функция в число` — законный
+     тип с нулём аргументов (`parseFunctionType`, «включая нуль»), а диспетчер
+     нулевой арности отличается от прочих только тем, что аргументов у него нет
+     вовсе. Запрещать тут нечего. */
+  const остались = params.filter((param) => !written.includes(param.name))
+  return { kind: "fn", params: остались.map((param) => param.type), returns: signature.returns }
 }
 
 /**

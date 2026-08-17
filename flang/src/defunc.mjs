@@ -98,7 +98,7 @@
  */
 
 import { flangError } from "./builtins.mjs"
-import { programTags } from "./tags.mjs"
+import { programTags, tagKey, tagVariant } from "./tags.mjs"
 import { MEASURE_CODE } from "./totality.mjs"
 
 /**
@@ -142,13 +142,24 @@ function liftHigherOrder(program) {
    * новой формы. Тот же приём и по той же причине уже применён в
    * `self/totality.flang`: результат Тарьяна приводится к порядку объявления,
    * потому что порядок диагностик наблюдаем. */
-  const found = programTags(program, (name) => functions.has(name))
-  const tags = [...functions.keys()].filter((name) => found.has(name))
+  const paramsOf = (name) => (functions.has(name) ? paramNamesOf(functions.get(name)) : null)
+  const found = programTags(program, paramsOf)
+  /* Внутри одной функции теги идут в порядке ПЕРВОГО ПОЯВЛЕНИЯ в программе:
+     `programTags` отдаёт их обходом, а обход у обеих сторон один и тот же.
+     Сортировать их между собой нечем — captured это строки, а сравнения строк
+     по порядку в языке нет. */
+  const tags = []
+  for (const name of functions.keys()) {
+    for (const тег of found.values()) if (тег.name === name) tags.push(тег)
+  }
   const byArity = new Map()
-  for (const name of tags) {
-    const arity = arityOf(functions.get(name))
+  for (const тег of tags) {
+    /* Арность ОСТАВШАЯСЯ: захваченное уже лежит полем тега, и диспетчер получит
+       только то, чего в теге нет. Та же арность, по которой раскладывает теги
+       анализ завершаемости, — списки случаев обязаны совпасть. */
+    const arity = arityOf(functions.get(тег.name)) - тег.captured.length
     if (!byArity.has(arity)) byArity.set(arity, [])
-    byArity.get(arity).push(name)
+    byArity.get(arity).push(тег)
   }
 
   const ctx = {
@@ -178,9 +189,15 @@ function liftHigherOrder(program) {
 
   /* Сумма приписывается, только если объявлять есть что: пустого `types` там,
      где его не было, появиться не должно — печать читает поля по наличию. */
-  const fresh = tags.filter((name) => !declaredVariants.has(name))
-  if (fresh.length > 0) итог.types = [...(rewritten.types ?? []), tagSum(fresh, program)]
+  const fresh = tags.filter((тег) => !declaredVariants.has(tagVariant(тег.name, тег.captured)))
+  if (fresh.length > 0) итог.types = [...(rewritten.types ?? []), tagSum(fresh, program, functions)]
   return итог
+}
+
+/** Имена параметров объявленной функции — в объявленном порядке. */
+function paramNamesOf(fn) {
+  if (!Array.isArray(fn?.params)) return []
+  return fn.params.map((param) => (typeof param === "string" ? param : param?.name)).filter((имя) => typeof имя === "string")
 }
 
 /* ── сторож меры ──────────────────────────────────────────────────────────── */
@@ -752,7 +769,17 @@ function tagValue(node, ctx) {
        печать не имеет права называть одну и ту же беду другими словами. */
     throw flangError("FLANG_UNKNOWN_NAME", `неизвестная функция «${String(node.name)}»`, node.span)
   }
-  return { kind: "construct", variant: node.name, fields: {}, span: node.span }
+  /* Захваченное едет полями варианта — теми же самыми, какими его несёт тег у
+     вычислителя. Значения полей переписываются: внутри захвата законно всё, что
+     законно в выражении, в том числе другой тег. */
+  const fields = {}
+  for (const [ключ, значение] of Object.entries(node.fields ?? {})) fields[ключ] = rewrite(значение, ctx)
+  return {
+    kind: "construct",
+    variant: tagVariant(node.name, Object.keys(fields)),
+    fields,
+    span: node.span,
+  }
 }
 
 /* ── диспетчер ────────────────────────────────────────────────────────────── */
@@ -782,14 +809,27 @@ function renderDispatcher({ arity, name }, ctx) {
   const params = [{ name: "тег" }]
   for (let index = 1; index <= arity; index += 1) params.push({ name: `а${index}` })
 
-  const cases = (ctx.byArity.get(arity) ?? []).map((tag) => ({
-    pattern: { kind: "variant", name: tag, bind: {} },
-    body: {
-      kind: "call",
-      name: tag,
-      args: params.slice(1).map((param) => ({ kind: "var", name: param.name })),
-    },
-  }))
+  const cases = (ctx.byArity.get(arity) ?? []).map((тег) => {
+    /* Захваченное достаётся из полей тега, остальное приходит аргументами
+       диспетчера. Собирается вызов В ПОРЯДКЕ ОБЪЯВЛЕНИЯ — ровно так же, как
+       собирает его вычислитель, иначе напечатанное считало бы другое.
+
+       Имя связки — само имя параметра: поле варианта названо им же, и `разбор`
+       связывает его без переименования. Столкнуться с `а1`…`аN` оно не может —
+       те заняты диспетчером, а параметр с таким именем захвачен быть не может,
+       не будучи при этом в `captured`. */
+    const bind = {}
+    for (const имя of тег.captured) bind[имя] = имя
+    const остальные = params.slice(1).map((param) => ({ kind: "var", name: param.name }))
+    let следующий = 0
+    const args = paramNamesOf(ctx.functions.get(тег.name)).map((имя) =>
+      тег.captured.includes(имя) ? { kind: "var", name: имя } : остальные[следующий++],
+    )
+    return {
+      pattern: { kind: "variant", name: tagVariant(тег.name, тег.captured), bind },
+      body: { kind: "call", name: тег.name, args },
+    }
+  })
 
   return {
     name,
@@ -820,12 +860,29 @@ function renderDispatcher({ arity, name }, ctx) {
  * именем, то есть несобираемый C. Значение при этом одно и то же: `{ variant,
  * fields }` у тега и у варианта без полей неотличимы и в вычислителе.
  */
-function tagSum(names, program) {
+function tagSum(tags, program, functions) {
   const taken = new Set()
   for (const type of program.types ?? []) {
     if (type !== null && typeof type === "object" && typeof type.name === "string") taken.add(type.name)
   }
   let name = "Функция"
   for (let suffix = 2; taken.has(name); suffix += 1) name = `Функция ${suffix}`
-  return { kind: "sum", name, variants: names.map((item) => ({ name: item, fields: [] })) }
+  /* Поля варианта — захваченные параметры, с ОБЪЯВЛЕННЫМИ типами: печать
+     объявляет по ним поля структуры, и взять типы откуда-то ещё значило бы
+     напечатать структуру, не совпадающую с тем, что в неё кладут. */
+  const полем = (имяФункции, имяПоля) => {
+    const fn = functions.get(имяФункции)
+    const param = (Array.isArray(fn?.params) ? fn.params : []).find(
+      (item) => (typeof item === "string" ? item : item?.name) === имяПоля,
+    )
+    return { name: имяПоля, type: typeof param === "string" ? undefined : param?.type }
+  }
+  return {
+    kind: "sum",
+    name,
+    variants: tags.map((тег) => ({
+      name: tagVariant(тег.name, тег.captured),
+      fields: тег.captured.map((имя) => полем(тег.name, имя)),
+    })),
+  }
 }

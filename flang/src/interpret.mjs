@@ -70,6 +70,23 @@ export const DEFAULT_MAX_DEPTH = 10_000
 
 const DEFAULT_RESULT_BINDING = "результат"
 
+/**
+ * «Работа не кончилась, кончился отпущенный на неё квант витков».
+ *
+ * Заведено ради потолка задержки (`conc.mjs`, шаг В4 карты): планировщик обязан
+ * уметь ОСТАНОВИТЬ пробег на середине и вернуться к нему позже, а не только
+ * бросить его и переиграть заново (В2). Возможно это здесь и только здесь по
+ * одной причине, названной в шапке файла: вычисление — цикл над ЯВНЫМ стеком
+ * кадров, а не рекурсия по стеку JS. Значит «сохранить стек пробега» — это не
+ * `swapcontext` за 278 нс и не 290 байт на виток глубины (замер В1), а просто
+ * НЕ ВЫБРАСЫВАТЬ объект машины, который и так уже существует.
+ *
+ * Символ, а не `null` и не особая запись: значением flang символ быть не может
+ * ни при каком вычислении, поэтому спутать «пробег снят» с «пробег вернул
+ * значение» нельзя даже случайно.
+ */
+const СНЯТО = Symbol("flang.снято по кванту")
+
 // ───────────────────────────── публичный интерфейс ─────────────────────────────
 
 export function createRuntime(program, options = {}) {
@@ -81,18 +98,80 @@ export function createRuntime(program, options = {}) {
   const builtinOptions = { indexBase: options.indexBase === 0 ? 0 : 1 }
   const runtime = { ...checked, limits, builtinOptions }
 
+  const сПределами = (callOptions) =>
+    callOptions
+      ? {
+        ...runtime,
+        limits: {
+          maxSteps: positiveLimit(callOptions.maxSteps, limits.maxSteps, "maxSteps"),
+          maxDepth: positiveLimit(callOptions.maxDepth, limits.maxDepth, "maxDepth"),
+        },
+      }
+      : runtime
+
   return {
     call(name, args, callOptions) {
-      const local = callOptions
-        ? {
-          ...runtime,
-          limits: {
-            maxSteps: positiveLimit(callOptions.maxSteps, limits.maxSteps, "maxSteps"),
-            maxDepth: positiveLimit(callOptions.maxDepth, limits.maxDepth, "maxDepth"),
-          },
+      return callFunction(сПределами(callOptions), name, args, callOptions?.отчёт)
+    },
+    /**
+     * Завести вызов, НЕ выполняя его: возвращается машина, которую дальше
+     * крутит `доиграть`.
+     *
+     * Ради потолка задержки (`conc.mjs`, шаг В4 карты). Всё, что делается здесь
+     * и не делается в `доиграть`, делается ровно один раз на вызов: связывание
+     * аргументов и предусловия на границе программы. Витков это не стоит —
+     * `applyFunction` только кладёт кадры на стек, — поэтому первый квант
+     * достаётся телу целиком.
+     *
+     * Машина держит `rt` СВОЙ, тот, что был на момент завода. Это не деталь
+     * реализации: горячая замена (Е1) меняет программу между пробегами, а
+     * начатый пробег обязан доиграть тем видом кода, которым начат.
+     */
+    начать(name, args, callOptions) {
+      const local = сПределами(callOptions)
+      const fn = local.functions.get(name)
+      if (!fn) throw flangError("FLANG_UNKNOWN_NAME", `не найдена функция «${name}»`)
+      const values = bindArguments(fn, args)
+      checkPreconditions(local, fn, values)
+      const machine = { work: [], value: null, steps: 0, depth: 0, current: fn.name, rt: local, потолок: 0 }
+      applyFunction(machine, fn, values, fn.span)
+      return machine
+    },
+    /**
+     * Крутить заведённую машину не дольше `витков`.
+     *
+     * `{ готово: true, значение }` — вызов кончился; `{ готово: false }` — квант
+     * кончился раньше, и ту же машину можно подать сюда снова. Отказ уходит
+     * исключением, ровно как из `call`: у пробега, который упал, и у пробега,
+     * который снят, разные исходы, и путать их нельзя.
+     *
+     * `отчёт.витки` — витки ЭТОЙ дольки, а не всего вызова: планировщик считает
+     * задержку по пробегу, и накопленная сумма ответила бы не на тот вопрос.
+     * `отчёт.всего` — накопленное, оно нужно для сведения с запасом.
+     */
+    доиграть(machine, callOptions) {
+      const витков = callOptions?.витков ?? 0
+      const было = machine.steps
+      machine.потолок = витков > 0 ? machine.steps + витков : 0
+      const отчёт = callOptions?.отчёт
+      try {
+        const итог = run(machine)
+        if (итог === СНЯТО) return { готово: false }
+        return { готово: true, значение: материализовать(итог) }
+      } finally {
+        if (отчёт !== undefined && отчёт !== null) {
+          отчёт.витки = machine.steps - было
+          отчёт.всего = machine.steps
+          /* Цена потолка задержки, названная СЧЁТОМ, а не измерением: сколько
+             кадров стека пробег держит между дольками. Ноль — пробег кончился и
+             не держит ничего. Это ровно та величина, которой у переигрывания
+             (В2) нет и не бывает, и ровно её замер В1 назвал в C «около 290
+             байт на виток глубины». Считать её надо здесь: снаружи стек машины
+             не виден, а прикидывать цену по памяти процесса значило бы мерить
+             сборщик мусора JS. */
+          отчёт.кадров = machine.work.length
         }
-        : runtime
-      return callFunction(local, name, args, callOptions?.отчёт)
+      }
     },
     listFunctions() {
       return [...checked.functions.values()].map((fn) => ({
@@ -375,7 +454,13 @@ function normalizeInput(value) {
 
 function run(machine) {
   const { maxSteps } = machine.rt.limits
+  /* Потолок этой ДОЛЬКИ: абсолютный номер витка, дальше которого крутить не
+     велено. Ноль — потолка нет, и тогда цикл ниже байт в байт тот же, каким был
+     всегда: у машины, заведённой `callFunction` или `checkPreconditions`, поля
+     `потолок` нет вовсе, значит и ветви этой нет. */
+  const потолок = machine.потолок ?? 0
   while (machine.work.length > 0) {
+    if (потолок > 0 && machine.steps >= потолок) return СНЯТО
     machine.steps += 1
     if (machine.steps > maxSteps) {
       throw flangError(

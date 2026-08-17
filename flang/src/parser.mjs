@@ -131,6 +131,10 @@ import { ACTION_TYPE } from "./conc.mjs"
 import { IO_TYPE_NAMES, IO_VARIANT_OWNER, withIoTypes } from "./io.mjs"
 import { FlangError, flangError, keywordId, surfaceOfTokens, tokenize, wordOn } from "./lexer.mjs"
 import { expandMonads } from "./monad.mjs"
+/* Имя тега — одно определение на все слои (`tags.mjs`): разбор сворачивает тег
+   примера в значение, и назвать его иначе, чем назовут вычислитель и печать,
+   значило бы сравнивать в примере одно значение с другим. */
+import { tagVariant } from "./tags.mjs"
 
 export { FlangError, flangError, tokenize }
 
@@ -2177,9 +2181,27 @@ class Parser {
          вид объявлен. Голое `«Удвоить»` значением стать не могло: имя функции в
          позиции выражения уже занято вызовом без аргументов
          (см. `bindNullaryCalls`), и отнять это значило бы сломать написанное. */
+      /* Захват части аргументов — теми же словами, какими поля присваивает
+         конструктор варианта (`вариант «Есть» с значение равным 5`). Это не
+         совпадение записи, а совпадение СМЫСЛА: тег и есть вариант, поля тега и
+         есть поля варианта, значит и присваиваются они одним способом
+         (`flang/cat/HOF.md`, фаза 4).
+
+         Захват ИМЕНОВАННЫЙ, а не приставочный, и это отступление от HOF.md
+         сделано замером: приставке (`функция «Ф» от а`) в дереве годятся 9
+         случаев специализации из 56, остальным 47 прижимать надо не первый
+         аргумент. Имя не знает про позицию вовсе, поэтому годится всем 56.
+
+         Поле `fields` приписывается ТОЛЬКО когда захват есть. Иначе у каждого
+         `функция «Имя»` дерева в AST появился бы пустой словарь, и побайтовая
+         сверка разбора с близнецом разошлась бы на каждой такой программе — при
+         том что захвата в них нет. */
       case "function": {
         this.next()
-        return { kind: "fnref", name: this.expectName("ожидалось имя функции"), span: token.span }
+        const name = this.expectName("ожидалось имя функции")
+        const fields = this.parseFieldAssignments()
+        if (Object.keys(fields).length === 0) return { kind: "fnref", name, span: token.span }
+        return { kind: "fnref", name, fields, span: token.span }
       }
       case "variant": {
         this.next()
@@ -4343,11 +4365,22 @@ function ftsTypeString(type) {
 function literalValue(expression, onError) {
   if (expression.kind === "literal") return expression.value
   /* Значение-функция в примере — это тег, и записывается он так же, как любой
-     вариант без полей: дефункционализация не «превращается» в тег при печати,
-     она им и является уже здесь. Отсюда `дано ф равно функция «Удвоить»`
-     сериализуется в `{ variant: "Удвоить", fields: {} }` и читается обратно
-     тем же `reifyValue`, что читает варианты. */
-  if (expression.kind === "fnref") return { variant: expression.name, fields: {} }
+     вариант: дефункционализация не «превращается» в тег при печати, она им и
+     является уже здесь. Отсюда `дано ф равно функция «Удвоить»` сериализуется
+     в `{ variant: "Удвоить", fields: {} }` и читается обратно тем же
+     `reifyValue`, что читает варианты.
+
+     Захват сворачивается так же, а имя тега собирается по НАПИСАННОМУ порядку
+     полей. Разбор объявлений не видит и порядка параметров знать не может —
+     поэтому порядок захвата обязан совпадать с порядком объявления, и требует
+     этого проверка типов (`fnrefType`, FLANG_APPLY). Без такого требования одно
+     и то же значение имело бы два имени, а у диспетчера появилось бы два случая
+     на один тег. */
+  if (expression.kind === "fnref") {
+    const fields = {}
+    for (const [key, value] of Object.entries(expression.fields ?? {})) fields[key] = literalValue(value, onError)
+    return { variant: tagVariant(expression.name, Object.keys(fields)), fields }
+  }
   if (expression.kind === "list") return expression.items.map((item) => literalValue(item, onError))
   if (expression.kind === "construct") {
     const fields = {}

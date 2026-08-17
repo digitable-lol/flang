@@ -1042,8 +1042,6 @@ test("четыре утверждения корпуса доказаны инд
   }
 })
 
-test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать один раз", async () => {
-test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать раз", async () => {
 test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать два раза", async () => {
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ НА ВСЕ ВОСЕМЬ СЛОВ, и он был правдой ровно до того дня,
      когда у слоя доказательства появилась продукция в `flang/self/parser.flang`
@@ -1165,18 +1163,26 @@ test("корпус самоприменения употребляет ровн�
   assert.deepEqual(найдено, [], "`по свойству` ядро отвергает всегда — в корпусе ему делать нечего")
   assert.deepEqual(теоремы.sort(), [
     "flang/self/types.flang",
+    "flang/self/types.flang",
+    "flang/self/types.flang",
   ], "теоремы корпуса неподвижной точки разошлись — прогоните flang/test/self-parser.test.mjs")
   assert.deepEqual(постусловия.sort(), [
     "flang/examples/leetcode/013-roman-to-integer.flang",
+    "flang/examples/leetcode/013-roman-to-integer.flang",
+    "flang/examples/measure/natural.flang",
     "flang/examples/measure/natural.flang",
     "flang/self/emit-c.flang",
     "flang/self/interpret.flang",
+    "flang/self/interpret.flang",
     "flang/self/iso.flang",
+    "flang/self/monad.flang",
     "flang/self/monad.flang",
     "flang/self/monoid.flang",
     "flang/self/obligations.flang",
     "flang/self/parser.flang",
+    "flang/self/parser.flang",
     "flang/self/proof-initial.flang",
+    "flang/self/proof-kernel.flang",
     "flang/self/proof-kernel.flang",
     "flang/self/proof.flang",
     "flang/self/proofterm.flang",
@@ -1185,12 +1191,18 @@ test("корпус самоприменения употребляет ровн�
        утверждение о границах точной сетки говорит и про дно, и про потолок, и
        про их порядок. Список считает СТРОКИ, а не функции. */
     "flang/self/types.flang",
+    "flang/self/types.flang",
+    "flang/self/types.flang",
+    "flang/self/types.flang",
     /* Библиотека. Два утверждения `numbers.flang` — первые постусловия
        `flang/stdlib` за всё время: до них каталог не имел в ведомости ни одной
        строки о поведении, хотя функций в нём 185. Сверка разборщика прогнана
        после каждого из них, а не в конце (`self-parser.test.mjs`). */
     "flang/stdlib/higher-order.flang",
+    "flang/stdlib/higher-order.flang",
+    "flang/stdlib/higher-order.flang",
     "flang/stdlib/logic.flang",
+    "flang/stdlib/numbers.flang",
     "flang/stdlib/numbers.flang",
     /* «Сколько дополнить» переехала в библиотеку (`work/stdlib-grow`) вместе со
        своим утверждением: слово `требует` разбирается теперь и близнецом, и

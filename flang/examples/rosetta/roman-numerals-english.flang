@@ -172,10 +172,19 @@ total function «To Roman»
 // example — and that is a check, not an argument: `flang/test/corpus-claims.test.mjs`
 // spoils the line in exactly that way and demands that "proved" disappear and
 // the run go red.
+//
+// The second claim is about the UPPER bound, and another rule of the kernel
+// takes it ("bounded by construction"): the same eight literals, and none of
+// them is above a thousand, because M is the highest symbol of the Roman table.
+// There are two questions — the sign of the result and its ceiling — so there
+// are two claims: the language has no form for "result between 0 and 1000", and
+// merging two different rules of the kernel into one line would state a goal the
+// kernel would still read as two.
 total function «Value of a symbol»
   accepts symbol: string
   returns number
   ensures «the value of a symbol is non-negative» result is at least 0
+  ensures «the value of a symbol is at most a thousand» result is at most 1000
   example «M»
     given symbol equals "M"
     expected 1000

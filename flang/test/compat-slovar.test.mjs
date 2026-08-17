@@ -133,6 +133,30 @@ test("образец наследия краснеет: обе спеки вед
   assert.equal(итог.checked.objects, 0)
 })
 
+test("настоящий словарь наследия зелёный БЕЗ единой правки — сломано место, а не файл", () => {
+  /* `sales-to-billing.fts` — вынутый из демонстрационного проекта FTS словарь
+     между `shop/sales/purchase.fts` и `shop/billing/invoice.fts`. Пути в нём
+     писались от каталога `shop/svyaz/`, а лежит он теперь в `fts-naslediye/`,
+     и потому не сходится ни один из двух.
+
+     Проба важна тем, что доказывает НЕ-строгость: если бы проверка краснела на
+     подлинном, никем не правленном содержимом, красное на испорченных словарях
+     ничего бы не значило. Исходник читается как есть, меняется только МЕСТО. */
+  const место = `${ФИКСТУРЫ}/fts/tools/ftsc/examples/shop/svyaz/f.fts`
+  const исходник = readFileSync(`${ФИКСТУРЫ}/fts-naslediye/sales-to-billing.fts`, "utf8")
+  const итог = checkFunctorDictionary(parse(исходник, место), {
+    file: место,
+    read: (путь) => readFileSync(путь, "utf8"),
+    parse,
+  })
+  assert.deepEqual(итог.diagnostics, [])
+  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 2, unmapped: 0 })
+
+  /* А из своего нынешнего каталога — две беды, и обе про место. */
+  const наместе = проверить(`${ФИКСТУРЫ}/fts-naslediye/sales-to-billing.fts`)
+  assert.deepEqual(наместе.коды, ["FLANG_FUNCTOR_SPEC_MISSING", "FLANG_FUNCTOR_SPEC_MISSING"])
+})
+
 test("категория без строки «использует» названа своей бедой, а не молчанием", () => {
   const исходник = `функтор «Заказ в счёт» из «Продажи» в «Биллинг»
   использует «Продажи» из «./prodazhi.fts»

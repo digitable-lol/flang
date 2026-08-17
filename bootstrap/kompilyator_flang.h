@@ -669,14 +669,6 @@ fl_status kompilyator_flang_sozdat_otbor_nomera(fl_ctx *ctx, fl_value indeks, fl
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_ishodnik(fl_ctx *ctx, fl_value put, fl_value tekst, fl_value *out, fl_error *error);
 
-/* Запись FTS «Итог сборки»: «файлы», «ошибка», «диагностики». */
-/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_itog_sborki(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
-
-/* Запись FTS «Итог проверки исходников»: «годно», «диагностики». */
-/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_itog_proverki_ishodnikov(fl_ctx *ctx, fl_value godno, fl_value diagnostiki, fl_value *out, fl_error *error);
-
 /* Запись FTS «Программа с бедами»: «программа», «диагностики». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_programma_s_bedami(fl_ctx *ctx, fl_value programma, fl_value diagnostiki, fl_value *out, fl_error *error);
@@ -700,6 +692,14 @@ fl_status kompilyator_flang_sozdat_shag_svyazki(fl_ctx *ctx, fl_value svyazka, f
 /* Запись FTS «Подмена»: «имя», «файл», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_podmena(fl_ctx *ctx, fl_value imya, fl_value fayl, fl_value uzel, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог сборки»: «файлы», «ошибка», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_itog_sborki(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог проверки исходников»: «годно», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_itog_proverki_ishodnikov(fl_ctx *ctx, fl_value godno, fl_value diagnostiki, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Режим»: «Начало» | «Тело» | «Блок в начале» | «Блок в теле» | «В кавычках». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -22687,15 +22687,6 @@ fl_status kompilyator_flang_beda_uzla(fl_ctx *ctx, fl_value kod, fl_value soobsc
 fl_status kompilyator_flang_beda_iz_razbora(fl_ctx *ctx, fl_value d, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Беда из анализа».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param d — «д»: «Диагностика анализа»
- * @return значение: «Беда»
- */
-fl_status kompilyator_flang_beda_iz_analiza(fl_ctx *ctx, fl_value d, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Слить беды».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -23108,6 +23099,15 @@ fl_status kompilyator_flang_teoremy_esli_est(fl_ctx *ctx, fl_value polya, fl_val
  * @return значение: «Значение»
  */
 fl_status kompilyator_flang_pustaya_programma(fl_ctx *ctx, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беда из анализа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param d — «д»: «Диагностика анализа»
+ * @return значение: «Беда»
+ */
+fl_status kompilyator_flang_beda_iz_analiza(fl_ctx *ctx, fl_value d, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать в C от исходников».

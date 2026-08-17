@@ -492,11 +492,18 @@ typedef struct fl_conc_sched {
   size_t proc_count;
   size_t proc_capacity; /* сколько слотов и признаков выделено под процессы */
 
-  /* Очередь готовых: индексы процессов ПО ВОЗРАСТАНИЮ, то есть в порядке
-     объявления. Держится списком, а не пересобирается перебором всех процессов
-     на каждом пробеге, как у эталона: содержимое то же самое, стоимость
-     O(готовых) вместо O(объявленных). */
-  size_t *ready;
+  /* Очередь готовых. Наблюдаемо от неё нужны ровно две вещи, и обе — ФУНКЦИИ, а
+     не хранилище: сколько готовых всего и КТО k-й ПО ВОЗРАСТАНИЮ номера. Ровно
+     это спрашивает у неё семя, и ровно это перебором считает эталон.
+
+     Поэтому здесь не список номеров, а ДЕРЕВО ЧАСТИЧНЫХ СУММ (Фенвика) над
+     признаком «готов»: `rank[i]` хранит сумму признаков на отрезке, который
+     кончается на `i`. Обе операции стоят O(log P) вместо O(готовых) на
+     `memmove`, а ответ на оба вопроса — тот же самый до номера. Подробности и
+     улика — у `fl_conc_rank_add`. */
+  size_t *rank;      /* дерево частичных сумм, ОДНООСНОВНОЕ: rank[0] не в счёт */
+  size_t rank_size;  /* сколько номеров в дереве; равно proc_capacity */
+  size_t rank_step;  /* наибольшая степень двойки, не превосходящая rank_size */
   bool *is_ready;
   size_t ready_count;
 
@@ -840,10 +847,12 @@ static bool fl_conc_index_build(fl_conc_sched *sched, size_t wanted) {
 static bool fl_conc_reserve(fl_conc_sched *sched, size_t wanted) {
   size_t next = sched->proc_capacity;
   fl_conc_slot *slots = NULL;
-  size_t *ready = NULL;
+  size_t *rank = NULL;
   bool *is_ready = NULL;
   fl_conc_link *over = NULL;
   size_t *subtree = NULL;
+  size_t index = 0;
+  size_t step = 1u;
   if (wanted <= sched->proc_capacity) {
     return true;
   }
@@ -857,21 +866,43 @@ static bool fl_conc_reserve(fl_conc_sched *sched, size_t wanted) {
     next *= 2u;
   }
   slots = (fl_conc_slot *)fl_arena_alloc(sched->home, next * sizeof(fl_conc_slot));
-  ready = (size_t *)fl_arena_alloc(sched->home, next * sizeof(size_t));
+  /* Одним больше: дерево одноосновное, потому что младший установленный бит у
+     нуля не определён, а на нём держится весь обход. */
+  rank = (size_t *)fl_arena_alloc(sched->home, (next + 1u) * sizeof(size_t));
   is_ready = (bool *)fl_arena_alloc(sched->home, next * sizeof(bool));
   over = (fl_conc_link *)fl_arena_alloc(sched->home, next * sizeof(fl_conc_link));
   subtree = (size_t *)fl_arena_alloc(sched->home, next * sizeof(size_t));
-  if (slots == NULL || ready == NULL || is_ready == NULL || over == NULL || subtree == NULL) {
+  if (slots == NULL || rank == NULL || is_ready == NULL || over == NULL || subtree == NULL) {
     return false;
   }
+  memset(rank, 0, (next + 1u) * sizeof(size_t));
   if (sched->proc_capacity > 0) {
     memcpy(slots, sched->slots, sched->proc_capacity * sizeof(fl_conc_slot));
-    memcpy(ready, sched->ready, sched->ready_count * sizeof(size_t));
     memcpy(is_ready, sched->is_ready, sched->proc_capacity * sizeof(bool));
     memcpy(over, sched->over_process, sched->proc_capacity * sizeof(fl_conc_link));
+    /* Дерево ПЕРЕСОБИРАЕТСЯ, а не переносится: узел его хранит сумму по
+       отрезку, а отрезки при другом размере другие. Сборка идёт за O(P), а не
+       за O(P·log P): сперва в каждый узел кладётся свой признак, потом каждый
+       узел один раз прибавляется к родителю. */
+    for (index = 0; index < sched->proc_count; index += 1) {
+      if (is_ready[index]) {
+        rank[index + 1u] += 1u;
+      }
+    }
+    for (index = 1u; index <= next; index += 1) {
+      const size_t parent = index + (index & ((size_t)0 - index));
+      if (parent <= next) {
+        rank[parent] += rank[index];
+      }
+    }
+  }
+  while (step * 2u <= next) {
+    step *= 2u;
   }
   sched->slots = slots;
-  sched->ready = ready;
+  sched->rank = rank;
+  sched->rank_size = next;
+  sched->rank_step = step;
   sched->is_ready = is_ready;
   sched->over_process = over;
   sched->subtree = subtree;
@@ -920,22 +951,96 @@ static const char *fl_conc_cstring(fl_conc_sched *sched, fl_value value) {
 }
 
 /* ───────────────────────────── очередь готовых ─────────────────────────────
-   Наименьшая позиция, на которую можно вставить индекс, не нарушив порядка.
-   Двоичный поиск, потому что список отсортирован всегда: это его инвариант, а
-   не удача. */
+ * ── Что здесь наблюдаемо, а что нет — и почему это надо назвать вслух ──────
+ *
+ * Долгое время здесь стоял отсортированный массив номеров, и трогать его
+ * считалось нельзя: «семя выбирает номер В ЭТОМ массиве, значит порядок в
+ * очереди готовых — часть наблюдаемого поведения». Первая половина верна,
+ * вторая — нет, и различить их стоит того, чтобы сказать точно.
+ *
+ * Наблюдаемо не хранилище, а ДВЕ ФУНКЦИИ, и обе видны в эталоне буквально
+ * (`conc.mjs`: `порядок.filter(…)`, потом `готовые[floor(случайное() · длина)]`):
+ *
+ *   1. СКОЛЬКО процессов готово — на это умножается число из семени;
+ *   2. КТО k-й ПО ВОЗРАСТАНИЮ НОМЕРА среди готовых — его и берут.
+ *
+ * Всё. Ни порядок в памяти, ни способ его держать наружу не видны ничем.
+ * Значит любая структура, отвечающая на эти два вопроса теми же числами, даёт
+ * ПОБАЙТОВО тот же журнал доставок — и это не рассуждение, а то, чем оно
+ * проверяется: 4000 совпадений с эталоном на 289 различных чередованиях
+ * (`flang/test/emit-c-conc.test.mjs`). Сверка здесь не помеха правке, а её
+ * единственное доказательство.
+ *
+ * ── Улика, ради которой это сделано ───────────────────────────────────────
+ * Массив отвечал на второй вопрос за O(1), а стоил O(готовых) на КАЖДОМ
+ * изменении: два `memmove` половины списка на пробег. Замер
+ * (`docs/planirovshchik-zamer.md`, раздел 5) назвал это числом: переключение
+ * стоит 88,1 мкс при 480 000 одновременно готовых процессов, наклон
+ * 0,172 нс на готовый процесс, а на миллионе выходило бы около 170 мкс, то
+ * есть примерно 5 900 переключений в секунду. Это и было последней стенкой
+ * между «миллион молчащих процессов» и «миллион работающих».
+ *
+ * ── Чем заменено ──────────────────────────────────────────────────────────
+ * Дерево частичных сумм (Фенвика) над признаком «готов». `rank[i]` хранит сумму
+ * признаков на отрезке длиной в младший установленный бит `i`, кончающемся на
+ * `i`. Отсюда:
+ *
+ *   • стало готово / перестало  — O(log P): `fl_conc_rank_add`;
+ *   • кто k-й по возрастанию    — O(log P): `fl_conc_select`, спуск по битам;
+ *   • сколько готовых           — O(1): счётчик `ready_count`, как и был.
+ *
+ * Памяти ровно столько же, сколько занимал массив: по одному `size_t` на
+ * процесс (плюс один на одноосновность). Порядок перечисления — по-прежнему
+ * порядок объявления, потому что номер процесса и есть порядок объявления, а
+ * дерево ходит по номерам.
+ */
 
-static size_t fl_conc_lower(const size_t *ready, size_t count, size_t value) {
-  size_t low = 0;
-  size_t high = count;
-  while (low < high) {
-    const size_t middle = low + ((high - low) / 2);
-    if (ready[middle] < value) {
-      low = middle + 1;
+/**
+ * Прибавить к дереву единицу (процесс стал готов) или отнять (перестал).
+ *
+ * Один и тот же обход на оба случая, потому что «стало» и «перестало» — не два
+ * разных действия, а одно с разным знаком: разъехались бы они, разъехались бы
+ * молча.
+ */
+static void fl_conc_rank_add(fl_conc_sched *sched, size_t index, bool more) {
+  size_t at = index + 1u;
+  while (at <= sched->rank_size) {
+    if (more) {
+      sched->rank[at] += 1u;
     } else {
-      high = middle;
+      sched->rank[at] -= 1u;
+    }
+    /* Следующий узел, покрывающий этот: прибавить младший установленный бит. */
+    at += at & ((size_t)0 - at);
+  }
+}
+
+/**
+ * Номер k-го ПО ВОЗРАСТАНИЮ готового процесса, k считается от нуля.
+ *
+ * Тот же самый процесс, который вернул бы `готовые[k]` у эталона, — и это
+ * утверждение, которое проверяется побайтовой сверкой журнала, а не обещается.
+ * Спуск по степеням двойки: на каждом шаге либо шагнули вправо, вычтя сумму
+ * пройденного отрезка, либо нет.
+ *
+ * Зовётся только когда `ready_count` больше нуля, поэтому «не нашлось» здесь
+ * невозможно: k строго меньше числа готовых, значит спуск обязан остановиться
+ * на готовом.
+ */
+static size_t fl_conc_select(const fl_conc_sched *sched, size_t k) {
+  size_t at = 0;
+  size_t step = sched->rank_step;
+  size_t left = k;
+  for (; step > 0; step >>= 1) {
+    const size_t next = at + step;
+    if (next <= sched->rank_size && sched->rank[next] <= left) {
+      at = next;
+      left -= sched->rank[at];
     }
   }
-  return low;
+  /* `at` — одноосновный номер последнего пройденного, значит искомый ровно он:
+     одноосновный `at + 1` это нольосновный `at`. */
+  return at;
 }
 
 /**
@@ -946,18 +1051,17 @@ static size_t fl_conc_lower(const size_t *ready, size_t count, size_t value) {
  */
 static void fl_conc_refresh(fl_conc_sched *sched, size_t index, size_t via) {
   const bool wanted = sched->slots[index].alive && sched->slots[index].box.count > 0;
-  size_t at = 0;
   /* В сборке без потоков складов нет вовсе, и «на чей склад класть» — вопрос без
      смысла. Параметр остаётся в подписи, чтобы у двух сборок был один и тот же
      набор вызовов: разойдись они, разница между сборками перестала бы быть
      одним выключателем. */
   (void)via;
 #ifdef FL_CONC_THREADS
-  /* Рабочий режим. Отсортированного списка здесь нет вовсе, и это не небрежность,
-     а прямое следствие того, что размениваем: порядок в очереди готовых
-     наблюдаем только через семя, а семя в этом режиме ничего не выбирает.
-     Взамен уходит и цена порядка — `memmove` половины списка на каждое
-     изменение, измеренная как 0,172 нс на каждый готовый процесс.
+  /* Рабочий режим. Дерева рангов здесь нет вовсе, и это не небрежность, а прямое
+     следствие того, что размениваем: очередь готовых наблюдаема только через
+     семя, а семя в этом режиме ничего не выбирает. Значит и отвечать на «кто k-й
+     по возрастанию» здесь не надо ни за какую цену — работу разбирают складами и
+     подворовыванием.
 
      Зовётся только с ВЗЯТЫМ замком этого процесса: признак и ящик ходят под ним
      вместе, иначе один поток решал бы «готов» по ящику, который другой в это
@@ -997,13 +1101,10 @@ static void fl_conc_refresh(fl_conc_sched *sched, size_t index, size_t via) {
   if (wanted == sched->is_ready[index]) {
     return;
   }
-  at = fl_conc_lower(sched->ready, sched->ready_count, index);
+  fl_conc_rank_add(sched, index, wanted);
   if (wanted) {
-    memmove(sched->ready + at + 1, sched->ready + at, (sched->ready_count - at) * sizeof(size_t));
-    sched->ready[at] = index;
     sched->ready_count += 1;
   } else {
-    memmove(sched->ready + at, sched->ready + at + 1, (sched->ready_count - at - 1) * sizeof(size_t));
     sched->ready_count -= 1;
   }
   sched->is_ready[index] = wanted;
@@ -2981,7 +3082,10 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
       if (chosen >= sched.ready_count) {
         chosen = sched.ready_count - 1;
       }
-      process = sched.ready[chosen];
+      /* Тот же самый процесс, который эталон взял бы из `готовые[chosen]`:
+         k-й по возрастанию номера среди готовых. Разница — в цене, а не в
+         ответе, и ровно это сверяется побайтово. */
+      process = fl_conc_select(&sched, chosen);
       message = fl_conc_box_shift(&sched.slots[process].box);
       fl_conc_refresh(&sched, process, SIZE_MAX);
       sched.turns += 1;

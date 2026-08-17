@@ -1042,7 +1042,7 @@ test("четыре утверждения корпуса доказаны инд
   }
 })
 
-test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать раз", async () => {
+test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать один раз", async () => {
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ НА ВСЕ ВОСЕМЬ СЛОВ, и он был правдой ровно до того дня,
      когда у слоя доказательства появилась продукция в `flang/self/parser.flang`
      (15 августа 2026). Продукция есть — запрет на `обеспечивает` стал ложью, и
@@ -1170,6 +1170,7 @@ test("корпус самоприменения употребляет ровн�
     "flang/self/obligations.flang",
     "flang/self/parser.flang",
     "flang/self/parser.flang",
+    "flang/self/proof-initial.flang",
     "flang/self/proof-initial.flang",
     "flang/self/proof-kernel.flang",
     "flang/self/proof-kernel.flang",

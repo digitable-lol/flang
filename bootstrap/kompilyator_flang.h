@@ -23891,15 +23891,6 @@ fl_status kompilyator_flang_pole_urezannoy(fl_ctx *ctx, fl_value polya, fl_value
 fl_status kompilyator_flang_pole_storozhey(fl_ctx *ctx, fl_value polya, fl_value pole, fl_value ostatok, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Отбросить если есть что».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param svyazano — «связано»: «Программа с бедами»
- * @return значение: «Значение»
- */
-fl_status kompilyator_flang_otbrosit_esli_est_chto(fl_ctx *ctx, fl_value svyazano, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Отбросить у отмеченной».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.

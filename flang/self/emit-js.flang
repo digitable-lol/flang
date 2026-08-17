@@ -1488,6 +1488,41 @@
     "}"
   ] по "\n"
 
+тотальная функция «Текст b_golova_dokazano»
+  возвращает строка
+  соединить [
+    "function $b_golova_dokazano(value) {",
+    "  return $expectList(\"голова\", value, \"аргумент\")[0]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_hvost_dokazano»
+  возвращает строка
+  соединить [
+    "function $b_hvost_dokazano(value) {",
+    "  return $expectList(\"хвост\", value, \"аргумент\").slice(1)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_razdelit_dokazano»
+  возвращает строка
+  соединить [
+    "function $b_razdelit_dokazano(text, separator) {",
+    "  $expectString(\"разделить\", text, \"строка\")",
+    "  $expectString(\"разделить\", separator, \"разделитель\")",
+    "  return text.split(separator)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_kod_simvola_dokazano»
+  возвращает строка
+  соединить [
+    "function $b_kod_simvola_dokazano(text) {",
+    "  $expectString(\"код символа\", text, \"строка\")",
+    "  return Array.from(text)[0].codePointAt(0)",
+    "}"
+  ] по "\n"
+
 тотальная функция «Текст b_element»
   возвращает строка
   соединить [
@@ -1507,7 +1542,80 @@
   соединить [
     "function $b_dobavit(item, value) {",
     "  const list = $expectList(\"добавить\", value, \"второй аргумент\")",
-    "  return [...list, item]",
+    "  const view = $VIEWS.get(list)",
+    "  if (view !== undefined && view.end === view.cells.length) {",
+    "    view.cells.push(item)",
+    "    return $view(view.cells, view.cells.length)",
+    "  }",
+    "  /* Копия — из буфера напрямую, а не сквозь ловушки вида: копировать чтением по",
+    "     одному элементу стоило бы вдесятеро дороже на ровном месте. */",
+    "  const cells = view === undefined ? list.slice() : view.cells.slice(0, view.end)",
+    "  cells.push(item)",
+    "  return $view(cells, cells.length)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст indexKey»
+  возвращает строка
+  соединить [
+    "function $indexKey(key) {",
+    "  if (typeof key !== \"string\") return -1",
+    "  const index = Number(key)",
+    "  return Number.isInteger(index) && index >= 0 && String(index) === key ? index : -1",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст VIEWS»
+  возвращает строка
+  соединить [
+    "// Буферы «добавить»: вид → его буфер и длина. Слабая — вид, который никому",
+    "// больше не нужен, обязан уйти вместе со своей записью.",
+    "const $VIEWS = new WeakMap()"
+  ] по "\n"
+
+тотальная функция «Текст view»
+  возвращает строка
+  соединить [
+    "function $view(cells, end) {",
+    "  /* Вид на общий буфер: те же ячейки, своя длина. Так «добавить» стоит",
+    "     постоянного времени, а не копии всего списка; обычным массивом это не",
+    "     выразить — два массива JS с разной длиной не делят хранилище. Ловушки ниже",
+    "     отвечают за одно: вид обязан быть НЕОТЛИЧИМ от массива длиной `end` — за",
+    "     концом пусто, ключей сверх своей длины нет, запись отвергается. */",
+    "  const view = new Proxy(cells, {",
+    "    get(target, key) {",
+    "      if (key === \"length\") return end",
+    "      const index = $indexKey(key)",
+    "      if (index >= 0) return index < end ? target[index] : undefined",
+    "      return target[key]",
+    "    },",
+    "    has(target, key) {",
+    "      if (key === \"length\") return true",
+    "      const index = $indexKey(key)",
+    "      if (index >= 0) return index < end",
+    "      return key in target",
+    "    },",
+    "    ownKeys() {",
+    "      const keys = []",
+    "      for (let index = 0; index < end; index += 1) keys.push(String(index))",
+    "      keys.push(\"length\")",
+    "      return keys",
+    "    },",
+    "    getOwnPropertyDescriptor(target, key) {",
+    "      if (key === \"length\") return { value: end, writable: true, enumerable: false, configurable: false }",
+    "      const index = $indexKey(key)",
+    "      if (index >= 0) {",
+    "        if (index >= end) return undefined",
+    "        return { value: target[index], writable: true, enumerable: true, configurable: true }",
+    "      }",
+    "      return Object.getOwnPropertyDescriptor(target, key)",
+    "    },",
+    "    set: () => false,",
+    "    defineProperty: () => false,",
+    "    deleteProperty: () => false,",
+    "  })",
+    "  $VIEWS.set(view, { cells, end })",
+    "  return view",
     "}"
   ] по "\n"
 
@@ -1625,6 +1733,158 @@
     "}"
   ] по "\n"
 
+тотальная функция «Текст stackMb»
+  возвращает строка
+  соединить [
+    "function $stackMb(maxDepth) {",
+    "  const perFrame = 8192 // байт на кадр: вдвое с лишним больше худшего измеренного",
+    "  const most = 1024 // МиБ: выше потолка глубина не покупается, а обещается",
+    "  if (!Number.isFinite(maxDepth) || maxDepth <= 0) return most",
+    "  return Math.min(most, Math.max(8, Math.ceil((maxDepth * perFrame) / 1048576)))",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст wireOut»
+  возвращает строка
+  соединить [
+    "function $wireOut(value) {",
+    "  if (Array.isArray(value)) return [\"l\", value.map($wireOut)]",
+    "  if (value instanceof $FlangVariant) return [\"v\", value.variant, $wireFields(value.fields)]",
+    "  if (value !== null && typeof value === \"object\") return [\"r\", $wireFields(value)]",
+    "  return [\"s\", value]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст wireFields»
+  возвращает строка
+  соединить [
+    "function $wireFields(fields) {",
+    "  return Object.keys(fields).map((name) => [name, $wireOut(fields[name])])",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст wireIn»
+  возвращает строка
+  соединить [
+    "function $wireIn(node) {",
+    "  if (node[0] === \"l\") return node[1].map($wireIn)",
+    "  if (node[0] === \"v\") return new $FlangVariant(node[1], $unwireFields(node[2]))",
+    "  if (node[0] === \"r\") return $unwireFields(node[1])",
+    "  return node[1]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст unwireFields»
+  возвращает строка
+  соединить [
+    "function $unwireFields(pairs) {",
+    "  const fields = {}",
+    "  for (const pair of pairs) fields[pair[0]] = $wireIn(pair[1])",
+    "  return fields",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст callHere»
+  возвращает строка
+  соединить [
+    "function $callHere(fn, args, limits) {",
+    "  $newContext(limits)",
+    "  return fn(...args)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст deepSource»
+  возвращает строка
+  соединить [
+    "function $deepSource() {",
+    "  return [",
+    "    \"import { parentPort, workerData } from \\\"node:worker_threads\\\"\",",
+    "    \"const program = await import(workerData.module)\",",
+    "    \"parentPort.postMessage(program.$deepEntry(program[workerData.name], workerData.args, workerData.limits))\",",
+    "  ].join(\"\\n\")",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст deepEntry»
+  возвращает строка
+  соединить [
+    "/**",
+    " * Точка входа расчёта в потоке с заданным стеком: её зовёт поток, который",
+    " * завёл `$callDeep`. Руками её звать незачем — вызов на своём стеке ничем не",
+    " * отличается от обычного вызова функции модуля.",
+    " *",
+    " * @param {Function} fn экспортированная функция этого модуля",
+    " * @param {Array} args аргументы в форме `$wireOut`",
+    " * @param {{maxDepth?: number, maxSteps?: number}} limits",
+    " */",
+    "export function $deepEntry(fn, args, limits) {",
+    "  if (typeof fn !== \"function\") return { ok: false, broken: \"в модуле нет такой функции\" }",
+    "  $newContext(limits ?? {})",
+    "  try {",
+    "    return { ok: true, value: $wireOut(fn(...args.map($wireIn))) }",
+    "  } catch (err) {",
+    "    if (err instanceof $FlangError) return { ok: false, code: err.code, message: err.message }",
+    "    return { ok: false, alien: String((err && err.message) || err) }",
+    "  }",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст callDeep»
+  возвращает строка
+  соединить [
+    "/**",
+    " * Вычисление на стеке, отведённом ПОД ОБЪЯВЛЕННЫЙ ПРЕДЕЛ глубины.",
+    " *",
+    " * Прямой вызов `функция(x)` считает на стеке того, кто позвал, а его в",
+    " * JavaScript хватает не на 10 000 кадров, а на 7 386 у самой тонкой функции",
+    " * и на 1 379 у функции с сорока связываниями. Здесь расчёт уезжает в поток",
+    " * с явно заданным стеком (`worker_threads`), и объявленный предел",
+    " * становится достижимым: тот же вход даёт FLANG_RECURSION_LIMIT на глубине",
+    " * 10 001, тем же текстом, что интерпретатор.",
+    " *",
+    " * Где рычага нет — в браузере и там, где поток не завёлся, — расчёт идёт на",
+    " * своём стеке, как и раньше, а правду говорит сторож: отказ остаётся",
+    " * объявленным, только текст называет хозяина.",
+    " *",
+    " * @param {Function} fn экспортированная функция этого модуля",
+    " * @param {Array} args её аргументы",
+    " * @param {{maxDepth?: number, maxSteps?: number}} [limits]",
+    " * @returns {Promise<any>}",
+    " */",
+    "export async function $callDeep(fn, args = [], limits = {}) {",
+    "  let Worker = null",
+    "  try {",
+    "    /* Имя модуля собирается на месте, а не стоит в тексте: статический",
+    "       «node:worker_threads» сборщик для браузера попытался бы разрешить, тогда",
+    "       как здесь его отсутствие — обычный ход дела, а не поломка. */",
+    "    Worker = (await import([\"node:\", \"worker_threads\"].join(\"\"))).Worker",
+    "  } catch {",
+    "    Worker = null",
+    "  }",
+    "  if (typeof Worker !== \"function\") return $callHere(fn, args, limits)",
+    "  const depth = typeof limits.maxDepth === \"number\" ? limits.maxDepth : $DEFAULT_MAX_DEPTH",
+    "  let worker = null",
+    "  try {",
+    "    worker = new Worker(new URL(`data:text/javascript,${encodeURIComponent($deepSource())}`), {",
+    "      workerData: { module: import.meta.url, name: fn.name, args: args.map($wireOut), limits },",
+    "      resourceLimits: { stackSizeMb: $stackMb(depth) },",
+    "    })",
+    "  } catch {",
+    "    return $callHere(fn, args, limits)",
+    "  }",
+    "  const answer = await new Promise((done) => {",
+    "    worker.on(\"message\", done)",
+    "    worker.on(\"error\", (err) => done({ ok: false, broken: String((err && err.message) || err) }))",
+    "    worker.on(\"exit\", (code) => done({ ok: false, broken: `поток вышел с кодом ${code}` }))",
+    "  })",
+    "  await worker.terminate()",
+    "  if (answer.ok === true) return $wireIn(answer.value)",
+    "  if (answer.broken !== undefined) return $callHere(fn, args, limits)",
+    "  if (answer.alien !== undefined) throw new Error(answer.alien)",
+    "  throw new $FlangError(answer.code, answer.message)",
+    "}"
+  ] по "\n"
+
 // Реестр рантайма: имя, чего требует, исходный текст. Порядок записей — порядок
 // печати: один AST обязан давать побайтово один вывод.
 тотальная функция «Рантайм»
@@ -1684,8 +1944,15 @@
     (запись «Кусок рантайма» с «имя» равным "$b_pusto" и «нужно» равным ["$fail", "$isList", "$typeName"] и «исходник» равным «Текст b_pusto»),
     (запись «Кусок рантайма» с «имя» равным "$b_golova" и «нужно» равным ["$fail", "$expectList"] и «исходник» равным «Текст b_golova»),
     (запись «Кусок рантайма» с «имя» равным "$b_hvost" и «нужно» равным ["$fail", "$expectList"] и «исходник» равным «Текст b_hvost»),
+    (запись «Кусок рантайма» с «имя» равным "$b_golova_dokazano" и «нужно» равным ["$expectList"] и «исходник» равным «Текст b_golova_dokazano»),
+    (запись «Кусок рантайма» с «имя» равным "$b_hvost_dokazano" и «нужно» равным ["$expectList"] и «исходник» равным «Текст b_hvost_dokazano»),
+    (запись «Кусок рантайма» с «имя» равным "$b_razdelit_dokazano" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_razdelit_dokazano»),
+    (запись «Кусок рантайма» с «имя» равным "$b_kod_simvola_dokazano" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_kod_simvola_dokazano»),
     (запись «Кусок рантайма» с «имя» равным "$b_element" и «нужно» равным ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"] и «исходник» равным «Текст b_element»),
-    (запись «Кусок рантайма» с «имя» равным "$b_dobavit" и «нужно» равным ["$expectList"] и «исходник» равным «Текст b_dobavit»),
+    (запись «Кусок рантайма» с «имя» равным "$indexKey" и «нужно» равным пустой список и «исходник» равным «Текст indexKey»),
+    (запись «Кусок рантайма» с «имя» равным "$VIEWS" и «нужно» равным пустой список и «исходник» равным «Текст VIEWS»),
+    (запись «Кусок рантайма» с «имя» равным "$view" и «нужно» равным ["$indexKey", "$VIEWS"] и «исходник» равным «Текст view»),
+    (запись «Кусок рантайма» с «имя» равным "$b_dobavit" и «нужно» равным ["$expectList", "$view", "$VIEWS"] и «исходник» равным «Текст b_dobavit»),
     (запись «Кусок рантайма» с «имя» равным "$b_ostatok_ot" и «нужно» равным ["$expectNumber"] и «исходник» равным «Текст b_ostatok_ot»),
     (запись «Кусок рантайма» с «имя» равным "$b_procentov_ot" и «нужно» равным ["$expectNumber"] и «исходник» равным «Текст b_procentov_ot»),
     (запись «Кусок рантайма» с «имя» равным "$Bounce" и «нужно» равным пустой список и «исходник» равным «Текст Bounce»),
@@ -1694,7 +1961,16 @@
     (запись «Кусок рантайма» с «имя» равным "$leave" и «нужно» равным ["$LIMITS"] и «исходник» равным «Текст leave»),
     (запись «Кусок рантайма» с «имя» равным "$step" и «нужно» равным ["$fail", "$LIMITS"] и «исходник» равным «Текст step»),
     (запись «Кусок рантайма» с «имя» равным "$hostDepth" и «нужно» равным ["$FlangError", "$LIMITS"] и «исходник» равным «Текст hostDepth»),
-    (запись «Кусок рантайма» с «имя» равным "$top" и «нужно» равным ["$hostDepth", "$LIMITS"] и «исходник» равным «Текст top»)
+    (запись «Кусок рантайма» с «имя» равным "$top" и «нужно» равным ["$hostDepth", "$LIMITS"] и «исходник» равным «Текст top»),
+    (запись «Кусок рантайма» с «имя» равным "$stackMb" и «нужно» равным пустой список и «исходник» равным «Текст stackMb»),
+    (запись «Кусок рантайма» с «имя» равным "$wireOut" и «нужно» равным ["$FlangVariant", "$wireFields"] и «исходник» равным «Текст wireOut»),
+    (запись «Кусок рантайма» с «имя» равным "$wireFields" и «нужно» равным ["$wireOut"] и «исходник» равным «Текст wireFields»),
+    (запись «Кусок рантайма» с «имя» равным "$wireIn" и «нужно» равным ["$FlangVariant", "$unwireFields"] и «исходник» равным «Текст wireIn»),
+    (запись «Кусок рантайма» с «имя» равным "$unwireFields" и «нужно» равным ["$wireIn"] и «исходник» равным «Текст unwireFields»),
+    (запись «Кусок рантайма» с «имя» равным "$callHere" и «нужно» равным ["$LIMITS"] и «исходник» равным «Текст callHere»),
+    (запись «Кусок рантайма» с «имя» равным "$deepSource" и «нужно» равным пустой список и «исходник» равным «Текст deepSource»),
+    (запись «Кусок рантайма» с «имя» равным "$deepEntry" и «нужно» равным ["$LIMITS", "$FlangError", "$wireIn", "$wireOut"] и «исходник» равным «Текст deepEntry»),
+    (запись «Кусок рантайма» с «имя» равным "$callDeep" и «нужно» равным ["$LIMITS", "$FlangError", "$deepEntry", "$deepSource", "$stackMb", "$wireIn", "$wireOut", "$callHere"] и «исходник» равным «Текст callDeep»)
   ]
 
 

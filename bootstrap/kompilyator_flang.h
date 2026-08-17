@@ -65,6 +65,10 @@ fl_status kompilyator_flang_sozdat_snyatie(fl_ctx *ctx, fl_value stek, fl_value 
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_blok_tablicy(fl_ctx *ctx, fl_value osnovanie, fl_value simvoly, fl_value *out, fl_error *error);
 
+/* Запись FTS «Голоса поверхностей»: «русских», «английских», «эсперанто», «китайских». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_golosa_poverhnostey(fl_ctx *ctx, fl_value russkih, fl_value angliyskih, fl_value esperanto, fl_value kitayskih, fl_value *out, fl_error *error);
+
 /* Запись FTS «Поле значения»: «ключ», «значение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_pole_znacheniya(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
@@ -121,9 +125,9 @@ fl_status kompilyator_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход», «ввод-вывод», «монада». */
+/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход», «ввод-вывод», «монада», «поверхность». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value vvod_vyvod, fl_value monada, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value vvod_vyvod, fl_value monada, fl_value poverhnost, fl_value *out, fl_error *error);
 
 /* Запись FTS «Шаг»: «р», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -1476,6 +1480,96 @@ fl_status kompilyator_flang_identifikator_frazy(fl_ctx *ctx, fl_value fraza, fl_
  * @return значение
  */
 fl_status kompilyator_flang_mozhet_nachinat(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Куски поверхностей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_kuski_poverhnostey(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поверхность фразы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fraza — «фраза»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_poverhnost_frazy(fl_ctx *ctx, fl_value fraza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Куски слов поверхностей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_kuski_slov_poverhnostey(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово на поверхности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @param poverhnost — «поверхность»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_slovo_na_poverhnosti(fl_ctx *ctx, fl_value identifikator, fl_value poverhnost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отдать голос».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golosa — «голоса»: «Голоса поверхностей»
+ * @param poverhnost — «поверхность»: строка
+ * @return значение: «Голоса поверхностей»
+ */
+fl_status kompilyator_flang_otdat_golos(fl_ctx *ctx, fl_value golosa, fl_value poverhnost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Голос за поверхность».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golosa — «голоса»: «Голоса поверхностей»
+ * @param poverhnost — «поверхность»: строка
+ * @return значение: число
+ */
+fl_status kompilyator_flang_golos_za_poverhnost(fl_ctx *ctx, fl_value golosa, fl_value poverhnost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все поверхности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_vse_poverhnosti(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наибольший голос».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golosa — «голоса»: «Голоса поверхностей»
+ * @return значение: число
+ */
+fl_status kompilyator_flang_naibolshiy_golos(fl_ctx *ctx, fl_value golosa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Победившая поверхность».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golosa — «голоса»: «Голоса поверхностей»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_pobedivshaya_poverhnost(fl_ctx *ctx, fl_value golosa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поверхность потока».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tokeny — «токены»: список: «Токен»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_poverhnost_potoka(fl_ctx *ctx, fl_value tokeny, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Складываемый».
@@ -3537,6 +3631,52 @@ fl_status kompilyator_flang_est_beda(fl_ctx *ctx, fl_value r, fl_value *result, 
  * @return значение: «Разборщик»
  */
 fl_status kompilyator_flang_s_bedoy(fl_ctx *ctx, fl_value r, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цитата на поверхности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fraza — «фраза»: строка
+ * @param poverhnost — «поверхность»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_citata_na_poverhnosti(fl_ctx *ctx, fl_value fraza, fl_value poverhnost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Куски на поверхности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param chasti — «части»: список: строка
+ * @param poverhnost — «поверхность»: строка
+ * @param citata — «цитата»
+ * @param gotovo — «готово»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_kuski_na_poverhnosti(fl_ctx *ctx, fl_value chasti, fl_value poverhnost, fl_value citata, fl_value gotovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «На поверхности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: строка
+ * @param poverhnost — «поверхность»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_na_poverhnosti(fl_ctx *ctx, fl_value soobschenie, fl_value poverhnost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово понятия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_slovo_ponyatiya(fl_ctx *ctx, fl_value r, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отказ с кодом».

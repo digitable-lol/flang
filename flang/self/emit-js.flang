@@ -3231,8 +3231,9 @@
     " * @type {{functions: Map<string, Function>, variant: Function, isVariant: Function, stackMb: number, entry: object}}",
     " */",
     "export const $PROGRAM = {",
-    "  functions: new Map([",
-    (соединить (отобразить («общее».«функции») как «функция» → «Строка таблицы» от «функция» и «общее») по "\n"),
+    // Программа без единой функции даёт `new Map([` и `]),` подряд, БЕЗ пустой
+    // строки между ними: у эталона рядов просто нет в списке, а не пустой ряд.
+    (соединить («Непустые части» от ["  functions: new Map([", (соединить (отобразить («общее».«функции») как «функция» → «Строка таблицы» от «функция» и «общее») по "\n")]) по "\n"),
     "  ]),",
     "  variant: (name, fields) => new $FlangVariant(name, fields),",
     "  isVariant: $isVariant,",

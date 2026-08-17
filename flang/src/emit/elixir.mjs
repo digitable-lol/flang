@@ -125,6 +125,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
+import { требуетХозяина } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
@@ -549,6 +550,13 @@ function createDeclarations(reserved) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitElixir(program, options = {}) {
+  /* Планировщик у цели есть, ХОЗЯИНА нет. `поручить` не значится в
+     `@known_actions` напечатанного планировщика (`elixir/flang_conc.ex`), и
+     напечатанная программа дошла бы до поручения и упала на «неизвестном
+     действии» уже в бою. Отказ печати говорит об этом там, где это ещё можно
+     изменить, и говорит ОТДЕЛЬНЫМ кодом, потому что беда другая: процессы цель
+     печатает прекрасно (`src/conc.mjs`, `требуетХозяина`). */
+  требуетХозяина(program, "elixir")
   /* Граница входа читает типы ДО дефункционализации: после неё параметр,
      объявленный функцией, становится суммой тегов, а `checkArguments` на границе
      интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы

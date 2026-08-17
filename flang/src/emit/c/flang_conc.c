@@ -42,11 +42,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+/* Часы — ради поручения «Текущее время» (седьмое действие). Ввоз безусловный:
+   хозяин ввода-вывода живёт в этом файле и в проверочном режиме тоже, а
+   `<time.h>` входит в C99 целиком. */
+#include <time.h>
 
 #ifdef FL_CONC_THREADS
 #include <pthread.h>
 #include <sched.h>
-#include <time.h>
 #include <unistd.h>
 #endif
 
@@ -525,6 +528,16 @@ typedef struct fl_conc_sched {
      исход пробега дописывается уже после вызова обработчика, — но живёт она в
      `scratch` и переписывается следующим пробегом. */
   bool keep_journal;
+
+  /* Хозяин ввода-вывода (седьмое действие, `поручить`). По умолчанию его НЕТ, и
+     это не осторожность, а условие сверки: журнал этого планировщика сверяется
+     побайтово с журналом эталона (`flang/src/conc.mjs`), а хозяин, читающий
+     настоящие файлы, сделал бы журнал зависящим от содержимого диска.
+     Без хозяина поручение отвечает `«Сбой»` с кодом FLANG_IO_NO_HOST — тем же
+     кодом и тем же текстом, что у эталона. Включает его тот, кто зовёт программу
+     РАБОТАТЬ, а не проверяться: `fl_conc_run_host(..., host = true)`, а из
+     прогонщика — поле `host` запроса. */
+  bool host;
   fl_conc_entry scratch;
   fl_conc_entry *journal;
   size_t journal_count;
@@ -570,6 +583,11 @@ typedef struct fl_conc_sched {
   size_t turns;
   size_t max_processes; /* сколько процессов прогон может завести всего (Б1) */
   uint32_t random;
+  /* Кости хозяина — ОТДЕЛЬНОЕ состояние того же генератора, не `random`. Возьми
+     хозяин числа у планировщика, и чередование стало бы зависеть от того,
+     сколько раз программа бросила кости: побайтовая сверка сломалась бы на
+     программе, которая ничего конкурентного не меняла. */
+  uint32_t dice;
 
   /* Рабочий режим. NULL — проверочный, и тогда ни одного замка не берётся. */
 #ifdef FL_CONC_THREADS
@@ -1114,11 +1132,194 @@ static bool fl_conc_variant_field(fl_value value, const char *name, fl_value *ou
   return false;
 }
 
-/** Известные действия — те же шесть, что вводит язык суммой «Действие». */
+/** Известные действия — те же СЕМЬ, что вводит язык суммой «Действие». */
 static bool fl_conc_known_action(const char *name) {
   return strcmp(name, "отправить") == 0 || strcmp(name, "через") == 0 ||
          strcmp(name, "остановить") == 0 || strcmp(name, "отложить") == 0 ||
-         strcmp(name, "продолжить") == 0 || strcmp(name, "породить") == 0;
+         strcmp(name, "продолжить") == 0 || strcmp(name, "породить") == 0 ||
+         strcmp(name, "поручить") == 0;
+}
+
+/* ───────────────────────────── хозяин ввода-вывода ─────────────────────────
+   Седьмое действие (`поручить`) даёт процессу выдать ПОРУЧЕНИЕ и получить
+   отклик обычным сообщением. Поручение ОПИСЫВАЕТСЯ языком — это значение
+   закрытой суммы «Поручение», — а исполняет его ХОЗЯИН: среда, в которую
+   напечатан модуль. Вот она, эта среда, для цели C, и она здесь одна на весь
+   файл: единственное место планировщика, где есть `fopen` и `time`.
+
+   Пять поручений языка, и по каждому сказано, что с ним делает эта среда:
+
+     «Прочитать файл»   — `fopen`/`fread`, отклик «Прочитано»;
+     «Записать файл»    — `fopen`/`fwrite`, отклик «Записано» с числом КОДОВЫХ
+                          ТОЧЕК, а не байтов: так считает `длина` в языке, и два
+                          разных числа об одном файле были бы ложью;
+     «Текущее время»    — `time(NULL)` в миллисекундах;
+     «Случайное число»  — тот же mulberry32, что ведёт чередование, но своим
+                          состоянием: брать числа у планировщика значило бы
+                          сделать чередование зависящим от того, сколько раз
+                          программа бросила кости;
+     «Запросить»        — НАЗВАННЫЙ ОТКАЗ `«Сбой»` с кодом FLANG_IO_NET. HTTP на
+                          голом C99 без внешней библиотеки не пишется, а
+                          притворяться нечем. Тот же код и по тому же доводу
+                          отдаёт хозяин Node, когда ходить в сеть нечем: для
+                          программы «сети не дали» и «сеть не ответила» — один
+                          путь, и он один и проверен.
+
+   Отказ хозяина — ОТКЛИК, а не ошибка прогона. Это решение приезжает готовым с
+   той стороны шва (`flang/src/io.mjs`): программа обязана уметь встретить
+   неудачу поручения, а «файла нет» ничем не отличается от «сеть упала».
+   Возвращается FL_ERROR только на нехватке памяти в арене — на том, что к
+   модели отношения не имеет. */
+
+static const char *const FL_CONC_NO_HOST = "FLANG_IO_NO_HOST";
+/* Текст без единой подстановки, и это условие, а не лаконизм: тот же текст
+   выдаёт эталон (`conc.mjs`, `NO_HOST_TEXT`), а журналы сверяются побайтово. */
+static const char *const FL_CONC_NO_HOST_TEXT =
+    "у прогона нет хозяина: поручение описано, а исполнить его некому";
+
+/** Отклик `«Сбой» с код … и сообщение …` — строится в арене вызывающего. */
+static fl_status fl_conc_io_fail(fl_ctx *ctx, const char *code, const char *text, fl_value *out,
+                                 fl_error *error) {
+  static const char *const names[2] = {"код", "сообщение"};
+  fl_value values[2];
+  if (fl_text(ctx, code, strlen(code), &values[0], error) != FL_OK) {
+    return FL_ERROR;
+  }
+  if (fl_text(ctx, text, strlen(text), &values[1], error) != FL_OK) {
+    return FL_ERROR;
+  }
+  return fl_variant_new(ctx, "Сбой", names, values, 2, out, error);
+}
+
+/** Строка поля поручения с нулём на конце, во временной памяти вызывающего. */
+static const char *fl_conc_io_text(fl_ctx *ctx, fl_value order, const char *field) {
+  fl_value value = fl_nothing();
+  char *text = NULL;
+  if (!fl_conc_variant_field(order, field, &value) || value.tag != FL_STRING) {
+    return NULL;
+  }
+  text = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);
+  if (text == NULL) {
+    return NULL;
+  }
+  memcpy(text, value.as.string.utf8, value.as.string.bytes);
+  text[value.as.string.bytes] = '\0';
+  return text;
+}
+
+/**
+ * Исполнить поручение. Всегда отдаёт ОТКЛИК — значение суммы «Отклик»; FL_ERROR
+ * только на нехватке памяти.
+ */
+static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value order, fl_value *out,
+                                 fl_error *error) {
+  const char *kind = NULL;
+  if (order.tag != FL_VARIANT) {
+    return fl_conc_io_fail(ctx, "FLANG_IO", "поручение обязано быть вариантом суммы «Поручение»", out, error);
+  }
+  kind = order.as.variant->name;
+  if (!sched->host) {
+    return fl_conc_io_fail(ctx, FL_CONC_NO_HOST, FL_CONC_NO_HOST_TEXT, out, error);
+  }
+
+  if (strcmp(kind, "Прочитать файл") == 0) {
+    static const char *const names[1] = {"содержимое"};
+    const char *path = fl_conc_io_text(ctx, order, "путь");
+    fl_value value = fl_nothing();
+    char *buffer = NULL;
+    size_t filled = 0;
+    size_t capacity = 4096;
+    FILE *file = NULL;
+    if (path == NULL || path[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь", out, error);
+    }
+    file = fopen(path, "rb");
+    if (file == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_READ", "файл не открылся", out, error);
+    }
+    /* Читается кусками и в арену: размер файла заранее не спрашивается нарочно —
+       `fseek`/`ftell` не обязаны работать на всём, что открывается, а на трубе
+       врут. Удвоение даёт тот же порядок обращений, что у арены. */
+    buffer = (char *)fl_arena_alloc(ctx->arena, capacity);
+    for (;;) {
+      size_t got = 0;
+      if (buffer == NULL) {
+        fclose(file);
+        return fl_conc_io_fail(ctx, "FLANG_IO_READ", "не хватило памяти под содержимое файла", out, error);
+      }
+      got = fread(buffer + filled, 1, capacity - filled, file);
+      filled += got;
+      if (filled < capacity) {
+        break;
+      }
+      {
+        char *bigger = (char *)fl_arena_alloc(ctx->arena, capacity * 2);
+        if (bigger != NULL) {
+          memcpy(bigger, buffer, filled);
+        }
+        buffer = bigger;
+        capacity *= 2;
+      }
+    }
+    fclose(file);
+    if (fl_text(ctx, buffer, filled, &value, error) != FL_OK) {
+      return FL_ERROR;
+    }
+    return fl_variant_new(ctx, "Прочитано", names, &value, 1, out, error);
+  }
+
+  if (strcmp(kind, "Записать файл") == 0) {
+    static const char *const names[1] = {"сколько"};
+    const char *path = fl_conc_io_text(ctx, order, "путь");
+    fl_value content = fl_nothing();
+    fl_value value = fl_nothing();
+    FILE *file = NULL;
+    if (path == NULL || path[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь", out, error);
+    }
+    if (!fl_conc_variant_field(order, "содержимое", &content) || content.tag != FL_STRING) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "поручению нужно содержимое строкой", out, error);
+    }
+    file = fopen(path, "wb");
+    if (file == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "файл не открылся на запись", out, error);
+    }
+    if (content.as.string.bytes > 0 &&
+        fwrite(content.as.string.utf8, 1, content.as.string.bytes, file) != content.as.string.bytes) {
+      fclose(file);
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "запись не удалась", out, error);
+    }
+    fclose(file);
+    /* Кодовые точки, а не байты: `длина` в языке считает точки, и «записано»
+       обязано совпадать с ней на том же тексте. */
+    value = fl_number((double)content.as.string.points);
+    return fl_variant_new(ctx, "Записано", names, &value, 1, out, error);
+  }
+
+  if (strcmp(kind, "Текущее время") == 0) {
+    static const char *const names[1] = {"миллисекунды"};
+    fl_value value = fl_number((double)time(NULL) * 1000.0);
+    return fl_variant_new(ctx, "Отметка времени", names, &value, 1, out, error);
+  }
+
+  if (strcmp(kind, "Случайное число") == 0) {
+    static const char *const names[1] = {"значение"};
+    /* Своё состояние, не планировщиково: чередование не должно зависеть от того,
+       сколько раз программа бросила кости. */
+    fl_value value = fl_number(fl_conc_random(&sched->dice));
+    return fl_variant_new(ctx, "Выпало", names, &value, 1, out, error);
+  }
+
+  if (strcmp(kind, "Запросить") == 0) {
+    return fl_conc_io_fail(ctx, "FLANG_IO_NET",
+                           "у хозяина на C нет способа сходить в сеть: HTTP в рантайм не входит", out,
+                           error);
+  }
+
+  /* Набор поручений закрыт, поэтому «неизвестное поручение» — это не «мы такого
+     ещё не умеем», а расхождение хозяина со словарём языка. Отклик, а не
+     ошибка: программа увидит «Сбой» и решит сама. */
+  return fl_conc_io_fail(ctx, "FLANG_IO_UNKNOWN", "хозяин не знает такого поручения", out, error);
 }
 
 /**
@@ -2015,6 +2216,36 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
         }
         continue;
       }
+      if (strcmp(kind, "поручить") == 0) {
+        /* Седьмое действие. Поручение исполняется ЗДЕСЬ, на месте выполнения
+           действия, и отклик ложится в ящик названного адресата обычным
+           сообщением — тем же `fl_conc_deliver`, каким ложится всё остальное.
+           Отсюда три следствия, и все три те же, что у эталона:
+             • полный ящик адресата — отказ ТОГО, КТО ПОРУЧИЛ, ровно как у
+               `отправить`: он попросил принести отклик, а принести некуда;
+             • мёртвый или необъявленный адресат отказом не является, отклик
+               пропадает так же, как пропадает отправка мёртвому;
+             • пробег на время исполнения поручения СТОИТ: хозяин синхронен, и
+               медленное поручение держит планировщик. Цена та же, что у
+               длинного обработчика, и названа по той же причине. */
+        fl_value order = fl_nothing();
+        fl_value answer = fl_nothing();
+        fl_conc_post posted = FL_CONC_POSTED;
+        fl_conc_variant_field(item, "кому", &to);
+        fl_conc_variant_field(item, "поручение", &order);
+        if (fl_conc_perform(sched, ctx, order, &answer, error) != FL_OK) {
+          return FL_ERROR;
+        }
+        posted = fl_conc_deliver(sched, ctx, hand->worker, fl_conc_address(sched, to), answer, false, false);
+        if (posted == FL_CONC_NOMEM) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
+                              "кончилась память в куче адресата");
+        } else if (posted == FL_CONC_FULL) {
+          fl_conc_own_failure(sched, process, entry, &failed, &reason, "FLANG_MAILBOX_FULL",
+                              fl_conc_full_text(sched, fl_conc_address(sched, to)));
+        }
+        continue;
+      }
       if (strcmp(kind, "через") == 0) {
         size_t target = SIZE_MAX;
         bool reserve = false;
@@ -2604,9 +2835,24 @@ static void *fl_conc_worker(void *raw) {
 }
 #endif /* FL_CONC_THREADS */
 
+/**
+ * Прогон БЕЗ хозяина — то, чем `fl_conc_run` был всегда.
+ *
+ * Обёртка, а не копия: у прогона, идущего на сверку с эталоном, хозяина нет и
+ * быть не должно, а прежняя подпись обязана остаться прежней — её зовут и
+ * прогонщик, и тесты. Новый довод дописан отдельной функцией именно затем,
+ * чтобы «проверяется» и «работает» отличались вызовом, а не забытым `false`.
+ */
 fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed, size_t max_turns,
                       size_t max_processes, size_t workers, bool journal, fl_conc_result *out,
                       fl_error *error) {
+  return fl_conc_run_host(ctx, plan, run, seed, max_turns, max_processes, workers, journal, false, out,
+                          error);
+}
+
+fl_status fl_conc_run_host(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, double seed,
+                           size_t max_turns, size_t max_processes, size_t workers, bool journal, bool host,
+                           fl_conc_result *out, fl_error *error) {
   fl_conc_sched sched;
   const fl_conc_run_spec *spec = NULL;
   fl_value *inbox = NULL;
@@ -2651,6 +2897,10 @@ fl_status fl_conc_run(fl_ctx *ctx, const fl_conc_plan *plan, const char *run, do
   sched.home = ctx->arena;
   sched.plan = plan;
   sched.random = fl_conc_seed(seed);
+  /* Кости хозяина заводятся ОТ ТОГО ЖЕ СЕМЕНИ, но своим состоянием: прогон с
+     хозяином и семенем N обязан быть повторимым целиком, вместе с бросками. */
+  sched.dice = fl_conc_seed(seed);
+  sched.host = host;
   sched.keep_journal = journal;
   sched.max_processes = max_processes == 0 ? FL_CONC_MAX_PROCESSES : max_processes;
   sched.proc_count = plan->process_count;

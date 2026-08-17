@@ -8320,6 +8320,10 @@ fl_status kompilyator_flang_napisannyy_zahvat(fl_ctx *ctx, fl_value uzel, fl_val
  * Функция flang «Тег по имени функции».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param imya — «имя»: строка
  * @param napisano — «написано»: список: строка
  * @param obyavlennye — «объявленные»: список: «Параметры функции»

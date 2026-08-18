@@ -28,7 +28,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { pascal, snake } from "../src/naming.mjs"
-import { ЗАНЯТО_ЦЕЛЬЮ, занятоЦелью, обойтиЗанятоеЦелью, обходСнимаетЗанятость } from "../src/emit/target-occupied.mjs"
+import { ЗАНЯТО_ЦЕЛЬЮ, занятоЦелью, обойтиЗанятоеЦелью, обходСнимаетЗанятость } from "../src/target-occupied.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../", import.meta.url))
 

@@ -211,7 +211,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../naming.mjs"
-import { обойтиЗанятоеЦелью } from "./target-occupied.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* Планировщик конкурентности — настоящий .js рядом, а не строка здесь, и по той
    же причине, по какой так сделано в C (`emit/c/flang_conc.c`): его читает

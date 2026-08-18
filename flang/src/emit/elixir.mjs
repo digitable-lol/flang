@@ -129,7 +129,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
 import { pascal, snake } from "../naming.mjs"
-import { обойтиЗанятоеЦелью } from "./target-occupied.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.

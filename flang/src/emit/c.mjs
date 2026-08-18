@@ -96,7 +96,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
 import { createNamer, pascal, snake } from "../naming.mjs"
-import { обойтиЗанятоеЦелью } from "./target-occupied.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.

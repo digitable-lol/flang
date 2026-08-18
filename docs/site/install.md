@@ -9,7 +9,7 @@ How each path was checked: [How the install was verified](install-evidence.html)
 | [Homebrew](#homebrew) | `flang` 0.5.0, `man flang` | `brew`, `cc`, `make` |
 | [asdf / mise](#asdf-and-mise) | `flang` 0.5.0 alongside other versions | `asdf` or `mise`, `cc`, `make` |
 | [From source](#from-source) | `bootstrap/flang_cli` from this tree | `git`, `cc`, `make` |
-| [Node, into your project](#node-into-your-project) | eight emit targets, laws, language server | Node ≥ 20 |
+| [Node: the reference implementation](#node-the-reference-implementation) | eight emit targets, laws, language server | Node ≥ 20 |
 
 The first three paths give the same binary: five commands — `check`, `run`,
 `test`, `emit --target c`, `repl`. The fourth installs the reference
@@ -78,9 +78,12 @@ Build in a fresh clone: `bootstrap/` arrives from the repository with
 where a build has happened it answers "nothing to be done" and leaves the **old**
 binary in place.
 
-## Node, into your project
+## Node: the reference implementation
 
-This path is for calling the language from your own code.
+This path is not for writing in the language: everything you need in order to
+write and check is done by the binary from the first three paths. It is for
+those **developing the language itself**, or calling it from their own Node
+code.
 
 ```bash
 git clone https://github.com/digitable-lol/flang.git

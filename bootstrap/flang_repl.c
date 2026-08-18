@@ -103,7 +103,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 /*
@@ -5112,7 +5111,6 @@ static int emit_file(int argc, char **argv, const char *self) {
 
   if (code == 0) {
     bool found = false;
-    bool made = false;
     for (index = 0; index < files.as.list.count && code == 0; index += 1) {
       fl_value where = fl_nothing();
       fl_value content = fl_nothing();
@@ -5139,14 +5137,13 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       {
         char *destination = repl_join(out, name);
-        /* Каталог заводится молча и один раз: `flang emit --out новый/` без
-           этого отказывал бы на первом же файле, а заводить его отдельной
-           командой человеку незачем. Ошибка mkdir не разбирается — если
-           каталога всё же нет, о том скажет отказ открытия файла, назвав путь. */
-        if (!made) {
-          mkdir(out, 0777);
-          made = true;
-        }
+        /* Каталог НЕ заводится, и это решение, а не пропуск. `mkdir` живёт в
+           <sys/stat.h>, а у этого файла есть обещание: оболочке хватает
+           стандартной библиотеки C плюс signal.h и unistd.h, и стережёт его
+           сторож в flang/test/emit-c.test.mjs («оболочка печатается только по
+           просьбе, и её нужды названы поимённо»). Один заголовок ради одного
+           mkdir — плохая цена: каталог человек делает `mkdir` сам, а если его
+           нет, отказ ниже назовёт путь. */
         if (!emit_write(destination, body, body_bytes)) {
           code = 1;
         }

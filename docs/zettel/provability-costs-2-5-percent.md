@@ -24,7 +24,7 @@
 вот число. Дорого стоит не доказуемость, а неоптимизированный генератор кода:
 [[slower-than-python-by-1-4]] и [[biggest-win-for-least-work]].
 
-Ветка `work/zamer-skorosti`, отчёт `docs/benchmark-speed.md`, 1224 строка, стенды
+Ветка `work/zamer-skorosti`, отчёт `docs/benchmark-speed.md`, 1390 строка, стенды
 в `benchmarks/zamer-skorosti/`.
 
 Связано: [[slower-than-python-by-1-4]], [[condition-for-the-revolution]],

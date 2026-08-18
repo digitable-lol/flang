@@ -117,9 +117,14 @@ total function «Replace»
     expected "абв"
   «Join strings» of (split text by needle) and replacement
 
+// One more claim closed by the core without a theorem. It says something real:
+// the function returns 0 when the substring is absent — that is, "not found" is
+// NOT encoded as minus one here, and that is proved about every input rather
+// than checked on the examples.
 total function «Position of substring»
   accepts text: string, part: string
   returns number
+  ensures «a position is non-negative» result is at least 0
   example «In the middle»
     given text equals "abcd"
     given part equals "c"

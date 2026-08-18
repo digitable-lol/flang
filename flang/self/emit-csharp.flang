@@ -3365,6 +3365,47 @@
   пусть «диспетчер» равно («Печать диспетчера» от «общее» и («с функциями».«состояние»))
   запись «Тела» с «состояние» равным («диспетчер».«состояние») и «части» равным (добавить («диспетчер».«вывод») к («с функциями».«части»))
 
+
+// ═════════════════════ имена, занятые самой целью C# ═════════════════════
+//
+// Имя модуля flang доезжает до цели именем в ЕЁ пространстве имён, а часть этого
+// пространства цель занимает сама. Улика: `модуль «JSON»` печатался в `json.py`
+// рядом с прогонщиком, тот делал `import json` и получал НАШ модуль вместо
+// библиотеки — ломалось не при печати, а при запуске.
+//
+// Свободное имя возвращается КАК ЕСТЬ: у программы, чьё имя цель не занимала,
+// вывод не меняется ни на байт. Занятое обходится приставкой. Отказывать нельзя:
+// имя автор выбрал законно, а набор занятого у цели свой и меняется от её версии.
+//
+// Эталон этих же наборов — `flang/src/emit/target-occupied.mjs`. Правка одной
+// стороны без другой молчит до первой подходящей формы в корпусе.
+
+тотальная функция «Занято целью C#»
+  возвращает список строки
+  [
+    "Action", "Activator", "Array", "ArgumentException", "ArgumentNullException", "ArgumentOutOfRangeException",
+    "AttributeUsageAttribute", "Attribute", "Boolean", "Buffer", "Byte", "Char", "Console",
+    "Convert", "DateOnly", "DateTime", "DateTimeOffset", "Decimal", "Delegate", "Double",
+    "Enum", "Environment", "Exception", "Func", "GC", "Guid", "IComparable", "IDisposable",
+    "IEquatable", "IFormattable", "Index", "Int16", "Int32", "Int64", "IntPtr", "Lazy",
+    "Math", "MathF", "MemoryExtensions", "Nullable", "Object", "ObsoleteAttribute", "OperatingSystem",
+    "OutOfMemoryException", "OverflowException", "Predicate", "Random", "Range", "SByte",
+    "Single", "Span", "StackOverflowException", "String", "StringComparer", "StringComparison",
+    "SystemException", "TimeOnly", "TimeSpan", "TimeZoneInfo", "Tuple", "Type", "UInt16",
+    "UInt32", "UInt64", "UIntPtr", "Uri", "ValueTuple", "ValueType", "Version", "Void",
+    "WeakReference", "Comparer", "Dictionary", "EqualityComparer", "HashSet", "ICollection",
+    "IComparer", "IDictionary", "IEnumerable", "IEnumerator", "IEqualityComparer", "IList",
+    "IReadOnlyList", "KeyValuePair", "LinkedList", "List", "Queue", "SortedDictionary",
+    "SortedSet", "Stack"
+  ]
+
+тотальная функция «Обойти занятое целью C#»
+  принимает «имя»: строка
+  возвращает строка
+  если «Занято целью C#» содержит «имя»
+    то соединить "Flang" с «имя»
+    иначе «имя»
+
 тотальная функция «Имя класса»
   принимает «программа»: «Значение», «настройки»: «Настройки»
   возвращает строка
@@ -3372,7 +3413,7 @@
     то «настройки».«путь»
     иначе
       если «Есть имя модуля» от «программа»
-        то «Безопасный идентификатор» от («Паскаль» от («Имя модуля» от «программа»))
+        то «Обойти занятое целью C#» от («Безопасный идентификатор» от («Паскаль» от («Имя модуля» от «программа»)))
         иначе "FlangProgram"
 
 тотальная функция «Проверить имя класса»

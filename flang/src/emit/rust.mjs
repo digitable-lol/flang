@@ -127,6 +127,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
 import { createNamer, snake } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "./target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.
@@ -550,7 +551,13 @@ export function emitRust(program, options = {}) {
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
-  const file = options.path ?? (moduleName === null ? "program" : rustSnake(moduleName))
+  const wanted = options.path ?? (moduleName === null ? "program" : rustSnake(moduleName))
+  /* Имя модуля flang доезжает до цели именем в ЕЁ пространстве имён, а часть
+     этого пространства цель занимает сама (`target-occupied.mjs`). Свободное имя
+     возвращается как есть — вывод не меняется ни на байт, — занятое обходится
+     приставкой. Отказывать здесь нельзя: имя автор выбрал законно, а набор
+     занятого у цели свой и меняется от её версии. */
+  const file = обойтиЗанятоеЦелью(wanted, "rust")
 
   /* Одно пространство имён на модуль Rust, поэтому один именователь на всё,
      что объявляется на верхнем уровне: функции, фабрики записей, конструкторы

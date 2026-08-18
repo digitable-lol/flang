@@ -28,19 +28,19 @@ itself and living in `flang/stdlib/`:
 
 | Module | File | Functions | Lines |
 | --- | --- | --- | --- |
-| «Списки» (lists) | `flang/stdlib/lists.flang` | 28 | 741 |
-| «Строки» (strings) | `flang/stdlib/strings.flang` | 30 | 666 |
-| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 12 | 361 |
-| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 9 | 184 |
+| «Списки» (lists) | `flang/stdlib/lists.flang` | 28 | 758 |
+| «Строки» (strings) | `flang/stdlib/strings.flang` | 30 | 680 |
+| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 12 | 370 |
+| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 9 | 192 |
 | «Числа» (numbers) | `flang/stdlib/numbers.flang` | 14 | 247 |
-| «Высший порядок» (higher-order) | `flang/stdlib/higher-order.flang` | 34 | 492 |
-| «Словарь» (dictionary) | `flang/stdlib/dictionary.flang` | 9 | 206 |
-| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 24 | 802 |
+| «Высший порядок» (higher-order) | `flang/stdlib/higher-order.flang` | 34 | 504 |
+| «Словарь» (dictionary) | `flang/stdlib/dictionary.flang` | 9 | 214 |
+| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 24 | 811 |
 
 The names and the counts were taken off the tree with `flang check`, not written
-from memory: until 18 August this table said «Высшего порядка» and
-«Хеш-таблица» — no such modules exist in the tree, and an import under those
-names would have been refused.
+from memory: this table used to say «Высшего порядка» and «Хеш-таблица» — no such
+modules exist in the tree, and an import under those names would have been
+refused.
 
 A module is imported by path, in the header:
 
@@ -269,26 +269,30 @@ would give infinity, while the function promises a number.
 ## What the ledger says about this file
 
 ```bash
-flang check docs/examples/operations.flang --proof --pretty
+flang check docs/examples/operations.flang --proof
 ```
+
+Three lines out of the ledger's summary; above them it names every function and
+every claim one by one:
 
 ```
 функций 99: тотальных 95, обычных 4
-обещание несёт: композиция 79, структура 11, точный шаг 3, постоянный шаг 2
-утверждений 5: доказано 3, сетка 2, объявлено, не доказано 0
+обещание несёт: композиция 79, структура 11, точный шаг 3, постоянный шаг 2, объявленная мера 0
+утверждений 53: доказано 6 (из них без теоремы 6, объявленным типом 1), сетка 47, объявлено, не доказано 0
 ```
 
 **Both postconditions written in this file landed on a grid, not on a proof.**
 The ledger says so plainly:
 
 ```
-постусловие «результат не меньше минимума» функции «Третий по порядку»
-  — сетка 1 значение (примеры функции): нарушений не найдено (искали прогоном на всех 1).
-    Это не доказательство — теоремы при утверждении нет
+постусловие «результат не меньше минимума» функции «Третий по порядку» — сетка 1
+значение (примеры функции): нарушений не найдено (искали прогоном на всех 1). Это
+не доказательство — теоремы при утверждении нет
 ```
 
-The three proven claims come **from the library**, not from here: `«Знак»`,
-`«Чётное»`, `«Сколько дополнить»`. Writing a postcondition is easy; getting a
+All six proven claims come **from the library**, not from here: `«Знак»`,
+`«Чётное»`, `«Сколько дополнить»`, `«Считать вхождения»`, `«Позиция подстроки»`,
+`«Размер множества»`. Writing a postcondition is easy; getting a
 proof under it is separate work, and the kernel does not pretend that work is
 done. What it costs and when it succeeds: see [Why and how](proofs.html).
 

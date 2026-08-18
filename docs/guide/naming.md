@@ -165,19 +165,19 @@ entry that outlived its reason lies exactly as much as a missing one; `ОБЪЯ�
 
 ### What the guard does not look at
 
-`КАТАЛОГИ` lists four directories, and the tree holds **773** `.flang` files. A directory left off the
+`КАТАЛОГИ` lists four directories, and the tree holds **774** `.flang` files. A directory left off the
 list does not go red — it simply is not checked, and the guard stays green precisely because it
 stopped looking. Same class as the note
 [«Переименование файла не краснеет, а тихо выключает проверку»](../zettel/renaming-a-file-silently-disables-the-guard.md).
 
-So the coverage is printed on every run and pinned by a test: **190 files out of 773**. The other 583
+So the coverage is printed on every run and pinned by a test: **190 files out of 774**. The other 584
 are not an oversight:
 
 | Outside coverage | Count | Why |
 |---|---|---|
 | benchmark output (`benchmarks/model-authoring/out/`, `docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
-| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `web/wasm`, `flang/проверки`) | **69** | worth covering, but their price has not been measured |
+| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
 
 Those last 66 are a named coverage debt. Widening the coverage without re-measuring the price would
 mean landing a rule the corpus was never checked against. If the numbers move, the test goes red and

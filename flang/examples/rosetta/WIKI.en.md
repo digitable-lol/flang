@@ -93,6 +93,13 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > *number* of disks into a tower — the wrapper that builds `[n … 1]` and the
 > entry point that calls it — because building that list counts up.
 > This is the general move in flang: keep the structure rather than a counter.
+>
+> The same structure then carries a *proof about the answer*, not only about
+> termination. `«Number of moves»` declares `ensures result is at least 0`, and
+> the core discharges it by induction over the list: the empty tower gives 0,
+> and a turn gives twice the tail plus one. `flang check … --proof` prints that
+> the claim holds "about EVERY input of type list, not about the ones that were
+> written down" — which is the line no example-based test can print.
 
 ## 100 doors — `hundred-doors.flang`
 
@@ -105,6 +112,12 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 >
 > Note also that `равен` / `equals` works on scalars only; comparing two lists
 > needs a function, and it is in the listing.
+>
+> One function here also carries a claim the machine checks: `«How many times
+> touched»` declares `ensures result is at least 0`, and the core proves it
+> straight from the body — the fold starts at zero and only adds — with no
+> theorem written at all. That is the cheapest of the three outcomes flang
+> distinguishes: proved by the core, checked on a grid, or stated and not proved.
 
 ## Roman numerals/Encode — `roman-numerals.flang`
 
@@ -224,6 +237,11 @@ Useful once per page, right under the `=={{header|flang}}==` line:
 > Fourteen functions, all fourteen proved terminating: normalisation, comparison
 > and the list version of the same problem. Same reason as above — the string is
 > decomposed into a list first, so everything after that is a fold.
+>
+> `«Position of substring»` carries a proved claim: `ensures result is at least
+> 0`. It says something real rather than decorative — the function returns 0 when
+> the substring is absent, so "not found" is not encoded as minus one, and that
+> is established about every input rather than checked on the examples.
 
 ## Ackermann function — `ackermann-function.flang`
 

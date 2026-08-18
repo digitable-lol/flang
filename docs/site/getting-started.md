@@ -1,7 +1,7 @@
-# Первая программа
+# Your first program
 
-Две дороги: собрать компилятор из C и не знать про Node вовсе — или подключить
-интерпретатор к своему проекту на Node. Здесь обе, компилятор первым.
+Two roads: build the compiler from C and never hear about Node — or wire the
+interpreter into your own Node project. Both are below, the compiler first.
 
 ```bash
 git clone https://github.com/digitable-lol/flang.git
@@ -9,102 +9,108 @@ cd flang
 make -C bootstrap
 ```
 
-Нужны `cc` и `make`, больше ничего: ни Node, ни npm, ни сети. Замер сборки:
-**30,7 с** при `make -j4` под `-O2 -flto`; на входе 9,68 МБ напечатанного C, на
-выходе `bootstrap/flang_cli` — 5,1 МиБ, связанный только с `libc` и `libm`.
+`cc` and `make`, nothing else: no Node, no npm, no network. Measured build:
+**30,7 с** with `make -j4` under `-O2 -flto`; 9,68 МБ of emitted C going in,
+`bootstrap/flang_cli` coming out — 5,1 МиБ, linked against `libc` and `libm`
+only.
 
-## Написать программу
+## Write a program
 
-Положите в файл `hello.flang`:
+Put this in `hello.flang`:
 
 ```
-модуль «Привет»
+module «Hello»
 
-тотальная функция «Удвоить»
-  принимает н: число
-  возвращает число
-  обеспечивает «удвоенное не меньше исходного» результат не меньше н
-  пример «Дважды два»
-    дано н равно 2
-    ожидается 4
-  н плюс н
+total function «Twice»
+  accepts n: number
+  returns number
+  ensures «the result is twice the input» result equals (2 times n)
+  example «Two doubled»
+    given n equals 2
+    expected 4
+  n plus n
 ```
 
-Здесь пять вещей, и каждая делает свою работу:
+Five things, each doing its own job:
 
-- **`тотальная`** — обещание, что функция завершается на любом входе. Компилятор
-  его **проверяет** и откажется собирать файл, если доказать не сможет.
-- **`принимает` / `возвращает`** — типы. Проверяются статически.
-- **`обеспечивает`** — постусловие: что верно про результат. Не для всех входов,
-  которые вы придумали, а **для всех вообще**, если ядро сумеет это доказать.
-  Утверждение **называется** — имя в ёлочках обязательно, по нему его потом
-  находят в ведомости.
-- **`пример`** — исполняемый пример. Он часть программы, а не тест сбоку, и
-  прогоняется при каждой проверке.
-- последняя строка — тело.
+- **`total`** — a promise that the function terminates on every input. The
+  compiler **checks** it and refuses the file if it cannot prove it.
+- **`accepts` / `returns`** — types, checked statically.
+- **`ensures`** — a postcondition: what holds of the result. Not for the inputs
+  you thought of but **for all of them**, if the kernel can prove it. The claim
+  is **named** — the name in guillemets is required, and the ledger reports it
+  by that name.
+- **`example`** — an executable example. It is part of the program rather than a
+  test on the side, and it runs on every check.
+- the last line is the body.
 
-## Проверить
+Keywords come in two surfaces. `module` / `total function` / `accepts` is the
+English one, `модуль` / `тотальная функция` / `принимает` the Russian one, and
+both parse to the same tree.
+
+## Check it
 
 ```bash
 ./bootstrap/flang_cli check hello.flang
 ```
 
 ```
-модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 hello.flang: проверено — разбор, типы, завершаемость; замечаний нет
 ```
 
-## Запустить
+The binary speaks Russian. Its diagnostics are not translated yet, and pretending
+otherwise on this page would not make them so.
+
+## Run it
 
 ```bash
-./bootstrap/flang_cli run hello.flang --function Удвоить --args '{"н": 21}'
+./bootstrap/flang_cli run hello.flang --function Twice --args '{"n": 21}'
 ```
 
 ```
 42
 ```
 
-Считает сам двоичный: вычислитель втащен в него, Node не нужен. Проверено
-прогоном под `env -i PATH=/nonexistent` — интерпретатора на машине не достать
-физически, ответ тот же.
+The binary computes this itself: the evaluator is pulled into it, Node is not
+needed.
 
-Имя функции здесь **без ёлочек**: в объявлении они часть записи, а в командной
-строке — уже нет.
+The function name goes **without guillemets**: in a declaration they are part of
+the notation, on a command line they are not.
 
-## Попробовать вживую
+## Try it live
 
 ```bash
 ./bootstrap/flang_cli repl
 ```
 
-Оболочка вычислитель пока не зовёт: она печатает сессию в C и собирает её тем же
-`cc`, которым вы только что собрали компилятор. Если `cc` нет, она не
-выключается, а проверяет разбор, типы и завершаемость и говорит об этом строкой
-«вычислять нечем».
+The shell does not call the evaluator yet: it emits the session to C and builds
+it with the same `cc` you just built the compiler with. With no `cc` it does not
+switch off — it checks parsing, types and termination and says so.
 
-## Чего двоичный не умеет
+## What the binary cannot do
 
-`check`, `run` и `repl` — всё, что в нём есть. `test` и `emit` он не знает и
-говорит это прямо:
+`check`, `run` and `repl` are all there is. It does not know `test` or `emit`,
+and says so plainly:
 
 ```
 $ ./bootstrap/flang_cli test hello.flang
 flang: неизвестная команда «test». «flang --help» — что умеет бинарник.
 ```
 
-Код возврата — 2, то есть в сценарии это отказ, а не тишина.
+The exit code is 2 — a refusal a script can see, not silence.
 
-Хуже отказа — `--proof`: двоичный его не отвергает, а **молча пропускает**.
-Вывод `check --proof` совпадает с выводом `check`, ведомости нет, и ничто об
-этом не сообщает. Ведомость печатает только интерпретатор.
+Worse than a refusal is `--proof`: the binary does not reject it, it **silently
+ignores** it. The output of `check --proof` equals the output of `check`, there
+is no ledger, and nothing says so. Only the interpreter prints a ledger.
 
-## Где двоичный расходится с эталоном
+## Where the binary diverges from the reference
 
-Не «чего-то не умеет», а **отвечает иначе**, и это опаснее: неумение видно,
-расхождение — нет.
+Not "cannot do something" but **answers differently**, which is the more
+dangerous kind: an inability is visible, a divergence is not.
 
-**Аргументы объявленным типам двоичный не сверяет.** `Факториал` объявлен на
-типе `нат`. Дайте ему −3:
+**The binary does not check arguments against declared types.** `Факториал` is
+declared over the type `нат`. Give it −3:
 
 ```
 $ ./bootstrap/flang_cli run flang/examples/rosetta/factorial.flang \
@@ -116,66 +122,68 @@ $ node flang/bin/flang.mjs run flang/examples/rosetta/factorial.flang \
 {"error":"вызов функции «Факториал»: аргумент «н»: -3 вне нат", …}
 ```
 
-Двоичный принял вход, которого у типа нет, и напечатал ответ. Эталон отказал.
-Пока это не сведено, вход, за который вы не ручаетесь, проверяйте эталоном.
+The binary accepted an input the type does not contain and printed an answer.
+The reference refused. Until that is closed, check inputs you do not vouch for
+with the reference.
 
-На разрешённых входах они сходятся — прогон трёх программ корпуса без Node:
-`Факториал(12) = 479001600`, `Фибоначчи(20) = 6765`, `Палиндром("шалаш") = true`,
-все три знак в знак с эталоном. Печатают по-разному: двоичный — голое значение,
-интерпретатор — JSON с именем функции и аргументами.
+On permitted inputs the two agree — three corpus programs run without Node:
+`Факториал(12) = 479001600`, `Фибоначчи(20) = 6765`,
+`Палиндром("шалаш") = true`, all three sign for sign with the reference. They
+print differently: the binary a bare value, the interpreter JSON with the
+function name and arguments.
 
-## Второй уклад: интерпретатор на Node
+## The second road: the interpreter on Node
 
-Он нужен в двух случаях: когда flang встраивается в уже существующий проект —
-правила лежат рядом с кодом, который их применяет, — и когда нужно то, чего в
-двоичном нет: ведомость доказательства, `test`, `emit` и сверка аргументов
-типам. Ставить нечего — внешних зависимостей ноль, `npm install` не нужен.
+It is for two cases: flang embedded in a project that already exists — rules
+sitting next to the code that applies them — and anything the binary lacks: the
+proof ledger, `test`, `emit`, and checking arguments against types. Nothing to
+install — zero external dependencies, `npm install` is not needed.
 
-### Проверить с доказательствами
+### Check with proofs
 
 ```bash
 node flang/bin/flang.mjs check hello.flang --proof --pretty
 ```
 
-Ядро попробует **доказать** постусловие — показать, что оно верно на всех
-входах, а не только на двойке из примера. Ответ скажет одно из трёх, и разница
-между ними существенна:
+The kernel tries to **prove** the postcondition — to show it holds on all inputs
+and not only on the 2 from the example. The answer is one of three, and the
+difference matters:
 
-- **доказано ядром** — утверждение верно про все входы;
-- **на сетке** — нарушений не нашли, прогнав по значениям. **Это не
-  доказательство**, и ведомость говорит это прямо;
-- **объявлено, не доказано** — ядру не хватило правил. Утверждение при этом
-  считается во время работы, на тех входах, которые придут.
+- **proved by the kernel** — the claim holds for all inputs;
+- **on a grid** — no violation found by running over values. **That is not a
+  proof**, and the ledger says so in those words;
+- **stated, not proved** — the kernel ran out of rules. The claim is then
+  evaluated at run time, on the inputs that arrive.
 
-### Запустить со сверкой типов
+### Run with type checking
 
 ```bash
-node flang/bin/flang.mjs run hello.flang --function Удвоить --args '{"н": 21}'
+node flang/bin/flang.mjs run hello.flang --function Twice --args '{"n": 21}'
 ```
 
 ```json
-{"function":"Удвоить","args":{"н":21},"result":42}
+{"function":"Twice","args":{"n":21},"result":42}
 ```
 
-`--function «Удвоить»` в ёлочках отвечает «не найдена функция».
-
-### Прогнать примеры
+### Run the examples
 
 ```bash
 node flang/bin/flang.mjs test hello.flang
 ```
 
-### Напечатать в другой язык
+### Emit into another language
 
 ```bash
-node flang/bin/flang.mjs emit hello.flang --target c --out ./вывод
+node flang/bin/flang.mjs emit hello.flang --target c --out ./out-c
 ```
 
-Целей восемь: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`, `rust`.
-Напечатанный код обязан выдавать **те же значения и те же коды ошибок**, что
-интерпретатор — это проверяется побайтово на всём корпусе, а не декларируется.
+There are eight targets: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`,
+`rust`. The emitted code must return **the same values and the same error codes**
+as the interpreter — checked byte for byte across the whole corpus, not
+declared.
 
-## Что дальше
+## Next
 
-- [Зачем доказательства и как они устроены](proofs.html)
-- [Спецификация языка](spec.html) — что в нём есть
+- [Why proofs, and how they work](proofs.html)
+- [Roadmap](roadmap.html) — what exists today and what does not
+- [Language specification](../spec.html) — in Russian

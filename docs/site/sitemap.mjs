@@ -6,27 +6,39 @@
 //
 // Поле `из` — путь от корня репозитория. Если файла нет, сборка отказывает с
 // именем — молча пропускать страницу нельзя, иначе сайт худеет незаметно.
+//
+// ДВУЯЗЫЧНОСТЬ выводится из имени файла, а не объявляется второй строкой: у
+// `имя.ru.md` английская пара — соседний `имя.md`, ровно тот уклад, что уже
+// работает у руководства. Английская страница встаёт по адресу
+// `en/<имя>.html`. Для СОБСТВЕННЫХ страниц сайта (`docs/site/`) пара
+// ОБЯЗАТЕЛЬНА: нет файла — сборка красная. Исключение одно и названо полем
+// `печатается`. Для страниц вне `docs/site/` пара берётся по наличию.
 
 export const РАЗДЕЛЫ = [
   {
-    имя: 'Начало',
+    имя: 'Начало', англ: 'Start',
     страницы: [
-      { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.md' },
-      { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.md' },
+      { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.ru.md' },
+      { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.ru.md' },
+      { адрес: 'roadmap.html', имя: 'Роадмап', из: 'docs/site/roadmap.ru.md' },
     ],
   },
   {
     // Раздел стоит вторым намеренно: заходящий второй раз ищет не «что это
     // такое», а «что приехало с прошлого раза», и искать это в конце списка
     // ему пришлось бы дольше, чем читать.
-    имя: 'Что изменилось',
+    имя: 'Что изменилось', англ: 'What changed',
     страницы: [
-      { адрес: 'changelog.html', имя: 'Что изменилось', из: 'docs/site/changelog.md' },
+      // `печатается` снимает требование английской пары. Перевод печатаемой
+      // страницы обязан приходить из печати, а не от переводчика: руками его
+      // затрёт первый же `node scripts/build-changelog-page.mjs`. Освобождение,
+      // названное в карте, честнее молчаливой дыры в стороже.
+      { адрес: 'changelog.html', имя: 'Что изменилось', из: 'docs/site/changelog.md', печатается: true },
       { адрес: 'journal.html', имя: 'Журнал изменений', из: 'CHANGELOG.md' },
     ],
   },
   {
-    имя: 'Язык',
+    имя: 'Язык', англ: 'Language',
     страницы: [
       { адрес: 'spec.html', имя: 'Спецификация языка', из: 'flang/SPEC.md' },
       /* Две страницы ниже завела ветка work/docs-surfaces-and-glossary уже
@@ -41,38 +53,38 @@ export const РАЗДЕЛЫ = [
     ],
   },
   {
-    имя: 'Доказательства',
+    имя: 'Доказательства', англ: 'Proofs',
     страницы: [
-      { адрес: 'proofs.html', имя: 'Зачем и как', из: 'docs/site/proofs.md' },
+      { адрес: 'proofs.html', имя: 'Зачем и как', из: 'docs/site/proofs.ru.md' },
       { адрес: 'spec-proof.html', имя: 'Спецификация ядра', из: 'flang/proof/SPEC.md' },
       { адрес: 'overview.html', имя: 'Что доказано, а что проверено', из: 'docs/overview.ru.md' },
     ],
   },
   {
-    имя: 'Почему так',
+    имя: 'Почему так', англ: 'Why this way',
     страницы: [
-      { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/rukovodstvo/single-source.ru.md' },
-      { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/rukovodstvo/totality.ru.md' },
-      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/rukovodstvo/two-implementations.ru.md' },
-      { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/rukovodstvo/developing.ru.md' },
-      { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/rukovodstvo/limits.ru.md' },
+      { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
+      { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/guide/totality.ru.md' },
+      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/guide/two-implementations.ru.md' },
+      { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/guide/developing.ru.md' },
+      { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/guide/limits.ru.md' },
     ],
   },
   {
-    имя: 'Устройство',
+    имя: 'Устройство', англ: 'Internals',
     страницы: [
-      { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/rukovodstvo/project-layout.ru.md' },
+      { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/guide/project-layout.ru.md' },
     ],
   },
   {
-    имя: 'Категорная поверхность',
+    имя: 'Категорная поверхность', англ: 'Categorical surface',
     страницы: [
       { адрес: 'spec-cat.html', имя: 'Категории и функторы', из: 'flang/cat/SPEC.md' },
       { адрес: 'spec-conc.html', имя: 'Процессы и отказоустойчивость', из: 'flang/conc/SPEC.md' },
     ],
   },
   {
-    имя: 'Замеры',
+    имя: 'Замеры', англ: 'Measurements',
     страницы: [
       { адрес: 'benchmark-speed.html', имя: 'Скорость против Python и Node', из: 'docs/benchmark-speed.md' },
       { адрес: 'benchmark-proof-cost.html', имя: 'Цена доказательства против тестов', из: 'docs/benchmark-proof-cost.md' },

@@ -133,6 +133,7 @@ export function отчёт({ доВсего, послеВсего, итог }) {
 export const ПРОГОН_ПО_УМОЛЧАНИЮ = [
   process.execPath,
   "--test",
+  "--test-timeout=1800000",
   "flang/test/emit-*.test.mjs",
   "flang/test/self-emit-*.test.mjs",
 ]

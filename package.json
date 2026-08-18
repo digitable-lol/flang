@@ -60,10 +60,10 @@
     "bootstrap:check": "node scripts/bootstrap-c.mjs --check",
     "preflight": "node scripts/preflight.mjs",
     "pretest": "node scripts/preflight.mjs",
-    "test": "node --test flang/test/*.test.mjs",
+    "test": "node --test --test-timeout=1800000 flang/test/*.test.mjs",
     "test:remote": "bash scripts/test-remote.sh",
     "pretest:backends": "node scripts/preflight.mjs",
-    "test:backends": "node --test flang/test/emit-*.test.mjs flang/test/self-emit-*.test.mjs",
+    "test:backends": "node --test --test-timeout=1800000 flang/test/emit-*.test.mjs flang/test/self-emit-*.test.mjs",
     "prepublishOnly": "npm test"
   },
   "engines": {

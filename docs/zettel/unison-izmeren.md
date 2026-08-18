@@ -35,5 +35,13 @@ due to different definitions "competing" for the same names».
 **Чем платит**: база данных вместо файлов, свой хостинг, ревью без обычного
 диффа. Оценка переноса такой схемы целиком — 15–25 тысяч строк.
 
+**Поправка, найденная позже и в пользу Unison.** Замер выше поставлен на худший
+случай — тип переписали нарочно. Оказалось, что **подъём версии сам по себе тип
+не форкает**: за семь минорных версий `@unison/base` не изменился ни один тип, а
+у `systemfw_concurrent` они совпали даже через мажор. Разбор —
+[[romb-lomaetsya-ot-pravki-tipa]]. Где именно лежит код и что едет по сети —
+[[pull-privozit-ves-kod]].
+
 Связано: [[adresatsiya-po-soderzhimomu]], [[imena-a-ne-hashi]],
-[[hash-vnutri-imena-snaruzhi]]
+[[hash-vnutri-imena-snaruzhi]], [[romb-lomaetsya-ot-pravki-tipa]],
+[[pull-privozit-ves-kod]]

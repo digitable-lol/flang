@@ -215,8 +215,20 @@ the change.
   function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except
   here it creates no lookalikes, and so it stands.
 - **File names carry no transliteration at all.** A Latin extension means an English-worded name:
-  `lists.flang`, `higher-order.flang`, `name-guard.mjs`. This one is not guarded by a run yet — under
-  `docs/` it is broken many times over, and the price of fixing that has not been measured.
+  `lists.flang`, `higher-order.flang`, `name-guard.mjs`. This one is not guarded by a run yet, and
+  the remainder is measured: **13 names** in the tree are still transliterated —
+
+  | Name | What it is |
+  |---|---|
+  | `bootstrap/kompilyator_flang.c`, `.h` | the bootstrap print; the name comes from `naming.mjs` off the module «Компилятор flang» — generated, but still against the rule |
+  | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.mjs` | hand-written sources |
+  | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
+  | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
+
+  `docs/rukovodstvo/` was the fourteenth and became `docs/guide/` on 18 August, together with 70
+  links across 17 files. The remaining thirteen cost the same order: a file name lives in prose, in
+  imports and in `package.json`, and a tree-wide `grep` is the only way to find every site. This
+  becomes a rule when that price is measured, and not before.
 
 ## Running it
 

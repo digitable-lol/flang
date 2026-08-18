@@ -18,8 +18,8 @@ import { readFileSync, statSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { brotliCompressSync, constants } from "node:zlib"
 
-import { собратьЗамок } from "../flang/src/lockfile.mjs"
-import { адресаОпределений, каноническийJSON, снятьПозиции } from "../flang/src/digest.mjs"
+import { безМест, собратьЗамок } from "../flang/src/lockfile.mjs"
+import { адресаОпределений, каноническийJSON } from "../flang/src/digest.mjs"
 import { importsOf } from "../flang/src/link.mjs"
 import { parse } from "../flang/src/parser.mjs"
 
@@ -106,7 +106,7 @@ for (const путь of ["flang/stdlib/strings.flang", "flang/stdlib/dictionary.f
   /* Форма замера самодостаточного адреса: имена вычеркнуты канонизатором. */
   const без = сжать(Buffer.from(каноническийJSON([...адресаОпределений(дерево).нормализованные.values()]), "utf8")).length
   /* Форма замка: сняты только позиции, имена целы. */
-  const с = сжать(Buffer.from(каноническийJSON(снятьПозиции(дерево)), "utf8")).length
+  const с = сжать(Buffer.from(JSON.stringify(безМест(дерево)), "utf8")).length
   const функций = (дерево.functions ?? []).length
   всегоБез += без
   всегоС += с
@@ -141,7 +141,7 @@ console.log(`${"═".repeat(78)}`)
   /* Правка на один знак — в теле функции, а не в примечании. */
   const стало = было.replace("Размер множества", "Размер множеств")
   if (стало === было) throw new Error("подделка не сработала: имени в файле нет")
-  const адрес = (текст) => сжать(Buffer.from(каноническийJSON(снятьПозиции(parse(текст, путь))), "utf8"))
+  const адрес = (текст) => сжать(Buffer.from(JSON.stringify(безМест(parse(текст, путь))), "utf8"))
   const прежний = адрес(было)
   const новый = адрес(стало)
   let одинаковых = 0

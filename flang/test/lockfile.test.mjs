@@ -24,8 +24,7 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { СХЕМА_ЗАМКА, адресМодуля, модулиЗамка, разборИзАдреса, собратьЗамок } from "../src/lockfile.mjs"
-import { каноническийJSON, снятьПозиции } from "../src/digest.mjs"
+import { СХЕМА_ЗАМКА, адресМодуля, безМест, модулиЗамка, разборИзАдреса, собратьЗамок } from "../src/lockfile.mjs"
 import { parse } from "../src/parser.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -48,8 +47,10 @@ const вовремя = () => mkdtempSync(join(tmpdir(), "flang-zamok-"))
 test("замок собирается и разворачивается в тот же разбор", () => {
   const текст = readFileSync(join(корень, "flang", "stdlib", "sets.flang"), "utf8")
   const дерево = parse(текст, "sets.flang")
-  const снято = снятьПозиции(дерево)
-  assert.equal(каноническийJSON(разборИзАдреса(адресМодуля(дерево))), каноническийJSON(снято))
+  /* Побайтово, а не «эквивалентно»: порядок ключей замок обязан сохранить —
+     печать в C несёт порядок полей записи, и отсортированный ключ сдвигал бы
+     напечатанный код. */
+  assert.equal(JSON.stringify(разборИзАдреса(адресМодуля(дерево))), JSON.stringify(безМест(дерево)))
 })
 
 test("в замке лежат сами зависимости, а не ссылки на них", async () => {
@@ -106,6 +107,25 @@ test("программа собирается из замка, когда исх
     const изЗамка = позвать(["check", join(где, "orders-api.flang")])
     /* Побайтово: замок обязан давать ТО ЖЕ дерево, а не похожее. */
     assert.equal(изЗамка, эталон)
+  } finally {
+    rmSync(где, { recursive: true, force: true })
+  }
+})
+
+test("печать программы из замка совпадает с печатью из исходников побайтово", () => {
+  const где = вовремя()
+  try {
+    const замок = позвать(["lock", ПРОГРАММА])
+    cpSync(ПРОГРАММА, join(где, "orders-api.flang"))
+    writeFileSync(join(где, "flang.lock"), замок, "utf8")
+    /* Улика снималась здесь, а не в `check`: на отсортированных ключах `check`
+       отвечал ТО ЖЕ, а печать в C расходилась таблицей имён поля записи.
+       Проверять замок одним `check` значит не проверять его. */
+    for (const цель of ["c", "js"]) {
+      const изИсходников = позвать(["emit", ПРОГРАММА, "--target", цель])
+      const изЗамка = позвать(["emit", join(где, "orders-api.flang"), "--target", цель])
+      assert.equal(изЗамка, изИсходников, `печать в ${цель} разошлась`)
+    }
   } finally {
     rmSync(где, { recursive: true, force: true })
   }

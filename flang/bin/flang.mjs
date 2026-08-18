@@ -1276,6 +1276,12 @@ function parseArgs(argv) {
       const base = Number(require_(argv[++index], "--index-base требует 0 или 1"))
       if (base !== 0 && base !== 1) throw usage("--index-base должен быть 0 или 1")
       options.indexBase = base
+      /* Ключ не «переигрывает базу при запуске», а ОБЪЯВЛЯЕТ её у программы:
+         дальше её читают проверка типов, интерпретатор и все восемь печатей —
+         одно поле, одно число. Пока в языке нет слова, которым автор написал
+         бы базу в самом файле, этот ключ и есть объявление; переходный уклад
+         назван в `flang/proof/SPEC.md`. */
+      options.объявленнаяБаза = base
     } else if (arg === "--max-depth") {
       const depth = Number(require_(argv[++index], "--max-depth требует число"))
       if (!Number.isInteger(depth) || depth <= 0) throw usage("--max-depth должен быть целым положительным числом")

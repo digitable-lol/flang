@@ -560,7 +560,9 @@ export function emitPython(program, options = {}) {
      — поэтому напечатанное не меняется ни на байт, и неподвижная точка цела. */
   program = defunctionalize(program)
   const prepared = prepare(program)
-  const base = options.indexBase === 0 ? 0 : 1
+  /* База номера едет НА ПРОГРАММЕ, а не в ключах: тем же полем считало
+     доказательство границ, и второе число здесь развело бы их молча. */
+  const base = (program?.базаНомера ?? options.indexBase) === 0 ? 0 : 1
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null

@@ -34,7 +34,7 @@ compared tree against tree, not described as equal.
 
 **Termination is proved at compile time.** In C, Python and JavaScript a function
 may loop forever and you find out in production. Here `total` is a promise the
-compiler answers for: **6126 functions out of 7997** carry it.
+compiler answers for: **6142 functions out of 8016** carry it.
 
 **A promise about the result is checked on all inputs, not on examples.** Tests
 cover the inputs you thought of. A postcondition accepted by the proof kernel
@@ -65,8 +65,8 @@ quietly: the page reddens with the tree.
 
 | | |
 |---|---:|
-| Functions in the corpus | 7997 |
-| Of them total (termination proved) | 6126 |
+| Functions in the corpus | 8016 |
+| Of them total (termination proved) | 6142 |
 | Behaviour claims stated | 153 |
 | Of them **proved by the kernel** — for all inputs | 132 |
 | Axioms in the kernel | **0** |

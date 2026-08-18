@@ -96,7 +96,14 @@ export function createRuntime(program, options = {}) {
     maxSteps: positiveLimit(options.maxSteps, DEFAULT_MAX_STEPS, "maxSteps"),
     maxDepth: positiveLimit(options.maxDepth, DEFAULT_MAX_DEPTH, "maxDepth"),
   }
-  const builtinOptions = { indexBase: options.indexBase === 0 ? 0 : 1 }
+  /* База номера — СВОЙСТВО ПРОГРАММЫ, и читается она с программы, а не с
+     ключа: доказательство границ (`src/types.mjs`, `вГраницах`) считало по
+     этому же полю, и разойдись они — сняли бы сторож, который был нужен. Ключ
+     запуска остаётся способом это поле ПОСТАВИТЬ (`bin/flang.mjs`), а не
+     способом переиграть его после проверки. */
+  const builtinOptions = {
+    indexBase: (program?.базаНомера ?? options.indexBase) === 0 ? 0 : 1,
+  }
   const runtime = { ...checked, limits, builtinOptions }
 
   const сПределами = (callOptions) =>

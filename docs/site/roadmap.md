@@ -34,11 +34,13 @@ export (`git archive` into an empty directory): one compiler invocation over fou
 `.c` files, not one warning under `-Werror -pedantic`, not one external
 dependency.
 
-**The evaluator is pulled into the binary.** `flang run` computes with it — no
-Node, no `cc`. The `repl` does **not** call it yet: it emits the session to C and
-builds it with the system `cc`; with no `cc` it does not switch off but checks
-parsing, types and termination. The difference is named because "there is a
-shell" and "there is an evaluator" are different promises.
+**The evaluator is pulled into the binary.** `flang run` and `flang test`
+compute with it — no Node, no `cc`. The binary also prints the `check --proof`
+ledger itself, and `emit --target c` too. The `repl` does **not** call the
+evaluator yet: it emits the session to C and builds it with the system `cc`;
+with no `cc` it does not switch off but checks parsing, types and termination.
+The difference is named because "there is a shell" and "there is an evaluator"
+are different promises.
 
 **An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
 
@@ -51,11 +53,13 @@ named one by one (`npm run surfaces:check`, `npm run glossary:check`).
 
 ## In progress
 
-**Checking arguments against declared types in the binary.** This is not
-"cannot do something" but **answers differently**, which is worse. `Факториал`
-is declared over `нат`; given −3 the binary prints `1` while the reference
-refuses: "аргумент «н»: -3 вне нат". Both were run. Until this is closed, check
-inputs you do not vouch for with the reference.
+**The input boundary of an emitted program.** The binary itself already checks
+arguments against declared types: `Факториал` is declared over `нат`, and given
+−3 it answers `FLANG_TYPE: аргумент «н»: -3 вне нат` with exit code 1, as the
+reference does. What stays empty is the boundary of a program emitted through
+`emit`: the table of declared types is built by the reference's type layer,
+which the binary does not have, and the binary warns about it as it emits.
+Until this is closed, the caller answers for an emitted program's input.
 
 **The English version of the site.** The site's own pages are translated; the
 guide, the measurement reports and the specifications are still Russian only.

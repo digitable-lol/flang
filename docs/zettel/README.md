@@ -102,6 +102,8 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
+- [Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом](a-sticky-bit-in-a-shared-tree-stops-git-merge.md)
 - [Объединение вариантов закрытой суммы — законное слияние, и оно обязано покраснеть у каждого, кто эту сумму разбирает](merging-two-branches-into-one-closed-sum.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)

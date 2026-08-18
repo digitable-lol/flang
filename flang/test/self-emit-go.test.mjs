@@ -33,7 +33,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
-import { checkTypes } from "../src/types.mjs"
+import { checkTypes, markProven } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -345,11 +345,27 @@ test("сторож меры: обе реализации понижения ст
   let сотметкой = 0
   for (const относительный of отмеченные) {
     const ast = await разобрать(относительный)
-    const помеченная = markMeasureGuards(ast)
+    /*
+     * ПРЕДОБРАБОТКА ЭТАЛОНА: markMeasureGuards, markProven — обе отметки переднего
+     * края (`flang/bin/flang.mjs`, `loadProgramFromSource`: `markProven(markMeasure(…))`).
+     * Эталон печатает ТОЛЬКО отмеченную программу: ни `emit`, ни `run`, ни `test`,
+     * ни `repl` непомеченной не видят, а печатник читает обе отметки — `доказана`
+     * и `числовая`. Снимается ими не разница между реализациями, а разница между
+     * тестом и работой: без них сверка сличала бы близнеца с печатью, которой у
+     * эталона не бывает, и молчала бы обо всех 2634 местах, где эталон печатает
+     * выражение вместо вызова помощника, а близнец — вызов.
+     */
+    /* Отметки кладутся ПО ОЧЕРЕДИ, а не одним выражением, потому что «есть ли у
+       программы числовая мера» спрашивается у ПЕРВОЙ: `markMeasureGuards`
+       возвращает ТОТ ЖЕ объект там, где мерить нечего, а `markProven` меняет
+       почти всякую программу — арифметика есть везде. Слей их в одно, и признак
+       «мера есть» стал бы признаком «арифметика есть», а отбор — холостым. */
+    const сМерой = markMeasureGuards(ast)
+    const помеченная = markProven(сМерой)
     /* Программа без числовой меры отметки не получает — это не беда сверки, а
        свойство корпуса; считаем такие отдельно и требуем, чтобы отмеченная была
        хоть одна, иначе тест зеленел бы вхолостую. */
-    if (помеченная !== ast && /FLANG_MEASURE/u.test(emitGo(помеченная).files.map((файл) => файл.content).join(""))) {
+    if (сМерой !== ast && /FLANG_MEASURE/u.test(emitGo(помеченная).files.map((файл) => файл.content).join(""))) {
       сотметкой += 1
     }
     случаи.push([относительный, помеченная])

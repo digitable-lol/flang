@@ -58,10 +58,10 @@ quietly. There are three decision rules, and each one fits in a single reading.
 
 ## Where we actually are
 
-The numbers come from a run (`npm run proof:ledger`), not an estimate, and a
-guard (`npm run counts:check`) compares every one of them against that run — the
-same guard that checks the prose of the whole tree. They cannot go stale
-quietly: the page reddens with the tree.
+The numbers are printed by the proof ledger (`flang check --proof`) over the
+whole corpus, not estimated, and a number guard compares every one of them
+against that run — the same guard that checks the prose of the whole tree. They
+cannot go stale quietly: the page reddens with the tree.
 
 | | |
 |---|---:|

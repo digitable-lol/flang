@@ -84,7 +84,7 @@ node flang/bin/flang.mjs run privet.flang --function «Удвоить» --args '
 node flang/bin/flang.mjs emit privet.flang --target c --out ./вывод
 ```
 
-Целей семь: `c`, `go`, `rust`, `python`, `java`, `csharp`, `elixir`.
+Целей восемь: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`, `rust`.
 Напечатанный код обязан выдавать **те же значения и те же коды ошибок**, что
 интерпретатор — это проверяется побайтово на всём корпусе, а не декларируется.
 

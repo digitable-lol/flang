@@ -414,6 +414,17 @@ function $post(value, property, name) {
   return value
 }
 
+/* Отдельный помощник, а не `$post` со вторым текстом: слова отказа дословно те
+   же, что у интерпретатора (`checkPreconditions` в src/interpret.mjs), и одно
+   сообщение на две разные вещи расходилось бы молча. Печатается он ТОЛЬКО в
+   программу, у которой есть `требует`, — как и всё остальное здесь. */
+function $pre(value, property, name) {
+  if (typeof value !== "boolean") {
+    $fail("FLANG_TYPE", `предусловие «${property}» функции «${name}» должно давать признак, получено ${$typeName(value)}`)
+  }
+  return value
+}
+
 function $nums(op, left, right) {
   if (typeof left !== "number" || typeof right !== "number") {
     $fail("FLANG_TYPE", `операция «${op}» допустима только для чисел, получено ${$typeName(left)} и ${$typeName(right)}`)
@@ -1104,6 +1115,7 @@ runtimeEntry("$variantField", ["$fail"], fromSource($variantField))
 runtimeEntry("$requireList", ["$fail", "$isList", "$typeName"], fromSource($requireList))
 runtimeEntry("$keep", ["$fail", "$typeName"], fromSource($keep))
 runtimeEntry("$post", ["$fail", "$typeName"], fromSource($post))
+runtimeEntry("$pre", ["$fail", "$typeName"], fromSource($pre))
 runtimeEntry("$nums", ["$fail", "$typeName"], fromSource($nums))
 runtimeEntry("$ord", ["$fail"], fromSource($ord))
 runtimeEntry("$add", ["$nums"], fromSource($add))
@@ -1400,6 +1412,12 @@ function prepare(program) {
       returns: fn.returns,
       body: fn.body,
       postconditions: normalizePostconditions(fn),
+      /* Предусловия здесь ТОЛЬКО ради границы напечатанной программы (гейт
+         `renderPreconditionGate` ниже, зовёт его прогонщик). В тело функции они
+         не печатаются ни одной строкой: внутри программы предусловие снял
+         вызывающий на проверке (`FLANG_PRECONDITION_CALL`), и проверять его во
+         время работы значило бы платить временем за доказанное. */
+      preconditions: normalizePreconditions(fn),
       span: fn.span,
     })
   }
@@ -1446,6 +1464,32 @@ function normalizePostconditions(fn) {
       expr: item.expr,
       bind: typeof item.bind === "string" ? item.bind : "результат",
       code: typeof item.code === "string" ? item.code : "FLANG_PROPERTY",
+      message: typeof item.message === "string" ? item.message : null,
+      span: item.span,
+    }
+  })
+}
+
+/**
+ * Предусловия функции — тем же разбором, что у интерпретатора
+ * (`normalizePreconditions` в src/interpret.mjs), и с теми же умолчаниями:
+ * код FLANG_PRECONDITION, текст «не выполнено требование …». `bind` у
+ * предусловия нет и быть не может: оно говорит о том, что было ДО вызова, а
+ * результата до вызова не существует.
+ */
+function normalizePreconditions(fn) {
+  const list = fn.preconditions ?? []
+  if (!Array.isArray(list)) {
+    throw flangError("FLANG_PARSE", `поле «preconditions» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return list.map((item) => {
+    if (item === null || typeof item !== "object" || item.expr === undefined) {
+      throw flangError("FLANG_PARSE", `предусловие функции «${fn.name}» должно содержать «expr»`, fn.span)
+    }
+    return {
+      name: item.name ?? "",
+      expr: item.expr,
+      code: typeof item.code === "string" ? item.code : "FLANG_PRECONDITION",
       message: typeof item.message === "string" ? item.message : null,
       span: item.span,
     }
@@ -1628,6 +1672,14 @@ export function emitJs(program, options = {}) {
   for (const name of prepared.variants.keys()) variantIdents.set(name, variantNamer(name))
   const functionIdents = new Map()
   for (const name of prepared.functions.keys()) functionIdents.set(name, valueNamer(name))
+  /* Гейт предусловий: отдельная функция модуля на каждую функцию с `требует`.
+     Имена берутся ПОСЛЕ всех имён функций, поэтому у программы без `требует`
+     раздача имён не сдвигается ни на шаг и напечатанное не меняется ни на байт
+     — та же дисциплина, что у `decreases` и `postconditions` в разборщике. */
+  const gateIdents = new Map()
+  for (const [name, fn] of prepared.functions) {
+    if (fn.preconditions.length > 0) gateIdents.set(name, valueNamer(`граница ${name}`))
+  }
 
   const topLevel = new Map()
   const claim = (ident, source) => {
@@ -1643,6 +1695,7 @@ export function emitJs(program, options = {}) {
   for (const [name, ident] of factoryIdents) claim(ident, `фабрика записи «${name}»`)
   for (const [name, ident] of variantIdents) claim(ident, `конструктор варианта «${name}»`)
   for (const [name, ident] of functionIdents) claim(ident, `функция «${name}»`)
+  for (const [name, ident] of gateIdents) claim(ident, `граница входа функции «${name}»`)
   /* Прогонщик конкурентности живёт в той же области видимости модуля, поэтому
      его имена занимаются так же, как имена функций: программа с функцией
      «conc run» обязана получить внятный отказ, а не молча потерять прогонщик. */
@@ -1684,6 +1737,7 @@ export function emitJs(program, options = {}) {
     sumIdents,
     variantIdents,
     functionIdents,
+    gateIdents,
     stepIdents,
     tailEdges,
     cyclic,
@@ -1695,7 +1749,14 @@ export function emitJs(program, options = {}) {
   const sections = []
   for (const [name, type] of prepared.records) sections.push(renderRecord(name, type, shared))
   for (const sum of prepared.sums) sections.push(renderSum(sum, shared))
-  for (const fn of prepared.functions.values()) sections.push(renderFunction(fn, shared))
+  for (const fn of prepared.functions.values()) {
+    sections.push(renderFunction(fn, shared))
+    /* Гейт печатается вместе с прогонщиком и отменяется вместе с ним
+       (`cli: false`): звать его некому, кроме двери, а дверь — это прогонщик. */
+    if (options.cli !== false && fn.preconditions.length > 0) {
+      sections.push(renderPreconditionGate(fn, shared))
+    }
+  }
 
   if (concurrent) {
     /* Планировщик отказывает через `$fail`, как и всё остальное в модуле: код и
@@ -1801,6 +1862,12 @@ function renderProgramTable(shared, stackMb, входные) {
   const rows = [...shared.prepared.functions.keys()].map(
     (name) => `    [${JSON.stringify(name)}, ${shared.functionIdents.get(name)}],`,
   )
+  /* Гейты предусловий — только у программы, где есть хоть одно `требует`.
+     Программа без него не получает ни поля, ни строки: печать обязана остаться
+     побайтово прежней. */
+  const gates = [...shared.gateIdents].map(
+    ([name, ident]) => `    [${JSON.stringify(name)}, ${ident}],`,
+  )
   return [
     "/**",
     " * Связь этого модуля с прогонщиком (`flang_cli.js`): имена flang → функции,",
@@ -1815,6 +1882,17 @@ function renderProgramTable(shared, stackMb, входные) {
     "  functions: new Map([",
     ...rows,
     "  ]),",
+    ...(gates.length === 0
+      ? []
+      : [
+        "  /* Предусловия (`требует`) — той же дверью, что и типы: прогонщик зовёт",
+        "     гейт ДО вызова, потому что значение приехало снаружи и вызывающего,",
+        "     который снял бы требование на проверке, у него нет. В тело функции",
+        "     предусловие не печатается: внутри программы оно доказано. */",
+        "  pre: new Map([",
+        ...gates,
+        "  ]),",
+      ]),
     "  variant: (name, fields) => new $FlangVariant(name, fields),",
     "  isVariant: $isVariant,",
     `  stackMb: ${stackMb},`,
@@ -2085,6 +2163,130 @@ function renderSum(sum, shared) {
     )
   }
   return blocks.join("\n\n")
+}
+
+/* ── граница входа: предусловия ── */
+
+/**
+ * ГДЕ ПРОВЕРЯЕТСЯ ДОГОВОР, И ПОЧЕМУ НЕ В ТЕЛЕ ФУНКЦИИ.
+ *
+ * В flang предусловие снимает ВЫЗЫВАЮЩИЙ: каждое место вызова обязано доказать
+ * `требует` вызываемой, иначе программа отвергается кодом
+ * FLANG_PRECONDITION_CALL и не доезжает до печати вовсе. Значит внутри
+ * программы предусловие уже ИСТИННО — не «проверено», а известно, — и печатать
+ * его проверку в тело значило бы платить временем каждого вызова (в том числе
+ * каждого витка рекурсии) за то, что доказано статически. Ровно этого
+ * доказуемый язык позволяет НЕ делать; так же устроено в Dafny.
+ *
+ * Недоказанное входит в программу ровно в одном месте — на ГРАНИЦЕ, где
+ * значение приезжает от хозяина: `--args`, факты, отклик хозяина, строка
+ * прогонщика. Там вызывающего нет, доказывать нечего, и вход проверяется
+ * вычислением. У интерпретатора эта дверь — `callFunction` (src/interpret.mjs),
+ * и проверка стоит ровно в ней, а `applyFunction` её не знает. У напечатанной
+ * программы дверь — прогонщик: он разбирает JSON, сверяет объявленные типы
+ * (`checkEntry`) и зовёт функцию по имени. До этой правки на ней стояла
+ * половина двери: типы сверялись, договор — нет.
+ *
+ * Улика снята прогоном, а не чтением: `flang/proof/examples/precondition.flang`,
+ * «Удвоить» от −5. Интерпретатор — FLANG_PRECONDITION «не выполнено требование
+ * «вход неотрицателен»»; напечатанный JS — FLANG_PROPERTY «нарушено свойство
+ * «удвоенное неотрицательно»», то есть отказ ПОСТусловия вместо отказа входа, и
+ * только потому, что постусловие у этой функции есть. У функции без
+ * `обеспечивает` не было бы и его: напечатанная программа посчитала бы ответ на
+ * входе, которого договор не допускает.
+ *
+ * ФОРМА — ОТДЕЛЬНАЯ ФУНКЦИЯ МОДУЛЯ, а не строки в теле. Тело остаётся байт в
+ * байт прежним: ни разворот хвостового самовызова в цикл, ни батут, ни счётчик
+ * глубины не сдвигаются. Гейт возвращает `null`, когда все требования
+ * выполнены, и первое нарушенное — объектом отказа: код и текст дословно те же,
+ * что у интерпретатора.
+ */
+function renderPreconditionGate(fn, shared) {
+  const ident = shared.gateIdents.get(fn.name)
+  const ctx = {
+    shared,
+    fn,
+    scope: new Map(),
+    taken: new Set([
+      ...shared.functionIdents.values(),
+      ...shared.gateIdents.values(),
+      ...shared.variantIdents.values(),
+      ...shared.factoryIdents.values(),
+    ]),
+    counter: 0,
+    params: [],
+    /* Гейт не тело: ни цикла, ни батута, ни счётчика глубины у него нет — он
+       считает замкнутое выражение при известных аргументах и возвращает. */
+    selfTail: false,
+    members: null,
+    leave: (code) => code,
+    use(name) {
+      shared.used.add(name)
+      return name
+    },
+    temp() {
+      ctx.counter += 1
+      return `$t${ctx.counter}`
+    },
+    fresh(name) {
+      const wanted = safeIdent(camel(name))
+      let candidate = wanted
+      let suffix = 1
+      while (ctx.taken.has(candidate) || JS_RESERVED.includes(candidate)) {
+        suffix += 1
+        candidate = `${wanted}$${suffix}`
+      }
+      ctx.taken.add(candidate)
+      return candidate
+    },
+    bind(name, identifier) {
+      const previous = ctx.scope.has(name) ? ctx.scope.get(name) : null
+      ctx.scope.set(name, identifier)
+      return previous
+    },
+    unbind(name, previous) {
+      if (previous === null) ctx.scope.delete(name)
+      else ctx.scope.set(name, previous)
+    },
+  }
+
+  for (const param of fn.params) {
+    const paramIdent = ctx.fresh(param.name)
+    ctx.params.push(paramIdent)
+    ctx.bind(param.name, paramIdent)
+  }
+
+  const body = []
+  for (const property of fn.preconditions) {
+    const check = emitValue(property.expr, ctx, body, "  ")
+    ctx.use("$pre")
+    const message = property.message ?? `не выполнено требование «${property.name}» функции «${fn.name}»`
+    const span = property.span === undefined || property.span === null
+      ? "null"
+      : renderLiteral(property.span)
+    body.push(`  // требует «${property.name}»`)
+    body.push(
+      `  if (!$pre(${check.code}, ${JSON.stringify(property.name)}, ${JSON.stringify(fn.name)})) {`,
+      `    return { code: ${JSON.stringify(property.code)}, message: ${JSON.stringify(message)}, span: ${span} }`,
+      "  }",
+    )
+  }
+  body.push("  return null")
+
+  const doc = [
+    "/**",
+    ` * Граница входа функции flang «${fn.name}»: её предусловия (\`требует\`).`,
+    " *",
+    " * Зовёт это прогонщик, и только он: значения пришли снаружи, вызывающего у",
+    " * них нет, и доказывать нечего. Внутри программы предусловие снято на",
+    " * проверке каждым местом вызова, поэтому в тело функции не печатается ни",
+    " * одной строки — платить временем за доказанное незачем.",
+    " *",
+    " * @returns {null | {code: string, message: string, span: object|null}} `null` —",
+    " * все требования выполнены; иначе первое нарушенное.",
+    " */",
+  ]
+  return [doc.join("\n"), `export function ${ident}(${ctx.params.join(", ")}) {`, ...body, "}"].join("\n")
 }
 
 /* ── функции ── */

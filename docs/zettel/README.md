@@ -99,6 +99,7 @@
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
 - [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
+- [Из двух половин доставки язык доказывает только «не больше одного»](at-most-once-is-the-only-provable-half.md)
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Замер скорости проверяет себя контрольной суммой](checksum-inside-the-benchmark.md)
 - [Переименование файла не краснеет, а тихо выключает проверку чисел в прозе](renaming-a-file-silently-disables-the-guard.md)

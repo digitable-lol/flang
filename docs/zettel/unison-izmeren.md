@@ -3,6 +3,12 @@
 Проверено прогоном, а не пересказано: `ucm release/1.3.0`, сценарии через
 `ucm transcript -S`.
 
+**Лозунг дословно**, чтобы спорить с ним, а не с пересказом: «in Unison,
+dependency conflicts and the diamond dependency problem are just not a thing»
+([The Big Idea](https://www.unison-lang.org/docs/the-big-idea/), сверено
+2026-08-18). Там же названа причина: «Dependency conflicts are, fundamentally,
+due to different definitions "competing" for the same names».
+
 **Главное открытие.** Лозунг «конфликтов версий не бывает, потому что это разные
 функции» на практике работает не полностью. Две версии действительно живут рядом
 — но **при смешивании получается ошибка типов**. По существу это поведение cargo

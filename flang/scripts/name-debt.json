@@ -30,8 +30,7 @@
       "эл"
     ],
     "flang/examples/leetcode/014-longest-common-prefix.flang": [
-      "акк",
-      "эл"
+      "акк"
     ],
     "flang/examples/leetcode/015-3sum.flang": [
       "акк",
@@ -382,14 +381,8 @@
       "х2",
       "эл"
     ],
-    "flang/examples/rosetta/primes-by-trial-division-english.flang": [
-      "acc",
-      "elem"
-    ],
     "flang/examples/rosetta/primes-by-trial-division.flang": [
-      "акк",
-      "н",
-      "эл"
+      "н"
     ],
     "flang/examples/rosetta/quicksort-english.flang": [
       "acc",
@@ -431,25 +424,37 @@
       "elem"
     ],
     "flang/self/bootstrap/compiler.flang": [
-      "д"
+      "акк",
+      "в",
+      "д",
+      "м",
+      "п",
+      "с",
+      "т",
+      "у"
+    ],
+    "flang/self/bounded.flang": [
+      "н",
+      "по"
     ],
     "flang/self/carriers.flang": [
       "акк"
     ],
-    "flang/self/commutative.flang": [
-      "а",
-      "б"
+    "flang/self/cli.flang": [
+      "акк",
+      "з",
+      "к",
+      "р",
+      "с",
+      "ц"
+    ],
+    "flang/self/conc.flang": [
+      "с"
     ],
     "flang/self/defunc.flang": [
       "акк",
       "п",
       "т"
-    ],
-    "flang/self/distributive.flang": [
-      "а",
-      "б",
-      "в",
-      "по"
     ],
     "flang/self/emit-c.flang": [
       "акк",
@@ -516,6 +521,19 @@
       "то",
       "эл"
     ],
+    "flang/self/emit-js.flang": [
+      "акк",
+      "в",
+      "до",
+      "имя акк",
+      "имя эл",
+      "п",
+      "по",
+      "свежий акк",
+      "свежий эл",
+      "строка акк",
+      "то"
+    ],
     "flang/self/emit-python.flang": [
       "акк",
       "в",
@@ -545,8 +563,10 @@
       "акк",
       "ок"
     ],
-    "flang/self/idempotent.flang": [
-      "х"
+    "flang/self/failures.flang": [
+      "акк",
+      "н",
+      "с"
     ],
     "flang/self/interpret.flang": [
       "а",
@@ -572,6 +592,7 @@
       "д",
       "и",
       "к",
+      "п",
       "р",
       "с",
       "т",
@@ -592,10 +613,6 @@
       "а",
       "б",
       "в"
-    ],
-    "flang/self/monotone.flang": [
-      "а",
-      "б"
     ],
     "flang/self/obligations.flang": [
       "а",
@@ -652,13 +669,6 @@
       "т3",
       "то",
       "у"
-    ],
-    "flang/self/partialorder.flang": [
-      "а",
-      "б",
-      "з",
-      "у",
-      "х"
     ],
     "flang/self/proof-initial.flang": [
       "акк",
@@ -834,12 +844,21 @@
       "ч",
       "э"
     ],
+    "flang/self/setoid.flang": [
+      "а",
+      "б",
+      "в",
+      "г",
+      "да",
+      "з",
+      "к",
+      "от",
+      "у",
+      "ф",
+      "х"
+    ],
     "flang/self/sets.flang": [
       "акк"
-    ],
-    "flang/self/svoystva.flang": [
-      "а",
-      "б"
     ],
     "flang/self/totality.flang": [
       "акк"
@@ -910,8 +929,7 @@
       "эл"
     ],
     "flang/stdlib/strings.flang": [
-      "акк",
-      "эл"
+      "акк"
     ],
     "flang/stdlib/strlists.flang": [
       "акк",

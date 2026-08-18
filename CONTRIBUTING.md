@@ -119,7 +119,7 @@ What this means when you write:
   `flang/scripts/name-guard.mjs`. The rules, what is deliberately *not* a rule,
   and how the threshold is stated for each of the four surfaces are in
   [Names in code](docs/guide/naming.md) · [ru](docs/guide/naming.ru.md).
-  The corpus does not satisfy them yet — 2852 sites in 142 files of 186 — so the
+  The corpus does not satisfy them yet — 2987 sites in 141 files of 190 — so the
   debt is recorded by name in `flang/scripts/name-debt.json` and compared as a
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.

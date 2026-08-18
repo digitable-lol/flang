@@ -22,9 +22,9 @@ not tell a name from a word in a comment, and in this tree the comments are long
 
 | | Rule | Where it applies | Violations in the corpus |
 |---|---|---|---|
-| Р1 | no one-letter name | local names | **1181** |
-| Р2 | no name shorter than three letters (Han: two characters) | local names | **436** beyond Р1 |
-| Р3 | no clipped word from a closed list (`акк`, `эл`, `acc`, `elem`, `знач`, `ctx`, `tmp`, …) | local names | **1150** |
+| Р1 | no one-letter name | local names | **1233** |
+| Р2 | no name shorter than three letters (Han: two characters) | local names | **444** beyond Р1 |
+| Р3 | no clipped word from a closed list (`акк`, `эл`, `acc`, `elem`, `знач`, `ctx`, `tmp`, …) | local names | **1218** |
 | Р4 | Cyrillic and Latin never mix inside one word | all names | **228** |
 | Р5 | no name longer than 48 letters | all names but example names | **0** |
 | Р6 | no example name longer than 96 letters | example names | **0** |
@@ -49,8 +49,8 @@ mathematical notation, and it stands 23 times in the corpus.
 argument with it. "Is it on the list" is settled exactly. The list is kept by hand in `ОБРУБКИ`, and
 that is what makes it honest: you can see what is forbidden, and see that little is.
 
-Six entries are measured in the corpus: `акк` (939 sites), `эл` (143), `acc` (36), `elem` (24),
-`знач` (5), `ctx` (3). The rest are the same clipping, not yet met.
+Six entries are measured in the corpus: `акк` (1011 sites), `эл` (140), `acc` (35), `elem` (23),
+`знач` (6), `ctx` (3). The rest are the same clipping, not yet met.
 
 ### Why Р4 is about lookalikes, not about mixed scripts
 
@@ -96,7 +96,7 @@ switched off. Lowercase `n`, `f`, `h`, `t` are not covered by the clause.
 ## Debt: the rule lands today, the corpus is fixed separately
 
 The corpus does not satisfy the rules today, and the price is stated as a number rather than as
-"here and there": **2852 sites in 142 files out of 186**. Pardoning them silently would be a lie;
+"here and there": **2987 sites in 141 files out of 190**. Pardoning them silently would be a lie;
 going red on all of them at once would block the build until a week of renaming is done.
 
 So the debt is written down **by name** in `flang/scripts/name-debt.json`, and the comparison is a
@@ -104,13 +104,13 @@ So the debt is written down **by name** in `flang/scripts/name-debt.json`, and t
 is reported as done. A count would have matched while one violation was traded for another.
 
 ```
-Сторож имён: 186 файлов, 2852 мест долга в 142 файлах.
-  Р1-одна-буква                1181
-  Р2-короче-трёх               436
-  Р3-обрубок                   1150
+Сторож имён: 190 файлов, 2987 мест долга в 141 файлах.
+  Р1-одна-буква                1233
+  Р2-короче-трёх               444
+  Р3-обрубок                   1218
   Р4-две-письменности          228
   помиловано (правило неверно) 17
-  не разобрано функций         2 (записано 2)
+  не разобрано функций         0 (записано 0)
 ```
 
 The debt key is "file + name", with no occurrence count. That is deliberately weaker than
@@ -137,12 +137,16 @@ same name cannot be both a debt and an exception: that is checked.
 
 ### A file that fails to parse must not carry its checks away silently
 
-`flang/self/interpret.flang` is not accepted whole by the parser — a known hole in the tree, named in
-`flang/test/proof.test.mjs`. The file would have carried away 279 functions, and the guard would have
-stayed green precisely because there was nothing left to check. So the guard has a fallback: the file
-is cut at function declarations, parsed piece by piece, and 277 functions out of 279 are checked. The
-two that are not are named in `ПОТЕРИ` and recounted on every run; if that number grows, the guard
-goes red.
+The guard was written when `flang/self/interpret.flang` was not accepted whole by the parser. The
+file would have carried away 279 functions, and the guard would have stayed green precisely because
+there was nothing left to check. So the guard has a fallback: the file is cut at function
+declarations and parsed piece by piece — at the time that saved 277 functions out of 279.
+
+The hole was closed on trunk (`57a193bb`, `7f95df5d`), and `ПОТЕРИ` is now empty: all 280 functions
+parse whole. The fallback stays — it is the insurance against the next such hole — but the list is
+compared **in both directions**: a new loss goes red, and so does the tombstone of a removed one. An
+entry that outlived its reason lies exactly as much as a missing one; `ОБЪЯВЛЕНО_НЕ_СДЕЛАНО` in
+`flang/scripts/code-guard.mjs` is kept by the same rule.
 
 ## Advice
 
@@ -157,15 +161,24 @@ the change.
   documentation: examples are printed into the tests of all eight targets.
 - **Do not transliterate.** `spisok` instead of `список` is the worse of both: neither a Russian word
   nor an English one. This is deliberately not a rule. The check "a Latin word that is not the
-  transliteration of a Russian one" was written and measured, and on healthy code it produced **233
+  transliteration of a Russian one" was written and measured, and on healthy code it produced **298
   false positives** — `list`, `to`, `element`, `start`, `by`, `on` in English files coincide with the
   transliteration of Russian words character for character. A guard that goes red on `element` gets
-  switched off the same day. Transliteration in corpus names today is **zero**, verified by reading
-  all 68 Latin words that occur in names outside English, Esperanto and Chinese files: every one is a
-  proper noun (`Java`, `Rust`, `Go`, `C`, `Elixir`, `Python`, `Makefile`, `Cargo`, `flang`), an
-  acronym (`JSON`, `AST`, `TS`, `JS`, `IEEE`, `ASCII`, `BMP`, `XML`), an English technical word
-  (`bind`, `unit`, `join`, `span`, `null`, `mod`) or example data (`kitten`, `sitting`, `horse`,
-  `MCMXCIX`). Not one is a Russian word in Latin letters.
+  switched off the same day.
+
+  Careless transliteration in corpus names is **zero**, verified by reading all 151 Latin words that
+  occur in names outside English, Esperanto and Chinese files: nearly all are proper nouns (`Java`,
+  `Rust`, `Go`, `C`, `Elixir`, `Python`, `Makefile`, `Cargo`, `flang`), acronyms (`JSON`, `AST`,
+  `TS`, `JS`, `IEEE`, `ASCII`, `BMP`, `XML`), English technical words (`bind`, `unit`, `join`,
+  `span`, `null`, `mod`, `trampoline`, `wireFields`) or example data (`kitten`, `sitting`, `horse`,
+  `MCMXCIX`).
+
+  Transliteration appears in names in exactly one place, and it is **not carelessness**: 31 functions
+  in `flang/self/emit-js.flang` are named «Текст b_dlina», «Текст b_soedinit», «Текст b_kod_simvola»
+  — after the identifier each one prints into JavaScript. That identifier is transliterated by
+  `flang/src/naming.mjs`, because JavaScript will not take Cyrillic in helper names, and the printing
+  function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except
+  here it creates no lookalikes, and so it stands.
 - **File names carry no transliteration at all.** A Latin extension means an English-worded name:
   `lists.flang`, `higher-order.flang`, `name-guard.mjs`. This one is not guarded by a run yet — under
   `docs/` it is broken many times over, and the price of fixing that has not been measured.

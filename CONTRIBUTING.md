@@ -166,7 +166,7 @@ npm run names:check    # naming rules, against the parse tree of the whole corpu
 What this means when you write:
 
 - **Numbers.** Put the path in backticks next to the count — either order works:
-  `` `flang/src/parser.mjs`, 4590 lines `` or `` 4590 lines in `flang/src/parser.mjs` ``.
+  `` `flang/src/parser.mjs`, 4695 lines `` or `` 4695 lines in `flang/src/parser.mjs` ``.
   It will be remeasured against the tree. If you mean an approximation, write
   `~3900` — the guard leaves those alone, on purpose. Both languages are read:
   `строк` and `lines`, `в` and `in`.

@@ -99,7 +99,8 @@
     "site:check": "node docs/site/build.mjs --check",
     "glossary": "node docs/site/glossary.mjs",
     "glossary:check": "node docs/site/glossary.mjs --check",
-    "surfaces:run": "node docs/site/surfaces-run.mjs"
+    "surfaces:run": "node docs/site/surfaces-run.mjs",
+    "surfaces:check": "node docs/site/surfaces-run.mjs --check"
   },
   "engines": {
     "node": ">=20"

@@ -34,7 +34,7 @@ compared tree against tree, not described as equal.
 
 **Termination is proved at compile time.** In C, Python and JavaScript a function
 may loop forever and you find out in production. Here `total` is a promise the
-compiler answers for: **6547 functions out of 8490** carry it.
+compiler answers for: **6650 functions out of 8595** carry it.
 
 **A promise about the result is checked on all inputs, not on examples.** Tests
 cover the inputs you thought of. A postcondition accepted by the proof kernel
@@ -58,17 +58,17 @@ quietly. There are three decision rules, and each one fits in a single reading.
 
 ## Where we actually are
 
-The numbers come from a run (`npm run proof:ledger`), not an estimate, and a
-guard (`npm run counts:check`) compares every one of them against that run — the
-same guard that checks the prose of the whole tree. They cannot go stale
-quietly: the page reddens with the tree.
+The numbers are printed by the proof ledger (`flang check --proof`) over the
+whole corpus, not estimated, and a number guard compares every one of them
+against that run — the same guard that checks the prose of the whole tree. They
+cannot go stale quietly: the page reddens with the tree.
 
 | | |
 |---|---:|
-| Functions in the corpus | 8490 |
-| Of them total (termination proved) | 6547 |
-| Behaviour claims stated | 182 |
-| Of them **proved by the kernel** — for all inputs | 152 |
+| Functions in the corpus | 8595 |
+| Of them total (termination proved) | 6650 |
+| Behaviour claims stated | 297 |
+| Of them **proved by the kernel** — for all inputs | 168 |
 | Axioms in the kernel | **0** |
 | Claims refuted | **0** |
 
@@ -82,7 +82,7 @@ And, honestly, what is not there:
   [the speed report](../benchmark-speed.html) — in Russian). That is **not the
   price of provability**: where a proof leaves no guard in the running program it
   costs **1–9 %, indistinguishable from zero** against the spread between runs.
-  A guard is left behind rarely: **70 functions out of 6547 total ones carry
+  A guard is left behind rarely: **70 functions out of 6650 total ones carry
   it — 1.1 %** (6 by a constant step, 64 by a declared measure, 104 sites; the
   count is printed by `flang check --proof`). There it really is expensive —
   **three times the cost of the function itself**. The gap is unfinished work, not the

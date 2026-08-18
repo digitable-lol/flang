@@ -8,7 +8,7 @@
  * (`src/link.mjs`), те же настройки печати (строка 335 того теста). Иначе числа
  * в статье и числа в проверке разошлись бы, и обе стороны были бы бесполезны.
  *
- * Запуск: node docs/ifl/facts.mjs   (из корня репозитория, после `npm run build`)
+ * Запуск: node docs/ifl/facts.mjs   (из корня репозитория; ставить и собирать нечего)
  */
 import { readFileSync } from "node:fs"
 import { join } from "node:path"

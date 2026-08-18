@@ -64,14 +64,38 @@ editors/          the .flang language server and a github-linguist submission st
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          printing the library index, the changelog and the release C
 benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
-fspec/            flang specs and their guard: a contradiction between two specs is caught by a run
 web/              flang in a tab: building a program to WebAssembly and running it in a browser
 .claude/          developer assistant skills: knowledge-base rules
+fspec/            the executable specification of the FTS surface and its guard
 docs/             documentation; README and SPEC files stay next to the code they describe
 .github/          CI and the npm release
 ```
 
 <!-- КАРТА-КОНЕЦ -->
+
+<!-- КОРЕНЬ-НАЧАЛО. The root files are checked against the tree the same way the directories
+     above are: flang/test/readme-layout.test.mjs fails if a file appears in the root that both
+     editions of the README are silent about, or if a named root file is gone. -->
+
+**The loose files in the root, and what keeps each one there.**
+
+| file | what keeps it in the root specifically |
+| --- | --- |
+| `README.md` · `README.ru.md` | the repository front page. GitHub would take it from `.github/` or `docs/` too, but the root copy is the one a reader opening the repository lands on |
+| `LICENSE` · `LICENSE-RU.md` | the BSD-2-Clause licence and its Russian edition. GitHub's licence detection reads **the root only**: move `LICENSE` and the repository becomes "no licence". The translation carries no legal force, but it is the one people read |
+| `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms; it looks in the root, in `.github/` and in `docs/` |
+| `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
+| `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
+| `package.json` · `package-lock.json` | the manifest of the **second mould** — the one that embeds the language into somebody else's Node project. npm reads them only from the root of the package it publishes |
+| `.gitignore` · `.gitattributes` | git reads them from the root |
+
+**Nothing in that set builds the binary.** `make -C bootstrap` builds the compiler with a single
+`cc` — no Node, no npm, not one line from here. `package.json` does not describe how the language
+is built; it describes the package the language is embedded with. It declares zero dependencies
+(`npm ls --all` prints `(empty)`), and `npm install` in a clone is needed for exactly one thing:
+to put `flang` into `node_modules/.bin`.
+
+<!-- КОРЕНЬ-КОНЕЦ -->
 
 **How to tell what checks a file without opening it.** There is one run: `npm test` executes
 `flang/test/*.test.mjs`, and everything is checked there — from the lexer to all eight backends,
@@ -79,7 +103,7 @@ including the `examples/library-api/` project (wired in through an adapter file)
 cannot immediately assign to a check is filed in the wrong place.
 
 Laying out **your own** project is a separate document:
-[Раскладка проекта](docs/guide/project-layout.ru.md).
+[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
@@ -97,40 +121,27 @@ Or straight from the release archive, with nothing but `cc` and `make`:
 ```bash
 tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 man page
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli --help          # what it does: check, test, run, emit, repl, --version
+./flang_cli --help          # what it does: check, repl, --version
 ./flang_cli check m.flang   # parse, types, totality — in words, not JSON
 ./flang_cli                 # with no arguments: JSON in, JSON out, one request per line
 ```
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
-tap serves it. The asdf (and mise) plugin installs the same archive from the same releases; its
-source is [`packaging/asdf/`](packaging/asdf/README.md), and because asdf clones a plugin as a
-whole repository, it is published as
-[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) — which is the copy asdf
-clones. Its three scripts have been run by hand, with Node absent from `PATH`: `list-all` offers only
-the releases that actually carry an archive — 0.4.8 is skipped, a real release with no attachment
-— `download` fetches and unpacks, and `install` builds from the C99 and yields a working
-`flang 0.5.0`. Installing *through* `asdf` itself is unverified — `asdf` was not present
-in the environment where that was run. Neither packaging needs anything but a C compiler. This is
-how self-hosting languages ship — Go carried generated C for years, Nim still does.
+tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
+its source is [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole
+repository, and that repository is not published yet, so for now the plugin is source rather than
+an install path. Neither needs anything but a C compiler. This is how self-hosting languages
+ship — Go carried generated C for years, Nim still does.
 
-**Be clear about what that binary is.** It answers to five commands — `check`, `test`, `run`,
-`emit`, `repl` — and the evaluator is now in it: [`flang/self/interpret.flang`](flang/self) is
-linked into the closure, so `flang run` and `flang test` compute with it, needing neither Node
-nor `cc`. Call arguments are checked against their declared types *before* evaluation, by the
-same code the reference uses. `flang check file.flang` runs parse, linking, types and totality
-and prints its findings in words — with a code and a place, not JSON; `flang check … --proof`
-adds the ledger of what carries each function's promise. `flang emit … --target c` prints the
-program to C99 without Node.
-
-Two limits are worth naming, because the binary names them itself rather than reporting a green
-result it did not earn. `flang repl` does not call the evaluator yet: it prints the session to C,
-builds it with the system `cc` against the runtime beside it, and runs that — and without a `cc`
-the shell does not switch off, it keeps checking parse, types and totality and says so once. And
-the `--proof` ledger covers only what this binary computed itself: laws checked on a grid
-(monoid, monad, isomorphism, category, sets, connection) are not computed here at all, and a
-program declaring one gets a refusal naming the obstacle rather than a green ledger with an empty
-section. `flang --help` lists the commands and `man flang` describes them.
+**Be clear about what that binary is.** It is the five layers of [`flang/self/`](flang/self):
+lexer, parser, types, totality, printing to C. There is no evaluator among them — which is why
+`flang repl` there evaluates the only honest way this binary can: it prints the session to C,
+builds it with the system `cc` against the runtime installed beside it, and runs that. Without a
+`cc` the shell does not switch off — it keeps checking parse, types and totality, and says so
+once. Checking a file needs nothing else: `flang check file.flang` runs parse, linking, types and
+totality and prints its findings in words — with a code and a place, not JSON. `flang --help`
+lists the commands and `man flang` describes them. Running a program or its examples
+non-interactively still needs the full toolchain below.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
 the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
@@ -146,11 +157,11 @@ editor language server. Inside a clone they are `node flang/bin/flang.mjs` and
 published release.
 
 **In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
-same compiler printed to C99, 7 files and 12,841,265 bytes:
+same compiler printed to C99, 7 files and 5,823,370 bytes:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap            # only cc and make; about 1.5 minutes of CPU
+make -C bootstrap            # only cc and make; about 4 minutes of CPU
 bootstrap/flang_cli --version
 ```
 
@@ -300,7 +311,7 @@ and a declared `свойство` becomes a postcondition of the emitted code: a
 service and a C binary refuse the same input with the same words.
 
 The worked example, from source to emitted postcondition — [Why this
-exists](docs/guide/single-source.md).
+exists](docs/rukovodstvo/single-source.md).
 
 ---
 
@@ -379,7 +390,7 @@ is in. A `тотальная` function has its termination proven, and only such
 into fact-checking, which is not allowed to hang.
 
 Which kinds of descent are accepted, what a declared measure is, and why this is not pedantry —
-[What `тотальная` buys you](docs/guide/totality.md).
+[What `тотальная` buys you](docs/rukovodstvo/totality.md).
 
 ---
 
@@ -393,7 +404,7 @@ its own reference.
 
 Readiness is not "it built" but the classical fixed point, and it **has converged**. How it
 works, what checks it and where the release comes from — [Two implementations, and the fixed
-point](docs/guide/two-implementations.md).
+point](docs/rukovodstvo/two-implementations.md).
 
 ---
 
@@ -420,20 +431,22 @@ domain is two FTS models, parsing and data handling are five flang modules, and 
 stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
 have an example, it moves into a model or a module, where the example is executable* — and the
 naming, layout, module-splitting and CI conventions derived from that project are collected in
-[Раскладка проекта](docs/guide/project-layout.ru.md).
+[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
 
 ---
 
 ## Developing the language
 
 The JavaScript reference implementation stays forever: the fixed point is checked against it,
-and removing it would make that check impossible. Work happens in a clone, and the clone needs
-no install step: the package has no dependencies and nothing to build, so `npm test` runs
-straight after `git clone`.
+and removing it would make that check impossible. Work happens in a clone, and **there is nothing
+to build**: the package declares zero dependencies (`npm ls --all` prints `(empty)`), and the
+language reads its sources instead of compiling them. A fresh clone answers
+`node flang/bin/flang.mjs check flang/stdlib/lists.flang` straight away; `npm install` only puts
+`flang` into `node_modules/.bin`.
 
 What to run when you change the compiler, how the bootstrap point is guarded, and the full list
 of commands the language answers to — [Developing the
-language](docs/guide/developing.md).
+language](docs/rukovodstvo/developing.md).
 
 **The language no longer reads `.fts` models.** It did until 16 August 2026 — through a bridge to
 the older project's TypeScript core; the project left the repository, and the bridge lost its
@@ -469,7 +482,7 @@ taken out — 357 files, 180 thousand lines — and lives at
 under the `fts-pered-udaleniem` tag.
 
 Further reading — in Russian (the language surface is Russian, and so is most of the prose):
-[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/guide/project-layout.ru.md) ·
+[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md) ·
 [self-hosting contract](flang/self/SPEC.md) · [category contract](flang/cat/SPEC.md) ·
 [concurrency contract](flang/conc/SPEC.md).
@@ -483,7 +496,7 @@ in whichever language they are written, because GitHub shows them as a directory
 ## Known limits
 
 Stated plainly, because a project with unmarked boundaries cannot be relied on. The full list
-is [Known limits](docs/guide/limits.md): what *proven* means against *checked*, what the
+is [Known limits](docs/rukovodstvo/limits.md): what *proven* means against *checked*, what the
 language does not have, where the categorical surface stops, and what is done in concurrency.
 The same boundary is drawn in [`docs/overview.ru.md`](docs/overview.ru.md); the complete lists
 are in [`flang/SPEC.md`](flang/SPEC.md) §10 and in the "Долги" sections of the contracts.

@@ -34329,6 +34329,36 @@ fl_status kompilyator_flang_uchest_posylku_bez_sluchaya(fl_ctx *ctx, fl_value po
 fl_status kompilyator_flang_svedenie_posylki_yadrom(fl_ctx *ctx, fl_value posylka, fl_value obstanovka, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Дописать о вычислении».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Сведение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_dopisat_o_vychislenii(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать о свободных».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param svobodnye — «свободные»: список: строка
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_dopisat_o_svobodnyh(fl_ctx *ctx, fl_value itog, fl_value svobodnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Причина со свободными».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prichina — «причина»: строка
+ * @param svobodnye — «свободные»: список: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_prichina_so_svobodnymi(fl_ctx *ctx, fl_value prichina, fl_value svobodnye, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Учесть сведённую ядром».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -38298,9 +38328,20 @@ fl_status kompilyator_flang_nasledie_svyazannoe(fl_ctx *ctx, fl_value programma,
  * @param nasledie — «наследие»: список: «Значение»
  * @param kategornye — «категорные»: список: «Категорное»
  * @param vhod — «вход»: «Может быть узел»
+ * @param teoremy — «теоремы»: список: «Значение»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value kategornye, fl_value vhod, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_sobrat_programmu(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value kategornye, fl_value vhod, fl_value teoremy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле теорем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param teoremy — «теоремы»: список: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status kompilyator_flang_pole_teorem(fl_ctx *ctx, fl_value polya, fl_value teoremy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Поля родов».
@@ -38410,6 +38451,75 @@ fl_status kompilyator_flang_imena_pervogo_prohoda(fl_ctx *ctx, fl_value shag, fl
  * @return значение: «Программа с бедами»
  */
 fl_status kompilyator_flang_sobrat_itog(fl_ctx *ctx, fl_value shag, fl_value razbory, fl_value vhod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Теоремы программы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param vh — «вх»: «Может быть узел»
+ * @param razbory — «разборы»: список: «Разобранное»
+ * @param vhod — «вход»: строка
+ * @param funkcii — «функции»: список: «Значение»
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_teoremy_programmy(fl_ctx *ctx, fl_value vh, fl_value razbory, fl_value vhod, fl_value funkcii, fl_value otkuda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Донести из разбора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: список: «Значение»
+ * @param r — «р»: «Разобранное»
+ * @param vhod — «вход»: строка
+ * @param funkcii — «функции»: список: «Значение»
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_donesti_iz_razbora(fl_ctx *ctx, fl_value akk, fl_value r, fl_value vhod, fl_value funkcii, fl_value otkuda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Донести теорему».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Значение»
+ * @param t — «т»: «Значение»
+ * @param ottuda — «оттуда»: список: строка
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_donesti_teoremu(fl_ctx *ctx, fl_value akk, fl_value t, fl_value ottuda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена теорем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param teoremy — «теоремы»: список: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_teorem(fl_ctx *ctx, fl_value teoremy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Постусловия из файла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Значение»
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @param fayl — «файл»: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_postusloviya_iz_fayla(fl_ctx *ctx, fl_value funkcii, fl_value otkuda, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Постусловия своей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param f — «ф»: «Значение»
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @param fayl — «файл»: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_postusloviya_svoey(fl_ctx *ctx, fl_value akk, fl_value f, fl_value otkuda, fl_value fayl, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Вход не найден».

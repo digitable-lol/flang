@@ -1,0 +1,5 @@
+POST /ссылки HTTP/1.1
+Host: сокращатель.рф
+Content-Length: 23
+
+адрес=https://пример.рф

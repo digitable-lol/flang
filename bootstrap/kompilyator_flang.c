@@ -2016,7 +2016,7 @@ static const fl_value kompilyator_flang_text_2003 = { FL_STRING, { .string = { "
 static const fl_value kompilyator_flang_text_2004 = { FL_STRING, { .string = { "sys", 3, 3 } } };
 static const fl_value kompilyator_flang_text_2005 = { FL_STRING, { .string = { "termios", 7, 7 } } };
 static const fl_value kompilyator_flang_text_2006 = { FL_STRING, { .string = { "unistd", 6, 6 } } };
-static const fl_value kompilyator_flang_text_2007 = { FL_STRING, { .string = { "flang_", 6, 6 } } };
+static const fl_value kompilyator_flang_text_2007 = { FL_STRING, { .string = { "_flang", 6, 6 } } };
 static const fl_value kompilyator_flang_text_2008 = { FL_STRING, { .string = { "зарезервировано в целевом языке: ", 61, 33 } } };
 static const fl_value kompilyator_flang_text_2009 = { FL_STRING, { .string = { "имена «", 13, 7 } } };
 static const fl_value kompilyator_flang_text_2010 = { FL_STRING, { .string = { "» и «", 8, 5 } } };
@@ -73668,7 +73668,7 @@ fl_status kompilyator_flang_oboyti_zanyatoe_celyu_c(fl_ctx *ctx, fl_value imya, 
   FL_TRY(fl_cond(ctx, fl_t14908, &fl_t14909, error));
   if (fl_t14909) {
     fl_value fl_t14910 = fl_nothing();
-    FL_TRY(fl_concat(ctx, kompilyator_flang_text_2007, imya, &fl_t14910, error));
+    FL_TRY(fl_concat(ctx, imya, kompilyator_flang_text_2007, &fl_t14910, error));
     *result = fl_t14910;
     return FL_OK;
   } else {

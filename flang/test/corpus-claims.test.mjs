@@ -1300,6 +1300,13 @@ const ОХВАТ = [
   "flang/examples/rosetta/palindrome.flang «Позиция подстроки»",
   "flang/examples/rosetta/roman-numerals-english.flang «Value of a symbol»",
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
+  /* Служба сокращателя (`flang/examples/web/shortener/`). Каталог НЕ закрытый:
+     он не входит в побайтовую неподвижную точку `self-parser.test.mjs`, и
+     раскладка по закрытым каталогам ниже от этих четырёх строк не меняется. */
+  "flang/examples/web/shortener/service.flang «Глубина пути»",
+  "flang/examples/web/shortener/service.flang «Предел тела запроса»",
+  "flang/examples/web/shortener/service.flang «Предел тела ответа»",
+  "flang/examples/web/shortener/store.flang «Сколько ссылок»",
   /* Прибавилась ОДНА функция, и прибавилась она вместе с формой тела: у
      «Сколько всего» тело — свёртка, и до принципа по свёртке ядро не брало у
      неё ничего. Утверждение при ней написано там же, где стоит функция. */

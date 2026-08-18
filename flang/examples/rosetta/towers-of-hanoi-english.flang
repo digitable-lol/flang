@@ -95,9 +95,16 @@ total function «Move tower»
 // The number of moves without building the moves themselves: 2·k + 1 along the
 // tail. Proved as well, and it is a handy check — it must agree with the length
 // of the list of moves.
+// The claim on this function is neither a comment nor a test. The core proves it
+// by induction over the STRUCTURE of the list: an empty tower gives 0, and a turn
+// gives «2 times the moves of the tail plus 1», and about the tail the induction
+// hypothesis already says what is needed. The move count of the Towers of Hanoi
+// is 2^n-1; what is proved here is the part of that the core can state today —
+// that it is non-negative for ANY tower, not for the three that were written down.
 total function «Number of moves»
   accepts disks: list of number
   returns number
+  ensures «a move count is never negative» result is at least 0
   example «An empty tower»
     given disks equals empty list
     expected 0
@@ -143,3 +150,19 @@ function «Towers of Hanoi»
     given disks equals 3
     expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
   «Move tower» of («Tower of» of disks) and "A" and "C" and "B"
+
+// ─────────────────────────────────────────────────────────────────────────
+// The proof. The induction here runs over the STRUCTURE of the list, not over a
+// number, which is why no `decreases` is needed: the tail of a list is smaller
+// than the list by construction, so there is nothing to prove about descent.
+// ─────────────────────────────────────────────────────────────────────────
+//
+// There is no bottom case in the theorem: on an empty tower the body is 0, and
+// the goal «0 is at least 0» the core reduces by itself. One case is left: the turn.
+theorem «a move count is never negative»
+  given disks: list of number
+  claim result is at least 0
+  induction on disks
+    case head and tail
+      then by hypothesis
+  therefore proved

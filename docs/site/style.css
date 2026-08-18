@@ -14,6 +14,11 @@
   --accent-bg: #E8EDF7;
   --code-bg:   #EFF1F5;
   --quote-bar: #C3CBDA;
+  --on-accent: #FFFFFF;
+  --good:      #2E7D5B;
+  --good-bg:   #E6F2EC;
+  --bad:       #A6472F;
+  --bad-bg:    #F7EAE6;
 
   --serif: ui-serif, Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "DejaVu Sans", sans-serif;
@@ -37,6 +42,11 @@
     --accent-bg: #1B2231;
     --code-bg:   #1C212B;
     --quote-bar: #303849;
+    --on-accent: #10141B;
+    --good:      #6FC79B;
+    --good-bg:   #17271F;
+    --bad:       #E08A6E;
+    --bad-bg:    #2A1B16;
   }
 }
 
@@ -53,6 +63,11 @@
   --accent-bg: #1B2231;
   --code-bg:   #1C212B;
   --quote-bar: #303849;
+  --on-accent: #10141B;
+  --good:      #6FC79B;
+  --good-bg:   #17271F;
+  --bad:       #E08A6E;
+  --bad-bg:    #2A1B16;
 }
 
 * { box-sizing: border-box; }
@@ -224,6 +239,40 @@ body {
 .content tbody tr:last-child td { border-bottom: none; }
 .content .ta-right { text-align: right; font-variant-numeric: tabular-nums; }
 .content .ta-center { text-align: center; }
+
+/* ── Схемы ─────────────────────────────────────────────────────────────
+   SVG рисуется сборкой (docs/site/diagram.mjs) из блока ```mermaid. Цвета
+   берутся из тех же переменных темы, что и остальная страница, поэтому
+   схема сама переключается вместе со светлой и тёмной. */
+
+.shema { margin: 0 0 1.6rem; padding: 0; overflow-x: auto; }
+.shema svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.shema figcaption {
+  margin-top: .5rem; text-align: center;
+  font-size: .82rem; color: var(--faint); line-height: 1.4;
+}
+
+.shema .node { fill: var(--surface); stroke: var(--rule); stroke-width: 1.25; }
+.shema .node.glavnoe { fill: var(--accent); stroke: var(--accent); }
+.shema .node.vyvod { fill: var(--good-bg); stroke: var(--good); }
+.shema .node.otkaz { fill: var(--bad-bg); stroke: var(--bad); }
+
+.shema .node-text {
+  fill: var(--ink); font-family: var(--sans); font-size: 13px;
+  text-anchor: middle; font-weight: 500;
+}
+.shema .node-text.on-accent { fill: var(--on-accent); }
+
+.shema .edge { fill: none; stroke: var(--faint); stroke-width: 1.4; }
+.shema .edge.dashed { stroke-dasharray: 5 4; }
+.shema .edge.thick { stroke: var(--accent); stroke-width: 2.4; }
+.shema .arrowhead { fill: var(--faint); }
+
+.shema .edge-label-bg { fill: var(--ground); }
+.shema .edge-label {
+  fill: var(--muted); font-family: var(--sans); font-size: 11.5px;
+  text-anchor: middle;
+}
 
 /* ── Оглавление справа ─────────────────────────────────────────────── */
 

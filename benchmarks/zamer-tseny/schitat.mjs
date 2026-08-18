@@ -5,7 +5,7 @@
    а написано оно было. */
 import { readFileSync, readdirSync } from "node:fs"
 const КОРЕНЬ = "/home/a/projects/flang/.claude/worktrees/agent-a4daa59c6b3b8bbfc"
-const dir = КОРЕНЬ + "/docs/zamer2"
+const dir = КОРЕНЬ + "/docs/benchmark2"
 
 const ПРАВКИ = {
   "07": { тесты: +8, док: +11, почему: "8 строк двух сравнений — подпорка примерам (литерала функции у языка нет); 11 строк отвергнутой теоремы лежат закомментированными" },

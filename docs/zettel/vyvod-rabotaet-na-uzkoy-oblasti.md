@@ -45,13 +45,13 @@ Ethernet, ARP, IPv4, TCP, UDP и имён DNS, вставленный в `mirage
 Это объявительное описание **соответствия данных** — то же самое, что у
 Narcissus описание формата. Сегодня компилятор по нему **проверяет**: словарь
 состоит из существующих слов (`compat.mjs`, 760 строк,
-[[slovar-mezhdu-spekami-byl-nemym]]) и квадрат перевода сходится с
+[[the-dictionary-between-specs-was-mute]]) и квадрат перевода сходится с
 контрпримером — `FLANG_FUNCTOR_SQUARE`
-([[svyaz-moduley-i-perevod-dannyh]]). Чего он не делает — **не выводит саму
+([[module-links-need-a-named-data-translation]]). Чего он не делает — **не выводит саму
 функцию перевода**. А это ровно та задача, на которой вывод из спецификации
 показал себя в проде: узкая, замкнутая, без рекурсии и ветвлений, с готовой
 теоремой правильности (тот самый квадрат) и готовым проверяющим (ядро с нулём
-аксиом, [[nol-aksiom]]).
+аксиом, [[zero-axioms]]).
 
 То есть замысел владельца «выводить по теоркату, а не хранить» **выполним ровно
 на одном участке**: перевод данных между двумя спеками. Не библиотека, не модуль
@@ -59,7 +59,7 @@ Narcissus описание формата. Сегодня компилятор �
 
 **Чем подтверждено.** Разбор внешних источников 2026-08-18, ссылки построчно
 выше. Состояние словаря и квадрата в дереве — прогоны, описанные в
-[[slovar-mezhdu-spekami-byl-nemym]] и [[svyaz-moduley-i-perevod-dannyh]]
+[[the-dictionary-between-specs-was-mute]] и [[module-links-need-a-named-data-translation]]
 (9 из 9 и три снятые порчи соответственно).
 
 **Чем ограничено.**
@@ -77,6 +77,6 @@ Narcissus описание формата. Сегодня компилятор �
   тот же предел, что и у всей категорной проверки.
 
 Связано: [[sintez-upiraetsya-v-75-uzlov]], [[hrapovik-vmesto-vyvoda]],
-[[svyaz-moduley-i-perevod-dannyh]], [[slovar-mezhdu-spekami-byl-nemym]],
-[[zakony-kak-ukazatel]], [[teorkat-perenosit-pravdu]],
+[[module-links-need-a-named-data-translation]], [[the-dictionary-between-specs-was-mute]],
+[[zakony-kak-ukazatel]], [[category-theory-transports-truth]],
 [[spetsifikatsiya-ne-opredelyaet-funktsiyu]]

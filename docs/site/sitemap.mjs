@@ -1,0 +1,228 @@
+// Карта сайта: какие страницы есть, из чего собираются, как называются.
+//
+// Один список — один источник правды. Добавить страницу значит дописать строку
+// сюда; забыть вписать в оглавление невозможно, потому что оглавление строится
+// отсюда же.
+//
+// Поле `из` — путь от корня репозитория. Если файла нет, сборка отказывает с
+// именем — молча пропускать страницу нельзя, иначе сайт худеет незаметно.
+
+export const РАЗДЕЛЫ = [
+  {
+    имя: 'Начало',
+    страницы: [
+      { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.md' },
+      { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.md' },
+    ],
+  },
+  {
+    // Раздел стоит вторым намеренно: заходящий второй раз ищет не «что это
+    // такое», а «что приехало с прошлого раза», и искать это в конце списка
+    // ему пришлось бы дольше, чем читать.
+    имя: 'Что изменилось',
+    страницы: [
+      { адрес: 'changelog.html', имя: 'Что изменилось', из: 'docs/site/changelog.md' },
+      { адрес: 'journal.html', имя: 'Журнал изменений', из: 'CHANGELOG.md' },
+    ],
+  },
+  {
+    имя: 'Язык',
+    страницы: [
+      { адрес: 'spec.html', имя: 'Спецификация языка', из: 'flang/SPEC.md' },
+      /* Две страницы ниже завела ветка work/docs-surfaces-and-glossary уже
+         ПОСЛЕ того, как эта ветка отошла от ствола, и в её карте их нет.
+         Перенесены сюда руками: karta.mjs, где они стояли, переименован в
+         этот файл, и молчаливая потеря двух страниц была бы ценой
+         переименования. */
+      { адрес: 'surfaces.html', имя: 'Четыре поверхности записи', из: 'docs/surfaces.md' },
+      // Печатается из `SURFACE_TABLE`: `node docs/site/glossary.mjs`. Руками не
+      // править — затрёт сборка; сторож свежести `npm run glossary:check`.
+      { адрес: 'glossary.html', имя: 'Словарь языка', из: 'docs/glossary.md' },
+    ],
+  },
+  {
+    имя: 'Доказательства',
+    страницы: [
+      { адрес: 'proofs.html', имя: 'Зачем и как', из: 'docs/site/proofs.md' },
+      { адрес: 'spec-proof.html', имя: 'Спецификация ядра', из: 'flang/proof/SPEC.md' },
+      { адрес: 'overview.html', имя: 'Что доказано, а что проверено', из: 'docs/overview.ru.md' },
+    ],
+  },
+  {
+    имя: 'Почему так',
+    страницы: [
+      { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/rukovodstvo/single-source.ru.md' },
+      { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/rukovodstvo/totality.ru.md' },
+      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/rukovodstvo/two-implementations.ru.md' },
+      { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/rukovodstvo/developing.ru.md' },
+      { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/rukovodstvo/limits.ru.md' },
+    ],
+  },
+  {
+    имя: 'Устройство',
+    страницы: [
+      { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/rukovodstvo/project-layout.ru.md' },
+    ],
+  },
+  {
+    имя: 'Категорная поверхность',
+    страницы: [
+      { адрес: 'spec-cat.html', имя: 'Категории и функторы', из: 'flang/cat/SPEC.md' },
+      { адрес: 'spec-conc.html', имя: 'Процессы и отказоустойчивость', из: 'flang/conc/SPEC.md' },
+    ],
+  },
+  {
+    имя: 'Замеры',
+    страницы: [
+      { адрес: 'benchmark-speed.html', имя: 'Скорость против Python и Node', из: 'docs/benchmark-speed.md' },
+      { адрес: 'benchmark-proof-cost.html', имя: 'Цена доказательства против тестов', из: 'docs/benchmark-proof-cost.md' },
+      { адрес: 'benchmark-processes.html', имя: 'Сколько процессов тянет планировщик', из: 'docs/scheduler-benchmark.md' },
+      { адрес: 'memory.html', имя: 'Память и области', из: 'docs/memory-and-regions.md' },
+      { адрес: 'modules.html', имя: 'Модульность и пакеты', из: 'docs/modularity-and-packages.md' },
+      { адрес: 'wasm.html', имя: 'WebAssembly через C', из: 'docs/wasm-via-c.md' },
+    ],
+  },
+];
+
+/** Каталог базы знаний. Страницы оттуда собираются сами, по файлам. */
+export const БАЗА_ЗНАНИЙ = {
+  каталог: 'docs/zettel',
+  указатель: 'docs/zettel/README.md',
+  адресУказателя: 'knowledge.html',
+  имяРаздела: 'База знаний',
+  // Имя страницы заметки: knowledge-<слаг>.html. Так же их называет markdown.mjs
+  // при разборе ссылок [[слаг]] — если менять, менять в обоих местах.
+  адресЗаметки: (слаг) => `knowledge-${слаг}.html`,
+};
+
+/**
+ * Переезды: старый адрес → новый.
+ *
+ * 17 августа 2026 страницы переименованы из транслита в английские слова
+ * (`nachalo.html` → `getting-started.html`). Внешняя ссылка на старый адрес
+ * ломается навсегда, и починить её мы не можем — она в чужой закладке, в чужом
+ * письме, в чужом посте. Поэтому по каждому старому адресу лежит страница в
+ * одну строку, уводящая на новый. Стоит она байты, а теряется без неё читатель.
+ *
+ * Список закрыт: сюда попадают только адреса, которые уже были опубликованы.
+ * Новая страница переезда не заводит — ей неоткуда переезжать.
+ */
+export const ПЕРЕЕЗДЫ = {
+  'nachalo.html': 'getting-started.html',
+  'izmeneniya.html': 'changelog.html',
+  'zhurnal.html': 'journal.html',
+  'dokazatelstva.html': 'proofs.html',
+  'obzor.html': 'overview.html',
+  'odin-istochnik.html': 'single-source.html',
+  'totalnost.html': 'totality.html',
+  'dve-realizacii.html': 'two-implementations.html',
+  'razvitie.html': 'developing.html',
+  'ogranicheniya.html': 'limits.html',
+  'raskladka.html': 'project-layout.html',
+  'zamer-skorosti.html': 'benchmark-speed.html',
+  'zamer-tseny.html': 'benchmark-proof-cost.html',
+  'zamer-processov.html': 'benchmark-processes.html',
+  'pamyat.html': 'memory.html',
+  'moduli.html': 'modules.html',
+  'znanie.html': 'knowledge.html',
+};
+
+/** Живые примеры кода на главной. Берутся из дерева, а не переписываются. */
+export const ПРИМЕРЫ_НА_ГЛАВНОЙ = [
+  {
+    файл: 'flang/examples/rosetta/factorial.flang',
+    подпись: 'Факториал с доказанной завершаемостью',
+  },
+];
+
+/**
+ * Переезды страниц базы знаний: старый адрес `znanie-<транслит>.html` → новый
+ * `knowledge-<английские слова>.html`. Заполняется вместе с переименованием
+ * заметок; пустой список законен — значит, ничего ещё не переезжало.
+ */
+export const ПЕРЕЕЗДЫ_ЗАМЕТОК = {
+  "znanie-adresatsiya-po-soderzhimomu.html": "knowledge-content-addressing.html",
+  "znanie-arena-ne-otdayot.html": "knowledge-arena-never-releases.html",
+  "znanie-beam-ne-obkhodit-os.html": "knowledge-beam-does-not-bypass-the-os.html",
+  "znanie-beskonechnost-zakonna-bez-vychitaniya.html": "knowledge-infinity-is-legal-without-subtraction.html",
+  "znanie-bliznec-otstayot-ot-uehavshego-etalona.html": "knowledge-twin-lags-behind-the-reference.html",
+  "znanie-bytovaya-sverka.html": "knowledge-byte-for-byte-comparison.html",
+  "znanie-chetyre-kuska-javascript.html": "knowledge-four-pieces-of-javascript.html",
+  "znanie-chisla-kak-kategoriya.html": "knowledge-numbers-as-a-category.html",
+  "znanie-chislo-bez-nazvannogo-izmeritelya.html": "knowledge-a-number-without-a-named-measure.html",
+  "znanie-chistota-ne-znachit-bez-pamyati.html": "knowledge-purity-is-not-zero-allocation.html",
+  "znanie-chto-daet-bolshe-vsego-za-menshuyu-rabotu.html": "knowledge-biggest-win-for-least-work.html",
+  "znanie-chto-otlozheno.html": "knowledge-what-is-deferred.html",
+  "znanie-chto-vhodit-v-hash.html": "knowledge-what-goes-into-the-hash.html",
+  "znanie-dlya-raket-pamyat-zapreshchena.html": "knowledge-safety-standards-ban-dynamic-memory.html",
+  "znanie-dokazano-ne-znachit-pravilno.html": "knowledge-proven-is-not-correct.html",
+  "znanie-dolg-na-neslitoy-vetke.html": "knowledge-debt-closed-on-an-unmerged-branch.html",
+  "znanie-dva-proekta-svyazany-generatorami.html": "knowledge-two-projects-tied-by-generators.html",
+  "znanie-dva-yadra-ne-slivayutsya-tekstom.html": "knowledge-two-cores-do-not-merge-as-text.html",
+  "znanie-flag-lto-uskoryaet-i-sborku.html": "knowledge-lto-speeds-up-the-build-too.html",
+  "znanie-formy-tela-uzkoe-mesto-pereehalo.html": "knowledge-bottleneck-moved-to-claim-shape.html",
+  "znanie-hash-vnutri-imena-snaruzhi.html": "knowledge-hash-inside-names-outside.html",
+  "znanie-igry-i-video-ne-nash-sluchay.html": "knowledge-games-and-video-are-not-our-case.html",
+  "znanie-imena-a-ne-hashi.html": "knowledge-names-not-hashes.html",
+  "znanie-induktsii-net-u-vstroennykh-tipov.html": "knowledge-no-induction-for-builtin-types.html",
+  "znanie-invariant-processa-eto-postuslovie-obrabotchika.html": "knowledge-process-invariant-is-a-handler-postcondition.html",
+  "znanie-izyatie.html": "knowledge-a-removal-must-turn-a-test-red.html",
+  "znanie-komanda-otvechaet-provereno-ne-proveriv.html": "knowledge-checked-without-checking.html",
+  "znanie-kontrolnaya-summa-v-zamere.html": "knowledge-checksum-inside-the-benchmark.html",
+  "znanie-levaya-svyortka-ne-daet-induktsii-po-spisku.html": "knowledge-left-fold-gives-no-list-induction.html",
+  "znanie-medlennee-python-v-1-4.html": "knowledge-slower-than-python-by-1-4.html",
+  "znanie-minus-nol-klass.html": "knowledge-minus-zero-is-a-class.html",
+  "znanie-nan-dostizhim.html": "knowledge-nan-is-reachable.html",
+  "znanie-net-porodit.html": "knowledge-no-spawn-in-two-targets.html",
+  "znanie-net-storozhevoy-stranitsy-v-wasm.html": "knowledge-no-guard-page-in-wasm.html",
+  "znanie-nevyskazyvaemoe-dorozhe.html": "knowledge-unstatable-costs-more-than-unprovable.html",
+  "znanie-ne-vyvod-regionov.html": "knowledge-region-inference-misses-the-point.html",
+  "znanie-nol-aksiom.html": "knowledge-zero-axioms.html",
+  "znanie-otritsatelnyy-rezultat-tsenen.html": "knowledge-a-measured-zero-is-valuable.html",
+  "znanie-pamyat-na-kategoriyu-eto-regiony.html": "knowledge-memory-per-category-is-regions.html",
+  "znanie-peredacha-sostoyaniya.html": "knowledge-handoff-goes-in-a-file.html",
+  "znanie-perenos-fayla-tiho-vyklyuchaet-storozha.html": "knowledge-renaming-a-file-silently-disables-the-guard.html",
+  "znanie-pervyy-zakon-krasneyushchiy-na-chestnoy-programme.html": "knowledge-natural-transformation-catches-what-nothing-else-does.html",
+  "znanie-pisat-prostym-yazykom.html": "knowledge-write-in-plain-language.html",
+  "znanie-planirovshchik-desyatki-tysyach.html": "knowledge-scheduler-holds-a-million-processes.html",
+  "znanie-plavayushchaya-tochka.html": "knowledge-floating-point-bits-are-exact.html",
+  "znanie-poisk-ne-imeet-prava-verit.html": "knowledge-proof-search-must-trust-nothing.html",
+  "znanie-pokoy-ne-otlichaetsya-ot-tupika.html": "knowledge-quiescence-hides-deadlock.html",
+  "znanie-pole-otmyvalo-znachenie.html": "knowledge-a-record-field-laundered-a-value.html",
+  "znanie-postuslovie-obrabotchika-mimo-zamknutogo-mnozhestva.html": "knowledge-handler-postcondition-escapes-the-closed-set.html",
+  "znanie-pribor-vral-a-ne-predmet.html": "knowledge-the-instrument-lied-not-the-subject.html",
+  "znanie-proverki-perestayushchie-sravnivat.html": "knowledge-checks-that-stopped-comparing.html",
+  "znanie-razbor-gugla.html": "knowledge-what-the-popular-stories-get-wrong.html",
+  "znanie-resheniya-vladeltsa.html": "knowledge-owner-decisions.html",
+  "znanie-sila-coq-v-lemmakh.html": "knowledge-coq-strength-is-in-its-lemmas.html",
+  "znanie-slovar-mezhdu-spekami-byl-nemym.html": "knowledge-the-dictionary-between-specs-was-mute.html",
+  "znanie-snyataya-proverka-tipa-eto-ne-otkaz.html": "knowledge-a-dropped-type-check-gives-a-wrong-answer.html",
+  "znanie-spisok-rukami-perezhivaet-derevo.html": "knowledge-a-hand-written-list-outlives-the-tree.html",
+  "znanie-ssylka-lomaetsya-pri-kopirovanii.html": "knowledge-relative-links-break-on-copy.html",
+  "znanie-sverka-ne-vidit-tozhdestva-obektov.html": "knowledge-byte-comparison-misses-object-identity.html",
+  "znanie-svoy-generator-mashinnogo-koda.html": "knowledge-our-own-machine-code-generator.html",
+  "znanie-svyaz-moduley-i-perevod-dannyh.html": "knowledge-module-links-need-a-named-data-translation.html",
+  "znanie-tavtologiya-zakryvaetsya-darom.html": "knowledge-tautologies-close-for-free.html",
+  "znanie-teorkat-perenosit-pravdu.html": "knowledge-category-theory-transports-truth.html",
+  "znanie-tikhie-konflikty-sliyaniya.html": "knowledge-silent-merge-conflicts.html",
+  "znanie-tip-uzla-otdayotsya-otmetkoy.html": "knowledge-type-inference-answers-with-a-node-mark.html",
+  "znanie-tochno-v-kakoy-sisteme.html": "knowledge-exact-in-which-base.html",
+  "znanie-tochnye-drobi-besplatny.html": "knowledge-exact-decimals-are-free.html",
+  "znanie-tri-tipa-chisel.html": "knowledge-three-number-types.html",
+  "znanie-tsel-yazyka.html": "knowledge-goal-of-the-language.html",
+  "znanie-tsena-dokazatelstva-0-iz-20.html": "knowledge-proof-cost-0-of-20.html",
+  "znanie-tsena-dokazuemosti-2-5-protsenta.html": "knowledge-provability-costs-2-5-percent.html",
+  "znanie-u-double-net-zakonov.html": "knowledge-double-has-no-laws.html",
+  "znanie-unison-izmeren.html": "knowledge-unison-measured.html",
+  "znanie-uslovie-revolyutsii.html": "knowledge-condition-for-the-revolution.html",
+  "znanie-usloviya-esli-dali-nol.html": "knowledge-reading-if-conditions-closed-zero-goals.html",
+  "znanie-uzkoe-mesto-ne-v-avtomatike.html": "knowledge-the-bottleneck-is-rule-strength.html",
+  "znanie-uzkoe-mesto-pereehalo-na-formu-tela.html": "knowledge-bottleneck-moved-to-body-shape.html",
+  "znanie-vtoruyu-realizatsiyu-vozmestit-nechem.html": "knowledge-the-second-implementation-cannot-be-replaced.html",
+  "znanie-wasm-cherez-c-besplatno.html": "knowledge-wasm-via-c-is-free.html",
+  "znanie-yadro-dokazalo-lozh.html": "knowledge-the-core-proved-a-falsehood.html",
+  "znanie-yadro-prinimaet-lozh-klass.html": "knowledge-the-core-accepts-falsehood-a-class.html",
+  "znanie-z3-orakul-a-ne-sudya.html": "knowledge-z3-as-oracle-not-judge.html",
+  "znanie-zamknutuyu-tsel-nado-schitat.html": "knowledge-closed-goals-must-be-computed.html",
+  "znanie-zamorozhennyy-etalon.html": "knowledge-a-frozen-reference-changes-the-check.html",
+};

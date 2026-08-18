@@ -34,7 +34,7 @@ ZlibDecode.decompressSingle (ZlibEncode.compress data level) maxOutputSize = .ok
 Разница практическая, а не словесная. При выводе спека обязана определять
 программу — а она не определяет ([[spetsifikatsiya-ne-opredelyaet-funktsiyu]]).
 При храповике спека обязана лишь **отсекать порчу**, и этого достаточно: неверный
-вариант не пройдёт ядро. Ядро flang с нулём аксиом ([[nol-aksiom]]) — ровно такой
+вариант не пройдёт ядро. Ядро flang с нулём аксиом ([[zero-axioms]]) — ровно такой
 храповик, и он у нас уже есть.
 
 **Цена храповика видна из тех же чисел: доказательство втрое длиннее кода**
@@ -49,7 +49,7 @@ verified software stack is real**»
 переводе **не доказывает соответствия RFC 1951**: «says the encoder and decoder
 are genuine inverses, **not that they were transcribed from the same RFC**». Вне
 охвата остаются разбор архивов, среда исполнения, FFI и расход памяти — «zip
-bombs» перечислены поимённо. Это ровно наш [[dokazano-ne-znachit-pravilno]], и
+bombs» перечислены поимённо. Это ровно наш [[proven-is-not-correct]], и
 внешний пример на 85 тысяч строк его подтверждает.
 
 **Спека — вот где теперь узкое место, и это измерено.** Лучшая модель пишет
@@ -84,6 +84,6 @@ bombs» перечислены поимённо. Это ровно наш [[doka
   делать библиотеки; следует, что один раз так сделали.
 
 Связано: [[sintez-upiraetsya-v-75-uzlov]],
-[[spetsifikatsiya-ne-opredelyaet-funktsiyu]], [[nol-aksiom]],
-[[dokazano-ne-znachit-pravilno]], [[vyvod-rabotaet-na-uzkoy-oblasti]],
+[[spetsifikatsiya-ne-opredelyaet-funktsiyu]], [[zero-axioms]],
+[[proven-is-not-correct]], [[vyvod-rabotaet-na-uzkoy-oblasti]],
 [[chuzhie-pakety-nado-hranit]]

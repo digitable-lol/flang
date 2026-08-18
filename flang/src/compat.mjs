@@ -547,7 +547,7 @@ export function runExamples(program, evaluate = evaluateFlang) {
  * Одна и та же поверхность `функтор «Ф» из «А» в «Б»` несёт в корпусе две
  * разные вещи, и это замерено разбором всего дерева: 875 файлов, узлов
  * `functorFile` — 10, из них у 4 (`flang/examples/cat/natural-square.flang`,
- * `flang/examples/cat/moduli/soglasovanie.flang`) список `imports` ПУСТ.
+ * `flang/examples/cat/modules/reconciliation.flang`) список `imports` ПУСТ.
  *
  *   • связь двух категорий ОДНОЙ программы: обе объявлены строкой `категория`
  *     здесь же или в модуле, привезённом обычным `использует` МОДУЛЯ. Её концы,

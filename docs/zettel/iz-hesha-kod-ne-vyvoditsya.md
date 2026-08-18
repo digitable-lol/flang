@@ -28,7 +28,7 @@
 
 **Отсюда прямое следствие про пакеты.** Хеш — это **адрес записи в таблице,
 которую кто-то ведёт**, а не сжатый исходник. Unison Share — такая таблица. IPFS —
-такая таблица. `~/.flang/store` из [[hash-vnutri-imena-snaruzhi]] — такая таблица.
+такая таблица. `~/.flang/store` из [[hash-inside-names-outside]] — такая таблица.
 Фраза «мне не нужно нигде хранить пакеты» неверна ровно настолько, насколько
 неверно «мне не нужен склад, у меня есть накладная».
 
@@ -62,5 +62,5 @@
   отдельно: [[spetsifikatsiya-ne-opredelyaet-funktsiyu]].
 
 Связано: [[spetsifikatsiya-ne-opredelyaet-funktsiyu]],
-[[hash-vnutri-imena-snaruzhi]], [[adresatsiya-po-soderzhimomu]],
-[[chto-vhodit-v-hash]], [[unison-izmeren]], [[otritsatelnyy-rezultat-tsenen]]
+[[hash-inside-names-outside]], [[content-addressing]],
+[[what-goes-into-the-hash]], [[unison-measured]], [[a-measured-zero-is-valuable]]

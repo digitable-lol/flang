@@ -267,4 +267,4 @@ LC_ALL=C.UTF-8 node flang/scripts/proof-ledger.mjs                  # ведом
 | свод | ветка сборки |
 
 Связанное: навык `flang-zettel` — база знаний проекта, читать до работы и
-пополнять после. Состояние проекта — `docs/PEREDACHA.md`.
+пополнять после. Состояние проекта — `docs/HANDOFF.md`.

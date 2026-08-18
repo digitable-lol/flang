@@ -106,11 +106,11 @@ description: Записать в базу знаний flang (docs/zettel/) то
 Копия на машине обновляется так:
 
 ```
-cp -r docs/zettel/* /srv/flang-znanie/ && cp docs/PEREDACHA.md /srv/flang-znanie/ \
+cp -r docs/zettel/* /srv/flang-znanie/ && cp docs/HANDOFF.md /srv/flang-znanie/ \
   && chmod -R a+rX /srv/flang-znanie
 ```
 
-**`docs/PEREDACHA.md` копируется вторым шагом, и это не довесок.** Указатель
+**`docs/HANDOFF.md` копируется вторым шагом, и это не довесок.** Указатель
 базы отправляет читателя, зашедшего с другой учётной записи, к передаче
 состояния, а лежит она в репозитории на уровень выше `docs/zettel/` — в копии же
 её сосед по каталогу. Скопируете одни заметки — копия будет отсылать к файлу,

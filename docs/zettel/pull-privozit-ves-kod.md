@@ -42,7 +42,7 @@
 как в npm, только дедуплицированный по хешу.
 
 > Сравните с местным замером: кодовая база со стандартной библиотекой — **16,7
-> МиБ** ([[unison-izmeren]]). Столько на диске и не могло бы лежать, если бы код
+> МиБ** ([[unison-measured]]). Столько на диске и не могло бы лежать, если бы код
 > «подтягивался по хешу».
 
 **Сборка без сети — да, но выведена, а не процитирована.** Прямой фразы «works
@@ -65,7 +65,7 @@ Idea](https://www.unison-lang.org/docs/the-big-idea/)); и наличие ком
 **Чем подтверждено.** Разбор исходников `unisonweb/unison` (ветка `trunk`) и
 публичного API `api.unison-lang.org` 2026-08-18; ссылки построчно выше. Числа
 16,7 МиБ и 9308 определений — прогон на этой машине 2026-08-15
-([[unison-izmeren]]).
+([[unison-measured]]).
 
 **Чем ограничено.**
 
@@ -80,6 +80,6 @@ Idea](https://www.unison-lang.org/docs/the-big-idea/)); и наличие ком
   каждая миграция оставляет полную копию файла рядом —
   [[romb-lomaetsya-ot-pravki-tipa]].
 
-Связано: [[unison-izmeren]], [[romb-lomaetsya-ot-pravki-tipa]],
+Связано: [[unison-measured]], [[romb-lomaetsya-ot-pravki-tipa]],
 [[iz-hesha-kod-ne-vyvoditsya]], [[chuzhie-pakety-nado-hranit]],
-[[adresatsiya-po-soderzhimomu]]
+[[content-addressing]]

@@ -13,7 +13,7 @@
 Замер сделан на ветке `work/native-x86-backend` от `5b68cbf`, машина —
 Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 
-Заметка [`svoy-generator-mashinnogo-koda`](zettel/svoy-generator-mashinnogo-koda.md)
+Заметка [`svoy-generator-mashinnogo-koda`](zettel/our-own-machine-code-generator.md)
 давала на этот вопрос ответ «примерно месяц» с честной пометкой *«по памяти, не
 замер»*. Здесь те же величины сняты прогонами в дереве; две из них заметку
 поправляют (§4, §9).
@@ -415,7 +415,7 @@ for (precision = 1; precision < 17; precision += 1) {
 
 ## 8. Чем это проверять
 
-Метод дерева — [побайтовая сверка](zettel/bytovaya-sverka.md). Надо
+Метод дерева — [побайтовая сверка](zettel/byte-for-byte-comparison.md). Надо
 разобраться, что именно в нём побайтово, потому что «для x86 сверять не с чем» —
 верно наполовину.
 
@@ -459,7 +459,7 @@ flang₂`. Терять её не приходится.
 
 ## 9. Что здесь поправляет базу знаний
 
-| было в [`svoy-generator-mashinnogo-koda`](zettel/svoy-generator-mashinnogo-koda.md) | стало по замеру |
+| было в [`svoy-generator-mashinnogo-koda`](zettel/our-own-machine-code-generator.md) | стало по замеру |
 |---|---|
 | «код в 3–10 раз медленнее C» *(по памяти)* | **1.20× на работе компилятора, 2.30× на арифметике** (§3), если выйти на качество `cc -O0` |
 | «5 000–10 000 строк, подъёмно» *(по памяти)* | **5 350–9 200 строк** с привязкой каждой части к измеренной величине (§4) — оценка подтвердилась |

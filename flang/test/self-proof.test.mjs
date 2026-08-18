@@ -800,10 +800,10 @@ const КОРПУС = [
   "flang/examples/cat/fold-by-cores.flang",
   "flang/examples/cat/monoid-and-monad.flang",
   "flang/examples/cat/natural-square.flang",
-  "flang/examples/cat/moduli/otgruzka.flang",
-  "flang/examples/cat/moduli/platezhi.flang",
-  "flang/examples/cat/moduli/soglasovanie.flang",
-  "flang/examples/cat/moduli/zakazy.flang",
+  "flang/examples/cat/modules/shipping.flang",
+  "flang/examples/cat/modules/payments.flang",
+  "flang/examples/cat/modules/reconciliation.flang",
+  "flang/examples/cat/modules/orders.flang",
   /* УТВЕРЖДЕНИЯ, и каждая строка здесь — свой вердикт раздела, а не «ещё одна
      программа». Без них раздел утверждений сверялся бы на одном «доказано по
      объявленным типам», а веток у него восемь:
@@ -1066,10 +1066,10 @@ test("нарушенный закон и оборванный обход сет�
  * корпуса — покраснеет здесь, а не через полгода на чужой находке.
  */
 const БЫВШИЙ_ЗАЗОР = [
-  "flang/examples/cat/moduli/otgruzka.flang",
-  "flang/examples/cat/moduli/platezhi.flang",
-  "flang/examples/cat/moduli/soglasovanie.flang",
-  "flang/examples/cat/moduli/zakazy.flang",
+  "flang/examples/cat/modules/shipping.flang",
+  "flang/examples/cat/modules/payments.flang",
+  "flang/examples/cat/modules/reconciliation.flang",
+  "flang/examples/cat/modules/orders.flang",
   "flang/examples/cat/natural-square.flang",
   "flang/examples/cat/order-shipment.flang",
 ]

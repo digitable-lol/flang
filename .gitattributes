@@ -29,8 +29,8 @@ bootstrap/README.md diff merge -linguist-generated
 # доказательства попадали бы в языковую статистику наравне с библиотекой и
 # врали бы о том, из чего состоит проект.
 benchmarks/** linguist-vendored
-docs/zamer/** linguist-vendored
-docs/zamer2/** linguist-vendored
+docs/benchmark/** linguist-vendored
+docs/benchmark2/** linguist-vendored
 
 # Расширение .flang GitHub не знает: языка flang в Linguist нет, подавать рано
 # (нужны сотни репозиториев, у нас один). Пока не примут, 89 866 строк на flang

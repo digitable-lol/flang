@@ -18,7 +18,7 @@
  *     `intersections`, `isomorphisms`: восемь родов объявлений теорката близнец
  *     не сливал и не выкладывал;
  *   • `flang/examples/io/link-report.flang` — `plans`;
- *   • `flang/examples/cat/moduli/soglasovanie.flang` и
+ *   • `flang/examples/cat/modules/reconciliation.flang` и
  *     `flang/examples/cat/natural-square.flang` — вдобавок функтор, который
  *     живёт узлом `legacy` и потому требует отдельного слияния.
  *
@@ -497,7 +497,7 @@ for (const [номер, [имя, файлы]] of Object.entries(ДУРНЫЕ).en
 const ИЗЪЯТИЙНЫЕ = new Map([
   ["flang/conc/examples/counter.flang", "процессы, надзор, прогоны + обработчик процесса строкой"],
   ["flang/examples/io/link-report.flang", "план"],
-  ["flang/examples/cat/moduli/soglasovanie.flang", "морфизмы и категории из ДВУХ импортированных модулей + функтор входного файла"],
+  ["flang/examples/cat/modules/reconciliation.flang", "морфизмы и категории из ДВУХ импортированных модулей + функтор входного файла"],
   ["flang/examples/cat/euler-orders.flang", "вложение и общая часть"],
   ["flang/examples/cat/monoid-and-monad.flang", "моноид и монада"],
   ["flang/examples/money/exact-decimal.flang", "моноид у программы с импортом"],

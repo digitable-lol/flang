@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /home/a/projects/flang/.claude/worktrees/agent-a4daa59c6b3b8bbfc
 export LC_ALL=C.UTF-8
-for f in docs/zamer2/*.flang; do
+for f in docs/benchmark2/*.flang; do
   printf "%-42s " "$f"
   node flang/bin/flang.mjs test "$f" --no-check 2>&1 | node -e '
     let s = ""

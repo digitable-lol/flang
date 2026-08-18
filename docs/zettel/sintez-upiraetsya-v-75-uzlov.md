@@ -96,4 +96,4 @@ Narcissus, отказ MoSSKit на переходе от списка к сло�
 Связано: [[spetsifikatsiya-ne-opredelyaet-funktsiyu]],
 [[iz-hesha-kod-ne-vyvoditsya]], [[hrapovik-vmesto-vyvoda]],
 [[vyvod-rabotaet-na-uzkoy-oblasti]], [[zakony-kak-ukazatel]],
-[[uzkoe-mesto-ne-v-avtomatike]]
+[[the-bottleneck-is-rule-strength]]

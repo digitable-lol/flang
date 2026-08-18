@@ -101,42 +101,42 @@ export async function ожидания() {
       `${словом(ц.близнецы.length)} генераторов кода из ${изСловом(ц.все.length)} — тоже да`,
     ],
 
-    // ── docs/site/nachalo.md ──
-    ["docs/site/nachalo.md", "целей печати списком", `Целей ${словом(ц.все.length)}: ${списокЦелей}.`],
+    // ── docs/site/getting-started.md ──
+    ["docs/site/getting-started.md", "целей печати списком", `Целей ${словом(ц.все.length)}: ${списокЦелей}.`],
 
-    // ── docs/site/dokazatelstva.md ──
+    // ── docs/site/proofs.md ──
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "композицией",
       `| Композицией — рекурсии нет вовсе | ${и.carriers.composition} |`,
     ],
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "структурой",
       `| Структурой — обход части значения | ${и.carriers.structure} |`,
     ],
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "точным шагом",
       `| Точным шагом по натуральному числу | ${и.carriers.exact} |`,
     ],
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "постоянным шагом",
       `| Постоянным шагом с проверкой во время работы | ${и.carriers.step} |`,
     ],
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "объявленной мерой",
       `| Объявленной мерой с проверкой во время работы | ${и.carriers.measure} |`,
     ],
     [
-      "docs/site/dokazatelstva.md",
+      "docs/site/proofs.md",
       "сторож меры",
       `**${и.guardSites} место у ${и.carriers.step + и.carriers.measure} функций**`,
     ],
-    ["docs/site/dokazatelstva.md", "доказано из высказанного", `Таких **${и.claims.proved} из ${и.claims.total}**`],
-    ["docs/site/dokazatelstva.md", "функций библиотеки", `**каждую девятую из всех ${библиотека}**`],
+    ["docs/site/proofs.md", "доказано из высказанного", `Таких **${и.claims.proved} из ${и.claims.total}**`],
+    ["docs/site/proofs.md", "функций библиотеки", `**каждую девятую из всех ${библиотека}**`],
   ]
 }
 
@@ -166,7 +166,7 @@ export async function сверить() {
   }
   // Ни одна страница сайта не вправе называть цели печати семью: их восемь.
   const ц = цели()
-  for (const файл of ["docs/site/index.md", "docs/site/nachalo.md", "docs/site/dokazatelstva.md"]) {
+  for (const файл of ["docs/site/index.md", "docs/site/getting-started.md", "docs/site/proofs.md"]) {
     const текст = прочесть(файл)
     const врёт = /печата[а-я]*\s+(?:во?\s+)?сем[ьи]\s+(?:язык|цел)/iu.exec(текст)
     if (врёт) беды.push(`${файл}: «${врёт[0]}» — целей печати ${ц.все.length}, а не семь`)

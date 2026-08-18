@@ -68,6 +68,7 @@ const HELP = `flang — полный язык поверх FTS
   flang io    <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
                      [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
   flang repl  [файл] [--max-steps N] [--max-depth N]
+  flang lock  <файл> [--pretty]
   flang version
 
 Файл: .flang (исходник) или .json (готовый AST).
@@ -115,6 +116,18 @@ repl: интерактивная оболочка. Объявления нака
 вычисляются сразу, «.помощь» показывает команды. Файл в аргументе загружается
 в сессию при запуске. Это единственная команда с человеческим выводом вместо
 JSON.
+
+lock: печатает ЗАМОК программы — JSON, в котором лежат САМИ зависимости, а не
+ссылки на них. Каждый импортированный модуль записан самодостаточным адресом:
+нормализованным разбором, обратимо сжатым. Склада при этом нет вовсе —
+скачивать неоткуда, потому что всё уже в замке.
+
+  flang lock программа.flang > flang.lock
+
+Если рядом с входным файлом лежит flang.lock, все команды берут импорты ИЗ
+НЕГО и исходников зависимостей не читают вовсе — их может не быть на диске.
+Замок самозаверен печатью: испорченный замок — отказ FLANG_LOCK, а не тихая
+сборка из чего попало. Обновляется замок целиком: в нём лежит код, а не хеш.
 `
 
 export async function main(argv = process.argv.slice(2)) {
@@ -153,6 +166,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandIo(options)
       case "repl":
         return await commandRepl(options)
+      case "lock":
+        return await commandLock(options)
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${HELP}`)
         return 2
@@ -438,6 +453,26 @@ async function commandRepl(options) {
 
 const REPL_PROMPT = "» "
 const REPL_CONTINUATION = "… "
+
+/* ───────────────────────────────── замок ────────────────────────────────── */
+
+/**
+ * ЗАМОК, В КОТОРОМ ЛЕЖАТ САМИ ЗАВИСИМОСТИ, а не ссылки на них
+ * (`src/lockfile.mjs` — там же и довод целиком).
+ *
+ * Печатается в stdout, как результат всякой другой команды: файл кладёт тот,
+ * кто вызвал, — `flang lock программа.flang > flang.lock`. Своей записи на
+ * диск команда не делает: у команд этого CLI ровно один выход, и второй способ
+ * создать файл был бы вторым способом ошибиться.
+ */
+async function commandLock(options) {
+  if (options.file === "-") throw usage("flang lock требует файл: со стандартного ввода импорты не разрешаются")
+  const { собратьЗамок } = await import(new URL("../src/lockfile.mjs", import.meta.url).href)
+  const parse = await разборщик()
+  const замок = await собратьЗамок(options.file, parse)
+  writeJson(замок, options.pretty, process.stdout)
+  return 0
+}
 
 /* ────────────────────────────── печать в языки ──────────────────────────── */
 
@@ -827,7 +862,11 @@ async function markProven(program) {
   }
 }
 
-async function parseFlang(source, file) {
+/**
+ * Функция разбора — одно место на весь передний край: имён у неё исторически
+ * три, и второй такой выбор (в `flang lock`) однажды разошёлся бы с первым.
+ */
+async function разборщик() {
   let parse
   try {
     const parser = await import(new URL("../src/parser.mjs", import.meta.url).href)
@@ -840,6 +879,46 @@ async function parseFlang(source, file) {
     )
   }
   if (typeof parse !== "function") throw fail("FLANG_PARSE", "в parser.mjs нет функции разбора")
+  return parse
+}
+
+/**
+ * ЗАМОК рядом с входным файлом — `flang.lock` (`src/lockfile.mjs`).
+ *
+ * Замка нет — всё как было. Есть — импорты берутся ИЗ НЕГО, а исходников
+ * зависимостей на диске может не быть вовсе. Испорченный замок — отказ, а не
+ * откат к чтению файлов: откат означал бы сборку не из замка.
+ *
+ * Имя файла стоит здесь строкой, а не ввозится из `lockfile.mjs`, и это не
+ * небрежность, а ПОТОЛОК рабочего пути (`test/rabochiy-put.test.mjs`): ввоз
+ * ради одной строки затащил бы весь модуль в путь каждой проверки, включая те,
+ * у которых замка нет. Ввоз стоит ПОСЛЕ чтения файла — не нашёлся, значит
+ * `lockfile.mjs` не загружается вовсе.
+ */
+async function замокРядом(file) {
+  const корень = dirname(resolve(file))
+  const путь = resolve(корень, "flang.lock")
+  let текст
+  try {
+    текст = await readFile(путь, "utf8")
+  } catch {
+    return null
+  }
+  const { модулиЗамка } = await import(new URL("../src/lockfile.mjs", import.meta.url).href)
+  try {
+    return { путь, модули: модулиЗамка(JSON.parse(текст), корень) }
+  } catch (error) {
+    throw fail("FLANG_LOCK", `замок ${путь} не принят: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/** Разбор, у которого модули из замка уже разобраны: файл из замка не читается. */
+function изЗамка(parse, модули) {
+  return (текст, файл) => модули.get(файл) ?? parse(текст, файл)
+}
+
+async function parseFlang(source, file) {
+  const parse = await разборщик()
 
   /* Со стандартного ввода нет каталога, относительно которого разрешается
      `использует … из "…"`, поэтому связывание для него не запускаем: честный
@@ -853,7 +932,16 @@ async function parseFlang(source, file) {
     /* Файл без импортов — это и есть вся программа: отбрасывать в ней нечего,
        и точки входа не запоминаются вовсе. */
     if (importsOf(single).length === 0) return { program: single, own: null }
-    const linked = await linkProgram(file, source, parse)
+    /* Замок, если он есть, ПОДМЕНЯЕТ чтение исходников зависимостей: код
+       модуля лежит в нём самом. Подмена — две обёртки и ни строки в
+       `link.mjs`: всякое новое поле там оплачивалось бы вторым связыванием на
+       самом flang (`flang/self`) и побайтовой сверкой близнеца. */
+    const замок = await замокРядом(file)
+    const linked = замок === null
+      ? await linkProgram(file, source, parse)
+      : await linkProgram(file, source, изЗамка(parse, замок.модули), {
+          readFile: (путь) => (замок.модули.has(путь) ? Promise.resolve("") : readFile(путь, "utf8")),
+        })
     if (linked.diagnostics.length > 0) {
       const error = new Error(linked.diagnostics[0].message)
       error.diagnostics = linked.diagnostics
@@ -1129,8 +1217,18 @@ export async function externalChecks(program, настройки = {}) {
       /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
     }
     try {
-      const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
-      const вердикты = checkProofs(program, итог.obligations)
+      /* КЕШ ВЕРДИКТОВ ЯДРА — ЗА ЯВНЫМ СОГЛАСИЕМ, и это следствие замера, а не
+         осторожность: ядро на 48 файлах корпуса занимает 98 мс, а `flang check
+         --proof` — 37 секунд, и уходят они в ввоз модулей и в ведомость. Кеш
+         сегодня стоит дороже, чем экономит; довод, замер и три замка, которыми
+         держится недоверие к записи, — в `flang/src/proofcache.mjs`. Пока
+         пользы нет, модуля нет и в рабочем пути: ввоз стоит за проверкой
+         переменной. Включается `FLANG_CACHE=да`. */
+      const вердикты = typeof process.env.FLANG_CACHE === "string" && process.env.FLANG_CACHE !== ""
+        ? (await import(new URL("../src/proofcache.mjs", import.meta.url).href))
+          .checkProofsCached(program, итог.obligations)
+        : (await import(new URL("../src/proofterm.mjs", import.meta.url).href))
+          .checkProofs(program, итог.obligations)
       results.proofs = вердикты
       diagnostics.push(...normalizeDiagnostics(вердикты))
     } catch {

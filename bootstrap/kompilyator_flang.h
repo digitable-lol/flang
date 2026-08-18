@@ -30422,9 +30422,10 @@ fl_status kompilyator_flang_hoda_net(fl_ctx *ctx, fl_value *result, fl_error *er
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Ветвление»
  */
-fl_status kompilyator_flang_po_usloviyu(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_po_usloviyu(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разделить цель».
@@ -30437,9 +30438,10 @@ fl_status kompilyator_flang_po_usloviyu(fl_ctx *ctx, fl_value zaklyuchenie, fl_v
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Ветвление»
  */
-fl_status kompilyator_flang_razdelit_cel(fl_ctx *ctx, fl_value cel, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_razdelit_cel(fl_ctx *ctx, fl_value cel, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Обе половины».
@@ -30453,9 +30455,10 @@ fl_status kompilyator_flang_razdelit_cel(fl_ctx *ctx, fl_value cel, fl_value dop
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Ветвление»
  */
-fl_status kompilyator_flang_obe_poloviny(fl_ctx *ctx, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_obe_poloviny(fl_ctx *ctx, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Вторая половина».
@@ -30470,9 +30473,10 @@ fl_status kompilyator_flang_obe_poloviny(fl_ctx *ctx, fl_value cel, fl_value usl
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Ветвление»
  */
-fl_status kompilyator_flang_vtoraya_polovina(fl_ctx *ctx, fl_value pervaya, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_vtoraya_polovina(fl_ctx *ctx, fl_value pervaya, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить половину».
@@ -30486,9 +30490,10 @@ fl_status kompilyator_flang_vtoraya_polovina(fl_ctx *ctx, fl_value pervaya, fl_v
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Ветвление»
  */
-fl_status kompilyator_flang_proverit_polovinu(fl_ctx *ctx, fl_value polovina, fl_value imya, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_proverit_polovinu(fl_ctx *ctx, fl_value polovina, fl_value imya, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Итог половины».
@@ -30525,9 +30530,10 @@ fl_status kompilyator_flang_o_predele_vetvleniya(fl_ctx *ctx, fl_value vitkov, f
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Сведение»
  */
-fl_status kompilyator_flang_svesti_polovinu(fl_ctx *ctx, fl_value cel, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_svesti_polovinu(fl_ctx *ctx, fl_value cel, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Половина по форме».
@@ -30541,9 +30547,10 @@ fl_status kompilyator_flang_svesti_polovinu(fl_ctx *ctx, fl_value cel, fl_value 
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Сведение»
  */
-fl_status kompilyator_flang_polovina_po_forme(fl_ctx *ctx, fl_value cel, fl_value forma, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_polovina_po_forme(fl_ctx *ctx, fl_value cel, fl_value forma, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести при известном».
@@ -30556,9 +30563,10 @@ fl_status kompilyator_flang_polovina_po_forme(fl_ctx *ctx, fl_value cel, fl_valu
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Сведение»
  */
-fl_status kompilyator_flang_svesti_pri_izvestnom(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_svesti_pri_izvestnom(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести ходами».
@@ -30572,9 +30580,28 @@ fl_status kompilyator_flang_svesti_pri_izvestnom(fl_ctx *ctx, fl_value zaklyuche
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
  * @return значение: «Сведение»
  */
-fl_status kompilyator_flang_svesti_hodami(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_svesti_hodami(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести после счёта».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param sochteno — «сочтено»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_svesti_posle_schyota(fl_ctx *ctx, fl_value itog, fl_value sochteno, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести ветвлением».
@@ -30653,6 +30680,338 @@ fl_status kompilyator_flang_svesti_s_opredeleniyami(fl_ctx *ctx, fl_value zaklyu
  * @return значение: «Сведение»
  */
 fl_status kompilyator_flang_svesti_vitkami(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести счётом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_svesti_schyotom(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это пусть со строкой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_pust_so_strokoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть среди имён».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: список: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_est_sredi_imyon(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить свободное».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: список: строка
+ * @param svyazannye — «связанные»: список: строка
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_dobavit_svobodnoe(fl_ctx *ctx, fl_value imena, fl_value svyazannye, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать по узлу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazannye — «связанные»: список: строка
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svyazat_po_uzlu(fl_ctx *ctx, fl_value svyazannye, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связи образца начальной».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazannye — «связанные»: список: строка
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svyazi_obrazca_nachalnoy(fl_ctx *ctx, fl_value svyazannye, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnoe_imya_uzla(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из пусть».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из узла»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_pust(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из свёртки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_svyortki(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из отображения».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из свёртки», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_otobrazheniya(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из разбора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_razbora(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из поля».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_polya(fl_ctx *ctx, fl_value pole, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из полей».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_poley(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из записи».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_zapisi(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные из узла».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из пусть»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_iz_uzla(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные имена».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param vyrazhenie — «выражение»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_svobodnye_imena(fl_ctx *ctx, fl_value vyrazhenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вычислением».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_vychisleniem(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел вычисления витков».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status kompilyator_flang_predel_vychisleniya_vitkov(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел вычисления глубины».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status kompilyator_flang_predel_vychisleniya_glubiny(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя обёртки цели».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imya_obyortki_celi(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя обёртки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zanyato — «занято»: список: строка
+ * @param imya — «имя»: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_svobodnoe_imya_obyortki(fl_ctx *ctx, fl_value zanyato, fl_value imya, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций программы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_imena_funkciy_programmy(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обёртка цели».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_obyortka_celi(fl_ctx *ctx, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Программа с обёрткой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_programma_s_obyortkoy(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Знач это да».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zn — «зн»: «Знач»
+ * @return значение
+ */
+fl_status kompilyator_flang_znach_eto_da(fl_ctx *ctx, fl_value zn, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Прогон дал да».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог прогона»
+ * @return значение
+ */
+fl_status kompilyator_flang_progon_dal_da(fl_ctx *ctx, fl_value itog, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Нет программы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_net_programmy(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вычислить замкнутую».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_vychislit_zamknutuyu(fl_ctx *ctx, fl_value cel, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замкнутую посчитать».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_zamknutuyu_poschitat(fl_ctx *ctx, fl_value cel, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Считать замкнутую».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_schitat_zamknutuyu(fl_ctx *ctx, fl_value cel, fl_value programma, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Имя именованного».
@@ -30907,15 +31266,6 @@ fl_status kompilyator_flang_proyti_uzel_zapisi(fl_ctx *ctx, fl_value uzel, fl_va
 fl_status kompilyator_flang_pryamaya_zamena(fl_ctx *ctx, fl_value uzel, fl_value zameny, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Это пусть со строкой».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status kompilyator_flang_eto_pust_so_strokoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Пройти по виду».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -31118,181 +31468,6 @@ fl_status kompilyator_flang_podstavit_nachalnoy(fl_ctx *ctx, fl_value vyrazhenie
  * @return значение: «Значение»
  */
 fl_status kompilyator_flang_podstavit_imena(fl_ctx *ctx, fl_value vyrazhenie, fl_value zameny, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Есть среди имён».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param imena — «имена»: список: строка
- * @param imya — «имя»: строка
- * @return значение
- */
-fl_status kompilyator_flang_est_sredi_imyon(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Добавить свободное».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param imena — «имена»: список: строка
- * @param svyazannye — «связанные»: список: строка
- * @param imya — «имя»: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_dobavit_svobodnoe(fl_ctx *ctx, fl_value imena, fl_value svyazannye, fl_value imya, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Связать по узлу».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param svyazannye — «связанные»: список: строка
- * @param uzel — «узел»: «Значение»
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svyazat_po_uzlu(fl_ctx *ctx, fl_value svyazannye, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Связи образца начальной».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param svyazannye — «связанные»: список: строка
- * @param sluchay — «случай»: «Значение»
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svyazi_obrazca_nachalnoy(fl_ctx *ctx, fl_value svyazannye, fl_value sluchay, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободное имя узла».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnoe_imya_uzla(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из пусть».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из узла»: вызовы идут через батут.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_pust(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из свёртки».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_svyortki(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из отображения».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Взаимная хвостовая рекурсия с «Свободные из свёртки», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_otobrazheniya(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из разбора».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_razbora(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из поля».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param pole — «поле»: «Поле значения»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_polya(fl_ctx *ctx, fl_value pole, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из полей».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_poley(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из записи».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_zapisi(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные из узла».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- *
- * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из пусть»: вызовы идут через батут.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param svyazannye — «связанные»: список: строка
- * @param imena — «имена»: список: строка
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_iz_uzla(fl_ctx *ctx, fl_value uzel, fl_value svyazannye, fl_value imena, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Свободные имена».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param vyrazhenie — «выражение»: «Значение»
- * @return значение: список: строка
- */
-fl_status kompilyator_flang_svobodnye_imena(fl_ctx *ctx, fl_value vyrazhenie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Алгебра».

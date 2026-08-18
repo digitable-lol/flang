@@ -82,10 +82,10 @@ And, honestly, what is not there:
   [the speed report](../benchmark-speed.html) — in Russian). That is **not the
   price of provability**: where a proof leaves no guard in the running program it
   costs **1–9 %, indistinguishable from zero** against the spread between runs.
-  A guard is left behind rarely: as of 18 August **68 functions out of 5992
-  total ones carry it — 1.1 %** (4 by a constant step, 64 by a declared measure,
-  102 sites; `npm run proof:ledger`). There it really is expensive — **three
-  times the cost of the function itself**. The gap is unfinished work, not the
+  A guard is left behind rarely: **70 functions out of 6547 total ones carry
+  it — 1.1 %** (6 by a constant step, 64 by a declared measure, 104 sites; the
+  count is printed by `flang check --proof`). There it really is expensive —
+  **three times the cost of the function itself**. The gap is unfinished work, not the
   price of proofs, and it is fixable;
 - **the compiler is not written in flang all the way**: the proof chain is, and
   eight code generators out of eight are, but the processes and the shell are

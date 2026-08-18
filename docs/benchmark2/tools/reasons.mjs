@@ -12,7 +12,7 @@ const { checkTotality } = await import(join(КОРЕНЬ, "flang/src/totality.mj
 const { obligations } = await import(join(КОРЕНЬ, "flang/src/obligations.mjs"))
 const { checkProofs } = await import(join(КОРЕНЬ, "flang/src/proofterm.mjs"))
 
-const каталог = join(КОРЕНЬ, "docs/zamer2")
+const каталог = join(КОРЕНЬ, "docs/benchmark2")
 const счёт = {}
 const поФайлам = {}
 let доказано = 0

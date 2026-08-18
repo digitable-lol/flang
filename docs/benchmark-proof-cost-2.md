@@ -17,7 +17,7 @@
 | основание | `origin/main` = `17d68539c866c319476c871dcf199902371896ba` (16 августа 2026, 15:49 UTC) |
 | прошлый замер стоял на | `origin/main` = `8203f39e…` (14 августа) |
 | инструмент | `flang test` (примеры) и `flang check --proof` (ведомость доказательства) |
-| файлы работы | `docs/zamer2/01-…flang` … `docs/zamer2/20-…flang`, 20 штук, все в дереве |
+| файлы работы | `docs/benchmark2/01-…flang` … `docs/benchmark2/20-…flang`, 20 штук, все в дереве |
 | журнал с секундомером | `benchmarks/zamer-tseny/zhurnal.md`; счётчик строк — `benchmarks/zamer-tseny/schitat.mjs` |
 | дата | 16 августа 2026 |
 
@@ -36,7 +36,7 @@
 | **вычисление замкнутой цели** | **НЕТ** | `benchmarks/zamer-tseny/proba-zamknutaya.flang`: `результат начинается с "\|"` при теле-строке — «объявлено, не доказано» |
 | предусловие **`требует`** | **ЕСТЬ** | замер 10: отказ говорит «известно: предусловие функции «Двоичный поиск»» |
 | дыра «один пример доказывает обо ВСЕХ входах» | **ЗАКРЫТА** | `benchmarks/zamer-tseny/proba-poddelka.flang` — подделка прошлого замера теперь отвергается поимённо |
-| `дано <имя>: <тип>`, где имя совпадает с именем типа | **дыра открыта** | проба в `docs/zamer2/13-chyotnoe.flang`: «имя «число» не связано» |
+| `дано <имя>: <тип>`, где имя совпадает с именем типа | **дыра открыта** | проба в `docs/benchmark2/13-chyotnoe.flang`: «имя «число» не связано» |
 
 Ведомость всего дерева на этом основании (`node flang/scripts/proof-ledger.mjs`):
 высказано 152 утверждения, доказано ядром 117 — из них индукцией 23 и **без
@@ -279,7 +279,7 @@
 
 ### Исход «ядро закрыло само» — цена одна строка
 
-`docs/zamer2/04-razmer-slovarya.flang`:
+`docs/benchmark2/04-razmer-slovarya.flang`:
 
 ```flang
 тотальная функция «Размер словаря»
@@ -305,7 +305,7 @@
 
 ### Исход «ядро не берёт» — правда высказана, правил не хватает
 
-`docs/zamer2/17-est-v-mnozhestve.flang`, утверждение ПОЛНОЕ — оно исчерпывает
+`docs/benchmark2/17-est-v-mnozhestve.flang`, утверждение ПОЛНОЕ — оно исчерпывает
 смысл функции:
 
 ```flang
@@ -340,7 +340,7 @@
 
 ### Исход «на языке не выразить» — правду нечем записать
 
-`docs/zamer2/16-uspeshno.flang`. Смысл функции: «да ровно тогда, когда итог —
+`docs/benchmark2/16-uspeshno.flang`. Смысл функции: «да ровно тогда, когда итог —
 вариант «Успех»». Попытка записать это выражением:
 
 ```
@@ -450,8 +450,8 @@ LC_ALL=C.UTF-8 node benchmarks/zamer-tseny/tela.mjs
 → тел вида «`разбор` по параметру» в `flang/stdlib` — **58 из 208**.
 
 ```
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/zamer2/04-razmer-slovarya.flang --proof
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/zamer2/13-chyotnoe.flang --proof
+LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/benchmark2/04-razmer-slovarya.flang --proof
+LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/benchmark2/13-chyotnoe.flang --proof
 ```
 → два «доказано … теоремы при нём нет и не нужно». Это и есть **2 из 20**.
 

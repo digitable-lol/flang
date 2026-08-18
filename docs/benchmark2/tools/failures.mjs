@@ -12,7 +12,7 @@ const { checkTotality } = await import(join(КОРЕНЬ, "flang/src/totality.mj
 const { obligations } = await import(join(КОРЕНЬ, "flang/src/obligations.mjs"))
 const { checkProofs } = await import(join(КОРЕНЬ, "flang/src/proofterm.mjs"))
 
-const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/zamer2")
+const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/benchmark2")
 const отбор = process.argv[3] ?? ""
 for (const ф of readdirSync(каталог).filter((f) => f.endsWith(".flang")).sort()) {
   if (отбор !== "" && !ф.startsWith(отбор)) continue

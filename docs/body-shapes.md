@@ -19,8 +19,8 @@
 | ветка | `work/formy-tela` |
 | основание | `origin/main` = `8e62870` |
 | ветки `work/indukciya-vstroennyh` и `work/zamknutaya-cel` | **НЕ влиты, и я их не вливал** |
-| материал замера | `docs/zamer2/01…20`, перенесён с `work/zamer-tseny-2` дословно |
-| чем меряно | `docs/zamer2/instrumenty/zamer20.mjs`, `docs/zamer2/instrumenty/otkazy.mjs`, `docs/zamer2/instrumenty/prichiny.mjs`, `docs/zamer2/instrumenty/tela2.mjs` |
+| материал замера | `docs/benchmark2/01…20`, перенесён с `work/zamer-tseny-2` дословно |
+| чем меряно | `docs/benchmark2/tools/measure20.mjs`, `docs/benchmark2/tools/failures.mjs`, `docs/benchmark2/tools/reasons.mjs`, `docs/benchmark2/tools/bodies2.mjs` |
 
 Ветку `work/indukciya-vstroennyh` я **прочитал, но не влил**, и довод тот же,
 что записан в `docs/zettel/two-cores-do-not-merge-as-text.md`: это второе
@@ -120,7 +120,7 @@
 
 ## Форма тела перестала быть стеной — со знаменателем
 
-Измерено `docs/zamer2/instrumenty/tela2.mjs` на тех же 208 функциях `flang/stdlib`:
+Измерено `docs/benchmark2/tools/bodies2.mjs` на тех же 208 функциях `flang/stdlib`:
 
 | | ДО | ПОСЛЕ |
 |---|---|---|
@@ -144,7 +144,7 @@
 
 ## Что мешает остальным — со знаменателем
 
-Разложение отказов по коду, до и после, одним прогоном (`docs/zamer2/instrumenty/prichiny.mjs`):
+Разложение отказов по коду, до и после, одним прогоном (`docs/benchmark2/tools/reasons.mjs`):
 
 | код отказа | что он значит | ДО | ПОСЛЕ |
 |---|---|---|---|
@@ -266,17 +266,17 @@
 ## Чем это проверить — четыре команды
 
 ```
-LC_ALL=C.UTF-8 node docs/zamer2/instrumenty/zamer20.mjs
+LC_ALL=C.UTF-8 node docs/benchmark2/tools/measure20.mjs
 ```
 → `доказано 9 из 22`.
 
 ```
-LC_ALL=C.UTF-8 node docs/zamer2/instrumenty/prichiny.mjs
+LC_ALL=C.UTF-8 node docs/benchmark2/tools/reasons.mjs
 ```
 → разложение отказов по коду: STEP 6, нет теоремы 3, BRANCH 2, TYPE 2.
 
 ```
-LC_ALL=C.UTF-8 node docs/zamer2/instrumenty/tela2.mjs
+LC_ALL=C.UTF-8 node docs/benchmark2/tools/bodies2.mjs
 ```
 → `тел, с которых ядро СТРОИТ посылки: 96` из 208.
 

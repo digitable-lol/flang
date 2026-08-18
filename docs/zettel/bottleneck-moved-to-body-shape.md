@@ -48,7 +48,7 @@
 Отдача этой работы лежит в леммах (`docs/lemmas-report.md`), а не в обычных
 функциях библиотеки.
 
-Улики: `docs/zamer2/` (20 файлов с настоящими текстами отказов), отчёт
+Улики: `docs/benchmark2/` (20 файлов с настоящими текстами отказов), отчёт
 `docs/benchmark-proof-cost-2.md`, журнал с секундомером `benchmarks/zamer-tseny/zhurnal.md`.
 
 Связано: [[proof-cost-0-of-20]], [[no-induction-for-builtin-types]],

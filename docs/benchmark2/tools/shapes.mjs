@@ -8,7 +8,7 @@ import { dirname, join } from "node:path"
 const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..")
 const { parse } = await import(join(КОРЕНЬ, "flang/src/parser.mjs"))
 
-const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/zamer2")
+const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/benchmark2")
 for (const ф of readdirSync(каталог).filter((f) => f.endsWith(".flang")).sort()) {
   const ast = parse(readFileSync(join(каталог, ф), "utf8"), ф)
   const главная = ast.functions.filter((f) => (f.postconditions ?? []).length > 0)

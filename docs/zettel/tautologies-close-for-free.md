@@ -6,7 +6,7 @@
 надуть до любой величины, ничего не доказав.
 
 **Чем подтверждено.** Замер 16 августа, функция `«Противоположное»` из
-`flang/stdlib/higher-order.flang` с телом `0 минус х` (`docs/zamer2/05-…flang`).
+`flang/stdlib/higher-order.flang` с телом `0 минус х` (`docs/benchmark2/05-…flang`).
 Две строки в одном файле, обе проверены прогоном `flang check --proof`:
 
 ```

@@ -14,7 +14,7 @@ const { checkTotality } = await import(join(КОРЕНЬ, "flang/src/totality.mj
 const { obligations } = await import(join(КОРЕНЬ, "flang/src/obligations.mjs"))
 const { checkProofs } = await import(join(КОРЕНЬ, "flang/src/proofterm.mjs"))
 
-const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/zamer2")
+const каталог = process.argv[2] ?? join(КОРЕНЬ, "docs/benchmark2")
 const файлы = readdirSync(каталог).filter((ф) => ф.endsWith(".flang")).sort()
 
 let доказано = 0

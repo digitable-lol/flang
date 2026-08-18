@@ -36,7 +36,7 @@ newer», потому что компилятор языка написан на
 |---|---|---|---|
 | `src/lexer.mjs` | 1065 | `self/lexer.flang` | текст → токены, отступы значимы |
 | `src/parser.mjs` | 4511 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
-| `src/types.mjs` | 7144 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
+| `src/types.mjs` | 7317 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1803 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
 | `src/emit/c.mjs` | 2145 | `self/emit-c.flang` | печать в C99 |
 | `src/emit/go.mjs` | 1743 | `self/emit-go.flang` | печать в Go |

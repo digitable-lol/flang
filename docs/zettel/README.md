@@ -49,6 +49,8 @@
 - [Замкнутую цель надо считать, а не выводить](zamknutuyu-tsel-nado-schitat.md)
 - [Узкое место переехало третий раз: мешает форма утверждения, а не форма тела](formy-tela-uzkoe-mesto-pereehalo.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](levaya-svyortka-ne-daet-induktsii-po-spisku.md)
+- [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
+- [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
 
 ## Теория категорий
 

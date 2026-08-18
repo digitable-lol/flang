@@ -17957,6 +17957,138 @@ fl_status kompilyator_flang_v_granicah(fl_ctx *ctx, fl_value nomer, fl_value kon
 fl_status kompilyator_flang_imya_v_granicah(fl_ctx *ctx, fl_value strogie, fl_value nestrogie, fl_value imya, fl_value baza, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «В границах подстроки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param stroka — «строка»: «Тип»
+ * @param nachalo — «начало»: «Тип»
+ * @param konec — «конец»: «Тип»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param baza — «база»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_v_granicah_podstroki(fl_ctx *ctx, fl_value stroka, fl_value nachalo, fl_value konec, fl_value argumenty, fl_value baza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка годна».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_stroka_godna(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Четыре факта подстроки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param o_nachale — «о начале»: «Может быть отрезок номера»
+ * @param o_konce — «о конце»: «Может быть отрезок номера»
+ * @param niz_dliny — «низ длины»: число
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param baza — «база»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_chetyre_fakta_podstroki(fl_ctx *ctx, fl_value o_nachale, fl_value o_konce, fl_value niz_dliny, fl_value imya, fl_value argumenty, fl_value baza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Факты о конце подстроки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param o_konce — «о конце»: «Может быть отрезок номера»
+ * @param verh_nachala — «верх начала»: число
+ * @param niz_dliny — «низ длины»: число
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param baza — «база»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_fakty_o_konce_podstroki(fl_ctx *ctx, fl_value o_konce, fl_value verh_nachala, fl_value niz_dliny, fl_value imya, fl_value argumenty, fl_value baza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Не больше длины».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param verh — «верх»: число
+ * @param strogie — «строгие»: список: строка
+ * @param nestrogie — «нестрогие»: список: строка
+ * @param potolok — «потолок»: число
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_ne_bolshe_dliny(fl_ctx *ctx, fl_value verh, fl_value strogie, fl_value nestrogie, fl_value potolok, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тот же источник».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Те же двуместные»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_tot_zhe_istochnik(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Те же двуместные».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Тот же источник»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_te_zhe_dvumestnye(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Те же формы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_te_zhe_formy(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Те же аргументы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Те же аргументы дальше»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levye — «левые»: список: «Значение»
+ * @param pravye — «правые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_te_zhe_argumenty(fl_ctx *ctx, fl_value levye, fl_value pravye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Те же аргументы дальше».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Те же аргументы»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pervyy_sleva — «первый слева»: «Значение»
+ * @param ostatok_sleva — «остаток слева»: список: «Значение»
+ * @param pravye — «правые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_te_zhe_argumenty_dalshe(fl_ctx *ctx, fl_value pervyy_sleva, fl_value ostatok_sleva, fl_value pravye, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Сузить по логике».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -18546,6 +18678,27 @@ fl_status kompilyator_flang_tip_arifmetiki(fl_ctx *ctx, fl_value uzel, fl_value 
  * @return значение: «Тип»
  */
 fl_status kompilyator_flang_arifmetika_otrezkov(fl_ctx *ctx, fl_value op, fl_value levyy, fl_value pravyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог отрезков».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levyy — «левый»: «Тип»
+ * @param pravyy — «правый»: «Тип»
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_itog_otrezkov(fl_ctx *ctx, fl_value op, fl_value levyy, fl_value pravyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя пережило вычитание».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Тип»
+ * @param levyy — «левый»: «Тип»
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_imya_perezhilo_vychitanie(fl_ctx *ctx, fl_value itog, fl_value levyy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отрезок операции».

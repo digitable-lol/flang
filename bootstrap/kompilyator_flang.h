@@ -15578,6 +15578,23 @@ fl_status kompilyator_flang_naibolshaya_arnost(fl_ctx *ctx, fl_value funkcii, fl
 fl_status kompilyator_flang_arnost_batutov(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Занято целью C».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_zanyato_celyu_c(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью C».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_oboyti_zanyatoe_celyu_c(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Имя файла программы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

@@ -103,11 +103,16 @@ make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
 ```
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
-tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
-its source is [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole
-repository, and that repository is not published yet, so for now the plugin is source rather than
-an install path. Neither needs anything but a C compiler. This is how self-hosting languages
-ship — Go carried generated C for years, Nim still does.
+tap serves it. The asdf (and mise) plugin installs the same archive from the same releases; its
+source is [`packaging/asdf/`](packaging/asdf/README.md), and because asdf clones a plugin as a
+whole repository, it is published as
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) — which is the copy asdf
+clones. Its three scripts have been run by hand, with Node absent from `PATH`: `list-all` offers only
+the releases that actually carry an archive — 0.4.8 is skipped, a real release with no attachment
+— `download` fetches and unpacks, and `install` builds from the C99 and yields a working
+`flang 0.5.0`. Installing *through* `asdf` itself is unverified — `asdf` was not present
+in the environment where that was run. Neither packaging needs anything but a C compiler. This is
+how self-hosting languages ship — Go carried generated C for years, Nim still does.
 
 **Be clear about what that binary is.** It answers to five commands — `check`, `test`, `run`,
 `emit`, `repl` — and the evaluator is now in it: [`flang/self/interpret.flang`](flang/self) is

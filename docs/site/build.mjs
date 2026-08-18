@@ -226,7 +226,7 @@ const СЛОВА = {
     тема: 'Сменить тему',
     другой: 'English',
     подвал:
-      'Собрано из репозитория командой <code>node docs/site/build.mjs</code>. Тексты живут в <code>docs/</code> — правьте их, а не эту страницу.',
+      'Страница собрана из репозитория; тексты живут в <code>docs/</code> — правьте их, а не эту страницу.',
   },
   en: {
     кСодержанию: 'Skip to content',
@@ -235,7 +235,7 @@ const СЛОВА = {
     тема: 'Switch theme',
     другой: 'Русский',
     подвал:
-      'Built from the repository by <code>node docs/site/build.mjs</code>. The texts live in <code>docs/</code> — edit those, not this page.',
+      'This page is built from the repository; the texts live in <code>docs/</code> — edit those, not this page.',
   },
 };
 

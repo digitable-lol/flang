@@ -6,7 +6,7 @@
   использует «Числа» из "../../flang/stdlib/numbers.flang"
 
 // Прогоняется целиком:
-//   node flang/bin/flang.mjs test docs/examples/operations.flang
+//   flang test docs/examples/operations.flang
 // Каждая функция ниже стоит на странице «Операции языка» и не переписана
 // туда руками: страница цитирует этот файл.
 

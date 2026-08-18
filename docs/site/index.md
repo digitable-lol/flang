@@ -1,88 +1,95 @@
-# flang — язык, в котором спецификация исполняется
+# flang — the specification is the program
 
-Написанный документ расходится с кодом на следующий день после того, как его
-приняли, и расходится **молча**: ничего не ломается оттого, что спецификация и
-реализация больше не про одно и то же.
+A written specification drifts away from the code the day after it is signed off,
+and it drifts **silently**: nothing breaks when the two stop being about the same
+thing.
 
-Здесь выбран другой путь. Спецификация **и есть** программа. Правила пишутся
-один раз, исполняются, проверяются собственными примерами — а потом печатаются в
-C, Go, Rust, Python, Java, C# или Elixir, где напечатанный код обязан выдавать те
-же значения и те же коды ошибок, что интерпретатор, вход за входом.
+flang takes the other road. The specification **is** the program. Rules are
+written once, they execute, they check themselves against their own examples —
+and then they are emitted into C, Go, Rust, Python, Java, C# or Elixir, where the
+emitted code must return the same values and the same error codes as the
+interpreter, input for input.
 
 ```
-тотальная функция «Произведение»
-  принимает элементы: список числа
-  возвращает число
-  пример «Произведение четырёх»
-    дано элементы равно [1, 2, 3, 4]
-    ожидается 24
-  пример «Произведение пустого — единица»
-    дано элементы равно пустой список
-    ожидается 1
-  свёртка элементы начиная с 1 как акк и эл → акк умножить на эл
+total function «Product»
+  accepts items: list of number
+  returns number
+  example «Product of four»
+    given items equals [1, 2, 3, 4]
+    expected 24
+  example «Product of nothing is one»
+    given items equals empty list
+    expected 1
+  fold items starting with 1 as acc and elem → acc times elem
 ```
 
-Слово `тотальная` здесь — не пожелание. Компилятор **доказал**, что эта функция
-завершается на любом входе, и отказался бы её принять, если бы не смог.
+`total` here is not a wish. The compiler **proved** that this function terminates
+on every input, and would have refused to accept it otherwise.
 
-## Три вещи, которых нет у обычных языков
+Those keywords are flang's English surface. The Russian one — `тотальная
+функция`, `свёртка … начиная с` — parses to the same syntax tree; the two are
+compared tree against tree, not described as equal.
 
-**Завершаемость доказана при компиляции.** В C, Python и JavaScript функция может
-зациклиться, и вы узнаете об этом в бою. Здесь `тотальная` — обещание, за которое
-отвечает компилятор: **6114 функций из 7935** его несут.
+## Three things ordinary languages do not have
 
-**Обещание о результате проверяется на всех входах, а не на примерах.** Тесты
-покрывают те входы, до которых вы додумались. Постусловие, принятое ядром
-доказательств, — все.
+**Termination is proved at compile time.** In C, Python and JavaScript a function
+may loop forever and you find out in production. Here `total` is a promise the
+compiler answers for: **6114 functions out of 7935** carry it.
 
-**Одна программа печатается в восемь языков с побайтово сверенным поведением.**
-Не «должно совпадать», а проверено, что совпадает: значения, коды ошибок,
-счётчики шагов.
+**A promise about the result is checked on all inputs, not on examples.** Tests
+cover the inputs you thought of. A postcondition accepted by the proof kernel
+covers the rest.
 
-## Чем мы отличаемся от Coq, Agda и Lean
+**One program is emitted into eight languages with byte-compared behaviour.** Not
+"should match" — checked to match: values, error codes, step counters.
 
-Те языки сильнее в доказательствах — и на них **не пишут сервисы**. Из Coq
-программы *извлекают* в OCaml, потому что писать на нём приложение невозможно.
+## How this differs from Coq, Agda and Lean
 
-flang пробует закрыть эту пропасть: один язык, на котором и доказывают, и пишут
-обычный код, и который при этом читается.
+Those languages are stronger at proving — and **nobody writes services in them**.
+Programs are *extracted* out of Coq into OCaml, because writing an application in
+Coq is not practical.
 
-**Ядро доказательств не принимает на веру ничего.** Аксиом ноль, и список пуст
-проверяемо — отдельным тестом, тихо добавить нельзя. Решающих правил три, и
-каждое можно прочесть целиком.
+flang tries to close that gap: one language you prove in, write ordinary code in,
+and can still read.
 
-## Где мы на самом деле
+**The proof kernel takes nothing on faith.** Zero axioms, and the list is
+provably empty — a separate test holds it at zero, so one cannot be added
+quietly. There are three decision rules, and each one fits in a single reading.
 
-Цифры измеряются прогоном (`npm run proof:ledger`), а не оцениваются. Каждая из
-них сверяется с этим прогоном сторожем чисел (`npm run counts:check`) — тем же,
-которым сверяется вся проза дерева, — поэтому протухнуть молча они больше не
-могут: страница краснеет вместе с деревом.
+## Where we actually are
+
+The numbers come from a run (`npm run proof:ledger`), not an estimate, and a
+guard (`npm run counts:check`) compares every one of them against that run — the
+same guard that checks the prose of the whole tree. They cannot go stale
+quietly: the page reddens with the tree.
 
 | | |
 |---|---:|
-| Функций в корпусе | 7935 |
-| Из них тотальных (завершаемость доказана) | 6114 |
-| Утверждений о поведении высказано | 153 |
-| Из них **доказано ядром** — про все входы | 132 |
-| Аксиом в ядре | **0** |
-| Опровергнутых утверждений | **0** |
+| Functions in the corpus | 7935 |
+| Of them total (termination proved) | 6114 |
+| Behaviour claims stated | 153 |
+| Of them **proved by the kernel** — for all inputs | 132 |
+| Axioms in the kernel | **0** |
+| Claims refuted | **0** |
 
-И честно про то, чего нет:
+And, honestly, what is not there:
 
-- **обычных функций библиотеки доказывается 7 из 20** — замер брал каждую девятую
-  из всех 208, чтобы не выбирать удобные;
-- **язык медленнее Python в 1,4 раза**, и это **не цена доказуемости**: она
-  измерена и равна 2,5 % — платит 71 функция из 2799. Остальное — обычная
-  неоптимизированность, и она чинится;
-- **компилятор написан на flang не целиком**: цепочка доказательства — да,
-  восемь генераторов кода из восьми — тоже да, а процессы и оболочка — пока
-  нет.
+- **of ordinary library functions the kernel accepts 7 out of 20** — the
+  measurement took every ninth function out of all 208, so the convenient ones
+  could not be picked;
+- **the language is 1.4× slower than Python**, and that is **not the price of
+  provability**: that price was measured separately and is 2.5 %, paid by 71
+  functions out of 2799. The rest is ordinary lack of optimisation, and it is
+  fixable;
+- **the compiler is not written in flang all the way**: the proof chain is, and
+  eight code generators out of eight are, but the processes and the shell are
+  not yet.
 
-## С чего начать
+## Where to start
 
-- [Что изменилось](changelog.html) — что приехало с прошлого раза: вливание за вливанием, и рядом числа, которые оно сдвинуло.
-- [Первая программа](getting-started.html) — поставить и запустить за пять минут.
-- [Зачем доказательства и как они устроены](proofs.html) — главное отличие языка.
-- [Спецификация языка](spec.html) — что в нём есть.
-- [Что доказано, а что проверено](overview.html) — граница проведена явно, и это важно.
-- [База знаний](knowledge.html) — почему решения приняты так, что измерено и что оказалось ложным.
+- [What changed](../changelog.html) — in Russian; merge by merge, with the numbers each one moved.
+- [Your first program](getting-started.html) — built and running in five minutes.
+- [Why proofs, and how they work](proofs.html) — the point of the language.
+- [Roadmap](roadmap.html) — done, in progress, not started, decided against.
+- [Language specification](../spec.html) — in Russian.
+- [What is proved and what is only checked](../overview.html) — in Russian; the line is drawn explicitly.

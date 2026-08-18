@@ -107,6 +107,15 @@ body {
 
 .tagline { color: var(--faint); font-size: .85rem; flex: 1; }
 
+/* Переключатель языка. Стоит рядом с переключателем темы и выглядит как он же:
+   это две кнопки одного рода — «показать то же самое иначе». */
+.lang {
+  border: 1px solid var(--rule); color: var(--muted); text-decoration: none;
+  border-radius: 3px; padding: .15rem .5rem; font-size: .8rem;
+  align-self: center; white-space: nowrap;
+}
+.lang:hover { background: var(--accent-bg); color: var(--accent); }
+
 .theme {
   background: none; border: 1px solid var(--rule); color: var(--muted);
   border-radius: 3px; cursor: pointer; padding: .15rem .5rem; font-size: .9rem;

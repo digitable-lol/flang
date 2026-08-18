@@ -31,7 +31,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
-import { checkTypes } from "../src/types.mjs"
+import { checkTypes, markProven } from "../src/types.mjs"
 import { безГраницы, долгБылНайден } from "./entry-debt.mjs"
 import { globSync } from "./glob.mjs"
 
@@ -258,7 +258,17 @@ test("сторож меры: обе реализации понижения ст
   const беды = []
   for (const относительный of отмеченные) {
     const ast = await разобрать(относительный)
-    const помеченная = markMeasureGuards(ast)
+    /*
+     * ПРЕДОБРАБОТКА ЭТАЛОНА: markMeasureGuards, markProven — обе отметки переднего
+     * края (`flang/bin/flang.mjs`, `loadProgramFromSource`: `markProven(markMeasure(…))`).
+     * Эталон печатает ТОЛЬКО отмеченную программу: ни `emit`, ни `run`, ни `test`,
+     * ни `repl` непомеченной не видят, а печатник читает обе отметки — `доказана`
+     * и `числовая`. Снимается ими не разница между реализациями, а разница между
+     * тестом и работой: без них сверка сличала бы близнеца с печатью, которой у
+     * эталона не бывает, и молчала бы обо всех 2634 местах, где эталон печатает
+     * выражение вместо вызова помощника, а близнец — вызов.
+     */
+    const помеченная = markProven(markMeasureGuards(ast))
     assert.notEqual(помеченная, ast, `${относительный}: числовой меры больше нет — программу переписали?`)
     assert.match(
       emitPython(помеченная).files.map((файл) => файл.content).join(""),
@@ -276,7 +286,7 @@ test("сторож меры: обе реализации понижения ст
      упадёт до нуля в тот день, когда долг закроют, — и тест скажет об этом. */
   let сОбъявленной = 0
   for (const относительный of программыРепозитория) {
-    const помеченная = markMeasureGuards(await разобрать(относительный))
+    const помеченная = markProven(markMeasureGuards(await разобрать(относительный)))
     if (Array.isArray(помеченная.descents) && помеченная.descents.length > 0) сОбъявленной += 1
   }
   t.diagnostic(`программ с объявленной мерой, сторожа которой самоприменение пока не ставит: ${сОбъявленной}`)

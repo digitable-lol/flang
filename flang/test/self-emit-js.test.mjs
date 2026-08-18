@@ -31,7 +31,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
-import { checkTypes } from "../src/types.mjs"
+import { checkTypes, markProven } from "../src/types.mjs"
 import { безГраницы, долгБылНайден } from "./entry-debt.mjs"
 import { globSync } from "./glob.mjs"
 
@@ -300,7 +300,17 @@ test("сторож меры: расходится только понижени�
   let совпало = 0
   for (const относительный of программыРепозитория) {
     const ast = await разобрать(относительный)
-    const помеченная = markMeasureGuards(ast)
+    /*
+     * ПРЕДОБРАБОТКА ЭТАЛОНА: markMeasureGuards, markProven — обе отметки переднего
+     * края (`flang/bin/flang.mjs`, `loadProgramFromSource`: `markProven(markMeasure(…))`).
+     * Эталон печатает ТОЛЬКО отмеченную программу: ни `emit`, ни `run`, ни `test`,
+     * ни `repl` непомеченной не видят, а печатник читает обе отметки — `доказана`
+     * и `числовая`. Снимается ими не разница между реализациями, а разница между
+     * тестом и работой: без них сверка сличала бы близнеца с печатью, которой у
+     * эталона не бывает, и молчала бы обо всех 2634 местах, где эталон печатает
+     * выражение вместо вызова помощника, а близнец — вызов.
+     */
+    const помеченная = markProven(markMeasureGuards(ast))
     /* Проход тождествен там, где числовой меры нет вовсе: он возвращает ТОТ ЖЕ
        объект. Такие программы уже сверены выше без отметок, второй раз незачем. */
     if (помеченная === ast) continue

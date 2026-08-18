@@ -46,6 +46,7 @@
     "spec:check": "node fspec/storozh.mjs",
     "codes:check": "node flang/scripts/code-guard.mjs",
     "emit:check": "node flang/scripts/emit-guard.mjs",
+    "tmp:check": "node flang/scripts/tempdir-guard.mjs",
     "proof:ledger": "node flang/scripts/proof-ledger.mjs",
     "proof:search": "node flang/scripts/proof-search.mjs",
     "word:occupancy": "node flang/scripts/word-occupancy.mjs",

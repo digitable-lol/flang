@@ -20,8 +20,7 @@
  * поднимается вместе с работой и вниз не ходит — это и есть храповик.
  */
 import assert from "node:assert/strict"
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
@@ -34,6 +33,7 @@ import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { безГраницы, долгБылНайден } from "./entry-debt.mjs"
 import { globSync } from "./glob.mjs"
+import { рабочийКаталог } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 const файл = fileURLToPath(new URL("../self/emit-js.flang", import.meta.url))
@@ -690,7 +690,7 @@ test("самоприменение: близнец печатает свой и�
       `${напечатанный.content.split("\n").length - 1} строк`,
   )
 
-  const каталог = mkdtempSync(join(tmpdir(), "self-emit-js-"))
+  const каталог = рабочийКаталог("self-emit-js")
   try {
     const путь = join(каталог, напечатанный.path)
     writeFileSync(путь, напечатанный.content, "utf8")

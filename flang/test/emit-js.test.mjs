@@ -35,7 +35,7 @@ import { markMeasureGuards } from "../src/totality.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { camel, pascal } from "../src/naming.mjs"
 import { УБЕГАЮЩИЕ } from "./corpus-grid.mjs"
-import { рабочийКаталог } from "./tempdir.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 
@@ -1704,11 +1704,10 @@ function спросить(path, вызов, срок) {
       timeout: срок,
       killSignal: "SIGKILL",
       maxBuffer: 64 * 1024 * 1024,
-      env: {
-        ...process.env,
+      env: средаСборки(workdir, {
         FLANG_MODULE: pathToFileURL(path).href,
         FLANG_REQUEST: JSON.stringify({ пределы: null, ...вызов }),
-      },
+      }),
     })
   } catch (беда) {
     if (беда.code === "ETIMEDOUT" || беда.signal === "SIGKILL") {

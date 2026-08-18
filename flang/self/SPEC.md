@@ -35,7 +35,7 @@ newer», потому что компилятор языка написан на
 | Слой на JS | Строк | Файл на flang | Что делает |
 |---|---|---|---|
 | `src/lexer.mjs` | 1065 | `self/lexer.flang` | текст → токены, отступы значимы |
-| `src/parser.mjs` | 4434 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
+| `src/parser.mjs` | 4507 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
 | `src/types.mjs` | 7113 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1803 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
 | `src/emit/c.mjs` | 2145 | `self/emit-c.flang` | печать в C99 |

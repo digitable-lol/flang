@@ -103,7 +103,7 @@ npm run emit:check     # "seven backends emit …, JavaScript emits one file", a
 What this means when you write:
 
 - **Numbers.** Put the path in backticks next to the count — either order works:
-  `` `flang/src/parser.mjs`, 4434 lines `` or `` 4434 lines in `flang/src/parser.mjs` ``.
+  `` `flang/src/parser.mjs`, 4507 lines `` or `` 4507 lines in `flang/src/parser.mjs` ``.
   It will be remeasured against the tree. If you mean an approximation, write
   `~3900` — the guard leaves those alone, on purpose. Both languages are read:
   `строк` and `lines`, `в` and `in`.

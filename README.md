@@ -80,9 +80,9 @@ docs/             documentation; README and SPEC files stay next to the code the
 
 | file | what keeps it in the root specifically |
 | --- | --- |
-| `README.md` · `README.ru.md` | the front page: GitHub serves it from the root and nowhere else |
-| `LICENSE` · `LICENSE-RU.md` | the BSD-2-Clause licence and its Russian edition; the translation carries no legal force, but it is the one people read |
-| `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms — also only from the root |
+| `README.md` · `README.ru.md` | the repository front page. GitHub would take it from `.github/` or `docs/` too, but the root copy is the one a reader opening the repository lands on |
+| `LICENSE` · `LICENSE-RU.md` | the BSD-2-Clause licence and its Russian edition. GitHub's licence detection reads **the root only**: move `LICENSE` and the repository becomes "no licence". The translation carries no legal force, but it is the one people read |
+| `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms; it looks in the root, in `.github/` and in `docs/` |
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
 | `package.json` · `package-lock.json` | the manifest of the **second mould** — the one that embeds the language into somebody else's Node project. npm reads them only from the root of the package it publishes |

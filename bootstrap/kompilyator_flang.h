@@ -19713,6 +19713,16 @@ fl_status kompilyator_flang_tip_izvestnoy_formy(fl_ctx *ctx, fl_value uzel, fl_v
 fl_status kompilyator_flang_forma_dlina(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Длина помнит контейнер».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_dlina_pomnit_konteyner(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строка или список».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -19722,12 +19732,13 @@ fl_status kompilyator_flang_forma_dlina(fl_ctx *ctx, fl_value uzel, fl_value arg
  * @param argumenty — «аргументы»: список: «Значение»
  * @param forma — «форма»: строка
  * @param itog — «итог»: «Тип»
+ * @param pomnit — «помнит»
  * @param imena — «имена»: «Имена»
  * @param tablicy — «таблицы»: «Таблицы»
  * @param bedy — «беды»: список: «Беда»
  * @return значение: «Итог вывода»
  */
-fl_status kompilyator_flang_stroka_ili_spisok(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value forma, fl_value itog, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_stroka_ili_spisok(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value forma, fl_value itog, fl_value pomnit, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Форма символ».

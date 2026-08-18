@@ -1042,7 +1042,7 @@ test("четыре утверждения корпуса доказаны инд
   }
 })
 
-test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать два раза", async () => {
+test("корпус самоприменения употребляет ровно `обеспечивает` и ровно тридцать семь раз", async () => {
   /* ЗДЕСЬ СТОЯЛ ЗАПРЕТ НА ВСЕ ВОСЕМЬ СЛОВ, и он был правдой ровно до того дня,
      когда у слоя доказательства появилась продукция в `flang/self/parser.flang`
      (15 августа 2026). Продукция есть — запрет на `обеспечивает` стал ложью, и
@@ -1172,6 +1172,12 @@ test("корпус самоприменения употребляет ровн�
     "flang/examples/measure/natural.flang",
     "flang/examples/measure/natural.flang",
     "flang/self/emit-c.flang",
+    /* Близнецы законов (`work/zakony-blizneci-1`) объявляют постусловия ровно
+       так же, как их объявляют моноид, изоморфизм и монада. Список пересчитан
+       прогоном на СЛИТОМ дереве, а не сложен из сторон: было тридцать два,
+       стало тридцать семь. */
+    "flang/self/functor.flang",
+    "flang/self/functor.flang",
     "flang/self/interpret.flang",
     "flang/self/interpret.flang",
     "flang/self/iso.flang",
@@ -1193,6 +1199,9 @@ test("корпус самоприменения употребляет ровн�
     "flang/self/proof-kernel.flang",
     "flang/self/proof.flang",
     "flang/self/proofterm.flang",
+    "flang/self/setoid.flang",
+    "flang/self/setoid.flang",
+    "flang/self/setoid.flang",
     "flang/self/sets.flang",
     /* «Потолок точных» несёт ТРИ строки, «Дно точных» одну (`work/lemmy`):
        утверждение о границах точной сетки говорит и про дно, и про потолок, и

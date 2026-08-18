@@ -526,9 +526,9 @@ test("свод по корпусу называет те же числа, что
 
      СТОРОЖ СЧИТАЕТСЯ НЕ ПО РЕКУРСИИ, А ПО НОСИТЕЛЮ: на стороже только два
      носителя из четырёх, и это второе число этапа — 66 функций, а не 80. */
-  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 415, "рекурсивных всего")
+  assert.equal(и.carriers.structure + и.carriers.exact + и.carriers.step + и.carriers.measure, 416, "рекурсивных всего")
   assert.equal(и.carriers.step + и.carriers.measure, 67, "функций на стороже")
-  assert.equal(и.carriers.composition + 415, и.total, "композиция и рекурсия покрывают тотальные")
+  assert.equal(и.carriers.composition + 416, и.total, "композиция и рекурсия покрывают тотальные")
 
   /* Утверждения о поведении — то, чего до слоя доказательства в корпусе не было
      вовсе: высказать их было нечем. Числа названы поимённо и точным равенством,

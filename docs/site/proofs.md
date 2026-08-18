@@ -25,22 +25,22 @@ There are five carriers of that promise, and each leaves a trace in the ledger:
 
 | Carrier | Functions |
 |---|---:|
-| By composition — no recursion at all | 5822 |
-| By structure — walking part of a value | 359 |
+| By composition — no recursion at all | 6089 |
+| By structure — walking part of a value | 361 |
 | By an exact step over a natural number | 27 |
-| By a constant step with a run-time check | 5 |
+| By a constant step with a run-time check | 6 |
 | By a declared measure with a run-time check | 64 |
 
 The last two lines are separated honestly: termination there is not proved all
 the way, and a run-time check picks up the difference. The ledger shows that as
-its own number — **103 sites across 69 functions** — instead of folding it into
+its own number — **104 sites across 70 functions** — instead of folding it into
 the total.
 
 ## Three answers, not two
 
 The kernel answers in three different ways, and mixing them is not allowed:
 
-**Proved by the kernel** — the claim holds for all inputs. There are **137 of 161**.
+**Proved by the kernel** — the claim holds for all inputs. There are **152 of 182**.
 
 **On a grid** — a set of values was run, no violation found. The ledger line for
 this ends with the words **"this is not a proof"**, and it ends that way on
@@ -111,7 +111,7 @@ years, and no kernel repeals it.
 We measured this, because whether the language is worth building depends on the
 answer.
 
-Twenty ordinary library functions were taken — **every ninth of all 259**, so
+Twenty ordinary library functions were taken — **every ninth of all 318**, so
 that the convenient ones could not be picked — and each got both tests and a
 proof.
 

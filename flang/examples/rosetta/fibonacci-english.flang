@@ -119,3 +119,40 @@ total function «Fibonacci»
     given n equals 40
     expected 102334155
   «Fibonacci by steps» of n and 0 and 1
+
+// The theorem this lemma was missing, and it was missing one word.
+//
+// Until now the statement stood in the ledger as a grid: the postcondition was
+// counted by one example of the author («No steps left») — on one input out of
+// the segment [0, 2⁵³−1] and one pair of accumulators out of infinity. Now it is
+// proven about ALL inputs, and not one line was added to the kernel for it.
+//
+// The principle is the one from `flang/proof/examples/segment.flang` — the `nat`
+// SEGMENT: `remaining` is declared `nat`, the descent is by exactly one
+// (`remaining minus 1`), and the floor is read off the condition
+// `if remaining is at most 0`. Strictness of the descent the kernel checks
+// itself, and a forgery whose step does not decrease is refused.
+//
+// WHAT CLOSES THE FLOOR — AND WHY NOT AN EXAMPLE. At the floor the body returns
+// `previous`, so the goal of the floor is `previous is at least 0`, and
+// `previous` in it is FREE. An example does not close such a premise, and the
+// kernel refuses rightly: an example gives one value, a free name ranges over
+// infinity. What closes it is `by hypothesis` — and the hypothesis here is not
+// the inductive one but the PRECONDITION of the function: `requires «previous is
+// non-negative»` stands above and is discharged by the caller. That is, the
+// floor is proven by the very `requires` it was written for; remove it and the
+// statement itself collapses along with the theorem, because the input
+// 0 / −7 / 9 yields −7.
+//
+// THE STEP is closed by `by hypothesis` in the usual sense: the result of a turn
+// is the result of the call on `remaining minus 1`, which is exactly what the
+// induction hypothesis speaks about.
+theorem «the Fibonacci step is non-negative»
+  given remaining: nat
+  claim result is at least 0
+  induction on remaining decreases remaining
+    case 0
+      then by hypothesis
+    case any
+      then by hypothesis
+  therefore proved

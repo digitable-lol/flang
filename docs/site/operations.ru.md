@@ -7,7 +7,7 @@
 прогоняется:
 
 ```bash
-node flang/bin/flang.mjs test docs/examples/operations.flang
+flang test docs/examples/operations.flang
 ```
 
 Прогон 18 августа 2026: **примеров 224, прошло 224, упало 0**. Двести
@@ -162,7 +162,7 @@ flang и лежащие в `flang/stdlib/`:
 ## Что говорит ведомость об этом файле
 
 ```bash
-node flang/bin/flang.mjs check docs/examples/operations.flang --proof --pretty
+flang check docs/examples/operations.flang --proof
 ```
 
 ```

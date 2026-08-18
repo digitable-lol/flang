@@ -56,6 +56,9 @@ const корень = fileURLToPath(new URL("../../", import.meta.url))
 const прочитать = (путь) => readFileSync(join(корень, путь), "utf8")
 
 const РЕПО = "digitable-lol/flang"
+/* Тот самый tap, что назван в README командой `brew install digitable-lol/tap/flang`:
+   brew разворачивает «digitable-lol/tap» в репозиторий «digitable-lol/homebrew-tap». */
+const ТAP = "digitable-lol/homebrew-tap"
 const ФОРМУЛА = "packaging/homebrew/flang.rb"
 
 /* ------------------------------------------------------------------- обещания */
@@ -215,5 +218,59 @@ test("ссылка формулы отдаёт архив, а не 404", async (
     ответ.ok,
     `${ФОРМУЛА}: url ведёт на ${ссылка}, а сервер отвечает ${ответ.status}. ` +
       `Это и есть «сайт обещает установку, которой нет»: brew скачает ${ответ.status} вместо архива.`,
+  )
+})
+
+test("формула в tap не отстала от формулы в репозитории", async (t) => {
+  if (process.env.FLANG_SKIP_RELEASE_CHECK) {
+    t.skip("проверка выключена намеренно: FLANG_SKIP_RELEASE_CHECK")
+    return
+  }
+  /*
+   * Почему это отдельная проверка и почему она важнее, чем кажется.
+   *
+   * README обещает `brew install digitable-lol/tap/flang`. Эта команда читает НЕ
+   * этот репозиторий, а Formula/flang.rb в репозитории digitable-lol/homebrew-tap.
+   * packaging/homebrew/flang.rb — черновик, который туда КОПИРУЮТ РУКАМИ: в tap
+   * по коммиту на релиз, автоматики нет ни здесь, ни там.
+   *
+   * Отсюда прямое следствие, измеренное 18 августа 2026: пока формула в
+   * репозитории показывала на несуществующий v0.5.0 и отдавала 404, tap спокойно
+   * отдавал v0.4.7 — ссылка 200, sha256 сходится, архив собирается за 38 с и
+   * бинарник говорит «flang 0.4.7». То есть brew не был сломан, он был ОТСТАВШИМ,
+   * и это разные беды с разным лечением. Правка черновика пользователя не
+   * достигает вовсе: без копирования в tap она остаётся упражнением.
+   */
+  const доступ = await githubДоступен()
+  if (!доступ.да) {
+    t.skip(`GitHub недоступен, формула tap НЕ ПРОВЕРЕНА — ${доступ.почему}`)
+    return
+  }
+
+  let ответ
+  try {
+    ответ = await fetch(`https://raw.githubusercontent.com/${ТAP}/HEAD/Formula/flang.rb`, {
+      signal: AbortSignal.timeout(ЖДАТЬ),
+    })
+  } catch (беда) {
+    t.skip(`формулу tap не скачали, НЕ ПРОВЕРЕНО — ${беда.message}`)
+    return
+  }
+  if (ответ.status === 404) {
+    t.skip(`в ${ТAP} нет Formula/flang.rb — проверять нечего`)
+    return
+  }
+  assert.ok(ответ.ok, `формула tap не читается: ${ответ.status}`)
+  const формулаTap = await ответ.text()
+
+  const версияTap = /^\s*version\s+"([^"]+)"/mu.exec(формулаTap)?.[1]
+  const наше = обещания[0].версия
+  assert.equal(
+    версияTap,
+    наше,
+    `${ФОРМУЛА} и документация обещают ${наше}, а tap ${ТAP} отдаёт ${версияTap}: ` +
+      `«brew install digitable-lol/tap/flang» поставит ${версияTap}, а не ${наше}. ` +
+      `Формула в tap правится РУКАМИ, автоматики нет — скопируйте туда ${ФОРМУЛА}. ` +
+      `Пока не скопировали, правка формулы здесь до пользователя не доходит.`,
   )
 })

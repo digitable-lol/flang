@@ -59,7 +59,7 @@ import { нормальнаяФорма, свести } from "../proof/reduce.mj
 import { ФАЙЛЫ } from "../scripts/proof-ledger.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { wordOn } from "../src/lexer.mjs"
-import { одинаковы } from "../src/obligations.mjs"
+import { одинаковы } from "../src/as-written.mjs"
 import { parse } from "../src/parser.mjs"
 import { proofLedger } from "./vedomost.mjs"
 

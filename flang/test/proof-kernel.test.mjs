@@ -42,9 +42,10 @@ import {
   свести,
 } from "../proof/reduce.mjs"
 import { ФАЙЛЫ } from "../scripts/proof-ledger.mjs"
+import { одинаковы } from "../src/as-written.mjs"
 import { BUILTIN_NAMES, callBuiltin } from "../src/builtins.mjs"
 import { evaluate } from "../src/interpret.mjs"
-import { obligations, одинаковы } from "../src/obligations.mjs"
+import { obligations } from "../src/obligations.mjs"
 import { parse } from "../src/parser.mjs"
 import { АКСИОМЫ, checkProofs, вычислениемЗамкнутой, свернутьПринцип, СИЛА } from "../src/proofterm.mjs"
 import { ИМЕНА_НАТ, ТИП_РЕЗУЛЬТАТА_ФОРМЫ, ТОЧНАЯ_СЕТКА } from "../src/types.mjs"

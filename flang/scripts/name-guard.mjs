@@ -89,7 +89,8 @@
  * Запуск:  node flang/scripts/name-guard.mjs        (или `npm run names:check`)
  *          node flang/scripts/name-guard.mjs --debt   переписать файл долга
  *          node flang/scripts/name-guard.mjs --list   показать долг по файлам
- * Проверяется он сам — `flang/test/name-guard.test.mjs`, включая подделки:
+ * Проверяется он сам — `flang/test/name-guard.test.mjs`, включая подделки и
+ * здоровый файл, подложенный тем же способом:
  * сторож, который не умеет краснеть, выглядит ровно как сторож, у которого всё
  * хорошо.
  */

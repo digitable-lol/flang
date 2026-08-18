@@ -179,6 +179,8 @@ node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
 node --test flang/test/name-guard.test.mjs     # the guard's own check
 ```
 
-The guard is checked by forty assertions: eleven fakes, one per rule; a fake supplied as a whole
-file; twenty healthy names across all four surfaces; and the count of what failed to parse. A guard
+The guard is checked by forty-one assertions: eleven fakes, one per rule; a fake supplied as a whole
+file; a healthy file supplied the same way; twenty healthy names across all four surfaces; and the
+count of what failed to parse. It was also checked against the real tree: a fake dropped into
+`flang/examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
 that cannot go red looks exactly like a guard that has nothing to report.

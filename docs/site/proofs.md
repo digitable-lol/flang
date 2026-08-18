@@ -25,7 +25,7 @@ There are five carriers of that promise, and each leaves a trace in the ledger:
 
 | Carrier | Functions |
 |---|---:|
-| By composition — no recursion at all | 5690 |
+| By composition — no recursion at all | 5692 |
 | By structure — walking part of a value | 357 |
 | By an exact step over a natural number | 27 |
 | By a constant step with a run-time check | 4 |

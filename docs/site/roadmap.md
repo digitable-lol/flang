@@ -18,8 +18,8 @@ axioms is held empty by a test, not by a promise: one cannot be added quietly.
 
 | | |
 |---|---:|
-| Functions in the corpus | 8016 |
-| Of them total | 6142 |
+| Functions in the corpus | 8018 |
+| Of them total | 6144 |
 | Claims stated | 153 |
 | Proved by the kernel | 132 |
 | Refuted by the kernel | 0 |

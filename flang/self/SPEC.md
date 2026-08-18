@@ -38,7 +38,7 @@ newer», потому что компилятор языка написан на
 | `src/parser.mjs` | 4590 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
 | `src/types.mjs` | 6975 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1803 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
-| `src/emit/c.mjs` | 2231 | `self/emit-c.flang` | печать в C99 |
+| `src/emit/c.mjs` | 2238 | `self/emit-c.flang` | печать в C99 |
 | `src/emit/go.mjs` | 1832 | `self/emit-go.flang` | печать в Go |
 | `src/defunc.mjs` | 888 | `self/defunc.flang` | сторожа меры (числовой и полиморфный) и дефункционализация перед печатью |
 | `src/interpret.mjs` | 1193 | `self/interpret.flang` | вычисление AST: машина «кадр → значение» |

@@ -5,6 +5,7 @@
  * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
  */
 #define FL_PROGRAM_CALL kompilyator_flang_call
+#define FL_PROGRAM_ENTRY kompilyator_flang_entry
 
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
@@ -118,6 +119,28 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
                                  fl_value *result, fl_error *error);
 
 /*
+ * Второй мост к программе — ЕЁ СОБСТВЕННАЯ ГРАНИЦА ВХОДА: объявленные типы
+ * параметров, впечатанные в программу данными (fl_entry_table). Нужен он ровно
+ * одному месту — `flang emit --target c`, печатающей САМ КОМПИЛЯТОР.
+ *
+ * Зачем. Таблицу строит слой типов эталона (`таблицаВхода`, flang/src/types.mjs),
+ * и на flang его нет: `flang/self/types.flang` эту таблицу не строит. Значит
+ * бинарнику взять её неоткуда — кроме одного случая, когда она у него уже есть:
+ * когда печатаемая программа и есть та программа, которой бинарник является.
+ * Тогда его собственная таблица и есть искомая, байт в байт.
+ *
+ * Случай этот не угадывается, а ПРОВЕРЯЕТСЯ: печать берёт таблицу только если
+ * список пар «функция, параметр» связанной программы совпадает с впечатанным
+ * — по порядку, по числу и по именам (`emit_entry_fits`). Не совпал — таблица
+ * пуста, и об этом сказано числом на stderr, а не умолчанием.
+ */
+#ifndef FL_PROGRAM_ENTRY
+#define FL_PROGRAM_ENTRY fl_program_entry
+#endif
+
+extern const fl_entry_table *FL_PROGRAM_ENTRY(void);
+
+/*
  * Чтение файла целиком. У прогонщика есть такое же — и это не досадный повтор,
  * а цена отдельности: файлы обязаны собираться порознь, и общий заголовок между
  * ними завёл бы третий файл ради двадцати строк.
@@ -195,6 +218,11 @@ static const char REPL_GREETING_NO_EVAL[] =
  * целей, запуска примеров и проверки суждений в этом бинарнике нет, поэтому
  * их здесь нет тоже: справка, обещающая несуществующее, обходится дороже
  * отсутствующей — по ней человек строит работу.
+ *
+ * `emit` появился здесь ПОСЛЕ того, как заработал, а не до: сегодня уже
+ * находили ключ, названный в справке и молча игнорируемый, и это хуже отказа.
+ * По той же причине названо и то, чего у печати НЕТ: отбрасывания недостижимого
+ * и отметок `markProven`. Обещание без оговорки читается как обещание целиком.
  */
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
@@ -203,6 +231,8 @@ static const char FLANG_HELP[] =
     "  flang run <файл.flang> --function «Имя» [--args '{\"н\":10}']\n"
     "                               вычислить функцию и напечатать значение\n"
     "  flang repl [<файл.flang>]    интерактивная оболочка; файл загружается в сессию\n"
+    "  flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "                               напечатать программу в C99\n"
     "  flang --version              версия\n"
     "  flang --help                 эта справка\n"
     "  flang                        без аргументов — прогонщик: JSON на входе, JSON на выходе,\n"
@@ -217,6 +247,15 @@ static const char FLANG_HELP[] =
     "против lib/libkompilyator_flang.a и запускает. Нет «cc» — оболочка не выключается,\n"
     "а проверяет разбор, типы и завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.\n"
+    "\n"
+    "Печать в C в бинарнике ЕСТЬ: `flang/self/emit-c.flang` втащен в замыкание, и\n"
+    "«flang emit --target c» печатает без Node. Исходники рантайма C она читает с диска\n"
+    "(--runtime, $FLANG_RUNTIME_DIR, ../flang/src/emit/c): они уезжают в вывод дословно.\n"
+    "ДВУХ ВЕЩЕЙ У НЕЁ НЕТ, И ОБЕ НАЗВАНЫ. Она не отбрасывает недостижимое — печатает\n"
+    "программу целиком, как это делает scripts/bootstrap-c.mjs. И она не приписывает\n"
+    "доказанное («markProven», flang/src/types.mjs; близнеца на flang нет): без этих\n"
+    "отметок печать теряет быстрые пути арифметики и суффикс «_dokazano». На самом\n"
+    "компиляторе это 6 файлов из 7 байт в байт и один расходящийся.\n"
     "\n"
     "Печать в остальные семь целей, запуск примеров и проверка суждений живут в полном\n"
     "инструментарии, а ему нужен Node: npm install -g @digitable-lol/fts\n"
@@ -383,15 +422,28 @@ static void buf_reset(repl_buf *buf) {
   buf->data[0] = '\0';
 }
 
-/** Список строк во владении: имена объявлений, пути, экспорты. */
+/**
+ * Список строк во владении: имена объявлений, пути, экспорты — и ИСХОДНИКИ.
+ *
+ * Длина хранится рядом, а не считается `strlen`, и это не запас на будущее.
+ * Исходник flang законно содержит НУЛЕВОЙ БАЙТ: `"\0"` — обычный строковый
+ * литерал языка, и в `flang/self/link.flang` он стоит разделителем ключа
+ * («Ход категорных», строка 890). Пока длина бралась `strlen`, такой файл
+ * приезжал в компилятор обрезанным по первому нулю, и лексер отвечал на него
+ * «не закрыта кавычка» — то есть БИНАРНИК НЕ МОГ ПРОЧИТАТЬ СВОЙ СОБСТВЕННЫЙ
+ * СЛОЙ СВЯЗЫВАНИЯ, а `check` компилятора недосчитывался 135 функций из 3431 и
+ * сыпал «неизвестная функция «Связать исходники»».
+ */
 typedef struct repl_strings {
   char **items;
+  size_t *sizes;
   size_t count;
   size_t capacity;
 } repl_strings;
 
 static void strings_init(repl_strings *list) {
   list->items = NULL;
+  list->sizes = NULL;
   list->count = 0;
   list->capacity = 0;
 }
@@ -400,8 +452,10 @@ static void strings_add(repl_strings *list, const char *text, size_t bytes) {
   if (list->count == list->capacity) {
     list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
     list->items = (char **)repl_grow(list->items, list->capacity * sizeof(char *));
+    list->sizes = (size_t *)repl_grow(list->sizes, list->capacity * sizeof(size_t));
   }
   list->items[list->count] = repl_dup(text, bytes);
+  list->sizes[list->count] = bytes;
   list->count += 1;
 }
 
@@ -410,7 +464,7 @@ static void strings_say(repl_strings *list, const char *text) { strings_add(list
 static bool strings_has(const repl_strings *list, const char *text, size_t bytes) {
   size_t index = 0;
   for (index = 0; index < list->count; index += 1) {
-    if (strlen(list->items[index]) == bytes && memcmp(list->items[index], text, bytes) == 0) {
+    if (list->sizes[index] == bytes && memcmp(list->items[index], text, bytes) == 0) {
       return true;
     }
   }
@@ -423,6 +477,7 @@ static void strings_free(repl_strings *list) {
     free(list->items[index]);
   }
   free(list->items);
+  free(list->sizes);
   strings_init(list);
 }
 
@@ -1547,7 +1602,7 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
       repl_oom();
     }
     for (index = 0; index < paths->count; index += 1) {
-      items[index] = repl_source_value(paths->items[index], texts->items[index], strlen(texts->items[index]));
+      items[index] = repl_source_value(paths->items[index], texts->items[index], texts->sizes[index]);
     }
     list = fl_list(items, paths->count);
   }
@@ -4530,6 +4585,655 @@ static int run_file(int argc, char **argv) {
   return code;
 }
 
+/* ═══════════════════════ flang emit <файл> --target c ═════════════════════ */
+
+/*
+ * Печать программы в C — та самая, которой печатается САМ этот бинарник.
+ *
+ * Зачем она здесь. Пока `emit` жил только в эталоне на JavaScript, компилятор
+ * пересобирался из исходников РОВНО ОДНИМ способом: `node
+ * scripts/bootstrap-c.mjs`. То есть Node лежал на пути сборки языка, и удалить
+ * его значило остаться без способа восстановить компилятор из исходников `flang/self`.
+ * Эта команда снимает ровно это: печать в C уже втащена в замыкание
+ * (`flang/self/emit-c.flang` едет в `compiler.flang`), и не хватало только
+ * разбора аргументов и подачи настроек.
+ *
+ * ── Три вещи, которые печать просит СНАРУЖИ ─────────────────────────────────
+ *
+ * 1. ТЕКСТ РАНТАЙМА — `flang_runtime.[ch]`, `flang_cli.c`, `flang_repl.c`. Это
+ *    исходники на C, а не печать: они приезжают в вывод дословно, с приписанной
+ *    сверху шапкой. Эталон читает их с диска (`flang/src/emit/c.mjs`), и здесь
+ *    читаются они же и оттуда же — иначе байты разошлись бы.
+ *
+ * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит слой типов
+ *    эталона (`таблицаВхода`), которого на flang нет вовсе. Один случай, когда
+ *    таблица у бинарника уже есть, — печать САМОГО СЕБЯ: тогда годится его
+ *    собственная, впечатанная (`FL_PROGRAM_ENTRY`). Годность не предполагается,
+ *    а проверяется парами «функция, параметр» (`emit_entry_fits`); не сошлось —
+ *    таблица пуста, и об этом сказано числом.
+ *
+ * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
+ *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
+ *    БЭКЕНДА (10⁶ и 10⁴); компилятор печатается с 40 000 000 и 20 000, и эти
+ *    числа называет тот, кто печатает, а не этот файл.
+ *
+ * ── Чего эта команда НЕ делает, и это названо, а не умолчано ────────────────
+ *
+ * • Не отбрасывает недостижимое. `flang emit` на Node зовёт `dropUnreachable`,
+ *   а `scripts/bootstrap-c.mjs` — нет, и обоснование записано там же: у
+ *   компилятора, печатаемого с оболочкой, точек входа больше, чем его
+ *   собственных функций. Здесь дорога одна — как у скрипта, — и на программе с
+ *   импортами вывод будет БОЛЬШЕ, чем у `flang emit --target c` на Node.
+ * • Не проверяет типы и завершаемость перед печатью: `flang check` — отдельная
+ *   команда, и она в этом же бинарнике. Беды СВЯЗЫВАНИЯ печать отменяют: без
+ *   связанной программы печатать нечего.
+ *
+ * ── Что померено прогоном, а не обещано ────────────────────────────────────
+ * Под `env -i PATH=/usr/bin:/bin`, то есть там, где Node недостижим:
+ *   1. flang₁ (этот бинарник) печатает компилятор — семь файлов; ШЕСТЬ из них
+ *      совпадают с печатью `scripts/bootstrap-c.mjs` ПОБАЙТОВО, расходится
+ *      один (kompilyator_flang.c) и по одной названной причине — `markProven`.
+ *   2. Напечатанное собирается `cc -std=c99 -Wall -Wextra -Werror -pedantic`
+ *      без единого предупреждения и даёт рабочий flang₂: `check` на пробном
+ *      файле отвечает тем же, что flang₁.
+ *   3. flang₂ печатает компилятор снова — и все СЕМЬ файлов совпадают с
+ *      печатью flang₁ побайтово. То есть у печати самого бинарника есть своя
+ *      неподвижная точка, и восстановить компилятор из исходников `flang/self`
+ *      можно сколько угодно раз, ни разу не позвав Node.
+ * • Цель одна — `c`. Остальные семь написаны на flang (`flang/self/emit-*.flang`)
+ *   и сверены с эталоном побайтово, но в замыкание не втащены. МЕШАЕТ ИМ ОДНО И
+ *   ТО ЖЕ — СТОЛКНОВЕНИЯ ИМЁН: связывание сливает объявления в одно плоское
+ *   пространство, а близнецы печати — братья одного строения и зовут свои части
+ *   одинаково. Померено по замыканию компилятора (18 файлов, 3978 объявленных
+ *   имён), числом новых объявлений цели и числом столкнувшихся:
+ *
+ *     go       189 →   2   («Слить просьбы», «Только цифры»)
+ *     rust     223 →   4   («Без ведущих пробелов», «Ключи полей»,
+ *                           «Обрезка слева», «Только цифры»)
+ *     java     364 →   7   («Есть имя», «Есть узел», «Может быть имя»,
+ *                           «Может быть узел», «Нет имени», «Нет узла»,
+ *                           «Пара имён»)
+ *     js       336 → 139
+ *     elixir   422 → 261
+ *     python   377 → 299
+ *     csharp   382 → 309
+ *
+ *   Разрыв между go/rust и остальными — не случайность: `emit-go.flang` и
+ *   `emit-rust.flang` называют свои части с именем цели («Модуль Go», «Змейка
+ *   Rust»), а js, python, csharp и elixir зовут их так же, как `emit-c.flang`
+ *   («Печать функции», «Печать вызова», «Общее», «Настройки»), и потому
+ *   сталкиваются с уже втащенным сплошь. Для сравнения: вычислителю стоило
+ *   трёх столкновений из 298, ядру доказательства — 36.
+ */
+
+/** Файлы рантайма, которые печать просит текстом. Порядок — как в настройках. */
+#define EMIT_RUNTIME_HEADER "flang_runtime.h"
+#define EMIT_RUNTIME_SOURCE "flang_runtime.c"
+#define EMIT_RUNNER_SOURCE "flang_cli.c"
+#define EMIT_SHELL_SOURCE "flang_repl.c"
+
+/**
+ * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
+ *
+ * Разница видна первой строкой: напечатанный `flang_runtime.h` начинается
+ * шапкой «Сгенерировано flang», исходник — строкой SPDX. Каталог рядом с
+ * бинарником (`bootstrap/`) полон именно напечатанных, и подсунуть их печати
+ * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
+ * НЕ пробуется — в отличие от поиска заголовков для оболочки.
+ */
+static bool emit_runtime_here(const char *directory) {
+  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+  size_t bytes = 0;
+  char *text = repl_read_file(probe, &bytes);
+  bool ok = false;
+  free(probe);
+  if (text == NULL) {
+    return false;
+  }
+  /* «Сгенерировано» стоит в первых двухстах байтах шапки и только там. */
+  ok = strstr(text, "Сгенерировано flang") == NULL;
+  free(text);
+  return ok;
+}
+
+static char *emit_runtime_dir(const char *self_dir, const char *given) {
+  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+  size_t index = 0;
+  if (given != NULL && given[0] != '\0') {
+    return emit_runtime_here(given) ? repl_say(given) : NULL;
+  }
+  {
+    const char *set = getenv("FLANG_RUNTIME_DIR");
+    if (set != NULL && set[0] != '\0') {
+      return emit_runtime_here(set) ? repl_say(set) : NULL;
+    }
+  }
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  for (index = 0; index < 2; index += 1) {
+    char *parent = repl_dirname(self_dir);
+    char *directory = repl_join(parent, places[index]);
+    free(parent);
+    if (emit_runtime_here(directory)) {
+      return directory;
+    }
+    free(directory);
+  }
+  return NULL;
+}
+
+/** Вид типа границы — обратный перевод к «Виду типа входа» из emit-c.flang. */
+static const char *emit_kind_word(fl_type_kind kind) {
+  switch (kind) {
+    case FL_TYPE_NUMBER:
+      return "число";
+    case FL_TYPE_STRING:
+      return "строка";
+    case FL_TYPE_FLAG:
+      return "признак";
+    case FL_TYPE_NULL:
+      return "ничто";
+    case FL_TYPE_LIST:
+      return "список";
+    case FL_TYPE_RECORD:
+      return "запись";
+    case FL_TYPE_SUM:
+      return "сумма";
+    case FL_TYPE_UNKNOWN:
+    default:
+      return "неизвестно";
+  }
+}
+
+/**
+ * Впечатанная граница входа — обратно в значения flang.
+ *
+ * Порядок полей здесь не свободный: это объекты «Тип входа», «Поле входа»,
+ * «Вариант входа» и «Параметр входа» из `flang/self/emit-c.flang`, и разойдись
+ * имена — печать получила бы записи не тех форм.
+ */
+static fl_value emit_entry_types(const fl_entry_table *table) {
+  static const char *const names[13] = {"вид",  "имя",     "владелец", "ничто",  "целое",
+                                        "отрезок", "низ",  "верх",     "элемент", "поле с",
+                                        "полей", "вариант с", "вариантов"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->type_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->type_count);
+  for (index = 0; index < table->type_count; index += 1) {
+    const fl_type *type = &table->types[index];
+    fl_value values[13];
+    values[0] = repl_value_say(emit_kind_word(type->kind));
+    values[1] = repl_value_say(type->name == NULL ? "" : type->name);
+    values[2] = repl_value_say(type->owner == NULL ? "" : type->owner);
+    values[3] = fl_flag(type->optional);
+    values[4] = fl_flag(type->integral);
+    values[5] = fl_flag(type->bounded);
+    values[6] = fl_number(type->low);
+    values[7] = fl_number(type->high);
+    values[8] = fl_number((double)type->of);
+    values[9] = fl_number((double)type->field_from);
+    values[10] = fl_number((double)type->field_count);
+    values[11] = fl_number((double)type->variant_from);
+    values[12] = fl_number((double)type->variant_count);
+    items[index] = repl_value_record(names, values, 13);
+  }
+  out = repl_value_list(items, table->type_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_fields(const fl_entry_table *table) {
+  static const char *const names[2] = {"имя", "тип"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->field_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->field_count);
+  for (index = 0; index < table->field_count; index += 1) {
+    fl_value values[2];
+    values[0] = repl_value_say(table->fields[index].name == NULL ? "" : table->fields[index].name);
+    values[1] = fl_number((double)table->fields[index].type);
+    items[index] = repl_value_record(names, values, 2);
+  }
+  out = repl_value_list(items, table->field_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_variants(const fl_entry_table *table) {
+  static const char *const names[3] = {"имя", "поле с", "полей"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->variant_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->variant_count);
+  for (index = 0; index < table->variant_count; index += 1) {
+    fl_value values[3];
+    values[0] = repl_value_say(table->variants[index].name == NULL ? "" : table->variants[index].name);
+    values[1] = fl_number((double)table->variants[index].field_from);
+    values[2] = fl_number((double)table->variants[index].field_count);
+    items[index] = repl_value_record(names, values, 3);
+  }
+  out = repl_value_list(items, table->variant_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_params(const fl_entry_table *table) {
+  static const char *const names[3] = {"функция", "параметр", "тип"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->param_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->param_count);
+  for (index = 0; index < table->param_count; index += 1) {
+    fl_value values[3];
+    values[0] = repl_value_say(table->params[index].function == NULL ? "" : table->params[index].function);
+    values[1] = repl_value_say(table->params[index].name == NULL ? "" : table->params[index].name);
+    values[2] = fl_number((double)table->params[index].type);
+    items[index] = repl_value_record(names, values, 3);
+  }
+  out = repl_value_list(items, table->param_count);
+  free(items);
+  return out;
+}
+
+/**
+ * Годится ли впечатанная граница связанной программе.
+ *
+ * Сверяются ПАРЫ «функция, параметр» по порядку, числу и именам — то же
+ * перечисление, каким строит список `таблицаВхода` (по функциям программы, по
+ * параметрам каждой). Совпало всё до последней пары — программа та же, и её
+ * таблица годится. Разошлось хоть в одном месте — таблица чужая, и печатать по
+ * ней значило бы соврать о типах напечатанного.
+ *
+ * Проверка НЕ доказывает совпадения типов: имена сошлись, а объявления могли
+ * разойтись. Именно поэтому неподвижная точка сверяется отдельно и байтами
+ * (`flang/test/self-bootstrap.test.mjs`): здесь дешёвый сторож, там приговор.
+ */
+static bool emit_entry_fits(fl_value program, const fl_entry_table *table) {
+  const fl_value *functions = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  size_t seen = 0;
+  zn_field_items(program, "functions", &functions, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *function = NULL;
+    size_t function_bytes = 0;
+    const fl_value *params = NULL;
+    size_t params_count = 0;
+    size_t at = 0;
+    if (!zn_field_text(functions[index], "name", &function, &function_bytes)) {
+      return false;
+    }
+    zn_field_items(functions[index], "params", &params, &params_count);
+    for (at = 0; at < params_count; at += 1) {
+      const char *name = NULL;
+      size_t name_bytes = 0;
+      if (seen >= table->param_count) {
+        return false;
+      }
+      if (!zn_field_text(params[at], "name", &name, &name_bytes)) {
+        return false;
+      }
+      if (table->params[seen].function == NULL || table->params[seen].name == NULL) {
+        return false;
+      }
+      if (strlen(table->params[seen].function) != function_bytes ||
+          memcmp(table->params[seen].function, function, function_bytes) != 0) {
+        return false;
+      }
+      if (strlen(table->params[seen].name) != name_bytes ||
+          memcmp(table->params[seen].name, name, name_bytes) != 0) {
+        return false;
+      }
+      seen += 1;
+    }
+  }
+  return seen == table->param_count && seen > 0;
+}
+
+/** Запись одного напечатанного файла на диск; путь уже разрешён. */
+static bool emit_write(const char *full, const char *text, size_t bytes) {
+  FILE *stream = fopen(full, "wb");
+  if (stream == NULL) {
+    fprintf(stderr, "flang emit: не открыт для записи %s\n", full);
+    return false;
+  }
+  if (bytes > 0 && fwrite(text, 1, bytes, stream) != bytes) {
+    fprintf(stderr, "flang emit: не записан %s\n", full);
+    fclose(stream);
+    return false;
+  }
+  if (fclose(stream) != 0) {
+    fprintf(stderr, "flang emit: не закрыт %s\n", full);
+    return false;
+  }
+  return true;
+}
+
+static int emit_file(int argc, char **argv, const char *self) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  static const char *const names[15] = {"путь",              "есть путь",         "база",
+                                        "предел глубины",    "предел шагов",      "прогонщик",
+                                        "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
+                                        "оболочка",          "исходник оболочки", "типы входа",
+                                        "поля входа",        "варианты входа",    "параметры входа"};
+  fl_value values[15];
+  fl_value args[2];
+  fl_value sources = fl_nothing();
+  fl_value result = fl_nothing();
+  fl_value files = fl_nothing();
+  fl_value failure = fl_nothing();
+  const fl_entry_table *table = FL_PROGRAM_ENTRY();
+  const char *path = NULL;
+  const char *target = NULL;
+  const char *out = NULL;
+  const char *one = NULL;
+  const char *given_runtime = NULL;
+  const char *steps = "1000000";
+  const char *depth = "10000";
+  const char *own = "";
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  char *self_dir = NULL;
+  char *runtime = NULL;
+  char *runtime_header = NULL;
+  char *runtime_source = NULL;
+  char *runner_source = NULL;
+  char *shell_source = NULL;
+  size_t runtime_header_bytes = 0;
+  size_t runtime_source_bytes = 0;
+  size_t runner_source_bytes = 0;
+  size_t shell_source_bytes = 0;
+  size_t bytes = 0;
+  size_t index = 0;
+  size_t written = 0;
+  int argument = 0;
+  int code = 0;
+  int base_index = 1;
+  bool cli = true;
+  bool shell = false;
+  bool fits = false;
+  bool opened = false;
+
+  for (argument = 2; argument < argc; argument += 1) {
+    if (strcmp(argv[argument], "--target") == 0 && argument + 1 < argc) {
+      argument += 1;
+      target = argv[argument];
+    } else if (strcmp(argv[argument], "--out") == 0 && argument + 1 < argc) {
+      argument += 1;
+      out = argv[argument];
+    } else if (strcmp(argv[argument], "--file") == 0 && argument + 1 < argc) {
+      argument += 1;
+      one = argv[argument];
+    } else if (strcmp(argv[argument], "--runtime") == 0 && argument + 1 < argc) {
+      argument += 1;
+      given_runtime = argv[argument];
+    } else if (strcmp(argv[argument], "--max-steps") == 0 && argument + 1 < argc) {
+      argument += 1;
+      steps = argv[argument];
+    } else if (strcmp(argv[argument], "--max-depth") == 0 && argument + 1 < argc) {
+      argument += 1;
+      depth = argv[argument];
+    } else if (strcmp(argv[argument], "--index-base") == 0 && argument + 1 < argc) {
+      argument += 1;
+      base_index = strcmp(argv[argument], "0") == 0 ? 0 : 1;
+    } else if (strcmp(argv[argument], "--path") == 0 && argument + 1 < argc) {
+      argument += 1;
+      own = argv[argument];
+    } else if (strcmp(argv[argument], "--cli") == 0) {
+      cli = true;
+    } else if (strcmp(argv[argument], "--no-cli") == 0) {
+      cli = false;
+    } else if (strcmp(argv[argument], "--repl") == 0) {
+      shell = true;
+    } else if (argv[argument][0] != '-' && path == NULL) {
+      path = argv[argument];
+    } else {
+      fprintf(stderr, "flang emit: непонятный ключ «%s»\n", argv[argument]);
+      return 2;
+    }
+  }
+
+  if (path == NULL) {
+    fputs("flang emit: не назван файл. Пример: flang emit м.flang --target c --out каталог\n", stderr);
+    return 2;
+  }
+  if (target == NULL) {
+    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    return 2;
+  }
+  if (strcmp(target, "c") != 0) {
+    fprintf(stderr,
+            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
+            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
+            target);
+    return 2;
+  }
+  if (out == NULL && one == NULL) {
+    fputs("flang emit: назовите, куда печатать: «--out каталог» (все файлы) или «--file имя»\n"
+          "(один файл на стандартный вывод, например «--file kompilyator_flang.c»).\n",
+          stderr);
+    return 2;
+  }
+
+  self_dir = repl_self_dir(self);
+  runtime = emit_runtime_dir(self_dir, given_runtime);
+  free(self_dir);
+  if (runtime == NULL) {
+    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
+          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
+          stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    free(runtime);
+    return 2;
+  }
+
+  {
+    char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
+    runtime_header = repl_read_file(where, &runtime_header_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_RUNTIME_SOURCE);
+    runtime_source = repl_read_file(where, &runtime_source_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_RUNNER_SOURCE);
+    runner_source = repl_read_file(where, &runner_source_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_SHELL_SOURCE);
+    shell_source = repl_read_file(where, &shell_source_bytes);
+    free(where);
+  }
+  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
+    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+    code = 2;
+  }
+
+  if (code == 0) {
+    repl_cycle();
+    strings_init(&paths);
+    strings_init(&texts);
+    strings_init(&queue);
+    opened = true;
+    strings_say(&paths, full);
+    strings_add(&texts, text, bytes);
+    repl_imports_of(text, bytes, full, &queue);
+    sources = repl_closure(&paths, &texts, &queue);
+
+    {
+      fl_value linked = fl_nothing();
+      fl_value program = fl_nothing();
+      fl_value bads = fl_nothing();
+      fl_value link_args[2];
+      link_args[0] = sources;
+      link_args[1] = repl_value_say(full);
+      if (repl_call("Связать исходники", link_args, 2, &linked) != FL_OK) {
+        code = 1;
+      } else if (val_field(linked, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
+        repl_bads list;
+        size_t at = 0;
+        bads_init(&list);
+        for (at = 0; at < bads.as.list.count; at += 1) {
+          bads_take(&list, bads.as.list.items[at]);
+        }
+        check_print_bads(&list, path, paths.count);
+        fprintf(stderr, "flang emit: печать отменена — связывание дало замечаний %lu\n",
+                (unsigned long)list.count);
+        bads_free(&list);
+        code = 1;
+      } else if (!val_field(linked, "программа", &program)) {
+        fputs("flang emit: связывание не вернуло программы\n", stderr);
+        code = 1;
+      } else {
+        fits = emit_entry_fits(program, table);
+        values[0] = repl_value_say(own);
+        values[1] = fl_flag(own[0] != '\0');
+        values[2] = fl_number((double)base_index);
+        values[3] = fl_number(strtod(depth, NULL));
+        values[4] = fl_number(strtod(steps, NULL));
+        values[5] = fl_flag(cli);
+        values[6] = repl_value_text(runtime_header, runtime_header_bytes);
+        values[7] = repl_value_text(runtime_source, runtime_source_bytes);
+        values[8] = repl_value_text(runner_source, runner_source_bytes);
+        values[9] = fl_flag(shell);
+        values[10] = repl_value_text(shell_source, shell_source_bytes);
+        values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+        values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+        values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+        values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+        args[0] = program;
+        args[1] = repl_value_record(names, values, 15);
+        if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
+          code = 1;
+        } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
+          char *say = val_copy(failure);
+          fprintf(stderr, "flang emit: печать отказала — %s\n", say);
+          free(say);
+          code = 1;
+        } else if (!val_field(result, "файлы", &files) || files.tag != FL_LIST) {
+          fputs("flang emit: печать не вернула файлов\n", stderr);
+          code = 1;
+        }
+      }
+    }
+  }
+
+  if (code == 0) {
+    bool found = false;
+    for (index = 0; index < files.as.list.count && code == 0; index += 1) {
+      fl_value where = fl_nothing();
+      fl_value content = fl_nothing();
+      const char *body = NULL;
+      size_t body_bytes = 0;
+      char *name = NULL;
+      if (!val_field(files.as.list.items[index], "путь", &where) ||
+          !val_field(files.as.list.items[index], "содержимое", &content) ||
+          !val_text(content, &body, &body_bytes)) {
+        continue;
+      }
+      name = val_copy(where);
+      if (one != NULL) {
+        if (strcmp(name, one) == 0) {
+          found = true;
+          if (body_bytes > 0 && fwrite(body, 1, body_bytes, stdout) != body_bytes) {
+            fputs("flang emit: вывод оборван\n", stderr);
+            code = 1;
+          }
+          written += body_bytes;
+        }
+        free(name);
+        continue;
+      }
+      {
+        char *destination = repl_join(out, name);
+        /* Каталог НЕ заводится, и это решение, а не пропуск. `mkdir` живёт в
+           <sys/stat.h>, а у этого файла есть обещание: оболочке хватает
+           стандартной библиотеки C плюс signal.h и unistd.h, и стережёт его
+           сторож в flang/test/emit-c.test.mjs («оболочка печатается только по
+           просьбе, и её нужды названы поимённо»). Один заголовок ради одного
+           mkdir — плохая цена: каталог человек делает `mkdir` сам, а если его
+           нет, отказ ниже назовёт путь. */
+        if (!emit_write(destination, body, body_bytes)) {
+          code = 1;
+        }
+        written += body_bytes;
+        free(destination);
+      }
+      free(name);
+    }
+    fflush(stdout);
+    if (one != NULL && !found && code == 0) {
+      fprintf(stderr, "flang emit: файла «%s» печать не даёт. Что даёт:", one);
+      for (index = 0; index < files.as.list.count; index += 1) {
+        fl_value where = fl_nothing();
+        if (val_field(files.as.list.items[index], "путь", &where)) {
+          char *name = val_copy(where);
+          fprintf(stderr, " %s", name);
+          free(name);
+        }
+      }
+      fputc('\n', stderr);
+      code = 2;
+    }
+    if (code == 0) {
+      /* Число файлов и байт — на stderr, потому что stdout занят печатью:
+         `flang emit … --file x.c > x.c` обязан дать РОВНО файл. */
+      if (one == NULL) {
+        fprintf(stderr, "напечатано файлов %lu, байт %lu, в %s\n", (unsigned long)files.as.list.count,
+                (unsigned long)written, out);
+      }
+      if (!fits) {
+        fprintf(stderr,
+                "граница входа пуста: таблицу объявленных типов строит слой типов эталона\n"
+                "(«таблицаВхода»), которого в бинарнике нет, а впечатанная (параметров %lu) этой\n"
+                "программе не подходит. Напечатанное соберётся и заработает, но аргументы\n"
+                "прогонщика объявленным типам сверяться не будут.\n",
+                (unsigned long)table->param_count);
+      }
+    }
+  }
+
+  if (opened) {
+    strings_free(&paths);
+    strings_free(&texts);
+    strings_free(&queue);
+  }
+  free(runtime_header);
+  free(runtime_source);
+  free(runner_source);
+  free(shell_source);
+  free(runtime);
+  free(text);
+  free(full);
+  return code;
+}
+
 static const char REPL_PROMPT[] = "» ";
 static const char REPL_CONTINUATION[] = "… ";
 
@@ -4709,6 +5413,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     }
   } else if (strcmp(command, "run") == 0) {
     code = run_file(argc, argv);
+  } else if (strcmp(command, "emit") == 0) {
+    code = emit_file(argc, argv, self);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

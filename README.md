@@ -97,27 +97,40 @@ Or straight from the release archive, with nothing but `cc` and `make`:
 ```bash
 tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 man page
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli --help          # what it does: check, repl, --version
+./flang_cli --help          # what it does: check, test, run, emit, repl, --version
 ./flang_cli check m.flang   # parse, types, totality — in words, not JSON
 ./flang_cli                 # with no arguments: JSON in, JSON out, one request per line
 ```
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
-tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
-its source is [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole
-repository, and that repository is not published yet, so for now the plugin is source rather than
-an install path. Neither needs anything but a C compiler. This is how self-hosting languages
-ship — Go carried generated C for years, Nim still does.
+tap serves it. The asdf (and mise) plugin installs the same archive from the same releases; its
+source is [`packaging/asdf/`](packaging/asdf/README.md), and because asdf clones a plugin as a
+whole repository, it is published as
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) — which is the copy asdf
+clones. Its three scripts have been run by hand, with Node absent from `PATH`: `list-all` offers only
+the releases that actually carry an archive — 0.4.8 is skipped, a real release with no attachment
+— `download` fetches and unpacks, and `install` builds from the C99 and yields a working
+`flang 0.5.0`. Installing *through* `asdf` itself is unverified — `asdf` was not present
+in the environment where that was run. Neither packaging needs anything but a C compiler. This is
+how self-hosting languages ship — Go carried generated C for years, Nim still does.
 
-**Be clear about what that binary is.** It is the five layers of [`flang/self/`](flang/self):
-lexer, parser, types, totality, printing to C. There is no evaluator among them — which is why
-`flang repl` there evaluates the only honest way this binary can: it prints the session to C,
-builds it with the system `cc` against the runtime installed beside it, and runs that. Without a
-`cc` the shell does not switch off — it keeps checking parse, types and totality, and says so
-once. Checking a file needs nothing else: `flang check file.flang` runs parse, linking, types and
-totality and prints its findings in words — with a code and a place, not JSON. `flang --help`
-lists the commands and `man flang` describes them. Running a program or its examples
-non-interactively still needs the full toolchain below.
+**Be clear about what that binary is.** It answers to five commands — `check`, `test`, `run`,
+`emit`, `repl` — and the evaluator is now in it: [`flang/self/interpret.flang`](flang/self) is
+linked into the closure, so `flang run` and `flang test` compute with it, needing neither Node
+nor `cc`. Call arguments are checked against their declared types *before* evaluation, by the
+same code the reference uses. `flang check file.flang` runs parse, linking, types and totality
+and prints its findings in words — with a code and a place, not JSON; `flang check … --proof`
+adds the ledger of what carries each function's promise. `flang emit … --target c` prints the
+program to C99 without Node.
+
+Two limits are worth naming, because the binary names them itself rather than reporting a green
+result it did not earn. `flang repl` does not call the evaluator yet: it prints the session to C,
+builds it with the system `cc` against the runtime beside it, and runs that — and without a `cc`
+the shell does not switch off, it keeps checking parse, types and totality and says so once. And
+the `--proof` ledger covers only what this binary computed itself: laws checked on a grid
+(monoid, monad, isomorphism, category, sets, connection) are not computed here at all, and a
+program declaring one gets a refusal naming the obstacle rather than a green ledger with an empty
+section. `flang --help` lists the commands and `man flang` describes them.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
 the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
@@ -133,11 +146,11 @@ editor language server. Inside a clone they are `node flang/bin/flang.mjs` and
 published release.
 
 **In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
-same compiler printed to C99, 7 files and 5,823,370 bytes:
+same compiler printed to C99, 7 files and 12,841,265 bytes:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap            # only cc and make; about 4 minutes of CPU
+make -C bootstrap            # only cc and make; about 1.5 minutes of CPU
 bootstrap/flang_cli --version
 ```
 
@@ -414,8 +427,9 @@ naming, layout, module-splitting and CI conventions derived from that project ar
 ## Developing the language
 
 The JavaScript reference implementation stays forever: the fixed point is checked against it,
-and removing it would make that check impossible. Work happens in a clone —
-`npm install && npm run build`.
+and removing it would make that check impossible. Work happens in a clone, and the clone needs
+no install step: the package has no dependencies and nothing to build, so `npm test` runs
+straight after `git clone`.
 
 What to run when you change the compiler, how the bootstrap point is guarded, and the full list
 of commands the language answers to — [Developing the

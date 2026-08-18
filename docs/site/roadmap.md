@@ -29,18 +29,52 @@ axioms is held empty by a test, not by a promise: one cannot be added quietly.
 `python`, `rust`. **All eight have a twin in flang** — the last one, `js`, is
 closed; none is left without.
 
-**The binary builds with a single `cc`, without Node.** Checked on a clean
-export (`git archive` into an empty directory): one compiler invocation over four
-`.c` files, not one warning under `-Werror -pedantic`, not one external
-dependency.
+**The binary builds with a single `cc`, without Node.** Re-measured on 18 August
+on a clean export (`git archive HEAD` into an empty directory): one compiler
+invocation over four `.c` files, not one warning under `-std=c99 -Wall -Wextra
+-Werror -pedantic -O2`, no external dependency beyond `libm` and `libpthread`.
+It takes **71 s** of CPU time (68.7 user and 2.5 system by `/usr/bin/time -v`)
+and yields a binary of **6 999 040 bytes** (cc 15.2.0, Linux 7.0.0). The time
+floats with machine load, the bytes do not: the same day and the same export,
+and the `bootstrap/README.md` ledger measured ≈90 s at the very same bytes. The
+`-flto` flag that stands in the `Makefile` is not needed for a single
+invocation: there is only one translation unit anyway.
+
+**The compiler's emission of itself matches byte for byte.** `node
+scripts/bootstrap-c.mjs --check` links the flang sources (**3502 functions,
+313 types**), emits them into C and compares that with what sits in `bootstrap/`:
+**7 files, 12 841 265 bytes, 0 differences**. It compares bytes, not a build, so
+the check always runs and needs no `cc`.
 
 **The evaluator is pulled into the binary.** `flang run` and `flang test`
-compute with it — no Node, no `cc`. The binary also prints the `check --proof`
-ledger itself, and `emit --target c` too. The `repl` does **not** call the
-evaluator yet: it emits the session to C and builds it with the system `cc`;
-with no `cc` it does not switch off but checks parsing, types and termination.
+compute with it — no Node, no `cc`. Checked on a freshly built binary: `flang run
+flang/stdlib/higher-order.flang --function 'Удвоить' --args '{"х":21}'` prints
+`42` and exits 0. The binary also prints the `check --proof` ledger itself, and
+`emit --target c` too. The `repl` does **not** call the evaluator yet: it emits
+the session to C and builds it with the system `cc`; with no `cc` it does not
+switch off but checks parsing, types and termination, and says so at start-up.
 The difference is named because "there is a shell" and "there is an evaluator"
 are different promises.
+
+**What the binary can do, as a list.** Taken from a run of a binary built in a
+clean directory, not from the help text: `check`, `test`, `run`, `emit`, `repl`,
+`--help`, `--version`, and with no arguments — the JSON-in, JSON-out runner. Each
+was run:
+
+| command | run | answer |
+|---|---|---|
+| `check` | `check flang/stdlib/higher-order.flang` | 34 functions, 34 with proved termination; no findings |
+| `check --proof` | the same with `--proof` | **the ledger is printed**: 65 lines against 2 without the flag |
+| `test` | `test flang/stdlib/higher-order.flang` | 55 examples, 55 passed, 0 failed |
+| `run` | `run … --function 'Удвоить' --args '{"х":21}'` | `42`, exit 0 |
+| `emit` | `emit flang/examples/rosetta/merge-sort.flang --target c` | 6 files, 277 469 bytes printed; `make` built them |
+| `repl` | `repl` with no `cc` | does not switch off, checks parsing, types and termination |
+
+`--proof` **is no longer swallowed in silence** — that was still true on the
+morning of 18 August and stopped being true by the evening. Emission from the
+binary has one named limit: the table of declared types is built by the
+reference layer, so runner arguments are not checked against declared types, and
+the binary says so itself rather than keeping quiet.
 
 **An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
 
@@ -68,12 +102,6 @@ guide, the measurement reports and the specifications are still Russian only.
 
 This is the important part of the page. Below is what does not exist, in the
 order in which each item blocks the next.
-
-**The binary has no `test` and no `emit`, and it silently ignores `--proof`.**
-Checked by running a freshly built binary: `test` and `emit` answer "unknown
-command" with exit code 2. `--proof` is worse — the output of `check --proof`
-equals the output of `check`, there is no ledger, and nothing says so. A refusal
-is visible; silence is not.
 
 **There are no packages at all.** A library is included by relative path
 (`использует «Модуль» из "path"`). No versions, no lock file, no reproducible

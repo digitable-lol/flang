@@ -287,3 +287,24 @@ test("без объявления flang.package команда отказыва�
     rmSync(где, { recursive: true, force: true })
   }
 })
+
+test("ПАКЕТ В ДЕРЕВЕ НЕ ПРОТУХ: собранный заново совпадает с лежащим рядом", () => {
+  /* Файл `docs/examples/package/shop/discount.flang-package` — не документация,
+     а груз: он лежит в дереве, и `flang check` на соседней программе собирает
+     её ИМЕННО ИЗ НЕГО. Стоит разбору сдвинуться хоть одним полем — файл станет
+     памятником прежнему AST, а страница «Пакеты» начнёт показывать байты,
+     которых сегодняшний `flang package` уже не печатает.
+
+     Сверка побайтовая и с ЯВНОЙ подсказкой, что делать: пересобрать. */
+  const свежий = позвать(["package", ПАКЕТ_ИСХОДНИК])
+  const лежит = readFileSync(
+    join(корень, "docs", "examples", "package", "shop", "discount.flang-package"),
+    "utf8",
+  )
+  assert.equal(
+    свежий,
+    лежит,
+    "пакет в дереве отстал от исходника: пересоберите — " +
+      "flang package docs/examples/package/discount.flang > docs/examples/package/shop/discount.flang-package",
+  )
+})

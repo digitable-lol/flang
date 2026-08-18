@@ -67,11 +67,18 @@ const HELP = `flang — полный язык поверх FTS
                      [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
   flang io    <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
                      [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
+                     [--no-spawn]
   flang repl  [файл] [--max-steps N] [--max-depth N]
   flang version
 
 Файл: .flang (исходник) или .json (готовый AST).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+Коды выхода io: 0 — план дошёл до «Конец работы»; 1 — план сдался сам
+(«Провал»), то есть программа нашла беду в предмете; 2 — кривой вызов; 3 —
+сломался инструмент (хозяин, предел поручений, не тот тип на входе шага).
+Разница между 1 и 3 — это разница между «нашёл беду» и «сам сломался», и она
+нужна всякому, кто ставит flang io в CI.
 
 check --размещение: свести программу с РАЗМЕЩЕНИЕМ процессов по узлам
 (flang/conc/DISTRIBUTED.md). Процесс, размещённый на другом узле, стоит здесь
@@ -323,36 +330,79 @@ async function commandFacts(options) {
  * В выводе есть журнал: какие поручения были выданы и что на них ответили. Это
  * то же самое, что тест увидит от поддельного хозяина, — значит настоящий
  * прогон и проверка без эффектов сравнимы напрямую.
+ *
+ * ── Коды выхода: их четыре, и третий заведён ради одной разницы ─────────────
+ *
+ * Здесь стояло жёсткое `return 0`, и на нём `flang io` умел ровно два ответа: 0
+ * — дошли до «Конец работы», 1 — что-то бросило. Под второй ответ попадало
+ * ВСЁ: и `«Провал»` (программа решила сама), и `FLANG_IO_LIMIT`, и «хозяин
+ * вернул не «Отклик»». Сторожу спек этого мало, и требование к нему записано
+ * дословно: он обязан отличать «нашёл беду» от «сам сломался». Иначе красный CI
+ * значит либо «спеки плохи», либо «сторож сломан», и разбираться идёт человек.
+ *
+ *   0 — план дошёл до «Конец работы»;
+ *   1 — план сдался сам («Провал»): предмет плох, инструмент цел;
+ *   2 — кривой вызов CLI (как у всех команд, `usage`);
+ *   3 — сломался инструмент: хозяин, предел поручений, не тот тип на входе
+ *       шага, неизвестный план, нечитаемый файл.
+ *
+ * Откуда берётся ЧИСЛО — вопрос, на который пришлось отвечать отдельно. Поле
+ * `код` у `«Провал»` — СТРОКА (`"СПЕКИ_НЕ_СОГЛАСНЫ"`), и числом её не сделать:
+ * коды отказа языка живут именами, а не номерами, и превращать их в номера
+ * значило бы завести вторую таблицу кодов. Поэтому число берётся не из
+ * значения, а из ПРИРОДЫ беды: `runPlan` помечает символом ту единственную
+ * беду, которую подняла сама программа (`сдалсяСам` в `src/io.mjs`), и здесь
+ * метка читается. Программе для нужного кода выхода не надо знать ни одного
+ * числа — довольно вернуть `«Провал»`.
+ *
+ * Отвергнуто по дороге: брать код выхода из значения `«Конец работы»`, если оно
+ * число. Тогда план, честно посчитавший 7, вышел бы с кодом 7, а `«Конец
+ * работы»` — это РЕЗУЛЬТАТ плана, а не вердикт о нём; смешивать их значило бы
+ * запретить планам возвращать числа. Образец взят у `commandFacts`, где
+ * опровергнутое утверждение уходит в stdout, а ненулевой код нужен только
+ * затем, чтобы CI мог на нём упасть.
+ *
+ * `process.exit()` здесь по-прежнему нет ни одного, и это решение сохранено
+ * намеренно (`docs/zettel/the-instrument-lied-not-the-subject.md`): код ставится
+ * ОДИН раз, `process.exitCode = await main()`, и поток вывода успевает уйти.
  */
 async function commandIo(options) {
-  const { runPlan, findPlan } = await import(new URL("../src/io.mjs", import.meta.url).href)
+  const { runPlan, findPlan, сдалсяСам } = await import(new URL("../src/io.mjs", import.meta.url).href)
   const { nodeHost } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
 
-  const program = await loadProgram(options.file)
-  const план = findPlan(program, options.planName)
-  const хозяин = nodeHost({
-    base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
-    разрешено: options.allow,
-    seed: options.seed,
-    внутриКорня: options.inDir === true,
-  })
+  try {
+    const program = await loadProgram(options.file)
+    const план = findPlan(program, options.planName)
+    const хозяин = nodeHost({
+      base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
+      разрешено: options.allow,
+      seed: options.seed,
+      внутриКорня: options.inDir === true,
+    })
 
-  const итог = await runPlan(program, план.name, хозяин, {
-    maxSteps: options.maxSteps,
-    maxDepth: options.maxDepth,
-    maxOrders: options.maxOrders,
-  })
-  writeJson(
-    {
-      plan: план.name,
-      result: итог.значение,
-      orders: итог.поручений,
-      log: итог.журнал,
-    },
-    options.pretty,
-    process.stdout,
-  )
-  return 0
+    const итог = await runPlan(program, план.name, хозяин, {
+      maxSteps: options.maxSteps,
+      maxDepth: options.maxDepth,
+      maxOrders: options.maxOrders,
+    })
+    writeJson(
+      {
+        plan: план.name,
+        result: итог.значение,
+        orders: итог.поручений,
+        log: итог.журнал,
+      },
+      options.pretty,
+      process.stdout,
+    )
+    return 0
+  } catch (ошибка) {
+    /* Кривой вызов остаётся кривым вызовом и здесь: `--plan` без имени разбирает
+       `parseArgs`, но `usage` может прилететь и отсюда. */
+    if (ошибка?.usage === true) throw ошибка
+    writeJson(errorResult(ошибка), options.pretty, process.stderr)
+    return сдалсяСам(ошибка) ? 1 : 3
+  }
 }
 
 /* ─────────────────────────── интерактивная оболочка ─────────────────────── */
@@ -1294,11 +1344,29 @@ function parseArgs(argv) {
       const orders = Number(require_(argv[++index], "--max-orders требует число"))
       if (!Number.isInteger(orders) || orders <= 0) throw usage("--max-orders должен быть целым положительным числом")
       options.maxOrders = orders
-    } else if (arg === "--no-read" || arg === "--no-write" || arg === "--no-net" || arg === "--no-clock" || arg === "--no-random") {
+    } else if (
+      arg === "--no-read" ||
+      arg === "--no-write" ||
+      arg === "--no-net" ||
+      arg === "--no-clock" ||
+      arg === "--no-random" ||
+      arg === "--no-spawn"
+    ) {
       /* Полномочия хозяина сужаются явно и по одному. Отдельного «разрешить»
          нет: умолчание — «можно всё», потому что запуск программы ключом `io`
          и есть согласие на её действия. Осмысленно только сужение. */
-      const поле = { "--no-read": "чтение", "--no-write": "запись", "--no-net": "сеть", "--no-clock": "время", "--no-random": "случайность" }[arg]
+      /* У запуска процесса право СВОЁ, а не общее с чтением: запущенная
+         программа читает, пишет и ходит в сеть сама, и ни один здешний ключ ей
+         не указ. Пустить её под `--no-read` значило бы объявить полномочием то,
+         чего хозяин не контролирует. */
+      const поле = {
+        "--no-read": "чтение",
+        "--no-write": "запись",
+        "--no-net": "сеть",
+        "--no-clock": "время",
+        "--no-random": "случайность",
+        "--no-spawn": "запуск",
+      }[arg]
       options.allow = { ...(options.allow ?? {}), [поле]: false }
     } else if (arg === "--in-dir") {
       options.inDir = true

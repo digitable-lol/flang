@@ -136,6 +136,11 @@ const ВИДИМОСТЬ = new Map([
   ["flang/cat", false], // категорные заметки: HOF, MONAD, POLY
   ["flang/scripts", false], // сторожа разработки: claim-guard сверяет прозу с лексером
   ["flang/test", false],
+  /* Обходчики проверок, написанных на самом языке, и их ведомости. Невидимы по
+     тому же правилу, что `flang/test` и `flang/scripts`: в поставку каталог не
+     входит (`package.json`, поле `files`), и правка здесь меняет то, чем
+     дерево проверяет себя, а не то, что получает поставивший язык. */
+  ["flang/проверки", false],
   ["docs", false],
   ["benchmarks", false],
   ["scripts", false],

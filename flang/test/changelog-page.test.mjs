@@ -107,7 +107,7 @@ test("страница знает про каждое вливание, доех
 
   /* Список слияний берётся ВЫБОРКОЙ ПО ДЕРЕВУ, а не перечнем в теле проверки:
      перечень, набранный руками, зеленел бы после того, как дерево ушло вперёд
-     (docs/zettel/spisok-rukami-perezhivaet-derevo.md). */
+     (docs/zettel/a-hand-written-list-outlives-the-tree.md). */
   const пропущенные = гит([
     "log",
     "--first-parent",

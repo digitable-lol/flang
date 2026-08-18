@@ -23,7 +23,7 @@
 | чем меряно | `docs/zamer2/instrumenty/zamer20.mjs`, `docs/zamer2/instrumenty/otkazy.mjs`, `docs/zamer2/instrumenty/prichiny.mjs`, `docs/zamer2/instrumenty/tela2.mjs` |
 
 Ветку `work/indukciya-vstroennyh` я **прочитал, но не влил**, и довод тот же,
-что записан в `docs/zettel/dva-yadra-ne-slivayutsya-tekstom.md`: это второе
+что записан в `docs/zettel/two-cores-do-not-merge-as-text.md`: это второе
 ядро, выросшее от той же точки, с 55 конфликтами и другими подписями `свести` и
 `нормализовать`. Слияние текста здесь — написание третьего ядра. То, ради чего
 её стоило читать (развёртка левой свёртки двумя определяющими уравнениями),
@@ -241,7 +241,7 @@
 расхождения СВЕРХ названного, а названным оказалось ровно то, которое изъятие и
 порождало. Проверка зазеленела, перестав сравнивать — четвёртый случай этого
 класса в дереве. Починено не записью в список, а переносом текста отказа в
-близнеца. Разбор — `docs/zettel/proverki-perestayushchie-sravnivat.md`.
+близнеца. Разбор — `docs/zettel/checks-that-stopped-comparing.md`.
 
 ---
 

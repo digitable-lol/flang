@@ -1129,8 +1129,19 @@ export async function externalChecks(program, настройки = {}) {
       /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
     }
     try {
-      const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
-      const вердикты = checkProofs(program, итог.obligations)
+      /* ЯДРО ЗОВЁТСЯ ЧЕРЕЗ КЕШ, а не напрямую, и это не обёртка ради обёртки:
+         доказательство стоит на порядки дороже теста, а до появления адреса
+         определения кешировать его было не по чему. Ключ — тройка «адрес
+         определения, адрес утверждения, адрес проверяющего»; нашлась — ядро не
+         зовётся вовсе, не нашлась — зовётся, и вердикт кладётся.
+
+         Кешу при этом не верят на слово: запись самозаверена, ключ на чтении
+         пересчитывается, а сомнение любого рода — ПРОМАХ, то есть вызов ядра
+         (`flang/src/proofcache.mjs`). Вердикт наружу едет тот же самый, поэтому
+         ведомость печатается байт в байт одинаково на холодном кеше и на
+         горячем — это сверено (`flang/test/digest.test.mjs`). */
+      const { checkProofsCached } = await import(new URL("../src/proofcache.mjs", import.meta.url).href)
+      const вердикты = checkProofsCached(program, итог.obligations)
       results.proofs = вердикты
       diagnostics.push(...normalizeDiagnostics(вердикты))
     } catch {

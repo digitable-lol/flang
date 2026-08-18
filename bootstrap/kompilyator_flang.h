@@ -30590,6 +30590,65 @@ fl_status kompilyator_flang_snaruzhi_svyortki(fl_ctx *ctx, fl_value spisok, fl_v
 fl_status kompilyator_flang_svyortka_neotricatelna(fl_ctx *ctx, fl_value svyortka, fl_value izvestnye, fl_value konechnye, fl_value polozhitelnye, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Упоминает имена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param term — «терм»: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_upominaet_imena(fl_ctx *ctx, fl_value term, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снаружи образца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param spisok — «список»: список: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_snaruzhi_obrazca(fl_ctx *ctx, fl_value spisok, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разбор неотрицателен».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Ветви неотрицательны»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param izvestnye — «известные»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_razbor_neotricatelen(fl_ctx *ctx, fl_value sluchai, fl_value izvestnye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветви неотрицательны».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Разбор неотрицателен»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pervyy — «первый»: «Значение»
+ * @param ostalnye — «остальные»: список: «Значение»
+ * @param izvestnye — «известные»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_vetvi_neotricatelny(fl_ctx *ctx, fl_value pervyy, fl_value ostalnye, fl_value izvestnye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Неотрицательно».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -30834,7 +30893,7 @@ fl_status kompilyator_flang_literal_pod_dnom(fl_ctx *ctx, fl_value znachenie, fl
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Слагаемое сходится», «Сумма под суммой», «По порядку»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «Литерал в границе», «По мере списка», «Слагаемое сходится», «Сумма под суммой», «По порядку»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param literal — «литерал»: «Значение»
@@ -30855,7 +30914,7 @@ fl_status kompilyator_flang_granica_shoditsya(fl_ctx *ctx, fl_value literal, fl_
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Сумма под суммой», «По порядку», «Граница сходится»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «Литерал в границе», «По мере списка», «Сумма под суммой», «По порядку», «Граница сходится»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param literal — «литерал»: «Значение»
@@ -30875,7 +30934,7 @@ fl_status kompilyator_flang_slagaemoe_shoditsya(fl_ctx *ctx, fl_value literal, f
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Слагаемое сходится», «По порядку», «Граница сходится»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «Литерал в границе», «По мере списка», «Слагаемое сходится», «По порядку», «Граница сходится»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param levoe — «левое»: «Значение»
@@ -30896,7 +30955,7 @@ fl_status kompilyator_flang_summa_pod_summoy(fl_ctx *ctx, fl_value levoe, fl_val
  *
  * Хвостовой самовызов развёрнут в цикл: стек не растёт.
  *
- * Взаимная хвостовая рекурсия с «Слагаемое сходится», «Сумма под суммой», «Граница сходится»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «Литерал в границе», «По мере списка», «Слагаемое сходится», «Сумма под суммой», «Граница сходится»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param levoe — «левое»: «Значение»
@@ -30909,6 +30968,25 @@ fl_status kompilyator_flang_summa_pod_summoy(fl_ctx *ctx, fl_value levoe, fl_val
  * @return значение
  */
 fl_status kompilyator_flang_po_poryadku(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По мере списка».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «Литерал в границе», «Слагаемое сходится», «Сумма под суммой», «По порядку», «Граница сходится»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_po_mere_spiska(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Это форма длины».
@@ -30973,9 +31051,25 @@ fl_status kompilyator_flang_razvernut_v_polyah(fl_ctx *ctx, fl_value uzel, fl_va
 fl_status kompilyator_flang_dlina_zvena(fl_ctx *ctx, fl_value uzel, fl_value hvost, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «По мере построения».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Длина от конструктора», «Длина от конструкции», «Развернуть длину звена»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_po_mere_postroeniya(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Длина от конструктора».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Длина от конструкции», «Развернуть длину звена», «По мере построения»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -30989,6 +31083,8 @@ fl_status kompilyator_flang_dlina_ot_konstruktora(fl_ctx *ctx, fl_value uzel, fl
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
+ * Взаимная хвостовая рекурсия с «Длина от конструктора», «Развернуть длину звена», «По мере построения»: вызовы идут через батут.
+ *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
  * @return значение: «Значение»
@@ -30999,6 +31095,8 @@ fl_status kompilyator_flang_dlina_ot_konstrukcii(fl_ctx *ctx, fl_value uzel, fl_
  * Функция flang «Развернуть длину звена».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Длина от конструктора», «Длина от конструкции», «По мере построения»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -31014,6 +31112,522 @@ fl_status kompilyator_flang_razvernut_dlinu_zvena(fl_ctx *ctx, fl_value uzel, fl
  * @return значение
  */
 fl_status kompilyator_flang_eto_poryadok_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма прибавления».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_forma_pribavleniya(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это форма прибавления».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_forma_pribavleniya(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_stroki(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера выбора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_vybora(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера случая».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_sluchaya(fl_ctx *ctx, fl_value uzel, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера разбора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_razbora(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера прибавления».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_pribavleniya(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера встроенной».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_vstroennoy(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера построения».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_postroeniya(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Встречается имя в поле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_vstrechaetsya_imya_v_pole(fl_ctx *ctx, fl_value pole, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Встречается имя в полях».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_vstrechaetsya_imya_v_polyah(fl_ctx *ctx, fl_value polya, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Встречается имя в списке».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_vstrechaetsya_imya_v_spiske(fl_ctx *ctx, fl_value elementy, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Встречается имя».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_vstrechaetsya_imya(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это имя узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_imya_uzla(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить имя в поле».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param imya — «имя»: строка
+ * @param chem — «чем»: «Значение»
+ * @return значение: «Поле значения»
+ */
+fl_status kompilyator_flang_zamenit_imya_v_pole(fl_ctx *ctx, fl_value pole, fl_value imya, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить имя».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param chem — «чем»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_zamenit_imya(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Звено образца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golova — «голова»: строка
+ * @param hvost — «хвост»: строка
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_zveno_obrazca(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пусто образца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_pusto_obrazca(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В ветви».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param granica — «граница»: «Значение»
+ * @param razbiraemoe — «разбираемое»: «Значение»
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_v_vetvi(fl_ctx *ctx, fl_value granica, fl_value razbiraemoe, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В ветви звена».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param granica — «граница»: «Значение»
+ * @param razbiraemoe — «разбираемое»: «Значение»
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_v_vetvi_zvena(fl_ctx *ctx, fl_value granica, fl_value razbiraemoe, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывает имя в поле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svyazyvaet_imya_v_pole(fl_ctx *ctx, fl_value pole, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывает имя в полях».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svyazyvaet_imya_v_polyah(fl_ctx *ctx, fl_value polya, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывает имя в списке».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svyazyvaet_imya_v_spiske(fl_ctx *ctx, fl_value elementy, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связыватель этого имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svyazyvatel_etogo_imeni(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Образец связывает».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_obrazec_svyazyvaet(fl_ctx *ctx, fl_value sluchai, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывает имя».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_svyazyvaet_imya(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь под границей».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param razbiraemoe — «разбираемое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_vetv_pod_granicey(fl_ctx *ctx, fl_value sluchay, fl_value razbiraemoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Захват границы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pravoe — «правое»: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_zahvat_granicy(fl_ctx *ctx, fl_value pravoe, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все ветви под границей».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param razbiraemoe — «разбираемое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_vse_vetvi_pod_granicey(fl_ctx *ctx, fl_value sluchai, fl_value razbiraemoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По разбору».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param razbor — «разбор»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_po_razboru(fl_ctx *ctx, fl_value razbor, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Под мерой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param mera — «мера»: «Значение»
+ * @param chto — «что»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_pod_meroy(fl_ctx *ctx, fl_value mera, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свёртка цели».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levoe — «левое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_svyortka_celi(fl_ctx *ctx, fl_value levoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера цели».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levoe — «левое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_mera_celi(fl_ctx *ctx, fl_value levoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свёртка не быстрее списка».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_svyortka_ne_bystree_spiska(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Посылки свёртки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param svyortka — «свёртка»: «Значение»
+ * @param mera — «мера»: «Значение»
+ * @param po_kotoromu — «по которому»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_posylki_svyortki(fl_ctx *ctx, fl_value svyortka, fl_value mera, fl_value po_kotoromu, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начало есть ноль».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nachalo — «начало»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_nachalo_est_nol(fl_ctx *ctx, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начало и шаг».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param svyortka — «свёртка»: «Значение»
+ * @param mera — «мера»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_nachalo_i_shag(fl_ctx *ctx, fl_value svyortka, fl_value mera, fl_value nakopitel, fl_value element, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отбор под длиной».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_otbor_pod_dlinoy(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Литерал не меньше нуля».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_literal_ne_menshe_nulya(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слагаемое границы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Литерал в границе», «По мере списка», «Слагаемое сходится», «Сумма под суммой», «По порядку», «Граница сходится»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param literal — «литерал»: «Значение»
+ * @param ostatok — «остаток»: «Значение»
+ * @param levoe — «левое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_slagaemoe_granicy(fl_ctx *ctx, fl_value literal, fl_value ostatok, fl_value levoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Литерал в границе».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Слагаемое границы», «По мере списка», «Слагаемое сходится», «Сумма под суммой», «По порядку», «Граница сходится»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param poryadki — «порядки»: список: «Значение»
+ * @param snizu — «снизу»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_literal_v_granice(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести порядком».

@@ -253,6 +253,12 @@ function prepare(program) {
       returns: fn.returns,
       body: fn.body,
       postconditions: normalizePostconditions(fn),
+      /* Предусловия здесь ТОЛЬКО ради ДВЕРИ напечатанной программы — вызова по
+         имени (`renderDispatch`). В тело функции они не печатаются ни одной
+         строкой: внутри программы предусловие снял вызывающий на проверке
+         (иначе FLANG_PRECONDITION_CALL), и проверять его во время работы значило
+         бы платить временем каждого вызова за доказанное статически. */
+      preconditions: normalizePreconditions(fn),
       span: fn.span,
     })
   }
@@ -299,6 +305,32 @@ function normalizePostconditions(fn) {
       expr: item.expr,
       bind: typeof item.bind === "string" ? item.bind : "результат",
       code: typeof item.code === "string" ? item.code : "FLANG_PROPERTY",
+      message: typeof item.message === "string" ? item.message : null,
+      span: item.span,
+    }
+  })
+}
+
+/**
+ * Предусловия функции — тем же разбором, что у интерпретатора
+ * (`normalizePreconditions` в src/interpret.mjs), и с теми же умолчаниями: код
+ * FLANG_PRECONDITION, текст «не выполнено требование …». `bind` у предусловия
+ * нет и быть не может: оно говорит о том, что было ДО вызова, а результата до
+ * вызова не существует.
+ */
+function normalizePreconditions(fn) {
+  const list = fn.preconditions ?? []
+  if (!Array.isArray(list)) {
+    throw flangError("FLANG_PARSE", `поле «preconditions» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return list.map((item) => {
+    if (item === null || typeof item !== "object" || item.expr === undefined) {
+      throw flangError("FLANG_PARSE", `предусловие функции «${fn.name}» должно содержать «expr»`, fn.span)
+    }
+    return {
+      name: item.name ?? "",
+      expr: item.expr,
+      code: typeof item.code === "string" ? item.code : "FLANG_PRECONDITION",
       message: typeof item.message === "string" ? item.message : null,
       span: item.span,
     }

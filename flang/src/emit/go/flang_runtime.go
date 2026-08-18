@@ -625,6 +625,23 @@ func Post(ctx *Ctx, value Value, property, function string) (bool, error) {
 	return value.Flag, nil
 }
 
+// Pre — значение предусловия: обязано быть признаком.
+//
+// Отдельно от Post, а не тот же помощник со вторым текстом: слова отказа
+// дословно те же, что у интерпретатора (checkPreconditions в
+// flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось бы
+// молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (Call): внутри
+// программы предусловие снял вызывающий на проверке, и проверять его там
+// значило бы платить временем за доказанное.
+func Pre(ctx *Ctx, value Value, property, function string) (bool, error) {
+	if value.Tag != TagFlag {
+		return false, Fail(CodeType,
+			"предусловие «%s» функции «%s» должно давать признак, получено %s",
+			property, function, TypeName(value))
+	}
+	return value.Flag, nil
+}
+
 // MatchFail — разбор не покрыл значение.
 func MatchFail(ctx *Ctx, value Value) error {
 	return Fail(CodeMatch, "разбор не покрывает значение %s", Describe(value))

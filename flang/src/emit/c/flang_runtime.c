@@ -2180,6 +2180,17 @@ fl_status fl_post(fl_ctx *ctx, fl_value value, const char *property, const char 
   return FL_OK;
 }
 
+fl_status fl_pre(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
+                 fl_error *error) {
+  if (value.tag != FL_FLAG) {
+    return fl_fail(ctx, error, FL_CODE_TYPE,
+                   "предусловие «%s» функции «%s» должно давать признак, получено %s", property, function,
+                   fl_type_name(ctx, value));
+  }
+  *out = value.as.flag;
+  return FL_OK;
+}
+
 fl_status fl_match_fail(fl_ctx *ctx, fl_value value, fl_error *error) {
   return fl_fail(ctx, error, FL_CODE_MATCH_NOT_EXHAUSTIVE, "разбор не покрывает значение %s",
                  fl_describe(ctx, value));

@@ -1579,6 +1579,24 @@ fl_status kompilyator_flang_urovni_strokoy(fl_ctx *ctx, fl_value stek, fl_value 
 fl_status kompilyator_flang_otstupit(fl_ctx *ctx, fl_value sostoyanie, fl_value shirina, fl_value mesto, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Ширина точки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение: число
+ */
+fl_status kompilyator_flang_shirina_tochki(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ширина строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param simvoly — «символы»: список: строка
+ * @return значение: число
+ */
+fl_status kompilyator_flang_shirina_stroki(fl_ctx *ctx, fl_value simvoly, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Длина до закрытия».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

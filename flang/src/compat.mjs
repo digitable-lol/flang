@@ -542,17 +542,47 @@ export function runExamples(program, evaluate = evaluateFlang) {
  * втащить их значило бы сделать мост непригодным там, где файловой системы нет
  * (браузерная сборка, `docs/site`), ради удобства одного вызова.
  *
+ * ── ДВА РАЗНЫХ СЛОВА «ФУНКТОР», И ПОЧЕМУ ЗДЕСЬ ПРОВЕРЯЕТСЯ ОДНО ─────────────
+ *
+ * Одна и та же поверхность `функтор «Ф» из «А» в «Б»` несёт в корпусе две
+ * разные вещи, и это замерено разбором всего дерева: 875 файлов, узлов
+ * `functorFile` — 10, из них у 4 (`flang/examples/cat/natural-square.flang`,
+ * `flang/examples/cat/moduli/soglasovanie.flang`) список `imports` ПУСТ.
+ *
+ *   • связь двух категорий ОДНОЙ программы: обе объявлены строкой `категория`
+ *     здесь же или в модуле, привезённом обычным `использует` МОДУЛЯ. Её концы,
+ *     композицию и единицы проверяет `checkFunctors` в `types.mjs`, и своих
+ *     `использует` внутри блока у неё нет — их и негде взять;
+ *   • СЛОВАРЬ МЕЖДУ ДВУМЯ СПЕКАМИ: категории лежат в чужих файлах, и функтор
+ *     привозит их сам строками `использует «Категория» из «путь»` ВНУТРИ блока.
+ *
+ * Различаются они не по наличию `imports` — по такому признаку словарь, у
+ * которого забыли обе строки `использует`, молча стал бы «связью внутри
+ * программы» и не проверился бы ничем. Различаются по тому, ОБЪЯВЛЕНА ЛИ
+ * категория в самой программе: объявленную знает `checkFunctors`, необъявленную
+ * не знает никто, и привезти её обязан сам функтор.
+ *
+ * Имена объявленных категорий приходят ИЗВНЕ (`declared`), а не считаются
+ * здесь по `program.categories`: до связывания их видно только в своём файле, а
+ * проверка обязана смотреть на ту программу, которую собрал передний край.
+ * Пустой `declared` — прежнее поведение слово в слово.
+ *
  * @param {object} program разобранная программа (`parse`), у которой в `legacy`
  *   лежат узлы `functorFile`
  * @param {{file?: string, read: (path: string) => string,
- *   parse: (source: string, file: string) => object}} options
+ *   parse: (source: string, file: string) => object,
+ *   declared?: Iterable<string>}} options
  * @returns {{valid: boolean, checked: object, diagnostics: object[]}}
  */
 export function checkFunctorDictionary(program, options = {}) {
   const diagnostics = []
-  const checked = { functors: 0, objects: 0, fields: 0, unmapped: 0 }
-  const узлы = (Array.isArray(program?.legacy) ? program.legacy : [])
+  const checked = { functors: 0, objects: 0, fields: 0, unmapped: 0, inProgram: 0 }
+  const объявлены = new Set(options.declared ?? [])
+  const свои = (функтор) => объявлены.has(функтор.from) && объявлены.has(функтор.to)
+  const все = (Array.isArray(program?.legacy) ? program.legacy : [])
     .filter((узел) => узел?.construct === "functorFile" && узел.value !== undefined)
+  const узлы = все.filter((узел) => !свои(узел.value))
+  checked.inProgram = все.length - узлы.length
   if (узлы.length === 0) return { valid: true, checked, diagnostics }
 
   const { read, parse, file = "" } = options

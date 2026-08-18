@@ -41,15 +41,6 @@ module «Primes by trial division»
 // versions side by side is more honest than choosing one: the first is how the
 // task is solved, the second is what the proof costs.
 
-total function «Prepend»
-  accepts element: number, items: list of number
-  returns list of number
-  example «Into an empty list»
-    given element equals 2
-    given items equals empty list
-    expected [2]
-  fold items starting with [element] as acc and elem → add elem to acc
-
 // The same algorithm — with fuel. Proved.
 total function «Sift with fuel»
   accepts fuel: list of number, candidates: list of number
@@ -71,7 +62,7 @@ total function «Sift with fuel»
           then empty list
         case head prime and tail others
           let sifted equals filter others where n → (n modulo prime) is not equal to 0
-          «Prepend» of prime and («Sift with fuel» of onward and sifted)
+          prepend prime to («Sift with fuel» of onward and sifted)
 
 // ─────────────────────────────────────────────────────────────────────────
 // Below — ordinary functions.
@@ -94,7 +85,7 @@ function «Sift»
       then empty list
     case head prime and tail others
       let sifted equals filter others where n → (n modulo prime) is not equal to 0
-      «Prepend» of prime and («Sift» of sifted)
+      prepend prime to («Sift» of sifted)
 
 function «Numbers from and to»
   accepts start: number, finish: number
@@ -109,7 +100,7 @@ function «Numbers from and to»
     expected empty list
   if start is greater than finish
     then empty list
-    else «Prepend» of start and («Numbers from and to» of (start plus 1) and finish)
+    else prepend start to («Numbers from and to» of (start plus 1) and finish)
 
 // The task.
 function «Primes up to»

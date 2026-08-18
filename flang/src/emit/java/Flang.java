@@ -888,6 +888,27 @@ public final class Flang {
     return Value.grown(cells, end + 1, new Value.Grow(end + 1));
   }
 
+  /**
+   * «приписать … к …»: тот же список с элементом впереди.
+   *
+   * Копирует по той же причине, что `bAppend`, и постоянного времени здесь быть
+   * не может: список — массив `Value[]`, ячейки ПЕРЕД началом у него нет, а
+   * запасом ёмкости в общем массиве пришлось бы кому-то владеть — значение flang
+   * по договору неизменяемо и разделяемо.
+   *
+   * Копия при этом ОДНА на вызов, а не одна на элемент, как у свёртки, которой
+   * приписывание в начало писали до появления формы. Цена по всем восьми целям —
+   * в SPEC, раздел «Стоимость встроенных форм».
+   */
+  public static Value bPrepend(Ctx ctx, Value item, Value value) {
+    Value list = expectList("приписать", value, "второй аргумент");
+    int size = Value.size(list);
+    Value[] next = new Value[size + 1];
+    next[0] = item;
+    System.arraycopy(list.items, 0, next, 1, size);
+    return Value.grown(next, size + 1, new Value.Grow(size + 1));
+  }
+
   /** «остаток от». */
   public static Value bRemainder(Ctx ctx, Value left, Value right) {
     double a = expectNumber("остаток от", left, "делимое");

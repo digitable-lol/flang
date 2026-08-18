@@ -588,7 +588,7 @@ export async function linkProgram(entryFile, source, parse, options = {}) {
      использует, — та же работа столько раз, сколько импортов, и ни одного
      нового факта за неё. Ключ не выкладывается, когда теорем нет: программа без
      доказательств обязана остаться побайтово прежней. */
-  for (const поле of ["processes", "supervisors", "runs", "plans", "theorems"]) {
+  for (const поле of ["processes", "supervisors", "runs", "plans", "theorems", "requirements"]) {
     if (Array.isArray(entry?.[поле]) && entry[поле].length > 0) linked[поле] = entry[поле]
   }
   return linked

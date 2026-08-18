@@ -64,8 +64,8 @@ const ОЖИДАЕТСЯ = new Map([
   ["roman-numerals-english.flang", { функций: 10, тотальных: 10 }],
   ["run-length-encoding.flang", { функций: 5, тотальных: 2 }],
   ["run-length-encoding-english.flang", { функций: 5, тотальных: 2 }],
-  ["primes-by-trial-division.flang", { функций: 6, тотальных: 2 }],
-  ["primes-by-trial-division-english.flang", { функций: 6, тотальных: 2 }],
+  ["primes-by-trial-division.flang", { функций: 5, тотальных: 1 }],
+  ["primes-by-trial-division-english.flang", { функций: 5, тотальных: 1 }],
   ["towers-of-hanoi.flang", { функций: 5, тотальных: 3 }],
   ["towers-of-hanoi-english.flang", { функций: 5, тотальных: 3 }],
 ])

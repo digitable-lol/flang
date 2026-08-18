@@ -816,6 +816,34 @@ function $b_dobavit(item, value) {
   return $view(cells, cells.length)
 }
 
+/*
+ * «приписать … к …»: одна копия на вызов.
+ *
+ * Постоянного времени здесь нет, и это НЕ недосмотр, а разница между печатью и
+ * вычислителем. Вид `$view` — прокси НАД массивом, и первая ячейка вида — это
+ * ячейка 0 массива: смотреть внутрь буфера со сдвигом прокси не умеет, а
+ * научить его этому значит добавить сложение к каждому чтению элемента у ВСЕХ
+ * списков напечатанной программы, включая те, что приписывания не видели. В
+ * вычислителе (`builtins.mjs`, «Список с запасом») этой платы нет: там список —
+ * своя запись с полями `начало` и `конец`, сдвиг лежит в ней, и запас работает
+ * с обоих концов. Цена по всем восьми целям названа в SPEC, раздел «Стоимость
+ * встроенных форм»: постоянная у C и Elixir, одна копия на вызов у шести
+ * остальных.
+ *
+ * Одна копия на вызов — это ровно то, чего не было: до появления формы
+ * приписывание писали свёрткой, а она копирует на КАЖДОМ элементе.
+ *
+ * Копия берётся из буфера напрямую, а не сквозь ловушки вида, по той же
+ * причине, что и у `$b_dobavit`: чтение по одному элементу сквозь прокси стоит
+ * вдесятеро дороже на ровном месте.
+ */
+function $b_pripisat(item, value) {
+  const list = $expectList("приписать", value, "второй аргумент")
+  const view = $VIEWS.get(list)
+  const cells = view === undefined ? list : view.cells.slice(0, view.end)
+  return [item, ...cells]
+}
+
 function $b_ostatok_ot(left, right) {
   $expectNumber("остаток от", left, "делимое")
   $expectNumber("остаток от", right, "делитель")
@@ -1160,6 +1188,7 @@ runtimeEntry(
 )
 runtimeEntry("$view", ["$indexKey", "$VIEWS"], fromSource($view))
 runtimeEntry("$b_dobavit", ["$expectList", "$view", "$VIEWS"], fromSource($b_dobavit))
+runtimeEntry("$b_pripisat", ["$expectList", "$VIEWS"], fromSource($b_pripisat))
 runtimeEntry("$b_ostatok_ot", ["$expectNumber"], fromSource($b_ostatok_ot))
 runtimeEntry("$b_procentov_ot", ["$expectNumber"], fromSource($b_procentov_ot))
 runtimeEntry("$Bounce", [], fromSource($Bounce))
@@ -1248,6 +1277,7 @@ const BUILTIN_HELPERS = new Map([
   ["хвост", "$b_hvost"],
   ["элемент", "$b_element"],
   ["добавить", "$b_dobavit"],
+  ["приписать", "$b_pripisat"],
   ["остаток от", "$b_ostatok_ot"],
   ["процентов от", "$b_procentov_ot"],
 ])
@@ -1282,6 +1312,7 @@ const BUILTIN_ARITY = new Map([
   ["хвост", 1],
   ["элемент", 2],
   ["добавить", 2],
+  ["приписать", 2],
   ["остаток от", 2],
   ["процентов от", 2],
 ])

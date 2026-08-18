@@ -1564,14 +1564,15 @@ fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out, fl
 }
 
 /*
- * Хвостовой запас массива. Запись одна на массив и общая для всех значений
- * списка, которые на этот массив смотрят: «добавить» дописывает в запас на
- * месте, а `filled` не даёт двум разным спискам занять одну и ту же ячейку.
- * Целиком правило — над `fl_b_dobavit`.
+ * Запас массива — с двух концов. Запись одна на массив и общая для всех
+ * значений списка, которые на этот массив смотрят: «добавить» занимает ячейку
+ * за концом, «приписать» — перед началом, а два водораздела не дают двум разным
+ * спискам занять одну и ту же ячейку. Целиком правило — над `fl_b_dobavit`.
  */
 struct fl_grow {
-  fl_value *items; /* база массива: значение с запасом обязано начинаться с неё */
-  size_t filled;   /* ячеек уже занято кем-то; только растёт */
+  fl_value *items; /* база массива; значение с запасом смотрит внутрь неё */
+  size_t head;     /* первая занятая кем-то ячейка; только убывает */
+  size_t filled;   /* ячеек занято до этой, не включая; только растёт */
   size_t capacity; /* ячеек в массиве всего */
 };
 
@@ -2901,16 +2902,20 @@ fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_err
  * Массив выделяется с запасом, а «добавить» пишет в запас на месте.
  * Всё держится на одном инварианте, и он же — доказательство неизменяемости:
  *
- *   у массива с запасом есть общая на всех запись `fl_grow`, и `filled` в
- *   ней — число ячеек, УЖЕ кем-то занятых; оно только растёт.
+ *   у массива с запасом есть общая на всех запись `fl_grow`, и занятая часть
+ *   массива в ней — полуинтервал `[head, filled)`: `filled` только растёт,
+ *   `head` только убывает.
  *
- * Занять ячейку `count` разрешено единственному — тому, у кого
- * `count == filled`; после записи `filled` становится `count + 1`. Значит:
+ * Занять ячейку `filled` разрешено единственному — тому списку, который в этом
+ * массиве кончается ровно на ней (`начало + длина == filled`); после записи
+ * `filled` становится больше на один. Ячейку `head − 1` занимает «приписать», и
+ * тоже единственному — тому, кто в этом массиве НАЧИНАЕТСЯ ровно на `head`.
+ * Значит:
  *
  *   • ячейка за концом списка пишется не более одного раза за всю жизнь
- *     арены — второе «добавить» к тому же значению видит `filled > count` и
- *     уходит на копию;
- *   • ячейки `0…count−1` не трогаются вовсе.
+ *     арены — второе «добавить» к тому же значению видит `filled` дальше своего
+ *     конца и уходит на копию; то же у «приписать» с `head`;
+ *   • ячейки `head…filled−1` не трогаются вовсе.
  *
  * Отсюда старый список после «добавить» — тот же самый: та же длина, те же
  * элементы. Разветвление
@@ -2937,14 +2942,20 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
   fl_value *items = NULL;
   size_t count = 0;
   size_t capacity = 0;
+  size_t start = 0;
 
   FL_TRY(fl_expect_list(ctx, "добавить", list, "второй аргумент", error));
   count = list.as.list.count;
   grow = list.as.list.grow;
+  /* Начало списка внутри массива: ноль у всех, кого собрал «добавить», и
+     сдвинутое вперёд у тех, кого собрал «приписать». */
+  if (grow != NULL) {
+    start = (size_t)(list.as.list.items - grow->items);
+  }
 
   /* Быстрый путь: ячейка за концом принадлежит этому массиву и свободна. */
-  if (grow != NULL && grow->items == list.as.list.items && grow->filled == count) {
-    bool room = count < grow->capacity;
+  if (grow != NULL && start + count == grow->filled) {
+    bool room = grow->filled < grow->capacity;
     if (!room && grow->capacity <= limit / 2) {
       /* Запас исчерпан, но массив может оказаться последней выдачей арены. */
       const size_t taken = grow->capacity * sizeof(fl_value);
@@ -2954,9 +2965,9 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
       }
     }
     if (room) {
-      grow->items[count] = item;
-      grow->filled = count + 1;
-      *out = fl_list_grown(grow->items, count + 1, grow);
+      grow->items[grow->filled] = item;
+      grow->filled += 1;
+      *out = fl_list_grown(grow->items + start, count + 1, grow);
       return FL_OK;
     }
   }
@@ -2982,9 +2993,87 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
   }
   items[count] = item;
   grow->items = items;
+  grow->head = 0;
   grow->filled = count + 1;
   grow->capacity = capacity;
   *out = fl_list_grown(items, count + 1, grow);
+  return FL_OK;
+}
+
+/*
+ * ── «приписать»: то же за постоянное время, только с другого конца ─────────
+ *
+ * Приписывание в начало — зеркало «добавить», и держится оно на той же записи
+ * `fl_grow`: у массива есть запас СПЕРЕДИ, а `head` не даёт двум разным
+ * спискам занять одну и ту же ячейку перед началом.
+ *
+ * Занять ячейку `head − 1` разрешено единственному — тому списку, который
+ * начинается ровно на `head`; после записи `head` становится меньше на один.
+ * Разветвление
+ *
+ *     пусть «а» равно (приписать 1 к «с»)   ← занимает ячейку head−1, head−−
+ *     пусть «б» равно (приписать 2 к «с»)   ← начало «с» уже не равно head → копия
+ *
+ * даёт два независимых списка, и ни один не портит «с» — доказательство то же,
+ * что у «добавить», и другой половиной того же инварианта.
+ *
+ * ЧЕМ ЭТО ОТЛИЧАЕТСЯ ОТ «ДОБАВИТЬ». Ровно одним: продлить массив на месте
+ * (`fl_arena_extend`) вперёд нельзя — арена умеет отменить только последнюю
+ * выдачу, и растёт та в сторону старших адресов. Поэтому весь запас
+ * «приписать» берёт заранее: копия кладётся в КОНЕЦ свежего массива, и всё
+ * свободное место остаётся перед ней. Запас равен длине, то есть удваивается,
+ * поэтому за все перевыделения арена отдаёт около 4n ячеек вместо n²/2.
+ *
+ * ЗАЧЕМ ЭТО ВООБЩЕ. До появления формы приписывание в начало писалось
+ * свёрткой, дописывающей КАЖДЫЙ элемент хвоста в свежий накопитель. У неё
+ * своя цена — линейная по длине на каждый вызов, — и на построении списка
+ * спереди назад это давало квадрат там, где нужен один проход. Числа: в SPEC,
+ * раздел «Стоимость встроенных форм», и в комментарии над проверкой
+ * «приписывание в начало не стоит длины списка» (flang/test/builtins.test.mjs).
+ */
+fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error) {
+  const size_t limit = ((size_t)-1) / sizeof(fl_value);
+  fl_grow *grow = NULL;
+  fl_value *items = NULL;
+  size_t count = 0;
+  size_t capacity = 0;
+  size_t slack = 0;
+
+  FL_TRY(fl_expect_list(ctx, "приписать", list, "второй аргумент", error));
+  count = list.as.list.count;
+  grow = list.as.list.grow;
+
+  /* Быстрый путь: ячейка перед началом принадлежит этому массиву и свободна. */
+  if (grow != NULL && grow->head > 0 && list.as.list.items == grow->items + grow->head) {
+    grow->head -= 1;
+    grow->items[grow->head] = item;
+    *out = fl_list_grown(grow->items + grow->head, count + 1, grow);
+    return FL_OK;
+  }
+
+  /* Медленный путь: копия в конец массива, весь запас — перед ней. */
+  if (count >= limit) {
+    return fl_no_memory(error);
+  }
+  slack = count < FL_GROW_FIRST ? FL_GROW_FIRST : count;
+  if (slack > limit - count) {
+    slack = limit - count;
+  }
+  capacity = count + slack; /* не меньше count + 1: выше count < limit, slack >= 1 */
+  grow = (fl_grow *)fl_arena_alloc(ctx->arena, sizeof(fl_grow));
+  if (grow == NULL) {
+    return fl_no_memory(error);
+  }
+  FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
+  if (count > 0) {
+    memcpy(items + slack, list.as.list.items, count * sizeof(fl_value));
+  }
+  items[slack - 1] = item;
+  grow->items = items;
+  grow->head = slack - 1;
+  grow->filled = capacity;
+  grow->capacity = capacity;
+  *out = fl_list_grown(items + grow->head, count + 1, grow);
   return FL_OK;
 }
 

@@ -78,7 +78,7 @@ test("целый словарь проверен, и число проверен
   /* Числа здесь не украшение: `valid: true` при нуле сравнений — ровно та
      ложная зелёная, от которой заведена вся проверка. Один функтор, один
      объект, два поля — и ни одного поля источника, оставшегося без образа. */
-  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 2, unmapped: 0 })
+  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 2, unmapped: 0, inProgram: 0 })
 })
 
 test("поле, которого нет ни с одной стороны, названо с обеих", () => {
@@ -92,7 +92,7 @@ test("поле, которого нет ни с одной стороны, на�
   assert.match(итог.тексты[0], /есть «сумма», «постоянный клиент»/u)
   assert.match(итог.тексты[1], /есть «сумма без НДС», «лояльный»/u)
   /* Объект СОШЁЛСЯ, поля — нет: и то и другое обязано быть видно числом. */
-  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 0, unmapped: 2 })
+  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 0, unmapped: 2, inProgram: 0 })
 })
 
 test("перевод числа в признак — отдельная беда со своим кодом", () => {
@@ -117,7 +117,7 @@ test("объект, которого нет ни в одной спеке, — �
   /* Полей не сверялось ни одного, и `checked` это признаёт: объект не сошёлся,
      значит про его поля не известно НИЧЕГО. Записать их в проверенные значило
      бы посчитать за проверку то, чего не было. */
-  assert.deepEqual(итог.checked, { functors: 1, objects: 0, fields: 0, unmapped: 0 })
+  assert.deepEqual(итог.checked, { functors: 1, objects: 0, fields: 0, unmapped: 0, inProgram: 0 })
 })
 
 test("образец наследия краснеет: обе спеки ведут в никуда", () => {
@@ -150,7 +150,7 @@ test("настоящий словарь наследия зелёный БЕЗ �
     parse,
   })
   assert.deepEqual(итог.diagnostics, [])
-  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 2, unmapped: 0 })
+  assert.deepEqual(итог.checked, { functors: 1, objects: 1, fields: 2, unmapped: 0, inProgram: 0 })
 
   /* А из своего нынешнего каталога — две беды, и обе про место. */
   const наместе = проверить(`${ФИКСТУРЫ}/fts-naslediye/sales-to-billing.fts`)
@@ -199,7 +199,35 @@ test("программа без функтора не проверяется и 
      платформой в руках. */
   const итог = checkFunctorDictionary({ flang: 1, module: "Пусто", legacy: [] })
   assert.equal(итог.valid, true)
-  assert.deepEqual(итог.checked, { functors: 0, objects: 0, fields: 0, unmapped: 0 })
+  assert.deepEqual(итог.checked, { functors: 0, objects: 0, fields: 0, unmapped: 0, inProgram: 0 })
+})
+
+test("функтор между категориями САМОЙ программы — не словарь, и мимо него", () => {
+  /* Одна поверхность, две разные вещи. `flang/examples/cat/natural-square.flang`
+     и `flang/examples/cat/moduli/soglasovanie.flang` пишут `функтор «Ф» из «А» в
+     «Б»`, где обе категории объявлены здесь же: своих `использует` внутри блока
+     у них нет и быть не может. Спросить с них строку `использует «А» из «…»`
+     значило бы покраснеть на двух заведомо здоровых файлах корпуса — замерено
+     прогоном: без этого различения оба дают FLANG_FUNCTOR_SPEC_MISSING.
+
+     Различение идёт по ОБЪЯВЛЕНИЮ категории, а не по пустоте `imports`: словарь,
+     у которого забыли обе строки `использует`, объявленных категорий не имеет,
+     значит остаётся словарём и краснеет (случай ниже — тот же исходник без
+     `declared`). */
+  const исходник = readFileSync(`${СЛОВАРИ}/slovar.fts`, "utf8")
+  const программа = parse(исходник, `${СЛОВАРИ}/slovar.fts`)
+  const свои = checkFunctorDictionary(программа, { declared: ["Продажи", "Биллинг"] })
+  assert.equal(свои.valid, true)
+  assert.deepEqual(свои.checked, { functors: 0, objects: 0, fields: 0, unmapped: 0, inProgram: 1 })
+  /* Одной объявленной мало: половина словаря снаружи — всё ещё словарь. */
+  const половина = checkFunctorDictionary(программа, {
+    file: `${СЛОВАРИ}/slovar.fts`,
+    read: (путь) => readFileSync(путь, "utf8"),
+    parse,
+    declared: ["Продажи"],
+  })
+  assert.equal(половина.checked.inProgram, 0)
+  assert.equal(половина.valid, true)
 })
 
 test("без чтения и разбора проверка отказывается, а не молчит зелёным", () => {

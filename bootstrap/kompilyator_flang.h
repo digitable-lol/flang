@@ -19398,16 +19398,47 @@ fl_status kompilyator_flang_proverit_tipy(fl_ctx *ctx, fl_value programma, fl_va
 fl_status kompilyator_flang_otmetit_dokazannye(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Приписать числа».
+ * Функция flang «Приписать доказанные».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
+ * @param dokazany — «доказаны»: список: «Доказанное место»
  * @param chisla — «числа»: список: «Доказанное место»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_pripisat_chisla(fl_ctx *ctx, fl_value uzel, fl_value chisla, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_pripisat_dokazannye(fl_ctx *ctx, fl_value uzel, fl_value dokazany, fl_value chisla, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отметить узел».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param dokazany — «доказаны»: список: «Доказанное место»
+ * @param chisla — «числа»: список: «Доказанное место»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_otmetit_uzel(fl_ctx *ctx, fl_value uzel, fl_value dokazany, fl_value chisla, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это доказанная форма».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param dokazany — «доказаны»: список: «Доказанное место»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_dokazannaya_forma(fl_ctx *ctx, fl_value uzel, fl_value dokazany, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Место формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Доказанное место»
+ */
+fl_status kompilyator_flang_mesto_formy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отметить если число».

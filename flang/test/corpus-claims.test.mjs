@@ -1344,6 +1344,7 @@ const ОХВАТ = [
   "flang/stdlib/dictionary.flang «Размер»",
   "flang/stdlib/hashmap.flang «Размер словаря»",
   "flang/stdlib/higher-order.flang «Считать где»",
+  "flang/stdlib/http.flang «Сколько заголовков»",
   "flang/stdlib/lists.flang «Считать вхождения»",
   "flang/stdlib/sets.flang «Размер множества»",
   "flang/stdlib/strings.flang «Позиция подстроки»",

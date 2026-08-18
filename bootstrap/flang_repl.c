@@ -4720,6 +4720,31 @@ static void run_print(fl_value value) {
  * 1 — программа отказала, 2 — ошибка вызова. Разделение не косметика: сценарий
  * вправе отличать «программа сказала нет» от «я позвал неправильно».
  */
+/**
+ * Ёлочки с имени функции, если человек их написал.
+ *
+ * Справка показывает `--function «Имя»`, и показывает не по недосмотру: имена
+ * функций в языке ПИШУТСЯ в ёлочках, и человек копирует их из исходника вместе
+ * с ними. А ключ ёлочек не принимал и отвечал `не найдена функция ««Имя»»` —
+ * то есть отвергал ровно ту форму, которой сам же учил.
+ *
+ * Близнец на Node — `снятьЁлочки` в `flang/bin/flang.mjs`, и правились они
+ * одним движением: почини одну сторону — и бинарник начал бы принимать то, что
+ * эталон отвергает.
+ *
+ * «» в UTF-8 — это C2 AB и C2 BB; снимается ровно одна внешняя пара.
+ */
+static const char *run_bare_name(const char *name, size_t *bytes) {
+  const size_t length = strlen(name);
+  *bytes = length;
+  if (length >= 4 && (unsigned char)name[0] == 0xC2u && (unsigned char)name[1] == 0xABu &&
+      (unsigned char)name[length - 2] == 0xC2u && (unsigned char)name[length - 1] == 0xBBu) {
+    *bytes = length - 4;
+    return name + 2;
+  }
+  return name;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
@@ -4796,7 +4821,11 @@ static int run_file(int argc, char **argv) {
   } else {
     args[0] = sources;
     args[1] = repl_value_say(full);
-    args[2] = repl_value_say(name);
+    {
+      size_t name_bytes = 0;
+      const char *bare = run_bare_name(name, &name_bytes);
+      args[2] = repl_value_text(bare, name_bytes);
+    }
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));

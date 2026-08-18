@@ -77,13 +77,24 @@ And, honestly, what is not there:
 - **of ordinary library functions the kernel accepts 7 out of 20** — the
   measurement took every ninth function out of all 208, so the convenient ones
   could not be picked;
-- **the language is 1.4× slower than Python**, and that is **not the price of
-  provability**: that price was measured separately and is 2.5 %, paid by 71
-  functions out of 2799. The rest is ordinary lack of optimisation, and it is
-  fixable;
+- **the language is 1.4× slower than Python, 3.3× slower than Node, and
+  hand-written C is 8.6× faster than we are** (geometric mean over five tasks,
+  [the speed report](../benchmark-speed.html) — in Russian). That is **not the
+  price of provability**: where a proof leaves no guard in the running program it
+  costs **1–9 %, indistinguishable from zero** against the spread between runs.
+  A guard is left behind rarely: as of 18 August **68 functions out of 5992
+  total ones carry it — 1.1 %** (4 by a constant step, 64 by a declared measure,
+  102 sites; `npm run proof:ledger`). There it really is expensive — **three
+  times the cost of the function itself**. The gap is unfinished work, not the
+  price of proofs, and it is fixable;
 - **the compiler is not written in flang all the way**: the proof chain is, and
   eight code generators out of eight are, but the processes and the shell are
-  not yet.
+  not yet;
+- **memory is not returned until the call ends**. There are no leaks at all —
+  valgrind reports zero bytes in zero blocks — but the arena holds everything it
+  ever took: a merge sort of 4000 numbers peaks at **1655 MiB** with a live
+  result of **125 KiB**, a ratio of **13 558×**
+  ([the memory report](../memory.html) — in Russian).
 
 ## Where to start
 

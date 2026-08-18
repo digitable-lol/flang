@@ -127,6 +127,7 @@
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)
+- [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](paket-npm-ne-uedet-v-podkatalog.md)
 
 ## Модульность и пакеты
 

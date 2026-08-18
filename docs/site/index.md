@@ -92,9 +92,11 @@ And, honestly, what is not there:
   not yet;
 - **memory is not returned until the call ends**. There are no leaks at all —
   valgrind reports zero bytes in zero blocks — but the arena holds everything it
-  ever took: a merge sort of 4000 numbers peaks at **1655 MiB** with a live
-  result of **125 KiB**, a ratio of **13 558×**
-  ([the memory report](../memory.html) — in Russian).
+  ever took. The scale of the trouble dropped by hundreds of times in three days:
+  a merge sort of 4000 numbers used to peak at 1655 MiB and on 18 August peaks at
+  **4.0 MiB** in 0.61 s, finishing the job. Where it still shows is insertion
+  sort: **176 MiB** for 2000 elements, and for 4000 it hits the recursion limit
+  before it finishes ([the memory report](../memory.html) — in Russian).
 
 ## Where to start
 

@@ -33,14 +33,14 @@ closed; none is left without.
 on a clean export (`git archive HEAD` into an empty directory): one compiler
 invocation over four `.c` files, not one warning under `-std=c99 -Wall -Wextra
 -Werror -pedantic -O2`, no external dependency beyond `libm` and `libpthread`.
-It takes **78 s** of CPU time and yields a binary of **6 854 664 bytes**
+It takes **77 s** of CPU time and yields a binary of **6 999 040 bytes**
 (cc 15.2.0, Linux 7.0.0). The `-flto` flag that stands in the `Makefile` is not
 needed for a single invocation: there is only one translation unit anyway.
 
 **The compiler's emission of itself matches byte for byte.** `node
-scripts/bootstrap-c.mjs --check` links the flang sources (**3436 functions,
-307 types**), emits them into C and compares that with what sits in `bootstrap/`:
-**7 files, 12 569 968 bytes, 0 differences**. It compares bytes, not a build, so
+scripts/bootstrap-c.mjs --check` links the flang sources (**3502 functions,
+313 types**), emits them into C and compares that with what sits in `bootstrap/`:
+**7 files, 12 841 265 bytes, 0 differences**. It compares bytes, not a build, so
 the check always runs and needs no `cc`.
 
 **The evaluator is pulled into the binary.** `flang run` computes with it — no
@@ -52,11 +52,25 @@ checks parsing, types and termination, and says so at start-up. The difference i
 named because "there is a shell" and "there is an evaluator" are different
 promises.
 
-**What the binary can do, as a list.** Taken from a run of a freshly built
-binary, not from the help text: `--help`/`-h`/`help`,
-`--version`/`-v`/`version`, `check`, `run`, `repl`, and with no arguments — the
-JSON-in, JSON-out runner. Anything not in that list answers "unknown command"
-with exit code 2.
+**What the binary can do, as a list.** Taken from a run of a binary built in a
+clean directory, not from the help text: `check`, `test`, `run`, `emit`, `repl`,
+`--help`, `--version`, and with no arguments — the JSON-in, JSON-out runner. Each
+was run:
+
+| command | run | answer |
+|---|---|---|
+| `check` | `check flang/stdlib/higher-order.flang` | 34 functions, 34 with proved termination; no findings |
+| `check --proof` | the same with `--proof` | **the ledger is printed**: 65 lines against 2 without the flag |
+| `test` | `test flang/stdlib/higher-order.flang` | 55 examples, 55 passed, 0 failed |
+| `run` | `run … --function 'Удвоить' --args '{"х":21}'` | `42`, exit 0 |
+| `emit` | `emit flang/examples/rosetta/merge-sort.flang --target c` | 6 files, 277 469 bytes printed; `make` built them |
+| `repl` | `repl` with no `cc` | does not switch off, checks parsing, types and termination |
+
+`--proof` **is no longer swallowed in silence** — that was still true on the
+morning of 18 August and stopped being true by the evening. Emission from the
+binary has one named limit: the table of declared types is built by the
+reference layer, so runner arguments are not checked against declared types, and
+the binary says so itself rather than keeping quiet.
 
 **An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
 
@@ -82,17 +96,6 @@ guide, the measurement reports and the specifications are still Russian only.
 
 This is the important part of the page. Below is what does not exist, in the
 order in which each item blocks the next.
-
-**The binary has no `test` and no `emit`, and it silently ignores `--proof`.**
-Re-measured on 18 August with a binary built in a clean directory: `test` and
-`emit` answer "unknown command" with exit code 2. `--proof` is worse — the output
-of `flang check file.flang --proof` equals the output of `flang check
-file.flang` **byte for byte** (compared with `diff`), there is no ledger, and
-nothing says so. A refusal is visible; silence is not.
-
-This is the one place where the binary still holds Node by the hand: emission
-into the eight targets and the checking of claims live only in the full toolchain.
-Bootstrapping no longer depends on Node — working with the language still does.
 
 **There are no packages at all.** A library is included by relative path
 (`использует «Модуль» из "path"`). No versions, no lock file, no reproducible

@@ -72,6 +72,30 @@ docs/             documentation; README and SPEC files stay next to the code the
 
 <!-- КАРТА-КОНЕЦ -->
 
+<!-- КОРЕНЬ-НАЧАЛО. The root files are checked against the tree the same way the directories
+     above are: flang/test/readme-layout.test.mjs fails if a file appears in the root that both
+     editions of the README are silent about, or if a named root file is gone. -->
+
+**The loose files in the root, and what keeps each one there.**
+
+| file | what keeps it in the root specifically |
+| --- | --- |
+| `README.md` · `README.ru.md` | the front page: GitHub serves it from the root and nowhere else |
+| `LICENSE` · `LICENSE-RU.md` | the BSD-2-Clause licence and its Russian edition; the translation carries no legal force, but it is the one people read |
+| `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms — also only from the root |
+| `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
+| `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
+| `package.json` · `package-lock.json` | the manifest of the **second mould** — the one that embeds the language into somebody else's Node project. npm reads them only from the root of the package it publishes |
+| `.gitignore` · `.gitattributes` | git reads them from the root |
+
+**Nothing in that set builds the binary.** `make -C bootstrap` builds the compiler with a single
+`cc` — no Node, no npm, not one line from here. `package.json` does not describe how the language
+is built; it describes the package the language is embedded with. It declares zero dependencies
+(`npm ls --all` prints `(empty)`), and `npm install` in a clone is needed for exactly one thing:
+to put `flang` into `node_modules/.bin`.
+
+<!-- КОРЕНЬ-КОНЕЦ -->
+
 **How to tell what checks a file without opening it.** There is one run: `npm test` executes
 `flang/test/*.test.mjs`, and everything is checked there — from the lexer to all eight backends,
 including the `examples/library-api/` project (wired in through an adapter file). A file you

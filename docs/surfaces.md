@@ -32,14 +32,16 @@ se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
 
 ```
 $ flang check flang/examples/rosetta/factorial.flang
-{"valid":true,"module":"Факториал","functions":[…5 функций…],"diagnostics":[]}
+{"valid":true,"module":"Факториал","functions":[…5 функций, у трёх "total":true…],"types":[],"diagnostics":[]}
 
 $ flang check flang/examples/surfaces/factorial.zh.flang
-{"valid":true,"module":"阶乘","functions":[…5 функций…],"diagnostics":[]}
+{"valid":true,"module":"阶乘","functions":[…те же 5, те же три…],"types":[],"diagnostics":[]}
 ```
 
-Имя модуля в ответе — то, которое написал автор: `Факториал` в русском файле,
-`阶乘` в китайском. Все остальные поля у четырёх ответов одинаковы.
+Многоточия — сокращение для страницы; всё остальное командой напечатано дословно.
+Разница между четырьмя ответами ровно одна — имя модуля: его выбрал автор, и оно
+не переводится. Ответ идёт JSON-ом, потому что его читает не только человек:
+контракт вывода один на все команды.
 
 ## Совпадают ли деревья
 

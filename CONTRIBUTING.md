@@ -87,6 +87,38 @@ build flang without Node. It is an artifact, never edited by hand; the guard
 `flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so it
 runs everywhere. See `bootstrap/README.md`.
 
+## Every script `package.json` declares, and who runs it
+
+`package.json` is the manifest of the **second mould** — the one that embeds the
+language into a Node project. It is not how the language is built: `make -C
+bootstrap` builds the compiler with a single `cc`, and the package declares zero
+dependencies (`npm ls --all` prints `(empty)`).
+
+A script nobody ever names is dead weight that still looks like a promise, so
+every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
+`package.json` grows one that this page is silent about.
+
+| script | who runs it |
+| --- | --- |
+| `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag |
+| `npm run pretest` · `npm run pretest:backends` | npm lifecycle hooks — the preflight report, run automatically before the suite |
+| `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
+| `npm run preflight` | the toolchain report on its own |
+| `npm run claims:check` · `npm run counts:check` · `npm run codes:check` · `npm run emit:check` | the four prose guards below |
+| `npm run license:check` | SPDX marking; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
+| `npm run changelog` · `npm run changelog:check` | print `CHANGELOG.md` and `changelog.json` from tags, and check they match the history |
+| `npm run izmeneniya` · `npm run izmeneniya:check` | print the merge journal; **Pages runs the file directly** before building the site |
+| `npm run site` · `npm run site:check` | build the documentation site and check its links; **Pages runs the file directly** |
+| `npm run bootstrap` · `npm run bootstrap:check` | reprint `bootstrap/` from the current sources, and compare byte for byte |
+| `npm run proof:ledger` · `npm run proof:search` | the proof ledger over the corpus, and the search behind it |
+| `npm run word:occupancy` | which words of the language a given name would collide with; takes arguments |
+| `npm run test:backends` | the emit tests alone, when you do not want the full suite |
+| `npm run test:remote` | the same suite on another host, over ssh |
+
+Three of these are run by CI as `node …` directly rather than through npm. That
+is a place two spellings can drift apart, and it is written down here rather
+than discovered later.
+
 ## Prose is checked, not trusted
 
 Documentation in this tree makes claims a machine can settle, and a claim nobody

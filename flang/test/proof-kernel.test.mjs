@@ -1189,6 +1189,18 @@ test("корпус самоприменения употребляет ровн�
     "flang/self/interpret.flang",
     "flang/self/interpret.flang",
     "flang/self/iso.flang",
+    /* Семь чисел вида элемента дополнения языкового сервера: `kind` в ответе LSP
+       — число из спецификации протокола, и «не меньше 0» о нём ядро берёт само.
+       Восьмого здесь нет намеренно: у «Вида объявления» параметром идёт узел
+       AST, а по нему враждебная сетка значений не строится, и сторож класса
+       такое утверждение назвал бы непокрытым. */
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
+    "flang/self/lsp.flang",
     "flang/self/monad.flang",
     "flang/self/monad.flang",
     "flang/self/monoid.flang",

@@ -36,5 +36,5 @@
 одного поля знания. Сложение по-прежнему ничего не проносит, и это не
 недоделка: `н` меньше длины `эл`, а `н плюс 1` не меньше ничего.
 
-Связано: [[vyvod-na-vetke-ne-vyvod-o-dereve]], [[proverki-perestayushchie-sravnivat]],
-[[plavayushchaya-tochka]], [[tri-tipa-chisel]]
+Связано: [[vyvod-na-vetke-ne-vyvod-o-dereve]], [[checks-that-stopped-comparing]],
+[[floating-point-bits-are-exact]], [[three-number-types]]

@@ -28,16 +28,20 @@ axioms is held empty by a check, not by a promise: one cannot be added quietly.
 {{цели.поАнглийски}} have a twin written in flang itself; none is left without.
 
 **The binary builds with a single compiler invocation, without Node.** Checked
-on a clean export of the tree into an empty directory: one invocation over four
-`.c` files, not one warning under `-std=c99 -Wall -Wextra -Werror -pedantic
--O2`, no external dependency beyond `libm` and `libpthread`. It yields a binary
-of **7 151 360 bytes** in **75 s** of CPU time (72.0 user and 2.7 system;
-cc 15.2.0, Linux 7.0.0). The bytes repeat, the time floats with machine load.
+on a clean export of the tree into an empty directory (`git archive HEAD`): one
+compiler invocation over four `.c` files, not one warning under `-std=c99 -Wall
+-Wextra -Werror -pedantic -O2`, no external dependency beyond `libm` and
+`libpthread`. It takes **83.7 s** and yields a binary of **7 134 408 bytes**;
+building the same export with four threads takes **40.6 s** and yields
+**7 127 856 bytes** (cc 15.2.0, Linux 7.0.0). The time floats with machine load,
+the bytes do not: two runs with different thread counts gave the same size to the
+byte. All the runs are on [How the install was verified](install-evidence.html).
 
-**The compiler's emission of itself matches byte for byte.** **3554 functions
-and 314 types** are linked, emitted into C and compared with what sits in
-`bootstrap/`: **7 files, 13 075 377 bytes, 0 differences**. It compares bytes,
-not a build, so the check always runs and needs no C compiler.
+**The compiler's emission of itself matches byte for byte.** The bootstrap check
+links the flang sources (**3554 functions, 314 types**), emits them into C and
+compares that with what sits in `bootstrap/`: **7 files, 13 060 621 bytes,
+0 differences**. It compares bytes, not a build, so the check always runs and
+needs no C compiler.
 
 **The evaluator is pulled into the binary.** `flang run` and `flang test`
 compute with it — no Node, no external compiler. The `flang repl` shell does
@@ -67,7 +71,8 @@ quiet.
 
 **Four writing surfaces** — Russian, English, Esperanto, Chinese. Of the
 {{словарь.понятий}} concepts in the glossary, {{словарь.наЧетырёх}} are open on
-all four; {{словарь.дырявых}} have holes, and those are named one by one.
+all four; {{словарь.дырявых}} have holes, and those are named one by one on
+[Four writing surfaces](../surfaces.html) (in Russian).
 
 **The flang corpus** — {{корпус.строк|разрядами}} lines across
 {{корпус.файлов}} files: the very files the functions in the table above were
@@ -98,8 +103,8 @@ be distributed nor updated.
 
 **The standard library is small**: {{библиотека.файлов}} files,
 {{библиотека.строк|разрядами}} lines, {{библиотека.функций}} functions. No
-network, no time, no database. The list of what is there is shorter than the
-list of what is not.
+database, no full networking. The list of what is there is shorter than the list
+of what is not.
 
 **There is almost no application code.** The backend is one example of 7 files
 and 563 lines (`examples/library-api`). The frontend is a browser demo, not an
@@ -107,7 +112,7 @@ application.
 
 ## Decided against
 
-A refusal is a decision, and each one has a named argument.
+A refusal is a decision, and each one has a stated reason.
 
 **No closures.** Capturing an environment breaks the termination analysis and
 direct emission into C, Go and Rust. First-class functions do exist — through

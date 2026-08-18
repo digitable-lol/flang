@@ -378,8 +378,8 @@ flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --p
 Тест закрепляет и то, сколько функций каждого файла доказано тотальными: набор показывает границу языка, поэтому сдвинувшаяся граница обязана ронять
 тест, а не тихо устаревать в комментарии. Стандартная библиотека
 ([`flang/stdlib/`](flang/stdlib): `dictionary`, `hashmap`, `higher-order`, `lists`, `logic`,
-`numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) написана так же — 13 модулей, 208 функций, из них
-204 доказана тотальной. `higher-order` — та, что
+`http`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) написана так же — 14 модулей, 259 функций, из них
+255 доказана тотальной. `higher-order` — та, что
 на функциях-значениях: свёртка, отображение, фильтр, поиск, сортировка и композиция принимают
 функцию аргументом.
 

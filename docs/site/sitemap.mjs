@@ -19,6 +19,7 @@ export const РАЗДЕЛЫ = [
     имя: 'Начало', англ: 'Start',
     страницы: [
       { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.ru.md' },
+      { адрес: 'install.html', имя: 'Установка', из: 'docs/site/install.ru.md' },
       { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.ru.md' },
       { адрес: 'roadmap.html', имя: 'Роадмап', из: 'docs/site/roadmap.ru.md' },
     ],
@@ -50,6 +51,8 @@ export const РАЗДЕЛЫ = [
       // Печатается из `SURFACE_TABLE`: `node docs/site/glossary.mjs`. Руками не
       // править — затрёт сборка; сторож свежести `npm run glossary:check`.
       { адрес: 'glossary.html', имя: 'Словарь языка', из: 'docs/glossary.md' },
+      { адрес: 'operations.html', имя: 'Операции языка', из: 'docs/site/operations.ru.md' },
+      { адрес: 'packages.html', имя: 'Как писать пакеты', из: 'docs/site/packages.ru.md' },
     ],
   },
   {
@@ -58,6 +61,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'proofs.html', имя: 'Зачем и как', из: 'docs/site/proofs.ru.md' },
       { адрес: 'spec-proof.html', имя: 'Спецификация ядра', из: 'flang/proof/SPEC.md' },
       { адрес: 'overview.html', имя: 'Что доказано, а что проверено', из: 'docs/overview.ru.md' },
+      { адрес: 'case-studies.html', имя: 'Разборы настоящих случаев', из: 'docs/site/case-studies.ru.md' },
     ],
   },
   {

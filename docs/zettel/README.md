@@ -48,6 +48,7 @@
 
 - [Замкнутую цель надо считать, а не выводить](closed-goals-must-be-computed.md)
 - [Узкое место переехало третий раз: мешает форма утверждения, а не форма тела](bottleneck-moved-to-claim-shape.md)
+- [Файл, записанный на четырёх поверхностях, доказательство нести не может](proof-words-live-on-two-surfaces-of-four.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 
 ## Теория категорий

@@ -349,11 +349,22 @@ async function commandIo(options) {
     внутриКорня: options.inDir === true,
   })
 
-  const итог = await runPlan(program, план.name, хозяин, {
-    maxSteps: options.maxSteps,
-    maxDepth: options.maxDepth,
-    maxOrders: options.maxOrders,
-  })
+  let итог
+  try {
+    итог = await runPlan(program, план.name, хозяин, {
+      maxSteps: options.maxSteps,
+      maxDepth: options.maxDepth,
+      maxOrders: options.maxOrders,
+    })
+  } finally {
+    /* Порты отдаются системе ВСЕГДА, и в `finally`, а не после: план,
+       кончившийся отказом, оставил бы слушающий сокет открытым, а с ним и
+       процесс, которому нечего больше делать. Закрывает тот, кто открыл, — и
+       это не поручение, потому что программа порт не открывала (она попросила
+       принять связь). Хозяин без сети такого способа не имеет вовсе, отсюда
+       проверка. */
+    if (typeof хозяин.закрыть === "function") хозяин.закрыть()
+  }
   writeJson(
     {
       plan: план.name,

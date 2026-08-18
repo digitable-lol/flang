@@ -124,6 +124,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.
@@ -603,7 +604,13 @@ export function emitGo(program, options = {}) {
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
-  const file = options.path ?? (moduleName === null ? "program" : snake(moduleName))
+  const wanted = options.path ?? (moduleName === null ? "program" : snake(moduleName))
+  /* У Go занята не библиотека, а ХВОСТ имени файла: последний сегмент через
+     `_` — это неявное условие сборки по GOOS/GOARCH, а `_test` делает файл
+     тестовым. `модуль «Сетка Windows»` дал бы `setka_windows.go`, которого на
+     Linux в сборке просто нет (`target-occupied.mjs`). Суффикс `_flang` — тот же
+     приём, что у семи прочих целей; приставка хвоста не сняла бы вовсе. */
+  const file = обойтиЗанятоеЦелью(wanted, "go")
 
   /* Одно пространство имён на пакет, поэтому один именователь на всё, что
      торчит наружу: функции, фабрики записей, конструкторы вариантов. Имена,

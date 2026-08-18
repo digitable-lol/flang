@@ -34,7 +34,7 @@ compared tree against tree, not described as equal.
 
 **Termination is proved at compile time.** In C, Python and JavaScript a function
 may loop forever and you find out in production. Here `total` is a promise the
-compiler answers for: **6167 functions out of 8047** carry it.
+compiler answers for: **6277 functions out of 8159** carry it.
 
 **A promise about the result is checked on all inputs, not on examples.** Tests
 cover the inputs you thought of. A postcondition accepted by the proof kernel
@@ -65,17 +65,17 @@ quietly: the page reddens with the tree.
 
 | | |
 |---|---:|
-| Functions in the corpus | 8047 |
-| Of them total (termination proved) | 6167 |
-| Behaviour claims stated | 154 |
-| Of them **proved by the kernel** — for all inputs | 132 |
+| Functions in the corpus | 8159 |
+| Of them total (termination proved) | 6277 |
+| Behaviour claims stated | 161 |
+| Of them **proved by the kernel** — for all inputs | 137 |
 | Axioms in the kernel | **0** |
 | Claims refuted | **0** |
 
 And, honestly, what is not there:
 
 - **of ordinary library functions the kernel accepts 7 out of 20** — the
-  measurement took every ninth function out of all 208, so the convenient ones
+  measurement took every ninth function out of all 259, so the convenient ones
   could not be picked;
 - **the language is 1.4× slower than Python, 3.3× slower than Node, and
   hand-written C is 8.6× faster than we are** (geometric mean over five tasks,

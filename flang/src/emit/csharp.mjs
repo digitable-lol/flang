@@ -90,6 +90,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 import { camel, pascal } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.
@@ -571,7 +572,14 @@ export function emitCsharp(program, options = {}) {
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
-  const className = options.path ?? (moduleName === null ? "FlangProgram" : safeIdent(pascal(moduleName)))
+  const wanted = options.path ?? (moduleName === null ? "FlangProgram" : safeIdent(pascal(moduleName)))
+  /* Имя модуля flang доезжает до цели именем в ЕЁ пространстве имён, а часть
+     этого пространства цель занимает сама (`target-occupied.mjs`). Свободное имя
+     возвращается как есть — вывод не меняется ни на байт, — занятое обходится
+     суффиксом (`flang_` приставкой звать нельзя: так зовут файлы рантайма).
+     Отказывать здесь нельзя: имя автор выбрал законно, а набор занятого у цели
+     свой и меняется от её версии. */
+  const className = обойтиЗанятоеЦелью(wanted, "csharp")
   if (RUNTIME_TYPES.includes(className)) {
     throw flangError(
       "FLANG_PARSE",

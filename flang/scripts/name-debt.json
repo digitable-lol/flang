@@ -423,6 +423,21 @@
     "flang/examples/surfaces/factorial.eo.flang": [
       "elem"
     ],
+    "flang/examples/web/shortener/plan.flang": [
+      "кд",
+      "хр"
+    ],
+    "flang/examples/web/shortener/service.flang": [
+      "вр",
+      "кд",
+      "мт",
+      "пр",
+      "тл",
+      "цл"
+    ],
+    "flang/examples/web/shortener/store.flang": [
+      "акк"
+    ],
     "flang/self/bootstrap/compiler.flang": [
       "акк",
       "в",
@@ -789,6 +804,28 @@
       "хв",
       "хп",
       "эл"
+    ],
+    "flang/stdlib/http.flang": [
+      "акк",
+      "вг",
+      "вр",
+      "вх",
+      "г",
+      "ж",
+      "зн",
+      "кд",
+      "мт",
+      "н",
+      "нм",
+      "пг",
+      "пр",
+      "пх",
+      "сб",
+      "ск",
+      "т",
+      "тл",
+      "х",
+      "цл"
     ],
     "flang/stdlib/lists.flang": [
       "акк",

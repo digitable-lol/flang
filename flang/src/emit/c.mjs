@@ -96,6 +96,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
 import { createNamer, pascal, snake } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм.
@@ -516,7 +517,14 @@ export function emitC(program, options = {}) {
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
-  const file = options.path ?? (moduleName === null ? "program" : snake(moduleName))
+  const wanted = options.path ?? (moduleName === null ? "program" : snake(moduleName))
+  /* Имя модуля flang доезжает до цели именем в ЕЁ пространстве имён, а часть
+     этого пространства цель занимает сама (`target-occupied.mjs`). Свободное имя
+     возвращается как есть — вывод не меняется ни на байт, — занятое обходится
+     суффиксом (`flang_` приставкой звать нельзя: так зовут файлы рантайма).
+     Отказывать здесь нельзя: имя автор выбрал законно, а набор занятого у цели
+     свой и меняется от её версии. */
+  const file = обойтиЗанятоеЦелью(wanted, "c")
   const prefix = snake(moduleName === null ? "program" : moduleName)
 
   /* Одно пространство имён на весь C, поэтому один именователь на всё, что
@@ -1752,8 +1760,15 @@ function emitFold(node, ctx, out, pad) {
   const init = emitValue(node.init, ctx, out, pad)
   const accIdent = ctx.fresh(node.acc)
   const index = ctx.temp()
+  /* Область на накопитель. Отметка снимается ПОСЛЕ начального значения: оно
+     обязано лежать ниже отметки, иначе откат первого же витка его унесёт.
+     Довод законности — над `fl_region_recycle` в flang_runtime.c: после
+     присваивания прежний накопитель не читает никто, а входной список и его
+     элементы построил вызывающий, и лежат они ниже отметки. */
+  const mark = ctx.temp()
   out.push(
     `${pad}fl_value ${accIdent} = ${init}; /* «${node.acc}» */`,
+    `${pad}const fl_mark ${mark} = fl_region_open(ctx);`,
     `${pad}for (size_t ${index} = 0; ${index} < ${list}.as.list.count; ${index} += 1) {`,
   )
   const itemIdent = ctx.fresh(node.item)
@@ -1767,7 +1782,13 @@ function emitFold(node, ctx, out, pad) {
   ctx.unbind(node.acc, undoAcc)
   guardUnused(out, at, [itemIdent], `${pad}  `)
 
-  out.push(`${pad}}`)
+  /* Закрытие после цикла возвращает границу объемлющей области — `recycle`
+     этого не делает нарочно, иначе со второго витка цикл шёл бы без сторожа. */
+  out.push(
+    `${pad}  FL_TRY(fl_region_recycle(ctx, ${mark}, &${accIdent}, error));`,
+    `${pad}}`,
+    `${pad}FL_TRY(fl_region_close(ctx, ${mark}, FL_OK, &${accIdent}, error));`,
+  )
   return accIdent
 }
 

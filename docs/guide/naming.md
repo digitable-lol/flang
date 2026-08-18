@@ -165,12 +165,12 @@ entry that outlived its reason lies exactly as much as a missing one; `ОБЪЯ�
 
 ### What the guard does not look at
 
-`КАТАЛОГИ` lists four directories, and the tree holds **774** `.flang` files. A directory left off the
+`КАТАЛОГИ` lists four directories, and the tree holds **780** `.flang` files. A directory left off the
 list does not go red — it simply is not checked, and the guard stays green precisely because it
 stopped looking. Same class as the note
 [«Переименование файла не краснеет, а тихо выключает проверку»](../zettel/renaming-a-file-silently-disables-the-guard.md).
 
-So the coverage is printed on every run and pinned by a test: **190 files out of 774**. The other 584
+So the coverage is printed on every run and pinned by a test: **196 files out of 780**. The other 584
 are not an oversight:
 
 | Outside coverage | Count | Why |

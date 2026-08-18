@@ -129,6 +129,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
 import { pascal, snake } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Рантайм и прогонщик.
@@ -601,7 +602,11 @@ export function emitElixir(program, options = {}) {
   const maxDepth = Number.isInteger(options.maxDepth) && options.maxDepth > 0 ? options.maxDepth : 10_000
   const maxSteps = Number.isInteger(options.maxSteps) && options.maxSteps > 0 ? options.maxSteps : 1_000_000
   const moduleName = typeof program.module === "string" && program.module.length > 0 ? program.module : null
-  const alias = options.path ?? (moduleName === null ? "FlangProgram" : pascalModule(moduleName))
+  const wantedAlias = options.path ?? (moduleName === null ? "FlangProgram" : pascalModule(moduleName))
+  /* У Elixir занят АЛИАС, а не файл: `defmodule Enum` перехватил бы `Enum.map`
+     во всём напечатанном рядом, а имя файла Elixir ничего не значит. Поэтому
+     обходится алиас, а файл остаётся именем модели (`target-occupied.mjs`). */
+  const alias = обойтиЗанятоеЦелью(wantedAlias, "elixir")
   if (RUNTIME_MODULES.includes(alias) || alias.startsWith("Flang.")) {
     throw flangError(
       "FLANG_PARSE",

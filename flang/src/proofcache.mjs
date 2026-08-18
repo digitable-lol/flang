@@ -88,12 +88,20 @@ import { АКСИОМЫ, СИЛА, ЯДРО, checkProofs } from "./proofterm.mjs
 /** Версия раскладки кеша. Меняется — прежние записи перестают находиться. */
 export const СХЕМА_КЕША = 1
 
-/** Куда кладём. `FLANG_CACHE=нет` выключает кеш целиком. */
+/**
+ * Куда кладём. Кеш ВКЛЮЧАЕТСЯ переменной `FLANG_CACHE`, а не выключается ею:
+ * по умолчанию его нет в рабочем пути вовсе (см. замер ниже и потолок в
+ * `flang/test/rabochiy-put.test.mjs`).
+ *
+ *   `FLANG_CACHE=да`   — обычное место, `~/.flang/cache`;
+ *   `FLANG_CACHE=<путь>` — своё место, чем и пользуются проверки;
+ *   не задана или `нет`  — кеша нет, ядро зовётся всегда.
+ */
 export function корень() {
   const свой = process.env.FLANG_CACHE
-  if (свой === "нет" || свой === "0") return null
-  if (typeof свой === "string" && свой !== "") return свой
-  return join(homedir(), ".flang", "cache")
+  if (typeof свой !== "string" || свой === "" || свой === "нет" || свой === "0") return null
+  if (свой === "да" || свой === "1") return join(homedir(), ".flang", "cache")
+  return свой
 }
 
 /**

@@ -1129,19 +1129,18 @@ export async function externalChecks(program, настройки = {}) {
       /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
     }
     try {
-      /* ЯДРО ЗОВЁТСЯ ЧЕРЕЗ КЕШ, а не напрямую, и это не обёртка ради обёртки:
-         доказательство стоит на порядки дороже теста, а до появления адреса
-         определения кешировать его было не по чему. Ключ — тройка «адрес
-         определения, адрес утверждения, адрес проверяющего»; нашлась — ядро не
-         зовётся вовсе, не нашлась — зовётся, и вердикт кладётся.
-
-         Кешу при этом не верят на слово: запись самозаверена, ключ на чтении
-         пересчитывается, а сомнение любого рода — ПРОМАХ, то есть вызов ядра
-         (`flang/src/proofcache.mjs`). Вердикт наружу едет тот же самый, поэтому
-         ведомость печатается байт в байт одинаково на холодном кеше и на
-         горячем — это сверено (`flang/test/digest.test.mjs`). */
-      const { checkProofsCached } = await import(new URL("../src/proofcache.mjs", import.meta.url).href)
-      const вердикты = checkProofsCached(program, итог.obligations)
+      /* КЕШ ВЕРДИКТОВ ЯДРА — ЗА ЯВНЫМ СОГЛАСИЕМ, и это следствие замера, а не
+         осторожность: ядро на 48 файлах корпуса занимает 98 мс, а `flang check
+         --proof` — 37 секунд, и уходят они в ввоз модулей и в ведомость. Кеш
+         сегодня стоит дороже, чем экономит; довод, замер и три замка, которыми
+         держится недоверие к записи, — в `flang/src/proofcache.mjs`. Пока
+         пользы нет, модуля нет и в рабочем пути: ввоз стоит за проверкой
+         переменной. Включается `FLANG_CACHE=да`. */
+      const вердикты = typeof process.env.FLANG_CACHE === "string" && process.env.FLANG_CACHE !== ""
+        ? (await import(new URL("../src/proofcache.mjs", import.meta.url).href))
+          .checkProofsCached(program, итог.obligations)
+        : (await import(new URL("../src/proofterm.mjs", import.meta.url).href))
+          .checkProofs(program, итог.obligations)
       results.proofs = вердикты
       diagnostics.push(...normalizeDiagnostics(вердикты))
     } catch {

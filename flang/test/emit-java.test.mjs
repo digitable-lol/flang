@@ -57,10 +57,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -80,25 +78,22 @@ import {
   ПРЕДЕЛ_УБЕГАЮЩЕЙ,
   ПРЕДЕЛЫ,
 } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const javacBin = findExecutable("javac")
 const javaBin = findExecutable("java")
 const toolchain = javacBin !== null && javaBin !== null
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-java-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-java")
 
 /* Ни сети, ни пользовательских настроек: напечатанная программа ни от чего не
    зависит, и запуск обязан это доказывать. JAVA_TOOL_OPTIONS гасится намеренно
    — он умеет дописать в stdout строку «Picked up …», которая испортила бы
    протокол прогонщика. */
-const JAVA_ENV = {
-  ...process.env,
+const JAVA_ENV = средаСборки(workdir, {
   JAVA_TOOL_OPTIONS: "",
   _JAVA_OPTIONS: "",
-}
+})
 
 /* Строгий режим: напечатанный код обязан быть чистым под самым придирчивым
    javac. Именно здесь ловится недостижимый оператор — аналог дефекта

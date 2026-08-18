@@ -53,10 +53,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { runConcurrent } from "../src/conc.mjs"
@@ -66,6 +64,7 @@ import { markMeasureGuards } from "../src/totality.mjs"
 import { emitC } from "../src/emit/c.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог } from "./tempdir.mjs"
 
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 
@@ -107,10 +106,7 @@ const ПРОГРАММЫ = readdirSync(примеры)
  */
 const СЕМЯН = 200
 
-const рабочий = await mkdtemp(join(tmpdir(), "flang-conc-c-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("conc-c")
 
 /**
  * Разбор ТОЙ ЖЕ программы, какую печатает CLI.

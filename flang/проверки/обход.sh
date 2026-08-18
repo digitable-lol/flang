@@ -15,7 +15,7 @@
 # записью, чтобы вывод не делали заново по памяти. Двоичный из ствола печатает
 # ведомость и её же в JSON:
 #
-#   $ bootstrap/flang_cli check fspec/spec/01-discount-cap.flang --proof --json
+#   $ bootstrap/flang check fspec/spec/01-discount-cap.flang --proof --json
 #   {"ledger":1,"module":"Спека 1: потолок скидки","functions":[…],"laws":[],…}
 #
 # То есть `fspec/guard.mjs` (285 строк) сегодня отделяет от двоичного одна
@@ -103,7 +103,11 @@ LC_ALL=C.UTF-8
 export LC_ALL
 
 root=$(cd "$(dirname "$0")/../.." && pwd)
-tool=${FLANG_BIN:-"$root/bootstrap/flang_cli"}
+# Имя выхода сборки — `flang`, именем языка. `flang_cli` принимается тоже: в
+# дереве, где сборка была до переименования, он лежит с прежним именем, и
+# обходчик не обязан из-за этого отказывать.
+tool=${FLANG_BIN:-"$root/bootstrap/flang"}
+[ -x "$tool" ] || tool="$root/bootstrap/flang_cli"
 dir="$root/flang/проверки"
 ledger="$dir/ведомость.txt"
 

@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | Homebrew | `flang` 0.5.0, `man flang` | `brew`, `cc`, `make` | формула и её хеш — да; сам `brew` — **нет** |
 | asdf / mise | `flang` 0.5.0 рядом с другими версиями | `asdf` или `mise`, `cc`, `make` | три скрипта плагина — да; сам `asdf` — **нет** |
-| Из исходников | `bootstrap/flang_cli` с этого дерева | `git`, `cc`, `make` | да, в пустом каталоге |
+| Из исходников | команда `flang` (`make -C bootstrap install`) | `git`, `cc`, `make` | да, в пустом каталоге |
 | Node в свой проект | восемь целей печати, законы, поиск нарушений | Node ≥ 20 | да, `npm install` в чистый проект |
 
 ## 1. Homebrew
@@ -84,31 +84,40 @@ bin/install   → 54,9 с, «flang 0.5.0 установлен»
 git clone https://github.com/digitable-lol/flang.git
 cd flang
 make -C bootstrap -j4
+sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```
 
+**Имя у программы одно — `flang`**, и на этой дороге тоже. `make` кладёт рядом с
+исходниками `bootstrap/flang`, а `make install` ставит его как команду вместе с
+`libkompilyator_flang.a`, заголовками и страницей `flang.1` (если она рядом —
+в архиве релиза есть, в дереве репозитория нет). Снять — `make -C bootstrap
+uninstall`. Прогнано здесь: `make install PREFIX=…` в пустой префикс, дальше
+`flang --version` → `flang 0.5.0`, `flang --help` → краткая справка.
+
 **Прогнано в пустом каталоге, и это не формальность.** `bootstrap/` лежит в
-репозитории вместе с уже собранными `flang_cli` и `*.o`, а `make` смотрит на
+репозитории вместе с уже собранными `flang` и `*.o`, а `make` смотрит на
 время файлов: в дереве, где сборка уже была, он отвечает «nothing to be done» и
 оставляет **старый** бинарник. Замер, снятый так, меряет ноль. Поэтому дерево
 разложено `git archive` в пустой каталог, артефакты удалены, и только потом
 запущен `make`:
 
 ```
-на входе   13 058 798 байт напечатанного C и заголовков (249 033 строки)
-make -j4   40,6 с, ни одного предупреждения при -Wall -Wextra -Werror -pedantic
-на выходе  bootstrap/flang_cli — 7 127 856 байт, связан с libc, libm, libpthread
+на входе   13 093 142 байт напечатанного C и заголовков (249 571 строк)
+make -j4   38,5 с, ни одного предупреждения при -Wall -Wextra -Werror -pedantic
+на выходе  bootstrap/flang — 7 149 128 байт, связан с libc, libm, libpthread
 ```
 
 Один вызов `cc` вместо `make` тоже работает — и это полезно знать, когда `make`
 на машине нет:
 
 ```bash
-cc -std=c99 -O2 -o flang \
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
    flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
 ```
 
-Прогнано: **83,7 с**, бинарник 7 134 408 байт. Вдвое дольше `make -j4` — сборка
-идёт в один поток, а `-flto` из `Makefile` здесь не задан.
+Прогнано: **85,7 с**, бинарник 7 159 800 байт. Дольше `make -j4` — сборка
+идёт в один поток, а `-flto` из `Makefile` здесь не задан. Имя выхода тут задаёте
+вы сами ключом `-o`, и назвать его стоит `flang`: у программы одно имя.
 
 Что умеет собранный двоичный и где его границы — на странице
 [Первая программа](getting-started.html).

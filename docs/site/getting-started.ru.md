@@ -6,12 +6,19 @@
 ```bash
 git clone https://github.com/digitable-lol/flang.git
 cd flang
-make -C bootstrap
+make -C bootstrap -j4
+sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```
 
-Нужны `cc` и `make`, больше ничего: ни Node, ни npm, ни сети. Замер сборки:
-**30,7 с** при `make -j4` под `-O2 -flto`; на входе 9,68 МБ напечатанного C, на
-выходе `bootstrap/flang_cli` — 5,1 МиБ, связанный только с `libc` и `libm`.
+Нужны `cc` и `make`, больше ничего: ни Node, ни npm, ни сети. На выходе —
+**команда `flang`**, та же самая, что кладут `brew` и `asdf`: одно имя у
+программы на всех трёх дорогах. Без `install` двоичный лежит в дереве как
+`bootstrap/flang` и зовётся `./bootstrap/flang`.
+
+```bash
+flang --version
+flang --help
+```
 
 ## Написать программу
 
@@ -46,7 +53,7 @@ make -C bootstrap
 ## Проверить
 
 ```bash
-./bootstrap/flang_cli check hello.flang
+flang check hello.flang
 ```
 
 ```
@@ -57,7 +64,7 @@ hello.flang: проверено — разбор, типы, завершаемо
 ## Запустить
 
 ```bash
-./bootstrap/flang_cli run hello.flang --function Удвоить --args '{"н": 21}'
+flang run hello.flang --function Удвоить --args '{"н": 21}'
 ```
 
 ```
@@ -73,9 +80,23 @@ hello.flang: проверено — разбор, типы, завершаемо
 
 ## Попробовать вживую
 
+Голая команда открывает оболочку — как `iex` у Elixir, как `python`:
+
 ```bash
-./bootstrap/flang_cli repl
+flang
 ```
+
+```
+flang 0.5.0 — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
+Объявление заканчивается пустой строкой, выражение вычисляется сразу.
+» 2 плюс 2
+4
+```
+
+То же самое по имени — `flang repl`; файл в аргументе загружается в сессию.
+Если на входе не терминал (`flang < сценарий.flang`, конвейер), оболочка читает
+ввод как сценарий: приглашений нет, диагностика уходит в stderr, а ненулевой код
+возврата означает, что была диагностика.
 
 Оболочка вычислитель пока не зовёт: она печатает сессию в C и собирает её тем же
 `cc`, которым вы только что собрали компилятор. Если `cc` нет, она не
@@ -85,7 +106,7 @@ hello.flang: проверено — разбор, типы, завершаемо
 ## Прогнать примеры
 
 ```bash
-./bootstrap/flang_cli test hello.flang
+flang test hello.flang
 ```
 
 ```
@@ -97,7 +118,7 @@ hello.flang: примеров 1, прошло 1, не прошло 0
 ## Ведомость доказательства
 
 ```bash
-./bootstrap/flang_cli check hello.flang --proof
+flang check hello.flang --proof
 ```
 
 Ядро пробует **доказать** постусловие — показать, что оно верно на всех входах, а
@@ -116,7 +137,7 @@ hello.flang: примеров 1, прошло 1, не прошло 0
 
 ```bash
 mkdir -p ./вывод
-./bootstrap/flang_cli emit hello.flang --target c --out ./вывод \
+flang emit hello.flang --target c --out ./вывод \
     --runtime flang/src/emit/c
 make -C ./вывод
 ```

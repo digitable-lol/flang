@@ -8,7 +8,7 @@ this machine: `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU Make 4.4.1`,
 | --- | --- | --- | --- |
 | Homebrew | `flang` 0.5.0, `man flang` | `brew`, `cc`, `make` | formula and its hash — yes; `brew` itself — **no** |
 | asdf / mise | `flang` 0.5.0 alongside other versions | `asdf` or `mise`, `cc`, `make` | the plugin's three scripts — yes; `asdf` itself — **no** |
-| From source | `bootstrap/flang_cli` from this tree | `git`, `cc`, `make` | yes, in an empty directory |
+| From source | the `flang` command (`make -C bootstrap install`) | `git`, `cc`, `make` | yes, in an empty directory |
 | Node, into your project | eight emit targets, laws, violation search | Node ≥ 20 | yes, `npm install` into a clean project |
 
 ## 1. Homebrew
@@ -84,31 +84,42 @@ dependency the plugin removes.
 git clone https://github.com/digitable-lol/flang.git
 cd flang
 make -C bootstrap -j4
+sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
+**The program has one name — `flang`**, on this path too. `make` puts
+`bootstrap/flang` next to the sources, and `make install` installs it as a
+command together with `libkompilyator_flang.a`, the headers and the `flang.1`
+man page (when it is next to them — it is in the release archive, not in the
+repository tree). To remove it: `make -C bootstrap uninstall`. Run here:
+`make install PREFIX=…` into an empty prefix, then `flang --version` →
+`flang 0.5.0`, `flang --help` → the short help.
+
 **Run in an empty directory, and that is not a formality.** `bootstrap/` ships in
-the repository together with an already built `flang_cli` and `*.o`, and `make`
+the repository together with an already built `flang` and `*.o`, and `make`
 looks at file times: in a tree where a build already happened it answers "nothing
 to be done" and leaves the **old** binary. A measurement taken that way measures
 zero. So the tree was unpacked with `git archive` into an empty directory, the
 artifacts were deleted, and only then `make` ran:
 
 ```
-in         13 058 798 bytes of emitted C and headers (249 033 lines)
-make -j4   40.6 s, not one warning under -Wall -Wextra -Werror -pedantic
-out        bootstrap/flang_cli — 7 127 856 bytes, linked against libc, libm, libpthread
+in         13 093 142 bytes of emitted C and headers (249 571 lines)
+make -j4   38.5 s, not one warning under -Wall -Wextra -Werror -pedantic
+out        bootstrap/flang — 7 149 128 bytes, linked against libc, libm, libpthread
 ```
 
 A single `cc` call instead of `make` works too — worth knowing when the machine
 has no `make`:
 
 ```bash
-cc -std=c99 -O2 -o flang \
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
    flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
 ```
 
-Run: **83.7 s**, binary 7 134 408 bytes. Twice as long as `make -j4` — the build
-is single-threaded and the `-flto` from the `Makefile` is not passed here.
+Run: **85.7 s**, binary 7 159 800 bytes. Longer than `make -j4` — the build
+is single-threaded and the `-flto` from the `Makefile` is not passed here. The
+output name is yours to pick with `-o`, and `flang` is the one to pick: the
+program has one name.
 
 What the built binary can do and where its limits are: see
 [Your first program](getting-started.html).

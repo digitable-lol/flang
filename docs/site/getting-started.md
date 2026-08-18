@@ -6,13 +6,19 @@ interpreter into your own Node project. Both are below, the compiler first.
 ```bash
 git clone https://github.com/digitable-lol/flang.git
 cd flang
-make -C bootstrap
+make -C bootstrap -j4
+sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
-`cc` and `make`, nothing else: no Node, no npm, no network. Measured build:
-**30,7 с** with `make -j4` under `-O2 -flto`; 9,68 МБ of emitted C going in,
-`bootstrap/flang_cli` coming out — 5,1 МиБ, linked against `libc` and `libm`
-only.
+`cc` and `make`, nothing else: no Node, no npm, no network. What comes out is
+the **`flang` command** — the same one `brew` and `asdf` install: one name for
+the program on all three paths. Without `install` the binary stays in the tree
+as `bootstrap/flang` and is called as `./bootstrap/flang`.
+
+```bash
+flang --version
+flang --help
+```
 
 ## Write a program
 
@@ -51,7 +57,7 @@ both parse to the same tree.
 ## Check it
 
 ```bash
-./bootstrap/flang_cli check hello.flang
+flang check hello.flang
 ```
 
 ```
@@ -65,7 +71,7 @@ otherwise on this page would not make them so.
 ## Run it
 
 ```bash
-./bootstrap/flang_cli run hello.flang --function Twice --args '{"n": 21}'
+flang run hello.flang --function Twice --args '{"n": 21}'
 ```
 
 ```
@@ -80,9 +86,23 @@ the notation, on a command line they are not.
 
 ## Try it live
 
+The bare command opens the shell — like `iex` for Elixir, like `python`:
+
 ```bash
-./bootstrap/flang_cli repl
+flang
 ```
+
+```
+flang 0.5.0 — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
+Объявление заканчивается пустой строкой, выражение вычисляется сразу.
+» 2 плюс 2
+4
+```
+
+The same thing by name is `flang repl`; a file given as an argument is loaded
+into the session. When standard input is not a terminal (`flang < script.flang`,
+a pipe), the shell reads it as a script: no prompts, diagnostics to stderr, and a
+non-zero exit code means there was diagnostics.
 
 The shell does not call the evaluator yet: it emits the session to C and builds
 it with the same `cc` you just built the compiler with. With no `cc` it does not
@@ -91,7 +111,7 @@ switch off — it checks parsing, types and termination and says so.
 ## Run the examples
 
 ```bash
-./bootstrap/flang_cli test hello.flang
+flang test hello.flang
 ```
 
 ```
@@ -104,7 +124,7 @@ counts them even without `test`.
 ## The proof ledger
 
 ```bash
-./bootstrap/flang_cli check hello.flang --proof
+flang check hello.flang --proof
 ```
 
 The kernel tries to **prove** the postcondition — to show it holds on every
@@ -124,7 +144,7 @@ promise, and its words are not interchangeable:
 
 ```bash
 mkdir -p ./out-c
-./bootstrap/flang_cli emit hello.flang --target c --out ./out-c \
+flang emit hello.flang --target c --out ./out-c \
     --runtime flang/src/emit/c
 make -C ./out-c
 ```

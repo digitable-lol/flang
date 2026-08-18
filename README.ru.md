@@ -122,9 +122,10 @@ brew install digitable-lol/tap/flang
 ```bash
 tar -xzf flang-*-c.tar.gz   # внутри — исходники на C99, Makefile и страница flang.1
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli --help          # что умеет: check, repl, --version
-./flang_cli check м.flang   # разбор, типы, завершаемость — словами, не JSON
-./flang_cli                 # без аргументов — прогонщик: JSON на входе и выходе
+sudo make install           # или PREFIX=$HOME/.local — на выходе команда `flang`
+flang --help                # что умеет: check, test, run, emit, repl
+flang check м.flang         # разбор, типы, завершаемость — словами, не JSON
+flang                       # на терминале — оболочка; под конвейером — прогонщик
 ```
 
 Формула Homebrew — [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb), и её раздаёт tap.
@@ -162,8 +163,9 @@ npm install -g @digitable-lol/fts
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap            # нужны только cc и make; ~4 минуты процессорного времени
-bootstrap/flang_cli --version
+make -C bootstrap -j4        # нужны только cc и make
+sudo make -C bootstrap install
+flang --version
 ```
 
 Что она такое, чем стережётся и как обновляется — [`bootstrap/README.md`](bootstrap/README.md).

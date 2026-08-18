@@ -48,10 +48,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join, sep } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { errorCode, runExamples } from "../src/compat.mjs"
@@ -73,12 +71,10 @@ import { camel, pascal } from "../src/naming.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
 import { черезГраницу } from "./through-entry.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
-const рабочий = await mkdtemp(join(tmpdir(), "flang-stdlib-hof-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("stdlib-hof")
 
 /* ═══════════════════════ модуль: flang/stdlib ════════════════════════════ */
 

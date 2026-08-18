@@ -63,10 +63,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -86,27 +84,24 @@ import {
   ПРЕДЕЛ_УБЕГАЮЩЕЙ,
   ПРЕДЕЛЫ,
 } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const dotnetBin = findExecutable("dotnet")
 const toolchain = dotnetBin !== null
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-csharp-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-csharp")
 
 /* Ни сети, ни пользовательских настроек, ни следов в домашнем каталоге:
    напечатанная программа ни от чего не зависит, и запуск обязан это
    доказывать. Телеметрия и приветствие первого запуска гасятся не из
    вредности — они пишут в stdout, а там протокол прогонщика. */
-const DOTNET_ENV = {
-  ...process.env,
+const DOTNET_ENV = средаСборки(workdir, {
   DOTNET_CLI_TELEMETRY_OPTOUT: "1",
   DOTNET_NOLOGO: "1",
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1",
   DOTNET_CLI_HOME: join(workdir, ".dotnet-home"),
   NUGET_PACKAGES: join(workdir, ".nuget"),
-}
+})
 
 let serial = 0
 

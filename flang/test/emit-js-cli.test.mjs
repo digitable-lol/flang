@@ -41,10 +41,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -52,11 +50,9 @@ import { evaluate as interpret, variant } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { черезГраницу } from "./through-entry.mjs"
+import { рабочийКаталог } from "./tempdir.mjs"
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-js-cli-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-js-cli")
 
 let serial = 0
 

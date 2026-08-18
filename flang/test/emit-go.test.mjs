@@ -37,10 +37,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join, relative } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -60,18 +58,16 @@ import {
   ПРЕДЕЛ_УБЕГАЮЩЕЙ,
   ПРЕДЕЛЫ,
 } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const goBin = findExecutable("go")
 const gofmtBin = findExecutable("gofmt")
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-go-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-go")
 
 /* Ни сети, ни прокси: напечатанный модуль ни от чего не зависит, и сборка
    обязана это доказывать, а не молча тянуть что-нибудь из интернета. */
-const GO_ENV = { ...process.env, GOFLAGS: "-mod=mod", GOPROXY: "off", GOSUMDB: "off" }
+const GO_ENV = средаСборки(workdir, { GOFLAGS: "-mod=mod", GOPROXY: "off", GOSUMDB: "off" })
 
 let serial = 0
 

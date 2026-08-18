@@ -28,8 +28,7 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
@@ -41,6 +40,7 @@ import { parse } from "../src/parser.mjs"
 import { checkTotality, markMeasureGuards } from "../src/totality.mjs"
 import { checkTypes, markProven, таблицаВхода } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
+import { рабочийКаталог } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 const файл = fileURLToPath(new URL("../self/emit-c.flang", import.meta.url))
@@ -875,7 +875,7 @@ const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 
 /** Собирает ровно то, что напечатано, в пустом каталоге и убирает за собой. */
 function собрать(файлы) {
-  const каталог = mkdtempSync(join(tmpdir(), "self-emit-c-"))
+  const каталог = рабочийКаталог("self-emit-c")
   try {
     for (const файл of файлы) writeFileSync(join(каталог, файл.path), файл.content, "utf8")
     const исходники = файлы.filter((файл) => файл.path.endsWith(".c")).map((файл) => файл.path)

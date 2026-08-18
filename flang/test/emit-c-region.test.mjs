@@ -21,17 +21,14 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdtemp, rm, writeFile, copyFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { writeFile, copyFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
+import { рабочийКаталог } from "./tempdir.mjs"
 
 const runtimeDirectory = fileURLToPath(new URL("../src/emit/c/", import.meta.url))
-const workdir = await mkdtemp(join(tmpdir(), "flang-region-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("region")
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
 

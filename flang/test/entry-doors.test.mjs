@@ -49,10 +49,9 @@
 
 import assert from "node:assert/strict"
 import { execFile, spawn } from "node:child_process"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
@@ -61,6 +60,7 @@ import { checkFacts } from "../src/factcheck.mjs"
 import { runPlan, хозяинПоСписку } from "../src/io.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const выполнить = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
@@ -70,10 +70,7 @@ const путьНатурального = fileURLToPath(new URL("../examples/meas
    точного натурального типа, и дыра была НА НЁМ. */
 const натуральное = parse(await readFile(путьНатурального, "utf8"), путьНатурального)
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-entry-doors-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("entry-doors")
 
 let счётчик = 0
 async function песочница(имя, текст) {

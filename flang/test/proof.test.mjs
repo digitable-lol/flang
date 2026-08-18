@@ -33,10 +33,9 @@
 import assert from "node:assert/strict"
 import { execFile } from "node:child_process"
 import { readFileSync } from "node:fs"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { writeFile } from "node:fs/promises"
 import { join, relative } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
@@ -44,15 +43,13 @@ import { externalChecks, loadProgram, loadProgramFromSource } from "../bin/flang
 import { ФАЙЛЫ, сводКорпуса } from "../scripts/proof-ledger.mjs"
 import { runExamples } from "../src/compat.mjs"
 import { formatProofLedger, proofLedger } from "./vedomost.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 
-const песочница = await mkdtemp(join(tmpdir(), "flang-proof-"))
-after(async () => {
-  await rm(песочница, { recursive: true, force: true })
-})
+const песочница = рабочийКаталог("proof")
 
 /** Ведомость программы из текста — тем же путём, каким её строит оболочка. */
 async function ведомость(исходник) {

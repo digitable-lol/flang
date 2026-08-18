@@ -44,10 +44,10 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { homedir, tmpdir } from "node:os"
+import { rm } from "node:fs/promises"
+import { homedir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -67,6 +67,7 @@ import {
   ПРЕДЕЛ_УБЕГАЮЩЕЙ,
   ПРЕДЕЛЫ,
 } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 /* rustup кладёт тулчейн в ~/.cargo/bin, а этого каталога нет ни в списке
    общеизвестных мест toolchain.mjs, ни, на серверах без входа в оболочку, в
@@ -75,14 +76,11 @@ const CARGO_BIN = [join(homedir(), ".cargo", "bin")]
 const rustcBin = findExecutable("rustc", CARGO_BIN)
 const cargoBin = findExecutable("cargo", CARGO_BIN)
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-rust-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-rust")
 
 /* Ни сети, ни реестра пакетов: напечатанный крейт ни от чего не зависит, и
    сборка обязана это доказывать, а не молча тянуть что-нибудь из интернета. */
-const RUST_ENV = { ...process.env, CARGO_NET_OFFLINE: "true" }
+const RUST_ENV = средаСборки(workdir, { CARGO_NET_OFFLINE: "true" })
 
 /* Отладочная информация тесту не нужна, а место на диске и время сборки —
    нужны: с ней каждый из тридцати одного крейта весит вчетверо больше. */

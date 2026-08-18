@@ -92,6 +92,7 @@
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](vtoruyu-realizatsiyu-vozmestit-nechem.md)
 - [Снятая правка обязана красить тест](izyatie.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](proverki-perestayushchie-sravnivat.md)
+- [Словарь между двумя спеками разбирался целиком и не значил ничего](slovar-mezhdu-spekami-byl-nemym.md)
 - [Бывают конфликты слияния, которых git не показывает](tikhie-konflikty-sliyaniya.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](dva-yadra-ne-slivayutsya-tekstom.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](dolg-na-neslitoy-vetke.md)

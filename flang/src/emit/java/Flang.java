@@ -901,11 +901,12 @@ public final class Flang {
    * в SPEC, раздел «Стоимость встроенных форм».
    */
   public static Value bPrepend(Ctx ctx, Value item, Value value) {
-    Value[] items = expectList("приписать", value, "второй аргумент");
-    Value[] next = new Value[items.length + 1];
+    Value list = expectList("приписать", value, "второй аргумент");
+    int size = Value.size(list);
+    Value[] next = new Value[size + 1];
     next[0] = item;
-    System.arraycopy(items, 0, next, 1, items.length);
-    return Value.list(next);
+    System.arraycopy(list.items, 0, next, 1, size);
+    return Value.grown(next, size + 1, new Value.Grow(size + 1));
   }
 
   /** «остаток от». */

@@ -1547,7 +1547,7 @@ pub fn b_prepend(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> 
     let items = expect_list("приписать", &value, "второй аргумент")?;
     let mut result: Vec<Value> = Vec::with_capacity(items.len().saturating_add(1));
     result.push(item);
-    result.extend(items.iter().cloned());
+    result.extend_from_slice(&items.as_slice());
     Ok(list(result))
 }
 

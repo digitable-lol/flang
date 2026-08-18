@@ -1024,11 +1024,12 @@ public static class Flang
     /// </summary>
     public static Value BPrepend(Ctx ctx, Value item, Value value)
     {
-        Value[] items = ExpectList("приписать", value, "второй аргумент");
-        var next = new Value[items.Length + 1];
+        Value list = ExpectList("приписать", value, "второй аргумент");
+        int size = Value.Size(list);
+        var next = new Value[size + 1];
         next[0] = item;
-        Array.Copy(items, 0, next, 1, items.Length);
-        return Value.List(next);
+        Array.Copy(list.Items, 0, next, 1, size);
+        return Value.Grown(next, size + 1, new Value.Grow(size + 1));
     }
 
     /// <summary>«остаток от».</summary>

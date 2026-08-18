@@ -22,9 +22,20 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
+import { brotliCompressSync } from "node:zlib"
 import { fileURLToPath } from "node:url"
 
-import { СХЕМА_ЗАМКА, адресМодуля, безМест, модулиЗамка, разборИзАдреса, собратьЗамок } from "../src/lockfile.mjs"
+import {
+  СХЕМА_ЗАМКА,
+  адресМодуля,
+  безМест,
+  модулиЗамка,
+  печатьТекста,
+  разборИзАдреса,
+  собратьЗамок,
+  текстИзАдреса,
+} from "../src/lockfile.mjs"
+import { каноническийJSON } from "../src/digest.mjs"
 import { parse } from "../src/parser.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
@@ -88,6 +99,24 @@ test("испорченный груз и правленый список зам�
 
   const чужаяСхема = { ...замок, схема: СХЕМА_ЗАМКА + 1 }
   assert.throws(() => модулиЗамка(чужаяСхема, корневой), /схем/)
+})
+
+test("переставленный ключ в грузе — другой груз, и печать это ловит", async () => {
+  const замок = await собратьЗамок(ПРОГРАММА, parse)
+  const корневой = join(корень, "flang", "examples", "web")
+  /* Канонический JSON того же дерева: ЗНАЧЕНИЯ те же, порядок ключей другой.
+     Печать по канону приняла бы такой груз за тот же самый — и разошлась бы не
+     проверка, а напечатанный код (см. `безМест` в src/lockfile.mjs). */
+  const переставлен = каноническийJSON(разборИзАдреса(замок.модули[0].адрес))
+  assert.notEqual(переставлен, текстИзАдреса(замок.модули[0].адрес))
+  const подделка = JSON.parse(JSON.stringify(замок))
+  подделка.модули[0].адрес = Buffer.from(
+    brotliCompressSync(Buffer.from(переставлен, "utf8")),
+  ).toString("base64")
+  assert.throws(() => модулиЗамка(подделка, корневой), /печать модуля/)
+  /* И печать по тексту у двух порядков разная — иначе проверка выше ловила бы
+     не то, что заявлено. */
+  assert.notEqual(печатьТекста(переставлен), печатьТекста(текстИзАдреса(замок.модули[0].адрес)))
 })
 
 test("программа собирается из замка, когда исходников зависимостей нет", () => {

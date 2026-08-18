@@ -20404,17 +20404,32 @@ fl_status kompilyator_flang_sverit_meru(fl_ctx *ctx, fl_value mera, fl_value sig
 fl_status kompilyator_flang_proverit_telo(fl_ctx *ctx, fl_value funkciya, fl_value signatura, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Под предусловиями».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param predusloviya — «предусловия»: список: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_pod_predusloviyami(fl_ctx *ctx, fl_value predusloviya, fl_value imena, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Сверить тело».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param telo — «тело»: «Значение»
+ * @param predusloviya — «предусловия»: список: «Значение»
  * @param signatura — «сигнатура»: «Сигнатура»
  * @param gde — «где»: строка
  * @param tablicy — «таблицы»: «Таблицы»
  * @param bedy — «беды»: список: «Беда»
  * @return значение: список: «Беда»
  */
-fl_status kompilyator_flang_sverit_telo(fl_ctx *ctx, fl_value telo, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_sverit_telo(fl_ctx *ctx, fl_value telo, fl_value predusloviya, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить постусловия».

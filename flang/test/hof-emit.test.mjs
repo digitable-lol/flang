@@ -66,10 +66,9 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { homedir, tmpdir } from "node:os"
+import { homedir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { errorCode } from "../src/compat.mjs"
@@ -92,12 +91,10 @@ import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
 import { globSync } from "./glob.mjs"
 import { черезГраницу } from "./through-entry.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
-const рабочий = await mkdtemp(join(tmpdir(), "flang-hof-emit-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("hof-emit")
 
 /* ══════════════════════ исходник, на котором всё держится ═════════════════ */
 

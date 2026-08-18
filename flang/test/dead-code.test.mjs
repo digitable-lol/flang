@@ -30,10 +30,9 @@
  */
 import assert from "node:assert/strict"
 import { execFile, execFileSync } from "node:child_process"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
@@ -44,6 +43,7 @@ import { parse } from "../src/parser.mjs"
 import { dropUnreachable, entryPoints, reachableFunctions } from "../src/reachable.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
@@ -52,10 +52,7 @@ const списки = fileURLToPath(new URL("../stdlib/lists.flang", import.meta.
 const высшийПорядок = fileURLToPath(new URL("../stdlib/higher-order.flang", import.meta.url))
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-dead-code-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("dead-code")
 
 let счётчик = 0
 async function песочница(файлы = {}) {

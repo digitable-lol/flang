@@ -56,10 +56,9 @@
  * счётчик шагов у неё тот же, что у остальных семи (см. таблицу).
  */
 import assert from "node:assert/strict"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { pathToFileURL } from "node:url"
 
 import { evaluate as interpret } from "../src/interpret.mjs"
@@ -75,12 +74,10 @@ import {
   РАЗМАХ_СЧЁТЧИКОВ,
   УБЕГАЮЩИЕ,
 } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const программы = loadPrograms()
-const рабочий = await mkdtemp(join(tmpdir(), "flang-corpus-runaway-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("corpus-runaway")
 
 const найти = (файл) => {
   const запись = программы.find((п) => п.file === файл)

@@ -74,10 +74,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 // globSync — из ./glob.mjs, а не из node:fs: в node:fs он появился только в
 // Node 22, а пакет обещает Node ≥ 20. Остальные шесть тестов перевели на эту
@@ -98,14 +96,12 @@ import { missingToolchain } from "./toolchain-guard.mjs"
    `bootstrap/` и со скриптом релиза. Пределы попадают в напечатанный байт, и
    держать их тремя копиями значило ждать дня, когда одна отстанет. */
 import { КАТАЛОГ, ВХОД, ПРЕДЕЛЫ, расхождения } from "../../scripts/bootstrap-c.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 
 const cc = findExecutable("cc") ?? findExecutable("gcc")
-const workdir = await mkdtemp(join(tmpdir(), "flang-bootstrap-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("bootstrap")
 
 /**
  * `-Wbidi-chars` GCC включает сам, а в `self/lexer.flang` лежит таблица блока

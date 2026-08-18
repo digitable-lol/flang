@@ -21,10 +21,9 @@
 import assert from "node:assert/strict"
 import { execFile } from "node:child_process"
 import { createServer } from "node:http"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
@@ -35,15 +34,13 @@ import { parse } from "../src/parser.mjs"
 import { variant } from "../src/builtins.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const запустить = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
 const пример = fileURLToPath(new URL("../examples/io/link-report.flang", import.meta.url))
 
-const песочница = await mkdtemp(join(tmpdir(), "flang-io-"))
-after(async () => {
-  await rm(песочница, { recursive: true, force: true })
-})
+const песочница = рабочийКаталог("io")
 
 /** Разбор + типы + тотальность одной строкой: три слоя обязаны быть согласны. */
 function собрать(исходник) {

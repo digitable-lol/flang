@@ -26,11 +26,10 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
+import { mkdir, writeFile } from "node:fs/promises"
 import { readFileSync } from "node:fs"
-import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { OUTCOME_TYPE_NAME, callBuiltin } from "../src/builtins.mjs"
@@ -40,15 +39,13 @@ import { evaluate } from "../src/interpret.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const ПРИМЕР = fileURLToPath(new URL("../examples/errors/column-total.flang", import.meta.url))
 const исходник = readFileSync(ПРИМЕР, "utf8")
 const программа = parse(исходник, "flang/examples/errors/column-total.flang")
 
-const песочница = await mkdtemp(join(tmpdir(), "flang-outcome-"))
-after(async () => {
-  await rm(песочница, { recursive: true, force: true })
-})
+const песочница = рабочийКаталог("outcome")
 
 /** Разбор с проверкой типов; `null` в программе — не разобралось вовсе. */
 function проверить(текст) {

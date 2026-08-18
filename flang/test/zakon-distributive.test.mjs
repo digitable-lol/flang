@@ -26,7 +26,7 @@ import { runExamples } from "../src/compat.mjs"
 import { checkCommutativity } from "../src/commutative.mjs"
 import { checkDistributivity } from "../src/distributive.mjs"
 import { parse } from "../src/parser.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./vedomost.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 

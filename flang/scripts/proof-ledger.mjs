@@ -67,10 +67,30 @@ import { fileURLToPath } from "node:url"
 import { externalChecks, loadProgram } from "../bin/flang.mjs"
 import { именаВызовов, местЧастичныхФорм } from "../src/failures.mjs"
 import { parse } from "../src/parser.mjs"
-import { proofLedger } from "../src/proof.mjs"
+import { ведомостьСлоем, слойВедомости } from "../src/self.mjs"
 import { globSync } from "../test/glob.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
+
+/**
+ * ВЕДОМОСТЬ СЧИТАЕТ СЛОЙ НА FLANG, а не эталон на JavaScript.
+ *
+ * `flang/src/proof.mjs` стёрт. Дверь сюда — та же самая, какой ведомость
+ * считает команда `flang check --proof`: `flang/src/self.mjs`. Подпись повторена
+ * знак в знак, поэтому ни одна строка отчёта, который печатает этот скрипт, не
+ * изменилась — совпадение проверено побайтовым сличением вывода до и после
+ * перевода.
+ *
+ * Дверь стоит здесь, а не в каждом из трёх скриптов: `claim-scan.mjs` и
+ * `proof-search.mjs` берут её отсюда же, вместе с `ФАЙЛЫ`. Три копии расходятся
+ * молча — этот довод в дереве уже записан у моста (`flang/src/bridge.mjs`), и он
+ * тот же самый.
+ */
+const слойВедомостиГотовый = await слойВедомости()
+
+/** Ведомость значением — той же подписью, что у стёртого эталона. */
+export const proofLedger = (программа, результаты) =>
+  ведомостьСлоем(слойВедомостиГотовый, программа, результаты).значением
 
 /**
  * Файлы корпуса.

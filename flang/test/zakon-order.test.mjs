@@ -28,7 +28,7 @@ import { checkCommutativity } from "../src/commutative.mjs"
 import { checkIdempotence } from "../src/idempotent.mjs"
 import { parse } from "../src/parser.mjs"
 import { checkPartialOrder, здоровыеПорядки } from "../src/partialorder.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./vedomost.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 

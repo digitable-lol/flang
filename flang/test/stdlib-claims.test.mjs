@@ -94,7 +94,7 @@ import { нормализовать, свести } from "../proof/reduce.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { obligations, одинаковы } from "../src/obligations.mjs"
 import { parse } from "../src/parser.mjs"
-import { proofLedger } from "../src/proof.mjs"
+import { proofLedger } from "./vedomost.mjs"
 import { checkProofs, КОДЫ, СИЛА } from "../src/proofterm.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))

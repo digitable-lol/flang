@@ -29,7 +29,7 @@ import { readFileSync } from "node:fs"
 import test from "node:test"
 
 import { parse } from "../src/parser.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./vedomost.mjs"
 import { checkCategoryLaws } from "../src/setoid.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"

@@ -43,7 +43,7 @@ import { promisify } from "node:util"
 import { externalChecks, loadProgram, loadProgramFromSource } from "../bin/flang.mjs"
 import { ФАЙЛЫ, сводКорпуса } from "../scripts/proof-ledger.mjs"
 import { runExamples } from "../src/compat.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./vedomost.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))

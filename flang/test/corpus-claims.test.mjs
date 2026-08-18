@@ -61,7 +61,7 @@ import { evaluate } from "../src/interpret.mjs"
 import { wordOn } from "../src/lexer.mjs"
 import { одинаковы } from "../src/obligations.mjs"
 import { parse } from "../src/parser.mjs"
-import { proofLedger } from "../src/proof.mjs"
+import { proofLedger } from "./vedomost.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 const текст = (путь) => readFileSync(`${корень}${путь}`, "utf8")

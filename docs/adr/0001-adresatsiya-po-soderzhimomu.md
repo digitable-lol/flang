@@ -2,7 +2,7 @@
 
 **Состояние:** предложено, ждёт решения владельца
 **Дата:** 17 августа 2026
-**Основание:** [`docs/modulnost-i-pakety.md`](../modulnost-i-pakety.md), 1058 строк. Unison поставлен и измерен, а не пересказан.
+**Основание:** [`docs/modularity-and-packages.md`](../modularity-and-packages.md), 1060 строк. Unison поставлен и измерен, а не пересказан.
 
 ---
 

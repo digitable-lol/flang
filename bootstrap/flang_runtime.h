@@ -250,10 +250,12 @@ typedef struct fl_record fl_record;
 typedef struct fl_variant fl_variant;
 
 /*
- * Хвостовой запас массива списка: сколько в нём ячеек всего и сколько уже
- * занято. Устройство спрятано в flang_runtime.c — снаружи это непрозрачная
- * пометка «этот список можно удлинить, не копируя»; правило, по которому
- * удлинение остаётся безопасным, объяснено над `fl_b_dobavit`.
+ * Запас массива списка — с ДВУХ концов: сколько в нём ячеек всего, сколько
+ * занято за концом списка и сколько свободно перед его началом. Устройство
+ * спрятано в flang_runtime.c — снаружи это непрозрачная пометка «этот список
+ * можно удлинить, не копируя»; правило, по которому удлинение остаётся
+ * безопасным, объяснено над `fl_b_dobavit` и работает в обе стороны:
+ * «добавить» занимает ячейку за концом, «приписать» — перед началом.
  */
 typedef struct fl_grow fl_grow;
 
@@ -271,9 +273,10 @@ struct fl_value {
     struct {
       const fl_value *items;
       size_t count;
-      /* Запас за концом; NULL — запаса нет, «добавить» скопирует. Поле не
-         наблюдаемо: равенство, длина и печать смотрят только на items и count.
-         Ширину значения оно не меняет — строка и без него занимает три слова. */
+      /* Запас за концом и перед началом; NULL — запаса нет, «добавить» и
+         «приписать» скопируют. Поле не наблюдаемо: равенство, длина и печать
+         смотрят только на items и count. Ширину значения оно не меняет —
+         строка и без него занимает три слова. */
       fl_grow *grow;
     } list;
     const fl_record *record;
@@ -781,6 +784,7 @@ fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *erro
 fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list, fl_value *out, fl_error *error);
 fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
+fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
 fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 

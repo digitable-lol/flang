@@ -259,7 +259,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-95 programs with 511 functions and 1291 examples between them. For every function a grid of inputs
+95 programs with 508 functions and 1288 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -267,9 +267,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 95, функций: 511, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+ℹ программ: 95, функций: 508, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 1291
+ℹ сверенных примеров: 1288
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with

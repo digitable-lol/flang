@@ -184,6 +184,8 @@ test("русская и английская поверхности дают о�
   assert.equal(keywordId("функция"), keywordId("function"))
   assert.equal(keywordId("свёртка"), keywordId("fold"))
   assert.equal(keywordId("не меньше"), keywordId("is at least"))
+  assert.equal(keywordId("приписать"), keywordId("prepend"))
+  assert.equal(keywordId("приписать"), keywordId("antaŭmeti"))
   assert.equal(keywordId("вложен объект"), keywordId("nested object"))
 })
 

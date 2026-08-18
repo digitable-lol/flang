@@ -29,6 +29,7 @@ import {
   describeValue,
   длинаСписка,
   ячейкиСписка,
+  началоСписка,
   элементСписка,
   элементыСписка,
   flangError,
@@ -1003,15 +1004,16 @@ function matchPattern(pattern, value, span) {
  * Это не оптимизация ради оптимизации, а обязательное свойство: тело свёртки,
  * «отобразить» и «отфильтровать» вправе позвать «добавить» — в том числе к тому
  * самому списку, по которому идёт обход. Продление занимает ячейки ЗА концом
- * вида (`builtins.mjs`, «Список с запасом»), и обход обязан их не увидеть,
- * иначе свёртка по списку из трёх элементов не кончилась бы никогда.
+ * вида, приписывание — ПЕРЕД его началом (`builtins.mjs`, «Список с запасом»), и
+ * обход обязан не увидеть ни тех, ни других: иначе свёртка по списку из трёх
+ * элементов не кончилась бы никогда.
  *
- * Снимок — это пара «ячейки и длина», а не копия: у вида ячейки общего массива,
- * у обычного списка он сам. Копировать нечего — ячейки до конца вида не
- * переписывает никто.
+ * Снимок — это тройка «ячейки, сдвиг и длина», а не копия: у вида ячейки общего
+ * массива и своё начало в нём, у обычного списка он сам и сдвиг ноль. Копировать
+ * нечего — ячейки между началом и концом вида не переписывает никто.
  */
 function снимокОбхода(list) {
-  return { ячейки: ячейкиСписка(list), длина: длинаСписка(list) }
+  return { ячейки: ячейкиСписка(list), сдвиг: началоСписка(list), длина: длинаСписка(list) }
 }
 
 function stepFoldOver(machine, frame) {
@@ -1044,7 +1046,7 @@ function stepFold(machine, frame) {
   }
   const env = Object.create(frame.env)
   env[frame.node.acc] = frame.acc
-  env[frame.node.item] = frame.обход.ячейки[frame.index]
+  env[frame.node.item] = frame.обход.ячейки[frame.обход.сдвиг + frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }
@@ -1081,7 +1083,7 @@ function stepLoop(machine, frame) {
       }
       // Тело фильтра — предикат; для отброшенных элементов ничего больше не
       // вычисляется (никакого «а вдруг пригодится»).
-      if (keep) frame.out.push(frame.обход.ячейки[frame.index])
+      if (keep) frame.out.push(frame.обход.ячейки[frame.обход.сдвиг + frame.index])
     }
     frame.index += 1
   }
@@ -1091,7 +1093,7 @@ function stepLoop(machine, frame) {
     return
   }
   const env = Object.create(frame.env)
-  env[frame.node.item] = frame.обход.ячейки[frame.index]
+  env[frame.node.item] = frame.обход.ячейки[frame.обход.сдвиг + frame.index]
   push(machine, frame)
   pushEval(machine, frame.node.body, env, frame.node.span)
 }

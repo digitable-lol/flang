@@ -5803,6 +5803,18 @@ fl_status kompilyator_flang_slovo_kodom_simvola(fl_ctx *ctx, fl_value r, fl_valu
 fl_status kompilyator_flang_slovo_dobavleniem(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Слово приписыванием».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param token — «токен»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status kompilyator_flang_slovo_pripisyvaniem(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Слово функцией».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -19920,6 +19932,7 @@ fl_status kompilyator_flang_forma_pusto(fl_ctx *ctx, fl_value uzel, fl_value arg
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param forma — «форма»: строка
  * @param uzel — «узел»: «Значение»
  * @param argumenty — «аргументы»: список: «Значение»
  * @param imena — «имена»: «Имена»
@@ -19927,7 +19940,7 @@ fl_status kompilyator_flang_forma_pusto(fl_ctx *ctx, fl_value uzel, fl_value arg
  * @param bedy — «беды»: список: «Беда»
  * @return значение: «Итог вывода»
  */
-fl_status kompilyator_flang_forma_dobavit(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_forma_dobavit(fl_ctx *ctx, fl_value forma, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Два аргумента добавления».
@@ -19935,6 +19948,7 @@ fl_status kompilyator_flang_forma_dobavit(fl_ctx *ctx, fl_value uzel, fl_value a
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param forma — «форма»: строка
  * @param uzel — «узел»: «Значение»
  * @param argumenty — «аргументы»: список: «Значение»
  * @param imena — «имена»: «Имена»
@@ -19942,7 +19956,7 @@ fl_status kompilyator_flang_forma_dobavit(fl_ctx *ctx, fl_value uzel, fl_value a
  * @param bedy — «беды»: список: «Беда»
  * @return значение: «Итог вывода»
  */
-fl_status kompilyator_flang_dva_argumenta_dobavleniya(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_dva_argumenta_dobavleniya(fl_ctx *ctx, fl_value forma, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить значение».

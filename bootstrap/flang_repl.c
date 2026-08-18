@@ -215,19 +215,36 @@ static const char REPL_GREETING_NO_EVAL[] =
 /*
  * Справка бинарника — не справка оболочки: здесь перечислено то, что умеет
  * ФАЙЛ, поставленный из brew или asdf, и ровно оно. Печати в остальные семь
- * целей, запуска примеров и проверки суждений в этом бинарнике нет, поэтому
- * их здесь нет тоже: справка, обещающая несуществующее, обходится дороже
- * отсутствующей — по ней человек строит работу.
+ * целей и проверки суждений в этом бинарнике нет, поэтому их здесь нет тоже:
+ * справка, обещающая несуществующее, обходится дороже отсутствующей — по ней
+ * человек строит работу. Команда попадает сюда ПОСЛЕ того, как заработала, а
+ * не вместе с замыслом.
  *
  * `emit` появился здесь ПОСЛЕ того, как заработал, а не до: сегодня уже
  * находили ключ, названный в справке и молча игнорируемый, и это хуже отказа.
  * По той же причине названо и то, чего у печати НЕТ: отбрасывания недостижимого
  * и отметок `markProven`. Обещание без оговорки читается как обещание целиком.
  */
+/* ПРЕДЕЛ ISO C99 НА ОДИН ЛИТЕРАЛ — 4095 БАЙТ, И ЭТА СПРАВКА В НЕГО ЕДВА ВЛЕЗАЕТ.
+   Соседние литералы компилятор склеивает в ОДИН, и считается длина склейки, а не
+   строки; в UTF-8 кириллица занимает по два байта, так что предел приходит вдвое
+   быстрее, чем кажется по экрану. Сегодня здесь 4083 байта — запас 12.
+
+   Поймано слиянием двух половин пары бинарника: `emit` и `test` пришли разными
+   ветками, каждая дописала свой абзац, и порознь обе влезали. Вместе вышло 4740
+   байт, и `cc -Werror=overlength-strings` отказался собирать компилятор — то
+   есть неподвижная точка встала целиком. Прибавляете строку — проверьте длину, а
+   лучше вынесите кусок во второй массив и печатайте двумя вызовами. */
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
     "\n"
-    "  flang check <файл.flang>     разбор, типы, завершаемость; замечания с кодом и местом\n"
+    "  flang check <файл.flang>     разбор, типы, завершаемость, ядро доказательства;\n"
+    "                               замечания с кодом и местом\n"
+    "  flang check <файл> --proof [--json]\n"
+    "                               ведомость доказательства: чем несётся обещание каждой\n"
+    "                               функции и чем — каждое высказанное утверждение\n"
+    "  flang test <файл.flang> [--no-check]\n"
+    "                               прогон примеров, объявленных внутри функций\n"
     "  flang run <файл.flang> --function «Имя» [--args '{\"н\":10}']\n"
     "                               вычислить функцию и напечатать значение\n"
     "  flang repl [<файл.flang>]    интерактивная оболочка; файл загружается в сессию\n"
@@ -241,23 +258,27 @@ static const char FLANG_HELP[] =
     "У оболочки ключи «--max-steps N» и «--max-depth N» — пределы вычисления.\n"
     "\n"
     "Вычислитель в бинарнике ЕСТЬ: `flang/self/interpret.flang` втащен в замыкание, и\n"
-    "«flang run» считает им, без Node и без «cc». Аргументы объявленным типам пока НЕ\n"
-    "сверяются — эталон на Node это делает, и в этом месте бинарник слабее его.\n"
+    "«flang run» и «flang test» считают им, без Node и без «cc». Аргументы вызова\n"
+    "сверяются объявленным типам ДО вычисления, тем же кодом, каким это делает эталон:\n"
+    "«Факториал» от −3 отвергается FLANG_TYPE, а не считается.\n"
+    "\n"
+    "Ведомость («--proof») бинарник печатает у программы, где всё, о чём она\n"
+    "отчитывается, он ПОСЧИТАЛ САМ. Законы, считаемые вычислением на сетке (моноид,\n"
+    "монада, изоморфизм, категория, множества, связь и пять объявленных свойств), в\n"
+    "бинарнике не считает никто, и программа, где такое объявлено, получает отказ с\n"
+    "названным препятствием, а не зелёную ведомость с пустым разделом. Поиск нарушений\n"
+    "по примерам тоже не переехал: ведомость говорит «не искали», а не «не найдено».\n"
     "Оболочка `repl` вычислитель пока не зовёт: она печатает сессию в C, собирает «cc»\n"
     "против lib/libkompilyator_flang.a и запускает. Нет «cc» — оболочка не выключается,\n"
     "а проверяет разбор, типы и завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.\n"
     "\n"
-    "Печать в C в бинарнике ЕСТЬ: `flang/self/emit-c.flang` втащен в замыкание, и\n"
-    "«flang emit --target c» печатает без Node. Исходники рантайма C она читает с диска\n"
-    "(--runtime, $FLANG_RUNTIME_DIR, ../flang/src/emit/c): они уезжают в вывод дословно.\n"
-    "ДВУХ ВЕЩЕЙ У НЕЁ НЕТ, И ОБЕ НАЗВАНЫ. Она не отбрасывает недостижимое — печатает\n"
-    "программу целиком, как это делает scripts/bootstrap-c.mjs. И она не приписывает\n"
-    "доказанное («markProven», flang/src/types.mjs; близнеца на flang нет): без этих\n"
-    "отметок печать теряет быстрые пути арифметики и суффикс «_dokazano». На самом\n"
-    "компиляторе это 6 файлов из 7 байт в байт и один расходящийся.\n"
+    "«emit --target c» печатает без Node; рантайм C читается с диска\n"
+    "(--runtime, $FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое\n"
+    "не отбрасывается, доказанное не метится («markProven»). На компиляторе\n"
+    "это 6 файлов из 7 байт в байт.\n"
     "\n"
-    "Печать в остальные семь целей, запуск примеров и проверка суждений живут в полном\n"
+    "Остальные семь целей, законы на сетке и суждения — в полном\n"
     "инструментарии, а ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
     "Подробности: man flang";
@@ -1648,7 +1669,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  * принимала бы объявление, которое `flang check` в том же файле отвергает.
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
-                               bool *has_program, repl_strings *proven) {
+                               bool *has_program, repl_strings *proven, bool kernel) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -1699,13 +1720,44 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       }
     }
   }
+  /*
+   * ЯДРО ДОКАЗАТЕЛЬСТВА — четвёртым шагом, и это не добавка к отчёту.
+   *
+   * Пока его тут не было, бинарник ПРИНИМАЛ программу с заведомо ложным
+   * утверждением: `flang check` отвечал «замечаний нет» и кодом 0 там, где
+   * эталон на Node отвечает `FLANG_PROOF_STEP` и кодом 1. Бинарник, принимающий
+   * то, что эталон отвергает, опаснее бинарника, который чего-то не умеет:
+   * неумение видно, расхождение — нет.
+   *
+   * Оболочке ядро не зовётся (`kernel` равно false), и причина не в скорости:
+   * сессия проверяется ПОСЛЕ КАЖДОГО объявления, а обязательство закрывается
+   * теоремой, которая приходит отдельной строкой ПОЗЖЕ. Судить незаконченную
+   * сессию ядром значило бы отвергать верное доказательство за то, что человек
+   * ещё не дописал его.
+   */
+  if (kernel) {
+    fl_value kernel_args[2];
+    fl_value kernel_bads = fl_nothing();
+    kernel_args[0] = *program;
+    kernel_args[1] = total;
+    if (repl_call("Беды ядра", kernel_args, 2, &kernel_bads) != FL_OK) {
+      bads_say(bads, "ядро доказательства прекращено");
+      return false;
+    }
+    if (kernel_bads.tag == FL_LIST) {
+      for (index = 0; index < kernel_bads.as.list.count; index += 1) {
+        bads_take(bads, kernel_bads.as.list.items[index]);
+      }
+    }
+  }
   return bads->count == 0;
 }
 
 /** Та же дорога для сессии: исходником служит собранный текст сессии. */
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
-  return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven);
+  return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
+                            false);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -4037,7 +4089,7 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -4084,6 +4136,264 @@ static int check_file(const char *path) {
   return ok ? 0 : 1;
 }
 
+/* ═══════════════════ flang check --proof: ведомость ══════════════════════ */
+
+/**
+ * `flang check <файл> --proof [--json]` — ведомость доказательства, без Node.
+ *
+ * Считает её слой на самом flang («Ведомость исходников» в
+ * `flang/self/bootstrap/compiler.flang`), а здесь — ровно печать: ни одного
+ * числа этот файл не выводит сам. Иначе чисел стало бы два набора, и спорили бы
+ * о них не люди, а две реализации.
+ *
+ * ── ТРИ ИСХОДА, И ТРЕТИЙ — ГЛАВНЫЙ ──────────────────────────────────────────
+ * 0 — ведомость напечатана; 1 — программа не прошла проверку (ведомости у неё
+ * нет: «доказано» о программе с отказом было бы неправдой про каждую строку);
+ * 2 — ПРЕПЯТСТВИЕ: в программе объявлено то, чьи законы бинарник не считает.
+ * Третий исход и есть отличие честной ведомости от зелёной: молча напечатать
+ * пустой раздел «законов не объявлено» на программе, где закон объявлен, —
+ * ровно та неправда, ради которой ведомость заводилась.
+ *
+ * Сверено с эталоном на 37 программах `flang/proof/examples`: 33 совпали знак в
+ * знак, 4 разошлись, и все четыре — в сторону «бинарник сказал МЕНЬШЕ» (поиска
+ * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
+ * искали», а не «не найдено»).
+ */
+static int proof_file(const char *path, bool json) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value result = fl_nothing();
+  fl_value args[2];
+  fl_value field = fl_nothing();
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  size_t index = 0;
+  int code = 0;
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+
+  if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
+    code = 1;
+  } else if (val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) {
+    if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
+      fwrite(utf8, 1, bytes, stdout);
+      if (json) {
+        fputc('\n', stdout);
+      }
+    }
+    fflush(stdout);
+  } else if (val_field(result, "препятствие", &field) && val_text(field, &utf8, &bytes) && bytes > 0) {
+    fprintf(stderr, "%.*s\n", (int)bytes, utf8);
+    code = 2;
+  } else {
+    fl_value list = fl_nothing();
+    if (val_field(result, "диагностики", &list) && list.tag == FL_LIST) {
+      for (index = 0; index < list.as.list.count; index += 1) {
+        repl_bads bads;
+        bads_init(&bads);
+        bads_take(&bads, list.as.list.items[index]);
+        check_print_bads(&bads, path, paths.count);
+        bads_free(&bads);
+      }
+    }
+    fflush(stderr);
+    printf("%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
+    fflush(stdout);
+    code = 1;
+  }
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+  return code;
+}
+
+/* ══════════════════════════════ flang test ══════════════════════════════ */
+
+/**
+ * `flang test <файл> [--no-check]` — прогон примеров, объявленных внутри функций.
+ *
+ * Порядок тот же, что у эталона: сначала те же проверки, что у `check`, и на
+ * непроверенной программе примеров не запускать. «Пример сошёлся» на программе с
+ * ошибкой типов не значит ничего — сойтись он мог на пути, который до кривого
+ * места не дошёл. `--no-check` снимает проверку ровно затем же, зачем у эталона:
+ * смотреть на поведение примеров, пока программа ещё в правке.
+ *
+ * Печатается КАЖДЫЙ не прошедший пример, а прошедшие — числом: отчёт, в котором
+ * тысяча зелёных строк прячет одну красную, читается как зелёный.
+ */
+static int test_file(int argc, char **argv) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value result = fl_nothing();
+  fl_value args[5];
+  fl_value field = fl_nothing();
+  fl_value rows = fl_nothing();
+  char buffer[4096];
+  const char *path = NULL;
+  const char *steps = "40000000";
+  const char *depth = "20000";
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  size_t index = 0;
+  bool check = true;
+  int argi = 0;
+  int code = 0;
+
+  for (argi = 2; argi < argc; argi += 1) {
+    if (strcmp(argv[argi], "--no-check") == 0) {
+      check = false;
+    } else if (strcmp(argv[argi], "--max-steps") == 0 && argi + 1 < argc) {
+      argi += 1;
+      steps = argv[argi];
+    } else if (strcmp(argv[argi], "--max-depth") == 0 && argi + 1 < argc) {
+      argi += 1;
+      depth = argv[argi];
+    } else if (argv[argi][0] != '-' && path == NULL) {
+      path = argv[argi];
+    } else {
+      fprintf(stderr, "flang test: непонятный ключ «%s»\n", argv[argi]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang test: не назван файл. Пример: flang test модуль.flang\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+  args[2] = fl_flag(check);
+  args[3] = fl_number(strtod(steps, NULL));
+  args[4] = fl_number(strtod(depth, NULL));
+
+  if (repl_call("Прогон примеров исходников", args, 5, &result) != FL_OK) {
+    code = 1;
+  } else {
+    double total = 0;
+    double passed = 0;
+    double failed = 0;
+    if (val_field(result, "всего", &field) && field.tag == FL_NUMBER) {
+      total = field.as.number;
+    }
+    if (val_field(result, "прошло", &field) && field.tag == FL_NUMBER) {
+      passed = field.as.number;
+    }
+    if (val_field(result, "сорвалось", &field) && field.tag == FL_NUMBER) {
+      failed = field.as.number;
+    }
+    if (val_field(result, "диагностики", &rows) && rows.tag == FL_LIST && rows.as.list.count > 0) {
+      repl_bads bads;
+      bads_init(&bads);
+      for (index = 0; index < rows.as.list.count; index += 1) {
+        bads_take(&bads, rows.as.list.items[index]);
+      }
+      check_print_bads(&bads, path, paths.count);
+      bads_free(&bads);
+      fflush(stderr);
+      printf("%s: примеры не запускались — программа не прошла проверку\n", path);
+      fflush(stdout);
+      code = 1;
+    } else {
+      if (val_field(result, "строки", &rows) && rows.tag == FL_LIST) {
+        for (index = 0; index < rows.as.list.count; index += 1) {
+          fl_value row = rows.as.list.items[index];
+          const char *fn = NULL;
+          size_t fn_bytes = 0;
+          const char *example = NULL;
+          size_t example_bytes = 0;
+          const char *word = NULL;
+          size_t word_bytes = 0;
+          const char *say = NULL;
+          size_t say_bytes = 0;
+          if (val_field(row, "прошёл", &field) && field.tag == FL_FLAG && field.as.flag) {
+            continue;
+          }
+          if (val_field(row, "функция", &field)) {
+            val_text(field, &fn, &fn_bytes);
+          }
+          if (val_field(row, "пример", &field)) {
+            val_text(field, &example, &example_bytes);
+          }
+          if (val_field(row, "код", &field)) {
+            val_text(field, &word, &word_bytes);
+          }
+          if (val_field(row, "сообщение", &field)) {
+            val_text(field, &say, &say_bytes);
+          }
+          /* Кода у не сошедшегося примера НЕТ, и выдумывать его нельзя: «не
+             совпало» — это результат прогона, а не отказ языка, и новый код ради
+             отчёта был бы кодом, которого не объявлял никто. Код стоит только
+             там, где вычисление сорвалось и язык его назвал сам. */
+          if (word_bytes > 0) {
+            fprintf(stderr, "%.*s: ", (int)word_bytes, word);
+          }
+          fprintf(stderr, "пример «%.*s» функции «%.*s» не прошёл: %.*s\n", (int)example_bytes,
+                  example == NULL ? "" : example, (int)fn_bytes, fn == NULL ? "" : fn, (int)say_bytes,
+                  say == NULL ? "" : say);
+        }
+      }
+      fflush(stderr);
+      printf("%s: примеров %lu, прошло %lu, не прошло %lu\n", path, (unsigned long)total, (unsigned long)passed,
+             (unsigned long)failed);
+      fflush(stdout);
+      code = failed > 0 ? 1 : 0;
+    }
+  }
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+  return code;
+}
+
 /* ══════════════════════════════ flang run ═══════════════════════════════ */
 
 /*
@@ -4094,15 +4404,15 @@ static int check_file(const char *path) {
  * в бинарнике не было. Теперь `flang/self/interpret.flang` втащен в замыкание
  * компилятора, и точка входа «Прогон исходников» считает без всякого Node.
  *
- * ── Чего здесь ЕЩЁ НЕТ, и это названо, а не умолчано ────────────────────────
+ * ── Долг, который здесь стоял и теперь закрыт ───────────────────────────────
  * Эталон на JavaScript (`commandRun` в `flang/bin/flang.mjs`) перед вычислением
  * сверяет аргументы с объявленными типами (`checkArguments`), и делает это не
  * для красоты: доказательство завершения `тотальной` функции стоит НА ТИПЕ, и
- * значение вне типа выносит вместе с типом и доказательство. Здесь этой сверки
- * нет — точка входа «Прогон исходников» её не делает. Значит `flang run` в
- * бинарнике примет `«Факториал» от −3` там, где эталон откажет. Долг записан
- * здесь, а не в отчёте: закрывается он на стороне flang, добавлением сверки в
- * «Прогон исходников», и до тех пор бинарник в этом месте СЛАБЕЕ эталона.
+ * значение вне типа выносит вместе с типом и доказательство. Этой сверки здесь
+ * не было, и `flang run` в бинарнике ПРИНИМАЛ `«Факториал» от −3`, печатая `1`
+ * там, где эталон отказывает `FLANG_TYPE` и кодом 1. Закрыто на стороне flang:
+ * «Прогон исходников» зовёт «Проверить аргументы вызова» (`self/types.flang`)
+ * ДО вычисления, и оба инструмента отвечают одним кодом и одним текстом.
  *
  * ── Почему свой разбор JSON, а не разбор компилятора ────────────────────────
  * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
@@ -4471,6 +4781,31 @@ static void run_print(fl_value value) {
  * 1 — программа отказала, 2 — ошибка вызова. Разделение не косметика: сценарий
  * вправе отличать «программа сказала нет» от «я позвал неправильно».
  */
+/**
+ * Ёлочки с имени функции, если человек их написал.
+ *
+ * Справка показывает `--function «Имя»`, и показывает не по недосмотру: имена
+ * функций в языке ПИШУТСЯ в ёлочках, и человек копирует их из исходника вместе
+ * с ними. А ключ ёлочек не принимал и отвечал `не найдена функция ««Имя»»` —
+ * то есть отвергал ровно ту форму, которой сам же учил.
+ *
+ * Близнец на Node — `снятьЁлочки` в `flang/bin/flang.mjs`, и правились они
+ * одним движением: почини одну сторону — и бинарник начал бы принимать то, что
+ * эталон отвергает.
+ *
+ * «» в UTF-8 — это C2 AB и C2 BB; снимается ровно одна внешняя пара.
+ */
+static const char *run_bare_name(const char *name, size_t *bytes) {
+  const size_t length = strlen(name);
+  *bytes = length;
+  if (length >= 4 && (unsigned char)name[0] == 0xC2u && (unsigned char)name[1] == 0xABu &&
+      (unsigned char)name[length - 2] == 0xC2u && (unsigned char)name[length - 1] == 0xBBu) {
+    *bytes = length - 4;
+    return name + 2;
+  }
+  return name;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
@@ -4547,7 +4882,11 @@ static int run_file(int argc, char **argv) {
   } else {
     args[0] = sources;
     args[1] = repl_value_say(full);
-    args[2] = repl_value_say(name);
+    {
+      size_t name_bytes = 0;
+      const char *bare = run_bare_name(name, &name_bytes);
+      args[2] = repl_value_text(bare, name_bytes);
+    }
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
@@ -5360,6 +5699,39 @@ static int repl_loop(int argc, char **argv, const char *self) {
   return interactive || !failed ? 0 : 1;
 }
 
+/**
+ * `flang check` с ключами. `--json` осмыслен только рядом с `--proof`: без него
+ * `check` и так печатает человеку, и молча принять ключ, который ничего не
+ * меняет, значило бы пообещать работу и её не сделать.
+ */
+static int check_command(int argc, char **argv) {
+  const char *path = NULL;
+  bool proof = false;
+  bool json = false;
+  int index = 0;
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--proof") == 0) {
+      proof = true;
+    } else if (strcmp(argv[index], "--json") == 0) {
+      json = true;
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang check: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang check: не назван файл. Пример: flang check модуль.flang\n", stderr);
+    return 2;
+  }
+  if (json && !proof) {
+    fputs("flang check --json осмыслен только рядом с «--proof»: без ведомости печатать в JSON нечего\n", stderr);
+    return 2;
+  }
+  return proof ? proof_file(path, json) : check_file(path);
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 static bool human_word(const char *word, const char *full, const char *short_form, const char *bare) {
@@ -5405,12 +5777,9 @@ int fl_human_main(int argc, char **argv, const char *self) {
   } else if (human_word(command, "--version", "-v", "version")) {
     printf("flang %s\n", FLANG_VERSION);
   } else if (strcmp(command, "check") == 0) {
-    if (argc < 3) {
-      fputs("flang check: не назван файл. Пример: flang check модуль.flang\n", stderr);
-      code = 2;
-    } else {
-      code = check_file(argv[2]);
-    }
+    code = check_command(argc, argv);
+  } else if (strcmp(command, "test") == 0) {
+    code = test_file(argc, argv);
   } else if (strcmp(command, "run") == 0) {
     code = run_file(argc, argv);
   } else if (strcmp(command, "emit") == 0) {

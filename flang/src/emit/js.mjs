@@ -211,6 +211,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
 import { camel, createNamer, pascal, snake } from "../naming.mjs"
+import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* Планировщик конкурентности — настоящий .js рядом, а не строка здесь, и по той
    же причине, по какой так сделано в C (`emit/c/flang_conc.c`): его читает
@@ -1848,7 +1849,13 @@ export function emitJs(program, options = {}) {
   if (runtime.length > 0) parts.push(runtime)
   parts.push(...sections.filter((section) => section.length > 0))
 
-  const path = options.path ?? `${moduleName === null ? "program" : snake(moduleName)}.js`
+  /* Восьмая цель считается наравне с семью, хотя набор занятого у неё ПУСТ:
+     печатается один самодостаточный файл, прогонщик берёт его по файловому
+     URL, а голый спецификатор Node в относительный файл не резолвится — занять
+     стандартную библиотеку JavaScript именем модуля нельзя (`target-occupied.mjs`).
+     Вызов стоит здесь, чтобы пустота набора была РЕШЕНИЕМ, а не пропуском. */
+  const stem = обойтиЗанятоеЦелью(moduleName === null ? "program" : snake(moduleName), "js")
+  const path = options.path ?? `${stem}.js`
   /* Последний шаг — снять сырые двунаправленные управляющие со всего вывода
      (bidi.mjs). Литерал их уже экранировал сам, но имя FTS уезжает ещё и в
      комментарии — в шапку модуля и в jsdoc функции, — а комментарий читают

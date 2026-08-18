@@ -3,11 +3,11 @@
 # Developing the language
 
 The JavaScript reference implementation stays for good: it is what the fixed point is checked
-against, and deleting it would delete the check. Working on it takes a clone:
+against, and deleting it would delete the check. Working on it takes a clone and nothing else:
+the package has no dependencies and there is nothing to build, so the scripts run straight after
+`git clone`.
 
 ```bash
-npm install
-npm run build
 node scripts/build-release-c.mjs     # prints the release C and builds it
 ```
 
@@ -43,32 +43,21 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 
-Any `.fts` model is a valid flang program, so the same commands take one directly. That path goes
-through the compatibility bridge, which needs the built TypeScript core — so `npm install && npm
-run build` inside the clone comes first:
+**`.fts` models are no longer read.** They were until 16 August 2026, through a bridge to the
+older project's TypeScript core; that project left the repository and the bridge lost its other
+side. There is no `fts` command in this tree either — `flang/bin/` holds `flang` and `flang-lsp`
+and nothing more. The refusal is explicit and names where the removed part now lives:
 
 ```bash
-flang check examples/utilities/discount.fts --pretty
-flang emit examples/utilities/discount.fts --target go --out ./out-go
-```
-
-FTS's own CLI, for models specifically:
-
-```bash
-fts pipeline examples/real-world/order-shipment.fts --pretty
-fts test examples/utilities/discount.fts --pretty
-fts run examples/utilities/discount.fts \
-  --utility "Рассчитать скидку" --input examples/utilities/discount.input.json --pretty
-fts certify examples/real-world/order-shipment.fts \
-  --context examples/real-world/order-shipment.context.json --pretty
-fts generate examples/utilities/discount.fts --out generated
+flang check model.fts
+# {"diagnostics":[{"code":"FLANG_FTS_REMOVED", … "github.com/digitable-lol/fts" …}]}
 ```
 
 Tests:
 
 ```bash
-npm run test:flang    # the language: parser, types, totality, backends, the core and compiler in flang
-npm test              # everything: core, tools, flang
+npm test              # one suite: flang/test/*.test.mjs, the whole language
+npm run test:backends # the eight code generators on their own
 ```
 
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —

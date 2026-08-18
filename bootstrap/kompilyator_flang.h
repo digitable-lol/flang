@@ -878,7 +878,7 @@ fl_status kompilyator_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_er
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_vid_neizvestnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
-fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value poddlinoy, fl_value nedlinnee, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_neotricatelnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_stroki(fl_ctx *ctx, fl_value dlinaniz, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_priznaka(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -17779,6 +17779,62 @@ fl_status kompilyator_flang_nalozhit_dlinu_na_imya(fl_ctx *ctx, fl_value imena, 
  * @return значение: «Имена»
  */
 fl_status kompilyator_flang_nalozhit_dlinu_na_tip(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value niz, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить имя границы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: список: строка
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status kompilyator_flang_dobavit_imya_granicy(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «С границей номера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param konteyner — «контейнер»: строка
+ * @param strogaya — «строгая»
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_s_granicey_nomera(fl_ctx *ctx, fl_value tip, fl_value konteyner, fl_value strogaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить границу номера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param nomer — «номер»: строка
+ * @param konteyner — «контейнер»: строка
+ * @param strogaya — «строгая»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_granicu_nomera(fl_ctx *ctx, fl_value imena, fl_value nomer, fl_value konteyner, fl_value strogaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить границу на тип».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param nomer — «номер»: строка
+ * @param konteyner — «контейнер»: строка
+ * @param strogaya — «строгая»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_granicu_na_tip(fl_ctx *ctx, fl_value imena, fl_value nomer, fl_value konteyner, fl_value strogaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сузить по границе номера».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_suzit_po_granice_nomera(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сузить по логике».

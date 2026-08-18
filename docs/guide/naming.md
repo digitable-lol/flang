@@ -25,7 +25,7 @@ not tell a name from a word in a comment, and in this tree the comments are long
 | Р1 | no one-letter name | local names | **1233** |
 | Р2 | no name shorter than three letters (Han: two characters) | local names | **444** beyond Р1 |
 | Р3 | no clipped word from a closed list (`акк`, `эл`, `acc`, `elem`, `знач`, `ctx`, `tmp`, …) | local names | **1218** |
-| Р4 | Cyrillic and Latin never mix inside one word | all names | **228** |
+| Р4 | Cyrillic and Latin never mix inside one word | all names | **0** — cleared |
 | Р5 | no name longer than 48 letters | all names but example names | **0** |
 | Р6 | no example name longer than 96 letters | example names | **0** |
 
@@ -59,6 +59,12 @@ The pairs `с/c`, `о/o`, `р/p`, `а/a`, `е/e`, `х/x` are lookalikes; only a 
 and that search finds nothing. 228 such names live in three files: `flang/self/proof-initial.flang`
 (144), `flang/self/proofterm.flang` (47), `flang/self/obligations.flang` (37) — there a `пусть` name
 mirrors a key of the JSON being printed, and the prefix separates it from the field of the same name.
+
+All 228 were cleared in the same pass that introduced the rule, and this is the one kind out of 2987
+where the fault is **invisible**: the other 2759 are readable abbreviations, you can see them, and
+they can wait. `«сkind»` became `«поле kind»`, `«сname»` became `«поле name»` — the mirror of the key
+is kept, the lookalike is gone, and the two scripts are separated by a space. 465 substitutions in
+three files; the `bootstrap/` point was reprinted in the same commit.
 
 Han mixed with Latin is **not** covered by Р4, and that was measured, not decided by taste: the first
 draft of the rule went red on a healthy Chinese example name, `二十的阶乘在double中仍然精确`. Chinese
@@ -96,7 +102,7 @@ switched off. Lowercase `n`, `f`, `h`, `t` are not covered by the clause.
 ## Debt: the rule lands today, the corpus is fixed separately
 
 The corpus does not satisfy the rules today, and the price is stated as a number rather than as
-"here and there": **2987 sites in 141 files out of 190**. Pardoning them silently would be a lie;
+"here and there": **2759 sites in 141 files out of 190**. Pardoning them silently would be a lie;
 going red on all of them at once would block the build until a week of renaming is done.
 
 So the debt is written down **by name** in `flang/scripts/name-debt.json`, and the comparison is a
@@ -104,12 +110,11 @@ So the debt is written down **by name** in `flang/scripts/name-debt.json`, and t
 is reported as done. A count would have matched while one violation was traded for another.
 
 ```
-Сторож имён: 190 файлов, 2987 мест долга в 141 файлах.
+Сторож имён: 190 файлов, 2759 мест долга в 141 файлах.
   Р1-одна-буква                1233
   Р2-короче-трёх               444
   Р3-обрубок                   1218
-  Р4-две-письменности          228
-  помиловано (правило неверно) 17
+  помиловано (правило неверно) 29
   не разобрано функций         0 (записано 0)
 ```
 
@@ -128,12 +133,22 @@ The upper bounds (Р5, Р6) have no debt: today they are zero, and an empty list
 Debt means "the code is wrong, we will fix it". An exception means "**the rule** is wrong here, and
 renaming would make the file worse". The two lists are separate on purpose.
 
-Today there are 17 exempt sites in eight files, all of one kind: a Rosetta task reproduces a formula
+Today there are 29 exempt sites in ten files, of two kinds.
+
+The first is 17 sites: a Rosetta task reproduces a formula
 that names its own variables. The Ackermann function is defined as `A(m, n)`, the factorial as `n!`;
 `первый` and `второй` in place of `m` and `n` would cut the tie to the definition the example exists
 for. A one-letter name is meaningful exactly when its meaning is fixed from outside by mathematical
-notation — and no run can check that, so the list is kept by hand and by name in `ИСКЛЮЧЕНИЯ`. The
-same name cannot be both a debt and an exception: that is checked.
+notation — and no run can check that, so the list is kept by hand and by name in `ИСКЛЮЧЕНИЯ`.
+
+The second is 12 sites, `«поле param»` in `flang/self/proof-initial.flang` and
+`flang/self/proofterm.flang`: the name mirrors a key of the canonical JSON, and the key sits quoted
+as the next word on the same line (`пусть «поле param» равно («Собрать поле ядра» от "param" и …)`).
+Canonical JSON is a compatibility surface, so the key cannot be renamed; calling the binding
+`поле parameter` would split the name from the key it exists to match. `param` *is* an honest
+clipping and Р3 catches it correctly — what is wrong here is applying the rule to a mirror.
+
+The same name cannot be both a debt and an exception: that is checked.
 
 ### A file that fails to parse must not carry its checks away silently
 

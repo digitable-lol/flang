@@ -34,6 +34,7 @@ import { execFileSync, spawnSync } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { nodeДостижим, исполняемый, путьБезNode } from "./node-free-path.mjs"
 
 const корень = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 /* Версия — из package.json, а не строкой рядом: релиз, называющий себя иначе,
@@ -96,25 +97,47 @@ console.log(`  LICENSE  ${(readFileSync(лицензия).length / 1024).toFixed
 console.log(`итого ${(всего / 1024 / 1024).toFixed(2)} МБ в ${каталог}`)
 
 /* Сборка в окружении без Node: если релиз требует Node, обещание «нужен только
-   cc» ложно, и узнать об этом надо здесь, а не от пользователя. */
-const компилятор = ["cc", "gcc", "clang"].find((имя) => {
-  try {
-    execFileSync("which", [имя], { stdio: "ignore" })
-    return true
-  } catch {
-    return false
-  }
-})
+   cc» ложно, и узнать об этом надо здесь, а не от пользователя.
 
-if (компилятор === undefined) {
+   PATH собирается ОТБОРОМ, а не зашитым списком. Прежде здесь стояло
+   `PATH: "/usr/bin:/bin:/usr/local/bin"` со словами «PATH без Node» рядом — при
+   том что node лежит ровно в /usr/local/bin. Сторож, заведённый ловить
+   прокравшуюся зависимость от Node, не поймал бы её никогда. Почему нельзя
+   просто выкинуть /usr/local/bin и почему отказ честнее тихого обхода —
+   в scripts/node-free-path.mjs. */
+const среда = путьБезNode({ нужны: ["make"] })
+const компилятор = ["cc", "gcc", "clang"].find((имя) => среда.оставлены.some((к) => исполняемый(к, имя)))
+
+if (!среда.годен || компилятор === undefined) {
+  const рядомСNode = ["cc", "gcc", "clang", "make"].filter((имя) =>
+    среда.выброшены.some((к) => исполняемый(к, имя)),
+  )
+  if (рядомСNode.length > 0) {
+    console.error(`\nсборку без Node здесь проверить НЕЛЬЗЯ: ${среда.почему ?? "компилятор C нашёлся только там же, где node"}`)
+    console.error(`каталоги, выброшенные из-за node: ${среда.выброшены.join(", ")}`)
+    console.error(`инструменты, живущие рядом с node: ${рядомСNode.join(", ")}`)
+    console.error("это не «всё хорошо», а «не смог проверить»: собрать с node под рукой и назвать")
+    console.error("это проверкой сборки без Node значит соврать ровно там, где проверяют честность")
+    process.exit(1)
+  }
   console.log("компилятора C в системе нет — сборка релиза не проверена")
   process.exit(0)
 }
 
-console.log(`\nпроверка сборки (${компилятор}, PATH без Node):`)
+/* Пояс поверх подтяжек: если node всё же достижим, отбор сломан, и собирать
+   нельзя — иначе зелёная сборка снова ничего не будет значить. */
+if (nodeДостижим(среда.путь)) {
+  console.error(`отбор PATH сломан: node достижим на «${среда.путь}»`)
+  process.exit(1)
+}
+
+console.log(`\nпроверка сборки (${компилятор}, PATH без Node: ${среда.путь})`)
+if (среда.выброшены.length > 0) {
+  console.log(`  выброшено из-за node: ${среда.выброшены.join(", ")}`)
+}
 execFileSync("make", ["-C", каталог], {
   stdio: "inherit",
-  env: { PATH: "/usr/bin:/bin:/usr/local/bin", HOME: process.env.HOME ?? "/tmp" },
+  env: { PATH: среда.путь, HOME: process.env.HOME ?? "/tmp" },
 })
 
 const собрано = readdirSync(каталог)

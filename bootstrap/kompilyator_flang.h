@@ -1170,12 +1170,13 @@ fl_status kompilyator_flang_variant_net_funkcii(fl_ctx *ctx, fl_value *out, fl_e
 fl_status kompilyator_flang_variant_est_chislo(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
 
-/* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
+/* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_vid_neizvestnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
-fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value poddlinoy, fl_value nedlinnee, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value poddlinoy, fl_value nedlinnee, fl_value masshtab, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_neotricatelnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_vid_vesa(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_stroki(fl_ctx *ctx, fl_value dlinaniz, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_priznaka(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_nichego(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -15749,9 +15750,10 @@ fl_status kompilyator_flang_dno_tochnyh(fl_ctx *ctx, fl_value *result, fl_error 
  * @param niz — «низ»: число
  * @param verh — «верх»: число
  * @param celoe — «целое»
+ * @param masshtab — «масштаб»: число
  * @return значение: «Тип»
  */
-fl_status kompilyator_flang_tip_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value celoe, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_tip_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value celoe, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип по концам».
@@ -15759,9 +15761,10 @@ fl_status kompilyator_flang_tip_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param niz — «низ»: число
  * @param verh — «верх»: число
+ * @param masshtab — «масштаб»: число
  * @return значение: «Тип»
  */
-fl_status kompilyator_flang_tip_po_koncam(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_tip_po_koncam(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Знак уцелел».
@@ -15792,6 +15795,34 @@ fl_status kompilyator_flang_tip_neotricatelnogo(fl_ctx *ctx, fl_value *result, f
 fl_status kompilyator_flang_otrezok_goden(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Масштаб типа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение: число
+ */
+fl_status kompilyator_flang_masshtab_tipa(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Точка ли».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_tochka_li(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Общий масштаб».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervyy — «первый»: «Тип»
+ * @param vtoroy — «второй»: «Тип»
+ * @return значение: число
+ */
+fl_status kompilyator_flang_obschiy_masshtab(fl_ctx *ctx, fl_value pervyy, fl_value vtoroy, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Тип нат».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -15806,6 +15837,57 @@ fl_status kompilyator_flang_tip_nat(fl_ctx *ctx, fl_value *result, fl_error *err
  * @return значение: «Тип»
  */
 fl_status kompilyator_flang_tip_celogo(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип веса».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_tip_vesa(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В отрезке веса».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_v_otrezke_vesa(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «С бесконечностью».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_s_beskonechnostyu(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечно положителен».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_konechno_polozhitelen(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип сотых».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_tip_sotyh(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип тысячных».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_tip_tysyachnyh(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип строки».
@@ -16150,6 +16232,26 @@ fl_status kompilyator_flang_goditsya(fl_ctx *ctx, fl_value dannyy, fl_value ozhi
 fl_status kompilyator_flang_goditsya_vid(fl_ctx *ctx, fl_value dannyy_vid, fl_value ozhidaemyy_vid, fl_value dannyy, fl_value ozhidaemyy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Годится возвратом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param dannyy — «данный»: «Тип»
+ * @param ozhidaemyy — «ожидаемый»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_goditsya_vozvratom(fl_ctx *ctx, fl_value dannyy, fl_value ozhidaemyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Масштаб вложен».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param dannyy — «данный»: «Тип»
+ * @param ozhidaemyy — «ожидаемый»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_masshtab_vlozhen(fl_ctx *ctx, fl_value dannyy, fl_value ozhidaemyy, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Вложен в отрезок».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -16324,9 +16426,10 @@ fl_status kompilyator_flang_nazvanie_vida(fl_ctx *ctx, fl_value vid, fl_value *r
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param niz — «низ»: число
  * @param verh — «верх»: число
+ * @param masshtab — «масштаб»: число
  * @return значение: строка
  */
-fl_status kompilyator_flang_chislovoe_imya(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_chislovoe_imya(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Применено к».
@@ -19065,6 +19168,28 @@ fl_status kompilyator_flang_tip_arifmetiki(fl_ctx *ctx, fl_value uzel, fl_value 
 fl_status kompilyator_flang_arifmetika_otrezkov(fl_ctx *ctx, fl_value op, fl_value levyy, fl_value pravyy, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Масштаб операции».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levyy — «левый»: «Тип»
+ * @param pravyy — «правый»: «Тип»
+ * @return значение: число
+ */
+fl_status kompilyator_flang_masshtab_operacii(fl_ctx *ctx, fl_value op, fl_value levyy, fl_value pravyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вес операции».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levyy — «левый»: «Тип»
+ * @param pravyy — «правый»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_ves_operacii(fl_ctx *ctx, fl_value op, fl_value levyy, fl_value pravyy, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Отрезок операции».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -19073,9 +19198,10 @@ fl_status kompilyator_flang_arifmetika_otrezkov(fl_ctx *ctx, fl_value op, fl_val
  * @param a2 — «а2»: число
  * @param b1 — «б1»: число
  * @param b2 — «б2»: число
+ * @param masshtab — «масштаб»: число
  * @return значение: «Тип»
  */
-fl_status kompilyator_flang_otrezok_operacii(fl_ctx *ctx, fl_value op, fl_value a1, fl_value a2, fl_value b1, fl_value b2, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_otrezok_operacii(fl_ctx *ctx, fl_value op, fl_value a1, fl_value a2, fl_value b1, fl_value b2, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отрезок произведения».
@@ -19085,9 +19211,10 @@ fl_status kompilyator_flang_otrezok_operacii(fl_ctx *ctx, fl_value op, fl_value 
  * @param vtoroy — «второй»: число
  * @param tretiy — «третий»: число
  * @param chetvyortyy — «четвёртый»: число
+ * @param masshtab — «масштаб»: число
  * @return значение: «Тип»
  */
-fl_status kompilyator_flang_otrezok_proizvedeniya(fl_ctx *ctx, fl_value pervyy, fl_value vtoroy, fl_value tretiy, fl_value chetvyortyy, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_otrezok_proizvedeniya(fl_ctx *ctx, fl_value pervyy, fl_value vtoroy, fl_value tretiy, fl_value chetvyortyy, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отрезок остатка».
@@ -19096,9 +19223,10 @@ fl_status kompilyator_flang_otrezok_proizvedeniya(fl_ctx *ctx, fl_value pervyy, 
  * @param a1 — «а1»: число
  * @param b1 — «б1»: число
  * @param b2 — «б2»: число
+ * @param masshtab — «масштаб»: число
  * @return значение: «Тип»
  */
-fl_status kompilyator_flang_otrezok_ostatka(fl_ctx *ctx, fl_value a1, fl_value b1, fl_value b2, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_otrezok_ostatka(fl_ctx *ctx, fl_value a1, fl_value b1, fl_value b2, fl_value masshtab, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип склейки».

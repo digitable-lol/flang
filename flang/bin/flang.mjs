@@ -37,8 +37,9 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
+import { flangError } from "../src/builtins.mjs"
 import { checkFunctorDictionary, errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
-import { возможностиЦели } from "../src/conc.mjs"
+import { runConcurrent, возможностиЦели } from "../src/conc.mjs"
 import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
    `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
@@ -115,9 +116,13 @@ emit: цели берутся из src/emit (по одному модулю на
 выброшено, видно полем «отброшено»; проверка при этом идёт по полной программе,
 и ведомость доказательства не урезается.
 
-io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
-строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
-В выводе есть журнал выданных поручений и полученных откликов.
+io: исполняет объявленный в файле план — или СЛУЖБУ, если планов нет, а есть
+процессы и прогон: седьмое действие «поручить» даёт процессу выдать поручение и
+получить отклик обычным сообщением. Различаются они объявлением, а не ключом:
+поручение в языке одно. Язык остаётся чистым — поручения строит программа,
+выполняет их хозяин на Node, и ключи --no-… его сужают. --plan называет план или
+прогон, когда их несколько. В выводе есть журнал выданных поручений и полученных
+откликов.
 
 repl: интерактивная оболочка. Объявления накапливаются в сессии, выражения
 вычисляются сразу, «.помощь» показывает команды. Файл в аргументе загружается
@@ -383,10 +388,20 @@ async function commandFacts(options) {
  */
 async function commandIo(options) {
   const { runPlan, findPlan, сдалсяСам } = await import(new URL("../src/io.mjs", import.meta.url).href)
-  const { nodeHost } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
+  const { nodeHost, nodeHostSync } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
 
   try {
     const program = await loadProgram(options.file)
+    /* СЛУЖБА — та же команда, и это не удобство, а утверждение: поручение одно на
+       язык, а выдавать его умеют двое — план и процесс. Различаются они
+       ОБЪЯВЛЕНИЕМ, а не ключом командной строки: есть `план` — работает план; нет
+       плана, а есть `прогон` — работает планировщик процессов с тем же хозяином и
+       теми же полномочиями (`--no-net`, `--in-dir` и соседи). Второй ключ вида «а
+       теперь запусти службу» означал бы, что ввод-вывод в языке два разных, а он
+       один. */
+    if ((program.plans ?? []).length === 0 && (program.runs ?? []).length > 0) {
+      return commandSluzhba(program, options, nodeHostSync)
+    }
     const план = findPlan(program, options.planName)
     const хозяин = nodeHost({
       base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
@@ -395,11 +410,22 @@ async function commandIo(options) {
       внутриКорня: options.inDir === true,
     })
 
-    const итог = await runPlan(program, план.name, хозяин, {
-      maxSteps: options.maxSteps,
-      maxDepth: options.maxDepth,
-      maxOrders: options.maxOrders,
-    })
+    let итог
+    try {
+      итог = await runPlan(program, план.name, хозяин, {
+        maxSteps: options.maxSteps,
+        maxDepth: options.maxDepth,
+        maxOrders: options.maxOrders,
+      })
+    } finally {
+      /* Порты отдаются системе ВСЕГДА, и в `finally`, а не после: план,
+         кончившийся отказом, оставил бы слушающий сокет открытым, а с ним и
+         процесс, которому нечего больше делать. Закрывает тот, кто открыл, — и
+         это не поручение, потому что программа порт не открывала (она попросила
+         принять связь). Хозяин без сети такого способа не имеет вовсе, отсюда
+         проверка. */
+      if (typeof хозяин.закрыть === "function") хозяин.закрыть()
+    }
     writeJson(
       {
         plan: план.name,
@@ -418,6 +444,67 @@ async function commandIo(options) {
     writeJson(errorResult(ошибка), options.pretty, process.stderr)
     return сдалсяСам(ошибка) ? 1 : 3
   }
+}
+
+/**
+ * `flang io` над программой с ПРОЦЕССАМИ: служба, говорящая с миром.
+ *
+ * Это вторая половина шва между двумя слоями языка. Первая — седьмое действие
+ * `поручить` (`src/conc.mjs`): процесс описывает поручение, а отклик приходит
+ * названному процессу обычным сообщением. Здесь стоит тот, кто поручение
+ * ИСПОЛНЯЕТ, и стоит он ровно там же, где стоял для плана, — снаружи языка.
+ *
+ * Прогон берётся объявленный: у службы, как и у плана, есть вход, и вход этот
+ * назван в исходнике (`дано «Служба» принимает …`). `--plan «Имя»` выбирает
+ * нужный, когда прогонов несколько, — тем же ключом и по той же причине, по
+ * которой им выбирается план: вопрос один и тот же, «какой из объявленных».
+ *
+ * Отличие от `прогона` при проверке ровно одно, и оно названо: там хозяина НЕТ,
+ * и поручение отвечает `«Сбой»` с кодом `FLANG_IO_NO_HOST`, потому что прогон
+ * обязан остаться эталоном для побайтовой сверки с напечатанным C. Здесь хозяин
+ * есть, и он настоящий.
+ */
+function commandSluzhba(program, options, nodeHostSync) {
+  const прогоны = program.runs ?? []
+  const имя = options.planName
+  const прогон = имя === undefined || имя === null || имя === ""
+    ? (прогоны.length === 1 ? прогоны[0] : null)
+    : (прогоны.find((п) => п.name === имя) ?? null)
+  if (прогон === null) {
+    const список = прогоны.map((п) => `«${п.name}»`).join(", ")
+    throw flangError(
+      "FLANG_UNKNOWN_PLAN",
+      имя === undefined || имя === null || имя === ""
+        ? `прогонов несколько (${список}) — назовите нужный ключом --plan`
+        : `не найден прогон «${имя}»; объявлены ${список}`,
+    )
+  }
+
+  const хозяин = nodeHostSync({
+    base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
+    разрешено: options.allow,
+    seed: options.seed,
+    внутриКорня: options.inDir === true,
+  })
+  const итог = runConcurrent(program, { ...прогон, seed: options.seed ?? прогон.seed }, {
+    исполнить: хозяин,
+    maxTurns: options.maxOrders,
+  })
+  writeJson(
+    {
+      run: прогон.name,
+      seed: options.seed ?? прогон.seed,
+      outcome: итог.исход,
+      states: итог.состояния,
+      orders: итог.поручения.length,
+      log: итог.поручения,
+      failures: итог.отказы,
+      decisions: итог.решения,
+    },
+    options.pretty,
+    process.stdout,
+  )
+  return 0
 }
 
 /* ─────────────────────────── интерактивная оболочка ─────────────────────── */

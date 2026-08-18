@@ -374,9 +374,9 @@ comparing each pair as trees, up to a renaming of names. That test also pins the
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `hashmap`, `higher-order`,
-`lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) is written the same
+`http`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) is written the same
 way —
-13 modules, 208 functions, of which 204 are proven total. `higher-order` is the one built on
+14 modules, 259 functions, of which 255 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 

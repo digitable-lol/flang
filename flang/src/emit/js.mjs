@@ -207,6 +207,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
+import { требуетХозяина } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
@@ -1652,6 +1653,13 @@ function stronglyConnected(functions, tailEdges) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitJs(program, options = {}) {
+  /* Планировщик у цели есть, ХОЗЯИНА нет: `поручить` не значится в
+     `$КОНК_ДЕЙСТВИЯ` напечатанного планировщика (`js/flang_conc.js`), и
+     напечатанная программа дошла бы до поручения и упала на «неизвестном
+     действии» уже в бою. Отказ отдельным кодом, потому что беда другая, чем
+     «нет планировщика»: процессы цель печатает (`src/conc.mjs`,
+     `требуетХозяина`). */
+  требуетХозяина(program, "js")
   /* Конкурентность БЕРЁТСЯ ДО дефункционализации, и это не вкус: план
      печатается по объявлениям исходной программы, а проход, который добавляет
      функции, к процессам, надзорам и прогонам не прикасается. Читать их после

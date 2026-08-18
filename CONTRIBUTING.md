@@ -1,48 +1,55 @@
 # Contributing
 
-## Run the suite on a host that has all eight toolchains
+flang is a language whose specification runs. Everything in this tree is either
+that language, a program written in it, or a guard that keeps a written claim
+honest. This page is what you need to build it, run the checks, and send a change.
+
+The tree is written in Russian: identifiers, commit messages and most prose. An
+English surface of the language exists and lexes to the same identifiers, and a
+patch written in English is welcome — nobody will ask you to write Russian to be
+read.
+
+## Build it
+
+There are two implementations here, and either one builds on its own.
+
+**The compiler, without Node.** The tree carries a bootstrap point — the
+self-hosted compiler printed to C99. A C compiler and `make` are the whole
+dependency list:
 
 ```bash
-scripts/test-remote.sh                # the whole suite, FTS_REQUIRE_TOOLCHAINS=all
-scripts/test-remote.sh test:backends  # any script from package.json
-scripts/test-remote.sh --info         # what the host is and what is installed on it
+git clone https://github.com/digitable-lol/flang && cd flang
+make -C bootstrap
+bootstrap/flang_cli --version          # flang 0.5.0
 ```
 
-This is the default way to run the suite, and the reason is arithmetic. A
-backend test proves code generation exactly one way: a real compiler accepted
-the emitted code and the examples agreed with the interpreter. Eight toolchains
-rarely live on a laptop, and the tests for the missing ones skip — the suite
-goes green while half the backends were never checked. That is how 0.4.6
-shipped with a Go code-generation defect: green locally (no Go), red in CI.
+That binary is the five layers of [`flang/self/`](flang/self): lexer, parser,
+types, totality, printing to C. There is no evaluator among them — what it is and
+what guards it: [`bootstrap/README.md`](bootstrap/README.md).
 
-Measured on this project, same commit, same suite:
+**The reference implementation, with Node.js 20 or newer.** It is the
+interpreter, the language server and all eight backends, and it needs neither a
+build step nor an install step:
 
-| | local (8 cores, shared) | `dev` (256 cores) |
-|---|---|---|
-| whole suite | 522 s | 252 s |
-| `test:backends` | 855 s | 15 s |
-| skipped for a missing toolchain | 0 (after installing all eight) | 0 by construction |
+```bash
+node flang/bin/flang.mjs check flang/examples/rosetta/towers-of-hanoi.flang
+```
 
-The host comes from `FLANG_REMOTE` (default `dev`, an alias in `~/.ssh/config`).
-The working tree is rsynced to `~/.cache/flang-remote/<name>` on that host —
-deliberately not `~/projects/flang`, which is a real clone with real branches.
-`node_modules` and `dist` are not copied: the host installs and builds its own,
-because copying someone else's build is another way of measuring the wrong tree.
+The package declares zero dependencies — `npm ls --all` prints `(empty)` — so
+`npm install` has nothing to fetch. To get the two commands on `$PATH` inside a
+clone, `npm link` gives you `flang` and `flang-lsp`.
 
-The remote run sets `FTS_REQUIRE_TOOLCHAINS=all`, so a missing toolchain there
-is a failure, not a skip.
-
-## Running locally
+## Run the checks
 
 ```bash
 npm test
 ```
 
-There is no install step: the package has no dependencies, so `npm install` has
-nothing to fetch. `npm test` is one suite — `flang/test/*.test.mjs`, the whole
-language. It must pass with zero failures.
+One suite — `flang/test/*.test.mjs`, the whole language. It is long: plan for
+tens of minutes, and reach for `npm run test:backends` when you only touched a
+code generator.
 
-Before the run, `npm test` prints what it is actually going to check:
+Before the run, the preflight prints what is actually going to be checked:
 
 ```
 Бэкенды кодогенерации: 8 целей
@@ -56,77 +63,90 @@ Before the run, `npm test` prints what it is actually going to check:
   Скрыто тестов:             33 — elixir 33
 ```
 
-Run it on its own with `npm run preflight`. The hidden-test count is measured,
-not estimated: the tests of an absent toolchain skip instantly, so counting them
-is cheap, and a number written down in the source would be stale by the next
-test added. `--fast` skips the counting, `--registry` also checks the published
-version.
+Run it on its own with `npm run preflight`. This report is why the suite can be
+believed at all. A backend test proves code generation exactly one way: a real
+compiler accepted the emitted code, and the result agreed with the interpreter.
+Eight toolchains rarely live on one machine, the tests of the missing ones skip,
+and the suite goes green while half the backends were never checked. That is how
+0.4.6 shipped with a Go code-generation defect: green on a machine without Go,
+red in CI.
 
-The same report checks that the lockfile matches `package.json`, and that
-`node_modules` matches the lockfile — a vendored copy two releases behind is a
-watchman that keeps quiet: the suite passes, and it passed against the old tree.
+So **a test skipped for a missing toolchain is not a passing test.**
+`FTS_REQUIRE_TOOLCHAINS` turns such a skip into a failure, and it does so for the
+toolchains you *name*: `FTS_REQUIRE_TOOLCHAINS=c` means "C must be here", not
+"all eight must be here" — which is exactly what CI sets, because the image it
+runs on has `cc` and little else. `--strict` is the separate switch that demands
+every one. Either way the preflight stops the run before it starts, rather than
+forty minutes in.
+
+`--fast` skips the hidden-test count; `--registry` also checks the published
+version. The hidden-test count is measured, not estimated: the tests of an absent
+toolchain skip instantly, so counting them is cheap, and a number written into
+the source would be stale by the next test added. The same report checks that the
+lockfile matches `package.json` and that `node_modules` matches the lockfile.
 That second check is dormant today and says so (`зависимостей у пакета нет —
-ставить нечего`): the tree's one dependency was `typescript`, and it left with
-the old FTS project. The check stays because the day a dependency returns is
-exactly the day nobody remembers to add it back.
+ставить нечего`); it stays because the day a dependency returns is exactly the
+day nobody remembers to add it back.
 
-A test skipped for a missing native toolchain is not a passing test. Set
-`FTS_REQUIRE_TOOLCHAINS` where the toolchain is supposed to exist — with it set,
-the preflight stops the run before it starts rather than forty minutes in.
-Strictness applies to the toolchains you **name**: `FTS_REQUIRE_TOOLCHAINS=c`
-means "C must be here", not "all eight must be here", so CI can require the one
-toolchain it installs. `--strict` is the separate switch that demands every one.
+If you do have a machine with all eight toolchains on it, `npm run test:remote`
+will copy the tree there and run the suite over ssh with
+`FTS_REQUIRE_TOOLCHAINS=all`. You name the host yourself:
 
-Changes to the compiler in `flang/self/` must reprint the bootstrap point in the
-same commit:
-
+```bash
+FLANG_REMOTE=<your ssh alias> npm run test:remote
 ```
+
+It is a convenience and nothing more — CI does not use it, and no change is
+expected to have gone through it.
+
+## The bootstrap point travels with the compiler
+
+A change to `flang/self/` must reprint the bootstrap point in the same commit:
+
+```bash
 node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
 node scripts/bootstrap-c.mjs --check   # compare it against the sources, exit 1 on drift
 ```
 
-`bootstrap/` is the compiler printed to C99 — what makes `cc` and `make` enough to
-build flang without Node. It is an artifact, never edited by hand; the guard
-"точка раскрутки bootstrap/ совпадает с печатью текущих исходников, побайтово" in
-`flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so it
-runs everywhere. See `bootstrap/README.md`.
+`bootstrap/` is an artifact, never edited by hand. The guard "точка раскрутки
+bootstrap/ совпадает с печатью текущих исходников, побайтово" in
+`flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so
+it runs everywhere.
 
 ## Every script `package.json` declares, and who runs it
 
-`package.json` is the manifest of the **second mould** — the one that embeds the
-language into a Node project. It is not how the language is built: `make -C
-bootstrap` builds the compiler with a single `cc`, and the package declares zero
-dependencies (`npm ls --all` prints `(empty)`).
-
 A script nobody ever names is dead weight that still looks like a promise, so
 every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
-`package.json` grows one that this page is silent about.
+`package.json` grows one this page is silent about.
 
 | script | who runs it |
 | --- | --- |
-| `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag |
+| `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag, on Node 20, 22 and 24 |
 | `npm run pretest` · `npm run pretest:backends` | npm lifecycle hooks — the preflight report, run automatically before the suite |
 | `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
 | `npm run preflight` | the toolchain report on its own |
-| `npm run claims:check` · `npm run counts:check` · `npm run codes:check` · `npm run emit:check` | the four prose guards below |
-| `npm run license:check` | SPDX marking; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
-| `npm run changelog` · `npm run changelog:check` | print `CHANGELOG.md` and `changelog.json` from tags, and check they match the history |
-| `npm run izmeneniya` · `npm run izmeneniya:check` | print the merge journal; **Pages runs the file directly** before building the site |
+| `npm run test:backends` | the emit tests alone, when you do not want the full suite |
+| `npm run test:remote` | the same suite on a host of your choosing, over ssh |
+| `npm run bootstrap` · `npm run bootstrap:check` | reprint `bootstrap/` from the current sources, and compare it byte for byte |
+| `npm run claims:check` · `npm run counts:check` · `npm run codes:check` · `npm run emit:check` · `npm run names:check` | the five prose guards below |
+| `npm run license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
+| `npm run links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
 | `npm run site` · `npm run site:check` | build the documentation site and check its links; **Pages runs the file directly** |
-| `npm run bootstrap` · `npm run bootstrap:check` | reprint `bootstrap/` from the current sources, and compare byte for byte |
-| `npm run proof:ledger` · `npm run proof:search` | the proof ledger over the corpus, and the search behind it |
-| `npm run word:occupancy` | which words of the language a given name would collide with; takes arguments |
-| `npm run spec:check` · `npm run comparison:check` | the FTS-surface spec guard, and the guard that a comparison does not preprocess the reference the way it preprocesses the twin |
-| `npm run changelog:page` · `npm run changelog:page:check` | print the merge page of the site and check it against the history |
-| `npm run links:check` | the site link guard on its own |
+| `npm run numbers:check` | the site pages' own numbers, against the measurer |
 | `npm run glossary` · `npm run glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
 | `npm run surfaces:run` · `npm run surfaces:check` | measure the four writing surfaces, and check the page against the run |
-| `npm run numbers:check` | check the site pages' own numbers against the measurer |
-| `npm run test:backends` | the emit tests alone, when you do not want the full suite |
-| `npm run test:remote` | the same suite on another host, over ssh |
+| `npm run changelog` · `npm run changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
+| `npm run changelog:page` · `npm run changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
+| `npm run spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
+| `npm run comparison:check` | the guard that a comparison does not preprocess the reference the way it preprocesses the twin |
+| `npm run memory:check` | every peak-memory number stated in prose, remeasured by a run |
+| `npm run tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |
+| `npm run occupied:check` | how many modules of the corpus would collide with names each target reserves |
+| `npm run proof:ledger` · `npm run proof:search` | the proof ledger over the corpus, and the search behind it |
+| `npm run word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
 
-Three of these are run by CI as `node …` directly rather than through npm. That
-is a place two spellings can drift apart, and it is written down here rather
+Four of these CI and Pages run as `node …` directly rather than through npm.
+That is a place two spellings can drift apart, and it is written down here rather
 than discovered later.
 
 ## Prose is checked, not trusted
@@ -168,10 +188,13 @@ What this means when you write:
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `flang/scripts/emit-guard.mjs`;
   change the runtime and the guard demands the table be revisited.
+- **Licence headers.** Every file the package ships carries an SPDX header. The
+  file list is derived from the tree, not written down, so a new file without a
+  header fails the gate rather than leaving the repository quietly unmarked.
 
 None of them may be "fixed" by loosening the guard. The tree is the measurer.
 
-Changes to flang must include:
+## What a change to the language must include
 
 - the corresponding section of `flang/SPEC.md`, updated in the same change;
 - a type-checker or totality test, whichever the change touches;
@@ -184,3 +207,22 @@ Changes to flang must include:
 Do not add product-specific structures, filesystem access, or network access to
 the language. Build integrations as separate packages over the JSON that
 `flang ast` prints.
+
+## Sending the change
+
+Fork the repository, branch off `main`, and open a pull request. Small first: one
+change, one reason, and a commit message that says what the tree now does that it
+did not do before.
+
+CI runs on tags and on demand, not on every push, so a pull request does not turn
+green by itself. Say in the description what you ran. If you could not run
+something — a backend whose toolchain you do not have, the full suite on a laptop
+— say that too: a named gap is worth more than a tick nobody earned.
+
+Bugs and questions go to
+[issues](https://github.com/digitable-lol/flang/issues). A report that carries
+the `.flang` file and the exact output of `flang check` is a report that can be
+turned into a test.
+
+The project is BSD-2-Clause ([LICENSE](LICENSE)); by sending a change you agree
+that it goes out under the same terms.

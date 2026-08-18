@@ -49,6 +49,7 @@
 - [Замкнутую цель надо считать, а не выводить](closed-goals-must-be-computed.md)
 - [Узкое место переехало третий раз: мешает форма утверждения, а не форма тела](bottleneck-moved-to-claim-shape.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
+- [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 
 ## Теория категорий
 

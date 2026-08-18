@@ -35,12 +35,12 @@ is a failure, not a skip.
 ## Running locally
 
 ```bash
-npm install
 npm test
 ```
 
-`npm test` is one suite — `flang/test/*.test.mjs`, the whole language. It must
-pass with zero failures.
+There is no install step: the package has no dependencies, so `npm install` has
+nothing to fetch. `npm test` is one suite — `flang/test/*.test.mjs`, the whole
+language. It must pass with zero failures.
 
 Before the run, `npm test` prints what it is actually going to check:
 
@@ -62,9 +62,13 @@ is cheap, and a number written down in the source would be stale by the next
 test added. `--fast` skips the counting, `--registry` also checks the published
 version.
 
-The same report checks that `node_modules` matches `package-lock.json` and that
-the lockfile matches `package.json`. A vendored copy two releases behind is a
+The same report checks that the lockfile matches `package.json`, and that
+`node_modules` matches the lockfile — a vendored copy two releases behind is a
 watchman that keeps quiet: the suite passes, and it passed against the old tree.
+That second check is dormant today and says so (`зависимостей у пакета нет —
+ставить нечего`): the tree's one dependency was `typescript`, and it left with
+the old FTS project. The check stays because the day a dependency returns is
+exactly the day nobody remembers to add it back.
 
 A test skipped for a missing native toolchain is not a passing test. Set
 `FTS_REQUIRE_TOOLCHAINS` where the toolchain is supposed to exist — with it set,

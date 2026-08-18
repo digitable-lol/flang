@@ -3,11 +3,11 @@
 # Развитие языка
 
 Эталонная реализация на JavaScript остаётся навсегда: относительно неё проверяется неподвижная
-точка, и её удаление сделало бы проверку невозможной. Работа над ней идёт в клоне:
+точка, и её удаление сделало бы проверку невозможной. Работа над ней идёт в клоне, и ставить в
+нём нечего: зависимостей у пакета нет и собирать нечего, поэтому скрипты запускаются сразу после
+`git clone`.
 
 ```bash
-npm install
-npm run build
 node scripts/build-release-c.mjs     # печатает релизный C и собирает его
 ```
 
@@ -43,32 +43,21 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 
-Модель `.fts` — тоже программа flang, и те же команды принимают её напрямую. Но этот путь идёт
-через мост совместимости, которому нужно собранное ядро на TypeScript, поэтому сначала —
-`npm install && npm run build` внутри клона:
+**Модели `.fts` больше не читаются.** Читались до 16 августа 2026 — через мост совместимости к
+ядру старого проекта на TypeScript; проект ушёл из репозитория, и мост потерял вторую сторону.
+Команды `fts` в дереве тоже нет: в `flang/bin/` лежат `flang` и `flang-lsp`, и больше ничего.
+Отказ высказан прямо и называет, где искать убранное:
 
 ```bash
-flang check examples/utilities/discount.fts --pretty
-flang emit examples/utilities/discount.fts --target go --out ./out-go
-```
-
-Собственный CLI FTS — для моделей:
-
-```bash
-fts pipeline examples/real-world/order-shipment.fts --pretty
-fts test examples/utilities/discount.fts --pretty
-fts run examples/utilities/discount.fts \
-  --utility "Рассчитать скидку" --input examples/utilities/discount.input.json --pretty
-fts certify examples/real-world/order-shipment.fts \
-  --context examples/real-world/order-shipment.context.json --pretty
-fts generate examples/utilities/discount.fts --out generated
+flang check model.fts
+# {"diagnostics":[{"code":"FLANG_FTS_REMOVED", … "github.com/digitable-lol/fts" …}]}
 ```
 
 Тесты:
 
 ```bash
-npm run test:flang    # язык: парсер, типы, тотальность, бэкенды, ядро и компилятор на flang
-npm test              # всё: ядро, инструменты, flang
+npm test              # прогон один: flang/test/*.test.mjs, весь язык
+npm run test:backends # восемь целей печати отдельно
 ```
 
 Каждая команда пишет JSON в stdout, диагностику в stderr и возвращает ненулевой код при отказе —

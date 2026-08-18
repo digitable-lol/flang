@@ -88,99 +88,135 @@ The shell does not call the evaluator yet: it emits the session to C and builds
 it with the same `cc` you just built the compiler with. With no `cc` it does not
 switch off — it checks parsing, types and termination and says so.
 
-## What the binary cannot do
+## Run the examples
 
-`check`, `run` and `repl` are all there is. It does not know `test` or `emit`,
-and says so plainly:
-
-```
-$ ./bootstrap/flang_cli test hello.flang
-flang: неизвестная команда «test». «flang --help» — что умеет бинарник.
+```bash
+./bootstrap/flang_cli test hello.flang
 ```
 
-The exit code is 2 — a refusal a script can see, not silence.
+```
+hello.flang: примеров 1, прошло 1, не прошло 0
+```
 
-Worse than a refusal is `--proof`: the binary does not reject it, it **silently
-ignores** it. The output of `check --proof` equals the output of `check`, there
-is no ledger, and nothing says so. Only the interpreter prints a ledger.
+Examples are part of the program rather than a test on the side, and `check`
+counts them even without `test`.
+
+## The proof ledger
+
+```bash
+./bootstrap/flang_cli check hello.flang --proof
+```
+
+The kernel tries to **prove** the postcondition — to show it holds on every
+input, not just on the 2 from the example. The ledger names what carries each
+promise, and its words are not interchangeable:
+
+- **доказано** (proved) — a claim about all inputs, derived from declarations
+  and structure;
+- **сетка N** (grid of N) — computed on N author-chosen values. **This is not a
+  proof**, and the ledger says so outright;
+- **объявлено, не доказано** (declared, not proved) — the kernel ran out of
+  rules. The claim is then computed at run time, on the inputs that arrive.
+
+## Emit into C
+
+`emit` does not create the output directory — make it yourself:
+
+```bash
+mkdir -p ./out-c
+./bootstrap/flang_cli emit hello.flang --target c --out ./out-c \
+    --runtime flang/src/emit/c
+make -C ./out-c
+```
+
+Six files, and they build with the same `cc` without a single warning. The
+binary reads the C runtime from disk: `--runtime` or `$FLANG_RUNTIME_DIR` says
+where.
+
+## The limits of the binary
+
+`check`, `test`, `run`, `repl`, `emit --target c` and the ledger are all in the
+binary. Its limits lie elsewhere, and it names them itself rather than staying
+quiet.
+
+**The ledger does not search for violations by example.** The binary counts
+examples but does not run them for the search: its ledger reads «нарушений НЕ
+ИСКАЛИ — прогона примеров не было, посчитано только их число» (did not search —
+the examples were not run, only counted), where the reference on the same file
+writes «нарушений не найдено (искали прогоном на всех 1)» (none found, searched
+by running all 1). A difference in wording is a difference in the strength of
+the claim.
+
+**The binary does not compute laws on a grid.** Monoid, monad, isomorphism,
+category, sets, connection and the five declared properties are computed by
+evaluation on a grid, and that layer is not in the binary. A program declaring
+one gets a refusal naming the obstacle, not a green ledger with an empty
+section.
+
+**The binary has one emit target.** `c`, and that is all; the other seven
+(`csharp`, `elixir`, `go`, `java`, `js`, `python`, `rust`) stayed with the
+reference. Two things are missing from the C emit itself: unreachable code is
+not dropped and proved code is not marked (`markProven`). On the compiler that
+is 6 files out of 7 byte for byte.
+
+**The `repl` shell does not call the evaluator.** It emits the session to C and
+builds it with the same `cc` you built the compiler with. With no `cc` it does
+not switch off — it checks parsing, types and termination and says so with the
+line «вычислять нечем».
 
 ## Where the binary diverges from the reference
 
 Not "cannot do something" but **answers differently**, which is the more
-dangerous kind: an inability is visible, a divergence is not.
+dangerous kind: an inability is visible, a divergence is not. Today there is one
+such place, and the binary warns about it as it emits.
 
-**The binary does not check arguments against declared types.** `Факториал` is
-declared over the type `нат`. Give it −3:
-
-```
-$ ./bootstrap/flang_cli run flang/examples/rosetta/factorial.flang \
-    --function Факториал --args '{"н": -3}'
-1
-
-$ node flang/bin/flang.mjs run flang/examples/rosetta/factorial.flang \
-    --function Факториал --args '{"н": -3}'
-{"error":"вызов функции «Факториал»: аргумент «н»: -3 вне нат", …}
-```
-
-The binary accepted an input the type does not contain and printed an answer.
-The reference refused. Until that is closed, check inputs you do not vouch for
-with the reference.
+**An emitted program has an empty input boundary.** The table of declared types
+is built by the reference's type layer, which the binary does not have, so the
+runner's arguments are **not checked** against declared types. The emitted code
+builds and runs, but the caller answers for the input. The binary itself does
+check arguments: `Факториал` is declared over the type `нат`, and on −3 it
+answers `FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне нат` with
+exit code 1 — the same code the reference gives.
 
 On permitted inputs the two agree — three corpus programs run without Node:
 `Факториал(12) = 479001600`, `Фибоначчи(20) = 6765`,
-`Палиндром("шалаш") = true`, all three sign for sign with the reference. They
-print differently: the binary a bare value, the interpreter JSON with the
-function name and arguments.
+`Палиндром("шалаш") = true`. They print differently: the binary a bare value,
+the interpreter JSON with the function name and arguments.
 
 ## The second road: the interpreter on Node
 
-It is for two cases: flang embedded in a project that already exists — rules
-sitting next to the code that applies them — and anything the binary lacks: the
-proof ledger, `test`, `emit`, and checking arguments against types. Nothing to
-install — zero external dependencies, `npm install` is not needed.
+The binary is for people who **install the language**. The interpreter is for
+people who **wire it into an existing project**: the rules sit next to the code
+that applies them and are called from it. Nothing to install — zero external
+dependencies, `npm install` is not needed.
 
-### Check with proofs
+It is also what you need for what the binary lacks: the other seven emit
+targets, laws on a grid, judgements, and the search for violations by example.
+
+Today it also carries the tooling around the language: the tree checks, the
+build of this site, the number guards (`npm run counts:check`) and the language
+server.
+
+### Emit into the other seven targets
+
+```bash
+node flang/bin/flang.mjs emit hello.flang --target rust --out ./out-rust
+```
+
+There are eight targets: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`,
+`rust`. The emitted code must produce **the same values and the same error
+codes** as the interpreter — checked byte for byte across the whole corpus
+rather than declared.
+
+### A ledger that searches
 
 ```bash
 node flang/bin/flang.mjs check hello.flang --proof --pretty
 ```
 
-The kernel tries to **prove** the postcondition — to show it holds on all inputs
-and not only on the 2 from the example. The answer is one of three, and the
-difference matters:
-
-- **proved by the kernel** — the claim holds for all inputs;
-- **on a grid** — no violation found by running over values. **That is not a
-  proof**, and the ledger says so in those words;
-- **stated, not proved** — the kernel ran out of rules. The claim is then
-  evaluated at run time, on the inputs that arrive.
-
-### Run with type checking
-
-```bash
-node flang/bin/flang.mjs run hello.flang --function Twice --args '{"n": 21}'
-```
-
-```json
-{"function":"Twice","args":{"n":21},"result":42}
-```
-
-### Run the examples
-
-```bash
-node flang/bin/flang.mjs test hello.flang
-```
-
-### Emit into another language
-
-```bash
-node flang/bin/flang.mjs emit hello.flang --target c --out ./out-c
-```
-
-There are eight targets: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`,
-`rust`. The emitted code must return **the same values and the same error codes**
-as the interpreter — checked byte for byte across the whole corpus, not
-declared.
+The same ledger the binary prints, except the grid is not merely counted but
+**run**: instead of "did not search" it reads «нарушений не найдено (искали
+прогоном на всех 1)».
 
 ## Next
 

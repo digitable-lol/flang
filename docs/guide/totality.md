@@ -36,3 +36,28 @@ data" — and a system that must answer yes or no is not allowed to hang. So it 
 function that was not proven to terminate, before evaluating anything — `flang facts` answers with
 `holds: false` and says why. The mode has no file, network or clock access, and a hard step budget:
 the answer depends only on `(program, facts, claims, limits)`.
+
+## A service is total by construction, and that is a type check, not a convention
+
+An ordinary server is one non-terminating program, and there is nothing to prove
+about it. In flang it is taken apart differently: **an infinite sequence of
+terminating turns**. The scheduler is infinite; the handler it calls must
+terminate.
+
+This is not a wish in the documentation but a refusal from the type checker. A
+handler that is neither marked `тотальная` nor names a fuel bound does not let
+the program through: code `FLANG_HANDLER_NOT_TOTAL`, severity **error**, not
+warning, and the message names what is missing — "с запасом". Name the bound and
+the program is accepted, but then `надзор` becomes mandatory, otherwise
+`FLANG_UNCOVERED_FAILURE`: a failure nobody catches does not pass either.
+
+This is guarded by `flang/test/conc.test.mjs`, the test "нетотальный обработчик
+без запаса витков — ошибка, а не предупреждение". The test looks at the severity
+precisely because a warning can be missed and an error cannot.
+
+```sh
+LC_ALL=C.UTF-8 node --test --test-name-pattern='обработчик' flang/test/conc.test.mjs
+```
+
+Run of 18 August: five tests, all green, 148 ms.
+

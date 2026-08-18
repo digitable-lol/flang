@@ -93,6 +93,7 @@
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
+- [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)

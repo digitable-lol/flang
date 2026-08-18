@@ -859,6 +859,26 @@ defmodule Flang.Rt do
           )
   end
 
+  @doc """
+  Значение предусловия: обязано быть признаком.
+
+  Отдельно от `post/3`, а не тот же помощник со вторым текстом: слова отказа
+  дословно те же, что у интерпретатора (`checkPreconditions` в
+  flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось бы
+  молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (`call/2`): внутри
+  программы предусловие снял вызывающий на проверке.
+  """
+  def pre({:flag, value}, _property, _function), do: value
+
+  def pre(value, property, function) do
+    raise fail(
+            @code_type,
+            "предусловие «" <>
+              property <>
+              "» функции «" <> function <> "» должно давать признак, получено " <> type_name(value)
+          )
+  end
+
   @doc "Разбор не покрыл значение."
   def match_fail(value), do: fail(@code_match, "разбор не покрывает значение " <> describe(value))
 

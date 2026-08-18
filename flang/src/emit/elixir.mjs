@@ -1671,7 +1671,29 @@ function emitLoop(node, ctx, out, pad) {
   return temp
 }
 
-/* ── вызов по имени ── */
+/* ── вызов по имени: ДВЕРЬ программы ── */
+
+/**
+ * Вызов по имени — это не вызов внутри программы, а ГРАНИЦА, и здесь стоит всё,
+ * что граница обязана проверить.
+ *
+ * Внутренние вызовы идут прямо на функцию; сюда заходит только тот, у кого имя
+ * функции — строка, то есть прогонщик, служба, тест, скрипт. Ровно так же
+ * устроен интерпретатор: `callFunction` (src/interpret.mjs) — дверь и
+ * проверяет, `applyFunction` — нет.
+ *
+ * ПОЧЕМУ ПРЕДУСЛОВИЕ ПРОВЕРЯЕТСЯ ЗДЕСЬ, А НЕ В ТЕЛЕ ФУНКЦИИ. В flang `требует`
+ * снимает ВЫЗЫВАЮЩИЙ: каждое место вызова обязано доказать предусловие, иначе
+ * программа отвергается кодом FLANG_PRECONDITION_CALL и до печати не доезжает.
+ * Значит внутри программы требование уже ИСТИННО — не «проверено», а известно,
+ * — и печать его проверки в тело была бы платой временем каждого вызова и
+ * каждого витка рекурсии за то, что доказано статически. Через эту же дверь
+ * приходит недоказанное: значение из JSON, у которого вызывающего нет вовсе.
+ *
+ * Порядок проверок на двери: сначала арность, потом объявленные типы
+ * (`Flang.Rt.check_entry`, зовёт прогонщик до `call`), и только потом договор.
+ * Предусловие о значении вне типа не значит ничего.
+ */
 
 function renderDispatch(shared) {
   const lines = [
@@ -1699,6 +1721,7 @@ function renderDispatch(shared) {
       "      )",
       "    end",
       "",
+      ...renderPreconditions(fn, shared, "    "),
       `    ${shared.functionIdents.get(fn.name)}(${pass.join(", ")})`,
       "  end",
       "",
@@ -1710,6 +1733,36 @@ function renderDispatch(shared) {
     "  end",
   )
   return lines.join("\n")
+}
+
+/**
+ * Договор функции на двери: `требует`.
+ *
+ * Программа без единого `требует` не получает отсюда ни строки — печать обязана
+ * остаться побайтово прежней, иначе рухнула бы сверка с близнецом и с эталоном
+ * на всём корпусе.
+ *
+ * Параметры связываются прямо с аргументами двери: своих имён у неё нет, а
+ * копировать значения в локальные ради читаемости значило бы печатать строки,
+ * которых вычисление не требует.
+ */
+function renderPreconditions(fn, shared, pad) {
+  if (fn.preconditions.length === 0) return []
+  const ctx = createContext(fn, shared, { selfTail: false, members: null })
+  for (const [index, param] of fn.params.entries()) ctx.bind(param.name, `Enum.at(args, ${index})`)
+  const out = []
+  for (const property of fn.preconditions) {
+    const check = emitValue(property.expr, ctx, out, pad)
+    const message = property.message ?? `не выполнено требование «${property.name}» функции «${fn.name}»`
+    out.push(
+      `${pad}# требует «${property.name}»`,
+      `${pad}if not Flang.Rt.pre(${check}, ${exstring(property.name)}, ${exstring(fn.name)}) do`,
+      `${pad}  raise Flang.Rt.fail(${exstring(property.code)}, ${exstring(message)})`,
+      `${pad}end`,
+      "",
+    )
+  }
+  return out
 }
 
 /* ── граница входа: объявленные типы параметров данными ── */

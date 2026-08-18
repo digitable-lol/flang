@@ -199,6 +199,25 @@ public final class Flang {
     return value.bit;
   }
 
+  /**
+   * Значение предусловия: обязано быть признаком.
+   *
+   * <p>Отдельно от {@link #post}, а не тот же помощник со вторым текстом: слова
+   * отказа дословно те же, что у интерпретатора (checkPreconditions в
+   * flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось бы
+   * молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (call): внутри
+   * программы предусловие снял вызывающий на проверке.
+   */
+  public static boolean pre(Ctx ctx, Value value, String property, String function) {
+    if (value.tag != Value.TAG_FLAG) {
+      throw fail(
+          FlangError.CODE_TYPE,
+          "предусловие «" + property + "» функции «" + function + "» должно давать признак,"
+              + " получено " + Value.typeName(value));
+    }
+    return value.bit;
+  }
+
   /** Разбор не покрыл значение. */
   public static FlangError matchFail(Ctx ctx, Value value) {
     return fail(FlangError.CODE_MATCH, "разбор не покрывает значение " + Value.describe(value));

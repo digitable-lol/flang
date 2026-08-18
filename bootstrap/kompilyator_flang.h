@@ -34329,6 +34329,36 @@ fl_status kompilyator_flang_uchest_posylku_bez_sluchaya(fl_ctx *ctx, fl_value po
 fl_status kompilyator_flang_svedenie_posylki_yadrom(fl_ctx *ctx, fl_value posylka, fl_value obstanovka, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Дописать о вычислении».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Сведение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_dopisat_o_vychislenii(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать о свободных».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param svobodnye — «свободные»: список: строка
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_dopisat_o_svobodnyh(fl_ctx *ctx, fl_value itog, fl_value svobodnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Причина со свободными».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prichina — «причина»: строка
+ * @param svobodnye — «свободные»: список: строка
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_prichina_so_svobodnymi(fl_ctx *ctx, fl_value prichina, fl_value svobodnye, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Учесть сведённую ядром».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

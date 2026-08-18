@@ -1,0 +1,771 @@
+benchmarks/model-authoring/out/M3/а/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/а/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/а/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/а/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/а/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/а/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/out/M3/б/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/б/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/б/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/б/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/б/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/б/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/b2-summa-spiska.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/b3-maksimum.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/b4-chetnye.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/b5-obratit.flang	2 1 1
+benchmarks/model-authoring/out/M3/в/r0/b6-est-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/b8-skolko-raz.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/c2-pervyj-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/a3-nod.flang	2 1 1
+benchmarks/model-authoring/out/M3/в/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/a5-summa-cifr.flang	2 0 2
+benchmarks/model-authoring/out/M3/в/r1/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/b2-summa-spiska.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/b3-maksimum.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/b4-chetnye.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/b5-obratit.flang	2 1 1
+benchmarks/model-authoring/out/M3/в/r1/b6-est-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/b8-skolko-raz.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/c2-pervyj-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/в/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/в/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/в/r2/a3-nod.flang	2 2 0
+benchmarks/model-authoring/out/M3/в/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/в/r2/a5-summa-cifr.flang	2 0 2
+benchmarks/model-authoring/out/M3/г/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/b2-summa-spiska.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/b3-maksimum.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/b4-chetnye.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/b5-obratit.flang	2 1 1
+benchmarks/model-authoring/out/M3/г/r0/b6-est-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/b8-skolko-raz.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/c2-pervyj-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r0/c3-ves-tokena.flang	3 3 0
+benchmarks/model-authoring/out/M3/г/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/a3-nod.flang	2 1 1
+benchmarks/model-authoring/out/M3/г/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/a5-summa-cifr.flang	2 0 2
+benchmarks/model-authoring/out/M3/г/r1/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/b2-summa-spiska.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/b3-maksimum.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/b4-chetnye.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/b5-obratit.flang	2 1 1
+benchmarks/model-authoring/out/M3/г/r1/b6-est-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/b8-skolko-raz.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/c2-pervyj-element.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M3/г/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M3/г/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M3/г/r2/a3-nod.flang	2 2 0
+benchmarks/model-authoring/out/M3/г/r2/a4-stepen.flang	2 1 1
+benchmarks/model-authoring/out/M3/г/r2/a5-summa-cifr.flang	2 0 2
+benchmarks/model-authoring/out/M4/а/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/в/r2/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/e1-schetchik.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/e3-norma.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/a1-summa-do.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/a2-faktorial.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/a3-nod.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/a4-stepen.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/a5-summa-cifr.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b1-dlina.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b2-summa-spiska.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b3-maksimum.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b4-chetnye.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b5-obratit.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b6-est-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b7-obratno-stroka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/b8-skolko-raz.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/c1-ploshad.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/c2-pervyj-element.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/c3-ves-tokena.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/c4-svetofor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/c5-cepochka.flang	отказ
+benchmarks/model-authoring/out/M4/г/r2/e1-schetchik.flang	отказ
+benchmarks/model-authoring/probe/p1.flang	0 0 0
+benchmarks/model-authoring/probe/p2.flang	отказ
+benchmarks/model-authoring/reference/a1-summa-do.flang	2 2 0
+benchmarks/model-authoring/reference/a2-faktorial.flang	2 2 0
+benchmarks/model-authoring/reference/a3-nod.flang	2 2 0
+benchmarks/model-authoring/reference/a4-stepen.flang	2 2 0
+benchmarks/model-authoring/reference/a5-summa-cifr.flang	2 2 0
+benchmarks/model-authoring/reference/b1-dlina.flang	2 2 0
+benchmarks/model-authoring/reference/b2-summa-spiska.flang	2 2 0
+benchmarks/model-authoring/reference/b3-maksimum.flang	2 2 0
+benchmarks/model-authoring/reference/b4-chetnye.flang	2 2 0
+benchmarks/model-authoring/reference/b5-obratit.flang	2 2 0
+benchmarks/model-authoring/reference/b6-est-element.flang	2 2 0
+benchmarks/model-authoring/reference/b7-obratno-stroka.flang	2 2 0
+benchmarks/model-authoring/reference/b8-skolko-raz.flang	2 2 0
+benchmarks/model-authoring/reference/c1-ploshad.flang	2 2 0
+benchmarks/model-authoring/reference/c2-pervyj-element.flang	2 2 0
+benchmarks/model-authoring/reference/c3-ves-tokena.flang	3 3 0
+benchmarks/model-authoring/reference/c4-svetofor.flang	3 3 0
+benchmarks/model-authoring/reference/c5-cepochka.flang	2 2 0
+benchmarks/model-authoring/reference/e1-schetchik.flang	1 1 0
+benchmarks/model-authoring/reference/e2-nadzor.flang	1 1 0
+benchmarks/model-authoring/reference/e3-norma.flang	1 1 0
+benchmarks/zamer-skorosti/programs/zadachi.flang	28 28 0
+benchmarks/zamer-tseny/proba-poddelka.flang	1 1 0
+benchmarks/zamer-tseny/proba-zamknutaya.flang	0 0 0
+docs/benchmark/01-klyuch-svyazi.flang	отказ
+docs/benchmark/02-klyuch-zvena.flang	отказ
+docs/benchmark/03-vpisat.flang	отказ
+docs/benchmark/04-razmer-slovarya.flang	отказ
+docs/benchmark/05-protivopolozhnoe.flang	5 5 0
+docs/benchmark/06-pripisat-v-nachalo.flang	отказ
+docs/benchmark/07-vstavit-po.flang	отказ
+docs/benchmark/08-maksimum.flang	отказ
+docs/benchmark/09-vzyat-pervye.flang	отказ
+docs/benchmark/10-dvoichnyj-poisk.flang	отказ
+docs/benchmark/11-unikalnye.flang	отказ
+docs/benchmark/12-sleduet.flang	отказ
+docs/benchmark/13-chyotnoe.flang	отказ
+docs/benchmark/14-derevo-iz-chisel.flang	отказ
+docs/benchmark/15-pervyj-ili-zapasnoe.flang	отказ
+docs/benchmark/16-uspeshno.flang	отказ
+docs/benchmark/17-est-v-mnozhestve.flang	отказ
+docs/benchmark/18-pripisat-stroku.flang	отказ
+docs/benchmark/19-strochnaya-bukva.flang	отказ
+docs/benchmark/20-obrezat-probely.flang	отказ
+docs/benchmark2/01-klyuch-svyazi.flang	4 4 0
+docs/benchmark2/02-klyuch-zvena.flang	3 3 0
+docs/benchmark2/03-vpisat.flang	отказ
+docs/benchmark2/04-razmer-slovarya.flang	6 6 0
+docs/benchmark2/05-protivopolozhnoe.flang	5 5 0
+docs/benchmark2/06-pripisat-v-nachalo.flang	отказ
+docs/benchmark2/07-vstavit-po.flang	6 6 0
+docs/benchmark2/08-maksimum.flang	отказ
+docs/benchmark2/09-vzyat-pervye.flang	отказ
+docs/benchmark2/10-dvoichnyj-poisk.flang	отказ
+docs/benchmark2/11-unikalnye.flang	отказ
+docs/benchmark2/12-sleduet.flang	4 4 0
+docs/benchmark2/13-chyotnoe.flang	6 5 1
+docs/benchmark2/14-derevo-iz-chisel.flang	5 5 0
+docs/benchmark2/15-pervyj-ili-zapasnoe.flang	6 6 0
+docs/benchmark2/16-uspeshno.flang	4 4 0
+docs/benchmark2/17-est-v-mnozhestve.flang	отказ
+docs/benchmark2/18-pripisat-stroku.flang	отказ
+docs/benchmark2/19-strochnaya-bukva.flang	отказ
+docs/benchmark2/20-obrezat-probely.flang	отказ
+docs/спецификации/слой-отказов.flang	4 4 0
+examples/library-api/lib/api.flang	60 60 0
+examples/library-api/lib/catalog.flang	29 29 0
+examples/library-api/lib/fine.flang	5 5 0
+examples/library-api/lib/isbn.flang	10 10 0
+examples/library-api/lib/loan.flang	4 4 0
+examples/library-api/lib/query.flang	15 15 0
+examples/library-api/stdlib/text.flang	9 9 0
+flang/conc/examples/backpressure.flang	0 0 0
+flang/conc/examples/budget.flang	0 0 0
+flang/conc/examples/counter.flang	2 2 0
+flang/conc/examples/distributed.flang	3 3 0
+flang/conc/examples/escalate.flang	1 1 0
+flang/conc/examples/mailbox.flang	0 0 0
+flang/conc/examples/measure.flang	3 3 0
+flang/conc/examples/race.flang	0 0 0
+flang/conc/examples/server.flang	3 3 0
+flang/conc/examples/supervision.flang	2 2 0
+flang/core/evaluate.flang	49 49 0
+flang/core/json.flang	18 18 0
+flang/core/lexer.flang	63 63 0
+flang/core/parser.flang	99 99 0
+flang/examples/cat/crdt-merge.flang	9 9 0
+flang/examples/cat/euler-orders.flang	4 4 0
+flang/examples/cat/fold-by-cores.flang	5 5 0
+flang/examples/cat/modules/orders.flang	4 4 0
+flang/examples/cat/modules/payments.flang	2 2 0
+flang/examples/cat/modules/reconciliation.flang	12 12 0
+flang/examples/cat/modules/shipping.flang	2 2 0
+flang/examples/cat/monoid-and-monad.flang	20 20 0
+flang/examples/cat/natural-square.flang	6 6 0
+flang/examples/cat/order-shipment.flang	0 0 0
+flang/examples/cat/retry-safe.flang	5 5 0
+flang/examples/cat/split-lines.flang	5 5 0
+flang/examples/errors/column-total.flang	13 13 0
+flang/examples/errors/number-parsing.flang	31 31 0
+flang/examples/import-check.flang	70 70 0
+flang/examples/io/link-report.flang	10 10 0
+flang/examples/leetcode/001-two-sum.flang	6 6 0
+flang/examples/leetcode/003-longest-substring-without-repeating-characters.flang	8 8 0
+flang/examples/leetcode/004-median-of-two-sorted-arrays.flang	12 12 0
+flang/examples/leetcode/011-container-with-most-water.flang	13 13 0
+flang/examples/leetcode/013-roman-to-integer.flang	10 10 0
+flang/examples/leetcode/014-longest-common-prefix.flang	11 11 0
+flang/examples/leetcode/015-3sum.flang	21 21 0
+flang/examples/leetcode/017-letter-combinations-of-a-phone-number.flang	11 11 0
+flang/examples/leetcode/020-valid-parentheses.flang	13 13 0
+flang/examples/leetcode/022-generate-parentheses.flang	8 8 0
+flang/examples/leetcode/026-remove-duplicates-from-sorted-array.flang	4 4 0
+flang/examples/leetcode/027-remove-element.flang	10 10 0
+flang/examples/leetcode/028-find-the-index-of-the-first-occurrence-in-a-string.flang	8 8 0
+flang/examples/leetcode/033-search-in-rotated-sorted-array.flang	11 11 0
+flang/examples/leetcode/035-search-insert-position.flang	3 3 0
+flang/examples/leetcode/042-trapping-rain-water.flang	11 11 0
+flang/examples/leetcode/046-permutations.flang	9 9 0
+flang/examples/leetcode/049-group-anagrams.flang	6 6 0
+flang/examples/leetcode/050-powx-n.flang	11 11 0
+flang/examples/leetcode/053-maximum-subarray.flang	4 4 0
+flang/examples/leetcode/056-merge-intervals.flang	17 17 0
+flang/examples/leetcode/062-unique-paths.flang	10 10 0
+flang/examples/leetcode/064-minimum-path-sum.flang	12 12 0
+flang/examples/leetcode/066-plus-one.flang	5 5 0
+flang/examples/leetcode/069-sqrtx.flang	9 9 0
+flang/examples/leetcode/070-climbing-stairs.flang	5 5 0
+flang/examples/leetcode/072-edit-distance.flang	13 13 0
+flang/examples/leetcode/074-search-a-2d-matrix.flang	12 12 0
+flang/examples/leetcode/076-minimum-window-substring.flang	11 11 0
+flang/examples/leetcode/078-subsets.flang	7 7 0
+flang/examples/leetcode/088-merge-sorted-array.flang	5 5 0
+flang/examples/leetcode/094-binary-tree-inorder-traversal.flang	7 7 0
+flang/examples/leetcode/098-validate-binary-search-tree.flang	15 15 0
+flang/examples/leetcode/100-same-tree.flang	6 6 0
+flang/examples/leetcode/101-symmetric-tree.flang	12 12 0
+flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang	3 3 0
+flang/examples/leetcode/110-balanced-binary-tree.flang	3 3 0
+flang/examples/leetcode/112-path-sum.flang	12 12 0
+flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang	3 3 0
+flang/examples/leetcode/125-valid-palindrome.flang	13 13 0
+flang/examples/leetcode/136-single-number.flang	4 4 0
+flang/examples/leetcode/139-word-break.flang	9 9 0
+flang/examples/leetcode/148-sort-list.flang	12 12 0
+flang/examples/leetcode/150-evaluate-reverse-polish-notation.flang	20 20 0
+flang/examples/leetcode/152-maximum-product-subarray.flang	8 8 0
+flang/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang	9 9 0
+flang/examples/leetcode/167-two-sum-ii-input-array-is-sorted.flang	7 7 0
+flang/examples/leetcode/169-majority-element.flang	3 3 0
+flang/examples/leetcode/179-largest-number.flang	13 13 0
+flang/examples/leetcode/189-rotate-array.flang	14 14 0
+flang/examples/leetcode/198-house-robber.flang	6 6 0
+flang/examples/leetcode/200-number-of-islands.flang	14 14 0
+flang/examples/leetcode/202-happy-number.flang	13 13 0
+flang/examples/leetcode/205-isomorphic-strings.flang	15 15 0
+flang/examples/leetcode/207-course-schedule.flang	19 19 0
+flang/examples/leetcode/208-implement-trie-prefix-tree.flang	13 13 0
+flang/examples/leetcode/209-minimum-size-subarray-sum.flang	11 11 0
+flang/examples/leetcode/217-contains-duplicate.flang	3 3 0
+flang/examples/leetcode/226-invert-binary-tree.flang	5 5 0
+flang/examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang	12 12 0
+flang/examples/leetcode/238-product-of-array-except-self.flang	14 14 0
+flang/examples/leetcode/242-valid-anagram.flang	5 5 0
+flang/examples/leetcode/268-missing-number.flang	4 4 0
+flang/examples/leetcode/283-move-zeroes.flang	3 3 0
+flang/examples/leetcode/300-longest-increasing-subsequence.flang	11 11 0
+flang/examples/leetcode/322-coin-change.flang	5 5 0
+flang/examples/leetcode/344-reverse-string.flang	5 5 0
+flang/examples/leetcode/349-intersection-of-two-arrays.flang	3 3 0
+flang/examples/leetcode/383-ransom-note.flang	9 9 0
+flang/examples/leetcode/424-longest-repeating-character-replacement.flang	14 14 0
+flang/examples/leetcode/438-find-all-anagrams-in-a-string.flang	13 13 0
+flang/examples/leetcode/509-fibonacci-number.flang	6 6 0
+flang/examples/leetcode/516-longest-palindromic-subsequence.flang	13 13 0
+flang/examples/leetcode/543-diameter-of-binary-tree.flang	14 14 0
+flang/examples/leetcode/547-number-of-provinces.flang	20 20 0
+flang/examples/leetcode/567-permutation-in-string.flang	13 13 0
+flang/examples/leetcode/643-maximum-average-subarray-i.flang	9 9 0
+flang/examples/leetcode/704-binary-search.flang	4 4 0
+flang/examples/leetcode/733-flood-fill.flang	21 21 0
+flang/examples/leetcode/739-daily-temperatures.flang	15 15 0
+flang/examples/leetcode/746-min-cost-climbing-stairs.flang	7 7 0
+flang/examples/leetcode/977-squares-of-a-sorted-array.flang	16 16 0
+flang/examples/measure/binary-search.flang	5 5 0
+flang/examples/measure/euclid.flang	6 6 0
+flang/examples/measure/natural.flang	16 16 0
+flang/examples/monad/order-total.flang	отказ
+flang/examples/money/exact-decimal.flang	отказ
+flang/examples/paths/shortest-path.flang	отказ
+flang/examples/rosetta/ackermann-function-english.flang	15 15 0
+flang/examples/rosetta/ackermann-function.flang	15 15 0
+flang/examples/rosetta/factorial-english.flang	11 11 0
+flang/examples/rosetta/factorial.flang	11 11 0
+flang/examples/rosetta/fibonacci-english.flang	10 10 0
+flang/examples/rosetta/fibonacci.flang	10 10 0
+flang/examples/rosetta/fizzbuzz-english.flang	10 10 0
+flang/examples/rosetta/fizzbuzz.flang	10 10 0
+flang/examples/rosetta/hundred-doors-english.flang	18 18 0
+flang/examples/rosetta/hundred-doors.flang	18 18 0
+flang/examples/rosetta/levenshtein-distance-english.flang	20 20 0
+flang/examples/rosetta/levenshtein-distance.flang	20 20 0
+flang/examples/rosetta/merge-sort-english.flang	13 13 0
+flang/examples/rosetta/merge-sort.flang	13 13 0
+flang/examples/rosetta/palindrome-english.flang	23 23 0
+flang/examples/rosetta/palindrome.flang	23 23 0
+flang/examples/rosetta/primes-by-trial-division-english.flang	11 11 0
+flang/examples/rosetta/primes-by-trial-division.flang	11 11 0
+flang/examples/rosetta/quicksort-english.flang	11 11 0
+flang/examples/rosetta/quicksort.flang	11 11 0
+flang/examples/rosetta/reverse-string-english.flang	10 10 0
+flang/examples/rosetta/reverse-string.flang	10 10 0
+flang/examples/rosetta/roman-numerals-english.flang	33 33 0
+flang/examples/rosetta/roman-numerals.flang	33 33 0
+flang/examples/rosetta/run-length-encoding-english.flang	14 14 0
+flang/examples/rosetta/run-length-encoding.flang	14 14 0
+flang/examples/rosetta/towers-of-hanoi-english.flang	12 12 0
+flang/examples/rosetta/towers-of-hanoi.flang	12 12 0
+flang/examples/surfaces/factorial.eo.flang	11 11 0
+flang/examples/surfaces/factorial.zh.flang	11 11 0
+flang/examples/web/orders-api.flang	130 130 0
+flang/proof/examples/body-forms.flang	7 7 0
+flang/proof/examples/corpus-alphabet.flang	6 6 0
+flang/proof/examples/corpus-brackets.flang	3 3 0
+flang/proof/examples/corpus-bytes.flang	1 1 0
+flang/proof/examples/corpus-carrier.flang	12 12 0
+flang/proof/examples/corpus-case.flang	3 3 0
+flang/proof/examples/corpus-cforms.flang	2 2 0
+flang/proof/examples/corpus-cident.flang	1 1 0
+flang/proof/examples/corpus-depth.flang	0 0 0
+flang/proof/examples/corpus-endings.flang	1 1 0
+flang/proof/examples/corpus-factorial.flang	4 4 0
+flang/proof/examples/corpus-fullwidth.flang	2 2 0
+flang/proof/examples/corpus-hof.flang	19 19 0
+flang/proof/examples/corpus-json.flang	6 6 0
+flang/proof/examples/corpus-jsonescape.flang	1 1 0
+flang/proof/examples/corpus-keywords.flang	1 1 0
+flang/proof/examples/corpus-length.flang	3 3 0
+flang/proof/examples/corpus-lists.flang	36 36 0
+flang/proof/examples/corpus-marks.flang	2 2 0
+flang/proof/examples/corpus-namesigns.flang	1 1 0
+flang/proof/examples/corpus-nat-names.flang	1 1 0
+flang/proof/examples/corpus-natural-ceiling.flang	1 1 0
+flang/proof/examples/corpus-natural.flang	1 1 0
+flang/proof/examples/corpus-numtree.flang	3 3 0
+flang/proof/examples/corpus-ophelpers.flang	1 1 0
+flang/proof/examples/corpus-phrases.flang	1 1 0
+flang/proof/examples/corpus-signs.flang	5 5 0
+flang/proof/examples/corpus-tables.flang	3 3 0
+flang/proof/examples/corpus-translit.flang	1 1 0
+flang/proof/examples/corpus-tree-depth.flang	5 5 0
+flang/proof/examples/corpus-tree-height.flang	5 5 0
+flang/proof/examples/corpus-tree.flang	2 2 0
+flang/proof/examples/four-words.flang	6 6 0
+flang/proof/examples/precondition.flang	6 6 0
+flang/proof/examples/segment.flang	4 4 0
+flang/proof/examples/stack.flang	2 2 0
+flang/proof/examples/traffic-light.flang	3 3 0
+flang/proof/kernel.flang	31 31 0
+flang/self/bootstrap/compiler.flang	отказ
+flang/self/bounded.flang	40 40 0
+flang/self/carriers.flang	91 91 0
+flang/self/cli.flang	23 23 0
+flang/self/conc.flang	10 10 0
+flang/self/defunc.flang	5 5 0
+flang/self/emit-c.flang	37 37 0
+flang/self/emit-csharp.flang	25 25 0
+flang/self/emit-elixir.flang	24 24 0
+flang/self/emit-go.flang	47 47 0
+flang/self/emit-java.flang	22 22 0
+flang/self/emit-js.flang	28 28 0
+flang/self/emit-python.flang	27 27 0
+flang/self/emit-rust.flang	40 40 0
+flang/self/factcheck.flang	18 18 0
+flang/self/failures.flang	5 5 0
+flang/self/functor.flang	34 34 0
+flang/self/grid.flang	9 9 0
+flang/self/interpret.flang	39 39 0
+flang/self/io.flang	13 13 0
+flang/self/iso.flang	33 33 0
+flang/self/lexer.flang	95 95 0
+flang/self/link.flang	155 155 0
+flang/self/monad-expand.flang	20 20 0
+flang/self/monad.flang	90 90 0
+flang/self/monoid.flang	33 33 0
+flang/self/obligations.flang	5 5 0
+flang/self/parser.flang	148 148 0
+flang/self/proof-initial.flang	5 5 0
+flang/self/proof-kernel.flang	5 5 0
+flang/self/proof.flang	50 50 0
+flang/self/proofterm.flang	23 23 0
+flang/self/repl/repl.flang	отказ
+flang/self/setoid.flang	35 35 0
+flang/self/sets.flang	86 86 0
+flang/self/tags.flang	10 10 0
+flang/self/totality.flang	91 91 0
+flang/self/types.flang	60 60 0
+flang/stdlib/dictionary.flang	20 20 0
+flang/stdlib/hashmap.flang	61 61 0
+flang/stdlib/higher-order.flang	55 55 0
+flang/stdlib/lists.flang	69 69 0
+flang/stdlib/logic.flang	20 20 0
+flang/stdlib/numbers.flang	27 27 0
+flang/stdlib/numtree.flang	18 18 0
+flang/stdlib/optional.flang	27 27 0
+flang/stdlib/result.flang	25 25 0
+flang/stdlib/sets.flang	21 21 0
+flang/stdlib/strings.flang	69 69 0
+flang/stdlib/strlists.flang	31 31 0
+flang/stdlib/tree.flang	41 41 0
+flang/test/fixtures/plany/00-tselyj.flang	0 0 0
+flang/test/fixtures/plany/01-dvazhdy.flang	0 0 0
+flang/test/fixtures/plany/02-slovar-zanyat.flang	0 0 0
+flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang	0 0 0
+flang/test/fixtures/plany/04-nachalo-neizvestno.flang	0 0 0
+flang/test/fixtures/plany/05-nachalo-s-argumentom.flang	0 0 0
+flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang	0 0 0
+flang/test/fixtures/plany/07-shag-neizvesten.flang	0 0 0
+flang/test/fixtures/plany/08-shag-odin-argument.flang	0 0 0
+flang/test/fixtures/plany/09-shag-pervyj-argument.flang	0 0 0
+flang/test/fixtures/plany/10-shag-vtoroj-argument.flang	0 0 0
+flang/test/fixtures/plany/11-shag-vozvrat.flang	0 0 0
+flang/test/fixtures/plany/12-shag-spisok.flang	0 0 0
+flang/test/fixtures/plany/13-shag-dzhoker.flang	отказ
+flang/проверки/встроенные-формы.flang	2 2 0
+fspec/experiments/contradiction-in-requirements.flang	0 0 0
+fspec/experiments/contradiction-one-function.flang	1 0 1
+fspec/experiments/contradiction-without-example.flang	0 0 0
+fspec/experiments/spec-legacy.flang	0 0 0
+fspec/experiments/spec-new-feature.flang	0 0 0
+fspec/experiments/theorem-on-false.flang	отказ
+fspec/policy.flang	22 22 0
+fspec/spec/01-discount-cap.flang	1 1 0
+fspec/spec/02-promo.flang	3 3 0
+web/wasm/spusk.flang	3 3 0

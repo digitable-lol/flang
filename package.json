@@ -96,7 +96,10 @@
     "prepublishOnly": "npm test",
     "prepare": "npm run build",
     "site": "node docs/site/build.mjs",
-    "site:check": "node docs/site/build.mjs --check"
+    "site:check": "node docs/site/build.mjs --check",
+    "glossary": "node docs/site/glossary.mjs",
+    "glossary:check": "node docs/site/glossary.mjs --check",
+    "surfaces:run": "node docs/site/surfaces-run.mjs"
   },
   "engines": {
     "node": ">=20"

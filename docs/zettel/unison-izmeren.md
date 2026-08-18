@@ -3,6 +3,12 @@
 Проверено прогоном, а не пересказано: `ucm release/1.3.0`, сценарии через
 `ucm transcript -S`.
 
+**Лозунг дословно**, чтобы спорить с ним, а не с пересказом: «in Unison,
+dependency conflicts and the diamond dependency problem are just not a thing»
+([The Big Idea](https://www.unison-lang.org/docs/the-big-idea/), сверено
+2026-08-18). Там же названа причина: «Dependency conflicts are, fundamentally,
+due to different definitions "competing" for the same names».
+
 **Главное открытие.** Лозунг «конфликтов версий не бывает, потому что это разные
 функции» на практике работает не полностью. Две версии действительно живут рядом
 — но **при смешивании получается ошибка типов**. По существу это поведение cargo
@@ -29,5 +35,13 @@
 **Чем платит**: база данных вместо файлов, свой хостинг, ревью без обычного
 диффа. Оценка переноса такой схемы целиком — 15–25 тысяч строк.
 
+**Поправка, найденная позже и в пользу Unison.** Замер выше поставлен на худший
+случай — тип переписали нарочно. Оказалось, что **подъём версии сам по себе тип
+не форкает**: за семь минорных версий `@unison/base` не изменился ни один тип, а
+у `systemfw_concurrent` они совпали даже через мажор. Разбор —
+[[romb-lomaetsya-ot-pravki-tipa]]. Где именно лежит код и что едет по сети —
+[[pull-privozit-ves-kod]].
+
 Связано: [[adresatsiya-po-soderzhimomu]], [[imena-a-ne-hashi]],
-[[hash-vnutri-imena-snaruzhi]]
+[[hash-vnutri-imena-snaruzhi]], [[romb-lomaetsya-ot-pravki-tipa]],
+[[pull-privozit-ves-kod]]

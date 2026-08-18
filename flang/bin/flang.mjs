@@ -37,7 +37,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
-import { errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
+import { checkFunctorDictionary, errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
 import { возможностиЦели } from "../src/conc.mjs"
 import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
@@ -169,7 +169,10 @@ export async function main(argv = process.argv.slice(2)) {
 
 async function commandCheck(options) {
   const program = await loadProgram(options.file)
-  const внешнее = await checkProgram(program, { размещение: await loadPlacement(options.placement) })
+  const внешнее = await checkProgram(program, {
+    размещение: await loadPlacement(options.placement),
+    файл: options.file,
+  })
   const diagnostics = внешнее.diagnostics
   const result = {
     valid: diagnostics.length === 0,
@@ -270,7 +273,7 @@ async function commandRun(options) {
 async function commandTest(options) {
   const program = await loadProgram(options.file)
   if (options.check !== false) {
-    const { diagnostics } = await checkProgram(program)
+    const { diagnostics } = await checkProgram(program, { файл: options.file })
     if (diagnostics.length > 0) {
       /* Форма ответа прежняя — тот, кто читает `total`/`passed`/`failed`,
          читает их и здесь. Примеры не запускались, поэтому счётчики нулевые, а
@@ -478,7 +481,7 @@ async function commandEmit(options) {
   const backend = await loadEmitter(options.target, targets)
   const program = await loadProgram(options.file)
   if (options.check !== false) {
-    const { diagnostics } = await checkProgram(program)
+    const { diagnostics } = await checkProgram(program, { файл: options.file })
     if (diagnostics.length > 0) {
       /* Диагностики уезжают в stderr целиком и в том же виде, в каком их
          печатает `check`: инструмент, который читает вывод `check`, обязан
@@ -894,7 +897,53 @@ async function parseFlang(source, file) {
  */
 export async function checkProgram(program, настройки = {}) {
   const внешнее = await externalChecks(program, настройки)
-  return { diagnostics: [...structuralDiagnostics(program), ...внешнее.diagnostics], results: внешнее.results }
+  const словарь = await functorDictionaryDiagnostics(program, настройки.файл)
+  return {
+    diagnostics: [...structuralDiagnostics(program), ...внешнее.diagnostics, ...словарь],
+    results: внешнее.results,
+  }
+}
+
+/**
+ * СЛОВАРЬ МЕЖДУ ДВУМЯ СПЕКАМИ — здесь, а не в таблице `externalChecks`, потому
+ * что ему нужен ФАЙЛ, а не только программа.
+ *
+ * Всё, что стоит в той таблице, спрашивают у разобранного дерева; этой проверке
+ * надо открыть чужие файлы по путям, написанным внутри функтора, — то есть
+ * знать, откуда считать относительный путь. Имени файла у AST нет намеренно
+ * (`stampFile` в `src/link.mjs`: дерево описывает программу, а не то, из каких
+ * файлов её собрали), значит имя обязано приехать доводом команды.
+ *
+ * Улика ДО, замером: `flang check` на четырёх словарях — целом и трёх
+ * испорченных по одной строке — давал `{"valid":true,…,"diagnostics":[]}` и код
+ * 0 на всех четырёх. Проверка была написана (`checkFunctorDictionary`, 10 из 10
+ * в `compat-slovar.test.mjs`) и не звалась из рабочего пути ни разу.
+ *
+ * ЧТЕНИЕ И РАЗБОР ПОДАЮТСЯ ЗДЕСЬ, а не берутся мостом самому: `compat.mjs` не
+ * тянет ни одного узла платформы, и втащить туда `node:fs` значило бы сломать
+ * его там, где файловой системы нет (браузерная сборка, `docs/site`).
+ *
+ * Разбор — ГОЛЫЙ `parse`, без связывания и без отметок переднего края. Спека
+ * читается ради ОБЪЯВЛЕНИЙ (какие объекты и с какими полями), а связывание
+ * втянуло бы её импорты и её импорты импортов; и оно же отвергло бы `.fts`,
+ * которым написана половина спек наследия.
+ *
+ * Запасного пути нет: сорвётся разбор чужой спеки — это диагностика словаря
+ * (`FLANG_FUNCTOR_SPEC_MISSING`), а не молчание.
+ */
+async function functorDictionaryDiagnostics(program, файл) {
+  if (typeof файл !== "string" || файл === "" || файл === "-") return []
+  const { parse } = await import(new URL("../src/parser.mjs", import.meta.url).href)
+  const итог = checkFunctorDictionary(program, {
+    file: файл,
+    read: (путь) => readFileSync(путь, "utf8"),
+    parse,
+    /* Категории, объявленные САМОЙ программой (после связывания — вместе с
+       привезёнными модулями): их концы проверяет `checkFunctors` в types.mjs, и
+       словарём они не являются. */
+    declared: (program?.categories ?? []).map((к) => к?.name).filter((имя) => typeof имя === "string"),
+  })
+  return итог.diagnostics
 }
 
 /** Минимум, который мост обязан гарантировать сам, не дожидаясь types.mjs. */

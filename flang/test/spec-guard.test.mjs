@@ -35,6 +35,7 @@
  *      нечем. Случай «индукцией» ниже — замок на неё.
  */
 import assert from "node:assert/strict"
+import { execFileSync } from "node:child_process"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -193,5 +194,76 @@ test("МОЛЧИТ на утверждении, доказанном индук�
       )
       assert.equal(итог.утверждений, 1)
     },
+  )
+})
+
+/* ── 4. политика, записанная на самом языке ───────────────────────────────── */
+
+/**
+ * `fspec/policy.flang` — третье правило сторожа, высказанное НА FLANG.
+ *
+ * Оно единственное из трёх, которого на языке не было: первые два ведомость
+ * считает сама (`flang/self/proof.flang`, `объект «Итоги утверждений»`). Это же
+ * — согласие наследницы с предшественницей — и есть сердце замысла: «спеки
+ * суммарно дают нулевую сумму».
+ *
+ * Проверки ниже держат файл живым. Без них он стал бы ровно тем, чем был
+ * `spec:check` до 18 августа, — вещью, которую никто не зовёт.
+ */
+const ФЛАНГ = new URL("../bin/flang.mjs", import.meta.url).pathname
+const ПОЛИТИКА = new URL("../../fspec/policy.flang", import.meta.url).pathname
+
+const прогон = (аргументы) =>
+  execFileSync(process.execPath, [ФЛАНГ, ...аргументы], {
+    encoding: "utf8",
+    maxBuffer: 1 << 26,
+    env: { ...process.env, LC_ALL: "C.UTF-8" },
+  })
+
+/** Ведомость спеки, сведённая к тому, чем спеки согласуются между собой. */
+function проекция(путь) {
+  const о = JSON.parse(прогон(["check", путь, "--proof", "--json"]))
+  return (о.proof?.claims ?? []).map((у) => ({ чья: у.of, имя: у.name, вердикт: у.verdict }))
+}
+
+const политика = (предки, наследники) =>
+  JSON.parse(
+    прогон(["run", ПОЛИТИКА, "--function", "Спеки согласны", "--args", JSON.stringify({ предки, наследники })]),
+  ).result
+
+test("политика на flang: семь функций, все тотальные, аксиом ноль", () => {
+  const о = JSON.parse(прогон(["check", ПОЛИТИКА, "--proof", "--json"]))
+  assert.equal(о.valid, true, "политика не проходит проверку языка")
+  assert.equal(о.functions.length, 7)
+  assert.deepEqual(
+    о.functions.filter((ф) => !ф.total),
+    [],
+    "в политике завелась нетотальная функция",
+  )
+})
+
+test("политика на flang согласна со сторожем: на дереве спеки сходятся", () => {
+  const предки = проекция(join(КАТАЛОГ_СПЕК, "01-discount-cap.flang"))
+  const наследники = проекция(join(КАТАЛОГ_СПЕК, "02-promo.flang"))
+  assert.equal(политика(предки, наследники), true)
+  /* Тот же ответ, что у сторожа на JavaScript, — и это не совпадение, а то,
+     ради чего политика записана: два голоса об одном обязаны сходиться. */
+  assert.deepEqual(проверить(КАТАЛОГ_СПЕК).беды, [])
+})
+
+test("политика на flang ловит противоречие ЧЕРЕЗ ФАЙЛ, которое `flang check` пропускает", () => {
+  const опыты = new URL("../../fspec/experiments/", import.meta.url).pathname
+  const предок = join(опыты, "spec-legacy.flang")
+  const наследница = join(опыты, "spec-new-feature.flang")
+
+  /* Сам компилятор на этой паре ЗЕЛЕНЕЕТ: «промо не меньше 50» при потолке 30
+     он откладывает на рантайм словами «объявлено, не доказано», и код выхода у
+     него 0. Ровно этот опыт и завёл `fspec/`. */
+  прогон(["check", наследница, "--proof"])
+
+  assert.equal(
+    политика(проекция(предок), проекция(наследница)),
+    false,
+    "политика пропустила противоречие через файл — то самое, ради которого она написана",
   )
 })

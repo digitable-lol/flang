@@ -54,10 +54,10 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { homedir, tmpdir } from "node:os"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { homedir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { evaluate } from "../src/interpret.mjs"
@@ -72,20 +72,18 @@ import { emitJs } from "../src/emit/js.mjs"
 import { emitPython } from "../src/emit/python.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
 
 const источник = fileURLToPath(new URL("../proof/examples/precondition.flang", import.meta.url))
 const программа = parse(readFileSync(источник, "utf8"), "proof/examples/precondition.flang")
 
-const рабочий = mkdtempSync(join(tmpdir(), "flang-precondition-door-"))
-after(() => {
-  rmSync(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("precondition-door")
 
 /* Локаль машины бывает сломана (`LC_CTYPE=UTF-8` — такой локали нет): BEAM
    уходит в latin1, JDK откатывается к ASCII. Имена функций здесь кириллические,
    и без этого прогонщик отвечал бы про другую функцию. */
-const СРЕДА = { ...process.env, LC_ALL: "C.UTF-8" }
+const СРЕДА = средаСборки(рабочий, { LC_ALL: "C.UTF-8" })
 
 /* ─────────────────────────── сетка входов ─────────────────────────── */
 

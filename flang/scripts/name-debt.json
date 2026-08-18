@@ -1,0 +1,862 @@
+{
+  "files": {
+    "flang/core/evaluate.flang": [
+      "акк",
+      "зн",
+      "л",
+      "оп",
+      "п"
+    ],
+    "flang/core/json.flang": [
+      "акк"
+    ],
+    "flang/core/lexer.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/core/parser.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/errors/column-total.flang": [
+      "н"
+    ],
+    "flang/examples/errors/number-parsing.flang": [
+      "зн",
+      "н"
+    ],
+    "flang/examples/leetcode/013-roman-to-integer.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/014-longest-common-prefix.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/015-3sum.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/017-letter-combinations-of-a-phone-number.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/020-valid-parentheses.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/022-generate-parentheses.flang": [
+      "н"
+    ],
+    "flang/examples/leetcode/026-remove-duplicates-from-sorted-array.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/027-remove-element.flang": [
+      "эл"
+    ],
+    "flang/examples/leetcode/035-search-insert-position.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/046-permutations.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/049-group-anagrams.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/053-maximum-subarray.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/056-merge-intervals.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/066-plus-one.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/069-sqrtx.flang": [
+      "н"
+    ],
+    "flang/examples/leetcode/070-climbing-stairs.flang": [
+      "н"
+    ],
+    "flang/examples/leetcode/076-minimum-window-substring.flang": [
+      "бг",
+      "бх"
+    ],
+    "flang/examples/leetcode/078-subsets.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/088-merge-sorted-array.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/094-binary-tree-inorder-traversal.flang": [
+      "акк",
+      "зн",
+      "л",
+      "п",
+      "эл"
+    ],
+    "flang/examples/leetcode/098-validate-binary-search-tree.flang": [
+      "зн",
+      "л",
+      "п"
+    ],
+    "flang/examples/leetcode/100-same-tree.flang": [
+      "зн",
+      "зн2",
+      "л",
+      "л2",
+      "п",
+      "п2"
+    ],
+    "flang/examples/leetcode/101-symmetric-tree.flang": [
+      "зн",
+      "зн2",
+      "л",
+      "л2",
+      "п",
+      "п2"
+    ],
+    "flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang": [
+      "акк",
+      "зн",
+      "л",
+      "п",
+      "эл"
+    ],
+    "flang/examples/leetcode/110-balanced-binary-tree.flang": [
+      "акк",
+      "зн",
+      "л",
+      "п",
+      "эл"
+    ],
+    "flang/examples/leetcode/112-path-sum.flang": [
+      "зн",
+      "л",
+      "п"
+    ],
+    "flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/125-valid-palindrome.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/136-single-number.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/148-sort-list.flang": [
+      "акк",
+      "вг",
+      "вх",
+      "пг",
+      "пх",
+      "эл"
+    ],
+    "flang/examples/leetcode/150-evaluate-reverse-polish-notation.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/152-maximum-product-subarray.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/169-majority-element.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/179-largest-number.flang": [
+      "акк",
+      "вг",
+      "вх",
+      "пг",
+      "пх"
+    ],
+    "flang/examples/leetcode/189-rotate-array.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/198-house-robber.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/200-number-of-islands.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/202-happy-number.flang": [
+      "акк",
+      "н",
+      "эл"
+    ],
+    "flang/examples/leetcode/205-isomorphic-strings.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/207-course-schedule.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/208-implement-trie-prefix-tree.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/226-invert-binary-tree.flang": [
+      "акк",
+      "зн",
+      "л",
+      "п",
+      "эл"
+    ],
+    "flang/examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang": [
+      "зн",
+      "л",
+      "п"
+    ],
+    "flang/examples/leetcode/238-product-of-array-except-self.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/242-valid-anagram.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/268-missing-number.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/283-move-zeroes.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/300-longest-increasing-subsequence.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/344-reverse-string.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/349-intersection-of-two-arrays.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/383-ransom-note.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/424-longest-repeating-character-replacement.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/438-find-all-anagrams-in-a-string.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/509-fibonacci-number.flang": [
+      "н"
+    ],
+    "flang/examples/leetcode/543-diameter-of-binary-tree.flang": [
+      "зн",
+      "л",
+      "п"
+    ],
+    "flang/examples/leetcode/547-number-of-provinces.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/567-permutation-in-string.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/733-flood-fill.flang": [
+      "акк"
+    ],
+    "flang/examples/leetcode/739-daily-temperatures.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/leetcode/977-squares-of-a-sorted-array.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/measure/euclid.flang": [
+      "а",
+      "б"
+    ],
+    "flang/examples/measure/natural.flang": [
+      "н"
+    ],
+    "flang/examples/paths/shortest-path.flang": [
+      "акк",
+      "зв"
+    ],
+    "flang/examples/rosetta/ackermann-function.flang": [
+      "м",
+      "н"
+    ],
+    "flang/examples/rosetta/factorial-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/factorial.flang": [
+      "акк",
+      "н",
+      "эл"
+    ],
+    "flang/examples/rosetta/fibonacci-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/fibonacci.flang": [
+      "акк",
+      "н",
+      "эл"
+    ],
+    "flang/examples/rosetta/fizzbuzz-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/fizzbuzz.flang": [
+      "акк",
+      "н",
+      "эл"
+    ],
+    "flang/examples/rosetta/hundred-doors-english.flang": [
+      "acc",
+      "elem",
+      "hl",
+      "hr",
+      "tl",
+      "tr"
+    ],
+    "flang/examples/rosetta/hundred-doors.flang": [
+      "акк",
+      "гв",
+      "гп",
+      "н",
+      "хв",
+      "хп",
+      "эл"
+    ],
+    "flang/examples/rosetta/levenshtein-distance-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/levenshtein-distance.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/rosetta/merge-sort-english.flang": [
+      "acc",
+      "elem",
+      "f",
+      "hl",
+      "hr",
+      "rf",
+      "tl",
+      "tr"
+    ],
+    "flang/examples/rosetta/merge-sort.flang": [
+      "акк",
+      "г1",
+      "г2",
+      "т",
+      "х1",
+      "х2",
+      "хт",
+      "эл"
+    ],
+    "flang/examples/rosetta/palindrome-english.flang": [
+      "acc",
+      "elem",
+      "h",
+      "h2",
+      "t",
+      "t2"
+    ],
+    "flang/examples/rosetta/palindrome.flang": [
+      "акк",
+      "г",
+      "г2",
+      "х",
+      "х2",
+      "эл"
+    ],
+    "flang/examples/rosetta/primes-by-trial-division.flang": [
+      "н"
+    ],
+    "flang/examples/rosetta/quicksort-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/quicksort.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/rosetta/reverse-string-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/reverse-string.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/rosetta/roman-numerals-english.flang": [
+      "acc",
+      "elem"
+    ],
+    "flang/examples/rosetta/roman-numerals.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/examples/rosetta/run-length-encoding-english.flang": [
+      "acc"
+    ],
+    "flang/examples/rosetta/run-length-encoding.flang": [
+      "акк"
+    ],
+    "flang/examples/rosetta/towers-of-hanoi-english.flang": [
+      "acc"
+    ],
+    "flang/examples/rosetta/towers-of-hanoi.flang": [
+      "акк"
+    ],
+    "flang/examples/surfaces/factorial.eo.flang": [
+      "elem"
+    ],
+    "flang/self/bootstrap/compiler.flang": [
+      "акк",
+      "в",
+      "д",
+      "м",
+      "п",
+      "с",
+      "т",
+      "у"
+    ],
+    "flang/self/bounded.flang": [
+      "н",
+      "по"
+    ],
+    "flang/self/carriers.flang": [
+      "акк"
+    ],
+    "flang/self/cli.flang": [
+      "акк",
+      "з",
+      "к",
+      "р",
+      "с",
+      "ц"
+    ],
+    "flang/self/conc.flang": [
+      "с"
+    ],
+    "flang/self/defunc.flang": [
+      "акк",
+      "п",
+      "т"
+    ],
+    "flang/self/emit-c.flang": [
+      "акк",
+      "в",
+      "до",
+      "имя акк",
+      "от",
+      "п",
+      "по",
+      "про ctx",
+      "с акк",
+      "свежий акк",
+      "то",
+      "эл"
+    ],
+    "flang/self/emit-csharp.flang": [
+      "акк",
+      "в",
+      "до",
+      "и",
+      "имя акк",
+      "от",
+      "п",
+      "по",
+      "с акк",
+      "свежий акк",
+      "то",
+      "эл"
+    ],
+    "flang/self/emit-elixir.flang": [
+      "акк",
+      "в",
+      "до",
+      "от",
+      "п",
+      "по",
+      "с акк",
+      "свежий акк",
+      "то",
+      "эл"
+    ],
+    "flang/self/emit-go.flang": [
+      "акк",
+      "имя акк",
+      "п",
+      "по",
+      "с акк",
+      "свежий акк",
+      "то"
+    ],
+    "flang/self/emit-java.flang": [
+      "акк",
+      "в",
+      "до",
+      "з",
+      "и",
+      "имя акк",
+      "от",
+      "п",
+      "по",
+      "с",
+      "с акк",
+      "свежий акк",
+      "то",
+      "эл"
+    ],
+    "flang/self/emit-js.flang": [
+      "акк",
+      "в",
+      "до",
+      "имя акк",
+      "имя эл",
+      "п",
+      "по",
+      "свежий акк",
+      "свежий эл",
+      "строка акк",
+      "то"
+    ],
+    "flang/self/emit-python.flang": [
+      "акк",
+      "в",
+      "до",
+      "з",
+      "имя акк",
+      "от",
+      "п",
+      "по",
+      "с",
+      "с акк",
+      "свежий акк",
+      "то",
+      "эл"
+    ],
+    "flang/self/emit-rust.flang": [
+      "акк",
+      "имя ctx",
+      "имя акк",
+      "п",
+      "по",
+      "с акк",
+      "свежий акк",
+      "то"
+    ],
+    "flang/self/factcheck.flang": [
+      "акк",
+      "ок"
+    ],
+    "flang/self/failures.flang": [
+      "акк",
+      "н",
+      "с"
+    ],
+    "flang/self/interpret.flang": [
+      "а",
+      "акк",
+      "до",
+      "зн",
+      "знач",
+      "м",
+      "от",
+      "п",
+      "с",
+      "э"
+    ],
+    "flang/self/lexer.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/self/link.flang": [
+      "а",
+      "акк",
+      "в",
+      "вх",
+      "д",
+      "и",
+      "к",
+      "п",
+      "р",
+      "с",
+      "т",
+      "ф",
+      "э"
+    ],
+    "flang/self/monad-expand.flang": [
+      "акк"
+    ],
+    "flang/self/monad.flang": [
+      "а",
+      "акк",
+      "г",
+      "к",
+      "м"
+    ],
+    "flang/self/monoid.flang": [
+      "а",
+      "б",
+      "в"
+    ],
+    "flang/self/obligations.flang": [
+      "а",
+      "акк",
+      "в",
+      "г",
+      "из",
+      "о",
+      "п",
+      "с",
+      "х",
+      "ц",
+      "э"
+    ],
+    "flang/self/parser.flang": [
+      "акк",
+      "в",
+      "до",
+      "и",
+      "из",
+      "к",
+      "на",
+      "от",
+      "п",
+      "по",
+      "р",
+      "с",
+      "т0",
+      "т1",
+      "т2",
+      "т3",
+      "то",
+      "у"
+    ],
+    "flang/self/proof-initial.flang": [
+      "акк",
+      "без акк",
+      "в",
+      "г",
+      "гл",
+      "гп",
+      "з",
+      "и",
+      "к",
+      "л",
+      "о",
+      "п",
+      "с",
+      "у",
+      "х",
+      "хл",
+      "хп",
+      "э",
+      "эл"
+    ],
+    "flang/self/proof-kernel.flang": [
+      "акк",
+      "без акк",
+      "г",
+      "га",
+      "гл",
+      "гп",
+      "д",
+      "и",
+      "л",
+      "о",
+      "п",
+      "с",
+      "с то",
+      "у",
+      "х",
+      "ха",
+      "хл",
+      "хп",
+      "э",
+      "эл"
+    ],
+    "flang/self/proof.flang": [
+      "акк",
+      "по"
+    ],
+    "flang/self/proofterm.flang": [
+      "а",
+      "акк",
+      "в",
+      "г",
+      "га",
+      "гп",
+      "до",
+      "и",
+      "из",
+      "м",
+      "н",
+      "о",
+      "п",
+      "с",
+      "т",
+      "у",
+      "ф",
+      "х",
+      "ха",
+      "хп",
+      "ч",
+      "э"
+    ],
+    "flang/self/repl/repl.flang": [
+      "а",
+      "акк",
+      "б",
+      "в",
+      "д",
+      "з",
+      "зн",
+      "и",
+      "к",
+      "м",
+      "н",
+      "о",
+      "п",
+      "па",
+      "пб",
+      "с",
+      "т",
+      "у",
+      "ф",
+      "ха",
+      "хб",
+      "ч",
+      "э"
+    ],
+    "flang/self/setoid.flang": [
+      "а",
+      "б",
+      "в",
+      "г",
+      "да",
+      "з",
+      "к",
+      "от",
+      "у",
+      "ф",
+      "х"
+    ],
+    "flang/self/sets.flang": [
+      "акк"
+    ],
+    "flang/self/totality.flang": [
+      "акк"
+    ],
+    "flang/self/types.flang": [
+      "а1",
+      "а2",
+      "акк",
+      "б1",
+      "б2",
+      "оп",
+      "то ли"
+    ],
+    "flang/stdlib/hashmap.flang": [
+      "акк",
+      "д",
+      "н",
+      "о",
+      "т",
+      "х"
+    ],
+    "flang/stdlib/higher-order.flang": [
+      "акк",
+      "г",
+      "гв",
+      "гп",
+      "ф",
+      "х",
+      "хв",
+      "хп",
+      "эл"
+    ],
+    "flang/stdlib/lists.flang": [
+      "акк",
+      "г",
+      "г2",
+      "гв",
+      "гп",
+      "х",
+      "х2",
+      "хв",
+      "хп",
+      "эл"
+    ],
+    "flang/stdlib/logic.flang": [
+      "акк",
+      "эл"
+    ],
+    "flang/stdlib/numbers.flang": [
+      "акк"
+    ],
+    "flang/stdlib/numtree.flang": [
+      "акк",
+      "б",
+      "зн",
+      "м",
+      "эл"
+    ],
+    "flang/stdlib/optional.flang": [
+      "акк",
+      "зн",
+      "эл"
+    ],
+    "flang/stdlib/result.flang": [
+      "зн"
+    ],
+    "flang/stdlib/sets.flang": [
+      "эл"
+    ],
+    "flang/stdlib/strings.flang": [
+      "акк"
+    ],
+    "flang/stdlib/strlists.flang": [
+      "акк",
+      "вг",
+      "вх",
+      "пг",
+      "пх"
+    ],
+    "flang/stdlib/tree.flang": [
+      "акк",
+      "вг",
+      "вх",
+      "зн",
+      "кл",
+      "л",
+      "лз",
+      "лк",
+      "лл",
+      "лп",
+      "п",
+      "пг",
+      "пз",
+      "пк",
+      "пл",
+      "пп",
+      "пр",
+      "пх",
+      "эл"
+    ]
+  }
+}

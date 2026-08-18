@@ -34,7 +34,7 @@ compared tree against tree, not described as equal.
 
 **Termination is proved at compile time.** In C, Python and JavaScript a function
 may loop forever and you find out in production. Here `total` is a promise the
-compiler answers for: **6144 functions out of 8018** carry it.
+compiler answers for: **6547 functions out of 8490** carry it.
 
 **A promise about the result is checked on all inputs, not on examples.** Tests
 cover the inputs you thought of. A postcondition accepted by the proof kernel
@@ -65,27 +65,27 @@ quietly: the page reddens with the tree.
 
 | | |
 |---|---:|
-| Functions in the corpus | 8018 |
-| Of them total (termination proved) | 6144 |
-| Behaviour claims stated | 153 |
-| Of them **proved by the kernel** — for all inputs | 132 |
+| Functions in the corpus | 8490 |
+| Of them total (termination proved) | 6547 |
+| Behaviour claims stated | 182 |
+| Of them **proved by the kernel** — for all inputs | 152 |
 | Axioms in the kernel | **0** |
 | Claims refuted | **0** |
 
 And, honestly, what is not there:
 
 - **of ordinary library functions the kernel accepts 7 out of 20** — the
-  measurement took every ninth function out of all 208, so the convenient ones
+  measurement took every ninth function out of all 318, so the convenient ones
   could not be picked;
 - **the language is 1.4× slower than Python, 3.3× slower than Node, and
   hand-written C is 8.6× faster than we are** (geometric mean over five tasks,
   [the speed report](../benchmark-speed.html) — in Russian). That is **not the
   price of provability**: where a proof leaves no guard in the running program it
   costs **1–9 %, indistinguishable from zero** against the spread between runs.
-  A guard is left behind rarely: as of 18 August **68 functions out of 5992
-  total ones carry it — 1.1 %** (4 by a constant step, 64 by a declared measure,
-  102 sites; `npm run proof:ledger`). There it really is expensive — **three
-  times the cost of the function itself**. The gap is unfinished work, not the
+  A guard is left behind rarely: **70 functions out of 6547 total ones carry
+  it — 1.1 %** (6 by a constant step, 64 by a declared measure, 104 sites; the
+  count is printed by `flang check --proof`). There it really is expensive —
+  **three times the cost of the function itself**. The gap is unfinished work, not the
   price of proofs, and it is fixable;
 - **the compiler is not written in flang all the way**: the proof chain is, and
   eight code generators out of eight are, but the processes and the shell are

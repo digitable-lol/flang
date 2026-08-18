@@ -32,9 +32,13 @@ total function «Prepend»
 
 // How many times a door was touched: as many times as its number has divisors
 // among the pass numbers. The list of passes arrives ready, so this is proved.
+// The claim is proved WITHOUT a theorem: the core reduced the goal against the
+// body by the rule "non-negative by construction" — the fold starts at zero and
+// only adds. This is the cheapest of the three outcomes: the proof cost one line.
 total function «How many times touched»
   accepts door: number, passes: list of number
   returns number
+  ensures «a touch count is non-negative» result is at least 0
   example «Six has four divisors»
     given door equals 6
     given passes equals [1, 2, 3, 4, 5, 6]

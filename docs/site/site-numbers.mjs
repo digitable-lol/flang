@@ -95,6 +95,21 @@ export async function ожидания() {
       `| Из них **доказано ядром** — про все входы | ${и.claims.proved} |`,
     ],
     ["docs/site/index.ru.md", "функций библиотеки", `из всех ${библиотека}, чтобы не выбирать удобные`],
+    /* СТОРОЖ, ОСТАЮЩИЙСЯ В РАБОТАЮЩЕЙ ПРОГРАММЕ — четыре числа одной фразой, и
+       заведены они по улике: главная называла «68 функций из 5992 … 4 постоянным
+       шагом, 102 места», тогда как ведомость дерева в тот же день считала 70 из
+       6547, 6 и 104. Эти числа двигает каждое вливание в библиотеку, а сторож их
+       не видел: `count-guard` ищет свой порядок слов, а здесь его не было. */
+    [
+      "docs/site/index.ru.md",
+      "сторож в работающей программе",
+      `**${и.carriers.step + и.carriers.measure} функций из ${и.total} тотальных — ${доля(и)} %**`,
+    ],
+    [
+      "docs/site/index.ru.md",
+      "чем несётся сторож",
+      `(${и.carriers.step} постоянным шагом, ${и.carriers.measure} объявленной мерой, ${и.guardSites} места`,
+    ],
     [
       "docs/site/index.ru.md",
       "генераторов на flang",
@@ -149,6 +164,16 @@ export async function ожидания() {
     ["docs/site/index.md", "stdlib", `every ninth function out of all ${библиотека}`],
     [
       "docs/site/index.md",
+      "run-time guard",
+      `**${и.carriers.step + и.carriers.measure} functions out of ${и.total} total ones carry`,
+    ],
+    [
+      "docs/site/index.md",
+      "what carries the guard",
+      `(${и.carriers.step} by a constant step, ${и.carriers.measure} by a declared measure, ${и.guardSites} sites`,
+    ],
+    [
+      "docs/site/index.md",
       "twins",
       `${словомПоАнглийски(ц.близнецы.length)} code generators out of ${словомПоАнглийски(ц.все.length)}`,
     ],
@@ -191,6 +216,17 @@ export async function ожидания() {
 function словом(н) {
   const слова = ["ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"]
   return слова[н] ?? String(н)
+}
+
+/**
+ * Доля тотальных функций, за которыми остаётся проверка во время работы.
+ *
+ * Считается здесь, а не на странице: доля — частное двух измеренных чисел, и
+ * записанная руками она разъезжается с ними молча. Запятая, а не точка: на
+ * русской странице число стоит по-русски.
+ */
+function доля(и) {
+  return (((и.carriers.step + и.carriers.measure) / и.total) * 100).toFixed(1).replace(".", ",")
 }
 
 /** Тот же счёт в родительном падеже: «семь генераторов из ВОСЬМИ». */

@@ -51,17 +51,17 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Почему так',
     страницы: [
-      { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/rukovodstvo/single-source.ru.md' },
-      { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/rukovodstvo/totality.ru.md' },
-      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/rukovodstvo/two-implementations.ru.md' },
-      { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/rukovodstvo/developing.ru.md' },
-      { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/rukovodstvo/limits.ru.md' },
+      { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
+      { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/guide/totality.ru.md' },
+      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/guide/two-implementations.ru.md' },
+      { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/guide/developing.ru.md' },
+      { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/guide/limits.ru.md' },
     ],
   },
   {
     имя: 'Устройство',
     страницы: [
-      { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/rukovodstvo/project-layout.ru.md' },
+      { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/guide/project-layout.ru.md' },
     ],
   },
   {

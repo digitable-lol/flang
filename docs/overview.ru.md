@@ -550,4 +550,4 @@ flang. С появлением продукции долг закрыт, и вс
 - `flang/core/SPEC.md` — контракт ядра FTS, написанного на flang
 - `flang/self/SPEC.md` — контракт самоприменения и его долги
 - `flang/cat/SPEC.md` — контракт категорной поверхности
-- `docs/rukovodstvo/project-layout.ru.md` — раскладка репозитория и куда что кладут
+- `docs/guide/project-layout.ru.md` — раскладка репозитория и куда что кладут

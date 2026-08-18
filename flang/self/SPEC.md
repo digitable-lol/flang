@@ -47,6 +47,7 @@ newer», потому что компилятор языка написан на
 | `src/emit/java.mjs` | 1702 | `self/emit-java.flang` | печать в Java |
 | `src/emit/python.mjs` | 1636 | `self/emit-python.flang` | печать в Python |
 | `src/emit/csharp.mjs` | 1761 | `self/emit-csharp.flang` | печать в C# |
+| `src/emit/js.mjs` | 2934 | `self/emit-js.flang` | печать в JavaScript: один модуль без зависимостей плюс прогонщик |
 | `proof/initial.mjs` | 1411 | `self/proof-initial.flang` | принцип индукции читается с объявления суммы и строится термом |
 | `proof/reduce.mjs` | 1928 | `self/proof-kernel.flang` | сведение цели к допущениям: три решающих правила и четыре переписки нормализации |
 | `src/obligations.mjs` | 373 | `self/obligations.flang` | постусловие и теорема сводятся в обязательство: что именно надо доказать, в виде данных |

@@ -1,8 +1,8 @@
 /**
  * Страница сайта «Что изменилось» обязана совпадать с историей репозитория.
  *
- * `docs/site/izmeneniya.md` и `docs/site/izmeneniya.json` печатаются из git
- * (`scripts/build-izmeneniya.mjs`), и этот тест — вся причина, по которой печать
+ * `docs/site/changelog.md` и `docs/site/changelog.json` печатаются из git
+ * (`scripts/build-changelog-page.mjs`), и этот тест — вся причина, по которой печать
  * имеет смысл. Приём тот же, что у `flang/test/changelog.test.mjs` для
  * `CHANGELOG.md` и у `flang/test/stdlib-index.test.mjs` для указателя
  * библиотеки: напечатанное сверяется с тем, из чего печаталось.
@@ -47,7 +47,7 @@ import { readFileSync } from "node:fs"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { РАЗДЕЛЫ } from "../../docs/site/karta.mjs"
+import { РАЗДЕЛЫ } from "../../docs/site/sitemap.mjs"
 import { разобрать } from "../../docs/site/markdown.mjs"
 import {
   ИЗМЕРИТЕЛИ,
@@ -57,7 +57,7 @@ import {
   историяПолна as полнаЛиИстория,
   собратьСводку,
   сериализовать,
-} from "../../scripts/build-izmeneniya.mjs"
+} from "../../scripts/build-changelog-page.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
 const записанныйMd = readFileSync(ПУТЬ_MD, "utf8")
@@ -69,7 +69,7 @@ const гит = (доводы) =>
 
 /*
  * Вся ли история под рукой. Вопрос задаётся ТЕМ ЖЕ кодом, которым его задаёт
- * сверка `node scripts/build-izmeneniya.mjs --check`: два ответа на один вопрос
+ * сверка `node scripts/build-changelog-page.mjs --check`: два ответа на один вопрос
  * разошлись бы, и тогда сторож и сверка спорили бы о том, что считать бедой.
  * Неполный клон — не отставшая страница: обвинять файл в том, что до него не
  * доехала история, значило бы красить тест за чужую беду. Та же оговорка и по
@@ -89,12 +89,12 @@ test("страница «Что изменилось» совпадает с и�
   assert.equal(
     записанныйJson,
     сериализовать(свежая),
-    "docs/site/izmeneniya.json разошёлся с историей — перепечатайте: node scripts/build-izmeneniya.mjs",
+    "docs/site/changelog.json разошёлся с историей — перепечатайте: node scripts/build-changelog-page.mjs",
   )
   assert.equal(
     записанныйMd,
     печатьMarkdown(свежая),
-    "docs/site/izmeneniya.md разошёлся с историей — перепечатайте: node scripts/build-izmeneniya.mjs",
+    "docs/site/changelog.md разошёлся с историей — перепечатайте: node scripts/build-changelog-page.mjs",
   )
 })
 
@@ -120,7 +120,7 @@ test("страница знает про каждое вливание, доех
     "",
     "в ствол приехали вливания, о которых страница молчит:\n" +
       пропущенные +
-      "\nПерепечатайте: node scripts/build-izmeneniya.mjs",
+      "\nПерепечатайте: node scripts/build-changelog-page.mjs",
   )
 })
 
@@ -130,7 +130,7 @@ test("markdown страницы напечатан из того же снимк
   assert.equal(
     записанныйMd,
     печатьMarkdown(снимок),
-    "docs/site/izmeneniya.md не совпадает с печатью из izmeneniya.json — страницу правили руками",
+    "docs/site/changelog.md не совпадает с печатью из changelog.json — страницу правили руками",
   )
 })
 
@@ -231,7 +231,7 @@ test("число проверок в шапке этого файла свере
      (flang/scripts/count-guard.mjs). Он .md-файлы читает, а .mjs — нет, и
      число в шапке проверки жило вне всякого измерителя. Теперь измеритель у
      него есть, и это сам файл. */
-  const свой = readFileSync(new URL("./izmeneniya.test.mjs", import.meta.url), "utf8")
+  const свой = readFileSync(new URL("./changelog-page.test.mjs", import.meta.url), "utf8")
   const СЛОВА = new Map([
     ["ОДНА", 1], ["ДВЕ", 2], ["ТРИ", 3], ["ЧЕТЫРЕ", 4], ["ПЯТЬ", 5],
     ["ШЕСТЬ", 6], ["СЕМЬ", 7], ["ВОСЕМЬ", 8], ["ДЕВЯТЬ", 9], ["ДЕСЯТЬ", 10],
@@ -260,11 +260,11 @@ test("страница вписана в карту сайта", () => {
      только то, что в карте, и о лишнем файле не узнает. */
   const адреса = РАЗДЕЛЫ.flatMap((р) => р.страницы.map((с) => с.из))
   assert.ok(
-    адреса.includes("docs/site/izmeneniya.md"),
-    "docs/site/izmeneniya.md не вписан в docs/site/karta.mjs — страница напечатана, а на сайт не попадёт",
+    адреса.includes("docs/site/changelog.md"),
+    "docs/site/changelog.md не вписан в docs/site/sitemap.mjs — страница напечатана, а на сайт не попадёт",
   )
   assert.ok(
     адреса.includes("CHANGELOG.md"),
-    "CHANGELOG.md не вписан в docs/site/karta.mjs — журнал печатается, а на сайте его нет",
+    "CHANGELOG.md не вписан в docs/site/sitemap.mjs — журнал печатается, а на сайте его нет",
   )
 })

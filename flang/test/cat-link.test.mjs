@@ -40,7 +40,7 @@ import { parse } from "../src/parser.mjs"
 import { АКСИОМЫ } from "../src/proofterm.mjs"
 import { checkTypes } from "../src/types.mjs"
 
-const примерКаталог = fileURLToPath(new URL("../examples/cat/moduli/", import.meta.url))
+const примерКаталог = fileURLToPath(new URL("../examples/cat/modules/", import.meta.url))
 
 /* ─────────────────────────── вспомогательное ─────────────────────────────── */
 
@@ -119,8 +119,8 @@ const ОТГРУЗКА = `модуль «Отгрузка»
 /** Связь с переводом. `перенос` — правая часть поля `отменена` в переводе. */
 const связь = (перенос, отображение = "  морфизм «отменить заказ» отображается в морфизм «отменить отгрузку»\n") =>
   `модуль «Согласование»
-  использует «Заказы» из "zakazy.flang"
-  использует «Отгрузка» из "otgruzka.flang"
+  использует «Заказы» из "orders.flang"
+  использует «Отгрузка» из "shipping.flang"
 
 тотальная функция «Отгрузка по заказу»
   принимает заказ: «Заказ»
@@ -171,7 +171,7 @@ test("улика: неполная связь ловится одинаково 
      домена до проверки не доезжала, и «вся категория» опять становилась
      неизвестным числом. Вердикт был `valid: true` при нуле диагностик. */
   const три = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": связь("заказ.отменён", "") },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": связь("заказ.отменён", "") },
     "svyaz.flang",
   )
   assert.ok(
@@ -182,7 +182,7 @@ test("улика: неполная связь ловится одинаково 
 
 test("улика: категория из импортированного модуля доезжает до проверки", async () => {
   const { программа } = await связать(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
     "svyaz.flang",
   )
   const имена = (программа.categories ?? []).map((узел) => узел.name).sort()
@@ -249,7 +249,7 @@ test("программа без категорий не получает от с
 
 test("подделка: перевод, потерявший поле, отвергается — и отказ несёт контрпример", async () => {
   const итог = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": ПОТЕРЯННОЕ_ПОЛЕ },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ПОТЕРЯННОЕ_ПОЛЕ },
     "svyaz.flang",
   )
   assert.ok(итог.коды.includes("FLANG_FUNCTOR_SQUARE"), `вышло ${JSON.stringify(итог.коды)}`)
@@ -268,7 +268,7 @@ test("подделка: перевод, потерявший поле, отве�
 
 test("подделка: честный перевод проходит — проверка умеет не только краснеть", async () => {
   const итог = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
     "svyaz.flang",
   )
   assert.deepEqual(итог.коды, [], `вышло ${JSON.stringify(итог.сообщения)}`)
@@ -283,7 +283,7 @@ test("подделка: перевод не той формы отвергает
      образ, то есть «Отгрузка». Это ДОКАЗЫВАЕТСЯ, и код у него свой. */
   const кривая = ЧЕСТНАЯ.replace("даёт «Отгрузка по заказу»", "даёт «Отменить заказ»")
   const итог = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": кривая },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": кривая },
     "svyaz.flang",
   )
   assert.ok(итог.коды.includes("FLANG_FUNCTOR_TRANSLATION"), `вышло ${JSON.stringify(итог.коды)}`)
@@ -296,7 +296,7 @@ test("подделка: перевод не той формы отвергает
 test("подделка: перевод, называющий несуществующую функцию, отвергается по имени", async () => {
   const кривая = ЧЕСТНАЯ.replace("даёт «Отгрузка по заказу»", "даёт «Такой функции нет»")
   const итог = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": кривая },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": кривая },
     "svyaz.flang",
   )
   assert.ok(итог.коды.includes("FLANG_UNKNOWN_NAME"), `вышло ${JSON.stringify(итог.коды)}`)
@@ -309,7 +309,7 @@ test("связь без переводов остаётся допущением
      «проверено» о нуле сравнений — это подмена «доказано» на «посмотрели». */
   const безПеревода = ЧЕСТНАЯ.replace(" даёт «Отгрузка по заказу»", "")
   const итог = await проверить(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": безПеревода },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": безПеревода },
     "svyaz.flang",
   )
   assert.deepEqual(итог.коды, [])
@@ -320,9 +320,9 @@ test("связь без переводов остаётся допущением
 
 /* ─────────────────────── настоящий пример репозитория ────────────────────── */
 
-test("пример flang/examples/cat/moduli: три модуля согласованы, и это посчитано", async () => {
+test("пример flang/examples/cat/modules: три модуля согласованы, и это посчитано", async () => {
   const { readFileSync } = await import("node:fs")
-  const входной = join(примерКаталог, "soglasovanie.flang")
+  const входной = join(примерКаталог, "reconciliation.flang")
   const исходник = readFileSync(входной, "utf8")
   const { diagnostics: бедыСвязывания, ...программа } = await linkProgram(входной, исходник, parse)
   assert.deepEqual(бедыСвязывания, [])
@@ -344,7 +344,7 @@ test("пример flang/examples/cat/moduli: три модуля согласо
 
 test("пример: композиция стрелок тоже входит в квадрат, а не пропускается молча", async () => {
   const { readFileSync } = await import("node:fs")
-  const входной = join(примерКаталог, "soglasovanie.flang")
+  const входной = join(примерКаталог, "reconciliation.flang")
   const { diagnostics: _, ...программа } = await linkProgram(входной, readFileSync(входной, "utf8"), parse)
   const итог = checkFunctorSquares(программа)
   /* Три квадрата на связь — это две образующие стрелки и их композиция. Считать
@@ -366,7 +366,7 @@ test("пример: композиция стрелок тоже входит в
  *     контрпример» — нет ни кода, ни контрпримера;
  *   • «подделка: честный перевод проходит — проверка умеет не только краснеть» —
  *     `checked` пуст, число квадратов не с чем сравнить;
- *   • «пример flang/examples/cat/moduli: три модуля согласованы, и это
+ *   • «пример flang/examples/cat/modules: три модуля согласованы, и это
  *     посчитано» — `checked` пуст;
  *   • «пример: композиция стрелок тоже входит в квадрат» — то же.
  *
@@ -382,7 +382,7 @@ test("пример: композиция стрелок тоже входит в
  */
 test("изъятие: пустая проверка квадрата не находит подделки — значит проверка работает", async () => {
   const { программа } = await связать(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": ПОТЕРЯННОЕ_ПОЛЕ },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ПОТЕРЯННОЕ_ПОЛЕ },
     "svyaz.flang",
   )
   /* Подмена, а не правка исходника: проверка обязана ловить подделку СЕЙЧАС, а
@@ -397,7 +397,7 @@ test("изъятие: пустая проверка квадрата не нах
 
 test("изъятие: связывание без категорий возвращает дыру, ради которой всё написано", async () => {
   const { программа } = await связать(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": связь("заказ.отменён", "") },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": связь("заказ.отменён", "") },
     "svyaz.flang",
   )
   /* Программа-тень: та же самая, но категорий в ней нет — ровно то, что отдавал
@@ -425,7 +425,7 @@ test("аксиом ноль: слой связи модулей не добав�
 
 test("квадрат не выдаёт себя за доказательство: сетка конечна и названа числом", async () => {
   const { программа } = await связать(
-    { "zakazy.flang": ЗАКАЗЫ, "otgruzka.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
+    { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
     "svyaz.flang",
   )
   const итог = checkFunctorSquares(программа)

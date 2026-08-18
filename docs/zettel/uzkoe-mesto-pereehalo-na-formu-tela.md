@@ -45,11 +45,11 @@
 Отдельно измерено и сказано против ожиданий: **вычисление замкнутой цели на этой
 выборке закрывает 0 из 20**. Все базы индукции в двадцатке либо уже закрыты
 подходящим примером, либо содержат свободное имя, которое вычислением не убрать.
-Отдача этой работы лежит в леммах (`docs/lemmy-otchet.md`), а не в обычных
+Отдача этой работы лежит в леммах (`docs/lemmas-report.md`), а не в обычных
 функциях библиотеки.
 
 Улики: `docs/zamer2/` (20 файлов с настоящими текстами отказов), отчёт
-`docs/zamer-tseny-2.md`, журнал с секундомером `benchmarks/zamer-tseny/zhurnal.md`.
+`docs/benchmark-proof-cost-2.md`, журнал с секундомером `benchmarks/zamer-tseny/zhurnal.md`.
 
 Связано: [[tsena-dokazatelstva-0-iz-20]], [[induktsii-net-u-vstroennykh-tipov]],
 [[tavtologiya-zakryvaetsya-darom]], [[dokazano-ne-znachit-pravilno]],

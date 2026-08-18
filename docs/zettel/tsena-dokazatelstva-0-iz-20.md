@@ -30,7 +30,7 @@
 
 **Улики не пересказаны, а сохранены**: 20 файлов работы в `docs/zamer/` с
 настоящими текстами отказов. Ветка `work/zamer-tseny`, отчёт
-`docs/zamer-tseny-dokazatelstva.md`, 663 строк.
+`docs/benchmark-proof-cost.md`, 663 строк.
 
 **Замер повторён 16 августа: стало 2 из 20.** Те же двадцать функций, основание
 `origin/main` = `17d6853`. Ноль не устоял, а вместе с ним не устояла и фраза
@@ -38,7 +38,7 @@
 теоремы, одной строкой постусловия**. Что при этом НЕ изменилось: теорем написано
 14, принято ядром по-прежнему 0; тесты нашли те же четыре ошибки, ни одна не
 починена; новых ошибок не нашла ни одна из двух работ. Разбор — в
-[[uzkoe-mesto-pereehalo-na-formu-tela]] и в `docs/zamer-tseny-2.md`.
+[[uzkoe-mesto-pereehalo-na-formu-tela]] и в `docs/benchmark-proof-cost-2.md`.
 
 Связано: [[induktsii-net-u-vstroennykh-tipov]], [[uslovie-revolyutsii]],
 [[nevyskazyvaemoe-dorozhe]], [[otritsatelnyy-rezultat-tsenen]],

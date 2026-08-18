@@ -124,9 +124,9 @@ make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 Повторить:
 
 ```sh
-node scripts/wasm-sverka.mjs --stack 1048576                     # node:wasi
-node scripts/wasm-sverka.mjs --stack 1048576 --host wasmtime     # wasmtime
-node scripts/wasm-sverka.mjs                                     # умолчание: мелкий стек, §7
+node scripts/wasm-compare.mjs --stack 1048576                     # node:wasi
+node scripts/wasm-compare.mjs --stack 1048576 --host wasmtime     # wasmtime
+node scripts/wasm-compare.mjs                                     # умолчание: мелкий стек, §7
 ```
 
 ---
@@ -502,15 +502,15 @@ echo '{"fn":"Сортировка слиянием","args":[{"l":[{"n":"3"},{"n"
   | ~/.local/bin/wasmtime run -W max-wasm-stack=8388608 /tmp/ms/flang_cli
 
 # 3. Сверка всего корпуса (94 программы, 8799 точек)
-node scripts/wasm-sverka.mjs --stack 1048576 --host wasmtime
-node scripts/wasm-sverka.mjs --stack 1048576            # то же под node:wasi
-node scripts/wasm-sverka.mjs                            # умолчание: видно ловушку §7
+node scripts/wasm-compare.mjs --stack 1048576 --host wasmtime
+node scripts/wasm-compare.mjs --stack 1048576            # то же под node:wasi
+node scripts/wasm-compare.mjs                            # умолчание: видно ловушку §7
 
 # 4. Потолок памяти: где программа перестаёт помещаться
-node scripts/wasm-potolok.mjs --n 1000,2000,4000,8000,12000
+node scripts/wasm-ceiling.mjs --n 1000,2000,4000,8000,12000
 
 # 5. Размер, запуск, скорость
-node scripts/wasm-skorost.mjs --repeats 7
+node scripts/wasm-speed.mjs --repeats 7
 
 # 6. Точка раскрутки: компилятор flang в WebAssembly
 cp -r bootstrap /tmp/boot-wasm
@@ -524,9 +524,9 @@ make -C /tmp/boot-wasm CC="clang --target=wasm32-wasi" LDLIBS="-lm" -j4
 | файл | что делает |
 |---|---|
 | `scripts/wasm-run.mjs` | запускает модуль поверх `node:wasi`; `FLANG_WASM_PAMYAT=1` печатает размер линейной памяти |
-| `scripts/wasm-sverka.mjs` | корпус через два бинарника, побайтовая сверка ответов |
-| `scripts/wasm-potolok.mjs` | на каком размере входа программа перестаёт помещаться |
-| `scripts/wasm-skorost.mjs` | размер модуля, цена запуска, скорость счёта |
+| `scripts/wasm-compare.mjs` | корпус через два бинарника, побайтовая сверка ответов |
+| `scripts/wasm-ceiling.mjs` | на каком размере входа программа перестаёт помещаться |
+| `scripts/wasm-speed.mjs` | размер модуля, цена запуска, скорость счёта |
 
 Ни один из них не трогает `flang/src/emit/` — цель печати не написана и не
 нужна.

@@ -74,3 +74,16 @@ jobs:
         with:
           node-version: 24
       - run: node scripts/check-licensing.mjs
+
+  # Ссылки в документации — по той же причине отдельно: ни зависимостей, ни
+  # сборки, зато отвечает за пять секунд. Сборка сайта проверяет ссылки на 107
+  # своих страницах; этот сторож — на всех 154 документах дерева, включая те,
+  # что на сайт не попадают.
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/link-guard.mjs

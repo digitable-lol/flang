@@ -25,9 +25,9 @@
   мерить не то, что спрашивали. Спрашивали: теряет ли что-нибудь ПЕРЕХОД в wasm.
 
   Запуск:
-    node scripts/wasm-sverka.mjs                # весь корпус
-    node scripts/wasm-sverka.mjs --limit 10     # первые 10 программ
-    node scripts/wasm-sverka.mjs --keep         # не удалять каталог сборки
+    node scripts/wasm-compare.mjs                # весь корпус
+    node scripts/wasm-compare.mjs --limit 10     # первые 10 программ
+    node scripts/wasm-compare.mjs --keep         # не удалять каталог сборки
 
   Нужны: `cc`, `clang` с целью wasm32-wasi и установленным wasi-libc
   (Ubuntu: пакеты `clang`, `lld`, `wasi-libc`, `libclang-rt-dev-wasm32`),
@@ -86,7 +86,7 @@ const WASM_CC = ["clang", "--target=wasm32-wasi"]
 const NATIVE_CC = ["cc"]
 const runner = join(root, "scripts", "wasm-run.mjs")
 
-const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-sverka-"))
+const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-compare-"))
 
 /* ── значения на проводе: как в emit-c.test.mjs ───────────────────────────── */
 

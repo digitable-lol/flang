@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Предпросмотр сайта одной самодостаточной страницей.
 //
-//   node docs/site/predprosmotr.mjs > /куда/предпросмотр.html
+//   node docs/site/preview.mjs > /куда/предпросмотр.html
 //
 // Зачем отдельно от build.mjs: настоящий сайт — 84 страницы со ссылками между
 // файлами, и показать его можно только выкачав. Предпросмотр показывает три
@@ -12,21 +12,21 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { разобрать, экранировать } from './markdown.mjs';
-import { РАЗДЕЛЫ, БАЗА_ЗНАНИЙ } from './karta.mjs';
+import { РАЗДЕЛЫ, БАЗА_ЗНАНИЙ } from './sitemap.mjs';
 
 const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const читать = (п) => readFileSync(join(КОРЕНЬ, п), 'utf8');
 
 const ПОКАЗЫВАЕМ = [
   { якорь: 'chto-takoe', из: 'docs/site/index.md', имя: 'Что такое flang' },
-  { якорь: 'nachalo', из: 'docs/site/nachalo.md', имя: 'Первая программа' },
-  { якорь: 'dokazatelstva', из: 'docs/site/dokazatelstva.md', имя: 'Зачем и как' },
+  { якорь: 'nachalo', из: 'docs/site/getting-started.md', имя: 'Первая программа' },
+  { якорь: 'dokazatelstva', из: 'docs/site/proofs.md', имя: 'Зачем и как' },
 ];
 
 const адресаПоказанных = new Map([
   ['index.html', '#chto-takoe'],
-  ['nachalo.html', '#nachalo'],
-  ['dokazatelstva.html', '#dokazatelstva'],
+  ['getting-started.html', '#nachalo'],
+  ['proofs.html', '#dokazatelstva'],
 ]);
 
 // Боковое меню: настоящая карта сайта. Страницы, которых нет в предпросмотре,

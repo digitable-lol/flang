@@ -12,7 +12,7 @@ WebAssembly писать не надо: он был бы девятым мест
 компилятором.
 
 **Чем подтверждено.** Ветка `work/wasm-cherez-c` от `6e186c5`, отчёт
-`docs/wasm-cherez-c.md`, оснастка `scripts/wasm-sverka.mjs`. Корпус
+`docs/wasm-via-c.md`, оснастка `scripts/wasm-compare.mjs`. Корпус
 `flang/test/corpus-grid.mjs` — 94 программы, **8799 точек, расхождений 0** — под
 двумя средами WASI (`node:wasi` и wasmtime 47.0.3). Правок в исходниках ноль,
 предупреждений ноль под `-std=c99 -Wall -Wextra -Werror -pedantic -O2`.

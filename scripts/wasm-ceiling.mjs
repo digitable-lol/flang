@@ -18,9 +18,9 @@
   памяти модуля (RSS процесса мерил бы заодно и сам Node).
 
   Запуск:
-    node scripts/wasm-potolok.mjs
-    node scripts/wasm-potolok.mjs --n 100,250,500,1000,1500,2000
-    node scripts/wasm-potolok.mjs --stack 1048576
+    node scripts/wasm-ceiling.mjs
+    node scripts/wasm-ceiling.mjs --n 100,250,500,1000,1500,2000
+    node scripts/wasm-ceiling.mjs --stack 1048576
 */
 
 import { execFileSync } from "node:child_process"
@@ -43,7 +43,7 @@ const функция = читать("--fn", "Сортировать")
 const исходник = читать("--file", "flang/stdlib/lists.flang")
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
-const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-potolok-"))
+const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-ceiling-"))
 const runner = join(root, "scripts", "wasm-run.mjs")
 
 /* ── сборка обеих сторон из одного напечатанного C ───────────────────────── */

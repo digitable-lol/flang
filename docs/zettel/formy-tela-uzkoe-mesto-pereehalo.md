@@ -9,7 +9,7 @@
 | 16 августа вечером | **форма УТВЕРЖДЕНИЯ**: оно связывает результат со входом | не закрыта |
 
 **Чем подтверждено.** Ветка `work/formy-tela` на основании `origin/main`
-`8e62870`, отчёт `docs/formy-tela.md`, прогоны `docs/zamer2/instrumenty/prichiny.mjs` и
+`8e62870`, отчёт `docs/body-shapes.md`, прогоны `docs/zamer2/instrumenty/prichiny.mjs` и
 `docs/zamer2/instrumenty/tela2.mjs`.
 
 Тел, с которых ядро СТРОИТ посылки индукции: **58 из 208 стало 96 из 208**

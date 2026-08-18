@@ -2848,7 +2848,7 @@ AST идёт через «Взять поле», а не по прямому а�
 | `processes`, `supervisors`, `runs` (`flang/conc/examples/*`) | 10 |
 | восемь родов теорката: `morphisms`, `isomorphisms`, `bifunctors`, `monoids`, `embeddings`, `intersections`, `categories`, `monads` | 12 |
 | `plans` (`examples/io/link-report.flang`) | 1 |
-| функтор из `legacy` (`cat/moduli/soglasovanie.flang`, `cat/natural-square.flang`) | вдобавок к 2 из тех же 12 |
+| функтор из `legacy` (`cat/moduli/reconciliation.flang`, `cat/natural-square.flang`) | вдобавок к 2 из тех же 12 |
 
 Ни в одном из тринадцати наборов нет ни морфизма, ни процесса, ни плана: зелёная
 сверка означала там «не на чем разойтись», а не «сошлось». Это ровно тот случай,

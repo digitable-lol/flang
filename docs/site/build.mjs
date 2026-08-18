@@ -17,7 +17,7 @@ import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { разобрать, экранировать } from './markdown.mjs';
-import { РАЗДЕЛЫ, БАЗА_ЗНАНИЙ, ПРИМЕРЫ_НА_ГЛАВНОЙ } from './karta.mjs';
+import { РАЗДЕЛЫ, БАЗА_ЗНАНИЙ, ПРИМЕРЫ_НА_ГЛАВНОЙ, ПЕРЕЕЗДЫ, ПЕРЕЕЗДЫ_ЗАМЕТОК } from './sitemap.mjs';
 
 const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ВЫХОД = join(КОРЕНЬ, 'docs', 'site', 'out');
@@ -216,8 +216,25 @@ if (беды.length) {
   process.exit(1);
 }
 
+// ── Переезды ────────────────────────────────────────────────────────────────
+// Старый адрес обязан вести на СУЩЕСТВУЮЩУЮ страницу, иначе переезд — это
+// вторая битая ссылка вместо одной. И он не имеет права занимать адрес живой
+// страницы: тогда страница молча пропадёт под перенаправлением.
+const переезды = { ...ПЕРЕЕЗДЫ, ...ПЕРЕЕЗДЫ_ЗАМЕТОК };
+for (const [старый, новый] of Object.entries(переезды)) {
+  if (!адресаСтраниц.has(новый)) беды.push(`переезд ${старый} ведёт в никуда: ${новый}`);
+  if (адресаСтраниц.has(старый)) беды.push(`переезд ${старый} занимает адрес живой страницы`);
+}
+
+if (беды.length) {
+  console.error('Сборка сайта ОТКАЗЫВАЕТ. Беды:');
+  for (const б of беды) console.error('  · ' + б);
+  console.error(`\nвсего бед: ${беды.length}`);
+  process.exit(1);
+}
+
 if (ТОЛЬКО_ПРОВЕРКА) {
-  console.log(`Проверка прошла: страниц ${страницы.length} (из них заметок ${заметки.length}), битых ссылок 0.`);
+  console.log(`Проверка прошла: страниц ${страницы.length} (из них заметок ${заметки.length}), переездов ${Object.keys(переезды).length}, битых ссылок 0.`);
   process.exit(0);
 }
 
@@ -226,5 +243,11 @@ mkdirSync(ВЫХОД, { recursive: true });
 for (const с of страницы) writeFileSync(join(ВЫХОД, с.адрес), страницаЦеликом(с));
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'style.css'), join(ВЫХОД, 'style.css'));
 
-console.log(`Собрано: страниц ${страницы.length}, из них заметок базы знаний ${заметки.length}.`);
+// Переезд — одна строка: и мгновенное перенаправление, и ссылка руками на
+// случай, если <meta refresh> выключен.
+for (const [старый, новый] of Object.entries(переезды)) {
+  writeFileSync(join(ВЫХОД, старый), `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Страница переехала · flang</title><link rel="canonical" href="${новый}"><meta http-equiv="refresh" content="0; url=${новый}"></head><body><p>Страница переехала: <a href="${новый}">${новый}</a></p></body></html>\n`);
+}
+
+console.log(`Собрано: страниц ${страницы.length}, из них заметок базы знаний ${заметки.length}; переездов ${Object.keys(переезды).length}.`);
 console.log(`Лежит в docs/site/out — откройте index.html.`);

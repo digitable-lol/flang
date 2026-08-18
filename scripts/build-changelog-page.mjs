@@ -34,9 +34,9 @@
  *
  * ── Как это стережётся ──────────────────────────────────────────────────────
  *
- * Файлы `docs/site/izmeneniya.md` и `docs/site/izmeneniya.json` печатаются
+ * Файлы `docs/site/changelog.md` и `docs/site/changelog.json` печатаются
  * отсюда и правятся ТОЛЬКО перепечаткой. Стережёт их
- * `flang/test/izmeneniya.test.mjs`: он перепечатывает страницу заново из git и
+ * `flang/test/changelog-page.test.mjs`: он перепечатывает страницу заново из git и
  * краснеет при первом расхождении — тем же приёмом, что
  * `flang/test/changelog.test.mjs` стережёт `CHANGELOG.md`.
  *
@@ -46,8 +46,8 @@
  * отсутствие.
  *
  * Запуск:
- *   node scripts/build-izmeneniya.mjs           напечатать
- *   node scripts/build-izmeneniya.mjs --check   сверить напечатанное с записанным
+ *   node scripts/build-changelog-page.mjs           напечатать
+ *   node scripts/build-changelog-page.mjs --check   сверить напечатанное с записанным
  */
 import { execFileSync, spawnSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
@@ -56,8 +56,8 @@ import { fileURLToPath } from "node:url"
 import { решение, словоПравок } from "./build-changelog.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../", import.meta.url))
-export const ПУТЬ_MD = fileURLToPath(new URL("../docs/site/izmeneniya.md", import.meta.url))
-export const ПУТЬ_JSON = fileURLToPath(new URL("../docs/site/izmeneniya.json", import.meta.url))
+export const ПУТЬ_MD = fileURLToPath(new URL("../docs/site/changelog.md", import.meta.url))
+export const ПУТЬ_JSON = fileURLToPath(new URL("../docs/site/changelog.json", import.meta.url))
 
 /** Версия формата снимка. Растёт, когда меняется состав полей. */
 const ВЕРСИЯ = 1
@@ -560,13 +560,13 @@ export function печатьMarkdown(сводка) {
   )
   строка()
   строка(
-    "Страница печатается `node scripts/build-izmeneniya.mjs` из истории репозитория. " +
-      "Править её руками бессмысленно: `flang/test/izmeneniya.test.mjs` печатает её " +
+    "Страница печатается `node scripts/build-changelog-page.mjs` из истории репозитория. " +
+      "Править её руками бессмысленно: `flang/test/changelog-page.test.mjs` печатает её " +
       "заново и краснеет при первом расхождении — и он же краснеет, если в ствол " +
       "приехало вливание, о котором страница не знает.",
   )
   строка()
-  строка("Журнал по релизам и по каждому коммиту — [Журнал изменений](zhurnal.html).")
+  строка("Журнал по релизам и по каждому коммиту — [Журнал изменений](journal.html).")
   строка()
   строка(
     "Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой " +
@@ -721,7 +721,7 @@ export function печатьMarkdown(сводка) {
  * Вся ли история под рукой, чтобы сверять.
  *
  * Шагов ствола видно меньше, чем записано, — это клон без истории. Тот же
- * вопрос и теми же словами задаёт `flang/test/izmeneniya.test.mjs`; ответ обязан
+ * вопрос и теми же словами задаёт `flang/test/changelog-page.test.mjs`; ответ обязан
  * совпадать, иначе сверка и сторож разошлись бы в том, что считать бедой.
  */
 export function историяПолна(снимок) {
@@ -749,7 +749,7 @@ function напечатать() {
 }
 
 /**
- * Сверка — те же три вопроса, что задаёт `flang/test/izmeneniya.test.mjs`, и
+ * Сверка — те же три вопроса, что задаёт `flang/test/changelog-page.test.mjs`, и
  * ровно в том же порядке.
  *
  * Печатать заново от HEAD и требовать совпадения было бы СТРОЖЕ теста — и
@@ -769,7 +769,7 @@ function сверить() {
     записанныйMd = readFileSync(ПУТЬ_MD, "utf8")
   } catch (беда) {
     console.error(`Страница «Что изменилось» не читается: ${беда.message}`)
-    console.error("\nЛечится одной командой: node scripts/build-izmeneniya.mjs")
+    console.error("\nЛечится одной командой: node scripts/build-changelog-page.mjs")
     return 1
   }
   const снимок = JSON.parse(записанныйJson)
@@ -782,8 +782,8 @@ function сверить() {
   const полна = историяПолна(снимок)
   if (!полна.полна) {
     if (записанныйMd !== печатьMarkdown(снимок)) {
-      console.error("izmeneniya.md не совпадает с печатью из izmeneniya.json — страницу правили руками")
-      console.error("\nЛечится одной командой: node scripts/build-izmeneniya.mjs")
+      console.error("changelog.md не совпадает с печатью из changelog.json — страницу правили руками")
+      console.error("\nЛечится одной командой: node scripts/build-changelog-page.mjs")
       return 1
     }
     console.log(`Полная сверка пропущена: ${полна.причина}.`)
@@ -792,8 +792,8 @@ function сверить() {
   }
 
   const свежая = собратьСводку(снимок.голова)
-  if (записанныйJson !== сериализовать(свежая)) беды.push("izmeneniya.json разошёлся с историей")
-  if (записанныйMd !== печатьMarkdown(свежая)) беды.push("izmeneniya.md разошёлся с историей")
+  if (записанныйJson !== сериализовать(свежая)) беды.push("changelog.json разошёлся с историей")
+  if (записанныйMd !== печатьMarkdown(свежая)) беды.push("changelog.md разошёлся с историей")
 
   const пропущенные = гит([
     "log",
@@ -810,7 +810,7 @@ function сверить() {
   if (беды.length) {
     console.error("Страница «Что изменилось» разошлась с историей:")
     for (const б of беды) console.error("  ✗ " + б)
-    console.error("\nЛечится одной командой: node scripts/build-izmeneniya.mjs")
+    console.error("\nЛечится одной командой: node scripts/build-changelog-page.mjs")
     return 1
   }
   console.log(

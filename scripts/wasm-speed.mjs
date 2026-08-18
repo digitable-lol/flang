@@ -14,8 +14,8 @@
   счёт; для программы, которую запускают на каждый запрос, — запуск.
 
   Запуск:
-    node scripts/wasm-skorost.mjs
-    node scripts/wasm-skorost.mjs --repeats 9 --host wasmtime
+    node scripts/wasm-speed.mjs
+    node scripts/wasm-speed.mjs --repeats 9 --host wasmtime
 */
 
 import { execFileSync } from "node:child_process"
@@ -45,7 +45,7 @@ const hostStack = Number(читать("--host-stack", "8388608"))
 const стек = Number(читать("--stack", "8388608"))
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
-const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-skorost-"))
+const workdir = mkdtempSync(join(tmpdir(), "flang-wasm-speed-"))
 
 /* ── задачи: настоящие программы, а не «hello world» ─────────────────────── */
 

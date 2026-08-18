@@ -3,7 +3,7 @@
 # Why this exists
 
 Here the rule is written once, in a form a domain expert can read
-(an excerpt from [`examples/utilities/discount.fts`](../../examples/utilities/discount.fts)):
+(an excerpt from `examples/utilities/discount.fts`):
 
 ```fts
 категория «Продажи»

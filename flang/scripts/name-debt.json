@@ -423,6 +423,21 @@
     "flang/examples/surfaces/factorial.eo.flang": [
       "elem"
     ],
+    "flang/examples/web/shortener/plan.flang": [
+      "кд",
+      "хр"
+    ],
+    "flang/examples/web/shortener/service.flang": [
+      "вр",
+      "кд",
+      "мт",
+      "пр",
+      "тл",
+      "цл"
+    ],
+    "flang/examples/web/shortener/store.flang": [
+      "акк"
+    ],
     "flang/self/bootstrap/compiler.flang": [
       "акк",
       "в",
@@ -599,6 +614,28 @@
       "ф",
       "э"
     ],
+    "flang/self/lsp.flang": [
+      "а",
+      "акк",
+      "в",
+      "д",
+      "до",
+      "з",
+      "и",
+      "м",
+      "н",
+      "о",
+      "от",
+      "п",
+      "р",
+      "с",
+      "с2",
+      "т",
+      "у",
+      "ф",
+      "э",
+      "эл"
+    ],
     "flang/self/monad-expand.flang": [
       "акк"
     ],
@@ -771,6 +808,10 @@
       "оп",
       "то ли"
     ],
+    "flang/stdlib/datetime.flang": [
+      "акк",
+      "симв"
+    ],
     "flang/stdlib/hashmap.flang": [
       "акк",
       "д",
@@ -788,6 +829,34 @@
       "х",
       "хв",
       "хп",
+      "эл"
+    ],
+    "flang/stdlib/http.flang": [
+      "акк",
+      "вг",
+      "вр",
+      "вх",
+      "г",
+      "ж",
+      "зн",
+      "кд",
+      "мт",
+      "н",
+      "нм",
+      "пг",
+      "пр",
+      "пх",
+      "сб",
+      "ск",
+      "т",
+      "тл",
+      "х",
+      "цл"
+    ],
+    "flang/stdlib/json.flang": [
+      "акк",
+      "п",
+      "симв",
       "эл"
     ],
     "flang/stdlib/lists.flang": [

@@ -31333,10 +31333,10 @@ fl_status kompilyator_flang_programma_s_obyortkoy(fl_ctx *ctx, fl_value programm
  * Функция flang «Знач это да».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param zn — «зн»: «Знач»
+ * @param znachenie — «значение»: «Знач»
  * @return значение
  */
-fl_status kompilyator_flang_znach_eto_da(fl_ctx *ctx, fl_value zn, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_znach_eto_da(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Прогон дал да».

@@ -75291,18 +75291,18 @@ fl_status kompilyator_flang_tochka_li(fl_ctx *ctx, fl_value tip, fl_value *resul
 fl_status kompilyator_flang_obschiy_masshtab(fl_ctx *ctx, fl_value pervyy, fl_value vtoroy, fl_value *result, fl_error *error) {
   fl_value fl_t15299 = fl_nothing();
   FL_TRY(kompilyator_flang_masshtab_tipa(ctx, pervyy, &fl_t15299, error));
-  const fl_value ma = fl_t15299; /* пусть «ма» */
+  const fl_value masshtab_pervogo = fl_t15299; /* пусть «масштаб первого» */
   fl_value fl_t15300 = fl_nothing();
   FL_TRY(kompilyator_flang_masshtab_tipa(ctx, vtoroy, &fl_t15300, error));
-  const fl_value mb = fl_t15300; /* пусть «мб» */
+  const fl_value masshtab_vtorogo = fl_t15300; /* пусть «масштаб второго» */
   bool fl_t15301 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(ma, mb)), &fl_t15301, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(masshtab_pervogo, masshtab_vtorogo)), &fl_t15301, error));
   if (fl_t15301) {
-    *result = ma;
+    *result = masshtab_pervogo;
     return FL_OK;
   } else {
     bool fl_t15302 = false;
-    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(ma, fl_number(0.0))), &fl_t15302, error));
+    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(masshtab_pervogo, fl_number(0.0))), &fl_t15302, error));
     fl_value fl_t15303 = fl_nothing();
     if (fl_t15302) {
       fl_value fl_t15304 = fl_nothing();
@@ -75314,11 +75314,11 @@ fl_status kompilyator_flang_obschiy_masshtab(fl_ctx *ctx, fl_value pervyy, fl_va
     bool fl_t15305 = false;
     FL_TRY(fl_cond(ctx, fl_t15303, &fl_t15305, error));
     if (fl_t15305) {
-      *result = mb;
+      *result = masshtab_vtorogo;
       return FL_OK;
     } else {
       bool fl_t15306 = false;
-      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(mb, fl_number(0.0))), &fl_t15306, error));
+      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(masshtab_vtorogo, fl_number(0.0))), &fl_t15306, error));
       fl_value fl_t15307 = fl_nothing();
       if (fl_t15306) {
         fl_value fl_t15308 = fl_nothing();
@@ -75330,7 +75330,7 @@ fl_status kompilyator_flang_obschiy_masshtab(fl_ctx *ctx, fl_value pervyy, fl_va
       bool fl_t15309 = false;
       FL_TRY(fl_cond(ctx, fl_t15307, &fl_t15309, error));
       if (fl_t15309) {
-        *result = ma;
+        *result = masshtab_pervogo;
         return FL_OK;
       } else {
         *result = fl_number(0.0 - 1.0);
@@ -130596,9 +130596,9 @@ fl_status kompilyator_flang_imena_funkciy_programmy(fl_ctx *ctx, fl_value progra
   size_t fl_t24476 = 0;
   FL_TRY(fl_list_alloc(ctx, fl_t24474.as.list.count, &fl_t24475, error));
   for (size_t fl_t24477 = 0; fl_t24477 < fl_t24474.as.list.count; fl_t24477 += 1) {
-    const fl_value f = fl_t24474.as.list.items[fl_t24477]; /* «ф» */
+    const fl_value funkciya = fl_t24474.as.list.items[fl_t24477]; /* «функция» */
     fl_value fl_t24478 = fl_nothing();
-    FL_TRY(kompilyator_flang_stroka_polya(ctx, f, kompilyator_flang_text_350, &fl_t24478, error));
+    FL_TRY(kompilyator_flang_stroka_polya(ctx, funkciya, kompilyator_flang_text_350, &fl_t24478, error));
     fl_t24475[fl_t24476] = fl_t24478;
     fl_t24476 += 1;
   }
@@ -130693,13 +130693,13 @@ fl_status kompilyator_flang_programma_s_obyortkoy(fl_ctx *ctx, fl_value programm
  * Функция flang «Знач это да».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param zn — «зн»: «Знач»
+ * @param znachenie — «значение»: «Знач»
  * @return значение
  */
-fl_status kompilyator_flang_znach_eto_da(fl_ctx *ctx, fl_value zn, fl_value *result, fl_error *error) {
-  if (fl_variant_is(zn, "Знач признак")) {
+fl_status kompilyator_flang_znach_eto_da(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error) {
+  if (fl_variant_is(znachenie, "Знач признак")) {
     fl_value p = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, zn, "признак", &p, error)); /* «признак» */
+    FL_TRY(fl_variant_field(ctx, znachenie, "признак", &p, error)); /* «признак» */
     *result = p;
     return FL_OK;
   } else {
@@ -196195,7 +196195,7 @@ static const fl_entry_param kompilyator_flang_entry_params[] = {
   { "Программа с обёрткой", "программа", 14 },
   { "Программа с обёрткой", "имя", 0 },
   { "Программа с обёрткой", "цель", 14 },
-  { "Знач это да", "зн", 222 },
+  { "Знач это да", "значение", 222 },
   { "Прогон дал да", "итог", 252 },
   { "Вычислить замкнутую", "цель", 14 },
   { "Вычислить замкнутую", "программа", 14 },

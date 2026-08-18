@@ -39685,6 +39685,80 @@ fl_status kompilyator_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programm
 fl_status kompilyator_flang_proverit_ishodniki(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Проверить связанное с примерами».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param predel_vitkov — «предел витков»: число
+ * @param predel_glubiny — «предел глубины»: число
+ * @return значение: «Итог проверки исходников»
+ */
+fl_status kompilyator_flang_proverit_svyazannoe_s_primerami(fl_ctx *ctx, fl_value svyazano, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог примерами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: «Итог проверки исходников»
+ */
+fl_status kompilyator_flang_itog_primerami(fl_ctx *ctx, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беды примеров».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param predel_vitkov — «предел витков»: число
+ * @param predel_glubiny — «предел глубины»: число
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_bedy_primerov(fl_ctx *ctx, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беда примера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka_itoga — «строка итога»: «Итог примера»
+ * @return значение: «Беда»
+ */
+fl_status kompilyator_flang_beda_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова примера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka_itoga — «строка итога»: «Итог примера»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_slova_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беды примеров при проверке».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Беда»
+ */
+fl_status kompilyator_flang_bedy_primerov_pri_proverke(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел витков проверки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status kompilyator_flang_predel_vitkov_proverki(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел глубины проверки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status kompilyator_flang_predel_glubiny_proverki(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Проверить связанное».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.

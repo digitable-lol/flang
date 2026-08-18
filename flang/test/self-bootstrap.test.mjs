@@ -91,7 +91,7 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { test } from "node:test"
 import { fileURLToPath } from "node:url"
@@ -1426,6 +1426,57 @@ test("flang test: примеры прогоняются, и счёт тот же
       `${файл}: счёт разошёлся с эталоном`,
     )
   }
+})
+
+/**
+ * `flang check` БИНАРНИКА тоже гоняет примеры — и потому не печатает программу,
+ * чей пример не сошёлся.
+ *
+ * До этой правки бинарник вёл себя ровно как эталон вёл себя до неё же: на
+ * `примеры.flang` (пример «Заведомо неверный»: `«Удвоить»` от 2 при
+ * `ожидается 5`) `flang_cli check` отвечал «проверено — разбор, типы,
+ * завершаемость; замечаний нет» и кодом 0, а `flang_cli emit --target c --out …`
+ * — кодом 0 и 263 793 байтами C в шести файлах. Совпадение двух реализаций тут
+ * не оправдание: обе молчали об одном и том же, и односторонняя починка
+ * развела бы их.
+ *
+ * Дифференциально, как всё в этом файле: коды сверяются с эталоном на Node, а
+ * не с написанным здесь словом. Напиши код сюда строкой — и проба проверяла бы,
+ * что бинарник согласен с ТЕСТОМ, а не с эталоном.
+ */
+test("flang check: ложный пример отвергается, и печать отменяется", (t) => {
+  if (flang1 === null) {
+    missingToolchain(t, "c", "компилятора C нет — flang₁ не собран, пропуск")
+    return
+  }
+  /* Сперва ГОДНЫЙ файл с примерами: инструмент, отвергающий всё, ничего не
+     доказывает. У «правды» два примера, и оба сходятся. */
+  const правда = позвать("check", "правда.flang")
+  assert.equal(правда.status, 0, `годную программу с примерами отвергли: ${правда.stdout}${правда.stderr}`)
+
+  const итог = позвать("check", "примеры.flang")
+  assert.equal(итог.status, 1, "программа с ложным примером принята бинарником")
+
+  const эталон = spawnSync(process.execPath, [join(корень, "flang/bin/flang.mjs"), "check", "примеры.flang"], {
+    encoding: "utf8",
+    cwd: человеческое(),
+  })
+  assert.equal(эталон.status, 1, "эталон не отверг ложный пример — сверять нечего")
+  const ждём = JSON.parse(эталон.stderr).diagnostics.map((беда) => беда.code).sort()
+  const наши = [...итог.stderr.matchAll(/\bFLANG_[A-Z_]+/gu)].map((пара) => пара[0]).sort()
+  assert.deepEqual(наши, ждём, `коды разошлись: бинарник ${JSON.stringify(наши)}, эталон ${JSON.stringify(ждём)}`)
+  assert.deepEqual(ждём, ["FLANG_EXAMPLE"], `не пример отверг: ${ждём}`)
+  /* Отказ обязан назвать пример и функцию — иначе искать испорченную строку
+     придётся вторым инструментом. */
+  assert.match(итог.stderr, /пример «Заведомо неверный» функции «Удвоить»/u, итог.stderr)
+
+  /* И главное: печать. Непроверенное не печатается — в этом весь смысл
+     проверок, и до правки бинарник печатал шесть файлов и уходил с нулём. */
+  const куда = join(workdir, "primery-emit")
+  mkdirSync(куда, { recursive: true })
+  const печать = позвать("emit", "примеры.flang", "--target", "c", "--out", куда)
+  assert.equal(печать.status, 1, `печать не отменена: ${печать.stdout}${печать.stderr}`)
+  assert.equal(readdirSync(куда).length, 0, `напечатано ${readdirSync(куда).length} файлов непроверенного`)
 })
 
 test("flang run: аргумент вне объявленного типа отвергается тем же кодом", (t) => {

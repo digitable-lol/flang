@@ -213,7 +213,7 @@ fl_status stupen_1_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *e
 
 ## 4. Чего это стоит — по частям, строками
 
-Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **3993 строк**
+Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **3995 строк**
 на flang против **2015 строк** того же бэкенда на JS (`flang/src/emit/c.mjs`):
 коэффициент перевода **1.80×**, и он взят из дерева, а не из головы.
 

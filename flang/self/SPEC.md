@@ -40,31 +40,31 @@ newer», потому что компилятор языка написан на
 
 | Слой на JS | Строк | Файл на flang | Что делает |
 |---|---|---|---|
-| `src/lexer.mjs` | 1065 | `self/lexer.flang` | текст → токены, отступы значимы |
+| `src/lexer.mjs` | 1094 | `self/lexer.flang` | текст → токены, отступы значимы |
 | `src/parser.mjs` | 4401 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
 | `src/types.mjs` | 6675 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1788 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
-| `src/emit/c.mjs` | 2143 | `self/emit-c.flang` | печать в C99 |
+| `src/emit/c.mjs` | 2145 | `self/emit-c.flang` | печать в C99 |
 | `src/parser.mjs` | 4401 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
 | `src/types.mjs` | 6622 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1788 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
 | `src/emit/c.mjs` | 2015 | `self/emit-c.flang` | печать в C99 |
-| `src/parser.mjs` | 4434 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
+| `src/parser.mjs` | 4444 | `self/parser.flang` | токены → AST (SPEC, раздел 5) |
 | `src/types.mjs` | 6708 | `self/types.flang` | проверка и вывод типов, исчерпывающность |
 | `src/totality.mjs` | 1803 | `self/totality.flang` | анализ завершаемости: часть значения, числовая мера, точный шаг и объявленная мера |
 | `src/emit/c.mjs` | 2015 | `self/emit-c.flang` | печать в C99 |
-| `src/emit/go.mjs` | 1741 | `self/emit-go.flang` | печать в Go |
+| `src/emit/go.mjs` | 1743 | `self/emit-go.flang` | печать в Go |
 | `src/defunc.mjs` | 888 | `self/defunc.flang` | сторожа меры (числовой и полиморфный) и дефункционализация перед печатью |
 | `src/interpret.mjs` | 1098 | `self/interpret.flang` | вычисление AST: машина «кадр → значение» |
 | `src/defunc.mjs` | 831 | `self/defunc.flang` | сторожа меры (числовой и полиморфный) и дефункционализация перед печатью |
 | `src/interpret.mjs` | 1051 | `self/interpret.flang` | вычисление AST: машина «кадр → значение» |
 | `src/defunc.mjs` | 831 | `self/defunc.flang` | сторожа меры (числовой и полиморфный) и дефункционализация перед печатью |
 | `src/interpret.mjs` | 1144 | `self/interpret.flang` | вычисление AST: машина «кадр → значение» |
-| `src/emit/rust.mjs` | 1772 | `self/emit-rust.flang` | печать в Rust: библиотека без сборщика мусора и без паник |
-| `src/emit/elixir.mjs` | 1971 | `self/emit-elixir.flang` | печать в Elixir: процессы GenServer и супервизоры OTP |
-| `src/emit/java.mjs` | 1702 | `self/emit-java.flang` | печать в Java |
-| `src/emit/python.mjs` | 1636 | `self/emit-python.flang` | печать в Python |
-| `src/emit/csharp.mjs` | 1761 | `self/emit-csharp.flang` | печать в C# |
+| `src/emit/rust.mjs` | 1774 | `self/emit-rust.flang` | печать в Rust: библиотека без сборщика мусора и без паник |
+| `src/emit/elixir.mjs` | 1973 | `self/emit-elixir.flang` | печать в Elixir: процессы GenServer и супервизоры OTP |
+| `src/emit/java.mjs` | 1704 | `self/emit-java.flang` | печать в Java |
+| `src/emit/python.mjs` | 1638 | `self/emit-python.flang` | печать в Python |
+| `src/emit/csharp.mjs` | 1763 | `self/emit-csharp.flang` | печать в C# |
 | `proof/initial.mjs` | 1411 | `self/proof-initial.flang` | принцип индукции читается с объявления суммы и строится термом |
 | `proof/reduce.mjs` | 1928 | `self/proof-kernel.flang` | сведение цели к допущениям: три решающих правила и четыре переписки нормализации |
 | `src/obligations.mjs` | 373 | `self/obligations.flang` | постусловие и теорема сводятся в обязательство: что именно надо доказать, в виде данных |
@@ -784,7 +784,7 @@ OTP 27 `-0.0 =:= 0.0` истинно и литерал опирался бы н�
 ### `self/emit-java.flang`
 
 Состояние: 312 функций, 219 тотальных, 93 обычных. Напечатанная Java совпадает
-с эталоном (`src/emit/java.mjs`, 1702 строки) **побайтово** на 101 программе
+с эталоном (`src/emit/java.mjs`, 1704 строки) **побайтово** на 101 программе
 `.flang` репозитория (`flang/stdlib`, `flang/examples`, `flang/core`, а также
 `self/emit-c.flang` и собственный исходник) и на 19 моделях `.fts` через
 `compat.mjs` — вместе с постусловиями, которых в `.flang` репозитория нет.
@@ -848,7 +848,7 @@ OTP 27 `-0.0 =:= 0.0` истинно и литерал опирался бы н�
 ### `self/emit-python.flang`
 
 Состояние: 323 функции, 228 тотальных, 95 обычных. Напечатанный Python совпадает
-с эталоном (`src/emit/python.mjs`, 1636 строк) **побайтово** на 100 программах
+с эталоном (`src/emit/python.mjs`, 1638 строк) **побайтово** на 100 программах
 `.flang` репозитория (`flang/stdlib`, `flang/examples`, `flang/examples/leetcode`,
 `flang/core`, включая собственный исходник) — 400 файлов из 400, — и на 19
 моделях `.fts` через `compat.mjs`, где живут постусловия. Плюс синтетические

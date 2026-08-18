@@ -111,6 +111,11 @@ const МЕСТО = (span) =>
 function файлыКорпуса(каталог, найдено = []) {
   for (const имя of readdirSync(каталог)) {
     if (имя === "node_modules" || имя === ".git" || имя === ".claude" || имя === "dist") continue
+    /* `fixtures` — входы сторожей, а не программы корпуса: ветка work/io-twin
+       завела там четырнадцать объявлений `план`, из них тринадцать сломаны
+       НАРОЧНО. В корпусе они давали «plans» 15 вместо 1 и роняли раскладку
+       родов. До этой ветки в `fixtures/` не лежало ни одного .flang. */
+    if (имя === "fixtures") continue
     const путь = join(каталог, имя)
     if (statSync(путь).isDirectory()) файлыКорпуса(путь, найдено)
     else if (имя.endsWith(".flang")) найдено.push(путь)

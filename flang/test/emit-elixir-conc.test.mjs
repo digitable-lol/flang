@@ -86,10 +86,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { runConcurrent } from "../src/conc.mjs"
@@ -99,6 +97,7 @@ import { markMeasureGuards } from "../src/totality.mjs"
 import { emitElixir } from "../src/emit/elixir.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const elixirBin = findExecutable("elixir")
 const elixircBin = findExecutable("elixirc")
@@ -174,12 +173,9 @@ const ПОВТОРОВ = 25
  */
 const ПРЕДЕЛ_РАЗГОВОРА = 600_000
 
-const рабочий = await mkdtemp(join(tmpdir(), "flang-conc-elixir-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("conc-elixir")
 
-const СРЕДА = { ...process.env, MIX_ENV: "prod", ERL_CRASH_DUMP_SECONDS: "0" }
+const СРЕДА = средаСборки(рабочий, { MIX_ENV: "prod", ERL_CRASH_DUMP_SECONDS: "0" })
 
 /**
  * Разбор ТОЙ ЖЕ программы, какую печатает CLI.

@@ -22,10 +22,9 @@
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
 import { readdirSync, readFileSync } from "node:fs"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { errorCode, INPUT_PARAM } from "../src/compat.mjs"
@@ -36,15 +35,13 @@ import { markMeasureGuards } from "../src/totality.mjs"
 import { emitJs } from "../src/emit/js.mjs"
 import { camel, pascal } from "../src/naming.mjs"
 import { УБЕГАЮЩИЕ } from "./corpus-grid.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
 
 /* ─────────────────────── загрузка напечатанного модуля ──────────────────── */
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-js-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-js")
 
 let serial = 0
 
@@ -1707,11 +1704,10 @@ function спросить(path, вызов, срок) {
       timeout: срок,
       killSignal: "SIGKILL",
       maxBuffer: 64 * 1024 * 1024,
-      env: {
-        ...process.env,
+      env: средаСборки(workdir, {
         FLANG_MODULE: pathToFileURL(path).href,
         FLANG_REQUEST: JSON.stringify({ пределы: null, ...вызов }),
-      },
+      }),
     })
   } catch (беда) {
     if (беда.code === "ETIMEDOUT" || беда.signal === "SIGKILL") {

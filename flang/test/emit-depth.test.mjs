@@ -51,10 +51,8 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from "node:fs"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { pathToFileURL } from "node:url"
 
 import { evaluate as interpret } from "../src/interpret.mjs"
@@ -65,6 +63,7 @@ import { emitJs } from "../src/emit/js.mjs"
 import { emitRust } from "../src/emit/rust.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 const goBin = findExecutable("go")
@@ -82,12 +81,8 @@ const WASI_SYSROOT = process.env.WASI_SYSROOT ?? "/usr"
 const wasmГотов = clangBin !== null && existsSync(join(WASI_SYSROOT, "lib/wasm32-wasi/libc.a"))
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2"]
-const GO_ENV = { ...process.env, GOFLAGS: "-mod=mod", GOPROXY: "off", GOSUMDB: "off" }
-
-const рабочий = await mkdtemp(join(tmpdir(), "flang-depth-"))
-after(async () => {
-  await rm(рабочий, { recursive: true, force: true })
-})
+const рабочий = рабочийКаталог("depth")
+const GO_ENV = средаСборки(рабочий, { GOFLAGS: "-mod=mod", GOPROXY: "off", GOSUMDB: "off" })
 
 /* ───────────────────── программа с толстым кадром ───────────────────── */
 
@@ -447,7 +442,7 @@ test("Rust: поднятый предел глубины даёт объявле
      прогонщик с нею наружу. `-D warnings` не смягчается — напечатанный Rust
      обязан собираться без единого замечания, и сторож стека тоже. */
   const RUSTC = ["--edition", "2021", "-D", "warnings", "-C", "debuginfo=0", "-C", "opt-level=2"]
-  const RUST_ENV = { ...process.env, CARGO_NET_OFFLINE: "true" }
+  const RUST_ENV = средаСборки(рабочий, { CARGO_NET_OFFLINE: "true" })
   const библиотека = join(каталог, "libflangprogram.rlib")
   const lib = spawnSync(
     rustcBin,

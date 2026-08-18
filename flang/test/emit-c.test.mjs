@@ -26,10 +26,9 @@
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
 import { readdirSync, readFileSync } from "node:fs"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 
 import { errorCode, INPUT_PARAM } from "../src/compat.mjs"
 import { evaluate as interpret, variant } from "../src/interpret.mjs"
@@ -38,12 +37,10 @@ import { ЧАСТИЧНЫЕ } from "../src/failures.mjs"
 import { markMeasureGuards } from "../src/totality.mjs"
 import { черезГраницу } from "./through-entry.mjs"
 import { emitC } from "../src/emit/c.mjs"
+import { рабочийКаталог } from "./tempdir.mjs"
 
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-emit-c-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("emit-c")
 
 const CFLAGS = ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic"]
 

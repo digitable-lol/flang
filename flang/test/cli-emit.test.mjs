@@ -44,10 +44,9 @@
  */
 import assert from "node:assert/strict"
 import { execFile, execFileSync } from "node:child_process"
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { after, test } from "node:test"
+import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 
@@ -59,6 +58,7 @@ import { emitJs } from "../src/emit/js.mjs"
 import { parse } from "../src/parser.mjs"
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const run = promisify(execFile)
 const cli = fileURLToPath(new URL("../bin/flang.mjs", import.meta.url))
@@ -68,10 +68,7 @@ const core = fileURLToPath(new URL("../core/", import.meta.url))
 const supervision = fileURLToPath(new URL("../conc/examples/supervision.flang", import.meta.url))
 const cc = findExecutable("cc") ?? findExecutable("gcc")
 
-const workdir = await mkdtemp(join(tmpdir(), "flang-cli-emit-"))
-after(async () => {
-  await rm(workdir, { recursive: true, force: true })
-})
+const workdir = рабочийКаталог("cli-emit")
 
 let counter = 0
 /** Пустой каталог под каждый прогон: печать обязана работать «в чистое поле». */

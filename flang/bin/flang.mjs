@@ -469,8 +469,8 @@ const REPL_CONTINUATION = "… "
  * второй способ создать файл был бы вторым способом ошибиться.
  */
 async function commandLock(options) {
-  const { собратьЗамок } = await import(new URL("../src/lockfile.mjs", import.meta.url).href)
   if (options.file === "-") throw usage("flang lock требует файл: со стандартного ввода импорты не разрешаются")
+  const { собратьЗамок } = await import(new URL("../src/lockfile.mjs", import.meta.url).href)
   const parse = await разборщик()
   const замок = await собратьЗамок(options.file, parse)
   writeJson(замок, options.pretty, process.stdout)

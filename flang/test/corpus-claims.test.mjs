@@ -1400,6 +1400,13 @@ const ОХВАТ = [
   "flang/examples/rosetta/palindrome.flang «Позиция подстроки»",
   "flang/examples/rosetta/roman-numerals-english.flang «Value of a symbol»",
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
+  /* Служба сокращателя (`flang/examples/web/shortener/`). Каталог НЕ закрытый:
+     он не входит в побайтовую неподвижную точку `self-parser.test.mjs`, и
+     раскладка по закрытым каталогам ниже от этих четырёх строк не меняется. */
+  "flang/examples/web/shortener/service.flang «Глубина пути»",
+  "flang/examples/web/shortener/service.flang «Предел тела запроса»",
+  "flang/examples/web/shortener/service.flang «Предел тела ответа»",
+  "flang/examples/web/shortener/store.flang «Сколько ссылок»",
   /* Прибавилась ОДНА функция, и прибавилась она вместе с формой тела: у
      «Сколько всего» тело — свёртка, и до принципа по свёртке ядро не брало у
      неё ничего. Утверждение при ней написано там же, где стоит функция. */
@@ -1449,6 +1456,7 @@ const ОХВАТ = [
   "flang/stdlib/dictionary.flang «Размер»",
   "flang/stdlib/hashmap.flang «Размер словаря»",
   "flang/stdlib/higher-order.flang «Считать где»",
+  "flang/stdlib/http.flang «Сколько заголовков»",
   "flang/stdlib/lists.flang «Считать вхождения»",
   "flang/stdlib/sets.flang «Размер множества»",
   "flang/stdlib/strings.flang «Позиция подстроки»",
@@ -1540,12 +1548,12 @@ const НАПИСАНЫ_В_ЗАКРЫТЫХ = [
   "flang/self/types.flang «Потолок точных»",
 ]
 
-test("охват: двадцать одно утверждение НАПИСАНО, а доказано ядром сорок пять", () => {
+test("охват: двадцать одно утверждение НАПИСАНО, а доказано ядром сорок шесть", () => {
   /* Каталоги — не список из головы: он снят с `исходникиFlang`
      (`flang/test/self-parser.test.mjs`), где и стоит корпус побайтовой сверки. */
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const доказано = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
-  assert.equal(доказано.length, 45, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
+  assert.equal(доказано.length, 46, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
 
   /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт прошлой работы
      сказал «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а
@@ -1555,7 +1563,7 @@ test("охват: двадцать одно утверждение НАПИСА�
     закрытые.map((каталог) => [каталог, ОХВАТ.filter((строка) => строка.startsWith(каталог)).length]),
   )
   assert.deepEqual(поКаталогам, {
-    "flang/stdlib/": 6,
+    "flang/stdlib/": 7,
     "flang/core/": 0,
     "flang/examples/leetcode/": 11,
     "flang/examples/measure/": 1,
@@ -1573,7 +1581,7 @@ test("охват: двадцать одно утверждение НАПИСА�
   }
   assert.equal(
     доказано.length - НАПИСАНЫ_В_ЗАКРЫТЫХ.length,
-    24,
+    25,
     "заказ на письмо: столько функций закрытых каталогов ядро уже доказывает, а утверждения при них не написано",
   )
 

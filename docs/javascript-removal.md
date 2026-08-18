@@ -626,8 +626,8 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/src/types.mjs` | 7304 | `self/types.flang` | 10 имён у 5 потребителей пути |
-| `flang/src/parser.mjs` | 4618 | `self/parser.flang` | разбор нужен всем |
+| `flang/src/types.mjs` | 7618 | `self/types.flang` | 10 имён у 5 потребителей пути |
+| `flang/src/parser.mjs` | 4695 | `self/parser.flang` | разбор нужен всем |
 | `flang/src/totality.mjs` | 1803 | `self/totality.flang` | 3 имени у 3 потребителей |
 | `flang/src/interpret.mjs` | 1200 | `self/interpret.flang` | 6 имён у **13** потребителей — на нём считают все |
 | `flang/src/lexer.mjs` | 1094 | `self/lexer.flang` | 6 имён у 2 |
@@ -688,7 +688,7 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/proof/reduce.mjs` | 2016 | `self/proof-kernel.flang` | 7 имён у 2; горячий цикл переписывания |
+| `flang/proof/reduce.mjs` | 2239 | `self/proof-kernel.flang` | 7 имён у 2; горячий цикл переписывания |
 | `flang/src/proofterm.mjs` | 1957 | `self/proofterm.flang` | проводка головы конвейера |
 | `flang/proof/initial.mjs` | 1411 | `self/proof-initial.flang` | 9 имён у 1; тот же горячий цикл |
 
@@ -729,7 +729,7 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/bin/flang.mjs` | 1651 | `self/cli.flang` (чистая половина) | эффекты: файлы, каталоги, поток, код возврата |
+| `flang/bin/flang.mjs` | 1654 | `self/cli.flang` (чистая половина) | эффекты: файлы, каталоги, поток, код возврата |
 
 Эталон покрывает то, что РЕШАЕТ; всё, что ТРОГАЕТ МИР, на flang невыразимо —
 эффектов в языке нет by design. Оболочка уходит не переписыванием, а тем же

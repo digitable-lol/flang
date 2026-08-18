@@ -31,15 +31,20 @@ axioms is held empty by a check, not by a promise: one cannot be added quietly.
 on a clean export of the tree into an empty directory (`git archive HEAD`): one
 compiler invocation over four `.c` files, not one warning under `-std=c99 -Wall
 -Wextra -Werror -pedantic -O2`, no external dependency beyond `libm` and
-`libpthread`. It takes **83.7 s** and yields a binary of **7 134 408 bytes**;
-building the same export with four threads takes **40.6 s** and yields
-**7 127 856 bytes** (cc 15.2.0, Linux 7.0.0). The time floats with machine load,
-the bytes do not: two runs with different thread counts gave the same size to the
-byte. All the runs are on [How the install was verified](install-evidence.html).
+`libpthread`. It takes **72.6 s** and yields a binary of **7 275 248 bytes**.
+
+Building the same export through the `Makefile` yields **7 260 216 bytes** —
+15 032 bytes less, and that difference is not about thread count: four threads
+and one gave the same size to the byte, while the time went from 32.4 s to three
+times that. The difference is **`-flto`**, which stands in the `Makefile` and is
+absent from the single invocation: there the translation unit is one, and
+link-time optimisation has nothing to optimise across. The bytes repeat, the
+time floats with machine load (cc 15.2.0, Linux 7.0.0). All the runs are on
+[How the install was verified](install-evidence.html).
 
 **The compiler's emission of itself matches byte for byte.** The bootstrap check
-links the flang sources (**3554 functions, 314 types**), emits them into C and
-compares that with what sits in `bootstrap/`: **7 files, 13 060 621 bytes,
+links the flang sources (**3616 functions, 315 types**), emits them into C and
+compares that with what sits in `bootstrap/`: **7 files, 13 304 108 bytes,
 0 differences**. It compares bytes, not a build, so the check always runs and
 needs no C compiler.
 

@@ -22,6 +22,7 @@ on:
       - 'flang/conc/SPEC.md'
       - 'scripts/build-changelog-page.mjs'
       - 'scripts/build-changelog.mjs'
+      - 'scripts/build-releases-page.mjs'
       - '.github/workflows/pages.yml'
   # Позволяет опубликовать вручную, не дожидаясь правки документов.
   workflow_dispatch:
@@ -62,6 +63,12 @@ jobs:
       # а не работник.
       - name: Перепечатать журнал вливаний
         run: node scripts/build-changelog-page.mjs
+
+      # По той же причине, что и журнал: страница выпусков печатается из тегов,
+      # и между новым тегом и перепечаткой она отстаёт. Опубликованное всегда
+      # свежее; дерево при этом не правится — сборка не коммитит.
+      - name: Перепечатать страницу выпусков
+        run: node scripts/build-releases-page.mjs
 
       # Отдельным шагом до сборки: если ссылки битые, видно сразу и по имени,
       # а не среди вывода сборки.

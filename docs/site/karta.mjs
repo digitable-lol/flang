@@ -22,6 +22,10 @@ export const РАЗДЕЛЫ = [
       { адрес: 'primery.html', имя: 'Примеры', из: 'docs/rukovodstvo/examples.ru.md' },
       { адрес: 'utility.html', имя: 'Исполняемые утилиты', из: 'docs/rukovodstvo/executable-utilities.ru.md' },
       { адрес: 'spec.html', имя: 'Спецификация языка', из: 'flang/SPEC.md' },
+      { адрес: 'surfaces.html', имя: 'Четыре поверхности записи', из: 'docs/surfaces.md' },
+      // Печатается из `SURFACE_TABLE`: `node docs/site/glossary.mjs`. Руками не
+      // править — затрёт сборка; сторож свежести `npm run glossary:check`.
+      { адрес: 'glossary.html', имя: 'Словарь языка', из: 'docs/glossary.md' },
     ],
   },
   {

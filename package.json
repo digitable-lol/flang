@@ -46,6 +46,7 @@
     "spec:check": "node fspec/guard.mjs",
     "codes:check": "node flang/scripts/code-guard.mjs",
     "emit:check": "node flang/scripts/emit-guard.mjs",
+    "comparison:check": "node flang/scripts/comparison-guard.mjs",
     "proof:ledger": "node flang/scripts/proof-ledger.mjs",
     "proof:search": "node flang/scripts/proof-search.mjs",
     "word:occupancy": "node flang/scripts/word-occupancy.mjs",

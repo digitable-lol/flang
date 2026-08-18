@@ -7,7 +7,7 @@ duplicates — what do I write?"**
 Everything below lives in one file, `docs/examples/operations.flang`, and runs:
 
 ```bash
-node flang/bin/flang.mjs test docs/examples/operations.flang
+flang test docs/examples/operations.flang
 ```
 
 Run on 18 August 2026: **224 examples, 224 passed, 0 failed**. Two hundred
@@ -163,7 +163,7 @@ the function would not be total:
 ## What the ledger says about this file
 
 ```bash
-node flang/bin/flang.mjs check docs/examples/operations.flang --proof --pretty
+flang check docs/examples/operations.flang --proof
 ```
 
 ```

@@ -19,7 +19,7 @@
  * планировщик конкурентности процессу (`server.flang`) и хозяин ввода-вывода
  * плану (`plan.flang`). Три разных хозяина, один и тот же уклад.
  *
- * Запуск:  node flang/examples/web/shortener/progon.mjs
+ * Запуск:  node flang/examples/web/shortener/serve.mjs
  */
 import { fileURLToPath } from "node:url"
 import { dirname, resolve } from "node:path"
@@ -76,3 +76,31 @@ for (const [имя, текст] of СЦЕНАРИЙ) {
   console.log(String(о["код"]).padStart(3) + " | " + имя.padEnd(23) + " | " + строка)
 }
 console.log("\nхранилище после шестнадцати запросов: " + JSON.stringify(состояние))
+
+/*
+ * ПОСЛЕДНЕЕ, И РАДИ ЧЕГО ВСЁ. Утверждение «язык отвергает проверкой типов
+ * обработчик, который не помечен тотальным и не назвал запас витков» проверяется
+ * не пересказом, а таким обработчиком. Он лежит рядом файлом, и вот чем язык
+ * ему отвечает.
+ */
+import { execFileSync } from "node:child_process"
+
+const безЗапаса = resolve(здесь, "handler-without-budget.flang")
+const компилятор = resolve(здесь, "../../../bin/flang.mjs")
+
+console.log("\nобработчик без «тотальная» и без «с запасом» — что скажет проверка:")
+let вывод = "{}"
+let код = 0
+try {
+  вывод = execFileSync("node", [компилятор, "check", безЗапаса], { stdio: ["ignore", "pipe", "pipe"] }).toString()
+} catch (е) {
+  /* Контракт вывода: результат — JSON в stdout, ДИАГНОСТИКА — JSON в stderr.
+     Отказавшая проверка кладёт отчёт целиком в stderr, и читать надо оттуда. */
+  код = е.status ?? 1
+  вывод = ((е.stderr ?? "").toString() || (е.stdout ?? "").toString() || "{}")
+}
+const отчёт = JSON.parse(вывод)
+const диагностика = (отчёт.diagnostics ?? [])[0] ?? {}
+console.log("  valid: " + отчёт.valid + "   код возврата: " + код)
+console.log("  " + (диагностика.code ?? "(нет кода)"))
+console.log("  " + (диагностика.message ?? "(нет сообщения)"))

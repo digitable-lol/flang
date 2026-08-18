@@ -132,7 +132,7 @@ than discovered later.
 ## Prose is checked, not trusted
 
 Documentation in this tree makes claims a machine can settle, and a claim nobody
-runs goes stale silently. Four guards run them instead. Each is a script you can
+runs goes stale silently. Five guards run them instead. Each is a script you can
 run on its own and a test that also proves the guard itself can go red:
 
 ```bash
@@ -140,6 +140,7 @@ npm run claims:check   # "the language has no such form" — asked of the real l
 npm run counts:check   # every "N lines of `path`" and every ledger count, remeasured
 npm run codes:check    # every FLANG_* named in any .md must exist in the sources
 npm run emit:check     # "seven backends emit …, JavaScript emits one file", and the cost table
+npm run names:check    # naming rules, against the parse tree of the whole corpus
 ```
 
 What this means when you write:
@@ -154,6 +155,16 @@ What this means when you write:
   prose and add an entry with a reason to `ОБЪЯВЛЕНО_НЕ_СДЕЛАНО` in
   `flang/scripts/code-guard.mjs`. That list goes red in both directions: once the
   code exists, the entry must go.
+- **Names.** A parameter, a `пусть` binding or a fold item may not be one letter,
+  may not be shorter than three letters (two characters on the Chinese surface),
+  and may not be a clipped word from the closed list in
+  `flang/scripts/name-guard.mjs`. The rules, what is deliberately *not* a rule,
+  and how the threshold is stated for each of the four surfaces are in
+  [Names in code](docs/guide/naming.md) · [ru](docs/guide/naming.ru.md).
+  The corpus does not satisfy them yet — 2759 sites in 141 files of 190 — so the
+  debt is recorded by name in `flang/scripts/name-debt.json` and compared as a
+  diff of lists, not of counts. New code goes red; the debt must shrink. Do not
+  add to it, and do not rewrite it to make your change pass.
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `flang/scripts/emit-guard.mjs`;
   change the runtime and the guard demands the table be revisited.

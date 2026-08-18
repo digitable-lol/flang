@@ -40,7 +40,7 @@ and draws the line between what is *proven* and what is *checked*, and
 
 ## Where things live
 
-There are 11 directories at the root, and the layout is plain: nearly everything about the
+There are 12 directories at the root, and the layout is plain: nearly everything about the
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
 point, packaging, measurements, documentation and one full-size example project.
 
@@ -64,6 +64,7 @@ editors/          the .flang language server and a github-linguist submission st
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          printing the library index, the changelog and the release C
 benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
+fspec/            flang specs and their guard: a contradiction between two specs is caught by a run
 web/              flang in a tab: building a program to WebAssembly and running it in a browser
 .claude/          developer assistant skills: knowledge-base rules
 docs/             documentation; README and SPEC files stay next to the code they describe

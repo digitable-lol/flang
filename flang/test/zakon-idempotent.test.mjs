@@ -38,7 +38,7 @@ import test from "node:test"
 import { runExamples } from "../src/compat.mjs"
 import { checkIdempotence, повторБезопасен } from "../src/idempotent.mjs"
 import { parse } from "../src/parser.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./vedomost.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 

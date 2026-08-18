@@ -40,7 +40,7 @@ import { ВЫЧИСЛЕНИЕМ } from "../proof/reduce.mjs"
 import { ЛГАТЬ, ПРЕДЕЛ_ГЛУБИНЫ, ПРЕДЕЛ_ШАГОВ, безТеоремы, искатьДоказательство } from "../proof/search.mjs"
 import { globSync } from "../test/glob.mjs"
 import { parse } from "../src/parser.mjs"
-import { proofLedger } from "../src/proof.mjs"
+import { proofLedger } from "./vedomost.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 const текст = (путь) => readFileSync(`${корень}${путь}`, "utf8")

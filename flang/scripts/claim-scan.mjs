@@ -41,8 +41,7 @@ import { fileURLToPath } from "node:url"
 import { externalChecks, loadProgramFromSource } from "../bin/flang.mjs"
 import { искатьДоказательство } from "../proof/search.mjs"
 import { parse } from "../src/parser.mjs"
-import { proofLedger } from "../src/proof.mjs"
-import { ФАЙЛЫ } from "./proof-ledger.mjs"
+import { proofLedger, ФАЙЛЫ } from "./proof-ledger.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 

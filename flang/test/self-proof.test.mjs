@@ -50,7 +50,7 @@ import { БЕЗ_СВОЙСТВА, итогиВедомости as итогиПр
 import { createRuntime, evaluate } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
-import { formatProofLedger, proofLedger } from "../src/proof.mjs"
+import { formatProofLedger, proofLedger } from "./zapis/vedomost-etalona.mjs"
 import { checkTotality } from "../src/totality.mjs"
 import { checkTypes } from "../src/types.mjs"
 

@@ -55,10 +55,10 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 | файл | строк |
 |---|---:|
 | `flang/src/emit/c/flang_repl.c` | 4 202 |
-| `flang/src/emit/c/flang_runtime.c` | 3 115 |
+| `flang/src/emit/c/flang_runtime.c` | 3 126 |
 | `flang/src/emit/c/flang_conc.c` | 3 193 |
 | `flang/src/emit/c/flang_cli.c` | 1 062 |
-| `flang/src/emit/c/flang_runtime.h` | 820 |
+| `flang/src/emit/c/flang_runtime.h` | 826 |
 | `flang/src/emit/c/flang_conc.h` | 350 |
 | **итого** | **11 146** |
 

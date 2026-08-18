@@ -254,6 +254,25 @@ export function answer(program, request) {
      программы без счётчиков его в модуле нет вовсе, и ставить нечего: глубина у
      неё ограничена графом вызовов, а витков она не считает. */
   if (typeof program.$newContext === "function") program.$newContext(limits)
+
+  /* Вторая половина той же двери: ДОГОВОР. Типы сверены выше, но `требует`
+     типами не выражается («ширина не меньше длины» — не тип), и снаружи его
+     снять некому: внутри программы это делает вызывающий на проверке, а у
+     значения из трубы вызывающего нет. Гейт печатается только у программы с
+     `требует` — отсюда оба `undefined`. Считается он ПОСЛЕ `$newContext`:
+     предусловие — вычисление, и витки его идут в тот же счёт, что витки тела. */
+  const gate = program.$PROGRAM.pre === undefined ? undefined : program.$PROGRAM.pre.get(name)
+  if (gate !== undefined) {
+    try {
+      const broken = gate(...args)
+      if (broken !== null) return failure(broken.code, broken.message)
+    } catch (error) {
+      if (error !== null && typeof error === "object" && typeof error.code === "string") {
+        return failure(error.code, error.message)
+      }
+      throw error
+    }
+  }
   try {
     return line({ ok: true, value: encodeValue(fn(...args), program) })
   } catch (error) {

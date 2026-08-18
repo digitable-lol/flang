@@ -732,6 +732,25 @@ def post(ctx, value, property_name, function):
     return value.data
 
 
+def pre(ctx, value, property_name, function):
+    """Значение предусловия: обязано быть признаком.
+
+    Отдельно от `post`, а не тот же помощник со вторым текстом: слова отказа
+    дословно те же, что у интерпретатора (`checkPreconditions` в
+    flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось бы
+    молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (`call`): внутри
+    программы предусловие снял вызывающий на проверке, и проверять его там
+    значило бы платить временем за доказанное.
+    """
+    if value.tag != TAG_FLAG:
+        raise fail(
+            CODE_TYPE,
+            f"предусловие «{property_name}» функции «{function}» должно давать признак,"
+            f" получено {type_name(value)}",
+        )
+    return value.data
+
+
 def match_fail(ctx, value):
     """Разбор не покрыл значение."""
     return fail(CODE_MATCH, f"разбор не покрывает значение {describe(value)}")

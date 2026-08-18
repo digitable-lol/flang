@@ -265,6 +265,12 @@ function prepare(program) {
       returns: fn.returns,
       body: fn.body,
       postconditions: normalizePostconditions(fn),
+      /* Предусловия здесь ТОЛЬКО ради ДВЕРИ напечатанной программы — вызова по
+         имени (`renderDispatch`). В тело функции они не печатаются ни одной
+         строкой: внутри программы предусловие снял вызывающий на проверке
+         (иначе FLANG_PRECONDITION_CALL), и проверять его во время работы значило
+         бы платить временем каждого вызова за доказанное статически. */
+      preconditions: normalizePreconditions(fn),
       span: fn.span,
     })
   }
@@ -311,6 +317,32 @@ function normalizePostconditions(fn) {
       expr: item.expr,
       bind: typeof item.bind === "string" ? item.bind : "результат",
       code: typeof item.code === "string" ? item.code : "FLANG_PROPERTY",
+      message: typeof item.message === "string" ? item.message : null,
+      span: item.span,
+    }
+  })
+}
+
+/**
+ * Предусловия функции — тем же разбором, что у интерпретатора
+ * (`normalizePreconditions` в src/interpret.mjs), и с теми же умолчаниями: код
+ * FLANG_PRECONDITION, текст «не выполнено требование …». `bind` у предусловия
+ * нет и быть не может: оно говорит о том, что было ДО вызова, а результата до
+ * вызова не существует.
+ */
+function normalizePreconditions(fn) {
+  const list = fn.preconditions ?? []
+  if (!Array.isArray(list)) {
+    throw flangError("FLANG_PARSE", `поле «preconditions» функции «${fn.name}» должно быть списком`, fn.span)
+  }
+  return list.map((item) => {
+    if (item === null || typeof item !== "object" || item.expr === undefined) {
+      throw flangError("FLANG_PARSE", `предусловие функции «${fn.name}» должно содержать «expr»`, fn.span)
+    }
+    return {
+      name: item.name ?? "",
+      expr: item.expr,
+      code: typeof item.code === "string" ? item.code : "FLANG_PRECONDITION",
       message: typeof item.message === "string" ? item.message : null,
       span: item.span,
     }
@@ -1566,8 +1598,29 @@ function requireListInto(ctx, out, pad, value, label) {
   return list
 }
 
-/* ── вызов по имени ── */
+/* ── вызов по имени: ДВЕРЬ программы ── */
 
+/**
+ * Вызов по имени — это не вызов внутри программы, а ГРАНИЦА, и здесь стоит всё,
+ * что граница обязана проверить.
+ *
+ * Внутренние вызовы идут прямо на функцию Go; сюда заходит только тот, у кого
+ * имя функции — строка, то есть прогонщик, служба, тест, скрипт. Ровно так же
+ * устроен интерпретатор: `callFunction` (src/interpret.mjs) — дверь и
+ * проверяет, `applyFunction` — нет.
+ *
+ * ПОЧЕМУ ПРЕДУСЛОВИЕ ПРОВЕРЯЕТСЯ ЗДЕСЬ, А НЕ В ТЕЛЕ ФУНКЦИИ. В flang `требует`
+ * снимает ВЫЗЫВАЮЩИЙ: каждое место вызова обязано доказать предусловие, иначе
+ * программа отвергается кодом FLANG_PRECONDITION_CALL и до печати не доезжает.
+ * Значит внутри программы требование уже ИСТИННО — не «проверено», а известно,
+ * — и печать его проверки в тело была бы платой временем каждого вызова и
+ * каждого витка рекурсии за то, что доказано статически. Через эту же дверь
+ * приходит недоказанное: значение из JSON, у которого вызывающего нет вовсе.
+ *
+ * Порядок проверок на двери: сначала арность, потом объявленные типы
+ * (`rt.CheckEntry`, зовёт прогонщик до `Call`), и только потом договор.
+ * Предусловие о значении вне типа не значит ничего.
+ */
 function renderDispatch(shared) {
   const lines = [
     "// Call — вызов функции по её исходному имени flang.",
@@ -1588,6 +1641,7 @@ function renderDispatch(shared) {
       '\t\t\t\t"функция «%s» принимает %d аргум., получено %d",',
       `\t\t\t\t${gostring(fn.name)}, ${arity}, len(args))`,
       "\t\t}",
+      ...renderPreconditions(fn, shared, "\t\t"),
       `\t\treturn ${shared.functionIdents.get(fn.name)}(${["ctx", ...pass].join(", ")})`,
     )
   }
@@ -1597,6 +1651,41 @@ function renderDispatch(shared) {
     "}",
   )
   return lines.join("\n")
+}
+
+/**
+ * Договор функции на двери: `требует`.
+ *
+ * Программа без единого `требует` не получает отсюда ни строки — печать обязана
+ * остаться побайтово прежней, иначе рухнула бы сверка с близнецом и с эталоном
+ * на всём корпусе.
+ *
+ * Параметры связываются прямо с `args[i]`: своих имён у двери нет, а копировать
+ * значения в локальные ради читаемости значило бы печатать строки, которых
+ * вычисление не требует.
+ */
+function renderPreconditions(fn, shared, pad) {
+  if (fn.preconditions.length === 0) return []
+  const ctx = createContext(fn, shared, { selfTail: false, members: null })
+  for (const [index, param] of fn.params.entries()) ctx.bind(param.name, `args[${index}]`)
+  const out = []
+  for (const property of fn.preconditions) {
+    const check = emitValue(property.expr, ctx, out, pad)
+    const holds = ctx.temp()
+    const error = ctx.fault()
+    const message = property.message ?? `не выполнено требование «${property.name}» функции «${fn.name}»`
+    out.push(
+      `${pad}// требует «${property.name}»`,
+      `${pad}${holds}, ${error} := rt.Pre(ctx, ${check}, ${gostring(property.name)}, ${gostring(fn.name)})`,
+      `${pad}if ${error} != nil {`,
+      `${pad}\treturn rt.Value{}, ${error}`,
+      `${pad}}`,
+      `${pad}if !${holds} {`,
+      `${pad}\treturn rt.Value{}, rt.Fail(${gostring(property.code)}, "%s", ${gostring(message)})`,
+      `${pad}}`,
+    )
+  }
+  return out
 }
 
 /* ── граница входа: объявленные типы параметров данными ── */

@@ -945,6 +945,26 @@ pub fn keep(_ctx: &Ctx, value: Value) -> Result<bool, Error> {
 }
 
 /// Значение постусловия: обязано быть признаком.
+/// Значение предусловия: обязано быть признаком.
+///
+/// Отдельно от `post`, а не тот же помощник со вторым текстом: слова отказа
+/// дословно те же, что у интерпретатора (`checkPreconditions` в
+/// flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось бы
+/// молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (`call`): внутри
+/// программы предусловие снял вызывающий на проверке.
+pub fn pre(_ctx: &Ctx, value: Value, property: &str, function: &str) -> Result<bool, Error> {
+    match value {
+        Value::Flag(item) => Ok(item),
+        other => Err(fail(
+            CODE_TYPE,
+            format!(
+                "предусловие «{property}» функции «{function}» должно давать признак, получено {}",
+                type_name(&other)
+            ),
+        )),
+    }
+}
+
 pub fn post(_ctx: &Ctx, value: Value, property: &str, function: &str) -> Result<bool, Error> {
     match value {
         Value::Flag(item) => Ok(item),

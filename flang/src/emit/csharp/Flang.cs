@@ -210,6 +210,26 @@ public static class Flang
         return value.Bit;
     }
 
+    /// <summary>Значение предусловия: обязано быть признаком.</summary>
+    /// <remarks>
+    /// Отдельно от <see cref="Post"/>, а не тот же помощник со вторым текстом:
+    /// слова отказа дословно те же, что у интерпретатора (checkPreconditions в
+    /// flang/src/interpret.mjs), и одно сообщение на две разные вещи разошлось
+    /// бы молча. Зовёт это ТОЛЬКО дверь программы — вызов по имени (Call):
+    /// внутри программы предусловие снял вызывающий на проверке.
+    /// </remarks>
+    public static bool Pre(Ctx ctx, Value value, string property, string function)
+    {
+        if (value.Tag != Value.TagFlag)
+        {
+            throw Fail(
+                FlangError.CodeType,
+                "предусловие «" + property + "» функции «" + function
+                    + "» должно давать признак, получено " + Value.TypeName(value));
+        }
+        return value.Bit;
+    }
+
     /// <summary>Разбор не покрыл значение.</summary>
     public static FlangError MatchFail(Ctx ctx, Value value) =>
         Fail(FlangError.CodeMatch, "разбор не покрывает значение " + Value.Describe(value));

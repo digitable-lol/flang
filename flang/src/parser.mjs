@@ -238,6 +238,7 @@ const EXPRESSION_START = new Set([
   "join",
   "split",
   "add",
+  "prepend",
   "variant",
   "record",
   "field",
@@ -2174,6 +2175,15 @@ class Parser {
         const item = this.parsePostfix()
         this.expectKw("to", "у 'добавить' ожидалось 'к'")
         return { kind: "builtin", name: "добавить", args: [item, this.parsePostfix()], span: token.span }
+      }
+      /* Приписывание в начало: та же форма, что у `добавить`, тот же предлог и
+         тот же порядок аргументов (элемент, список). Различие ровно в глаголе —
+         см. довод над `prepend` в таблице ключевых слов. */
+      case "prepend": {
+        this.next()
+        const item = this.parsePostfix()
+        this.expectKw("to", "у 'приписать' ожидалось 'к'")
+        return { kind: "builtin", name: "приписать", args: [item, this.parsePostfix()], span: token.span }
       }
       /* Значение-функция: `функция «Удвоить»`. Слово то же, что у объявления и
          у типа, и это не экономия, а параллель — `вариант «Есть» с …` и

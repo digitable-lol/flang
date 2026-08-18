@@ -59,7 +59,7 @@ import { нормальнаяФорма, свести } from "../proof/reduce.mj
 import { ФАЙЛЫ } from "../scripts/proof-ledger.mjs"
 import { evaluate } from "../src/interpret.mjs"
 import { wordOn } from "../src/lexer.mjs"
-import { одинаковы } from "../src/obligations.mjs"
+import { одинаковы } from "../src/as-written.mjs"
 import { parse } from "../src/parser.mjs"
 import { proofLedger } from "./vedomost.mjs"
 
@@ -1402,7 +1402,13 @@ const ОХВАТ = [
   "flang/examples/rosetta/roman-numerals.flang «Значение цифры»",
   /* Служба сокращателя (`flang/examples/web/shortener/`). Каталог НЕ закрытый:
      он не входит в побайтовую неподвижную точку `self-parser.test.mjs`, и
-     раскладка по закрытым каталогам ниже от этих четырёх строк не меняется. */
+     раскладка по закрытым каталогам ниже от этих пяти строк не меняется.
+
+     Пятой пришёл `«Порт службы»` — постоянная плана, работающего по сокету
+     (`plan-network.flang`). Ядро берёт её ровно потому, что порт — число без
+     аргументов: утверждения ей не написано, и это честно, потому что писать про
+     константу нечего. */
+  "flang/examples/web/shortener/plan-network.flang «Порт службы»",
   "flang/examples/web/shortener/service.flang «Глубина пути»",
   "flang/examples/web/shortener/service.flang «Предел тела запроса»",
   "flang/examples/web/shortener/service.flang «Предел тела ответа»",

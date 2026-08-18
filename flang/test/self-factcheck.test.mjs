@@ -81,7 +81,7 @@ import test from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { checkFacts } from "../src/factcheck.mjs"
-import { fromFtsDocument } from "../src/compat.mjs"
+import { fromFtsDocument } from "../src/fts-legacy.mjs"
 import { createRuntime } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"

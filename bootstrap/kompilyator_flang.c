@@ -897,7 +897,7 @@ static const fl_value kompilyator_flang_text_884 = { FL_STRING, { .string = { "m
 static const fl_value kompilyator_flang_text_885 = { FL_STRING, { .string = { "ожидалось 'отображаются в морфизм'", 63, 34 } } };
 static const fl_value kompilyator_flang_text_886 = { FL_STRING, { .string = { "ожидался образ пары морфизмов", 55, 29 } } };
 static const fl_value kompilyator_flang_text_887 = { FL_STRING, { .string = { "не разобрана конструкция: в бифункторе ожидаются строки 'объекты … и …' и 'морфизмы … и …'", 164, 90 } } };
-static const fl_value kompilyator_flang_text_888 = { FL_STRING, { .string = { "после 'элемент' у левого края ожидалось 'начиная с' и число 0 или 1", 116, 67 } } };
+static const fl_value kompilyator_flang_text_888 = { FL_STRING, { .string = { "не разобрана конструкция: после 'элемент' у левого края ожидалось 'начиная с' и число 0 или 1 — этим словом у левого края начинается только объявление базы номера", 292, 162 } } };
 static const fl_value kompilyator_flang_text_889 = { FL_STRING, { .string = { "база номера объявляется числом 0 или 1: `элемент начиная с 0` значит, что первый элемент списка имеет номер 0, `элемент начиная с 1` — что единицу; третьей базы у языка нет", 302, 172 } } };
 static const fl_value kompilyator_flang_text_890 = { FL_STRING, { .string = { "базаНомера", 20, 10 } } };
 static const fl_value kompilyator_flang_text_891 = { FL_STRING, { .string = { "база номера объявлена дважды: объявление в программе одно — иначе смысл программы решал бы порядок строк", 193, 104 } } };

@@ -16534,6 +16534,39 @@ fl_status kompilyator_flang_skolko_argumentov(fl_ctx *ctx, fl_value skolko, fl_v
 fl_status kompilyator_flang_svyazat_imya(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Без границы об имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_bez_granicy_ob_imeni(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отменить границы об имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_otmenit_granicy_ob_imeni(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя заново».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_svyazat_imya_zanovo(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Найти имя».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

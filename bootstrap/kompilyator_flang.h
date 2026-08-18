@@ -21202,6 +21202,15 @@ fl_status kompilyator_flang_proverit_lishnie_argumenty(fl_ctx *ctx, fl_value dan
 fl_status kompilyator_flang_tolko_diagnostiki(fl_ctx *ctx, fl_value bedy, fl_value sobrannye, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Снимается непустотой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param forma — «форма»: строка
+ * @return значение
+ */
+fl_status kompilyator_flang_snimaetsya_nepustotoy(fl_ctx *ctx, fl_value forma, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Отметки непустоты».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

@@ -317,9 +317,13 @@ fl_status kompilyator_flang_sozdat_parametr_v_c(fl_ctx *ctx, fl_value imya, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_postuslovie(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Функция»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия». */
+/* Запись FTS «Предусловие»: «имя», «выражение», «код», «сообщение», «есть сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_funkciya(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_preduslovie(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_funkciya(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
 
 /* Запись FTS «Поле типа в C»: «имя», «тип». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -11903,6 +11907,15 @@ fl_status kompilyator_flang_stroka_polya_ili(fl_ctx *ctx, fl_value uzel, fl_valu
 fl_status kompilyator_flang_sobrat_postuslovie(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Собрать предусловие».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие»
+ */
+fl_status kompilyator_flang_sobrat_preduslovie(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Собрать функцию».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -14616,6 +14629,26 @@ fl_status kompilyator_flang_nachalnyy_kontekst(fl_ctx *ctx, fl_value funkciya, f
 fl_status kompilyator_flang_svyazat_parametr(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Контекст двери».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: «Контекст»
+ */
+fl_status kompilyator_flang_kontekst_dveri(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @return значение: «Связывание параметров»
+ */
+fl_status kompilyator_flang_svyazat_parametr_dveri(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Начальное взятое».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -14793,23 +14826,70 @@ fl_status kompilyator_flang_pechat_prostoy_funkcii(fl_ctx *ctx, fl_value funkciy
 fl_status kompilyator_flang_stroka_argumenta_vyzova(fl_ctx *ctx, fl_value zip, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Ветка диспетчера».
+ * Функция flang «Договор на двери».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param funkciya — «функция»: «Функция»
  * @param obschee — «общее»: «Общее»
- * @return значение: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
  */
-fl_status kompilyator_flang_vetka_dispetchera(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_dogovor_na_dveri(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status kompilyator_flang_proverki_dogovora(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок»
+ * @param preduslovie — «предусловие»: «Предусловие»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Блок»
+ */
+fl_status kompilyator_flang_shag_predusloviya(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status kompilyator_flang_vetka_dispetchera(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок»
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: «Блок»
+ */
+fl_status kompilyator_flang_shag_vetki_dispetchera(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать диспетчера».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param obschee — «общее»: «Общее»
- * @return значение: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
  */
-fl_status kompilyator_flang_pechat_dispetchera(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_pechat_dispetchera(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Признак C».

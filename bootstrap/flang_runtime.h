@@ -724,6 +724,12 @@ fl_status fl_cond(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
 fl_status fl_keep(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
 fl_status fl_post(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
                   fl_error *error);
+/* Предусловие — отдельно от постусловия, а не тот же помощник со вторым текстом:
+   слова отказа дословно те же, что у интерпретатора (checkPreconditions в
+   flang/src/interpret.mjs). Зовёт это ТОЛЬКО дверь программы — вызов по имени
+   (prefix_call): внутри программы предусловие снял вызывающий на проверке. */
+fl_status fl_pre(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
+                 fl_error *error);
 fl_status fl_match_fail(fl_ctx *ctx, fl_value value, fl_error *error);
 fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label, fl_value *out, fl_error *error);
 

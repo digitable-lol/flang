@@ -413,7 +413,7 @@ implementation report the second list is what makes the first one worth reading.
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-npm ci && npm run build
+# nothing to install and nothing to build: the package declares zero dependencies
 bash docs/ifl/reproduce.sh          # every number in this paper, ~6 min
 bash docs/ifl/reproduce.sh --fast   # without the fixed point and the eight targets
 ```

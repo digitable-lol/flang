@@ -413,8 +413,11 @@ naming, layout, module-splitting and CI conventions derived from that project ar
 ## Developing the language
 
 The JavaScript reference implementation stays forever: the fixed point is checked against it,
-and removing it would make that check impossible. Work happens in a clone —
-`npm install && npm run build`.
+and removing it would make that check impossible. Work happens in a clone, and **there is nothing
+to build**: the package declares zero dependencies (`npm ls --all` prints `(empty)`), and the
+language reads its sources instead of compiling them. A fresh clone answers
+`node flang/bin/flang.mjs check flang/stdlib/lists.flang` straight away; `npm install` only puts
+`flang` into `node_modules/.bin`.
 
 What to run when you change the compiler, how the bootstrap point is guarded, and the full list
 of commands the language answers to — [Developing the

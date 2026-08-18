@@ -9,7 +9,7 @@
 #define FL_INDEX_BASE 1
 #define FL_MAX_DEPTH 20000
 #define FL_MAX_STEPS 40000000
-#define FL_MAX_TAIL_ARGS 8
+#define FL_MAX_TAIL_ARGS 9
 #define FL_MAX_ARGS 14
 
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */

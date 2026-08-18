@@ -52,6 +52,8 @@
 - [Правило неотрицательности читает объявленное имя, но не вызов и не поле — и на этом обрывается цепочка лемм](rule-one-does-not-read-calls-and-fields.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
+- [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
+- [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
 
 ## Теория категорий
 

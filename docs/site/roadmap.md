@@ -29,16 +29,34 @@ axioms is held empty by a test, not by a promise: one cannot be added quietly.
 `python`, `rust`. **All eight have a twin in flang** — the last one, `js`, is
 closed; none is left without.
 
-**The binary builds with a single `cc`, without Node.** Checked on a clean
-export (`git archive` into an empty directory): one compiler invocation over four
-`.c` files, not one warning under `-Werror -pedantic`, not one external
-dependency.
+**The binary builds with a single `cc`, without Node.** Re-measured on 18 August
+on a clean export (`git archive HEAD` into an empty directory): one compiler
+invocation over four `.c` files, not one warning under `-std=c99 -Wall -Wextra
+-Werror -pedantic -O2`, no external dependency beyond `libm` and `libpthread`.
+It takes **78 s** of CPU time and yields a binary of **6 854 664 bytes**
+(cc 15.2.0, Linux 7.0.0). The `-flto` flag that stands in the `Makefile` is not
+needed for a single invocation: there is only one translation unit anyway.
+
+**The compiler's emission of itself matches byte for byte.** `node
+scripts/bootstrap-c.mjs --check` links the flang sources (**3436 functions,
+307 types**), emits them into C and compares that with what sits in `bootstrap/`:
+**7 files, 12 569 968 bytes, 0 differences**. It compares bytes, not a build, so
+the check always runs and needs no `cc`.
 
 **The evaluator is pulled into the binary.** `flang run` computes with it — no
-Node, no `cc`. The `repl` does **not** call it yet: it emits the session to C and
-builds it with the system `cc`; with no `cc` it does not switch off but checks
-parsing, types and termination. The difference is named because "there is a
-shell" and "there is an evaluator" are different promises.
+Node, no `cc`. Checked on a freshly built binary: `flang run
+flang/stdlib/higher-order.flang --function 'Удвоить' --args '{"х":21}'` prints
+`42` and exits 0. The `repl` does **not** call it yet: it emits the session to C
+and builds it with the system `cc`; with no `cc` it does not switch off but
+checks parsing, types and termination, and says so at start-up. The difference is
+named because "there is a shell" and "there is an evaluator" are different
+promises.
+
+**What the binary can do, as a list.** Taken from a run of a freshly built
+binary, not from the help text: `--help`/`-h`/`help`,
+`--version`/`-v`/`version`, `check`, `run`, `repl`, and with no arguments — the
+JSON-in, JSON-out runner. Anything not in that list answers "unknown command"
+with exit code 2.
 
 **An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
 
@@ -66,10 +84,15 @@ This is the important part of the page. Below is what does not exist, in the
 order in which each item blocks the next.
 
 **The binary has no `test` and no `emit`, and it silently ignores `--proof`.**
-Checked by running a freshly built binary: `test` and `emit` answer "unknown
-command" with exit code 2. `--proof` is worse — the output of `check --proof`
-equals the output of `check`, there is no ledger, and nothing says so. A refusal
-is visible; silence is not.
+Re-measured on 18 August with a binary built in a clean directory: `test` and
+`emit` answer "unknown command" with exit code 2. `--proof` is worse — the output
+of `flang check file.flang --proof` equals the output of `flang check
+file.flang` **byte for byte** (compared with `diff`), there is no ledger, and
+nothing says so. A refusal is visible; silence is not.
+
+This is the one place where the binary still holds Node by the hand: emission
+into the eight targets and the checking of claims live only in the full toolchain.
+Bootstrapping no longer depends on Node — working with the language still does.
 
 **There are no packages at all.** A library is included by relative path
 (`использует «Модуль» из "path"`). No versions, no lock file, no reproducible

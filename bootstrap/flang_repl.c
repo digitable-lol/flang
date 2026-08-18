@@ -200,6 +200,8 @@ static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
     "\n"
     "  flang check <файл.flang>     разбор, типы, завершаемость; замечания с кодом и местом\n"
+    "  flang run <файл.flang> --function «Имя» [--args '{\"н\":10}']\n"
+    "                               вычислить функцию и напечатать значение\n"
     "  flang repl [<файл.flang>]    интерактивная оболочка; файл загружается в сессию\n"
     "  flang --version              версия\n"
     "  flang --help                 эта справка\n"
@@ -209,9 +211,9 @@ static const char FLANG_HELP[] =
     "У оболочки ключи «--max-steps N» и «--max-depth N» — пределы вычисления.\n"
     "\n"
     "Вычислитель в бинарнике ЕСТЬ: `flang/self/interpret.flang` втащен в замыкание, и\n"
-    "прогонщик зовёт его точкой входа «Прогон исходников» (файлы, вход, имя, аргументы,\n"
-    "предел витков, предел глубины). Своей человеческой команды у него пока нет.\n"
-    "Оболочка `repl` его пока не зовёт: она печатает сессию в C, собирает системным «cc»\n"
+    "«flang run» считает им, без Node и без «cc». Аргументы объявленным типам пока НЕ\n"
+    "сверяются — эталон на Node это делает, и в этом месте бинарник слабее его.\n"
+    "Оболочка `repl` вычислитель пока не зовёт: она печатает сессию в C, собирает «cc»\n"
     "против lib/libkompilyator_flang.a и запускает. Нет «cc» — оболочка не выключается,\n"
     "а проверяет разбор, типы и завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.\n"
@@ -4027,6 +4029,507 @@ static int check_file(const char *path) {
   return ok ? 0 : 1;
 }
 
+/* ══════════════════════════════ flang run ═══════════════════════════════ */
+
+/*
+ * `flang run <файл> --function «Имя» [--args JSON]` — вычислить названную
+ * функцию и напечатать её значение.
+ *
+ * Появилось это только теперь и ровно потому, что раньше было НЕЧЕМ: вычислителя
+ * в бинарнике не было. Теперь `flang/self/interpret.flang` втащен в замыкание
+ * компилятора, и точка входа «Прогон исходников» считает без всякого Node.
+ *
+ * ── Чего здесь ЕЩЁ НЕТ, и это названо, а не умолчано ────────────────────────
+ * Эталон на JavaScript (`commandRun` в `flang/bin/flang.mjs`) перед вычислением
+ * сверяет аргументы с объявленными типами (`checkArguments`), и делает это не
+ * для красоты: доказательство завершения `тотальной` функции стоит НА ТИПЕ, и
+ * значение вне типа выносит вместе с типом и доказательство. Здесь этой сверки
+ * нет — точка входа «Прогон исходников» её не делает. Значит `flang run` в
+ * бинарнике примет `«Факториал» от −3` там, где эталон откажет. Долг записан
+ * здесь, а не в отчёте: закрывается он на стороне flang, добавлением сверки в
+ * «Прогон исходников», и до тех пор бинарник в этом месте СЛАБЕЕ эталона.
+ *
+ * ── Почему свой разбор JSON, а не разбор компилятора ────────────────────────
+ * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
+ * прогонщик, и его разборщик (`flang_cli.c`) говорит на своём языке тегов
+ * («{"n":…}», «{"s":…}»), заведённом для передачи готовых значений рантайма, а
+ * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому здесь
+ * лежит маленький разбор ровно этого: плоский объект скаляров. Вложенности нет
+ * намеренно — она понадобится, когда понадобится, а не «на всякий случай».
+ */
+
+/** Вариант с одним полем: «Значение записи» и «Значение списка» строятся так. */
+static fl_value repl_value_variant_fields(const char *variant, const char *field, fl_value held) {
+  fl_value out = fl_nothing();
+  fl_error error;
+  const char *names[1];
+  fl_value values[1];
+  error.code = NULL;
+  error.message = NULL;
+  names[0] = field;
+  values[0] = held;
+  if (fl_variant_new(&repl_ctx, variant, names, values, 1, &out, &error) != FL_OK) {
+    repl_oom();
+  }
+  return out;
+}
+
+/*
+ * Строка в JSON: кавычки, обратная косая и управляющие — экранируются.
+ * Свой код здесь потому, что «Экранировать» компилятора работает над его
+ * собственными значениями, а тут на руках голый UTF-8 из рантайма.
+ */
+static void run_print_text(const char *text, size_t bytes) {
+  size_t index = 0;
+  fputc('"', stdout);
+  for (index = 0; index < bytes; index += 1) {
+    const unsigned char symbol = (unsigned char)text[index];
+    if (symbol == '"' || symbol == '\\') {
+      fputc('\\', stdout);
+      fputc((int)symbol, stdout);
+    } else if (symbol == '\n') {
+      fputs("\\n", stdout);
+    } else if (symbol == '\t') {
+      fputs("\\t", stdout);
+    } else if (symbol == '\r') {
+      fputs("\\r", stdout);
+    } else if (symbol < 0x20) {
+      printf("\\u%04x", (unsigned int)symbol);
+    } else {
+      fputc((int)symbol, stdout);
+    }
+  }
+  fputc('"', stdout);
+}
+
+/** «Скаляр» из `core/json.flang`, обёрнутый в «Значение скаляра». */
+static fl_value run_scalar(const char *variant, const char *field, fl_value inner) {
+  fl_value out = fl_nothing();
+  fl_value scalar = fl_nothing();
+  fl_error error;
+  const char *names[1];
+  fl_value values[1];
+  error.code = NULL;
+  error.message = NULL;
+  names[0] = field;
+  values[0] = inner;
+  if (fl_variant_new(&repl_ctx, variant, names, values, 1, &scalar, &error) != FL_OK) {
+    repl_oom();
+  }
+  names[0] = "скаляр";
+  values[0] = scalar;
+  if (fl_variant_new(&repl_ctx, "Значение скаляра", names, values, 1, &out, &error) != FL_OK) {
+    repl_oom();
+  }
+  return out;
+}
+
+/** Пропуск пробелов; общий на весь разбор `--args`. */
+static void run_spaces(const char *text, size_t *at) {
+  while (text[*at] == ' ' || text[*at] == '\t' || text[*at] == '\n' || text[*at] == '\r') {
+    *at += 1;
+  }
+}
+
+/*
+ * Строка JSON в память арены. Escape-последовательности разбираются те, что
+ * есть в самом JSON; `\uXXXX` намеренно НЕ разбирается, и это не лень: ключи и
+ * значения приезжают из командной строки, где UTF-8 уже написан буквами, а
+ * половинчатая поддержка суррогатных пар хуже честного отказа.
+ */
+static bool run_text(const char *text, size_t *at, char **out, size_t *bytes) {
+  size_t start = 0;
+  size_t used = 0;
+  char *buffer = NULL;
+  run_spaces(text, at);
+  if (text[*at] != '"') {
+    return false;
+  }
+  *at += 1;
+  start = *at;
+  while (text[*at] != '\0' && text[*at] != '"') {
+    *at += text[*at] == '\\' && text[*at + 1] != '\0' ? 2 : 1;
+  }
+  if (text[*at] != '"') {
+    return false;
+  }
+  buffer = (char *)malloc(*at - start + 1);
+  if (buffer == NULL) {
+    repl_oom();
+  }
+  {
+    size_t index = start;
+    while (index < *at) {
+      if (text[index] == '\\' && index + 1 < *at) {
+        const char next = text[index + 1];
+        index += 2;
+        if (next == 'n') {
+          buffer[used] = '\n';
+        } else if (next == 't') {
+          buffer[used] = '\t';
+        } else if (next == 'r') {
+          buffer[used] = '\r';
+        } else if (next == 'u') {
+          free(buffer);
+          return false;
+        } else {
+          buffer[used] = next;
+        }
+        used += 1;
+        continue;
+      }
+      buffer[used] = text[index];
+      used += 1;
+      index += 1;
+    }
+  }
+  buffer[used] = '\0';
+  *at += 1;
+  *out = buffer;
+  *bytes = used;
+  return true;
+}
+
+/** Один скаляр JSON в «Значение». Объектов и списков здесь нет — см. шапку. */
+static bool run_value(const char *text, size_t *at, fl_value *out) {
+  run_spaces(text, at);
+  if (strncmp(text + *at, "true", 4) == 0) {
+    *at += 4;
+    *out = run_scalar("Скаляр признак", "значение", fl_flag(true));
+    return true;
+  }
+  if (strncmp(text + *at, "false", 5) == 0) {
+    *at += 5;
+    *out = run_scalar("Скаляр признак", "значение", fl_flag(false));
+    return true;
+  }
+  if (strncmp(text + *at, "null", 4) == 0) {
+    *at += 4;
+    {
+      fl_value nothing = fl_nothing();
+      fl_error error;
+      error.code = NULL;
+      error.message = NULL;
+      if (fl_variant_new(&repl_ctx, "Скаляр ничто", NULL, NULL, 0, &nothing, &error) != FL_OK) {
+        repl_oom();
+      }
+      {
+        const char *names[1];
+        fl_value values[1];
+        names[0] = "скаляр";
+        values[0] = nothing;
+        if (fl_variant_new(&repl_ctx, "Значение скаляра", names, values, 1, out, &error) != FL_OK) {
+          repl_oom();
+        }
+      }
+    }
+    return true;
+  }
+  if (text[*at] == '"') {
+    char *word = NULL;
+    size_t bytes = 0;
+    if (!run_text(text, at, &word, &bytes)) {
+      return false;
+    }
+    *out = run_scalar("Скаляр строка", "значение", repl_value_text(word, bytes));
+    free(word);
+    return true;
+  }
+  {
+    char *end = NULL;
+    const double number = strtod(text + *at, &end);
+    if (end == text + *at) {
+      return false;
+    }
+    *at = (size_t)(end - text);
+    *out = run_scalar("Скаляр число", "значение", fl_number(number));
+    return true;
+  }
+}
+
+/**
+ * `--args` в «Значение записи». Пустая строка и отсутствие ключа дают пустую
+ * запись — функция без параметров зовётся без `--args`, и требовать `{}` от
+ * человека было бы обрядом.
+ */
+static bool run_args(const char *text, fl_value *out) {
+  size_t at = 0;
+  size_t count = 0;
+  size_t capacity = 8;
+  fl_value *fields = (fl_value *)malloc(capacity * sizeof(fl_value));
+  bool ok = true;
+  if (fields == NULL) {
+    repl_oom();
+  }
+  if (text == NULL) {
+    free(fields);
+    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
+    return true;
+  }
+  run_spaces(text, &at);
+  if (text[at] != '{') {
+    free(fields);
+    return false;
+  }
+  at += 1;
+  run_spaces(text, &at);
+  if (text[at] != '}') {
+    for (;;) {
+      char *key = NULL;
+      size_t bytes = 0;
+      fl_value value = fl_nothing();
+      if (!run_text(text, &at, &key, &bytes)) {
+        ok = false;
+        break;
+      }
+      run_spaces(text, &at);
+      if (text[at] != ':') {
+        free(key);
+        ok = false;
+        break;
+      }
+      at += 1;
+      if (!run_value(text, &at, &value)) {
+        free(key);
+        ok = false;
+        break;
+      }
+      if (count == capacity) {
+        fl_value *bigger = (fl_value *)realloc(fields, capacity * 2 * sizeof(fl_value));
+        if (bigger == NULL) {
+          free(key);
+          repl_oom();
+        }
+        fields = bigger;
+        capacity *= 2;
+      }
+      {
+        const char *names[2];
+        fl_value values[2];
+        names[0] = "ключ";
+        values[0] = repl_value_text(key, bytes);
+        names[1] = "значение";
+        values[1] = value;
+        fields[count] = repl_value_record(names, values, 2);
+        count += 1;
+      }
+      free(key);
+      run_spaces(text, &at);
+      if (text[at] == ',') {
+        at += 1;
+        continue;
+      }
+      break;
+    }
+  }
+  if (ok) {
+    run_spaces(text, &at);
+    ok = text[at] == '}';
+  }
+  if (ok) {
+    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, count));
+  }
+  free(fields);
+  return ok;
+}
+
+/**
+ * «Знач» человеку — тем же JSON, каким его печатает эталон.
+ *
+ * Печатается РЕКУРСИВНО и по значению, а не через «Описать знач»: та даёт
+ * описание («список длиной 3»), годное для диагностики и негодное для того, кто
+ * читает ответ программы.
+ */
+static void run_print(fl_value value) {
+  fl_value inner = fl_nothing();
+  const char *text = NULL;
+  size_t bytes = 0;
+  if (val_is(value, "Знач ничто")) {
+    fputs("null", stdout);
+    return;
+  }
+  if (val_is(value, "Знач число") && val_field(value, "число", &inner) && inner.tag == FL_NUMBER) {
+    char buffer[64];
+    const size_t used = fl_number_text(inner.as.number, buffer);
+    printf("%.*s", (int)used, buffer);
+    return;
+  }
+  if (val_is(value, "Знач признак") && val_field(value, "признак", &inner)) {
+    fputs(inner.as.flag ? "true" : "false", stdout);
+    return;
+  }
+  if (val_is(value, "Знач строка") && val_field(value, "текст", &inner) && val_text(inner, &text, &bytes)) {
+    run_print_text(text, bytes);
+    return;
+  }
+  if (val_is(value, "Знач список") && val_field(value, "элементы", &inner) && inner.tag == FL_LIST) {
+    size_t index = 0;
+    fputc('[', stdout);
+    for (index = 0; index < inner.as.list.count; index += 1) {
+      if (index > 0) {
+        fputc(',', stdout);
+      }
+      run_print(inner.as.list.items[index]);
+    }
+    fputc(']', stdout);
+    return;
+  }
+  if ((val_is(value, "Знач запись") || val_is(value, "Знач вариант")) && val_field(value, "поля", &inner) &&
+      inner.tag == FL_LIST) {
+    size_t index = 0;
+    fputc('{', stdout);
+    /* Имя варианта печатается полем, как это делает эталон: запись и вариант с
+       теми же полями обязаны быть различимы в ответе, иначе прочитавший его
+       не отличит одно от другого. */
+    if (val_is(value, "Знач вариант")) {
+      fl_value named = fl_nothing();
+      if (val_field(value, "имя", &named) && val_text(named, &text, &bytes)) {
+        fputs("\"вариант\":", stdout);
+        run_print_text(text, bytes);
+        if (inner.as.list.count > 0) {
+          fputc(',', stdout);
+        }
+      }
+    }
+    for (index = 0; index < inner.as.list.count; index += 1) {
+      fl_value key = fl_nothing();
+      fl_value held = fl_nothing();
+      if (index > 0) {
+        fputc(',', stdout);
+      }
+      if (val_field(inner.as.list.items[index], "ключ", &key) && val_text(key, &text, &bytes)) {
+        run_print_text(text, bytes);
+      }
+      fputc(':', stdout);
+      if (val_field(inner.as.list.items[index], "значение", &held)) {
+        run_print(held);
+      }
+    }
+    fputc('}', stdout);
+    return;
+  }
+  fputs("null", stdout);
+}
+
+/**
+ * `flang run` целиком. Код возврата тот же, что у `check`: 0 — посчиталось,
+ * 1 — программа отказала, 2 — ошибка вызова. Разделение не косметика: сценарий
+ * вправе отличать «программа сказала нет» от «я позвал неправильно».
+ */
+static int run_file(int argc, char **argv) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value sources = fl_nothing();
+  fl_value result = fl_nothing();
+  fl_value args[6];
+  fl_value bound = fl_nothing();
+  fl_value field = fl_nothing();
+  char buffer[4096];
+  const char *path = NULL;
+  const char *name = NULL;
+  const char *given = NULL;
+  const char *steps = "40000000";
+  const char *depth = "20000";
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--function") == 0 && index + 1 < argc) {
+      index += 1;
+      name = argv[index];
+    } else if (strcmp(argv[index], "--args") == 0 && index + 1 < argc) {
+      index += 1;
+      given = argv[index];
+    } else if (strcmp(argv[index], "--max-steps") == 0 && index + 1 < argc) {
+      index += 1;
+      steps = argv[index];
+    } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
+      index += 1;
+      depth = argv[index];
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang run: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang run: не назван файл. Пример: flang run м.flang --function «Ф» --args '{\"н\":10}'\n", stderr);
+    return 2;
+  }
+  if (name == NULL) {
+    fputs("flang run требует «--function «Имя»»: какую из функций считать, программа сама не решает\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  sources = repl_closure(&paths, &texts, &queue);
+
+  if (!run_args(given, &bound)) {
+    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
+    code = 2;
+  } else {
+    args[0] = sources;
+    args[1] = repl_value_say(full);
+    args[2] = repl_value_say(name);
+    args[3] = bound;
+    args[4] = fl_number(strtod(steps, NULL));
+    args[5] = fl_number(strtod(depth, NULL));
+    if (repl_call("Прогон исходников", args, 6, &result) != FL_OK) {
+      code = 1;
+    } else if (val_field(result, "удалось", &field) && field.tag == FL_FLAG && field.as.flag) {
+      if (val_field(result, "значение", &field)) {
+        run_print(field);
+        fputc('\n', stdout);
+      }
+      fflush(stdout);
+    } else {
+      const char *word = NULL;
+      size_t word_bytes = 0;
+      const char *say = NULL;
+      size_t say_bytes = 0;
+      fl_value held = fl_nothing();
+      if (val_field(result, "код", &held)) {
+        val_text(held, &word, &word_bytes);
+      }
+      if (val_field(result, "сообщение", &held)) {
+        val_text(held, &say, &say_bytes);
+      }
+      fprintf(stderr, "%.*s: %.*s\n", (int)word_bytes, word == NULL ? "" : word, (int)say_bytes,
+              say == NULL ? "" : say);
+      code = 1;
+    }
+  }
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+  return code;
+}
+
 static const char REPL_PROMPT[] = "» ";
 static const char REPL_CONTINUATION[] = "… ";
 
@@ -4204,6 +4707,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     } else {
       code = check_file(argv[2]);
     }
+  } else if (strcmp(command, "run") == 0) {
+    code = run_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

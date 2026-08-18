@@ -58,5 +58,5 @@
 На большом проекте искать придётся по указателю веток и по общим предкам, а не
 перебором.
 
-Связано: [[granica-perezhivaet-vychitanie]], [[dolg-na-neslitoy-vetke]],
-[[chislo-bez-nazvannogo-izmeritelya]], [[tikhie-konflikty-sliyaniya]]
+Связано: [[granica-perezhivaet-vychitanie]], [[debt-closed-on-an-unmerged-branch]],
+[[a-number-without-a-named-measure]], [[silent-merge-conflicts]]

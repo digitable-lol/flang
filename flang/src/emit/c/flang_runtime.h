@@ -487,6 +487,17 @@ fl_mark fl_region_open(fl_ctx *ctx);
  */
 fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value *result, fl_error *error);
 
+/**
+ * Закрывает область и тут же открывает её заново той же отметкой.
+ *
+ * Нужна одному месту — накопителю свёртки (см. `fl_region_recycle` в
+ * flang_runtime.c). Одним `fl_region_close` тут не обойтись: он возвращает
+ * границу ОБЪЕМЛЮЩЕЙ области, и второй виток цикла пошёл бы без сторожа —
+ * `fl_arena_extend` продлил бы на месте блок, лежащий ниже отметки, а его
+ * вот-вот откатят.
+ */
+fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_error *error);
+
 /*
  * Виток вычисления: вход в функцию, оборот цикла хвостового самовызова, отскок
  * батута. Считается отдельно от глубины — хвостовая рекурсия глубину не растит,

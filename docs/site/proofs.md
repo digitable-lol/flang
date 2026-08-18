@@ -1,145 +1,147 @@
-# Доказательства: зачем и как
+# Proofs: why and how
 
-Это главное отличие языка, и оно требует объяснения — потому что слово
-«доказательство» в программировании обычно означает что-то другое.
+## A proof against a test
 
-## Чем доказательство отличается от теста
-
-Тест проверяет входы, до которых вы **додумались**. Доказательство отвечает про
-**все** входы сразу — включая те, о которых никто не подумал.
+A test covers the inputs you **thought of**. A proof answers about **all** of
+them at once, including the ones nobody thought of.
 
 ```
-пример «Дважды два»            ← один вход
-  дано н равно 2
-  ожидается 4
+example «Two doubled»            ← one input
+  given n equals 2
+  expected 4
 
-обеспечивает результат равно (2 умножить на н)    ← все входы
+ensures «twice the input» result equals (2 times n)    ← all inputs
 ```
 
-Обе строки полезны, и обе остаются в языке. Разница в том, что примеры вы пишете
-вечно, а доказательство пишется один раз.
+Both lines stay in the language. The difference is that examples are written
+forever, and a proof is written once.
 
-## Что происходит с завершаемостью
+## What happens to termination
 
-`тотальная` — обещание, что функция завершится на любом входе. Компилятор его
-**проверяет** и отказывается собирать файл, если доказать не может.
+`total` is a promise that the function finishes on every input. The compiler
+**checks** it and refuses the file if it cannot prove it.
 
-Доказывается пятью способами, и каждый оставляет след в ведомости:
+There are five carriers of that promise, and each leaves a trace in the ledger:
 
-| Как | Функций |
+| Carrier | Functions |
 |---|---:|
-| Композицией — рекурсии нет вовсе | 5542 |
-| Структурой — обход части значения | 355 |
-| Точным шагом по натуральному числу | 27 |
-| Постоянным шагом с проверкой во время работы | 4 |
-| Объявленной мерой с проверкой во время работы | 64 |
+| By composition — no recursion at all | 5542 |
+| By structure — walking part of a value | 355 |
+| By an exact step over a natural number | 27 |
+| By a constant step with a run-time check | 4 |
+| By a declared measure with a run-time check | 64 |
 
-Последние две строки честно отделены: там завершаемость не доказана до конца, и
-разницу подхватывает проверка во время работы. Ведомость показывает это отдельным
-числом — **102 место у 68 функций**, — а не прячет в общий итог.
+The last two lines are separated honestly: termination there is not proved all
+the way, and a run-time check picks up the difference. The ledger shows that as
+its own number — **102 sites across 68 functions** — instead of folding it into
+the total.
 
-## Три ответа, а не два
+## Three answers, not two
 
-Ядро отвечает тремя разными способами, и смешивать их нельзя:
+The kernel answers in three different ways, and mixing them is not allowed:
 
-**Доказано ядром** — утверждение верно про все входы. Таких **132 из 153**.
+**Proved by the kernel** — the claim holds for all inputs. There are **132 of
+153**.
 
-**На сетке** — прогнали по набору значений, нарушений не нашли. Строка ведомости
-про это заканчивается словами **«Это не доказательство»**, и заканчивается так
-намеренно: перебор конечного набора ничего не доказывает.
+**On a grid** — a set of values was run, no violation found. The ledger line for
+this ends with the words **"this is not a proof"**, and it ends that way on
+purpose: exhausting a finite set proves nothing.
 
-**Объявлено, не доказано** — ядру не хватило правил. Утверждение при этом
-проверяется во время работы, на тех входах, которые придут.
+**Stated, not proved** — the kernel ran out of rules. The claim is then checked
+at run time, on the inputs that arrive.
 
-Есть и четвёртый ответ, самый ценный: **НАРУШЕНО** — контрпример найден, и он
-показывается. Не «доказать не вышло», а «вот вход, на котором ваше утверждение
-ложно».
+There is a fourth answer, and it is the most valuable: **VIOLATED** — a
+counterexample was found, and it is shown. Not "could not prove it" but "here is
+an input on which your claim is false".
 
-## Ноль аксиом — что это значит
+## Zero axioms — what that means
 
-Аксиома — то, что принимается на веру, без доказательства. В Coq и Lean аксиомы
-есть, и ими пользуются: классическое исключённое третье, аксиома выбора.
-Каждая — то, что машина **не проверяет**.
+An axiom is what you accept without proof. Coq and Lean have axioms and use
+them: excluded middle, the axiom of choice. Each one is something the machine
+**does not check**.
 
-**В flang их ноль**, и список пуст **проверяемо**: стоит отдельный тест, тихо
-добавить нельзя.
+**flang has zero**, and the list is provably empty: a separate test holds it
+there, so one cannot be added quietly.
 
-Плата у этого честная: без исключённого третьего некоторые классические
-утверждения недоказуемы. Для языка программирования это оказалось удачным
-совпадением — мы говорим о программах, а программы вычислимы.
+The price is honest: without excluded middle some classical statements cannot be
+proved. For a programming language that turned out to be a lucky coincidence — we
+talk about programs, and programs compute.
 
-### Чего ноль аксиом не даёт
+### What zero axioms does not buy
 
-Доверять всё равно приходится, просто меньшему: что три решающих правила
-написаны верно, что реализация ядра верна, что компилятор под ней верен, что
-железо считает правильно.
+You still trust something, just less of it: that the three decision rules are
+written correctly, that the kernel implementation is correct, that the compiler
+underneath it is correct, that the hardware computes correctly.
 
-И это не теория. **За одни сутки в самих правилах нашлось шесть дыр**, где ядро
-печатало «доказано обо ВСЕХ входах» там, где прогон находит контрпример.
+This is not theory. **In one day six holes were found in those very rules**,
+where the kernel printed "proved for ALL inputs" on claims a run refutes with a
+counterexample.
 
-Все шесть закрыты, и теперь стоит проверка **на весь класс**: если ведомость
-сказала «обо всех входах» — прогон обязан не найти контрпример. Проверяется на
-всех утверждениях корпуса, а не на тех, что вспомнили.
+All six are closed, and a check now stands **over the whole class**: if the
+ledger said "for all inputs", a run must fail to find a counterexample. It is
+checked on every claim in the corpus, not on the ones somebody remembered.
 
-## Как устроено ядро
+## How the kernel is built
 
-Три решающих правила, и каждое можно прочесть целиком. Плюс четвёртый ход у
-сведения: **замкнутое выражение — это значение, его надо посчитать**, а не
-выводить.
+Three decision rules, each readable in one sitting. Plus a fourth move in
+reduction: **a closed expression is a value, so compute it** rather than derive
+it.
 
-Отдельно стоит **поиск доказательства**, и его устройство важно: он **ничему не
-верит**. Он только предлагает, а перепроверяет всё ядро. Поэтому поиск можно
-делать сколь угодно наглым — хоть моделью, — и строгость не пострадает.
+Proof **search** stands apart, and how it is built matters: it **believes
+nothing**. It only proposes, and the kernel re-checks everything. That is why
+search can be as brazen as you like — a model, even — without costing rigour.
 
-Это же объясняет, почему мы **не подключаем внешний решатель как судью**.
-Довериться ему значит отдать корректность двумстам тысячам строк чужого кода. Как
-подсказчику — можно и полезно. Как источнику истины — нет.
+The same reasoning explains why we **do not wire in an external solver as the
+judge**. Trusting one means handing correctness to two hundred thousand lines of
+somebody else's code. As a hint-giver it is useful. As a source of truth it is
+not.
 
-## Чего доказательство не говорит
+## What a proof does not say
 
-Самое важное на этой странице, и обычно об этом молчат.
+The most important thing on this page, and usually the unsaid one.
 
-> **Доказательство говорит, что код соответствует спецификации. Оно ничего не
-> говорит о том, выражает ли спецификация ваше намерение.**
+> **A proof says the code matches the specification. It says nothing about
+> whether the specification expresses what you meant.**
 
-Если постусловие написано неверно — код будет корректно делать не то. Это
-единственная причина, по которой формальные методы за пятьдесят лет не захватили
-индустрию, и никакое ядро её не отменяет.
+If the postcondition is wrong, the code will correctly do the wrong thing. That
+is the single reason formal methods did not take over the industry in fifty
+years, and no kernel repeals it.
 
-## Сколько это стоит
+## What it costs
 
-Мы это измерили, потому что от ответа зависит, нужен ли язык вообще.
+We measured this, because whether the language is worth building depends on the
+answer.
 
-Взяли двадцать обычных функций библиотеки — **каждую девятую из всех 208**, чтобы
-не выбирать удобные, — и на каждую написали и тесты, и доказательство.
+Twenty ordinary library functions were taken — **every ninth of all 208**, so
+that the convenient ones could not be picked — and each got both tests and a
+proof.
 
-| | тесты | доказательство |
+| | tests | proof |
 |---|---:|---:|
-| Строк | 390 | 196 |
-| Времени | 7 мин 49 с | 9 мин 39 с |
-| Найдено настоящих ошибок | **4** | 0 |
-| Принято ядром | — | **0 из 20** |
+| Lines | 390 | 196 |
+| Time | 7 min 49 s | 9 min 39 s |
+| Real bugs found | **4** | 0 |
+| Accepted by the kernel | — | **0 of 20** |
 
-Ноль. И это оказалось самым полезным результатом дня: замер показал, что узкое
-место не там, где все думали. Причина у 13 случаев из 15 была одна — **принципа
-индукции не было ни у одного встроенного типа**: ни у списка, ни у строки, ни у
-числа.
+Zero. And that turned out to be the most useful result of the day: the
+measurement showed the bottleneck was not where everyone assumed. In 13 cases out
+of 15 the cause was the same — **no built-in type had an induction principle**:
+not the list, not the string, not the number.
 
-После того, как это починили, **стало 7 из 20**.
+Once that was fixed it became **7 of 20**.
 
-Замер повторяется, и он линейка: по ней видно, движемся ли мы к цели или просто
-наращиваем возможности. Условие, ради которого всё:
+The measurement repeats, and it is a ruler: it shows whether we are moving toward
+the goal or merely growing features. The condition everything is for:
 
-> **Доказательство должно стоить дешевле, чем тесты, которые оно заменяет.**
+> **A proof must cost less than the tests it replaces.**
 
-Сегодня в мире оно дороже в 5–20 раз — поэтому доказывают только ядра
-операционных систем, криптографию и авионику. Если цена упадёт ниже цены тестов,
-меняется не язык, а то, что делают программисты: доказательство пишется один раз
-и покрывает все входы, тесты пишутся вечно.
+Today, in the world at large, it costs 5–20× more — which is why only OS kernels,
+cryptography and avionics get proved. If the price drops below the price of
+tests, what changes is not the language but what programmers do: a proof is
+written once and covers all inputs, tests are written forever.
 
-## Дальше
+## Further
 
-- [Спецификация ядра](spec-proof.html) — правила целиком
-- [Что доказано, а что проверено](overview.html) — граница проведена явно
-- [Замер цены доказательства](benchmark-proof-cost.html) — отчёт с числами
-- [База знаний](knowledge.html) — что измерено и что оказалось ложным
+- [Roadmap](roadmap.html) — where the proof work stands today
+- [Kernel specification](../spec-proof.html) — in Russian; the rules in full
+- [The price of a proof, measured](../benchmark-proof-cost.html) — in Russian; the report with numbers

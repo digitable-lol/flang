@@ -75,68 +75,112 @@ export async function ожидания() {
   const списокЦелей = ц.все.map((т) => `\`${т}\``).join(", ")
 
   return [
-    // ── docs/site/index.md ──
-    ["docs/site/index.md", "целей печати", `печатается в ${словом(ц.все.length)} языков`],
-    ["docs/site/index.md", "тотальных из корпуса", `**${и.total} функций из ${и.functions}** его несут`],
-    ["docs/site/index.md", "функций в корпусе", `| Функций в корпусе | ${и.functions} |`],
+    // ── docs/site/index.ru.md ──
+    ["docs/site/index.ru.md", "целей печати", `печатается в ${словом(ц.все.length)} языков`],
+    ["docs/site/index.ru.md", "тотальных из корпуса", `**${и.total} функций из ${и.functions}** его несут`],
+    ["docs/site/index.ru.md", "функций в корпусе", `| Функций в корпусе | ${и.functions} |`],
     [
-      "docs/site/index.md",
+      "docs/site/index.ru.md",
       "тотальных таблицей",
       `| Из них тотальных (завершаемость доказана) | ${и.total} |`,
     ],
     [
-      "docs/site/index.md",
+      "docs/site/index.ru.md",
       "утверждений высказано",
       `| Утверждений о поведении высказано | ${и.claims.total} |`,
     ],
     [
-      "docs/site/index.md",
+      "docs/site/index.ru.md",
       "доказано ядром",
       `| Из них **доказано ядром** — про все входы | ${и.claims.proved} |`,
     ],
-    ["docs/site/index.md", "функций библиотеки", `из всех ${библиотека}, чтобы не выбирать удобные`],
+    ["docs/site/index.ru.md", "функций библиотеки", `из всех ${библиотека}, чтобы не выбирать удобные`],
     [
-      "docs/site/index.md",
+      "docs/site/index.ru.md",
       "генераторов на flang",
       `${словом(ц.близнецы.length)} генераторов кода из ${изСловом(ц.все.length)} — тоже да`,
     ],
 
-    // ── docs/site/getting-started.md ──
-    ["docs/site/getting-started.md", "целей печати списком", `Целей ${словом(ц.все.length)}: ${списокЦелей}.`],
+    // ── docs/site/getting-started.ru.md ──
+    ["docs/site/getting-started.ru.md", "целей печати списком", `Целей ${словом(ц.все.length)}: ${списокЦелей}.`],
 
-    // ── docs/site/proofs.md ──
+    // ── docs/site/proofs.ru.md ──
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "композицией",
       `| Композицией — рекурсии нет вовсе | ${и.carriers.composition} |`,
     ],
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "структурой",
       `| Структурой — обход части значения | ${и.carriers.structure} |`,
     ],
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "точным шагом",
       `| Точным шагом по натуральному числу | ${и.carriers.exact} |`,
     ],
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "постоянным шагом",
       `| Постоянным шагом с проверкой во время работы | ${и.carriers.step} |`,
     ],
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "объявленной мерой",
       `| Объявленной мерой с проверкой во время работы | ${и.carriers.measure} |`,
     ],
     [
-      "docs/site/proofs.md",
+      "docs/site/proofs.ru.md",
       "сторож меры",
       `**${и.guardSites} место у ${и.carriers.step + и.carriers.measure} функций**`,
     ],
-    ["docs/site/proofs.md", "доказано из высказанного", `Таких **${и.claims.proved} из ${и.claims.total}**`],
-    ["docs/site/proofs.md", "функций библиотеки", `**каждую девятую из всех ${библиотека}**`],
+    ["docs/site/proofs.ru.md", "доказано из высказанного", `Таких **${и.claims.proved} из ${и.claims.total}**`],
+    ["docs/site/proofs.ru.md", "функций библиотеки", `**каждую девятую из всех ${библиотека}**`],
+
+    // ── Английские половины ──
+    // Число одно, а страниц две: перевод, потерявший число, — такая же ложь,
+    // как проза, разошедшаяся с измерителем. Поэтому сторож один на обе.
+    ["docs/site/index.md", "corpus", `| Functions in the corpus | ${и.functions} |`],
+    ["docs/site/index.md", "total", `| Of them total (termination proved) | ${и.total} |`],
+    ["docs/site/index.md", "claims", `| Behaviour claims stated | ${и.claims.total} |`],
+    ["docs/site/index.md", "proved", `| Of them **proved by the kernel** — for all inputs | ${и.claims.proved} |`],
+    ["docs/site/index.md", "carry it", `**${и.total} functions out of ${и.functions}** carry it`],
+    ["docs/site/index.md", "stdlib", `every ninth function out of all ${библиотека}`],
+    [
+      "docs/site/index.md",
+      "twins",
+      `${словомПоАнглийски(ц.близнецы.length)} code generators out of ${словомПоАнглийски(ц.все.length)}`,
+    ],
+    [
+      "docs/site/getting-started.md",
+      "targets",
+      `There are ${словомПоАнглийски(ц.все.length)} targets: ${списокЦелей}.`,
+    ],
+    ["docs/site/proofs.md", "composition", `| By composition — no recursion at all | ${и.carriers.composition} |`],
+    ["docs/site/proofs.md", "structure", `| By structure — walking part of a value | ${и.carriers.structure} |`],
+    ["docs/site/proofs.md", "exact", `| By an exact step over a natural number | ${и.carriers.exact} |`],
+    ["docs/site/proofs.md", "step", `| By a constant step with a run-time check | ${и.carriers.step} |`],
+    ["docs/site/proofs.md", "measure", `| By a declared measure with a run-time check | ${и.carriers.measure} |`],
+    [
+      "docs/site/proofs.md",
+      "guard sites",
+      `**${и.guardSites} sites across ${и.carriers.step + и.carriers.measure} functions**`,
+    ],
+    ["docs/site/proofs.md", "proved of stated", `There are **${и.claims.proved} of ${и.claims.total}**`],
+    ["docs/site/proofs.md", "stdlib", `**every ninth of all ${библиотека}**`],
+
+    // ── Роадмап ──
+    ["docs/site/roadmap.ru.md", "функций в корпусе", `| Функций в корпусе | ${и.functions} |`],
+    ["docs/site/roadmap.ru.md", "тотальных", `| Из них тотальных | ${и.total} |`],
+    ["docs/site/roadmap.ru.md", "высказано", `| Утверждений высказано | ${и.claims.total} |`],
+    ["docs/site/roadmap.ru.md", "доказано ядром", `| Доказано ядром | ${и.claims.proved} |`],
+    ["docs/site/roadmap.ru.md", "близнецы", `У всех ${изСловом(ц.все.length)} есть близнец на flang`],
+    ["docs/site/roadmap.md", "corpus", `| Functions in the corpus | ${и.functions} |`],
+    ["docs/site/roadmap.md", "total", `| Of them total | ${и.total} |`],
+    ["docs/site/roadmap.md", "claims", `| Claims stated | ${и.claims.total} |`],
+    ["docs/site/roadmap.md", "proved", `| Proved by the kernel | ${и.claims.proved} |`],
+    ["docs/site/roadmap.md", "twins", `All ${словомПоАнглийски(ц.все.length)} have a twin in flang`],
   ]
 }
 
@@ -155,6 +199,12 @@ function изСловом(н) {
   return слова[н] ?? String(н)
 }
 
+/** То же для английской половины: там числа до десяти тоже стоят словом. */
+function словомПоАнглийски(н) {
+  const слова = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+  return слова[н] ?? String(н)
+}
+
 const плоско = (текст) => текст.replace(/\s+/gu, " ")
 
 export async function сверить() {
@@ -166,7 +216,12 @@ export async function сверить() {
   }
   // Ни одна страница сайта не вправе называть цели печати семью: их восемь.
   const ц = цели()
-  for (const файл of ["docs/site/index.md", "docs/site/getting-started.md", "docs/site/proofs.md"]) {
+  for (const файл of ["docs/site/index.md", "docs/site/getting-started.md", "docs/site/proofs.md", "docs/site/roadmap.md"]) {
+    const текст = прочесть(файл)
+    const врёт = /emitted\s+(?:in)?to\s+seven\s+(?:language|target)/iu.exec(текст)
+    if (врёт) беды.push(`${файл}: «${врёт[0]}» — целей печати ${ц.все.length}, а не семь`)
+  }
+  for (const файл of ["docs/site/index.ru.md", "docs/site/getting-started.ru.md", "docs/site/proofs.ru.md"]) {
     const текст = прочесть(файл)
     const врёт = /печата[а-я]*\s+(?:во?\s+)?сем[ьи]\s+(?:язык|цел)/iu.exec(текст)
     if (врёт) беды.push(`${файл}: «${врёт[0]}» — целей печати ${ц.все.length}, а не семь`)

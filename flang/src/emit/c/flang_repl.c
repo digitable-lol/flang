@@ -233,6 +233,7 @@ static const char FLANG_HELP[] =
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
     "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "\n"
     "  flang --help                       эта справка\n"
@@ -242,8 +243,8 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь 6 команд, у полного инструментария их 12: сверх этих есть ast, facts,\n"
-    "io, lock и package, а с ними остальные семь целей печати, законы на сетке и\n"
+    "Здесь 7 команд, у полного инструментария их 12: сверх этих есть facts, io,\n"
+    "lock и package, а с ними остальные семь целей печати, законы на сетке и\n"
     "суждения.\n"
     "Ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
@@ -314,6 +315,20 @@ static const char HELP_EMIT[] =
     "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
     "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
+static const char HELP_AST[] =
+    "flang ast <файл.flang> [--pretty]\n"
+    "\n"
+    "Печатает разобранную и СВЯЗАННУЮ программу деревом в JSON — то же самое, что\n"
+    "видит печать в целевой язык. Связывание здесь не украшение: без него у\n"
+    "программы с «использует … из \"…\"» дерево вышло бы неполным, и первым признаком\n"
+    "стала бы не ошибка команды, а несобирающийся напечатанный код.\n"
+    "\n"
+    "  --pretty   с отступами в два пробела\n"
+    "\n"
+    "Проверок типов и завершаемости здесь нет НАМЕРЕННО: дерево — это то, что\n"
+    "прочитано, а не то, что признано годным. Отказывает команда только на том, из\n"
+    "чего дерева не выходит вовсе, — на разборе и на связывании.";
+
 static const char HELP_REPL[] =
     "flang repl [<файл.flang>] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -347,6 +362,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_EMIT);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
+  } else if (strcmp(topic, "ast") == 0) {
+    printf("%s\n", HELP_AST);
   } else {
     printf("%s\n", FLANG_HELP);
   }
@@ -5859,6 +5876,197 @@ static int check_command(int argc, char **argv) {
   return proof ? proof_file(path, json) : check_file(path);
 }
 
+/* ═══════════════════════════════ flang ast ═══════════════════════════════ */
+
+/*
+ * ОТСТУП В JSON СЧИТАЕТСЯ ЗДЕСЬ, А САМ JSON — НЕТ.
+ *
+ * Байты дерева печатает слой на flang («Печать значения» из `core/json.flang`),
+ * и печатает их ровно так, как `JSON.stringify` без отступа: порядок ключей,
+ * запись чисел, экранирование — всё оттуда. Заводить второй печатник в C
+ * значило бы завести второй способ разойтись со свидетелем на первом же
+ * непечатном символе.
+ *
+ * `--pretty` — не второй печатник, а перекладка пробелов в уже готовой строке,
+ * и правило у неё одно: пустые `{}` и `[]` `JSON.stringify` оставляет в одну
+ * строку, а непустые раскрывает. Строковые литералы проходят насквозь: скобка
+ * внутри строки — это буква, а не структура.
+ */
+static void ast_newline(size_t depth) {
+  size_t at = 0;
+  fputc('\n', stdout);
+  for (at = 0; at < depth * 2; at += 1) {
+    fputc(' ', stdout);
+  }
+}
+
+static void ast_pretty(const char *utf8, size_t bytes) {
+  size_t at = 0;
+  size_t depth = 0;
+  bool in_string = false;
+  bool escaped = false;
+  for (at = 0; at < bytes; at += 1) {
+    const char ch = utf8[at];
+    if (in_string) {
+      fputc(ch, stdout);
+      if (escaped) {
+        escaped = false;
+      } else if (ch == '\\') {
+        escaped = true;
+      } else if (ch == '"') {
+        in_string = false;
+      }
+      continue;
+    }
+    if (ch == '"') {
+      in_string = true;
+      fputc(ch, stdout);
+    } else if (ch == '{' || ch == '[') {
+      const char next = at + 1 < bytes ? utf8[at + 1] : '\0';
+      fputc(ch, stdout);
+      if (next != '}' && next != ']') {
+        depth += 1;
+        ast_newline(depth);
+      }
+    } else if (ch == '}' || ch == ']') {
+      const char prev = at > 0 ? utf8[at - 1] : '\0';
+      if (prev == '{' || prev == '[') {
+        fputc(ch, stdout);
+      } else {
+        depth -= 1;
+        ast_newline(depth);
+        fputc(ch, stdout);
+      }
+    } else if (ch == ',') {
+      fputc(ch, stdout);
+      ast_newline(depth);
+    } else if (ch == ':') {
+      fputs(": ", stdout);
+    } else {
+      fputc(ch, stdout);
+    }
+  }
+}
+
+/**
+ * `flang ast <файл> [--pretty]` — дерево разбора в JSON, без Node.
+ *
+ * Дорога та же, что у `flang emit`: замыкание «использует» → «Связать
+ * исходники» → печать. Разбор БЕЗ связывания сюда не годится, и это уже
+ * стоило один раз: команда, печатающая дерево одного файла, на ядре,
+ * разложенном по модулям, отдаёт дерево, в котором нет половины функций, —
+ * и человек, скормивший его дальше, узнаёт об этом от компилятора C.
+ *
+ * Проверок типов и завершаемости здесь нет, и это не недоделка, а тот же
+ * договор, что у свидетеля: `ast` показывает ПРОЧИТАННОЕ. Отказ бывает ровно
+ * там, где дерева не выходит вовсе, — на разборе и на связывании, код 1.
+ *
+ * ДВЕ ОТМЕТКИ АНАЛИЗА СТАВЯТСЯ, И ПОРЯДОК МЕЖДУ НИМИ ОБЯЗАТЕЛЕН. Свидетель
+ * кладёт их в `loadProgram` («Отметить меры», затем «Отметить доказанные»), и
+ * без них дерево расходится с ним побайтово: на трёхстрочном модуле разница
+ * вышла в один ключ `"числовая":true` и 24 байта. Отметка меры ПЕРЕСТРАИВАЕТ
+ * дерево, а доказанное привязано к узлам уже перестроенного, — поменяй
+ * порядок, и отметка легла бы на выброшенные узлы, молча и без единой
+ * диагностики.
+ */
+static int ast_file(int argc, char **argv) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value args[2];
+  fl_value linked = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value measured = fl_nothing();
+  fl_value proven = fl_nothing();
+  fl_value bads = fl_nothing();
+  fl_value printed = fl_nothing();
+  const char *path = NULL;
+  bool pretty = false;
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--pretty") == 0) {
+      pretty = true;
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang ast: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang ast: не назван файл. Пример: flang ast модуль.flang\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+
+  if (repl_call("Связать исходники", args, 2, &linked) != FL_OK) {
+    code = 1;
+  } else if (val_field(linked, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
+    repl_bads list;
+    size_t at = 0;
+    bads_init(&list);
+    for (at = 0; at < bads.as.list.count; at += 1) {
+      bads_take(&list, bads.as.list.items[at]);
+    }
+    check_print_bads(&list, path, paths.count);
+    bads_free(&list);
+    code = 1;
+  } else if (!val_field(linked, "программа", &program)) {
+    fputs("flang ast: связывание не вернуло программы\n", stderr);
+    code = 1;
+  } else if (repl_call("Отметить меры", &program, 1, &measured) != FL_OK ||
+             repl_call("Отметить доказанные", &measured, 1, &proven) != FL_OK) {
+    fputs("flang ast: отметки анализа не легли\n", stderr);
+    code = 1;
+  } else if (repl_call("Печать значения", &proven, 1, &printed) != FL_OK ||
+             !val_text(printed, &utf8, &bytes)) {
+    fputs("flang ast: прочитанное не напечаталось\n", stderr);
+    code = 1;
+  } else {
+    if (pretty) {
+      ast_pretty(utf8, bytes);
+    } else {
+      fwrite(utf8, 1, bytes, stdout);
+    }
+    fputc('\n', stdout);
+    fflush(stdout);
+  }
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -5876,9 +6084,6 @@ static int check_command(int argc, char **argv) {
  * КАЖДАЯ команда свидетеля была у двоичного либо исполнена, либо названа здесь.
  */
 static const char *human_elsewhere(const char *command) {
-  if (strcmp(command, "ast") == 0) {
-    return "печать разобранной программы";
-  }
   if (strcmp(command, "facts") == 0) {
     return "проверка суждений на фактах";
   }
@@ -6004,6 +6209,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = run_file(argc, argv);
   } else if (strcmp(command, "emit") == 0) {
     code = emit_file(argc, argv, self);
+  } else if (strcmp(command, "ast") == 0) {
+    code = ast_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

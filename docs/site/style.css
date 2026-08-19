@@ -1,6 +1,39 @@
 /* Оформление сайта документации flang.
    Шрифты системные намеренно: сайт обязан собираться и открываться без сети. */
 
+/* ── Слой 1: фирменные токены Digitable ──────────────────────────────────────
+   ЕДИНСТВЕННОЕ место в дереве, где написаны шестнадцатеричные коды бренда.
+   Списаны с https://courses.digitable.life/css/digitable.tokens.css
+   (скачано 19 августа 2026). Именно СПИСАНЫ, а не подключены: готовая
+   страница не делает ни одного запроса на сторону, и `@import` чужой таблицы
+   стилей сдавал бы адрес каждого читателя стороннему хосту. Ровно тот же
+   довод записан в шапке самой этой таблицы у Digitable — там по нему из
+   портала выкинули `@import` с fonts.googleapis.com.
+
+   Отсюда и польза слоя: правка палитры на портале доезжает сюда правкой этих
+   двенадцати строк, а не поиском цвета по файлу.
+
+   Палитра выписана ЦЕЛИКОМ, включая цвета, за которыми сегодня нет роли
+   (жёлтый, красный, фиолетовый): роль, которой завтра понадобится цвет,
+   обязана взять его отсюда, а не придумать свой. Фиолетовый у Digitable
+   значит «объявление»; лексер flang такого вида токена не выдаёт — виды
+   ровно пять (слово, имя, строка, число, комментарий), — поэтому роль пока
+   пустует, а цвет под неё уже назван и ждёт. */
+:root {
+  --digitable-bg-0:   #05080d;
+  --digitable-bg-1:   #071018;
+  --digitable-cyan:   #00e5e5;
+  --digitable-blue:   #3ca9ff;
+  --digitable-green:  #7cff6b;
+  --digitable-purple: #b65cff;
+  --digitable-orange: #ff8a2a;
+  --digitable-yellow: #ffc247;
+  --digitable-red:    #ff5b5b;
+  --digitable-white:  #f5f7fa;
+  --digitable-muted:  #9baab8;
+  --digitable-border: #15566a;
+}
+
 :root {
   --ground:    #F5F6F9;
   --surface:   #FFFFFF;
@@ -20,18 +53,59 @@
   --bad:       #A6472F;
   --bad-bg:    #F7EAE6;
 
-  /* Подсветка flang. Цвета сдержанные намеренно: выделяться обязаны слова
-     языка и имена в ёлочках, остальное — читаться спокойно. Каждый взят из
-     уже живущей здесь палитры, чтобы код не спорил с остальной страницей. */
-  --syn-slovo:  #30478F;
-  --syn-imya:   #7A3E9D;
-  --syn-stroka: #25674A;
-  --syn-chislo: #9A4A2B;
-  --syn-zametka: #5B6373;
+  /* ── Слой 2: палитра КАРТОЧКИ КОДА ────────────────────────────────────────
+     Своих чисел здесь нет — одни псевдонимы фирменных токенов. Раньше на этом
+     месте лежали пять своих цветов, подобранных под светлую страницу; теперь
+     цвет приезжает из бренда, а страница к нему не имеет отношения.
+
+     ПОЧЕМУ КАРТОЧКА ТЁМНАЯ И В СВЕТЛОЙ ТЕМЕ ТОЖЕ. Это не вкус, а замер.
+     Фирменные акценты — палитра ТЁМНАЯ по замыслу (`--digitable-bg-0` #05080d
+     против `--digitable-white` #f5f7fa). Положить их на прежнюю светлую
+     карточку (#EFF1F5) значит получить: зелёный 1.13, циан 1.39, оранжевый
+     2.08, приглушённый 2.10, синий 2.23 — при норме 4.5. Это ровно та беда,
+     которую Digitable уже прошли и записали в шапке своего css/syntax.css:
+     подсветка следовала за темой СТРАНИЦЫ, а карточка за темой не следовала,
+     строка давала 1.24:1, и замер насчитал 60 таких мест на одной статье.
+     Чинится это не подкраской пострадавшей страницы, а тем, что ПОДЛОЖКА
+     ЕДЕТ ВМЕСТЕ С ЦВЕТАМИ И ПО ТЕМ ЖЕ СЕЛЕКТОРАМ: `--flang-kod-fon` и
+     `--flang-kod-tekst` объявлены здесь же, рядом с ролями, и ставятся одним
+     правилом `.content pre`. Половину карточки в одной теме, половину в
+     другой теперь не собрать: цвет на карточке берётся ТОЛЬКО из
+     `--flang-kod-*`/`--flang-syn-*`, цвет на странице — только из палитры
+     страницы выше, и смешивать нельзя ни в одну сторону.
+
+     ПОЧЕМУ ОБЪЯВЛЕНО ТРИЖДЫ (здесь, в `@media (prefers-color-scheme: dark)` и
+     в `:root[data-theme="dark"]`), хотя значения одинаковы. Именно потому,
+     что карточка тёмная в обеих темах, значения и совпадают — но записаны они
+     всё равно целиком в каждом из трёх мест темы. Иначе правило «подложка
+     едет вместе с цветами» держалось бы на памяти: тот, кто завтра сделает
+     карточку в тёмной теме другой, поправит её там, где она объявлена, — а
+     объявлена она ВЕЗДЕ, вместе со своими цветами. Разъехаться значениям
+     не на чем: каждая строка — псевдоним, а числа лежат слоем выше в одном
+     экземпляре. Стережёт всё это замер `docs/site/kontrast.mjs`: он читает
+     все три места, требует в каждом полный набор и считает контраст. */
+  --flang-kod-fon:     var(--digitable-bg-0);
+  --flang-kod-tekst:   var(--digitable-white);
+  --flang-kod-ramka:   var(--digitable-border);
+  --flang-syn-slovo:   var(--digitable-blue);
+  --flang-syn-imya:    var(--digitable-cyan);
+  --flang-syn-stroka:  var(--digitable-green);
+  --flang-syn-chislo:  var(--digitable-orange);
+  --flang-syn-zametka: var(--digitable-muted);
 
   --serif: ui-serif, Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "DejaVu Sans", sans-serif;
-  --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace;
+  /* Шрифт кода бренда — JetBrains Mono, и он стоит первым. Файла шрифта в
+     дереве нет и не будет: скачивать его со стороны запрещено (страница
+     обязана открываться без сети), а класть в дерево вариативный woff2 ради
+     блоков кода — плата весом за то, чего никто не просил. Первым он стоит
+     потому, что это ничего не стоит: запроса на сторону не делает ни один
+     порядок стопки, а у читателя, у которого шрифт уже установлен, код
+     показывается фирменным начертанием. У кого нет — тому `ui-monospace`,
+     ровно как было. Тот же приём и по той же причине применён у самих
+     Digitable к Bebas Neue: имя в стопке оставлено, вес первой загрузки за
+     него не платится. */
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", "DejaVu Sans Mono", Consolas, monospace;
 
   --side-w: 264px;
   --toc-w: 220px;
@@ -57,11 +131,17 @@
     --bad:       #E08A6E;
     --bad-bg:    #2A1B16;
 
-    --syn-slovo:  #8FADE9;
-    --syn-imya:   #C79BE8;
-    --syn-stroka: #6FC79B;
-    --syn-chislo: #E0A06E;
-    --syn-zametka: #8A93A4;
+    /* Палитра карточки кода — целиком, а не «то, что изменилось». Довод
+       записан у первого объявления в `:root`: подложка обязана ехать вместе
+       с цветами, и держаться это должно на записи, а не на памяти. */
+    --flang-kod-fon:     var(--digitable-bg-0);
+    --flang-kod-tekst:   var(--digitable-white);
+    --flang-kod-ramka:   var(--digitable-border);
+    --flang-syn-slovo:   var(--digitable-blue);
+    --flang-syn-imya:    var(--digitable-cyan);
+    --flang-syn-stroka:  var(--digitable-green);
+    --flang-syn-chislo:  var(--digitable-orange);
+    --flang-syn-zametka: var(--digitable-muted);
   }
 }
 
@@ -84,11 +164,17 @@
   --bad:       #E08A6E;
   --bad-bg:    #2A1B16;
 
-  --syn-slovo:  #8FADE9;
-  --syn-imya:   #C79BE8;
-  --syn-stroka: #6FC79B;
-  --syn-chislo: #E0A06E;
-  --syn-zametka: #8A93A4;
+  /* То же и здесь, и по той же причине: это ветка живого переключателя в
+     шапке. Пропусти её — и кнопка «тёмная» дала бы половину темы: страница
+     переключилась, карточка кода осталась. */
+  --flang-kod-fon:     var(--digitable-bg-0);
+  --flang-kod-tekst:   var(--digitable-white);
+  --flang-kod-ramka:   var(--digitable-border);
+  --flang-syn-slovo:   var(--digitable-blue);
+  --flang-syn-imya:    var(--digitable-cyan);
+  --flang-syn-stroka:  var(--digitable-green);
+  --flang-syn-chislo:  var(--digitable-orange);
+  --flang-syn-zametka: var(--digitable-muted);
 }
 
 * { box-sizing: border-box; }
@@ -285,9 +371,26 @@ body {
   background: var(--code-bg); padding: .1em .35em; border-radius: 2px;
 }
 
+/* КАРТОЧКА КОДА. Подложка, цвет текста и рамка ставятся ЗДЕСЬ, одним правилом
+   и из одной палитры — той же, из которой берут цвет токены ниже. Разделить их
+   нельзя: у Digitable подсветка красилась глобально, а тёмная карточка
+   выдавалась узко — и всякий блок кода за пределами читалки получал цвета
+   карточки на фоне страницы. Здесь такое невозможно: селектор один и тот же,
+   `.content pre`, и он же несёт `color`. Блок на чужом языке (```bash,
+   ```json) — та же карточка и тот же `--flang-kod-tekst`: непокрашенный текст
+   на карточке не имеет права остаться цветом СТРАНИЦЫ, это и есть тот самый
+   тёмный текст на тёмном фоне (у них — 1.01:1).
+
+   Встроенный `code` в строке текста — не карточка, и палитра у него остаётся
+   страничная (`--code-bg`, цвет текста страницы). Смешение запрещено в обе
+   стороны.
+
+   Рамка слева взята из фирменной палитры и заодно стала виднее: `#15566a` к
+   тёмной странице — 2.26 против прежних 1.38 у `--rule`. */
 .content pre {
-  background: var(--code-bg);
-  border-left: 2px solid var(--rule);
+  background: var(--flang-kod-fon);
+  color: var(--flang-kod-tekst);
+  border-left: 2px solid var(--flang-kod-ramka);
   padding: 1rem 1.1rem;
   margin: 0 0 1.3rem;
   overflow-x: auto;
@@ -300,15 +403,18 @@ body {
 /* Подсветка flang. Классы ставит СБОРКА настоящим лексером языка
    (docs/site/podsvetka.mjs) — в браузере не красится ничего, скрипта на это
    нет и не будет. Красятся ровно пять видов токенов; имена без ёлочек, знаки
-   и стрелки остаются цветом текста. */
+   и стрелки остаются цветом текста карточки.
+   Роли розданы не заново: сопоставление взято у Digitable как есть
+   (`--course-syn-*` в courses-v2.css) — ключевое слово синий, имя циан,
+   строка зелёный, число оранжевый, комментарий приглушённый. */
 /* Жирным помечены ИМЕНА, а не ключевые слова: на замере по собранному сайту
    слов языка 2714 из 4097 окрашенных мест (две трети), и жирный на них делает
    жирным весь блок. Имён 948 — их и надо находить глазом, не перечитывая. */
-.content pre code .tok-slovo      { color: var(--syn-slovo); }
-.content pre code .tok-imya       { color: var(--syn-imya); font-weight: 600; }
-.content pre code .tok-stroka     { color: var(--syn-stroka); }
-.content pre code .tok-chislo     { color: var(--syn-chislo); }
-.content pre code .tok-kommentariy { color: var(--syn-zametka); }
+.content pre code .tok-slovo      { color: var(--flang-syn-slovo); }
+.content pre code .tok-imya       { color: var(--flang-syn-imya); font-weight: 600; }
+.content pre code .tok-stroka     { color: var(--flang-syn-stroka); }
+.content pre code .tok-chislo     { color: var(--flang-syn-chislo); }
+.content pre code .tok-kommentariy { color: var(--flang-syn-zametka); }
 
 .content blockquote {
   margin: 0 0 1.3rem;

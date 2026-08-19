@@ -18,16 +18,16 @@
 #   scripts/test-remote.sh --sync           только синхронизировать
 #   scripts/test-remote.sh --info           что за хост и что на нём стоит
 #
-# Хост: FLANG_REMOTE (по умолчанию dev — алиас из ~/.ssh/config).
-# Каталог на хосте: FLANG_REMOTE_DIR (по умолчанию ~/.cache/flang-remote/<имя>).
+# Хост задаёт FLANG_REMOTE — алиас ssh, по которому пускают без пароля.
+# Умолчания у него нет намеренно: чужая машина не должна называться в дереве.
 #
-# Каталог намеренно НЕ ~/projects/flang: там рабочий клон владельца со своими
-# ветками, и затирать его прогоном тестов недопустимо. Копия отдельная, её
-# содержимое одноразовое.
+# Каталог на хосте: FLANG_REMOTE_DIR (по умолчанию ~/.cache/flang-remote/<имя>).
+# Отдельный каталог под кэшем, а не рабочий клон: содержимое копии одноразовое,
+# её затирает каждый прогон, и настоящему клону это стоило бы веток.
 
 set -euo pipefail
 
-REMOTE="${FLANG_REMOTE:-dev}"
+REMOTE="${FLANG_REMOTE:-}"
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
 NAME=$(basename "$ROOT")
@@ -43,8 +43,10 @@ info() { printf '    %s\n' "$*"; }
 die()  { printf '%sОШИБКА%s %s\n' "$RED" "$RST" "$*" >&2; exit 1; }
 
 command -v rsync >/dev/null 2>&1 || die "нужен rsync"
+[ -n "$REMOTE" ] \
+  || die "не задан хост. FLANG_REMOTE=<ваш ssh-алиас> scripts/test-remote.sh — нужна машина, где стоят все восемь тулчейнов и куда пускают по ключу"
 ssh -o BatchMode=yes -o ConnectTimeout=10 "$REMOTE" true 2>/dev/null \
-  || die "хост «$REMOTE» недоступен по ssh без пароля. Задайте FLANG_REMOTE=<алиас> или пропишите алиас в ~/.ssh/config"
+  || die "хост «$REMOTE» недоступен по ssh без пароля"
 
 # PATH для неинтерактивного ssh: Go, Rust и Elixir нередко лежат в /usr/local,
 # а ~/.local/bin в PATH добавляет только login shell, до которого мы не доходим.

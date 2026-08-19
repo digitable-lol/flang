@@ -5,123 +5,170 @@ answered, and what could not be checked. It is a separate page because someone
 installing the language needs a command, not a QA report — but the report cannot
 be thrown away either, or the word "verified" has nothing under it.
 
-Everything was run on 18 August 2026 on one machine: `cc (Ubuntu
-15.2.0-16ubuntu1) 15.2.0`, `GNU Make 4.4.1`, `node v26.7.0`.
+Everything below was run on one machine: `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`,
+`GNU Make 4.4.1`, `node v26.7.0`.
 
-## Homebrew: formula, hash and archive agree
+## Release 0.5.1: archive, hash, formula, build
 
-The published formula was downloaded: HTTP 200, 10 314 bytes. Its `version` is
-`0.5.0`, its `url` points at release `v0.5.0`, its `sha256` is `7dc75fec…d0505`.
+The release archive was downloaded: `flang-0.5.1-c.tar.gz`, **1,515,080 bytes**,
+`sha256sum` — `ef2cbcbe…61de1`. It holds exactly **nine files**: `LICENSE`,
+`Makefile`, `flang.1`, four `.c` and two `.h` — no `.o`, no prebuilt binary.
 
-The archive at that `url` was downloaded separately: HTTP 200, **929 817
-bytes**, and `sha256sum` matched the formula character for character. The
-archive holds exactly **9 files**: `LICENSE`, `Makefile`, `flang.1`, four `.c`
-and two `.h` — no `.o`, no prebuilt binary.
+The published formula was downloaded separately: HTTP 200, 10,891 bytes. Its
+`version` is `0.5.1`, its `url` points at release `v0.5.1`, and its `sha256`
+matched the one computed over the downloaded archive character for character.
 
-The body of the formula, comment lines aside, **matched**
-`packaging/homebrew/flang.rb` in this tree: the copy in the tap has not fallen
-behind.
+The archive was built with the flags the formula itself sets
+(`-std=c99 -Wall -Wextra -Werror -pedantic -O2`): 78.2 s, not one warning, a
+`flang` of 7,873,872 bytes, and `flang --version` answers `flang 0.5.1`.
 
 **What could not be checked.** There is no `brew` in this environment
 (`command -v brew` is empty). So everything only brew can do is unchecked:
-parsing the formula as Ruby, `bin.install`, the build sandbox, `brew audit`. On
-this evidence one may not say "it installs via Homebrew". One may say exactly
-what is above: archive, hash and formula agree.
+parsing the formula as Ruby, `bin.install`, the build sandbox, `brew audit`.
+Checked is exactly what is above: archive, hash, formula, and building the
+archive with the formula's flags.
 
-## asdf: the plugin's three scripts, run with no Node in `PATH`
+**The formula in this tree lags behind the published one.**
+`packaging/homebrew/flang.rb` here still says `version "0.5.0"` with hash
+`7dc75fec…`, while `digitable-lol/homebrew-tap` already carries 0.5.1. The
+mismatch used to be guarded the other way round — "the copy in the tap has not
+fallen behind"; today it is the original that has.
 
-The plugin repository exists and is public: `github.com/digitable-lol/asdf-flang`
-answers HTTP 200.
+## Why 0.5.0 had to be replaced: it did not build on macOS at all
 
-Its three scripts were run by hand with `PATH=/usr/bin:/bin` — that is, **with
-Node physically absent from `PATH`** (`command -v node` empty; `node` lives in
-`/usr/local/bin`, where the path does not lead):
+Not "installed badly" — did not build, for anyone. `flang_repl.c` declares
+`_POSIX_C_SOURCE 200809L`: on glibc that line EXPOSES `mkdtemp`, on Darwin it
+HIDES it — Apple's headers derive the visibility level from `__DARWIN_C_LEVEL`,
+and a named `_POSIX_C_SOURCE` drops it to pure POSIX, where `mkdtemp` does not
+appear. The build runs with `-Werror`, so an implicit declaration is a stop, not
+a warning: `brew install digitable-lol/tap/flang` never finished on any Mac.
+
+Evidence, not retelling: in the unpacked 0.5.0 archive the word
+`_DARWIN_C_SOURCE` occurs **zero** times; in the 0.5.1 archive, **three** (the
+explanation and two `#define`s under `__APPLE__`).
+
+**What could not be checked.** There is no macOS machine in this environment,
+and the red cannot be reproduced on Linux by anything: here the line works even
+without the fix.
+
+## asdf: eight versions listed, and installing 0.5.1 fails
+
+The plugin's three scripts were run by hand with `PATH=/usr/bin:/bin` — that is,
+**with Node physically absent from `PATH`**.
 
 ```
-bin/list-all  → 0.4.1 0.4.2 0.4.4 0.4.5 0.4.6 0.4.7 0.5.0
-bin/download  → 9 files downloaded and unpacked
-bin/install   → 54.9 s, "flang 0.5.0 installed"
+bin/list-all        → 0.4.1 0.4.2 0.4.4 0.4.5 0.4.6 0.4.7 0.5.0 0.5.1
+bin/download 0.5.1  → nine files downloaded and unpacked
+bin/install  0.5.1  → REFUSED
+bin/download 0.5.0  →
+bin/install  0.5.0  → "flang 0.5.0 установлен"
 ```
 
-After that the install directory holds four files: `bin/flang`,
+The version list comes from GitHub releases live, so 0.5.1 appeared in it by
+itself. **0.4.8 is absent on purpose**: the release is real but has no asset, and
+`asdf install flang 0.4.8` ended in a 404. The script selects on "an archive is
+served", not on "a release exists".
+
+The refusal on 0.5.1 looks like this:
+
+```
+cc … -o flang flang_cli.o flang_repl.o flang_runtime.o kompilyator_flang.o -lm -lpthread
+install: No such file or directory
+```
+
+The build passed, the install did not. The published script runs
+`install -m 0755 "${build}/flang_cli"`, while the `Makefile` in the 0.5.1
+archive produces `flang`. The fix already exists in this tree —
+`packaging/asdf/bin/install` accepts both names and additionally probes
+`--version` and `--help` — but it has not been published to the plugin
+repository, so what reaches a person today is the refusal.
+
+After installing 0.5.0 the version directory holds four files: `bin/flang`,
 `lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
-`include/kompilyator_flang.h`. `bin/flang --version` answers `flang 0.5.0`.
+`include/kompilyator_flang.h`.
 
-**About 0.4.8.** The release exists, it has no archive, and `asdf install flang
-0.4.8` ended in a 404. That is why `bin/list-all` does not name it, and why the
-install page spells the version list out in full: an ellipsis would quietly
-promise something that cannot be delivered.
+**Installing from a branch is refused on purpose.** With `ASDF_INSTALL_TYPE=ref`
+the script exits 1 and explains: in the repository the compiler is source
+written in flang itself, and the first binary out of it comes from Node —
+precisely the dependency the plugin exists to remove.
 
 **What could not be checked.** Neither `asdf` nor `mise` is in this environment.
 So everything asdf does around the scripts is unchecked: `plugin add`, version
-resolution, shimming into `PATH`. Exactly one thing is checked: the three
-scripts asdf calls produce a working `flang 0.5.0` without Node.
+resolution, shimming into `PATH`. About mise nothing at all was run — the line
+about it on the install page rests on how the plugin is built, not on a
+measurement.
 
-**Installing from a branch is refused on purpose.** `asdf install flang ref:main`
-fails with an explanation: in the repository the compiler is source written in
-flang itself, and the first binary out of it comes from Node — precisely the
-dependency the plugin exists to remove.
+## From source: a fresh clone holds no built file
 
-## From source: three builds in an empty directory
+It used to say here that `bootstrap/` ships from the repository with `flang` and
+`*.o` already built, and that measuring therefore requires an empty directory.
+**That is wrong, and a clone proves it.** `bootstrap/flang` is in `.gitignore`,
+`git ls-files bootstrap/` names eight files, and `git clone --depth 1` from
+GitHub puts down exactly those: `Makefile`, `README.md`, four `.c`, two `.h`.
+Nothing built.
 
-The empty directory is not a formality. `bootstrap/` ships in the repository
-with `flang` and `*.o` already built, and `make` goes by file times: in a tree
-where a build has happened it answers "nothing to be done" and leaves the
-**old** binary. A measurement taken that way measures nothing.
-
-So the tree was unpacked with `git archive` into an empty directory, and only
-then was `make` started:
+The measurement was taken in that very clone:
 
 | run | time | binary |
 | --- | ---: | ---: |
-| `make -C bootstrap -j4` | 34.3 s | 7 276 792 bytes |
-| `make -C bootstrap` (no `-j`) | 93.8 s | 7 276 792 bytes |
-| one `cc` call over four `.c` | 76.3 s | 7 283 688 bytes |
+| `make -C bootstrap -j4`, the tree's flags (with `-flto`) | 34.2 s | 7,831,160 bytes |
+| one `cc` call over four `.c` (no `-flto`) | 83.5 s | 7,873,872 bytes |
+| `make` in the unpacked 0.5.1 archive, the formula's flags (no `-flto`) | 78.2 s | 7,873,872 bytes |
 
-All three come from one measuring session, one directory, `make clean` between
-runs.
+Not one warning under `-Wall -Wextra -Werror -pedantic` in any of the runs. Time
+drifts with machine load, bytes do not: the two runs without `-flto` gave the
+same size to the byte, and only the `-flto` build differs from them.
 
-The input is 13 324 277 bytes of emitted C and headers (254 065 lines). Not one
-warning about the code under `-Wall -Wextra -Werror -pedantic`; on the run
-without `-j`, `gcc` spoke about its own build — `lto-wrapper: warning: using
-serial compilation of 73 LTRANS jobs` — which is about the build layout, not the
-emitted code. The binary links against `libc`, `libm`, `libpthread`.
+`make -C bootstrap install PREFIX=…` into an empty prefix laid down four files:
+`bin/flang`, `lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
+`include/kompilyator_flang.h`. No man page among them: `flang.1` lives in
+`packaging/`, not in `bootstrap/`, and the release script is what puts it into
+the archive.
 
-**The output is named `flang`.** `make install` puts it in place as a command
-(`PREFIX` defaults to `/usr/local`); run here by installing into an empty
-prefix, after which `flang --version` answered `flang 0.5.0` and `flang --help`
-printed the short help.
+`./bootstrap/flang --version` in the clone answers `flang 0.5.0`, not `0.5.1`:
+the `v0.5.1` tag is not merged into `main`, and `package.json` together with
+`FLANG_VERSION` there is still 0.5.0. Hence the caveat on the install page: the
+version is whatever the clone holds, not the latest release.
 
-**Time drifts with machine load, bytes do not.** Two `make` runs with different
-thread counts gave the same size to the byte; only the plain `cc` call differs,
-and it differs predictably — no `-flto`, so the link is a different one.
+## Node: the git URL, the registry, and emit targets beyond C
 
-## Node: what `npm` answered
+`npm install ../flang` into a clean directory: **1 package added in 255 ms**,
+zero dependencies — `package.json` has no `dependencies` or `devDependencies`
+keys at all. It produced `node_modules/.bin/flang` and
+`node_modules/.bin/flang-lsp`.
 
-`npm install ../flang` into a clean directory added **1 package** in 397 ms —
-the package has zero dependencies, and `package.json` has no `dependencies` or
-`devDependencies` keys at all. It produced `node_modules/.bin/flang` and
-`node_modules/.bin/flang-lsp`. Called from a project script:
+`npm install git+https://github.com/digitable-lol/flang.git` into an empty
+project gives the same in 11 s. A previous run of that command failed with
+"Could not read from remote repository": npm reaches git over ssh and there were
+no keys on the machine. Today the keys are there and the command passes; on a
+machine without keys it may fail again.
 
-```js
-import { execFileSync } from 'node:child_process'
-execFileSync('./node_modules/.bin/flang', ['check', 'proba.flang'], { encoding: 'utf8' })
-// {"valid":true,"module":"Проба","functions":[{"name":"Два","total":true}],"types":[],"diagnostics":[]}
+The difference between the binary and the Node package was measured with one
+command on one file:
+
+```
+binary: flang emit проба.flang --target rust
+        → "цели «rust» в этом бинарнике нет. Втащена одна — «c»"
+Node:   ./node_modules/.bin/flang emit проба.flang --target rust
+        → Cargo.toml, src/runtime.rs, src/lib.rs, src/main.rs
 ```
 
-**Two shortcuts were tried and did not work** — which is why they are not on the
-install page:
+**The registry is shut from both sides.** `npm view @digitable-lol/flang version`
+answers **E404**: nothing is published under the language's own name.
+`npm view @digitable-lol/fts version` answers **0.4.7** — the old name, and it
+lags behind the release.
 
-- `npm view @digitable-lol/fts version` answers **0.4.7**: the registry holds a
-  version that lags behind release 0.5.0. That is the old name — on 19 August
-  2026 the package was renamed to `@digitable-lol/flang`, and for the new name
-  the registry answers **404**: nothing is published under it yet, so the
-  registry path is shut either way;
-- `npm install github:digitable-lol/flang` and
-  `npm install git+https://github.com/digitable-lol/flang.git` fail in this
-  environment with "Could not read from remote repository": npm reaches git over
-  ssh and there are no keys. On a machine with keys this will probably work —
-  but "probably" does not belong on an install page.
+## The binary has ten commands, not six
+
+Both this page and the install page used to say the binary knows six commands
+and that `flang lock` is rejected with exit code 2, pointing at "the full
+toolchain". Re-measured: `./bootstrap/flang --help` names all ten, and
+`flang lock проба.flang` answers with a JSON lock and exit code 0. The help of
+the binary and of the Node package list the same set of commands.
+
+So the difference between the paths is exactly one thing, and it is about
+emitting: the binary has the `c` target, the Node package has all
+{{цели.поАнглийски}} ({{цели.список}}) plus the `flang-lsp` language server.
 
 ## Next
 

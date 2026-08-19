@@ -173,6 +173,7 @@
 - [Старый проект FTS нельзя вынести дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
+- [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны](a-packaging-copy-in-another-repository-drifts-both-ways.md)
 
 ## Интерфейс инструмента
 

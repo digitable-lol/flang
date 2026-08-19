@@ -108,6 +108,7 @@
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
 - [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
+- [Сверка близнеца не ловила забытую команду: на ключе эталон отказывает раньше, чем доходит до команды](spravka-bliznetsa-otstayot-tam-gde-korpus-idyot-s-klyuchom.md)
 - [Из двух половин доставки язык доказывает только «не больше одного»](at-most-once-is-the-only-provable-half.md)
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Замер скорости проверяет себя контрольной суммой](checksum-inside-the-benchmark.md)
@@ -116,6 +117,8 @@
 - [Перечень, записанный в проверке руками, переживает дерево](a-hand-written-list-outlives-the-tree.md)
 - [Команда может ответить «проверено», не проверив ничего](checked-without-checking.md)
 - [Число прозы без названного измерителя не перепроверяется, а заменяется другим числом](a-number-without-a-named-measure.md)
+- [Набранное число расходится между страницами; подставленное — не может](typed-numbers-drift-substituted-ones-cannot.md)
+- [Журнал, записывающий короткий хеш коммита, догнать правкой коммита нельзя](amend-cannot-catch-up-a-journal-that-records-hashes.md)
 - [Относительная ссылка ломается ровно при копировании каталога](relative-links-break-on-copy.md)
 - [Замер собранного артефакта врёт молча: `make` не пересобирает, а отвечает «nothing to be done»](measuring-a-stale-artifact.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
@@ -124,6 +127,8 @@
 ## Устройство репозитория
 
 - [Старый проект FTS нельзя вынести дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
+- [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
+- [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 
 ## Найденные ошибки
 
@@ -132,9 +137,14 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
+- [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
+- [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)
+- [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
+- [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 
 ## Отвергнутые пути
 
@@ -160,6 +170,8 @@
 - [Синтез из спецификации упирается в 75 узлов дерева — и медианная функция нашей библиотеки ровно этого размера](sintez-upiraetsya-v-75-uzlov.md)
 - [Библиотеку сегодня не выводят из спеки — её пишут агентом, а теорема работает храповиком](hrapovik-vmesto-vyvoda.md)
 - [Вывод из спецификации работает там, где область сузили нарочно, — и у flang такая область уже есть: словарь между спеками](vyvod-rabotaet-na-uzkoy-oblasti.md)
+- [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](paket-eto-zamok-s-imenem-i-versiey.md)
+- [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
 
 ## Внешнее и объёмы
 

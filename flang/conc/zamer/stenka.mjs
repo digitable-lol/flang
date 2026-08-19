@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Где стенка печати: наименьшее число сообщений в «дано», на котором emitC ещё
  * падает/уже падает. Двоичный поиск, каждый шаг — настоящая печать.

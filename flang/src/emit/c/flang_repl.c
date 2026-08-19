@@ -234,6 +234,7 @@ static const char FLANG_HELP[] =
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
     "  flang emit <файл> --target c       напечатать программу в C99\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
+    "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "\n"
     "  flang --help                       эта справка\n"
@@ -243,9 +244,8 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь 7 команд, у полного инструментария их 12: сверх этих есть facts, io,\n"
-    "lock и package, а с ними остальные семь целей печати, законы на сетке и\n"
-    "суждения.\n"
+    "Здесь 8 команд, у полного инструментария их 12: сверх этих есть io, lock и\n"
+    "package, а с ними остальные семь целей печати и законы на сетке.\n"
     "Ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
     "Подробности: man flang";
@@ -329,6 +329,26 @@ static const char HELP_AST[] =
     "прочитано, а не то, что признано годным. Отказывает команда только на том, из\n"
     "чего дерева не выходит вовсе, — на разборе и на связывании.";
 
+static const char HELP_FACTS[] =
+    "flang facts <файл.flang> --claims '[\"…\"]' [--facts факты.json] [--steps N] [--pretty]\n"
+    "\n"
+    "Проверяет утверждения на фактах — то, ради чего язык написан. Утверждение\n"
+    "имеет вид «<что-то> <оператор> <что-то>»; слева бывает факт, поле факта или\n"
+    "вызов функции от фактов, справа — то же самое или литерал.\n"
+    "\n"
+    "  --facts файл    факты JSON-объектом (без ключа — фактов нет)\n"
+    "  --claims '[…]'  что проверять, JSON-массивом строк\n"
+    "  --steps N       предел шагов вычисления (по умолчанию 10000)\n"
+    "  --pretty        JSON с отступами\n"
+    "\n"
+    "КОД 1 ЗДЕСЬ ЗНАЧИТ «ОПРОВЕРГНУТО», а не «сломалось»: вердикт всё равно уходит\n"
+    "в stdout, и код нужен, чтобы на нём падал CI. Код 2 — отказ вызова: не назван\n"
+    "файл, не разобран JSON, не связалась программа.\n"
+    "\n"
+    "Вызов зовётся ТОЛЬКО у функции, чьё завершение доказано: нетотальная даёт\n"
+    "отказ до всякого вычисления. Упирание в предел шагов — тоже ответ, «не\n"
+    "досчитали за отведённый бюджет», а не сбой инструмента.";
+
 static const char HELP_REPL[] =
     "flang repl [<файл.flang>] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -364,6 +384,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
+  } else if (strcmp(topic, "facts") == 0) {
+    printf("%s\n", HELP_FACTS);
   } else {
     printf("%s\n", FLANG_HELP);
   }
@@ -6067,6 +6089,344 @@ static int ast_file(int argc, char **argv) {
   return code;
 }
 
+/* ═════════════════════ проверка суждений: `flang facts` ══════════════════ */
+
+/*
+ * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров, и разбирает их отдельная
+ * функция, а не `run_value`. Причина не в аккуратности: утверждение умеет
+ * говорить `поле «x» факта «y»`, то есть факт бывает записью, — а разбор
+ * `--args` объектов и списков не знает намеренно (см. его шапку) и знать не
+ * должен: аргумент вызова у `flang run` скаляр по контракту.
+ */
+static bool facts_json(const char *text, size_t *at, fl_value *out);
+
+static bool facts_json_items(const char *text, size_t *at, fl_value *out) {
+  size_t count = 0;
+  size_t capacity = 8;
+  fl_value *items = (fl_value *)malloc(capacity * sizeof(fl_value));
+  bool ok = true;
+  if (items == NULL) {
+    repl_oom();
+  }
+  *at += 1;
+  run_spaces(text, at);
+  if (text[*at] == ']') {
+    *at += 1;
+    *out = repl_value_variant_fields("Значение списка", "элементы", repl_value_list(NULL, 0));
+    free(items);
+    return true;
+  }
+  while (ok) {
+    fl_value item = fl_nothing();
+    if (!facts_json(text, at, &item)) {
+      ok = false;
+      break;
+    }
+    if (count == capacity) {
+      capacity *= 2;
+      items = (fl_value *)repl_grow(items, capacity * sizeof(fl_value));
+    }
+    items[count] = item;
+    count += 1;
+    run_spaces(text, at);
+    if (text[*at] == ',') {
+      *at += 1;
+      continue;
+    }
+    if (text[*at] == ']') {
+      *at += 1;
+      break;
+    }
+    ok = false;
+  }
+  if (ok) {
+    *out = repl_value_variant_fields("Значение списка", "элементы", repl_value_list(items, count));
+  }
+  free(items);
+  return ok;
+}
+
+static bool facts_json_fields(const char *text, size_t *at, fl_value *out) {
+  size_t count = 0;
+  size_t capacity = 8;
+  fl_value *fields = (fl_value *)malloc(capacity * sizeof(fl_value));
+  bool ok = true;
+  if (fields == NULL) {
+    repl_oom();
+  }
+  *at += 1;
+  run_spaces(text, at);
+  if (text[*at] == '}') {
+    *at += 1;
+    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
+    free(fields);
+    return true;
+  }
+  while (ok) {
+    char *key = NULL;
+    size_t bytes = 0;
+    fl_value item = fl_nothing();
+    run_spaces(text, at);
+    if (text[*at] != '"' || !run_text(text, at, &key, &bytes)) {
+      ok = false;
+      break;
+    }
+    run_spaces(text, at);
+    if (text[*at] != ':') {
+      free(key);
+      ok = false;
+      break;
+    }
+    *at += 1;
+    if (!facts_json(text, at, &item)) {
+      free(key);
+      ok = false;
+      break;
+    }
+    {
+      const char *names[2];
+      fl_value values[2];
+      names[0] = "ключ";
+      values[0] = repl_value_text(key, bytes);
+      names[1] = "значение";
+      values[1] = item;
+      if (count == capacity) {
+        capacity *= 2;
+        fields = (fl_value *)repl_grow(fields, capacity * sizeof(fl_value));
+      }
+      fields[count] = repl_value_record(names, values, 2);
+      count += 1;
+    }
+    free(key);
+    run_spaces(text, at);
+    if (text[*at] == ',') {
+      *at += 1;
+      continue;
+    }
+    if (text[*at] == '}') {
+      *at += 1;
+      break;
+    }
+    ok = false;
+  }
+  if (ok) {
+    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, count));
+  }
+  free(fields);
+  return ok;
+}
+
+static bool facts_json(const char *text, size_t *at, fl_value *out) {
+  run_spaces(text, at);
+  if (text[*at] == '[') {
+    return facts_json_items(text, at, out);
+  }
+  if (text[*at] == '{') {
+    return facts_json_fields(text, at, out);
+  }
+  return run_value(text, at, out);
+}
+
+/* Утверждения приезжают JSON-массивом строк — ровно тем же ключом и в том же
+   виде, что у свидетеля: `--claims '["…"]'`. */
+static bool facts_claims(const char *text, repl_strings *out) {
+  size_t at = 0;
+  run_spaces(text, &at);
+  if (text[at] != '[') {
+    return false;
+  }
+  at += 1;
+  run_spaces(text, &at);
+  if (text[at] == ']') {
+    return true;
+  }
+  for (;;) {
+    char *claim = NULL;
+    size_t bytes = 0;
+    run_spaces(text, &at);
+    if (text[at] != '"' || !run_text(text, &at, &claim, &bytes)) {
+      return false;
+    }
+    strings_add(out, claim, bytes);
+    free(claim);
+    run_spaces(text, &at);
+    if (text[at] == ',') {
+      at += 1;
+      continue;
+    }
+    if (text[at] == ']') {
+      at += 1;
+      break;
+    }
+    return false;
+  }
+  run_spaces(text, &at);
+  return text[at] == '\0';
+}
+
+/*
+ * `flang facts` — то, ради чего язык написан (`flang/SPEC.md`, раздел 1).
+ *
+ * КОД ВОЗВРАТА ЗДЕСЬ ГОВОРИТ О ВЕРДИКТЕ, А НЕ О РАБОТЕ ИНСТРУМЕНТА, и это
+ * контракт свидетеля, перенесённый дословно: опровергнутое утверждение — это
+ * РЕЗУЛЬТАТ, вердикт уходит в stdout, а код 1 нужен, чтобы на нём падал CI.
+ * Кода 3 у этой команды нет: «сам сломался» здесь неотличимо от «не разобрал
+ * вызов» и отвечает двойкой, как у всех остальных команд бинарника.
+ */
+static int facts_file(int argc, char **argv) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  repl_strings claims;
+  fl_value args[6];
+  fl_value verdict = fl_nothing();
+  fl_value facts = fl_nothing();
+  fl_value bads = fl_nothing();
+  fl_value field = fl_nothing();
+  const char *path = NULL;
+  const char *claims_text = NULL;
+  const char *facts_path = NULL;
+  double steps = 10000;
+  bool pretty = false;
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  char *facts_text = NULL;
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  size_t at = 0;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--pretty") == 0) {
+      pretty = true;
+    } else if (strcmp(argv[index], "--claims") == 0 && index + 1 < argc) {
+      index += 1;
+      claims_text = argv[index];
+    } else if (strcmp(argv[index], "--facts") == 0 && index + 1 < argc) {
+      index += 1;
+      facts_path = argv[index];
+    } else if (strcmp(argv[index], "--steps") == 0 && index + 1 < argc) {
+      index += 1;
+      steps = strtod(argv[index], NULL);
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang facts: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang facts: не назван файл. Пример: flang facts модуль.flang --facts ф.json --claims '[\"…\"]'\n",
+          stderr);
+    return 2;
+  }
+  if (claims_text == NULL) {
+    fputs("flang facts: требует --claims '[\"…\"]'\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(base);
+    free(full);
+    return 2;
+  }
+  if (facts_path != NULL) {
+    char *facts_full = repl_resolve(base, facts_path);
+    size_t facts_bytes = 0;
+    facts_text = repl_read_file(facts_full, &facts_bytes);
+    free(facts_full);
+    if (facts_text == NULL) {
+      fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", facts_path);
+      free(base);
+      free(full);
+      free(text);
+      return 2;
+    }
+  }
+  free(base);
+
+  repl_cycle();
+  strings_init(&claims);
+  if (!facts_claims(claims_text, &claims)) {
+    fputs("flang facts: --claims должен быть JSON-массивом строк\n", stderr);
+    strings_free(&claims);
+    free(text);
+    free(facts_text);
+    free(full);
+    return 2;
+  }
+  if (facts_text == NULL) {
+    facts = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
+  } else if (!facts_json(facts_text, &at, &facts)) {
+    fprintf(stderr, "flang facts: не разобран JSON фактов (%s)\n", facts_path);
+    strings_free(&claims);
+    free(text);
+    free(facts_text);
+    free(full);
+    return 2;
+  }
+
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+  args[2] = facts;
+  args[3] = repl_value_strings(&claims);
+  args[4] = fl_number(steps);
+  args[5] = fl_number(100);
+
+  if (repl_call("Проверка фактов исходников", args, 6, &verdict) != FL_OK) {
+    fputs("flang facts: проверка не отработала\n", stderr);
+    code = 2;
+  } else if (val_field(verdict, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
+    repl_bads list;
+    size_t item = 0;
+    bads_init(&list);
+    for (item = 0; item < bads.as.list.count; item += 1) {
+      bads_take(&list, bads.as.list.items[item]);
+    }
+    check_print_bads(&list, path, paths.count);
+    bads_free(&list);
+    code = 2;
+  } else if (!val_field(verdict, "вывод", &field) || !val_text(field, &utf8, &bytes)) {
+    fputs("flang facts: вердикт не напечатался\n", stderr);
+    code = 2;
+  } else {
+    bool ok = false;
+    if (pretty) {
+      ast_pretty(utf8, bytes);
+    } else {
+      fwrite(utf8, 1, bytes, stdout);
+    }
+    fputc('\n', stdout);
+    fflush(stdout);
+    if (val_field(verdict, "годно", &field) && field.tag == FL_FLAG) {
+      ok = field.as.flag;
+    }
+    code = ok ? 0 : 1;
+  }
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  strings_free(&claims);
+  free(text);
+  free(facts_text);
+  free(full);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -6084,9 +6444,6 @@ static int ast_file(int argc, char **argv) {
  * КАЖДАЯ команда свидетеля была у двоичного либо исполнена, либо названа здесь.
  */
 static const char *human_elsewhere(const char *command) {
-  if (strcmp(command, "facts") == 0) {
-    return "проверка суждений на фактах";
-  }
   if (strcmp(command, "io") == 0) {
     return "исполнение плана или службы";
   }
@@ -6211,6 +6568,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = emit_file(argc, argv, self);
   } else if (strcmp(command, "ast") == 0) {
     code = ast_file(argc, argv);
+  } else if (strcmp(command, "facts") == 0) {
+    code = facts_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

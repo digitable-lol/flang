@@ -769,7 +769,7 @@ const ЗАЗОР = [
  * Указание по пересъёмке лежит в шапке самого файла снимка, а не только здесь:
  * тот, кто откроет снимок, шапку увидит, а этот комментарий — нет.
  */
-const ФАЙЛ_СНИМКА = fileURLToPath(new URL("./snimok/proofterm-etalon.json", import.meta.url))
+const ФАЙЛ_СНИМКА = fileURLToPath(new URL("./snimok/proofterm-witness.json", import.meta.url))
 
 const ШАПКА_СНИМКА = [
   "СНИМОК ОТВЕТОВ СВИДЕТЕЛЯ `flang/src/proofterm.mjs` НА ВСЁМ КОРПУСЕ.",

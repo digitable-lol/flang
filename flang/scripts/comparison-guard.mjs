@@ -149,10 +149,10 @@ export const МАРКЕР = "ПРЕДОБРАБОТКА СВИДЕТЕЛЯ:"
 
 /**
  * Сверки, не попадающие под образец `self-*`, но сверяющие ту же пару.
- * Список руками: `proof-kernel-twin.test.mjs` назван эталоном в имени, а не
+ * Список руками: `proof-kernel-reference.test.mjs` назван эталоном в имени, а не
  * в приставке, и общий образец его не ловит.
  */
-export const СОСЕДИ = Object.freeze(["proof-kernel-twin.test.mjs"])
+export const СОСЕДИ = Object.freeze(["proof-kernel-reference.test.mjs"])
 
 /**
  * ПОИМЁННЫЙ СПИСОК файлов, которые предобрабатывают свидетеля, и чем именно.

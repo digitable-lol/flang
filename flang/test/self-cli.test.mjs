@@ -49,11 +49,11 @@ import { obligations } from "../src/obligations.mjs"
    `./vedomost.mjs` — ведомость СЛОЯ НА FLANG, та же, какой её считает команда.
    Ею собирается «до и после» первого утверждения: там сравниваются две ведомости,
    собранные ОДНИМ счётчиком на РАЗНЫХ обязательствах, и счётчик обязан быть один.
-   `./zapis/vedomost-etalona.mjs` — ЗАПИСЬ ответов стёртого `flang/src/proof.mjs`.
+   `./zapis/witness-ledger.mjs` — ЗАПИСЬ ответов стёртого `flang/src/proof.mjs`.
    Ею сверяется сам эталон: сравнивать его с ним же значило бы не сравнивать
    ничего. Цена записи названа в шапке того файла. */
 import { formatProofLedger, proofLedger } from "./vedomost.mjs"
-import { отпечаток, отпечатокСвидетеля } from "./zapis/vedomost-etalona.mjs"
+import { отпечаток, отпечатокСвидетеля } from "./zapis/witness-ledger.mjs"
 import { checkProofs } from "../src/proofterm.mjs"
 import {
   ведомость as ведомостьЭталона,

@@ -188,6 +188,7 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Поле встроенного словаря, названное ключевым словом, ставится и не читается](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)
 - [Постусловие «обращение не меняет длины строки» ложно, и ломает его одинокий суррогат](obrashchenie-stroki-lozhno-na-odinokom-surrogate.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
 - [Литерал `"\uD83D"` в любом `.flang` этого дерева ломает сверку самоприменения — и это не чинится](literal-s-odinokim-surrogatom-lomaet-samoprimenenie.md)

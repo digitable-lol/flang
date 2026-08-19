@@ -118,6 +118,7 @@
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
 - [Одна причина, названная сразу за группу, прячет остальные — и держит в долге тех, кого не держит ничто](one-named-reason-for-a-group-hides-the-others.md)
 - [Стена «слой связывается асинхронно» стоит 263 синхронных места вызова, а не одной правки](the-sync-wall-costs-263-call-sites.md)
+- [Внутренний предел витков умножается на цену витка и обязан помещаться во внешний бюджет слоя](an-inner-step-limit-multiplies-into-the-outer-budget.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)

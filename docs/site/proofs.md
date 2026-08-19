@@ -127,7 +127,17 @@ measurement showed the bottleneck was not where everyone assumed. In 13 cases ou
 of 15 the cause was the same — **no built-in type had an induction principle**:
 not the list, not the string, not the number.
 
-Once that was fixed it became **7 of 20**.
+Once that was fixed the measurement was repeated — the same twenty functions,
+on 16 August. **It became 2 of 20**: that many claims the kernel closed on its
+own, and they are claims that say something about the function. Four more closed
+for free, but only after the claim had been weakened, which makes **6 of 20**
+counting those. **Not one human-written theorem has been accepted by the kernel**
+— not the first time, not the second.
+
+The figure "7 of 20" travelled across these pages for a while as a result. It was
+not one: the first report's plan carried a row reading "up to 7 of 20" — what an
+unbuilt rule would give. An estimate was read as a measurement, and that is
+corrected here.
 
 The measurement repeats, and it is a ruler: it shows whether we are moving toward
 the goal or merely growing features. The condition everything is for:

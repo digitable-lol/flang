@@ -122,9 +122,11 @@ brew install digitable-lol/tap/flang
 ```bash
 tar -xzf flang-*-c.tar.gz   # внутри — исходники на C99, Makefile и страница flang.1
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli --help          # что умеет: check, repl, --version
-./flang_cli check м.flang   # разбор, типы, завершаемость — словами, не JSON
-./flang_cli                 # без аргументов — прогонщик: JSON на входе и выходе
+sudo make install           # с 0.5.1; в архиве 0.5.0 такой цели нет — там
+                            # скопируйте `flang_cli` в bin/flang руками
+flang --help                # что умеет: check, test, run, emit, repl
+flang check м.flang         # разбор, типы, завершаемость — словами, не JSON
+flang                       # на терминале — оболочка; под конвейером — прогонщик
 ```
 
 Формула Homebrew — [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb), и её раздаёт tap.
@@ -167,8 +169,9 @@ node flang/bin/flang.mjs check flang/examples/rosetta/factorial.flang
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap            # нужны только cc и make; ~4 минуты процессорного времени
-bootstrap/flang_cli --version
+make -C bootstrap -j4        # нужны только cc и make
+sudo make -C bootstrap install
+flang --version
 ```
 
 Что она такое, чем стережётся и как обновляется — [`bootstrap/README.md`](bootstrap/README.md).
@@ -292,7 +295,7 @@ export function mestoVstavki(elementy, cel) {
 
 Каждый бэкенд проверяется дифференциально, а не эталонными файлами. Корпус — стандартная
 библиотека и решения LeetCode: `flang/stdlib/*.flang` и `flang/examples/leetcode/*.flang`, то
-есть 95 программ с 508 функциями и 1288 примерами. Для каждой функции строится сетка входов из
+есть 98 программ с 618 функциями и 1598 примерами. Для каждой функции строится сетка входов из
 её собственных примеров и намеренно неверных аргументов (`ничто`, строка там, где ждут список,
 несуществующий вариант); программа печатается в пустой каталог, собирается настоящим тулчейном из
 одного только того, что выдал бэкенд, и запускается настоящим процессом. Прогон сам отчитывается
@@ -300,9 +303,9 @@ export function mestoVstavki(elementy, cel) {
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 95, функций: 508, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+ℹ программ: 98, функций: 618, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 1288
+ℹ сверенных примеров: 1598
 ```
 
 Бэкенд C дополнительно собирается и `gcc`, и `clang` с
@@ -382,9 +385,9 @@ flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --p
 поверхности и на английской, и тест сверяет пары деревьями, с точностью до переименования имён.
 Тест закрепляет и то, сколько функций каждого файла доказано тотальными: набор показывает границу языка, поэтому сдвинувшаяся граница обязана ронять
 тест, а не тихо устаревать в комментарии. Стандартная библиотека
-([`flang/stdlib/`](flang/stdlib): `dictionary`, `hashmap`, `higher-order`, `lists`, `logic`,
-`http`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) написана так же — 14 модулей, 259 функций, из них
-255 доказана тотальной. `higher-order` — та, что
+([`flang/stdlib/`](flang/stdlib): `datetime`, `dictionary`, `hashmap`, `higher-order`, `http`, `json`,
+`lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) написана так же — 16 модулей, 318 функций, из них
+314 доказана тотальной. `higher-order` — та, что
 на функциях-значениях: свёртка, отображение, фильтр, поиск, сортировка и композиция принимают
 функцию аргументом.
 

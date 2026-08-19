@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Вопрос о языке / A question about the language
+    url: https://github.com/digitable-lol/flang/discussions
+    about: Как это писать, почему так устроено — сюда, если это не дефект. / How to write something, why it works that way — here, if it is not a defect.
+  - name: Спецификация / The specification
+    url: https://github.com/digitable-lol/flang/blob/main/flang/SPEC.md
+    about: Что язык обещает — до того, как заводить задачу. / What the language promises — before opening an issue.
+  - name: Что язык НЕ умеет / Known limits
+    url: https://digitable-lol.github.io/flang/en/limits.html
+    about: Список того, чего нет, ведётся нарочно. Возможно, ваш случай уже там. / The list of what is missing is kept on purpose. Your case may already be on it.

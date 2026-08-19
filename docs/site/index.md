@@ -73,9 +73,12 @@ it go stale quietly — [how that works](about-docs.html).
 
 And, honestly, what is not there:
 
-- **of ordinary library functions the kernel accepts 7 out of 20** — the
-  measurement took every ninth function out of all {{библиотека.функций}}, so the convenient ones
-  could not be picked;
+- **of ordinary library functions the kernel closes 2 out of 20**; four more it
+  closed only after the claim had been weakened, which makes 6 out of 20 counting
+  those. **Not one human-written theorem has been accepted by the kernel.** The
+  measurement took every ninth function out of all {{библиотека.функций}}, so the
+  convenient ones could not be picked, and it was run twice on the same material —
+  [what backs that](proofs.html);
 - **the language is 1.4× slower than Python, 3.3× slower than Node, and
   hand-written C is 8.6× faster than we are** (geometric mean over five tasks,
   [the speed report](../benchmark-speed.html) — in Russian). That is **not the

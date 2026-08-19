@@ -149,6 +149,7 @@
 ## Отвергнутые пути
 
 - [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](oraculu-meshala-totalnost-a-ne-pervyy-klass.md)
+- [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](vynut-iz-resheniya-i-vynut-iz-zagruzki-eto-dva-sobytiya.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)

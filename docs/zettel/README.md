@@ -89,6 +89,8 @@
 - [Инвариант процесса пишется постусловием обработчика, и третьего рода обязательства для этого не нужно](process-invariant-is-a-handler-postcondition.md)
 - [Постусловие на обработчике заводит восьмой вид отказа мимо замкнутого множества](handler-postcondition-escapes-the-closed-set.md)
 - [Тупик, потерянное письмо и успешное завершение дают у прогона один и тот же исход «покой»](quiescence-hides-deadlock.md)
+- [Граница мира у горячей замены проходит по пяти чужим проходам, а не по часам и сокетам](hot-swap-boundary-runs-through-five-passes-not-through-a-clock.md)
+- [Кандидат на горячую замену разбирается ОТДЕЛЬНО, поэтому имена типов работающей программы в нём назвать можно, а функции её позвать нельзя](a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions.md)
 
 ## Самораскрутка и метод проверки
 
@@ -103,6 +105,8 @@
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
+- [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который эталон у себя уже чинил](totality-twin-does-not-read-postconditions.md)
+- [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
 - [Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом](a-sticky-bit-in-a-shared-tree-stops-git-merge.md)
 - [Объединение вариантов закрытой суммы — законное слияние, и оно обязано покраснеть у каждого, кто эту сумму разбирает](merging-two-branches-into-one-closed-sum.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)

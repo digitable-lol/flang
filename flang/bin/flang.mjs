@@ -37,8 +37,9 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { checkFacts } from "../src/factcheck.mjs"
+import { flangError } from "../src/builtins.mjs"
 import { checkFunctorDictionary, errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
-import { возможностиЦели } from "../src/conc.mjs"
+import { runConcurrent, возможностиЦели } from "../src/conc.mjs"
 import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
    `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
@@ -67,12 +68,20 @@ const HELP = `flang — полный язык поверх FTS
                      [--index-base 0|1] [--max-depth N] [--max-steps N] [--pretty]
   flang io    <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
                      [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
+                     [--no-spawn]
   flang repl  [файл] [--max-steps N] [--max-depth N]
   flang lock  <файл> [--pretty]
+  flang package <файл> [--pretty]
   flang version
 
 Файл: .flang (исходник) или .json (готовый AST).
 Результат — JSON в stdout, диагностика — JSON в stderr, ошибка — ненулевой код.
+
+Коды выхода io: 0 — план дошёл до «Конец работы»; 1 — план сдался сам
+(«Провал»), то есть программа нашла беду в предмете; 2 — кривой вызов; 3 —
+сломался инструмент (хозяин, предел поручений, не тот тип на входе шага).
+Разница между 1 и 3 — это разница между «нашёл беду» и «сам сломался», и она
+нужна всякому, кто ставит flang io в CI.
 
 check: разбор, связывание, типы, завершаемость, ядро доказательства и ПРИМЕРЫ.
 Пример — часть программы, а не тест сбоку: он прогоняется при каждой проверке, и
@@ -115,9 +124,13 @@ emit: цели берутся из src/emit (по одному модулю на
 выброшено, видно полем «отброшено»; проверка при этом идёт по полной программе,
 и ведомость доказательства не урезается.
 
-io: исполняет объявленный в файле план. Язык остаётся чистым — поручения
-строит программа, выполняет их хозяин на Node, и ключи --no-… его сужают.
-В выводе есть журнал выданных поручений и полученных откликов.
+io: исполняет объявленный в файле план — или СЛУЖБУ, если планов нет, а есть
+процессы и прогон: седьмое действие «поручить» даёт процессу выдать поручение и
+получить отклик обычным сообщением. Различаются они объявлением, а не ключом:
+поручение в языке одно. Язык остаётся чистым — поручения строит программа,
+выполняет их хозяин на Node, и ключи --no-… его сужают. --plan называет план или
+прогон, когда их несколько. В выводе есть журнал выданных поручений и полученных
+откликов.
 
 repl: интерактивная оболочка. Объявления накапливаются в сессии, выражения
 вычисляются сразу, «.помощь» показывает команды. Файл в аргументе загружается
@@ -135,6 +148,21 @@ lock: печатает ЗАМОК программы — JSON, в котором
 НЕГО и исходников зависимостей не читают вовсе — их может не быть на диске.
 Замок самозаверен печатью: испорченный замок — отказ FLANG_LOCK, а не тихая
 сборка из чего попало. Обновляется замок целиком: в нём лежит код, а не хеш.
+
+package: печатает ПАКЕТ — тот же груз, что в замке, плюс имя, версия, источник
+и ведомость доказанного. Имя и версию команда берёт из объявления flang.package
+рядом со входным файлом, а не из ключей вызова.
+
+  flang package strings.flang > strings.flang-package
+
+Подключается пакет одной строкой и без новых слов в языке:
+
+  использует «Строки» из "strings.flang-package"
+
+Исходников зависимостей при этом на диске нет, склада нет, сети не надо: код
+уже в файле. Испорченный пакет — отказ FLANG_PACKAGE. Двух версий одной
+библиотеки в программе по-прежнему не бывает; два пакета, привезшие один путь с
+разным содержимым, — тоже FLANG_PACKAGE, а не молчаливый выбор первого.
 `
 
 export async function main(argv = process.argv.slice(2)) {
@@ -175,6 +203,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandRepl(options)
       case "lock":
         return await commandLock(options)
+      case "package":
+        return await commandPackage(options)
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${HELP}`)
         return 2
@@ -354,31 +384,156 @@ async function commandFacts(options) {
  * В выводе есть журнал: какие поручения были выданы и что на них ответили. Это
  * то же самое, что тест увидит от поддельного хозяина, — значит настоящий
  * прогон и проверка без эффектов сравнимы напрямую.
+ *
+ * ── Коды выхода: их четыре, и третий заведён ради одной разницы ─────────────
+ *
+ * Здесь стояло жёсткое `return 0`, и на нём `flang io` умел ровно два ответа: 0
+ * — дошли до «Конец работы», 1 — что-то бросило. Под второй ответ попадало
+ * ВСЁ: и `«Провал»` (программа решила сама), и `FLANG_IO_LIMIT`, и «хозяин
+ * вернул не «Отклик»». Сторожу спек этого мало, и требование к нему записано
+ * дословно: он обязан отличать «нашёл беду» от «сам сломался». Иначе красный CI
+ * значит либо «спеки плохи», либо «сторож сломан», и разбираться идёт человек.
+ *
+ *   0 — план дошёл до «Конец работы»;
+ *   1 — план сдался сам («Провал»): предмет плох, инструмент цел;
+ *   2 — кривой вызов CLI (как у всех команд, `usage`);
+ *   3 — сломался инструмент: хозяин, предел поручений, не тот тип на входе
+ *       шага, неизвестный план, нечитаемый файл.
+ *
+ * Откуда берётся ЧИСЛО — вопрос, на который пришлось отвечать отдельно. Поле
+ * `код` у `«Провал»` — СТРОКА (`"СПЕКИ_НЕ_СОГЛАСНЫ"`), и числом её не сделать:
+ * коды отказа языка живут именами, а не номерами, и превращать их в номера
+ * значило бы завести вторую таблицу кодов. Поэтому число берётся не из
+ * значения, а из ПРИРОДЫ беды: `runPlan` помечает символом ту единственную
+ * беду, которую подняла сама программа (`сдалсяСам` в `src/io.mjs`), и здесь
+ * метка читается. Программе для нужного кода выхода не надо знать ни одного
+ * числа — довольно вернуть `«Провал»`.
+ *
+ * Отвергнуто по дороге: брать код выхода из значения `«Конец работы»`, если оно
+ * число. Тогда план, честно посчитавший 7, вышел бы с кодом 7, а `«Конец
+ * работы»` — это РЕЗУЛЬТАТ плана, а не вердикт о нём; смешивать их значило бы
+ * запретить планам возвращать числа. Образец взят у `commandFacts`, где
+ * опровергнутое утверждение уходит в stdout, а ненулевой код нужен только
+ * затем, чтобы CI мог на нём упасть.
+ *
+ * `process.exit()` здесь по-прежнему нет ни одного, и это решение сохранено
+ * намеренно (`docs/zettel/the-instrument-lied-not-the-subject.md`): код ставится
+ * ОДИН раз, `process.exitCode = await main()`, и поток вывода успевает уйти.
  */
 async function commandIo(options) {
-  const { runPlan, findPlan } = await import(new URL("../src/io.mjs", import.meta.url).href)
-  const { nodeHost } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
+  const { runPlan, findPlan, сдалсяСам } = await import(new URL("../src/io.mjs", import.meta.url).href)
+  const { nodeHost, nodeHostSync } = await import(new URL("../src/host/node.mjs", import.meta.url).href)
 
-  const program = await loadProgram(options.file)
-  const план = findPlan(program, options.planName)
-  const хозяин = nodeHost({
+  try {
+    const program = await loadProgram(options.file)
+    /* СЛУЖБА — та же команда, и это не удобство, а утверждение: поручение одно на
+       язык, а выдавать его умеют двое — план и процесс. Различаются они
+       ОБЪЯВЛЕНИЕМ, а не ключом командной строки: есть `план` — работает план; нет
+       плана, а есть `прогон` — работает планировщик процессов с тем же хозяином и
+       теми же полномочиями (`--no-net`, `--in-dir` и соседи). Второй ключ вида «а
+       теперь запусти службу» означал бы, что ввод-вывод в языке два разных, а он
+       один. */
+    if ((program.plans ?? []).length === 0 && (program.runs ?? []).length > 0) {
+      return commandSluzhba(program, options, nodeHostSync)
+    }
+    const план = findPlan(program, options.planName)
+    const хозяин = nodeHost({
+      base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
+      разрешено: options.allow,
+      seed: options.seed,
+      внутриКорня: options.inDir === true,
+    })
+
+    let итог
+    try {
+      итог = await runPlan(program, план.name, хозяин, {
+        maxSteps: options.maxSteps,
+        maxDepth: options.maxDepth,
+        maxOrders: options.maxOrders,
+      })
+    } finally {
+      /* Порты отдаются системе ВСЕГДА, и в `finally`, а не после: план,
+         кончившийся отказом, оставил бы слушающий сокет открытым, а с ним и
+         процесс, которому нечего больше делать. Закрывает тот, кто открыл, — и
+         это не поручение, потому что программа порт не открывала (она попросила
+         принять связь). Хозяин без сети такого способа не имеет вовсе, отсюда
+         проверка. */
+      if (typeof хозяин.закрыть === "function") хозяин.закрыть()
+    }
+    writeJson(
+      {
+        plan: план.name,
+        result: итог.значение,
+        orders: итог.поручений,
+        log: итог.журнал,
+      },
+      options.pretty,
+      process.stdout,
+    )
+    return 0
+  } catch (ошибка) {
+    /* Кривой вызов остаётся кривым вызовом и здесь: `--plan` без имени разбирает
+       `parseArgs`, но `usage` может прилететь и отсюда. */
+    if (ошибка?.usage === true) throw ошибка
+    writeJson(errorResult(ошибка), options.pretty, process.stderr)
+    return сдалсяСам(ошибка) ? 1 : 3
+  }
+}
+
+/**
+ * `flang io` над программой с ПРОЦЕССАМИ: служба, говорящая с миром.
+ *
+ * Это вторая половина шва между двумя слоями языка. Первая — седьмое действие
+ * `поручить` (`src/conc.mjs`): процесс описывает поручение, а отклик приходит
+ * названному процессу обычным сообщением. Здесь стоит тот, кто поручение
+ * ИСПОЛНЯЕТ, и стоит он ровно там же, где стоял для плана, — снаружи языка.
+ *
+ * Прогон берётся объявленный: у службы, как и у плана, есть вход, и вход этот
+ * назван в исходнике (`дано «Служба» принимает …`). `--plan «Имя»` выбирает
+ * нужный, когда прогонов несколько, — тем же ключом и по той же причине, по
+ * которой им выбирается план: вопрос один и тот же, «какой из объявленных».
+ *
+ * Отличие от `прогона` при проверке ровно одно, и оно названо: там хозяина НЕТ,
+ * и поручение отвечает `«Сбой»` с кодом `FLANG_IO_NO_HOST`, потому что прогон
+ * обязан остаться эталоном для побайтовой сверки с напечатанным C. Здесь хозяин
+ * есть, и он настоящий.
+ */
+function commandSluzhba(program, options, nodeHostSync) {
+  const прогоны = program.runs ?? []
+  const имя = options.planName
+  const прогон = имя === undefined || имя === null || имя === ""
+    ? (прогоны.length === 1 ? прогоны[0] : null)
+    : (прогоны.find((п) => п.name === имя) ?? null)
+  if (прогон === null) {
+    const список = прогоны.map((п) => `«${п.name}»`).join(", ")
+    throw flangError(
+      "FLANG_UNKNOWN_PLAN",
+      имя === undefined || имя === null || имя === ""
+        ? `прогонов несколько (${список}) — назовите нужный ключом --plan`
+        : `не найден прогон «${имя}»; объявлены ${список}`,
+    )
+  }
+
+  const хозяин = nodeHostSync({
     base: options.file === "-" ? process.cwd() : dirname(resolve(options.file)),
     разрешено: options.allow,
     seed: options.seed,
     внутриКорня: options.inDir === true,
   })
-
-  const итог = await runPlan(program, план.name, хозяин, {
-    maxSteps: options.maxSteps,
-    maxDepth: options.maxDepth,
-    maxOrders: options.maxOrders,
+  const итог = runConcurrent(program, { ...прогон, seed: options.seed ?? прогон.seed }, {
+    исполнить: хозяин,
+    maxTurns: options.maxOrders,
   })
   writeJson(
     {
-      plan: план.name,
-      result: итог.значение,
-      orders: итог.поручений,
-      log: итог.журнал,
+      run: прогон.name,
+      seed: options.seed ?? прогон.seed,
+      outcome: итог.исход,
+      states: итог.состояния,
+      orders: итог.поручения.length,
+      log: итог.поручения,
+      failures: итог.отказы,
+      decisions: итог.решения,
     },
     options.pretty,
     process.stdout,
@@ -487,6 +642,58 @@ async function commandLock(options) {
   const parse = await разборщик()
   const замок = await собратьЗамок(options.file, parse)
   writeJson(замок, options.pretty, process.stdout)
+  return 0
+}
+
+/* ───────────────────────────────── пакет ────────────────────────────────── */
+
+/**
+ * ПАКЕТ — один файл, в котором лежит модуль со всем своим замыканием
+ * (`src/package.mjs` — там же и довод целиком).
+ *
+ * Имя, версию и источник команда не берёт ключами вызова, а читает из
+ * объявления `flang.package` рядом со входным файлом. Причина не в удобстве:
+ * ключ вызова живёт в истории оболочки, а объявление живёт в репозитории
+ * автора и попадает в `git diff` — версия, поднятая ключом, поднялась бы молча.
+ *
+ * Печатается в stdout, как и замок: файл кладёт тот, кто вызвал.
+ */
+async function commandPackage(options) {
+  if (options.file === "-") throw usage("flang package требует файл: со стандартного ввода импорты не разрешаются")
+  const { ведомостьПакета, объявлениеРядом, собратьПакет } = await import(
+    new URL("../src/package.mjs", import.meta.url).href
+  )
+  const объявление = await объявлениеРядом(options.file, (путь) => readFile(путь, "utf8"), fail)
+  const parse = await разборщик()
+  /* ПРОВЕРКА ПЕРЕД СБОРКОЙ, как у печати: пакет — это обещание, а обещать за
+     непроверенное нельзя. Отказ проверки — отказ команды, а не пакет с
+     припиской «зато собрался». */
+  const program = await loadProgram(options.file)
+  const итоги = await checkProgram(program, { файл: options.file })
+  if (итоги.diagnostics.length > 0) {
+    throw fail("FLANG_PACKAGE", `${options.file} не проходит проверку: пакет собирается только из проверенного`)
+  }
+  /* ВЕДОМОСТЬ считается по СВОЕМУ модулю, а не по связанной программе: пакет
+     обещает за то, что написано в нём, и ни строкой больше. Имена своих функций
+     берутся из одиночного разбора входа — в слитой программе своё от
+     привезённого не отличить. */
+  const свои = (parse(await readInput(options.file), resolve(options.file)).functions ?? []).map((fn) => fn.name)
+  let ведомость = []
+  try {
+    const { obligations } = await import(new URL("../src/obligations.mjs", import.meta.url).href)
+    const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
+    const об = obligations(program, итоги.results)
+    ведомость = ведомостьПакета(об.obligations, checkProofs(program, об.obligations), свои)
+  } catch {
+    /* ядра нет — ведомость выйдет пустой, и это честнее выдуманной */
+  }
+  let пакет = null
+  try {
+    пакет = await собратьПакет(options.file, parse, объявление, { ведомость })
+  } catch (беда) {
+    throw fail("FLANG_PACKAGE", беда instanceof Error ? беда.message : String(беда))
+  }
+  writeJson(пакет, options.pretty, process.stdout)
   return 0
 }
 
@@ -933,6 +1140,29 @@ function изЗамка(parse, модули) {
   return (текст, файл) => модули.get(файл) ?? parse(текст, файл)
 }
 
+/**
+ * ПАКЕТЫ, на которые ссылается программа, — `использует «Имя» из "имя.flang-package"`.
+ *
+ * Опознаются по расширению пути импорта, и только по нему: имя модуля тут не
+ * спрашивается ни разу. Ребро импорта даёт ПУТЬ, путь даёт файл пакета, файл
+ * даёт разбор — и то, что приехало, есть ровно то, на что сослались. Поиск по
+ * имени привёз бы разбор чужого тела под правильной вывеской, и побайтовая
+ * сверка этого бы не заметила: сверять было бы не с чем.
+ *
+ * Проверка стоит ДО ввоза `package.mjs` и по одному разбору входа: у программы
+ * без пакетов модуль не загружается вовсе — тот же приём и та же причина, что у
+ * замка (ПОТОЛОК рабочего пути, `test/rabochiy-put.test.mjs`).
+ */
+async function пакетыРядом(single, file, importsOf) {
+  if (!importsOf(single).some((з) => typeof з.from === "string" && з.from.endsWith(".flang-package"))) return null
+  const { пакетамиПрограммы } = await import(new URL("../src/package.mjs", import.meta.url).href)
+  try {
+    return await пакетамиПрограммы(single, file, { readFile: (путь) => readFile(путь, "utf8") })
+  } catch (error) {
+    throw fail("FLANG_PACKAGE", error instanceof Error ? error.message : String(error))
+  }
+}
+
 async function parseFlang(source, file) {
   const parse = await разборщик()
 
@@ -953,10 +1183,18 @@ async function parseFlang(source, file) {
        `link.mjs`: всякое новое поле там оплачивалось бы вторым связыванием на
        самом flang (`flang/self`) и побайтовой сверкой близнеца. */
     const замок = await замокРядом(file)
-    const linked = замок === null
+    /* Пакеты — та же подмена и по той же причине. Складываются в одну карту:
+       программа вправе тянуть и замок, и пакеты, а связывание про обоих не
+       знает и знать не должно. Замок кладётся ПОВЕРХ пакетов — он собран по
+       этой самой программе и потому точнее. */
+    const пакеты = await пакетыРядом(single, file, importsOf)
+    const модули = пакеты === null && замок === null
+      ? null
+      : new Map([...(пакеты ?? new Map()), ...(замок?.модули ?? new Map())])
+    const linked = модули === null
       ? await linkProgram(file, source, parse)
-      : await linkProgram(file, source, изЗамка(parse, замок.модули), {
-          readFile: (путь) => (замок.модули.has(путь) ? Promise.resolve("") : readFile(путь, "utf8")),
+      : await linkProgram(file, source, изЗамка(parse, модули), {
+          readFile: (путь) => (модули.has(путь) ? Promise.resolve("") : readFile(путь, "utf8")),
         })
     if (linked.diagnostics.length > 0) {
       const error = new Error(linked.diagnostics[0].message)
@@ -1476,13 +1714,16 @@ function parseArgs(argv) {
     } else if (arg === "--index-base") {
       const base = Number(require_(argv[++index], "--index-base требует 0 или 1"))
       if (base !== 0 && base !== 1) throw usage("--index-base должен быть 0 или 1")
+      /* Ключ ставит базу только МОЛЧАЩЕЙ программе. Слово в языке теперь есть
+         (`элемент начиная с 0` у левого края), и объявление автора ключу не
+         уступает: поле `базаНомера` читается ПЕРЕД `options.indexBase` во всех
+         одиннадцати местах — проверке типов, интерпретаторе и восьми печатях.
+         Довод, почему считаем по объявленному, а не отказываем, записан в
+         `flang/proof/SPEC.md`: база — свойство ПРОГРАММЫ, как имя модуля, и
+         ключ, способный его переиграть, вернул бы два источника одного числа.
+         Поле `объявленнаяБаза` здесь стояло и не читалось ни одним местом —
+         снято вместе с укладом, ради которого заводилось. */
       options.indexBase = base
-      /* Ключ не «переигрывает базу при запуске», а ОБЪЯВЛЯЕТ её у программы:
-         дальше её читают проверка типов, интерпретатор и все восемь печатей —
-         одно поле, одно число. Пока в языке нет слова, которым автор написал
-         бы базу в самом файле, этот ключ и есть объявление; переходный уклад
-         назван в `flang/proof/SPEC.md`. */
-      options.объявленнаяБаза = base
     } else if (arg === "--max-depth") {
       const depth = Number(require_(argv[++index], "--max-depth требует число"))
       if (!Number.isInteger(depth) || depth <= 0) throw usage("--max-depth должен быть целым положительным числом")
@@ -1501,11 +1742,29 @@ function parseArgs(argv) {
       const orders = Number(require_(argv[++index], "--max-orders требует число"))
       if (!Number.isInteger(orders) || orders <= 0) throw usage("--max-orders должен быть целым положительным числом")
       options.maxOrders = orders
-    } else if (arg === "--no-read" || arg === "--no-write" || arg === "--no-net" || arg === "--no-clock" || arg === "--no-random") {
+    } else if (
+      arg === "--no-read" ||
+      arg === "--no-write" ||
+      arg === "--no-net" ||
+      arg === "--no-clock" ||
+      arg === "--no-random" ||
+      arg === "--no-spawn"
+    ) {
       /* Полномочия хозяина сужаются явно и по одному. Отдельного «разрешить»
          нет: умолчание — «можно всё», потому что запуск программы ключом `io`
          и есть согласие на её действия. Осмысленно только сужение. */
-      const поле = { "--no-read": "чтение", "--no-write": "запись", "--no-net": "сеть", "--no-clock": "время", "--no-random": "случайность" }[arg]
+      /* У запуска процесса право СВОЁ, а не общее с чтением: запущенная
+         программа читает, пишет и ходит в сеть сама, и ни один здешний ключ ей
+         не указ. Пустить её под `--no-read` значило бы объявить полномочием то,
+         чего хозяин не контролирует. */
+      const поле = {
+        "--no-read": "чтение",
+        "--no-write": "запись",
+        "--no-net": "сеть",
+        "--no-clock": "время",
+        "--no-random": "случайность",
+        "--no-spawn": "запуск",
+      }[arg]
       options.allow = { ...(options.allow ?? {}), [поле]: false }
     } else if (arg === "--in-dir") {
       options.inDir = true

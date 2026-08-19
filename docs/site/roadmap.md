@@ -14,14 +14,14 @@ the built one sits next to the sources, `make` sees it as newer and answers
 **The proof kernel is written in flang itself, with zero axioms.** The list of
 axioms is held empty by a test, not by a promise: one cannot be added quietly.
 
-**The corpus is measured, not estimated** — `node docs/site/site-numbers.mjs`:
+**The corpus is measured, not estimated** — by a counter over the whole tree:
 
 | | |
 |---|---:|
-| Functions in the corpus | 8490 |
-| Of them total | 6547 |
-| Claims stated | 182 |
-| Proved by the kernel | 152 |
+| Functions in the corpus | 8775 |
+| Of them total | 6807 |
+| Claims stated | 298 |
+| Proved by the kernel | 170 |
 | Refuted by the kernel | 0 |
 | Axioms | 0 |
 
@@ -33,17 +33,19 @@ closed; none is left without.
 on a clean export (`git archive HEAD` into an empty directory): one compiler
 invocation over four `.c` files, not one warning under `-std=c99 -Wall -Wextra
 -Werror -pedantic -O2`, no external dependency beyond `libm` and `libpthread`.
-It takes **71 s** of CPU time (68.7 user and 2.5 system by `/usr/bin/time -v`)
-and yields a binary of **6 999 040 bytes** (cc 15.2.0, Linux 7.0.0). The time
-floats with machine load, the bytes do not: the same day and the same export,
-and the `bootstrap/README.md` ledger measured ≈90 s at the very same bytes. The
+It takes **83.7 s** and yields a binary of **7 134 408 bytes**; `make -C
+bootstrap -j4` on the same export takes **40.6 s** and yields **7 127 856
+bytes** (cc 15.2.0, Linux 7.0.0). The time floats with machine load, the bytes
+do not: two `make` runs with different thread counts gave the same size to the
+byte. All the runs are on [How the install was
+verified](install-evidence.html). The
 `-flto` flag that stands in the `Makefile` is not needed for a single
 invocation: there is only one translation unit anyway.
 
-**The compiler's emission of itself matches byte for byte.** `node
-scripts/bootstrap-c.mjs --check` links the flang sources (**3502 functions,
-313 types**), emits them into C and compares that with what sits in `bootstrap/`:
-**7 files, 12 841 265 bytes, 0 differences**. It compares bytes, not a build, so
+**The compiler's emission of itself matches byte for byte.** The bootstrap
+check links the flang sources (**3554 functions, 314 types**), emits them into C
+and compares that with what sits in `bootstrap/`: **7 files, 13 060 621 bytes,
+0 differences**. It compares bytes, not a build, so
 the check always runs and needs no `cc`.
 
 **The evaluator is pulled into the binary.** `flang run` and `flang test`
@@ -67,22 +69,20 @@ was run:
 | `check --proof` | the same with `--proof` | **the ledger is printed**: 65 lines against 2 without the flag |
 | `test` | `test flang/stdlib/higher-order.flang` | 55 examples, 55 passed, 0 failed |
 | `run` | `run … --function 'Удвоить' --args '{"х":21}'` | `42`, exit 0 |
-| `emit` | `emit flang/examples/rosetta/merge-sort.flang --target c` | 6 files, 277 469 bytes printed; `make` built them |
+| `emit` | `emit flang/examples/rosetta/merge-sort.flang --target c` | 6 files, 285 301 bytes printed; `make` built them |
 | `repl` | `repl` with no `cc` | does not switch off, checks parsing, types and termination |
 
-`--proof` **is no longer swallowed in silence** — that was still true on the
-morning of 18 August and stopped being true by the evening. Emission from the
-binary has one named limit: the table of declared types is built by the
+Emission from the binary has one named limit: the table of declared types is built by the
 reference layer, so runner arguments are not checked against declared types, and
 the binary says so itself rather than keeping quiet.
 
 **An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
 
 **Four writing surfaces** — Russian, English, Esperanto, Chinese. Of the 149
-concepts in the glossary, 132 are open on all four; 17 have holes, and those are
-named one by one (`npm run surfaces:check`, `npm run glossary:check`).
+concepts in the glossary, 132 are open on all four; 17 have holes, and those
+are named one by one on [Four writing surfaces](../surfaces.html) (in Russian).
 
-**Code in flang** — 116 303 lines across 753 files:
+**Code in flang** — 128 954 lines across 785 files:
 `find . -name '*.flang' | xargs cat | wc -l`.
 
 ## In progress
@@ -103,14 +103,21 @@ guide, the measurement reports and the specifications are still Russian only.
 This is the important part of the page. Below is what does not exist, in the
 order in which each item blocks the next.
 
-**There are no packages at all.** A library is included by relative path
-(`использует «Модуль» из "path"`). No versions, no lock file, no reproducible
-build. This blocks everything under it: a library without packages can neither be
-distributed nor updated.
+**There is no package manager.** Packages themselves exist: `flang package`
+puts a library and its whole closure into one file, imported with a single line
+(`использует «Скидка» из "discount.flang-package"`) — [how it is done](packages.html).
+Run: 8 modules and 53 functions travelled in 13,161 bytes against 99,508 bytes of
+sources, and on another machine two files rebuilt the same program with byte-for-byte
+the same C output.
 
-**The standard library is small**: 13 files, 5110 lines
-(`ls flang/stdlib/*.flang`). No network, no time, no database. The list of what
-is there is shorter than the list of what is not.
+What is missing is everything ABOVE a package: a registry, search by name,
+version ranges (`^1.2`) and dependency resolution. Updating means taking the new
+file and replacing the old one. That no longer blocks distributing a library, as
+it used to — it makes it manual.
+
+**The standard library is small**: 16 files, 7716 lines
+(`cat flang/stdlib/*.flang | wc -l`). No database, no full networking. The list
+of what is there is shorter than the list of what is not.
 
 **There is almost no application code.** The backend is one example of 7 files
 and 563 lines (`examples/library-api`). The frontend is a browser demo, not an
@@ -118,8 +125,7 @@ application.
 
 ## Decided against
 
-A refusal is a decision, and each one has an argument. If the argument falls, the
-refusal falls with it.
+A refusal is a decision, and each one has a stated reason.
 
 **No closures.** Capturing an environment breaks the termination analysis and
 direct emission into C, Go and Rust. First-class functions do exist — through
@@ -141,5 +147,5 @@ in the same place.
 
 Not one date. Order of work yes, dependencies yes, dates no.
 
-The page moves with the tree: `npm run numbers:check` guards its numbers, and
-`npm run site:check` will not let it drift without its Russian pair.
+The page moves with the tree: a number guard compares its numbers against the
+run, and the site build will not let it drift without its Russian pair.

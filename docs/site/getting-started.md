@@ -29,7 +29,9 @@ Five parts, each doing its own job:
 - `обеспечивает` (ensures) — a postcondition about the result. The name in
   guillemets is required: that is how the claim is found in the ledger;
 - `пример` (example) — an executable example. It is part of the program, not a
-  test on the side;
+  test on the side, and it runs on EVERY check: if it does not hold, `check`
+  answers `FLANG_EXAMPLE` with a non-zero exit code, and the compiler refuses to
+  emit the program;
 - the last line is the body.
 
 ## Check
@@ -40,7 +42,7 @@ flang check hello.flang
 
 ```
 модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
-hello.flang: проверено — разбор, типы, завершаемость; замечаний нет
+hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 Exit code 0. Had termination not been provable, it would be exit code 1 and a

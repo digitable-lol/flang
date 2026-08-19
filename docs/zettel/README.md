@@ -209,6 +209,7 @@
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)
+- [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 
 ## Отвергнутые пути
 

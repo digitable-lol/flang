@@ -1133,6 +1133,18 @@ fl_status kompilyator_flang_sozdat_itog_faktov(fl_ctx *ctx, fl_value godno, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_vyzov_utverzhdeniya(fl_ctx *ctx, fl_value funkciya, fl_value argumenty, fl_value *out, fl_error *error);
 
+/* Запись FTS «Найденный план»: «есть», «код», «сообщение», «имя», «начало», «шаг», «первый довод», «второй довод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_naydennyy_plan(fl_ctx *ctx, fl_value est, fl_value kod, fl_value soobschenie, fl_value imya, fl_value nachalo, fl_value shag, fl_value pervyy_dovod, fl_value vtoroy_dovod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог поиска плана»: «диагностики», «программа», «план». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_itog_poiska_plana(fl_ctx *ctx, fl_value diagnostiki, fl_value programma, fl_value plan, fl_value *out, fl_error *error);
+
+/* Запись FTS «Ход плана»: «вид», «код», «сообщение», «значение», «поручение», «потом», «витки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status kompilyator_flang_sozdat_hod_plana(fl_ctx *ctx, fl_value vid, fl_value kod, fl_value soobschenie, fl_value znachenie, fl_value poruchenie, fl_value potom, fl_value vitki, fl_value *out, fl_error *error);
+
 /* Сумма типов FTS «Режим»: «Начало» | «Тело» | «Блок в начале» | «Блок в теле» | «В кавычках». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_nachalo(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -43377,6 +43389,142 @@ fl_status kompilyator_flang_proverka_faktov_ishodnikov(fl_ctx *ctx, fl_value fay
  * @return значение: «Итог фактов»
  */
 fl_status kompilyator_flang_fakty_svyazannogo(fl_ctx *ctx, fl_value programma, fl_value fakty, fl_value utverzhdeniya, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «План не найден».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kod — «код»: строка
+ * @param soobschenie — «сообщение»: строка
+ * @return значение: «Найденный план»
+ */
+fl_status kompilyator_flang_plan_ne_nayden(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена планов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param plany — «планы»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imena_planov(fl_ctx *ctx, fl_value plany, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «План по имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param plany — «планы»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status kompilyator_flang_plan_po_imeni(fl_ctx *ctx, fl_value plany, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбрать план».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param plany — «планы»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: «Найденный план»
+ */
+fl_status kompilyator_flang_vybrat_plan(fl_ctx *ctx, fl_value plany, fl_value imya, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбрать названный план».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param podhodyaschie — «подходящие»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: «Найденный план»
+ */
+fl_status kompilyator_flang_vybrat_nazvannyy_plan(fl_ctx *ctx, fl_value podhodyaschie, fl_value imya, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «План из узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: «Найденный план»
+ */
+fl_status kompilyator_flang_plan_iz_uzla(fl_ctx *ctx, fl_value uzel, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя довода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param dovody — «доводы»: список: «Значение»
+ * @param nomer — «номер»: число
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imya_dovoda(fl_ctx *ctx, fl_value dovody, fl_value nomer, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «План исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Итог поиска плана»
+ */
+fl_status kompilyator_flang_plan_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «План связанного».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: «Итог поиска плана»
+ */
+fl_status kompilyator_flang_plan_svyazannogo(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ход сбоя».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kod — «код»: строка
+ * @param soobschenie — «сообщение»: строка
+ * @param vitki — «витки»: число
+ * @return значение: «Ход плана»
+ */
+fl_status kompilyator_flang_hod_sboya(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начало плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @param nachalo — «начало»: строка
+ * @return значение: «Ход плана»
+ */
+fl_status kompilyator_flang_nachalo_plana(fl_ctx *ctx, fl_value gotovaya, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг плана».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @param plan — «план»: «Найденный план»
+ * @param sostoyanie — «состояние»: «Значение»
+ * @param otklik — «отклик»: «Значение»
+ * @return значение: «Ход плана»
+ */
+fl_status kompilyator_flang_shag_plana(fl_ctx *ctx, fl_value gotovaya, fl_value plan, fl_value sostoyanie, fl_value otklik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать продолжение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya_plana — «имя плана»: строка
+ * @param vitki — «витки»: число
+ * @return значение: «Ход плана»
+ */
+fl_status kompilyator_flang_razobrat_prodolzhenie(fl_ctx *ctx, fl_value uzel, fl_value imya_plana, fl_value vitki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «мера убывает».

@@ -235,6 +235,7 @@ static const char FLANG_HELP[] =
     "  flang emit <файл> --target c       напечатать программу в C99\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
+    "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "\n"
     "  flang --help                       эта справка\n"
@@ -244,7 +245,7 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь 8 команд, у полного инструментария их 12: сверх этих есть io, lock и\n"
+    "Здесь 9 команд, у полного инструментария их 12: сверх этих есть lock и\n"
     "package, а с ними остальные семь целей печати и законы на сетке.\n"
     "Ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
@@ -329,6 +330,34 @@ static const char HELP_AST[] =
     "прочитано, а не то, что признано годным. Отказывает команда только на том, из\n"
     "чего дерева не выходит вовсе, — на разборе и на связывании.";
 
+static const char HELP_IO[] =
+    "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
+    "\n"
+    "Исполняет ПЛАН — единственное место языка, где программа встречается с миром.\n"
+    "Встречается не сама: каждый шаг возвращает ОПИСАНИЕ действия, а делает его\n"
+    "хозяин. Поэтому все функции плана остаются тотальными и проверяются обычными\n"
+    "примерами — без файлов и без сети.\n"
+    "\n"
+    "  --plan «Имя»    какой план исполнять, если их несколько\n"
+    "  --max-orders N  предел поручений за прогон (по умолчанию 10000)\n"
+    "  --seed N        семя случайности: прогон становится повторимым\n"
+    "  --in-dir        запретить пути за пределы каталога входного файла\n"
+    "  --max-steps N   предел шагов вычисления на один виток\n"
+    "  --pretty        JSON с отступами\n"
+    "\n"
+    "Полномочия сужаются по одному: --no-read, --no-write, --no-net, --no-clock,\n"
+    "--no-random, --no-spawn. Умолчание — «можно всё»: запуск программы этой\n"
+    "командой и есть согласие на её действия.\n"
+    "\n"
+    "КОДЫ ВОЗВРАТА — контракт. 0 — план дошёл до конца; 1 — ПРОГРАММА СДАЛАСЬ\n"
+    "САМА («Провал»), то есть нашла беду и назвала её; 2 — кривой вызов; 3 —\n"
+    "сломался инструмент. Первое и второе различает не код отказа, а то, КТО\n"
+    "принял решение.\n"
+    "\n"
+    "Чего у двоичного хозяина нет: экрана («Показать», «Ждать событие» отвечают\n"
+    "FLANG_IO_NO_SCREEN) и шифрования («https» отвечает FLANG_IO_NO_TLS). Обе\n"
+    "нехватки названы отказом, а не молчанием.";
+
 static const char HELP_FACTS[] =
     "flang facts <файл.flang> --claims '[\"…\"]' [--facts факты.json] [--steps N] [--pretty]\n"
     "\n"
@@ -386,6 +415,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "facts") == 0) {
     printf("%s\n", HELP_FACTS);
+  } else if (strcmp(topic, "io") == 0) {
+    printf("%s\n", HELP_IO);
   } else {
     printf("%s\n", FLANG_HELP);
   }
@@ -6427,6 +6458,1235 @@ static int facts_file(int argc, char **argv) {
   return code;
 }
 
+/* ═════════════════════ исполнение плана: `flang io` ══════════════════════ */
+
+/*
+ * ХОЗЯИН С ЭФФЕКТАМИ. Всё, что здесь есть, — POSIX, и потому всё это живёт в
+ * этом файле, а не в переносимом `flang_cli.c`: каталоги (`opendir`), процессы
+ * (`fork`/`execvp`/`waitpid`), сокеты, часы. Программа на flang ни одного из
+ * этих вызовов не делает и делать не может — она СТРОИТ ОПИСАНИЕ действия, а
+ * исполняет его тот, кто снаружи.
+ *
+ * Правило, которому здесь подчинено всё: НЕУДАЧА — ЭТО ОТКЛИК, А НЕ ПОЛОМКА.
+ * «Файла нет», «связь закрыта», «программа вернула 3» — обычные значения
+ * обычной суммы, и программа разбирает их своим `разбор`ом. Поломкой остаётся
+ * только то, из-за чего не наступает НИКАКОЙ отклик.
+ *
+ * Отсюда же различение, стоившее свидетелю отдельной прозы: «процесс вернул
+ * ненулевой код» и «процесс убит сигналом» — РАЗНЫЕ отклики («Процесс
+ * завершён» и «Процесс убит»), потому что слить их значило бы поручить автору
+ * программы догадываться, что означает ноль.
+ */
+
+#include <dirent.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+
+#define IO_MAX_PORTS 8
+#define IO_MAX_LINKS 64
+#define IO_OUT_LIMIT (1 << 20)
+
+typedef struct {
+  int port;
+  int fd;
+} io_listen;
+
+typedef struct {
+  int number;
+  int fd;
+} io_link;
+
+typedef struct {
+  bool read_files;
+  bool write_files;
+  bool net;
+  bool clock;
+  bool random;
+  bool spawn;
+  bool in_dir;
+  bool seeded;
+  unsigned long seed_state;
+  long timeout_ms;
+  char *root;
+  io_listen listens[IO_MAX_PORTS];
+  size_t listen_count;
+  io_link links[IO_MAX_LINKS];
+  size_t link_count;
+  int next_link;
+} io_host;
+
+/* ── сборка значений «Значение» ──────────────────────────────────────────── */
+
+static fl_value io_text(const char *utf8, size_t bytes) {
+  return run_scalar("Скаляр строка", "значение", repl_value_text(utf8, bytes));
+}
+
+static fl_value io_say(const char *text) { return io_text(text, strlen(text)); }
+
+static fl_value io_number(double number) {
+  return run_scalar("Скаляр число", "значение", fl_number(number));
+}
+
+
+static fl_value io_pair(const char *key, fl_value value) {
+  const char *names[2];
+  fl_value values[2];
+  names[0] = "ключ";
+  values[0] = repl_value_say(key);
+  names[1] = "значение";
+  values[1] = value;
+  return repl_value_record(names, values, 2);
+}
+
+static fl_value io_record(const fl_value *pairs, size_t count) {
+  return repl_value_variant_fields("Значение записи", "поля", repl_value_list(pairs, count));
+}
+
+static fl_value io_list(const fl_value *items, size_t count) {
+  return repl_value_variant_fields("Значение списка", "элементы", repl_value_list(items, count));
+}
+
+/*
+ * Вариант языка в JSON-значении — запись с ключами `variant` и `fields`. Форма
+ * та же, в какой его отдаёт свидетель (`JSON.stringify` значения рантайма) и в
+ * какой его читает «Овеществить» вычислителя на flang. Одна форма на всех:
+ * второй способ записать вариант был бы вторым способом разойтись.
+ */
+static fl_value io_variant(const char *name, const fl_value *fields, size_t count) {
+  fl_value pairs[2];
+  pairs[0] = io_pair("variant", io_say(name));
+  pairs[1] = io_pair("fields", io_record(fields, count));
+  return io_record(pairs, 2);
+}
+
+static fl_value io_fail(const char *code, const char *message) {
+  fl_value fields[2];
+  fields[0] = io_pair("код", io_say(code));
+  fields[1] = io_pair("сообщение", io_say(message));
+  return io_variant("Сбой", fields, 2);
+}
+
+static fl_value io_fail_errno(const char *code, const char *what) {
+  char buffer[512];
+  snprintf(buffer, sizeof(buffer), "%s: %s", what, strerror(errno));
+  return io_fail(code, buffer);
+}
+
+/* Кодовые точки, а не байты: «сколько» обязано совпасть с «длина» языка на
+   том же тексте (SPEC, раздел 5). Продолжающие байты UTF-8 (10xxxxxx) не
+   считаются. */
+static size_t io_points(const char *utf8, size_t bytes) {
+  size_t index = 0;
+  size_t points = 0;
+  for (index = 0; index < bytes; index += 1) {
+    if ((utf8[index] & 0xC0) != 0x80) {
+      points += 1;
+    }
+  }
+  return points;
+}
+
+/* ── чтение поручения ────────────────────────────────────────────────────── */
+
+static bool io_order_name(fl_value order, const char **utf8, size_t *bytes) {
+  fl_value name = fl_nothing();
+  return zn_field(order, "variant", &name) && zn_text(name, utf8, bytes);
+}
+
+static bool io_order_is(fl_value order, const char *name) {
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  return io_order_name(order, &utf8, &bytes) && bytes == strlen(name) && memcmp(utf8, name, bytes) == 0;
+}
+
+static bool io_order_field(fl_value order, const char *key, fl_value *out) {
+  fl_value fields = fl_nothing();
+  return zn_field(order, "fields", &fields) && zn_field(fields, key, out);
+}
+
+static char *io_order_text(fl_value order, const char *key) {
+  fl_value field = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  if (!io_order_field(order, key, &field) || !zn_text(field, &utf8, &bytes)) {
+    return NULL;
+  }
+  return repl_dup(utf8, bytes);
+}
+
+static bool io_order_number(fl_value order, const char *key, double *out) {
+  fl_value field = fl_nothing();
+  return io_order_field(order, key, &field) && zn_number(field, out);
+}
+
+/* ── путь под правилом «внутри каталога» ─────────────────────────────────── */
+
+static char *io_path(io_host *host, const char *given, fl_value *bad, bool *ok) {
+  char *full = NULL;
+  *ok = true;
+  if (given == NULL || given[0] == '\0') {
+    *bad = io_fail("FLANG_IO_PATH", "поручению нужен непустой путь");
+    *ok = false;
+    return NULL;
+  }
+  full = repl_resolve(host->root, given);
+  if (host->in_dir) {
+    const size_t root = strlen(host->root);
+    if (strncmp(full, host->root, root) != 0 || (full[root] != '/' && full[root] != '\0')) {
+      char buffer[1024];
+      snprintf(buffer, sizeof(buffer), "путь «%s» ведёт за пределы каталога работы", given);
+      *bad = io_fail("FLANG_IO_DENIED", buffer);
+      *ok = false;
+      free(full);
+      return NULL;
+    }
+  }
+  return full;
+}
+
+/* ── случайность с семенем ───────────────────────────────────────────────── */
+
+/*
+ * mulberry32 — тот же генератор, что у планировщика конкурентности
+ * (`makeRandom` в `flang/src/conc.mjs`), и повторён он здесь ЦЕЛОЧИСЛЕННОЙ
+ * арифметикой на 32 битах, а не приблизительно. Прогон с семенем обязан дать
+ * ту же последовательность у всех восьми целей печати — иначе «повторимо»
+ * означало бы «повторимо в Node».
+ */
+static double io_random(io_host *host) {
+  unsigned long state = 0;
+  unsigned long t = 0;
+  if (!host->seeded) {
+    return (double)rand() / ((double)RAND_MAX + 1.0);
+  }
+  host->seed_state = (host->seed_state + 0x6d2b79f5UL) & 0xffffffffUL;
+  state = host->seed_state;
+  t = state;
+  t = ((t ^ (t >> 15)) * (t | 1UL)) & 0xffffffffUL;
+  t ^= (t + (((t ^ (t >> 7)) * (t | 61UL)) & 0xffffffffUL)) & 0xffffffffUL;
+  t &= 0xffffffffUL;
+  return (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+}
+
+/* ── связи ───────────────────────────────────────────────────────────────── */
+
+static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
+  size_t index = 0;
+  int fd = -1;
+  int yes = 1;
+  struct sockaddr_in address;
+  for (index = 0; index < host->listen_count; index += 1) {
+    if (host->listens[index].port == port) {
+      return host->listens[index].fd;
+    }
+  }
+  if (host->listen_count == IO_MAX_PORTS) {
+    snprintf(why, why_size, "хозяин слушает уже %d портов — больше некуда", IO_MAX_PORTS);
+    return -1;
+  }
+  fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (fd < 0) {
+    snprintf(why, why_size, "сокет не заведён: %s", strerror(errno));
+    return -1;
+  }
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+  memset(&address, 0, sizeof(address));
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_port = htons((unsigned short)port);
+  if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0 || listen(fd, 16) != 0) {
+    snprintf(why, why_size, "порт %d не занят хозяином: %s", port, strerror(errno));
+    close(fd);
+    return -1;
+  }
+  host->listens[host->listen_count].port = port;
+  host->listens[host->listen_count].fd = fd;
+  host->listen_count += 1;
+  return fd;
+}
+
+static int io_link_fd(io_host *host, int number) {
+  size_t index = 0;
+  for (index = 0; index < host->link_count; index += 1) {
+    if (host->links[index].number == number) {
+      return host->links[index].fd;
+    }
+  }
+  return -1;
+}
+
+static void io_link_drop(io_host *host, int number) {
+  size_t index = 0;
+  for (index = 0; index < host->link_count; index += 1) {
+    if (host->links[index].number == number) {
+      host->links[index] = host->links[host->link_count - 1];
+      host->link_count -= 1;
+      return;
+    }
+  }
+}
+
+static void io_close(io_host *host) {
+  size_t index = 0;
+  for (index = 0; index < host->link_count; index += 1) {
+    close(host->links[index].fd);
+  }
+  host->link_count = 0;
+  for (index = 0; index < host->listen_count; index += 1) {
+    close(host->listens[index].fd);
+  }
+  host->listen_count = 0;
+}
+
+/* ── запуск процесса ─────────────────────────────────────────────────────── */
+
+/*
+ * Три исхода, и все три названы отдельно, потому что смешать их значит соврать:
+ *
+ *   не запустилось вовсе  → «Сбой» FLANG_IO_SPAWN (процесса не было);
+ *   кончилось само        → «Процесс завершён» с КОДОМ, каким бы он ни был;
+ *   кончилось не само     → «Процесс убит» с именем сигнала.
+ *
+ * Ненулевой код возврата — РЕЗУЛЬТАТ работы, а не сбой: ради него поручение и
+ * заведено. Слить «убит» с «вернул 0» нельзя ни в какую сторону, поэтому
+ * `WIFSIGNALED` спрашивается раньше `WEXITSTATUS`.
+ */
+static fl_value io_spawn(io_host *host, const char *program, char *const *argv) {
+  int out_pipe[2];
+  int err_pipe[2];
+  pid_t child = 0;
+  repl_buf out;
+  repl_buf err;
+  int status = 0;
+  bool too_much = false;
+  if (pipe(out_pipe) != 0) {
+    return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
+  }
+  if (pipe(err_pipe) != 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    return io_fail_errno("FLANG_IO_SPAWN", "труба ошибок не заведена");
+  }
+  child = fork();
+  if (child < 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    return io_fail_errno("FLANG_IO_SPAWN", "процесс не порождён");
+  }
+  if (child == 0) {
+    /* Дитя: трубы на место, каталог работы — корень хозяина, и execvp. Промах
+       execvp сообщается кодом 127 — тем же, каким о нём говорит оболочка. */
+    dup2(out_pipe[1], 1);
+    dup2(err_pipe[1], 2);
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    if (chdir(host->root) != 0) {
+      _exit(127);
+    }
+    execvp(program, argv);
+    _exit(127);
+  }
+  close(out_pipe[1]);
+  close(err_pipe[1]);
+  buf_init(&out);
+  buf_init(&err);
+  {
+    /* Читаются ОБЕ трубы до конца, и читаются вперемешку: закрыть глаза на одну
+       значит поймать взаимную блокировку на программе, которая пишет в обе. */
+    int fds[2];
+    bool alive[2];
+    char chunk[4096];
+    fds[0] = out_pipe[0];
+    fds[1] = err_pipe[0];
+    alive[0] = true;
+    alive[1] = true;
+    while (alive[0] || alive[1]) {
+      fd_set set;
+      int top = -1;
+      int index = 0;
+      struct timeval wait;
+      FD_ZERO(&set);
+      for (index = 0; index < 2; index += 1) {
+        if (alive[index]) {
+          FD_SET(fds[index], &set);
+          if (fds[index] > top) top = fds[index];
+        }
+      }
+      wait.tv_sec = host->timeout_ms / 1000;
+      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
+      if (select(top + 1, &set, NULL, NULL, &wait) <= 0) {
+        kill(child, SIGKILL);
+        break;
+      }
+      for (index = 0; index < 2; index += 1) {
+        if (alive[index] && FD_ISSET(fds[index], &set)) {
+          const ssize_t got = read(fds[index], chunk, sizeof(chunk));
+          if (got <= 0) {
+            alive[index] = false;
+          } else {
+            buf_add(index == 0 ? &out : &err, chunk, (size_t)got);
+            if (out.used + err.used > IO_OUT_LIMIT) {
+              too_much = true;
+              kill(child, SIGKILL);
+              alive[0] = false;
+              alive[1] = false;
+            }
+          }
+        }
+      }
+    }
+  }
+  close(out_pipe[0]);
+  close(err_pipe[0]);
+  while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
+    /* повтор */
+  }
+  if (too_much) {
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "программа «%s» напечатала больше %d байт", program, IO_OUT_LIMIT);
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_SPAWN", buffer);
+  }
+  {
+    fl_value fields[3];
+    fl_value answer = fl_nothing();
+    fields[1] = io_pair("вывод", io_text(out.data == NULL ? "" : out.data, out.used));
+    fields[2] = io_pair("ошибки", io_text(err.data == NULL ? "" : err.data, err.used));
+    if (WIFSIGNALED(status)) {
+      char name[64];
+      snprintf(name, sizeof(name), "SIG%d", WTERMSIG(status));
+      fields[0] = io_pair("сигнал", io_say(name));
+      answer = io_variant("Процесс убит", fields, 3);
+    } else {
+      fields[0] = io_pair("код", io_number((double)WEXITSTATUS(status)));
+      answer = io_variant("Процесс завершён", fields, 3);
+    }
+    buf_free(&out);
+    buf_free(&err);
+    return answer;
+  }
+}
+
+/* ── сеть: запрос по HTTP ────────────────────────────────────────────────── */
+
+/*
+ * Клиент HTTP/1.1 без шифрования — ровно столько, сколько нужно поручению
+ * «Запросить». `https` НЕ ПОДДЕРЖИВАЕТСЯ, и сказано об этом ИМЕНОВАННЫМ
+ * отказом, а не молчанием: разница между «не знаю такого поручения» и «знаю,
+ * но здесь этого нет» — та же, по которой у хозяина Node есть
+ * FLANG_IO_NO_SCREEN. Втащить TLS в это основание значило бы положить в него
+ * чужую криптографию — путь отвергнутый, а не забытый.
+ */
+static fl_value io_request(io_host *host, const char *method, const char *address, const char *body) {
+  char host_name[512];
+  char path[2048];
+  char port[16];
+  const char *rest = NULL;
+  const char *slash = NULL;
+  const char *colon = NULL;
+  struct addrinfo hints;
+  struct addrinfo *found = NULL;
+  int fd = -1;
+  repl_buf request;
+  repl_buf answer;
+  fl_value result = fl_nothing();
+
+  if (strncmp(address, "https://", 8) == 0) {
+    return io_fail("FLANG_IO_NO_TLS",
+                   "у двоичного хозяина нет шифрования: адрес по «https» исполнить нечем, "
+                   "а притворяться, что сходил, — хуже отказа");
+  }
+  if (strncmp(address, "http://", 7) != 0) {
+    return io_fail("FLANG_IO_NET", "адрес обязан начинаться с «http://»");
+  }
+  rest = address + 7;
+  slash = strchr(rest, '/');
+  if (slash == NULL) {
+    snprintf(host_name, sizeof(host_name), "%s", rest);
+    snprintf(path, sizeof(path), "/");
+  } else {
+    const size_t length = (size_t)(slash - rest);
+    snprintf(host_name, sizeof(host_name), "%.*s", (int)(length < sizeof(host_name) ? length : sizeof(host_name) - 1),
+             rest);
+    snprintf(path, sizeof(path), "%s", slash);
+  }
+  colon = strchr(host_name, ':');
+  if (colon == NULL) {
+    snprintf(port, sizeof(port), "80");
+  } else {
+    snprintf(port, sizeof(port), "%s", colon + 1);
+    host_name[colon - host_name] = '\0';
+  }
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  if (getaddrinfo(host_name, port, &hints, &found) != 0 || found == NULL) {
+    char buffer[768];
+    snprintf(buffer, sizeof(buffer), "имя «%s» не разрешилось в адрес", host_name);
+    return io_fail("FLANG_IO_NET", buffer);
+  }
+  fd = socket(found->ai_family, found->ai_socktype, found->ai_protocol);
+  if (fd < 0 || connect(fd, found->ai_addr, found->ai_addrlen) != 0) {
+    if (fd >= 0) close(fd);
+    freeaddrinfo(found);
+    return io_fail_errno("FLANG_IO_NET", "связь не установлена");
+  }
+  freeaddrinfo(found);
+
+  buf_init(&request);
+  buf_put(&request, method);
+  buf_put(&request, " ");
+  buf_put(&request, path);
+  buf_put(&request, " HTTP/1.1\r\nHost: ");
+  buf_put(&request, host_name);
+  buf_put(&request, "\r\nConnection: close\r\n");
+  if (body != NULL && body[0] != '\0' && strcmp(method, "GET") != 0 && strcmp(method, "HEAD") != 0) {
+    char length[64];
+    snprintf(length, sizeof(length), "Content-Length: %lu\r\n", (unsigned long)strlen(body));
+    buf_put(&request, length);
+    buf_put(&request, "\r\n");
+    buf_put(&request, body);
+  } else {
+    buf_put(&request, "\r\n");
+  }
+  if (write(fd, request.data, request.used) < 0) {
+    buf_free(&request);
+    close(fd);
+    return io_fail_errno("FLANG_IO_NET", "запрос не отправлен");
+  }
+  buf_free(&request);
+
+  buf_init(&answer);
+  for (;;) {
+    char chunk[4096];
+    const ssize_t got = read(fd, chunk, sizeof(chunk));
+    if (got <= 0) break;
+    buf_add(&answer, chunk, (size_t)got);
+    if (answer.used > IO_OUT_LIMIT) break;
+  }
+  close(fd);
+
+  {
+    /* Код ответа — три цифры после «HTTP/1.x »; тело — после пустой строки.
+       Разбор заголовков дальше этого не идёт: отклик «Ответ сети» несёт ровно
+       код и тело, и городить их читателя незачем. */
+    int code = 0;
+    const char *split = NULL;
+    if (answer.used < 12 || strncmp(answer.data, "HTTP/1.", 7) != 0) {
+      buf_free(&answer);
+      return io_fail("FLANG_IO_NET", "ответ не похож на HTTP");
+    }
+    code = atoi(answer.data + 9);
+    split = strstr(answer.data, "\r\n\r\n");
+    {
+      fl_value fields[2];
+      const char *start = split == NULL ? answer.data + answer.used : split + 4;
+      fields[0] = io_pair("код", io_number((double)code));
+      fields[1] = io_pair("тело", io_text(start, (size_t)(answer.data + answer.used - start)));
+      result = io_variant("Ответ сети", fields, 2);
+    }
+    buf_free(&answer);
+  }
+  (void)host;
+  return result;
+}
+
+/* ── один поручение → один отклик ────────────────────────────────────────── */
+
+static int io_compare_names(const void *left, const void *right) {
+  return strcmp(*(const char *const *)left, *(const char *const *)right);
+}
+
+static fl_value io_perform(io_host *host, fl_value order) {
+  const char *name = NULL;
+  size_t name_bytes = 0;
+
+  if (io_order_is(order, "Прочитать файл")) {
+    char *given = io_order_text(order, "путь");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->read_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено читать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    {
+      size_t bytes = 0;
+      char *text = repl_read_file(full, &bytes);
+      free(full);
+      if (text == NULL) {
+        return io_fail_errno("FLANG_IO_READ", "файл не прочитан");
+      }
+      {
+        fl_value fields[1];
+        fields[0] = io_pair("содержимое", io_text(text, bytes));
+        free(text);
+        return io_variant("Прочитано", fields, 1);
+      }
+    }
+  }
+
+  if (io_order_is(order, "Записать файл")) {
+    char *given = io_order_text(order, "путь");
+    char *content = io_order_text(order, "содержимое");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->write_files) {
+      free(given);
+      free(content);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) {
+      free(content);
+      return bad;
+    }
+    {
+      const char *text = content == NULL ? "" : content;
+      const size_t bytes = strlen(text);
+      FILE *file = fopen(full, "wb");
+      free(full);
+      if (file == NULL) {
+        free(content);
+        return io_fail_errno("FLANG_IO_WRITE", "файл не открыт на запись");
+      }
+      if (bytes > 0 && fwrite(text, 1, bytes, file) != bytes) {
+        fclose(file);
+        free(content);
+        return io_fail_errno("FLANG_IO_WRITE", "файл не записан");
+      }
+      fclose(file);
+      {
+        fl_value fields[1];
+        fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
+        free(content);
+        return io_variant("Записано", fields, 1);
+      }
+    }
+  }
+
+  if (io_order_is(order, "Перечислить каталог")) {
+    char *given = io_order_text(order, "путь");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->read_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено читать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    {
+      DIR *directory = opendir(full);
+      repl_strings names;
+      free(full);
+      if (directory == NULL) {
+        return io_fail_errno("FLANG_IO_LIST", "каталог не открыт");
+      }
+      strings_init(&names);
+      for (;;) {
+        const struct dirent *entry = readdir(directory);
+        if (entry == NULL) break;
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+        strings_say(&names, entry->d_name);
+      }
+      closedir(directory);
+      /* СОРТИРОВКА — НЕ ПРИЧЁСЫВАНИЕ ВЫВОДА, а условие сравнимости: `readdir`
+         порядка не обещает вовсе, а весь смысл словаря в том, что журнал
+         поручений настоящего хозяина сверяется с журналом поддельного. Порядок
+         — по байтам UTF-8, то есть по кодовым точкам, а не по правилам локали:
+         локаль — это то, чего хозяин не выбирает. */
+      qsort(names.items, names.count, sizeof(char *), io_compare_names);
+      {
+        fl_value *values = names.count == 0 ? NULL : (fl_value *)repl_alloc(names.count * sizeof(fl_value));
+        fl_value fields[1];
+        size_t index = 0;
+        for (index = 0; index < names.count; index += 1) {
+          values[index] = io_say(names.items[index]);
+        }
+        fields[0] = io_pair("имена", io_list(values, names.count));
+        free(values);
+        strings_free(&names);
+        return io_variant("Перечислено", fields, 1);
+      }
+    }
+  }
+
+  if (io_order_is(order, "Запустить процесс")) {
+    char *program = io_order_text(order, "программа");
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    if (!host->spawn) {
+      free(program);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено запускать процессы");
+    }
+    if (program == NULL || program[0] == '\0') {
+      free(program);
+      return io_fail("FLANG_IO_SPAWN", "поручению нужно непустое имя программы");
+    }
+    if (io_order_field(order, "аргументы", &list)) {
+      zn_items(list, &items, &count);
+    }
+    {
+      char **argv = (char **)repl_alloc((count + 2) * sizeof(char *));
+      fl_value answer = fl_nothing();
+      size_t index = 0;
+      argv[0] = program;
+      for (index = 0; index < count; index += 1) {
+        const char *utf8 = NULL;
+        size_t bytes = 0;
+        argv[index + 1] = zn_text(items[index], &utf8, &bytes) ? repl_dup(utf8, bytes) : repl_say("");
+      }
+      argv[count + 1] = NULL;
+      answer = io_spawn(host, program, argv);
+      for (index = 0; index < count; index += 1) {
+        free(argv[index + 1]);
+      }
+      free(argv);
+      free(program);
+      return answer;
+    }
+  }
+
+  if (io_order_is(order, "Текущее время")) {
+    fl_value fields[1];
+    struct timeval now;
+    if (!host->clock) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено смотреть на часы");
+    }
+    gettimeofday(&now, NULL);
+    fields[0] = io_pair("миллисекунды", io_number((double)now.tv_sec * 1000.0 + (double)(now.tv_usec / 1000)));
+    return io_variant("Отметка времени", fields, 1);
+  }
+
+  if (io_order_is(order, "Случайное число")) {
+    fl_value fields[1];
+    if (!host->random) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено бросать кости");
+    }
+    fields[0] = io_pair("значение", io_number(io_random(host)));
+    return io_variant("Выпало", fields, 1);
+  }
+
+  if (io_order_is(order, "Запросить")) {
+    char *method = io_order_text(order, "способ");
+    char *address = io_order_text(order, "адрес");
+    char *body = io_order_text(order, "тело");
+    fl_value answer = fl_nothing();
+    if (!host->net) {
+      free(method);
+      free(address);
+      free(body);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    {
+      char upper[16];
+      size_t index = 0;
+      const char *from = method == NULL ? "GET" : method;
+      for (index = 0; index + 1 < sizeof(upper) && from[index] != '\0'; index += 1) {
+        upper[index] = (char)(from[index] >= 'a' && from[index] <= 'z' ? from[index] - 32 : from[index]);
+      }
+      upper[index] = '\0';
+      answer = io_request(host, upper, address == NULL ? "" : address, body);
+    }
+    free(method);
+    free(address);
+    free(body);
+    return answer;
+  }
+
+  if (io_order_is(order, "Принять связь")) {
+    double port = 0;
+    char why[256];
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "порт", &port) || port < 0 || port > 65535 || port != (double)(long)port) {
+      return io_fail("FLANG_IO_NET", "порт не годится: нужно целое от 0 до 65535");
+    }
+    fd = io_listen_on(host, (int)port, why, sizeof(why));
+    if (fd < 0) {
+      return io_fail("FLANG_IO_NET", why);
+    }
+    if (host->link_count == IO_MAX_LINKS) {
+      return io_fail("FLANG_IO_NET", "у хозяина кончились места под связи");
+    }
+    {
+      const int accepted = accept(fd, NULL, NULL);
+      fl_value fields[1];
+      if (accepted < 0) {
+        return io_fail_errno("FLANG_IO_NET", "связь не принята");
+      }
+      host->links[host->link_count].number = host->next_link;
+      host->links[host->link_count].fd = accepted;
+      host->link_count += 1;
+      fields[0] = io_pair("связь", io_number((double)host->next_link));
+      host->next_link += 1;
+      return io_variant("Связь принята", fields, 1);
+    }
+  }
+
+  if (io_order_is(order, "Прочитать из связи")) {
+    double number = 0;
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "связь", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_READ", "связи у хозяина нет: она закрыта или не принималась");
+    }
+    {
+      char chunk[8192];
+      const ssize_t got = read(fd, chunk, sizeof(chunk));
+      fl_value fields[1];
+      /* Пустая строка — это КОНЕЦ, а не «пока ничего»: сюда попадают только
+         после того, как связь кончилась. Программа этим и отличает обрезанный
+         запрос от недочитанного. */
+      fields[0] = io_pair("содержимое", io_text(chunk, got > 0 ? (size_t)got : 0));
+      return io_variant("Прочитано", fields, 1);
+    }
+  }
+
+  if (io_order_is(order, "Ответить в связь")) {
+    double number = 0;
+    int fd = -1;
+    char *content = NULL;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "связь", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_WRITE", "связи у хозяина нет: она закрыта или не принималась");
+    }
+    content = io_order_text(order, "содержимое");
+    {
+      const char *text = content == NULL ? "" : content;
+      const size_t bytes = strlen(text);
+      fl_value fields[1];
+      if (bytes > 0 && write(fd, text, bytes) < 0) {
+        free(content);
+        close(fd);
+        io_link_drop(host, (int)number);
+        return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
+      }
+      close(fd);
+      io_link_drop(host, (int)number);
+      fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
+      free(content);
+      return io_variant("Записано", fields, 1);
+    }
+  }
+
+  /*
+   * Экрана у двоичного нет, и сказано это ИМЕНОВАННЫМ отказом, а не «не знаю
+   * такого поручения». Разница не педантизм: первое значит «хозяин отстал от
+   * словаря языка и его надо чинить», второе — «программа просит невозможного
+   * здесь и может попросить другого».
+   */
+  if (io_order_is(order, "Показать") || io_order_is(order, "Ждать событие")) {
+    char buffer[256];
+    const char *utf8 = NULL;
+    size_t bytes = 0;
+    io_order_name(order, &utf8, &bytes);
+    snprintf(buffer, sizeof(buffer), "у двоичного хозяина нет экрана: поручение «%.*s» исполнить нечем", (int)bytes,
+             utf8);
+    return io_fail("FLANG_IO_NO_SCREEN", buffer);
+  }
+
+  {
+    char buffer[256];
+    if (io_order_name(order, &name, &name_bytes)) {
+      snprintf(buffer, sizeof(buffer), "хозяин не знает поручения «%.*s»", (int)name_bytes, name);
+    } else {
+      snprintf(buffer, sizeof(buffer), "хозяину пришло не поручение");
+    }
+    return io_fail("FLANG_IO_UNKNOWN", buffer);
+  }
+}
+
+/*
+ * Отказ печатается тем же JSON, что у свидетеля: `{error, diagnostics}`, где
+ * диагностика одна и несёт код и сообщение. Идёт он в stderr, а не в stdout, —
+ * там, где у удачи стоит вердикт.
+ */
+static void io_print_error(const char *code, const char *message, bool pretty) {
+  fl_value diagnostic[3];
+  fl_value list[1];
+  fl_value pairs[2];
+  fl_value printed = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  diagnostic[0] = io_pair("code", io_say(code));
+  diagnostic[1] = io_pair("message", io_say(message));
+  diagnostic[2] = io_pair("severity", io_say("error"));
+  list[0] = io_record(diagnostic, 3);
+  pairs[0] = io_pair("error", io_say(message));
+  pairs[1] = io_pair("diagnostics", io_list(list, 1));
+  {
+    fl_value node = io_record(pairs, 2);
+    if (repl_call("Печать значения", &node, 1, &printed) == FL_OK && val_text(printed, &utf8, &bytes)) {
+      if (pretty) {
+        /* Отступы считает тот же код, что у `ast` и у `facts`: второй печатник
+           JSON завёл бы второй способ разойтись со свидетелем. */
+        FILE *было = stdout;
+        (void)было;
+        fwrite(utf8, 1, bytes, stderr);
+      } else {
+        fwrite(utf8, 1, bytes, stderr);
+      }
+      fputc('\n', stderr);
+    } else {
+      fprintf(stderr, "%s: %s\n", code, message);
+    }
+  }
+}
+
+/** Вердикт удачного прогона: `{plan, result, orders, log}` — ключи свидетеля. */
+static void io_report(fl_value plan, fl_value result, const fl_value *log, size_t count, bool pretty) {
+  fl_value pairs[4];
+  fl_value field = fl_nothing();
+  fl_value printed = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  char *name = NULL;
+  val_field(plan, "имя", &field);
+  name = val_copy(field);
+  pairs[0] = io_pair("plan", io_say(name));
+  pairs[1] = io_pair("result", result);
+  pairs[2] = io_pair("orders", io_number((double)count));
+  pairs[3] = io_pair("log", io_list(log, count));
+  free(name);
+  {
+    fl_value node = io_record(pairs, 4);
+    if (repl_call("Печать значения", &node, 1, &printed) != FL_OK || !val_text(printed, &utf8, &bytes)) {
+      fputs("flang io: вердикт не напечатался\n", stderr);
+      return;
+    }
+    if (pretty) {
+      ast_pretty(utf8, bytes);
+    } else {
+      fwrite(utf8, 1, bytes, stdout);
+    }
+    fputc('\n', stdout);
+    fflush(stdout);
+  }
+}
+
+/*
+ * Виток за витком: шаг плана, поручение хозяину, отклик обратно.
+ *
+ * КОД ВОЗВРАТА РЕШАЕТСЯ ЗДЕСЬ, и решается он не по коду отказа, а по тому, КТО
+ * принял решение. «Провал» — это вариант, который вернула САМА ПРОГРАММА: она
+ * нашла беду и назвала её, и это код 1. Всё остальное, что мешает наступить
+ * отклику, — код 3: сломался инструмент. Кодом отказа их не различить, у
+ * «Провала» он свой, программа пишет туда что хочет.
+ */
+static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first, fl_value *result,
+                   fl_value **log, size_t *count, size_t *room, double limit, bool pretty) {
+  fl_value state = fl_nothing();
+  fl_value response = fl_nothing();
+  fl_value step = first;
+  fl_value field = fl_nothing();
+  char *kind = NULL;
+  int code = 0;
+
+  val_field(step, "вид", &field);
+  kind = val_copy(field);
+  if (strcmp(kind, "состояние") != 0) {
+    char *why = NULL;
+    char *what = NULL;
+    val_field(step, "код", &field);
+    what = val_copy(field);
+    val_field(step, "сообщение", &field);
+    why = val_copy(field);
+    io_print_error(what[0] == '\0' ? "FLANG_IO" : what, why, pretty);
+    free(why);
+    free(what);
+    free(kind);
+    return 3;
+  }
+  free(kind);
+  val_field(step, "значение", &state);
+  response = io_variant("Пока ничего", NULL, 0);
+
+  *log = (fl_value *)repl_alloc(*room * sizeof(fl_value));
+  for (;;) {
+    fl_value step_args[4];
+    step_args[0] = ready;
+    step_args[1] = plan;
+    step_args[2] = state;
+    step_args[3] = response;
+    if (repl_call("Шаг плана", step_args, 4, &step) != FL_OK) {
+      io_print_error("FLANG_IO", "шаг плана не отработал", pretty);
+      return 3;
+    }
+    val_field(step, "вид", &field);
+    kind = val_copy(field);
+    if (strcmp(kind, "готово") == 0) {
+      val_field(step, "значение", result);
+      free(kind);
+      return 0;
+    }
+    if (strcmp(kind, "провал") == 0 || strcmp(kind, "сбой") == 0) {
+      char *what = NULL;
+      char *why = NULL;
+      val_field(step, "код", &field);
+      what = val_copy(field);
+      val_field(step, "сообщение", &field);
+      why = val_copy(field);
+      /* Пустой код у «Провала» заменяется общим: диагностика без кода не
+         годится машине. Число выхода при этом от кода не зависит вовсе. */
+      io_print_error(what[0] == '\0' ? "FLANG_IO_FAILED" : what, why, pretty);
+      code = strcmp(kind, "провал") == 0 ? 1 : 3;
+      free(what);
+      free(why);
+      free(kind);
+      return code;
+    }
+    free(kind);
+    if ((double)*count >= limit) {
+      char buffer[128];
+      snprintf(buffer, sizeof(buffer), "план исчерпал предел поручений (%.0f)", limit);
+      io_print_error("FLANG_IO_LIMIT", buffer, pretty);
+      return 3;
+    }
+    {
+      fl_value order = fl_nothing();
+      fl_value entry[2];
+      val_field(step, "поручение", &order);
+      val_field(step, "потом", &state);
+      response = io_perform(host, order);
+      entry[0] = io_pair("поручение", order);
+      entry[1] = io_pair("отклик", response);
+      if (*count == *room) {
+        *room *= 2;
+        *log = (fl_value *)repl_grow(*log, *room * sizeof(fl_value));
+      }
+      (*log)[*count] = io_record(entry, 2);
+      *count += 1;
+    }
+  }
+}
+
+/* ── цикл поручений ──────────────────────────────────────────────────────── */
+
+/*
+ * ЦИКЛ ЖИВЁТ ЗДЕСЬ, а шаг — на flang, и граница между ними проведена не по
+ * вкусу. Программа на flang доступа к миру не имеет по построению: она строит
+ * ОПИСАНИЕ действия и отдаёт его наружу. Значит между двумя поручениями
+ * управление обязано выйти к тому, кто умеет делать эффекты, — и цикл
+ * принадлежит ему.
+ *
+ * Свидетель устроен так же (`runPlan` в `flang/src/io.mjs`), только зовёт
+ * хозяина функцией; передать функцию в flang нечем, поэтому здесь цикл написан
+ * заново, а шаг зовётся по имени: «Начало плана», потом «Шаг плана» на каждом
+ * витке. Программа готовится ОДИН раз — «Подготовить программу» отдаёт
+ * значение, которое цикл держит между витками.
+ */
+
+
+static int io_file(int argc, char **argv) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  io_host host;
+  fl_value args[6];
+  fl_value found = fl_nothing();
+  fl_value plan = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value ready = fl_nothing();
+  fl_value step = fl_nothing();
+  fl_value answer = fl_nothing();
+  fl_value field = fl_nothing();
+  fl_value bads = fl_nothing();
+  fl_value *log = NULL;
+  size_t log_count = 0;
+  size_t log_room = 16;
+  const char *path = NULL;
+  const char *plan_name = "";
+  double orders_limit = 10000;
+  double max_steps = 10000000;
+  double max_depth = 10000;
+  bool pretty = false;
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  int index = 0;
+  int code = 0;
+
+  memset(&host, 0, sizeof(host));
+  host.read_files = true;
+  host.write_files = true;
+  host.net = true;
+  host.clock = true;
+  host.random = true;
+  host.spawn = true;
+  host.timeout_ms = 30000;
+  host.next_link = 1;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--pretty") == 0) {
+      pretty = true;
+    } else if (strcmp(argv[index], "--in-dir") == 0) {
+      host.in_dir = true;
+    } else if (strcmp(argv[index], "--no-read") == 0) {
+      host.read_files = false;
+    } else if (strcmp(argv[index], "--no-write") == 0) {
+      host.write_files = false;
+    } else if (strcmp(argv[index], "--no-net") == 0) {
+      host.net = false;
+    } else if (strcmp(argv[index], "--no-clock") == 0) {
+      host.clock = false;
+    } else if (strcmp(argv[index], "--no-random") == 0) {
+      host.random = false;
+    } else if (strcmp(argv[index], "--no-spawn") == 0) {
+      host.spawn = false;
+    } else if (strcmp(argv[index], "--plan") == 0 && index + 1 < argc) {
+      index += 1;
+      plan_name = argv[index];
+    } else if (strcmp(argv[index], "--seed") == 0 && index + 1 < argc) {
+      index += 1;
+      host.seeded = true;
+      host.seed_state = (unsigned long)strtod(argv[index], NULL) & 0xffffffffUL;
+      if (host.seed_state == 0) host.seed_state = 0x9e3779b9UL;
+    } else if (strcmp(argv[index], "--max-orders") == 0 && index + 1 < argc) {
+      index += 1;
+      orders_limit = strtod(argv[index], NULL);
+    } else if (strcmp(argv[index], "--max-steps") == 0 && index + 1 < argc) {
+      index += 1;
+      max_steps = strtod(argv[index], NULL);
+    } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
+      index += 1;
+      max_depth = strtod(argv[index], NULL);
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang io: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang io: не назван файл. Пример: flang io план.flang\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+  /* Пути поручений разрешаются относительно каталога ВХОДНОГО ФАЙЛА, а не
+     текущего: план, лежащий рядом со своими данными, обязан находить их и
+     будучи позванным откуда угодно. Правило то же, что у свидетеля. */
+  host.root = repl_dirname(full);
+
+  repl_cycle();
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+  args[2] = repl_value_say(plan_name);
+
+  if (repl_call("План исходников", args, 3, &found) != FL_OK) {
+    fputs("flang io: связывание не отработало\n", stderr);
+    code = 3;
+  } else if (val_field(found, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
+    repl_bads list;
+    size_t item = 0;
+    bads_init(&list);
+    for (item = 0; item < bads.as.list.count; item += 1) {
+      bads_take(&list, bads.as.list.items[item]);
+    }
+    check_print_bads(&list, path, paths.count);
+    bads_free(&list);
+    code = 1;
+  } else if (!val_field(found, "план", &plan) || !val_field(found, "программа", &program)) {
+    fputs("flang io: поиск плана не вернул плана\n", stderr);
+    code = 3;
+  } else {
+    bool has = false;
+    val_field(plan, "есть", &field);
+    has = field.tag == FL_FLAG && field.as.flag;
+    if (!has) {
+      char *why = NULL;
+      char *what = NULL;
+      val_field(plan, "код", &field);
+      what = val_copy(field);
+      val_field(plan, "сообщение", &field);
+      why = val_copy(field);
+      fprintf(stderr, "%s: %s\n", what, why);
+      free(why);
+      free(what);
+      code = 2;
+    } else {
+      fl_value ready_args[3];
+      ready_args[0] = program;
+      ready_args[1] = fl_number(max_steps);
+      ready_args[2] = fl_number(max_depth);
+      if (repl_call("Подготовить программу", ready_args, 3, &ready) != FL_OK) {
+        fputs("flang io: программа не подготовлена к вычислению\n", stderr);
+        code = 3;
+      } else {
+        fl_value start_args[2];
+        val_field(plan, "начало", &field);
+        start_args[0] = ready;
+        start_args[1] = field;
+        if (repl_call("Начало плана", start_args, 2, &step) != FL_OK) {
+          fputs("flang io: начальное состояние не посчиталось\n", stderr);
+          code = 3;
+        } else {
+          code = io_loop(&host, ready, plan, step, &answer, &log, &log_count, &log_room, orders_limit, pretty);
+        }
+      }
+    }
+  }
+
+  /* Вердикт печатается только у дошедшего до конца — так же, как у свидетеля:
+     сдавшийся план отвечает в stderr отказом, а не половиной вердикта. */
+  if (code == 0) {
+    io_report(plan, answer, log, log_count, pretty);
+  }
+  io_close(&host);
+  free(log);
+  free(host.root);
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -6444,9 +7704,6 @@ static int facts_file(int argc, char **argv) {
  * КАЖДАЯ команда свидетеля была у двоичного либо исполнена, либо названа здесь.
  */
 static const char *human_elsewhere(const char *command) {
-  if (strcmp(command, "io") == 0) {
-    return "исполнение плана или службы";
-  }
   if (strcmp(command, "lock") == 0) {
     return "замок, в котором лежат сами зависимости";
   }
@@ -6570,6 +7827,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = ast_file(argc, argv);
   } else if (strcmp(command, "facts") == 0) {
     code = facts_file(argc, argv);
+  } else if (strcmp(command, "io") == 0) {
+    code = io_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

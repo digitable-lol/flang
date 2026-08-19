@@ -20,6 +20,15 @@
   --bad:       #A6472F;
   --bad-bg:    #F7EAE6;
 
+  /* Подсветка flang. Цвета сдержанные намеренно: выделяться обязаны слова
+     языка и имена в ёлочках, остальное — читаться спокойно. Каждый взят из
+     уже живущей здесь палитры, чтобы код не спорил с остальной страницей. */
+  --syn-slovo:  #30478F;
+  --syn-imya:   #7A3E9D;
+  --syn-stroka: #25674A;
+  --syn-chislo: #9A4A2B;
+  --syn-zametka: #5B6373;
+
   --serif: ui-serif, Georgia, "Noto Serif", "Liberation Serif", "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "DejaVu Sans", sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace;
@@ -47,6 +56,12 @@
     --good-bg:   #17271F;
     --bad:       #E08A6E;
     --bad-bg:    #2A1B16;
+
+    --syn-slovo:  #8FADE9;
+    --syn-imya:   #C79BE8;
+    --syn-stroka: #6FC79B;
+    --syn-chislo: #E0A06E;
+    --syn-zametka: #8A93A4;
   }
 }
 
@@ -68,6 +83,12 @@
   --good-bg:   #17271F;
   --bad:       #E08A6E;
   --bad-bg:    #2A1B16;
+
+  --syn-slovo:  #8FADE9;
+  --syn-imya:   #C79BE8;
+  --syn-stroka: #6FC79B;
+  --syn-chislo: #E0A06E;
+  --syn-zametka: #8A93A4;
 }
 
 * { box-sizing: border-box; }
@@ -275,6 +296,19 @@ body {
   background: none; padding: 0;
   font-size: .82rem; line-height: 1.6; white-space: pre;
 }
+
+/* Подсветка flang. Классы ставит СБОРКА настоящим лексером языка
+   (docs/site/podsvetka.mjs) — в браузере не красится ничего, скрипта на это
+   нет и не будет. Красятся ровно пять видов токенов; имена без ёлочек, знаки
+   и стрелки остаются цветом текста. */
+/* Жирным помечены ИМЕНА, а не ключевые слова: на замере по собранному сайту
+   слов языка 2714 из 4097 окрашенных мест (две трети), и жирный на них делает
+   жирным весь блок. Имён 948 — их и надо находить глазом, не перечитывая. */
+.content pre code .tok-slovo      { color: var(--syn-slovo); }
+.content pre code .tok-imya       { color: var(--syn-imya); font-weight: 600; }
+.content pre code .tok-stroka     { color: var(--syn-stroka); }
+.content pre code .tok-chislo     { color: var(--syn-chislo); }
+.content pre code .tok-kommentariy { color: var(--syn-zametka); }
 
 .content blockquote {
   margin: 0 0 1.3rem;

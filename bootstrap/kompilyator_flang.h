@@ -36049,6 +36049,146 @@ fl_status kompilyator_flang_verdikt_po_obyavleniyu(fl_ctx *ctx, fl_value cel, fl
 fl_status kompilyator_flang_slova_po_obyavleniyu(fl_ctx *ctx, fl_value bez_obyavleniy, fl_value pravilo, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разбором по случаям».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_razborom_po_sluchayam(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаями по телу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_sluchayami_po_telu(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value telo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаями по имени».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_sluchayami_po_imeni(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Индукция по разбору».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: строка
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_indukciya_po_razboru(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаями по принципу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param summa — «сумма»: «Значение»
+ * @param princip — «принцип»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_sluchayami_po_principu(fl_ctx *ctx, fl_value programma, fl_value summa, fl_value princip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустой свод посылок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Свод посылок»
+ */
+fl_status kompilyator_flang_pustoy_svod_posylok(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пройти посылки случаями».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param posylki — «посылки»: список: «Значение»
+ * @param svod — «свод»: «Свод посылок»
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Свод посылок»
+ */
+fl_status kompilyator_flang_proyti_posylki_sluchayami(fl_ctx *ctx, fl_value posylki, fl_value svod, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Учесть посылку случаем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param posylka — «посылка»: «Значение»
+ * @param svod — «свод»: «Свод посылок»
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Свод посылок»
+ */
+fl_status kompilyator_flang_uchest_posylku_sluchaem(fl_ctx *ctx, fl_value posylka, fl_value svod, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сведение посылки допущением».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param posylka — «посылка»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status kompilyator_flang_svedenie_posylki_dopuscheniem(fl_ctx *ctx, fl_value posylka, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаями по своду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param princip — «принцип»: «Значение»
+ * @param summa — «сумма»: «Значение»
+ * @param svod — «свод»: «Свод посылок»
+ * @param skolko — «сколько»: число
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_sluchayami_po_svodu(fl_ctx *ctx, fl_value princip, fl_value summa, fl_value svod, fl_value skolko, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вердикт по случаям».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param princip — «принцип»: «Значение»
+ * @param summa — «сумма»: «Значение»
+ * @param svod — «свод»: «Свод посылок»
+ * @return значение: «Значение»
+ */
+fl_status kompilyator_flang_verdikt_po_sluchayam(fl_ctx *ctx, fl_value princip, fl_value summa, fl_value svod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Правило первого случая».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sluchai — «случаи»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_pravilo_pervogo_sluchaya(fl_ctx *ctx, fl_value sluchai, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова по случаям».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param princip — «принцип»: «Значение»
+ * @param svod — «свод»: «Свод посылок»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_slova_po_sluchayam(fl_ctx *ctx, fl_value princip, fl_value svod, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строка проверки».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

@@ -62,11 +62,11 @@ fails with an explanation: in the repository the compiler is source written in
 flang itself, and the first binary out of it comes from Node — precisely the
 dependency the plugin exists to remove.
 
-## From source: two builds in an empty directory
+## From source: three builds in an empty directory
 
 The empty directory is not a formality. `bootstrap/` ships in the repository
-with `flang_cli` and `*.o` already built, and `make` goes by file times: in a
-tree where a build has happened it answers "nothing to be done" and leaves the
+with `flang` and `*.o` already built, and `make` goes by file times: in a tree
+where a build has happened it answers "nothing to be done" and leaves the
 **old** binary. A measurement taken that way measures nothing.
 
 So the tree was unpacked with `git archive` into an empty directory, and only
@@ -74,13 +74,23 @@ then was `make` started:
 
 | run | time | binary |
 | --- | ---: | ---: |
-| `make -C bootstrap -j4` | 40.6 s | 7 127 856 bytes |
-| `make -C bootstrap` (no `-j`) | 98.2 s | 7 127 856 bytes |
-| one `cc` call over four `.c` | 83.7 s | 7 134 408 bytes |
+| `make -C bootstrap -j4` | 34.3 s | 7 276 792 bytes |
+| `make -C bootstrap` (no `-j`) | 93.8 s | 7 276 792 bytes |
+| one `cc` call over four `.c` | 76.3 s | 7 283 688 bytes |
 
-The input is 13 058 798 bytes of emitted C and headers (249 033 lines). Not one
-warning under `-Wall -Wextra -Werror -pedantic`. The binary links against
-`libc`, `libm`, `libpthread`.
+All three come from one measuring session, one directory, `make clean` between
+runs.
+
+The input is 13 324 277 bytes of emitted C and headers (254 065 lines). Not one
+warning about the code under `-Wall -Wextra -Werror -pedantic`; on the run
+without `-j`, `gcc` spoke about its own build — `lto-wrapper: warning: using
+serial compilation of 73 LTRANS jobs` — which is about the build layout, not the
+emitted code. The binary links against `libc`, `libm`, `libpthread`.
+
+**The output is named `flang`.** `make install` puts it in place as a command
+(`PREFIX` defaults to `/usr/local`); run here by installing into an empty
+prefix, after which `flang --version` answered `flang 0.5.0` and `flang --help`
+printed the short help.
 
 **Time drifts with machine load, bytes do not.** Two `make` runs with different
 thread counts gave the same size to the byte; only the plain `cc` call differs,

@@ -105,7 +105,12 @@ class Flang < Formula
     # единого предупреждения. Ослабить их здесь значило бы скрыть от себя же,
     # что печать испортилась.
     system "make", "CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -O2"
-    bin.install "flang_cli" => "flang"
+    # У программы одно имя — `flang`, и с 0.5.1 его даёт уже сама сборка:
+    # `make` кладёт рядом `flang`, а не `flang_cli`. Прежнее имя принимается
+    # тоже, потому что архив релиза несёт СВОЙ Makefile: формула обязана
+    # ставиться и на архив, собранный до переименования.
+    собрано = File.exist?("flang") ? "flang" : "flang_cli"
+    bin.install собрано => "flang"
     lib.install "libkompilyator_flang.a" if File.exist?("libkompilyator_flang.a")
     include.install Dir["*.h"]
     # Страница руководства — не украшение. Человек, поставивший язык из brew,
@@ -144,6 +149,15 @@ class Flang < Formula
     # требуется непустой и осмысленный вывод.
     assert_match "flang #{version}", shell_output("#{bin}/flang --version")
     assert_match "flang check", shell_output("#{bin}/flang --help")
+    assert_match "flang check", shell_output("#{bin}/flang -h")
+    assert_match "flang #{version}", shell_output("#{bin}/flang -v")
+
+    # Второй этаж справки: `flang <команда> --help` обязан отвечать про КОМАНДУ,
+    # а не повторять общий перечень. Ключ, который есть у всех, до 0.5.1
+    # отвечал «непонятный ключ» у каждой команды.
+    подробно = shell_output("#{bin}/flang check --help")
+    assert_match "--proof", подробно
+    refute_match "flang test <файл>", подробно
 
     (testpath/"проба.flang").write(исходник)
     assert_match "проверено", shell_output("#{bin}/flang check проба.flang")

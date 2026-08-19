@@ -89,6 +89,9 @@
 - [Инвариант процесса пишется постусловием обработчика, и третьего рода обязательства для этого не нужно](process-invariant-is-a-handler-postcondition.md)
 - [Постусловие на обработчике заводит восьмой вид отказа мимо замкнутого множества](handler-postcondition-escapes-the-closed-set.md)
 - [Тупик, потерянное письмо и успешное завершение дают у прогона один и тот же исход «покой»](quiescence-hides-deadlock.md)
+- [Граница мира у горячей замены проходит по пяти чужим проходам, а не по часам и сокетам](hot-swap-boundary-runs-through-five-passes-not-through-a-clock.md)
+- [Кандидат на горячую замену разбирается ОТДЕЛЬНО, поэтому имена типов работающей программы в нём назвать можно, а функции её позвать нельзя](a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions.md)
+- [Из четырёх утверждений, которых ждут от планировщика процессов, ядро не берёт ни одного](what-a-scheduler-needs-proved.md)
 
 ## Самораскрутка и метод проверки
 
@@ -99,13 +102,17 @@
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
+- [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
+- [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который эталон у себя уже чинил](totality-twin-does-not-read-postconditions.md)
+- [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
 - [Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом](a-sticky-bit-in-a-shared-tree-stops-git-merge.md)
 - [Объединение вариантов закрытой суммы — законное слияние, и оно обязано покраснеть у каждого, кто эту сумму разбирает](merging-two-branches-into-one-closed-sum.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
+- [Две реализации одного файла, выросшие порознь, бывают не соперниками, а половинами](two-rewrites-of-one-file-may-be-halves.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
 - [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
 - [Сверка близнеца не ловила забытую команду: на ключе эталон отказывает раньше, чем доходит до команды](spravka-bliznetsa-otstayot-tam-gde-korpus-idyot-s-klyuchom.md)
@@ -130,6 +137,12 @@
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 
+## Интерфейс инструмента
+
+- [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
+- [Двоичный файл — подмножество языка, и подмножество обязано называть себя](the-installed-binary-is-a-named-subset.md)
+- [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
+
 ## Найденные ошибки
 
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)
@@ -140,6 +153,7 @@
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
 - [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)
+- [Замок снимает места, а генератор кода их печатает — отсюда расхождение в 337 байт](zamok-snimaet-mesta-a-generator-ih-pechataet.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)

@@ -13,15 +13,34 @@ LDLIBS ?= -lm -lpthread
 
 OBJECTS = flang_runtime.o kompilyator_flang.o
 
-all: libkompilyator_flang.a flang_cli
+# Куда ставит `make install`. Человек после сборки обязан получить КОМАНДУ
+# `flang`, а не путь в каталог сборки: PREFIX=$HOME/.local, если без sudo.
+PREFIX ?= /usr/local
+
+all: libkompilyator_flang.a flang
 
 libkompilyator_flang.a: $(OBJECTS)
 	ar rcs $@ $(OBJECTS)
 
-flang_cli: flang_cli.o flang_repl.o $(OBJECTS)
+flang: flang_cli.o flang_repl.o $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ flang_cli.o flang_repl.o $(OBJECTS) $(LDLIBS)
 
-clean:
-	rm -f $(OBJECTS) flang_cli.o flang_repl.o flang_cli libkompilyator_flang.a
+# Заголовки и библиотека ставятся рядом с бинарником не для порядка: без
+# них оболочка не может собрать выражение системным `cc` и умеет только
+# проверять. Страница руководства кладётся, если она рядом (в архиве
+# релиза она есть, в дереве репозитория — нет).
+install: all
+	install -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include
+	install -m 0755 flang $(DESTDIR)$(PREFIX)/bin/flang
+	install -m 0644 libkompilyator_flang.a $(DESTDIR)$(PREFIX)/lib/
+	install -m 0644 *.h $(DESTDIR)$(PREFIX)/include/
+	test ! -f flang.1 || { install -d $(DESTDIR)$(PREFIX)/share/man/man1 && install -m 0644 flang.1 $(DESTDIR)$(PREFIX)/share/man/man1/; }
+	@echo 'поставлено: $(DESTDIR)$(PREFIX)/bin/flang — проверьте: flang --version'
 
-.PHONY: all clean
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/flang $(DESTDIR)$(PREFIX)/lib/libkompilyator_flang.a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1
+
+clean:
+	rm -f $(OBJECTS) flang_cli.o flang_repl.o flang libkompilyator_flang.a
+
+.PHONY: all clean install uninstall

@@ -123,6 +123,53 @@ body {
 }
 .theme:hover { background: var(--accent-bg); color: var(--accent); }
 
+/* ── Поиск ─────────────────────────────────────────────────────────────
+   Поле стоит в разметке с `hidden` и открывается скриптом: без JavaScript
+   поля нет вовсе, и шапка выглядит ровно как до поиска. Правило `[hidden]`
+   написано явно, потому что `display: flex` ниже перебило бы умолчание
+   браузера. */
+.poisk { position: relative; align-self: center; display: flex; }
+.poisk[hidden] { display: none; }
+
+.poisk input {
+  font: inherit; font-size: .85rem;
+  width: 15rem; max-width: 34vw;
+  padding: .2rem .55rem;
+  background: var(--ground); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 3px;
+}
+.poisk input::placeholder { color: var(--faint); }
+.poisk input:focus { border-color: var(--accent); background: var(--surface); }
+
+/* Ответ висит под полем и прижат к его правому краю: шапка липкая, и вывод
+   обязан оставаться на виду при прокрутке страницы под ним. */
+.poisk-vyvod {
+  position: absolute; top: calc(100% + .4rem); right: 0; z-index: 20;
+  width: min(34rem, 88vw); max-height: min(70vh, 34rem); overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .16);
+  font-size: .85rem;
+}
+.poisk-vyvod[hidden] { display: none; }
+
+.poisk-otvet {
+  display: block; padding: .5rem .75rem; text-decoration: none; color: var(--ink);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.poisk-otvet:last-child { border-bottom: none; }
+.poisk-otvet:hover, .poisk-otvet.vybran { background: var(--accent-bg); }
+
+.poisk-imya { display: block; font-weight: 600; line-height: 1.3; }
+.poisk-razdel {
+  display: block; color: var(--faint);
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  margin-top: .1rem;
+}
+.poisk-kusok {
+  display: block; color: var(--muted); margin-top: .25rem; line-height: 1.45;
+}
+.poisk-pusto { padding: .6rem .75rem; color: var(--faint); }
+
 /* ── Каркас ────────────────────────────────────────────────────────── */
 
 .shell {
@@ -337,4 +384,8 @@ body {
   }
   .content { padding: 1.8rem 1.2rem 4rem; }
   .tagline { display: none; }
+  /* Подзаголовок ушёл — поле поиска забирает освободившуюся ширину и остаётся
+     тем, ради чего в шапку смотрят с телефона. */
+  .poisk { flex: 1; }
+  .poisk input { width: 100%; max-width: none; }
 }

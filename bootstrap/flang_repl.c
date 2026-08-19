@@ -246,6 +246,7 @@ static const char FLANG_HELP[] =
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
+    "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "\n"
     "  flang --help                       эта справка\n"
@@ -255,9 +256,9 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь 10 команд, у полного инструментария их 12: сверх этих есть package, а с\n"
-    "ним остальные семь целей печати и законы на сетке.\n"
-    "Ему нужен Node: npm install -g @digitable-lol/fts\n"
+    "Здесь все 10 команд полного инструментария. Чего у бинарника нет — остальные\n"
+    "семь целей печати и законы на сетке: им нужен Node.\n"
+    "Полный инструментарий: npm install -g @digitable-lol/fts\n"
     "\n"
     "Подробности: man flang";
 
@@ -408,6 +409,30 @@ static const char HELP_LOCK[] =
     "Входного модуля в грузе нет: замок отвечает на вопрос «из чего собрана эта\n"
     "программа», а сама программа лежит рядом с ним.";
 
+static const char HELP_PACKAGE[] =
+    "flang package <файл.flang> [--pretty]\n"
+    "\n"
+    "Печатает ПАКЕТ — тот же груз, что в замке, плюс имя, версия, источник и\n"
+    "ведомость доказанного. Имя и версию команда берёт из объявления flang.package\n"
+    "рядом со входным файлом, а не из ключей вызова: ключ живёт в истории оболочки,\n"
+    "а объявление живёт в репозитории и попадает в «git diff».\n"
+    "\n"
+    "  flang package strings.flang > strings.flang-package\n"
+    "\n"
+    "Подключается пакет одной строкой и без новых слов в языке:\n"
+    "\n"
+    "  использует «Строки» из \"strings.flang-package\"\n"
+    "\n"
+    "Исходников зависимостей при этом на диске нет, склада нет, сети не надо: код уже\n"
+    "в файле. Испорченный пакет — отказ FLANG_PACKAGE. Двух версий одной библиотеки в\n"
+    "программе по-прежнему не бывает; два пакета, привезшие один путь с разным\n"
+    "содержимым, — тоже FLANG_PACKAGE, а не молчаливый выбор первого.\n"
+    "\n"
+    "  --pretty   с отступами в два пробела\n"
+    "\n"
+    "Пакет собирается ТОЛЬКО ИЗ ПРОВЕРЕННОГО: пакет — это обещание, а обещать за\n"
+    "непроверенное нельзя.";
+
 static const char HELP_REPL[] =
     "flang repl [<файл.flang>] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -449,6 +474,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_IO);
   } else if (strcmp(topic, "lock") == 0) {
     printf("%s\n", HELP_LOCK);
+  } else if (strcmp(topic, "package") == 0) {
+    printf("%s\n", HELP_PACKAGE);
   } else {
     printf("%s\n", FLANG_HELP);
   }
@@ -1951,6 +1978,10 @@ static bool lock_json_text(const char *text, size_t bytes, repl_buf *out) {
  */
 static repl_strings lock_cargo_paths;
 static repl_strings lock_cargo_texts;
+/* Кто привёз запись: «замок» или «имя версия» пакета. Нужен ровно одному
+   отказу — «путь привезли два пакета с разным содержимым», — и без него отказ
+   назвал бы только одну сторону из двух. */
+static repl_strings lock_cargo_from;
 static bool lock_cargo_open = false;
 
 /* Разбор JSON целиком — тот же, каким приезжают факты; объявлен здесь заранее. */
@@ -1977,6 +2008,15 @@ static char *lock_cargo_read(const char *path, size_t *bytes) {
   }
   return repl_read_file(path, bytes);
 }
+
+/* Отказ пакета — тем же кодом, каким его называет свидетель. Объявлен здесь, а
+   определён у команды `package`: груз у замка и пакета общий, а коды отказа
+   разные, и общая проверка груза обязана уметь сказать оба. */
+static bool pkg_refuse(const char *say);
+
+/* Пакеты, на которые ссылается программа, — тот же склад и та же подмена, что у
+   замка. Объявлен здесь, а определён у команды `package`. */
+static bool pkg_beside(const char *entry);
 
 /** Отказ замка — кодом FLANG_LOCK и с именем файла: чинить будут его. */
 static bool lock_refuse(const char *path, const char *say) {
@@ -2041,8 +2081,12 @@ static const char *lock_module_name(fl_value module, size_t *bytes) {
  * дырой ровно в том месте, где её никто не ищет. Порядок тот же, что у
  * `разборМодуля` свидетеля.
  */
-static bool lock_take_module(const char *path, fl_value module, const char *where, char **file, char **source,
-                             size_t *bytes) {
+static bool lock_cargo_refuse(bool package, const char *path, const char *say) {
+  return package ? pkg_refuse(say) : lock_refuse(path, say);
+}
+
+static bool lock_take_module(bool package, const char *path, fl_value module, const char *where, char **file,
+                             char **source, size_t *bytes) {
   repl_buf say;
   const char *text = NULL;
   const char *name = NULL;
@@ -2067,7 +2111,7 @@ static bool lock_take_module(const char *path, fl_value module, const char *wher
     buf_put(&say, " у модуля «");
     buf_add(&say, name, name_bytes);
     buf_put(&say, "» нет исходника");
-    ok = lock_refuse(path, say.data);
+    ok = lock_cargo_refuse(package, path, say.data);
     buf_free(&say);
     return ok;
   }
@@ -2080,7 +2124,7 @@ static bool lock_take_module(const char *path, fl_value module, const char *wher
     buf_put(&say, "адрес модуля «");
     buf_add(&say, name, name_bytes);
     buf_put(&say, "» не сходится с его исходником: правлен или испорчен");
-    ok = lock_refuse(path, say.data);
+    ok = lock_cargo_refuse(package, path, say.data);
     buf_free(&say);
     return ok;
   }
@@ -2096,7 +2140,7 @@ static bool lock_take_module(const char *path, fl_value module, const char *wher
     buf_put(&say, "» из ");
     buf_put(&say, where);
     buf_put(&say, " не разбирается");
-    ok = lock_refuse(path, say.data);
+    ok = lock_cargo_refuse(package, path, say.data);
     buf_free(&say);
     return ok;
   }
@@ -2110,13 +2154,13 @@ static bool lock_take_module(const char *path, fl_value module, const char *wher
     buf_put(&say, "», а в исходнике он «");
     buf_add(&say, real, real_bytes);
     buf_put(&say, "»");
-    ok = lock_refuse(path, say.data);
+    ok = lock_cargo_refuse(package, path, say.data);
     buf_free(&say);
     return ok;
   }
 
   if (!zn_field_text(module, "путь", &real, &real_bytes)) {
-    return lock_refuse(path, "у модуля в замке нет пути");
+    return lock_cargo_refuse(package, path, "у модуля в грузе нет пути");
   }
   *file = repl_dup(real, real_bytes);
   *source = repl_dup(text, text_bytes);
@@ -2150,14 +2194,19 @@ static bool lock_beside(const char *entry) {
   bool ok = true;
 
   if (text == NULL) {
+    /* Замка нет — груз пуст, но пакеты рядом всё равно спрашиваются: у
+       программы, ссылающейся на `.flang-package`, исходников зависимостей на
+       диске нет и без замка. */
     free(root);
     free(path);
-    return true;
+    repl_cycle();
+    return pkg_beside(entry);
   }
 
   repl_cycle();
   strings_init(&lock_cargo_paths);
   strings_init(&lock_cargo_texts);
+  strings_init(&lock_cargo_from);
   lock_cargo_open = false;
 
   if (!facts_json(text, &where, &lock)) {
@@ -2208,11 +2257,12 @@ static bool lock_beside(const char *entry) {
       char *file = NULL;
       char *source = NULL;
       size_t source_bytes = 0;
-      ok = lock_take_module(path, items[at], "замке", &file, &source, &source_bytes);
+      ok = lock_take_module(false, path, items[at], "замке", &file, &source, &source_bytes);
       if (ok) {
         char *full = repl_resolve(root, file);
         strings_say(&lock_cargo_paths, full);
         strings_add(&lock_cargo_texts, source, source_bytes);
+        strings_say(&lock_cargo_from, "замок");
         free(full);
       }
       free(file);
@@ -2224,7 +2274,9 @@ static bool lock_beside(const char *entry) {
   free(text);
   free(root);
   free(path);
-  return ok;
+  /* ЗАМОК ПОВЕРХ ПАКЕТОВ: он собран по этой самой программе и потому точнее.
+     Порядок в складе и есть это правило — искать начинают с начала. */
+  return ok && pkg_beside(entry);
 }
 
 /**
@@ -8677,6 +8729,1065 @@ static int lock_file(int argc, char **argv) {
   return code;
 }
 
+
+/* ══════════════════════════ пакет: `flang package` ═══════════════════════ */
+
+/*
+ * ПАКЕТ — ЭТО ЗАМОК, КОТОРОМУ ДАЛИ ИМЯ И ВЕРСИЮ (`flang/src/package.mjs`).
+ *
+ * Груз у них общий — те же записи «имя, путь, функций, адрес, исходник», — и
+ * потому номер схемы у пакета двинут вместе с замком: сменился груз, сменились
+ * оба. Своего сверх замка у пакета четыре вещи: имя, версия, источник и
+ * ведомость доказанного, и все четыре ЗАВЕРЕНЫ печатью. Незаверенная версия —
+ * это версия, которую правят одним `sed` и не ловят ничем: до того как печать
+ * накрыла личность, подмена `"версия"` с 1.0.0 на 9.9.9 проходила проверку
+ * молча.
+ */
+#define PACKAGE_SCHEMA 2
+#define PACKAGE_DECL "flang.package"
+#define PACKAGE_EXT ".flang-package"
+
+/** Пакет опознаётся ТОЛЬКО по расширению пути импорта: имя тут не спрашивается. */
+static bool pkg_is_package(const char *path) {
+  const size_t bytes = strlen(path);
+  const size_t tail = strlen(PACKAGE_EXT);
+  return bytes >= tail && memcmp(path + bytes - tail, PACKAGE_EXT, tail) == 0;
+}
+
+/** Отказ пакета — кодом FLANG_PACKAGE, тем же, что у свидетеля. */
+static bool pkg_refuse(const char *say) {
+  repl_print_bad("FLANG_PACKAGE", say, NULL, NULL, 0, 0);
+  return false;
+}
+
+typedef struct {
+  char *name;
+  char *version;
+  char *source; /* NULL — источника в объявлении нет, и в пакет он не едет */
+} pkg_decl;
+
+static void pkg_decl_free(pkg_decl *decl) {
+  free(decl->name);
+  free(decl->version);
+  free(decl->source);
+  decl->name = NULL;
+  decl->version = NULL;
+  decl->source = NULL;
+}
+
+/** Одно поле объявления: непустая строка. Нет обязательного — отказ. */
+static bool pkg_decl_field(fl_value node, const char *key, const char *where, bool required, char **out) {
+  fl_value value = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  repl_buf say;
+  *out = NULL;
+  if (!zn_field(node, key, &value)) {
+    if (!required) {
+      return true;
+    }
+    buf_init(&say);
+    buf_put(&say, where);
+    buf_put(&say, ": нет поля «");
+    buf_put(&say, key);
+    buf_put(&say, "»");
+    pkg_refuse(say.data);
+    buf_free(&say);
+    return false;
+  }
+  if (!zn_text(value, &utf8, &bytes) || bytes == 0) {
+    buf_init(&say);
+    buf_put(&say, where);
+    buf_put(&say, ": поле «");
+    buf_put(&say, key);
+    buf_put(&say, "» — непустая строка");
+    pkg_refuse(say.data);
+    buf_free(&say);
+    return false;
+  }
+  *out = repl_dup(utf8, bytes);
+  return true;
+}
+
+/*
+ * ОБЪЯВЛЕНИЕ РЯДОМ СО ВХОДНЫМ ФАЙЛОМ, а не ключи вызова, и причина не в
+ * удобстве: ключ вызова живёт в истории оболочки, а объявление живёт в
+ * репозитории автора и попадает в `git diff`. Версия, поднятая ключом,
+ * поднялась бы молча.
+ */
+static bool pkg_declaration(const char *entry, const char *said, pkg_decl *out) {
+  char *root = repl_dirname(entry);
+  char *path = repl_join(root, PACKAGE_DECL);
+  size_t bytes = 0;
+  char *text = repl_read_file(path, &bytes);
+  fl_value node = fl_nothing();
+  size_t at = 0;
+  bool ok = true;
+  out->name = NULL;
+  out->version = NULL;
+  out->source = NULL;
+  free(root);
+  if (text == NULL) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "рядом с ");
+    buf_put(&say, said);
+    buf_put(&say, " нет объявления " PACKAGE_DECL ": пакету нужны имя и версия, и берутся они оттуда, а не из вызова");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    free(path);
+    return ok;
+  }
+  if (!facts_json(text, &at, &node)) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, path);
+    buf_put(&say, " не разбирается как JSON");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+  } else if (!val_is(node, "Значение записи")) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, path);
+    buf_put(&say, ": ожидалась запись JSON");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+  } else {
+    ok = pkg_decl_field(node, "имя", path, true, &out->name) &&
+         pkg_decl_field(node, "версия", path, true, &out->version) &&
+         pkg_decl_field(node, "источник", path, false, &out->source);
+  }
+  free(text);
+  free(path);
+  if (!ok) {
+    pkg_decl_free(out);
+  }
+  return ok;
+}
+
+/*
+ * ПЕЧАТЬ ПАКЕТА НАКРЫВАЕТ ВСЁ, ЧТО ОН О СЕБЕ ГОВОРИТ, а не только груз.
+ *
+ * Замок заверяет груз, и для него это правильно: он отвечает на вопрос «из чего
+ * собрана эта программа». Пакет отвечает ещё и на вопрос «кто он такой», и
+ * незаверенное имя с версией правились бы одним `sed`.
+ */
+static bool pkg_seal(const pkg_decl *decl, const char *entry, const lock_modules *modules, char *out) {
+  repl_buf buf;
+  size_t at = 0;
+  bool ok = true;
+  buf_init(&buf);
+  buf_char(&buf, '[');
+  ok = lock_json_text(decl->name, strlen(decl->name), &buf);
+  buf_char(&buf, ',');
+  ok = ok && lock_json_text(decl->version, strlen(decl->version), &buf);
+  buf_char(&buf, ',');
+  ok = ok && lock_json_text(decl->source == NULL ? "" : decl->source,
+                            decl->source == NULL ? 0 : strlen(decl->source), &buf);
+  buf_char(&buf, ',');
+  ok = ok && lock_json_text(entry, strlen(entry), &buf);
+  buf_put(&buf, ",[");
+  for (at = 0; at < modules->count && ok; at += 1) {
+    const lock_module *module = &modules->items[at];
+    if (at > 0) {
+      buf_char(&buf, ',');
+    }
+    buf_char(&buf, '[');
+    ok = lock_json_text(module->path, strlen(module->path), &buf);
+    buf_char(&buf, ',');
+    ok = ok && lock_json_text(module->name, strlen(module->name), &buf);
+    buf_char(&buf, ',');
+    buf_number(&buf, module->functions);
+    buf_char(&buf, ',');
+    ok = ok && lock_json_text(module->address, 64, &buf);
+    buf_char(&buf, ']');
+  }
+  buf_put(&buf, "]]");
+  if (ok) {
+    lock_print(buf.data, buf.used, out);
+  }
+  buf_free(&buf);
+  return ok;
+}
+
+/*
+ * ПАКЕТ НАД ПАКЕТОМ: груз вложенного переезжает КАК ЕСТЬ, вместе с адресом
+ * каждого модуля, и потому остаётся тем же байт в байт. У того, кто собирает
+ * пакет над чужим, исходников чужого нет и не будет — в этом весь смысл.
+ *
+ * Ставится ЦЕЛИКОМ, а не обходом импортов: у привезённого пакета замыкание уже
+ * полное, обходить его второй раз нечем и незачем. Проверяется он при этом
+ * полностью, теми же заставами, что и при чтении: испорченный вложенный пакет
+ * обязан отвергнуться ЗДЕСЬ, а не всплыть у того, кому мы отдадим свой.
+ */
+static bool pkg_take_nested(const char *file, const char *root, lock_modules *out);
+
+/*
+ * Обход замыкания пакета: то же, что у замка, плюс две разницы. Входной модуль
+ * в груз ЕДЕТ — он и есть то, что отдают. И встреченный `.flang-package`
+ * раскрывается целиком, а не читается как исходник.
+ */
+static bool pkg_collect(const char *entry, const char *root, const char *entry_name, lock_modules *out,
+                        repl_strings *own, char **entry_module) {
+  repl_strings seen;
+  repl_strings queue_paths;
+  repl_strings queue_names;
+  size_t at = 0;
+  bool ok = true;
+  strings_init(&seen);
+  strings_init(&queue_paths);
+  strings_init(&queue_names);
+  strings_say(&seen, entry);
+  strings_say(&queue_paths, entry);
+  strings_say(&queue_names, entry_name);
+
+  for (at = 0; at < queue_paths.count && ok; at += 1) {
+    const char *file = queue_paths.items[at];
+    char *name = NULL;
+    size_t functions = 0;
+    size_t bytes = 0;
+    char *text = NULL;
+    if (pkg_is_package(file)) {
+      ok = pkg_take_nested(file, root, out);
+      continue;
+    }
+    text = repl_read_file(file, &bytes);
+    if (text == NULL) {
+      fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
+      ok = false;
+      break;
+    }
+    if (!lock_scan(file, text, bytes, &name, &functions, &seen, &queue_paths, &queue_names)) {
+      free(text);
+      free(name);
+      ok = false;
+      break;
+    }
+    if (at == 0 && entry_module != NULL) {
+      /* Имя ВХОДНОГО модуля берётся из его заголовка, а не из запасного: пакет,
+         названный в объявлении иначе, чем модуль, обязан отвергнуться, и
+         «называется никак» — законный ответ. */
+      *entry_module = name != NULL ? repl_say(name) : NULL;
+    }
+    {
+      lock_module *record = lock_modules_push(out);
+      record->name = name != NULL ? name : repl_say(queue_names.items[at]);
+      record->path = lock_path(root, file);
+      record->source = text;
+      record->bytes = bytes;
+      record->functions = functions;
+      lock_print(text, bytes, record->address);
+    }
+    /* СВОИ ИМЕНА берутся из одиночного разбора входа: в слитой программе своё от
+       привезённого не отличить, а ведомость обещает за то, что написано в этом
+       модуле, и ни строкой больше. */
+    if (at == 0 && own != NULL) {
+      fl_value args[2];
+      fl_value parsed = fl_nothing();
+      fl_value program = fl_nothing();
+      const fl_value *items = NULL;
+      size_t count = 0;
+      size_t index = 0;
+      args[0] = repl_value_text(text, bytes);
+      args[1] = repl_value_list(NULL, 0);
+      if (repl_call("Разбор исходника", args, 2, &parsed) == FL_OK && val_field(parsed, "программа", &program)) {
+        zn_field_items(program, "functions", &items, &count);
+        for (index = 0; index < count; index += 1) {
+          const char *utf8 = NULL;
+          size_t got = 0;
+          if (zn_field_text(items[index], "name", &utf8, &got)) {
+            strings_add(own, utf8, got);
+          }
+        }
+      }
+    }
+  }
+
+  strings_free(&seen);
+  strings_free(&queue_paths);
+  strings_free(&queue_names);
+  return ok;
+}
+
+/*
+ * Открытый пакет: разобранный JSON плюс то, что он говорит о себе.
+ *
+ * Общий у двух читателей — у сборки пакета над пакетом и у ПОДКЛЮЧЕНИЯ пакета к
+ * программе, — и общий намеренно: читатель, проверяющий три заставы из четырёх,
+ * был бы дырой ровно в том месте, где её никто не ищет.
+ */
+typedef struct {
+  fl_value node;
+  const fl_value *items;
+  size_t count;
+  char *name;
+  char *version;
+  char *source;
+  char *entry;
+} pkg_open;
+
+static void pkg_open_free(pkg_open *pkg) {
+  free(pkg->name);
+  free(pkg->version);
+  free(pkg->source);
+  free(pkg->entry);
+  pkg->name = NULL;
+  pkg->version = NULL;
+  pkg->source = NULL;
+  pkg->entry = NULL;
+  pkg->items = NULL;
+  pkg->count = 0;
+}
+
+/*
+ * Прочитать пакет и проверить всё, что он о себе говорит.
+ *
+ * ПАКЕТ ПРЕЖНЕЙ СХЕМЫ отвергается по НОМЕРУ, раньше всякого разбора груза, и
+ * текст отказа говорит, что делать: груз схемы 1 был base64 от brotli, и
+ * попытка прочесть его как исходник дала бы не отказ, а мусор под видом кода.
+ * Печать сверяется ДО груза и накрывает имя, версию, источник, вход и весь
+ * список: незаверенная версия — это версия, которую правят одним `sed`.
+ */
+static bool pkg_open_file(const char *file, pkg_open *pkg) {
+  size_t bytes = 0;
+  char *text = repl_read_file(file, &bytes);
+  fl_value schema = fl_nothing();
+  fl_value modules = fl_nothing();
+  const char *utf8 = NULL;
+  size_t utf8_bytes = 0;
+  size_t read = 0;
+  double number = 0;
+  repl_buf say;
+  bool ok = true;
+
+  pkg->node = fl_nothing();
+  pkg->items = NULL;
+  pkg->count = 0;
+  pkg->name = NULL;
+  pkg->version = NULL;
+  pkg->source = NULL;
+  pkg->entry = NULL;
+
+  if (text == NULL) {
+    buf_init(&say);
+    buf_put(&say, "пакет ");
+    buf_put(&say, file);
+    buf_put(&say, " не прочитан");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    return ok;
+  }
+  if (!facts_json(text, &read, &pkg->node)) {
+    buf_init(&say);
+    buf_put(&say, "пакет ");
+    buf_put(&say, file);
+    buf_put(&say, " не прочитан: не разбирается как JSON");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    free(text);
+    return ok;
+  }
+  free(text);
+
+  if (!zn_field(pkg->node, "схема", &schema) || !zn_number(schema, &number) ||
+      number != (double)PACKAGE_SCHEMA) {
+    buf_init(&say);
+    if (!zn_field(pkg->node, "схема", &schema)) {
+      buf_put(&say, "пакет без номера схемы: прежним форматом собран или испорчен, а нужна схема ");
+      buf_number(&say, PACKAGE_SCHEMA);
+    } else {
+      fl_value printed = fl_nothing();
+      buf_put(&say, "пакет собран прежним форматом: схема ");
+      if (repl_call("Печать значения", &schema, 1, &printed) == FL_OK && val_text(printed, &utf8, &utf8_bytes)) {
+        buf_add(&say, utf8, utf8_bytes);
+      } else {
+        buf_put(&say, "?");
+      }
+      buf_put(&say, ", а нужна ");
+      buf_number(&say, PACKAGE_SCHEMA);
+    }
+    buf_put(&say, ". Пересоберите: flang package <входной файл> > <имя>" PACKAGE_EXT);
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    return ok;
+  }
+  if (!zn_field_text(pkg->node, "имя", &utf8, &utf8_bytes) || utf8_bytes == 0) {
+    return pkg_refuse("у пакета нет имени");
+  }
+  pkg->name = repl_dup(utf8, utf8_bytes);
+  if (!zn_field_text(pkg->node, "версия", &utf8, &utf8_bytes) || utf8_bytes == 0) {
+    buf_init(&say);
+    buf_put(&say, "у пакета «");
+    buf_put(&say, pkg->name);
+    buf_put(&say, "» нет версии");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    pkg_open_free(pkg);
+    return ok;
+  }
+  pkg->version = repl_dup(utf8, utf8_bytes);
+  if (zn_field_text(pkg->node, "источник", &utf8, &utf8_bytes)) {
+    pkg->source = repl_dup(utf8, utf8_bytes);
+  }
+  if (!zn_field_text(pkg->node, "вход", &utf8, &utf8_bytes)) {
+    pkg_open_free(pkg);
+    return pkg_refuse("у пакета нет входного модуля");
+  }
+  pkg->entry = repl_dup(utf8, utf8_bytes);
+  if (!zn_field(pkg->node, "модули", &modules) || !zn_items(modules, &pkg->items, &pkg->count)) {
+    buf_init(&say);
+    buf_put(&say, "в пакете «");
+    buf_put(&say, pkg->name);
+    buf_put(&say, "» нет списка модулей");
+    ok = pkg_refuse(say.data);
+    buf_free(&say);
+    pkg_open_free(pkg);
+    return ok;
+  }
+
+  /* ПЕЧАТЬ СВЕРЯЕТСЯ РАНЬШЕ ГРУЗА и по тому же списку, каким она считалась. */
+  {
+    pkg_decl said;
+    lock_modules read_modules;
+    char seal[65];
+    const char *told = NULL;
+    size_t told_bytes = 0;
+    size_t at = 0;
+    said.name = pkg->name;
+    said.version = pkg->version;
+    said.source = pkg->source;
+    lock_modules_init(&read_modules);
+    for (at = 0; at < pkg->count && ok; at += 1) {
+      lock_module *record = lock_modules_push(&read_modules);
+      fl_value number_node = fl_nothing();
+      double got = 0;
+      record->name = NULL;
+      record->path = NULL;
+      record->source = NULL;
+      record->bytes = 0;
+      record->functions = 0;
+      record->address[0] = '\0';
+      ok = zn_field_text(pkg->items[at], "имя", &utf8, &utf8_bytes);
+      if (ok) {
+        record->name = repl_dup(utf8, utf8_bytes);
+        ok = zn_field_text(pkg->items[at], "путь", &utf8, &utf8_bytes);
+      }
+      if (ok) {
+        record->path = repl_dup(utf8, utf8_bytes);
+        ok = zn_field_text(pkg->items[at], "адрес", &utf8, &utf8_bytes) && utf8_bytes == 64;
+      }
+      if (ok) {
+        memcpy(record->address, utf8, 64);
+        record->address[64] = '\0';
+        if (zn_field(pkg->items[at], "функций", &number_node) && zn_number(number_node, &got)) {
+          record->functions = (size_t)got;
+        }
+      }
+    }
+    ok = ok && pkg_seal(&said, pkg->entry, &read_modules, seal);
+    lock_modules_free(&read_modules);
+    if (!ok || !zn_field_text(pkg->node, "печать", &told, &told_bytes) || told_bytes != 64 ||
+        memcmp(told, seal, 64) != 0) {
+      buf_init(&say);
+      buf_put(&say, "печать пакета «");
+      buf_put(&say, pkg->name);
+      buf_put(&say, "» не сходится: пакет правлен или испорчен");
+      ok = pkg_refuse(say.data);
+      buf_free(&say);
+      pkg_open_free(pkg);
+      return ok;
+    }
+  }
+  return true;
+}
+
+/*
+ * Куда ложится модуль пакета: входной — на место САМОГО ФАЙЛА пакета, прочие —
+ * рядом с ним. На пакет ссылаются `использует «Имя» из "sets.flang-package"`, и
+ * разрешение импорта обязано попасть ровно в эту запись.
+ */
+static char *pkg_module_place(const char *file, const pkg_open *pkg, const char *inner) {
+  char *where = NULL;
+  char *full = NULL;
+  if (strcmp(inner, pkg->entry) == 0) {
+    return repl_say(file);
+  }
+  where = repl_dirname(file);
+  full = repl_resolve(where, inner);
+  free(where);
+  return full;
+}
+
+static bool pkg_take_nested(const char *file, const char *root, lock_modules *out) {
+  pkg_open pkg;
+  size_t at = 0;
+  bool ok = pkg_open_file(file, &pkg);
+  for (at = 0; at < pkg.count && ok; at += 1) {
+    char *inner = NULL;
+    char *source_text = NULL;
+    size_t source_bytes = 0;
+    repl_buf label;
+    buf_init(&label);
+    buf_put(&label, "пакете «");
+    buf_put(&label, pkg.name);
+    buf_char(&label, ' ');
+    buf_put(&label, pkg.version);
+    buf_put(&label, "»");
+    ok = lock_take_module(true, file, pkg.items[at], label.data, &inner, &source_text, &source_bytes);
+    buf_free(&label);
+    if (!ok) {
+      free(inner);
+      free(source_text);
+      break;
+    }
+    {
+      char *full = pkg_module_place(file, &pkg, inner);
+      char *rebased = lock_path(root, full);
+      size_t index = 0;
+      bool already = false;
+      for (index = 0; index < out->count; index += 1) {
+        if (strcmp(out->items[index].path, rebased) == 0) {
+          already = true;
+          break;
+        }
+      }
+      if (already) {
+        free(rebased);
+        free(source_text);
+      } else {
+        lock_module *record = lock_modules_push(out);
+        const char *told = NULL;
+        size_t told_bytes = 0;
+        fl_value number_node = fl_nothing();
+        double got = 0;
+        record->path = rebased;
+        record->source = source_text;
+        record->bytes = source_bytes;
+        record->functions = 0;
+        record->name = zn_field_text(pkg.items[at], "имя", &told, &told_bytes) ? repl_dup(told, told_bytes)
+                                                                              : repl_say("");
+        if (zn_field(pkg.items[at], "функций", &number_node) && zn_number(number_node, &got)) {
+          record->functions = (size_t)got;
+        }
+        if (zn_field_text(pkg.items[at], "адрес", &told, &told_bytes) && told_bytes == 64) {
+          memcpy(record->address, told, 64);
+        }
+        record->address[64] = '\0';
+      }
+      free(full);
+      free(inner);
+    }
+  }
+  pkg_open_free(&pkg);
+  return ok;
+}
+
+/*
+ * ПАКЕТЫ, НА КОТОРЫЕ ССЫЛАЕТСЯ ПРОГРАММА, — `использует «Имя» из "имя.flang-package"`.
+ *
+ * Опознаются по расширению пути импорта, и только по нему: имя модуля тут не
+ * спрашивается ни разу. Ребро импорта даёт ПУТЬ, путь даёт файл пакета, файл
+ * даёт исходник — и то, что приехало, есть ровно то, на что сослались. Поиск по
+ * имени привёз бы чужое тело под правильной вывеской, и побайтовая сверка этого
+ * бы не заметила: сверять было бы не с чем.
+ *
+ * Груз ложится в тот же склад, что и груз замка, и ложится ПОСЛЕ него: замок
+ * собран по этой самой программе и потому точнее. Порядок здесь и есть правило
+ * «замок поверх пакетов» — искать в складе начинают с начала.
+ */
+static bool pkg_beside(const char *entry) {
+  repl_strings queue;
+  repl_strings seen;
+  size_t bytes = 0;
+  char *text = repl_read_file(entry, &bytes);
+  size_t at = 0;
+  bool ok = true;
+
+  if (text == NULL) {
+    return true;
+  }
+  strings_init(&queue);
+  strings_init(&seen);
+  {
+    repl_strings all;
+    size_t index = 0;
+    strings_init(&all);
+    repl_imports_of(text, bytes, entry, &all);
+    for (index = 0; index < all.count; index += 1) {
+      if (pkg_is_package(all.items[index])) {
+        strings_say(&queue, all.items[index]);
+      }
+    }
+    strings_free(&all);
+  }
+  free(text);
+  if (queue.count == 0) {
+    strings_free(&queue);
+    strings_free(&seen);
+    return true;
+  }
+
+  for (at = 0; at < queue.count && ok; at += 1) {
+    /* Копия, а не указатель в очередь: очередь растёт ниже по ходу этого же
+       витка, и `realloc` унёс бы строку из-под ног. */
+    char *file = repl_say(queue.items[at]);
+    pkg_open pkg;
+    size_t index = 0;
+    size_t first = lock_cargo_paths.count;
+    if (strings_has(&seen, file, strlen(file))) {
+      free(file);
+      continue;
+    }
+    strings_say(&seen, file);
+    /* Пакет, уже приехавший грузом другого пакета, на диске не ищется: его там
+       нет и не должно быть — в этом весь смысл пакета над пакетом. */
+    if (lock_cargo_open) {
+      bool inside = false;
+      for (index = 0; index < lock_cargo_paths.count; index += 1) {
+        if (strcmp(lock_cargo_paths.items[index], file) == 0) {
+          inside = true;
+          break;
+        }
+      }
+      if (inside) {
+        free(file);
+        continue;
+      }
+    }
+    ok = pkg_open_file(file, &pkg);
+    for (index = 0; index < pkg.count && ok; index += 1) {
+      char *inner = NULL;
+      char *source_text = NULL;
+      size_t source_bytes = 0;
+      char *place = NULL;
+      size_t already = 0;
+      bool found = false;
+      repl_buf label;
+      buf_init(&label);
+      buf_put(&label, "пакете «");
+      buf_put(&label, pkg.name);
+      buf_char(&label, ' ');
+      buf_put(&label, pkg.version);
+      buf_put(&label, "»");
+      ok = lock_take_module(true, file, pkg.items[index], label.data, &inner, &source_text, &source_bytes);
+      buf_free(&label);
+      if (!ok) {
+        free(inner);
+        free(source_text);
+        break;
+      }
+      place = pkg_module_place(file, &pkg, inner);
+      for (already = 0; already < lock_cargo_paths.count; already += 1) {
+        if (strcmp(lock_cargo_paths.items[already], place) == 0) {
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        /* СВЕРЯЕТСЯ СОДЕРЖИМОЕ, а не имя: два пакета вправе везти одну и ту же
+           `lists.flang` — это ромб, и он разрешается сам собой, когда обе
+           стороны везут одно и то же. Разное содержимое на одном пути — это две
+           версии одной библиотеки, а их в flang не бывает. */
+        if (lock_cargo_texts.sizes[already] != source_bytes ||
+            memcmp(lock_cargo_texts.items[already], source_text, source_bytes) != 0) {
+          repl_buf say;
+          buf_init(&say);
+          buf_put(&say, "путь ");
+          buf_put(&say, place);
+          buf_put(&say, " привезли два пакета с разным содержимым: «");
+          buf_put(&say, lock_cargo_from.count > already ? lock_cargo_from.items[already] : "?");
+          buf_put(&say, "» и «");
+          buf_put(&say, pkg.name);
+          buf_char(&say, ' ');
+          buf_put(&say, pkg.version);
+          buf_put(&say,
+                  "». Двух версий одной библиотеки в одной программе не бывает: поднимите обе стороны до одной "
+                  "версии");
+          ok = pkg_refuse(say.data);
+          buf_free(&say);
+        }
+      } else {
+        repl_buf label2;
+        buf_init(&label2);
+        buf_put(&label2, pkg.name);
+        buf_char(&label2, ' ');
+        buf_put(&label2, pkg.version);
+        strings_say(&lock_cargo_paths, place);
+        strings_add(&lock_cargo_texts, source_text, source_bytes);
+        strings_say(&lock_cargo_from, label2.data);
+        buf_free(&label2);
+        lock_cargo_open = true;
+      }
+      free(place);
+      free(inner);
+      free(source_text);
+    }
+    /* Импорты привезённых модулей обходятся ПОСЛЕ того, как весь пакет лёг в
+       склад, а не по ходу: пакет над пакетом везёт и верхний модуль, и
+       вложенный файл пакета, и первый ссылается на второй. Обход по ходу
+       поставил бы вложенный файл в очередь раньше, чем он лёг, и его пошли бы
+       искать на диске — где его нет и не должно быть. */
+    for (index = first; index < lock_cargo_paths.count && ok; index += 1) {
+      repl_strings all;
+      size_t inner = 0;
+      strings_init(&all);
+      repl_imports_of(lock_cargo_texts.items[index], lock_cargo_texts.sizes[index], lock_cargo_paths.items[index],
+                      &all);
+      for (inner = 0; inner < all.count; inner += 1) {
+        if (pkg_is_package(all.items[inner]) && !strings_has(&seen, all.items[inner], strlen(all.items[inner]))) {
+          strings_say(&queue, all.items[inner]);
+        }
+      }
+      strings_free(&all);
+    }
+    pkg_open_free(&pkg);
+    free(file);
+  }
+
+  strings_free(&queue);
+  strings_free(&seen);
+  return ok;
+}
+
+/*
+ * ВЕДОМОСТЬ ПАКЕТА — что ядро сказало про функции автора, и ни строкой больше.
+ *
+ * Считается из того же, из чего печатается `flang check --proof`: обязательства
+ * и вердикты. В пакет едет СПРАВКОЙ: тот, кто пакет подключил, доказывает всё
+ * заново. Пригодна она для одного — посмотреть, что обещает библиотека, ДО того
+ * как на неё сослаться.
+ *
+ * Строк своих здесь нет ни у чего, кроме сборки JSON: обязательства считает
+ * `flang/self/obligations.flang`, вердикты — `flang/self/proofterm.flang`, обе
+ * в замыкании. Второго счёта не заводится: два набора вердиктов спорили бы
+ * между собой, а спорить о доказанном должны люди, а не две реализации.
+ */
+static bool pkg_ledger(fl_value program, const repl_strings *own, repl_buf *out) {
+  fl_value total = fl_nothing();
+  fl_value descents_in = fl_nothing();
+  fl_value descents = fl_nothing();
+  fl_value svod = fl_nothing();
+  fl_value obligations = fl_nothing();
+  fl_value runs = fl_nothing();
+  fl_value verified = fl_nothing();
+  fl_value checked = fl_nothing();
+  fl_value args[3];
+  size_t at = 0;
+  size_t written = 0;
+  bool ok = true;
+
+  /* Отметки анализа («Отметить меры», «Отметить доказанные» — свидетель кладёт
+     их в `loadProgram`) здесь НЕ ставятся, и это замер, а не пропуск: с ними и
+     без них ведомость на семи пакетах вышла одна и та же, байт в байт. Правка,
+     которая ничего не держит, — это две лишние строки в доверенном основании. */
+  if (repl_call("Проверить тотальность", &program, 1, &total) != FL_OK ||
+      !val_field(total, "спуски", &descents_in) ||
+      repl_call("Спуски узлами", &descents_in, 1, &descents) != FL_OK) {
+    return false;
+  }
+  args[0] = program;
+  args[1] = descents;
+  if (repl_call("Обязательства", args, 2, &svod) != FL_OK) {
+    return false;
+  }
+  args[0] = svod;
+  args[1] = repl_value_say("obligations");
+  if (repl_call("Элементы поля", args, 2, &obligations) != FL_OK || obligations.tag != FL_LIST) {
+    return false;
+  }
+  if (repl_call("Прогоны для ядра", &program, 1, &runs) != FL_OK) {
+    return false;
+  }
+  args[0] = program;
+  args[1] = obligations;
+  args[2] = runs;
+  if (repl_call("Проверить доказательства", args, 3, &verified) != FL_OK) {
+    return false;
+  }
+  args[0] = verified;
+  args[1] = repl_value_say("checked");
+  if (repl_call("Элементы поля", args, 2, &checked) != FL_OK || checked.tag != FL_LIST) {
+    return false;
+  }
+
+  buf_char(out, '[');
+  for (at = 0; at < obligations.as.list.count && ok; at += 1) {
+    fl_value node = obligations.as.list.items[at];
+    const char *kind = NULL;
+    size_t kind_bytes = 0;
+    const char *of = NULL;
+    size_t of_bytes = 0;
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    bool named = false;
+    const char *verdict = NULL;
+    size_t verdict_bytes = 0;
+    size_t index = 0;
+    if (!zn_field_text(node, "kind", &kind, &kind_bytes) || kind_bytes != 13 ||
+        memcmp(kind, "postcondition", 13) != 0) {
+      continue;
+    }
+    if (!zn_field_text(node, "of", &of, &of_bytes)) {
+      continue;
+    }
+    if (own->count > 0 && !strings_has(own, of, of_bytes)) {
+      continue;
+    }
+    named = zn_field_text(node, "name", &name, &name_bytes);
+    /* Вердикт сводится по ПАРЕ «чья функция, имя утверждения», как у свидетеля,
+       и берётся ПОСЛЕДНИЙ совпавший: он строит карту и перезаписывает её. */
+    for (index = 0; index < checked.as.list.count; index += 1) {
+      fl_value row = checked.as.list.items[index];
+      const char *row_of = NULL;
+      size_t row_of_bytes = 0;
+      const char *row_name = NULL;
+      size_t row_name_bytes = 0;
+      const char *row_verdict = NULL;
+      size_t row_verdict_bytes = 0;
+      if (!zn_field_text(row, "of", &row_of, &row_of_bytes) || row_of_bytes != of_bytes ||
+          memcmp(row_of, of, of_bytes) != 0) {
+        continue;
+      }
+      if (!zn_field_text(row, "name", &row_name, &row_name_bytes)) {
+        row_name_bytes = 0;
+      }
+      if (row_name_bytes != (named ? name_bytes : 0) ||
+          (row_name_bytes > 0 && memcmp(row_name, name, row_name_bytes) != 0)) {
+        continue;
+      }
+      if (zn_field_text(row, "verdict", &row_verdict, &row_verdict_bytes)) {
+        verdict = row_verdict;
+        verdict_bytes = row_verdict_bytes;
+      } else {
+        verdict = NULL;
+      }
+    }
+    if (written > 0) {
+      buf_char(out, ',');
+    }
+    written += 1;
+    buf_put(out, "{\"функция\":");
+    ok = lock_json_text(of, of_bytes, out);
+    buf_put(out, ",\"утверждение\":");
+    if (named) {
+      ok = ok && lock_json_text(name, name_bytes, out);
+    } else {
+      buf_put(out, "null");
+    }
+    buf_put(out, ",\"сила\":");
+    if (verdict != NULL) {
+      ok = ok && lock_json_text(verdict, verdict_bytes, out);
+    } else {
+      buf_put(out, "null");
+    }
+    buf_char(out, '}');
+  }
+  buf_char(out, ']');
+  return ok;
+}
+
+/**
+ * `flang package <файл> [--pretty]` — пакет: груз замка плюс имя, версия,
+ * источник и ведомость доказанного.
+ *
+ * ПРОВЕРКА СТОИТ ДО СБОРКИ, как у печати в целевой язык: пакет — это обещание,
+ * а обещать за непроверенное нельзя. Отказ проверки — отказ команды, а не пакет
+ * с припиской «зато собрался».
+ */
+static int package_file(int argc, char **argv) {
+  lock_modules modules;
+  pkg_decl decl;
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  repl_strings own;
+  repl_strings proven;
+  repl_bads bads;
+  repl_buf out;
+  repl_buf ledger;
+  fl_value program = fl_nothing();
+  char buffer[4096];
+  char seal[65];
+  const char *path = NULL;
+  char *base = NULL;
+  char *full = NULL;
+  char *root = NULL;
+  char *entry = NULL;
+  char *entry_module = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  bool pretty = false;
+  bool has_program = false;
+  bool ok = true;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--pretty") == 0) {
+      pretty = true;
+    } else if (strcmp(argv[index], "-") == 0) {
+      fputs("flang package требует файл: со стандартного ввода импорты не разрешаются\n", stderr);
+      return 2;
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang package: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang package: не назван файл. Пример: flang package модуль.flang\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+  root = repl_dirname(full);
+
+  /* Замок и пакеты рядом — та же подмена, что у остальных команд: пакет над
+     пакетом собирается там, где исходников вложенного на диске нет. */
+  if (!lock_beside(full)) {
+    free(text);
+    free(root);
+    free(full);
+    return 1;
+  }
+  if (!pkg_declaration(full, path, &decl)) {
+    free(text);
+    free(root);
+    free(full);
+    return 1;
+  }
+
+  /* ── проверка перед сборкой: та же дорога, что у `flang check` ── */
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_init(&own);
+  strings_init(&proven);
+  bads_init(&bads);
+  lock_modules_init(&modules);
+  buf_init(&out);
+  buf_init(&ledger);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true);
+  if (!ok || bads.count > 0) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, path);
+    buf_put(&say, " не проходит проверку: пакет собирается только из проверенного");
+    pkg_refuse(say.data);
+    buf_free(&say);
+    code = 1;
+  }
+
+  if (code == 0) {
+    if (!pkg_collect(full, root, decl.name, &modules, &own, &entry_module)) {
+      code = 1;
+    } else if (!pkg_ledger(program, &own, &ledger)) {
+      fputs("flang package: ведомость не посчиталась\n", stderr);
+      code = 1;
+    } else {
+      const char *own_name = entry_module;
+      if (own_name == NULL || strcmp(own_name, decl.name) != 0) {
+        repl_buf say;
+        buf_init(&say);
+        buf_put(&say, "в " PACKAGE_DECL " пакет назван «");
+        buf_put(&say, decl.name);
+        buf_put(&say, "», а модуль в ");
+        buf_put(&say, path);
+        buf_put(&say, " называется ");
+        if (own_name == NULL || own_name[0] == '\0') {
+          buf_put(&say, "никак");
+        } else {
+          buf_put(&say, "«");
+          buf_put(&say, own_name);
+          buf_put(&say, "»");
+        }
+        pkg_refuse(say.data);
+        buf_free(&say);
+        code = 1;
+      }
+    }
+  }
+
+  if (code == 0) {
+    entry = lock_path(root, full);
+    qsort(modules.items, modules.count, sizeof(lock_module), lock_by_path);
+    if (!pkg_seal(&decl, entry, &modules, seal)) {
+      fputs("flang package: печать пакета не посчиталась\n", stderr);
+      code = 1;
+    } else {
+      size_t at = 0;
+      ok = true;
+      buf_put(&out, "{\"схема\":");
+      buf_number(&out, PACKAGE_SCHEMA);
+      buf_put(&out, ",\"имя\":");
+      ok = lock_json_text(decl.name, strlen(decl.name), &out);
+      buf_put(&out, ",\"версия\":");
+      ok = ok && lock_json_text(decl.version, strlen(decl.version), &out);
+      buf_put(&out, ",\"вход\":");
+      ok = ok && lock_json_text(entry, strlen(entry), &out);
+      buf_put(&out, ",\"модули\":[");
+      for (at = 0; at < modules.count && ok; at += 1) {
+        if (at > 0) {
+          buf_char(&out, ',');
+        }
+        ok = lock_write_module(&modules.items[at], &out);
+      }
+      buf_put(&out, "],\"ведомость\":");
+      buf_add(&out, ledger.data, ledger.used);
+      /* Источник ставится ПОСЛЕ ведомости и только если он объявлен: пустая
+         строка в JSON читается как «источник забыли», а не «его не было». */
+      if (decl.source != NULL) {
+        buf_put(&out, ",\"источник\":");
+        ok = ok && lock_json_text(decl.source, strlen(decl.source), &out);
+      }
+      buf_put(&out, ",\"печать\":");
+      ok = ok && lock_json_text(seal, 64, &out);
+      buf_char(&out, '}');
+      if (!ok) {
+        fputs("flang package: пакет не напечатался\n", stderr);
+        code = 1;
+      } else {
+        if (pretty) {
+          ast_pretty(out.data, out.used);
+        } else {
+          fwrite(out.data, 1, out.used, stdout);
+        }
+        fputc('\n', stdout);
+        fflush(stdout);
+      }
+    }
+  }
+
+  buf_free(&out);
+  buf_free(&ledger);
+  bads_free(&bads);
+  lock_modules_free(&modules);
+  pkg_decl_free(&decl);
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  strings_free(&own);
+  strings_free(&proven);
+  free(entry);
+  free(entry_module);
+  free(root);
+  free(text);
+  free(full);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -8694,9 +9805,12 @@ static int lock_file(int argc, char **argv) {
  * КАЖДАЯ команда свидетеля была у двоичного либо исполнена, либо названа здесь.
  */
 static const char *human_elsewhere(const char *command) {
-  if (strcmp(command, "package") == 0) {
-    return "пакет: груз замка плюс имя, версия и ведомость доказанного";
-  }
+  /* СПИСОК ПУСТ, и это событие, а не забывчивость: с этой правки двоичный
+     исполняет ВСЕ ДЕСЯТЬ команд свидетеля, и называть отсутствующим нечего.
+     Механизм при этом остаётся: он опустеет ровно до первой новой команды у
+     свидетеля, и тогда сюда впишут её — иначе человек, пришедший за ней по
+     документации, получит ответ, читающийся как опечатка. */
+  (void)command;
   return NULL;
 }
 
@@ -8818,6 +9932,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = io_file(argc, argv);
   } else if (strcmp(command, "lock") == 0) {
     code = lock_file(argc, argv);
+  } else if (strcmp(command, "package") == 0) {
+    code = package_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

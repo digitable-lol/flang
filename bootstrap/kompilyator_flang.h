@@ -1373,6 +1373,13 @@ fl_status kompilyator_flang_variant_kadr_sverhu(fl_ctx *ctx, fl_value kadr, fl_v
 fl_status kompilyator_flang_variant_est_opisanie(fl_ctx *ctx, fl_value opisanie, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_net_opisaniya(fl_ctx *ctx, fl_value *out, fl_error *error);
 
+/* Сумма типов FTS «Исход прогона»: «Прогон дал значение» | «Прогон не удался» | «Прогон исчерпал предел» | «Программа не готова». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status kompilyator_flang_variant_progon_dal_znachenie(fl_ctx *ctx, fl_value znachenie, fl_value vitki, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_progon_ne_udalsya(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_progon_ischerpal_predel(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_programma_ne_gotova(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
+
 /* Сумма типов FTS «Итог образца при вычислении»: «Не подошёл» | «Подошёл» | «Образец сломан». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_ne_podoshyol(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -28636,6 +28643,100 @@ fl_status kompilyator_flang_svyazat_odin_argument(fl_ctx *ctx, fl_value opisanie
 fl_status kompilyator_flang_podgotovit_programmu(fl_ctx *ctx, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Вызвать готовое исходом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_vyzvat_gotovoe_ishodom(fl_ctx *ctx, fl_value gotovaya, fl_value imya, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызвать исходом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @param predel_vitkov — «предел витков»: число
+ * @param predel_glubiny — «предел глубины»: число
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_vyzvat_ishodom(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value argumenty, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызвать в программе исходом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param p — «п»: «Программа»
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_vyzvat_v_programme_ishodom(fl_ctx *ctx, fl_value p, fl_value imya, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызвать готовую исходом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param p — «п»: «Программа»
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_vyzvat_gotovuyu_ishodom(fl_ctx *ctx, fl_value p, fl_value imya, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызвать со связкой исходом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param p — «п»: «Программа»
+ * @param opisanie — «описание»: «Описание вычислителя»
+ * @param svyazka — «связка»: «Связка аргументов»
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_vyzvat_so_svyazkoy_ishodom(fl_ctx *ctx, fl_value p, fl_value opisanie, fl_value svyazka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исход машины».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param m — «м»: «Машина»
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_ishod_mashiny(fl_ctx *ctx, fl_value m, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kod — «код»: строка
+ * @param soobschenie — «сообщение»: строка
+ * @param vitki — «витки»: число
+ * @return значение: «Исход прогона»
+ */
+fl_status kompilyator_flang_otkaz_progona(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Код предела прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_kod_predela_progona(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог прогона исходом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение: «Итог прогона»
+ */
+fl_status kompilyator_flang_itog_progona_ishodom(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Вызвать готовое».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -28660,39 +28761,6 @@ fl_status kompilyator_flang_vyzvat_gotovoe(fl_ctx *ctx, fl_value gotovaya, fl_va
 fl_status kompilyator_flang_vyzvat(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value argumenty, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Вызвать в программе».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param p — «п»: «Программа»
- * @param imya — «имя»: строка
- * @param argumenty — «аргументы»: «Значение»
- * @return значение: «Итог прогона»
- */
-fl_status kompilyator_flang_vyzvat_v_programme(fl_ctx *ctx, fl_value p, fl_value imya, fl_value argumenty, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Вызвать готовую».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param p — «п»: «Программа»
- * @param imya — «имя»: строка
- * @param argumenty — «аргументы»: «Значение»
- * @return значение: «Итог прогона»
- */
-fl_status kompilyator_flang_vyzvat_gotovuyu(fl_ctx *ctx, fl_value p, fl_value imya, fl_value argumenty, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Вызвать со связкой».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param p — «п»: «Программа»
- * @param opisanie — «описание»: «Описание вычислителя»
- * @param svyazka — «связка»: «Связка аргументов»
- * @return значение: «Итог прогона»
- */
-fl_status kompilyator_flang_vyzvat_so_svyazkoy(fl_ctx *ctx, fl_value p, fl_value opisanie, fl_value svyazka, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Итог машины».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -28711,6 +28779,60 @@ fl_status kompilyator_flang_itog_mashiny(fl_ctx *ctx, fl_value m, fl_value *resu
  * @return значение: «Итог прогона»
  */
 fl_status kompilyator_flang_itog_otkaza(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исход удался».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение
+ */
+fl_status kompilyator_flang_ishod_udalsya(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел у исхода прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение
+ */
+fl_status kompilyator_flang_predel_u_ishoda_progona(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение исхода прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение: «Знач»
+ */
+fl_status kompilyator_flang_znachenie_ishoda_progona(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Код исхода прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_kod_ishoda_progona(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сообщение исхода прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_soobschenie_ishoda_progona(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Витки исхода прогона».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishod — «исход»: «Исход прогона»
+ * @return значение: число
+ */
+fl_status kompilyator_flang_vitki_ishoda_progona(fl_ctx *ctx, fl_value ishod, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Считать форму».

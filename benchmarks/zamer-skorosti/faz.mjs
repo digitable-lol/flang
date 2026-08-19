@@ -41,7 +41,11 @@ const { parse } = await import(new URL("src/parser.mjs", корень).href)
 const { checkTypes } = await import(new URL("src/types.mjs", корень).href)
 const { checkTotality, markMeasureGuards } = await import(new URL("src/totality.mjs", корень).href)
 const { checkMonadLaws } = await import(new URL("src/monad.mjs", корень).href)
-const { checkSetLaws } = await import(new URL("src/sets.mjs", корень).href)
+/* Свидетеля `src/sets.mjs` в дереве больше нет — стёрт. Законы множеств
+   считает слой на flang, тот самый, что зовёт команда. Фаза «законы» после
+   этого меряет РАБОЧИЙ путь, а не свидетеля, и числа её с прежними не
+   сравнимы. */
+const { множестваЗаконом } = await import(new URL("src/self.mjs", корень).href)
 const { obligations } = await import(new URL("src/obligations.mjs", корень).href)
 const { checkProofs } = await import(new URL("src/proofterm.mjs", корень).href)
 const { linkProgram, importsOf } = await import(new URL("src/link.mjs", корень).href)
@@ -102,10 +106,12 @@ for (let повтор = 0; повтор < повторов + 1; повтор += 
 
   const типы = мера(() => checkTypes(программа))
   const тотальность = мера(() => checkTotality(программа))
-  const законы = мера(() => {
+  const законы = await (async () => {
+    const начало = performance.now()
     checkMonadLaws(программа)
-    checkSetLaws(программа)
-  })
+    await множестваЗаконом(программа)
+    return { мс: performance.now() - начало }
+  })()
   const обяз = мера(() => obligations(программа, { types: типы.итог, totality: тотальность.итог }))
   const доказ = мера(() => checkProofs(программа, обяз.итог.obligations))
   const печать = мера(() => emitC(программа, {}))

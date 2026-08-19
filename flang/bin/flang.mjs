@@ -1535,9 +1535,11 @@ export async function externalChecks(program, настройки = {}) {
   let считатьМоноиды = null
   let считатьИзоморфизмы = null
   let считатьКвадраты = null
+  let считатьКатегории = null
   try {
     ;({ обязательства: считатьОбязательства, свойства: считатьСвойства, моноиды: считатьМоноиды,
-        изоморфизмы: считатьИзоморфизмы, квадраты: считатьКвадраты } = await import(new URL("../src/self.mjs", import.meta.url).href))
+        изоморфизмы: считатьИзоморфизмы, квадраты: считатьКвадраты,
+        категории: считатьКатегории } = await import(new URL("../src/self.mjs", import.meta.url).href))
   } catch {
     /* слоя ещё нет — check работает в объёме, который доступен сегодня */
   }
@@ -1547,6 +1549,7 @@ export async function externalChecks(program, настройки = {}) {
   const МОНОИД_СЛОЕМ = "моноид слоем"
   const ИЗОМОРФИЗМ_СЛОЕМ = "изоморфизм слоем"
   const ФУНКТОР_СЛОЕМ = "функтор слоем"
+  const КАТЕГОРИЯ_СЛОЕМ = "категория слоем"
 
   for (const [file, names, ключ] of [
     ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"], "types"],
@@ -1590,7 +1593,13 @@ export async function externalChecks(program, настройки = {}) {
        раньше, в `checkTypes`. Категория без объявленного равенства сюда
        приходит и уходит в `assumed`: сравнивать нечем, а молчать о непроверенном
        нельзя. */
-    ["../src/setoid.mjs", ["checkCategoryLaws"], "category"],
+    /* РАВЕНСТВО МОРФИЗМОВ СЧИТАЕТ СЛОЙ НА САМОМ FLANG, и зовётся он здесь же,
+       на прежнем месте: порядок ключей `results` — поверхность, по нему берёт
+       ответ замороженная запись свидетеля. Держал свидетеля в рабочем пути один
+       довод — закону мало разобрать программу, надо её ВЫПОЛНИТЬ, — и оракул
+       переехал в дерево (`flang/self/setoid-oracle.flang`), так что держать
+       стало нечем. */
+    [КАТЕГОРИЯ_СЛОЕМ, [], "category"],
     /* ПЯТИ ОБЪЯВЛЕННЫХ СВОЙСТВ ЗДЕСЬ БОЛЬШЕ НЕТ: их считает слой на самом flang,
        и зовётся он ниже, отдельным шагом. Довод и подтверждение — в шапке
        раздела «пять объявленных свойств» в `flang/src/self.mjs`. Коротко:
@@ -1630,6 +1639,13 @@ export async function externalChecks(program, настройки = {}) {
     if (file === ИЗОМОРФИЗМ_СЛОЕМ) {
       if (считатьИзоморфизмы === null) continue
       const итог = await считатьИзоморфизмы(program)
+      results[ключ] = итог
+      diagnostics.push(...normalizeDiagnostics(итог))
+      continue
+    }
+    if (file === КАТЕГОРИЯ_СЛОЕМ) {
+      if (считатьКатегории === null) continue
+      const итог = await считатьКатегории(program)
       results[ключ] = итог
       diagnostics.push(...normalizeDiagnostics(итог))
       continue

@@ -171,6 +171,7 @@
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
+- [Граница входа была долгом печати, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается](granica-vhoda-eto-dolg-pechati-a-ne-vychitanie-v-proverke.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)
 

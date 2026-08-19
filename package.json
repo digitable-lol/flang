@@ -58,6 +58,8 @@
     "changelog:check": "node scripts/build-changelog.mjs --check && node scripts/build-changelog.mjs --self-test",
     "changelog:page": "node scripts/build-changelog-page.mjs",
     "changelog:page:check": "node scripts/build-changelog-page.mjs --check",
+    "releases:page": "node scripts/build-releases-page.mjs",
+    "releases:page:check": "node scripts/build-releases-page.mjs --check",
     "links:check": "node scripts/link-guard.mjs",
     "site": "node docs/site/build.mjs",
     "site:check": "node docs/site/build.mjs --check",
@@ -73,6 +75,7 @@
     "glossary:check": "node docs/site/glossary.mjs --check",
     "surfaces:run": "node docs/site/surfaces-run.mjs",
     "surfaces:check": "node docs/site/surfaces-run.mjs --check",
+    "numbers": "node docs/site/site-numbers.mjs --write",
     "numbers:check": "node docs/site/site-numbers.mjs --check",
     "prepublishOnly": "npm test"
   },

@@ -117,6 +117,8 @@
 - [Перечень, записанный в проверке руками, переживает дерево](a-hand-written-list-outlives-the-tree.md)
 - [Команда может ответить «проверено», не проверив ничего](checked-without-checking.md)
 - [Число прозы без названного измерителя не перепроверяется, а заменяется другим числом](a-number-without-a-named-measure.md)
+- [Набранное число расходится между страницами; подставленное — не может](typed-numbers-drift-substituted-ones-cannot.md)
+- [Журнал, записывающий короткий хеш коммита, догнать правкой коммита нельзя](amend-cannot-catch-up-a-journal-that-records-hashes.md)
 - [Относительная ссылка ломается ровно при копировании каталога](relative-links-break-on-copy.md)
 - [Замер собранного артефакта врёт молча: `make` не пересобирает, а отвечает «nothing to be done»](measuring-a-stale-artifact.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)

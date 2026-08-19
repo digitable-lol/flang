@@ -34,4 +34,10 @@
 входит. Доказуемая половина атомарности — «из отвергнутого ответа применять
 нечего» — здесь есть и доказана индукцией по замкнутой сумме исходов.
 
-Связано: [[byte-for-byte-comparison]], [[totality-twin-does-not-read-postconditions]], [[a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions]]
+Форма единственного доказанного утверждения — та же, что у соседей: индукция по
+ЗАМКНУТОЙ СУММЕ, у которой ветвь не зависит от груза варианта. У «Исхода замены»
+варианты вовсе без груза, поэтому два примера закрывают оба случая. Там, где от
+ветви требуется прочитать груз или условие, ядро отказывает — и это уже
+разобрано поимённо для планировщика.
+
+Связано: [[byte-for-byte-comparison]], [[totality-twin-does-not-read-postconditions]], [[a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions]], [[what-a-scheduler-needs-proved]], [[at-most-once-is-the-only-provable-half]]

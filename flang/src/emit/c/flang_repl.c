@@ -61,7 +61,7 @@
  * выражения нет. Пока долг не закрыт, выражение вычисляется прежним способом —
  * сессия печатается в C (та же «Печать программы», что у `flang emit`),
  * собирается системным `cc` и запускается. Пересобирать при этом нечего, кроме
- * самой сессии: рантайм уже стоит рядом с бинарником — `lib/libkompilyator_flang.a`
+ * самой сессии: рантайм уже стоит рядом с бинарником — `lib/libcompiler_flang.a`
  * и заголовки в `include/` кладут и формула Homebrew, и плагин asdf.
  *
  * Без `cc` оболочка не выключается: она по-прежнему проверяет разбор, типы и
@@ -200,7 +200,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
 #define REPL_FILE "«оболочка».flang"
 
 /** Архив рантайма, который кладут формула и плагин; каталог ищется, имя — нет. */
-#define REPL_ARCHIVE "libkompilyator_flang.a"
+#define REPL_ARCHIVE "libcompiler_flang.a"
 
 /** Сколько объявлений печатать поимённо, прежде чем перейти к счёту. */
 #define REPL_VERBOSE 6
@@ -458,7 +458,7 @@ static const char HELP_REPL[] =
     "показывает команды. Файл в аргументе загружается в сессию при запуске.\n"
     "\n"
     "Выражение считается так: сессия печатается в C (та же «Печать программы», что\n"
-    "у «flang emit»), собирается системным «cc» против lib/libkompilyator_flang.a и\n"
+    "у «flang emit»), собирается системным «cc» против lib/libcompiler_flang.a и\n"
     "запускается. Нет «cc» — оболочка не выключается, а проверяет разбор, типы и\n"
     "завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.";
@@ -5786,7 +5786,7 @@ static int run_file(int argc, char **argv) {
  * Под `env -i PATH=/usr/bin:/bin`, то есть там, где Node недостижим:
  *   1. flang₁ (этот бинарник) печатает компилятор — семь файлов; ШЕСТЬ из них
  *      совпадают с печатью `scripts/bootstrap-c.mjs` ПОБАЙТОВО, расходится
- *      один (kompilyator_flang.c) и по одной названной причине — `markProven`.
+ *      один (compiler_flang.c) и по одной названной причине — `markProven`.
  *   2. Напечатанное собирается `cc -std=c99 -Wall -Wextra -Werror -pedantic`
  *      без единого предупреждения и даёт рабочий flang₂: `check` на пробном
  *      файле отвечает тем же, что flang₁.
@@ -6183,7 +6183,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
   if (out == NULL && one == NULL) {
     fputs("flang emit: назовите, куда печатать: «--out каталог» (все файлы) или «--file имя»\n"
-          "(один файл на стандартный вывод, например «--file kompilyator_flang.c»).\n",
+          "(один файл на стандартный вывод, например «--file compiler_flang.c»).\n",
           stderr);
     return 2;
   }

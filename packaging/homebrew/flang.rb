@@ -53,22 +53,29 @@ class Flang < Formula
   # `tar -czf` даёт РАЗНЫЕ байты при одном и том же содержимом: он кладёт в архив
   # время правки файлов, их права и владельца, а печать заводит файлы заново при
   # каждом запуске. Проверено на этом самом архиве: две упаковки одного дерева,
-  # между которыми файлу сменили время правки (`touch kompilyator_flang.c`), дали
+  # между которыми файлу сменили время правки (`touch compiler_flang.c`), дали
   # ПОБАЙТОВО ОДИН И ТОТ ЖЕ файл и один sha256. Хеш, который нельзя повторить,
   # нельзя и проверить: ровно поэтому он и переезжал из релиза в релиз
   # непересчитанным.
   #
   # ДЕВЯТЬ имён перечислены поимённо, а не взяты точкой или звёздочкой: скрипт
   # СОБИРАЕТ напечатанное прямо в том же каталоге, и `tar -czf … .` уносит
-  # пользователю ещё и flang_cli, *.o и libkompilyator_flang.a — то есть бинарник
+  # пользователю ещё и flang_cli, *.o и libcompiler_flang.a — то есть бинарник
   # чужой машины вместо исходников. Проверено распаковкой: в архиве ровно девять
   # файлов, ни одного `.o`, ни одного собранного бинарника.
+  #
+  # ИМЕНА ДВУХ ИЗ ДЕВЯТИ СМЕНИЛИСЬ В 0.5.2: `kompilyator_flang.[ch]` стали
+  # `compiler_flang.[ch]`. Имя файла печать берёт от имени модуля компилятора,
+  # модуль звался «Компилятор flang» — и транслит в имени файла запрещён
+  # `docs/guide/naming.ru.md`; чинилось это переименованием модуля в
+  # «Compiler flang». Команда ниже — для 0.5.2 и новее; для 0.5.1 и старее в ней
+  # стоят прежние два имени, всё остальное то же.
   #
   #   node scripts/build-release-c.mjs
   #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
   #       --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - \
-  #       LICENSE Makefile flang.1 flang_cli.c flang_repl.c flang_runtime.c \
-  #       flang_runtime.h kompilyator_flang.c kompilyator_flang.h \
+  #       LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
+  #       flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h \
   #     | gzip -9n > output/flang-0.5.0-c.tar.gz
   #
   # LICENSE стоит в списке первым и не забывается: пункт 1 BSD-2-Clause требует
@@ -111,7 +118,15 @@ class Flang < Formula
     # ставиться и на архив, собранный до переименования.
     собрано = File.exist?("flang") ? "flang" : "flang_cli"
     bin.install собрано => "flang"
-    lib.install "libkompilyator_flang.a" if File.exist?("libkompilyator_flang.a")
+    # Библиотека зовётся по имени модуля компилятора, а имя это менялось: до
+    # 0.5.2 модуль звался «Компилятор flang», и печать давала
+    # `libkompilyator_flang.a` — транслит в имени файла, запрещённый
+    # `docs/guide/naming.ru.md`; с 0.5.2 модуль зовётся «Compiler flang», и
+    # печать даёт `libcompiler_flang.a`. Формула ставит выпущенные версии, а
+    # среди них есть и те и другие, поэтому имя ИЩЕТСЯ, а не пишется: берётся
+    # любой архив, какой собрал `make`. Заголовки ставятся звёздочкой и потому
+    # переименования не заметили вовсе.
+    lib.install Dir["lib*.a"]
     include.install Dir["*.h"]
     # Страница руководства — не украшение. Человек, поставивший язык из brew,
     # ищет `man flang` раньше, чем README в интернете, и не найдя — решает, что

@@ -155,6 +155,8 @@
 - [Замер скорости проверяет себя контрольной суммой](checksum-inside-the-benchmark.md)
 - [Переименование файла не краснеет, а тихо выключает проверку чисел в прозе](renaming-a-file-silently-disables-the-guard.md)
 - [Переименование понятия — не замена по дереву: у слова оказывается три значения](renaming-a-word-is-not-search-and-replace.md)
+- [Имя порождённого файла чинится в имени модуля, а не в генераторе кода](a-generated-file-name-is-fixed-in-the-module-name.md)
+- [Сборка релиза ломалась молча: имя выхода переименовали в трёх местах из четырёх, а четвёртое зовут руками](a-hard-coded-binary-name-outlives-its-rename.md)
 - [Вторую сторону сверки можно заморозить, но проверка меняет род](a-frozen-reference-changes-the-check.md)
 - [Перечень, записанный в проверке руками, переживает дерево](a-hand-written-list-outlives-the-tree.md)
 - [Команда может ответить «проверено», не проверив ничего](checked-without-checking.md)

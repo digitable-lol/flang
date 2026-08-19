@@ -154,7 +154,7 @@ test("семь слоёв связываются в одну программу 
      без неё нет и программы: `src/link.mjs` сливает объявления в одно плоское
      пространство имён, и повтор имени там — ошибка, а не перекрытие. */
   assert.deepEqual(бедыСвязывания, [], "связывание семи слоёв дало диагностики")
-  assert.equal(компилятор.module, "Компилятор flang")
+  assert.equal(компилятор.module, "Compiler flang")
   assert.ok(компилятор.functions.length > 1200, `функций после связывания ${компилятор.functions.length}`)
   const имена = компилятор.functions.map((функция) => функция.name)
   assert.equal(new Set(имена).size, имена.length, "одно имя досталось двум функциям")
@@ -1088,12 +1088,12 @@ test("оболочка flang₁ отвечает то же, что оболоч�
   const куда = join(workdir, "flang1")
   /* Оболочка собирает ТОЛЬКО сессию, а рантайм берёт готовым рядом с
      бинарником — иначе каждое выражение стоило бы пересборки компилятора. */
-  execFileSync(cc, [...CFLAGS, ...БЕЗ_BIDI, "-c", "flang_runtime.c", "kompilyator_flang.c"], {
+  execFileSync(cc, [...CFLAGS, ...БЕЗ_BIDI, "-c", "flang_runtime.c", "compiler_flang.c"], {
     cwd: куда,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   })
-  execFileSync("ar", ["rcs", "libkompilyator_flang.a", "flang_runtime.o", "kompilyator_flang.o"], {
+  execFileSync("ar", ["rcs", "libcompiler_flang.a", "flang_runtime.o", "compiler_flang.o"], {
     cwd: куда,
     encoding: "utf8",
   })

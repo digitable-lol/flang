@@ -216,19 +216,31 @@ the change.
   here it creates no lookalikes, and so it stands.
 - **File names carry no transliteration at all.** A Latin extension means an English-worded name:
   `lists.flang`, `higher-order.flang`, `name-guard.mjs`. This one is not guarded by a run yet, and
-  the remainder is measured: **13 names** in the tree are still transliterated —
+  the remainder is measured: **11 names** in the tree are still transliterated —
 
   | Name | What it is |
   |---|---|
-  | `bootstrap/kompilyator_flang.c`, `.h` | the bootstrap print; the name comes from `naming.mjs` off the module «Компилятор flang» — generated, but still against the rule |
   | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.mjs` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
   | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
 
   `docs/rukovodstvo/` was the fourteenth and became `docs/guide/` on 18 August, together with 70
-  links across 17 files. The remaining thirteen cost the same order: a file name lives in prose, in
+  links across 17 files. The remaining eleven cost the same order: a file name lives in prose, in
   imports and in `package.json`, and a tree-wide `grep` is the only way to find every site. This
   becomes a rule when that price is measured, and not before.
+
+  The table's first row was `bootstrap/kompilyator_flang.c`, `.h` — the bootstrap print. It was removed on
+  19 August, and removed NOT by patching the printing machinery: the file name there comes from
+  `naming.mjs` off the module name, the contract «a module name reaches the target» is shared by all
+  eight targets, and carving a special case into it for one program would fix our tree at every other
+  tree's expense. It was removed by renaming the module itself — «Компилятор flang» → «Compiler
+  flang» — because that module's name is the only one in `flang/self/` that reaches a foreign
+  namespace at all: it is the file name (`compiler_flang.c`, `.h`), the library name
+  (`libcompiler_flang.a`), the header guard, and the prefix of every exported C symbol. Layer names
+  never get there — linking merges them into one flat namespace. The word order («Compiler flang»,
+  not «Flang compiler») is chosen because the `flang_` prefix belongs to the backend itself
+  (`flang_runtime.c`, `flang_cli.c`, `flang_repl.c`), and the tree tells the print from the program
+  by exactly that prefix.
 
 ## Running it
 

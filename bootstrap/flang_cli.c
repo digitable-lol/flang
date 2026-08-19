@@ -1,11 +1,11 @@
 /*
  * Сгенерировано flang (бэкенд C, flang/src/emit/c.mjs). Не редактировать руками.
- * Модуль flang: «Компилятор flang».
+ * Модуль flang: «Compiler flang».
  * Файл: прогонщик: JSON на входе, JSON на выходе.
  * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
  */
-#define FL_PROGRAM_CALL kompilyator_flang_call
-#define FL_PROGRAM_ENTRY kompilyator_flang_entry
+#define FL_PROGRAM_CALL compiler_flang_call
+#define FL_PROGRAM_ENTRY compiler_flang_entry
 #define FL_WITH_REPL 1
 
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */

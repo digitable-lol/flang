@@ -91,7 +91,7 @@ export const ПРЕДЕЛЫ = { cli: true, repl: true, maxSteps: 40_000_000, max
  * дереве без `.git` — на dev дерево уезжает без него, и проверка, опирающаяся на
  * `git ls-files`, там пропустилась бы молча.
  */
-export const НЕ_ТОЧКА = new Set(["README.md", "flang", "flang.exe", "flang_cli", "flang_cli.exe", "libkompilyator_flang.a"])
+export const НЕ_ТОЧКА = new Set(["README.md", "flang", "flang.exe", "flang_cli", "flang_cli.exe", "libcompiler_flang.a"])
 const ПРОДУКТ_СБОРКИ = /\.(?:o|obj|a|d)$/u
 
 /**

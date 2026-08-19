@@ -37,11 +37,6 @@ Installs `bin/flang`, `lib/libkompilyator_flang.a` and two headers into the
 version directory. The third line is `asdf set`, not `asdf global`: `global`
 and `local` were removed in asdf 0.16.0.
 
-**0.5.1 does not install this way today.** The published plugin looks for the
-old file name `flang_cli`, while the 0.5.1 build produces `flang`: the build
-succeeds and the install fails on the last step. Until the fix is published,
-asdf installs 0.5.0.
-
 The same plugin works with mise: `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
 
 ## From source

@@ -775,15 +775,20 @@ async function commandPackage(options) {
      берутся из одиночного разбора входа — в слитой программе своё от
      привезённого не отличить. */
   const свои = (parse(await readInput(options.file), resolve(options.file)).functions ?? []).map((fn) => fn.name)
-  let ведомость = []
-  try {
-    const { obligations } = await import(new URL("../src/obligations.mjs", import.meta.url).href)
-    const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
-    const об = obligations(program, итоги.results)
-    ведомость = ведомостьПакета(об.obligations, checkProofs(program, об.obligations), свои)
-  } catch {
-    /* ядра нет — ведомость выйдет пустой, и это честнее выдуманной */
-  }
+  /* ОБЯЗАТЕЛЬСТВА И ВЕРДИКТЫ БЕРУТСЯ У ПРОВЕРКИ, КОТОРАЯ УЖЕ ПРОШЛА, а не
+     считаются здесь второй раз. Здесь стоял ввоз двух свидетелей
+     (`src/obligations.mjs` и `src/proofterm.mjs`), и это было ДВА РАЗНЫХ ЯДРА в
+     одном дереве: `check` спрашивает слой на самом flang, а `package` — свидетеля.
+     Пока оба отвечали одно и то же, разница была невидима; разойдись они на знак,
+     и пакет обещал бы не то, что проверила команда, — молча.
+
+     Пересчёта тут не было нужно и до того: `checkProgram` выше уже посчитала и
+     обязательства (`results.obligations`), и вердикты ядра (`results.proofs`), и
+     вердикт лежит НА САМОМ обязательстве полем `discharge` — ведомость читает
+     его оттуда. */
+  const обязательства = итоги.results?.obligations?.obligations ?? []
+  const вердикты = итоги.results?.proofs ?? { checked: [], diagnostics: [] }
+  const ведомость = ведомостьПакета(обязательства, вердикты, свои)
   let пакет = null
   try {
     пакет = await собратьПакет(options.file, parse, объявление, { ведомость })

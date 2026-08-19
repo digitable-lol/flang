@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /** Печать стенда в Elixir и сборка elixirc. */
 import { execFileSync } from "node:child_process"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"

@@ -73,6 +73,22 @@ of the spelling, on the command line they are not.
 
 ## The shell
 
+The bare command opens the shell — like `iex` for Elixir, like `python`:
+
+```bash
+flang
+```
+
+```
+flang 0.5.0 — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
+Объявление заканчивается пустой строкой, выражение вычисляется сразу.
+» 2 плюс 2
+4
+```
+
+The same thing by name is `flang repl`, and that is also how a file is loaded
+into the session:
+
 ```bash
 flang repl hello.flang
 ```
@@ -89,8 +105,12 @@ From there you type expressions of the language and get the answer at once:
 42
 ```
 
-`.выход` leaves. Guillemets are needed here: this is language text now, not a
-command-line argument.
+`.выход` or Ctrl-D leaves. Guillemets are needed here: this is language text
+now, not a command-line argument.
+
+When standard input is not a terminal (`flang < script.flang`, a pipe), the
+shell reads it as a script: no prompts, diagnostics to the error stream, and a
+non-zero exit code means there was diagnostics.
 
 ## What the ledger says
 

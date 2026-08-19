@@ -64,7 +64,11 @@ LC_ALL=C.UTF-8
 export LC_ALL
 
 root=$(cd "$(dirname "$0")/../.." && pwd)
-tool=${FLANG_BIN:-"$root/bootstrap/flang_cli"}
+# Имя выхода сборки — `flang`, именем языка. `flang_cli` принимается тоже: в
+# дереве, где сборка была до переименования, он лежит с прежним именем, и
+# обходчик не обязан из-за этого отказывать.
+tool=${FLANG_BIN:-"$root/bootstrap/flang"}
+[ -x "$tool" ] || tool="$root/bootstrap/flang_cli"
 ledger="$root/flang/проверки/ведомость-примеров.txt"
 
 if [ ! -x "$tool" ]; then

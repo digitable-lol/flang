@@ -8,12 +8,20 @@ How each path was checked: [How the install was verified](install-evidence.html)
 | --- | --- | --- |
 | [Homebrew](#homebrew) | `flang` 0.5.0, `man flang` | `brew`, `cc`, `make` |
 | [asdf / mise](#asdf-and-mise) | `flang` 0.5.0 alongside other versions | `asdf` or `mise`, `cc`, `make` |
-| [From source](#from-source) | `bootstrap/flang_cli` from this tree | `git`, `cc`, `make` |
+| [From source](#from-source) | the `flang` command (`make -C bootstrap install`) | `git`, `cc`, `make` |
 | [Node: the reference implementation](#node-the-reference-implementation) | eight emit targets, laws, language server | Node ≥ 20 |
 
-The first three paths give the same binary: five commands — `check`, `run`,
-`test`, `emit --target c`, `repl`. The fourth installs the reference
-implementation on Node, which has more commands and more emit targets.
+The first three paths give the same binary, and the bare `flang` command in it
+opens the shell — like `iex` for Elixir, like `python`. It has **six** commands:
+`check`, `run`, `test`, `emit --target c`, `repl` and the shell itself.
+
+**The fourth path gives twelve, and the difference is worth knowing up front.**
+On top of the six, the reference on Node has `ast`, `facts`, `io`, `lock` and
+`package`, and with them the other seven emit targets, the laws on a grid and the language
+server. The binary does not keep quiet about it: `flang lock` is rejected with
+exit code 2 and a line saying the command exists in the full toolchain — but the
+language documentation promises those commands, and if you need them, you need
+the fourth path.
 
 ## Homebrew
 
@@ -60,23 +68,35 @@ the plugin's three scripts, the ones asdf calls.
 git clone https://github.com/digitable-lol/flang.git
 cd flang
 make -C bootstrap -j4
+sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
-You get `bootstrap/flang_cli` — 7 127 856 bytes, built from four C99 files in
-40.6 s, with no warning at all under `-Wall -Wextra -Werror -pedantic`.
+**The program has one name — `flang`**, on this path too: `make` puts
+`bootstrap/flang` next to the sources, and `make install` installs it as a
+command together with `libkompilyator_flang.a`, the headers and the `flang.1`
+man page (when it is next to them — it is in the release archive, not in the
+repository tree). To remove it: `make -C bootstrap uninstall`. The build used to
+produce `flang_cli` while brew and asdf installed the same file as `flang`: two
+names for one program, and the guide taught the worse one.
 
-If the machine has no `make`, one `cc` call is enough:
+Measured on a clean export (`git archive` into an empty directory): 13 324 277
+bytes of emitted C and headers going in, `make -j4` — **34.3 s** and
+**7 276 792 bytes**, with no warning at all under
+`-Wall -Wextra -Werror -pedantic`.
+
+If the machine has no `make`, one `cc` call is enough — **76.3 s**,
+7 283 688 bytes:
 
 ```bash
 cd bootstrap
-cc -std=c99 -O2 -o flang \
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
    flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
 ```
 
-Build in a fresh clone: `bootstrap/` arrives from the repository with
-`flang_cli` and `*.o` already built, and `make` goes by file times — in a tree
-where a build has happened it answers "nothing to be done" and leaves the **old**
-binary in place.
+Build in a fresh clone: `bootstrap/` arrives from the repository with `flang`
+and `*.o` already built, and `make` goes by file times — in a tree where a build
+has happened it answers "nothing to be done" and leaves the **old** binary in
+place.
 
 ## Node: the reference implementation
 

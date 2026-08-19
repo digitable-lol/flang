@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /** Сколько стоит проверка типов на стенде: её в build.mjs нет, а в цепочке есть. */
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"

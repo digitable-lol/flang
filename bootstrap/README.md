@@ -5,11 +5,18 @@
 Ни Node, ни самого flang для этого не требуется.
 
 ```sh
-make -C bootstrap          # cc -std=c99 -Werror -pedantic -O2 -flto
-bootstrap/flang_cli --version
-bootstrap/flang_cli check путь/к/файлу.flang
-bootstrap/flang_cli run путь/к/файлу.flang --function «Имя» --args '{"х":21}'
+make -C bootstrap -j4      # cc -std=c99 -Werror -pedantic -O2 -flto
+sudo make -C bootstrap install     # или PREFIX=$HOME/.local, без sudo
+
+flang --version
+flang check путь/к/файлу.flang
+flang run путь/к/файлу.flang --function «Имя» --args '{"х":21}'
+flang                              # на терминале — оболочка, под конвейером — прогонщик
 ```
+
+**Имя выхода — `flang`, а не `flang_cli`.** У программы одно имя на все три
+дороги установки: `brew`, `asdf` и сборка из исходников кладут один и тот же файл
+под одним и тем же именем. Без `install` он лежит здесь же — `bootstrap/flang`.
 
 Проверено на `cc 13.3.0` и `cc 15.2.0`; никаких зависимостей, кроме `libm` и
 `libpthread`.
@@ -22,12 +29,12 @@ bootstrap/flang_cli run путь/к/файлу.flang --function «Имя» --arg
 git archive HEAD | tar -x -C ПУСТОЙ_КАТАЛОГ
 cd ПУСТОЙ_КАТАЛОГ/bootstrap
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 \
-   -o flang_cli flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
+   -o flang flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
 ```
 
-**≈90 с** процессорного времени (время плавает с загрузкой машины, байты — нет),
-**ни одного предупреждения**, бинарник **7 147 192 байта** (cc 15.2.0,
-Linux 7.0.0). `-flto`
+**76,3 с** (время плавает с загрузкой машины, байты — нет), **ни одного
+предупреждения**, бинарник **7 283 688 байт** (cc 15.2.0, Linux 7.0.0). Тем же
+`make -j4` в том же чистом каталоге — **34,3 с** и **7 276 792 байта**. `-flto`
 при одном вызове не нужен: единица трансляции и так одна — флаг в `Makefile`
 стоит ради раздельной сборки.
 
@@ -48,23 +55,23 @@ Linux 7.0.0). `-flto`
 её и не пропустит.
 
 Числа снимаются прогоном `node scripts/bootstrap-c.mjs --check`; здесь они на
-18 августа 2026.
+18 августа 2026, после переименования выхода сборки в `flang`.
 
 | файл | байт | что это |
 |---|---|---|
-| `kompilyator_flang.c` | 10 655 141 | сам компилятор: 3624 функции, 315 типов после связывания |
+| `kompilyator_flang.c` | 10 662 933 | сам компилятор: 3624 функции, 315 типов после связывания |
 | `kompilyator_flang.h` | 2 162 242 | его объявления |
-| `flang_repl.c` | 250 489 | человеческий вход: `check`, `test`, `run`, `emit`, `repl`, `--help`, `--version` |
+| `flang_repl.c` | 260 648 | человеческий вход: `check`, `test`, `run`, `emit`, `repl`, `--help`, `--version` |
 | `flang_runtime.c` | 150 013 | рантайм: значения, арена, UTF-8, встроенные формы |
 | `flang_runtime.h` | 60 575 | заголовок рантайма и `#define` пределов печати |
-| `flang_cli.c` | 47 942 | прогонщик: JSON на входе, JSON на выходе |
-| `Makefile` | 1 543 | `cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto` |
-| **итого** | **13 327 945** | 7 файлов, 12,71 МиБ |
+| `flang_cli.c` | 48 994 | прогонщик: JSON на входе, JSON на выходе |
+| `Makefile` | 2 911 | сборка, `make install` и `make uninstall` |
+| **итого** | **13 348 316** | 7 файлов, 12,73 МиБ |
 
 Четыре файла из семи — не порождённый код, а дословные копии
 `flang/src/emit/c/*` с приписанной сверху шапкой (6 строк у `flang_runtime.c`,
 10 у `flang_cli.c`, 14 у `flang_runtime.h`; `flang_repl.c` — своя шапка: имя
-модуля, пределы, `#define FL_PROGRAM_CALL`). На них приходится 509 019 байт,
+модуля, пределы, `#define FL_PROGRAM_CALL`). На них приходится 520 230 байт,
 **3,9 %** точки; остальные 96,1 % — два файла компилятора.
 
 ## Порядок обновления

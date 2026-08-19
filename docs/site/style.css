@@ -92,18 +92,26 @@ body {
 
 .top {
   position: sticky; top: 0; z-index: 5;
-  display: flex; align-items: baseline; gap: 1rem;
+  display: flex; align-items: center; gap: 1rem;
   padding: .85rem 1.5rem;
   background: var(--surface);
   border-bottom: 1px solid var(--rule);
 }
 
 .brand {
+  display: inline-flex; align-items: center; gap: .45rem;
   font-family: var(--mono);
   font-size: 1.05rem; font-weight: 700;
   color: var(--ink); text-decoration: none;
   letter-spacing: -.01em;
 }
+
+/* Знак. Рисует его сборка (docs/site/build.mjs) прямо в разметку: ни файла, ни
+   запроса на сторону. Цвета своего у него нет — берёт `currentColor` у буквы
+   рядом и потому переворачивается вместе с тёмной темой сам.
+   24 пикселя — не украшение, а мера: на ней знак проверен, ниже он мылится.
+   Шапка от него не растёт: строка `flang` и без знака выше 24 пикселей. */
+.brand .znak { width: 24px; height: 24px; flex: none; }
 
 .tagline { color: var(--faint); font-size: .85rem; flex: 1; }
 
@@ -313,6 +321,13 @@ body {
   max-width: 1400px; margin: 0 auto;
 }
 .bottom code { font-family: var(--mono); font-size: .92em; }
+.bottom p { margin: 0 0 .45rem; }
+.bottom p:last-child { margin-bottom: 0; }
+/* Четыре факта о том, кто делает язык: владелец, лицензия, дерево, куда нести
+   ошибку. Цвет приглушённого текста, а не серый цвет подвала: строка ниже — про
+   эту страницу, эта — про проект, и путать их не надо. */
+.about { color: var(--muted); }
+.about a { color: inherit; }
 /* Строка происхождения: версия, коммит дерева, дата сборки. Её ставит сборка на
    каждую страницу — это единственное место, где сказано, к чему страница
    относится. Мельче основного текста, но не серее подвала: её читают. */

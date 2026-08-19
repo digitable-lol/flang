@@ -61,6 +61,7 @@
 - [Автоматическая индукция по `разбор`у закрыла 9 утверждений, а из двенадцати заказанных — 5](auto-induction-on-match-closes-nine.md)
 - [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
+- [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](pole-ne-minus-nol-zakrylo-dva-mesta-a-ne-odinnadcat.md)
 
 ## Теория категорий
 
@@ -112,7 +113,7 @@
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
-- [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держит brotli](pyat-komand-dvoichnogo-cena-kazhdoy.md)
+- [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держал brotli (поправлено: не держит)](pyat-komand-dvoichnogo-cena-kazhdoy.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
@@ -168,10 +169,13 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
+- [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](celochislennoe-delenie-ne-daet-yadru-nat.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
 - [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)
 - [Замок снимает места, а генератор кода их печатает — отсюда расхождение в 337 байт](zamok-snimaet-mesta-a-generator-ih-pechataet.md)
+- [Адрес модуля в замке — sha256 его исходника, а сжатия в формате нет вовсе](adres-modulya-eto-sha256-ishodnika.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)

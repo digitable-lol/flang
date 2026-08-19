@@ -25,8 +25,8 @@ There are five carriers of that promise, and each leaves a trace in the ledger:
 
 | Carrier | Functions |
 |---|---:|
-| By composition — no recursion at all | 6089 |
-| By structure — walking part of a value | 361 |
+| By composition — no recursion at all | 6340 |
+| By structure — walking part of a value | 370 |
 | By an exact step over a natural number | 27 |
 | By a constant step with a run-time check | 6 |
 | By a declared measure with a run-time check | 64 |
@@ -40,7 +40,7 @@ the total.
 
 The kernel answers in three different ways, and mixing them is not allowed:
 
-**Proved by the kernel** — the claim holds for all inputs. There are **152 of 182**.
+**Proved by the kernel** — the claim holds for all inputs. There are **170 of 298**.
 
 **On a grid** — a set of values was run, no violation found. The ledger line for
 this ends with the words **"this is not a proof"**, and it ends that way on

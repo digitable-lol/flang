@@ -1,112 +1,50 @@
 # Your first program
 
-Two roads: build the compiler from C and never hear about Node — or wire the
-interpreter into your own Node project. Both are below, the compiler first.
+Five minutes: write a function, check it, run it, read the proof ledger, and emit
+the program into C. You need `flang` installed — [how to install
+it](install.html).
 
-```bash
-git clone https://github.com/digitable-lol/flang.git
-cd flang
-make -C bootstrap -j4
-sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
-```
-
-`cc` and `make`, nothing else: no Node, no npm, no network. What comes out is
-the **`flang` command** — the same one `brew` and `asdf` install: one name for
-the program on all three paths. Without `install` the binary stays in the tree
-as `bootstrap/flang` and is called as `./bootstrap/flang`.
-
-```bash
-flang --version
-flang --help
-```
-
-## Write a program
+## Write
 
 Put this in `hello.flang`:
 
 ```
-module «Hello»
+модуль «Привет»
 
-total function «Twice»
-  accepts n: number
-  returns number
-  ensures «the result is twice the input» result equals (2 times n)
-  example «Two doubled»
-    given n equals 2
-    expected 4
-  n plus n
+тотальная функция «Удвоить»
+  принимает н: число
+  возвращает число
+  обеспечивает «удвоенное не меньше исходного» результат не меньше н
+  пример «дважды два»
+    дано н равно 2
+    ожидается 4
+  н плюс н
 ```
 
-Five things, each doing its own job:
+Five parts, each doing its own job:
 
-- **`total`** — a promise that the function terminates on every input. The
-  compiler **checks** it and refuses the file if it cannot prove it.
-- **`accepts` / `returns`** — types, checked statically.
-- **`ensures`** — a postcondition: what holds of the result. Not for the inputs
-  you thought of but **for all of them**, if the kernel can prove it. The claim
-  is **named** — the name in guillemets is required, and the ledger reports it
-  by that name.
-- **`example`** — an executable example. It is part of the program rather than a
-  test on the side, and it runs on every check.
+- `тотальная` (total) — a promise that the function terminates on every input.
+  The compiler **checks** it and refuses the file if it cannot prove it;
+- `принимает` / `возвращает` (accepts / returns) — types, checked before the run;
+- `обеспечивает` (ensures) — a postcondition about the result. The name in
+  guillemets is required: that is how the claim is found in the ledger;
+- `пример` (example) — an executable example. It is part of the program, not a
+  test on the side;
 - the last line is the body.
 
-Keywords come in two surfaces. `module` / `total function` / `accepts` is the
-English one, `модуль` / `тотальная функция` / `принимает` the Russian one, and
-both parse to the same tree.
-
-## Check it
+## Check
 
 ```bash
 flang check hello.flang
 ```
 
 ```
-модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
 hello.flang: проверено — разбор, типы, завершаемость; замечаний нет
 ```
 
-The binary speaks Russian. Its diagnostics are not translated yet, and pretending
-otherwise on this page would not make them so.
-
-## Run it
-
-```bash
-flang run hello.flang --function Twice --args '{"n": 21}'
-```
-
-```
-42
-```
-
-The binary computes this itself: the evaluator is pulled into it, Node is not
-needed.
-
-The function name goes **without guillemets**: in a declaration they are part of
-the notation, on a command line they are not.
-
-## Try it live
-
-The bare command opens the shell — like `iex` for Elixir, like `python`:
-
-```bash
-flang
-```
-
-```
-flang 0.5.0 — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
-Объявление заканчивается пустой строкой, выражение вычисляется сразу.
-» 2 плюс 2
-4
-```
-
-The same thing by name is `flang repl`; a file given as an argument is loaded
-into the session. When standard input is not a terminal (`flang < script.flang`,
-a pipe), the shell reads it as a script: no prompts, diagnostics to stderr, and a
-non-zero exit code means there was diagnostics.
-
-The shell does not call the evaluator yet: it emits the session to C and builds
-it with the same `cc` you just built the compiler with. With no `cc` it does not
-switch off — it checks parsing, types and termination and says so.
+Exit code 0. Had termination not been provable, it would be exit code 1 and a
+diagnostic with a code, a line and a column.
 
 ## Run the examples
 
@@ -118,128 +56,118 @@ flang test hello.flang
 hello.flang: примеров 1, прошло 1, не прошло 0
 ```
 
-Examples are part of the program rather than a test on the side, and `check`
-counts them even without `test`.
+## Run
 
-## The proof ledger
+```bash
+flang run hello.flang --function Удвоить --args '{"н": 21}'
+```
+
+```
+42
+```
+
+The function name here carries **no guillemets**: in a declaration they are part
+of the spelling, on the command line they are not.
+
+## The shell
+
+```bash
+flang repl hello.flang
+```
+
+```
+объявлено: тотальная функция «Удвоить» — завершение доказано
+загружено из hello.flang
+```
+
+From there you type expressions of the language and get the answer at once:
+
+```
+«Удвоить» от 21
+42
+```
+
+`.выход` leaves. Guillemets are needed here: this is language text now, not a
+command-line argument.
+
+## What the ledger says
 
 ```bash
 flang check hello.flang --proof
 ```
 
 The kernel tries to **prove** the postcondition — to show it holds on every
-input, not just on the 2 from the example. The ledger names what carries each
-promise, and its words are not interchangeable:
+input, not only on the 2 from the example. About this program it answers:
 
-- **доказано** (proved) — a claim about all inputs, derived from declarations
-  and structure;
-- **сетка N** (grid of N) — computed on N author-chosen values. **This is not a
-  proof**, and the ledger says so outright;
-- **объявлено, не доказано** (declared, not proved) — the kernel ran out of
-  rules. The claim is then computed at run time, on the inputs that arrive.
+```
+постусловие «удвоенное не меньше исходного» функции «Удвоить» —
+сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров
+не было, посчитано только их число. Это не доказательство — теоремы при
+утверждении нет
+```
+
+Three words of the ledger, and they are not interchangeable:
+
+| word | what it means |
+| --- | --- |
+| доказано (proved) | true for **all** inputs |
+| сетка N (grid of N) | computed on N values of yours; **this is not a proof** |
+| объявлено, не доказано (stated, not proved) | the kernel ran out of rules; the claim is checked at run time |
+
+How to get a claim all the way to "proved" is in the
+[tutorial](tutorial.html), the chapter on theorems.
 
 ## Emit into C
 
-`emit` does not create the output directory — make it yourself:
-
 ```bash
-mkdir -p ./out-c
-flang emit hello.flang --target c --out ./out-c \
-    --runtime flang/src/emit/c
-make -C ./out-c
+flang emit hello.flang --target c --out ./вывод
+make -C ./вывод
 ```
 
-Six files, and they build with the same `cc` without a single warning. The
-binary reads the C runtime from disk: `--runtime` or `$FLANG_RUNTIME_DIR` says
-where.
+Emitting gives **6 files, 264 365 bytes**; `make` builds them in 0.7 s with the
+same `cc`, with no warning at all under `-Wall -Wextra -Werror -pedantic`. The
+output directory is not created for you.
 
-## The limits of the binary
+While emitting, the binary states its own boundary: it has no table of declared
+types, so the emitted program does not check arguments against declared types.
+`flang run` itself does check: `Факториал` is declared over `нат`, and on −3 it
+answers `FLANG_TYPE: … -3 вне нат` with exit code 1.
 
-`check`, `test`, `run`, `repl`, `emit --target c` and the ledger are all in the
-binary. Its limits lie elsewhere, and it names them itself rather than staying
-quiet.
+## Boundaries of the binary
 
-**The ledger does not search for violations by example.** The binary counts
-examples but does not run them for the search: its ledger reads «нарушений НЕ
-ИСКАЛИ — прогона примеров не было, посчитано только их число» (did not search —
-the examples were not run, only counted), where the reference on the same file
-writes «нарушений не найдено (искали прогоном на всех 1)» (none found, searched
-by running all 1). A difference in wording is a difference in the strength of
-the claim.
+`check`, `run`, `test`, `repl`, `emit --target c` — that is all it has, and it
+names its boundaries itself instead of staying quiet about them:
 
-**The binary does not compute laws on a grid.** Monoid, monad, isomorphism,
-category, sets, connection and the five declared properties are computed by
-evaluation on a grid, and that layer is not in the binary. A program declaring
-one gets a refusal naming the obstacle, not a green ledger with an empty
-section.
+- **the ledger does not search for violations over examples** — it writes
+  "нарушений НЕ ИСКАЛИ" (did not look) where the reference implementation writes
+  "нарушений не найдено (искали прогоном)" (looked and found none);
+- **the binary does not check laws on a grid** — monoid, monad, isomorphism,
+  category, sets and the five declared properties are checked by computation, and
+  that layer is not in it. A program declaring one of those gets a refusal
+  naming the obstacle, not a green ledger with an empty section;
+- **it has one emit target** — `c`. There are eight targets: `c`, `csharp`,
+  `elixir`, `go`, `java`, `js`, `python`, `rust`. The other seven stayed with the
+  reference implementation.
 
-**The binary has one emit target.** `c`, and that is all; the other seven
-(`csharp`, `elixir`, `go`, `java`, `js`, `python`, `rust`) stayed with the
-reference. Two things are missing from the C emit itself: unreachable code is
-not dropped and proved code is not marked (`markProven`). On the compiler that
-is 6 files out of 7 byte for byte.
-
-**The `repl` shell does not call the evaluator.** It emits the session to C and
-builds it with the same `cc` you built the compiler with. With no `cc` it does
-not switch off — it checks parsing, types and termination and says so with the
-line «вычислять нечем».
-
-## Where the binary diverges from the reference
-
-Not "cannot do something" but **answers differently**, which is the more
-dangerous kind: an inability is visible, a divergence is not. Today there is one
-such place, and the binary warns about it as it emits.
-
-**An emitted program has an empty input boundary.** The table of declared types
-is built by the reference's type layer, which the binary does not have, so the
-runner's arguments are **not checked** against declared types. The emitted code
-builds and runs, but the caller answers for the input. The binary itself does
-check arguments: `Факториал` is declared over the type `нат`, and on −3 it
-answers `FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне нат` with
-exit code 1 — the same code the reference gives.
-
-On permitted inputs the two agree — three corpus programs run without Node:
+On permitted inputs the binary and the reference answer the same:
 `Факториал(12) = 479001600`, `Фибоначчи(20) = 6765`,
-`Палиндром("шалаш") = true`. They print differently: the binary a bare value,
-the interpreter JSON with the function name and arguments.
-
-## The second road: the interpreter on Node
-
-The binary is for people who **install the language**. The interpreter is for
-people who **wire it into an existing project**: the rules sit next to the code
-that applies them and are called from it. Nothing to install — zero external
-dependencies, `npm install` is not needed.
-
-It is also what you need for what the binary lacks: the other seven emit
-targets, laws on a grid, judgements, and the search for violations by example.
-
-Today it also carries the tooling around the language: the tree checks, the
-build of this site, the number guards (`npm run counts:check`) and the language
-server.
-
-### Emit into the other seven targets
-
-```bash
-node flang/bin/flang.mjs emit hello.flang --target rust --out ./out-rust
-```
-
-There are eight targets: `c`, `csharp`, `elixir`, `go`, `java`, `js`, `python`,
-`rust`. The emitted code must produce **the same values and the same error
-codes** as the interpreter — checked byte for byte across the whole corpus
-rather than declared.
-
-### A ledger that searches
-
-```bash
-node flang/bin/flang.mjs check hello.flang --proof --pretty
-```
-
-The same ledger the binary prints, except the grid is not merely counted but
-**run**: instead of "did not search" it reads «нарушений не найдено (искали
-прогоном на всех 1)».
+`Палиндром("шалаш") = true`.
 
 ## Next
 
-- [Why proofs, and how they work](proofs.html)
-- [Roadmap](roadmap.html) — what exists today and what does not
-- [Language specification](../spec.html) — in Russian
+- [Tutorial](tutorial.html) — from the first function to a claim proved by the kernel
+- [Operations](operations.html) — what does what: lists, strings, numbers
+- [Proofs: why and how](proofs.html) — the kernel's three answers and zero axioms
+
+### For those developing the language itself
+
+The reference implementation lives in the repository and runs from it. It is
+what emits into the other seven targets — into Rust, for example:
+
+```bash
+node flang/bin/flang.mjs emit hello.flang --target rust --out ./вывод-rust
+```
+
+Seven files, 126 815 bytes. It also builds this site and computes the number
+guards. Someone who merely writes in the language does not need it: everything
+above was done by the binary.

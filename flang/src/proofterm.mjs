@@ -109,8 +109,8 @@ import {
   сигнатураФунктора,
 } from "../proof/initial.mjs"
 import { ВЫЧИСЛЕНИЕМ, ПРЕДЕЛ_ВЕТВЛЕНИЯ, СПИСОК, нормализовать, образецВарианта, свести } from "../proof/reduce.mjs"
+import { какНаписан, одинаковы } from "./as-written.mjs"
 import { createRuntime, describeValue, evaluate } from "./interpret.mjs"
-import { какНаписан, одинаковы } from "./obligations.mjs"
 
 /** Версия формата термов и вердиктов: их читает ведомость, значит она названа. */
 export const ЯДРО = 2

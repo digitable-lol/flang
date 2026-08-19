@@ -103,7 +103,7 @@ including the `examples/library-api/` project (wired in through an adapter file)
 cannot immediately assign to a check is filed in the wrong place.
 
 Laying out **your own** project is a separate document:
-[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
+[Раскладка проекта](docs/guide/project-layout.ru.md).
 
 ---
 
@@ -313,7 +313,7 @@ and a declared `свойство` becomes a postcondition of the emitted code: a
 service and a C binary refuse the same input with the same words.
 
 The worked example, from source to emitted postcondition — [Why this
-exists](docs/rukovodstvo/single-source.md).
+exists](docs/guide/single-source.md).
 
 ---
 
@@ -376,9 +376,9 @@ comparing each pair as trees, up to a renaming of names. That test also pins the
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `dictionary`, `hashmap`, `higher-order`,
-`lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) is written the same
+`http`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`, `strings`, `strlists`, `tree`) is written the same
 way —
-13 modules, 208 functions, of which 204 are proven total. `higher-order` is the one built on
+14 modules, 259 functions, of which 255 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 
@@ -392,7 +392,7 @@ is in. A `тотальная` function has its termination proven, and only such
 into fact-checking, which is not allowed to hang.
 
 Which kinds of descent are accepted, what a declared measure is, and why this is not pedantry —
-[What `тотальная` buys you](docs/rukovodstvo/totality.md).
+[What `тотальная` buys you](docs/guide/totality.md).
 
 ---
 
@@ -406,7 +406,7 @@ its own reference.
 
 Readiness is not "it built" but the classical fixed point, and it **has converged**. How it
 works, what checks it and where the release comes from — [Two implementations, and the fixed
-point](docs/rukovodstvo/two-implementations.md).
+point](docs/guide/two-implementations.md).
 
 ---
 
@@ -433,7 +433,7 @@ domain is two FTS models, parsing and data handling are five flang modules, and 
 stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
 have an example, it moves into a model or a module, where the example is executable* — and the
 naming, layout, module-splitting and CI conventions derived from that project are collected in
-[Раскладка проекта](docs/rukovodstvo/project-layout.ru.md).
+[Раскладка проекта](docs/guide/project-layout.ru.md).
 
 ---
 
@@ -448,7 +448,7 @@ language reads its sources instead of compiling them. A fresh clone answers
 
 What to run when you change the compiler, how the bootstrap point is guarded, and the full list
 of commands the language answers to — [Developing the
-language](docs/rukovodstvo/developing.md).
+language](docs/guide/developing.md).
 
 **The language no longer reads `.fts` models.** It did until 16 August 2026 — through a bridge to
 the older project's TypeScript core; the project left the repository, and the bridge lost its
@@ -484,7 +484,7 @@ taken out — 357 files, 180 thousand lines — and lives at
 under the `fts-pered-udaleniem` tag.
 
 Further reading — in Russian (the language surface is Russian, and so is most of the prose):
-[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/rukovodstvo/project-layout.ru.md) ·
+[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/guide/project-layout.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md) ·
 [self-hosting contract](flang/self/SPEC.md) · [category contract](flang/cat/SPEC.md) ·
 [concurrency contract](flang/conc/SPEC.md).
@@ -498,7 +498,7 @@ in whichever language they are written, because GitHub shows them as a directory
 ## Known limits
 
 Stated plainly, because a project with unmarked boundaries cannot be relied on. The full list
-is [Known limits](docs/rukovodstvo/limits.md): what *proven* means against *checked*, what the
+is [Known limits](docs/guide/limits.md): what *proven* means against *checked*, what the
 language does not have, where the categorical surface stops, and what is done in concurrency.
 The same boundary is drawn in [`docs/overview.ru.md`](docs/overview.ru.md); the complete lists
 are in [`flang/SPEC.md`](flang/SPEC.md) §10 and in the "Долги" sections of the contracts.

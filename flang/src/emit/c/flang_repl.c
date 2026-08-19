@@ -242,8 +242,9 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Остальные семь целей печати, законы на сетке и суждения — в полном\n"
-    "инструментарии, а ему нужен Node: npm install -g @digitable-lol/fts\n"
+    "Здесь 6 команд, у полного инструментария их 11: сверх этих есть ast, facts,\n"
+    "io и lock, а с ними остальные семь целей печати, законы на сетке и суждения.\n"
+    "Ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
     "Подробности: man flang";
 
@@ -5801,6 +5802,36 @@ static int check_command(int argc, char **argv) {
 
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
+/*
+ * КОМАНДЫ, КОТОРЫЕ ЕСТЬ У ПОЛНОГО ИНСТРУМЕНТАРИЯ И КОТОРЫХ ЗДЕСЬ НЕТ.
+ *
+ * Названы поимённо, а не свалены в «неизвестная команда». Замер, с которого это
+ * заведено: у двоичного 6 команд, у эталона на Node — 11, и человек, пришедший
+ * по документации за `flang lock`, получал ответ, читающийся как опечатка. Он не
+ * узнавал ни того, что команда существует, ни того, где она живёт, — а
+ * документация её обещает.
+ *
+ * Отвечать на такое ошибкой ПРАВИЛЬНО (двоичный этого не умеет, и делать вид,
+ * что умеет, было бы хуже всего), но ошибка обязана назвать причину. Список
+ * стережётся с обеих сторон: `flang/test/self-bootstrap.test.mjs` требует, чтобы
+ * КАЖДАЯ команда эталона была у двоичного либо исполнена, либо названа здесь.
+ */
+static const char *human_elsewhere(const char *command) {
+  if (strcmp(command, "ast") == 0) {
+    return "печать разобранной программы";
+  }
+  if (strcmp(command, "facts") == 0) {
+    return "проверка суждений на фактах";
+  }
+  if (strcmp(command, "io") == 0) {
+    return "исполнение плана или службы";
+  }
+  if (strcmp(command, "lock") == 0) {
+    return "замок, в котором лежат сами зависимости";
+  }
+  return NULL;
+}
+
 static bool human_word(const char *word, const char *full, const char *short_form, const char *bare) {
   return strcmp(word, full) == 0 || (short_form != NULL && strcmp(word, short_form) == 0) ||
          (bare != NULL && strcmp(word, bare) == 0);
@@ -5914,7 +5945,16 @@ int fl_human_main(int argc, char **argv, const char *self) {
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {
-    fprintf(stderr, "flang: неизвестная команда «%s». «flang --help» — что умеет бинарник.\n", command);
+    const char *elsewhere = human_elsewhere(command);
+    if (elsewhere != NULL) {
+      fprintf(stderr,
+              "flang %s (%s) есть в полном инструментарии, а в этом двоичном — нет.\n"
+              "Что умеет двоичный, скажет «flang --help». Полный ставится с Node:\n"
+              "npm install -g @digitable-lol/fts\n",
+              command, elsewhere);
+    } else {
+      fprintf(stderr, "flang: неизвестная команда «%s». «flang --help» — что умеет бинарник.\n", command);
+    }
     code = 2;
   }
   fl_arena_release(&repl_arena);

@@ -835,6 +835,12 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
      не прогон, а работу, — и знает, что платит за наблюдение памятью на каждом
      пробеге. Умолчание наоборот сломало бы сверку молча. */
   double journal = 1.0;
+  /* Хозяин ввода-вывода (седьмое действие, `поручить`). По умолчанию ВЫКЛЮЧЕН, и
+     это не осторожность: прогон — эталон, с которым побайтово сверяется журнал
+     `flang/src/conc.mjs`, а хозяин, читающий настоящие файлы, сделал бы журнал
+     зависящим от содержимого диска. Просит его тот, кто зовёт программу
+     РАБОТАТЬ, а не проверяться, — и просит вслух, полем `"host": 1`. */
+  double host = 0.0;
 #endif
 
   fl_arena_reset(arena);
@@ -909,6 +915,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак журнала\"}\n", stdout);
         return;
       }
+    } else if (strcmp(key, "host") == 0) {
+      if (!read_number_text(&reader, &host)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак хозяина\"}\n", stdout);
+        return;
+      }
 #endif
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
@@ -949,8 +960,8 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
             stdout);
       return;
     }
-    if (fl_conc_run(&ctx, plan, run, seed, turn_limit, process_limit, worker_count, journal != 0.0, &outcome,
-                    &error) == FL_OK) {
+    if (fl_conc_run_host(&ctx, plan, run, seed, turn_limit, process_limit, worker_count, journal != 0.0,
+                         host != 0.0, &outcome, &error) == FL_OK) {
       write_run(run, &outcome);
       return;
     }

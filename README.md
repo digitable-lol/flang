@@ -121,7 +121,8 @@ Or straight from the release archive, with nothing but `cc` and `make`:
 ```bash
 tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 man page
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-sudo make install           # or PREFIX=$HOME/.local — you get the `flang` command
+sudo make install           # from 0.5.1; in the 0.5.0 archive there is no such
+                            # target — copy `flang_cli` to bin/flang by hand
 flang --help                # what it does: check, test, run, emit, repl
 flang check m.flang         # parse, types, totality — in words, not JSON
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out

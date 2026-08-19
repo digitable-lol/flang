@@ -122,7 +122,8 @@ brew install digitable-lol/tap/flang
 ```bash
 tar -xzf flang-*-c.tar.gz   # внутри — исходники на C99, Makefile и страница flang.1
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-sudo make install           # или PREFIX=$HOME/.local — на выходе команда `flang`
+sudo make install           # с 0.5.1; в архиве 0.5.0 такой цели нет — там
+                            # скопируйте `flang_cli` в bin/flang руками
 flang --help                # что умеет: check, test, run, emit, repl
 flang check м.flang         # разбор, типы, завершаемость — словами, не JSON
 flang                       # на терминале — оболочка; под конвейером — прогонщик

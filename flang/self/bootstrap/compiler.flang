@@ -3,6 +3,7 @@
   использует «Лексер flang» из "../lexer.flang"
   использует «Парсер flang» из "../parser.flang"
   использует «Печать в C» из "../emit-c.flang"
+  использует «Печать в Go» из "../emit-go.flang"
   использует «Проверка типов» из "../types.flang"
   использует «Тотальность flang» из "../totality.flang"
   использует «Вычислитель flang» из "../interpret.flang"

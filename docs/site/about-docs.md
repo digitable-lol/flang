@@ -4,10 +4,28 @@ The documentation version is the language version: **{{выпуск.версия
 now. There is deliberately no separate numbering for documents: two numbers
 drift apart, one does not.
 
-## The provenance line
+## The footer
 
-One line stands at the bottom of every page, and the build puts it there, not a
-human:
+Two lines stand at the bottom of every page, and the build puts them there, not
+a human.
+
+The first is about the project: who makes the language, under which licence,
+where the tree is, where a bug report goes.
+
+```
+The language is made by Digitable (Marat Zimnurov) · BSD 2-Clause, © 2026,
+the verbatim text is LICENSE at the root of the tree ·
+source — github.com/digitable-lol/flang · bug reports — issues in the same repository
+```
+
+Not one fact in it is typed. The copyright holder, the year and the licence name
+are read from `LICENSE`, both addresses from `package.json`; the licence name in
+the file is checked against the package's `license` field, and a disagreement
+fails the build. A typed year would go stale on 1 January and a typed address on
+the day the repository moves — both of them silently.
+
+The second is about the page itself: which version of the language it describes
+and which tree its numbers were taken on.
 
 ```
 flang documentation 0.5.0 · tree 83a0b5d of 2026-08-18 · built 2026-08-18
@@ -17,6 +35,14 @@ The commit and the date come from `git rev-parse --short HEAD` and
 `git log -1 --date=short` at build time; the version comes from `package.json`.
 In an export without `.git` (`git archive`) the line honestly says it could not
 name the tree, instead of naming a wrong one.
+
+## The mark in the header
+
+The mark is drawn by the build itself and inlined into every page: no image
+file, no request to anywhere else — the site has to open without a network
+whole, not almost whole. It has no colour of its own; it takes the colour of the
+word beside it and therefore flips with the dark theme on its own. Its measure is
+24 pixels: that is where it was checked, and it must not be set smaller.
 
 ## Dates in the prose
 

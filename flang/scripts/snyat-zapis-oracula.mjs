@@ -1,0 +1,128 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
+/**
+ * ЗАПИСЬ ОТВЕТОВ СВИДЕТЕЛЯ ЯРУСА ОРАКУЛОВ — снимается ДО удаления, не после.
+ *
+ * Владелец распорядился удалить вторую реализацию компилятора на JavaScript
+ * целиком. На ярусе законов это уже сделано, и там вместе со сверкой ушли 36
+ * порч: они сравнивали два оракула, и без второго сравнивать стало не с чем.
+ * Повторять эту потерю, уже зная о ней, нельзя — поэтому на ярусе оракулов
+ * порядок обратный: СНАЧАЛА запись, ПОТОМ удаление.
+ *
+ * Запись слабее свидетеля, и слабость названа прямо:
+ *
+ *   1. свидетель отвечает на ЛЮБУЮ программу, запись — только на те, что были в
+ *      корпусе в день съёмки;
+ *   2. свидетель растёт вместе с языком, запись — нет;
+ *   3. запись можно ПЕРЕСНЯТЬ, и тогда она согласится с чем угодно. Защита от
+ *      этого одна и нетехническая: пересъёмка обязана быть отдельным коммитом с
+ *      названной причиной, и отпечаток в записи делает её видимой.
+ *
+ * Чего запись всё-таки НЕ теряет: односторонняя правка стороны на flang после
+ * удаления свидетеля упрётся в замороженное число и покраснеет. Ровно этого не
+ * стало на ярусе законов.
+ *
+ * Запуск: node flang/scripts/snyat-zapis-oracula.mjs
+ */
+import { createHash } from "node:crypto"
+import { readFileSync, writeFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+
+import { checkFacts } from "../src/factcheck.mjs"
+import { checkFunctorSquares } from "../src/functor.mjs"
+import { parse } from "../src/parser.mjs"
+import { checkSetLaws } from "../src/sets.mjs"
+import { checkCategoryLaws } from "../src/setoid.mjs"
+import { globSync } from "../test/glob.mjs"
+
+const корень = fileURLToPath(new URL("../../", import.meta.url))
+
+export const файлыКорпуса = [
+  ...globSync("**/*.flang", { cwd: `${корень}flang`, exclude: (путь) => путь.includes("node_modules") }).map(
+    (путь) => `flang/${путь}`,
+  ),
+  ...globSync("**/*.flang", { cwd: `${корень}examples`, exclude: (путь) => путь.includes("node_modules") }).map(
+    (путь) => `examples/${путь}`,
+  ),
+].sort()
+
+/* Свидетели яруса, по одному имени на модуль. `sets.mjs` записан только
+   половиной `checkSetLaws`: вторая половина `checkSetShapes` берёт контекст у
+   типизатора, и снять её отдельно от него нельзя. `grid.mjs` не записан вовсе —
+   ему нужны обязательства, а их считает слой на flang, и запись тогда мерила бы
+   слой слоем. Обе границы названы, чтобы их не приняли за полноту. */
+export const СВИДЕТЕЛИ = {
+  setoid: (программа) => checkCategoryLaws(программа),
+  sets: (программа) => checkSetLaws(программа),
+  factcheck: (программа) => checkFacts(программа),
+  functor: (программа) => checkFunctorSquares(программа),
+}
+
+/** Устойчивый вид ответа: ключи по порядку, чтобы отпечаток не плясал. */
+export function канон(значение) {
+  if (Array.isArray(значение)) return значение.map(канон)
+  if (значение && typeof значение === "object") {
+    const итог = {}
+    for (const ключ of Object.keys(значение).sort()) итог[ключ] = канон(значение[ключ])
+    return итог
+  }
+  return значение
+}
+
+/**
+ * Пуст ли ответ: объект, у которого все поля — пустые списки либо `ok: true`.
+ * `checkFacts` на программе без утверждений отвечает `{ok: true, results: []}`,
+ * и это то же «сказать нечего», что пустой список у соседей.
+ */
+export function пусто(ответ) {
+  if (!ответ || typeof ответ !== "object" || Array.isArray(ответ)) return false
+  return Object.values(ответ).every(
+    (значение) => (Array.isArray(значение) && значение.length === 0) || значение === true,
+  )
+}
+
+export function снять(пути = файлыКорпуса) {
+  const непустые = {}
+  const поток = []
+  let программ = 0
+  for (const путь of пути) {
+    let программа
+    try {
+      программа = parse(readFileSync(`${корень}${путь}`, "utf8"), путь)
+    } catch {
+      continue /* неразбираемые программы корпуса — предмет других проверок */
+    }
+    программ += 1
+    const ответы = {}
+    for (const [имя, свидетель] of Object.entries(СВИДЕТЕЛИ)) {
+      let ответ
+      try {
+        ответ = канон(свидетель(программа))
+      } catch (ошибка) {
+        ответ = { отказ: ошибка?.message ?? String(ошибка) }
+      }
+      поток.push(`${путь} ${имя} ${JSON.stringify(ответ)}`)
+      /* Пустой ответ — подавляющее большинство. Хранить его пофайлово значило бы
+         сделать запись нечитаемой ради нуля сведений; отпечаток держит и его. */
+      if (!пусто(ответ)) ответы[имя] = ответ
+    }
+    if (Object.keys(ответы).length > 0) непустые[путь] = ответы
+  }
+  return {
+    программ,
+    свидетелей: Object.keys(СВИДЕТЕЛИ).length,
+    непустых: Object.keys(непустые).length,
+    отпечаток: createHash("sha256").update(поток.join("\n")).digest("hex"),
+    непустые,
+  }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const запись = снять()
+  const куда = fileURLToPath(new URL("../test/fixtures/zapis-oracula.json", import.meta.url))
+  writeFileSync(куда, `${JSON.stringify(запись, null, 2)}\n`)
+  process.stdout.write(
+    `снято: программ ${запись.программ}, свидетелей ${запись.свидетелей}, непустых ${запись.непустых}\n` +
+      `отпечаток ${запись.отпечаток}\n`,
+  )
+}

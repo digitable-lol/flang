@@ -1,0 +1,153 @@
+{
+  "программ": 284,
+  "свидетелей": 4,
+  "непустых": 7,
+  "отпечаток": "524a06c4783b8de72e5655771881db432b677fab7530d11dca1dd8530ce31cd6",
+  "непустые": {
+    "flang/examples/cat/euler-orders.flang": {
+      "sets": {
+        "assumed": [],
+        "checked": [
+          {
+            "embedding": "Срочные среди заказов",
+            "values": 2
+          },
+          {
+            "embedding": "Оплаченные среди заказов",
+            "values": 2
+          },
+          {
+            "intersection": "Срочные оплаченные",
+            "values": 4,
+            "witness": {
+              "номер": 2,
+              "срочность": 1
+            }
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/orders.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Заказы",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/payments.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Платежи",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/reconciliation.flang": {
+      "functor": {
+        "assumed": [
+          {
+            "functor": "Заказ в платёж",
+            "why": "сетка пуста или у стрелок квадрата нет «даёт»: считать не на чем"
+          },
+          {
+            "functor": "Заказ в отгрузку",
+            "why": "сетка пуста или у стрелок квадрата нет «даёт»: считать не на чем"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/shipping.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Отгрузки",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/natural-square.flang": {
+      "setoid": {
+        "assumed": [],
+        "checked": [
+          {
+            "arrows": [
+              "выставить"
+            ],
+            "category": "Схема",
+            "objects": 2,
+            "triples": 0,
+            "values": 2
+          },
+          {
+            "arrows": [
+              "наценка рублями",
+              "наценка копейками",
+              "заявку в копейки",
+              "счёт в копейки"
+            ],
+            "category": "Учёт",
+            "objects": 4,
+            "triples": 0,
+            "values": 6
+          },
+          {
+            "objects": 2,
+            "squares": 1,
+            "transformation": "в копейки",
+            "values": 2
+          }
+        ],
+        "diagnostics": []
+      },
+      "functor": {
+        "assumed": [
+          {
+            "functor": "В рублях",
+            "why": "ни у одного объекта нет «даёт»: переводить нечем, сравнивать нечего"
+          },
+          {
+            "functor": "В копейках",
+            "why": "ни у одного объекта нет «даёт»: переводить нечем, сравнивать нечего"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/order-shipment.flang": {
+      "setoid": {
+        "assumed": [],
+        "checked": [
+          {
+            "arrows": [
+              "отгрузить",
+              "выписать",
+              "по накладной",
+              "оформить"
+            ],
+            "category": "Отгрузки",
+            "objects": 3,
+            "triples": 7,
+            "values": 5
+          }
+        ],
+        "diagnostics": []
+      }
+    }
+  }
+}

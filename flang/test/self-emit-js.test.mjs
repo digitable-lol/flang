@@ -106,7 +106,7 @@ function настройки(опции = {}) {
 
 /** Печать на flang: список файлов в той же форме, что у свидетеля. */
 function напечатать(ast, опции = {}) {
-  const итог = вызвать("Печать программы", { "программа": значение(ast), "настройки": настройки(опции) })
+  const итог = вызвать("Печать программы JS", { "программа": значение(ast), "настройки": настройки(опции) })
   return { files: итог.файлы.map((файл) => ({ path: файл.путь, content: файл.содержимое })), error: итог.ошибка }
 }
 
@@ -763,16 +763,16 @@ test("самоприменение: эталон печатает свой ис�
     const экспорты = Object.keys(модуль)
     t.diagnostic(`напечатанный модуль загрузился: ${экспорты.length} экспортов`)
     assert.ok(экспорты.length > 400, `экспортов всего ${экспорты.length} — модуль обрезан?`)
-    assert.equal(typeof модуль.pechatProgrammy, "function", "точка входа не экспортирована")
+    assert.equal(typeof модуль.pechatProgrammyJS, "function", "точка входа не экспортирована")
 
     /* Три функции, у которых в исходнике есть примеры: ответ напечатанного кода
        обязан совпасть с тем, что обещает пример. Минус ноль здесь не случаен —
        это ровно то место, где печать литерала расходится первой. */
     assert.equal(модуль.chisloJS(-0), "-0", "напечатанный код потерял минус ноль")
     assert.equal(модуль.chisloJS(1), "1")
-    assert.equal(модуль.paskal("Пара чисел"), "ParaChisel")
-    assert.equal(модуль.verblyud("Пара чисел"), "paraChisel")
-    assert.equal(модуль.bezopasnoeImya("1a"), "_1a")
+    assert.equal(модуль.paskalJS("Пара чисел"), "ParaChisel")
+    assert.equal(модуль.verblyudJS("Пара чисел"), "paraChisel")
+    assert.equal(модуль.bezopasnoeImyaJS("1a"), "_1a")
   } finally {
     rmSync(каталог, { recursive: true, force: true })
   }

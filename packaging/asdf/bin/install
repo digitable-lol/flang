@@ -25,8 +25,17 @@ cp -R "${ASDF_DOWNLOAD_PATH}/." "$build"
 jobs="${ASDF_CONCURRENCY:-1}"
 make -C "$build" -j "$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
 
+# У программы одно имя — `flang`, и с 0.5.1 его даёт уже сама сборка: `make`
+# кладёт рядом `flang`, а не `flang_cli`. Прежнее имя принимается тоже, потому
+# что архив релиза несёт СВОЙ Makefile: плагин обязан ставить и архив, собранный
+# до переименования.
+# Имя переменной английское, а не русское: POSIX-shell берёт в имена только
+# латиницу и подчёркивание, и `собрано=…` он читает как команду. Поймано прогоном.
+built="${build}/flang"
+[ -x "$built" ] || built="${build}/flang_cli"
+
 mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
-install -m 0755 "${build}/flang_cli" "${ASDF_INSTALL_PATH}/bin/flang"
+install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
 if [ -f "${build}/libkompilyator_flang.a" ]; then
   install -m 0644 "${build}/libkompilyator_flang.a" "${ASDF_INSTALL_PATH}/lib/"
 fi
@@ -38,6 +47,21 @@ install -m 0644 "${build}"/*.h "${ASDF_INSTALL_PATH}/include/"
 probe='{"fn":"Число связанных функций","args":[{"l":[{"r":[["путь",{"s":"проба.flang"}],["текст",{"s":"модуль «Проба»\n\nтотальная функция «Два»\n  возвращает число\n  2\n"}]]}]},{"s":"проба.flang"}]}'
 answer="$(printf '%s\n' "$probe" | "${ASDF_INSTALL_PATH}/bin/flang")"
 case "$answer" in
-  *'"ok":true'*'"n":"1"'*) echo "flang ${ASDF_INSTALL_VERSION} установлен" ;;
+  *'"ok":true'*'"n":"1"'*) : ;;
   *) echo "собранный компилятор ответил не то: ${answer}" >&2; exit 1 ;;
 esac
+
+# И человеческий вход — отдельной пробой, потому что он отдельная дорога.
+# Проверяется ровно то, что человек наберёт первым: `flang --help` и
+# `flang --version`. До 0.5.1 первый отвечал «непонятный ключ» на стороне Node,
+# и разойтись эти две стороны могут снова.
+if ! "${ASDF_INSTALL_PATH}/bin/flang" --version | grep -q "flang ${ASDF_INSTALL_VERSION}"; then
+  echo "flang --version назвал не ту версию" >&2
+  exit 1
+fi
+if ! "${ASDF_INSTALL_PATH}/bin/flang" --help | grep -q "flang check"; then
+  echo "flang --help не напечатал справку" >&2
+  exit 1
+fi
+
+echo "flang ${ASDF_INSTALL_VERSION} установлен: flang --help, flang — оболочка"

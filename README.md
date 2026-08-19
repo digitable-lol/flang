@@ -121,9 +121,11 @@ Or straight from the release archive, with nothing but `cc` and `make`:
 ```bash
 tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 man page
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
-./flang_cli --help          # what it does: check, repl, --version
-./flang_cli check m.flang   # parse, types, totality — in words, not JSON
-./flang_cli                 # with no arguments: JSON in, JSON out, one request per line
+sudo make install           # from 0.5.1; in the 0.5.0 archive there is no such
+                            # target — copy `flang_cli` to bin/flang by hand
+flang --help                # what it does: check, test, run, emit, repl
+flang check m.flang         # parse, types, totality — in words, not JSON
+flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
@@ -167,8 +169,9 @@ same compiler printed to C99, 7 files and 5,823,370 bytes:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap            # only cc and make; about 4 minutes of CPU
-bootstrap/flang_cli --version
+make -C bootstrap -j4        # only cc and make
+sudo make -C bootstrap install
+flang --version
 ```
 
 What it is, what guards it and how it is updated: [`bootstrap/README.md`](bootstrap/README.md).

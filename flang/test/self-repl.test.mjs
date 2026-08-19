@@ -56,6 +56,9 @@ import { checkTypes } from "../src/types.mjs"
 const каталог = fileURLToPath(new URL("../", import.meta.url))
 const файл = fileURLToPath(new URL("../self/repl/repl.flang", import.meta.url))
 const исходник = readFileSync(файл, "utf8")
+/* Версия в шапке оболочки — эффект (чтение `package.json`), и эталон получает
+   её доводом. Здесь она читается оттуда же, откуда её читает свидетель. */
+const ВЕРСИЯ_ПАКЕТА = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version
 
 const свой = parse(исходник, "self/repl/repl.flang")
 const связано = await linkProgram(файл, исходник, parse)
@@ -550,7 +553,7 @@ test("справка и приветствие — тот же байт, что 
      печатает терминал при запуске, и через `Принять` оно не проходит вовсе.
      Без этой сверки два экрана текста лежали бы в слое непроверенными. */
   assert.equal(зов("Справка оболочки", {}), HELP)
-  assert.equal(зов("Приветствие оболочки", {}), GREETING)
+  assert.equal(зов("Приветствие оболочки", { "версия": ВЕРСИЯ_ПАКЕТА }), GREETING)
 })
 
 test("диагностика печатается кодом, местом и сообщением — тем же байтом", () => {

@@ -920,7 +920,28 @@ function renderSource(file, moduleName, shared, bodies) {
   return [head.join("\n"), ...bodies.filter((body) => body.length > 0)].join("\n\n") + "\n"
 }
 
+/**
+ * Makefile напечатанной программы.
+ *
+ * ИМЯ ВЫХОДА ЗАВИСИТ ОТ ТОГО, ЧЬЯ ЭТО ПРОГРАММА, и это не украшение. У обычной
+ * напечатанной программы выход — прогонщик, и зовут его `flang_cli`: JSON на
+ * входе, JSON на выходе. Но с `repl` печатается ЧЕЛОВЕЧЕСКИЙ ВХОД, а просит его
+ * ровно одна программа — сам компилятор flang; у неё выход зовут именем языка,
+ * `flang`, потому что именно это имя человек и наберёт.
+ *
+ * До этой правки имя было одно на всех — `flang_cli`, — и расходилось с тем,
+ * что кладут упаковщики: и формула Homebrew, и плагин asdf ставили тот же файл
+ * под именем `flang`. У одной программы было два имени, и учебник учил худшему:
+ * «зовите ./bootstrap/flang_cli» — то есть путь внутрь каталога сборки.
+ *
+ * Оттуда же и цель `install`: после `make` человек обязан получить КОМАНДУ, а
+ * не путь. Она печатается только вместе с человеческим входом — ставить в
+ * систему прогонщик чужой программы под именем `flang` было бы неправдой.
+ */
 function renderMakefile(file, cli, repl, concurrent = false) {
+  /* `repl` печатается только у самого компилятора (flang/src/emit/c/flang_repl.c,
+     просьба — `repl: true` у бэкенда), поэтому он же и различает две программы. */
+  const бинарник = repl ? "flang" : "flang_cli"
   return [
     "# Сгенерировано flang (бэкенд C). Флаги здесь — часть контракта бэкенда:",
     "# сгенерированный код обязан собираться без единого предупреждения.",
@@ -937,22 +958,49 @@ function renderMakefile(file, cli, repl, concurrent = false) {
     "",
     `OBJECTS = flang_runtime.o${concurrent ? " flang_conc.o" : ""} ${file}.o`,
     "",
-    `all: lib${file}.a${cli ? " flang_cli" : ""}`,
+    ...(repl
+      ? [
+          "# Куда ставит `make install`. Человек после сборки обязан получить КОМАНДУ",
+          "# `flang`, а не путь в каталог сборки: PREFIX=$HOME/.local, если без sudo.",
+          "PREFIX ?= /usr/local",
+          "",
+        ]
+      : []),
+    `all: lib${file}.a${cli ? ` ${бинарник}` : ""}`,
     "",
     `lib${file}.a: $(OBJECTS)`,
     "\tar rcs $@ $(OBJECTS)",
     ...(cli
       ? [
           "",
-          `flang_cli: flang_cli.o${repl ? " flang_repl.o" : ""} $(OBJECTS)`,
+          `${бинарник}: flang_cli.o${repl ? " flang_repl.o" : ""} $(OBJECTS)`,
           `\t$(CC) $(CFLAGS) -o $@ flang_cli.o${repl ? " flang_repl.o" : ""} $(OBJECTS) $(LDLIBS)`,
+        ]
+      : []),
+    ...(cli && repl
+      ? [
+          "",
+          "# Заголовки и библиотека ставятся рядом с бинарником не для порядка: без",
+          "# них оболочка не может собрать выражение системным `cc` и умеет только",
+          "# проверять. Страница руководства кладётся, если она рядом (в архиве",
+          "# релиза она есть, в дереве репозитория — нет).",
+          "install: all",
+          "\tinstall -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include",
+          `\tinstall -m 0755 ${бинарник} $(DESTDIR)$(PREFIX)/bin/${бинарник}`,
+          `\tinstall -m 0644 lib${file}.a $(DESTDIR)$(PREFIX)/lib/`,
+          "\tinstall -m 0644 *.h $(DESTDIR)$(PREFIX)/include/",
+          "\ttest ! -f flang.1 || { install -d $(DESTDIR)$(PREFIX)/share/man/man1 && install -m 0644 flang.1 $(DESTDIR)$(PREFIX)/share/man/man1/; }",
+          `\t@echo 'поставлено: $(DESTDIR)$(PREFIX)/bin/${бинарник} — проверьте: ${бинарник} --version'`,
+          "",
+          "uninstall:",
+          `\trm -f $(DESTDIR)$(PREFIX)/bin/${бинарник} $(DESTDIR)$(PREFIX)/lib/lib${file}.a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1`,
         ]
       : []),
     "",
     "clean:",
-    `\trm -f $(OBJECTS) flang_cli.o${repl ? " flang_repl.o" : ""} flang_cli lib${file}.a`,
+    `\trm -f $(OBJECTS) flang_cli.o${repl ? " flang_repl.o" : ""} ${бинарник} lib${file}.a`,
     "",
-    ".PHONY: all clean",
+    `.PHONY: all clean${cli && repl ? " install uninstall" : ""}`,
     "",
   ].join("\n")
 }

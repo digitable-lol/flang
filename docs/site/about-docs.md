@@ -56,12 +56,44 @@ THIS tree — the very one whose commit stands at the bottom of the page. Today
 that is {{корпус.функций}} functions in the corpus and {{утверждения.доказано}}
 claims proved by the kernel, and no page may name others.
 
+## Search
+
+Search runs entirely in the browser: the site sits on GitHub Pages, and there is
+no server behind it. The index is assembled by the build
+(`docs/site/poisk.mjs`) and placed beside the pages as a single file,
+`poisk-ukazatel.js`; the search over it is `poisk.js` — ours, without a single
+library, exactly like the markdown parser.
+
+The index does not hold the full text. The full text of every page is some 1.8
+million characters, close to three megabytes: an index that heavy would take
+longer to load than the page it was opened for takes to read. So a page's entry
+holds its title, its section, all of its subheadings, and the **first 700
+characters** of its text. The cut is justified by the shape of the tree, not
+only by weight: a knowledge-base note opens with its claim, and a site page
+opens with what it is about. The exact weight of the index is printed by the
+build, on its own line next to the page count.
+
+The index is fetched on the first touch of the search field, not with every
+page: a reader who came to read does not need it, and once fetched it stays in
+the browser cache.
+
+Two rules serve Russian, which is the main case here. "Ё" and "е" are one letter
+for search — the tree contains both «свёртка» and «свертка», and the language
+glossary holds them in neighbouring cells of one row. And words are compared by
+stem rather than whole, so «свёртка» finds «свёртке» and «тотальность» finds
+«тотальную».
+
+Without JavaScript there is no search field at all: it is marked `hidden` and
+opened by the script. The page then stays what it was — the side table of
+contents in place, everything readable. A field that takes letters and answers
+nothing is worse than no field.
+
 ## What guards it
 
 | Command | What it prevents |
 |---|---|
 | `npm run numbers:check` | leaving a number on the site that has drifted from the tree |
-| `npm run site:check` | a page without its English pair, a link to nowhere, a substitution with no value |
+| `npm run site:check` | a page without its English pair, a link to nowhere, a substitution with no value, a broken search |
 | `npm run links:check` | breaking a link to a file of the tree by renaming it |
 | `npm run glossary:check` | the glossary page and the surface table drifting apart |
 

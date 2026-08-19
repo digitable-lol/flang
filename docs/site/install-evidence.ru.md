@@ -72,7 +72,7 @@ bin/install  0.5.0  → «flang 0.5.0 установлен»
 Отказ на 0.5.1 выглядит так:
 
 ```
-cc … -o flang flang_cli.o flang_repl.o flang_runtime.o kompilyator_flang.o -lm -lpthread
+cc … -o flang flang_cli.o flang_repl.o flang_runtime.o compiler_flang.o -lm -lpthread
 install: No such file or directory
 ```
 
@@ -83,8 +83,8 @@ install: No such file or directory
 репозиторий плагина она не выложена, и человеку сегодня достаётся отказ.
 
 После установки 0.5.0 в каталоге версии четыре файла: `bin/flang`,
-`lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
-`include/kompilyator_flang.h`.
+`lib/libcompiler_flang.a`, `include/flang_runtime.h`,
+`include/compiler_flang.h`.
 
 **Из ветки плагин ставить отказывается намеренно.** С `ASDF_INSTALL_TYPE=ref`
 он выходит кодом 1 и объясняет: в репозитории компилятор лежит исходником на
@@ -120,8 +120,8 @@ GitHub кладёт ровно их: `Makefile`, `README.md`, четыре `.c`,
 с `-flto`.
 
 `make -C bootstrap install PREFIX=…` в пустой префикс положил четыре файла:
-`bin/flang`, `lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
-`include/kompilyator_flang.h`. Страницы руководства среди них нет: `flang.1`
+`bin/flang`, `lib/libcompiler_flang.a`, `include/flang_runtime.h`,
+`include/compiler_flang.h`. Страницы руководства среди них нет: `flang.1`
 лежит в `packaging/`, а не в `bootstrap/`, и в архив релиза его кладёт скрипт
 выпуска.
 

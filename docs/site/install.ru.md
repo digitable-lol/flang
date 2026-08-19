@@ -22,7 +22,7 @@
 brew install digitable-lol/tap/flang
 ```
 
-Ставит `flang 0.5.1`, `libkompilyator_flang.a`, заголовки и страницу
+Ставит `flang 0.5.1`, `libcompiler_flang.a`, заголовки и страницу
 `man flang`. Node не нужен: в архиве релиза лежит готовый C99.
 
 ## asdf
@@ -33,7 +33,7 @@ asdf install flang 0.5.1
 asdf set -u flang 0.5.1
 ```
 
-Ставит в каталог версии `bin/flang`, `lib/libkompilyator_flang.a` и два
+Ставит в каталог версии `bin/flang`, `lib/libcompiler_flang.a` и два
 заголовка. Третья строка — `asdf set`, а не `asdf global`: `global` и `local`
 удалены в asdf 0.16.0.
 
@@ -48,7 +48,7 @@ make -C bootstrap -j4
 sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```
 
-Ставит команду `flang`, `libkompilyator_flang.a` и два заголовка; снять —
+Ставит команду `flang`, `libcompiler_flang.a` и два заголовка; снять —
 `make -C bootstrap uninstall`. Версия будет та, что в клоне, а не последняя
 выпущенная. Страницы `man` на этом пути нет: `flang.1` приезжает только в
 архиве релиза.
@@ -58,7 +58,7 @@ sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```bash
 cd bootstrap
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
-   flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
+   flang_cli.c flang_repl.c flang_runtime.c compiler_flang.c -lm -lpthread
 ```
 
 ## Через npm

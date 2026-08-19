@@ -72,7 +72,7 @@ served", not on "a release exists".
 The refusal on 0.5.1 looks like this:
 
 ```
-cc … -o flang flang_cli.o flang_repl.o flang_runtime.o kompilyator_flang.o -lm -lpthread
+cc … -o flang flang_cli.o flang_repl.o flang_runtime.o compiler_flang.o -lm -lpthread
 install: No such file or directory
 ```
 
@@ -84,8 +84,8 @@ archive produces `flang`. The fix already exists in this tree —
 repository, so what reaches a person today is the refusal.
 
 After installing 0.5.0 the version directory holds four files: `bin/flang`,
-`lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
-`include/kompilyator_flang.h`.
+`lib/libcompiler_flang.a`, `include/flang_runtime.h`,
+`include/compiler_flang.h`.
 
 **Installing from a branch is refused on purpose.** With `ASDF_INSTALL_TYPE=ref`
 the script exits 1 and explains: in the repository the compiler is source
@@ -120,8 +120,8 @@ drifts with machine load, bytes do not: the two runs without `-flto` gave the
 same size to the byte, and only the `-flto` build differs from them.
 
 `make -C bootstrap install PREFIX=…` into an empty prefix laid down four files:
-`bin/flang`, `lib/libkompilyator_flang.a`, `include/flang_runtime.h`,
-`include/kompilyator_flang.h`. No man page among them: `flang.1` lives in
+`bin/flang`, `lib/libcompiler_flang.a`, `include/flang_runtime.h`,
+`include/compiler_flang.h`. No man page among them: `flang.1` lives in
 `packaging/`, not in `bootstrap/`, and the release script is what puts it into
 the archive.
 

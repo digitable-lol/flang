@@ -22,7 +22,7 @@ the fourth path.
 brew install digitable-lol/tap/flang
 ```
 
-Installs `flang 0.5.1`, `libkompilyator_flang.a`, the headers and the
+Installs `flang 0.5.1`, `libcompiler_flang.a`, the headers and the
 `man flang` page. Node is not needed: the release archive ships ready C99.
 
 ## asdf
@@ -33,7 +33,7 @@ asdf install flang 0.5.1
 asdf set -u flang 0.5.1
 ```
 
-Installs `bin/flang`, `lib/libkompilyator_flang.a` and two headers into the
+Installs `bin/flang`, `lib/libcompiler_flang.a` and two headers into the
 version directory. The third line is `asdf set`, not `asdf global`: `global`
 and `local` were removed in asdf 0.16.0.
 
@@ -48,7 +48,7 @@ make -C bootstrap -j4
 sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
-Installs the `flang` command, `libkompilyator_flang.a` and two headers; to
+Installs the `flang` command, `libcompiler_flang.a` and two headers; to
 remove it, `make -C bootstrap uninstall`. The version is whatever the clone
 holds, not the latest release. There is no `man` page on this path: `flang.1`
 ships only in the release archive.
@@ -58,7 +58,7 @@ If the machine has no `make`, one `cc` call is enough:
 ```bash
 cd bootstrap
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
-   flang_cli.c flang_repl.c flang_runtime.c kompilyator_flang.c -lm -lpthread
+   flang_cli.c flang_repl.c flang_runtime.c compiler_flang.c -lm -lpthread
 ```
 
 ## With npm

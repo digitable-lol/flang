@@ -151,6 +151,7 @@
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
+- [Хозяин эффектов на C стоил 1268 строк, а цикл поручений обязан жить снаружи языка](hozyain-effektov-na-c-stoil-1268-strok-a-cikl-ostalsya-snaruzhi.md)
 
 ## Устройство репозитория
 

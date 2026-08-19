@@ -150,6 +150,7 @@
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
 - [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)
+- [Замок снимает места, а генератор кода их печатает — отсюда расхождение в 337 байт](zamok-snimaet-mesta-a-generator-ih-pechataet.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)

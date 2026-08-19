@@ -30,8 +30,7 @@ import { fileURLToPath } from "node:url"
 
 import { checkFacts } from "../src/factcheck.mjs"
 import { parse } from "../src/parser.mjs"
-import { квадраты } from "../src/self.mjs"
-import { checkSetLaws } from "../src/sets.mjs"
+import { квадраты, множестваЗаконом } from "../src/self.mjs"
 import { checkCategoryLaws } from "../src/setoid.mjs"
 import { globSync } from "../test/glob.mjs"
 
@@ -53,7 +52,9 @@ export const файлыКорпуса = [
    слой слоем. Обе границы названы, чтобы их не приняли за полноту. */
 export const СВИДЕТЕЛИ = {
   setoid: (программа) => checkCategoryLaws(программа),
-  sets: (программа) => checkSetLaws(программа),
+  /* Свидетеля `src/sets.mjs` в дереве больше нет — стёрт; отвечает
+     `self/sets.flang` + `self/sets-oracle.flang` через `src/self.mjs`. */
+  sets: (программа) => множестваЗаконом(программа),
   factcheck: (программа) => checkFacts(программа),
   /* Свидетеля `src/functor.mjs` В ДЕРЕВЕ БОЛЬШЕ НЕТ — стёрт. Отвечает слой на
      flang (`self/functor.flang` + `self/functor-oracle.flang`) через

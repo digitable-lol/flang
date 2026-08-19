@@ -7145,6 +7145,10 @@ typedef struct {
 typedef struct {
   int number;
   int fd;
+  /* Соединение открыла ПРОГРАММА («Открыть соединение»), а не приняли мы. Читает
+     это поле только запись: закрывает соединение тот, кто его завёл, и потому
+     ответ в принятое кладёт трубку, а ответ в открытое — нет. */
+  bool outgoing;
 } io_link;
 
 typedef struct {
@@ -7356,6 +7360,49 @@ static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   return fd;
 }
 
+/*
+ * Пойти НАРУЖУ. Это вторая половина сети, и без неё на языке нельзя было
+ * написать клиента ни к одной службе с двоичным протоколом: `«Запросить»` умеет
+ * только HTTP, а `«Принять соединение»` ждёт, пока придут к нам.
+ *
+ * `getaddrinfo`, а не `inet_addr`: имя узла разрешать всё равно надо, а второй
+ * способ не умеет ни имён, ни IPv6. Первый годный адрес и берётся — перебирать
+ * все и выбирать «лучший» здесь некому и незачем.
+ */
+static int io_connect_to(io_host *host, const char *address, int port, char *why, size_t why_size) {
+  struct addrinfo hints;
+  struct addrinfo *found = NULL;
+  struct addrinfo *step = NULL;
+  char service[8];
+  int fd = -1;
+  int failed = 0;
+  (void)host;
+  snprintf(service, sizeof(service), "%d", port);
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  failed = getaddrinfo(address, service, &hints, &found);
+  if (failed != 0) {
+    snprintf(why, why_size, "адрес «%s» не разрешён: %s", address, gai_strerror(failed));
+    return -1;
+  }
+  for (step = found; step != NULL; step = step->ai_next) {
+    fd = socket(step->ai_family, step->ai_socktype, step->ai_protocol);
+    if (fd < 0) {
+      continue;
+    }
+    if (connect(fd, step->ai_addr, step->ai_addrlen) == 0) {
+      freeaddrinfo(found);
+      return fd;
+    }
+    close(fd);
+    fd = -1;
+  }
+  snprintf(why, why_size, "соединение с %s:%d не установлено: %s", address, port, strerror(errno));
+  freeaddrinfo(found);
+  return -1;
+}
+
 static int io_link_fd(io_host *host, int number) {
   size_t index = 0;
   for (index = 0; index < host->link_count; index += 1) {
@@ -7364,6 +7411,18 @@ static int io_link_fd(io_host *host, int number) {
     }
   }
   return -1;
+}
+
+/* Открыла ли соединение сама программа. Неизвестное соединение — «нет»: до
+   этого вопроса дело доходит только после того, как `io_link_fd` его нашёл. */
+static bool io_link_outgoing(io_host *host, int number) {
+  size_t index = 0;
+  for (index = 0; index < host->link_count; index += 1) {
+    if (host->links[index].number == number) {
+      return host->links[index].outgoing;
+    }
+  }
+  return false;
 }
 
 static void io_link_drop(io_host *host, int number) {
@@ -7859,7 +7918,47 @@ static fl_value io_perform(io_host *host, fl_value order) {
     return answer;
   }
 
-  if (io_order_is(order, "Принять связь")) {
+  if (io_order_is(order, "Открыть соединение")) {
+    double port = 0;
+    char why[256];
+    char *address = NULL;
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    address = io_order_text(order, "адрес");
+    if (address == NULL || address[0] == '\0') {
+      free(address);
+      return io_fail("FLANG_IO_NET", "поручению «Открыть соединение» нужен непустой адрес");
+    }
+    /* Ноль здесь НЕ годится, в отличие от приёма: «порт 0» на слушающем сокете
+       значит «дай любой свободный», а на исходящем не значит ничего. */
+    if (!io_order_number(order, "порт", &port) || port < 1 || port > 65535 || port != (double)(long)port) {
+      free(address);
+      return io_fail("FLANG_IO_NET", "порт не годится: нужно целое от 1 до 65535");
+    }
+    if (host->link_count == IO_MAX_LINKS) {
+      free(address);
+      return io_fail("FLANG_IO_NET", "у хозяина кончились места под соединения");
+    }
+    fd = io_connect_to(host, address, (int)port, why, sizeof(why));
+    free(address);
+    if (fd < 0) {
+      return io_fail("FLANG_IO_NET", why);
+    }
+    {
+      fl_value fields[1];
+      host->links[host->link_count].number = host->next_link;
+      host->links[host->link_count].fd = fd;
+      host->links[host->link_count].outgoing = true;
+      host->link_count += 1;
+      fields[0] = io_pair("соединение", io_number((double)host->next_link));
+      host->next_link += 1;
+      return io_variant("Соединение открыто", fields, 1);
+    }
+  }
+
+  if (io_order_is(order, "Принять соединение")) {
     double port = 0;
     char why[256];
     int fd = -1;
@@ -7874,31 +7973,32 @@ static fl_value io_perform(io_host *host, fl_value order) {
       return io_fail("FLANG_IO_NET", why);
     }
     if (host->link_count == IO_MAX_LINKS) {
-      return io_fail("FLANG_IO_NET", "у хозяина кончились места под связи");
+      return io_fail("FLANG_IO_NET", "у хозяина кончились места под соединения");
     }
     {
       const int accepted = accept(fd, NULL, NULL);
       fl_value fields[1];
       if (accepted < 0) {
-        return io_fail_errno("FLANG_IO_NET", "связь не принята");
+        return io_fail_errno("FLANG_IO_NET", "соединение не принято");
       }
       host->links[host->link_count].number = host->next_link;
       host->links[host->link_count].fd = accepted;
+      host->links[host->link_count].outgoing = false;
       host->link_count += 1;
-      fields[0] = io_pair("связь", io_number((double)host->next_link));
+      fields[0] = io_pair("соединение", io_number((double)host->next_link));
       host->next_link += 1;
-      return io_variant("Связь принята", fields, 1);
+      return io_variant("Соединение открыто", fields, 1);
     }
   }
 
-  if (io_order_is(order, "Прочитать из связи")) {
+  if (io_order_is(order, "Прочитать из соединения")) {
     double number = 0;
     int fd = -1;
     if (!host->net) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
     }
-    if (!io_order_number(order, "связь", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
-      return io_fail("FLANG_IO_READ", "связи у хозяина нет: она закрыта или не принималась");
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_READ", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
     }
     {
       char chunk[8192];
@@ -7912,20 +8012,26 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
-  if (io_order_is(order, "Ответить в связь")) {
+  if (io_order_is(order, "Ответить в соединение")) {
     double number = 0;
     int fd = -1;
     char *content = NULL;
     if (!host->net) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
     }
-    if (!io_order_number(order, "связь", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
-      return io_fail("FLANG_IO_WRITE", "связи у хозяина нет: она закрыта или не принималась");
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
     }
     content = io_order_text(order, "содержимое");
     {
       const char *text = content == NULL ? "" : content;
       const size_t bytes = strlen(text);
+      /* ЕДИНСТВЕННОЕ место, где принятое соединение отличается от открытого:
+         закрывает тот, кто завёл. Принятое хозяин закрывает ответом — обмен на
+         нём кончился; открытое оставляет программе — разговор продолжается.
+         Пустое содержимое закрывает и то и другое: это и есть «положить
+         трубку», и другого слова для этого в словаре нет. */
+      const bool closing = bytes == 0 || !io_link_outgoing(host, (int)number);
       fl_value fields[1];
       if (bytes > 0 && write(fd, text, bytes) < 0) {
         free(content);
@@ -7933,8 +8039,10 @@ static fl_value io_perform(io_host *host, fl_value order) {
         io_link_drop(host, (int)number);
         return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
       }
-      close(fd);
-      io_link_drop(host, (int)number);
+      if (closing) {
+        close(fd);
+        io_link_drop(host, (int)number);
+      }
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
       free(content);
       return io_variant("Записано", fields, 1);

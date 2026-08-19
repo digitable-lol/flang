@@ -236,6 +236,7 @@ static const char FLANG_HELP[] =
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
+    "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "\n"
     "  flang --help                       эта справка\n"
@@ -245,8 +246,8 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь 9 команд, у полного инструментария их 12: сверх этих есть lock и\n"
-    "package, а с ними остальные семь целей печати и законы на сетке.\n"
+    "Здесь 10 команд, у полного инструментария их 12: сверх этих есть package, а с\n"
+    "ним остальные семь целей печати и законы на сетке.\n"
     "Ему нужен Node: npm install -g @digitable-lol/fts\n"
     "\n"
     "Подробности: man flang";
@@ -378,6 +379,26 @@ static const char HELP_FACTS[] =
     "отказ до всякого вычисления. Упирание в предел шагов — тоже ответ, «не\n"
     "досчитали за отведённый бюджет», а не сбой инструмента.";
 
+static const char HELP_LOCK[] =
+    "flang lock <файл.flang> [--pretty]\n"
+    "\n"
+    "Печатает ЗАМОК программы — JSON, в котором лежат САМИ зависимости, а не ссылки\n"
+    "на них: у каждого импортированного модуля записан его исходник целиком, а\n"
+    "адресом ему служит sha256 по этому исходнику. Склада нет вовсе — скачивать\n"
+    "неоткуда, потому что всё уже в замке; сжатия в формате нет тоже.\n"
+    "\n"
+    "  flang lock программа.flang > flang.lock\n"
+    "\n"
+    "Если рядом с входным файлом лежит flang.lock, все команды берут импорты ИЗ НЕГО\n"
+    "и исходников зависимостей не читают вовсе — их может не быть на диске. Замок\n"
+    "самозаверен печатью: испорченный замок — отказ FLANG_LOCK, а не тихая сборка из\n"
+    "чего попало. Обновляется замок целиком: в нём лежит код, а не хеш.\n"
+    "\n"
+    "  --pretty   с отступами в два пробела\n"
+    "\n"
+    "Входного модуля в грузе нет: замок отвечает на вопрос «из чего собрана эта\n"
+    "программа», а сама программа лежит рядом с ним.";
+
 static const char HELP_REPL[] =
     "flang repl [<файл.flang>] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -417,6 +438,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
     printf("%s\n", HELP_IO);
+  } else if (strcmp(topic, "lock") == 0) {
+    printf("%s\n", HELP_LOCK);
   } else {
     printf("%s\n", FLANG_HELP);
   }
@@ -7717,6 +7740,572 @@ static int io_file(int argc, char **argv) {
   return code;
 }
 
+/* ══════════════ печать sha256: адрес модуля и печать замка ═══════════════ */
+
+/*
+ * SHA-256 переносимым C99 — единственная вычислительная зависимость замка
+ * схемы 2, и она в основании уже была нужна: печать замка считается ею и у
+ * свидетеля (`node:crypto` в `flang/src/lockfile.mjs`).
+ *
+ * До 19 августа 2026 сюда просился ещё и brotli качества 11: адресом модуля
+ * был base64 от сжатого разбора, и байт в байт нужен был ЭТАЛОННЫЙ кодировщик
+ * — десятки тысяч строк чужого алгоритма сжатия в том, чему надо доверять.
+ * Владелец вынес brotli из формата, груз стал исходником, адрес — sha256 по
+ * нему, и от той оценки осталось ровно то, что ниже.
+ *
+ * Считается на `unsigned long`, а не на `uint32_t`: <stdint.h> в C99
+ * обязателен, но точная ширина — нет, а `unsigned long` обещан не уже 32 бит.
+ * Отсюда маска `& 0xffffffffUL` после каждого сложения и сдвига влево: на
+ * машине с 64-битным `long` без неё перенос ушёл бы в старшие биты и печать
+ * разошлась бы со свидетелем молча.
+ */
+static const unsigned long SHA256_K[64] = {
+    0x428a2f98UL, 0x71374491UL, 0xb5c0fbcfUL, 0xe9b5dba5UL, 0x3956c25bUL, 0x59f111f1UL, 0x923f82a4UL, 0xab1c5ed5UL,
+    0xd807aa98UL, 0x12835b01UL, 0x243185beUL, 0x550c7dc3UL, 0x72be5d74UL, 0x80deb1feUL, 0x9bdc06a7UL, 0xc19bf174UL,
+    0xe49b69c1UL, 0xefbe4786UL, 0x0fc19dc6UL, 0x240ca1ccUL, 0x2de92c6fUL, 0x4a7484aaUL, 0x5cb0a9dcUL, 0x76f988daUL,
+    0x983e5152UL, 0xa831c66dUL, 0xb00327c8UL, 0xbf597fc7UL, 0xc6e00bf3UL, 0xd5a79147UL, 0x06ca6351UL, 0x14292967UL,
+    0x27b70a85UL, 0x2e1b2138UL, 0x4d2c6dfcUL, 0x53380d13UL, 0x650a7354UL, 0x766a0abbUL, 0x81c2c92eUL, 0x92722c85UL,
+    0xa2bfe8a1UL, 0xa81a664bUL, 0xc24b8b70UL, 0xc76c51a3UL, 0xd192e819UL, 0xd6990624UL, 0xf40e3585UL, 0x106aa070UL,
+    0x19a4c116UL, 0x1e376c08UL, 0x2748774cUL, 0x34b0bcb5UL, 0x391c0cb3UL, 0x4ed8aa4aUL, 0x5b9cca4fUL, 0x682e6ff3UL,
+    0x748f82eeUL, 0x78a5636fUL, 0x84c87814UL, 0x8cc70208UL, 0x90befffaUL, 0xa4506cebUL, 0xbef9a3f7UL, 0xc67178f2UL};
+
+typedef struct {
+  unsigned long state[8];
+  unsigned char block[64];
+  size_t filled;
+  unsigned long long total; /* байт всего: длина едет в хвост битами */
+} sha256_ctx;
+
+static unsigned long sha256_rotr(unsigned long value, unsigned by) {
+  return ((value >> by) | (value << (32u - by))) & 0xffffffffUL;
+}
+
+static void sha256_round(sha256_ctx *ctx) {
+  unsigned long w[64];
+  unsigned long a = ctx->state[0];
+  unsigned long b = ctx->state[1];
+  unsigned long c = ctx->state[2];
+  unsigned long d = ctx->state[3];
+  unsigned long e = ctx->state[4];
+  unsigned long f = ctx->state[5];
+  unsigned long g = ctx->state[6];
+  unsigned long h = ctx->state[7];
+  size_t i = 0;
+  for (i = 0; i < 16; i += 1) {
+    w[i] = ((unsigned long)ctx->block[i * 4] << 24) | ((unsigned long)ctx->block[i * 4 + 1] << 16) |
+           ((unsigned long)ctx->block[i * 4 + 2] << 8) | (unsigned long)ctx->block[i * 4 + 3];
+  }
+  for (i = 16; i < 64; i += 1) {
+    const unsigned long s0 = sha256_rotr(w[i - 15], 7) ^ sha256_rotr(w[i - 15], 18) ^ (w[i - 15] >> 3);
+    const unsigned long s1 = sha256_rotr(w[i - 2], 17) ^ sha256_rotr(w[i - 2], 19) ^ (w[i - 2] >> 10);
+    w[i] = (w[i - 16] + s0 + w[i - 7] + s1) & 0xffffffffUL;
+  }
+  for (i = 0; i < 64; i += 1) {
+    const unsigned long S1 = sha256_rotr(e, 6) ^ sha256_rotr(e, 11) ^ sha256_rotr(e, 25);
+    const unsigned long ch = (e & f) ^ ((e ^ 0xffffffffUL) & g);
+    const unsigned long t1 = (h + S1 + ch + SHA256_K[i] + w[i]) & 0xffffffffUL;
+    const unsigned long S0 = sha256_rotr(a, 2) ^ sha256_rotr(a, 13) ^ sha256_rotr(a, 22);
+    const unsigned long maj = (a & b) ^ (a & c) ^ (b & c);
+    const unsigned long t2 = (S0 + maj) & 0xffffffffUL;
+    h = g;
+    g = f;
+    f = e;
+    e = (d + t1) & 0xffffffffUL;
+    d = c;
+    c = b;
+    b = a;
+    a = (t1 + t2) & 0xffffffffUL;
+  }
+  ctx->state[0] = (ctx->state[0] + a) & 0xffffffffUL;
+  ctx->state[1] = (ctx->state[1] + b) & 0xffffffffUL;
+  ctx->state[2] = (ctx->state[2] + c) & 0xffffffffUL;
+  ctx->state[3] = (ctx->state[3] + d) & 0xffffffffUL;
+  ctx->state[4] = (ctx->state[4] + e) & 0xffffffffUL;
+  ctx->state[5] = (ctx->state[5] + f) & 0xffffffffUL;
+  ctx->state[6] = (ctx->state[6] + g) & 0xffffffffUL;
+  ctx->state[7] = (ctx->state[7] + h) & 0xffffffffUL;
+}
+
+static void sha256_init(sha256_ctx *ctx) {
+  ctx->state[0] = 0x6a09e667UL;
+  ctx->state[1] = 0xbb67ae85UL;
+  ctx->state[2] = 0x3c6ef372UL;
+  ctx->state[3] = 0xa54ff53aUL;
+  ctx->state[4] = 0x510e527fUL;
+  ctx->state[5] = 0x9b05688cUL;
+  ctx->state[6] = 0x1f83d9abUL;
+  ctx->state[7] = 0x5be0cd19UL;
+  ctx->filled = 0;
+  ctx->total = 0;
+}
+
+static void sha256_add(sha256_ctx *ctx, const char *data, size_t bytes) {
+  size_t at = 0;
+  ctx->total += (unsigned long long)bytes;
+  for (at = 0; at < bytes; at += 1) {
+    ctx->block[ctx->filled] = (unsigned char)data[at];
+    ctx->filled += 1;
+    if (ctx->filled == 64) {
+      sha256_round(ctx);
+      ctx->filled = 0;
+    }
+  }
+}
+
+/** Печать шестнадцатеричной строкой, строчными буквами — как `digest("hex")`. */
+static void sha256_hex(sha256_ctx *ctx, char *out) {
+  const unsigned long long bits = ctx->total * 8u;
+  size_t at = 0;
+  const char one = (char)0x80;
+  sha256_add(ctx, &one, 1);
+  while (ctx->filled != 56) {
+    const char zero = 0;
+    sha256_add(ctx, &zero, 1);
+  }
+  for (at = 0; at < 8; at += 1) {
+    ctx->block[56 + at] = (unsigned char)((bits >> (8 * (7 - at))) & 0xffu);
+  }
+  sha256_round(ctx);
+  ctx->filled = 0;
+  for (at = 0; at < 8; at += 1) {
+    sprintf(out + at * 8, "%08lx", ctx->state[at]);
+  }
+  out[64] = '\0';
+}
+
+/*
+ * ПЕЧАТЬ ТЕКСТА — sha256 с приставкой, в которую входит номер схемы.
+ *
+ * Приставка не украшение: она делает адреса двух схем заведомо разными на одном
+ * и том же тексте, поэтому груз, переложенный из замка прежней схемы, не может
+ * случайно пройти проверку новой. Пишется приставка ОТДЕЛЬНОЙ подачей, а не
+ * склейкой в буфер: исходник модуля бывает в сотню килобайт, и лишняя копия
+ * каждого была бы платой ни за что.
+ */
+#define LOCK_SCHEMA 2
+#define LOCK_FILENAME "flang.lock"
+
+static void lock_print(const char *text, size_t bytes, char *out) {
+  char prefix[32];
+  sha256_ctx ctx;
+  sprintf(prefix, "flang-lock-%d ", LOCK_SCHEMA);
+  sha256_init(&ctx);
+  sha256_add(&ctx, prefix, strlen(prefix));
+  sha256_add(&ctx, text, bytes);
+  sha256_hex(&ctx, out);
+}
+
+/* ═══════════════════ замок: `flang lock` и его груз ══════════════════════ */
+
+/*
+ * ЗАМОК, В КОТОРОМ ЛЕЖАТ САМИ ЗАВИСИМОСТИ, а не ссылки на них: схема 2,
+ * `flang/src/lockfile.mjs` — там же довод целиком.
+ *
+ * Груз — ИСХОДНИК модуля строкой JSON, адрес — sha256 по нему, сжатия в формате
+ * нет вовсе. Отсюда и цена этой команды у двоичного: sha256 (выше) плюс сборка
+ * записи. Экранирования строки JSON здесь своего НЕТ — его делает «Печать
+ * строки» из `flang/core/json.flang`, уже втащенная в замыкание.
+ */
+typedef struct {
+  char *name;   /* имя модуля — из его же заголовка, а не из ссылки на него */
+  char *path;   /* путь внутри замка: от каталога замка и всегда через `/` */
+  char *source; /* груз: весь текст файла, байт в байт */
+  size_t bytes;
+  size_t functions;
+  char address[65];
+} lock_module;
+
+typedef struct {
+  lock_module *items;
+  size_t count;
+  size_t capacity;
+} lock_modules;
+
+static void lock_modules_init(lock_modules *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static lock_module *lock_modules_push(lock_modules *list) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = repl_grow(list->items, list->capacity * sizeof(lock_module));
+  }
+  list->count += 1;
+  return &list->items[list->count - 1];
+}
+
+static void lock_modules_free(lock_modules *list) {
+  size_t at = 0;
+  for (at = 0; at < list->count; at += 1) {
+    free(list->items[at].name);
+    free(list->items[at].path);
+    free(list->items[at].source);
+  }
+  free(list->items);
+  lock_modules_init(list);
+}
+
+/** Путь внутри замка — от каталога замка и всегда через косую черту. */
+static char *lock_path(const char *root, const char *file) {
+  char *relative = repl_relative(root, file);
+  char *result = NULL;
+  if (relative[0] == '.' || relative[0] == '/') {
+    return relative;
+  }
+  result = repl_join("./", relative);
+  free(relative);
+  return result;
+}
+
+/*
+ * Строка JSON тем же экранированием, что у свидетеля, и своего кода здесь ноль.
+ *
+ * `JSON.stringify` для строки — это «Печать строки» из `flang/core/json.flang`
+ * вместе с «Экранировать» и таблицей всех 34 замен; обе уже в замыкании
+ * компилятора. Рядом в этом файле лежит `buf_json_text`, и для замка он НЕ
+ * ГОДИТСЯ: символы 0x08 и 0x0c уезжают у него шестью байтами вида «u0008», а
+ * `JSON.stringify` пишет их короткой формой в два байта. Разница на первом же
+ * исходнике с таким символом — и адрес модуля не сошёлся бы со свидетелем.
+ */
+static bool lock_json_text(const char *text, size_t bytes, repl_buf *out) {
+  fl_value arg = repl_value_text(text, bytes);
+  fl_value printed = fl_nothing();
+  const char *utf8 = NULL;
+  size_t got = 0;
+  if (repl_call("Печать строки", &arg, 1, &printed) != FL_OK || !val_text(printed, &utf8, &got)) {
+    return false;
+  }
+  buf_add(out, utf8, got);
+  return true;
+}
+
+/*
+ * Разбор одного файла ради трёх вещей: как модуль зовут, сколько в нём функций
+ * и куда он ссылается. Разбор здесь тот же, каким живут остальные команды
+ * («Разбор исходника»), и второго выбора функции разбора не заводится: он
+ * однажды разошёлся бы с первым.
+ *
+ * Импорты ставятся в очередь ПАРОЙ — путь и категория, — потому что имя модуля
+ * берётся из его собственного заголовка, а категория нужна запасным ответом на
+ * случай файла без заголовка.
+ */
+static bool lock_scan(const char *full, const char *text, size_t bytes, char **name, size_t *functions,
+                      repl_strings *seen, repl_strings *queue_paths, repl_strings *queue_names) {
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  const fl_value *legacy = NULL;
+  const fl_value *items = NULL;
+  const char *utf8 = NULL;
+  size_t got = 0;
+  size_t count = 0;
+  size_t index = 0;
+  char *directory = NULL;
+
+  args[0] = repl_value_text(text, bytes);
+  args[1] = repl_value_list(NULL, 0);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
+    return false;
+  }
+  /* Беды РАЗБОРА приезжают плоскими — «код», «сообщение», «строка», — а не
+     записью «место», как беды связывания. Разбирается это здесь тем же
+     способом, что и при загрузке файла в оболочку: у двух форм беды один
+     печатник, но разные читатели, и путать их значило бы терять место. */
+  if (val_field(parsed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST &&
+      diagnostics.as.list.count > 0) {
+    repl_bads bads;
+    bads_init(&bads);
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      fl_value bad = diagnostics.as.list.items[index];
+      fl_value code = fl_nothing();
+      fl_value message = fl_nothing();
+      fl_value line = fl_nothing();
+      if (!val_field(bad, "код", &code) || !val_field(bad, "сообщение", &message)) {
+        continue;
+      }
+      val_field(bad, "строка", &line);
+      bads_push(&bads, val_copy(code), val_copy(message), true,
+                line.tag == FL_NUMBER ? (size_t)line.as.number : 0, 0);
+    }
+    repl_print_bads(&bads, NULL, "файл", full, 0, 0);
+    bads_free(&bads);
+    return false;
+  }
+  if (!val_field(parsed, "программа", &program)) {
+    return false;
+  }
+
+  *name = zn_field_text(program, "module", &utf8, &got) ? repl_dup(utf8, got) : NULL;
+  zn_field_items(program, "functions", &items, &count);
+  *functions = count;
+
+  directory = repl_dirname(full);
+  zn_field_items(program, "legacy", &legacy, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *construct = NULL;
+    size_t construct_bytes = 0;
+    fl_value value = fl_nothing();
+    const fl_value *imports = NULL;
+    size_t imported = 0;
+    size_t inner = 0;
+    if (!zn_field_text(legacy[index], "construct", &construct, &construct_bytes)) {
+      continue;
+    }
+    if (construct_bytes != 12 || memcmp(construct, "moduleHeader", 12) != 0) {
+      continue;
+    }
+    if (!zn_field(legacy[index], "value", &value)) {
+      continue;
+    }
+    zn_field_items(value, "imports", &imports, &imported);
+    for (inner = 0; inner < imported; inner += 1) {
+      const char *from = NULL;
+      size_t from_bytes = 0;
+      const char *category = NULL;
+      size_t category_bytes = 0;
+      char *relative = NULL;
+      char *target = NULL;
+      if (!zn_field_text(imports[inner], "from", &from, &from_bytes)) {
+        continue;
+      }
+      relative = repl_dup(from, from_bytes);
+      target = repl_resolve(directory, relative);
+      free(relative);
+      if (strings_has(seen, target, strlen(target))) {
+        free(target);
+        continue;
+      }
+      strings_say(seen, target);
+      strings_say(queue_paths, target);
+      if (zn_field_text(imports[inner], "category", &category, &category_bytes)) {
+        strings_add(queue_names, category, category_bytes);
+      } else {
+        strings_say(queue_names, "");
+      }
+      free(target);
+    }
+  }
+  free(directory);
+  return true;
+}
+
+/*
+ * Обход замыкания «использует» с чтением файлов — то же, что делает
+ * `собратьЗамок` свидетеля, и в том же порядке: очередь в ширину от входа,
+ * дедупликация при постановке, а не при снятии.
+ *
+ * `with_entry` разводит замок и пакет одним доводом: у ЗАМКА входной модуль в
+ * груз не едет (замок отвечает «из чего собрана эта программа», а сама
+ * программа лежит рядом), у ПАКЕТА едет — он и есть то, что отдают.
+ */
+static bool lock_collect(const char *entry, const char *root, const char *entry_name, bool with_entry,
+                         lock_modules *out) {
+  repl_strings seen;
+  repl_strings queue_paths;
+  repl_strings queue_names;
+  size_t at = 0;
+  bool ok = true;
+  strings_init(&seen);
+  strings_init(&queue_paths);
+  strings_init(&queue_names);
+  strings_say(&seen, entry);
+  strings_say(&queue_paths, entry);
+  strings_say(&queue_names, entry_name == NULL ? "" : entry_name);
+
+  for (at = 0; at < queue_paths.count && ok; at += 1) {
+    const char *file = queue_paths.items[at];
+    char *name = NULL;
+    size_t functions = 0;
+    size_t bytes = 0;
+    char *text = repl_read_file(file, &bytes);
+    if (text == NULL) {
+      fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
+      ok = false;
+      break;
+    }
+    if (!lock_scan(file, text, bytes, &name, &functions, &seen, &queue_paths, &queue_names)) {
+      free(text);
+      free(name);
+      ok = false;
+      break;
+    }
+    if (at > 0 || with_entry) {
+      lock_module *record = lock_modules_push(out);
+      record->name = name != NULL ? name : repl_say(queue_names.items[at]);
+      record->path = lock_path(root, file);
+      record->source = text;
+      record->bytes = bytes;
+      record->functions = functions;
+      lock_print(text, bytes, record->address);
+    } else {
+      free(name);
+      free(text);
+    }
+  }
+
+  strings_free(&seen);
+  strings_free(&queue_paths);
+  strings_free(&queue_names);
+  return ok;
+}
+
+/*
+ * Порядок записей — ПО ПУТИ, а не по обходу: замок обязан быть одним и тем же
+ * файлом при одной и той же программе, иначе `git diff` шумит на пустом месте.
+ * Сравнение побайтовое — у свидетеля это сравнение строк JavaScript, и на
+ * путях из кодовых точек ниже 0x10000 оба порядка совпадают.
+ */
+static int lock_by_path(const void *left, const void *right) {
+  const lock_module *l = left;
+  const lock_module *r = right;
+  return strcmp(l->path, r->path);
+}
+
+/** Печать замка: sha256 канонического JSON от списка пар «путь, адрес». */
+static bool lock_seal(const lock_modules *modules, char *out) {
+  repl_buf buf;
+  size_t at = 0;
+  bool ok = true;
+  buf_init(&buf);
+  buf_char(&buf, '[');
+  for (at = 0; at < modules->count && ok; at += 1) {
+    if (at > 0) {
+      buf_char(&buf, ',');
+    }
+    buf_char(&buf, '[');
+    ok = lock_json_text(modules->items[at].path, strlen(modules->items[at].path), &buf);
+    buf_char(&buf, ',');
+    ok = ok && lock_json_text(modules->items[at].address, 64, &buf);
+    buf_char(&buf, ']');
+  }
+  buf_char(&buf, ']');
+  if (ok) {
+    lock_print(buf.data, buf.used, out);
+  }
+  buf_free(&buf);
+  return ok;
+}
+
+/** Одна запись груза: имя, путь, число функций, адрес и сам исходник. */
+static bool lock_write_module(const lock_module *module, repl_buf *out) {
+  bool ok = true;
+  buf_put(out, "{\"имя\":");
+  ok = lock_json_text(module->name, strlen(module->name), out);
+  buf_put(out, ",\"путь\":");
+  ok = ok && lock_json_text(module->path, strlen(module->path), out);
+  buf_put(out, ",\"функций\":");
+  buf_number(out, module->functions);
+  buf_put(out, ",\"адрес\":");
+  ok = ok && lock_json_text(module->address, 64, out);
+  buf_put(out, ",\"исходник\":");
+  ok = ok && lock_json_text(module->source, module->bytes, out);
+  buf_char(out, '}');
+  return ok;
+}
+
+/**
+ * `flang lock <файл> [--pretty]` — замок, в котором лежат сами зависимости.
+ *
+ * Печатается в stdout, как результат всякой другой команды: файл кладёт тот,
+ * кто вызвал, — `flang lock программа.flang > flang.lock`. Своей записи на диск
+ * команда не делает, и это тот же договор, что у свидетеля: у команд этого
+ * инструмента ровно один выход, и второй способ создать файл был бы вторым
+ * способом ошибиться.
+ *
+ * Входного модуля в грузе НЕТ: замок отвечает на вопрос «из чего собрана эта
+ * программа», а сама программа лежит рядом с ним.
+ */
+static int lock_file(int argc, char **argv) {
+  lock_modules modules;
+  repl_buf out;
+  char buffer[4096];
+  char seal[65];
+  const char *path = NULL;
+  char *base = NULL;
+  char *full = NULL;
+  char *root = NULL;
+  char *entry = NULL;
+  bool pretty = false;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--pretty") == 0) {
+      pretty = true;
+    } else if (strcmp(argv[index], "-") == 0) {
+      fputs("flang lock требует файл: со стандартного ввода импорты не разрешаются\n", stderr);
+      return 2;
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang lock: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (path == NULL) {
+    fputs("flang lock: не назван файл. Пример: flang lock программа.flang\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  free(base);
+  root = repl_dirname(full);
+
+  repl_cycle();
+  lock_modules_init(&modules);
+  buf_init(&out);
+  if (!lock_collect(full, root, NULL, false, &modules)) {
+    code = 1;
+  } else {
+    qsort(modules.items, modules.count, sizeof(lock_module), lock_by_path);
+    entry = lock_path(root, full);
+    if (!lock_seal(&modules, seal)) {
+      fputs("flang lock: печать замка не посчиталась\n", stderr);
+      code = 1;
+    } else {
+      bool ok = true;
+      size_t at = 0;
+      buf_put(&out, "{\"схема\":");
+      buf_number(&out, LOCK_SCHEMA);
+      buf_put(&out, ",\"вход\":");
+      ok = lock_json_text(entry, strlen(entry), &out);
+      buf_put(&out, ",\"модули\":[");
+      for (at = 0; at < modules.count && ok; at += 1) {
+        if (at > 0) {
+          buf_char(&out, ',');
+        }
+        ok = lock_write_module(&modules.items[at], &out);
+      }
+      buf_put(&out, "],\"печать\":");
+      ok = ok && lock_json_text(seal, 64, &out);
+      buf_char(&out, '}');
+      if (!ok) {
+        fputs("flang lock: замок не напечатался\n", stderr);
+        code = 1;
+      } else {
+        if (pretty) {
+          ast_pretty(out.data, out.used);
+        } else {
+          fwrite(out.data, 1, out.used, stdout);
+        }
+        fputc('\n', stdout);
+        fflush(stdout);
+      }
+    }
+  }
+
+  buf_free(&out);
+  lock_modules_free(&modules);
+  free(entry);
+  free(root);
+  free(full);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -7734,9 +8323,6 @@ static int io_file(int argc, char **argv) {
  * КАЖДАЯ команда свидетеля была у двоичного либо исполнена, либо названа здесь.
  */
 static const char *human_elsewhere(const char *command) {
-  if (strcmp(command, "lock") == 0) {
-    return "замок, в котором лежат сами зависимости";
-  }
   if (strcmp(command, "package") == 0) {
     return "пакет: груз замка плюс имя, версия и ведомость доказанного";
   }
@@ -7859,6 +8445,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = facts_file(argc, argv);
   } else if (strcmp(command, "io") == 0) {
     code = io_file(argc, argv);
+  } else if (strcmp(command, "lock") == 0) {
+    code = lock_file(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

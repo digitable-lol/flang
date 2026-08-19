@@ -83,6 +83,11 @@
 - [Межмодульная оптимизация ускорила не только работу, но и сборку большого файла](lto-speeds-up-the-build-too.md)
 - [Прогон примеров при каждой проверке стоит 3 мс обычному файлу и 35 секунд двум самым большим](examples-cost-lands-on-two-files.md)
 
+## Службы и долговечность
+
+- [Чистота обработчика превращает восстановление из журнала в одну свёртку](chistota-obrabotchika-delaet-vosstanovlenie-svyortkoy.md)
+- [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
+
 ## Процессы и конкурентность
 
 - [BEAM не обходит операционную систему, и C зависит от неё ровно так же](beam-does-not-bypass-the-os.md)
@@ -100,6 +105,8 @@
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
+- [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
+- [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
@@ -163,6 +170,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
 
 ## Отвергнутые пути
 

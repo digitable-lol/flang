@@ -141,8 +141,18 @@ execFileSync("make", ["-C", каталог], {
 })
 
 const собрано = readdirSync(каталог)
-if (!собрано.includes("flang_cli")) {
-  console.error("сборка прошла, но flang_cli не появился")
+/* ИМЯ ВЫХОДА — «flang», именем языка: у компилятора и у поставленного из brew
+   файла обязано быть одно имя (коммит b517cc8f). Прежнее имя принимается тоже, и это
+   не вежливость к старью: скрипт собирает Makefile ИЗ АРХИВА, а архив бывает
+   старый — так собирают предыдущие выпуски, когда надо переснять улику.
+
+   Проверка стояла на одном имени flang_cli и после переименования отказывала
+   ВСЕГДА: «сборка прошла, но flang_cli не появился». То есть выпустить релиз
+   было нельзя вовсе, и поймалось это только попыткой выпустить. Тот же приём,
+   что в плагине asdf (packaging/asdf/bin/install), и по той же причине. */
+const имяВыхода = собрано.includes("flang") ? "flang" : "flang_cli"
+if (!собрано.includes(имяВыхода)) {
+  console.error("сборка прошла, но бинарник не появился: нет ни «flang», ни «flang_cli»")
   process.exit(1)
 }
 
@@ -154,7 +164,7 @@ const запрос = JSON.stringify({
     { s: "проба.flang" },
   ],
 })
-const ответ = execFileSync(join(каталог, "flang_cli"), [], {
+const ответ = execFileSync(join(каталог, имяВыхода), [], {
   input: `${запрос}\n`,
   env: { PATH: "/usr/bin:/bin" },
 }).toString()
@@ -176,7 +186,7 @@ const тяжкийЗапрос = JSON.stringify({
     { s: "parser.flang" },
   ],
 })
-const тяжкийОтвет = execFileSync(join(каталог, "flang_cli"), [], {
+const тяжкийОтвет = execFileSync(join(каталог, имяВыхода), [], {
   input: `${тяжкийЗапрос}\n`,
   env: { PATH: "/usr/bin:/bin" },
   maxBuffer: 64 * 1024 * 1024,
@@ -196,7 +206,7 @@ console.log(`разобрал self/parser.flang: функций ${тяжкийИ
  * который требует непустого вывода, — нет.
  */
 const человек = (аргументы, вход = "") =>
-  spawnSync(join(каталог, "flang_cli"), аргументы, {
+  spawnSync(join(каталог, имяВыхода), аргументы, {
     input: вход,
     encoding: "utf8",
     env: { PATH: "/usr/bin:/bin", HOME: process.env.HOME ?? "/tmp" },
@@ -258,4 +268,4 @@ if (troff === undefined) {
   console.log(`страница руководства набирается ${troff}: ${набрано.split("\n").length} строк`)
 }
 
-console.log(existsSync(join(каталог, "flang_cli")) ? "релиз готов" : "релиз не готов")
+console.log(existsSync(join(каталог, имяВыхода)) ? "релиз готов" : "релиз не готов")

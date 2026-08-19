@@ -132,11 +132,12 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm run license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
 | `npm run links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
 | `npm run site` · `npm run site:check` | build the documentation site and check its links; **Pages runs the file directly** |
-| `npm run numbers:check` | the site pages' own numbers, against the measurer |
+| `npm run numbers` · `npm run numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `npm run glossary` · `npm run glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
 | `npm run surfaces:run` · `npm run surfaces:check` | measure the four writing surfaces, and check the page against the run |
 | `npm run changelog` · `npm run changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
 | `npm run changelog:page` · `npm run changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
+| `npm run releases:page` · `npm run releases:page:check` | print the releases page, both halves of it, and check it against the tags |
 | `npm run spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
 | `npm run comparison:check` | the guard that a comparison does not preprocess the reference the way it preprocesses the twin |
 | `npm run memory:check` | every peak-memory number stated in prose, remeasured by a run |

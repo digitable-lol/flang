@@ -1203,7 +1203,7 @@ async function разборщик() {
  * у которых замка нет. Ввоз стоит ПОСЛЕ чтения файла — не нашёлся, значит
  * `lockfile.mjs` не загружается вовсе.
  */
-async function замокРядом(file) {
+async function замокРядом(file, parse) {
   const корень = dirname(resolve(file))
   const путь = resolve(корень, "flang.lock")
   let текст
@@ -1214,7 +1214,7 @@ async function замокРядом(file) {
   }
   const { модулиЗамка } = await import(new URL("../src/lockfile.mjs", import.meta.url).href)
   try {
-    return { путь, модули: модулиЗамка(JSON.parse(текст), корень) }
+    return { путь, модули: модулиЗамка(JSON.parse(текст), корень, parse) }
   } catch (error) {
     throw fail("FLANG_LOCK", `замок ${путь} не принят: ${error instanceof Error ? error.message : String(error)}`)
   }
@@ -1238,11 +1238,11 @@ function изЗамка(parse, модули) {
  * без пакетов модуль не загружается вовсе — тот же приём и та же причина, что у
  * замка (ПОТОЛОК рабочего пути, `test/rabochiy-put.test.mjs`).
  */
-async function пакетыРядом(single, file, importsOf) {
+async function пакетыРядом(single, file, importsOf, parse) {
   if (!importsOf(single).some((з) => typeof з.from === "string" && з.from.endsWith(".flang-package"))) return null
   const { пакетамиПрограммы } = await import(new URL("../src/package.mjs", import.meta.url).href)
   try {
-    return await пакетамиПрограммы(single, file, { readFile: (путь) => readFile(путь, "utf8") })
+    return await пакетамиПрограммы(single, file, parse, { readFile: (путь) => readFile(путь, "utf8") })
   } catch (error) {
     throw fail("FLANG_PACKAGE", error instanceof Error ? error.message : String(error))
   }
@@ -1267,12 +1267,12 @@ async function parseFlang(source, file) {
        модуля лежит в нём самом. Подмена — две обёртки и ни строки в
        `link.mjs`: всякое новое поле там оплачивалось бы вторым связыванием на
        самом flang (`flang/self`) и побайтовой сверкой эталона. */
-    const замок = await замокРядом(file)
+    const замок = await замокРядом(file, parse)
     /* Пакеты — та же подмена и по той же причине. Складываются в одну карту:
        программа вправе тянуть и замок, и пакеты, а связывание про обоих не
        знает и знать не должно. Замок кладётся ПОВЕРХ пакетов — он собран по
        этой самой программе и потому точнее. */
-    const пакеты = await пакетыРядом(single, file, importsOf)
+    const пакеты = await пакетыРядом(single, file, importsOf, parse)
     const модули = пакеты === null && замок === null
       ? null
       : new Map([...(пакеты ?? new Map()), ...(замок?.модули ?? new Map())])

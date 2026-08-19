@@ -50,7 +50,7 @@ point, packaging, measurements, documentation and one full-size example project.
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap», no Node
-flang/src/        the flang implementation in JavaScript — the reference for the language
+flang/src/        the flang implementation in JavaScript — the witness for the language
 flang/self/       the same compiler, written in flang itself
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/stdlib/     the standard library; its index is printed from the modules themselves
@@ -172,7 +172,7 @@ bootstrap/flang_cli --version
 ```
 
 What it is, what guards it and how it is updated: [`bootstrap/README.md`](bootstrap/README.md).
-Node is still needed for the reference implementation and seven of the eight backends, but not to
+Node is still needed for the witness implementation and seven of the eight backends, but not to
 build the compiler; see [Developing the language](#developing-the-language).
 
 ---
@@ -402,11 +402,11 @@ Which kinds of descent are accepted, what a declared measure is, and why this is
 
 ## Two implementations, and the fixed point
 
-There are two implementations, and both are maintained on purpose. The **reference** one is
+There are two implementations, and both are maintained on purpose. The **witness** one is
 written in TypeScript and JavaScript and defines the behaviour of the language. The
 **self-hosted** one is written in flang itself: [`flang/core/`](flang/core) is the FTS core,
 [`flang/self/`](flang/self) is the compiler — five layers, each checked byte for byte against
-its own reference.
+its own witness.
 
 Readiness is not "it built" but the classical fixed point, and it **has converged**. How it
 works, what checks it and where the release comes from — [Two implementations, and the fixed
@@ -443,7 +443,7 @@ naming, layout, module-splitting and CI conventions derived from that project ar
 
 ## Developing the language
 
-The JavaScript reference implementation stays forever: the fixed point is checked against it,
+The JavaScript witness implementation stays forever: the fixed point is checked against it,
 and removing it would make that check impossible. Work happens in a clone, and **there is nothing
 to build**: the package declares zero dependencies (`npm ls --all` prints `(empty)`), and the
 language reads its sources instead of compiling them. A fresh clone answers

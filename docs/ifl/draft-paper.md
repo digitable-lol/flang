@@ -29,12 +29,12 @@ argued: the design is explained, and the reader is invited to agree. The other
 kind is exhibited: a command is given, a machine runs it, and the reader looks
 at what comes out. This report is about two claims of the second kind, made by
 flang — a small functional language whose keywords are Russian words, whose
-reference implementation is an interpreter in JavaScript, and which prints to
+witness implementation is an interpreter in JavaScript, and which prints to
 eight target languages: C, Go, Rust, Python, Java, C#, Elixir and JavaScript.
 
 The first claim is that self-application has reached a **byte-level fixed
 point**. Six layers of the compiler are written in flang itself; the JavaScript
-reference prints them to C, that C builds into a compiler `flang₁`, `flang₁`
+witness prints them to C, that C builds into a compiler `flang₁`, `flang₁`
 prints the same sources, `flang₂` built from that output prints them again, and
 all three printings are identical byte for byte.
 
@@ -190,14 +190,14 @@ each for a stated reason.
 The criterion is the classical bootstrap, and it is a byte comparison rather
 than an acceptance test:
 
-1. the JavaScript reference prints `self/*.flang` → C → builds → `flang₁`;
+1. the JavaScript witness prints `self/*.flang` → C → builds → `flang₁`;
 2. `flang₁` prints the same sources → C → builds → `flang₂`;
 3. the C printed by `flang₁` and the C printed by `flang₂` are identical byte
    for byte.
 
 The check in the repository is stronger than the criterion in one respect: it
-also compares `flang₁`'s C against the *reference's* C. Agreement with the
-reference says `flang₁` prints correctly; agreement of `flang₂` with `flang₁`
+also compares `flang₁`'s C against the *witness's* C. Agreement with the
+witness says `flang₁` prints correctly; agreement of `flang₂` with `flang₁`
 says the program built from that printing prints correctly too. They can
 diverge separately.
 
@@ -224,14 +224,14 @@ them either.
 
 ### 4.3 The run
 
-The reference prints the linked compiler into **seven files of C, 5,814,671
+The witness prints the linked compiler into **seven files of C, 5,814,671
 bytes** (5.55 MiB), which build under
 `cc -std=c99 -Wall -Wextra -Werror -pedantic`. The resulting `flang₁` is put to
 work as a real compiler on a corpus of **43 programs** — 10 modules of the
 standard library, 1 example, 26 LeetCode solutions, 4 modules of the FTS core
 and 2 of the compiler's own layers — and is required to
 
-* print the same C as the reference, byte for byte;
+* print the same C as the witness, byte for byte;
 * build the same linked AST, byte for byte after serialisation;
 * give the same diagnostics and the same verdict, on the 43 well-formed
   programs and on 7 deliberately broken ones that between them raise 6 distinct
@@ -244,12 +244,12 @@ built from that C, and prints them again.
 
 ```
 $ FTS_REQUIRE_TOOLCHAINS=c node --test flang/test/self-bootstrap.test.mjs
-✔ шаг 1: эталон печатает компилятор в C, и этот C собирается (12119 ms)
-✔ flang₁ печатает тот же C, что эталон, побайтово (17436 ms)
-✔ flang₁ строит тот же связанный AST, что эталон, побайтово (14737 ms)
-✔ flang₁ выносит те же вердикты и диагностики, что эталон (12545 ms)
+✔ шаг 1: свидетель печатает компилятор в C, и этот C собирается (12119 ms)
+✔ flang₁ печатает тот же C, что свидетель, побайтово (17436 ms)
+✔ flang₁ строит тот же связанный AST, что свидетель, побайтово (14737 ms)
+✔ flang₁ выносит те же вердикты и диагностики, что свидетель (12545 ms)
 ✔ шаги 2 и 3: flang₁ печатает сам себя, flang₂ печатает то же самое (125103 ms)
-ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у эталона, flang₁ и flang₂
+ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у свидетеля, flang₁ и flang₂
 ℹ tests 22   ℹ pass 22   ℹ fail 0   ℹ skipped 0   ℹ duration_ms 215795
 ```
 
@@ -290,12 +290,12 @@ percent.
 ## 5. What the byte comparison caught that the tests did not
 
 For a while the corpus comparison was silent about the only genuine divergence
-between the two compilers. The reference emits not the linked program but the
+between the two compilers. The witness emits not the linked program but the
 *marked* one: the front end inserts measure guards before any backend runs, and
 `flang emit --target c` prints that. Comparing `flang₁` against the printing of
-the *unmarked* program compared it against something the reference hands to
+the *unmarked* program compared it against something the witness hands to
 nobody — and hid the fact that the measure guard `FLANG_MEASURE` was present in
-the reference's C and absent from `flang₁`'s. The comparison found it as soon as
+the witness's C and absent from `flang₁`'s. The comparison found it as soon as
 it was made against the artefact that is actually shipped.
 
 We draw two lessons, and neither is about compilers in particular. First, a
@@ -315,7 +315,7 @@ was written; the commands are in `docs/ifl/numbers.md`.
 implementation.** It has no evaluator: five layers plus the C backend. Its REPL
 evaluates in the only honest way it can — by printing the session to C, building
 it with the system `cc`, and running that. Running a program non-interactively
-still needs the JavaScript toolchain, and the JavaScript reference must stay:
+still needs the JavaScript toolchain, and the JavaScript witness must stay:
 it is what the fixed point is measured against.
 
 **Declared measures are exercised by two programs.** `убывает` appears in
@@ -360,7 +360,7 @@ Elixir backend refuses to print a bounded mailbox at all.
 runtime. The scheduler is cooperative and single-threaded by design, and the
 repository's own measurement is the argument for that design: on three machines,
 handing a run to another thread cost 3.8×, 5.3× and 13.8× the run itself. A
-thread pool is not written; preemption by quantum exists in the reference and
+thread pool is not written; preemption by quantum exists in the witness and
 not in the printed C. Elixir gets real parallelism, but from the BEAM rather
 than from anything we implemented.
 

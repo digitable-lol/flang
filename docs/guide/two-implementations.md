@@ -2,7 +2,7 @@
 
 # Two implementations, and the fixed point
 
-Two implementations exist, and both are kept deliberately. The **reference** one is written in
+Two implementations exist, and both are kept deliberately. The **witness** one is written in
 TypeScript and JavaScript and defines the behaviour of the language. The **self-hosted** one is
 written in flang.
 
@@ -25,10 +25,10 @@ ones — code *and* message text.
 ### The compiler, written in flang, and the fixed point
 
 [`flang/self/`](../../flang/self) is the flang compiler written in flang. Five layers, each with its
-own JavaScript reference to be compared against — not "roughly the same", but to the last
+own JavaScript witness to be compared against — not "roughly the same", but to the last
 component of the result:
 
-| Layer                 | Functions | Reference          | What must match                                                     |
+| Layer                 | Functions | Witness            | What must match                                                     |
 |-----------------------|----------:|--------------------|---------------------------------------------------------------------|
 | `self/lexer.flang`    |        88 | `src/lexer.mjs`    | token stream: kind, value, quotedness, line and column               |
 | `self/parser.flang`   |       372 | `src/parser.mjs`   | the AST — **byte for byte** after serialization                      |
@@ -44,15 +44,15 @@ Readiness is not "it built". It is the classical fixed point:
 3. the C printed by flang₁ and the C printed by flang₂ are identical byte for byte
 ```
 
-**The fixed point has converged.** The reference, `flang₁` and `flang₂` print the compiler
+**The fixed point has converged.** The witness, `flang₁` and `flang₂` print the compiler
 identically — all seven printed C files — which means the compiler understands the language the way the
-reference does, and no test suite substitutes for that. The check is
+witness does, and no test suite substitutes for that. The check is
 `flang/test/self-bootstrap.test.mjs`, and it prints the result:
 
 ```
 ✔ шаги 2 и 3: flang₁ печатает сам себя, flang₂ печатает то же самое
-ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у эталона, flang₁ и flang₂
+ℹ неподвижная точка сошлась: 7 файлов совпали побайтово у свидетеля, flang₁ и flang₂
 ```
 
-This is where the release comes from: the C in the release archive is printed from these sources. The reference implementation is not deleted, and will not be — convergence is
+This is where the release comes from: the C in the release archive is printed from these sources. The witness implementation is not deleted, and will not be — convergence is
 measured against it, and deleting it would delete the check.

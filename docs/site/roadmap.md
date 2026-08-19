@@ -101,10 +101,17 @@ guide, the measurement reports and the specifications are still Russian only.
 This is the important part of the page. Below is what does not exist, in the
 order in which each item blocks the next.
 
-**There are no packages at all.** A library is included by relative path
-(`использует «Модуль» из "path"`). No versions, no lock file, no reproducible
-build. This blocks everything under it: a library without packages can neither
-be distributed nor updated.
+**There is no package manager.** Packages themselves exist: `flang package`
+puts a library and its whole closure into one file, imported with a single line
+(`использует «Скидка» из "discount.flang-package"`) — [how it is done](packages.html).
+Run: 8 modules and 53 functions travelled in 13,161 bytes against 99,508 bytes of
+sources, and on another machine two files rebuilt the same program with byte-for-byte
+the same C output.
+
+What is missing is everything ABOVE a package: a registry, search by name,
+version ranges (`^1.2`) and dependency resolution. Updating means taking the new
+file and replacing the old one. That no longer blocks distributing a library, as
+it used to — it makes it manual.
 
 **The standard library is small**: {{библиотека.файлов}} files,
 {{библиотека.строк|разрядами}} lines, {{библиотека.функций}} functions. No

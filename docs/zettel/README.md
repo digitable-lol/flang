@@ -110,6 +110,7 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
 - [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)

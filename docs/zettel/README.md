@@ -132,6 +132,7 @@
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Две реализации одного файла, выросшие порознь, бывают не соперниками, а половинами](two-rewrites-of-one-file-may-be-halves.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
+- [`git cherry` не видит содержимое, приехавшее в ветку слиянием, — «своего ноль» надо перепроверять сравнением деревьев](git-cherry-does-not-see-content-that-arrived-by-merge.md)
 - [Файл, взятый целиком из другой ветки, приносит с собой её долги](transplanted-file-brings-its-own-debt.md)
 - [Эталон отстаёт от свидетеля, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
 - [Сверка эталона не ловила забытую команду: на ключе свидетель отказывает раньше, чем доходит до команды](spravka-bliznetsa-otstayot-tam-gde-korpus-idyot-s-klyuchom.md)

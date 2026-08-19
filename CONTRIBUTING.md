@@ -20,7 +20,7 @@ dependency list:
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
 make -C bootstrap
-bootstrap/flang_cli --version          # flang 0.5.0
+bootstrap/flang_cli --version
 ```
 
 That binary is the five layers of [`flang/self/`](flang/self): lexer, parser,

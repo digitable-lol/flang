@@ -423,6 +423,9 @@
     "flang/examples/surfaces/factorial.eo.flang": [
       "elem"
     ],
+    "flang/examples/web/shortener/plan-network.flang": [
+      "хр"
+    ],
     "flang/examples/web/shortener/plan.flang": [
       "кд",
       "хр"
@@ -463,6 +466,10 @@
       "с",
       "ц"
     ],
+    "flang/self/commutative.flang": [
+      "а",
+      "б"
+    ],
     "flang/self/conc.flang": [
       "с"
     ],
@@ -470,6 +477,18 @@
       "акк",
       "п",
       "т"
+    ],
+    "flang/self/distributed.flang": [
+      "акк",
+      "к",
+      "с",
+      "я"
+    ],
+    "flang/self/distributive.flang": [
+      "а",
+      "б",
+      "в",
+      "по"
     ],
     "flang/self/emit-c.flang": [
       "акк",
@@ -583,6 +602,9 @@
       "н",
       "с"
     ],
+    "flang/self/idempotent.flang": [
+      "х"
+    ],
     "flang/self/interpret.flang": [
       "а",
       "акк",
@@ -651,6 +673,10 @@
       "б",
       "в"
     ],
+    "flang/self/monotone.flang": [
+      "а",
+      "б"
+    ],
     "flang/self/obligations.flang": [
       "а",
       "акк",
@@ -683,6 +709,13 @@
       "т3",
       "то",
       "у"
+    ],
+    "flang/self/partialorder.flang": [
+      "а",
+      "б",
+      "з",
+      "у",
+      "х"
     ],
     "flang/self/proof-initial.flang": [
       "акк",
@@ -720,6 +753,7 @@
       "с",
       "с то",
       "у",
+      "ф",
       "х",
       "ха",
       "хл",
@@ -796,6 +830,10 @@
     "flang/self/sets.flang": [
       "акк"
     ],
+    "flang/self/svoystva.flang": [
+      "а",
+      "б"
+    ],
     "flang/self/totality.flang": [
       "акк"
     ],
@@ -805,6 +843,7 @@
       "акк",
       "б1",
       "б2",
+      "л",
       "оп",
       "то ли"
     ],

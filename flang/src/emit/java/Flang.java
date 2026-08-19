@@ -543,7 +543,7 @@ public final class Flang {
    * «код символа»: кодовая точка первого символа строки.
    *
    * codePointAt(0) собирает суррогатную пару обратно в одну точку; charAt(0)
-   * отдал бы половину пары, и Java разошлась бы с эталоном на эмодзи.
+   * отдал бы половину пары, и Java разошлась бы со свидетелем на эмодзи.
    */
   public static Value bCharCode(Ctx ctx, Value source) {
     String value = expectString("код символа", source, "строка");
@@ -1012,7 +1012,7 @@ public final class Flang {
     if (value.tag != Value.TAG_NUMBER || !Double.isFinite(value.num)) {
       throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
     }
-    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    /* Целость проверяется ДО отрезка и на ней же кончается: у свидетеля тот же
        порядок, и второй отказ на одном значении был бы вторым текстом про одну
        беду. */
     if (spec.integral() && Math.floor(value.num) != value.num) {
@@ -1141,7 +1141,7 @@ public final class Flang {
       }
       default -> {
         /* TYPE_UNKNOWN: сверять нечем, и молчание здесь то же самое, каким
-           отвечает проверка значений эталона на джокер. */
+           отвечает проверка значений свидетеля на джокер. */
       }
     }
   }
@@ -1152,7 +1152,7 @@ public final class Flang {
    * <p>Молчит там, где сверять нечем: имени в таблице нет, число значений с
    * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
    * приехал видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у
-   * {@code checkValue} эталона.
+   * {@code checkValue} свидетеля.
    */
   public static void checkEntry(EntryTable table, String name, Value[] args) {
     int declared = 0;

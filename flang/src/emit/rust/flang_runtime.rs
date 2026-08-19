@@ -1704,7 +1704,7 @@ fn check_number_type(spec: &Type, value: &Value, label: &str) -> Result<(), Erro
         Value::Number(number) if number.is_finite() => *number,
         _ => return Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name))),
     };
-    /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+    /* Целость проверяется ДО отрезка и на ней же кончается: у свидетеля тот же
     порядок, и второй отказ на одном значении был бы вторым текстом про одну
     беду. */
     if spec.integral && found.floor() != found {
@@ -1847,7 +1847,7 @@ fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> 
 ///
 /// Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
 /// параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
-/// видом `Unknown`. Тексты отказов дословно те же, что у `checkValue` эталона:
+/// видом `Unknown`. Тексты отказов дословно те же, что у `checkValue` свидетеля:
 /// расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
 /// значение типу».
 pub fn check_entry(table: &EntryTable, name: &str, args: &[Value]) -> Result<(), Error> {

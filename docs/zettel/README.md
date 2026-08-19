@@ -55,6 +55,9 @@
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
+- [Правый край сравнения сам по себе не закрыл ничего: закрыла ЛЕВАЯ сторона, прочитанная как мера списка](right-edge-alone-closes-nothing.md)
+- [Узкое место переехало четвёртый раз: теперь мешает индукция, которую негде объявить](what-blocks-the-kernel-now-is-induction-without-a-theorem.md)
+- [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 
 ## Теория категорий
 

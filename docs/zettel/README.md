@@ -55,6 +55,7 @@
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
+- [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 
 ## Теория категорий
 

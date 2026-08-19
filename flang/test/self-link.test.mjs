@@ -672,7 +672,19 @@ test("восемь родов теорката и пять объявлений 
        этом же прогоне зелена на всех 283 программах — то есть числа поехали от
        прибавления программ, а не от расхождения сторон. Восемь родов теорката
        не сдвинулись ни на единицу, и это здесь видно. */
-    ["plans", 2], ["processes", 14], ["runs", 11], ["supervisors", 10], ["theorems", 47],
+    /* ЧЕТЫРЕ ЧИСЛА ПЕРЕСНЯТЫ 19 августа, и у каждого названо ИМЯ приехавшего
+       файла — разностью чисел такое не доказывается:
+
+         plans      2 → 4   + examples/wal/append-plan.flang (журнал упреждающей записи),
+                            + examples/web/shortener/plan-network.flang (план по сокету)
+         processes 14 → 15  + conc/sluzhby/chtenie.flang (служба чтения на flang)
+         runs      11 → 12  тот же chtenie.flang
+         theorems  47 → 51  теоремы приехали с теми же четырьмя файлами
+
+       Восемь родов теорката (categories, embeddings, intersections,
+       isomorphisms, monads, monoids, morphisms, supervisors) не сдвинулись ни
+       на единицу — ровно это раскладка и показывает. */
+    ["plans", 4], ["processes", 15], ["runs", 12], ["supervisors", 10], ["theorems", 51],
   ]
   assert.deepEqual([...счёт].sort((а, б) => а[0].localeCompare(б[0])), ждём, "раскладка объявлений по корпусу поехала")
 })

@@ -245,7 +245,7 @@ function корпус() {
     дать("check", "а.flang", ключ)
     for (const команда of ЧУЖИЕ_КОМАНДЫ) дать(команда, "а.flang", ключ)
   }
-  for (const команда of ["check", "run", "ast", "io", "repl", "facts"]) дать(команда, "а.flang", "--no-check")
+  for (const команда of ["check", "run", "ast", "io", "repl", "facts", "lock", "package"]) дать(команда, "а.flang", "--no-check")
   for (const команда of ЧУЖИЕ_КОМАНДЫ) дать(команда, "а.flang", "--размещение", "у.json")
 
   /* отказы, известные до чтения файла */

@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Печать стенда в C и сборка: замеряет и стенку компиляции тоже.
  * Числа времени — процессорное время каждой стадии, в миллисекундах.

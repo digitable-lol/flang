@@ -15,9 +15,9 @@ The first three paths give the same binary, and the bare `flang` command in it
 opens the shell — like `iex` for Elixir, like `python`. It has **six** commands:
 `check`, `run`, `test`, `emit --target c`, `repl` and the shell itself.
 
-**The fourth path gives eleven, and the difference is worth knowing up front.**
-On top of the six, the reference on Node has `ast`, `facts`, `io` and `lock`,
-and with them the other seven emit targets, the laws on a grid and the language
+**The fourth path gives twelve, and the difference is worth knowing up front.**
+On top of the six, the reference on Node has `ast`, `facts`, `io`, `lock` and
+`package`, and with them the other seven emit targets, the laws on a grid and the language
 server. The binary does not keep quiet about it: `flang lock` is rejected with
 exit code 2 and a line saying the command exists in the full toolchain — but the
 language documentation promises those commands, and if you need them, you need

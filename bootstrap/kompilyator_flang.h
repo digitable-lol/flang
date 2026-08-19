@@ -1250,7 +1250,7 @@ fl_status kompilyator_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_er
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status kompilyator_flang_variant_vid_neizvestnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
-fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value poddlinoy, fl_value nedlinnee, fl_value masshtab, fl_value nebolshe, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_variant_vid_otrezka(fl_ctx *ctx, fl_value niz, fl_value verh, fl_value poddlinoy, fl_value nedlinnee, fl_value masshtab, fl_value nebolshe, fl_value neminusnol, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_neotricatelnogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_vesa(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status kompilyator_flang_variant_vid_stroki(fl_ctx *ctx, fl_value dlinaniz, fl_value *out, fl_error *error);
@@ -18898,6 +18898,87 @@ fl_status kompilyator_flang_s_granicey_nomera(fl_ctx *ctx, fl_value tip, fl_valu
  * @return значение: «Тип»
  */
 fl_status kompilyator_flang_s_granicey_poryadka(fl_ctx *ctx, fl_value tip, fl_value drugoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Не минус ноль».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status kompilyator_flang_ne_minus_nol(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «С не минус нолём».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_s_ne_minus_nolyom(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Со знаком нуля как у».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param novyy — «новый»: «Тип»
+ * @param prezhniy — «прежний»: «Тип»
+ * @return значение: «Тип»
+ */
+fl_status kompilyator_flang_so_znakom_nulya_kak_u(fl_ctx *ctx, fl_value novyy, fl_value prezhniy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сузить по неравенству нулю».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_suzit_po_neravenstvu_nulyu(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сузить сторону нуля».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_suzit_storonu_nulya(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить дно из неравенства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_dno_iz_neravenstva(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить дно на тип».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_dno_na_tip(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поднять дно до единицы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_podnyat_dno_do_edinicy(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Наложить порядок».

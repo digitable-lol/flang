@@ -30,8 +30,7 @@ import { fileURLToPath } from "node:url"
 
 import { checkFacts } from "../src/factcheck.mjs"
 import { parse } from "../src/parser.mjs"
-import { квадраты, множестваЗаконом } from "../src/self.mjs"
-import { checkCategoryLaws } from "../src/setoid.mjs"
+import { категории, квадраты, множестваЗаконом } from "../src/self.mjs"
 import { globSync } from "../test/glob.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
@@ -51,7 +50,9 @@ export const файлыКорпуса = [
    ему нужны обязательства, а их считает слой на flang, и запись тогда мерила бы
    слой слоем. Обе границы названы, чтобы их не приняли за полноту. */
 export const СВИДЕТЕЛИ = {
-  setoid: (программа) => checkCategoryLaws(программа),
+  /* Свидетеля `src/setoid.mjs` в дереве больше нет — стёрт; отвечает
+     `self/setoid.flang` + `self/setoid-oracle.flang` через `src/self.mjs`. */
+  setoid: (программа) => категории(программа),
   /* Свидетеля `src/sets.mjs` в дереве больше нет — стёрт; отвечает
      `self/sets.flang` + `self/sets-oracle.flang` через `src/self.mjs`. */
   sets: (программа) => множестваЗаконом(программа),

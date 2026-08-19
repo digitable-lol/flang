@@ -34,6 +34,7 @@
 - [Бесконечность становится законной, если убрать вычитание](infinity-is-legal-without-subtraction.md)
 - [Числа описываются категорией, но категория не вычисляет](numbers-as-a-category.md)
 - [Счётчик типа `нат` внутри записи написать нельзя, и это меняет устройство программы](nat-counter-in-a-record-is-unwritable.md)
+- [`нат` в объявлении снимает отказ по целости, но почти не добавляет доказанных мест](nat-v-obyavlenii-snimaet-celost-no-ne-granicy.md)
 
 ## Доказательства
 
@@ -55,6 +56,9 @@
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
+- [Правый край сравнения сам по себе не закрыл ничего: закрыла ЛЕВАЯ сторона, прочитанная как мера списка](right-edge-alone-closes-nothing.md)
+- [Узкое место переехало четвёртый раз: теперь мешает индукция, которую негде объявить](what-blocks-the-kernel-now-is-induction-without-a-theorem.md)
+- [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 
 ## Теория категорий
@@ -107,6 +111,7 @@
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
+- [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держит brotli](pyat-komand-dvoichnogo-cena-kazhdoy.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
@@ -115,6 +120,7 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
 - [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
@@ -123,6 +129,7 @@
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
 - [Две реализации одного файла, выросшие порознь, бывают не соперниками, а половинами](two-rewrites-of-one-file-may-be-halves.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
+- [Файл, взятый целиком из другой ветки, приносит с собой её долги](transplanted-file-brings-its-own-debt.md)
 - [Эталон отстаёт от свидетеля, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
 - [Сверка эталона не ловила забытую команду: на ключе свидетель отказывает раньше, чем доходит до команды](spravka-bliznetsa-otstayot-tam-gde-korpus-idyot-s-klyuchom.md)
 - [Из двух половин доставки язык доказывает только «не больше одного»](at-most-once-is-the-only-provable-half.md)

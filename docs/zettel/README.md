@@ -90,6 +90,8 @@
 - [Снятая проверка типа даёт не отказ, а неверный ответ](a-dropped-type-check-gives-a-wrong-answer.md)
 - [Межмодульная оптимизация ускорила не только работу, но и сборку большого файла](lto-speeds-up-the-build-too.md)
 - [Прогон примеров при каждой проверке стоит 3 мс обычному файлу и 35 секунд двум самым большим](examples-cost-lands-on-two-files.md)
+- [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок](sha256-bez-bitovyh-operaciy-stoit-925-tysyach-shagov.md)
+- [Предел шагов интерпретатора решает, что вообще может быть примером](predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom.md)
 
 ## Службы и долговечность
 
@@ -115,6 +117,10 @@
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
+- [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)
+- [Переключение слоя не всегда опускает потолок: у `sets` он ВЫРОС, и это не провал](pereklyuchenie-sloya-ne-vsegda-opuskaet-potolok.md)
+- [Порча, попавшая в недостижимую ветвь, лечится КОРПУСОМ, а не другой порчей](porcha-v-nedostizhimuyu-vetv-lechitsya-korpusom.md)
+- [Признак, прочитанный печатью, ложен на каждом входе — и сверка этого не видит](priznak-uznayotsya-razborom-a-ne-pechatyu.md)
 - [Отказ прогона, отданный значением, — граница, а не одна функция: её ловят исключением 33 места](run-outcome-as-a-value-is-a-boundary-not-a-function.md)
 - [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держал brotli (поправлено дважды: не держит, и цена вышла в 7 раз выше пересчёта)](pyat-komand-dvoichnogo-cena-kazhdoy.md)
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](cena-komandy-schitaetsya-po-rabote-a-ne-po-snyatomu-prepyatstviyu.md)
@@ -182,6 +188,7 @@
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
 - [Постусловие «обращение не меняет длины строки» ложно, и ломает его одинокий суррогат](obrashchenie-stroki-lozhno-na-odinokom-surrogate.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
+- [Литерал `"\uD83D"` в любом `.flang` этого дерева ломает сверку самоприменения — и это не чинится](literal-s-odinokim-surrogatom-lomaet-samoprimenenie.md)
 - [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](celochislennoe-delenie-ne-daet-yadru-nat.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)

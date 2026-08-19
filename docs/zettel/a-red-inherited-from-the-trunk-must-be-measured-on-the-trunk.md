@@ -31,4 +31,5 @@ git worktree remove --force /куда/угодно
 дерева: тогда оба прогона идут по-разному не из-за кода. Здесь этого нет —
 набор читает только дерево и компилятор C.
 
-Связано: [[the-instrument-lied-not-the-subject]]
+Связано: [[the-instrument-lied-not-the-subject]],
+[[amend-cannot-catch-up-a-journal-that-records-hashes]]

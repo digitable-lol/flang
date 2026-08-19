@@ -45,16 +45,18 @@ price of the `тотальная` marker on real tasks is measurable, and it is 
 
 ## Case 2. The URL-shortener service
 
-`flang/examples/web/shortener/` — **1 614 lines of flang** across five files plus
-106 lines of a Node host that reads bytes off the connection and hands bytes
-back. Between input and output there is not one line that is not flang.
+`flang/examples/web/shortener/` — **2 162 lines**: 1 743 of flang across seven
+files plus 419 lines of three Node hosts that read bytes off the connection and
+hand bytes back. Between input and output there is not one line that is not flang.
 
 | File | Lines | What is in it |
 | --- | --- | --- |
 | `service.flang` | 594 | outcome, theorems, routing, HTTP parsing and printing |
+| `plan-durable.flang` | 381 | the same service on top of a write-ahead log |
 | `server.flang` | 229 | processes, supervision, three runs |
+| `plan-network.flang` | 198 | the same service through a real socket |
 | `store.flang` | 155 | codes, addresses, redirect counter |
-| `plan.flang` | 121 | the same handler through file I/O |
+| `plan.flang` | 133 | the same handler through file I/O |
 | `handler-without-budget.flang` | 53 | the exhibit: it does not compile, and that is the point |
 
 The ledger run:

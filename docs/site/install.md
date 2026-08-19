@@ -41,8 +41,13 @@ release archive.
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
 asdf install flang 0.5.0
-asdf global flang 0.5.0
+asdf set -u flang 0.5.0
 ```
+
+The third line is `asdf set`, not `asdf global`: `global` and `local` were
+**removed** in asdf 0.16.0, and on any current asdf that line is an error. `-u`
+writes the version into the home `.tool-versions` — exactly what `global` did.
+On asdf older than 0.16 the old word still works.
 
 You get four files — `bin/flang`, `lib/libkompilyator_flang.a`,
 `include/flang_runtime.h`, `include/kompilyator_flang.h` — and
@@ -117,8 +122,11 @@ emit targets (`csharp`, `elixir`, `go`, `java`, `js`, `python`, `rust`), law
 checking on a grid, violation search by running examples, and the language
 server — the binary has none of that.
 
-Install from the clone, not from the registry: `npm view @digitable-lol/fts
-version` answers `0.4.7`, so the registry lags behind release 0.5.0.
+Install from the clone, not from the registry. The package is named
+`@digitable-lol/flang` — the language's own name — and nothing has been
+published under it yet: the registry answers 404. What is published is the old
+name: `npm view @digitable-lol/fts version` answers `0.4.7`, which lags behind
+release 0.5.0.
 
 ## Next
 

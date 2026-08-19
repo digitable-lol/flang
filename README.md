@@ -149,11 +149,11 @@ non-interactively still needs the full toolchain below.
 the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
 self-hosted compiler — the one in the release — prints to **C and nothing else**.
 
-**Install from the clone, not from the registry.** What is published on npm today is
-`@digitable-lol/fts` 0.4.7, from 7 August — named after the older project that has since left this
-repository, and carrying five of that project's commands (`fts`, `fts-mcp`, `ftsc`, `ftspec`,
-`ftsvm`) into your `$PATH` alongside the two you came for. Until the package is republished under
-the language's own name, take the clone:
+**Install from the clone, not from the registry.** The package is now named
+`@digitable-lol/flang`, after the language, but nothing is published under it yet. On npm today
+there is still `@digitable-lol/fts` 0.4.7, from 7 August — the name of the older project, since
+moved out of this repository, and it drags five of that project's commands (`fts`, `fts-mcp`,
+`ftsc`, `ftspec`, `ftsvm`) into your `$PATH`. Until the new name reaches npm, take the clone:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang

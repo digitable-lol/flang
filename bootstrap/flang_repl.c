@@ -284,7 +284,7 @@ static const char FLANG_HELP[] =
     "\n"
     "Здесь все 10 команд полного инструментария. Чего у бинарника нет — остальные\n"
     "семь целей печати и законы на сетке: им нужен Node.\n"
-    "Полный инструментарий: npm install -g @digitable-lol/fts\n"
+    "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
 
@@ -9968,7 +9968,7 @@ int fl_human_main(int argc, char **argv, const char *self) {
       fprintf(stderr,
               "flang %s (%s) есть в полном инструментарии, а в этом двоичном — нет.\n"
               "Что умеет двоичный, скажет «flang --help». Полный ставится с Node:\n"
-              "npm install -g @digitable-lol/fts\n",
+              "npm install -g @digitable-lol/flang\n",
               command, elsewhere);
     } else {
       fprintf(stderr, "flang: неизвестная команда «%s». «flang --help» — что умеет бинарник.\n", command);

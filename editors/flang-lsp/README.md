@@ -54,7 +54,7 @@
 Сервер ставится вместе с пакетом и работает по stdio:
 
 ```bash
-npm i -g @digitable-lol/fts
+npm i -g @digitable-lol/flang
 flang-lsp --stdio
 ```
 

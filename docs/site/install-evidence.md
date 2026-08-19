@@ -113,7 +113,10 @@ execFileSync('./node_modules/.bin/flang', ['check', 'proba.flang'], { encoding: 
 install page:
 
 - `npm view @digitable-lol/fts version` answers **0.4.7**: the registry holds a
-  version that lags behind release 0.5.0;
+  version that lags behind release 0.5.0. That is the old name — on 19 August
+  2026 the package was renamed to `@digitable-lol/flang`, and for the new name
+  the registry answers **404**: nothing is published under it yet, so the
+  registry path is shut either way;
 - `npm install github:digitable-lol/flang` and
   `npm install git+https://github.com/digitable-lol/flang.git` fail in this
   environment with "Could not read from remote repository": npm reaches git over

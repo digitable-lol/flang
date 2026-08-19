@@ -110,7 +110,10 @@ execFileSync('./node_modules/.bin/flang', ['check', 'proba.flang'], { encoding: 
 их нет:
 
 - `npm view @digitable-lol/fts version` отвечает **0.4.7**: в реестре лежит
-  отставшая версия, релиз — 0.5.0;
+  отставшая версия, релиз — 0.5.0. Это старое имя: 19 августа 2026 пакет
+  переименован в `@digitable-lol/flang`, и на новое имя реестр отвечает
+  **404** — под ним ещё ничего не выложено, так что дорога через реестр
+  закрыта и так, и так;
 - `npm install github:digitable-lol/flang` и
   `npm install git+https://github.com/digitable-lol/flang.git` в этом окружении
   падают на «Could not read from remote repository»: npm ходит в git по ssh,

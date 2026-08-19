@@ -40,8 +40,13 @@ brew install digitable-lol/tap/flang
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
 asdf install flang 0.5.0
-asdf global flang 0.5.0
+asdf set -u flang 0.5.0
 ```
+
+Третья строка — `asdf set`, а не `asdf global`: команды `global` и `local`
+**удалены** версией asdf 0.16.0, и на любом сегодняшнем asdf эта строка даёт
+ошибку. Ключ `-u` пишет версию в домашний `.tool-versions`, то есть делает ровно
+то, что делала `global`. На asdf старее 0.16 работает прежнее слово.
 
 Появятся четыре файла — `bin/flang`, `lib/libkompilyator_flang.a`,
 `include/flang_runtime.h`, `include/kompilyator_flang.h`, — и `flang --version`
@@ -113,7 +118,9 @@ npm install ../flang
 сетке, поиск нарушений прогоном примеров и языковой сервер — в двоичном файле
 ничего этого нет.
 
-Ставьте из клона, а не из реестра: `npm view @digitable-lol/fts version`
+Ставьте из клона, а не из реестра. Пакет называется `@digitable-lol/flang` —
+собственным именем языка, — и под этим именем ещё ничего не выложено: реестр
+отвечает 404. Выложено старое имя: `npm view @digitable-lol/fts version`
 отвечает `0.4.7`, то есть реестр отстал от релиза 0.5.0.
 
 ## Что дальше

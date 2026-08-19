@@ -243,7 +243,7 @@ Node.js для установки не нужен. Такой способ ра�
 распространяется через npm и требует Node:
 
 ```bash
-npm install -g @digitable-lol/fts
+npm install -g @digitable-lol/flang
 ```
 
 Рантайм не содержит архитектурно-зависимых конструкций; выравнивание

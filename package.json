@@ -1,5 +1,5 @@
 {
-  "name": "@digitable-lol/fts",
+  "name": "@digitable-lol/flang",
   "version": "0.5.0",
   "description": "flang: проверяемый язык с тотальными и обычными функциями, ядром доказательств на нуле аксиом и печатью в C, Go, Rust, Python, Java, C#, Elixir и JavaScript.",
   "type": "module",

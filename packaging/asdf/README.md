@@ -5,9 +5,14 @@
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
 asdf install flang latest
-asdf global flang latest
+asdf set -u flang latest
 flang --help
 ```
+
+Третья строка — `asdf set`, а не `asdf global`: команды `global` и `local` в asdf
+**удалены** версией 0.16.0, и человек на любом сегодняшнем asdf получал на ней
+ошибку. Ключ `-u` пишет версию в домашний `.tool-versions`, то есть делает ровно
+то, что делала `global`. На asdf старее 0.16 работает прежнее слово.
 
 [mise](https://mise.jdx.dev) понимает те же плагины:
 
@@ -48,7 +53,7 @@ mise use -g flang@latest
 Остальные семь целей печати живут в полном инструментарии, а ему нужен Node:
 
 ```bash
-npm install -g @digitable-lol/fts
+npm install -g @digitable-lol/flang
 ```
 
 ## Из ветки поставить нельзя

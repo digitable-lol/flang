@@ -36,11 +36,9 @@ import { readFileSync, realpathSync } from "node:fs"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { checkFacts } from "../src/factcheck.mjs"
 import { flangError } from "../src/builtins.mjs"
 import { checkFunctorDictionary, errorCode, evaluateFlang, runExamples } from "../src/compat.mjs"
 import { runConcurrent, возможностиЦели } from "../src/conc.mjs"
-import { dropUnreachable } from "../src/reachable.mjs"
 /* Граница входа. Импорт статический, а не «если модуль есть» (как в
    `externalChecks`): проверка, которая молча отключается, когда её не нашли, —
    это проверка, которая не умеет краснеть. */
@@ -447,6 +445,20 @@ async function commandFacts(options) {
   const program = await loadProgram(options.file)
   const facts = options.factsFile === undefined ? {} : JSON.parse(await readInput(options.factsFile))
   const limits = options.steps === undefined ? undefined : { steps: options.steps }
+  /* ВВОЗ ОТЛОЖЕН, и это не стиль, а изъятие из рабочего пути `flang check`.
+     Свидетель факт-чекинга — 448 строк — грузился в КАЖДУЮ команду одной
+     статической строкой наверху файла, хотя зовёт его ровно одна команда, и это
+     `facts`. Ввоз здесь оставляет его вне переписи всех остальных команд, и
+     сторож (`test/rabochiy-put.test.mjs`) считает это числом, а не на слово.
+
+     Названо и то, чего этот перенос НЕ сделал: решение о фактах по-прежнему
+     принимает JavaScript. Эталон `flang/self/factcheck.flang` сверен побайтово
+     (`test/self-factcheck.test.mjs`), но зовётся он с ТАБЛИЦЕЙ ответов
+     вычислителя, а какие вызовы в неё положить, знает разбор утверждения — то
+     самое, что эталон и решает. Собрать таблицу здесь значило бы завести второй
+     разбор утверждений на JavaScript рядом с тем, что уже сверен. Переключение
+     ждёт точки входа «какие вызовы нужны» на стороне flang. */
+  const { checkFacts } = await import(new URL("../src/factcheck.mjs", import.meta.url).href)
   const verdict = checkFacts(program, { facts, claims: options.claims, limits })
   /* Опровергнутое утверждение — это результат работы, а не сбой инструмента:
      JSON уходит в stdout. Ненулевой код нужен, чтобы CI мог на нём падать. */
@@ -851,7 +863,29 @@ async function commandEmit(options) {
      Проход стоит здесь, а не в бэкенде, по той же причине, по какой здесь стоит
      отметка меры: бэкенду отличить своё от привезённого нечем — связывание
      кладёт все модули в один плоский список, — а какой файл был входом, знает
-     загрузчик. Одно место на все восемь целей (`src/reachable.mjs`). */
+     загрузчик. Одно место на все восемь целей (`src/reachable.mjs`).
+
+     ВВОЗ ОТЛОЖЕН, и здесь это отдельное утверждение, а не стиль. Два документа
+     дерева говорили про этот модуль разное: `docs/javascript-removal.md`
+     называл его остающимся НАВСЕГДА по цене, а сторож рабочего пути считал его
+     долгом. Оба правы, и мерят они разное.
+
+     ЦЕНА НАСТОЯЩАЯ, перемерена прогоном 19 августа, а не взята из документа:
+     `dropUnreachable` против «Отбросить недостижимое» из `self/link.flang`,
+     ответы совпали на всех трёх программах побайтово —
+
+       examples/import-check.flang    29 функций    свидетель   1 мс, слой   160 мс  ×203
+       self/emit-c.flang             547 функций    свидетель  19 мс, слой  2262 мс  ×116
+       self/bootstrap/compiler.flang 3880 функций   свидетель 164 мс, слой 31494 мс  ×192
+
+     плюс 981 мс на сборку слоя. Переключать РЕШЕНИЕ на слой по-прежнему нельзя.
+
+     А вот ЗАГРУЗКА к решению отношения не имела: `flang check` отбрасывания не
+     зовёт вовсе — оно нужно одной команде `emit`, — но модуль ехал в каждую
+     команду статической строкой наверху файла. Ввоз здесь оставляет 248 строк
+     свидетеля вне переписи `flang check`, не тронув ни цены, ни ответа: печать
+     считает тем же свидетелем, что и считала. */
+  const { dropUnreachable } = await import(new URL("../src/reachable.mjs", import.meta.url).href)
   const кПечати = dropUnreachable(program, ownFunctionNames(program))
   const отброшено = (program.functions?.length ?? 0) - (кПечати.functions?.length ?? 0)
   const files = emittedFiles(backend.emit(кПечати, emitOptions(options)), options.target)
@@ -1537,10 +1571,11 @@ export async function externalChecks(program, настройки = {}) {
   let считатьКвадраты = null
   let считатьКатегории = null
   let считатьМножества = null
+  let считатьСетку = null
   try {
     ;({ обязательства: считатьОбязательства, свойства: считатьСвойства, моноиды: считатьМоноиды,
         изоморфизмы: считатьИзоморфизмы, квадраты: считатьКвадраты,
-        категории: считатьКатегории,
+        категории: считатьКатегории, сеткаНарушений: считатьСетку,
         множестваЗаконом: считатьМножества } = await import(new URL("../src/self.mjs", import.meta.url).href))
   } catch {
     /* слоя ещё нет — check работает в объёме, который доступен сегодня */
@@ -1729,12 +1764,18 @@ export async function externalChecks(program, настройки = {}) {
        автора постусловие — это красный `flang test`, а место у примеров одно.
        Работа поиска в другом: без него ведомость печатала «нарушений не
        найдено», не посмотрев ни на один пример. */
-    try {
-      const { checkGrid } = await import(new URL("../src/grid.mjs", import.meta.url).href)
-      results.grid = checkGrid(program, итог.obligations)
-    } catch {
-      /* модуля ещё нет — ведомость тогда скажет «не искали», а не «не найдено» */
-    }
+    /* СЕТКУ СЧИТАЕТ СЛОЙ НА САМОМ FLANG (`flang/self/grid.flang`), а не свидетель
+       `src/grid.mjs`. Свидетель сверен с эталоном ПОБАЙТОВО на всём корпусе
+       дерева — ответ до знака, до ключа и до порядка ключей, плюс 196 теней
+       отдельно и без оракула (`flang/test/self-grid.test.mjs`), — и всё равно
+       решение принимал он. Цена переключения названа числами в шапке
+       `сеткаНарушений`; худший случай ×1,4 на самоприменённом компиляторе.
+
+       ЗАПАСНОГО ПУТИ К СВИДЕТЕЛЮ ЗДЕСЬ НЕТ, и это то же правило, по которому
+       его нет у обязательств: `try` накрывает только отсутствие слоя в поставке
+       («ведомость тогда скажет „не искали“, а не „не найдено“»), а сорвись сам
+       слой — сорвётся команда. Тихий запасной путь считал бы свидетелем молча. */
+    if (считатьСетку !== null) results.grid = await считатьСетку(program, итог.obligations)
     try {
       /* КЕШ ВЕРДИКТОВ ЯДРА — ЗА ЯВНЫМ СОГЛАСИЕМ, и это следствие замера, а не
          осторожность: ядро на 48 файлах корпуса занимает 98 мс, а `flang check

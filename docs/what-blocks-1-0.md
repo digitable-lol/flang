@@ -205,12 +205,12 @@ JavaScript, фраза «компилятор написан на самом я�
 |---|---:|---|
 | `flang/src/builtins.mjs` | 956 | представление значений и встроенные формы |
 | `flang/src/compat.mjs` | 560 | мост FtsDocument → программа flang |
-| `flang/src/self.mjs` | 932 | дверь, через которую зовут слои на flang |
+| `flang/src/self.mjs` | 1100 | дверь, через которую зовут слои на flang |
 | `flang/src/reachable.mjs` | 248 | достижимость от точки входа |
 | `flang/src/partialorder.mjs` | 241 | закон частичного порядка |
 | `flang/src/monotone.mjs` | 231 | закон монотонности |
 | `flang/src/idempotent.mjs` | 196 | закон идемпотентности |
-| `flang/src/svoystva.mjs` | 172 | общее основание пяти законов |
+| `flang/src/svoystva.mjs` | 162 | общее основание пяти законов |
 | `flang/src/distributive.mjs` | 157 | закон дистрибутивности |
 | `flang/src/bridge.mjs` | 131 | мост между двумя представлениями |
 | `flang/src/commutative.mjs` | 131 | закон коммутативности |

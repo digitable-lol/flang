@@ -77,7 +77,9 @@ import { createRuntime } from "../src/interpret.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { ПРЕДЕЛ_СЕТКИ as ПРЕДЕЛ_МОНАДЫ, ПРЕДЕЛ_СТРЕЛОК, checkMonadLaws, expandMonads } from "../src/monad.mjs"
 import { parse } from "../src/parser.mjs"
-import { ПРЕДЕЛ_СЕТКИ as ПРЕДЕЛ_МНОЖЕСТВ, checkSetLaws, checkSetShapes } from "../src/sets.mjs"
+import { ПРЕДЕЛ_МНОЖЕСТВ as ПРЕДЕЛ_В_ПУТИ } from "../src/self.mjs"
+import { checkSetShapes } from "../src/set-shapes.mjs"
+import { ПРЕДЕЛ_СЕТКИ as ПРЕДЕЛ_МНОЖЕСТВ, checkSetLaws } from "../src/sets.mjs"
 import { checkTypes } from "../src/types.mjs"
 import { globSync } from "./glob.mjs"
 import { вычислитель, исходникСлоя, слойИз, средаСлоя } from "./self-evaluator.mjs"
@@ -490,6 +492,11 @@ test("«Проверить законы множеств» совпадает с
 
 test("предел сетки множеств у эталона тот же, что у свидетеля", () => {
   assert.equal(множества("Предел сетки множеств", {}), ПРЕДЕЛ_МНОЖЕСТВ)
+  /* И ТО ЖЕ ЧИСЛО У КОПИИ В РАБОЧЕМ ПУТИ. С 19 августа `src/self.mjs` держит
+     копию предела, а `sets.mjs` из рабочего пути ушёл: ввозить 503 строки ради
+     одного числа дороже, чем держать копию под сторожем. Хозяин у числа один —
+     слой; разъедется копия — покраснеет здесь. */
+  assert.equal(множества("Предел сетки множеств", {}), ПРЕДЕЛ_В_ПУТИ)
 })
 
 /**

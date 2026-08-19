@@ -71,6 +71,7 @@ const HELP = `flang — полный язык поверх FTS
                      [--no-spawn]
   flang repl  [файл] [--max-steps N] [--max-depth N]
   flang lock  <файл> [--pretty]
+  flang package <файл> [--pretty]
   flang version
 
 Файл: .flang (исходник) или .json (готовый AST).
@@ -140,6 +141,21 @@ lock: печатает ЗАМОК программы — JSON, в котором
 НЕГО и исходников зависимостей не читают вовсе — их может не быть на диске.
 Замок самозаверен печатью: испорченный замок — отказ FLANG_LOCK, а не тихая
 сборка из чего попало. Обновляется замок целиком: в нём лежит код, а не хеш.
+
+package: печатает ПАКЕТ — тот же груз, что в замке, плюс имя, версия, источник
+и ведомость доказанного. Имя и версию команда берёт из объявления flang.package
+рядом со входным файлом, а не из ключей вызова.
+
+  flang package strings.flang > strings.flang-package
+
+Подключается пакет одной строкой и без новых слов в языке:
+
+  использует «Строки» из "strings.flang-package"
+
+Исходников зависимостей при этом на диске нет, склада нет, сети не надо: код
+уже в файле. Испорченный пакет — отказ FLANG_PACKAGE. Двух версий одной
+библиотеки в программе по-прежнему не бывает; два пакета, привезшие один путь с
+разным содержимым, — тоже FLANG_PACKAGE, а не молчаливый выбор первого.
 `
 
 export async function main(argv = process.argv.slice(2)) {
@@ -180,6 +196,8 @@ export async function main(argv = process.argv.slice(2)) {
         return await commandRepl(options)
       case "lock":
         return await commandLock(options)
+      case "package":
+        return await commandPackage(options)
       default:
         process.stderr.write(`unknown command '${options.command}'\n\n${HELP}`)
         return 2
@@ -608,6 +626,58 @@ async function commandLock(options) {
   const parse = await разборщик()
   const замок = await собратьЗамок(options.file, parse)
   writeJson(замок, options.pretty, process.stdout)
+  return 0
+}
+
+/* ───────────────────────────────── пакет ────────────────────────────────── */
+
+/**
+ * ПАКЕТ — один файл, в котором лежит модуль со всем своим замыканием
+ * (`src/package.mjs` — там же и довод целиком).
+ *
+ * Имя, версию и источник команда не берёт ключами вызова, а читает из
+ * объявления `flang.package` рядом со входным файлом. Причина не в удобстве:
+ * ключ вызова живёт в истории оболочки, а объявление живёт в репозитории
+ * автора и попадает в `git diff` — версия, поднятая ключом, поднялась бы молча.
+ *
+ * Печатается в stdout, как и замок: файл кладёт тот, кто вызвал.
+ */
+async function commandPackage(options) {
+  if (options.file === "-") throw usage("flang package требует файл: со стандартного ввода импорты не разрешаются")
+  const { ведомостьПакета, объявлениеРядом, собратьПакет } = await import(
+    new URL("../src/package.mjs", import.meta.url).href
+  )
+  const объявление = await объявлениеРядом(options.file, (путь) => readFile(путь, "utf8"), fail)
+  const parse = await разборщик()
+  /* ПРОВЕРКА ПЕРЕД СБОРКОЙ, как у печати: пакет — это обещание, а обещать за
+     непроверенное нельзя. Отказ проверки — отказ команды, а не пакет с
+     припиской «зато собрался». */
+  const program = await loadProgram(options.file)
+  const итоги = await checkProgram(program, { файл: options.file })
+  if (итоги.diagnostics.length > 0) {
+    throw fail("FLANG_PACKAGE", `${options.file} не проходит проверку: пакет собирается только из проверенного`)
+  }
+  /* ВЕДОМОСТЬ считается по СВОЕМУ модулю, а не по связанной программе: пакет
+     обещает за то, что написано в нём, и ни строкой больше. Имена своих функций
+     берутся из одиночного разбора входа — в слитой программе своё от
+     привезённого не отличить. */
+  const свои = (parse(await readInput(options.file), resolve(options.file)).functions ?? []).map((fn) => fn.name)
+  let ведомость = []
+  try {
+    const { obligations } = await import(new URL("../src/obligations.mjs", import.meta.url).href)
+    const { checkProofs } = await import(new URL("../src/proofterm.mjs", import.meta.url).href)
+    const об = obligations(program, итоги.results)
+    ведомость = ведомостьПакета(об.obligations, checkProofs(program, об.obligations), свои)
+  } catch {
+    /* ядра нет — ведомость выйдет пустой, и это честнее выдуманной */
+  }
+  let пакет = null
+  try {
+    пакет = await собратьПакет(options.file, parse, объявление, { ведомость })
+  } catch (беда) {
+    throw fail("FLANG_PACKAGE", беда instanceof Error ? беда.message : String(беда))
+  }
+  writeJson(пакет, options.pretty, process.stdout)
   return 0
 }
 
@@ -1054,6 +1124,29 @@ function изЗамка(parse, модули) {
   return (текст, файл) => модули.get(файл) ?? parse(текст, файл)
 }
 
+/**
+ * ПАКЕТЫ, на которые ссылается программа, — `использует «Имя» из "имя.flang-package"`.
+ *
+ * Опознаются по расширению пути импорта, и только по нему: имя модуля тут не
+ * спрашивается ни разу. Ребро импорта даёт ПУТЬ, путь даёт файл пакета, файл
+ * даёт разбор — и то, что приехало, есть ровно то, на что сослались. Поиск по
+ * имени привёз бы разбор чужого тела под правильной вывеской, и побайтовая
+ * сверка этого бы не заметила: сверять было бы не с чем.
+ *
+ * Проверка стоит ДО ввоза `package.mjs` и по одному разбору входа: у программы
+ * без пакетов модуль не загружается вовсе — тот же приём и та же причина, что у
+ * замка (ПОТОЛОК рабочего пути, `test/rabochiy-put.test.mjs`).
+ */
+async function пакетыРядом(single, file, importsOf) {
+  if (!importsOf(single).some((з) => typeof з.from === "string" && з.from.endsWith(".flang-package"))) return null
+  const { пакетамиПрограммы } = await import(new URL("../src/package.mjs", import.meta.url).href)
+  try {
+    return await пакетамиПрограммы(single, file, { readFile: (путь) => readFile(путь, "utf8") })
+  } catch (error) {
+    throw fail("FLANG_PACKAGE", error instanceof Error ? error.message : String(error))
+  }
+}
+
 async function parseFlang(source, file) {
   const parse = await разборщик()
 
@@ -1074,10 +1167,18 @@ async function parseFlang(source, file) {
        `link.mjs`: всякое новое поле там оплачивалось бы вторым связыванием на
        самом flang (`flang/self`) и побайтовой сверкой близнеца. */
     const замок = await замокРядом(file)
-    const linked = замок === null
+    /* Пакеты — та же подмена и по той же причине. Складываются в одну карту:
+       программа вправе тянуть и замок, и пакеты, а связывание про обоих не
+       знает и знать не должно. Замок кладётся ПОВЕРХ пакетов — он собран по
+       этой самой программе и потому точнее. */
+    const пакеты = await пакетыРядом(single, file, importsOf)
+    const модули = пакеты === null && замок === null
+      ? null
+      : new Map([...(пакеты ?? new Map()), ...(замок?.модули ?? new Map())])
+    const linked = модули === null
       ? await linkProgram(file, source, parse)
-      : await linkProgram(file, source, изЗамка(parse, замок.модули), {
-          readFile: (путь) => (замок.модули.has(путь) ? Promise.resolve("") : readFile(путь, "utf8")),
+      : await linkProgram(file, source, изЗамка(parse, модули), {
+          readFile: (путь) => (модули.has(путь) ? Promise.resolve("") : readFile(путь, "utf8")),
         })
     if (linked.diagnostics.length > 0) {
       const error = new Error(linked.diagnostics[0].message)
@@ -1510,13 +1611,16 @@ function parseArgs(argv) {
     } else if (arg === "--index-base") {
       const base = Number(require_(argv[++index], "--index-base требует 0 или 1"))
       if (base !== 0 && base !== 1) throw usage("--index-base должен быть 0 или 1")
+      /* Ключ ставит базу только МОЛЧАЩЕЙ программе. Слово в языке теперь есть
+         (`элемент начиная с 0` у левого края), и объявление автора ключу не
+         уступает: поле `базаНомера` читается ПЕРЕД `options.indexBase` во всех
+         одиннадцати местах — проверке типов, интерпретаторе и восьми печатях.
+         Довод, почему считаем по объявленному, а не отказываем, записан в
+         `flang/proof/SPEC.md`: база — свойство ПРОГРАММЫ, как имя модуля, и
+         ключ, способный его переиграть, вернул бы два источника одного числа.
+         Поле `объявленнаяБаза` здесь стояло и не читалось ни одним местом —
+         снято вместе с укладом, ради которого заводилось. */
       options.indexBase = base
-      /* Ключ не «переигрывает базу при запуске», а ОБЪЯВЛЯЕТ её у программы:
-         дальше её читают проверка типов, интерпретатор и все восемь печатей —
-         одно поле, одно число. Пока в языке нет слова, которым автор написал
-         бы базу в самом файле, этот ключ и есть объявление; переходный уклад
-         назван в `flang/proof/SPEC.md`. */
-      options.объявленнаяБаза = base
     } else if (arg === "--max-depth") {
       const depth = Number(require_(argv[++index], "--max-depth требует число"))
       if (!Number.isInteger(depth) || depth <= 0) throw usage("--max-depth должен быть целым положительным числом")

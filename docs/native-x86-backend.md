@@ -56,10 +56,10 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 |---|---:|
 | `flang/src/emit/c/flang_repl.c` | 5 786 |
 | `flang/src/emit/c/flang_runtime.c` | 3 222 |
-| `flang/src/emit/c/flang_conc.c` | 3 193 |
-| `flang/src/emit/c/flang_cli.c` | 1 062 |
+| `flang/src/emit/c/flang_conc.c` | 3 443 |
+| `flang/src/emit/c/flang_cli.c` | 1 073 |
 | `flang/src/emit/c/flang_runtime.h` | 837 |
-| `flang/src/emit/c/flang_conc.h` | 350 |
+| `flang/src/emit/c/flang_conc.h` | 371 |
 | **итого** | **11 146** |
 
 Эти 11 146 строк написаны руками, на C, и не доказаны ничем. Своя печать в x86
@@ -353,8 +353,8 @@ for (precision = 1; precision < 17; precision += 1) {
 
 ### 6.2. Процессы и планировщик — 2049 строк, и это самая тяжёлая часть
 
-`flang/src/emit/c/flang_conc.c` — 3193 строк кооперативного однопоточного
-планировщика (плюс `flang/src/conc.mjs`, 1768 строк на стороне эталона). Печать
+`flang/src/emit/c/flang_conc.c` — 3443 строк кооперативного однопоточного
+планировщика (плюс `flang/src/conc.mjs`, 2140 строк на стороне эталона). Печать
 сообщает `«параллелизм»: «нет»`, и по замеру WebAssembly он не зовёт ничего,
 кроме `math.h`/`stdint.h`/`stdio.h`/`string.h` — то есть переносится хорошо.
 
@@ -419,7 +419,7 @@ for (precision = 1; precision < 17; precision += 1) {
 разобраться, что именно в нём побайтово, потому что «для x86 сверять не с чем» —
 верно наполовину.
 
-**Что сверяется побайтово сегодня** (`flang/test/self-bootstrap.test.mjs`, 1754
+**Что сверяется побайтово сегодня** (`flang/test/self-bootstrap.test.mjs`, 1768
 строк): C, напечатанный эталоном на JS, C, напечатанный flang₁, и C,
 напечатанный flang₂, — три текста обязаны совпасть знак в знак; и каталог
 `bootstrap/` обязан совпасть с сегодняшней печатью, 7 файлов, 7 897 188 байт.

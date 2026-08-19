@@ -45,7 +45,7 @@ price of the `тотальная` marker on real tasks is measurable, and it is 
 
 ## Case 2. The URL-shortener service
 
-`flang/examples/web/shortener/` — **1 152 lines of flang** across five files plus
+`flang/examples/web/shortener/` — **1 614 lines of flang** across five files plus
 106 lines of a Node host that reads bytes off the connection and hands bytes
 back. Between input and output there is not one line that is not flang.
 
@@ -60,7 +60,7 @@ back. Between input and output there is not one line that is not flang.
 The ledger run:
 
 ```bash
-node flang/bin/flang.mjs check flang/examples/web/shortener/service.flang --proof --pretty
+flang check flang/examples/web/shortener/service.flang --proof
 ```
 
 ```
@@ -85,8 +85,10 @@ error body" fails type checking here rather than being caught by a test.
 утверждении нет". About "the response body is no longer than the declared limit"
 exactly this much is known: no violation was found on the written examples.
 
-Running the service's examples: `node flang/bin/flang.mjs test …/server.flang` —
-**243 examples, 243 passed, 0 failed**.
+Running the service's examples: `flang test …/server.flang` — **240 examples,
+240 passed, 0 failed**. The binary does not run the three process runs at all;
+with them there are 243 examples, and all 243 pass under the reference
+implementation.
 
 ## Case 3. Supervision: what happens when the loop budget runs out
 

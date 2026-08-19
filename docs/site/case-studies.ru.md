@@ -45,7 +45,7 @@ leetcode, служба-сокращатель ссылок и надзор на�
 
 ## Случай 2. Служба-сокращатель ссылок
 
-`flang/examples/web/shortener/` — **1 152 строки на flang** в пяти файлах плюс
+`flang/examples/web/shortener/` — **1 614 строк на flang** в пяти файлах плюс
 106 строк хозяина на Node, который читает байты из связи и отдаёт байты обратно.
 Между входом и выходом нет ни одной строки не на flang.
 
@@ -60,7 +60,7 @@ leetcode, служба-сокращатель ссылок и надзор на�
 Прогон ведомости:
 
 ```bash
-node flang/bin/flang.mjs check flang/examples/web/shortener/service.flang --proof --pretty
+flang check flang/examples/web/shortener/service.flang --proof
 ```
 
 ```
@@ -85,8 +85,9 @@ node flang/bin/flang.mjs check flang/examples/web/shortener/service.flang --proo
 при утверждении нет». Про «тело ответа не длиннее заявленного предела» известно
 ровно то, что на написанных примерах нарушений не нашли.
 
-Прогон примеров службы: `node flang/bin/flang.mjs test …/server.flang` —
-**243 примера, 243 прошло, 0 упало**.
+Прогон примеров службы: `flang test …/server.flang` — **240 примеров, 240
+прошло, 0 упало**. Три прогона процессов двоичный не гоняет вовсе; с ними
+примеров 243, и столько же проходит у реализации-эталона.
 
 ## Случай 3. Надзор: что происходит, когда кончается запас витков
 

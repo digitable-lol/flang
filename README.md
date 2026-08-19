@@ -1,4 +1,4 @@
-**English** · [Русский](README.ru.md)
+**English** · [Русский](README.ru.md) · [Documentation site](https://digitable-lol.github.io/flang/en/index.html)
 
 # flang — a language whose specification runs, and prints itself into your language
 
@@ -147,14 +147,20 @@ non-interactively still needs the full toolchain below.
 the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
 self-hosted compiler — the one in the release — prints to **C and nothing else**.
 
+**Install from the clone, not from the registry.** What is published on npm today is
+`@digitable-lol/fts` 0.4.7, from 7 August — named after the older project that has since left this
+repository, and carrying five of that project's commands (`fts`, `fts-mcp`, `ftsc`, `ftspec`,
+`ftsvm`) into your `$PATH` alongside the two you came for. Until the package is republished under
+the language's own name, take the clone:
+
 ```bash
-npm install -g @digitable-lol/fts
+git clone https://github.com/digitable-lol/flang && cd flang
+node flang/bin/flang.mjs check flang/examples/rosetta/factorial.flang
 ```
 
-That gives the two commands used on this page: `flang` for the language and `flang-lsp` for the
-editor language server. Inside a clone they are `node flang/bin/flang.mjs` and
-`node flang/bin/flang-lsp.mjs` — and a clone is what you need for anything newer than the last
-published release.
+`npm link` inside that clone puts exactly two commands on `$PATH` and nothing else: `flang` for
+the language and `flang-lsp` for the editor language server — the two names this page uses. There
+is no build step and no install step; the package declares no dependencies.
 
 **In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
 same compiler printed to C99, 7 files and 5,823,370 bytes:

@@ -134,9 +134,11 @@
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
+- [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)
 
 ## Отвергнутые пути
 
+- [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](oraculu-meshala-totalnost-a-ne-pervyy-klass.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)

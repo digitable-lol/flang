@@ -113,6 +113,7 @@
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Замер скорости проверяет себя контрольной суммой](checksum-inside-the-benchmark.md)
 - [Переименование файла не краснеет, а тихо выключает проверку чисел в прозе](renaming-a-file-silently-disables-the-guard.md)
+- [Переименование понятия — не замена по дереву: у слова оказывается три значения](renaming-a-word-is-not-search-and-replace.md)
 - [Вторую сторону сверки можно заморозить, но проверка меняет род](a-frozen-reference-changes-the-check.md)
 - [Перечень, записанный в проверке руками, переживает дерево](a-hand-written-list-outlives-the-tree.md)
 - [Команда может ответить «проверено», не проверив ничего](checked-without-checking.md)

@@ -1,6 +1,40 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.5.1": {
+      "ru": {
+        "заголовок": "Установка на macOS починена: 0.5.0 не собирался там ни у кого",
+        "появилось": [
+          "`«Открыть соединение»` — поручение, которым программа сама идёт к чужой службе по сокету. До него на flang нельзя было написать клиент к базе данных или к любой службе с двоичным протоколом: служба умела отвечать, но не спрашивать.",
+          "Вся четвёрка сетевых поручений переименована на одно слово: `«Открыть соединение»`, `«Принять соединение»`, `«Прочитать из соединения»`, `«Ответить в соединение»`.",
+          "Вторая дверь у напечатанной программы на C — `МОДУЛЬ_enter`: она сверяет аргументы с объявленными типами. Прежде чужой код, слинкованный с библиотекой, получал на `−3` для `нат` ответ `1` и не узнавал об этом."
+        ],
+        "изменилось": [
+          "Пакет в npm называется `@digitable-lol/flang`, а не `@digitable-lol/fts`: язык называется flang.",
+          "Файлы C зовутся `compiler_flang.[ch]` вместо `kompilyator_flang.[ch]` — транслит ушёл из имён, и печать стала меньше на 124 431 байт.",
+          "Сборка выхода зовётся `flang`, а не `flang_cli`; формула Homebrew и плагин asdf принимают оба имени."
+        ],
+        "сломалось": [
+          "Ничего из объявленного прежде. Двоичный по-прежнему печатает только в C и не берёт составные значения в `--args` — обе границы названы на страницах установки и в `man`."
+        ]
+      },
+      "en": {
+        "заголовок": "The macOS install is fixed: 0.5.0 did not build there for anyone",
+        "появилось": [
+          "`«Открыть соединение»` — an order with which a program itself reaches a foreign service over a socket. Before it, no client to a database or to any binary-protocol service could be written in flang: a service could answer but not ask.",
+          "All four network orders now use one word for the concept.",
+          "A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `нат` argument and never knew."
+        ],
+        "изменилось": [
+          "The npm package is named `@digitable-lol/flang`, not `@digitable-lol/fts`.",
+          "The C files are `compiler_flang.[ch]` instead of `kompilyator_flang.[ch]`; the printed output shrank by 124 431 bytes.",
+          "The build output is named `flang`, not `flang_cli`; the Homebrew formula and the asdf plugin accept both."
+        ],
+        "сломалось": [
+          "Nothing previously promised. The binary still emits to C only and does not take composite values in `--args`; both limits are named on the install pages and in `man`."
+        ]
+      }
+    },
     "0.5.0": {
       "ru": {
         "заголовок": "Компилятор считает себя сам, а напечатанный код стал быстрее и экономнее",

@@ -6,6 +6,26 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.5.1 — 19 August 2026
+
+**The macOS install is fixed: 0.5.0 did not build there for anyone**
+
+### What appeared
+
+- `«Открыть соединение»` — an order with which a program itself reaches a foreign service over a socket. Before it, no client to a database or to any binary-protocol service could be written in flang: a service could answer but not ask.
+- All four network orders now use one word for the concept.
+- A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `нат` argument and never knew.
+
+### What changed
+
+- The npm package is named `@digitable-lol/flang`, not `@digitable-lol/fts`.
+- The C files are `compiler_flang.[ch]` instead of `kompilyator_flang.[ch]`; the printed output shrank by 124 431 bytes.
+- The build output is named `flang`, not `flang_cli`; the Homebrew formula and the asdf plugin accept both.
+
+### What broke
+
+- Nothing previously promised. The binary still emits to C only and does not take composite values in `--args`; both limits are named on the install pages and in `man`.
+
 ## 0.5.0 — 18 August 2026
 
 **The compiler measures itself, and the emitted code got faster and leaner**

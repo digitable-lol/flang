@@ -1125,6 +1125,166 @@ fl_status compiler_flang_sozdat_rezak(fl_ctx *ctx, fl_value nashli, fl_value nac
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_razbor_chisla(fl_ctx *ctx, fl_value godno, fl_value byl_znak, fl_value cifr_do, fl_value byla_tochka, fl_value cifr_posle, fl_value *out, fl_error *error);
 
+/* Запись FTS «Пара имён шарп»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_para_imyon_sharp(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор слов шарп»: «слово», «готовые». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_slov_sharp(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Метка шарп»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_metka_sharp(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поиск слова шарп»: «первый», «предыдущий», «найдено». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poisk_slova_sharp(fl_ctx *ctx, fl_value pervyy, fl_value predyduschiy, fl_value naydeno, fl_value *out, fl_error *error);
+
+/* Запись FTS «Набор имён шарп»: «взято», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nabor_imyon_sharp(fl_ctx *ctx, fl_value vzyato, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр шарп»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_sharp(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Постусловие шарп»: «имя», «выражение», «связывание», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_postuslovie_sharp(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предусловие шарп»: «имя», «выражение», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_preduslovie_sharp(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция шарп»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_funkciya_sharp(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле типа шарп»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_tipa_sharp(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Запись типа шарп»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapis_tipa_sharp(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант типа шарп»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_tipa_sharp(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сумма типов шарп»: «имя», «варианты». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_summa_tipov_sharp(fl_ctx *ctx, fl_value imya, fl_value varianty, fl_value *out, fl_error *error);
+
+/* Запись FTS «Рёбра шарп»: «имя», «цели». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ryobra_sharp(fl_ctx *ctx, fl_value imya, fl_value celi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Компонента шарп»: «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_komponenta_sharp(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тарьян шарп»: «номера», «низы», «на стеке», «стек», «компоненты», «счётчик». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_taryan_sharp(fl_ctx *ctx, fl_value nomera, fl_value nizy, fl_value na_steke, fl_value stek, fl_value komponenty, fl_value schyotchik, fl_value *out, fl_error *error);
+
+/* Запись FTS «Отрезание шарп»: «индекс», «элементы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_otrezanie_sharp(fl_ctx *ctx, fl_value indeks, fl_value elementy, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именованные идентификаторы шарп»: «имя», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovannye_identifikatory_sharp(fl_ctx *ctx, fl_value imya, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее шарп»: «имя класса», «функции», «записи», «варианты», «суммы», «ид функций», «ид фабрик», «ид вариантов», «ид шагов», «ид параметров», «общие имена», «хвостовые», «циклические», «рекурсивные». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_sharp(fl_ctx *ctx, fl_value imya_klassa, fl_value funkcii, fl_value zapisi, fl_value varianty, fl_value summy, fl_value id_funkciy, fl_value id_fabrik, fl_value id_variantov, fl_value id_shagov, fl_value id_parametrov, fl_value obschie_imena, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Зип шарп»: «индекс», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zip_sharp(fl_ctx *ctx, fl_value indeks, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние шарп»: «счётчик», «взято», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_sharp(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее шарп»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог шарп»: «состояние», «вывод», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок шарп»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст шарп»: «общее», «функция», «параметры», «сам хвост», «есть члены», «члены», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_sharp(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value sam_hvost, fl_value est_chleny, fl_value chleny, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Порядок шарп»: «состояние», «вывод», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poryadok_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связка шарп»: «идентификатор», «есть примечание», «примечание», «код». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazka_sharp(fl_ctx *ctx, fl_value identifikator, fl_value est_primechanie, fl_value primechanie, fl_value kod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог связывания шарп»: «состояние», «контекст», «связки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_svyazyvaniya_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value kontekst, fl_value svyazki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог образца шарп»: «состояние», «вывод», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_obrazca_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Случай печати шарп»: «тело», «образец», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sluchay_pechati_sharp(fl_ctx *ctx, fl_value telo, fl_value obrazec, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор случаев шарп»: «состояние», «вывод», «случаи». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_sluchaev_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value sluchai, fl_value *out, fl_error *error);
+
+/* Запись FTS «Файл шарп»: «путь», «содержимое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_fayl_sharp(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки шарп»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм значение», «рантайм поле», «рантайм ошибка», «рантайм контекст», «рантайм операции», «исходник прогонщика». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_sharp(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_znachenie, fl_value rantaym_pole, fl_value rantaym_oshibka, fl_value rantaym_kontekst, fl_value rantaym_operacii, fl_value ishodnik_progonschika, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог печати шарп»: «файлы», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_pechati_sharp(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тела шарп»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tela_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Строки параметров шарп»: «индекс», «строки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_stroki_parametrov_sharp(fl_ctx *ctx, fl_value indeks, fl_value stroki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров шарп»: «контекст», «индекс». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_sharp(fl_ctx *ctx, fl_value kontekst, fl_value indeks, fl_value *out, fl_error *error);
+
+/* Запись FTS «Занятое шарп»: «идентификатор», «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zanyatoe_sharp(fl_ctx *ctx, fl_value identifikator, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Просьба шарп»: «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_prosba_sharp(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именователь шарп»: «таблица», «состояние». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovatel_sharp(fl_ctx *ctx, fl_value tablica, fl_value sostoyanie, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог сборки»: «файлы», «ошибка», «диагностики». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_sborki(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
@@ -1523,6 +1683,31 @@ fl_status compiler_flang_variant_net_funkcii_suzhdeniya(fl_ctx *ctx, fl_value *o
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_vychisleno(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_sorvalos(fl_ctx *ctx, fl_value tekst, fl_value kod, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть узел шарп»: «Есть узел шарп» | «Нет узла шарп». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_uzel_sharp(fl_ctx *ctx, fl_value uzel, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_uzla_sharp(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть имя шарп»: «Есть имя шарп» | «Нет имени шарп». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_imya_sharp(fl_ctx *ctx, fl_value imya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_imeni_sharp(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть число шарп»: «Есть число шарп» | «Нет числа шарп». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_chislo_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_chisla_sharp(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть функция шарп»: «Есть функция шарп» | «Нет функции шарп». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_funkciya_sharp(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_funkcii_sharp(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть занятое шарп»: «Есть занятое шарп» | «Нет занятого шарп». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_zanyatoe_sharp(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_zanyatogo_sharp(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /*
  * Функция flang «Приписать строку в начало».
@@ -43457,6 +43642,3629 @@ fl_status compiler_flang_proverit_fakty(fl_ctx *ctx, fl_value programma, fl_valu
 fl_status compiler_flang_proverit_odno(fl_ctx *ctx, fl_value programma, fl_value fakty, fl_value vychisleniya, fl_value beda, fl_value utverzhdenie, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Узел ничто шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_nichto_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из полей шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть узел шарп»
+ */
+fl_status compiler_flang_pervoe_iz_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть узел шарп»
+ */
+fl_status compiler_flang_pole_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть поле у узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_pole_u_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять поле шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_vzyat_pole_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка скаляра шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_skalyara_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка в скаляре шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_v_skalyare_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это признак в скаляре шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_priznak_v_skalyare_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это признак шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_priznak_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число в скаляре шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_v_skalyare_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина в скаляре шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_v_skalyare_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число скаляра шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_skalyara_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это запись шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zapis_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это список шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_spisok_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто в скаляре шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_v_skalyare_sharp(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status compiler_flang_polya_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы поля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_polya_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_uzla_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Применить замены шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param zameny — «замены»: список: «Замена»
+ * @return значение: строка
+ */
+fl_status compiler_flang_primenit_zameny_sharp(fl_ctx *ctx, fl_value tekst, fl_value zameny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены кириллицы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_kirillicy_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в нижний регистр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_nizhniy_registr_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в верхний регистр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_verhniy_registr_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Транслитерировать шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_transliterirovat_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В нижний регистр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_nizhniy_registr_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В верхний регистр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_verhniy_registr_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Словарные символы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovarnye_simvoly_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цифры шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_cifry_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_slova_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый символ шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_simvol_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последний символ шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_posledniy_simvol_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без первого символа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_pervogo_simvola_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать слово шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @param gotovye — «готовые»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_slovo_sharp(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slova_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «С заглавной шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_s_zaglavnoy_sharp(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slova — «слова»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_slit_slova_sharp(fl_ctx *ctx, fl_value slova, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Паскаль шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_paskal_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Верблюд шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_verblyud_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из пар шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Пара имён шарп»
+ * @return значение: «Может быть имя шарп»
+ */
+fl_status compiler_flang_pervoe_iz_par_sharp(fl_ctx *ctx, fl_value pary, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти в таблице шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть имя шарп»
+ */
+fl_status compiler_flang_nayti_v_tablice_sharp(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть в таблице шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_v_tablice_sharp(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение по ключу шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znachenie_po_klyuchu_sharp(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить пару шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Пара имён шарп»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Пара имён шарп»
+ */
+fl_status compiler_flang_obnovit_paru_sharp(fl_ctx *ctx, fl_value para, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в таблицу шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён шарп»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_polozhit_v_tablicu_sharp(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из меток шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка шарп»
+ * @return значение: «Может быть число шарп»
+ */
+fl_status compiler_flang_pervaya_iz_metok_sharp(fl_ctx *ctx, fl_value metki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти метку шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть число шарп»
+ */
+fl_status compiler_flang_nayti_metku_sharp(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть метка шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_metka_sharp(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Метка или ноль шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка шарп»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_metka_ili_nol_sharp(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить метку шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metka — «метка»: «Метка шарп»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: «Метка шарп»
+ */
+fl_status compiler_flang_obnovit_metku_sharp(fl_ctx *ctx, fl_value metka, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить метку шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка шарп»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: список: «Метка шарп»
+ */
+fl_status compiler_flang_polozhit_metku_sharp(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Меньшее шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervoe — «первое»: число
+ * @param vtoroe — «второе»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_menshee_sharp(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Между шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param ot — «от»: число
+ * @param do_2 — «до»: число
+ * @return значение
+ */
+fl_status compiler_flang_mezhdu_sharp(fl_ctx *ctx, fl_value znachenie, fl_value ot, fl_value do_2, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это символ слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_simvol_slova_sharp(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Граница слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param naydeno — «найдено»
+ * @param sleva — «слева»: строка
+ * @param sprava — «справа»: строка
+ * @return значение
+ */
+fl_status compiler_flang_granica_slova_sharp(fl_ctx *ctx, fl_value naydeno, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поиска слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Поиск слова шарп»
+ * @param chast — «часть»: строка
+ * @return значение: «Поиск слова шарп»
+ */
+fl_status compiler_flang_shag_poiska_slova_sharp(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пройти части шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: «Поиск слова шарп»
+ */
+fl_status compiler_flang_proyti_chasti_sharp(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть слово шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param slovo — «слово»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_slovo_sharp(fl_ctx *ctx, fl_value tekst, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только символы слова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_simvoly_slova_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только цифры шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_cifry_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это атом шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_atom_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на временное шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_vremennoe_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_c_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_c_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_c_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_c_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_c_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены XML шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_xml_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать XML шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_xml_sharp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_c_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Типы рантайма шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tipy_rantayma_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявлено бэкендом шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyavleno_bekendom_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято сначала шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_snachala_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасный идентификатор шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnyy_identifikator_sharp(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_sharp(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор имён шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор имён шарп»
+ */
+fl_status compiler_flang_shag_unikalnyh_sharp(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param obschie — «общие»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_sharp(fl_ctx *ctx, fl_value imena, fl_value obschie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Приставка роли шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pristavka_roli_sharp(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Название роли шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nazvanie_roli_sharp(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификатор с ролью шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_identifikator_s_rolyu_sharp(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поле типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Поле типа шарп»
+ */
+fl_status compiler_flang_sobrat_pole_tipa_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Поле типа шарп»
+ */
+fl_status compiler_flang_sobrat_polya_tipa_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена полей типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_poley_tipa_sharp(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать параметр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Параметр шарп»
+ */
+fl_status compiler_flang_sobrat_parametr_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля или шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @param po_umolchaniyu — «по умолчанию»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_ili_sharp(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value po_umolchaniyu, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать постусловие шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Постусловие шарп»
+ */
+fl_status compiler_flang_sobrat_postuslovie_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать предусловие шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие шарп»
+ */
+fl_status compiler_flang_sobrat_preduslovie_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функцию шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Функция шарп»
+ */
+fl_status compiler_flang_sobrat_funkciyu_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Функция шарп»
+ */
+fl_status compiler_flang_sobrat_funkcii_sharp(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_funkciy_sharp(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из функций шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @return значение: «Может быть функция шарп»
+ */
+fl_status compiler_flang_pervaya_iz_funkciy_sharp(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти функцию шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Может быть функция шарп»
+ */
+fl_status compiler_flang_nayti_funkciyu_sharp(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть функция с именем шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_funkciya_s_imenem_sharp(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число параметров шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_parametrov_sharp(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить запись типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: «Запись типа шарп»
+ * @param novaya — «новая»: «Запись типа шарп»
+ * @return значение: «Запись типа шарп»
+ */
+fl_status compiler_flang_obnovit_zapis_tipa_sharp(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена записей шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_zapisey_sharp(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить запись типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Запись типа шарп»
+ * @param novaya — «новая»: «Запись типа шарп»
+ * @return значение: список: «Запись типа шарп»
+ */
+fl_status compiler_flang_slit_zapis_tipa_sharp(fl_ctx *ctx, fl_value akk, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать записи шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Запись типа шарп»
+ */
+fl_status compiler_flang_sobrat_zapisi_sharp(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать вариант шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Вариант типа шарп»
+ */
+fl_status compiler_flang_sobrat_variant_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать суммы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Сумма типов шарп»
+ */
+fl_status compiler_flang_sobrat_summy_sharp(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить вариант типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhniy — «прежний»: «Вариант типа шарп»
+ * @param novyy — «новый»: «Вариант типа шарп»
+ * @return значение: «Вариант типа шарп»
+ */
+fl_status compiler_flang_obnovit_variant_tipa_sharp(fl_ctx *ctx, fl_value prezhniy, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_variantov_sharp(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить вариант типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа шарп»
+ * @param novyy — «новый»: «Вариант типа шарп»
+ * @return значение: список: «Вариант типа шарп»
+ */
+fl_status compiler_flang_slit_variant_tipa_sharp(fl_ctx *ctx, fl_value akk, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты суммы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа шарп»
+ * @param summa — «сумма»: «Сумма типов шарп»
+ * @return значение: список: «Вариант типа шарп»
+ */
+fl_status compiler_flang_slit_varianty_summy_sharp(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param summy — «суммы»: список: «Сумма типов шарп»
+ * @return значение: список: «Вариант типа шарп»
+ */
+fl_status compiler_flang_sobrat_varianty_sharp(fl_ctx *ctx, fl_value summy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цели шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_celi_sharp(fl_ctx *ctx, fl_value ryobra, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить уникальное шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_unikalnoe_sharp(fl_ctx *ctx, fl_value imya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить имя вызова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_imya_vyzova_sharp(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело пусть шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_telo_pust_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случая шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaya_sharp(fl_ctx *ctx, fl_value sluchay, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случаев шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaev_sharp(fl_ctx *ctx, fl_value sluchai, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sharp(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста ветвей шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_vetvey_sharp(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые вызовы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvostovye_vyzovy_sharp(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить вызов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_vyzov_sharp(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход всего шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_vsego_sharp(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход полей шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все вызовы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_vyzovy_sharp(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг отрезания шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Отрезание шарп»
+ * @param element — «элемент»: строка
+ * @param predel — «предел»: число
+ * @return значение: «Отрезание шарп»
+ */
+fl_status compiler_flang_shag_otrezaniya_sharp(fl_ctx *ctx, fl_value akk, fl_value element, fl_value predel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без последней строки шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_bez_posledney_stroki_sharp(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последняя строка шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_poslednyaya_stroka_sharp(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать компоненту шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_zapisat_komponentu_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять компоненту шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять вершину стека шарп»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_snyat_komponentu_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять вершину стека шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять компоненту шарп»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_snyat_vershinu_steka_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить низ шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param niz — «низ»: число
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_zamenit_niz_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value niz, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обратное ребро шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_obratnoe_rebro_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрыть вершину шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_zakryt_vershinu_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро вглубь шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_rebro_vglub_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро внутри шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_rebro_vnutri_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро Тарьяна шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_rebro_taryana_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти вершину шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_oboyti_vershinu_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Корень Тарьяна шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян шарп»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: «Тарьян шарп»
+ */
+fl_status compiler_flang_koren_taryana_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Компоненты связности шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: список: «Компонента шарп»
+ */
+fl_status compiler_flang_komponenty_svyaznosti_sharp(fl_ctx *ctx, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя модуля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_modulya_sharp(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя модуля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_modulya_sharp(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы для шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Именованные идентификаторы шарп»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_dlya_sharp(fl_ctx *ctx, fl_value tablica, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица фабрик шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа шарп»
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_tablica_fabrik_sharp(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица вариантов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа шарп»
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_tablica_variantov_sharp(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица функций шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_tablica_funkciy_sharp(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица шагов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ciklicheskie — «циклические»: список: «Рёбра шарп»
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_tablica_shagov_sharp(fl_ctx *ctx, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые рёбра шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @return значение: список: «Рёбра шарп»
+ */
+fl_status compiler_flang_hvostovye_ryobra_sharp(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рёбра вызовов шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция шарп»
+ * @return значение: список: «Рёбра шарп»
+ */
+fl_status compiler_flang_ryobra_vyzovov_sharp(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены компоненты шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента шарп»
+ * @return значение: список: «Рёбра шарп»
+ */
+fl_status compiler_flang_chleny_komponenty_sharp(fl_ctx *ctx, fl_value komponenta, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить рёбра шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Рёбра шарп»
+ * @param dobavka — «добавка»: список: «Рёбра шарп»
+ * @return значение: список: «Рёбра шарп»
+ */
+fl_status compiler_flang_slit_ryobra_sharp(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Циклические функции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента шарп»
+ * @return значение: список: «Рёбра шарп»
+ */
+fl_status compiler_flang_ciklicheskie_funkcii_sharp(fl_ctx *ctx, fl_value komponenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить строки шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param dobavka — «добавка»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slit_stroki_sharp(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивная одиночка шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента шарп»
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnaya_odinochka_sharp(fl_ctx *ctx, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг рекурсивных шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param komponenta — «компонента»: «Компонента шарп»
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_rekursivnyh_sharp(fl_ctx *ctx, fl_value akk, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивные функции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента шарп»
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnye_funkcii_sharp(fl_ctx *ctx, fl_value komponenty, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значения пар шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Пара имён шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_znacheniya_par_sharp(fl_ctx *ctx, fl_value pary, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Общие имена шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fabriki — «фабрики»: список: «Пара имён шарп»
+ * @param varianty — «варианты»: список: «Пара имён шарп»
+ * @param funkcii — «функции»: список: «Пара имён шарп»
+ * @param shagi — «шаги»: список: «Пара имён шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obschie_imena_sharp(fl_ctx *ctx, fl_value fabriki, fl_value varianty, fl_value funkcii, fl_value shagi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschie — «общие»: список: строка
+ * @return значение: «Именованные идентификаторы шарп»
+ */
+fl_status compiler_flang_identifikatory_parametrov_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param imya_klassa — «имя класса»: строка
+ * @return значение: «Общее шарп»
+ */
+fl_status compiler_flang_sobrat_obschee_sharp(fl_ctx *ctx, fl_value programma, fl_value imya_klassa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_sinonimy_form_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_sharp(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_pomoschniki_form_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка шарп»
+ */
+fl_status compiler_flang_arnosti_form_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово аргументов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kolichestvo — «количество»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_argumentov_sharp(fl_ctx *ctx, fl_value kolichestvo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг выбора шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип шарп»
+ * @param element — «элемент»: строка
+ * @param iskomyy — «искомый»: число
+ * @return значение: «Зип шарп»
+ */
+fl_status compiler_flang_shag_vybora_sharp(fl_ctx *ctx, fl_value akk, fl_value element, fl_value iskomyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элемент по индексу шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param indeks — «индекс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_element_po_indeksu_sharp(fl_ctx *ctx, fl_value stroki, fl_value indeks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргументы с ctx шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_argumenty_s_ctx_sharp(fl_ctx *ctx, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_zamenit_schyotchik_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_zapisat_oshibku_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Свежее шарп»
+ */
+fl_status compiler_flang_vremennoe_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее шарп»
+ */
+fl_status compiler_flang_svezhee_imya_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка вывода шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_vyvoda_sharp(fl_ctx *ctx, fl_value otstup, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Глубже шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_glubzhe_sharp(fl_ctx *ctx, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст шарп»
+ */
+fl_status compiler_flang_svyazat_imya_sharp(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг подъёма шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок шарп»
+ * @param chast — «часть»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_shag_podyoma_sharp(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поднять части шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_podnyat_chasti_sharp(fl_ctx *ctx, fl_value chasti, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустой порядок шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_pustoy_poryadok_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить по порядку шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок шарп»
+ * @param itog — «итог»: «Итог шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_slit_po_poryadku_sharp(fl_ctx *ctx, fl_value akk, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка значений шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок шарп»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_shag_poryadka_znacheniy_sharp(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По порядку значений шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_po_poryadku_znacheniy_sharp(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка литералов шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок шарп»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_shag_poryadka_literalov_sharp(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По порядку литералов шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_po_poryadku_literalov_sharp(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка связки шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazka — «связка»: «Связка шарп»
+ * @param ispolzovano — «использовано»
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_svyazki_sharp(fl_ctx *ctx, fl_value svyazka, fl_value ispolzovano, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг строк связок шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: строка
+ * @param svyazka — «связка»: «Связка шарп»
+ * @param tekst — «текст»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shag_strok_svyazok_sharp(fl_ctx *ctx, fl_value akk, fl_value svyazka, fl_value tekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки связок шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazki — «связки»: список: «Связка шарп»
+ * @param tekst — «текст»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroki_svyazok_sharp(fl_ctx *ctx, fl_value svyazki, fl_value tekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить связку шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания шарп»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param est_primechanie — «есть примечание»
+ * @param primechanie — «примечание»: строка
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_dobavit_svyazku_sharp(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value est_primechanie, fl_value primechanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Пара имён шарп»
+ */
+fl_status compiler_flang_svyazki_varianta_sharp(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания шарп»
+ * @param svyazka — «связка»: «Пара имён шарп»
+ * @param predmet — «предмет»: строка
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_sharp(fl_ctx *ctx, fl_value itog, fl_value svyazka, fl_value predmet, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания шарп»
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы и хвоста шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания шарп»
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_i_hvosta_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание любого шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания шарп»
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_svyazyvanie_lyubogo_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Итог связывания шарп»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_prosto_znachenie_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи полей шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_klyuchi_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значения полей шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_znacheniya_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип шарп»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: «Зип шарп»
+ */
+fl_status compiler_flang_stroka_polya_c_sharp(fl_ctx *ctx, fl_value zip, fl_value klyuch, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sobrat_polya_sharp(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать список шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sobrat_spisok_sharp(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_skalyara_sharp(fl_ctx *ctx, fl_value skalyar, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закодированный вариант шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_zakodirovannyy_variant_sharp(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литеральных полей шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_literalnyh_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литеральной записи шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_literalnoy_zapisi_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерального списка шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_literalnogo_spiska_sharp(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_literala_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_imya_uzla_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_razreshit_vyzov_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_arnost_formy_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_sharp(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_zapis_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_variant_sharp(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_neizvestnyy_vid_sharp(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_znacheniya_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_peremennoy_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_pust_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_polozhit_v_sharp(fl_ctx *ctx, fl_value uzel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_esli_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_vyzova_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_sharp(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_sharp(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_formy_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param poryadok — «порядок»: «Порядок шарп»
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_sharp(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value poryadok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_operacii_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка значений шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_spiska_znacheniy_sharp(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей значений шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_poley_znacheniy_sharp(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_zapisi_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_konstruktora_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_sharp(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_svyortki_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_telo_cikla_sharp(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_sharp(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог шарп»
+ */
+fl_status compiler_flang_pechat_cikla_sharp(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param proverka — «проверка»: строка
+ * @return значение: «Итог образца шарп»
+ */
+fl_status compiler_flang_gotovaya_proverka_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value proverka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Итог образца шарп»
+ */
+fl_status compiler_flang_oshibka_obrazca_sharp(fl_ctx *ctx, fl_value obrazec, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца шарп»
+ */
+fl_status compiler_flang_proverka_literalom_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца шарп»
+ */
+fl_status compiler_flang_proverka_obrazca_sharp(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить случай шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_sluchay_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора случая шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сбор случаев шарп»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор случаев шарп»
+ */
+fl_status compiler_flang_shag_sbora_sluchaya_sharp(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_telo_vetvi_sharp(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати шарп»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_pechat_vetvi_sharp(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ разбора шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_razbora_sharp(fl_ctx *ctx, fl_value est_cel, fl_value cel, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Иначе с отказом шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_inache_s_otkazom_sharp(fl_ctx *ctx, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост цепочки шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvost_cepochki_sharp(fl_ctx *ctx, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка ветви шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param proverka — «проверка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_vetvi_sharp(fl_ctx *ctx, fl_value otkryto, fl_value proverka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь с проверкой шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати шарп»
+ * @param ostalnye — «остальные»: список: «Случай печати шарп»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_vetv_s_proverkoy_sharp(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь без проверки шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати шарп»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_vetv_bez_proverki_sharp(fl_ctx *ctx, fl_value sluchay, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг цепочки шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати шарп»
+ * @param ostalnye — «остальные»: список: «Случай печати шарп»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_shag_cepochki_sharp(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цепочка случаев шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Случай печати шарп»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_cepochka_sluchaev_sharp(fl_ctx *ctx, fl_value sluchai, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_pechat_razbora_sharp(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoe_pust_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoe_esli_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это самовызов шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_samovyzov_sharp(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_sharp(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param poryadok — «порядок»: «Порядок шарп»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_sharp(fl_ctx *ctx, fl_value poryadok, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param poryadok — «порядок»: «Порядок шарп»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoy_otskok_sharp(fl_ctx *ctx, fl_value poryadok, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргумент можно оставить шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @return значение
+ */
+fl_status compiler_flang_argument_mozhno_ostavit_sharp(fl_ctx *ctx, fl_value argument, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок шарп»
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок шарп»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_sharp(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип шарп»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип шарп»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_sharp(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param poryadok — «порядок»: «Порядок шарп»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoy_cikl_sharp(fl_ctx *ctx, fl_value poryadok, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_pechat_hvosta_sharp(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка файла шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_fayla_sharp(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка документа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: строка
+ * @param stroka — «строка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_dokumenta_sharp(fl_ctx *ctx, fl_value akk, fl_value stroka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Документ шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_dokument_sharp(fl_ctx *ctx, fl_value stroki, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка вида типа шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_vida_tipa_sharp(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка имени типа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_imeni_tipa_sharp(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка типа шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_tipa_sharp(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена рёбер шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_ryober_sharp(fl_ctx *ctx, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Самовызов в хвосте шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение
+ */
+fl_status compiler_flang_samovyzov_v_hvoste_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены батута шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chleny_batuta_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть батут шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение
+ */
+fl_status compiler_flang_est_batut_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть сторож глубины шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение
+ */
+fl_status compiler_flang_est_storozh_glubiny_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка батута шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_batuta_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Строки параметров шарп»
+ * @param parametr — «параметр»: «Параметр шарп»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Строки параметров шарп»
+ */
+fl_status compiler_flang_stroka_parametra_sharp(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список параметров шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_spisok_parametrov_sharp(fl_ctx *ctx, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Подпись функции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_podpis_funkcii_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень полей шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_poley_sharp(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Подпись фабрики шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_podpis_fabriki_sharp(fl_ctx *ctx, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_sharp(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа шарп»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_sharp(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструкторов суммы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param summa — «сумма»: «Сумма типов шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_pechat_konstruktorov_summy_sharp(fl_ctx *ctx, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров шарп»
+ * @param parametr — «параметр»: «Параметр шарп»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров шарп»
+ */
+fl_status compiler_flang_svyazat_parametr_sharp(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: «Контекст шарп»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Контекст двери шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: «Контекст шарп»
+ */
+fl_status compiler_flang_kontekst_dveri_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров шарп»
+ * @param parametr — «параметр»: «Параметр шарп»
+ * @return значение: «Связывание параметров шарп»
+ */
+fl_status compiler_flang_svyazat_parametr_dveri_sharp(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value identifikatory, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок шарп»
+ * @param postuslovie — «постусловие»: «Постусловие шарп»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_shag_postusloviya_sharp(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_sharp(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело циклом шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_telo_ciklom_sharp(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_telo_funkcii_sharp(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг распаковки шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип шарп»
+ * @param parametr — «параметр»: «Параметр шарп»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип шарп»
+ */
+fl_status compiler_flang_shag_raspakovki_sharp(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param tekst — «текст»: строка
+ * @param dokument — «документ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_batuta_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value dokument, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать со сторожем шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param tekst — «текст»: строка
+ * @param dokument — «документ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_so_storozhem_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value dokument, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать простой функции шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param tekst — «текст»: строка
+ * @param dokument — «документ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_prostoy_funkcii_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value dokument, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбор оболочки шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param tekst — «текст»: строка
+ * @param dokument — «документ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vybor_obolochki_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value dokument, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отступ тела шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otstup_tela_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_pechat_funkcii_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка аргумента вызова шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип шарп»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Зип шарп»
+ */
+fl_status compiler_flang_stroka_argumenta_vyzova_sharp(fl_ctx *ctx, fl_value zip, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_dogovor_na_dveri_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_proverki_dogovora_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок шарп»
+ * @param preduslovie — «предусловие»: «Предусловие шарп»
+ * @param kontekst — «контекст»: «Контекст шарп»
+ * @param funkciya — «функция»: «Функция шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_shag_predusloviya_sharp(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_vetka_dispetchera_sharp(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок шарп»
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_sharp(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Блок шарп»
+ */
+fl_status compiler_flang_pechat_dispetchera_sharp(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать контекста шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konteksta_sharp(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить тела шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_skleit_tela_sharp(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исходник модуля шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param imya_klassa — «имя класса»: строка
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ishodnik_modulya_sharp(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value imya_klassa, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать проекта шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_proekta_sharp(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya_klassa — «имя класса»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_sharp(fl_ctx *ctx, fl_value imya_klassa, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти занятое шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Занятое шарп»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Может быть занятое шарп»
+ */
+fl_status compiler_flang_nayti_zanyatoe_sharp(fl_ctx *ctx, fl_value tablica, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы занятых шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Занятое шарп»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_zanyatyh_sharp(fl_ctx *ctx, fl_value tablica, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить занятое шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Занятое шарп»
+ * @param novoe — «новое»: «Занятое шарп»
+ * @return значение: список: «Занятое шарп»
+ */
+fl_status compiler_flang_polozhit_zanyatoe_sharp(fl_ctx *ctx, fl_value tablica, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Владелец имени шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatoe — «занятое»: «Занятое шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vladelec_imeni_sharp(fl_ctx *ctx, fl_value zanyatoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка столкновения шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: «Занятое шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_oshibka_stolknoveniya_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value rol, fl_value imya, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить былое шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: «Занятое шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_byloe_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value rol, fl_value imya, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить прежнее шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть занятое шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_prezhnee_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять имя шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovatel — «именователь»: «Именователь шарп»
+ * @param prosba — «просьба»: «Просьба шарп»
+ * @return значение: «Именователь шарп»
+ */
+fl_status compiler_flang_zanyat_imya_sharp(fl_ctx *ctx, fl_value imenovatel, fl_value prosba, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить просьбы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Просьба шарп»
+ * @param dobavka — «добавка»: список: «Просьба шарп»
+ * @return значение: список: «Просьба шарп»
+ */
+fl_status compiler_flang_slit_prosby_sharp(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просьбы имён шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: список: «Просьба шарп»
+ */
+fl_status compiler_flang_prosby_imyon_sharp(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить столкновения шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_stolknoveniya_sharp(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела шарп»
+ * @param funkciya — «функция»: «Функция шарп»
+ * @param obschee — «общее»: «Общее шарп»
+ * @return значение: «Тела шарп»
+ */
+fl_status compiler_flang_shag_tela_funkcii_sharp(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее шарп»
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @return значение: «Тела шарп»
+ */
+fl_status compiler_flang_pechat_tel_sharp(fl_ctx *ctx, fl_value obschee, fl_value nastroyki, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_c_sharp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_c_sharp(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя класса шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_klassa_sharp(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя класса шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние шарп»
+ * @param imya_klassa — «имя класса»: строка
+ * @param modul — «модуль»: строка
+ * @return значение: «Состояние шарп»
+ */
+fl_status compiler_flang_proverit_imya_klassa_sharp(fl_ctx *ctx, fl_value sostoyanie, fl_value imya_klassa, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файл рантайма шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param put — «путь»: строка
+ * @param chto — «что»: строка
+ * @param ishodnik — «исходник»: строка
+ * @return значение: «Файл шарп»
+ */
+fl_status compiler_flang_fayl_rantayma_sharp(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value put, fl_value chto, fl_value ishodnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить файлы шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Файл шарп»
+ * @param vtorye — «вторые»: список: «Файл шарп»
+ * @return значение: список: «Файл шарп»
+ */
+fl_status compiler_flang_slit_fayly_sharp(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: «Итог печати шарп»
+ */
+fl_status compiler_flang_pechat_programmy_sharp(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Беда из анализа».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -43475,6 +47283,27 @@ fl_status compiler_flang_beda_iz_analiza(fl_ctx *ctx, fl_value d, fl_value *resu
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_pechat_v_c_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать в C-шарп от исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_pechat_v_c_sharp_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в C-шарп».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_c_sharp(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «К печати».

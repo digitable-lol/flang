@@ -1536,10 +1536,12 @@ export async function externalChecks(program, настройки = {}) {
   let считатьИзоморфизмы = null
   let считатьКвадраты = null
   let считатьКатегории = null
+  let считатьМножества = null
   try {
     ;({ обязательства: считатьОбязательства, свойства: считатьСвойства, моноиды: считатьМоноиды,
         изоморфизмы: считатьИзоморфизмы, квадраты: считатьКвадраты,
-        категории: считатьКатегории } = await import(new URL("../src/self.mjs", import.meta.url).href))
+        категории: считатьКатегории,
+        множестваЗаконом: считатьМножества } = await import(new URL("../src/self.mjs", import.meta.url).href))
   } catch {
     /* слоя ещё нет — check работает в объёме, который доступен сегодня */
   }
@@ -1550,6 +1552,7 @@ export async function externalChecks(program, настройки = {}) {
   const ИЗОМОРФИЗМ_СЛОЕМ = "изоморфизм слоем"
   const ФУНКТОР_СЛОЕМ = "функтор слоем"
   const КАТЕГОРИЯ_СЛОЕМ = "категория слоем"
+  const МНОЖЕСТВА_СЛОЕМ = "множества слоем"
 
   for (const [file, names, ключ] of [
     ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"], "types"],
@@ -1584,7 +1587,13 @@ export async function externalChecks(program, настройки = {}) {
        только склейка у вложения — предъявленный контрпример; общая часть без
        свидетеля сюда не приходит вовсе и уходит в `assumed`, потому что «не
        нашли» — это не «нет» (flang/cat/SETS.md). */
-    ["../src/sets.mjs", ["checkSetLaws"], "sets"],
+    /* СЕТКУ ОТНОШЕНИЙ СЧИТАЕТ СЛОЙ НА САМОМ FLANG, и зовётся он здесь же, на
+       прежнем месте: порядок ключей `results` — поверхность. `src/sets.mjs` из
+       рабочего пути при этом НЕ УХОДИТ, и молчать об этом нельзя: вторая его
+       половина, `checkSetShapes`, берёт контекст у типизатора, а не программу
+       целиком, и уедет вместе с ним. Сколько строк остаётся на потом, названо
+       числом в `flang/test/rabochiy-put.test.mjs`. */
+    [МНОЖЕСТВА_СЛОЕМ, [], "sets"],
     /* Равенство морфизмов — там же и по той же причине. Категория объявляет
        СВОЁ отношение равенства на значениях объекта, а равенство стрелок
        выводится из него поточечно; и то, что оно эквивалентность, и то, что
@@ -1639,6 +1648,13 @@ export async function externalChecks(program, настройки = {}) {
     if (file === ИЗОМОРФИЗМ_СЛОЕМ) {
       if (считатьИзоморфизмы === null) continue
       const итог = await считатьИзоморфизмы(program)
+      results[ключ] = итог
+      diagnostics.push(...normalizeDiagnostics(итог))
+      continue
+    }
+    if (file === МНОЖЕСТВА_СЛОЕМ) {
+      if (считатьМножества === null) continue
+      const итог = await считатьМножества(program)
       results[ключ] = итог
       diagnostics.push(...normalizeDiagnostics(итог))
       continue

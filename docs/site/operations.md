@@ -53,6 +53,111 @@ The quoted name must match the module name inside the file. A mismatch is a
 refusal: `модуль в …/sets.flang называется «Множество строк», а импортируется как
 «Множества»`. That is not pedantry: it is how a forgotten file move gets caught.
 
+## Passing arguments: `--args`
+
+Arguments travel in one option, and it takes a **JSON object**: the key is the
+parameter name exactly as written in `принимает`; the value is the value.
+
+| Parameter type | What to write | Example |
+| --- | --- | --- |
+| `число`, `нат`, `целое` (number, natural, integer) | a number | `21`, `-3`, `2.5` |
+| `строка` (string) | a double-quoted string | `"раз два три"` |
+| `признак` (boolean) | `true` or `false` | `true` |
+| `список чего-то` (list of something) | an array | `[3, 1, 3, 2, 1]` |
+| a record | an object with field names | `{"начало": 1, "конец": 2}` |
+
+The function name goes in ordinary quotes on the command line — guillemets are
+not quotes to the shell, and it would split the name at the space.
+
+**Scalars** — two numbers:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Страниц под записи" --args '{"записей": 23, "размер": 10}'
+```
+
+```json
+{"function":"Страниц под записи","args":{"записей":23,"размер":10},"result":3}
+```
+
+**A list** — an array:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
+```
+
+```json
+{"function":"Сумма без повторов","args":{"элементы":[3,1,3,2,1]},"result":6}
+```
+
+**A record, and a list of records** — an object with field names. There is no
+record in `operations.flang`, so this example is taken from another file in the
+tree:
+
+```bash
+flang run flang/examples/leetcode/056-merge-intervals.flang \
+  --function "Приписать отрезок в начало" \
+  --args '{"первый": {"начало": 1, "конец": 2}, "отрезки": [{"начало": 5, "конец": 6}]}'
+```
+
+```json
+{"function":"Приписать отрезок в начало","args":{"первый":{"начало":1,"конец":2},"отрезки":[{"начало":5,"конец":6}]},"result":[{"начало":1,"конец":2},{"начало":5,"конец":6}]}
+```
+
+### The binary takes scalars only
+
+The command `flang` is two different programs under one name: the full toolchain
+from npm (`@digitable-lol/flang`, runs on Node) and the binary from `brew` and
+`asdf` (no Node needed). The output above was taken off the full toolchain.
+
+The binary takes **a flat object of scalars only** for `--args`: a number, a
+string, `true`, `false`, `null`. It does not parse an array or an object at all:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
+```
+
+```
+flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
+```
+
+The refusal goes to the error stream; the exit code is 2.
+
+Scalars the binary does take, and it computes the same answer. It prints one
+value, with no envelope:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Страниц под записи" --args '{"записей": 23, "размер": 10}'
+```
+
+```
+3
+```
+
+A composite value reaches the binary through the shell: there it is written in
+words of the language rather than in JSON, and the compiler itself reads it.
+
+```bash
+echo '«Сумма без повторов» от [3, 1, 3, 2, 1]' | flang repl docs/examples/operations.flang
+```
+
+```
+объявлено: тотальная функция «Сумма без повторов» — завершение доказано
+объявлено: тотальная функция «Третий по порядку» — завершение доказано
+объявлено: тотальная функция «Слов в строке» — завершение доказано
+объявлено: тотальная функция «Код из адреса» — завершение доказано
+объявлено: тотальная функция «Общих меток» — завершение доказано
+объявлено: тотальная функция «Страниц под записи» — завершение доказано
+загружено из docs/examples/operations.flang
+6
+```
+
+The shell computes the expression with the system `cc`; without `cc` it does not
+switch off — it checks parsing, types and termination and answers `проверено`.
+
 ## Lists
 
 | You need | Use |

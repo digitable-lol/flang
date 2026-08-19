@@ -66,6 +66,9 @@ The language has no loop at all. Walking a list is written `свёртка` (fol
 Read it as: start from `0`, walk the list, and at every step take the
 accumulator (`акк`) and the current item (`эл`) and produce the new accumulator.
 
+The arrow is typed `→`, `->` or `=>` — all the same thing. Here and below it is
+written `→`; if your keyboard has no such key, write `->`.
+
 A fold is **total by construction**: the list is finite and it is walked once.
 There is nothing for the compiler to prove.
 

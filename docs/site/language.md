@@ -30,6 +30,24 @@ spellings is the [Glossary](../glossary.html), and how surfaces work is
 Names — of modules, functions, types, examples, claims — are written in
 guillemets `«…»` on every surface.
 
+### What can be typed more than one way
+
+The arrow is typed `→`, `->` or `=>` — all the same thing. Every example below
+uses `→`; there is no need to hunt for it on the keyboard.
+
+| Sign | How else it is typed | Where it stands |
+| --- | --- | --- |
+| `→` | `->`, `=>` | a fold, `отобразить`, `отфильтровать` (map, filter), a function type |
+| `"text"` | `'text'` | a string literal |
+| `:` `(` `,` and the other punctuation | full-width `：` `（` `，` | a Chinese layout puts them on the same keys |
+
+Words of the language also come in more than one spelling: `объект` and
+`структура` (object, structure), `свёртка` and `свертка` (fold, with and without
+`ё`), `равен`, `равна`, `равно`, `равным`, `равной`, `равное` (equals, in its
+grammatical forms). Every spelling of every word is listed in the
+[Glossary](../glossary.html) — one column per surface, all spellings in one cell,
+comma-separated. Signs are not in the glossary: it holds words only.
+
 ## Module and imports
 
 | Line | What it does |

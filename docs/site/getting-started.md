@@ -125,6 +125,11 @@ flang run hello.flang --function Twice --args '{"n": 21}'
 The function name here carries **no guillemets**: in a declaration they are part
 of the spelling, on the command line they are not.
 
+`--args` takes a JSON object: the key is the parameter name exactly as written
+in `accepts`. The binary reads **a flat object of scalars only** in it — a
+number, a string, `true`, `false`, `null`. It does not parse a list or a record;
+how to pass those is on [Operations](operations.html), the `--args` section.
+
 ## The shell
 
 The bare command opens the shell — like `iex` for Elixir, like `python`:
@@ -246,7 +251,13 @@ names its boundaries itself instead of staying quiet about them:
   naming the obstacle, not a green ledger with an empty section;
 - **it has one emit target** — `c`. There are eight targets: `c`, `csharp`,
   `elixir`, `go`, `java`, `js`, `python`, `rust`. The other seven stayed with the
-  reference implementation.
+  reference implementation;
+- **`--args` takes a flat object of scalars only** — the binary does not parse
+  `[…]` or `{…}` at all and answers `flang run: «--args» разобрать не удалось —
+  ждался плоский объект скаляров, вроде '{"н":10}'` with exit code 2. The
+  reference implementation takes a list and a record as ordinary JSON; the binary
+  is given a composite value through the shell (`flang repl`). Both ways, with
+  runs, are on [Operations](operations.html).
 
 On permitted inputs the binary and the reference answer the same — measured on
 the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,

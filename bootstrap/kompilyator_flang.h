@@ -18474,6 +18474,163 @@ fl_status kompilyator_flang_tip_esli(fl_ctx *ctx, fl_value uzel, fl_value imena,
 fl_status kompilyator_flang_svesti_vetvi(fl_ctx *ctx, fl_value togda, fl_value inache, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Сузить условием».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_suzit_usloviem(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целость условия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Целость по логике»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @param vsyo — «всё»: «Значение»
+ * @param verh — «верх»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_celost_usloviya(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value vsyo, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целость по логике».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Целость условия»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @param vsyo — «всё»: «Значение»
+ * @param verh — «верх»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_celost_po_logike(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value vsyo, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целость листом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vsyo — «всё»: «Значение»
+ * @param verh — «верх»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_celost_listom(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vsyo, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя целости».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imya_celosti(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя целости по сторонам».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imya_celosti_po_storonam(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя остатка».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status kompilyator_flang_imya_ostatka(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это литерал числом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param skolko — «сколько»: число
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_literal_chislom(fl_ctx *ctx, fl_value uzel, fl_value skolko, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Условие даёт потолок».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Потолок из логики»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @param imya — «имя»: строка
+ * @param vetv — «ветвь»
+ * @return значение
+ */
+fl_status kompilyator_flang_uslovie_dayot_potolok(fl_ctx *ctx, fl_value uslovie, fl_value imya, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Потолок из логики».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Условие даёт потолок»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @param imya — «имя»: строка
+ * @param vetv — «ветвь»
+ * @return значение
+ */
+fl_status kompilyator_flang_potolok_iz_logiki(fl_ctx *ctx, fl_value uslovie, fl_value imya, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Потолок из сравнения».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imya — «имя»: строка
+ * @param vetv — «ветвь»
+ * @return значение
+ */
+fl_status kompilyator_flang_potolok_iz_sravneniya(fl_ctx *ctx, fl_value uslovie, fl_value imya, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить целость».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_celost(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наложить нат».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: «Имена»
+ * @param imya — «имя»: строка
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_nalozhit_nat(fl_ctx *ctx, fl_value imena, fl_value imya, fl_value tip, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Сузить имена».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -18498,6 +18655,36 @@ fl_status kompilyator_flang_suzit_imena(fl_ctx *ctx, fl_value uslovie, fl_value 
  * @return значение: «Имена»
  */
 fl_status kompilyator_flang_suzit_po_pustote(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сузить по приставке».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param vetv — «ветвь»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_suzit_po_pristavke(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value vetv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Длина по приставке».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uslovie — «условие»: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @return значение: «Имена»
+ */
+fl_status kompilyator_flang_dlina_po_pristavke(fl_ctx *ctx, fl_value uslovie, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строковый литерал».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_eto_strokovyy_literal(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сузить по длине».
@@ -18800,6 +18987,26 @@ fl_status kompilyator_flang_konec_ne_levee_nachala(fl_ctx *ctx, fl_value konec, 
  * @return значение
  */
 fl_status kompilyator_flang_konec_nazvan_ili_spisan(fl_ctx *ctx, fl_value nebolshie, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конец списан с вычетом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param nachalo — «начало»: «Значение»
+ * @param konec — «конец»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_konec_spisan_s_vychetom(fl_ctx *ctx, fl_value nachalo, fl_value konec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вычет неотрицателен».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param nachalo — «начало»: «Значение»
+ * @param konec — «конец»: «Значение»
+ * @return значение
+ */
+fl_status kompilyator_flang_vychet_neotricatelen(fl_ctx *ctx, fl_value nachalo, fl_value konec, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Имя в границах».

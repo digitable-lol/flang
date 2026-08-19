@@ -1133,9 +1133,9 @@ fl_status kompilyator_flang_sozdat_itog_faktov(fl_ctx *ctx, fl_value godno, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status kompilyator_flang_sozdat_vyzov_utverzhdeniya(fl_ctx *ctx, fl_value funkciya, fl_value argumenty, fl_value *out, fl_error *error);
 
-/* Запись FTS «Найденный план»: «есть», «код», «сообщение», «имя», «начало», «шаг», «первый довод», «второй довод». */
+/* Запись FTS «Найденный план»: «есть», «код», «сообщение», «имя», «начало», «шаг», «первый довод», «второй довод», «строка», «столбец». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status kompilyator_flang_sozdat_naydennyy_plan(fl_ctx *ctx, fl_value est, fl_value kod, fl_value soobschenie, fl_value imya, fl_value nachalo, fl_value shag, fl_value pervyy_dovod, fl_value vtoroy_dovod, fl_value *out, fl_error *error);
+fl_status kompilyator_flang_sozdat_naydennyy_plan(fl_ctx *ctx, fl_value est, fl_value kod, fl_value soobschenie, fl_value imya, fl_value nachalo, fl_value shag, fl_value pervyy_dovod, fl_value vtoroy_dovod, fl_value stroka, fl_value stolbec, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог поиска плана»: «диагностики», «программа», «план». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */

@@ -5954,15 +5954,18 @@ static int check_command(int argc, char **argv) {
  * строку, а непустые раскрывает. Строковые литералы проходят насквозь: скобка
  * внутри строки — это буква, а не структура.
  */
-static void ast_newline(size_t depth) {
+static void ast_newline(FILE *stream, size_t depth) {
   size_t at = 0;
-  fputc('\n', stdout);
+  fputc('\n', stream);
   for (at = 0; at < depth * 2; at += 1) {
-    fputc(' ', stdout);
+    fputc(' ', stream);
   }
 }
 
-static void ast_pretty(const char *utf8, size_t bytes) {
+/* Поток параметром — ради `flang io`: у него отказ уезжает в stderr, и печатать
+   его вторым способом значило бы завести второй способ разойтись. */
+static void ast_pretty_to(FILE *stdout_or_stderr, const char *utf8, size_t bytes) {
+  FILE *const поток = stdout_or_stderr;
   size_t at = 0;
   size_t depth = 0;
   bool in_string = false;
@@ -5970,7 +5973,7 @@ static void ast_pretty(const char *utf8, size_t bytes) {
   for (at = 0; at < bytes; at += 1) {
     const char ch = utf8[at];
     if (in_string) {
-      fputc(ch, stdout);
+      fputc(ch, поток);
       if (escaped) {
         escaped = false;
       } else if (ch == '\\') {
@@ -5982,33 +5985,35 @@ static void ast_pretty(const char *utf8, size_t bytes) {
     }
     if (ch == '"') {
       in_string = true;
-      fputc(ch, stdout);
+      fputc(ch, поток);
     } else if (ch == '{' || ch == '[') {
       const char next = at + 1 < bytes ? utf8[at + 1] : '\0';
-      fputc(ch, stdout);
+      fputc(ch, поток);
       if (next != '}' && next != ']') {
         depth += 1;
-        ast_newline(depth);
+        ast_newline(поток, depth);
       }
     } else if (ch == '}' || ch == ']') {
       const char prev = at > 0 ? utf8[at - 1] : '\0';
       if (prev == '{' || prev == '[') {
-        fputc(ch, stdout);
+        fputc(ch, поток);
       } else {
         depth -= 1;
-        ast_newline(depth);
-        fputc(ch, stdout);
+        ast_newline(поток, depth);
+        fputc(ch, поток);
       }
     } else if (ch == ',') {
-      fputc(ch, stdout);
-      ast_newline(depth);
+      fputc(ch, поток);
+      ast_newline(поток, depth);
     } else if (ch == ':') {
-      fputs(": ", stdout);
+      fputs(": ", поток);
     } else {
-      fputc(ch, stdout);
+      fputc(ch, поток);
     }
   }
 }
+
+static void ast_pretty(const char *utf8, size_t bytes) { ast_pretty_to(stdout, utf8, bytes); }
 
 /**
  * `flang ast <файл> [--pretty]` — дерево разбора в JSON, без Node.
@@ -7338,28 +7343,36 @@ static fl_value io_perform(io_host *host, fl_value order) {
  * диагностика одна и несёт код и сообщение. Идёт он в stderr, а не в stdout, —
  * там, где у удачи стоит вердикт.
  */
-static void io_print_error(const char *code, const char *message, bool pretty) {
-  fl_value diagnostic[3];
+static void io_print_error(const char *code, const char *message, double line, double column, bool pretty) {
+  fl_value diagnostic[4];
   fl_value list[1];
   fl_value pairs[2];
   fl_value printed = fl_nothing();
   const char *utf8 = NULL;
   size_t bytes = 0;
+  size_t count = 3;
   diagnostic[0] = io_pair("code", io_say(code));
   diagnostic[1] = io_pair("message", io_say(message));
   diagnostic[2] = io_pair("severity", io_say("error"));
-  list[0] = io_record(diagnostic, 3);
+  /* МЕСТО СТАВИТСЯ НЕ ВСЕГДА, и это не небрежность: свидетель кладёт `span`
+     тому отказу, который родился ВНУТРИ прогона плана (`план.span`), и не
+     кладёт тому, который родился до него — «плана с таким именем нет» указывать
+     не на что. Ключ, поставленный лишний раз, разошёлся бы с ним побайтово. */
+  if (line > 0) {
+    fl_value place[2];
+    place[0] = io_pair("line", io_number(line));
+    place[1] = io_pair("column", io_number(column));
+    diagnostic[3] = io_pair("span", io_record(place, 2));
+    count = 4;
+  }
+  list[0] = io_record(diagnostic, count);
   pairs[0] = io_pair("error", io_say(message));
   pairs[1] = io_pair("diagnostics", io_list(list, 1));
   {
     fl_value node = io_record(pairs, 2);
     if (repl_call("Печать значения", &node, 1, &printed) == FL_OK && val_text(printed, &utf8, &bytes)) {
       if (pretty) {
-        /* Отступы считает тот же код, что у `ast` и у `facts`: второй печатник
-           JSON завёл бы второй способ разойтись со свидетелем. */
-        FILE *было = stdout;
-        (void)было;
-        fwrite(utf8, 1, bytes, stderr);
+        ast_pretty_to(stderr, utf8, bytes);
       } else {
         fwrite(utf8, 1, bytes, stderr);
       }
@@ -7417,7 +7430,15 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
   fl_value step = first;
   fl_value field = fl_nothing();
   char *kind = NULL;
+  char *plan_name = NULL;
+  double line = 0;
+  double column = 0;
   int code = 0;
+
+  val_field(plan, "имя", &field);
+  plan_name = val_copy(field);
+  if (val_field(plan, "строка", &field) && field.tag == FL_NUMBER) line = field.as.number;
+  if (val_field(plan, "столбец", &field) && field.tag == FL_NUMBER) column = field.as.number;
 
   val_field(step, "вид", &field);
   kind = val_copy(field);
@@ -7428,10 +7449,11 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
     what = val_copy(field);
     val_field(step, "сообщение", &field);
     why = val_copy(field);
-    io_print_error(what[0] == '\0' ? "FLANG_IO" : what, why, pretty);
+    io_print_error(what[0] == '\0' ? "FLANG_IO" : what, why, line, column, pretty);
     free(why);
     free(what);
     free(kind);
+    free(plan_name);
     return 3;
   }
   free(kind);
@@ -7446,7 +7468,8 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
     step_args[2] = state;
     step_args[3] = response;
     if (repl_call("Шаг плана", step_args, 4, &step) != FL_OK) {
-      io_print_error("FLANG_IO", "шаг плана не отработал", pretty);
+      io_print_error("FLANG_IO", "шаг плана не отработал", line, column, pretty);
+      free(plan_name);
       return 3;
     }
     val_field(step, "вид", &field);
@@ -7454,6 +7477,7 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
     if (strcmp(kind, "готово") == 0) {
       val_field(step, "значение", result);
       free(kind);
+      free(plan_name);
       return 0;
     }
     if (strcmp(kind, "провал") == 0 || strcmp(kind, "сбой") == 0) {
@@ -7465,18 +7489,20 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
       why = val_copy(field);
       /* Пустой код у «Провала» заменяется общим: диагностика без кода не
          годится машине. Число выхода при этом от кода не зависит вовсе. */
-      io_print_error(what[0] == '\0' ? "FLANG_IO_FAILED" : what, why, pretty);
+      io_print_error(what[0] == '\0' ? "FLANG_IO_FAILED" : what, why, line, column, pretty);
       code = strcmp(kind, "провал") == 0 ? 1 : 3;
       free(what);
       free(why);
       free(kind);
+      free(plan_name);
       return code;
     }
     free(kind);
     if ((double)*count >= limit) {
-      char buffer[128];
-      snprintf(buffer, sizeof(buffer), "план исчерпал предел поручений (%.0f)", limit);
-      io_print_error("FLANG_IO_LIMIT", buffer, pretty);
+      char buffer[512];
+      snprintf(buffer, sizeof(buffer), "план «%s» исчерпал предел поручений (%.0f)", plan_name, limit);
+      io_print_error("FLANG_IO_LIMIT", buffer, line, column, pretty);
+      free(plan_name);
       return 3;
     }
     {
@@ -7647,16 +7673,20 @@ static int io_file(int argc, char **argv) {
     val_field(plan, "есть", &field);
     has = field.tag == FL_FLAG && field.as.flag;
     if (!has) {
+      /* «Плана с таким именем нет» — это код 3, а не 2, и это контракт
+         свидетеля: двойка означает КРИВОЙ ВЫЗОВ (не назван файл, непонятный
+         ключ), а здесь вызов правильный и до плана дело дошло. Места у такого
+         отказа нет: указывать не на что. */
       char *why = NULL;
       char *what = NULL;
       val_field(plan, "код", &field);
       what = val_copy(field);
       val_field(plan, "сообщение", &field);
       why = val_copy(field);
-      fprintf(stderr, "%s: %s\n", what, why);
+      io_print_error(what, why, 0, 0, pretty);
       free(why);
       free(what);
-      code = 2;
+      code = 3;
     } else {
       fl_value ready_args[3];
       ready_args[0] = program;

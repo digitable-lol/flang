@@ -189,6 +189,7 @@
 - [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
+- [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
 
 ## Найденные ошибки
 
@@ -209,6 +210,7 @@
 - [Адрес модуля в замке — sha256 его исходника, а сжатия в формате нет вовсе](adres-modulya-eto-sha256-ishodnika.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
+- [Страница `man` показывала вместо примера `--args` обрывок `'{`, и проверка была зелёной](the-man-page-swallowed-the-args-example.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)

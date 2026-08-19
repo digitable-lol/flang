@@ -156,7 +156,7 @@ node scripts/wasm-compare.mjs                                     # умолча
 
 Самая интересная проверка — и она проходит.
 
-`bootstrap/kompilyator_flang.c` (4.5 МБ, 1588 функций) **собирается в
+`bootstrap/compiler_flang.c` (4.5 МБ, 1588 функций) **собирается в
 `wasm32-wasi` без единой правки и без единого предупреждения.** Слинкованный
 модуль — 4 567 408 байт против 4 249 992 байт обычного бинарника, то есть всего
 в 1.07 раза толще.
@@ -516,7 +516,7 @@ node scripts/wasm-speed.mjs --repeats 7
 cp -r bootstrap /tmp/boot-wasm
 make -C /tmp/boot-wasm CC="clang --target=wasm32-wasi" LDLIBS="-lm" -j4
 #   flang_repl.c упадёт с 8 ошибками — это §6, так и должно быть;
-#   kompilyator_flang.o, flang_runtime.o и flang_cli.o соберутся.
+#   compiler_flang.o, flang_runtime.o и flang_cli.o соберутся.
 ```
 
 Оснастка замера в дереве:

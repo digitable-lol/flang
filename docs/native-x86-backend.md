@@ -41,7 +41,7 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 
 **Сколько чужого кода читается на сборке.** Порождённый C втягивает **97 чужих
 заголовков, 17 100 строк** (`cc -M` по всем четырём файлам точки раскрутки), и
-зовёт **54 чужих символа** (`nm -u` минус наши `fl_*` и `kompilyator_flang_*`):
+зовёт **54 чужих символа** (`nm -u` минус наши `fl_*` и `compiler_flang_*`):
 `malloc`, `memcpy`, `snprintf`, `strtod`, `pthread_create`, `getrlimit` и
 соседи.
 
@@ -112,7 +112,7 @@ make -C bootstrap -j1   →  44.13 с (42.62 с пользовательског
 
 | шаг | секунд | доля |
 |---|---:|---:|
-| `cc -c kompilyator_flang.c` (120 102 строки, 6 279 070 байт) | **40.55** | 91.9 % |
+| `cc -c compiler_flang.c` (120 102 строки, 6 279 070 байт) | **40.55** | 91.9 % |
 | `cc -c flang_repl.c` | 1.42 | 3.2 % |
 | `cc -c flang_runtime.c` | 0.83 | 1.9 % |
 | `cc -c flang_cli.c` | 0.20 | 0.5 % |
@@ -274,7 +274,7 @@ fl_status stupen_1_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *e
 
 | объектник | инструкций | косвенных `call` |
 |---|---:|---:|
-| `kompilyator_flang.o` (**весь порождённый код**) | 702 126 | **0** |
+| `compiler_flang.o` (**весь порождённый код**) | 702 126 | **0** |
 | `flang_runtime.o` (ручной C) | 8 515 | 2 |
 | `flang_cli.o` (ручной C) | 1 756 | 0 |
 | `flang_repl.o` (ручной C) | 14 670 | 0 |
@@ -377,7 +377,7 @@ for (precision = 1; precision < 17; precision += 1) {
 ничего: байты не проверяет никто.
 
 Побочно то же касается диагностики. Одна функция точки раскрутки,
-`kompilyator_flang_call`, занимает **309 386 байт** — это цепочка `strcmp` по
+`compiler_flang_call`, занимает **309 386 байт** — это цепочка `strcmp` по
 2037 именам. `cc` такое переваривает; свой генератор обязан не сложиться на
 функции такого размера, и это надо проверять, а не предполагать.
 
@@ -520,13 +520,13 @@ make -C bootstrap clean && time make -C bootstrap -j1
 
 # 2. Разложение по шагам
 cd bootstrap
-for f in flang_runtime kompilyator_flang flang_cli flang_repl; do
+for f in flang_runtime compiler_flang flang_cli flang_repl; do
   /usr/bin/time -f "$f %e" cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -c -o $f.o $f.c
 done
 
 # 3. Куда уходит время внутри cc
-for O in 0 1 2; do /usr/bin/time -f "-O$O %e" cc -std=c99 -w -O$O -c -o /tmp/k$O.o kompilyator_flang.c; done
-/usr/bin/time -f "-E %e" cc -std=c99 -w -E -o /dev/null kompilyator_flang.c
+for O in 0 1 2; do /usr/bin/time -f "-O$O %e" cc -std=c99 -w -O$O -c -o /tmp/k$O.o compiler_flang.c; done
+/usr/bin/time -f "-E %e" cc -std=c99 -w -E -o /dev/null compiler_flang.c
 
 # 4. Сколько стоит НАША печать того же компилятора
 LC_ALL=C.UTF-8 /usr/bin/time -f "%e" node scripts/bootstrap-c.mjs --check
@@ -537,17 +537,17 @@ grep -o 'execve("[^"]*"' /tmp/tr.txt | sort -u
 
 # 6. Чужие заголовки и чужие символы
 cc -std=c99 -w -M *.c | tr ' ' '\n' | grep '^/usr' | sort -u | xargs wc -l | tail -1
-nm -u *.o | grep -oP '^\s+U \K\S+' | sed 's/@.*//' | sort -u | grep -v '^fl_\|^kompilyator_flang'
+nm -u *.o | grep -oP '^\s+U \K\S+' | sed 's/@.*//' | sort -u | grep -v '^fl_\|^compiler_flang'
 
 # 7. Ноль косвенных вызовов в порождённом коде
-objdump -d kompilyator_flang.o | grep -c 'call.*\*'    # 0
-objdump -d kompilyator_flang.o | grep -cP '^\s+[0-9a-f]+:'  # 702126
+objdump -d compiler_flang.o | grep -c 'call.*\*'    # 0
+objdump -d compiler_flang.o | grep -cP '^\s+[0-9a-f]+:'  # 702126
 
 # 8. Мнемоники и релокации — сколько x86 на самом деле нужно
 objdump -d flang_cli | grep -P '^\s+[0-9a-f]+:' \
   | awk '{for(i=1;i<=NF;i++) if($i !~ /^[0-9a-f][0-9a-f]$/ && $i !~ /:$/){print $i; break}}' \
   | sort | uniq -c | sort -rn | head -30
-readelf -r kompilyator_flang.o | grep -oP 'R_X86_64_\w+' | sort | uniq -c
+readelf -r compiler_flang.o | grep -oP 'R_X86_64_\w+' | sort | uniq -c
 
 # 9. Сорок четыре инструкции на одно умножение
 node flang/bin/flang.mjs emit МОДУЛЬ.flang --target c --out /tmp/s1

@@ -36,9 +36,17 @@ built="${build}/flang"
 
 mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
 install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
-if [ -f "${build}/libkompilyator_flang.a" ]; then
-  install -m 0644 "${build}/libkompilyator_flang.a" "${ASDF_INSTALL_PATH}/lib/"
-fi
+# Библиотека зовётся по имени модуля компилятора, а имя это менялось: до 0.5.2
+# модуль звался «Компилятор flang» и печать давала `libkompilyator_flang.a`,
+# с 0.5.2 он «Compiler flang» и печать даёт `libcompiler_flang.a` (транслит в
+# имени файла — нарушение docs/guide/naming.ru.md, и чинился он в имени модуля).
+# Плагин ставит выпущенные версии, а среди них есть и те и другие, поэтому
+# берётся ЛЮБОЙ архив, какой собрал make: имя ищется, а не пишется.
+# Заголовки ставятся звёздочкой и потому переименования не заметили вовсе.
+for archive in "${build}"/lib*.a; do
+  [ -f "$archive" ] || continue
+  install -m 0644 "$archive" "${ASDF_INSTALL_PATH}/lib/"
+done
 install -m 0644 "${build}"/*.h "${ASDF_INSTALL_PATH}/include/"
 
 # Проверяем не «запустился», а «понял язык»: подаём модуль и требуем, чтобы

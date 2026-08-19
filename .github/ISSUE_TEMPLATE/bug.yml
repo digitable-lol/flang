@@ -1,0 +1,58 @@
+name: Дефект языка / Language defect
+description: Программа принята, а не должна была; ответ не тот; напечатанный код разошёлся с интерпретатором
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Пишите на русском или английском — читаются оба.
+        Write in Russian or English; both are read.
+
+        Уязвимость сюда не пишите — см. `.github/SECURITY.md`.
+        Do not report a vulnerability here — see `.github/SECURITY.md`.
+  - type: textarea
+    id: program
+    attributes:
+      label: Программа / The program
+      description: Наименьший `.flang`, на котором это видно. Вставьте текстом, а не ссылкой. / The smallest `.flang` that shows it. Paste it, do not link it.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Команда и её вывод / The command and its output
+      description: Дословно, вместе с кодом возврата. / Verbatim, with the exit code.
+      render: shell
+      placeholder: |
+        $ flang check proba.flang
+        {"valid":true,...}
+        $ echo $?
+        0
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Чего ждали / What you expected
+      description: И почему — какое место спецификации или какой пример это обещает. / And why — which part of the spec or which example promises it.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Версия / Version
+      description: Вывод `bootstrap/flang_cli --version`, либо коммит дерева. / Output of `bootstrap/flang_cli --version`, or the tree's commit.
+    validations:
+      required: true
+  - type: dropdown
+    id: implementation
+    attributes:
+      label: Какая реализация / Which implementation
+      options:
+        - Интерпретатор на Node / the Node reference implementation
+        - Самоприменённый двоичный файл (bootstrap) / the self-hosted binary
+        - Напечатанный код одной из восьми целей / emitted code, one of the eight targets
+        - Не знаю / not sure
+    validations:
+      required: true

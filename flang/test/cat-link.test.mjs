@@ -34,7 +34,7 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { checkFunctorSquares } from "../src/functor.mjs"
+import { квадраты as checkFunctorSquares } from "../src/self.mjs"
 import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 import { АКСИОМЫ } from "../src/proofterm.mjs"
@@ -61,7 +61,7 @@ async function связать(файлы, входной) {
 async function проверить(файлы, входной) {
   const { программа, бедыСвязывания } = await связать(файлы, входной)
   const типы = checkTypes(программа)
-  const квадраты = checkFunctorSquares(программа)
+  const квадраты = await checkFunctorSquares(программа)
   return {
     программа,
     коды: [...бедыСвязывания, ...(типы.diagnostics ?? []), ...квадраты.diagnostics].map((б) => б.code),
@@ -328,7 +328,7 @@ test("пример flang/examples/cat/modules: три модуля соглас�
   assert.deepEqual(бедыСвязывания, [])
   assert.deepEqual((checkTypes(программа).diagnostics ?? []).map((б) => б.code), [])
 
-  const квадраты = checkFunctorSquares(программа)
+  const квадраты = await checkFunctorSquares(программа)
   assert.deepEqual(квадраты.diagnostics, [])
   assert.deepEqual(квадраты.checked.map((з) => з.functor).sort(), ["Заказ в отгрузку", "Заказ в платёж"])
   for (const запись of квадраты.checked) {
@@ -346,7 +346,7 @@ test("пример: композиция стрелок тоже входит в
   const { readFileSync } = await import("node:fs")
   const входной = join(примерКаталог, "reconciliation.flang")
   const { diagnostics: _, ...программа } = await linkProgram(входной, readFileSync(входной, "utf8"), parse)
-  const итог = checkFunctorSquares(программа)
+  const итог = await checkFunctorSquares(программа)
   /* Три квадрата на связь — это две образующие стрелки и их композиция. Считать
      композицию не обязательно (вычисление и есть композиция, поэтому её квадрат
      сходится сам), но УМЕТЬ её взять проверка обязана: иначе категория,
@@ -390,7 +390,7 @@ test("изъятие: пустая проверка квадрата не нах
   const снятая = () => ({ diagnostics: [], checked: [], assumed: [] })
   assert.deepEqual(снятая(программа).diagnostics, [], "снятая проверка молчит — так и задумано")
   assert.ok(
-    checkFunctorSquares(программа).diagnostics.length > 0,
+    (await checkFunctorSquares(программа)).diagnostics.length > 0,
     "настоящая проверка обязана находить то, о чём снятая молчит",
   )
 })
@@ -428,7 +428,7 @@ test("квадрат не выдаёт себя за доказательств�
     { "orders.flang": ЗАКАЗЫ, "shipping.flang": ОТГРУЗКА, "svyaz.flang": ЧЕСТНАЯ },
     "svyaz.flang",
   )
-  const итог = checkFunctorSquares(программа)
+  const итог = await checkFunctorSquares(программа)
   for (const запись of итог.checked) {
     assert.equal(typeof запись.values, "number")
     assert.equal(typeof запись.squares, "number")

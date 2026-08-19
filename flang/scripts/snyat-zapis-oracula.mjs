@@ -29,10 +29,8 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 import { checkFacts } from "../src/factcheck.mjs"
-import { checkFunctorSquares } from "../src/functor.mjs"
 import { parse } from "../src/parser.mjs"
-import { checkSetLaws } from "../src/sets.mjs"
-import { checkCategoryLaws } from "../src/setoid.mjs"
+import { категории, квадраты, множестваЗаконом } from "../src/self.mjs"
 import { globSync } from "../test/glob.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
@@ -52,10 +50,19 @@ export const файлыКорпуса = [
    ему нужны обязательства, а их считает слой на flang, и запись тогда мерила бы
    слой слоем. Обе границы названы, чтобы их не приняли за полноту. */
 export const СВИДЕТЕЛИ = {
-  setoid: (программа) => checkCategoryLaws(программа),
-  sets: (программа) => checkSetLaws(программа),
+  /* Свидетеля `src/setoid.mjs` в дереве больше нет — стёрт; отвечает
+     `self/setoid.flang` + `self/setoid-oracle.flang` через `src/self.mjs`. */
+  setoid: (программа) => категории(программа),
+  /* Свидетеля `src/sets.mjs` в дереве больше нет — стёрт; отвечает
+     `self/sets.flang` + `self/sets-oracle.flang` через `src/self.mjs`. */
+  sets: (программа) => множестваЗаконом(программа),
   factcheck: (программа) => checkFacts(программа),
-  functor: (программа) => checkFunctorSquares(программа),
+  /* Свидетеля `src/functor.mjs` В ДЕРЕВЕ БОЛЬШЕ НЕТ — стёрт. Отвечает слой на
+     flang (`self/functor.flang` + `self/functor-oracle.flang`) через
+     `src/self.mjs`, а числа записи остались замороженными свидетелем: отпечаток
+     не пересчитан, и в этом весь смысл. Разойдётся слой с записью — запись
+     покраснеет. */
+  functor: (программа) => квадраты(программа),
 }
 
 /** Устойчивый вид ответа: ключи по порядку, чтобы отпечаток не плясал. */
@@ -90,7 +97,7 @@ export function пусто(ответ) {
  * помнит свой список путей, и сверяется ровно по нему; рост корпуса виден
  * отдельным утверждением и красным не считается.
  */
-export function снять(пути = файлыКорпуса) {
+export async function снять(пути = файлыКорпуса) {
   const непустые = {}
   const поток = []
   const снятые = []
@@ -108,7 +115,7 @@ export function снять(пути = файлыКорпуса) {
     for (const [имя, свидетель] of Object.entries(СВИДЕТЕЛИ)) {
       let ответ
       try {
-        ответ = канон(свидетель(программа))
+        ответ = канон(await свидетель(программа))
       } catch (ошибка) {
         ответ = { отказ: ошибка?.message ?? String(ошибка) }
       }
@@ -130,7 +137,7 @@ export function снять(пути = файлыКорпуса) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const запись = снять()
+  const запись = await снять()
   const куда = fileURLToPath(new URL("../test/fixtures/zapis-oracula.json", import.meta.url))
   writeFileSync(куда, `${JSON.stringify(запись, null, 2)}\n`)
   process.stdout.write(

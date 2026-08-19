@@ -99,6 +99,7 @@
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
+- [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)

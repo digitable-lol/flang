@@ -55,6 +55,10 @@
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
+- [Правый край сравнения сам по себе не закрыл ничего: закрыла ЛЕВАЯ сторона, прочитанная как мера списка](right-edge-alone-closes-nothing.md)
+- [Узкое место переехало четвёртый раз: теперь мешает индукция, которую негде объявить](what-blocks-the-kernel-now-is-induction-without-a-theorem.md)
+- [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
+- [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 
 ## Теория категорий
 
@@ -82,6 +86,11 @@
 - [Межмодульная оптимизация ускорила не только работу, но и сборку большого файла](lto-speeds-up-the-build-too.md)
 - [Прогон примеров при каждой проверке стоит 3 мс обычному файлу и 35 секунд двум самым большим](examples-cost-lands-on-two-files.md)
 
+## Службы и долговечность
+
+- [Чистота обработчика превращает восстановление из журнала в одну свёртку](chistota-obrabotchika-delaet-vosstanovlenie-svyortkoy.md)
+- [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
+
 ## Процессы и конкурентность
 
 - [BEAM не обходит операционную систему, и C зависит от неё ровно так же](beam-does-not-bypass-the-os.md)
@@ -99,6 +108,8 @@
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
+- [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
+- [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
@@ -107,6 +118,7 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
 - [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
@@ -163,6 +175,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
 
 ## Отвергнутые пути
 

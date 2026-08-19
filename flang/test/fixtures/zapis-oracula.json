@@ -1,0 +1,440 @@
+{
+  "программ": 285,
+  "пути": [
+    "examples/library-api/lib/api.flang",
+    "examples/library-api/lib/catalog.flang",
+    "examples/library-api/lib/fine.flang",
+    "examples/library-api/lib/isbn.flang",
+    "examples/library-api/lib/loan.flang",
+    "examples/library-api/lib/query.flang",
+    "examples/library-api/stdlib/text.flang",
+    "flang/conc/examples/backpressure.flang",
+    "flang/conc/examples/budget.flang",
+    "flang/conc/examples/counter.flang",
+    "flang/conc/examples/distributed.flang",
+    "flang/conc/examples/escalate.flang",
+    "flang/conc/examples/mailbox.flang",
+    "flang/conc/examples/measure.flang",
+    "flang/conc/examples/race.flang",
+    "flang/conc/examples/server.flang",
+    "flang/conc/examples/supervision.flang",
+    "flang/conc/sluzhby/chtenie.flang",
+    "flang/core/evaluate.flang",
+    "flang/core/json.flang",
+    "flang/core/lexer.flang",
+    "flang/core/parser.flang",
+    "flang/examples/cat/crdt-merge.flang",
+    "flang/examples/cat/euler-orders.flang",
+    "flang/examples/cat/fold-by-cores.flang",
+    "flang/examples/cat/modules/orders.flang",
+    "flang/examples/cat/modules/payments.flang",
+    "flang/examples/cat/modules/reconciliation.flang",
+    "flang/examples/cat/modules/shipping.flang",
+    "flang/examples/cat/monoid-and-monad.flang",
+    "flang/examples/cat/natural-square.flang",
+    "flang/examples/cat/order-shipment.flang",
+    "flang/examples/cat/retry-safe.flang",
+    "flang/examples/cat/split-lines.flang",
+    "flang/examples/errors/column-total.flang",
+    "flang/examples/errors/number-parsing.flang",
+    "flang/examples/import-check.flang",
+    "flang/examples/io/link-report.flang",
+    "flang/examples/leetcode/001-two-sum.flang",
+    "flang/examples/leetcode/003-longest-substring-without-repeating-characters.flang",
+    "flang/examples/leetcode/004-median-of-two-sorted-arrays.flang",
+    "flang/examples/leetcode/011-container-with-most-water.flang",
+    "flang/examples/leetcode/013-roman-to-integer.flang",
+    "flang/examples/leetcode/014-longest-common-prefix.flang",
+    "flang/examples/leetcode/015-3sum.flang",
+    "flang/examples/leetcode/017-letter-combinations-of-a-phone-number.flang",
+    "flang/examples/leetcode/020-valid-parentheses.flang",
+    "flang/examples/leetcode/022-generate-parentheses.flang",
+    "flang/examples/leetcode/026-remove-duplicates-from-sorted-array.flang",
+    "flang/examples/leetcode/027-remove-element.flang",
+    "flang/examples/leetcode/028-find-the-index-of-the-first-occurrence-in-a-string.flang",
+    "flang/examples/leetcode/033-search-in-rotated-sorted-array.flang",
+    "flang/examples/leetcode/035-search-insert-position.flang",
+    "flang/examples/leetcode/042-trapping-rain-water.flang",
+    "flang/examples/leetcode/046-permutations.flang",
+    "flang/examples/leetcode/049-group-anagrams.flang",
+    "flang/examples/leetcode/050-powx-n.flang",
+    "flang/examples/leetcode/053-maximum-subarray.flang",
+    "flang/examples/leetcode/056-merge-intervals.flang",
+    "flang/examples/leetcode/062-unique-paths.flang",
+    "flang/examples/leetcode/064-minimum-path-sum.flang",
+    "flang/examples/leetcode/066-plus-one.flang",
+    "flang/examples/leetcode/069-sqrtx.flang",
+    "flang/examples/leetcode/070-climbing-stairs.flang",
+    "flang/examples/leetcode/072-edit-distance.flang",
+    "flang/examples/leetcode/074-search-a-2d-matrix.flang",
+    "flang/examples/leetcode/076-minimum-window-substring.flang",
+    "flang/examples/leetcode/078-subsets.flang",
+    "flang/examples/leetcode/088-merge-sorted-array.flang",
+    "flang/examples/leetcode/094-binary-tree-inorder-traversal.flang",
+    "flang/examples/leetcode/098-validate-binary-search-tree.flang",
+    "flang/examples/leetcode/100-same-tree.flang",
+    "flang/examples/leetcode/101-symmetric-tree.flang",
+    "flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang",
+    "flang/examples/leetcode/110-balanced-binary-tree.flang",
+    "flang/examples/leetcode/112-path-sum.flang",
+    "flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang",
+    "flang/examples/leetcode/125-valid-palindrome.flang",
+    "flang/examples/leetcode/136-single-number.flang",
+    "flang/examples/leetcode/139-word-break.flang",
+    "flang/examples/leetcode/148-sort-list.flang",
+    "flang/examples/leetcode/150-evaluate-reverse-polish-notation.flang",
+    "flang/examples/leetcode/152-maximum-product-subarray.flang",
+    "flang/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang",
+    "flang/examples/leetcode/167-two-sum-ii-input-array-is-sorted.flang",
+    "flang/examples/leetcode/169-majority-element.flang",
+    "flang/examples/leetcode/179-largest-number.flang",
+    "flang/examples/leetcode/189-rotate-array.flang",
+    "flang/examples/leetcode/198-house-robber.flang",
+    "flang/examples/leetcode/200-number-of-islands.flang",
+    "flang/examples/leetcode/202-happy-number.flang",
+    "flang/examples/leetcode/205-isomorphic-strings.flang",
+    "flang/examples/leetcode/207-course-schedule.flang",
+    "flang/examples/leetcode/208-implement-trie-prefix-tree.flang",
+    "flang/examples/leetcode/209-minimum-size-subarray-sum.flang",
+    "flang/examples/leetcode/217-contains-duplicate.flang",
+    "flang/examples/leetcode/226-invert-binary-tree.flang",
+    "flang/examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang",
+    "flang/examples/leetcode/238-product-of-array-except-self.flang",
+    "flang/examples/leetcode/242-valid-anagram.flang",
+    "flang/examples/leetcode/268-missing-number.flang",
+    "flang/examples/leetcode/283-move-zeroes.flang",
+    "flang/examples/leetcode/300-longest-increasing-subsequence.flang",
+    "flang/examples/leetcode/322-coin-change.flang",
+    "flang/examples/leetcode/344-reverse-string.flang",
+    "flang/examples/leetcode/349-intersection-of-two-arrays.flang",
+    "flang/examples/leetcode/383-ransom-note.flang",
+    "flang/examples/leetcode/424-longest-repeating-character-replacement.flang",
+    "flang/examples/leetcode/438-find-all-anagrams-in-a-string.flang",
+    "flang/examples/leetcode/509-fibonacci-number.flang",
+    "flang/examples/leetcode/516-longest-palindromic-subsequence.flang",
+    "flang/examples/leetcode/543-diameter-of-binary-tree.flang",
+    "flang/examples/leetcode/547-number-of-provinces.flang",
+    "flang/examples/leetcode/567-permutation-in-string.flang",
+    "flang/examples/leetcode/643-maximum-average-subarray-i.flang",
+    "flang/examples/leetcode/704-binary-search.flang",
+    "flang/examples/leetcode/733-flood-fill.flang",
+    "flang/examples/leetcode/739-daily-temperatures.flang",
+    "flang/examples/leetcode/746-min-cost-climbing-stairs.flang",
+    "flang/examples/leetcode/977-squares-of-a-sorted-array.flang",
+    "flang/examples/measure/binary-search.flang",
+    "flang/examples/measure/euclid.flang",
+    "flang/examples/measure/natural.flang",
+    "flang/examples/monad/order-total.flang",
+    "flang/examples/money/exact-decimal.flang",
+    "flang/examples/paths/shortest-path.flang",
+    "flang/examples/rosetta/ackermann-function-english.flang",
+    "flang/examples/rosetta/ackermann-function.flang",
+    "flang/examples/rosetta/factorial-english.flang",
+    "flang/examples/rosetta/factorial.flang",
+    "flang/examples/rosetta/fibonacci-english.flang",
+    "flang/examples/rosetta/fibonacci.flang",
+    "flang/examples/rosetta/fizzbuzz-english.flang",
+    "flang/examples/rosetta/fizzbuzz.flang",
+    "flang/examples/rosetta/hundred-doors-english.flang",
+    "flang/examples/rosetta/hundred-doors.flang",
+    "flang/examples/rosetta/levenshtein-distance-english.flang",
+    "flang/examples/rosetta/levenshtein-distance.flang",
+    "flang/examples/rosetta/merge-sort-english.flang",
+    "flang/examples/rosetta/merge-sort.flang",
+    "flang/examples/rosetta/palindrome-english.flang",
+    "flang/examples/rosetta/palindrome.flang",
+    "flang/examples/rosetta/primes-by-trial-division-english.flang",
+    "flang/examples/rosetta/primes-by-trial-division.flang",
+    "flang/examples/rosetta/quicksort-english.flang",
+    "flang/examples/rosetta/quicksort.flang",
+    "flang/examples/rosetta/reverse-string-english.flang",
+    "flang/examples/rosetta/reverse-string.flang",
+    "flang/examples/rosetta/roman-numerals-english.flang",
+    "flang/examples/rosetta/roman-numerals.flang",
+    "flang/examples/rosetta/run-length-encoding-english.flang",
+    "flang/examples/rosetta/run-length-encoding.flang",
+    "flang/examples/rosetta/towers-of-hanoi-english.flang",
+    "flang/examples/rosetta/towers-of-hanoi.flang",
+    "flang/examples/surfaces/factorial.eo.flang",
+    "flang/examples/surfaces/factorial.zh.flang",
+    "flang/examples/wal/append-plan.flang",
+    "flang/examples/wal/write-ahead-log.flang",
+    "flang/examples/web/orders-api.flang",
+    "flang/examples/web/shortener/handler-without-budget.flang",
+    "flang/examples/web/shortener/plan-durable.flang",
+    "flang/examples/web/shortener/plan-network.flang",
+    "flang/examples/web/shortener/plan.flang",
+    "flang/examples/web/shortener/server.flang",
+    "flang/examples/web/shortener/service.flang",
+    "flang/examples/web/shortener/store.flang",
+    "flang/proof/examples/body-forms.flang",
+    "flang/proof/examples/corpus-alphabet.flang",
+    "flang/proof/examples/corpus-brackets.flang",
+    "flang/proof/examples/corpus-bytes.flang",
+    "flang/proof/examples/corpus-carrier.flang",
+    "flang/proof/examples/corpus-case.flang",
+    "flang/proof/examples/corpus-cforms.flang",
+    "flang/proof/examples/corpus-cident.flang",
+    "flang/proof/examples/corpus-depth.flang",
+    "flang/proof/examples/corpus-endings.flang",
+    "flang/proof/examples/corpus-factorial.flang",
+    "flang/proof/examples/corpus-fullwidth.flang",
+    "flang/proof/examples/corpus-hof.flang",
+    "flang/proof/examples/corpus-json.flang",
+    "flang/proof/examples/corpus-jsonescape.flang",
+    "flang/proof/examples/corpus-keywords.flang",
+    "flang/proof/examples/corpus-length.flang",
+    "flang/proof/examples/corpus-lists.flang",
+    "flang/proof/examples/corpus-marks.flang",
+    "flang/proof/examples/corpus-namesigns.flang",
+    "flang/proof/examples/corpus-nat-names.flang",
+    "flang/proof/examples/corpus-natural-ceiling.flang",
+    "flang/proof/examples/corpus-natural.flang",
+    "flang/proof/examples/corpus-numtree.flang",
+    "flang/proof/examples/corpus-ophelpers.flang",
+    "flang/proof/examples/corpus-phrases.flang",
+    "flang/proof/examples/corpus-signs.flang",
+    "flang/proof/examples/corpus-tables.flang",
+    "flang/proof/examples/corpus-translit.flang",
+    "flang/proof/examples/corpus-tree-depth.flang",
+    "flang/proof/examples/corpus-tree-height.flang",
+    "flang/proof/examples/corpus-tree.flang",
+    "flang/proof/examples/four-words.flang",
+    "flang/proof/examples/precondition.flang",
+    "flang/proof/examples/segment.flang",
+    "flang/proof/examples/stack.flang",
+    "flang/proof/examples/traffic-light.flang",
+    "flang/proof/kernel.flang",
+    "flang/self/bootstrap/compiler.flang",
+    "flang/self/bounded.flang",
+    "flang/self/builtins.flang",
+    "flang/self/carriers.flang",
+    "flang/self/cli.flang",
+    "flang/self/commutative.flang",
+    "flang/self/conc.flang",
+    "flang/self/defunc.flang",
+    "flang/self/distributed.flang",
+    "flang/self/distributive.flang",
+    "flang/self/emit-c.flang",
+    "flang/self/emit-csharp.flang",
+    "flang/self/emit-elixir.flang",
+    "flang/self/emit-go.flang",
+    "flang/self/emit-java.flang",
+    "flang/self/emit-js.flang",
+    "flang/self/emit-python.flang",
+    "flang/self/emit-rust.flang",
+    "flang/self/factcheck.flang",
+    "flang/self/failures.flang",
+    "flang/self/functor.flang",
+    "flang/self/grid.flang",
+    "flang/self/hotswap.flang",
+    "flang/self/idempotent.flang",
+    "flang/self/interpret.flang",
+    "flang/self/io.flang",
+    "flang/self/iso.flang",
+    "flang/self/law-oracle.flang",
+    "flang/self/lexer.flang",
+    "flang/self/link.flang",
+    "flang/self/lsp.flang",
+    "flang/self/monad-expand.flang",
+    "flang/self/monad.flang",
+    "flang/self/monoid.flang",
+    "flang/self/monotone.flang",
+    "flang/self/obligations.flang",
+    "flang/self/oracle.flang",
+    "flang/self/parser.flang",
+    "flang/self/partialorder.flang",
+    "flang/self/proof-initial.flang",
+    "flang/self/proof-kernel.flang",
+    "flang/self/proof.flang",
+    "flang/self/proofterm.flang",
+    "flang/self/repl/repl.flang",
+    "flang/self/setoid.flang",
+    "flang/self/sets.flang",
+    "flang/self/svoystva.flang",
+    "flang/self/tags.flang",
+    "flang/self/totality.flang",
+    "flang/self/types.flang",
+    "flang/stdlib/datetime.flang",
+    "flang/stdlib/dictionary.flang",
+    "flang/stdlib/hashmap.flang",
+    "flang/stdlib/higher-order.flang",
+    "flang/stdlib/http.flang",
+    "flang/stdlib/json.flang",
+    "flang/stdlib/lists.flang",
+    "flang/stdlib/logic.flang",
+    "flang/stdlib/numbers.flang",
+    "flang/stdlib/numtree.flang",
+    "flang/stdlib/optional.flang",
+    "flang/stdlib/result.flang",
+    "flang/stdlib/sets.flang",
+    "flang/stdlib/strings.flang",
+    "flang/stdlib/strlists.flang",
+    "flang/stdlib/tree.flang",
+    "flang/test/fixtures/plany/00-tselyj.flang",
+    "flang/test/fixtures/plany/01-dvazhdy.flang",
+    "flang/test/fixtures/plany/02-slovar-zanyat.flang",
+    "flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang",
+    "flang/test/fixtures/plany/04-nachalo-neizvestno.flang",
+    "flang/test/fixtures/plany/05-nachalo-s-argumentom.flang",
+    "flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang",
+    "flang/test/fixtures/plany/07-shag-neizvesten.flang",
+    "flang/test/fixtures/plany/08-shag-odin-argument.flang",
+    "flang/test/fixtures/plany/09-shag-pervyj-argument.flang",
+    "flang/test/fixtures/plany/10-shag-vtoroj-argument.flang",
+    "flang/test/fixtures/plany/11-shag-vozvrat.flang",
+    "flang/test/fixtures/plany/12-shag-spisok.flang",
+    "flang/test/fixtures/plany/13-shag-dzhoker.flang",
+    "flang/проверки/встроенные-формы.flang"
+  ],
+  "свидетелей": 4,
+  "непустых": 7,
+  "отпечаток": "54f7b2106e1c1bbc29f948e248553bb9d313bc46bd38ca44775bb02a3017790e",
+  "непустые": {
+    "flang/examples/cat/euler-orders.flang": {
+      "sets": {
+        "assumed": [],
+        "checked": [
+          {
+            "embedding": "Срочные среди заказов",
+            "values": 2
+          },
+          {
+            "embedding": "Оплаченные среди заказов",
+            "values": 2
+          },
+          {
+            "intersection": "Срочные оплаченные",
+            "values": 4,
+            "witness": {
+              "номер": 2,
+              "срочность": 1
+            }
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/orders.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Заказы",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/payments.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Платежи",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/reconciliation.flang": {
+      "functor": {
+        "assumed": [
+          {
+            "functor": "Заказ в платёж",
+            "why": "сетка пуста или у стрелок квадрата нет «даёт»: считать не на чем"
+          },
+          {
+            "functor": "Заказ в отгрузку",
+            "why": "сетка пуста или у стрелок квадрата нет «даёт»: считать не на чем"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/modules/shipping.flang": {
+      "setoid": {
+        "assumed": [
+          {
+            "category": "Отгрузки",
+            "why": "своего равенства не объявлено: равенство стрелок не выразимо, ассоциативность не считана"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/natural-square.flang": {
+      "setoid": {
+        "assumed": [],
+        "checked": [
+          {
+            "arrows": [
+              "выставить"
+            ],
+            "category": "Схема",
+            "objects": 2,
+            "triples": 0,
+            "values": 2
+          },
+          {
+            "arrows": [
+              "наценка рублями",
+              "наценка копейками",
+              "заявку в копейки",
+              "счёт в копейки"
+            ],
+            "category": "Учёт",
+            "objects": 4,
+            "triples": 0,
+            "values": 6
+          },
+          {
+            "objects": 2,
+            "squares": 1,
+            "transformation": "в копейки",
+            "values": 2
+          }
+        ],
+        "diagnostics": []
+      },
+      "functor": {
+        "assumed": [
+          {
+            "functor": "В рублях",
+            "why": "ни у одного объекта нет «даёт»: переводить нечем, сравнивать нечего"
+          },
+          {
+            "functor": "В копейках",
+            "why": "ни у одного объекта нет «даёт»: переводить нечем, сравнивать нечего"
+          }
+        ],
+        "checked": [],
+        "diagnostics": []
+      }
+    },
+    "flang/examples/cat/order-shipment.flang": {
+      "setoid": {
+        "assumed": [],
+        "checked": [
+          {
+            "arrows": [
+              "отгрузить",
+              "выписать",
+              "по накладной",
+              "оформить"
+            ],
+            "category": "Отгрузки",
+            "objects": 3,
+            "triples": 7,
+            "values": 5
+          }
+        ],
+        "diagnostics": []
+      }
+    }
+  }
+}

@@ -176130,65 +176130,65 @@ fl_status kompilyator_flang_vyzov_iz_sbora(fl_ctx *ctx, fl_value imya, fl_value 
   }
 }
 
-/* Тело «Значением из знач»; глубину считает обёртка ниже. */
-static fl_status kompilyator_flang_znacheniem_iz_znach_body(fl_ctx *ctx, fl_value z, fl_value *result, fl_error *error) {
-  if (fl_variant_is(z, "Знач число")) {
-    fl_value ch = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "число", &ch, error)); /* «число» */
-    return kompilyator_flang_uzlom_chisla(ctx, ch, result, error);
-  } else if (fl_variant_is(z, "Знач строка")) {
-    fl_value t = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "текст", &t, error)); /* «текст» */
-    return kompilyator_flang_uzlom_stroki(ctx, t, result, error);
-  } else if (fl_variant_is(z, "Знач признак")) {
-    fl_value p = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "признак", &p, error)); /* «признак» */
-    return kompilyator_flang_uzlom_priznaka(ctx, p, result, error);
-  } else if (fl_variant_is(z, "Знач ничто")) {
+/* Тело «Значением из вычисленного»; глубину считает обёртка ниже. */
+static fl_status kompilyator_flang_znacheniem_iz_vychislennogo_body(fl_ctx *ctx, fl_value vychislennoe, fl_value *result, fl_error *error) {
+  if (fl_variant_is(vychislennoe, "Знач число")) {
+    fl_value chislom = fl_nothing();
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "число", &chislom, error)); /* «число» */
+    return kompilyator_flang_uzlom_chisla(ctx, chislom, result, error);
+  } else if (fl_variant_is(vychislennoe, "Знач строка")) {
+    fl_value tekstom = fl_nothing();
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "текст", &tekstom, error)); /* «текст» */
+    return kompilyator_flang_uzlom_stroki(ctx, tekstom, result, error);
+  } else if (fl_variant_is(vychislennoe, "Знач признак")) {
+    fl_value priznakom = fl_nothing();
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "признак", &priznakom, error)); /* «признак» */
+    return kompilyator_flang_uzlom_priznaka(ctx, priznakom, result, error);
+  } else if (fl_variant_is(vychislennoe, "Знач ничто")) {
     return kompilyator_flang_pustoy_uzel(ctx, result, error);
-  } else if (fl_variant_is(z, "Знач список")) {
+  } else if (fl_variant_is(vychislennoe, "Знач список")) {
     fl_value elementy = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "элементы", &elementy, error)); /* «элементы» */
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "элементы", &elementy, error)); /* «элементы» */
     fl_value fl_t33927 = fl_nothing();
     FL_TRY(fl_require_list(ctx, elementy, "отобразить", &fl_t33927, error));
     fl_value *fl_t33928 = NULL;
     size_t fl_t33929 = 0;
     FL_TRY(fl_list_alloc(ctx, fl_t33927.as.list.count, &fl_t33928, error));
     for (size_t fl_t33930 = 0; fl_t33930 < fl_t33927.as.list.count; fl_t33930 += 1) {
-      const fl_value e = fl_t33927.as.list.items[fl_t33930]; /* «э» */
+      const fl_value element = fl_t33927.as.list.items[fl_t33930]; /* «элемент» */
       fl_value fl_t33931 = fl_nothing();
-      FL_TRY(kompilyator_flang_znacheniem_iz_znach(ctx, e, &fl_t33931, error));
+      FL_TRY(kompilyator_flang_znacheniem_iz_vychislennogo(ctx, element, &fl_t33931, error));
       fl_t33928[fl_t33929] = fl_t33931;
       fl_t33929 += 1;
     }
     return kompilyator_flang_uzlom_spiska(ctx, fl_list(fl_t33928, fl_t33929), result, error);
-  } else if (fl_variant_is(z, "Знач запись")) {
+  } else if (fl_variant_is(vychislennoe, "Знач запись")) {
     fl_value polya = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "поля", &polya, error)); /* «поля» */
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "поля", &polya, error)); /* «поля» */
     fl_value fl_t33932 = fl_nothing();
     FL_TRY(fl_require_list(ctx, polya, "отобразить", &fl_t33932, error));
     fl_value *fl_t33933 = NULL;
     size_t fl_t33934 = 0;
     FL_TRY(fl_list_alloc(ctx, fl_t33932.as.list.count, &fl_t33933, error));
     for (size_t fl_t33935 = 0; fl_t33935 < fl_t33932.as.list.count; fl_t33935 += 1) {
-      const fl_value p_2 = fl_t33932.as.list.items[fl_t33935]; /* «п» */
+      const fl_value pole = fl_t33932.as.list.items[fl_t33935]; /* «поле» */
       fl_value fl_t33936 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, p_2, "ключ", &fl_t33936, error));
+      FL_TRY(fl_field_get(ctx, pole, "ключ", &fl_t33936, error));
       fl_value fl_t33937 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, p_2, "значение", &fl_t33937, error));
+      FL_TRY(fl_field_get(ctx, pole, "значение", &fl_t33937, error));
       fl_value fl_t33938 = fl_nothing();
-      FL_TRY(kompilyator_flang_znacheniem_iz_znach(ctx, fl_t33937, &fl_t33938, error));
+      FL_TRY(kompilyator_flang_znacheniem_iz_vychislennogo(ctx, fl_t33937, &fl_t33938, error));
       fl_value fl_t33939 = fl_nothing();
       FL_TRY(kompilyator_flang_para_polya_suzhdeniya(ctx, fl_t33936, fl_t33938, &fl_t33939, error));
       fl_t33933[fl_t33934] = fl_t33939;
       fl_t33934 += 1;
     }
     return kompilyator_flang_uzlom_zapisi(ctx, fl_list(fl_t33933, fl_t33934), result, error);
-  } else if (fl_variant_is(z, "Знач вариант")) {
+  } else if (fl_variant_is(vychislennoe, "Знач вариант")) {
     fl_value imya = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "имя", &imya, error)); /* «имя» */
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "имя", &imya, error)); /* «имя» */
     fl_value polya_2 = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, z, "поля", &polya_2, error)); /* «поля» */
+    FL_TRY(fl_variant_field(ctx, vychislennoe, "поля", &polya_2, error)); /* «поля» */
     fl_value *fl_t33940 = NULL;
     FL_TRY(fl_list_alloc(ctx, 2, &fl_t33940, error));
     fl_value fl_t33941 = fl_nothing();
@@ -176200,13 +176200,13 @@ static fl_status kompilyator_flang_znacheniem_iz_znach_body(fl_ctx *ctx, fl_valu
     size_t fl_t33944 = 0;
     FL_TRY(fl_list_alloc(ctx, fl_t33942.as.list.count, &fl_t33943, error));
     for (size_t fl_t33945 = 0; fl_t33945 < fl_t33942.as.list.count; fl_t33945 += 1) {
-      const fl_value p_3 = fl_t33942.as.list.items[fl_t33945]; /* «п» */
+      const fl_value pole_2 = fl_t33942.as.list.items[fl_t33945]; /* «поле» */
       fl_value fl_t33946 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, p_3, "ключ", &fl_t33946, error));
+      FL_TRY(fl_field_get(ctx, pole_2, "ключ", &fl_t33946, error));
       fl_value fl_t33947 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, p_3, "значение", &fl_t33947, error));
+      FL_TRY(fl_field_get(ctx, pole_2, "значение", &fl_t33947, error));
       fl_value fl_t33948 = fl_nothing();
-      FL_TRY(kompilyator_flang_znacheniem_iz_znach(ctx, fl_t33947, &fl_t33948, error));
+      FL_TRY(kompilyator_flang_znacheniem_iz_vychislennogo(ctx, fl_t33947, &fl_t33948, error));
       fl_value fl_t33949 = fl_nothing();
       FL_TRY(kompilyator_flang_para_polya_suzhdeniya(ctx, fl_t33946, fl_t33948, &fl_t33949, error));
       fl_t33943[fl_t33944] = fl_t33949;
@@ -176219,24 +176219,24 @@ static fl_status kompilyator_flang_znacheniem_iz_znach_body(fl_ctx *ctx, fl_valu
     fl_t33940[1] = fl_t33951;
     return kompilyator_flang_uzlom_zapisi(ctx, fl_list(fl_t33940, 2), result, error);
   } else {
-    return fl_match_fail(ctx, z, error);
+    return fl_match_fail(ctx, vychislennoe, error);
   }
 }
 
 /*
- * Функция flang «Значением из знач».
+ * Функция flang «Значением из вычисленного».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param z — «з»: «Знач»
+ * @param vychislennoe — «вычисленное»: «Знач»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_znacheniem_iz_znach(fl_ctx *ctx, fl_value z, fl_value *result, fl_error *error) {
-  FL_TRY(fl_enter(ctx, "Значением из знач", error));
+fl_status kompilyator_flang_znacheniem_iz_vychislennogo(fl_ctx *ctx, fl_value vychislennoe, fl_value *result, fl_error *error) {
+  FL_TRY(fl_enter(ctx, "Значением из вычисленного", error));
   {
     const fl_mark region = fl_region_open(ctx);
-    const fl_status status = kompilyator_flang_znacheniem_iz_znach_body(ctx, z, result, error);
+    const fl_status status = kompilyator_flang_znacheniem_iz_vychislennogo_body(ctx, vychislennoe, result, error);
     fl_leave(ctx);
     return fl_region_close(ctx, region, status, result, error);
   }
@@ -176294,7 +176294,7 @@ fl_status kompilyator_flang_ishod_itoga(fl_ctx *ctx, fl_value itog, fl_value *re
     fl_value fl_t33963 = fl_nothing();
     FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t33963, error));
     fl_value fl_t33964 = fl_nothing();
-    FL_TRY(kompilyator_flang_znacheniem_iz_znach(ctx, fl_t33963, &fl_t33964, error));
+    FL_TRY(kompilyator_flang_znacheniem_iz_vychislennogo(ctx, fl_t33963, &fl_t33964, error));
     fl_value fl_t33966[1];
     fl_t33966[0] = fl_t33964; /* «значение» */
     fl_value fl_t33965 = fl_nothing();
@@ -203135,12 +203135,12 @@ fl_status kompilyator_flang_call(fl_ctx *ctx, const char *name, const fl_value *
     }
     return kompilyator_flang_vyzov_iz_sbora(ctx, args[0], args[1], result, error);
   }
-  if (strcmp(name, "Значением из знач") == 0) {
+  if (strcmp(name, "Значением из вычисленного") == 0) {
     if (count != 1) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
-                     "Значением из знач", (unsigned long)1, (unsigned long)count);
+                     "Значением из вычисленного", (unsigned long)1, (unsigned long)count);
     }
-    return kompilyator_flang_znacheniem_iz_znach(ctx, args[0], result, error);
+    return kompilyator_flang_znacheniem_iz_vychislennogo(ctx, args[0], result, error);
   }
   if (strcmp(name, "Ответ на вызов") == 0) {
     if (count != 4) {
@@ -213505,7 +213505,7 @@ static const fl_entry_param kompilyator_flang_entry_params[] = {
   { "Вызов по именам", "имена фактов", 1 },
   { "Вызов из сбора", "имя", 0 },
   { "Вызов из сбора", "сбор", 373 },
-  { "Значением из знач", "з", 222 },
+  { "Значением из вычисленного", "вычисленное", 222 },
   { "Ответ на вызов", "программа", 14 },
   { "Ответ на вызов", "вызов", 381 },
   { "Ответ на вызов", "предел витков", 2 },

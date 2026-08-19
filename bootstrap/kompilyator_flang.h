@@ -42973,15 +42973,15 @@ fl_status kompilyator_flang_vyzov_po_imenam(fl_ctx *ctx, fl_value funkcii, fl_va
 fl_status kompilyator_flang_vyzov_iz_sbora(fl_ctx *ctx, fl_value imya, fl_value sbor, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Значением из знач».
+ * Функция flang «Значением из вычисленного».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param z — «з»: «Знач»
+ * @param vychislennoe — «вычисленное»: «Знач»
  * @return значение: «Значение»
  */
-fl_status kompilyator_flang_znacheniem_iz_znach(fl_ctx *ctx, fl_value z, fl_value *result, fl_error *error);
+fl_status kompilyator_flang_znacheniem_iz_vychislennogo(fl_ctx *ctx, fl_value vychislennoe, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ответ на вызов».

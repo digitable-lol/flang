@@ -58,6 +58,7 @@
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
 - [Правый край сравнения сам по себе не закрыл ничего: закрыла ЛЕВАЯ сторона, прочитанная как мера списка](right-edge-alone-closes-nothing.md)
 - [Узкое место переехало четвёртый раз: теперь мешает индукция, которую негде объявить](what-blocks-the-kernel-now-is-induction-without-a-theorem.md)
+- [Автоматическая индукция по `разбор`у закрыла 9 утверждений, а из двенадцати заказанных — 5](auto-induction-on-match-closes-nine.md)
 - [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 
@@ -167,6 +168,8 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
+- [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](celochislennoe-delenie-ne-daet-yadru-nat.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
 - [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)

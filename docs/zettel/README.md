@@ -89,6 +89,7 @@
 - [Инвариант процесса пишется постусловием обработчика, и третьего рода обязательства для этого не нужно](process-invariant-is-a-handler-postcondition.md)
 - [Постусловие на обработчике заводит восьмой вид отказа мимо замкнутого множества](handler-postcondition-escapes-the-closed-set.md)
 - [Тупик, потерянное письмо и успешное завершение дают у прогона один и тот же исход «покой»](quiescence-hides-deadlock.md)
+- [Из четырёх утверждений, которых ждут от планировщика процессов, ядро не берёт ни одного](what-a-scheduler-needs-proved.md)
 
 ## Самораскрутка и метод проверки
 
@@ -99,6 +100,7 @@
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
+- [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
@@ -106,6 +108,7 @@
 - [Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом](a-sticky-bit-in-a-shared-tree-stops-git-merge.md)
 - [Объединение вариантов закрытой суммы — законное слияние, и оно обязано покраснеть у каждого, кто эту сумму разбирает](merging-two-branches-into-one-closed-sum.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)
+- [Две реализации одного файла, выросшие порознь, бывают не соперниками, а половинами](two-rewrites-of-one-file-may-be-halves.md)
 - [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md)
 - [Близнец отстаёт от эталона, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
 - [Сверка близнеца не ловила забытую команду: на ключе эталон отказывает раньше, чем доходит до команды](spravka-bliznetsa-otstayot-tam-gde-korpus-idyot-s-klyuchom.md)
@@ -148,11 +151,13 @@
 - [Отбрасывание недостижимого на стороне flang даёт тот же ответ и стоит в 180 раз дороже](otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу](bold-around-inline-code-never-rendered.md)
+- [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](poryadok-klyuchey-results-eto-poverhnost.md)
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 
 ## Отвергнутые пути
 
+- [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](oraculu-meshala-totalnost-a-ne-pervyy-klass.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)

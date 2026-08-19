@@ -1398,7 +1398,7 @@ func checkNumberType(spec *Type, value Value, label string) error {
 	if value.Tag != TagNumber || math.IsNaN(value.Num) || math.IsInf(value.Num, 0) {
 		return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
 	}
-	// Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+	// Целость проверяется ДО отрезка и на ней же кончается: у свидетеля тот же
 	// порядок, и второй отказ на одном значении был бы вторым текстом про одну беду.
 	if spec.Integral && math.Floor(value.Num) != value.Num {
 		return Fail(CodeType, "%s: %s не целое, а тип %s — целый", label, NumberText(value.Num), spec.Name)
@@ -1521,7 +1521,7 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 //
 // Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
 // параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
-// видом TypeUnknown. Тексты отказов дословно те же, что у `checkValue` эталона.
+// видом TypeUnknown. Тексты отказов дословно те же, что у `checkValue` свидетеля.
 func CheckEntry(table *EntryTable, name string, args []Value) error {
 	declared := 0
 	for _, param := range table.Params {

@@ -610,7 +610,7 @@ public static class Flang
     /// <summary>«код символа»: кодовая точка первого символа строки.</summary>
     /// <remarks>
     /// char.ConvertToUtf32 собирает суррогатную пару в одну точку; value[0]
-    /// отдал бы половину пары, и цель разошлась бы с эталоном на эмодзи.
+    /// отдал бы половину пары, и цель разошлась бы со свидетелем на эмодзи.
     /// </remarks>
     public static Value BCharCode(Ctx ctx, Value source)
     {
@@ -1268,7 +1268,7 @@ public static class Flang
         {
             throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
         }
-        // Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+        // Целость проверяется ДО отрезка и на ней же кончается: у свидетеля тот же
         // порядок, и второй отказ на одном значении был бы вторым текстом про
         // одну беду.
         if (spec.Integral && System.Math.Floor(value.Num) != value.Num)
@@ -1427,7 +1427,7 @@ public static class Flang
                 return;
             default:
                 // TypeUnknown: сверять нечем, и молчание здесь то же самое, каким
-                // отвечает проверка значений эталона на джокер.
+                // отвечает проверка значений свидетеля на джокер.
                 return;
         }
     }
@@ -1437,7 +1437,7 @@ public static class Flang
     /// Молчит там, где сверять нечем: имени в таблице нет, число значений с
     /// числом параметров не сошлось (об этом скажет диспетчер своим текстом),
     /// тип приехал видом TypeUnknown. Тексты отказов дословно те же, что у
-    /// <c>checkValue</c> эталона.
+    /// <c>checkValue</c> свидетеля.
     /// </summary>
     public static void CheckEntry(EntryTable table, string name, Value[] args)
     {

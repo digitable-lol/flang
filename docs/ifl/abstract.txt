@@ -10,12 +10,12 @@ has to exhibit.
 The first is self-application. Six layers of the compiler -- lexer, parser, type
 checker, totality analysis, defunctionalisation and the C backend -- are written
 in flang itself: 17,370 lines that link into one program of 1,586 functions and
-170 types. The reference implementation prints that program into 5,814,671 bytes
+170 types. The witness implementation prints that program into 5,814,671 bytes
 of C in seven files; the C builds under cc -std=c99 -Wall -Wextra -Werror
 -pedantic into flang1; flang1 prints the same sources; flang2, built from
 flang1's output, prints them a third time. All three printings are
 byte-identical. On a corpus of 43 programs, flang1 also reproduces the
-reference's C, its linked AST, and its diagnostics and verdicts, on well-formed
+witness's C, its linked AST, and its diagnostics and verdicts, on well-formed
 and on deliberately broken input alike. The whole criterion is one test file: 22
 tests, 216 seconds on eight cores.
 

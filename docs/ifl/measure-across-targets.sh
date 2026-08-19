@@ -42,7 +42,7 @@ for line in sys.stdin:
 
 no_toolchain() { printf '%-12s %s\n' "$1" "тулчейна нет — не запускалось"; }
 
-# ── эталон: интерпретатор на Node ───────────────────────────────────────────
+# ── свидетель: интерпретатор на Node ───────────────────────────────────────────
 node flang/bin/flang.mjs run "$SRC" --function 'НОД' \
   --args '{"а":1.618033988749895,"б":1}' 2>&1 \
   | python3 -c 'import sys,json; print(json.load(sys.stdin)["diagnostics"][0]["message"])' \

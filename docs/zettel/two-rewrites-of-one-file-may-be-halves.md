@@ -55,4 +55,4 @@ git show <ветка>:flang/self/X.flang | grep -c '^\(тотальная \)\?ф
 [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md) ·
 [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md) ·
 [Долг, закрытый на неслитой ветке, остаётся открытым долгом](debt-closed-on-an-unmerged-branch.md) ·
-[Близнец отстаёт от эталона, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)
+[Эталон отстаёт от свидетеля, который уехал, — отставание надо мерить](twin-lags-behind-the-reference.md)

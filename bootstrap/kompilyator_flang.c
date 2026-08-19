@@ -1938,7 +1938,7 @@ static const fl_value kompilyator_flang_text_1925 = { FL_STRING, { .string = { "
 static const fl_value kompilyator_flang_text_1926 = { FL_STRING, { .string = { " *\012", 3, 3 } } };
 static const fl_value kompilyator_flang_text_1927 = { FL_STRING, { .string = { " * Виды `неизвестно` (значение-функция, параметр полиморфизма, применение\012", 133, 74 } } };
 static const fl_value kompilyator_flang_text_1928 = { FL_STRING, { .string = { " * типа с аргументами) не сверяются — ровно как молчит о них проверка\012", 125, 70 } } };
-static const fl_value kompilyator_flang_text_1929 = { FL_STRING, { .string = { " * значений эталона.\012", 36, 21 } } };
+static const fl_value kompilyator_flang_text_1929 = { FL_STRING, { .string = { " * значений свидетеля.\012", 40, 23 } } };
 static const fl_value kompilyator_flang_text_1930 = { FL_STRING, { .string = { "\012const fl_entry_table *", 23, 23 } } };
 static const fl_value kompilyator_flang_text_1931 = { FL_STRING, { .string = { "_entry(void) {\012  return &", 25, 25 } } };
 static const fl_value kompilyator_flang_text_1932 = { FL_STRING, { .string = { "_entry_table;\012}", 15, 15 } } };
@@ -192616,7 +192616,7 @@ fl_status kompilyator_flang_call(fl_ctx *ctx, const char *name, const fl_value *
  *
  * Виды `неизвестно` (значение-функция, параметр полиморфизма, применение
  * типа с аргументами) не сверяются — ровно как молчит о них проверка
- * значений эталона.
+ * значений свидетеля.
  */
 static const fl_type_field kompilyator_flang_entry_fields[] = {
   { "вид", 0 },

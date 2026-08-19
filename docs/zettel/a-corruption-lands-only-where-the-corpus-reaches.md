@@ -48,5 +48,5 @@
 **Смежное.**
 [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md) ·
 [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md) ·
-[Побайтовая сверка с эталоном — главный метод проверки](byte-for-byte-comparison.md) ·
+[Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md) ·
 [Перечень, записанный в проверке руками, переживает дерево](a-hand-written-list-outlives-the-tree.md)

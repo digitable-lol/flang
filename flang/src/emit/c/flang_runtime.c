@@ -653,7 +653,7 @@ static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type, fl_value
     return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s", label, type->name);
   }
   fl_number_text(value.as.number, text);
-  /* Целость проверяется ДО отрезка и на ней же кончается: у эталона тот же
+  /* Целость проверяется ДО отрезка и на ней же кончается: у свидетеля тот же
      порядок, и второй отказ на одном значении был бы вторым текстом про одну
      беду. */
   if (type->integral && floor(value.as.number) != value.as.number) {
@@ -679,7 +679,7 @@ static const fl_field *fl_find_field(const fl_field *fields, size_t count, const
 /*
  * Объявленные поля против заданных. `owner` — имя записи либо имя варианта:
  * сообщения о пропущенном поле у них разной формы, и обе выписаны здесь
- * дословно, потому что сверяются они с эталоном равенством строк.
+ * дословно, потому что сверяются они со свидетелем равенством строк.
  */
 static fl_status fl_check_fields(fl_ctx *ctx, const fl_entry_table *table, size_t from, size_t count,
                                  const fl_field *given, size_t given_count, const char *label,
@@ -2667,7 +2667,7 @@ fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator,
  * конца вызова никуда не денется. Список из n символов стоит поэтому одного
  * выделения на массив, а не n выделений на строки.
  *
- * Пустая строка даёт пустой список — так же, как в эталоне.
+ * Пустая строка даёт пустой список — так же, как в свидетеле.
  */
 fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
   size_t count = 0;

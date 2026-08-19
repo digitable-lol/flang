@@ -2,7 +2,7 @@
 
 # Developing the language
 
-The JavaScript reference implementation stays for good: it is what the fixed point is checked
+The JavaScript witness implementation stays for good: it is what the fixed point is checked
 against, and deleting it would delete the check. Working on it takes a clone and nothing else:
 the package has no dependencies and there is nothing to build, so the scripts run straight after
 `git clone`.

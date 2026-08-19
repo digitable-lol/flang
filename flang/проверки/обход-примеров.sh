@@ -58,7 +58,7 @@
 #   flang/examples/paths/shortest-path.flang   22 примера   FLANG_UNKNOWN_NAME
 #   flang/self/repl/repl.flang                 14 примеров  FLANG_RECURSION_LIMIT
 # и `flang/self/bootstrap/compiler.flang` — тот же лимит шагов (40 000 000),
-# примеров у него нет. Эталон на Node эти файлы берёт; двоичный пока нет.
+# примеров у него нет. Свидетель на Node эти файлы берёт; двоичный пока нет.
 set -eu
 LC_ALL=C.UTF-8
 export LC_ALL

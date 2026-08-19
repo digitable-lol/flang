@@ -90,6 +90,8 @@
 - [Снятая проверка типа даёт не отказ, а неверный ответ](a-dropped-type-check-gives-a-wrong-answer.md)
 - [Межмодульная оптимизация ускорила не только работу, но и сборку большого файла](lto-speeds-up-the-build-too.md)
 - [Прогон примеров при каждой проверке стоит 3 мс обычному файлу и 35 секунд двум самым большим](examples-cost-lands-on-two-files.md)
+- [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок](sha256-bez-bitovyh-operaciy-stoit-925-tysyach-shagov.md)
+- [Предел шагов интерпретатора решает, что вообще может быть примером](predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom.md)
 
 ## Службы и долговечность
 
@@ -186,6 +188,7 @@
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
 - [Постусловие «обращение не меняет длины строки» ложно, и ломает его одинокий суррогат](obrashchenie-stroki-lozhno-na-odinokom-surrogate.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
+- [Литерал `"\uD83D"` в любом `.flang` этого дерева ломает сверку самоприменения — и это не чинится](literal-s-odinokim-surrogatom-lomaet-samoprimenenie.md)
 - [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](celochislennoe-delenie-ne-daet-yadru-nat.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)

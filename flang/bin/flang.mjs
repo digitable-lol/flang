@@ -1534,9 +1534,10 @@ export async function externalChecks(program, настройки = {}) {
   let считатьСвойства = null
   let считатьМоноиды = null
   let считатьИзоморфизмы = null
+  let считатьКвадраты = null
   try {
     ;({ обязательства: считатьОбязательства, свойства: считатьСвойства, моноиды: считатьМоноиды,
-        изоморфизмы: считатьИзоморфизмы } = await import(new URL("../src/self.mjs", import.meta.url).href))
+        изоморфизмы: считатьИзоморфизмы, квадраты: считатьКвадраты } = await import(new URL("../src/self.mjs", import.meta.url).href))
   } catch {
     /* слоя ещё нет — check работает в объёме, который доступен сегодня */
   }
@@ -1545,6 +1546,7 @@ export async function externalChecks(program, настройки = {}) {
   const СВОЙСТВА_СЛОЕМ = "свойства слоем"
   const МОНОИД_СЛОЕМ = "моноид слоем"
   const ИЗОМОРФИЗМ_СЛОЕМ = "изоморфизм слоем"
+  const ФУНКТОР_СЛОЕМ = "функтор слоем"
 
   for (const [file, names, ключ] of [
     ["../src/types.mjs", ["checkTypes", "typecheck", "check", "inferProgram"], "types"],
@@ -1607,7 +1609,7 @@ export async function externalChecks(program, настройки = {}) {
        вместе с ним — утверждение «перевести и сделать» = «сделать и перевести».
        Равенство вычислений неразрешимо, значит сетка; связь без переводов сюда
        не приходит вовсе и уходит в `assumed`. */
-    ["../src/functor.mjs", ["checkFunctorSquares"], "functor"],
+    [ФУНКТОР_СЛОЕМ, [], "functor"],
   ]) {
     /* ПЯТЬ ОБЪЯВЛЕННЫХ СВОЙСТВ СЧИТАЕТ СЛОЙ НА САМОМ FLANG, и кладутся они в
        `results` пятью ключами разом: слоёв шесть на пять ключей — оракул один на
@@ -1628,6 +1630,13 @@ export async function externalChecks(program, настройки = {}) {
     if (file === ИЗОМОРФИЗМ_СЛОЕМ) {
       if (считатьИзоморфизмы === null) continue
       const итог = await считатьИзоморфизмы(program)
+      results[ключ] = итог
+      diagnostics.push(...normalizeDiagnostics(итог))
+      continue
+    }
+    if (file === ФУНКТОР_СЛОЕМ) {
+      if (считатьКвадраты === null) continue
+      const итог = await считатьКвадраты(program)
       results[ключ] = итог
       diagnostics.push(...normalizeDiagnostics(итог))
       continue

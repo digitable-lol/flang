@@ -293,7 +293,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-98 programs with 618 functions and 1598 examples between them. For every function a grid of inputs
+101 programs with 690 functions and 1822 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -301,9 +301,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 98, функций: 618, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
+ℹ программ: 101, функций: 690, сверенных входов: 8151, из них по лимиту шагов только по коду: 3, за 754 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 1598
+ℹ сверенных примеров: 1822
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -382,10 +382,10 @@ written twice — 28 files: once on the Russian surface and once on the English 
 comparing each pair as trees, up to a renaming of names. That test also pins the number of
 functions each file proves total: the set exists to show the
 border of the language, so a border that moves has to break a test rather than quietly outdate a
-comment. The standard library ([`flang/stdlib/`](flang/stdlib): `datetime`, `dictionary`, `hashmap`,
-`higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `result`, `sets`,
-`strings`, `strlists`, `tree`) is written the same way —
-16 modules, 318 functions, of which 314 are proven total. `higher-order` is the one built on
+comment. The standard library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`,
+`hashmap`, `higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`,
+`result`, `sets`, `sha256`, `strings`, `strlists`, `tree`, `utf8`) is written the same way —
+19 modules, 390 functions, of which 386 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 

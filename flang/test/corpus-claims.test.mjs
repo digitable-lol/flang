@@ -1432,8 +1432,10 @@ const ОХВАТ = [
      аргументов: утверждения ей не написано, и это честно, потому что писать про
      константу нечего. */
   "flang/examples/wal/write-ahead-log.flang «Сколько записей»",
+  "flang/examples/web/shortener/plan-durable.flang «Порт службы с журналом»",
   "flang/examples/web/shortener/plan-network.flang «Порт службы»",
   "flang/examples/web/shortener/service.flang «Глубина пути»",
+  "flang/examples/web/shortener/service.flang «Код исхода»",
   "flang/examples/web/shortener/service.flang «Предел тела запроса»",
   "flang/examples/web/shortener/service.flang «Предел тела ответа»",
   "flang/examples/web/shortener/store.flang «Сколько ссылок»",
@@ -1444,16 +1446,41 @@ const ОХВАТ = [
   "flang/proof/examples/corpus-hof.flang «Считать где»",
   "flang/proof/examples/corpus-lists.flang «Считать вхождения»",
   "flang/proof/examples/corpus-natural.flang «Сумма пары»",
+  "flang/proof/examples/four-words.flang «Ступень»",
+  "flang/proof/examples/traffic-light.flang «Штраф»",
+  "flang/self/bounded.flang «Знаков в скаляре»",
   "flang/self/builtins.flang «Арность формы»",
   "flang/self/builtins.flang «Основание индексации»",
   "flang/self/builtins.flang «Основание по умолчанию»",
+  "flang/self/conc.flang «Глубина тотального»",
+  "flang/self/conc.flang «Два в тридцать второй»",
+  "flang/self/conc.flang «Запас тотального»",
+  "flang/self/conc.flang «Предел пробегов»",
+  "flang/self/conc.flang «Предел числа процессов»",
   "flang/self/distributed.flang «Пауза по умолчанию»",
   "flang/self/distributed.flang «Пульс по умолчанию»",
   "flang/self/distributed.flang «Срок по умолчанию»",
   "flang/self/emit-c.flang «Байтов у символа»",
   "flang/self/emit-c.flang «Наибольшая арность»",
+  "flang/self/emit-c.flang «Число параметров»",
+  "flang/self/emit-csharp.flang «Число параметров»",
+  "flang/self/emit-elixir.flang «Число параметров»",
+  "flang/self/emit-java.flang «Число параметров Java»",
+  "flang/self/emit-js.flang «Число параметров»",
+  "flang/self/emit-python.flang «Число параметров»",
   "flang/self/emit-rust.flang «Счёт узлов поля»",
-  "flang/self/failures.flang «Мест частичных форм»",
+  /* ОТСЮДА ЖЕ ОДНА СТРОКА УБЫЛА, и убыла не молча: `failures.flang «Мест
+     частичных форм»`. Файл заменён целиком — на его месте сведённый близнец
+     слоя процессов, — и тело функции с ним переписано: было
+     `длина (отфильтровать …)`, у которого ядро берёт «не меньше 0» даром, стало
+     `«Обойти для мест» от … и 0` — накопитель со свёрткой и рекурсией, который
+     ядро не сводит. Утверждения при ней не было ни до, ни после, поэтому
+     НАПИСАННОЕ не пострадало: упал охват ядра, а не корпус. Заказ на теорему
+     здесь и записан. */
+  "flang/self/failures.flang «Предел витков обработчика»",
+  "flang/self/failures.flang «Предел глубины обработчика»",
+  "flang/self/failures.flang «Предел пробега»",
+  "flang/self/functor-oracle.flang «Запас разворота»",
   "flang/self/functor.flang «Запас глубины функтора»",
   "flang/self/functor.flang «Предел сетки функтора»",
   "flang/self/grid.flang «Версия сетки»",
@@ -1465,9 +1492,9 @@ const ОХВАТ = [
      у одной, свёртка с неотрицательным началом и шагом у другой. */
   "flang/self/lexer.flang «Ширина строки»",
   "flang/self/lexer.flang «Ширина точки»",
-  "flang/self/lsp.flang «Вид объявления»",
   "flang/self/lsp.flang «Вид варианта»",
   "flang/self/lsp.flang «Вид записи»",
+  "flang/self/lsp.flang «Вид объявления»",
   "flang/self/lsp.flang «Вид переменной»",
   "flang/self/lsp.flang «Вид поля»",
   "flang/self/lsp.flang «Вид слова»",
@@ -1521,6 +1548,7 @@ const ОХВАТ = [
   "flang/self/setoid.flang «Предел сетки категории»",
   "flang/self/setoid.flang «Предел троек»",
   "flang/self/sets.flang «Предел сетки множеств»",
+  "flang/self/svoystva.flang «Входов у функции»",
   "flang/self/svoystva.flang «Предел сетки свойств»",
   "flang/self/types.flang «База номера программы»",
   "flang/self/types.flang «Потолок точных»",
@@ -1590,12 +1618,20 @@ test("а «по объявленным типам» ведомость гово�
  *   написанное обязано быть ДОКАЗАННЫМ  — каждая строка отсюда есть в `ОХВАТ`;
  *   доказанное писать НЕ ОБЯЗАНО — это работа над корпусом, а не над ядром.
  *
- * Разница между списками — заказ на письмо, и он назван числом ниже (двадцать два).
+ * Разница между списками — заказ на письмо, и он назван числом ниже (сорок восемь).
  */
 const НАПИСАНЫ_В_ЗАКРЫТЫХ = [
   "flang/examples/leetcode/013-roman-to-integer.flang «Значение цифры»",
   "flang/examples/measure/natural.flang «Сумма пары»",
+  "flang/self/conc.flang «Глубина тотального»",
+  "flang/self/conc.flang «Два в тридцать второй»",
+  "flang/self/conc.flang «Запас тотального»",
+  "flang/self/conc.flang «Предел пробегов»",
+  "flang/self/conc.flang «Предел числа процессов»",
   "flang/self/emit-c.flang «Байтов у символа»",
+  "flang/self/failures.flang «Предел витков обработчика»",
+  "flang/self/failures.flang «Предел глубины обработчика»",
+  "flang/self/failures.flang «Предел пробега»",
   "flang/self/functor.flang «Запас глубины функтора»",
   "flang/self/functor.flang «Предел сетки функтора»",
   "flang/self/grid.flang «Версия сетки»",
@@ -1636,17 +1672,18 @@ const НАПИСАНЫ_В_ЗАКРЫТЫХ = [
   "flang/stdlib/datetime.flang «Дней в месяце»",
   "flang/stdlib/dictionary.flang «Размер»",
   "flang/stdlib/higher-order.flang «Считать где»",
+  "flang/stdlib/http.flang «Сколько заголовков»",
   "flang/stdlib/lists.flang «Считать вхождения»",
   "flang/stdlib/sets.flang «Размер множества»",
   "flang/stdlib/strings.flang «Позиция подстроки»",
 ]
 
-test("охват: сорок одно утверждение НАПИСАНО, а доказано ядром восемьдесят три", () => {
+test("охват: пятьдесят одно утверждение НАПИСАНО, а доказано ядром девяносто девять", () => {
   /* Каталоги — не список из головы: он снят с `исходникиFlang`
      (`flang/test/self-parser.test.mjs`), где и стоит корпус побайтовой сверки. */
   const закрытые = ["flang/stdlib/", "flang/core/", "flang/examples/leetcode/", "flang/examples/measure/", "flang/self/"]
   const доказано = ОХВАТ.filter((строка) => закрытые.some((каталог) => строка.startsWith(каталог)))
-  assert.equal(доказано.length, 83, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
+  assert.equal(доказано.length, 99, `доказанных в закрытых стало ${доказано.length}: ${доказано.join("; ")}`)
 
   /* И РАСКЛАДКА ПО КАТАЛОГАМ, а не только сумма. Первый счёт прошлой работы
      сказал «шесть в self и одна в leetcode»: `flang/examples/measure` выпал, а
@@ -1655,17 +1692,21 @@ test("охват: сорок одно утверждение НАПИСАНО, �
   const поКаталогам = Object.fromEntries(
     закрытые.map((каталог) => [каталог, ОХВАТ.filter((строка) => строка.startsWith(каталог)).length]),
   )
-  /* Раскладка переснята 19 августа вместе с ОХВАТОМ: 46 → 82 в закрытых, и
-     весь прирост в двух каталогах — `self` 27 → 63 (законы, ведомость, ядро
-     сведения, распределённость, оракул) и `stdlib` 7 → 8 (`datetime.flang`). Три
-     остальных не сдвинулись ни на единицу, и ровно затем раскладка стоит
-     поимённо, а не суммой. */
+  /* Раскладка переснята 19 августа вместе с ОХВАТОМ: 83 → 99 в закрытых, и
+     весь прирост в одном каталоге — `self` 63 → 79. Пришёл он слиянием двух
+     близнецов слоя процессов (`conc.flang` +5, `failures.flang` +3) и
+     печатью-в-цель (`emit-c`, `emit-js`, `emit-java`, `emit-python`,
+     `emit-csharp`, `emit-elixir` по одной), плюс `bounded`, `svoystva` и
+     `functor-oracle`. `stdlib` не сдвинулся ни на единицу — при том, что
+     ПИСАНОГО в нём прибавилось 25 строк (`http`, `base64`): цели у них не «не
+     меньше 0», и они стоят в `ВНЕ_ОХВАТА`. Ровно затем раскладка и стоит
+     поимённо, а не суммой: сумма скрыла бы, что выросло и что не выросло. */
   assert.deepEqual(поКаталогам, {
     "flang/stdlib/": 8,
     "flang/core/": 0,
     "flang/examples/leetcode/": 11,
     "flang/examples/measure/": 1,
-    "flang/self/": 63,
+    "flang/self/": 79,
   })
 
   /* НАПИСАННОЕ ОБЯЗАНО БЫТЬ ДОКАЗАННЫМ. Обратное неверно и неверно намеренно:
@@ -1677,16 +1718,18 @@ test("охват: сорок одно утверждение НАПИСАНО, �
       `${строка}: утверждение написано, а ядро его не берёт — либо ядро ослабло, либо утверждение не о том`,
     )
   }
-  /* ЗАКАЗ 25 → 41, и вырос он не оттого, что перестали писать, а оттого,
-     что ядро стало доказывать больше: написанного как было 28 строк, так и
-     осталось, а доказанного в закрытых каталогах стало 83 вместо 46. Прирост на
-     единицу 19 августа — «Предел оракула»: он и доказан, и написан, поэтому
-     заказ от него не двинулся. Разница —
-     работа над КОРПУСОМ (написать утверждения там, где это разрешено), а не над
-     ядром, и она числом названа именно затем, чтобы не потеряться. */
+  /* ЗАКАЗ 41 → 48, и вырос он не оттого, что перестали писать, а оттого, что
+     доказанного в закрытых каталогах стало 99 вместо 83 при написанных 51
+     вместо 42. Восемь из девяти дописанных — постоянные близнецов слоя
+     процессов (`conc.flang` пять, `failures.flang` три): они и доказаны, и
+     написаны, поэтому заказ от них не двинулся ни на единицу. Двинули его
+     двенадцать функций печати-в-цель и границ, которые ядро доказывает, а
+     утверждения при них не написано. Разница — работа над КОРПУСОМ (написать
+     утверждения там, где это разрешено), а не над ядром, и она числом названа
+     именно затем, чтобы не потеряться. */
   assert.equal(
     доказано.length - НАПИСАНЫ_В_ЗАКРЫТЫХ.length,
-    41,
+    48,
     "заказ на письмо: столько функций закрытых каталогов ядро уже доказывает, а утверждения при них не написано",
   )
 
@@ -1778,10 +1821,15 @@ test("охват: сорок одно утверждение НАПИСАНО, �
      распределённость на flang принесли свои, и имён стало 144 вместо 39.
      Считано прогоном на собранном стволе 2bfcb7d0.
 
-     159 → 160 (19 августа, эта ветка): одна строка, «предел оракула
-     неотрицателен» в `flang/self/oracle.flang`. Прибавка НАША, названа поимённо
-     и вписана в оба списка выше — и в охват ядра, и в написанные, — поэтому
-     заказ на письмо от неё не двинулся.
+     159 → 160 (19 августа): одна строка, «предел оракула неотрицателен» в
+     `flang/self/oracle.flang`.
+
+     160 → 213 (19 августа, перепись после слияния близнецов). Имён стало 190
+     вместо 145, и все 45 названы поимённо в списках выше: `stdlib/http.flang`
+     14, `stdlib/base64.flang` 12, `self/conc.flang` 13, `self/failures.flang` 3,
+     `self/hotswap.flang` 3. Ни одна не наша — это чужая работа, доехавшая
+     слиянием; сторож её и поймал, для того он и стоит. Считано прогоном на
+     собранном стволе, а не сложено из веток.
 
      ЗДЕСЬ ЖЕ ПОЧИНЕНА САМА ПРОВЕРКА: у `assert.equal` стояло ЧЕТЫРЕ аргумента
      — 31, 30, 32 и текст, — а он берёт три. Лишние молча отбрасывались, и
@@ -1789,7 +1837,7 @@ test("охват: сорок одно утверждение НАПИСАНО, �
      два других числа не значили ничего. */
   assert.equal(
     сПостусловием.reduce((сумма, [, сколько]) => сумма + сколько, 0),
-    160,
+    213,
     "строк `обеспечивает` в закрытых каталогах стало другое число — вписана или снята строка",
   )
 })
@@ -1814,6 +1862,24 @@ test("охват: сорок одно утверждение НАПИСАНО, �
  * Каждая строка ДОКАЗАНА и ПРАВДИВА отдельно — `flang/test/stdlib-claims.test.mjs`.
  */
 const ВНЕ_ОХВАТА = [
+  /* «Разность пары» пришла из `work/claims-core` и стоит здесь по той же
+     причине, что и строки выше: цель у неё ПОТОЛОК — «результат не больше
+     2⁵³−1», — а охват спрашивает про дно. Утверждение это ровно то, что до сих
+     пор лежало в перенесённой копии
+     `flang/proof/examples/corpus-natural-ceiling.flang`; копия осталась на
+     месте, а само утверждение переехало К ФУНКЦИИ — продукция `обеспечивает` у
+     парсера на flang написана, и запрета на слово в этом каталоге больше нет.
+     Держится оно двумя фактами одной подписи, и оба даёт `нат`: потолок
+     уменьшаемого и дно вычитаемого. */
+  "flang/examples/measure/natural.flang «Разность пары»",
+  "flang/self/conc.flang «Адресат порождения»",
+  "flang/self/conc.flang «Адресат поручения»",
+  "flang/self/conc.flang «Варианты действия»",
+  "flang/self/conc.flang «Веса разрядов»",
+  "flang/self/conc.flang «Имена действий языка»",
+  "flang/self/conc.flang «Имена действий»",
+  "flang/self/conc.flang «Поля сбоя хозяина»",
+  "flang/self/conc.flang «Стратегии надзора»",
   /* «Дно точных» отдаёт −(2⁵³−1): цель «не меньше 0» о нём ЛОЖНА, и ядро её не
      берёт по делу. Написанное при нём утверждение — про границу снизу, и
      закрывает его правило порядка. */
@@ -1821,8 +1887,23 @@ const ВНЕ_ОХВАТА = [
   "flang/self/distributed.flang «Кого роняет разрыв»",
   "flang/self/distributed.flang «Размещение однозначно»",
   "flang/self/distributed.flang «Срок обнаружения молчания»",
+  "flang/self/hotswap.flang «Ответ отказа»",
+  "flang/self/hotswap.flang «Процессы кандидата»",
+  "flang/self/hotswap.flang «Что ложится в программу»",
   "flang/self/types.flang «Дно точных»",
   "flang/self/types.flang «Масштаб типа»",
+  "flang/stdlib/base64.flang «Азбука 64 для адреса»",
+  "flang/stdlib/base64.flang «Азбука 64»",
+  "flang/stdlib/base64.flang «Вторая шестёрка»",
+  "flang/stdlib/base64.flang «Закодировать байты»",
+  "flang/stdlib/base64.flang «Знак 64 для адреса»",
+  "flang/stdlib/base64.flang «Знак 64»",
+  "flang/stdlib/base64.flang «Значение знака 64»",
+  "flang/stdlib/base64.flang «Первая шестёрка»",
+  "flang/stdlib/base64.flang «Раскодировать в байты»",
+  "flang/stdlib/base64.flang «Третья шестёрка»",
+  "flang/stdlib/base64.flang «Тройка байтов»",
+  "flang/stdlib/base64.flang «Четвёртая шестёрка»",
   "flang/stdlib/datetime.flang «Високосный год»",
   "flang/stdlib/datetime.flang «Двумя знаками»",
   "flang/stdlib/datetime.flang «День недели»",
@@ -1850,6 +1931,19 @@ const ВНЕ_ОХВАТА = [
   "flang/stdlib/higher-order.flang «Сортировать»",
   "flang/stdlib/higher-order.flang «Удвоить»",
   "flang/stdlib/higher-order.flang «Утроить»",
+  "flang/stdlib/http.flang «Байт процентами»",
+  "flang/stdlib/http.flang «Закодировать проценты»",
+  "flang/stdlib/http.flang «Знак по коду»",
+  "flang/stdlib/http.flang «Обрезать края»",
+  "flang/stdlib/http.flang «Обрезать слева»",
+  "flang/stdlib/http.flang «Обрезать справа»",
+  "flang/stdlib/http.flang «Плюсы в пробелы»",
+  "flang/stdlib/http.flang «Путь цели»",
+  "flang/stdlib/http.flang «Раскодировать проценты»",
+  "flang/stdlib/http.flang «Строка запроса цели»",
+  "flang/stdlib/http.flang «Цифра в шестнадцатеричную»",
+  "flang/stdlib/http.flang «Цифра десятичная»",
+  "flang/stdlib/http.flang «Цифра шестнадцатеричная»",
   "flang/stdlib/json.flang «Буква слова json»",
   "flang/stdlib/json.flang «Десять в степени json»",
   "flang/stdlib/json.flang «Одиночный знак json»",
@@ -1912,16 +2006,6 @@ const ВНЕ_ОХВАТА = [
   "flang/stdlib/strings.flang «Разбить по символу»",
   "flang/stdlib/strings.flang «Символы»",
   "flang/stdlib/strings.flang «Сколько дополнить»",
-  /* «Разность пары» пришла из `work/claims-core` и стоит здесь по той же
-     причине, что и строки выше: цель у неё ПОТОЛОК — «результат не больше
-     2⁵³−1», — а охват спрашивает про дно. Утверждение это ровно то, что до сих
-     пор лежало в перенесённой копии
-     `flang/proof/examples/corpus-natural-ceiling.flang`; копия осталась на
-     месте, а само утверждение переехало К ФУНКЦИИ — продукция `обеспечивает` у
-     парсера на flang написана, и запрета на слово в этом каталоге больше нет.
-     Держится оно двумя фактами одной подписи, и оба даёт `нат`: потолок
-     уменьшаемого и дно вычитаемого. */
-  "flang/examples/measure/natural.flang «Разность пары»",
   "flang/stdlib/strings.flang «Считать символ»",
   "flang/stdlib/strings.flang «Цифра числом»",
   "flang/stdlib/strlists.flang «Дописать строку»",

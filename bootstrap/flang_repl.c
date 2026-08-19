@@ -96,6 +96,32 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+/*
+ * И ВТОРАЯ ПОЛОВИНА ТОГО ЖЕ, БЕЗ КОТОРОЙ ПЕРВАЯ ЛОМАЕТ macOS.
+ *
+ * На glibc `_POSIX_C_SOURCE 200809L` ОТКРЫВАЕТ `mkdtemp`. На Darwin та же
+ * строка его ЗАКРЫВАЕТ: заголовки Apple считают уровень видимости по
+ * `__DARWIN_C_LEVEL`, и названный `_POSIX_C_SOURCE` опускает его до чистого
+ * POSIX, где `mkdtemp` (вошедший в стандарт только в 2008-м) не значится.
+ * Под `-std=c99` clang вдобавок ставит `__STRICT_ANSI__`, и уровень падает ещё
+ * ниже. Оба следствия снимает `_DARWIN_C_SOURCE` — он поднимает уровень до
+ * полного, ничего при этом не отнимая.
+ *
+ * Улика, а не догадка: релиз 0.5.0 нёс `_POSIX_C_SOURCE` (строка 91 архива) и
+ * на Linux собирался начисто, а на macOS 19 августа 2026 упал ровно здесь:
+ *
+ *   flang_repl.c:3748:7: error: call to undeclared function 'mkdtemp';
+ *   ISO C99 and later do not support implicit function declarations
+ *
+ * Сборка идёт с `-Werror`, поэтому неявное объявление — не предупреждение, а
+ * остановка: `brew install digitable-lol/tap/flang` не доходит до конца ни у
+ * кого на Mac. Проверить это на Linux нельзя ничем: там строка выше и так
+ * работает, и красный появляется только на чужих заголовках.
+ */
+#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE
+#endif
+
 #include "flang_runtime.h"
 
 #include <errno.h>

@@ -202,6 +202,8 @@
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
+- [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
+- [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 
 ## Отвергнутые пути
 

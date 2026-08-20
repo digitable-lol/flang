@@ -1,7 +1,8 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /**
- * ПОЛНЫЙ УЗЕЛ на второй цели печати: не слой связи, а узел целиком.
+ * ПОЛНЫЙ УЗЕЛ на каждой цели, у которой есть хозяин: не слой связи, а узел
+ * целиком.
  *
  * ── Чем это отличается от соседнего прогона ─────────────────────────────────
  *
@@ -34,11 +35,18 @@
  * Надзора у узла на Python нет: отказ процесса доезжает до журнала и там
  * остаётся. Это названо в шапке `flang/conc/bin/node.py`, а не спрятано.
  *
- * Запуск: node --test flang/test/uzel-vtoraya-cel.test.mjs
+ * ── Мера ───────────────────────────────────────────────────────────────────
+ *
+ * Прогон печатает её сам: «полный узел на N целях из 8». N — это число целей,
+ * у которых есть ХОЗЯИН; решения печатаются во все восемь и сверены отдельно
+ * (`flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs`).
+ * Путать эти два числа нельзя: первое про работу, второе про переносимость.
+ *
+ * Запуск: node --test flang/test/uzel-celi.test.mjs
  */
 import assert from "node:assert/strict"
 import { spawn, spawnSync } from "node:child_process"
-import { copyFileSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
@@ -48,7 +56,29 @@ import { missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
-const питон = findExecutable("python3") ?? findExecutable("python")
+
+/* Цели, у которых узел есть ЦЕЛИКОМ. Список короткий нарочно: он и есть мера
+   работы, и растёт он не «формой», а написанным хозяином.
+
+   `js` в списке нет, и это не пропуск: узел на JavaScript — второй конец в
+   каждой паре ниже, и без него сверять было бы не с чем. Он считается отдельно
+   и первым. */
+const ЦЕЛИ = [
+  {
+    имя: "python", тулчейн: "python", ищем: ["python3", "python"], хозяин: "node.py",
+    собрать: null,
+    запуск: (каталог, чем) => [чем, ["-B", "node.py"]],
+  },
+  {
+    имя: "go", тулчейн: "go", ищем: ["go"], хозяин: "node.go",
+    /* Хозяин кладётся в свой каталог: у напечатанного уже есть `cli/main.go` с
+       `func main`, и два `main` в одном пакете не собираются. */
+    собрать: (каталог) => ["go", ["build", "-o", "flang_node", "./node"], "node"],
+    запуск: (каталог) => [join(каталог, "flang_node"), []],
+  },
+]
+
+const целейРаботает = []
 
 /** План узла: имя процесса → начальное состояние и обработчик, оба ИМЕНАМИ.
  *
@@ -96,24 +126,40 @@ function новаяЗапись(записи, подходит, срок) {
   })
 }
 
-/** Напечатать узел в цель и положить рядом хозяина. Возвращает каталог. */
-function собратьУзел(каталог, цель, хозяин) {
+/** Напечатать узел в цель, положить рядом хозяина и собрать. */
+function собратьУзел(каталог, цель) {
+  const среда = средаСборки(каталог, { LC_ALL: "C.UTF-8" })
   const печать = spawnSync(process.execPath, [
-    join(корень, "flang/bin/flang.mjs"), "emit", "flang/conc/uzel-zamer.flang", "--target", цель, "--out", каталог,
-  ], { cwd: корень, encoding: "utf8", env: средаСборки(каталог, { LC_ALL: "C.UTF-8" }), maxBuffer: 256 * 1024 * 1024 })
-  assert.equal(печать.status, 0, `печать узла в ${цель} отказала:\n${печать.stdout}\n${печать.stderr}`)
-  copyFileSync(join(корень, `flang/conc/bin/${хозяин}`), join(каталог, хозяин))
+    join(корень, "flang/bin/flang.mjs"), "emit", "flang/conc/uzel-zamer.flang", "--target", цель.имя, "--out", каталог,
+  ], { cwd: корень, encoding: "utf8", env: среда, maxBuffer: 256 * 1024 * 1024 })
+  assert.equal(печать.status, 0, `печать узла в ${цель.имя} отказала:\n${печать.stdout}\n${печать.stderr}`)
+
+  const собрать = цель.собрать === null ? null : цель.собрать(каталог)
+  const куда = собрать === null ? каталог : join(каталог, собрать[2] ?? ".")
+  mkdirSync(куда, { recursive: true })
+  copyFileSync(join(корень, `flang/conc/bin/${цель.хозяин}`), join(куда, цель.хозяин))
   writeFileSync(join(каталог, "plan.json"), JSON.stringify(ПЛАН), "utf8")
+
+  if (собрать !== null) {
+    const итог = spawnSync(собрать[0], собрать[1], {
+      cwd: каталог, encoding: "utf8", env: среда, maxBuffer: 256 * 1024 * 1024, timeout: 900_000,
+    })
+    assert.equal(итог.status, 0, `тулчейн ${цель.имя} не собрал узел:\n${итог.stdout}\n${итог.stderr}`)
+  }
   return каталог
 }
 
-test("узел на Python и узел на JavaScript ведут ОДНУ программу через настоящий провод", async (t) => {
-  if (питон === null) return missingToolchain(t, "python", "python не найден — пропуск")
+for (const цель of ЦЕЛИ) {
+ test(`узел на ${цель.имя} и узел на js ведут ОДНУ программу через настоящий провод`, async (t) => {
+  const чем = цель.ищем.map((это) => findExecutable(это)).find((это) => это !== null)
+  if (чем === undefined || чем === null) {
+    return missingToolchain(t, цель.тулчейн, `тулчейн «${цель.тулчейн}» не найден — пропуск`)
+  }
 
-  const каталог = рабочийКаталог("uzel-vtoraya-cel")
+  const каталог = рабочийКаталог(`uzel-${цель.имя}`)
   const узлы = []
   try {
-    собратьУзел(каталог, "python", "node.py")
+    собратьУзел(каталог, цель)
 
     /* ── узел на JavaScript, слушающий, несёт «Учётчика» ─────────────────── */
     const записи = []
@@ -145,11 +191,12 @@ test("узел на Python и узел на JavaScript ведут ОДНУ пр�
     const хэш = createHash("sha256").update(emitJs(программа).files[0].content, "utf8").digest("hex")
     assert.equal(хэш.slice(0, 12), поднят.хэш, "хэш посчитан не так, как считает узел")
 
-    /* ── узел на Python, звонящий, несёт «Счётчика» ──────────────────────── */
+    /* ── узел на второй цели, звонящий, несёт «Счётчика» ──────────────────── */
     const питонЗаписи = []
     const вброс = [{ кому: "Счётчик", что: ["в", "замерить", { сколько: ["ч", 2] }] }]
-    const питонУзел = spawn(питон, [
-      "-B", "node.py",
+    const [чемЗвать, свои] = цель.запуск(каталог, чем)
+    const питонУзел = spawn(чемЗвать, [
+      ...свои,
       "--я", "счёт", "--слушать", "127.0.0.1:0", "--хэш", хэш,
       "--план-файл", "plan.json",
       "--размещение", JSON.stringify({
@@ -171,7 +218,7 @@ test("узел на Python и узел на JavaScript ведут ОДНУ пр�
     /* ПЕРВОЕ: рукопожатие сошлось у ОБОИХ. */
     const уПитона = await новаяЗапись(питонЗаписи, (з) => з.в === "связь" && з.что === "заведена", 20_000)
       .catch((беда) => { throw new Error(`${беда.message}\nstderr питона:\n${питонОшибки}`) })
-    assert.equal(уПитона.цель, "python")
+    assert.equal(уПитона.цель, цель.имя)
     const уУзла = await новаяЗапись(записи, (з) => з.в === "связь" && з.что === "заведена" && з.сосед === "счёт", 20_000)
     assert.equal(уУзла.узел, "учёт")
 
@@ -203,21 +250,24 @@ test("узел на Python и узел на JavaScript ведут ОДНУ пр�
       `ответ с узла на JavaScript не поменял состояния «Счётчика»: ${JSON.stringify(конец.состояния)}`,
     )
 
-    console.log("полный узел на двух целях: python ↔ js, рукопожатие у обоих, письмо и ответ доехали")
-    console.log(`узел на Python: ${мираВФайле(join(корень, "flang/conc/bin/node.py"))}`)
+    целейРаботает.push(цель.имя)
+    console.log(`полный узел: ${цель.имя} ↔ js, рукопожатие у обоих, письмо и ответ доехали`)
+    console.log(`  хозяин ${цель.хозяин}: ${мираВФайле(join(корень, `flang/conc/bin/${цель.хозяин}`), цель.имя)}`)
   } finally {
     for (const п of узлы) { try { п.kill("SIGKILL") } catch { /* уже умер */ } }
     rmSync(каталог, { recursive: true, force: true })
   }
-})
+ })
+}
 
 /** Сколько строк хозяина трогают мир. Считается по пометке, а не на глаз: в
  *  `node.py` каждая такая строка помечена комментарием «# МИР», и пометка эта
  *  проверяемая — снимите её с настоящего вызова, и число здесь соврёт заметно. */
-function мираВФайле(путь) {
+function мираВФайле(путь, цель) {
+  const знак = цель === "go" ? "//" : "#"
   const строки = readFileSync(путь, "utf8").split("\n")
-  const кода = строки.filter((это) => это.trim() !== "" && !это.trim().startsWith("#")).length
-  const мира = строки.filter((это) => это.includes("# МИР")).length
+  const кода = строки.filter((это) => это.trim() !== "" && !это.trim().startsWith(знак)).length
+  const мира = строки.filter((это) => это.includes(`${знак} МИР`)).length
   return `${строки.length} строк, ${кода} кода, мира ${мира}`
 }
 
@@ -245,4 +295,12 @@ test("начальные состояния узла и программы — �
     assert.equal(узел, программа, `«${уУзла}» узла разошлось с «${уПрограммы}» программы`)
   }
   console.log(`начальных состояний сверено ${пары.length}, расхождений 0`)
+})
+
+test.after(() => {
+  /* Цель js считается работающей без отдельного прогона: она — второй конец
+     каждой пары выше, и без её работы ни одна пара не сошлась бы. */
+  const всего = целейРаботает.length + 1
+  console.log(`ПОЛНЫЙ УЗЕЛ РАБОТАЕТ НА ${всего} ЦЕЛЯХ ИЗ 8: js, ${целейРаботает.join(", ")}`)
+  console.log("решения при этом печатаются во все восемь — это другое число и другой прогон")
 })

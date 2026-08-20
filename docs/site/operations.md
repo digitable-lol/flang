@@ -4,10 +4,13 @@ The [glossary](../glossary.html) (in Russian) answers "what does this word mean"
 answers a different question: **"I have a list and I need the sum without
 duplicates — what do I write?"**
 
-Everything below lives in one file, `docs/examples/operations.flang`, and runs:
+Everything below lives in one file, `docs/examples/operations.flang`, in the
+language repository — the page reads fine without it, and running the whole
+thing is easiest from a clone of the tree:
 
 ```bash
-flang test docs/examples/operations.flang
+git clone https://github.com/digitable-lol/flang.git
+flang test flang/docs/examples/operations.flang
 ```
 
 Run on 18 August 2026: **224 examples, 224 passed, 0 failed**. Two hundred
@@ -403,6 +406,6 @@ done. What it costs and when it succeeds: see [Why and how](proofs.html).
 
 ## Next
 
-- [Glossary](../glossary.html) — in Russian; 149 concepts, printed from the surface table
+- [Glossary](../glossary.html) — in Russian; {{словарь.понятий}} concepts, printed from the surface table
 - [Writing packages](packages.html) — when operations stop being enough
 - [Real case studies](case-studies.html) — the same operations on 82 tasks and a service

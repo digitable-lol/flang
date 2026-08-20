@@ -29,9 +29,14 @@ brew install digitable-lol/tap/flang
 
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
-asdf install flang 0.5.1
-asdf set -u flang 0.5.1
+asdf install flang 0.5.0
+asdf set -u flang 0.5.0
 ```
+
+Здесь стоит 0.5.0, а не последний выпуск, и это не описка: у выложенного
+плагина установка 0.5.1 отказывает — скрипт ищет в архиве файл под прежним
+именем. Починка в дереве уже есть, но в репозиторий плагина не выложена, так
+что до выкладки через asdf ставится 0.5.0, а последний выпуск даёт Homebrew.
 
 Ставит в каталог версии `bin/flang`, `lib/libcompiler_flang.a` и два
 заголовка. Третья строка — `asdf set`, а не `asdf global`: `global` и `local`
@@ -82,5 +87,3 @@ npm install git+https://github.com/digitable-lol/flang.git
 - [Первая программа](getting-started.html) — написать, проверить, запустить
 - [Учебник](tutorial.html) — от первой функции до утверждения, доказанного ядром
 - [Операции языка](operations.html) — что чем делается
-- [Чем проверена установка](install-evidence.html) — прогоны, хеши, размеры и
-  чего проверить не удалось

@@ -119,7 +119,7 @@ nothing is worse than no field.
 | Command | What it prevents |
 |---|---|
 | `npm run numbers:check` | leaving a number on the site that has drifted from the tree |
-| `npm run site:check` | a page without its English pair, a link to nowhere, a substitution with no value, a broken search |
+| `npm run site:check` | a page without its English pair, a link to nowhere, a substitution with no value, a broken search, a code sample on the home page that no longer exists in the tree |
 | `npm run links:check` | breaking a link to a file of the tree by renaming it |
 | `npm run glossary:check` | the glossary page and the surface table drifting apart |
 

@@ -7,15 +7,23 @@
 
 ## Двоичный говорит МЕНЬШЕ свидетеля — четыре случая
 
-| что | двоичный | свидетель на Node |
-|---|---|---|
-| `flang/conc/**` (11 файлов) | 14 примеров | 45 примеров |
-| `flang/conc/sluzhby/chtenie.flang` | отказ `FLANG_UNKNOWN_NAME` | взят, 9 примеров |
-| `flang/self/repl/repl.flang` | отказ `FLANG_RECURSION_LIMIT` (40 000 000 витков, 172 с) | взят, 324 примера |
-| `flang/self/bootstrap/compiler.flang` | отказ `FLANG_RECURSION_LIMIT` (220 с) | взят, 405 примеров |
-| `flang/examples/monad/order-total.flang` | отказ `FLANG_TYPE_PARAM` | взят, 27 примеров |
+| что | двоичный | свидетель на Node | разница |
+|---|---|---|---:|
+| `прогон` модели процессов, `flang/conc/**` (11 файлов) | 14 примеров | 45 примеров | −31 |
+| законы при стрелке `морфизм … даёт` (4 файла) | 256 примеров | 267 примеров | −11 |
+| `flang/self/bootstrap/compiler.flang` | отказ `FLANG_RECURSION_LIMIT` (40 000 000 витков, 220 с) | взят, 405 примеров | −405 |
+| `flang/self/repl/repl.flang` | отказ `FLANG_RECURSION_LIMIT` (172 с) | взят, 324 примера | −324 |
+| `flang/examples/monad/order-total.flang` | отказ `FLANG_TYPE_PARAM` | взят, 27 примеров | −27 |
+| `flang/conc/sluzhby/chtenie.flang` | отказ `FLANG_UNKNOWN_NAME` | взят, 9 примеров | −9 |
 
-Первая строка — самая тихая и потому самая неприятная. `прогон «имя»` модели
+Вторая строка — ДОЛГ, записанный заранее: шапка «Прогон примеров исходников»
+(`flang/self/bootstrap/compiler.flang`) прямо говорит, что примеры закона живут
+в `morphisms`, а не в `functions`, и здесь их нет. Четыре программы названы там
+же числом, и прогон нашёл ровно четыре: `cat/modules/orders.flang` (4 против 6),
+`cat/modules/reconciliation.flang` (12 против 14), `cat/order-shipment.flang`
+(0 против 4) и `web/shortener/server.flang` (240 против 243).
+
+Первая строка — самая тихая и нигде не записанная. `прогон «имя»` модели
 процессов — это тоже пример для `flang test` у свидетеля, а «Прогон примеров
 исходников» двоичного смотрит только в `functions`. Поэтому
 

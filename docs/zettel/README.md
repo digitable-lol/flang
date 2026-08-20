@@ -190,6 +190,8 @@
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя](the-installed-binary-is-a-named-subset.md)
 - [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
+- [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
+- [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал ни у одного поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)

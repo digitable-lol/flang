@@ -71,11 +71,17 @@ class Flang < Formula
   # «Compiler flang». Команда ниже — для 0.5.2 и новее; для 0.5.1 и старее в ней
   # стоят прежние два имени, всё остальное то же.
   #
+  # С 0.5.3 имён ДЕСЯТЬ, а не девять: прибавился каталог `runtime-c` — рукописные
+  # исходники рантайма, без которых `flang emit --target c` не работает у
+  # поставившего (см. `install` ниже). Кладётся он именем каталога, а не
+  # звёздочкой: `tar` берёт его со всем содержимым, а звёздочка развернулась бы
+  # оболочкой и снова унесла бы в архив всё, что рядом.
+  #
   #   node scripts/build-release-c.mjs
   #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
   #       --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - \
   #       LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
-  #       flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h \
+  #       flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h runtime-c \
   #     | gzip -9n > output/flang-0.5.0-c.tar.gz
   #
   # LICENSE стоит в списке первым и не забывается: пункт 1 BSD-2-Clause требует
@@ -128,6 +134,23 @@ class Flang < Formula
     # переименования не заметили вовсе.
     lib.install Dir["lib*.a"]
     include.install Dir["*.h"]
+    # ИСХОДНИКИ РАНТАЙМА — без них `flang emit --target c` не работает у
+    # поставившего вовсе. Печать кладёт в вывод четыре файла рантайма ДОСЛОВНО,
+    # то есть читает их с диска, и ищет в `share/flang/c` рядом с бинарником
+    # (`emit_runtime_dir` в flang/src/emit/c/flang_repl.c). Формула их не ставила,
+    # архив их не нёс, и человек получал «не найдены исходники рантайма C» на
+    # любой попытке напечатать программу.
+    #
+    # Верхние файлы архива для этого НЕ ГОДЯТСЯ, хотя имена те же: наверху лежат
+    # напечатанные копии — с шапкой «Сгенерировано flang» в первой строке, — и
+    # печать их отвергает по делу, чтобы не приписывать шапку второй раз.
+    # Рукописные оригиналы едут отдельным каталогом `runtime-c/`; имя названо в
+    # scripts/release-layout.mjs, и совпадение с ним стережёт проверка пути
+    # установки в flang/test/self-bootstrap.test.mjs.
+    #
+    # Условие — не осторожность, а совместимость: формула ставит и выпущенные
+    # версии, а в архивах до 0.5.3 этого каталога нет.
+    (share/"flang/c").install Dir["runtime-c/*"] if Dir.exist?("runtime-c")
     # Страница руководства — не украшение. Человек, поставивший язык из brew,
     # ищет `man flang` раньше, чем README в интернете, и не найдя — решает, что
     # инструмента нет. Лежит она в корне архива, туда её кладёт
@@ -188,5 +211,16 @@ class Flang < Formula
     FLANG
     беда = shell_output("#{bin}/flang check кривая.flang 2>&1", 1)
     assert_match "FLANG_TYPE", беда
+
+    # И ПЕЧАТЬ В C — то, ради чего половина ставит язык, и ровно то, что не
+    # работало ни у одного поставившего: рукописного рантайма не было ни в
+    # архиве, ни в `share/flang/c`, и `flang emit` отвечал «не найдены исходники
+    # рантайма C». Формула, проверявшая только `check`, этого не видела.
+    #
+    # Каталог назван несуществующий нарочно: `emit` обязан завести его сам, как
+    # это делает версия для Node.
+    shell_output("#{bin}/flang emit проба.flang --target c --out печать/сюда 2>&1")
+    assert_predicate testpath/"печать/сюда/flang_runtime.c", :exist?
+    assert_predicate testpath/"печать/сюда/Makefile", :exist?
   end
 end

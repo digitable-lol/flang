@@ -128,6 +128,25 @@ flang check m.flang         # parse, types, totality — in words, not JSON
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
 
+**`flang emit --target c` needs four runtime files, and before 0.5.3 they were in neither the
+archive nor the installation.** Printing copies `flang_runtime.h`, `flang_runtime.c`,
+`flang_cli.c` and `flang_repl.c` into the output **verbatim**, so it reads them from disk — in
+turn from `--runtime <dir>`, from `$FLANG_RUNTIME_DIR`, and from `share/flang/c` next to the
+command. From 0.5.3 both the formula and the plugin put them there; archives 0.5.0—0.5.2 do not
+carry them at all, and `flang emit` answers «не найдены исходники рантайма C». While an older
+version is installed, here is the **temporary workaround**, verified by a run: take them from a
+clone.
+
+```bash
+git clone https://github.com/digitable-lol/flang
+flang emit m.flang --target c --out out --runtime flang/flang/src/emit/c
+# the same, once: export FLANG_RUNTIME_DIR=$PWD/flang/flang/src/emit/c
+```
+
+The files at the top of the unpacked archive will **not** do, despite the identical names: those
+are printed copies whose first line is the «Сгенерировано flang» header, and printing rejects them
+so as not to stamp that header a second time.
+
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
 tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
 its source is [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole

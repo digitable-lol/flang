@@ -262,6 +262,7 @@
 - [`git ls-files | grep '\.flang$'` насчитал 390 файлов там, где их 826: git берёт пути с не-ASCII в кавычки](git-quotes-non-ascii-paths-and-a-count-loses-them.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
+- [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
 - [Граница входа была долгом печати, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается](granica-vhoda-eto-dolg-pechati-a-ne-vychitanie-v-proverke.md)

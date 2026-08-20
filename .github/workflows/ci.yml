@@ -105,7 +105,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: node scripts/check-licensing.mjs
+      - run: bootstrap/flang io scripts/storozh-licenzii.flang
 
   # Ссылки в документации — по той же причине отдельно: ни зависимостей, ни
   # сборки, зато отвечает за пять секунд. Сборка сайта проверяет ссылки на 107

@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "postinstall": "node packaging/postinstall.mjs",
-    "license:check": "node scripts/check-licensing.mjs",
+    "license:check": "bootstrap/flang io scripts/storozh-licenzii.flang",
     "claims:check": "node flang/scripts/claim-guard.mjs",
     "counts:check": "node flang/scripts/count-guard.mjs",
     "spec:check": "bootstrap/flang io fspec/guard.flang",

@@ -68,7 +68,7 @@ class Конец:
         self.ctx = реш.new_context()
         self.связь = реш.fn_svyaz_zanovo(
             self.ctx, rt.text(кто), rt.flag(False), rt.flag(False),
-            rt.flag(False), rt.flag(False), rt.number(0.0),
+            rt.flag(False), rt.flag(False), rt.flag(False), rt.number(0.0),
         )
         self.сокет = None
         self.хвост = ""
@@ -171,6 +171,9 @@ class Конец:
             self.послать({"в": "привет", "узел": self.я, "хэш": self.хэш})
         elif имя == "Прибрать":
             self.прибрать()
+        elif имя == "Доложить о несостоявшемся знакомстве":
+            сказать({"в": "связь", "узел": self.я, "цель": ЦЕЛЬ, "сосед": self.кто,
+                     "что": "не состоялась", "почему": поля["почему"]})
         elif имя == "Связь заведена":
             сказать({"в": "связь", "узел": self.я, "цель": ЦЕЛЬ, "сосед": self.кто, "что": "заведена"})
         elif имя == "Связь отвергнута":

@@ -245,7 +245,7 @@ function $b_k_stroke(value) {
 }
 
 /** Запись FTS «Связь». */
-/** @typedef {{ "кто": string, "готова": *, "звоним": *, "виделись": *, "ждём решения": *, "последний байт": number }} Svyaz */
+/** @typedef {{ "кто": string, "готова": *, "звоним": *, "виделись": *, "ждём решения": *, "срок вышел": *, "последний байт": number }} Svyaz */
 
 /**
  * Фабрика записи «Связь».
@@ -264,6 +264,7 @@ export function sozdatSvyaz(fields = {}) {
     "звоним": fields["звоним"] ?? null,
     "виделись": fields["виделись"] ?? null,
     "ждём решения": fields["ждём решения"] ?? null,
+    "срок вышел": fields["срок вышел"] ?? null,
     "последний байт": fields["последний байт"] ?? null,
   }
 }
@@ -288,7 +289,7 @@ export function sozdatHodSvyazi(fields = {}) {
   }
 }
 
-/** Сумма типов FTS «Что случилось со связью»: «Сокет завёлся» | «Пришёл привет» | «Пришёл пульс» | «Пришло письмо» | «Пришёл отбой» | «Пришёл чужой кадр» | «Байты пришли» | «Сокет отказал» | «Звонок не удался» | «Сторож проснулся». */
+/** Сумма типов FTS «Что случилось со связью»: «Сокет завёлся» | «Пришёл привет» | «Пришёл пульс» | «Пришло письмо» | «Пришёл отбой» | «Пришёл чужой кадр» | «Байты пришли» | «Сокет отказал» | «Звонок не удался» | «Сторож проснулся» | «Срок знакомства вышел». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} ChtoSluchilosSoSvyazyu */
 
@@ -420,7 +421,20 @@ export function StorozhProsnulsya(fields = {}) {
   return new $FlangVariant("Сторож проснулся", fields)
 }
 
-/** Сумма типов FTS «Веление»: «Послать привет» | «Прибрать» | «Связь заведена» | «Связь отвергнута» | «Доложить о потере» | «Доставить письмо» | «Позвонить снова». */
+/**
+ * Конструктор варианта «Срок знакомства вышел» суммы «Что случилось со связью».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "срок": number }} fields
+ * @returns {$FlangVariant}
+ */
+export function SrokZnakomstvaVyshel(fields = {}) {
+  return new $FlangVariant("Срок знакомства вышел", fields)
+}
+
+/** Сумма типов FTS «Веление»: «Послать привет» | «Прибрать» | «Связь заведена» | «Связь отвергнута» | «Доложить о потере» | «Доставить письмо» | «Позвонить снова» | «Доложить о несостоявшемся знакомстве». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} Velenie */
 
@@ -512,6 +526,19 @@ export function PozvonitSnova(fields = {}) {
   return new $FlangVariant("Позвонить снова", fields)
 }
 
+/**
+ * Конструктор варианта «Доложить о несостоявшемся знакомстве» суммы «Веление».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "почему": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function DolozhitONesostoyavshemsyaZnakomstve(fields = {}) {
+  return new $FlangVariant("Доложить о несостоявшемся знакомстве", fields)
+}
+
 /** Сумма типов FTS «Доклад о разрыве»: «Доложить» | «Смолчать». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} DokladORazryve */
@@ -550,11 +577,12 @@ export function Smolchat(fields = {}) {
  * @param {*} zvonim — «звоним»
  * @param {*} videlis — «виделись»
  * @param {*} zhdyomResheniya — «ждём решения»
+ * @param {*} srokVyshel — «срок вышел»
  * @param {number} posledniyBayt — «последний байт»
  * @returns {Svyaz}
  */
-export function svyazZanovo(kto, gotova, zvonim, videlis, zhdyomResheniya, posledniyBayt) {
-  return { "кто": kto, "готова": gotova, "звоним": zvonim, "виделись": videlis, "ждём решения": zhdyomResheniya, "последний байт": posledniyBayt }
+export function svyazZanovo(kto, gotova, zvonim, videlis, zhdyomResheniya, srokVyshel, posledniyBayt) {
+  return { "кто": kto, "готова": gotova, "звоним": zvonim, "виделись": videlis, "ждём решения": zhdyomResheniya, "срок вышел": srokVyshel, "последний байт": posledniyBayt }
 }
 
 /**
@@ -567,7 +595,7 @@ export function svyazZanovo(kto, gotova, zvonim, videlis, zhdyomResheniya, posle
  * @returns {Svyaz}
  */
 export function svyazSOtmetkoy(svyaz, kogda) {
-  return svyazZanovo($field(svyaz, "кто"), $field(svyaz, "готова"), $field(svyaz, "звоним"), $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), kogda)
+  return svyazZanovo($field(svyaz, "кто"), $field(svyaz, "готова"), $field(svyaz, "звоним"), $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), kogda)
 }
 
 /**
@@ -579,7 +607,7 @@ export function svyazSOtmetkoy(svyaz, kogda) {
  * @returns {Svyaz}
  */
 export function svyazSnyata(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "последний байт"))
+  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
 }
 
 /**
@@ -591,7 +619,7 @@ export function svyazSnyata(svyaz) {
  * @returns {Svyaz}
  */
 export function svyazZhdyotResheniya(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, $field(svyaz, "последний байт"))
+  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
 }
 
 /**
@@ -603,7 +631,7 @@ export function svyazZhdyotResheniya(svyaz) {
  * @returns {Svyaz}
  */
 export function svyazGotova(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), true, false, true, false, $field(svyaz, "последний байт"))
+  return svyazZanovo($field(svyaz, "кто"), true, false, true, false, false, $field(svyaz, "последний байт"))
 }
 
 /**
@@ -634,6 +662,9 @@ export function etoPoterya(velenie) {
   } else if ($isVariant(velenie) && velenie.variant === "Позвонить снова") {
     const pauza = $variantField(velenie, "пауза")
     return false
+  } else if ($isVariant(velenie) && velenie.variant === "Доложить о несостоявшемся знакомстве") {
+    const pochemu$3 = $variantField(velenie, "почему")
+    return true
   } else {
     $matchFail(velenie)
   }
@@ -651,23 +682,29 @@ export function etoPoterya(velenie) {
 export function dokladyvatLiORazryve(svyaz, rabotaet) {
   let $t1
   if ($cond(rabotaet)) {
-    $t1 = $field(svyaz, "виделись")
+    let $t2
+    if ($cond($field(svyaz, "виделись"))) {
+      $t2 = true
+    } else {
+      $t2 = $field(svyaz, "срок вышел")
+    }
+    $t1 = $t2
   } else {
     $t1 = false
   }
-  let $t2
+  let $t3
   if ($cond($t1)) {
-    let $t3
+    let $t4
     if ($cond($field(svyaz, "ждём решения"))) {
-      $t3 = false
+      $t4 = false
     } else {
-      $t3 = true
+      $t4 = true
     }
-    $t2 = $t3
+    $t3 = $t4
   } else {
-    $t2 = false
+    $t3 = false
   }
-  if ($cond($t2)) {
+  if ($cond($t3)) {
     return Dolozhit({})
   } else {
     return Smolchat({})
@@ -700,7 +737,7 @@ export function poteryaSvyazi(svyaz, pochemu, doklad) {
   }
   // постусловие «один разрыв роняет связь не больше одного раза»
   if (!$post($lte($b_dlina($t3), 1), "один разрыв роняет связь не больше одного раза", "Потеря связи")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «один разрыв роняет связь не больше одного раза» функции «Потеря связи»", { "line": 190, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «один разрыв роняет связь не больше одного раза» функции «Потеря связи»", { "line": 204, "column": 3 })
   }
   return $t1
 }
@@ -722,7 +759,7 @@ export function nachaloHesha(hesh) {
   }
   // постусловие «в сообщение едет не больше двенадцати знаков хэша»
   if (!$post($lte($b_dlina($t1), 12), "в сообщение едет не больше двенадцати знаков хэша", "Начало хэша")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «в сообщение едет не больше двенадцати знаков хэша» функции «Начало хэша»", { "line": 217, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «в сообщение едет не больше двенадцати знаков хэша» функции «Начало хэша»", { "line": 231, "column": 3 })
   }
   return $t1
 }
@@ -786,6 +823,83 @@ export function pochemuZamolchala(svyaz, seychas, srok) {
 }
 
 /**
+ * Функция flang «Почему знакомство не состоялось».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {number} srok — «срок»
+ * @returns {string}
+ */
+export function pochemuZnakomstvoNeSostoyalos(srok) {
+  return $concat($concat("знакомство не состоялось за ", $b_k_stroke(srok)), " мс")
+}
+
+/**
+ * Функция flang «Связь просрочена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Svyaz} svyaz — «связь»
+ * @returns {Svyaz}
+ */
+export function svyazProsrochena(svyaz) {
+  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, true, $field(svyaz, "последний байт"))
+}
+
+/**
+ * Функция flang «Знакомство просрочено».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Svyaz} svyaz — «связь»
+ * @param {number} srok — «срок»
+ * @param {*} rabotaet — «работает»
+ * @returns {HodSvyazi}
+ */
+export function znakomstvoProsrocheno(svyaz, srok, rabotaet) {
+  let $t1
+  if ($cond($field(svyaz, "виделись"))) {
+    $t1 = true
+  } else {
+    $t1 = $field(svyaz, "срок вышел")
+  }
+  let $t2
+  if ($cond($t1)) {
+    $t2 = { "связь": svyaz, "веления": [] }
+  } else {
+    let $t3
+    if ($cond(rabotaet)) {
+      let $t4
+      if ($cond($field(svyaz, "ждём решения"))) {
+        $t4 = false
+      } else {
+        $t4 = true
+      }
+      $t3 = $t4
+    } else {
+      $t3 = false
+    }
+    let $t5
+    if ($cond($t3)) {
+      $t5 = { "связь": svyazProsrochena(svyaz), "веления": [Pribrat({}), DolozhitONesostoyavshemsyaZnakomstve({ "почему": pochemuZnakomstvoNeSostoyalos(srok) })] }
+    } else {
+      $t5 = { "связь": svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), true, $field(svyaz, "последний байт")), "веления": [Pribrat({})] }
+    }
+    $t2 = $t5
+  }
+  const $t6 = $requireList($field($t2, "веления"), "отфильтровать")
+  const $t7 = []
+  for (const v of $t6) {
+    if ($keep(etoPoterya(v))) $t7.push(v)
+  }
+  // постусловие «просроченный срок роняет связь не больше одного раза»
+  if (!$post($lte($b_dlina($t7), 1), "просроченный срок роняет связь не больше одного раза", "Знакомство просрочено")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченный срок роняет связь не больше одного раза» функции «Знакомство просрочено»", { "line": 347, "column": 3 })
+  }
+  return $t2
+}
+
+/**
  * Функция flang «Шаг связи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -801,7 +915,7 @@ export function pochemuZamolchala(svyaz, seychas, srok) {
 export function shagSvyazi(svyaz, chto, moyHesh, srok, pauza, rabotaet) {
   if ($isVariant(chto) && chto.variant === "Сокет завёлся") {
     const seychas = $variantField(chto, "сейчас")
-    return { "связь": svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), seychas), "веления": [PoslatPrivet({})] }
+    return { "связь": svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), seychas), "веления": [PoslatPrivet({})] }
   } else if ($isVariant(chto) && chto.variant === "Пришёл привет") {
     const uzel = $variantField(chto, "узел")
     const hesh = $variantField(chto, "хэш")
@@ -837,7 +951,13 @@ export function shagSvyazi(svyaz, chto, moyHesh, srok, pauza, rabotaet) {
     if ($cond($t1)) {
       return { "связь": svyazSnyata(svyaz), "веления": [] }
     } else {
+      let $t2
       if ($cond($field(svyaz, "виделись"))) {
+        $t2 = true
+      } else {
+        $t2 = $field(svyaz, "срок вышел")
+      }
+      if ($cond($t2)) {
         return poteryaSvyazi(svyaz, "дозвониться не удалось", dokladyvatLiORazryve(svyaz, rabotaet))
       } else {
         return { "связь": svyazSnyata(svyaz), "веления": [PozvonitSnova({ "пауза": pauza })] }
@@ -850,6 +970,9 @@ export function shagSvyazi(svyaz, chto, moyHesh, srok, pauza, rabotaet) {
     } else {
       return { "связь": svyaz, "веления": [] }
     }
+  } else if ($isVariant(chto) && chto.variant === "Срок знакомства вышел") {
+    const srok$2 = $variantField(chto, "срок")
+    return znakomstvoProsrocheno(svyaz, srok$2, rabotaet)
   } else {
     $matchFail(chto)
   }
@@ -878,6 +1001,9 @@ export const $PROGRAM = {
     ["Кем назвался", kemNazvalsya],
     ["Связь замолчала", svyazZamolchala],
     ["Почему замолчала", pochemuZamolchala],
+    ["Почему знакомство не состоялось", pochemuZnakomstvoNeSostoyalos],
+    ["Связь просрочена", svyazProsrochena],
+    ["Знакомство просрочено", znakomstvoProsrocheno],
     ["Шаг связи", shagSvyazi],
   ]),
   variant: (name, fields) => new $FlangVariant(name, fields),
@@ -891,11 +1017,11 @@ export const $PROGRAM = {
       { kind: "строка", name: "строка", owner: "", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 0 },
       { kind: "признак", name: "признак", owner: "", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 0 },
       { kind: "число", name: "число", owner: "", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 0 },
-      { kind: "запись", name: "«Связь»", owner: "Связь", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 6, variantAt: 0, variantCount: 0 },
-      { kind: "сумма", name: "«Веление»", owner: "Веление", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 7 },
+      { kind: "запись", name: "«Связь»", owner: "Связь", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 7, variantAt: 0, variantCount: 0 },
+      { kind: "сумма", name: "«Веление»", owner: "Веление", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 8 },
       { kind: "число", name: "нат", owner: "", nothing: false, integer: true, range: true, low: 0, high: 9007199254740991, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 0, variantCount: 0 },
-      { kind: "сумма", name: "«Доклад о разрыве»", owner: "Доклад о разрыве", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 7, variantCount: 2 },
-      { kind: "сумма", name: "«Что случилось со связью»", owner: "Что случилось со связью", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 9, variantCount: 10 },
+      { kind: "сумма", name: "«Доклад о разрыве»", owner: "Доклад о разрыве", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 8, variantCount: 2 },
+      { kind: "сумма", name: "«Что случилось со связью»", owner: "Что случилось со связью", nothing: false, integer: false, range: false, low: 0, high: 0, item: 0, fieldAt: 0, fieldCount: 0, variantAt: 10, variantCount: 11 },
     ],
     fields: [
       { name: "кто", type: 0 },
@@ -903,12 +1029,14 @@ export const $PROGRAM = {
       { name: "звоним", type: 1 },
       { name: "виделись", type: 1 },
       { name: "ждём решения", type: 1 },
+      { name: "срок вышел", type: 1 },
       { name: "последний байт", type: 2 },
       { name: "сосед", type: 0 },
       { name: "почему", type: 0 },
       { name: "почему", type: 0 },
       { name: "кому", type: 0 },
       { name: "пауза", type: 5 },
+      { name: "почему", type: 0 },
       { name: "сейчас", type: 2 },
       { name: "узел", type: 0 },
       { name: "хэш", type: 0 },
@@ -918,27 +1046,30 @@ export const $PROGRAM = {
       { name: "сейчас", type: 2 },
       { name: "почему", type: 0 },
       { name: "сейчас", type: 2 },
+      { name: "срок", type: 5 },
     ],
     variants: [
-      { name: "Послать привет", fieldAt: 6, fieldCount: 0 },
-      { name: "Прибрать", fieldAt: 6, fieldCount: 0 },
-      { name: "Связь заведена", fieldAt: 6, fieldCount: 0 },
-      { name: "Связь отвергнута", fieldAt: 6, fieldCount: 2 },
-      { name: "Доложить о потере", fieldAt: 8, fieldCount: 1 },
-      { name: "Доставить письмо", fieldAt: 9, fieldCount: 1 },
-      { name: "Позвонить снова", fieldAt: 10, fieldCount: 1 },
-      { name: "Доложить", fieldAt: 11, fieldCount: 0 },
-      { name: "Смолчать", fieldAt: 11, fieldCount: 0 },
-      { name: "Сокет завёлся", fieldAt: 11, fieldCount: 1 },
-      { name: "Пришёл привет", fieldAt: 12, fieldCount: 2 },
-      { name: "Пришёл пульс", fieldAt: 14, fieldCount: 0 },
-      { name: "Пришло письмо", fieldAt: 14, fieldCount: 1 },
-      { name: "Пришёл отбой", fieldAt: 15, fieldCount: 1 },
-      { name: "Пришёл чужой кадр", fieldAt: 16, fieldCount: 1 },
-      { name: "Байты пришли", fieldAt: 17, fieldCount: 1 },
-      { name: "Сокет отказал", fieldAt: 18, fieldCount: 1 },
-      { name: "Звонок не удался", fieldAt: 19, fieldCount: 0 },
-      { name: "Сторож проснулся", fieldAt: 19, fieldCount: 1 },
+      { name: "Послать привет", fieldAt: 7, fieldCount: 0 },
+      { name: "Прибрать", fieldAt: 7, fieldCount: 0 },
+      { name: "Связь заведена", fieldAt: 7, fieldCount: 0 },
+      { name: "Связь отвергнута", fieldAt: 7, fieldCount: 2 },
+      { name: "Доложить о потере", fieldAt: 9, fieldCount: 1 },
+      { name: "Доставить письмо", fieldAt: 10, fieldCount: 1 },
+      { name: "Позвонить снова", fieldAt: 11, fieldCount: 1 },
+      { name: "Доложить о несостоявшемся знакомстве", fieldAt: 12, fieldCount: 1 },
+      { name: "Доложить", fieldAt: 13, fieldCount: 0 },
+      { name: "Смолчать", fieldAt: 13, fieldCount: 0 },
+      { name: "Сокет завёлся", fieldAt: 13, fieldCount: 1 },
+      { name: "Пришёл привет", fieldAt: 14, fieldCount: 2 },
+      { name: "Пришёл пульс", fieldAt: 16, fieldCount: 0 },
+      { name: "Пришло письмо", fieldAt: 16, fieldCount: 1 },
+      { name: "Пришёл отбой", fieldAt: 17, fieldCount: 1 },
+      { name: "Пришёл чужой кадр", fieldAt: 18, fieldCount: 1 },
+      { name: "Байты пришли", fieldAt: 19, fieldCount: 1 },
+      { name: "Сокет отказал", fieldAt: 20, fieldCount: 1 },
+      { name: "Звонок не удался", fieldAt: 21, fieldCount: 0 },
+      { name: "Сторож проснулся", fieldAt: 21, fieldCount: 1 },
+      { name: "Срок знакомства вышел", fieldAt: 22, fieldCount: 1 },
     ],
     params: [
       { fn: "Связь заново", name: "кто", type: 0 },
@@ -946,6 +1077,7 @@ export const $PROGRAM = {
       { fn: "Связь заново", name: "звоним", type: 1 },
       { fn: "Связь заново", name: "виделись", type: 1 },
       { fn: "Связь заново", name: "ждём решения", type: 1 },
+      { fn: "Связь заново", name: "срок вышел", type: 1 },
       { fn: "Связь заново", name: "последний байт", type: 2 },
       { fn: "Связь с отметкой", name: "связь", type: 3 },
       { fn: "Связь с отметкой", name: "когда", type: 2 },
@@ -969,6 +1101,11 @@ export const $PROGRAM = {
       { fn: "Почему замолчала", name: "связь", type: 3 },
       { fn: "Почему замолчала", name: "сейчас", type: 2 },
       { fn: "Почему замолчала", name: "срок", type: 5 },
+      { fn: "Почему знакомство не состоялось", name: "срок", type: 5 },
+      { fn: "Связь просрочена", name: "связь", type: 3 },
+      { fn: "Знакомство просрочено", name: "связь", type: 3 },
+      { fn: "Знакомство просрочено", name: "срок", type: 5 },
+      { fn: "Знакомство просрочено", name: "работает", type: 1 },
       { fn: "Шаг связи", name: "связь", type: 3 },
       { fn: "Шаг связи", name: "что", type: 7 },
       { fn: "Шаг связи", name: "мой хэш", type: 0 },

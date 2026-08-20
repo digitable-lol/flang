@@ -43,7 +43,7 @@
 `FLANG_BUDGET_EXHAUSTED`, а не результатом. Это разные обещания, и путать их
 нельзя.
 
-**Чем подтверждено.** `flang/self/distributed.flang` (515 строк) и
+**Чем подтверждено.** `flang/self/distributed.flang` (901 строка) и
 `flang/test/self-distributed.test.mjs`: 395 значений корпуса, 5 297 491 байт
 побайтовой сверки со свидетелем, 0 расхождений; ведомость доказательства —
 `flang check --proof`. Ветка `work/uzly`, 18 августа 2026.

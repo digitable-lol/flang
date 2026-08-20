@@ -57906,6 +57906,16 @@ fl_status compiler_flang_perepisat(fl_ctx *ctx, fl_value uzel, fl_value otkuda, 
 fl_status compiler_flang_perepisat_vsemi(fl_ctx *ctx, fl_value uzel, fl_value ravenstva, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Переписанное после меры».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param ravenstva — «равенства»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_perepisannoe_posle_mery(fl_ctx *ctx, fl_value uzel, fl_value ravenstva, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Переписать до неподвижной».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.

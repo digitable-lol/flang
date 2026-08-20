@@ -276,7 +276,14 @@ static const char REPL_GREETING_NO_EVAL[] =
  * ниже: одна называет, что есть, вторая — чего нет.
  */
 #define EMIT_TARGETS_WORDS "c|go|rust|java|js|elixir|python|csharp"
-#define EMIT_TARGETS_MISSING "законы на сетке"
+#define EMIT_TARGETS_MISSING \
+  "СУД НАД КАТЕГОРНОЙ ПОВЕРХНОСТЬЮ И ПРОЦЕССАМИ: морфизм, категория, связь\n"\
+  "модулей, бифунктор, преобразование, изоморфизм, моноид, монада, множества,\n"\
+  "объявленные свойства, требования, процесс, надзор, прогон. Часть их правил\n"\
+  "доказывается сличением объявлений, часть считается вычислением на сетке; ни\n"\
+  "те ни другие в бинарник не втащены, и им нужен Node. Программу с такими\n"\
+  "объявлениями «flang check» НЕ пропускает молча: он называет, чего не\n"\
+  "проверил, и отвечает кодом 2."
 #define EMIT_TARGETS_SAY \
   "целей здесь ВОСЕМЬ — «c», «go», «rust», «java», «js», «elixir», «python», «csharp»"
 #define EMIT_TARGETS_REST \
@@ -288,7 +295,7 @@ static const char FLANG_HELP[] =
     "\n"
     "  flang                              оболочка: объявляй и считай сразу\n"
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
-    "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
+    "  flang test <файл|каталог>          прогон примеров: один файл или весь корпус\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
     "  flang emit <файл> --target «цель»  напечатать программу: " EMIT_TARGETS_WORDS "\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
@@ -307,8 +314,8 @@ static const char FLANG_HELP[] =
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
     "Здесь все 10 команд полного инструментария плюс языковой сервер, у свидетеля\n"
-    "живущий отдельной командой «flang-lsp». Чего у бинарника нет — " EMIT_TARGETS_MISSING "\n"
-    "и законы на сетке: им нужен Node.\n"
+    "живущий отдельной командой «flang-lsp». Чего у бинарника нет — " EMIT_TARGETS_MISSING "
+"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -323,23 +330,48 @@ static const char HELP_CHECK[] =
     "            — каждое высказанное утверждение\n"
     "  --json    вместе с --proof: ведомость машинным видом\n"
     "\n"
-    "Ведомость бинарник печатает у программы, где всё, о чём она отчитывается, он\n"
-    "ПОСЧИТАЛ САМ. Законы, считаемые вычислением на сетке (моноид, монада,\n"
-    "изоморфизм, категория, множества, связь и пять объявленных свойств), в\n"
-    "бинарнике не считает никто, и программа, где такое объявлено, получает отказ с\n"
-    "названным препятствием, а не зелёную ведомость с пустым разделом. Поиск\n"
-    "нарушений по примерам тоже не переехал: ведомость говорит «не искали», а не\n"
-    "«не найдено».";
+    "Категорной поверхности и процессов бинарник НЕ СУДИТ ВОВСЕ — ни доказуемых\n"
+    "правил (концы стрелок, замкнутость категории, полнота связи), ни законов на\n"
+    "сетке (моноид, монада, изоморфизм, равенство морфизмов, множества, квадрат\n"
+    "связи, пять объявленных свойств), ни процессов, надзора и прогонов. Слоёв,\n"
+    "которые это делают, в бинарнике нет. Поэтому программа с такими объявлениями\n"
+    "получает отказ с названным пробелом и код 2 — и у check, и у --proof:\n"
+    "«замечаний нет» и пустой раздел ведомости читались бы как «проверено», а это\n"
+    "неправда. Поиск нарушений по примерам тоже не переехал: ведомость говорит «не\n"
+    "искали», а не «не найдено».\n"
+    "\n"
+    "ДВА ЗАЗОРА, которые бинарник не умеет даже НАЗВАТЬ, и потому названы здесь.\n"
+    "Уточнённые числовые типы («сотых», «вес») стоят типом в подписи, а не\n"
+    "отдельной строкой: программу с ними от обычной по объявлениям не отличить, и\n"
+    "check на ней отвечает «замечаний нет». Мост из FTS («.fts»-модели, законы\n"
+    "поверх них) бинарник не принимает вовсе.\n"
+    "\n"
+    "Полный список правил, которых здесь нет, — не в этой справке, а в проверке:\n"
+    "flang/scripts/binary-rules-guard.mjs сверяет СОСТАВ ПРАВИЛ двух реализаций в\n"
+    "обе стороны, и правило, дописанное одной из них, красит её само.";
 
 static const char HELP_TEST[] =
-    "flang test <файл.flang> [--no-check] [--max-steps N] [--max-depth N]\n"
+    "flang test <файл.flang | каталог | маска> [--no-check] [--json]\n"
+    "                                          [--max-steps N] [--max-depth N]\n"
     "\n"
     "Прогон примеров, объявленных внутри функций. Сначала проверяет программу теми\n"
     "же проверками, что и check: «пример сошёлся» на программе с ошибкой типов не\n"
     "значит ничего.\n"
     "\n"
+    "Довод, не кончающийся на «.flang», и всякий довод со звездой или вопросом —\n"
+    "это КОРПУС, а не файл:\n"
+    "\n"
+    "  flang test flang/stdlib/                весь каталог, вглубь\n"
+    "  flang test \'flang/examples/**/*.flang\'  по маске (кавычки — от оболочки)\n"
+    "\n"
+    "У корпуса печатается каждый не прошедший пример и каждый не взятый файл, а\n"
+    "прошедшие — числом. Код возврата 0 — взяты все файлы и сошлись все примеры;\n"
+    "1 — что-то не сошлось или файл не взят; 2 — кривой вызов.\n"
+    "\n"
     "  --no-check      не проверять — смотреть на поведение примеров, пока\n"
     "                  программа ещё в правке\n"
+    "  --json          машиночитаемый итог одной строкой\n"
+    "  --ledger        ведомость: по строке на файл, для сверки диффом\n"
     "  --max-steps N   предел шагов вычислителя\n"
     "  --max-depth N   предел глубины\n"
     "\n"
@@ -1092,6 +1124,28 @@ static void repl_cycle(void) {
   fl_ctx_init(&repl_ctx, &repl_arena);
 }
 
+/*
+ * ПОСЛЕДНИЙ ОТКАЗ ВЫЗОВА, взятый на руки. Нужен ровно прогону по корпусу: там
+ * отказ на одном файле — это СТРОКА ОТЧЁТА про этот файл, а не конец работы, и
+ * напечатать её обязан отчёт целиком, вперемежку с остальными, а не `fprintf`
+ * посреди прогона. Тихий режим гасит только печать; сам отказ никуда не
+ * девается — он переезжает в поля «код» и «сообщение» итога по файлу.
+ */
+static bool repl_call_quiet = false;
+static char repl_call_code[128];
+static char repl_call_message[1024];
+
+static void repl_call_keep(const char *code, const char *message) {
+  const size_t code_bytes = code == NULL ? 0 : strlen(code);
+  const size_t say_bytes = message == NULL ? 0 : strlen(message);
+  const size_t code_fit = code_bytes < sizeof(repl_call_code) ? code_bytes : sizeof(repl_call_code) - 1;
+  const size_t say_fit = say_bytes < sizeof(repl_call_message) ? say_bytes : sizeof(repl_call_message) - 1;
+  memcpy(repl_call_code, code == NULL ? "" : code, code_fit);
+  repl_call_code[code_fit] = 0;
+  memcpy(repl_call_message, message == NULL ? "" : message, say_fit);
+  repl_call_message[say_fit] = 0;
+}
+
 static fl_status repl_call(const char *name, const fl_value *args, size_t count, fl_value *result) {
   fl_error error;
   fl_status status = FL_OK;
@@ -1103,10 +1157,13 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
   repl_ctx.depth = 0;
   status = FL_PROGRAM_CALL(&repl_ctx, name, args, count, result, &error);
   if (status != FL_OK) {
+    repl_call_keep(error.code == NULL ? "FLANG_INTERNAL" : error.code,
+                   error.message == NULL ? "компилятор прекратил работу" : error.message);
     /* Сбой самого компилятора виден человеку целиком: молча отдать «ошибок нет»
        значило бы соврать про проверку. */
-    fprintf(stderr, "%s: %s\n", error.code == NULL ? "FLANG_INTERNAL" : error.code,
-            error.message == NULL ? "компилятор прекратил работу" : error.message);
+    if (!repl_call_quiet) {
+      fprintf(stderr, "%s: %s\n", repl_call_code, repl_call_message);
+    }
   }
   return status;
 }
@@ -4924,6 +4981,7 @@ static int check_file(const char *path) {
   size_t proved = 0;
   bool has_program = false;
   bool ok = false;
+  bool unjudged = false;
 
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   full = repl_resolve(base, path);
@@ -5021,9 +5079,78 @@ static int check_file(const char *path) {
      этой строки замечания приезжали бы раньше того, к чему относятся. */
   fflush(stdout);
   check_print_bads(&bads, path, paths.count);
+  /*
+   * ПРЕПЯТСТВИЕ — ШЕСТЫМ ШАГОМ, И ЭТО ТА ЖЕ ДЫРА, ЧТО БЫЛА С ЯДРОМ И ПРИМЕРАМИ.
+   *
+   * Пять шагов выше судят программу теми правилами, какие у бинарника есть.
+   * Правил, каких у него НЕТ, они не называют никак, и `check` кончался словами
+   * «замечаний нет» на программе, о половине которой не спросил никто.
+   *
+   * Улика до правки, снятая прогоном на 13 подделках (по одной на объявление:
+   * `flang/test/fixtures/binary-rules/` и `examples/web/shortener/
+   * handler-without-budget.flang`): свидетель на Node отверг ВСЕ 13 с названным
+   * кодом (`FLANG_CATEGORY_NOT_CLOSED`, `FLANG_FUNCTOR_ARROW_MISMATCH`,
+   * `FLANG_MONOID_ASSOC`, `FLANG_HANDLER_NOT_TOTAL`, …), бинарник ответил
+   * «проверено — замечаний нет» и кодом 0 на ВСЕХ 13. Бинарник, принимающий то,
+   * что свидетель отвергает, опаснее бинарника, который чего-то не умеет:
+   * неумение видно, расхождение — нет.
+   *
+   * КОД 2, А НЕ 1, и это не мелочь: 1 говорит «программа не прошла», 2 говорит
+   * «я не судил». Первое было бы неправдой про верную программу, второе —
+   * правда про урезанную сборку. Тот же код и по тому же доводу отдаёт
+   * ведомость (`proof_file` ниже), и разводить их значило бы завести два ответа
+   * на одну новость. У программы, которая И НЕ ПРОШЛА, остаётся 1: там
+   * названное замечание важнее названного пробела.
+   *
+   * Список непроверенного считает СЛОЙ НА FLANG («Что бинарник не судил» в
+   * `flang/self/bootstrap/compiler.flang`), а не этот файл: назови его C сам —
+   * и две копии списка разошлись бы молча, ровно как разошлись бы пределы.
+   */
+  if (has_program) {
+    fl_value obstacle = fl_nothing();
+    fl_value parse_args[2];
+    fl_value parsed = fl_nothing();
+    fl_value obstacle_args[2];
+    const char *utf8 = NULL;
+    size_t obstacle_bytes = 0;
+    /*
+     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
+     *
+     * Связывание доносит не все объявления: свойства и преобразования оно
+     * теряет — их нет ни среди слитых, ни среди взятых у входного файла
+     * (`КАТЕГОРНЫЕ` в `flang/src/link.mjs`). Мерено на дереве: `flang ast`
+     * свидетеля даёт у `examples/cat/crdt-merge.flang` ключ `properties`, а
+     * связанная программа его не несёт; то же с `transformations` у
+     * `examples/cat/natural-square.flang`. Спроси здесь одну связанную — и
+     * бинарник промолчал бы ровно о двух поверхностях из четырнадцати.
+     *
+     * Свидетель этого не замечает потому, что файл без единого `использует` он
+     * НЕ СВЯЗЫВАЕТ вовсе и судит разобранный; бинарник связывает всегда.
+     *
+     * Цена — один разбор входного файла (импорты не перебираются: их
+     * объявления доносит связывание). Отказ разбора здесь молчит: если
+     * программа не разобралась, об этом уже сказали пять шагов выше.
+     */
+    parse_args[0] = repl_value_text(text, bytes);
+    parse_args[1] = repl_value_list(NULL, 0);
+    if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
+      parsed = fl_nothing();
+    }
+    obstacle_args[0] = program;
+    if (!val_field(parsed, "программа", &obstacle_args[1])) {
+      obstacle_args[1] = program;
+    }
+    if (repl_call("Что бинарник не судил", obstacle_args, 2, &obstacle) == FL_OK
+        && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+      fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
+      unjudged = true;
+    }
+  }
   fflush(stderr);
-  if (ok) {
+  if (ok && !unjudged) {
     printf("%s: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет\n", path);
+  } else if (ok) {
+    printf("%s: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли\n", path);
   } else {
     printf("%s: не проверено — замечаний %lu\n", path, (unsigned long)bads.count);
   }
@@ -5036,7 +5163,7 @@ static int check_file(const char *path) {
   strings_free(&proven);
   free(text);
   free(full);
-  return ok ? 0 : 1;
+  return ok ? (unjudged ? 2 : 0) : 1;
 }
 
 /* ═══════════════════ flang check --proof: ведомость ══════════════════════ */
@@ -5148,8 +5275,17 @@ static int proof_file(const char *path, bool json) {
 
 /* ══════════════════════════════ flang test ══════════════════════════════ */
 
+/* Прогон по корпусу живёт в хозяйской половине файла: ему нужен `opendir`, а
+   заголовки POSIX подключаются ниже, у `flang io`. Здесь — только объявление. */
+static int test_corpus(const char *given, bool check, const char *steps, const char *depth, bool json,
+                       bool ledger, bool many);
+
 /**
- * `flang test <файл> [--no-check]` — прогон примеров, объявленных внутри функций.
+ * `flang test <файл|каталог|маска> [--no-check] [--json]` — прогон примеров.
+ *
+ * Довод, не кончающийся на «.flang», и всякий довод со звездой или вопросом —
+ * это КОРПУС: обход уходит в `test_corpus` (хозяйская половина файла), и решает
+ * это не `stat`, а «Довод корпусом» на flang.
  *
  * Порядок тот же, что у свидетеля: сначала те же проверки, что у `check`, и на
  * непроверенной программе примеров не запускать. «Пример сошёлся» на программе с
@@ -5178,12 +5314,18 @@ static int test_file(int argc, char **argv) {
   size_t bytes = 0;
   size_t index = 0;
   bool check = true;
+  bool json = false;
+  bool ledger = false;
   int argi = 0;
   int code = 0;
 
   for (argi = 2; argi < argc; argi += 1) {
     if (strcmp(argv[argi], "--no-check") == 0) {
       check = false;
+    } else if (strcmp(argv[argi], "--json") == 0) {
+      json = true;
+    } else if (strcmp(argv[argi], "--ledger") == 0) {
+      ledger = true;
     } else if (strcmp(argv[argi], "--max-steps") == 0 && argi + 1 < argc) {
       argi += 1;
       steps = argv[argi];
@@ -5198,8 +5340,29 @@ static int test_file(int argc, char **argv) {
     }
   }
   if (path == NULL) {
-    fputs("flang test: не назван файл. Пример: flang test модуль.flang\n", stderr);
+    fputs("flang test: не назван ни файл, ни каталог.\n"
+          "  flang test модуль.flang        один файл\n"
+          "  flang test flang/stdlib/       весь каталог\n",
+          stderr);
     return 2;
+  }
+
+  /* ФАЙЛ ИЛИ КОРПУС — решает НЕ этот файл, а «Довод корпусом» на flang: имя,
+     кончающееся на «.flang» и не несущее звезды с вопросом, — файл, всё
+     остальное — каталог или маска. Спрашивать у мира (`stat`) не надо вовсе, и
+     решение остаётся там же, где остальные решения прогонщика. */
+  {
+    fl_value given = fl_nothing();
+    fl_value corpus = fl_nothing();
+    repl_cycle();
+    given = repl_value_say(path);
+    const bool many = repl_call("Довод корпусом", &given, 1, &corpus) == FL_OK && corpus.tag == FL_FLAG && corpus.as.flag;
+    /* Машиночитаемый вывод у одного файла — тот же свод, что у корпуса из
+       одного файла. Второй формы для одного файла не заводится: разбирающий
+       вывод обязан разбирать одну форму, а не две. */
+    if (many || json || ledger) {
+      return test_corpus(path, check, steps, depth, json, ledger, many);
+    }
   }
 
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
@@ -5223,6 +5386,7 @@ static int test_file(int argc, char **argv) {
   }
 
   repl_cycle();
+
   strings_init(&paths);
   strings_init(&texts);
   strings_init(&queue);
@@ -7517,6 +7681,536 @@ static int facts_file(int argc, char **argv) {
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
+
+/* ═══════════ прогон примеров ПО КОРПУСУ: `flang test <каталог|маска>` ═══════ */
+
+/*
+ * ЗДЕСЬ НЕТ НИ ОДНОГО РЕШЕНИЯ, и это главное про этот кусок.
+ *
+ * Что считать корпусом, куда идти обходу, в какие каталоги не заходить, какие
+ * пути брать, в каком порядке, какими словами отчитаться, что печатать машине и
+ * с каким кодом выйти — всё это решает `flang/self/bootstrap/corpus.flang`, то
+ * есть сам язык. Здесь остаются ровно те три вещи, которых в языке нет и быть не
+ * может: перечислить каталог (`opendir`), прочитать файл (`fopen`) и спросить
+ * часы. Всё остальное — перевозка значений туда и обратно.
+ *
+ * Граница названа числом в шапке `corpus.flang`, и она не оценка: снимите
+ * отсюда обход и чтение — не останется ничего, что стоило бы переносить.
+ *
+ * ── Почему итоги копятся в C, а не списком на flang ─────────────────────────
+ * Область памяти не отдаёт ничего до конца вызова (`docs/zettel/arena-never-
+ * releases.md`), а один файл корпуса стоит 20—70 МиБ разбора, типов и прогона.
+ * Триста файлов в одной области — это десятки гигабайт, и прогонщик умер бы на
+ * первом же настоящем корпусе. Поэтому область сбрасывается на КАЖДОМ файле, а
+ * итог по файлу снимается с неё простыми копиями строк и чисел; список на flang
+ * собирается один раз в конце, из уже снятого.
+ */
+
+typedef struct {
+  char *function;
+  char *example;
+  char *code;
+  char *message;
+} corpus_fail;
+
+typedef struct {
+  corpus_fail *items;
+  size_t count;
+  size_t capacity;
+} corpus_fails;
+
+typedef struct {
+  char *path;
+  bool taken;
+  char *code;
+  char *message;
+  double total;
+  double own;
+  double passed;
+  double failed;
+  corpus_fails fails;
+} corpus_row;
+
+typedef struct {
+  corpus_row *items;
+  size_t count;
+  size_t capacity;
+} corpus_rows;
+
+static void corpus_fails_init(corpus_fails *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void corpus_fails_push(corpus_fails *list, char *function, char *example, char *code, char *message) {
+  corpus_fail item;
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 4 : list->capacity * 2;
+    list->items = (corpus_fail *)repl_grow(list->items, list->capacity * sizeof(corpus_fail));
+  }
+  item.function = function;
+  item.example = example;
+  item.code = code;
+  item.message = message;
+  list->items[list->count] = item;
+  list->count += 1;
+}
+
+static void corpus_fails_free(corpus_fails *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index].function);
+    free(list->items[index].example);
+    free(list->items[index].code);
+    free(list->items[index].message);
+  }
+  free(list->items);
+  corpus_fails_init(list);
+}
+
+static void corpus_rows_init(corpus_rows *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static corpus_row *corpus_rows_open(corpus_rows *list, const char *path) {
+  corpus_row *row = NULL;
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 16 : list->capacity * 2;
+    list->items = (corpus_row *)repl_grow(list->items, list->capacity * sizeof(corpus_row));
+  }
+  row = &list->items[list->count];
+  list->count += 1;
+  row->path = repl_say(path);
+  row->taken = false;
+  row->code = repl_say("");
+  row->message = repl_say("");
+  row->total = 0;
+  row->own = 0;
+  row->passed = 0;
+  row->failed = 0;
+  corpus_fails_init(&row->fails);
+  return row;
+}
+
+static void corpus_rows_free(corpus_rows *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index].path);
+    free(list->items[index].code);
+    free(list->items[index].message);
+    corpus_fails_free(&list->items[index].fails);
+  }
+  free(list->items);
+  corpus_rows_init(list);
+}
+
+/** Отказ по файлу: код и слова вместо цифр. Строки берутся во владение. */
+static void corpus_row_refuse(corpus_row *row, const char *code, const char *message) {
+  free(row->code);
+  free(row->message);
+  row->taken = false;
+  row->code = repl_say(code);
+  row->message = repl_say(message);
+}
+
+static char *corpus_join(const char *root, const char *name) {
+  const size_t root_bytes = strlen(root);
+  const size_t name_bytes = strlen(name);
+  char *out = NULL;
+  if (root_bytes == 0) {
+    return repl_say(name);
+  }
+  out = (char *)repl_alloc(root_bytes + name_bytes + 2);
+  memcpy(out, root, root_bytes);
+  out[root_bytes] = '/';
+  memcpy(out + root_bytes + 1, name, name_bytes);
+  out[root_bytes + name_bytes + 1] = 0;
+  return out;
+}
+
+/*
+ * Обход каталога вглубь. Единственное место всего прогонщика, которого на flang
+ * написать нельзя: в языке нет эффектов вовсе, а перечисление каталога — эффект.
+ * Ни отбора, ни порядка здесь нет намеренно — и то и другое считает flang по
+ * полученному списку.
+ */
+static void corpus_walk(const char *root, const repl_strings *skip, repl_strings *out) {
+  DIR *directory = opendir(root[0] == 0 ? "." : root);
+  if (directory == NULL) {
+    return;
+  }
+  for (;;) {
+    const struct dirent *entry = readdir(directory);
+    char *child = NULL;
+    struct stat state;
+    if (entry == NULL) {
+      break;
+    }
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+      continue;
+    }
+    if (strings_has(skip, entry->d_name, strlen(entry->d_name))) {
+      continue;
+    }
+    child = corpus_join(root, entry->d_name);
+    /* `lstat`, а не `stat`, и это не придирка: символьная ссылка на
+       родительский каталог увела бы обход в бесконечную рекурсию, а прогонщик
+       корпуса ходит по ЧУЖИМ деревьям. Ссылки поэтому не берутся вовсе — ни как
+       каталог, ни как файл; настоящий файл на диске лежит один раз, и брать его
+       дважды под двумя именами прогонщику незачем. */
+    if (lstat(child, &state) != 0) {
+      free(child);
+      continue;
+    }
+    if (S_ISDIR(state.st_mode)) {
+      corpus_walk(child, skip, out);
+    } else if (S_ISREG(state.st_mode)) {
+      strings_say(out, child);
+    }
+    free(child);
+  }
+  closedir(directory);
+}
+
+/** Список строк с той стороны: ответ flang снимается копиями в C. */
+static void corpus_take_strings(fl_value list, repl_strings *out) {
+  size_t index = 0;
+  if (list.tag != FL_LIST) {
+    return;
+  }
+  for (index = 0; index < list.as.list.count; index += 1) {
+    char *text = val_copy(list.as.list.items[index]);
+    strings_say(out, text);
+    free(text);
+  }
+}
+
+/*
+ * Один файл корпуса: то же самое, что делает `flang test` с одним файлом, но
+ * без единой печати — всё, что нашлось, переезжает в `row`.
+ *
+ * Область сбрасывается ЗДЕСЬ, на входе, и потому всё, что уносится наружу,
+ * скопировано (`val_copy`): к следующему файлу от этих значений не останется ни
+ * байта.
+ */
+static void corpus_one(const char *shown, bool check, const char *steps, const char *depth, corpus_row *row) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value result = fl_nothing();
+  fl_value args[5];
+  fl_value field = fl_nothing();
+  fl_value rows = fl_nothing();
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  size_t index = 0;
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, shown);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    corpus_row_refuse(row, "FLANG_CLI", "файл не прочитан");
+    free(full);
+    return;
+  }
+
+  /* Замок рядом со входом — тот же порядок, что у прогона одного файла: он
+     подменяет чтение исходников зависимостей, и стоять обязан ДО сброса
+     области. */
+  repl_call_quiet = true;
+  if (!lock_beside(full)) {
+    repl_call_quiet = false;
+    corpus_row_refuse(row, "FLANG_LOCK", "замок рядом со входом не принят");
+    free(text);
+    free(full);
+    return;
+  }
+
+  repl_cycle();
+
+  /* СВОИ примеры считаются ПЕРВЫМИ и по одному файлу, без замыкания.
+     Иначе отчёт врёт: `flang test` гоняет примеры всей связанной программы, и
+     слой без единого своего примера отчитывается чужими — `carriers.flang`
+     печатает «примеров 91, прошло 91», а все девяносто одна приехали из
+     `totality.flang`. Считает это «Своих примеров в исходнике» на flang; здесь
+     только вопрос и ответ числом. */
+  {
+    fl_value alone = repl_value_text(text, bytes);
+    fl_value own = fl_nothing();
+    if (repl_call("Своих примеров в исходнике", &alone, 1, &own) == FL_OK && own.tag == FL_NUMBER) {
+      row->own = own.as.number;
+    }
+  }
+
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, text, bytes);
+  repl_imports_of(text, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+  args[2] = fl_flag(check);
+  args[3] = fl_number(strtod(steps, NULL));
+  args[4] = fl_number(strtod(depth, NULL));
+
+  if (repl_call("Прогон примеров исходников", args, 5, &result) != FL_OK) {
+    corpus_row_refuse(row, repl_call_code, repl_call_message);
+  } else if (val_field(result, "диагностики", &rows) && rows.tag == FL_LIST && rows.as.list.count > 0) {
+    /* Программа не прошла проверку: примеры не запускались вовсе. Наружу едет
+       ПЕРВОЕ замечание — остальные человек увидит, позвав `flang check` на этот
+       файл; выкладывать в свод корпуса все замечания всех файлов значило бы
+       топить отчёт в том, ради чего у `check` есть свой вывод. */
+    fl_value bad = rows.as.list.items[0];
+    fl_value code = fl_nothing();
+    fl_value message = fl_nothing();
+    char *code_text = NULL;
+    char *say_text = NULL;
+    val_field(bad, "код", &code);
+    val_field(bad, "сообщение", &message);
+    code_text = val_copy(code);
+    say_text = val_copy(message);
+    corpus_row_refuse(row, code_text, say_text);
+    free(code_text);
+    free(say_text);
+  } else {
+    row->taken = true;
+    if (val_field(result, "всего", &field) && field.tag == FL_NUMBER) {
+      row->total = field.as.number;
+    }
+    if (val_field(result, "прошло", &field) && field.tag == FL_NUMBER) {
+      row->passed = field.as.number;
+    }
+    if (val_field(result, "сорвалось", &field) && field.tag == FL_NUMBER) {
+      row->failed = field.as.number;
+    }
+    if (val_field(result, "строки", &rows) && rows.tag == FL_LIST) {
+      for (index = 0; index < rows.as.list.count; index += 1) {
+        fl_value line = rows.as.list.items[index];
+        fl_value hold = fl_nothing();
+        char *function = NULL;
+        char *example = NULL;
+        char *code = NULL;
+        char *message = NULL;
+        if (val_field(line, "прошёл", &hold) && hold.tag == FL_FLAG && hold.as.flag) {
+          continue;
+        }
+        function = val_field(line, "функция", &hold) ? val_copy(hold) : repl_say("");
+        example = val_field(line, "пример", &hold) ? val_copy(hold) : repl_say("");
+        code = val_field(line, "код", &hold) ? val_copy(hold) : repl_say("");
+        message = val_field(line, "сообщение", &hold) ? val_copy(hold) : repl_say("");
+        corpus_fails_push(&row->fails, function, example, code, message);
+      }
+    }
+  }
+  repl_call_quiet = false;
+
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(text);
+  free(full);
+}
+
+static fl_value corpus_fail_value(const corpus_fail *item) {
+  static const char *const names[4] = {"функция", "пример", "код", "сообщение"};
+  fl_value values[4];
+  values[0] = repl_value_say(item->function);
+  values[1] = repl_value_say(item->example);
+  values[2] = repl_value_say(item->code);
+  values[3] = repl_value_say(item->message);
+  return repl_value_record(names, values, 4);
+}
+
+static fl_value corpus_row_value(const corpus_row *row) {
+  static const char *const names[9] = {"путь",  "взят",  "код",    "сообщение", "всего",
+                                       "своих", "прошло", "сорвалось", "сорванные"};
+  fl_value values[9];
+  fl_value *items = NULL;
+  fl_error error;
+  size_t index = 0;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_list_alloc(&repl_ctx, row->fails.count, &items, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < row->fails.count; index += 1) {
+    items[index] = corpus_fail_value(&row->fails.items[index]);
+  }
+  values[0] = repl_value_say(row->path);
+  values[1] = fl_flag(row->taken);
+  values[2] = repl_value_say(row->code);
+  values[3] = repl_value_say(row->message);
+  values[4] = fl_number(row->total);
+  values[5] = fl_number(row->own);
+  values[6] = fl_number(row->passed);
+  values[7] = fl_number(row->failed);
+  values[8] = fl_list(items, row->fails.count);
+  return repl_value_record(names, values, 9);
+}
+
+/** Настенное время прогона в миллисекундах: часы — тоже эффект. */
+static double corpus_now(void) {
+  struct timeval now;
+  if (gettimeofday(&now, NULL) != 0) {
+    return 0;
+  }
+  return (double)now.tv_sec * 1000.0 + (double)now.tv_usec / 1000.0;
+}
+
+/*
+ * `flang test <каталог|маска>` целиком.
+ *
+ * `many` равное `нет` — это один названный файл, попросивший машиночитаемый
+ * вывод: обхода тогда нет, а свод и его форма те же самые. Второго формата для
+ * одного файла не заводится намеренно — тот, кто разбирает вывод прогонщика,
+ * обязан разбирать одну форму, а не две.
+ */
+static int test_corpus(const char *given, bool check, const char *steps, const char *depth, bool json,
+                       bool ledger, bool many) {
+  repl_strings skip;
+  repl_strings found;
+  repl_strings chosen;
+  corpus_rows rows;
+  fl_value result = fl_nothing();
+  fl_value args[3];
+  fl_value field = fl_nothing();
+  fl_value *items = NULL;
+  fl_error error;
+  double started = 0;
+  size_t index = 0;
+  int code = 0;
+  char *root = NULL;
+
+  strings_init(&skip);
+  strings_init(&found);
+  strings_init(&chosen);
+  corpus_rows_init(&rows);
+  error.code = NULL;
+  error.message = NULL;
+
+  /* Куда идти обходу и куда не заходить — спрашивается у flang, а не решается
+     здесь. Ответ снимается копиями: следующий сброс области его сотрёт. */
+  repl_cycle();
+  {
+    fl_value arg = repl_value_say(given);
+    fl_value answer = fl_nothing();
+    if (repl_call("Корень обхода", &arg, 1, &answer) != FL_OK) {
+      strings_free(&skip);
+      return 1;
+    }
+    root = val_copy(answer);
+    if (repl_call("Каталоги мимо корпуса", NULL, 0, &answer) != FL_OK) {
+      free(root);
+      strings_free(&skip);
+      return 1;
+    }
+    corpus_take_strings(answer, &skip);
+  }
+
+  started = corpus_now();
+  if (!many) {
+    /* Один названный файл: обходить нечего, отбирать нечего. */
+    strings_say(&chosen, given);
+    free(root);
+  } else {
+    corpus_walk(root, &skip, &found);
+    free(root);
+
+    /* Отбор и порядок — тоже там. Сюда возвращается готовый список путей. */
+    repl_cycle();
+    {
+      fl_value answer = fl_nothing();
+      fl_value pair[2];
+      if (fl_list_alloc(&repl_ctx, found.count, &items, &error) != FL_OK) {
+        repl_oom();
+      }
+      for (index = 0; index < found.count; index += 1) {
+        items[index] = repl_value_say(found.items[index]);
+      }
+      pair[0] = fl_list(items, found.count);
+      pair[1] = repl_value_say(given);
+      if (repl_call("Отбор корпуса", pair, 2, &answer) != FL_OK) {
+        strings_free(&skip);
+        strings_free(&found);
+        strings_free(&chosen);
+        return 1;
+      }
+      corpus_take_strings(answer, &chosen);
+    }
+  }
+
+  if (chosen.count == 0) {
+    fprintf(stderr, "flang test: под «%s» не нашлось ни одного .flang\n", given);
+    strings_free(&skip);
+    strings_free(&found);
+    strings_free(&chosen);
+    return 2;
+  }
+
+  for (index = 0; index < chosen.count; index += 1) {
+    corpus_row *row = corpus_rows_open(&rows, chosen.items[index]);
+    corpus_one(chosen.items[index], check, steps, depth, row);
+  }
+
+  /* Свод — целиком на flang: слова, машиночитаемый вид и код возврата. */
+  repl_cycle();
+  if (fl_list_alloc(&repl_ctx, rows.count, &items, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < rows.count; index += 1) {
+    items[index] = corpus_row_value(&rows.items[index]);
+  }
+  args[0] = repl_value_say(given);
+  args[1] = fl_list(items, rows.count);
+  args[2] = fl_number((double)(long)(corpus_now() - started));
+  if (repl_call("Свести корпус", args, 3, &result) != FL_OK) {
+    code = 1;
+  } else {
+    const char *utf8 = NULL;
+    size_t bytes = 0;
+    if (ledger) {
+      /* Ведомость по строке на файл: её записывают и сверяют диффом. Ни
+         замечаний, ни итога — они бы поехали в тот же поток и попали в дифф. */
+      if (val_field(result, "ведомостью", &field) && val_text(field, &utf8, &bytes) && bytes > 0) {
+        fwrite(utf8, 1, bytes, stdout);
+        fputc('\n', stdout);
+      }
+    } else if (json) {
+      if (val_field(result, "в JSON", &field) && val_text(field, &utf8, &bytes)) {
+        fwrite(utf8, 1, bytes, stdout);
+        fputc('\n', stdout);
+      }
+    } else {
+      if (val_field(result, "замечания", &field) && val_text(field, &utf8, &bytes) && bytes > 0) {
+        fwrite(utf8, 1, bytes, stderr);
+        fputc('\n', stderr);
+      }
+      if (val_field(result, "итог", &field) && val_text(field, &utf8, &bytes)) {
+        fwrite(utf8, 1, bytes, stdout);
+        fputc('\n', stdout);
+      }
+    }
+    fflush(stderr);
+    fflush(stdout);
+    if (val_field(result, "код", &field) && field.tag == FL_NUMBER) {
+      code = (int)field.as.number;
+    }
+  }
+
+  strings_free(&skip);
+  strings_free(&found);
+  strings_free(&chosen);
+  corpus_rows_free(&rows);
+  return code;
+}
 
 #define IO_MAX_PORTS 8
 #define IO_MAX_LINKS 64

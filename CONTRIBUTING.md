@@ -143,10 +143,12 @@ It holds no list of its own.
 
 **The first shortcut cannot be written in flang, and that is stated rather than
 hidden.** Reading `ярлыки.flang` needs the binary, and the binary is what the
-first shortcut builds. Exactly one line resolves it: `./ярлык сборка` is known
-to the shell script itself, before it ever calls the binary. The same line also
-stands in `ярлыки.flang`, and the script compares the two on every run, so the
-duplicate cannot drift in silence.
+first shortcut builds. Exactly one line resolves it: `make -C bootstrap` is
+known to the shell script itself, before it ever calls the binary. On a fresh
+clone any shortcut therefore works — the script builds the binary first and says
+so, the way `scripts/raskrutka.sh` already does (38 s measured on a cold tree).
+The same line also stands in `ярлыки.flang`, and the script compares the two on
+every run, so the duplicate cannot drift in silence.
 
 | shortcut | who runs it |
 | --- | --- |

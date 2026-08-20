@@ -62,6 +62,7 @@
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Ядро доказало ровно те утверждения библиотеки HTTP и JSON, которые не говорят ни о чём: 9 из 9 даровые](proved-claims-in-http-and-json-were-all-gratis.md)
+- [Содержательных доказанных утверждений пишется много, если выбирать форму утверждения: 53 из 53 в корпусе спек](substantive-claims-are-provable-when-you-pick-the-shape.md)
 - [Круговое тождество «разобрал и собрал обратно» постусловием не выразить: мешают две разные стены](round-trip-claims-are-unstatable-in-postconditions.md)
 - [Цели «равно» упёрлись в порядок слагаемых, а не в отсутствие индукции](ravenstvo-uperlos-v-poryadok-slagaemyh-a-ne-v-indukciyu.md)
 - [Перенесённое правило состоит из ТРЁХ частей: самого правила, места вызова и текста отказа](porting-a-rule-means-porting-its-refusal-text.md)

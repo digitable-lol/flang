@@ -45,6 +45,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { путьДвоичного } from "./dvoichnyy.mjs"
+
 const КОРЕНЬ = fileURLToPath(new URL("../..", import.meta.url))
 
 /**
@@ -82,10 +84,14 @@ function запрос(функция, сколько) {
   return `${JSON.stringify({ fn: функция, args: [{ l: элементы }] })}\n`
 }
 
+/* Печатает ДВОИЧНЫЙ: печатника на JavaScript в дереве нет. Ключи те же самые —
+   `emit --target c --out … --max-steps …`, — потому что мерялся всегда не
+   печатник, а НАПЕЧАТАННОЕ: пик памяти снимается с собранного `cc` бинарника,
+   и от того, кто напечатал ему исходник, он не зависит. */
 function собрать(программа, каталог) {
   execFileSync(
-    process.execPath,
-    [join(КОРЕНЬ, "flang/bin/flang.mjs"), "emit", join(КОРЕНЬ, программа), "--target", "c", "--out", каталог, "--max-steps", "2000000000"],
+    путьДвоичного(),
+    ["emit", join(КОРЕНЬ, программа), "--target", "c", "--out", каталог, "--max-steps", "2000000000"],
     { stdio: "pipe", env: { ...process.env, LC_ALL: "C.UTF-8" } },
   )
   execFileSync("make", ["-C", каталог, "-j4"], { stdio: "pipe" })

@@ -405,7 +405,11 @@ static const char HELP_EMIT[] =
     "  --cli | --no-cli  печатать ли прогонщик\n"
     "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
     "  --runtime каталог где лежат исходники рантайма цели\n"
-    "\n"
+    "\n";
+
+/* Вторая часть: C99 требует поддержки строкового литерала лишь до 4095
+   знаков, а склеенная справка длиннее. Разрез — по абзацу, а не по месту. */
+static const char HELP_EMIT_2[] =
     "ПЕЧАТАЕТСЯ ТОЛЬКО ПРОВЕРЕННОЕ. Перед печатью программа судится той же дорогой,\n"
     "что и «flang check»: разбор, связывание, типы, завершаемость и ядро\n"
     "доказательств. Замечание — печать отменена и код 1, ни файла не записано.\n"
@@ -618,7 +622,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "run") == 0) {
     printf("%s\n", HELP_RUN);
   } else if (strcmp(topic, "emit") == 0) {
-    printf("%s\n", HELP_EMIT);
+    printf("%s\n%s\n", HELP_EMIT, HELP_EMIT_2);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "lsp") == 0) {
@@ -2618,7 +2622,8 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  * отвечать на непросмотренное тем же молчанием, что на просмотренное.
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
-                               bool *has_program, repl_strings *proven, bool kernel, bool examples) {
+                               bool *has_program, repl_strings *proven, bool kernel, bool examples,
+                               fl_value *linked_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -2637,6 +2642,13 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     return false;
   }
   *has_program = true;
+  /* Связанная запись ЦЕЛИКОМ — тем целям печати, которым нужна она, а не
+     программа (`from_linked` в таблице целей). Отдаётся отсюда, чтобы печать
+     не связывала второй раз: на компиляторе связывание стоит 23,7 млн витков
+     и минуты — дороже всего остального вместе взятого. */
+  if (linked_out != NULL) {
+    *linked_out = linked;
+  }
   if (val_field(linked, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
     for (index = 0; index < diagnostics.as.list.count; index += 1) {
       bads_take(bads, diagnostics.as.list.items[index]);
@@ -2765,7 +2777,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false);
+                            false, false, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -5108,7 +5120,7 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -6993,10 +7005,11 @@ static int emit_file(int argc, char **argv, const char *self) {
        * после печати.
        */
       fl_value program = fl_nothing();
+      fl_value linked = fl_nothing();
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -11212,7 +11225,7 @@ static int package_file(int argc, char **argv) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);

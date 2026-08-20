@@ -1953,9 +1953,9 @@ fl_status compiler_flang_sozdat_obyazatelstvo(fl_ctx *ctx, fl_value identifikato
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itogi_proverok(fl_ctx *ctx, fl_value cikly, fl_value struktury, fl_value tochnye, fl_value storozha, fl_value spuski, fl_value monoidy, fl_value monady, fl_value izomorfizmy, fl_value kategorii, fl_value mnozhestva, fl_value idempotentnost, fl_value kommutativnost, fl_value distributivnost, fl_value chastichnyy_poryadok, fl_value monotonnost, fl_value svyazi, fl_value dopuscheniya_mnozhestv, fl_value dopuscheniya_izomorfizmov, fl_value dopuscheniya_kategoriy, fl_value dopuscheniya_svyazey, fl_value obyazatelstva, fl_value poisk, fl_value *out, fl_error *error);
 
-/* Запись FTS «Строка функции ведомости»: «имя», «тотальная», «носитель», «говорит», «рекурсивна», «цикл», «аргумент», «мера», «мест сторожа». */
+/* Запись FTS «Строка функции ведомости»: «имя», «тотальная», «носитель», «говорит», «рекурсивна», «цикл», «аргумент», «мера», «мест сторожа», «мест частичных форм». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_stroka_funkcii_vedomosti(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value nositel, fl_value govorit, fl_value rekursivna, fl_value cikl, fl_value argument, fl_value mera, fl_value mest_storozha, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_stroka_funkcii_vedomosti(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value nositel, fl_value govorit, fl_value rekursivna, fl_value cikl, fl_value argument, fl_value mera, fl_value mest_storozha, fl_value mest_chastichnyh_form, fl_value *out, fl_error *error);
 
 /* Запись FTS «Сетка ведомости»: «значений», «предел», «точек», «стрелки», «исход». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -14901,6 +14901,61 @@ fl_status compiler_flang_suffiks_dokazannogo_pomoschnika(fl_ctx *ctx, fl_value *
  * @return значение: строка
  */
 fl_status compiler_flang_pomoschnik_formy(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена частичных форм».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_chastichnyh_form(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма частичная».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_forma_chastichnaya(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Место частичной формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_mesto_chastichnoy_formy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мест частичных форм».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_mest_chastichnyh_form(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мест частичных форм в узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_mest_chastichnyh_form_v_uzle(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пропускаемый ключ обхода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_propuskaemyy_klyuch_obhoda(fl_ctx *ctx, fl_value klyuch, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Арности форм».
@@ -63580,6 +63635,16 @@ fl_status compiler_flang_argumenty_mery(fl_ctx *ctx, fl_value teksty, fl_value *
  * @return значение: «Строка функции ведомости»
  */
 fl_status compiler_flang_stroka_o_funkcii(fl_ctx *ctx, fl_value funkciya, fl_value itogi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка с местами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: «Строка функции ведомости»
+ * @param mest — «мест»: число
+ * @return значение: «Строка функции ведомости»
+ */
+fl_status compiler_flang_stroka_s_mestami(fl_ctx *ctx, fl_value stroka, fl_value mest, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Строка без обещания».

@@ -127,3 +127,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/komandy-cherez-ssylku.flang
+
+  # Печать не печатает непроверенного, а что из проверок печать не делает —
+  # названо в её же справке. Отдельной работой: зависимостей нет, десять секунд.
+  pechat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: bootstrap/flang io scripts/pechat-i-primery.flang

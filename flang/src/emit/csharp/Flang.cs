@@ -375,6 +375,75 @@ public static class Flang
         return Value.Flag(left.Num <= right.Num);
     }
 
+    /// <summary>
+    /// Сойдутся ли на стыке двух строк высокая и низкая половины суррогатной
+    /// пары. В UTF-16 они слились бы в ОДИН знак: два знака на входе, один на
+    /// выходе, — и всякое утверждение о длине склейки стало бы ложным.
+    /// </summary>
+    private static bool PairSplits(string left, string right)
+    {
+        if (left.Length == 0 || right.Length == 0)
+        {
+            return false;
+        }
+        return char.IsHighSurrogate(left[left.Length - 1]) && char.IsLowSurrogate(right[0]);
+    }
+
+    /// <summary>
+    /// Отказ на стыке, где склейка слила бы два знака в один. Отказ, а не тихая
+    /// порча: показать разницу это представление не может. У целей, где строка —
+    /// UTF-8 или последовательность кодовых точек, такого стыка не бывает вовсе.
+    /// </summary>
+    private static void GlueCheck(string left, string right)
+    {
+        if (PairSplits(left, right))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«соединить»: на стыке сошлись половины суррогатной пары — два знака слились бы в один");
+        }
+    }
+
+    /// <summary>
+    /// Разорван ли край подстроки: начинается низкой половиной суррогатной пары
+    /// или кончается высокой. Вхождение способно разрезать знак пополам ТОЛЬКО у
+    /// такой подстроки — значит у всякой другой обычный поиск по единицам UTF-16
+    /// уже считает знаки, и обходить строку незачем.
+    /// </summary>
+    private static bool IsTorn(string part)
+    {
+        if (part.Length == 0)
+        {
+            return false;
+        }
+        return char.IsLowSurrogate(part[0]) || char.IsHighSurrogate(part[part.Length - 1]);
+    }
+
+    /// <summary>Стоит ли позиция на границе знака, а не в середине пары.</summary>
+    private static bool IsBoundary(string text, int at)
+    {
+        if (at <= 0 || at >= text.Length)
+        {
+            return true;
+        }
+        return !char.IsLowSurrogate(text[at]) || !char.IsHighSurrogate(text[at - 1]);
+    }
+
+    /// <summary>Первое вхождение, не разрезающее знак ни началом, ни концом.</summary>
+    private static int FindAligned(string text, string part, int from)
+    {
+        for (int at = text.IndexOf(part, from, StringComparison.Ordinal);
+             at >= 0;
+             at = text.IndexOf(part, at + 1, StringComparison.Ordinal))
+        {
+            if (IsBoundary(text, at) && IsBoundary(text, at + part.Length))
+            {
+                return at;
+            }
+        }
+        return -1;
+    }
+
     /// <summary>«соединить» как двуместная операция над строками.</summary>
     public static Value Concat(Ctx ctx, Value left, Value right)
     {
@@ -385,6 +454,7 @@ public static class Flang
                 "«соединить» допустимо только для строк, получено "
                     + Value.TypeName(left) + " и " + Value.TypeName(right));
         }
+        GlueCheck(left.Str, right.Str);
         return Value.Text(left.Str + right.Str);
     }
 
@@ -561,6 +631,7 @@ public static class Flang
         {
             string separator = ExpectString("соединить", right, "разделитель");
             var output = new StringBuilder();
+            string tail = string.Empty;
             for (int index = 0; index < Value.Size(left); index++)
             {
                 Value item = Value.At(left, index);
@@ -574,7 +645,17 @@ public static class Flang
                 }
                 if (index > 0)
                 {
+                    GlueCheck(tail, separator);
+                    if (separator.Length != 0)
+                    {
+                        tail = separator;
+                    }
                     output.Append(separator);
+                }
+                GlueCheck(tail, item.Str);
+                if (item.Str.Length != 0)
+                {
+                    tail = item.Str;
                 }
                 output.Append(item.Str);
             }
@@ -582,14 +663,17 @@ public static class Flang
         }
         string first = ExpectString("соединить", left, "первая строка");
         string second = ExpectString("соединить", right, "вторая строка");
+        GlueCheck(first, second);
         return Value.Text(first + second);
     }
 
     /// <summary>
     /// «разделить … по …».
     ///
-    /// Поиск разделителя идёт по единицам UTF-16 и строго ordinal — ровно как
-    /// String.prototype.split в интерпретаторе. Ordinal здесь обязателен:
+    /// Поиск идёт по единицам UTF-16 и строго ordinal, пока у разделителя целые
+    /// края: у такого совпадение в UTF-16 и совпадение по кодовым точкам — одно
+    /// и то же. Разорванный половиной суррогатной пары край требует поиска,
+    /// пропускающего вхождения, которые разрезали бы знак. Ordinal обязателен:
     /// культурное сравнение в .NET умеет считать пустой строкой то, что ею не
     /// является, и находить «совпадения» там, где их нет.
     /// </summary>
@@ -663,10 +747,13 @@ public static class Flang
             throw Fail(FlangError.CodeBuiltinArgs, "«разделить»: разделитель не может быть пустым");
         }
         var parts = new List<Value>();
+        bool torn = IsTorn(mark);
         int from = 0;
         for (; ; )
         {
-            int found = value.IndexOf(mark, from, StringComparison.Ordinal);
+            int found = torn
+                ? FindAligned(value, mark, from)
+                : value.IndexOf(mark, from, StringComparison.Ordinal);
             if (found < 0)
             {
                 parts.Add(Value.Text(value.Substring(from)));
@@ -694,7 +781,11 @@ public static class Flang
         }
         string value = ExpectString("содержит", left, "строка или список");
         string part = ExpectString("содержит", right, "искомая подстрока");
-        return Value.Flag(value.Contains(part, StringComparison.Ordinal));
+        if (!IsTorn(part))
+        {
+            return Value.Flag(value.Contains(part, StringComparison.Ordinal));
+        }
+        return Value.Flag(FindAligned(value, part, 0) >= 0);
     }
 
     /// <summary>«начинается с».</summary>
@@ -702,7 +793,11 @@ public static class Flang
     {
         string value = ExpectString("начинается с", source, "строка");
         string start = ExpectString("начинается с", prefix, "префикс");
-        return Value.Flag(value.StartsWith(start, StringComparison.Ordinal));
+        if (!value.StartsWith(start, StringComparison.Ordinal))
+        {
+            return Value.False;
+        }
+        return Value.Flag(!IsTorn(start) || IsBoundary(value, start.Length));
     }
 
     /// <summary>
@@ -956,10 +1051,13 @@ public static class Flang
         string value = ExpectString("разделить", source, "строка");
         string mark = ExpectString("разделить", separator, "разделитель");
         var parts = new List<Value>();
+        bool torn = IsTorn(mark);
         int from = 0;
         for (; ; )
         {
-            int found = value.IndexOf(mark, from, StringComparison.Ordinal);
+            int found = torn
+                ? FindAligned(value, mark, from)
+                : value.IndexOf(mark, from, StringComparison.Ordinal);
             if (found < 0)
             {
                 parts.Add(Value.Text(value.Substring(from)));

@@ -36,6 +36,7 @@
 - [Числа описываются категорией, но категория не вычисляет](numbers-as-a-category.md)
 - [Счётчик типа `нат` внутри записи написать нельзя, и это меняет устройство программы](nat-counter-in-a-record-is-unwritable.md)
 - [`нат` в объявлении снимает отказ по целости, но почти не добавляет доказанных мест](nat-v-obyavlenii-snimaet-celost-no-ne-granicy.md)
+- [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
 
 ## Доказательства
 - [Отметка слоя типов в дерево не выезжает: места проверок считаются только внутри компилятора, снаружи выйдет на 56 % больше](otmetka-sloya-tipov-ne-vyezzhaet-v-derevo-poetomu-schitat-mozhno-tolko-vnutri.md)
@@ -309,6 +310,7 @@
 - [Прогонщик двоичного открывает ВСЁ замыкание компилятора — новая команда нужна только там, где у ответа свой вид вывода](progonshchik-dvoichnogo-otkryvaet-vsyo-zamykanie.md)
 - [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](proizvodnye-tablicy-odnogo-fakta-rashodyatsya-molcha.md)
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
+- [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
 
 ## Найденные ошибки
 

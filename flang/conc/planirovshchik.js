@@ -922,6 +922,73 @@ export function umertvit(process, prichina) {
 }
 
 /**
+ * Функция flang «Оживить».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Process} process — «процесс»
+ * @returns {Process}
+ */
+export function ozhivit(process) {
+  return processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), true, "", $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+}
+
+/**
+ * Функция flang «Оживить процесс».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} imya — «имя»
+ * @returns {Uzel}
+ */
+export function ozhivitProcess(uzel, imya) {
+  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
+    return uzel
+  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
+    const p = $variantField($t1, "процесс")
+    return sProcessom(uzel, ozhivit(p))
+  } else {
+    $matchFail($t1)
+  }
+}
+
+/**
+ * Функция flang «Уложить процесс».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} imya — «имя»
+ * @param {string} prichina — «причина»
+ * @returns {Uzel}
+ */
+export function ulozhitProcess(uzel, imya, prichina) {
+  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
+    return uzel
+  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
+    const p = $variantField($t1, "процесс")
+    return sProcessom(uzel, umertvit(p, prichina))
+  } else {
+    $matchFail($t1)
+  }
+}
+
+/**
+ * Функция flang «Остановить узел».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @returns {Uzel}
+ */
+export function ostanovitUzel(uzel) {
+  return { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": false }
+}
+
+/**
  * Функция flang «Ящик полон».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -1572,6 +1639,10 @@ export const $PROGRAM = {
     ["Процесс заново", processZanovo],
     ["С ящиком", sYaschikom],
     ["Умертвить", umertvit],
+    ["Оживить", ozhivit],
+    ["Оживить процесс", ozhivitProcess],
+    ["Уложить процесс", ulozhitProcess],
+    ["Остановить узел", ostanovitUzel],
     ["Ящик полон", yaschikPolon],
     ["В ящик", vYaschik],
     ["Исход положить", ishodPolozhit],

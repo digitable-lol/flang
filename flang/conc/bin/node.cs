@@ -40,9 +40,10 @@
 // включены, и хозяин собирается под тем же режимом. Это не помеха, а условие:
 // напечатанное и рукописное живут в ОДНОЙ сборке, послаблений для второго нет.
 //
-// Надзора здесь нет, ровно как у узлов на Python и Go, и по той же причине:
-// надзор выражен на flang отдельно, и переносить его в хозяина значило бы
-// завести третий источник правды.
+// Надзор: отказ процесса доезжает до веления «Уронить процесс», и хозяин
+// передаёт его НАДЗОРУ — четвёртому напечатанному модулю, `nadzor.flang`. Кого
+// поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
+// исполняет. Дерево надзора приезжает данными в плане, как и размещение.
 #nullable enable
 
 using System;
@@ -310,6 +311,22 @@ public static class HozyainUzla
         internal double? Yaschik;
     }
 
+    private sealed class SvyazPlana
+    {
+        internal string Kto = "";
+        internal string Strategiya = "";
+    }
+
+    private sealed class NadzorPlana
+    {
+        internal string Imya = "";
+        internal double Porog;
+        internal double Okno;
+        internal string Inache = "остановить";
+        internal List<SvyazPlana> Processy = new List<SvyazPlana>();
+        internal List<SvyazPlana> Nadzory = new List<SvyazPlana>();
+    }
+
     private sealed class Uzel
     {
         internal string Imya = "";
@@ -328,6 +345,7 @@ public static class HozyainUzla
         internal Dictionary<int, Value> Gruzy = new Dictionary<int, Value>();
         internal List<Taymer> Taymery = new List<Taymer>();
         internal JsonElement PoslednijKadr;
+        internal Value Derevo = Value.Nothing();
         internal bool Rabotaet = true;
         internal BlockingCollection<SobytieProvoda> Vhod = new BlockingCollection<SobytieProvoda>(256);
         internal TcpListener? Slushatel;
@@ -347,7 +365,8 @@ public static class HozyainUzla
         int srok,
         int puls,
         int pauza,
-        uint semya)
+        uint semya,
+        List<NadzorPlana> nadzory)
     {
         var u = new Uzel
         {
@@ -404,7 +423,106 @@ public static class HozyainUzla
             Value.Text(""),
             Value.Number(0),
             Value.Flag(true));
+
+        // Дерево надзора — данные, ровно как размещение. Решает по нему
+        // напечатанный `nadzor.flang`, а не этот файл.
+        var nadzirateli = new List<Value>();
+        var nadProcessom = new List<Value>();
+        var nadNadzorom = new List<Value>();
+        foreach (NadzorPlana n in nadzory)
+        {
+            nadzirateli.Add(Pozvat(
+                u, "Надзиратель узла",
+                Value.Text(n.Imya), Value.Number(n.Porog), Value.Number(n.Okno), Value.Text(n.Inache)));
+            foreach (SvyazPlana svyaz in n.Processy)
+            {
+                nadProcessom.Add(Pozvat(
+                    u, "Связь надзора узла",
+                    Value.Text(svyaz.Kto), Value.Text(n.Imya), Value.Text(svyaz.Strategiya)));
+            }
+
+            foreach (SvyazPlana svyaz in n.Nadzory)
+            {
+                nadNadzorom.Add(Pozvat(
+                    u, "Связь надзора узла",
+                    Value.Text(svyaz.Kto), Value.Text(n.Imya), Value.Text(svyaz.Strategiya)));
+            }
+        }
+
+        u.Derevo = Pozvat(
+            u, "Дерево надзора узла",
+            Value.List(nadzirateli.ToArray()),
+            Value.List(nadProcessom.ToArray()),
+            Value.List(nadNadzorom.ToArray()));
         return u;
+    }
+
+    /* ── единственная дорога от отказа к решению надзора ────────────────────── */
+
+    private static void NadzorSluchilsya(Uzel u, string kto, string kod)
+    {
+        Value hod = Pozvat(u, "Шаг надзора узла", u.Derevo, Value.Text(kto), Value.Text(kod), Value.Number(Chasy()));
+        u.Derevo = Pole(hod, "дерево");
+        foreach (Value velenie in Value.Elements(Pole(hod, "веления")))
+        {
+            IspolnitNadzor(u, velenie);
+        }
+    }
+
+    private static void IspolnitNadzor(Uzel u, Value velenie)
+    {
+        string Stroka(string imya) => Pole(velenie, imya).Str;
+
+        switch (velenie.Str)
+        {
+            case "Поднять":
+                // Перезапуск трогает состояние и не трогает ящик — это решено на
+                // flang; здесь состояние берётся тем же путём, что при подъёме узла.
+                u.Sostoyanie = Pozvat(u, "Оживить процесс узла", u.Sostoyanie, Value.Text(Stroka("кто")));
+                foreach (ProcessPlana p in u.Plan)
+                {
+                    if (p.Imya == Stroka("кто"))
+                    {
+                        u.Sostoyaniya[p.Imya] = Pozvat(u, p.Nachalnoe);
+                    }
+                }
+
+                Skazat(new Dictionary<string, object?>
+                {
+                    ["в"] = "надзор", ["узел"] = u.Imya, ["цель"] = Cel,
+                    ["что"] = "поднят", ["кто"] = Stroka("кто"),
+                });
+                break;
+            case "Уложить":
+                u.Sostoyanie = Pozvat(
+                    u, "Уложить процесс узла", u.Sostoyanie,
+                    Value.Text(Stroka("кто")), Value.Text("остановлен надзором"));
+                Skazat(new Dictionary<string, object?>
+                {
+                    ["в"] = "надзор", ["узел"] = u.Imya, ["цель"] = Cel, ["что"] = "уложен",
+                    ["кто"] = Stroka("кто"), ["надзор"] = Stroka("надзор"),
+                });
+                break;
+            case "Решено":
+                Skazat(new Dictionary<string, object?>
+                {
+                    ["в"] = "надзор", ["узел"] = u.Imya, ["цель"] = Cel, ["что"] = "решено",
+                    ["кто"] = Stroka("кто"), ["надзор"] = Stroka("надзор"),
+                    ["стратегия"] = Stroka("стратегия"),
+                });
+                break;
+            case "Некому надзирать":
+                u.Sostoyanie = Pozvat(u, "Остановить узел целиком", u.Sostoyanie);
+                u.Rabotaet = false;
+                Skazat(new Dictionary<string, object?>
+                {
+                    ["в"] = "надзор", ["узел"] = u.Imya, ["цель"] = Cel, ["что"] = "некому",
+                    ["кто"] = Stroka("кто"), ["надзор"] = Stroka("надзор"),
+                });
+                break;
+            default:
+                throw new InvalidOperationException($"узел не знает веления надзора «{velenie.Str}»");
+        }
     }
 
     /* ── мир: сокеты. Все обращения к сети — в этих пяти местах ────────────── */
@@ -726,6 +844,10 @@ public static class HozyainUzla
                     ["в"] = "отказ", ["узел"] = u.Imya, ["цель"] = Cel, ["процесс"] = Stroka("кто"),
                     ["код"] = Stroka("код"), ["текст"] = Stroka("текст"),
                 });
+
+                // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный
+                // `nadzor.flang`, здесь только дорога к нему.
+                NadzorSluchilsya(u, Stroka("кто"), Stroka("код"));
                 break;
             case "Письмо пропало":
                 Skazat(new Dictionary<string, object?>
@@ -1032,6 +1154,47 @@ public static class HozyainUzla
             });
         }
 
+        var nadzory = new List<NadzorPlana>();
+        if (syroyPlan.TryGetProperty("надзоры", out JsonElement syryeNadzory))
+        {
+            foreach (JsonElement n in syryeNadzory.EnumerateArray())
+            {
+                var nadzor = new NadzorPlana
+                {
+                    Imya = n.GetProperty("имя").GetString() ?? "",
+                    Porog = n.TryGetProperty("порог", out JsonElement por) ? por.GetDouble() : 0,
+                    Okno = n.TryGetProperty("окно", out JsonElement okn) ? okn.GetDouble() : 0,
+                    Inache = n.TryGetProperty("иначе", out JsonElement ina) ? ina.GetString() ?? "остановить" : "остановить",
+                };
+                foreach (string klyuch in new[] { "процессы", "надзоры" })
+                {
+                    if (!n.TryGetProperty(klyuch, out JsonElement spisok))
+                    {
+                        continue;
+                    }
+
+                    foreach (JsonElement svyaz in spisok.EnumerateArray())
+                    {
+                        var para = new SvyazPlana
+                        {
+                            Kto = svyaz.GetProperty("кто").GetString() ?? "",
+                            Strategiya = svyaz.GetProperty("стратегия").GetString() ?? "",
+                        };
+                        if (klyuch == "процессы")
+                        {
+                            nadzor.Processy.Add(para);
+                        }
+                        else
+                        {
+                            nadzor.Nadzory.Add(para);
+                        }
+                    }
+                }
+
+                nadzory.Add(nadzor);
+            }
+        }
+
         JsonElement razmeschenie = JsonDocument.Parse(Klyuch("размещение", "{}")).RootElement;
         var gde = new Dictionary<string, string>();
         var zvonit = new Dictionary<string, string>();
@@ -1052,7 +1215,8 @@ public static class HozyainUzla
 
         Uzel u = Zavesti(
             Klyuch("я", ""), plan, gde, zvonit, Klyuch("хэш", ""),
-            Chislo("срок", 1000), Chislo("пульс", 200), Chislo("пауза", 250), (uint)Chislo("семя", 7));
+            Chislo("срок", 1000), Chislo("пульс", 200), Chislo("пауза", 250), (uint)Chislo("семя", 7),
+            nadzory);
 
         int port = 0;
         if (klyuchi.ContainsKey("слушать"))

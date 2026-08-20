@@ -13,7 +13,7 @@
     "url": "https://github.com/digitable-lol/flang/issues"
   },
   "bin": {
-    "flang": "./flang/bin/flang.mjs",
+    "flang": "./packaging/flang-zapusk.mjs",
     "flang-lsp": "./flang/bin/flang-lsp.mjs"
   },
   "files": [
@@ -29,6 +29,9 @@
     "flang/core/SPEC.md",
     "bootstrap",
     "packaging/flang.1",
+    "packaging/postinstall.mjs",
+    "packaging/flang-zapusk.mjs",
+    "packaging/sverka-ustanovok.flang",
     "README.md",
     "README.ru.md",
     "CONTRIBUTING.md",
@@ -40,6 +43,7 @@
     "!**/*.test.mjs"
   ],
   "scripts": {
+    "postinstall": "node packaging/postinstall.mjs",
     "license:check": "node scripts/check-licensing.mjs",
     "claims:check": "node flang/scripts/claim-guard.mjs",
     "counts:check": "node flang/scripts/count-guard.mjs",

@@ -187,12 +187,14 @@
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны](a-packaging-copy-in-another-repository-drifts-both-ways.md)
+- [Выпуск был замкнут сам на себя: набор требовал релизного архива, а собрать его прогону было нечем](vypusk-ne-mog-sostoyatsya-nabor-treboval-arhiv-kotorogo-nikto-ne-sobiral.md)
 - [Указатель поиска по 244 страницам весит 371 КиБ, если класть заголовки и первые 700 знаков, а не весь текст](a-client-side-index-holds-headings-not-full-text.md)
 
 ## Интерфейс инструмента
 
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя](the-installed-binary-is-a-named-subset.md)
+- [Из npm и из brew приезжали разные компиляторы: на одном корпусе они разошлись на 54 вызовах из 59](dve-ustanovki-otvechali-po-raznomu-na-54-vyzova-iz-59.md)
 - [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
 - [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал ни у одного поставившего язык](the-installed-path-was-never-walked-end-to-end.md)

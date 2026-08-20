@@ -1172,12 +1172,9 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
    */
   if (!repl_call_quiet && repl_ctx.max_steps > 0 && repl_ctx.steps > repl_ctx.max_steps / 2) {
     fprintf(stderr,
-            "ЗАПАС ШАГОВ НА ИСХОДЕ: «%s» съел %lu витков из %lu (%lu %%). Рост дерева в полтора
-"
-            "раза стоит вдвое с лишним — то, что перевалило за половину, в следующий раз не
-"
-            "поместится. Предел печати компилятора задаётся в scripts/raskrutka.sh.
-",
+            "ЗАПАС ШАГОВ НА ИСХОДЕ: «%s» съел %lu витков из %lu (%lu %%). Рост дерева\n"
+            "в полтора раза стоит вдвое с лишним — то, что перевалило за половину, в\n"
+            "следующий раз не поместится. Предел задаётся в scripts/raskrutka.sh.\n",
             name, (unsigned long)repl_ctx.steps, (unsigned long)repl_ctx.max_steps,
             (unsigned long)(repl_ctx.steps * 100 / repl_ctx.max_steps));
   }

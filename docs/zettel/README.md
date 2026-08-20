@@ -137,6 +137,7 @@
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
+- [Сверка двух реализаций слепнет на том, что вычли до сравнения](sverka-dvuh-realizaciy-slepnet-na-tom-chto-vychli-do-sravneniya.md)
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
@@ -189,6 +190,7 @@
 
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя](the-installed-binary-is-a-named-subset.md)
+- [Урезанная сборка обязана сказать, чего она не проверила](urezannaya-sborka-obyazana-skazat-chego-ne-proverila.md)
 - [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
 - [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал ни у одного поставившего язык](the-installed-path-was-never-walked-end-to-end.md)

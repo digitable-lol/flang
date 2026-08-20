@@ -106,9 +106,16 @@ linkage() {
   tail -n +"$((edge + 1))" "$ENTRY" >>"$PROBE"
   $FL ast "$PROBE" >/dev/null 2>"$TMP/link.err"
   rm -f "$PROBE"
-  # Диагностика — JSON, и второй её разборщик однажды разошёлся бы с первым.
-  jq -r '.diagnostics[]? | select(.code=="FLANG_DUPLICATE_NAME") | .message' \
-    <"$TMP/link.err" 2>/dev/null
+  # Свидетель на Node печатает диагностику JSON-ом, двоичный — строкой
+  # человеку («FLANG_DUPLICATE_NAME, строка 510, столбец 1: …»). Оба вида
+  # читаются здесь, потому что мерить полагается тем и другим, а числа обязаны
+  # сойтись: на emit-go сошлись, 1 и 1.
+  if jq -e '.diagnostics' <"$TMP/link.err" >/dev/null 2>&1; then
+    jq -r '.diagnostics[]? | select(.code=="FLANG_DUPLICATE_NAME") | .message' \
+      <"$TMP/link.err" 2>/dev/null
+    return
+  fi
+  sed -n 's/^FLANG_DUPLICATE_NAME, [^:]*: //p' "$TMP/link.err"
 }
 
 # «функция «Слить просьбы» объявлена в двух модулях: A и B» → «функция|Слить просьбы».
@@ -269,11 +276,14 @@ for t in "${TARGETS[@]}"; do
 
   # 2. Имена, о которых связывание молчит: один идентификатор у двух разных
   #    имён. Хвост « C#» — метка своей же цели, поэтому он заменяется.
+  # Переменные awk латиницей по той же причине, что и в bash: gawk не берёт в
+  # идентификаторы ничего, кроме [A-Za-z_0-9]. Кириллические имена здесь уже
+  # стоили восьми пропавших строк карты, и пропали они молча.
   awk -F"$TAB" -v n="$n" -v s="$s" -v low="$low" '
-    { было = $3; стало = было
-      sub(/ C#$/, "", стало); стало = стало " " s
+    { bylo = $3; stalo = bylo
+      sub(/ C#$/, "", stalo); stalo = stalo " " s
       ident = $1; sub(/_c$/, "", ident)
-      print n "\tпечать\t" $2 "\t" было "\t" стало "\t" ident "_" low }
+      print n "\tпечать\t" $2 "\t" bylo "\t" stalo "\t" ident "_" low }
   ' "$TMP/$n.print" >>"$TMP/map.tsv"
 
   # 3. Варианты, которые столкнутся, как только их сумму разведут по имени.

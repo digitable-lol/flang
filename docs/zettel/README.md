@@ -47,6 +47,8 @@
 - [Принципа индукции нет ни у одного встроенного типа](no-induction-for-builtin-types.md)
 - [Узкое место переехало: принцип индукции появился, а цепляться ему не за что](bottleneck-moved-to-body-shape.md)
 - [Тавтология закрывается даром, поэтому число «доказано без теоремы» само по себе ничего не значит](tautologies-close-for-free.md)
+- [Форма, которую разбор уже отвергает, — самое дешёвое место для нового синтаксиса, и цена измерена](occupy-a-form-the-parser-already-rejects.md)
+- [Новая форма языка, не доехавшая до генераторов кода, расходится с типами молча](a-language-form-must-reach-code-generation.md)
 
 - [Замкнутую цель надо считать, а не выводить](closed-goals-must-be-computed.md)
 - [Узкое место переехало третий раз: мешает форма утверждения, а не форма тела](bottleneck-moved-to-claim-shape.md)
@@ -132,6 +134,7 @@
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки: одна неиспользуемая функция красит побайтовую сверку](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним](podmena-chteniya-stoit-vnutri-obhoda-a-ne-pered-nim.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)
+- [Проверка, зовущая свидетеля напрямую, не держит правило работающего слоя](a-check-that-calls-the-witness-does-not-hold-the-working-layer.md)
 - [Побайтовая сверка данных не видит зависимости от тождества объектов](byte-comparison-misses-object-identity.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)

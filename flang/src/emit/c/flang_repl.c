@@ -258,7 +258,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c|java  напечатать программу в C99 или Java\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -325,7 +325,7 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|java [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -334,7 +334,7 @@ static const char HELP_EMIT[] =
     "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
     "байт.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c|java   две цели этого бинарника\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
@@ -6077,6 +6077,306 @@ static bool emit_write(const char *full, const char *text, size_t bytes) {
   return true;
 }
 
+/**
+ * Раскладка напечатанного по диску — одна на обе цели.
+ *
+ * Каталог НЕ заводится, и это решение, а не пропуск: `mkdir` живёт в
+ * <sys/stat.h>, а у оболочки есть обещание обходиться стандартной библиотекой C
+ * плюс signal.h и unistd.h, и стережёт его сторож в `flang/test/emit-c.test.mjs`.
+ * Печати в Java это ничего не стоит: у неё восемь файлов и все ПЛОСКИЕ —
+ * пакетов она не объявляет вовсе, поэтому подкаталог не нужен ни одному.
+ */
+static int emit_files_out(fl_value files, const char *out, const char *one, size_t *written) {
+  size_t index = 0;
+  int code = 0;
+  bool found = false;
+  for (index = 0; index < files.as.list.count && code == 0; index += 1) {
+    fl_value where = fl_nothing();
+    fl_value content = fl_nothing();
+    const char *body = NULL;
+    size_t body_bytes = 0;
+    char *name = NULL;
+    if (!val_field(files.as.list.items[index], "путь", &where) ||
+        !val_field(files.as.list.items[index], "содержимое", &content) ||
+        !val_text(content, &body, &body_bytes)) {
+      continue;
+    }
+    name = val_copy(where);
+    if (one != NULL) {
+      if (strcmp(name, one) == 0) {
+        found = true;
+        if (body_bytes > 0 && fwrite(body, 1, body_bytes, stdout) != body_bytes) {
+          fputs("flang emit: вывод оборван\n", stderr);
+          code = 1;
+        }
+        *written += body_bytes;
+      }
+      free(name);
+      continue;
+    }
+    {
+      char *destination = repl_join(out, name);
+      if (!emit_write(destination, body, body_bytes)) {
+        code = 1;
+      }
+      *written += body_bytes;
+      free(destination);
+    }
+    free(name);
+  }
+  fflush(stdout);
+  if (one != NULL && !found && code == 0) {
+    fprintf(stderr, "flang emit: файла «%s» печать не даёт. Что даёт:", one);
+    for (index = 0; index < files.as.list.count; index += 1) {
+      fl_value where = fl_nothing();
+      if (val_field(files.as.list.items[index], "путь", &where)) {
+        char *name = val_copy(where);
+        fprintf(stderr, " %s", name);
+        free(name);
+      }
+    }
+    fputc('\n', stderr);
+    code = 2;
+  }
+  return code;
+}
+
+/** Пять файлов рантайма Java плюс прогонщик; порядок — как в «Настройках Java». */
+static const char *const EMIT_JAVA_FILES[6] = {"Value.java", "Field.java",  "FlangError.java",
+                                               "Ctx.java",   "Flang.java",  "FlangCli.java"};
+
+/**
+ * Каталог с ИСХОДНИКАМИ рантайма Java. Признак тот же, что у C: напечатанный
+ * файл несёт шапку «Сгенерировано flang», исходник начинается строкой SPDX.
+ */
+static bool emit_java_here(const char *directory) {
+  char *probe = repl_join(directory, EMIT_JAVA_FILES[0]);
+  size_t bytes = 0;
+  char *text = repl_read_file(probe, &bytes);
+  bool ok = false;
+  free(probe);
+  if (text == NULL) {
+    return false;
+  }
+  ok = strstr(text, "Сгенерировано flang") == NULL;
+  free(text);
+  return ok;
+}
+
+static char *emit_java_dir(const char *self_dir, const char *given) {
+  static const char *const places[2] = {"flang/src/emit/java", "share/flang/java"};
+  size_t index = 0;
+  if (given != NULL && given[0] != '\0') {
+    return emit_java_here(given) ? repl_say(given) : NULL;
+  }
+  {
+    const char *set = getenv("FLANG_RUNTIME_DIR");
+    if (set != NULL && set[0] != '\0') {
+      return emit_java_here(set) ? repl_say(set) : NULL;
+    }
+  }
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  for (index = 0; index < 2; index += 1) {
+    char *parent = repl_dirname(self_dir);
+    char *directory = repl_join(parent, places[index]);
+    free(parent);
+    if (emit_java_here(directory)) {
+      return directory;
+    }
+    free(directory);
+  }
+  return NULL;
+}
+
+/**
+ * `flang emit <файл> --target java`.
+ *
+ * Вся печать — на flang: `flang/self/emit-java.flang` втащен в замыкание, а
+ * связывание, обе отметки, отбрасывание недостижимого и сама печать спрятаны за
+ * ОДНУ точку входа «Печать в Java от исходников» (`self/bootstrap/compiler.flang`).
+ * Здесь остаётся ровно то, чего язык не умеет: прочитать шесть файлов рантайма
+ * с диска, подать впечатанную границу входа и записать вывод.
+ *
+ * Граница входа — та же оговорка, что у печати в C, и ровно из того же места:
+ * таблицу объявленных типов строит слой типов свидетеля («таблицаВхода»),
+ * которого на flang нет ни строки. Годится впечатанная только при печати САМОГО
+ * СЕБЯ, и годность проверяется парами «функция, параметр» (`emit_entry_fits`).
+ * Не сошлось — таблица пуста, и об этом сказано числом.
+ */
+static int emit_java(const char *path, const char *out, const char *one, const char *given_runtime,
+                     const char *own, const char *steps, const char *depth, int base_index, bool cli,
+                     const char *self) {
+  static const char *const names[16] = {
+      "путь",           "есть путь",       "база",            "предел глубины",
+      "предел шагов",   "прогонщик",       "рантайм значение", "рантайм поле",
+      "рантайм ошибка", "рантайм контекст", "рантайм формы",   "исходник прогонщика",
+      "типы входа",     "поля входа",      "варианты входа",  "параметры входа"};
+  const fl_entry_table *table = FL_PROGRAM_ENTRY();
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value values[16];
+  fl_value args[3];
+  fl_value sources = fl_nothing();
+  fl_value result = fl_nothing();
+  fl_value files = fl_nothing();
+  fl_value failure = fl_nothing();
+  fl_value bads = fl_nothing();
+  char *runtime = NULL;
+  char *self_dir = NULL;
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  char *runtime_text[6];
+  size_t runtime_bytes[6];
+  char buffer[4096];
+  size_t bytes = 0;
+  size_t index = 0;
+  size_t written = 0;
+  int code = 0;
+  bool opened = false;
+  bool fits = false;
+
+  for (index = 0; index < 6; index += 1) {
+    runtime_text[index] = NULL;
+    runtime_bytes[index] = 0;
+  }
+
+  self_dir = repl_self_dir(self);
+  runtime = emit_java_dir(self_dir, given_runtime);
+  free(self_dir);
+  if (runtime == NULL) {
+    fputs("flang emit: не найдены ИСХОДНИКИ рантайма Java (Value.java без шапки «Сгенерировано»).\n"
+          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/java, ../share/flang/java.\n",
+          stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    free(runtime);
+    return 2;
+  }
+
+  for (index = 0; index < 6; index += 1) {
+    char *where = repl_join(runtime, EMIT_JAVA_FILES[index]);
+    runtime_text[index] = repl_read_file(where, &runtime_bytes[index]);
+    free(where);
+    if (runtime_text[index] == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает %s\n", runtime, EMIT_JAVA_FILES[index]);
+      code = 2;
+    }
+  }
+
+  /* Замок рядом со входом — та же подмена, что у остальных команд. */
+  if (code == 0 && !lock_beside(full)) {
+    code = 1;
+  }
+
+  if (code == 0) {
+    repl_cycle();
+    strings_init(&paths);
+    strings_init(&texts);
+    strings_init(&queue);
+    opened = true;
+    strings_say(&paths, full);
+    strings_add(&texts, text, bytes);
+    repl_imports_of(text, bytes, full, &queue);
+    sources = repl_closure(&paths, &texts, &queue);
+
+    values[0] = repl_value_say(own);
+    values[1] = fl_flag(own[0] != '\0');
+    values[2] = fl_number((double)base_index);
+    values[3] = fl_number(strtod(depth, NULL));
+    values[4] = fl_number(strtod(steps, NULL));
+    values[5] = fl_flag(cli);
+    for (index = 0; index < 6; index += 1) {
+      values[6 + index] = repl_value_text(runtime_text[index], runtime_bytes[index]);
+    }
+    /* Годность впечатанной таблицы решается по СВЯЗАННОЙ программе, а связывает
+       здесь сам flang, внутри точки входа. Поэтому связываем ещё раз — только
+       ради проверки годности: цена одного лишнего связывания меньше, чем цена
+       таблицы, приписанной чужой программе. */
+    {
+      fl_value linked = fl_nothing();
+      fl_value program = fl_nothing();
+      fl_value link_args[2];
+      link_args[0] = sources;
+      link_args[1] = repl_value_say(full);
+      if (repl_call("Связать исходники", link_args, 2, &linked) == FL_OK &&
+          val_field(linked, "программа", &program)) {
+        fits = emit_entry_fits(program, table);
+      }
+    }
+    values[12] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+    values[13] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+    values[14] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+    values[15] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+
+    args[0] = sources;
+    args[1] = repl_value_say(full);
+    args[2] = repl_value_record(names, values, 16);
+    if (repl_call("Печать в Java от исходников", args, 3, &result) != FL_OK) {
+      code = 1;
+    } else if (val_field(result, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
+      repl_bads list;
+      size_t at = 0;
+      bads_init(&list);
+      for (at = 0; at < bads.as.list.count; at += 1) {
+        bads_take(&list, bads.as.list.items[at]);
+      }
+      check_print_bads(&list, path, paths.count);
+      fprintf(stderr, "flang emit: печать отменена — связывание дало замечаний %lu\n",
+              (unsigned long)list.count);
+      bads_free(&list);
+      code = 1;
+    } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
+      char *say = val_copy(failure);
+      fprintf(stderr, "flang emit: печать отказала — %s\n", say);
+      free(say);
+      code = 1;
+    } else if (!val_field(result, "файлы", &files) || files.tag != FL_LIST) {
+      fputs("flang emit: печать не вернула файлов\n", stderr);
+      code = 1;
+    } else {
+      code = emit_files_out(files, out, one, &written);
+      if (code == 0 && one == NULL) {
+        fprintf(stderr, "напечатано файлов %lu, байт %lu, в %s\n", (unsigned long)files.as.list.count,
+                (unsigned long)written, out);
+      }
+      if (code == 0 && !fits) {
+        fprintf(stderr,
+                "граница входа пуста: таблицу объявленных типов строит слой типов свидетеля\n"
+                "(«таблицаВхода»), которого в бинарнике нет, а впечатанная (параметров %lu) этой\n"
+                "программе не подходит. Напечатанное соберётся и заработает, но аргументы\n"
+                "прогонщика объявленным типам сверяться не будут.\n",
+                (unsigned long)table->param_count);
+      }
+    }
+  }
+
+  if (opened) {
+    strings_free(&paths);
+    strings_free(&texts);
+    strings_free(&queue);
+  }
+  for (index = 0; index < 6; index += 1) {
+    free(runtime_text[index]);
+  }
+  free(runtime);
+  free(text);
+  free(full);
+  return code;
+}
+
 static int emit_file(int argc, char **argv, const char *self) {
   repl_strings paths;
   repl_strings texts;
@@ -6116,7 +6416,6 @@ static int emit_file(int argc, char **argv, const char *self) {
   size_t runner_source_bytes = 0;
   size_t shell_source_bytes = 0;
   size_t bytes = 0;
-  size_t index = 0;
   size_t written = 0;
   int argument = 0;
   int code = 0;
@@ -6170,13 +6469,13 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике две цели — «c» и «java»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  if (strcmp(target, "c") != 0 && strcmp(target, "java") != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «java»; остальные\n"
+            "шесть (js, go, rust, python, csharp, elixir) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
     return 2;
@@ -6186,6 +6485,10 @@ static int emit_file(int argc, char **argv, const char *self) {
           "(один файл на стандартный вывод, например «--file compiler_flang.c»).\n",
           stderr);
     return 2;
+  }
+
+  if (strcmp(target, "java") == 0) {
+    return emit_java(path, out, one, given_runtime, own, steps, depth, base_index, cli, self);
   }
 
   self_dir = repl_self_dir(self);
@@ -6304,62 +6607,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   if (code == 0) {
-    bool found = false;
-    for (index = 0; index < files.as.list.count && code == 0; index += 1) {
-      fl_value where = fl_nothing();
-      fl_value content = fl_nothing();
-      const char *body = NULL;
-      size_t body_bytes = 0;
-      char *name = NULL;
-      if (!val_field(files.as.list.items[index], "путь", &where) ||
-          !val_field(files.as.list.items[index], "содержимое", &content) ||
-          !val_text(content, &body, &body_bytes)) {
-        continue;
-      }
-      name = val_copy(where);
-      if (one != NULL) {
-        if (strcmp(name, one) == 0) {
-          found = true;
-          if (body_bytes > 0 && fwrite(body, 1, body_bytes, stdout) != body_bytes) {
-            fputs("flang emit: вывод оборван\n", stderr);
-            code = 1;
-          }
-          written += body_bytes;
-        }
-        free(name);
-        continue;
-      }
-      {
-        char *destination = repl_join(out, name);
-        /* Каталог НЕ заводится, и это решение, а не пропуск. `mkdir` живёт в
-           <sys/stat.h>, а у этого файла есть обещание: оболочке хватает
-           стандартной библиотеки C плюс signal.h и unistd.h, и стережёт его
-           сторож в flang/test/emit-c.test.mjs («оболочка печатается только по
-           просьбе, и её нужды названы поимённо»). Один заголовок ради одного
-           mkdir — плохая цена: каталог человек делает `mkdir` сам, а если его
-           нет, отказ ниже назовёт путь. */
-        if (!emit_write(destination, body, body_bytes)) {
-          code = 1;
-        }
-        written += body_bytes;
-        free(destination);
-      }
-      free(name);
-    }
-    fflush(stdout);
-    if (one != NULL && !found && code == 0) {
-      fprintf(stderr, "flang emit: файла «%s» печать не даёт. Что даёт:", one);
-      for (index = 0; index < files.as.list.count; index += 1) {
-        fl_value where = fl_nothing();
-        if (val_field(files.as.list.items[index], "путь", &where)) {
-          char *name = val_copy(where);
-          fprintf(stderr, " %s", name);
-          free(name);
-        }
-      }
-      fputc('\n', stderr);
-      code = 2;
-    }
+    code = emit_files_out(files, out, one, &written);
     if (code == 0) {
       /* Число файлов и байт — на stderr, потому что stdout занят печатью:
          `flang emit … --file x.c > x.c` обязан дать РОВНО файл. */

@@ -41,17 +41,33 @@
  */
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { КАТАЛОГ } from "../../scripts/bootstrap-c.mjs"
-import { findExecutable } from "../src/toolchain.mjs"
+import { корень as корневойВременный } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
+
+/*
+ * Имя каталога читается из рецепта на `sh`, а не берётся у
+ * `scripts/bootstrap-c.mjs`, — и это не педантизм, а условие выживания этой
+ * проверки. Она заведена ровно затем, чтобы остаться сторожем ПОСЛЕ удаления
+ * реализации на JavaScript; импортируй она то, что удалят, — упала бы в тот же
+ * день с «модуль не найден», то есть сломалась бы именно тогда, когда нужна.
+ * Поэтому здесь нет ни одного импорта из `flang/src` и `scripts/*.mjs`.
+ */
+const РЕЦЕПТ = readFileSync(join(корень, "scripts/bootstrap-c.sh"), "utf8")
+const изРецепта = (имя) => {
+  const найдено = РЕЦЕПТ.match(new RegExp(`^${имя}='([^']*)'`, "mu"))
+  assert.ok(найдено, `scripts/bootstrap-c.sh: не найдено ${имя} — рецепт печати разошёлся`)
+  return найдено[1]
+}
+const КАТАЛОГ = изРецепта("FLANG_OUT")
 const двоичный = join(корень, КАТАЛОГ, "flang")
 const попросили = process.env.FLANG_TOCHKA_DVOICHNYM === "1"
+const есть = (имя) => spawnSync("sh", ["-c", `command -v ${имя}`], { stdio: "ignore" }).status === 0
 
 test("точка раскрутки: печать двоичного совпадает с деревом байт в байт", (t) => {
   if (!попросили && !existsSync(двоичный)) {
@@ -63,16 +79,21 @@ test("точка раскрутки: печать двоичного совпа�
     t.skip("двоичный не собран — печать двоичным не проверена")
     return
   }
-  if (findExecutable("make") === null) {
+  if (!есть("make")) {
     t.diagnostic("НЕ ПРОВЕРЕНО: `make` не найден — двоичный не из чего собрать")
     t.skip("нет make")
     return
   }
 
+  /* TMPDIR уводится в корень прогона: скрипт печатает во временный каталог, а
+     сторож временных каталогов (`flang/scripts/tempdir-guard.mjs`) считает
+     мусор именно по этому корню. Каталог на 15 МБ, заведённый мимо него,
+     сторож назвал бы следом печати и не смог бы отличить от чужого. */
   const итог = spawnSync("sh", ["scripts/bootstrap-c.sh", "--check"], {
     cwd: корень,
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, TMPDIR: корневойВременный() },
   })
   assert.equal(
     итог.status,

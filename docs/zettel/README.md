@@ -43,6 +43,7 @@
 
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
+- [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест](equality-on-a-type-parameter-is-banned-only-in-bodies.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)
 - [Поиск доказательства не должен ничему верить](proof-search-must-trust-nothing.md)
 - [Ноль аксиом — проверяемое свойство, а не лозунг](zero-axioms.md)
@@ -156,6 +157,7 @@
 - [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](etalon-sverennyy-s-tretim-artefaktom.md)
 - [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](rovnoe-chislo-cherez-tcp-obeshchat-nelzya.md)
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika.md)
+- [Типизированная ссылка на процесс выражается сегодняшним языком без единой правки компилятора, и подделка с чужим грузом отвергается](typed-process-reference-is-already-expressible.md)
 - [Девяти обработчикам из десяти вытеснение не нужно: срок известен до запуска](nine-handlers-in-ten-need-no-preemption.md)
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
 
@@ -172,6 +174,7 @@
 - [Внутренний предел витков умножается на цену витка и обязан помещаться во внешний бюджет слоя](an-inner-step-limit-multiplies-into-the-outer-budget.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Node ушёл с пути сборки: точку раскрутки печатает сам двоичный, и обе печати совпали байт в байт](node-ushyol-s-puti-sborki.md)
+- [Закоммиченная точка раскрутки отстала от исходников на одну форму языка, и двоичный не проверяет три своих модуля](bootstrap-seed-lags-the-sources-by-one-language-form.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)

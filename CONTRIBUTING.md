@@ -124,6 +124,7 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag, on Node 20, 22 and 24 |
 | `npm run pretest` · `npm run pretest:backends` | npm lifecycle hooks — the preflight report, run automatically before the suite |
 | `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
+| `npm run postinstall` | npm lifecycle hook — builds the binary compiler from the C99 in `bootstrap/` and puts it in `dvoichnyy/flang`. This is what makes `npm install` deliver the *same* compiler `brew` delivers instead of a second implementation. Needs `cc` and `make`; without them the install still succeeds and the refusal names the fix. `FLANG_BEZ_SBORKI=1` skips the build |
 | `npm run preflight` | the toolchain report on its own |
 | `npm run test:backends` | the emit tests alone, when you do not want the full suite |
 | `npm run test:remote` | the same suite on a host of your choosing, over ssh |

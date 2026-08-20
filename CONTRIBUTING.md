@@ -146,7 +146,6 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm run changelog:page` · `npm run changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
 | `npm run releases:page` · `npm run releases:page:check` | print the releases page, both halves of it, and check it against the tags |
 | `npm run spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
-| `npm run comparison:check` | the guard that a comparison does not preprocess the witness the way it preprocesses the reference |
 | `npm run rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
 | `npm run memory:check` | every peak-memory number stated in prose, remeasured by a run |
 | `npm run tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |

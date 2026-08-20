@@ -45,11 +45,11 @@ from memory: this table used to say «Высшего порядка» and «Хе
 modules exist in the tree, and an import under those names would have been
 refused.
 
-A module is imported by path, in the header:
+A module is imported by name, in the header, with no path:
 
 ```
 модуль «Операции»
-  использует «Списки» из "../../flang/stdlib/lists.flang"
+  использует «Списки»
 ```
 
 The quoted name must match the module name inside the file. A mismatch is a

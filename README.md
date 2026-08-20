@@ -465,7 +465,7 @@ not have.
 
 ```flang
 модуль «Проба импорта»
-  использует «Списки» из "../stdlib/lists.flang"
+  использует «Списки»
 
 тотальная функция «Сумма пробы»
   принимает элементы: список числа
@@ -473,7 +473,13 @@ not have.
   «Сумма» от элементы
 ```
 
-A selective form takes only what you name — `использует «Списки» из "…" только «Сумма», «Длина»` —
+There is no path in the line: a module is found by its name — the one written on the file's first
+line as `модуль «Списки»`. The search looks in the file's own directory, then in every directory
+above it while that directory still holds `.flang` files, then in the library shipped with the
+compiler. Moving a module to another directory does not break anything; a module off that road is
+named directly — `использует «Списки» из "path"`.
+
+A selective form takes only what you name — `использует «Списки» только «Сумма», «Длина»` —
 which is also how a name conflict between two modules is resolved.
 
 How that scales to a full-size project is shown by

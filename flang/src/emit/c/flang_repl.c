@@ -1992,6 +1992,59 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
 /** Каталог, из которого запущен бинарник: нужен, чтобы найти его библиотеку. */
 static const char *repl_self_kept = NULL;
 
+/*
+ * Прочитанные каталоги: путь файла → имя его модуля. Без этого каждый ввоз по
+ * имени перечитывал бы каталог целиком, а `flang/self` — это сорок файлов по
+ * сотне килобайт: тридцать ввозов компилятора стоили бы сотню мегабайт чтения
+ * там, где хватает одного прохода. Живёт кеш ровно одну команду и стирается в
+ * конце `repl_closure`: между вводами оболочки файл на диске мог измениться.
+ */
+typedef struct {
+  char *dir;
+  repl_strings paths;
+  repl_strings names;
+} repl_place_index;
+
+static repl_place_index *repl_place_seen = NULL;
+static size_t repl_place_count = 0;
+
+static void repl_place_forget(void) {
+  size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    free(repl_place_seen[index].dir);
+    strings_free(&repl_place_seen[index].paths);
+    strings_free(&repl_place_seen[index].names);
+  }
+  free(repl_place_seen);
+  repl_place_seen = NULL;
+  repl_place_count = 0;
+}
+
+/*
+ * Начало файла, а не весь файл: заголовок модуля стоит первой значащей строкой,
+ * и глубже всех в дереве он отстоит от начала на 6181 байт
+ * (`flang/проверки/встроенные-формы.flang`). Шестьдесят четыре килобайта берут
+ * его с десятикратным запасом и не тянут остальные четыреста.
+ */
+static char *repl_read_head(const char *path, size_t cap, size_t *bytes) {
+  FILE *stream = fopen(path, "rb");
+  char *text = NULL;
+  size_t got = 0;
+  if (stream == NULL) {
+    return NULL;
+  }
+  text = malloc(cap + 1);
+  if (text == NULL) {
+    fclose(stream);
+    repl_oom();
+  }
+  got = fread(text, 1, cap, stream);
+  fclose(stream);
+  text[got] = '\0';
+  *bytes = got;
+  return text;
+}
+
 /**
  * Имя модуля файла: первая значащая строка, `модуль «Имя»`.
  *
@@ -2055,37 +2108,32 @@ static bool repl_module_name(const char *text, size_t bytes, char **out, size_t 
   return false;
 }
 
-/** Есть ли в каталоге хоть один `.flang`: этим кончается подъём вверх. */
-static bool repl_dir_has_flang(const char *dir) {
-  DIR *directory = opendir(dir[0] == '\0' ? "." : dir);
-  bool found = false;
-  if (directory == NULL) {
-    return false;
-  }
-  for (;;) {
-    const struct dirent *entry = readdir(directory);
-    size_t length = 0;
-    if (entry == NULL) {
-      break;
-    }
-    length = strlen(entry->d_name);
-    if (length > 6 && strcmp(entry->d_name + length - 6, ".flang") == 0) {
-      found = true;
-      break;
-    }
-  }
-  closedir(directory);
-  return found;
-}
-
-/** Файлы каталога, чей `модуль «…»` совпал с именем. Вглубь не заходит. */
-static void repl_place_scan(const char *dir, const char *name, repl_strings *found) {
-  DIR *directory = opendir(dir[0] == '\0' ? "." : dir);
-  const size_t want = strlen(name);
+/** Каталог, прочитанный один раз: пути его `.flang` и имена их модулей. */
+static const repl_place_index *repl_place_read(const char *dir) {
+  DIR *directory = NULL;
   repl_strings names;
+  repl_place_index *slot = NULL;
   size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    if (strcmp(repl_place_seen[index].dir, dir) == 0) {
+      return &repl_place_seen[index];
+    }
+  }
+  {
+    repl_place_index *grown = realloc(repl_place_seen, (repl_place_count + 1) * sizeof(repl_place_index));
+    if (grown == NULL) {
+      repl_oom();
+    }
+    repl_place_seen = grown;
+  }
+  slot = &repl_place_seen[repl_place_count];
+  repl_place_count += 1;
+  slot->dir = repl_say(dir);
+  strings_init(&slot->paths);
+  strings_init(&slot->names);
+  directory = opendir(dir[0] == '\0' ? "." : dir);
   if (directory == NULL) {
-    return;
+    return slot;
   }
   strings_init(&names);
   for (;;) {
@@ -2118,19 +2166,38 @@ static void repl_place_scan(const char *dir, const char *name, repl_strings *fou
   for (index = 0; index < names.count; index += 1) {
     char *full = repl_join(dir, names.items[index]);
     size_t bytes = 0;
-    char *text = repl_read_file(full, &bytes);
+    char *text = repl_read_head(full, 65536, &bytes);
     char *module = NULL;
     size_t module_bytes = 0;
+    strings_say(&slot->paths, full);
     if (text != NULL && repl_module_name(text, bytes, &module, &module_bytes)) {
-      if (module_bytes == want && memcmp(module, name, want) == 0) {
-        strings_say(found, full);
-      }
+      strings_add(&slot->names, module, module_bytes);
       free(module);
+    } else {
+      strings_say(&slot->names, "");
     }
     free(text);
     free(full);
   }
   strings_free(&names);
+  return slot;
+}
+
+/** Есть ли в каталоге хоть один `.flang`: этим кончается подъём вверх. */
+static bool repl_dir_has_flang(const char *dir) {
+  return repl_place_read(dir)->paths.count > 0;
+}
+
+/** Файлы каталога, чей `модуль «…»` совпал с именем. Вглубь не заходит. */
+static void repl_place_scan(const char *dir, const char *name, repl_strings *found) {
+  const repl_place_index *place = repl_place_read(dir);
+  const size_t want = strlen(name);
+  size_t index = 0;
+  for (index = 0; index < place->paths.count; index += 1) {
+    if (place->names.sizes[index] == want && memcmp(place->names.items[index], name, want) == 0) {
+      strings_say(found, place->paths.items[index]);
+    }
+  }
 }
 
 /** Библиотека, поставленная с компилятором: подкаталоги рядом с бинарником. */
@@ -2213,6 +2280,7 @@ static void repl_find_module(const char *importer, const char *name, repl_string
   }
   strings_free(&places);
 }
+
 
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
@@ -2835,6 +2903,7 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     }
     list = fl_list(items, paths->count);
   }
+  repl_place_forget();
   return list;
 }
 

@@ -80,7 +80,7 @@ test("каталог с ложным примером: упавший назва
   assert.match(прогон.stderr, /lozhnyy\.flang/, "упавший файл обязан быть назван поимённо")
   assert.match(прогон.stderr, /Заведомо ложный/, "упавший пример обязан быть назван поимённо")
   assert.doesNotMatch(прогон.stderr, /chistyy\.flang/, "чистый файл в замечаниях не место")
-  assert.match(прогон.stdout, /файлов 2, взято 2, отказано 0, примеров 4 \(своих 4\), без своих примеров 0, прошло 3, не прошло 1/)
+  assert.match(прогон.stdout, /файлов 2, взято 2, отказано 0, примеров 4 \(своих 4\), на чужих примерах 0, потеряно своих 0, прошло 3, не прошло 1/)
   t.diagnostic(прогон.stdout.trim())
 })
 
@@ -90,8 +90,8 @@ test("--json: тот же итог машине, и он разбирается"
   const свод = JSON.parse(прогон.stdout)
   assert.equal(свод.valid, false)
   assert.deepEqual(
-    [свод.files, свод.taken, свод.refused, свод.total, свод.own, свод.noOwn, свод.passed, свод.failed],
-    [2, 2, 0, 4, 4, 0, 3, 1],
+    [свод.files, свод.taken, свод.refused, свод.total, свод.own, свод.noOwn, свод.lostOwn, свод.passed, свод.failed],
+    [2, 2, 0, 4, 4, 0, 0, 3, 1],
   )
   const упавший = свод.results.find((строка) => строка.file.endsWith("lozhnyy.flang"))
   assert.equal(упавший.failures.length, 1)

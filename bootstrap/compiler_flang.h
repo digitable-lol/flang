@@ -43705,13 +43705,22 @@ fl_status compiler_flang_summa_sorvavshihsya(fl_ctx *ctx, fl_value fayly, fl_val
 fl_status compiler_flang_summa_svoih(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Файлы без своих примеров».
+ * Функция flang «Потеряно своих».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: число
+ */
+fl_status compiler_flang_poteryano_svoih(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файлы на чужих примерах».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param fayly — «файлы»: список: «Итог файла корпуса»
  * @return значение: список: «Итог файла корпуса»
  */
-fl_status compiler_flang_fayly_bez_svoih_primerov(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+fl_status compiler_flang_fayly_na_chuzhih_primerah(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Слова о чужих примерах».
@@ -43748,6 +43757,15 @@ fl_status compiler_flang_nevzyatye_fayly(fl_ctx *ctx, fl_value fayly, fl_value *
  * @return значение: строка
  */
 fl_status compiler_flang_slova_otkaza_fayla(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цена отказа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: строка
+ */
+fl_status compiler_flang_cena_otkaza(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Слова сорванного».

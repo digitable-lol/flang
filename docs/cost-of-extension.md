@@ -177,10 +177,10 @@ node docs/site/glossary.mjs --check
 
 | Файл | Байт | Строк |
 |---|---:|---:|
-| `bootstrap/compiler_flang.c` | 11 551 303 | 222 237 |
-| `bootstrap/compiler_flang.h` | 2 357 636 | 44 697 |
+| `bootstrap/compiler_flang.c` | 11 556 834 | 222 345 |
+| `bootstrap/compiler_flang.h` | 2 358 457 | 44 715 |
 | остальные пять | 716 532 | 15 898 |
-| **итого** | **14 625 471** | **282 832** |
+| **итого** | **14 631 823** | **282 958** |
 
 Таблица лежит там константами C — `compiler_flang.c:399`,
 `"|модуль:module|module:module|模块:module|…"`. Правило записано в

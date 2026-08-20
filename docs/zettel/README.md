@@ -180,6 +180,9 @@
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны](a-packaging-copy-in-another-repository-drifts-both-ways.md)
+- [Путь, который во всём дереве встречается только на стороне чтения, — это файл, которого у пользователя нет](a-path-only-ever-read-is-a-file-nobody-has.md)
+- [Режим `--mode=u=rw,go=r`, заданный ради повторимости архива, запирает каталоги наглухо](a-tar-mode-for-files-locks-directories.md)
+- [Проверку пути установки нельзя целиком написать на flang: хозяин убивает процесс на 30 000 мс, а сборка идёт 128 000 мс](host-timeout-of-30-seconds-keeps-builds-out-of-flang-plans.md)
 - [Указатель поиска по 244 страницам весит 371 КиБ, если класть заголовки и первые 700 знаков, а не весь текст](a-client-side-index-holds-headings-not-full-text.md)
 
 ## Интерфейс инструмента

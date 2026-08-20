@@ -554,6 +554,31 @@ public final class Flang {
   }
 
   /**
+   * «символ по коду»: строка ровно из одного символа.
+   *
+   * Character.toChars разворачивает точку за основной плоскостью в суррогатную
+   * пару — то есть в строке Java она занимает две единицы UTF-16, а «длина»
+   * flang считает её одним символом, как и положено. Суррогат отвергается
+   * ЯВНО, хотя Java его хранить умеет: строка в четырёх целях печати из восьми
+   * — UTF-8, и там половины пары нет, а язык обещает восьми целям одинаковые
+   * значения.
+   */
+  public static Value bCharFromCode(Ctx ctx, Value code) {
+    double point = expectInteger("символ по коду", code, "код");
+    if (point < 0 || point > 1114111) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«символ по коду»: код " + Value.numberText(point) + " вне диапазона Unicode [0, 1114111]");
+    }
+    if (point >= 55296 && point <= 57343) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«символ по коду»: код " + Value.numberText(point) + " — половина суррогатной пары, а не символ");
+    }
+    return Value.text(new String(Character.toChars((int) point)));
+  }
+
+  /**
    * «разделить … по …».
    *
    * Поиск разделителя идёт по единицам UTF-16, а не по кодовым точкам, — ровно

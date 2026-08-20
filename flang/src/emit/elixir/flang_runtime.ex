@@ -1084,6 +1084,36 @@ defmodule Flang.Rt do
     end
   end
 
+  @doc """
+  «символ по коду»: строка ровно из одного символа.
+
+  `<<point::utf8>>` кодирует точку в UTF-8 — то же представление, в каком живут
+  все строки на BEAM. Суррогат такой записи не имеет вовсе: конструктор на нём
+  сорвался бы ArgumentError, то есть падением рантайма, а не отказом языка.
+  Поэтому обе границы проверяются ДО конструктора, и текст отказа тот же, что у
+  семи остальных целей.
+  """
+  def b_char_from_code(code) do
+    point = expect_integer("символ по коду", code, "код")
+
+    cond do
+      point < 0.0 or point > 1_114_111.0 ->
+        raise fail(
+                @code_builtin_args,
+                "«символ по коду»: код " <> number_text(point) <> " вне диапазона Unicode [0, 1114111]"
+              )
+
+      point >= 55_296.0 and point <= 57_343.0 ->
+        raise fail(
+                @code_builtin_args,
+                "«символ по коду»: код " <> number_text(point) <> " — половина суррогатной пары, а не символ"
+              )
+
+      true ->
+        text(<<trunc(point)::utf8>>)
+    end
+  end
+
   @doc "«символ … в …». Индексация с 1 и включительно (SPEC, раздел 5)."
   def b_char(index, source) do
     position = expect_integer("символ", index, "индекс")

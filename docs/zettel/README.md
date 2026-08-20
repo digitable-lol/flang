@@ -46,6 +46,7 @@
 - [Квантор по соседним парам выразим сегодня и работает сторожем — стена в доказуемости](kvantor-po-sosednim-param-vyrazim-segodnya-no-nedokazuem.md)
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти](kvantor-po-sosednim-param-stoil-dvuh-faylov-vmesto-dvadcati-devyati.md)
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](uporyadochennost-nastoyashchey-sortirovki-lozhna-na-ne-chisle.md)
+- [Мера содержательности слепа к утверждениям о порядке: пустой список упорядочен](mera-soderzhatelnosti-slepa-k-utverzhdeniyam-o-poryadke.md)
 - [Полная упорядоченность сортировки упирается во вторую стену: лемме нужна добавочная переменная-порог](lemma-s-dobavochnym-porogom-postusloviem-nevyrazima.md)
 - [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест](equality-on-a-type-parameter-is-banned-only-in-bodies.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)

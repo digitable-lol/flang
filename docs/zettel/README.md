@@ -128,6 +128,8 @@
 - [Отказ прогона, отданный значением, — граница, а не одна функция: её ловят исключением 33 места](run-outcome-as-a-value-is-a-boundary-not-a-function.md)
 - [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держал brotli (поправлено дважды: не держит, и цена вышла в 7 раз выше пересчёта)](pyat-komand-dvoichnogo-cena-kazhdoy.md)
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](cena-komandy-schitaetsya-po-rabote-a-ne-po-snyatomu-prepyatstviyu.md)
+- [Цена втаскивания цели печати в двоичный считается встречей имён: у Elixir 262 столкновения на 436 объявлений](cena-celi-pechati-v-dvoichnom-eto-vstrecha-imyon.md)
+- [Двоичный расходится с Node на корпусе не печатью, а границей входа: у цели C — 161 программа из 163](granica-vhoda-a-ne-pechat-razvodit-dvoichnyy-s-node.md)
 - [Ведомость двоичного бывает слабее ведомости на Node и никогда не сильнее](vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним](podmena-chteniya-stoit-vnutri-obhoda-a-ne-pered-nim.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)

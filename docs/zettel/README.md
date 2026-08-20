@@ -100,6 +100,9 @@
 - [Для критичных систем стандарты запрещают динамическую память вообще](safety-standards-ban-dynamic-memory.md)
 - [Чистота означает «без изменения на месте», а не «без выделения памяти»](purity-is-not-zero-allocation.md)
 - [Игры и обработка видео — не наш случай, и причин ровно три](games-and-video-are-not-our-case.md)
+- [Чистому вычислению нужно 5 имён libc и 16 % рантайма, а не 150 КБ](pure-computation-needs-five-libc-names.md)
+- [Уйти от libc мешает одно место рантайма — перевод числа в текст](number-to-text-is-the-only-hard-part-of-dropping-libc.md)
+- [Зеркало оценки размера на flang уже написано, и смета в отчёте о памяти устарела](the-size-estimate-mirror-in-flang-already-exists.md)
 
 ## Скорость и цена доказуемости
 
@@ -124,6 +127,7 @@
 - [Пустая строка у «Прочитано» значит КОНЕЦ, и раскодировщик, вызванный руками, отдаёт её ещё в одном случае](pustaya-stroka-u-prochitano-znachit-konec-i-eto-lovushka-raskodirovshchika.md)
 - [Открытая труба стандартного ввода — это не «ввода нет», а «ввод будет позже», и потомок ждёт до срока](otkrytaya-truba-vvoda-eto-ne-vvoda-net-a-vvod-budet-pozzhe.md)
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](srok-hozyaina-byl-ne-nazyvaem-i-eto-derzhalo-sborku-na-javascript.md)
+- [Долгоживущая служба на flang не растёт: 2 МиБ на миллион запросов](a-long-running-flang-service-does-not-grow.md)
 
 ## Процессы и конкурентность
 

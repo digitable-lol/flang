@@ -67,8 +67,8 @@ jobs:
       - run: npm ci
       # Двоичный собирается ДО прогона, потому что часть проб дерева ходит
       # именно в него, а без него не падает, а ПРОПУСКАЕТСЯ: корпусный режим
-      # `flang test <каталог>` есть только у двоичного
-      # (`flang/test/cli-test-corpus.test.mjs`). Пропуск в отчёте читается как
+      # `flang test <каталог>` есть только у двоичного (судит его теперь
+      # `scripts/progonshchik-korpusa.flang`). Пропуск в отчёте читается как
       # «всё хорошо», и до этой правки так и читался — двоичный не собирался в
       # CI на Linux ни разу. Сборка стоит около минуты на четырёх ядрах против
       # двух часов самого прогона; вместе с `FTS_REQUIRE_BINARY: 1` ниже это
@@ -136,3 +136,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/pechat-i-primery.flang
+
+  # Прогонщик корпуса: каталог, маска и ведомость строкой. Отдельной работой —
+  # зависимостей нет, семь секунд.
+  korpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: bootstrap/flang io scripts/progonshchik-korpusa.flang

@@ -144,6 +144,7 @@
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
+- [Два правила языка живут только в реализации на JavaScript, и сверка двух реализаций их не видит](dva-pravila-yazyka-zhivut-tolko-v-javascript.md)
 - [`flang test` на слое без своих примеров зеленеет всегда — а таких слоёв 11 683 строки](flang-test-na-etalone-bez-svoih-primerov-zeleneet-vsegda.md)
 - [Правило, на которое не наступает ни одна программа корпуса, невидимо для сверки эталона](pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki.md)
 - [Отказ компилятора на стороне flang — значение, поэтому «программа отвергнута» проверяется обычным примером](otkaz-na-storone-flang-eto-znachenie-znachit-ego-vidit-primer.md)

@@ -70,8 +70,6 @@
     "site:check": "node docs/site/build.mjs --check",
     "bootstrap": "sh scripts/bootstrap-c.sh",
     "bootstrap:check": "sh scripts/bootstrap-c.sh --check",
-    "bootstrap:js": "node scripts/bootstrap-c.mjs",
-    "bootstrap:js:check": "node scripts/bootstrap-c.mjs --check",
     "preflight": "node scripts/preflight.mjs",
     "pretest": "node scripts/preflight.mjs",
     "test": "node --test --test-timeout=1800000 flang/test/*.test.mjs",

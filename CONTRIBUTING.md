@@ -110,9 +110,13 @@ sh scripts/bootstrap-c.sh --check      # compare it against the sources, exit 1 
 
 The binary that prints is `bootstrap/flang` itself, built by `make -C bootstrap`
 from the point already committed in the tree — that is how the chicken-and-egg is
-resolved. Node is no longer on the build path. The JavaScript implementation
-still prints the same point (`npm run bootstrap:js`), and on 20 August 2026 the
-two prints came out identical down to the last byte: 7 files, 15 641 371 bytes.
+resolved. Node is no longer on the build path.
+
+While the JavaScript implementation was still in the tree it printed the same
+point, and on 20 August 2026 the two prints came out identical down to the last
+byte: 7 files, 15 641 371 bytes. That number was taken deliberately, on the last
+day there was anything left to compare against — the JavaScript is gone now, and
+the comparison can no longer be repeated.
 
 `bootstrap/` is an artifact, never edited by hand. The guard "точка раскрутки
 bootstrap/ совпадает с печатью текущих исходников, побайтово" in

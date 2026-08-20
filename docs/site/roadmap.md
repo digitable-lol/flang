@@ -33,9 +33,9 @@ The first column grows by itself; the second has to be pushed by hand.
 
 ### The kernel proves few ordinary functions
 
-Twenty ordinary library functions were taken — the kernel closed **two**; four
-more only after the claim was weakened. Not one human-written theorem was
-accepted. How it was counted — [Proofs: why and how](proofs.html).
+Of twenty ordinary library functions the kernel closed **two**; four more only
+after the claim was weakened. Not one human-written theorem was accepted. How it
+was counted — [Proofs: why and how](proofs.html).
 
 The obstacle is not search speed but the **strength of the rules themselves**:
 there are three deciding rules, and they run out on the body shape of an ordinary

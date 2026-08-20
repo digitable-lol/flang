@@ -1129,9 +1129,9 @@ fl_status compiler_flang_sozdat_razbor_chisla(fl_ctx *ctx, fl_value godno, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_sorvannyy_primer(fl_ctx *ctx, fl_value funkciya, fl_value primer, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Итог файла корпуса»: «путь», «взят», «код», «сообщение», «всего», «прошло», «сорвалось», «сорванные». */
+/* Запись FTS «Итог файла корпуса»: «путь», «взят», «код», «сообщение», «всего», «своих», «прошло», «сорвалось», «сорванные». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_itog_fayla_korpusa(fl_ctx *ctx, fl_value put, fl_value vzyat, fl_value kod, fl_value soobschenie, fl_value vsego, fl_value proshlo, fl_value sorvalos, fl_value sorvannye, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_itog_fayla_korpusa(fl_ctx *ctx, fl_value put, fl_value vzyat, fl_value kod, fl_value soobschenie, fl_value vsego, fl_value svoih, fl_value proshlo, fl_value sorvalos, fl_value sorvannye, fl_value *out, fl_error *error);
 
 /* Запись FTS «Свод корпуса»: «файлов», «взято», «отказано», «всего», «прошло», «сорвалось», «замечания», «итог», «в JSON», «код». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -43696,6 +43696,33 @@ fl_status compiler_flang_summa_proshedshih(fl_ctx *ctx, fl_value fayly, fl_value
 fl_status compiler_flang_summa_sorvavshihsya(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Сумма своих».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: число
+ */
+fl_status compiler_flang_summa_svoih(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файлы без своих примеров».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: список: «Итог файла корпуса»
+ */
+fl_status compiler_flang_fayly_bez_svoih_primerov(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова о чужих примерах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: строка
+ */
+fl_status compiler_flang_slova_o_chuzhih_primerah(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Взятые файлы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -43759,6 +43786,16 @@ fl_status compiler_flang_stroki_otchyota_korpusa(fl_ctx *ctx, fl_value fayly, fl
  * @return значение: список: строка
  */
 fl_status compiler_flang_dopisat_stroki_fayla(fl_ctx *ctx, fl_value nakoplennoe, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать строки взятого».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nakoplennoe — «накопленное»: список: строка
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_stroki_vzyatogo(fl_ctx *ctx, fl_value nakoplennoe, fl_value fayl, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Итоговая строка корпуса».
@@ -44178,6 +44215,24 @@ fl_status compiler_flang_itog_primera_po_progonu(fl_ctx *ctx, fl_value itog, fl_
  * @return значение: «Итог примера»
  */
 fl_status compiler_flang_itog_primera_po_znacheniyu(fl_ctx *ctx, fl_value soshlos, fl_value imya, fl_value primer, fl_value ozhidaetsya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Своих примеров в исходнике».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param ishodnik — «исходник»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_svoih_primerov_v_ishodnike(fl_ctx *ctx, fl_value ishodnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Примеров в функциях».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_primerov_v_funkciyah(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ведомость исходников».

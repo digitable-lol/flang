@@ -5181,6 +5181,7 @@ static int test_file(int argc, char **argv) {
   }
 
   repl_cycle();
+
   strings_init(&paths);
   strings_init(&texts);
   strings_init(&queue);
@@ -7252,6 +7253,7 @@ typedef struct {
   char *code;
   char *message;
   double total;
+  double own;
   double passed;
   double failed;
   corpus_fails fails;
@@ -7314,6 +7316,7 @@ static corpus_row *corpus_rows_open(corpus_rows *list, const char *path) {
   row->code = repl_say("");
   row->message = repl_say("");
   row->total = 0;
+  row->own = 0;
   row->passed = 0;
   row->failed = 0;
   corpus_fails_init(&row->fails);
@@ -7459,6 +7462,21 @@ static void corpus_one(const char *shown, bool check, const char *steps, const c
   }
 
   repl_cycle();
+
+  /* СВОИ примеры считаются ПЕРВЫМИ и по одному файлу, без замыкания.
+     Иначе отчёт врёт: `flang test` гоняет примеры всей связанной программы, и
+     слой без единого своего примера отчитывается чужими — `carriers.flang`
+     печатает «примеров 91, прошло 91», а все девяносто одна приехали из
+     `totality.flang`. Считает это «Своих примеров в исходнике» на flang; здесь
+     только вопрос и ответ числом. */
+  {
+    fl_value alone = repl_value_text(text, bytes);
+    fl_value own = fl_nothing();
+    if (repl_call("Своих примеров в исходнике", &alone, 1, &own) == FL_OK && own.tag == FL_NUMBER) {
+      row->own = own.as.number;
+    }
+  }
+
   strings_init(&paths);
   strings_init(&texts);
   strings_init(&queue);
@@ -7540,9 +7558,9 @@ static fl_value corpus_fail_value(const corpus_fail *item) {
 }
 
 static fl_value corpus_row_value(const corpus_row *row) {
-  static const char *const names[8] = {"путь",  "взят",   "код",       "сообщение",
-                                       "всего", "прошло", "сорвалось", "сорванные"};
-  fl_value values[8];
+  static const char *const names[9] = {"путь",  "взят",  "код",    "сообщение", "всего",
+                                       "своих", "прошло", "сорвалось", "сорванные"};
+  fl_value values[9];
   fl_value *items = NULL;
   fl_error error;
   size_t index = 0;
@@ -7559,10 +7577,11 @@ static fl_value corpus_row_value(const corpus_row *row) {
   values[2] = repl_value_say(row->code);
   values[3] = repl_value_say(row->message);
   values[4] = fl_number(row->total);
-  values[5] = fl_number(row->passed);
-  values[6] = fl_number(row->failed);
-  values[7] = fl_list(items, row->fails.count);
-  return repl_value_record(names, values, 8);
+  values[5] = fl_number(row->own);
+  values[6] = fl_number(row->passed);
+  values[7] = fl_number(row->failed);
+  values[8] = fl_list(items, row->fails.count);
+  return repl_value_record(names, values, 9);
 }
 
 /** Настенное время прогона в миллисекундах: часы — тоже эффект. */

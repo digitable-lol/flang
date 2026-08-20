@@ -260,7 +260,7 @@ static const char *const compiler_flang_names_247[] = { "стоп", "готов�
 static const char *const compiler_flang_names_248[] = { "нашли", "начали", "левое" };
 static const char *const compiler_flang_names_249[] = { "годно", "был знак", "цифр до", "была точка", "цифр после" };
 static const char *const compiler_flang_names_250[] = { "функция", "пример", "код", "сообщение" };
-static const char *const compiler_flang_names_251[] = { "путь", "взят", "код", "сообщение", "всего", "прошло", "сорвалось", "сорванные" };
+static const char *const compiler_flang_names_251[] = { "путь", "взят", "код", "сообщение", "всего", "своих", "прошло", "сорвалось", "сорванные" };
 static const char *const compiler_flang_names_252[] = { "файлов", "взято", "отказано", "всего", "прошло", "сорвалось", "замечания", "итог", "в JSON", "код" };
 static const char *const compiler_flang_names_253[] = { "файлы", "ошибка", "диагностики" };
 static const char *const compiler_flang_names_254[] = { "годно", "диагностики" };
@@ -3131,43 +3131,49 @@ static const fl_value compiler_flang_text_3118 = { FL_STRING, { .string = { ".fl
 static const fl_value compiler_flang_text_3119 = { FL_STRING, { .string = { ".git", 4, 4 } } };
 static const fl_value compiler_flang_text_3120 = { FL_STRING, { .string = { "node_modules", 12, 12 } } };
 static const fl_value compiler_flang_text_3121 = { FL_STRING, { .string = { "dist", 4, 4 } } };
-static const fl_value compiler_flang_text_3122 = { FL_STRING, { .string = { ": не взят — ", 20, 12 } } };
-static const fl_value compiler_flang_text_3123 = { FL_STRING, { .string = { "» не прошёл: ", 22, 13 } } };
-static const fl_value compiler_flang_text_3124 = { FL_STRING, { .string = { "корпус «", 15, 8 } } };
-static const fl_value compiler_flang_text_3125 = { FL_STRING, { .string = { "»: файлов ", 17, 10 } } };
-static const fl_value compiler_flang_text_3126 = { FL_STRING, { .string = { ", взято ", 13, 8 } } };
-static const fl_value compiler_flang_text_3127 = { FL_STRING, { .string = { ", отказано ", 19, 11 } } };
-static const fl_value compiler_flang_text_3128 = { FL_STRING, { .string = { ", примеров ", 19, 11 } } };
-static const fl_value compiler_flang_text_3129 = { FL_STRING, { .string = { ", прошло ", 15, 9 } } };
-static const fl_value compiler_flang_text_3130 = { FL_STRING, { .string = { ", не прошло ", 20, 12 } } };
-static const fl_value compiler_flang_text_3131 = { FL_STRING, { .string = { ", за ", 7, 5 } } };
-static const fl_value compiler_flang_text_3132 = { FL_STRING, { .string = { " мс", 5, 3 } } };
-static const fl_value compiler_flang_text_3133 = { FL_STRING, { .string = { "passed", 6, 6 } } };
-static const fl_value compiler_flang_text_3134 = { FL_STRING, { .string = { "file", 4, 4 } } };
-static const fl_value compiler_flang_text_3135 = { FL_STRING, { .string = { "taken", 5, 5 } } };
-static const fl_value compiler_flang_text_3136 = { FL_STRING, { .string = { "failed", 6, 6 } } };
-static const fl_value compiler_flang_text_3137 = { FL_STRING, { .string = { "valid", 5, 5 } } };
-static const fl_value compiler_flang_text_3138 = { FL_STRING, { .string = { "corpus", 6, 6 } } };
-static const fl_value compiler_flang_text_3139 = { FL_STRING, { .string = { "files", 5, 5 } } };
-static const fl_value compiler_flang_text_3140 = { FL_STRING, { .string = { "ms", 2, 2 } } };
-static const fl_value compiler_flang_text_3141 = { FL_STRING, { .string = { "FLANG_EXAMPLE", 13, 13 } } };
-static const fl_value compiler_flang_text_3142 = { FL_STRING, { .string = { " (и ещё замечаний: ", 32, 19 } } };
-static const fl_value compiler_flang_text_3143 = { FL_STRING, { .string = { "значение не совпало с ожидаемым: ожидалось ", 79, 43 } } };
-static const fl_value compiler_flang_text_3144 = { FL_STRING, { .string = { "ведомость не печатается: в программе объявлено то, чьи законы бинарник не считает — ", 154, 84 } } };
-static const fl_value compiler_flang_text_3145 = { FL_STRING, { .string = { ". Эти законы считаются ВЫЧИСЛЕНИЕМ на сетке, и слоёв, которые это делают, в бинарнике нет. Пустой раздел ведомости читался бы как «законов не объявлено», а это неправда. Полная ведомость — у инструментария на Node: flang check --proof", 404, 234 } } };
-static const fl_value compiler_flang_text_3146 = { FL_STRING, { .string = { "2⁵³−1", 10, 5 } } };
-static const fl_value compiler_flang_text_3147 = { FL_STRING, { .string = { "FLANG_UNKNOWN_PLAN", 18, 18 } } };
-static const fl_value compiler_flang_text_3148 = { FL_STRING, { .string = { "в программе нет ни одного плана: исполнять нечего", 90, 49 } } };
-static const fl_value compiler_flang_text_3149 = { FL_STRING, { .string = { "планов несколько (", 33, 18 } } };
-static const fl_value compiler_flang_text_3150 = { FL_STRING, { .string = { ") — назовите нужный", 35, 19 } } };
-static const fl_value compiler_flang_text_3151 = { FL_STRING, { .string = { "не найден план «", 29, 16 } } };
-static const fl_value compiler_flang_text_3152 = { FL_STRING, { .string = { "сбой", 8, 4 } } };
-static const fl_value compiler_flang_text_3153 = { FL_STRING, { .string = { "готово", 12, 6 } } };
-static const fl_value compiler_flang_text_3154 = { FL_STRING, { .string = { "провал", 12, 6 } } };
-static const fl_value compiler_flang_text_3155 = { FL_STRING, { .string = { "поручить", 16, 8 } } };
-static const fl_value compiler_flang_text_3156 = { FL_STRING, { .string = { "FLANG_IO", 8, 8 } } };
-static const fl_value compiler_flang_text_3157 = { FL_STRING, { .string = { "шаг плана «", 20, 11 } } };
-static const fl_value compiler_flang_text_3158 = { FL_STRING, { .string = { "» вернул не «Продолжение»", 47, 25 } } };
+static const fl_value compiler_flang_text_3122 = { FL_STRING, { .string = { ": СВОИХ примеров нет ни одного — все ", 66, 37 } } };
+static const fl_value compiler_flang_text_3123 = { FL_STRING, { .string = { " приехали по «использует», и о самом файле не сказано ничего", 109, 60 } } };
+static const fl_value compiler_flang_text_3124 = { FL_STRING, { .string = { ": не взят — ", 20, 12 } } };
+static const fl_value compiler_flang_text_3125 = { FL_STRING, { .string = { "» не прошёл: ", 22, 13 } } };
+static const fl_value compiler_flang_text_3126 = { FL_STRING, { .string = { "корпус «", 15, 8 } } };
+static const fl_value compiler_flang_text_3127 = { FL_STRING, { .string = { "»: файлов ", 17, 10 } } };
+static const fl_value compiler_flang_text_3128 = { FL_STRING, { .string = { ", взято ", 13, 8 } } };
+static const fl_value compiler_flang_text_3129 = { FL_STRING, { .string = { ", отказано ", 19, 11 } } };
+static const fl_value compiler_flang_text_3130 = { FL_STRING, { .string = { ", примеров ", 19, 11 } } };
+static const fl_value compiler_flang_text_3131 = { FL_STRING, { .string = { " (своих ", 13, 8 } } };
+static const fl_value compiler_flang_text_3132 = { FL_STRING, { .string = { "), без своих примеров ", 38, 22 } } };
+static const fl_value compiler_flang_text_3133 = { FL_STRING, { .string = { ", прошло ", 15, 9 } } };
+static const fl_value compiler_flang_text_3134 = { FL_STRING, { .string = { ", не прошло ", 20, 12 } } };
+static const fl_value compiler_flang_text_3135 = { FL_STRING, { .string = { ", за ", 7, 5 } } };
+static const fl_value compiler_flang_text_3136 = { FL_STRING, { .string = { " мс", 5, 3 } } };
+static const fl_value compiler_flang_text_3137 = { FL_STRING, { .string = { "passed", 6, 6 } } };
+static const fl_value compiler_flang_text_3138 = { FL_STRING, { .string = { "file", 4, 4 } } };
+static const fl_value compiler_flang_text_3139 = { FL_STRING, { .string = { "taken", 5, 5 } } };
+static const fl_value compiler_flang_text_3140 = { FL_STRING, { .string = { "own", 3, 3 } } };
+static const fl_value compiler_flang_text_3141 = { FL_STRING, { .string = { "failed", 6, 6 } } };
+static const fl_value compiler_flang_text_3142 = { FL_STRING, { .string = { "valid", 5, 5 } } };
+static const fl_value compiler_flang_text_3143 = { FL_STRING, { .string = { "corpus", 6, 6 } } };
+static const fl_value compiler_flang_text_3144 = { FL_STRING, { .string = { "files", 5, 5 } } };
+static const fl_value compiler_flang_text_3145 = { FL_STRING, { .string = { "noOwn", 5, 5 } } };
+static const fl_value compiler_flang_text_3146 = { FL_STRING, { .string = { "ms", 2, 2 } } };
+static const fl_value compiler_flang_text_3147 = { FL_STRING, { .string = { "FLANG_EXAMPLE", 13, 13 } } };
+static const fl_value compiler_flang_text_3148 = { FL_STRING, { .string = { " (и ещё замечаний: ", 32, 19 } } };
+static const fl_value compiler_flang_text_3149 = { FL_STRING, { .string = { "значение не совпало с ожидаемым: ожидалось ", 79, 43 } } };
+static const fl_value compiler_flang_text_3150 = { FL_STRING, { .string = { "ведомость не печатается: в программе объявлено то, чьи законы бинарник не считает — ", 154, 84 } } };
+static const fl_value compiler_flang_text_3151 = { FL_STRING, { .string = { ". Эти законы считаются ВЫЧИСЛЕНИЕМ на сетке, и слоёв, которые это делают, в бинарнике нет. Пустой раздел ведомости читался бы как «законов не объявлено», а это неправда. Полная ведомость — у инструментария на Node: flang check --proof", 404, 234 } } };
+static const fl_value compiler_flang_text_3152 = { FL_STRING, { .string = { "2⁵³−1", 10, 5 } } };
+static const fl_value compiler_flang_text_3153 = { FL_STRING, { .string = { "FLANG_UNKNOWN_PLAN", 18, 18 } } };
+static const fl_value compiler_flang_text_3154 = { FL_STRING, { .string = { "в программе нет ни одного плана: исполнять нечего", 90, 49 } } };
+static const fl_value compiler_flang_text_3155 = { FL_STRING, { .string = { "планов несколько (", 33, 18 } } };
+static const fl_value compiler_flang_text_3156 = { FL_STRING, { .string = { ") — назовите нужный", 35, 19 } } };
+static const fl_value compiler_flang_text_3157 = { FL_STRING, { .string = { "не найден план «", 29, 16 } } };
+static const fl_value compiler_flang_text_3158 = { FL_STRING, { .string = { "сбой", 8, 4 } } };
+static const fl_value compiler_flang_text_3159 = { FL_STRING, { .string = { "готово", 12, 6 } } };
+static const fl_value compiler_flang_text_3160 = { FL_STRING, { .string = { "провал", 12, 6 } } };
+static const fl_value compiler_flang_text_3161 = { FL_STRING, { .string = { "поручить", 16, 8 } } };
+static const fl_value compiler_flang_text_3162 = { FL_STRING, { .string = { "FLANG_IO", 8, 8 } } };
+static const fl_value compiler_flang_text_3163 = { FL_STRING, { .string = { "шаг плана «", 20, 11 } } };
+static const fl_value compiler_flang_text_3164 = { FL_STRING, { .string = { "» вернул не «Продолжение»", 47, 25 } } };
 
 /* Шаги батута: объявлены заранее, потому что ссылаются друг на друга. */
 static fl_status compiler_flang_chitat_yunikod_step(fl_ctx *ctx, const fl_value *args, fl_bounce *bounce, fl_value *result,
@@ -6093,17 +6099,18 @@ fl_status compiler_flang_sozdat_sorvannyy_primer(fl_ctx *ctx, fl_value funkciya,
 }
 
 /* Фабрика записи FTS «Итог файла корпуса». */
-fl_status compiler_flang_sozdat_itog_fayla_korpusa(fl_ctx *ctx, fl_value put, fl_value vzyat, fl_value kod, fl_value soobschenie, fl_value vsego, fl_value proshlo, fl_value sorvalos, fl_value sorvannye, fl_value *out, fl_error *error) {
-  fl_value values[8];
+fl_status compiler_flang_sozdat_itog_fayla_korpusa(fl_ctx *ctx, fl_value put, fl_value vzyat, fl_value kod, fl_value soobschenie, fl_value vsego, fl_value svoih, fl_value proshlo, fl_value sorvalos, fl_value sorvannye, fl_value *out, fl_error *error) {
+  fl_value values[9];
   values[0] = put; /* «путь» */
   values[1] = vzyat; /* «взят» */
   values[2] = kod; /* «код» */
   values[3] = soobschenie; /* «сообщение» */
   values[4] = vsego; /* «всего» */
-  values[5] = proshlo; /* «прошло» */
-  values[6] = sorvalos; /* «сорвалось» */
-  values[7] = sorvannye; /* «сорванные» */
-  return fl_record_new(ctx, compiler_flang_names_251, values, 8, out, error);
+  values[5] = svoih; /* «своих» */
+  values[6] = proshlo; /* «прошло» */
+  values[7] = sorvalos; /* «сорвалось» */
+  values[8] = sorvannye; /* «сорванные» */
+  return fl_record_new(ctx, compiler_flang_names_251, values, 9, out, error);
 }
 
 /* Фабрика записи FTS «Свод корпуса». */
@@ -179796,6 +179803,95 @@ fl_status compiler_flang_summa_sorvavshihsya(fl_ctx *ctx, fl_value fayly, fl_val
 }
 
 /*
+ * Функция flang «Сумма своих».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: число
+ */
+fl_status compiler_flang_summa_svoih(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
+  fl_value fl_t34454 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "свёртка", &fl_t34454, error));
+  fl_value nakoplennoe = fl_number(0.0); /* «накопленное» */
+  const fl_mark fl_t34456 = fl_region_open(ctx);
+  for (size_t fl_t34455 = 0; fl_t34455 < fl_t34454.as.list.count; fl_t34455 += 1) {
+    const fl_value fayl = fl_t34454.as.list.items[fl_t34455]; /* «файл» */
+    fl_value fl_t34457 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "своих", &fl_t34457, error));
+    if (nakoplennoe.tag != FL_NUMBER || fl_t34457.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", nakoplennoe, fl_t34457, error));
+    nakoplennoe = fl_number(nakoplennoe.as.number + fl_t34457.as.number);
+    FL_TRY(fl_region_recycle(ctx, fl_t34456, &nakoplennoe, error));
+  }
+  FL_TRY(fl_region_close(ctx, fl_t34456, FL_OK, &nakoplennoe, error));
+  *result = nakoplennoe;
+  return FL_OK;
+}
+
+/*
+ * Функция flang «Файлы без своих примеров».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: список: «Итог файла корпуса»
+ */
+fl_status compiler_flang_fayly_bez_svoih_primerov(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
+  fl_value fl_t34458 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "отфильтровать", &fl_t34458, error));
+  fl_value *fl_t34459 = NULL;
+  size_t fl_t34460 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34458.as.list.count, &fl_t34459, error));
+  for (size_t fl_t34461 = 0; fl_t34461 < fl_t34458.as.list.count; fl_t34461 += 1) {
+    const fl_value fayl = fl_t34458.as.list.items[fl_t34461]; /* «файл» */
+    fl_value fl_t34462 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34462, error));
+    bool fl_t34463 = false;
+    FL_TRY(fl_cond(ctx, fl_t34462, &fl_t34463, error));
+    fl_value fl_t34464 = fl_nothing();
+    if (fl_t34463) {
+      fl_value fl_t34465 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, fayl, "своих", &fl_t34465, error));
+      fl_t34464 = fl_flag(fl_equal(fl_t34465, fl_number(0.0)));
+    } else {
+      fl_t34464 = fl_flag(false);
+    }
+    bool fl_t34466 = false;
+    FL_TRY(fl_keep(ctx, fl_t34464, &fl_t34466, error));
+    if (fl_t34466) {
+      fl_t34459[fl_t34460] = fayl;
+      fl_t34460 += 1;
+    }
+  }
+  *result = fl_list(fl_t34459, fl_t34460);
+  return FL_OK;
+}
+
+/*
+ * Функция flang «Слова о чужих примерах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: строка
+ */
+fl_status compiler_flang_slova_o_chuzhih_primerah(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error) {
+  fl_value *fl_t34467 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 4, &fl_t34467, error));
+  fl_value fl_t34468 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34468, error));
+  fl_t34467[0] = fl_t34468;
+  fl_t34467[1] = compiler_flang_text_3122;
+  fl_value fl_t34469 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "всего", &fl_t34469, error));
+  fl_value fl_t34470 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34469, &fl_t34470, error));
+  fl_t34467[2] = fl_t34470;
+  fl_t34467[3] = compiler_flang_text_3123;
+  fl_value fl_t34471 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34467, 4), compiler_flang_text_331, &fl_t34471, error));
+  *result = fl_t34471;
+  return FL_OK;
+}
+
+/*
  * Функция flang «Взятые файлы».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -179803,23 +179899,23 @@ fl_status compiler_flang_summa_sorvavshihsya(fl_ctx *ctx, fl_value fayly, fl_val
  * @return значение: список: «Итог файла корпуса»
  */
 fl_status compiler_flang_vzyatye_fayly(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34454 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fayly, "отфильтровать", &fl_t34454, error));
-  fl_value *fl_t34455 = NULL;
-  size_t fl_t34456 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34454.as.list.count, &fl_t34455, error));
-  for (size_t fl_t34457 = 0; fl_t34457 < fl_t34454.as.list.count; fl_t34457 += 1) {
-    const fl_value fayl = fl_t34454.as.list.items[fl_t34457]; /* «файл» */
-    fl_value fl_t34458 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34458, error));
-    bool fl_t34459 = false;
-    FL_TRY(fl_keep(ctx, fl_t34458, &fl_t34459, error));
-    if (fl_t34459) {
-      fl_t34455[fl_t34456] = fayl;
-      fl_t34456 += 1;
+  fl_value fl_t34472 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "отфильтровать", &fl_t34472, error));
+  fl_value *fl_t34473 = NULL;
+  size_t fl_t34474 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34472.as.list.count, &fl_t34473, error));
+  for (size_t fl_t34475 = 0; fl_t34475 < fl_t34472.as.list.count; fl_t34475 += 1) {
+    const fl_value fayl = fl_t34472.as.list.items[fl_t34475]; /* «файл» */
+    fl_value fl_t34476 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34476, error));
+    bool fl_t34477 = false;
+    FL_TRY(fl_keep(ctx, fl_t34476, &fl_t34477, error));
+    if (fl_t34477) {
+      fl_t34473[fl_t34474] = fayl;
+      fl_t34474 += 1;
     }
   }
-  *result = fl_list(fl_t34455, fl_t34456);
+  *result = fl_list(fl_t34473, fl_t34474);
   return FL_OK;
 }
 
@@ -179831,31 +179927,31 @@ fl_status compiler_flang_vzyatye_fayly(fl_ctx *ctx, fl_value fayly, fl_value *re
  * @return значение: список: «Итог файла корпуса»
  */
 fl_status compiler_flang_nevzyatye_fayly(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34460 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fayly, "отфильтровать", &fl_t34460, error));
-  fl_value *fl_t34461 = NULL;
-  size_t fl_t34462 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34460.as.list.count, &fl_t34461, error));
-  for (size_t fl_t34463 = 0; fl_t34463 < fl_t34460.as.list.count; fl_t34463 += 1) {
-    const fl_value fayl = fl_t34460.as.list.items[fl_t34463]; /* «файл» */
-    fl_value fl_t34464 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34464, error));
-    bool fl_t34465 = false;
-    FL_TRY(fl_cond(ctx, fl_t34464, &fl_t34465, error));
-    fl_value fl_t34466 = fl_nothing();
-    if (fl_t34465) {
-      fl_t34466 = fl_flag(false);
+  fl_value fl_t34478 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "отфильтровать", &fl_t34478, error));
+  fl_value *fl_t34479 = NULL;
+  size_t fl_t34480 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34478.as.list.count, &fl_t34479, error));
+  for (size_t fl_t34481 = 0; fl_t34481 < fl_t34478.as.list.count; fl_t34481 += 1) {
+    const fl_value fayl = fl_t34478.as.list.items[fl_t34481]; /* «файл» */
+    fl_value fl_t34482 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34482, error));
+    bool fl_t34483 = false;
+    FL_TRY(fl_cond(ctx, fl_t34482, &fl_t34483, error));
+    fl_value fl_t34484 = fl_nothing();
+    if (fl_t34483) {
+      fl_t34484 = fl_flag(false);
     } else {
-      fl_t34466 = fl_flag(true);
+      fl_t34484 = fl_flag(true);
     }
-    bool fl_t34467 = false;
-    FL_TRY(fl_keep(ctx, fl_t34466, &fl_t34467, error));
-    if (fl_t34467) {
-      fl_t34461[fl_t34462] = fayl;
-      fl_t34462 += 1;
+    bool fl_t34485 = false;
+    FL_TRY(fl_keep(ctx, fl_t34484, &fl_t34485, error));
+    if (fl_t34485) {
+      fl_t34479[fl_t34480] = fayl;
+      fl_t34480 += 1;
     }
   }
-  *result = fl_list(fl_t34461, fl_t34462);
+  *result = fl_list(fl_t34479, fl_t34480);
   return FL_OK;
 }
 
@@ -179867,39 +179963,39 @@ fl_status compiler_flang_nevzyatye_fayly(fl_ctx *ctx, fl_value fayly, fl_value *
  * @return значение: строка
  */
 fl_status compiler_flang_slova_otkaza_fayla(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error) {
-  fl_value *fl_t34468 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 4, &fl_t34468, error));
-  fl_value fl_t34469 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34469, error));
-  fl_t34468[0] = fl_t34469;
-  fl_t34468[1] = compiler_flang_text_3122;
-  fl_value fl_t34470 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34470, error));
-  fl_value fl_t34471 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t34470, &fl_t34471, error));
-  bool fl_t34472 = false;
-  FL_TRY(fl_cond(ctx, fl_t34471, &fl_t34472, error));
-  fl_value fl_t34473 = fl_nothing();
-  if (fl_t34472) {
-    fl_t34473 = compiler_flang_text_331;
+  fl_value *fl_t34486 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 4, &fl_t34486, error));
+  fl_value fl_t34487 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34487, error));
+  fl_t34486[0] = fl_t34487;
+  fl_t34486[1] = compiler_flang_text_3124;
+  fl_value fl_t34488 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34488, error));
+  fl_value fl_t34489 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t34488, &fl_t34489, error));
+  bool fl_t34490 = false;
+  FL_TRY(fl_cond(ctx, fl_t34489, &fl_t34490, error));
+  fl_value fl_t34491 = fl_nothing();
+  if (fl_t34490) {
+    fl_t34491 = compiler_flang_text_331;
   } else {
-    fl_value *fl_t34474 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34474, error));
-    fl_value fl_t34475 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34475, error));
-    fl_t34474[0] = fl_t34475;
-    fl_t34474[1] = compiler_flang_text_601;
-    fl_value fl_t34476 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34474, 2), compiler_flang_text_331, &fl_t34476, error));
-    fl_t34473 = fl_t34476;
+    fl_value *fl_t34492 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34492, error));
+    fl_value fl_t34493 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34493, error));
+    fl_t34492[0] = fl_t34493;
+    fl_t34492[1] = compiler_flang_text_601;
+    fl_value fl_t34494 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34492, 2), compiler_flang_text_331, &fl_t34494, error));
+    fl_t34491 = fl_t34494;
   }
-  fl_t34468[2] = fl_t34473;
-  fl_value fl_t34477 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "сообщение", &fl_t34477, error));
-  fl_t34468[3] = fl_t34477;
-  fl_value fl_t34478 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34468, 4), compiler_flang_text_331, &fl_t34478, error));
-  *result = fl_t34478;
+  fl_t34486[2] = fl_t34491;
+  fl_value fl_t34495 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "сообщение", &fl_t34495, error));
+  fl_t34486[3] = fl_t34495;
+  fl_value fl_t34496 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34486, 4), compiler_flang_text_331, &fl_t34496, error));
+  *result = fl_t34496;
   return FL_OK;
 }
 
@@ -179912,46 +180008,46 @@ fl_status compiler_flang_slova_otkaza_fayla(fl_ctx *ctx, fl_value fayl, fl_value
  * @return значение: строка
  */
 fl_status compiler_flang_slova_sorvannogo(fl_ctx *ctx, fl_value put, fl_value sorvannyy, fl_value *result, fl_error *error) {
-  fl_value *fl_t34479 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 9, &fl_t34479, error));
-  fl_t34479[0] = put;
-  fl_t34479[1] = compiler_flang_text_601;
-  fl_value fl_t34480 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34480, error));
-  fl_value fl_t34481 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t34480, &fl_t34481, error));
-  bool fl_t34482 = false;
-  FL_TRY(fl_cond(ctx, fl_t34481, &fl_t34482, error));
-  fl_value fl_t34483 = fl_nothing();
-  if (fl_t34482) {
-    fl_t34483 = compiler_flang_text_331;
+  fl_value *fl_t34497 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 9, &fl_t34497, error));
+  fl_t34497[0] = put;
+  fl_t34497[1] = compiler_flang_text_601;
+  fl_value fl_t34498 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34498, error));
+  fl_value fl_t34499 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t34498, &fl_t34499, error));
+  bool fl_t34500 = false;
+  FL_TRY(fl_cond(ctx, fl_t34499, &fl_t34500, error));
+  fl_value fl_t34501 = fl_nothing();
+  if (fl_t34500) {
+    fl_t34501 = compiler_flang_text_331;
   } else {
-    fl_value *fl_t34484 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34484, error));
-    fl_value fl_t34485 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34485, error));
-    fl_t34484[0] = fl_t34485;
-    fl_t34484[1] = compiler_flang_text_601;
-    fl_value fl_t34486 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34484, 2), compiler_flang_text_331, &fl_t34486, error));
-    fl_t34483 = fl_t34486;
+    fl_value *fl_t34502 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34502, error));
+    fl_value fl_t34503 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34503, error));
+    fl_t34502[0] = fl_t34503;
+    fl_t34502[1] = compiler_flang_text_601;
+    fl_value fl_t34504 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34502, 2), compiler_flang_text_331, &fl_t34504, error));
+    fl_t34501 = fl_t34504;
   }
-  fl_t34479[2] = fl_t34483;
-  fl_t34479[3] = compiler_flang_text_922;
-  fl_value fl_t34487 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "пример", &fl_t34487, error));
-  fl_t34479[4] = fl_t34487;
-  fl_t34479[5] = compiler_flang_text_908;
-  fl_value fl_t34488 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "функция", &fl_t34488, error));
-  fl_t34479[6] = fl_t34488;
-  fl_t34479[7] = compiler_flang_text_3123;
-  fl_value fl_t34489 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "сообщение", &fl_t34489, error));
-  fl_t34479[8] = fl_t34489;
-  fl_value fl_t34490 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34479, 9), compiler_flang_text_331, &fl_t34490, error));
-  *result = fl_t34490;
+  fl_t34497[2] = fl_t34501;
+  fl_t34497[3] = compiler_flang_text_922;
+  fl_value fl_t34505 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "пример", &fl_t34505, error));
+  fl_t34497[4] = fl_t34505;
+  fl_t34497[5] = compiler_flang_text_908;
+  fl_value fl_t34506 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "функция", &fl_t34506, error));
+  fl_t34497[6] = fl_t34506;
+  fl_t34497[7] = compiler_flang_text_3125;
+  fl_value fl_t34507 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "сообщение", &fl_t34507, error));
+  fl_t34497[8] = fl_t34507;
+  fl_value fl_t34508 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34497, 9), compiler_flang_text_331, &fl_t34508, error));
+  *result = fl_t34508;
   return FL_OK;
 }
 
@@ -179963,23 +180059,23 @@ fl_status compiler_flang_slova_sorvannogo(fl_ctx *ctx, fl_value put, fl_value so
  * @return значение: список: строка
  */
 fl_status compiler_flang_slova_sorvannyh_fayla(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error) {
-  fl_value fl_t34491 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "сорванные", &fl_t34491, error));
-  fl_value fl_t34492 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34491, "отобразить", &fl_t34492, error));
-  fl_value *fl_t34493 = NULL;
-  size_t fl_t34494 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34492.as.list.count, &fl_t34493, error));
-  for (size_t fl_t34495 = 0; fl_t34495 < fl_t34492.as.list.count; fl_t34495 += 1) {
-    const fl_value sorvannyy = fl_t34492.as.list.items[fl_t34495]; /* «сорванный» */
-    fl_value fl_t34496 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34496, error));
-    fl_value fl_t34497 = fl_nothing();
-    FL_TRY(compiler_flang_slova_sorvannogo(ctx, fl_t34496, sorvannyy, &fl_t34497, error));
-    fl_t34493[fl_t34494] = fl_t34497;
-    fl_t34494 += 1;
+  fl_value fl_t34509 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "сорванные", &fl_t34509, error));
+  fl_value fl_t34510 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34509, "отобразить", &fl_t34510, error));
+  fl_value *fl_t34511 = NULL;
+  size_t fl_t34512 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34510.as.list.count, &fl_t34511, error));
+  for (size_t fl_t34513 = 0; fl_t34513 < fl_t34510.as.list.count; fl_t34513 += 1) {
+    const fl_value sorvannyy = fl_t34510.as.list.items[fl_t34513]; /* «сорванный» */
+    fl_value fl_t34514 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34514, error));
+    fl_value fl_t34515 = fl_nothing();
+    FL_TRY(compiler_flang_slova_sorvannogo(ctx, fl_t34514, sorvannyy, &fl_t34515, error));
+    fl_t34511[fl_t34512] = fl_t34515;
+    fl_t34512 += 1;
   }
-  *result = fl_list(fl_t34493, fl_t34494);
+  *result = fl_list(fl_t34511, fl_t34512);
   return FL_OK;
 }
 
@@ -179991,18 +180087,18 @@ fl_status compiler_flang_slova_sorvannyh_fayla(fl_ctx *ctx, fl_value fayl, fl_va
  * @return значение: список: строка
  */
 fl_status compiler_flang_stroki_otchyota_korpusa(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34498 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fayly, "свёртка", &fl_t34498, error));
+  fl_value fl_t34516 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "свёртка", &fl_t34516, error));
   fl_value nakoplennoe = fl_list(NULL, 0); /* «накопленное» */
-  const fl_mark fl_t34500 = fl_region_open(ctx);
-  for (size_t fl_t34499 = 0; fl_t34499 < fl_t34498.as.list.count; fl_t34499 += 1) {
-    const fl_value fayl = fl_t34498.as.list.items[fl_t34499]; /* «файл» */
-    fl_value fl_t34501 = fl_nothing();
-    FL_TRY(compiler_flang_dopisat_stroki_fayla(ctx, nakoplennoe, fayl, &fl_t34501, error));
-    nakoplennoe = fl_t34501;
-    FL_TRY(fl_region_recycle(ctx, fl_t34500, &nakoplennoe, error));
+  const fl_mark fl_t34518 = fl_region_open(ctx);
+  for (size_t fl_t34517 = 0; fl_t34517 < fl_t34516.as.list.count; fl_t34517 += 1) {
+    const fl_value fayl = fl_t34516.as.list.items[fl_t34517]; /* «файл» */
+    fl_value fl_t34519 = fl_nothing();
+    FL_TRY(compiler_flang_dopisat_stroki_fayla(ctx, nakoplennoe, fayl, &fl_t34519, error));
+    nakoplennoe = fl_t34519;
+    FL_TRY(fl_region_recycle(ctx, fl_t34518, &nakoplennoe, error));
   }
-  FL_TRY(fl_region_close(ctx, fl_t34500, FL_OK, &nakoplennoe, error));
+  FL_TRY(fl_region_close(ctx, fl_t34518, FL_OK, &nakoplennoe, error));
   *result = nakoplennoe;
   return FL_OK;
 }
@@ -180016,41 +180112,78 @@ fl_status compiler_flang_stroki_otchyota_korpusa(fl_ctx *ctx, fl_value fayly, fl
  * @return значение: список: строка
  */
 fl_status compiler_flang_dopisat_stroki_fayla(fl_ctx *ctx, fl_value nakoplennoe, fl_value fayl, fl_value *result, fl_error *error) {
-  fl_value fl_t34502 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34502, error));
-  bool fl_t34503 = false;
-  FL_TRY(fl_cond(ctx, fl_t34502, &fl_t34503, error));
-  fl_value fl_t34504 = fl_nothing();
-  if (fl_t34503) {
-    fl_t34504 = fl_flag(false);
+  fl_value fl_t34520 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34520, error));
+  bool fl_t34521 = false;
+  FL_TRY(fl_cond(ctx, fl_t34520, &fl_t34521, error));
+  fl_value fl_t34522 = fl_nothing();
+  if (fl_t34521) {
+    fl_t34522 = fl_flag(false);
   } else {
-    fl_t34504 = fl_flag(true);
+    fl_t34522 = fl_flag(true);
   }
-  bool fl_t34505 = false;
-  FL_TRY(fl_cond(ctx, fl_t34504, &fl_t34505, error));
-  if (fl_t34505) {
-    fl_value fl_t34506 = fl_nothing();
-    FL_TRY(compiler_flang_slova_otkaza_fayla(ctx, fayl, &fl_t34506, error));
-    fl_value fl_t34507 = fl_nothing(); /* «добавить» */
-    FL_TRY(fl_b_dobavit(ctx, fl_t34506, nakoplennoe, &fl_t34507, error));
-    *result = fl_t34507;
+  bool fl_t34523 = false;
+  FL_TRY(fl_cond(ctx, fl_t34522, &fl_t34523, error));
+  if (fl_t34523) {
+    fl_value fl_t34524 = fl_nothing();
+    FL_TRY(compiler_flang_slova_otkaza_fayla(ctx, fayl, &fl_t34524, error));
+    fl_value fl_t34525 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, fl_t34524, nakoplennoe, &fl_t34525, error));
+    *result = fl_t34525;
     return FL_OK;
   } else {
-    fl_value fl_t34508 = fl_nothing();
-    FL_TRY(compiler_flang_slova_sorvannyh_fayla(ctx, fayl, &fl_t34508, error));
-    fl_value fl_t34509 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, fl_t34508, "свёртка", &fl_t34509, error));
-    fl_value summa = nakoplennoe; /* «сумма» */
-    const fl_mark fl_t34511 = fl_region_open(ctx);
-    for (size_t fl_t34510 = 0; fl_t34510 < fl_t34509.as.list.count; fl_t34510 += 1) {
-      const fl_value stroka = fl_t34509.as.list.items[fl_t34510]; /* «строка» */
-      fl_value fl_t34512 = fl_nothing(); /* «добавить» */
-      FL_TRY(fl_b_dobavit(ctx, stroka, summa, &fl_t34512, error));
-      summa = fl_t34512;
-      FL_TRY(fl_region_recycle(ctx, fl_t34511, &summa, error));
-    }
-    FL_TRY(fl_region_close(ctx, fl_t34511, FL_OK, &summa, error));
-    *result = summa;
+    return compiler_flang_dopisat_stroki_vzyatogo(ctx, nakoplennoe, fayl, result, error);
+  }
+}
+
+/*
+ * Функция flang «Дописать строки взятого».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nakoplennoe — «накопленное»: список: строка
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_stroki_vzyatogo(fl_ctx *ctx, fl_value nakoplennoe, fl_value fayl, fl_value *result, fl_error *error) {
+  fl_value fl_t34526 = fl_nothing();
+  FL_TRY(compiler_flang_slova_sorvannyh_fayla(ctx, fayl, &fl_t34526, error));
+  fl_value fl_t34527 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34526, "свёртка", &fl_t34527, error));
+  fl_value summa = nakoplennoe; /* «сумма» */
+  const fl_mark fl_t34529 = fl_region_open(ctx);
+  for (size_t fl_t34528 = 0; fl_t34528 < fl_t34527.as.list.count; fl_t34528 += 1) {
+    const fl_value stroka = fl_t34527.as.list.items[fl_t34528]; /* «строка» */
+    fl_value fl_t34530 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, stroka, summa, &fl_t34530, error));
+    summa = fl_t34530;
+    FL_TRY(fl_region_recycle(ctx, fl_t34529, &summa, error));
+  }
+  FL_TRY(fl_region_close(ctx, fl_t34529, FL_OK, &summa, error));
+  const fl_value s_provalami = summa; /* пусть «с провалами» */
+  fl_value fl_t34531 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "своих", &fl_t34531, error));
+  bool fl_t34532 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t34531, fl_number(0.0))), &fl_t34532, error));
+  fl_value fl_t34533 = fl_nothing();
+  if (fl_t34532) {
+    fl_value fl_t34534 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fayl, "всего", &fl_t34534, error));
+    if (fl_t34534.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34534, fl_number(0.0), error));
+    fl_t34533 = fl_flag(fl_t34534.as.number > 0.0);
+  } else {
+    fl_t34533 = fl_flag(false);
+  }
+  bool fl_t34535 = false;
+  FL_TRY(fl_cond(ctx, fl_t34533, &fl_t34535, error));
+  if (fl_t34535) {
+    fl_value fl_t34536 = fl_nothing();
+    FL_TRY(compiler_flang_slova_o_chuzhih_primerah(ctx, fayl, &fl_t34536, error));
+    fl_value fl_t34537 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, fl_t34536, s_provalami, &fl_t34537, error));
+    *result = fl_t34537;
+    return FL_OK;
+  } else {
+    *result = s_provalami;
     return FL_OK;
   }
 }
@@ -180065,58 +180198,72 @@ fl_status compiler_flang_dopisat_stroki_fayla(fl_ctx *ctx, fl_value nakoplennoe,
  * @return значение: строка
  */
 fl_status compiler_flang_itogovaya_stroka_korpusa(fl_ctx *ctx, fl_value dovod, fl_value fayly, fl_value millisekund, fl_value *result, fl_error *error) {
-  fl_value *fl_t34513 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 17, &fl_t34513, error));
-  fl_t34513[0] = compiler_flang_text_3124;
-  fl_t34513[1] = dovod;
-  fl_t34513[2] = compiler_flang_text_3125;
-  fl_value fl_t34514 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34514, error));
-  fl_value fl_t34515 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34514, &fl_t34515, error));
-  fl_t34513[3] = fl_t34515;
-  fl_t34513[4] = compiler_flang_text_3126;
-  fl_value fl_t34516 = fl_nothing();
-  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34516, error));
-  fl_value fl_t34517 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34516, &fl_t34517, error));
-  fl_value fl_t34518 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34517, &fl_t34518, error));
-  fl_t34513[5] = fl_t34518;
-  fl_t34513[6] = compiler_flang_text_3127;
-  fl_value fl_t34519 = fl_nothing();
-  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34519, error));
-  fl_value fl_t34520 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34519, &fl_t34520, error));
-  fl_value fl_t34521 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34520, &fl_t34521, error));
-  fl_t34513[7] = fl_t34521;
-  fl_t34513[8] = compiler_flang_text_3128;
-  fl_value fl_t34522 = fl_nothing();
-  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34522, error));
-  fl_value fl_t34523 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34522, &fl_t34523, error));
-  fl_t34513[9] = fl_t34523;
-  fl_t34513[10] = compiler_flang_text_3129;
-  fl_value fl_t34524 = fl_nothing();
-  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34524, error));
-  fl_value fl_t34525 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34524, &fl_t34525, error));
-  fl_t34513[11] = fl_t34525;
-  fl_t34513[12] = compiler_flang_text_3130;
-  fl_value fl_t34526 = fl_nothing();
-  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34526, error));
-  fl_value fl_t34527 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, fl_t34526, &fl_t34527, error));
-  fl_t34513[13] = fl_t34527;
-  fl_t34513[14] = compiler_flang_text_3131;
-  fl_value fl_t34528 = fl_nothing(); /* «к строке» */
-  FL_TRY(fl_b_k_stroke(ctx, millisekund, &fl_t34528, error));
-  fl_t34513[15] = fl_t34528;
-  fl_t34513[16] = compiler_flang_text_3132;
-  fl_value fl_t34529 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34513, 17), compiler_flang_text_331, &fl_t34529, error));
-  *result = fl_t34529;
+  fl_value *fl_t34538 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 21, &fl_t34538, error));
+  fl_t34538[0] = compiler_flang_text_3126;
+  fl_t34538[1] = dovod;
+  fl_t34538[2] = compiler_flang_text_3127;
+  fl_value fl_t34539 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34539, error));
+  fl_value fl_t34540 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34539, &fl_t34540, error));
+  fl_t34538[3] = fl_t34540;
+  fl_t34538[4] = compiler_flang_text_3128;
+  fl_value fl_t34541 = fl_nothing();
+  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34541, error));
+  fl_value fl_t34542 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34541, &fl_t34542, error));
+  fl_value fl_t34543 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34542, &fl_t34543, error));
+  fl_t34538[5] = fl_t34543;
+  fl_t34538[6] = compiler_flang_text_3129;
+  fl_value fl_t34544 = fl_nothing();
+  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34544, error));
+  fl_value fl_t34545 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34544, &fl_t34545, error));
+  fl_value fl_t34546 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34545, &fl_t34546, error));
+  fl_t34538[7] = fl_t34546;
+  fl_t34538[8] = compiler_flang_text_3130;
+  fl_value fl_t34547 = fl_nothing();
+  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34547, error));
+  fl_value fl_t34548 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34547, &fl_t34548, error));
+  fl_t34538[9] = fl_t34548;
+  fl_t34538[10] = compiler_flang_text_3131;
+  fl_value fl_t34549 = fl_nothing();
+  FL_TRY(compiler_flang_summa_svoih(ctx, fayly, &fl_t34549, error));
+  fl_value fl_t34550 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34549, &fl_t34550, error));
+  fl_t34538[11] = fl_t34550;
+  fl_t34538[12] = compiler_flang_text_3132;
+  fl_value fl_t34551 = fl_nothing();
+  FL_TRY(compiler_flang_fayly_bez_svoih_primerov(ctx, fayly, &fl_t34551, error));
+  fl_value fl_t34552 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34551, &fl_t34552, error));
+  fl_value fl_t34553 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34552, &fl_t34553, error));
+  fl_t34538[13] = fl_t34553;
+  fl_t34538[14] = compiler_flang_text_3133;
+  fl_value fl_t34554 = fl_nothing();
+  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34554, error));
+  fl_value fl_t34555 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34554, &fl_t34555, error));
+  fl_t34538[15] = fl_t34555;
+  fl_t34538[16] = compiler_flang_text_3134;
+  fl_value fl_t34556 = fl_nothing();
+  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34556, error));
+  fl_value fl_t34557 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, fl_t34556, &fl_t34557, error));
+  fl_t34538[17] = fl_t34557;
+  fl_t34538[18] = compiler_flang_text_3135;
+  fl_value fl_t34558 = fl_nothing(); /* «к строке» */
+  FL_TRY(fl_b_k_stroke(ctx, millisekund, &fl_t34558, error));
+  fl_t34538[19] = fl_t34558;
+  fl_t34538[20] = compiler_flang_text_3136;
+  fl_value fl_t34559 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34538, 21), compiler_flang_text_331, &fl_t34559, error));
+  *result = fl_t34559;
   return FL_OK;
 }
 
@@ -180128,11 +180275,11 @@ fl_status compiler_flang_itogovaya_stroka_korpusa(fl_ctx *ctx, fl_value dovod, f
  * @return значение: строка
  */
 fl_status compiler_flang_zamechaniya_o_korpuse(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34530 = fl_nothing();
-  FL_TRY(compiler_flang_stroki_otchyota_korpusa(ctx, fayly, &fl_t34530, error));
-  fl_value fl_t34531 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_t34530, compiler_flang_text_373, &fl_t34531, error));
-  *result = fl_t34531;
+  fl_value fl_t34560 = fl_nothing();
+  FL_TRY(compiler_flang_stroki_otchyota_korpusa(ctx, fayly, &fl_t34560, error));
+  fl_value fl_t34561 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_t34560, compiler_flang_text_373, &fl_t34561, error));
+  *result = fl_t34561;
   return FL_OK;
 }
 
@@ -180144,40 +180291,40 @@ fl_status compiler_flang_zamechaniya_o_korpuse(fl_ctx *ctx, fl_value fayly, fl_v
  * @return значение: строка
  */
 fl_status compiler_flang_sorvannyy_v_json(fl_ctx *ctx, fl_value sorvannyy, fl_value *result, fl_error *error) {
-  fl_value *fl_t34532 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 5, &fl_t34532, error));
-  fl_value fl_t34533 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "функция", &fl_t34533, error));
-  fl_value fl_t34534 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34533, &fl_t34534, error));
-  fl_value fl_t34535 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_762, fl_t34534, &fl_t34535, error));
-  fl_t34532[0] = fl_t34535;
-  fl_value fl_t34536 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "пример", &fl_t34536, error));
-  fl_value fl_t34537 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34536, &fl_t34537, error));
-  fl_value fl_t34538 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_676, fl_t34537, &fl_t34538, error));
-  fl_t34532[1] = fl_t34538;
-  fl_value fl_t34539 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3133, compiler_flang_text_529, &fl_t34539, error));
-  fl_t34532[2] = fl_t34539;
-  fl_value fl_t34540 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34540, error));
-  fl_value fl_t34541 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34540, &fl_t34541, error));
-  fl_value fl_t34542 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_904, fl_t34541, &fl_t34542, error));
-  fl_t34532[3] = fl_t34542;
-  fl_value fl_t34543 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sorvannyy, "сообщение", &fl_t34543, error));
-  fl_value fl_t34544 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34543, &fl_t34544, error));
-  fl_value fl_t34545 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_906, fl_t34544, &fl_t34545, error));
-  fl_t34532[4] = fl_t34545;
-  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34532, 5), result, error);
+  fl_value *fl_t34562 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 5, &fl_t34562, error));
+  fl_value fl_t34563 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "функция", &fl_t34563, error));
+  fl_value fl_t34564 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34563, &fl_t34564, error));
+  fl_value fl_t34565 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_762, fl_t34564, &fl_t34565, error));
+  fl_t34562[0] = fl_t34565;
+  fl_value fl_t34566 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "пример", &fl_t34566, error));
+  fl_value fl_t34567 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34566, &fl_t34567, error));
+  fl_value fl_t34568 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_676, fl_t34567, &fl_t34568, error));
+  fl_t34562[1] = fl_t34568;
+  fl_value fl_t34569 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3137, compiler_flang_text_529, &fl_t34569, error));
+  fl_t34562[2] = fl_t34569;
+  fl_value fl_t34570 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "код", &fl_t34570, error));
+  fl_value fl_t34571 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34570, &fl_t34571, error));
+  fl_value fl_t34572 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_904, fl_t34571, &fl_t34572, error));
+  fl_t34562[3] = fl_t34572;
+  fl_value fl_t34573 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sorvannyy, "сообщение", &fl_t34573, error));
+  fl_value fl_t34574 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34573, &fl_t34574, error));
+  fl_value fl_t34575 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_906, fl_t34574, &fl_t34575, error));
+  fl_t34562[4] = fl_t34575;
+  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34562, 5), result, error);
 }
 
 /*
@@ -180188,83 +180335,90 @@ fl_status compiler_flang_sorvannyy_v_json(fl_ctx *ctx, fl_value sorvannyy, fl_va
  * @return значение: строка
  */
 fl_status compiler_flang_fayl_v_json(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error) {
-  fl_value *fl_t34546 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 8, &fl_t34546, error));
-  fl_value fl_t34547 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34547, error));
-  fl_value fl_t34548 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34547, &fl_t34548, error));
-  fl_value fl_t34549 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3134, fl_t34548, &fl_t34549, error));
-  fl_t34546[0] = fl_t34549;
-  fl_value fl_t34550 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34550, error));
-  bool fl_t34551 = false;
-  FL_TRY(fl_cond(ctx, fl_t34550, &fl_t34551, error));
-  fl_value fl_t34552 = fl_nothing();
-  if (fl_t34551) {
-    fl_t34552 = compiler_flang_text_528;
+  fl_value *fl_t34576 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 9, &fl_t34576, error));
+  fl_value fl_t34577 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t34577, error));
+  fl_value fl_t34578 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34577, &fl_t34578, error));
+  fl_value fl_t34579 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3138, fl_t34578, &fl_t34579, error));
+  fl_t34576[0] = fl_t34579;
+  fl_value fl_t34580 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "взят", &fl_t34580, error));
+  bool fl_t34581 = false;
+  FL_TRY(fl_cond(ctx, fl_t34580, &fl_t34581, error));
+  fl_value fl_t34582 = fl_nothing();
+  if (fl_t34581) {
+    fl_t34582 = compiler_flang_text_528;
   } else {
-    fl_t34552 = compiler_flang_text_529;
+    fl_t34582 = compiler_flang_text_529;
   }
-  fl_value fl_t34553 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3135, fl_t34552, &fl_t34553, error));
-  fl_t34546[1] = fl_t34553;
-  fl_value fl_t34554 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "всего", &fl_t34554, error));
-  fl_value fl_t34555 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34554, &fl_t34555, error));
-  fl_value fl_t34556 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_698, fl_t34555, &fl_t34556, error));
-  fl_t34546[2] = fl_t34556;
-  fl_value fl_t34557 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "прошло", &fl_t34557, error));
-  fl_value fl_t34558 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34557, &fl_t34558, error));
-  fl_value fl_t34559 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3133, fl_t34558, &fl_t34559, error));
-  fl_t34546[3] = fl_t34559;
-  fl_value fl_t34560 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "сорвалось", &fl_t34560, error));
-  fl_value fl_t34561 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34560, &fl_t34561, error));
-  fl_value fl_t34562 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3136, fl_t34561, &fl_t34562, error));
-  fl_t34546[4] = fl_t34562;
-  fl_value fl_t34563 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34563, error));
-  fl_value fl_t34564 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34563, &fl_t34564, error));
-  fl_value fl_t34565 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_904, fl_t34564, &fl_t34565, error));
-  fl_t34546[5] = fl_t34565;
-  fl_value fl_t34566 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "сообщение", &fl_t34566, error));
-  fl_value fl_t34567 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34566, &fl_t34567, error));
-  fl_value fl_t34568 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_906, fl_t34567, &fl_t34568, error));
-  fl_t34546[6] = fl_t34568;
-  fl_value fl_t34569 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fayl, "сорванные", &fl_t34569, error));
-  fl_value fl_t34570 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34569, "отобразить", &fl_t34570, error));
-  fl_value *fl_t34571 = NULL;
-  size_t fl_t34572 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34570.as.list.count, &fl_t34571, error));
-  for (size_t fl_t34573 = 0; fl_t34573 < fl_t34570.as.list.count; fl_t34573 += 1) {
-    const fl_value sorvannyy = fl_t34570.as.list.items[fl_t34573]; /* «сорванный» */
-    fl_value fl_t34574 = fl_nothing();
-    FL_TRY(compiler_flang_sorvannyy_v_json(ctx, sorvannyy, &fl_t34574, error));
-    fl_t34571[fl_t34572] = fl_t34574;
-    fl_t34572 += 1;
+  fl_value fl_t34583 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3139, fl_t34582, &fl_t34583, error));
+  fl_t34576[1] = fl_t34583;
+  fl_value fl_t34584 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "всего", &fl_t34584, error));
+  fl_value fl_t34585 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34584, &fl_t34585, error));
+  fl_value fl_t34586 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_698, fl_t34585, &fl_t34586, error));
+  fl_t34576[2] = fl_t34586;
+  fl_value fl_t34587 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "своих", &fl_t34587, error));
+  fl_value fl_t34588 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34587, &fl_t34588, error));
+  fl_value fl_t34589 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3140, fl_t34588, &fl_t34589, error));
+  fl_t34576[3] = fl_t34589;
+  fl_value fl_t34590 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "прошло", &fl_t34590, error));
+  fl_value fl_t34591 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34590, &fl_t34591, error));
+  fl_value fl_t34592 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3137, fl_t34591, &fl_t34592, error));
+  fl_t34576[4] = fl_t34592;
+  fl_value fl_t34593 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "сорвалось", &fl_t34593, error));
+  fl_value fl_t34594 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34593, &fl_t34594, error));
+  fl_value fl_t34595 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3141, fl_t34594, &fl_t34595, error));
+  fl_t34576[5] = fl_t34595;
+  fl_value fl_t34596 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "код", &fl_t34596, error));
+  fl_value fl_t34597 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34596, &fl_t34597, error));
+  fl_value fl_t34598 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_904, fl_t34597, &fl_t34598, error));
+  fl_t34576[6] = fl_t34598;
+  fl_value fl_t34599 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "сообщение", &fl_t34599, error));
+  fl_value fl_t34600 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, fl_t34599, &fl_t34600, error));
+  fl_value fl_t34601 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_906, fl_t34600, &fl_t34601, error));
+  fl_t34576[7] = fl_t34601;
+  fl_value fl_t34602 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fayl, "сорванные", &fl_t34602, error));
+  fl_value fl_t34603 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34602, "отобразить", &fl_t34603, error));
+  fl_value *fl_t34604 = NULL;
+  size_t fl_t34605 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34603.as.list.count, &fl_t34604, error));
+  for (size_t fl_t34606 = 0; fl_t34606 < fl_t34603.as.list.count; fl_t34606 += 1) {
+    const fl_value sorvannyy = fl_t34603.as.list.items[fl_t34606]; /* «сорванный» */
+    fl_value fl_t34607 = fl_nothing();
+    FL_TRY(compiler_flang_sorvannyy_v_json(ctx, sorvannyy, &fl_t34607, error));
+    fl_t34604[fl_t34605] = fl_t34607;
+    fl_t34605 += 1;
   }
-  fl_value fl_t34575 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_massiva(ctx, fl_list(fl_t34571, fl_t34572), &fl_t34575, error));
-  fl_value fl_t34576 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_1107, fl_t34575, &fl_t34576, error));
-  fl_t34546[7] = fl_t34576;
-  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34546, 8), result, error);
+  fl_value fl_t34608 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_massiva(ctx, fl_list(fl_t34604, fl_t34605), &fl_t34608, error));
+  fl_value fl_t34609 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_1107, fl_t34608, &fl_t34609, error));
+  fl_t34576[8] = fl_t34609;
+  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34576, 9), result, error);
 }
 
 /*
@@ -180277,95 +180431,111 @@ fl_status compiler_flang_fayl_v_json(fl_ctx *ctx, fl_value fayl, fl_value *resul
  * @return значение: строка
  */
 fl_status compiler_flang_korpus_v_json(fl_ctx *ctx, fl_value dovod, fl_value fayly, fl_value millisekund, fl_value *result, fl_error *error) {
-  fl_value *fl_t34577 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 10, &fl_t34577, error));
-  fl_value fl_t34578 = fl_nothing();
-  FL_TRY(compiler_flang_korpus_chist(ctx, fayly, &fl_t34578, error));
-  bool fl_t34579 = false;
-  FL_TRY(fl_cond(ctx, fl_t34578, &fl_t34579, error));
-  fl_value fl_t34580 = fl_nothing();
-  if (fl_t34579) {
-    fl_t34580 = compiler_flang_text_528;
-  } else {
-    fl_t34580 = compiler_flang_text_529;
-  }
-  fl_value fl_t34581 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3137, fl_t34580, &fl_t34581, error));
-  fl_t34577[0] = fl_t34581;
-  fl_value fl_t34582 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_stroki(ctx, dovod, &fl_t34582, error));
-  fl_value fl_t34583 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3138, fl_t34582, &fl_t34583, error));
-  fl_t34577[1] = fl_t34583;
-  fl_value fl_t34584 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34584, error));
-  fl_value fl_t34585 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34584, &fl_t34585, error));
-  fl_value fl_t34586 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3139, fl_t34585, &fl_t34586, error));
-  fl_t34577[2] = fl_t34586;
-  fl_value fl_t34587 = fl_nothing();
-  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34587, error));
-  fl_value fl_t34588 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34587, &fl_t34588, error));
-  fl_value fl_t34589 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34588, &fl_t34589, error));
-  fl_value fl_t34590 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3135, fl_t34589, &fl_t34590, error));
-  fl_t34577[3] = fl_t34590;
-  fl_value fl_t34591 = fl_nothing();
-  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34591, error));
-  fl_value fl_t34592 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34591, &fl_t34592, error));
-  fl_value fl_t34593 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34592, &fl_t34593, error));
-  fl_value fl_t34594 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_2938, fl_t34593, &fl_t34594, error));
-  fl_t34577[4] = fl_t34594;
-  fl_value fl_t34595 = fl_nothing();
-  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34595, error));
-  fl_value fl_t34596 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34595, &fl_t34596, error));
-  fl_value fl_t34597 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_698, fl_t34596, &fl_t34597, error));
-  fl_t34577[5] = fl_t34597;
-  fl_value fl_t34598 = fl_nothing();
-  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34598, error));
-  fl_value fl_t34599 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34598, &fl_t34599, error));
-  fl_value fl_t34600 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3133, fl_t34599, &fl_t34600, error));
-  fl_t34577[6] = fl_t34600;
-  fl_value fl_t34601 = fl_nothing();
-  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34601, error));
-  fl_value fl_t34602 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34601, &fl_t34602, error));
-  fl_value fl_t34603 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3136, fl_t34602, &fl_t34603, error));
-  fl_t34577[7] = fl_t34603;
-  fl_value fl_t34604 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_chisla(ctx, millisekund, &fl_t34604, error));
-  fl_value fl_t34605 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3140, fl_t34604, &fl_t34605, error));
-  fl_t34577[8] = fl_t34605;
-  fl_value fl_t34606 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fayly, "отобразить", &fl_t34606, error));
-  fl_value *fl_t34607 = NULL;
-  size_t fl_t34608 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34606.as.list.count, &fl_t34607, error));
-  for (size_t fl_t34609 = 0; fl_t34609 < fl_t34606.as.list.count; fl_t34609 += 1) {
-    const fl_value fayl = fl_t34606.as.list.items[fl_t34609]; /* «файл» */
-    fl_value fl_t34610 = fl_nothing();
-    FL_TRY(compiler_flang_fayl_v_json(ctx, fayl, &fl_t34610, error));
-    fl_t34607[fl_t34608] = fl_t34610;
-    fl_t34608 += 1;
-  }
+  fl_value *fl_t34610 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 12, &fl_t34610, error));
   fl_value fl_t34611 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_massiva(ctx, fl_list(fl_t34607, fl_t34608), &fl_t34611, error));
-  fl_value fl_t34612 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3117, fl_t34611, &fl_t34612, error));
-  fl_t34577[9] = fl_t34612;
-  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34577, 10), result, error);
+  FL_TRY(compiler_flang_korpus_chist(ctx, fayly, &fl_t34611, error));
+  bool fl_t34612 = false;
+  FL_TRY(fl_cond(ctx, fl_t34611, &fl_t34612, error));
+  fl_value fl_t34613 = fl_nothing();
+  if (fl_t34612) {
+    fl_t34613 = compiler_flang_text_528;
+  } else {
+    fl_t34613 = compiler_flang_text_529;
+  }
+  fl_value fl_t34614 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3142, fl_t34613, &fl_t34614, error));
+  fl_t34610[0] = fl_t34614;
+  fl_value fl_t34615 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_stroki(ctx, dovod, &fl_t34615, error));
+  fl_value fl_t34616 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3143, fl_t34615, &fl_t34616, error));
+  fl_t34610[1] = fl_t34616;
+  fl_value fl_t34617 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34617, error));
+  fl_value fl_t34618 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34617, &fl_t34618, error));
+  fl_value fl_t34619 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3144, fl_t34618, &fl_t34619, error));
+  fl_t34610[2] = fl_t34619;
+  fl_value fl_t34620 = fl_nothing();
+  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34620, error));
+  fl_value fl_t34621 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34620, &fl_t34621, error));
+  fl_value fl_t34622 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34621, &fl_t34622, error));
+  fl_value fl_t34623 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3139, fl_t34622, &fl_t34623, error));
+  fl_t34610[3] = fl_t34623;
+  fl_value fl_t34624 = fl_nothing();
+  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34624, error));
+  fl_value fl_t34625 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34624, &fl_t34625, error));
+  fl_value fl_t34626 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34625, &fl_t34626, error));
+  fl_value fl_t34627 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_2938, fl_t34626, &fl_t34627, error));
+  fl_t34610[4] = fl_t34627;
+  fl_value fl_t34628 = fl_nothing();
+  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34628, error));
+  fl_value fl_t34629 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34628, &fl_t34629, error));
+  fl_value fl_t34630 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_698, fl_t34629, &fl_t34630, error));
+  fl_t34610[5] = fl_t34630;
+  fl_value fl_t34631 = fl_nothing();
+  FL_TRY(compiler_flang_summa_svoih(ctx, fayly, &fl_t34631, error));
+  fl_value fl_t34632 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34631, &fl_t34632, error));
+  fl_value fl_t34633 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3140, fl_t34632, &fl_t34633, error));
+  fl_t34610[6] = fl_t34633;
+  fl_value fl_t34634 = fl_nothing();
+  FL_TRY(compiler_flang_fayly_bez_svoih_primerov(ctx, fayly, &fl_t34634, error));
+  fl_value fl_t34635 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34634, &fl_t34635, error));
+  fl_value fl_t34636 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34635, &fl_t34636, error));
+  fl_value fl_t34637 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3145, fl_t34636, &fl_t34637, error));
+  fl_t34610[7] = fl_t34637;
+  fl_value fl_t34638 = fl_nothing();
+  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34638, error));
+  fl_value fl_t34639 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34638, &fl_t34639, error));
+  fl_value fl_t34640 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3137, fl_t34639, &fl_t34640, error));
+  fl_t34610[8] = fl_t34640;
+  fl_value fl_t34641 = fl_nothing();
+  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34641, error));
+  fl_value fl_t34642 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, fl_t34641, &fl_t34642, error));
+  fl_value fl_t34643 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3141, fl_t34642, &fl_t34643, error));
+  fl_t34610[9] = fl_t34643;
+  fl_value fl_t34644 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_chisla(ctx, millisekund, &fl_t34644, error));
+  fl_value fl_t34645 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3146, fl_t34644, &fl_t34645, error));
+  fl_t34610[10] = fl_t34645;
+  fl_value fl_t34646 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fayly, "отобразить", &fl_t34646, error));
+  fl_value *fl_t34647 = NULL;
+  size_t fl_t34648 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34646.as.list.count, &fl_t34647, error));
+  for (size_t fl_t34649 = 0; fl_t34649 < fl_t34646.as.list.count; fl_t34649 += 1) {
+    const fl_value fayl = fl_t34646.as.list.items[fl_t34649]; /* «файл» */
+    fl_value fl_t34650 = fl_nothing();
+    FL_TRY(compiler_flang_fayl_v_json(ctx, fayl, &fl_t34650, error));
+    fl_t34647[fl_t34648] = fl_t34650;
+    fl_t34648 += 1;
+  }
+  fl_value fl_t34651 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_massiva(ctx, fl_list(fl_t34647, fl_t34648), &fl_t34651, error));
+  fl_value fl_t34652 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_polya(ctx, compiler_flang_text_3117, fl_t34651, &fl_t34652, error));
+  fl_t34610[11] = fl_t34652;
+  return compiler_flang_pechat_obekta(ctx, fl_list(fl_t34610, 12), result, error);
 }
 
 /*
@@ -180376,16 +180546,16 @@ fl_status compiler_flang_korpus_v_json(fl_ctx *ctx, fl_value dovod, fl_value fay
  * @return значение
  */
 fl_status compiler_flang_korpus_chist(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34613 = fl_nothing();
-  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34613, error));
-  fl_value fl_t34614 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34613, &fl_t34614, error));
-  bool fl_t34615 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t34614, fl_number(0.0))), &fl_t34615, error));
-  if (fl_t34615) {
-    fl_value fl_t34616 = fl_nothing();
-    FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34616, error));
-    *result = fl_flag(fl_equal(fl_t34616, fl_number(0.0)));
+  fl_value fl_t34653 = fl_nothing();
+  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34653, error));
+  fl_value fl_t34654 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34653, &fl_t34654, error));
+  bool fl_t34655 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t34654, fl_number(0.0))), &fl_t34655, error));
+  if (fl_t34655) {
+    fl_value fl_t34656 = fl_nothing();
+    FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34656, error));
+    *result = fl_flag(fl_equal(fl_t34656, fl_number(0.0)));
     return FL_OK;
   } else {
     *result = fl_flag(false);
@@ -180401,11 +180571,11 @@ fl_status compiler_flang_korpus_chist(fl_ctx *ctx, fl_value fayly, fl_value *res
  * @return значение: число
  */
 fl_status compiler_flang_kod_korpusa(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error) {
-  fl_value fl_t34617 = fl_nothing();
-  FL_TRY(compiler_flang_korpus_chist(ctx, fayly, &fl_t34617, error));
-  bool fl_t34618 = false;
-  FL_TRY(fl_cond(ctx, fl_t34617, &fl_t34618, error));
-  if (fl_t34618) {
+  fl_value fl_t34657 = fl_nothing();
+  FL_TRY(compiler_flang_korpus_chist(ctx, fayly, &fl_t34657, error));
+  bool fl_t34658 = false;
+  FL_TRY(fl_cond(ctx, fl_t34657, &fl_t34658, error));
+  if (fl_t34658) {
     *result = fl_number(0.0);
     return FL_OK;
   } else {
@@ -180424,44 +180594,44 @@ fl_status compiler_flang_kod_korpusa(fl_ctx *ctx, fl_value fayly, fl_value *resu
  * @return значение: «Свод корпуса»
  */
 fl_status compiler_flang_svesti_korpus(fl_ctx *ctx, fl_value dovod, fl_value fayly, fl_value millisekund, fl_value *result, fl_error *error) {
-  fl_value fl_t34619 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34619, error));
-  fl_value fl_t34620 = fl_nothing();
-  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34620, error));
-  fl_value fl_t34621 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34620, &fl_t34621, error));
-  fl_value fl_t34622 = fl_nothing();
-  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34622, error));
-  fl_value fl_t34623 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34622, &fl_t34623, error));
-  fl_value fl_t34624 = fl_nothing();
-  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34624, error));
-  fl_value fl_t34625 = fl_nothing();
-  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34625, error));
-  fl_value fl_t34626 = fl_nothing();
-  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34626, error));
-  fl_value fl_t34627 = fl_nothing();
-  FL_TRY(compiler_flang_zamechaniya_o_korpuse(ctx, fayly, &fl_t34627, error));
-  fl_value fl_t34628 = fl_nothing();
-  FL_TRY(compiler_flang_itogovaya_stroka_korpusa(ctx, dovod, fayly, millisekund, &fl_t34628, error));
-  fl_value fl_t34629 = fl_nothing();
-  FL_TRY(compiler_flang_korpus_v_json(ctx, dovod, fayly, millisekund, &fl_t34629, error));
-  fl_value fl_t34630 = fl_nothing();
-  FL_TRY(compiler_flang_kod_korpusa(ctx, fayly, &fl_t34630, error));
-  fl_value fl_t34632[10];
-  fl_t34632[0] = fl_t34619; /* «файлов» */
-  fl_t34632[1] = fl_t34621; /* «взято» */
-  fl_t34632[2] = fl_t34623; /* «отказано» */
-  fl_t34632[3] = fl_t34624; /* «всего» */
-  fl_t34632[4] = fl_t34625; /* «прошло» */
-  fl_t34632[5] = fl_t34626; /* «сорвалось» */
-  fl_t34632[6] = fl_t34627; /* «замечания» */
-  fl_t34632[7] = fl_t34628; /* «итог» */
-  fl_t34632[8] = fl_t34629; /* «в JSON» */
-  fl_t34632[9] = fl_t34630; /* «код» */
-  fl_value fl_t34631 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_252, fl_t34632, 10, &fl_t34631, error));
-  *result = fl_t34631;
+  fl_value fl_t34659 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fayly, &fl_t34659, error));
+  fl_value fl_t34660 = fl_nothing();
+  FL_TRY(compiler_flang_vzyatye_fayly(ctx, fayly, &fl_t34660, error));
+  fl_value fl_t34661 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34660, &fl_t34661, error));
+  fl_value fl_t34662 = fl_nothing();
+  FL_TRY(compiler_flang_nevzyatye_fayly(ctx, fayly, &fl_t34662, error));
+  fl_value fl_t34663 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34662, &fl_t34663, error));
+  fl_value fl_t34664 = fl_nothing();
+  FL_TRY(compiler_flang_summa_vsego(ctx, fayly, &fl_t34664, error));
+  fl_value fl_t34665 = fl_nothing();
+  FL_TRY(compiler_flang_summa_proshedshih(ctx, fayly, &fl_t34665, error));
+  fl_value fl_t34666 = fl_nothing();
+  FL_TRY(compiler_flang_summa_sorvavshihsya(ctx, fayly, &fl_t34666, error));
+  fl_value fl_t34667 = fl_nothing();
+  FL_TRY(compiler_flang_zamechaniya_o_korpuse(ctx, fayly, &fl_t34667, error));
+  fl_value fl_t34668 = fl_nothing();
+  FL_TRY(compiler_flang_itogovaya_stroka_korpusa(ctx, dovod, fayly, millisekund, &fl_t34668, error));
+  fl_value fl_t34669 = fl_nothing();
+  FL_TRY(compiler_flang_korpus_v_json(ctx, dovod, fayly, millisekund, &fl_t34669, error));
+  fl_value fl_t34670 = fl_nothing();
+  FL_TRY(compiler_flang_kod_korpusa(ctx, fayly, &fl_t34670, error));
+  fl_value fl_t34672[10];
+  fl_t34672[0] = fl_t34659; /* «файлов» */
+  fl_t34672[1] = fl_t34661; /* «взято» */
+  fl_t34672[2] = fl_t34663; /* «отказано» */
+  fl_t34672[3] = fl_t34664; /* «всего» */
+  fl_t34672[4] = fl_t34665; /* «прошло» */
+  fl_t34672[5] = fl_t34666; /* «сорвалось» */
+  fl_t34672[6] = fl_t34667; /* «замечания» */
+  fl_t34672[7] = fl_t34668; /* «итог» */
+  fl_t34672[8] = fl_t34669; /* «в JSON» */
+  fl_t34672[9] = fl_t34670; /* «код» */
+  fl_value fl_t34671 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_252, fl_t34672, 10, &fl_t34671, error));
+  *result = fl_t34671;
   return FL_OK;
 }
 
@@ -180473,39 +180643,39 @@ fl_status compiler_flang_svesti_korpus(fl_ctx *ctx, fl_value dovod, fl_value fay
  * @return значение: «Беда»
  */
 fl_status compiler_flang_beda_iz_analiza(fl_ctx *ctx, fl_value d, fl_value *result, fl_error *error) {
-  fl_value fl_t34633 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, d, "код", &fl_t34633, error));
-  fl_value fl_t34634 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, d, "сообщение", &fl_t34634, error));
-  fl_value fl_t34635 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, d, "есть место", &fl_t34635, error));
-  bool fl_t34636 = false;
-  FL_TRY(fl_cond(ctx, fl_t34635, &fl_t34636, error));
-  fl_value fl_t34637 = fl_nothing();
-  if (fl_t34636) {
-    fl_value fl_t34638 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, d, "строка", &fl_t34638, error));
-    fl_value fl_t34639 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, d, "столбец", &fl_t34639, error));
-    fl_value fl_t34641[3];
-    fl_t34641[0] = fl_flag(true); /* «есть» */
-    fl_t34641[1] = fl_t34638; /* «строка» */
-    fl_t34641[2] = fl_t34639; /* «столбец» */
-    fl_value fl_t34640 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_104, fl_t34641, 3, &fl_t34640, error));
-    fl_t34637 = fl_t34640;
+  fl_value fl_t34673 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, d, "код", &fl_t34673, error));
+  fl_value fl_t34674 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, d, "сообщение", &fl_t34674, error));
+  fl_value fl_t34675 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, d, "есть место", &fl_t34675, error));
+  bool fl_t34676 = false;
+  FL_TRY(fl_cond(ctx, fl_t34675, &fl_t34676, error));
+  fl_value fl_t34677 = fl_nothing();
+  if (fl_t34676) {
+    fl_value fl_t34678 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, d, "строка", &fl_t34678, error));
+    fl_value fl_t34679 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, d, "столбец", &fl_t34679, error));
+    fl_value fl_t34681[3];
+    fl_t34681[0] = fl_flag(true); /* «есть» */
+    fl_t34681[1] = fl_t34678; /* «строка» */
+    fl_t34681[2] = fl_t34679; /* «столбец» */
+    fl_value fl_t34680 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_104, fl_t34681, 3, &fl_t34680, error));
+    fl_t34677 = fl_t34680;
   } else {
-    fl_value fl_t34642 = fl_nothing();
-    FL_TRY(compiler_flang_bez_mesta(ctx, &fl_t34642, error));
-    fl_t34637 = fl_t34642;
+    fl_value fl_t34682 = fl_nothing();
+    FL_TRY(compiler_flang_bez_mesta(ctx, &fl_t34682, error));
+    fl_t34677 = fl_t34682;
   }
-  fl_value fl_t34644[3];
-  fl_t34644[0] = fl_t34633; /* «код» */
-  fl_t34644[1] = fl_t34634; /* «сообщение» */
-  fl_t34644[2] = fl_t34637; /* «место» */
-  fl_value fl_t34643 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34644, 3, &fl_t34643, error));
-  *result = fl_t34643;
+  fl_value fl_t34684[3];
+  fl_t34684[0] = fl_t34673; /* «код» */
+  fl_t34684[1] = fl_t34674; /* «сообщение» */
+  fl_t34684[2] = fl_t34677; /* «место» */
+  fl_value fl_t34683 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34684, 3, &fl_t34683, error));
+  *result = fl_t34683;
   return FL_OK;
 }
 
@@ -180519,31 +180689,31 @@ fl_status compiler_flang_beda_iz_analiza(fl_ctx *ctx, fl_value d, fl_value *resu
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_pechat_v_c_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t34645 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34645, error));
-  const fl_value svyazano = fl_t34645; /* пусть «связано» */
-  fl_value fl_t34646 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34646, error));
-  fl_value fl_t34647 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34646, &fl_t34647, error));
-  if (fl_t34647.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34647, fl_number(0.0), error));
-  bool fl_t34648 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_t34647.as.number > 0.0), &fl_t34648, error));
-  if (fl_t34648) {
-    fl_value fl_t34649 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34649, error));
-    fl_value fl_t34651[3];
-    fl_t34651[0] = fl_list(NULL, 0); /* «файлы» */
-    fl_t34651[1] = compiler_flang_text_331; /* «ошибка» */
-    fl_t34651[2] = fl_t34649; /* «диагностики» */
-    fl_value fl_t34650 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_253, fl_t34651, 3, &fl_t34650, error));
-    *result = fl_t34650;
+  fl_value fl_t34685 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34685, error));
+  const fl_value svyazano = fl_t34685; /* пусть «связано» */
+  fl_value fl_t34686 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34686, error));
+  fl_value fl_t34687 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34686, &fl_t34687, error));
+  if (fl_t34687.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34687, fl_number(0.0), error));
+  bool fl_t34688 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_t34687.as.number > 0.0), &fl_t34688, error));
+  if (fl_t34688) {
+    fl_value fl_t34689 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34689, error));
+    fl_value fl_t34691[3];
+    fl_t34691[0] = fl_list(NULL, 0); /* «файлы» */
+    fl_t34691[1] = compiler_flang_text_331; /* «ошибка» */
+    fl_t34691[2] = fl_t34689; /* «диагностики» */
+    fl_value fl_t34690 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_253, fl_t34691, 3, &fl_t34690, error));
+    *result = fl_t34690;
     return FL_OK;
   } else {
-    fl_value fl_t34652 = fl_nothing();
-    FL_TRY(compiler_flang_k_pechati(ctx, svyazano, nastroyki, &fl_t34652, error));
-    return compiler_flang_napechatat_k_pechati(ctx, fl_t34652, nastroyki, result, error);
+    fl_value fl_t34692 = fl_nothing();
+    FL_TRY(compiler_flang_k_pechati(ctx, svyazano, nastroyki, &fl_t34692, error));
+    return compiler_flang_napechatat_k_pechati(ctx, fl_t34692, nastroyki, result, error);
   }
 }
 
@@ -180556,18 +180726,18 @@ fl_status compiler_flang_pechat_v_c_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, f
  * @return значение: «Значение»
  */
 fl_status compiler_flang_k_pechati(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t34653 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34653, error));
-  fl_value fl_t34654 = fl_nothing();
-  FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t34653, &fl_t34654, error));
-  fl_value fl_t34655 = fl_nothing();
-  FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t34654, &fl_t34655, error));
-  const fl_value otmechennaya = fl_t34655; /* пусть «отмеченная» */
-  fl_value fl_t34656 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, nastroyki, "оболочка", &fl_t34656, error));
-  bool fl_t34657 = false;
-  FL_TRY(fl_cond(ctx, fl_t34656, &fl_t34657, error));
-  if (fl_t34657) {
+  fl_value fl_t34693 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34693, error));
+  fl_value fl_t34694 = fl_nothing();
+  FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t34693, &fl_t34694, error));
+  fl_value fl_t34695 = fl_nothing();
+  FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t34694, &fl_t34695, error));
+  const fl_value otmechennaya = fl_t34695; /* пусть «отмеченная» */
+  fl_value fl_t34696 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, nastroyki, "оболочка", &fl_t34696, error));
+  bool fl_t34697 = false;
+  FL_TRY(fl_cond(ctx, fl_t34696, &fl_t34697, error));
+  if (fl_t34697) {
     *result = otmechennaya;
     return FL_OK;
   } else {
@@ -180584,20 +180754,20 @@ fl_status compiler_flang_k_pechati(fl_ctx *ctx, fl_value svyazano, fl_value nast
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t34658 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_programmy(ctx, programma, nastroyki, &fl_t34658, error));
-  const fl_value itog = fl_t34658; /* пусть «итог» */
-  fl_value fl_t34659 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "файлы", &fl_t34659, error));
-  fl_value fl_t34660 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "ошибка", &fl_t34660, error));
-  fl_value fl_t34662[3];
-  fl_t34662[0] = fl_t34659; /* «файлы» */
-  fl_t34662[1] = fl_t34660; /* «ошибка» */
-  fl_t34662[2] = fl_list(NULL, 0); /* «диагностики» */
-  fl_value fl_t34661 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_253, fl_t34662, 3, &fl_t34661, error));
-  *result = fl_t34661;
+  fl_value fl_t34698 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_programmy(ctx, programma, nastroyki, &fl_t34698, error));
+  const fl_value itog = fl_t34698; /* пусть «итог» */
+  fl_value fl_t34699 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "файлы", &fl_t34699, error));
+  fl_value fl_t34700 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "ошибка", &fl_t34700, error));
+  fl_value fl_t34702[3];
+  fl_t34702[0] = fl_t34699; /* «файлы» */
+  fl_t34702[1] = fl_t34700; /* «ошибка» */
+  fl_t34702[2] = fl_list(NULL, 0); /* «диагностики» */
+  fl_value fl_t34701 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_253, fl_t34702, 3, &fl_t34701, error));
+  *result = fl_t34701;
   return FL_OK;
 }
 
@@ -180610,11 +180780,11 @@ fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, f
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error) {
-  fl_value fl_t34663 = fl_nothing();
-  FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34663, error));
-  fl_value fl_t34664 = fl_nothing();
-  FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t34663, &fl_t34664, error));
-  return compiler_flang_napechatat_k_pechati(ctx, fl_t34664, nastroyki, result, error);
+  fl_value fl_t34703 = fl_nothing();
+  FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34703, error));
+  fl_value fl_t34704 = fl_nothing();
+  FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t34703, &fl_t34704, error));
+  return compiler_flang_napechatat_k_pechati(ctx, fl_t34704, nastroyki, result, error);
 }
 
 /*
@@ -180626,13 +180796,13 @@ fl_status compiler_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programma, 
  * @return значение: «Итог проверки исходников»
  */
 fl_status compiler_flang_proverit_ishodniki(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t34665 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34665, error));
-  fl_value fl_t34666 = fl_nothing();
-  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34666, error));
-  fl_value fl_t34667 = fl_nothing();
-  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34667, error));
-  return compiler_flang_proverit_svyazannoe_s_primerami(ctx, fl_t34665, fl_t34666, fl_t34667, result, error);
+  fl_value fl_t34705 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34705, error));
+  fl_value fl_t34706 = fl_nothing();
+  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34706, error));
+  fl_value fl_t34707 = fl_nothing();
+  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34707, error));
+  return compiler_flang_proverit_svyazannoe_s_primerami(ctx, fl_t34705, fl_t34706, fl_t34707, result, error);
 }
 
 /*
@@ -180645,30 +180815,30 @@ fl_status compiler_flang_proverit_ishodniki(fl_ctx *ctx, fl_value fayly, fl_valu
  * @return значение: «Итог проверки исходников»
  */
 fl_status compiler_flang_proverit_svyazannoe_s_primerami(fl_ctx *ctx, fl_value svyazano, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34668 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_svyazannoe(ctx, svyazano, &fl_t34668, error));
-  const fl_value do_primerov = fl_t34668; /* пусть «до примеров» */
-  fl_value fl_t34669 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, do_primerov, "годно", &fl_t34669, error));
-  bool fl_t34670 = false;
-  FL_TRY(fl_cond(ctx, fl_t34669, &fl_t34670, error));
-  fl_value fl_t34671 = fl_nothing();
-  if (fl_t34670) {
-    fl_t34671 = fl_flag(false);
+  fl_value fl_t34708 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_svyazannoe(ctx, svyazano, &fl_t34708, error));
+  const fl_value do_primerov = fl_t34708; /* пусть «до примеров» */
+  fl_value fl_t34709 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, do_primerov, "годно", &fl_t34709, error));
+  bool fl_t34710 = false;
+  FL_TRY(fl_cond(ctx, fl_t34709, &fl_t34710, error));
+  fl_value fl_t34711 = fl_nothing();
+  if (fl_t34710) {
+    fl_t34711 = fl_flag(false);
   } else {
-    fl_t34671 = fl_flag(true);
+    fl_t34711 = fl_flag(true);
   }
-  bool fl_t34672 = false;
-  FL_TRY(fl_cond(ctx, fl_t34671, &fl_t34672, error));
-  if (fl_t34672) {
+  bool fl_t34712 = false;
+  FL_TRY(fl_cond(ctx, fl_t34711, &fl_t34712, error));
+  if (fl_t34712) {
     *result = do_primerov;
     return FL_OK;
   } else {
-    fl_value fl_t34673 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34673, error));
-    fl_value fl_t34674 = fl_nothing();
-    FL_TRY(compiler_flang_bedy_primerov(ctx, fl_t34673, predel_vitkov, predel_glubiny, &fl_t34674, error));
-    return compiler_flang_itog_primerami(ctx, fl_t34674, result, error);
+    fl_value fl_t34713 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34713, error));
+    fl_value fl_t34714 = fl_nothing();
+    FL_TRY(compiler_flang_bedy_primerov(ctx, fl_t34713, predel_vitkov, predel_glubiny, &fl_t34714, error));
+    return compiler_flang_itog_primerami(ctx, fl_t34714, result, error);
   }
 }
 
@@ -180680,14 +180850,14 @@ fl_status compiler_flang_proverit_svyazannoe_s_primerami(fl_ctx *ctx, fl_value s
  * @return значение: «Итог проверки исходников»
  */
 fl_status compiler_flang_itog_primerami(fl_ctx *ctx, fl_value bedy, fl_value *result, fl_error *error) {
-  fl_value fl_t34675 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, bedy, &fl_t34675, error));
-  fl_value fl_t34677[2];
-  fl_t34677[0] = fl_t34675; /* «годно» */
-  fl_t34677[1] = bedy; /* «диагностики» */
-  fl_value fl_t34676 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_254, fl_t34677, 2, &fl_t34676, error));
-  *result = fl_t34676;
+  fl_value fl_t34715 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, bedy, &fl_t34715, error));
+  fl_value fl_t34717[2];
+  fl_t34717[0] = fl_t34715; /* «годно» */
+  fl_t34717[1] = bedy; /* «диагностики» */
+  fl_value fl_t34716 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_254, fl_t34717, 2, &fl_t34716, error));
+  *result = fl_t34716;
   return FL_OK;
 }
 
@@ -180701,50 +180871,50 @@ fl_status compiler_flang_itog_primerami(fl_ctx *ctx, fl_value bedy, fl_value *re
  * @return значение: список: «Беда»
  */
 fl_status compiler_flang_bedy_primerov(fl_ctx *ctx, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34678 = fl_nothing();
-  FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34678, error));
-  fl_value fl_t34679 = fl_nothing();
-  FL_TRY(compiler_flang_primery_programmy(ctx, fl_t34678, predel_vitkov, predel_glubiny, &fl_t34679, error));
-  const fl_value itogi = fl_t34679; /* пусть «итоги» */
-  fl_value fl_t34680 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itogi, "строки", &fl_t34680, error));
-  fl_value fl_t34681 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34680, "отфильтровать", &fl_t34681, error));
-  fl_value *fl_t34682 = NULL;
-  size_t fl_t34683 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34681.as.list.count, &fl_t34682, error));
-  for (size_t fl_t34684 = 0; fl_t34684 < fl_t34681.as.list.count; fl_t34684 += 1) {
-    const fl_value stroka_itoga = fl_t34681.as.list.items[fl_t34684]; /* «строка итога» */
-    fl_value fl_t34685 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, stroka_itoga, "прошёл", &fl_t34685, error));
-    bool fl_t34686 = false;
-    FL_TRY(fl_cond(ctx, fl_t34685, &fl_t34686, error));
-    fl_value fl_t34687 = fl_nothing();
-    if (fl_t34686) {
-      fl_t34687 = fl_flag(false);
+  fl_value fl_t34718 = fl_nothing();
+  FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34718, error));
+  fl_value fl_t34719 = fl_nothing();
+  FL_TRY(compiler_flang_primery_programmy(ctx, fl_t34718, predel_vitkov, predel_glubiny, &fl_t34719, error));
+  const fl_value itogi = fl_t34719; /* пусть «итоги» */
+  fl_value fl_t34720 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itogi, "строки", &fl_t34720, error));
+  fl_value fl_t34721 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34720, "отфильтровать", &fl_t34721, error));
+  fl_value *fl_t34722 = NULL;
+  size_t fl_t34723 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34721.as.list.count, &fl_t34722, error));
+  for (size_t fl_t34724 = 0; fl_t34724 < fl_t34721.as.list.count; fl_t34724 += 1) {
+    const fl_value stroka_itoga = fl_t34721.as.list.items[fl_t34724]; /* «строка итога» */
+    fl_value fl_t34725 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, stroka_itoga, "прошёл", &fl_t34725, error));
+    bool fl_t34726 = false;
+    FL_TRY(fl_cond(ctx, fl_t34725, &fl_t34726, error));
+    fl_value fl_t34727 = fl_nothing();
+    if (fl_t34726) {
+      fl_t34727 = fl_flag(false);
     } else {
-      fl_t34687 = fl_flag(true);
+      fl_t34727 = fl_flag(true);
     }
-    bool fl_t34688 = false;
-    FL_TRY(fl_keep(ctx, fl_t34687, &fl_t34688, error));
-    if (fl_t34688) {
-      fl_t34682[fl_t34683] = stroka_itoga;
-      fl_t34683 += 1;
+    bool fl_t34728 = false;
+    FL_TRY(fl_keep(ctx, fl_t34727, &fl_t34728, error));
+    if (fl_t34728) {
+      fl_t34722[fl_t34723] = stroka_itoga;
+      fl_t34723 += 1;
     }
   }
-  fl_value fl_t34689 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_list(fl_t34682, fl_t34683), "отобразить", &fl_t34689, error));
-  fl_value *fl_t34690 = NULL;
-  size_t fl_t34691 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34689.as.list.count, &fl_t34690, error));
-  for (size_t fl_t34692 = 0; fl_t34692 < fl_t34689.as.list.count; fl_t34692 += 1) {
-    const fl_value stroka_itoga_2 = fl_t34689.as.list.items[fl_t34692]; /* «строка итога» */
-    fl_value fl_t34693 = fl_nothing();
-    FL_TRY(compiler_flang_beda_primera(ctx, stroka_itoga_2, &fl_t34693, error));
-    fl_t34690[fl_t34691] = fl_t34693;
-    fl_t34691 += 1;
+  fl_value fl_t34729 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_list(fl_t34722, fl_t34723), "отобразить", &fl_t34729, error));
+  fl_value *fl_t34730 = NULL;
+  size_t fl_t34731 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34729.as.list.count, &fl_t34730, error));
+  for (size_t fl_t34732 = 0; fl_t34732 < fl_t34729.as.list.count; fl_t34732 += 1) {
+    const fl_value stroka_itoga_2 = fl_t34729.as.list.items[fl_t34732]; /* «строка итога» */
+    fl_value fl_t34733 = fl_nothing();
+    FL_TRY(compiler_flang_beda_primera(ctx, stroka_itoga_2, &fl_t34733, error));
+    fl_t34730[fl_t34731] = fl_t34733;
+    fl_t34731 += 1;
   }
-  *result = fl_list(fl_t34690, fl_t34691);
+  *result = fl_list(fl_t34730, fl_t34731);
   return FL_OK;
 }
 
@@ -180756,17 +180926,17 @@ fl_status compiler_flang_bedy_primerov(fl_ctx *ctx, fl_value programma, fl_value
  * @return значение: «Беда»
  */
 fl_status compiler_flang_beda_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_value *result, fl_error *error) {
-  fl_value fl_t34694 = fl_nothing();
-  FL_TRY(compiler_flang_slova_primera(ctx, stroka_itoga, &fl_t34694, error));
-  fl_value fl_t34695 = fl_nothing();
-  FL_TRY(compiler_flang_bez_mesta(ctx, &fl_t34695, error));
-  fl_value fl_t34697[3];
-  fl_t34697[0] = compiler_flang_text_3141; /* «код» */
-  fl_t34697[1] = fl_t34694; /* «сообщение» */
-  fl_t34697[2] = fl_t34695; /* «место» */
-  fl_value fl_t34696 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34697, 3, &fl_t34696, error));
-  *result = fl_t34696;
+  fl_value fl_t34734 = fl_nothing();
+  FL_TRY(compiler_flang_slova_primera(ctx, stroka_itoga, &fl_t34734, error));
+  fl_value fl_t34735 = fl_nothing();
+  FL_TRY(compiler_flang_bez_mesta(ctx, &fl_t34735, error));
+  fl_value fl_t34737[3];
+  fl_t34737[0] = compiler_flang_text_3147; /* «код» */
+  fl_t34737[1] = fl_t34734; /* «сообщение» */
+  fl_t34737[2] = fl_t34735; /* «место» */
+  fl_value fl_t34736 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34737, 3, &fl_t34736, error));
+  *result = fl_t34736;
   return FL_OK;
 }
 
@@ -180778,44 +180948,44 @@ fl_status compiler_flang_beda_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_val
  * @return значение: строка
  */
 fl_status compiler_flang_slova_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_value *result, fl_error *error) {
-  fl_value *fl_t34698 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 6, &fl_t34698, error));
-  fl_t34698[0] = compiler_flang_text_922;
-  fl_value fl_t34699 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, stroka_itoga, "пример", &fl_t34699, error));
-  fl_t34698[1] = fl_t34699;
-  fl_t34698[2] = compiler_flang_text_908;
-  fl_value fl_t34700 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, stroka_itoga, "функция", &fl_t34700, error));
-  fl_t34698[3] = fl_t34700;
-  fl_t34698[4] = compiler_flang_text_2013;
-  fl_value fl_t34701 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, stroka_itoga, "код", &fl_t34701, error));
-  bool fl_t34702 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t34701, compiler_flang_text_331)), &fl_t34702, error));
-  fl_value fl_t34703 = fl_nothing();
-  if (fl_t34702) {
-    fl_value fl_t34704 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, stroka_itoga, "сообщение", &fl_t34704, error));
-    fl_t34703 = fl_t34704;
+  fl_value *fl_t34738 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 6, &fl_t34738, error));
+  fl_t34738[0] = compiler_flang_text_922;
+  fl_value fl_t34739 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, stroka_itoga, "пример", &fl_t34739, error));
+  fl_t34738[1] = fl_t34739;
+  fl_t34738[2] = compiler_flang_text_908;
+  fl_value fl_t34740 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, stroka_itoga, "функция", &fl_t34740, error));
+  fl_t34738[3] = fl_t34740;
+  fl_t34738[4] = compiler_flang_text_2013;
+  fl_value fl_t34741 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, stroka_itoga, "код", &fl_t34741, error));
+  bool fl_t34742 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t34741, compiler_flang_text_331)), &fl_t34742, error));
+  fl_value fl_t34743 = fl_nothing();
+  if (fl_t34742) {
+    fl_value fl_t34744 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, stroka_itoga, "сообщение", &fl_t34744, error));
+    fl_t34743 = fl_t34744;
   } else {
-    fl_value *fl_t34705 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 3, &fl_t34705, error));
-    fl_value fl_t34706 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, stroka_itoga, "код", &fl_t34706, error));
-    fl_t34705[0] = fl_t34706;
-    fl_t34705[1] = compiler_flang_text_601;
-    fl_value fl_t34707 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, stroka_itoga, "сообщение", &fl_t34707, error));
-    fl_t34705[2] = fl_t34707;
-    fl_value fl_t34708 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34705, 3), compiler_flang_text_331, &fl_t34708, error));
-    fl_t34703 = fl_t34708;
+    fl_value *fl_t34745 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 3, &fl_t34745, error));
+    fl_value fl_t34746 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, stroka_itoga, "код", &fl_t34746, error));
+    fl_t34745[0] = fl_t34746;
+    fl_t34745[1] = compiler_flang_text_601;
+    fl_value fl_t34747 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, stroka_itoga, "сообщение", &fl_t34747, error));
+    fl_t34745[2] = fl_t34747;
+    fl_value fl_t34748 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34745, 3), compiler_flang_text_331, &fl_t34748, error));
+    fl_t34743 = fl_t34748;
   }
-  fl_t34698[5] = fl_t34703;
-  fl_value fl_t34709 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34698, 6), compiler_flang_text_331, &fl_t34709, error));
-  *result = fl_t34709;
+  fl_t34738[5] = fl_t34743;
+  fl_value fl_t34749 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34738, 6), compiler_flang_text_331, &fl_t34749, error));
+  *result = fl_t34749;
   return FL_OK;
 }
 
@@ -180827,11 +180997,11 @@ fl_status compiler_flang_slova_primera(fl_ctx *ctx, fl_value stroka_itoga, fl_va
  * @return значение: список: «Беда»
  */
 fl_status compiler_flang_bedy_primerov_pri_proverke(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
-  fl_value fl_t34710 = fl_nothing();
-  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34710, error));
-  fl_value fl_t34711 = fl_nothing();
-  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34711, error));
-  return compiler_flang_bedy_primerov(ctx, programma, fl_t34710, fl_t34711, result, error);
+  fl_value fl_t34750 = fl_nothing();
+  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34750, error));
+  fl_value fl_t34751 = fl_nothing();
+  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34751, error));
+  return compiler_flang_bedy_primerov(ctx, programma, fl_t34750, fl_t34751, result, error);
 }
 
 /*
@@ -180868,54 +181038,54 @@ fl_status compiler_flang_predel_glubiny_proverki(fl_ctx *ctx, fl_value *result, 
  * @return значение: «Итог проверки исходников»
  */
 fl_status compiler_flang_proverit_svyazannoe(fl_ctx *ctx, fl_value svyazano, fl_value *result, fl_error *error) {
-  fl_value fl_t34712 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34712, error));
-  fl_value fl_t34713 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_tipy(ctx, fl_t34712, &fl_t34713, error));
-  const fl_value tipy = fl_t34713; /* пусть «типы» */
-  fl_value fl_t34714 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34714, error));
-  fl_value fl_t34715 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_totalnost(ctx, fl_t34714, &fl_t34715, error));
-  const fl_value totalnost = fl_t34715; /* пусть «тотальность» */
-  fl_value fl_t34716 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34716, error));
-  fl_value fl_t34717 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, tipy, "диагностики", &fl_t34717, error));
-  fl_value fl_t34718 = fl_nothing();
-  FL_TRY(compiler_flang_slit_bedy(ctx, fl_t34716, fl_t34717, &fl_t34718, error));
-  fl_value fl_t34719 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "диагностики", &fl_t34719, error));
-  fl_value fl_t34720 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34719, "отобразить", &fl_t34720, error));
-  fl_value *fl_t34721 = NULL;
-  size_t fl_t34722 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34720.as.list.count, &fl_t34721, error));
-  for (size_t fl_t34723 = 0; fl_t34723 < fl_t34720.as.list.count; fl_t34723 += 1) {
-    const fl_value d = fl_t34720.as.list.items[fl_t34723]; /* «д» */
-    fl_value fl_t34724 = fl_nothing();
-    FL_TRY(compiler_flang_beda_iz_analiza(ctx, d, &fl_t34724, error));
-    fl_t34721[fl_t34722] = fl_t34724;
-    fl_t34722 += 1;
+  fl_value fl_t34752 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34752, error));
+  fl_value fl_t34753 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_tipy(ctx, fl_t34752, &fl_t34753, error));
+  const fl_value tipy = fl_t34753; /* пусть «типы» */
+  fl_value fl_t34754 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34754, error));
+  fl_value fl_t34755 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_totalnost(ctx, fl_t34754, &fl_t34755, error));
+  const fl_value totalnost = fl_t34755; /* пусть «тотальность» */
+  fl_value fl_t34756 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t34756, error));
+  fl_value fl_t34757 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, tipy, "диагностики", &fl_t34757, error));
+  fl_value fl_t34758 = fl_nothing();
+  FL_TRY(compiler_flang_slit_bedy(ctx, fl_t34756, fl_t34757, &fl_t34758, error));
+  fl_value fl_t34759 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "диагностики", &fl_t34759, error));
+  fl_value fl_t34760 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34759, "отобразить", &fl_t34760, error));
+  fl_value *fl_t34761 = NULL;
+  size_t fl_t34762 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34760.as.list.count, &fl_t34761, error));
+  for (size_t fl_t34763 = 0; fl_t34763 < fl_t34760.as.list.count; fl_t34763 += 1) {
+    const fl_value d = fl_t34760.as.list.items[fl_t34763]; /* «д» */
+    fl_value fl_t34764 = fl_nothing();
+    FL_TRY(compiler_flang_beda_iz_analiza(ctx, d, &fl_t34764, error));
+    fl_t34761[fl_t34762] = fl_t34764;
+    fl_t34762 += 1;
   }
-  fl_value fl_t34725 = fl_nothing();
-  FL_TRY(compiler_flang_slit_bedy(ctx, fl_t34718, fl_list(fl_t34721, fl_t34722), &fl_t34725, error));
-  const fl_value do_yadra = fl_t34725; /* пусть «до ядра» */
-  fl_value fl_t34726 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34726, error));
-  fl_value fl_t34727 = fl_nothing();
-  FL_TRY(compiler_flang_bedy_yadra(ctx, fl_t34726, totalnost, &fl_t34727, error));
-  fl_value fl_t34728 = fl_nothing();
-  FL_TRY(compiler_flang_slit_bedy(ctx, do_yadra, fl_t34727, &fl_t34728, error));
-  const fl_value vse = fl_t34728; /* пусть «все» */
-  fl_value fl_t34729 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, vse, &fl_t34729, error));
-  fl_value fl_t34731[2];
-  fl_t34731[0] = fl_t34729; /* «годно» */
-  fl_t34731[1] = vse; /* «диагностики» */
-  fl_value fl_t34730 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_254, fl_t34731, 2, &fl_t34730, error));
-  *result = fl_t34730;
+  fl_value fl_t34765 = fl_nothing();
+  FL_TRY(compiler_flang_slit_bedy(ctx, fl_t34758, fl_list(fl_t34761, fl_t34762), &fl_t34765, error));
+  const fl_value do_yadra = fl_t34765; /* пусть «до ядра» */
+  fl_value fl_t34766 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34766, error));
+  fl_value fl_t34767 = fl_nothing();
+  FL_TRY(compiler_flang_bedy_yadra(ctx, fl_t34766, totalnost, &fl_t34767, error));
+  fl_value fl_t34768 = fl_nothing();
+  FL_TRY(compiler_flang_slit_bedy(ctx, do_yadra, fl_t34767, &fl_t34768, error));
+  const fl_value vse = fl_t34768; /* пусть «все» */
+  fl_value fl_t34769 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, vse, &fl_t34769, error));
+  fl_value fl_t34771[2];
+  fl_t34771[0] = fl_t34769; /* «годно» */
+  fl_t34771[1] = vse; /* «диагностики» */
+  fl_value fl_t34770 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_254, fl_t34771, 2, &fl_t34770, error));
+  *result = fl_t34770;
   return FL_OK;
 }
 
@@ -180928,29 +181098,29 @@ fl_status compiler_flang_proverit_svyazannoe(fl_ctx *ctx, fl_value svyazano, fl_
  * @return значение: список: «Беда»
  */
 fl_status compiler_flang_bedy_yadra(fl_ctx *ctx, fl_value programma, fl_value totalnost, fl_value *result, fl_error *error) {
-  fl_value fl_t34732 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34732, error));
-  fl_value fl_t34733 = fl_nothing();
-  FL_TRY(compiler_flang_spuski_uzlami(ctx, fl_t34732, &fl_t34733, error));
-  fl_value fl_t34734 = fl_nothing();
-  FL_TRY(compiler_flang_obyazatelstva(ctx, programma, fl_t34733, &fl_t34734, error));
-  const fl_value svod = fl_t34734; /* пусть «свод» */
-  fl_value fl_t34735 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t34735, error));
-  fl_value fl_t34736 = fl_nothing();
-  FL_TRY(compiler_flang_progony_dlya_yadra(ctx, programma, &fl_t34736, error));
-  fl_value fl_t34737 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_dokazatelstva(ctx, programma, fl_t34735, fl_t34736, &fl_t34737, error));
-  const fl_value verdikty = fl_t34737; /* пусть «вердикты» */
-  fl_value fl_t34738 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2695, &fl_t34738, error));
-  fl_value fl_t34739 = fl_nothing();
-  FL_TRY(compiler_flang_bedy_uzlami(ctx, fl_t34738, &fl_t34739, error));
-  fl_value fl_t34740 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, verdikty, compiler_flang_text_2695, &fl_t34740, error));
-  fl_value fl_t34741 = fl_nothing();
-  FL_TRY(compiler_flang_bedy_uzlami(ctx, fl_t34740, &fl_t34741, error));
-  return compiler_flang_slit_bedy(ctx, fl_t34739, fl_t34741, result, error);
+  fl_value fl_t34772 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34772, error));
+  fl_value fl_t34773 = fl_nothing();
+  FL_TRY(compiler_flang_spuski_uzlami(ctx, fl_t34772, &fl_t34773, error));
+  fl_value fl_t34774 = fl_nothing();
+  FL_TRY(compiler_flang_obyazatelstva(ctx, programma, fl_t34773, &fl_t34774, error));
+  const fl_value svod = fl_t34774; /* пусть «свод» */
+  fl_value fl_t34775 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t34775, error));
+  fl_value fl_t34776 = fl_nothing();
+  FL_TRY(compiler_flang_progony_dlya_yadra(ctx, programma, &fl_t34776, error));
+  fl_value fl_t34777 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_dokazatelstva(ctx, programma, fl_t34775, fl_t34776, &fl_t34777, error));
+  const fl_value verdikty = fl_t34777; /* пусть «вердикты» */
+  fl_value fl_t34778 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2695, &fl_t34778, error));
+  fl_value fl_t34779 = fl_nothing();
+  FL_TRY(compiler_flang_bedy_uzlami(ctx, fl_t34778, &fl_t34779, error));
+  fl_value fl_t34780 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, verdikty, compiler_flang_text_2695, &fl_t34780, error));
+  fl_value fl_t34781 = fl_nothing();
+  FL_TRY(compiler_flang_bedy_uzlami(ctx, fl_t34780, &fl_t34781, error));
+  return compiler_flang_slit_bedy(ctx, fl_t34779, fl_t34781, result, error);
 }
 
 /*
@@ -180961,31 +181131,31 @@ fl_status compiler_flang_bedy_yadra(fl_ctx *ctx, fl_value programma, fl_value to
  * @return значение: список: «Беда»
  */
 fl_status compiler_flang_bedy_uzlami(fl_ctx *ctx, fl_value uzly, fl_value *result, fl_error *error) {
-  fl_value fl_t34742 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, uzly, "отобразить", &fl_t34742, error));
-  fl_value *fl_t34743 = NULL;
-  size_t fl_t34744 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34742.as.list.count, &fl_t34743, error));
-  for (size_t fl_t34745 = 0; fl_t34745 < fl_t34742.as.list.count; fl_t34745 += 1) {
-    const fl_value u = fl_t34742.as.list.items[fl_t34745]; /* «у» */
-    fl_value fl_t34746 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_904, &fl_t34746, error));
-    fl_value fl_t34747 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_906, &fl_t34747, error));
-    fl_value fl_t34748 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_577, &fl_t34748, error));
-    fl_value fl_t34749 = fl_nothing();
-    FL_TRY(compiler_flang_mesto_uzla_bedy(ctx, fl_t34748, &fl_t34749, error));
-    fl_value fl_t34751[3];
-    fl_t34751[0] = fl_t34746; /* «код» */
-    fl_t34751[1] = fl_t34747; /* «сообщение» */
-    fl_t34751[2] = fl_t34749; /* «место» */
-    fl_value fl_t34750 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34751, 3, &fl_t34750, error));
-    fl_t34743[fl_t34744] = fl_t34750;
-    fl_t34744 += 1;
+  fl_value fl_t34782 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, uzly, "отобразить", &fl_t34782, error));
+  fl_value *fl_t34783 = NULL;
+  size_t fl_t34784 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34782.as.list.count, &fl_t34783, error));
+  for (size_t fl_t34785 = 0; fl_t34785 < fl_t34782.as.list.count; fl_t34785 += 1) {
+    const fl_value u = fl_t34782.as.list.items[fl_t34785]; /* «у» */
+    fl_value fl_t34786 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_904, &fl_t34786, error));
+    fl_value fl_t34787 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_906, &fl_t34787, error));
+    fl_value fl_t34788 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_577, &fl_t34788, error));
+    fl_value fl_t34789 = fl_nothing();
+    FL_TRY(compiler_flang_mesto_uzla_bedy(ctx, fl_t34788, &fl_t34789, error));
+    fl_value fl_t34791[3];
+    fl_t34791[0] = fl_t34786; /* «код» */
+    fl_t34791[1] = fl_t34787; /* «сообщение» */
+    fl_t34791[2] = fl_t34789; /* «место» */
+    fl_value fl_t34790 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_105, fl_t34791, 3, &fl_t34790, error));
+    fl_t34783[fl_t34784] = fl_t34790;
+    fl_t34784 += 1;
   }
-  *result = fl_list(fl_t34743, fl_t34744);
+  *result = fl_list(fl_t34783, fl_t34784);
   return FL_OK;
 }
 
@@ -180997,26 +181167,26 @@ fl_status compiler_flang_bedy_uzlami(fl_ctx *ctx, fl_value uzly, fl_value *resul
  * @return значение: «Место»
  */
 fl_status compiler_flang_mesto_uzla_bedy(fl_ctx *ctx, fl_value mesto, fl_value *result, fl_error *error) {
-  fl_value fl_t34752 = fl_nothing();
-  FL_TRY(compiler_flang_eto_zapis(ctx, mesto, &fl_t34752, error));
-  bool fl_t34753 = false;
-  FL_TRY(fl_cond(ctx, fl_t34752, &fl_t34753, error));
-  if (fl_t34753) {
-    fl_value fl_t34754 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_673, &fl_t34754, error));
-    fl_value fl_t34755 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t34754, &fl_t34755, error));
-    fl_value fl_t34756 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_674, &fl_t34756, error));
-    fl_value fl_t34757 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t34756, &fl_t34757, error));
-    fl_value fl_t34759[3];
-    fl_t34759[0] = fl_flag(true); /* «есть» */
-    fl_t34759[1] = fl_t34755; /* «строка» */
-    fl_t34759[2] = fl_t34757; /* «столбец» */
-    fl_value fl_t34758 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_104, fl_t34759, 3, &fl_t34758, error));
-    *result = fl_t34758;
+  fl_value fl_t34792 = fl_nothing();
+  FL_TRY(compiler_flang_eto_zapis(ctx, mesto, &fl_t34792, error));
+  bool fl_t34793 = false;
+  FL_TRY(fl_cond(ctx, fl_t34792, &fl_t34793, error));
+  if (fl_t34793) {
+    fl_value fl_t34794 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_673, &fl_t34794, error));
+    fl_value fl_t34795 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t34794, &fl_t34795, error));
+    fl_value fl_t34796 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_674, &fl_t34796, error));
+    fl_value fl_t34797 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t34796, &fl_t34797, error));
+    fl_value fl_t34799[3];
+    fl_t34799[0] = fl_flag(true); /* «есть» */
+    fl_t34799[1] = fl_t34795; /* «строка» */
+    fl_t34799[2] = fl_t34797; /* «столбец» */
+    fl_value fl_t34798 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_104, fl_t34799, 3, &fl_t34798, error));
+    *result = fl_t34798;
     return FL_OK;
   } else {
     return compiler_flang_bez_mesta(ctx, result, error);
@@ -181031,33 +181201,33 @@ fl_status compiler_flang_mesto_uzla_bedy(fl_ctx *ctx, fl_value mesto, fl_value *
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_spuski_uzlami(fl_ctx *ctx, fl_value spuski, fl_value *result, fl_error *error) {
-  fl_value fl_t34760 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, spuski, "отобразить", &fl_t34760, error));
-  fl_value *fl_t34761 = NULL;
-  size_t fl_t34762 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34760.as.list.count, &fl_t34761, error));
-  for (size_t fl_t34763 = 0; fl_t34763 < fl_t34760.as.list.count; fl_t34763 += 1) {
-    const fl_value s = fl_t34760.as.list.items[fl_t34763]; /* «с» */
-    fl_value *fl_t34764 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34764, error));
-    fl_value fl_t34765 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, s, "откуда", &fl_t34765, error));
-    fl_value fl_t34766 = fl_nothing();
-    FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34765, &fl_t34766, error));
-    fl_value fl_t34767 = fl_nothing();
-    FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_548, fl_t34766, &fl_t34767, error));
-    fl_t34764[0] = fl_t34767;
-    fl_value fl_t34768 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, s, "мера витка", &fl_t34768, error));
-    fl_value fl_t34769 = fl_nothing();
-    FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_1381, fl_t34768, &fl_t34769, error));
-    fl_t34764[1] = fl_t34769;
-    fl_value fl_t34770 = fl_nothing();
-    FL_TRY(compiler_flang_zapis_znacheniem(ctx, fl_list(fl_t34764, 2), &fl_t34770, error));
-    fl_t34761[fl_t34762] = fl_t34770;
-    fl_t34762 += 1;
+  fl_value fl_t34800 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, spuski, "отобразить", &fl_t34800, error));
+  fl_value *fl_t34801 = NULL;
+  size_t fl_t34802 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34800.as.list.count, &fl_t34801, error));
+  for (size_t fl_t34803 = 0; fl_t34803 < fl_t34800.as.list.count; fl_t34803 += 1) {
+    const fl_value s = fl_t34800.as.list.items[fl_t34803]; /* «с» */
+    fl_value *fl_t34804 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34804, error));
+    fl_value fl_t34805 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, s, "откуда", &fl_t34805, error));
+    fl_value fl_t34806 = fl_nothing();
+    FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34805, &fl_t34806, error));
+    fl_value fl_t34807 = fl_nothing();
+    FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_548, fl_t34806, &fl_t34807, error));
+    fl_t34804[0] = fl_t34807;
+    fl_value fl_t34808 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, s, "мера витка", &fl_t34808, error));
+    fl_value fl_t34809 = fl_nothing();
+    FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_1381, fl_t34808, &fl_t34809, error));
+    fl_t34804[1] = fl_t34809;
+    fl_value fl_t34810 = fl_nothing();
+    FL_TRY(compiler_flang_zapis_znacheniem(ctx, fl_list(fl_t34804, 2), &fl_t34810, error));
+    fl_t34801[fl_t34802] = fl_t34810;
+    fl_t34802 += 1;
   }
-  *result = fl_list(fl_t34761, fl_t34762);
+  *result = fl_list(fl_t34801, fl_t34802);
   return FL_OK;
 }
 
@@ -181069,63 +181239,63 @@ fl_status compiler_flang_spuski_uzlami(fl_ctx *ctx, fl_value spuski, fl_value *r
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_progony_dlya_yadra(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
-  fl_value fl_t34771 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_956, &fl_t34771, error));
-  fl_value fl_t34772 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t34771, &fl_t34772, error));
-  bool fl_t34773 = false;
-  FL_TRY(fl_cond(ctx, fl_t34772, &fl_t34773, error));
-  if (fl_t34773) {
+  fl_value fl_t34811 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_956, &fl_t34811, error));
+  fl_value fl_t34812 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t34811, &fl_t34812, error));
+  bool fl_t34813 = false;
+  FL_TRY(fl_cond(ctx, fl_t34812, &fl_t34813, error));
+  if (fl_t34813) {
     *result = fl_list(NULL, 0);
     return FL_OK;
   } else {
-    fl_value fl_t34774 = fl_nothing();
-    FL_TRY(compiler_flang_primery_programmy(ctx, programma, fl_number(1000000.0), fl_number(10000.0), &fl_t34774, error));
-    fl_value fl_t34775 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fl_t34774, "строки", &fl_t34775, error));
-    fl_value fl_t34776 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, fl_t34775, "отобразить", &fl_t34776, error));
-    fl_value *fl_t34777 = NULL;
-    size_t fl_t34778 = 0;
-    FL_TRY(fl_list_alloc(ctx, fl_t34776.as.list.count, &fl_t34777, error));
-    for (size_t fl_t34779 = 0; fl_t34779 < fl_t34776.as.list.count; fl_t34779 += 1) {
-      const fl_value s = fl_t34776.as.list.items[fl_t34779]; /* «с» */
-      fl_value *fl_t34780 = NULL;
-      FL_TRY(fl_list_alloc(ctx, 4, &fl_t34780, error));
-      fl_value fl_t34781 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, s, "функция", &fl_t34781, error));
-      fl_value fl_t34782 = fl_nothing();
-      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34781, &fl_t34782, error));
-      fl_value fl_t34783 = fl_nothing();
-      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_546, fl_t34782, &fl_t34783, error));
-      fl_t34780[0] = fl_t34783;
-      fl_value fl_t34784 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, s, "пример", &fl_t34784, error));
-      fl_value fl_t34785 = fl_nothing();
-      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34784, &fl_t34785, error));
-      fl_value fl_t34786 = fl_nothing();
-      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_384, fl_t34785, &fl_t34786, error));
-      fl_t34780[1] = fl_t34786;
-      fl_value fl_t34787 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, s, "прошёл", &fl_t34787, error));
-      fl_value fl_t34788 = fl_nothing();
-      FL_TRY(compiler_flang_priznak_znacheniem(ctx, fl_t34787, &fl_t34788, error));
-      fl_value fl_t34789 = fl_nothing();
-      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_2747, fl_t34788, &fl_t34789, error));
-      fl_t34780[2] = fl_t34789;
-      fl_value fl_t34790 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, s, "сообщение", &fl_t34790, error));
-      fl_value fl_t34791 = fl_nothing();
-      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34790, &fl_t34791, error));
-      fl_value fl_t34792 = fl_nothing();
-      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_906, fl_t34791, &fl_t34792, error));
-      fl_t34780[3] = fl_t34792;
-      fl_value fl_t34793 = fl_nothing();
-      FL_TRY(compiler_flang_zapis_znacheniem(ctx, fl_list(fl_t34780, 4), &fl_t34793, error));
-      fl_t34777[fl_t34778] = fl_t34793;
-      fl_t34778 += 1;
+    fl_value fl_t34814 = fl_nothing();
+    FL_TRY(compiler_flang_primery_programmy(ctx, programma, fl_number(1000000.0), fl_number(10000.0), &fl_t34814, error));
+    fl_value fl_t34815 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fl_t34814, "строки", &fl_t34815, error));
+    fl_value fl_t34816 = fl_nothing();
+    FL_TRY(fl_require_list(ctx, fl_t34815, "отобразить", &fl_t34816, error));
+    fl_value *fl_t34817 = NULL;
+    size_t fl_t34818 = 0;
+    FL_TRY(fl_list_alloc(ctx, fl_t34816.as.list.count, &fl_t34817, error));
+    for (size_t fl_t34819 = 0; fl_t34819 < fl_t34816.as.list.count; fl_t34819 += 1) {
+      const fl_value s = fl_t34816.as.list.items[fl_t34819]; /* «с» */
+      fl_value *fl_t34820 = NULL;
+      FL_TRY(fl_list_alloc(ctx, 4, &fl_t34820, error));
+      fl_value fl_t34821 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, s, "функция", &fl_t34821, error));
+      fl_value fl_t34822 = fl_nothing();
+      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34821, &fl_t34822, error));
+      fl_value fl_t34823 = fl_nothing();
+      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_546, fl_t34822, &fl_t34823, error));
+      fl_t34820[0] = fl_t34823;
+      fl_value fl_t34824 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, s, "пример", &fl_t34824, error));
+      fl_value fl_t34825 = fl_nothing();
+      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34824, &fl_t34825, error));
+      fl_value fl_t34826 = fl_nothing();
+      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_384, fl_t34825, &fl_t34826, error));
+      fl_t34820[1] = fl_t34826;
+      fl_value fl_t34827 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, s, "прошёл", &fl_t34827, error));
+      fl_value fl_t34828 = fl_nothing();
+      FL_TRY(compiler_flang_priznak_znacheniem(ctx, fl_t34827, &fl_t34828, error));
+      fl_value fl_t34829 = fl_nothing();
+      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_2747, fl_t34828, &fl_t34829, error));
+      fl_t34820[2] = fl_t34829;
+      fl_value fl_t34830 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, s, "сообщение", &fl_t34830, error));
+      fl_value fl_t34831 = fl_nothing();
+      FL_TRY(compiler_flang_tekst_znacheniem(ctx, fl_t34830, &fl_t34831, error));
+      fl_value fl_t34832 = fl_nothing();
+      FL_TRY(compiler_flang_pole(ctx, compiler_flang_text_906, fl_t34831, &fl_t34832, error));
+      fl_t34820[3] = fl_t34832;
+      fl_value fl_t34833 = fl_nothing();
+      FL_TRY(compiler_flang_zapis_znacheniem(ctx, fl_list(fl_t34820, 4), &fl_t34833, error));
+      fl_t34817[fl_t34818] = fl_t34833;
+      fl_t34818 += 1;
     }
-    *result = fl_list(fl_t34777, fl_t34778);
+    *result = fl_list(fl_t34817, fl_t34818);
     return FL_OK;
   }
 }
@@ -181139,12 +181309,12 @@ fl_status compiler_flang_progony_dlya_yadra(fl_ctx *ctx, fl_value programma, fl_
  * @return значение: строка
  */
 fl_status compiler_flang_pechat_svyazannogo_ast(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t34794 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34794, error));
-  const fl_value svyazano = fl_t34794; /* пусть «связано» */
-  fl_value fl_t34795 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34795, error));
-  return compiler_flang_pechat_znacheniya(ctx, fl_t34795, result, error);
+  fl_value fl_t34834 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34834, error));
+  const fl_value svyazano = fl_t34834; /* пусть «связано» */
+  fl_value fl_t34835 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34835, error));
+  return compiler_flang_pechat_znacheniya(ctx, fl_t34835, result, error);
 }
 
 /*
@@ -181160,12 +181330,12 @@ fl_status compiler_flang_pechat_svyazannogo_ast(fl_ctx *ctx, fl_value fayly, fl_
  * @return значение: «Итог прогона»
  */
 fl_status compiler_flang_progon_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value imya, fl_value argumenty, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34796 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34796, error));
-  const fl_value svyazano = fl_t34796; /* пусть «связано» */
-  fl_value fl_t34797 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34797, error));
-  return compiler_flang_progon_svyazannogo(ctx, fl_t34797, imya, argumenty, predel_vitkov, predel_glubiny, result, error);
+  fl_value fl_t34836 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34836, error));
+  const fl_value svyazano = fl_t34836; /* пусть «связано» */
+  fl_value fl_t34837 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34837, error));
+  return compiler_flang_progon_svyazannogo(ctx, fl_t34837, imya, argumenty, predel_vitkov, predel_glubiny, result, error);
 }
 
 /*
@@ -181180,22 +181350,22 @@ fl_status compiler_flang_progon_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value
  * @return значение: «Итог прогона»
  */
 fl_status compiler_flang_progon_svyazannogo(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value argumenty, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34798 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_argumenty_vyzova(ctx, programma, imya, argumenty, &fl_t34798, error));
-  if (fl_chain_empty(fl_t34798)) {
-    fl_value fl_t34799 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34799, error));
-    return compiler_flang_vyzvat(ctx, fl_t34799, imya, argumenty, predel_vitkov, predel_glubiny, result, error);
-  } else if (fl_chain_cons(fl_t34798)) {
-    const fl_value beda = fl_chain_head(fl_t34798); /* голова «беда» */
-    const fl_value prochie = fl_chain_tail(fl_t34798); /* хвост «прочие» */
-    fl_value fl_t34800 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, beda, "код", &fl_t34800, error));
-    fl_value fl_t34801 = fl_nothing();
-    FL_TRY(compiler_flang_soobschenie_otkaza_vhoda(ctx, beda, prochie, &fl_t34801, error));
-    return compiler_flang_itog_otkaza(ctx, fl_t34800, fl_t34801, fl_number(0.0), result, error);
+  fl_value fl_t34838 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_argumenty_vyzova(ctx, programma, imya, argumenty, &fl_t34838, error));
+  if (fl_chain_empty(fl_t34838)) {
+    fl_value fl_t34839 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_mery(ctx, programma, &fl_t34839, error));
+    return compiler_flang_vyzvat(ctx, fl_t34839, imya, argumenty, predel_vitkov, predel_glubiny, result, error);
+  } else if (fl_chain_cons(fl_t34838)) {
+    const fl_value beda = fl_chain_head(fl_t34838); /* голова «беда» */
+    const fl_value prochie = fl_chain_tail(fl_t34838); /* хвост «прочие» */
+    fl_value fl_t34840 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, beda, "код", &fl_t34840, error));
+    fl_value fl_t34841 = fl_nothing();
+    FL_TRY(compiler_flang_soobschenie_otkaza_vhoda(ctx, beda, prochie, &fl_t34841, error));
+    return compiler_flang_itog_otkaza(ctx, fl_t34840, fl_t34841, fl_number(0.0), result, error);
   } else {
-    return fl_match_fail(ctx, fl_t34798, error);
+    return fl_match_fail(ctx, fl_t34838, error);
   }
 }
 
@@ -181208,31 +181378,31 @@ fl_status compiler_flang_progon_svyazannogo(fl_ctx *ctx, fl_value programma, fl_
  * @return значение: строка
  */
 fl_status compiler_flang_soobschenie_otkaza_vhoda(fl_ctx *ctx, fl_value beda, fl_value prochie, fl_value *result, fl_error *error) {
-  fl_value fl_t34802 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, prochie, &fl_t34802, error));
-  bool fl_t34803 = false;
-  FL_TRY(fl_cond(ctx, fl_t34802, &fl_t34803, error));
-  if (fl_t34803) {
-    fl_value fl_t34804 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, beda, "сообщение", &fl_t34804, error));
-    *result = fl_t34804;
+  fl_value fl_t34842 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, prochie, &fl_t34842, error));
+  bool fl_t34843 = false;
+  FL_TRY(fl_cond(ctx, fl_t34842, &fl_t34843, error));
+  if (fl_t34843) {
+    fl_value fl_t34844 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, beda, "сообщение", &fl_t34844, error));
+    *result = fl_t34844;
     return FL_OK;
   } else {
-    fl_value *fl_t34805 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 4, &fl_t34805, error));
-    fl_value fl_t34806 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, beda, "сообщение", &fl_t34806, error));
-    fl_t34805[0] = fl_t34806;
-    fl_t34805[1] = compiler_flang_text_3142;
-    fl_value fl_t34807 = fl_nothing(); /* «длина» */
-    FL_TRY(fl_b_dlina(ctx, prochie, &fl_t34807, error));
-    fl_value fl_t34808 = fl_nothing(); /* «к строке» */
-    FL_TRY(fl_b_k_stroke(ctx, fl_t34807, &fl_t34808, error));
-    fl_t34805[2] = fl_t34808;
-    fl_t34805[3] = compiler_flang_text_436;
-    fl_value fl_t34809 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34805, 4), compiler_flang_text_331, &fl_t34809, error));
-    *result = fl_t34809;
+    fl_value *fl_t34845 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 4, &fl_t34845, error));
+    fl_value fl_t34846 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, beda, "сообщение", &fl_t34846, error));
+    fl_t34845[0] = fl_t34846;
+    fl_t34845[1] = compiler_flang_text_3148;
+    fl_value fl_t34847 = fl_nothing(); /* «длина» */
+    FL_TRY(fl_b_dlina(ctx, prochie, &fl_t34847, error));
+    fl_value fl_t34848 = fl_nothing(); /* «к строке» */
+    FL_TRY(fl_b_k_stroke(ctx, fl_t34847, &fl_t34848, error));
+    fl_t34845[2] = fl_t34848;
+    fl_t34845[3] = compiler_flang_text_436;
+    fl_value fl_t34849 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34845, 4), compiler_flang_text_331, &fl_t34849, error));
+    *result = fl_t34849;
     return FL_OK;
   }
 }
@@ -181246,16 +181416,16 @@ fl_status compiler_flang_soobschenie_otkaza_vhoda(fl_ctx *ctx, fl_value beda, fl
  * @return значение: число
  */
 fl_status compiler_flang_chislo_svyazannyh_funkciy(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t34810 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34810, error));
-  const fl_value svyazano = fl_t34810; /* пусть «связано» */
-  fl_value fl_t34811 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34811, error));
-  fl_value fl_t34812 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, fl_t34811, compiler_flang_text_602, &fl_t34812, error));
-  fl_value fl_t34813 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34812, &fl_t34813, error));
-  *result = fl_t34813;
+  fl_value fl_t34850 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34850, error));
+  const fl_value svyazano = fl_t34850; /* пусть «связано» */
+  fl_value fl_t34851 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34851, error));
+  fl_value fl_t34852 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, fl_t34851, compiler_flang_text_602, &fl_t34852, error));
+  fl_value fl_t34853 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t34852, &fl_t34853, error));
+  *result = fl_t34853;
   return FL_OK;
 }
 
@@ -181271,43 +181441,43 @@ fl_status compiler_flang_chislo_svyazannyh_funkciy(fl_ctx *ctx, fl_value fayly, 
  * @return значение: «Итоги примеров»
  */
 fl_status compiler_flang_progon_primerov_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value proveryat, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34814 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34814, error));
-  const fl_value svyazano = fl_t34814; /* пусть «связано» */
-  bool fl_t34815 = false;
-  FL_TRY(fl_cond(ctx, proveryat, &fl_t34815, error));
-  fl_value fl_t34816 = fl_nothing();
-  if (fl_t34815) {
-    fl_value fl_t34817 = fl_nothing();
-    FL_TRY(compiler_flang_proverit_svyazannoe(ctx, svyazano, &fl_t34817, error));
-    fl_value fl_t34818 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, fl_t34817, "диагностики", &fl_t34818, error));
-    fl_t34816 = fl_t34818;
+  fl_value fl_t34854 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34854, error));
+  const fl_value svyazano = fl_t34854; /* пусть «связано» */
+  bool fl_t34855 = false;
+  FL_TRY(fl_cond(ctx, proveryat, &fl_t34855, error));
+  fl_value fl_t34856 = fl_nothing();
+  if (fl_t34855) {
+    fl_value fl_t34857 = fl_nothing();
+    FL_TRY(compiler_flang_proverit_svyazannoe(ctx, svyazano, &fl_t34857, error));
+    fl_value fl_t34858 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, fl_t34857, "диагностики", &fl_t34858, error));
+    fl_t34856 = fl_t34858;
   } else {
-    fl_t34816 = fl_list(NULL, 0);
+    fl_t34856 = fl_list(NULL, 0);
   }
-  const fl_value diagnostiki = fl_t34816; /* пусть «диагностики» */
-  fl_value fl_t34819 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, diagnostiki, &fl_t34819, error));
-  bool fl_t34820 = false;
-  FL_TRY(fl_cond(ctx, fl_t34819, &fl_t34820, error));
-  if (fl_t34820) {
-    fl_value fl_t34821 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34821, error));
-    fl_value fl_t34822 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t34821, &fl_t34822, error));
-    return compiler_flang_primery_programmy(ctx, fl_t34822, predel_vitkov, predel_glubiny, result, error);
+  const fl_value diagnostiki = fl_t34856; /* пусть «диагностики» */
+  fl_value fl_t34859 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, diagnostiki, &fl_t34859, error));
+  bool fl_t34860 = false;
+  FL_TRY(fl_cond(ctx, fl_t34859, &fl_t34860, error));
+  if (fl_t34860) {
+    fl_value fl_t34861 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34861, error));
+    fl_value fl_t34862 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t34861, &fl_t34862, error));
+    return compiler_flang_primery_programmy(ctx, fl_t34862, predel_vitkov, predel_glubiny, result, error);
   } else {
-    fl_value fl_t34824[6];
-    fl_t34824[0] = fl_flag(false); /* «годно» */
-    fl_t34824[1] = fl_number(0.0); /* «всего» */
-    fl_t34824[2] = fl_number(0.0); /* «прошло» */
-    fl_t34824[3] = fl_number(0.0); /* «сорвалось» */
-    fl_t34824[4] = fl_list(NULL, 0); /* «строки» */
-    fl_t34824[5] = diagnostiki; /* «диагностики» */
-    fl_value fl_t34823 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_256, fl_t34824, 6, &fl_t34823, error));
-    *result = fl_t34823;
+    fl_value fl_t34864[6];
+    fl_t34864[0] = fl_flag(false); /* «годно» */
+    fl_t34864[1] = fl_number(0.0); /* «всего» */
+    fl_t34864[2] = fl_number(0.0); /* «прошло» */
+    fl_t34864[3] = fl_number(0.0); /* «сорвалось» */
+    fl_t34864[4] = fl_list(NULL, 0); /* «строки» */
+    fl_t34864[5] = diagnostiki; /* «диагностики» */
+    fl_value fl_t34863 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_256, fl_t34864, 6, &fl_t34863, error));
+    *result = fl_t34863;
     return FL_OK;
   }
 }
@@ -181322,47 +181492,47 @@ fl_status compiler_flang_progon_primerov_ishodnikov(fl_ctx *ctx, fl_value fayly,
  * @return значение: «Итоги примеров»
  */
 fl_status compiler_flang_primery_programmy(fl_ctx *ctx, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34825 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t34825, error));
-  fl_value fl_t34826 = fl_nothing();
-  FL_TRY(compiler_flang_stroki_primerov(ctx, fl_t34825, programma, predel_vitkov, predel_glubiny, &fl_t34826, error));
-  const fl_value stroki = fl_t34826; /* пусть «строки» */
-  fl_value fl_t34827 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, stroki, "отфильтровать", &fl_t34827, error));
-  fl_value *fl_t34828 = NULL;
-  size_t fl_t34829 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34827.as.list.count, &fl_t34828, error));
-  for (size_t fl_t34830 = 0; fl_t34830 < fl_t34827.as.list.count; fl_t34830 += 1) {
-    const fl_value s = fl_t34827.as.list.items[fl_t34830]; /* «с» */
-    fl_value fl_t34831 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, s, "прошёл", &fl_t34831, error));
-    bool fl_t34832 = false;
-    FL_TRY(fl_keep(ctx, fl_t34831, &fl_t34832, error));
-    if (fl_t34832) {
-      fl_t34828[fl_t34829] = s;
-      fl_t34829 += 1;
+  fl_value fl_t34865 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t34865, error));
+  fl_value fl_t34866 = fl_nothing();
+  FL_TRY(compiler_flang_stroki_primerov(ctx, fl_t34865, programma, predel_vitkov, predel_glubiny, &fl_t34866, error));
+  const fl_value stroki = fl_t34866; /* пусть «строки» */
+  fl_value fl_t34867 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, stroki, "отфильтровать", &fl_t34867, error));
+  fl_value *fl_t34868 = NULL;
+  size_t fl_t34869 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34867.as.list.count, &fl_t34868, error));
+  for (size_t fl_t34870 = 0; fl_t34870 < fl_t34867.as.list.count; fl_t34870 += 1) {
+    const fl_value s = fl_t34867.as.list.items[fl_t34870]; /* «с» */
+    fl_value fl_t34871 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, s, "прошёл", &fl_t34871, error));
+    bool fl_t34872 = false;
+    FL_TRY(fl_keep(ctx, fl_t34871, &fl_t34872, error));
+    if (fl_t34872) {
+      fl_t34868[fl_t34869] = s;
+      fl_t34869 += 1;
     }
   }
-  fl_value fl_t34833 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_list(fl_t34828, fl_t34829), &fl_t34833, error));
-  const fl_value proshlo = fl_t34833; /* пусть «прошло» */
-  fl_value fl_t34834 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34834, error));
-  fl_value fl_t34835 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34835, error));
-  fl_value fl_t34836 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34836, error));
-  if (fl_t34836.tag != FL_NUMBER || proshlo.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "sub", fl_t34836, proshlo, error));
-  fl_value fl_t34838[6];
-  fl_t34838[0] = fl_flag(fl_equal(fl_t34834, proshlo)); /* «годно» */
-  fl_t34838[1] = fl_t34835; /* «всего» */
-  fl_t34838[2] = proshlo; /* «прошло» */
-  fl_t34838[3] = fl_number(fl_t34836.as.number - proshlo.as.number); /* «сорвалось» */
-  fl_t34838[4] = stroki; /* «строки» */
-  fl_t34838[5] = fl_list(NULL, 0); /* «диагностики» */
-  fl_value fl_t34837 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_256, fl_t34838, 6, &fl_t34837, error));
-  *result = fl_t34837;
+  fl_value fl_t34873 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_list(fl_t34868, fl_t34869), &fl_t34873, error));
+  const fl_value proshlo = fl_t34873; /* пусть «прошло» */
+  fl_value fl_t34874 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34874, error));
+  fl_value fl_t34875 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34875, error));
+  fl_value fl_t34876 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, stroki, &fl_t34876, error));
+  if (fl_t34876.tag != FL_NUMBER || proshlo.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "sub", fl_t34876, proshlo, error));
+  fl_value fl_t34878[6];
+  fl_t34878[0] = fl_flag(fl_equal(fl_t34874, proshlo)); /* «годно» */
+  fl_t34878[1] = fl_t34875; /* «всего» */
+  fl_t34878[2] = proshlo; /* «прошло» */
+  fl_t34878[3] = fl_number(fl_t34876.as.number - proshlo.as.number); /* «сорвалось» */
+  fl_t34878[4] = stroki; /* «строки» */
+  fl_t34878[5] = fl_list(NULL, 0); /* «диагностики» */
+  fl_value fl_t34877 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_256, fl_t34878, 6, &fl_t34877, error));
+  *result = fl_t34877;
   return FL_OK;
 }
 
@@ -181377,20 +181547,20 @@ fl_status compiler_flang_primery_programmy(fl_ctx *ctx, fl_value programma, fl_v
  * @return значение: список: «Итог примера»
  */
 fl_status compiler_flang_stroki_primerov(fl_ctx *ctx, fl_value funkcii, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34839 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, funkcii, "свёртка", &fl_t34839, error));
+  fl_value fl_t34879 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, funkcii, "свёртка", &fl_t34879, error));
   fl_value akk = fl_list(NULL, 0); /* «акк» */
-  const fl_mark fl_t34841 = fl_region_open(ctx);
-  for (size_t fl_t34840 = 0; fl_t34840 < fl_t34839.as.list.count; fl_t34840 += 1) {
-    const fl_value funkciya = fl_t34839.as.list.items[fl_t34840]; /* «функция» */
-    fl_value fl_t34842 = fl_nothing();
-    FL_TRY(compiler_flang_primery_funkcii(ctx, funkciya, programma, predel_vitkov, predel_glubiny, &fl_t34842, error));
-    fl_value fl_t34843 = fl_nothing();
-    FL_TRY(compiler_flang_dopisat_primery(ctx, akk, fl_t34842, &fl_t34843, error));
-    akk = fl_t34843;
-    FL_TRY(fl_region_recycle(ctx, fl_t34841, &akk, error));
+  const fl_mark fl_t34881 = fl_region_open(ctx);
+  for (size_t fl_t34880 = 0; fl_t34880 < fl_t34879.as.list.count; fl_t34880 += 1) {
+    const fl_value funkciya = fl_t34879.as.list.items[fl_t34880]; /* «функция» */
+    fl_value fl_t34882 = fl_nothing();
+    FL_TRY(compiler_flang_primery_funkcii(ctx, funkciya, programma, predel_vitkov, predel_glubiny, &fl_t34882, error));
+    fl_value fl_t34883 = fl_nothing();
+    FL_TRY(compiler_flang_dopisat_primery(ctx, akk, fl_t34882, &fl_t34883, error));
+    akk = fl_t34883;
+    FL_TRY(fl_region_recycle(ctx, fl_t34881, &akk, error));
   }
-  FL_TRY(fl_region_close(ctx, fl_t34841, FL_OK, &akk, error));
+  FL_TRY(fl_region_close(ctx, fl_t34881, FL_OK, &akk, error));
   *result = akk;
   return FL_OK;
 }
@@ -181404,18 +181574,18 @@ fl_status compiler_flang_stroki_primerov(fl_ctx *ctx, fl_value funkcii, fl_value
  * @return значение: список: «Итог примера»
  */
 fl_status compiler_flang_dopisat_primery(fl_ctx *ctx, fl_value akk, fl_value novye, fl_value *result, fl_error *error) {
-  fl_value fl_t34844 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, novye, "свёртка", &fl_t34844, error));
+  fl_value fl_t34884 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, novye, "свёртка", &fl_t34884, error));
   fl_value summa = akk; /* «сумма» */
-  const fl_mark fl_t34846 = fl_region_open(ctx);
-  for (size_t fl_t34845 = 0; fl_t34845 < fl_t34844.as.list.count; fl_t34845 += 1) {
-    const fl_value stroka = fl_t34844.as.list.items[fl_t34845]; /* «строка» */
-    fl_value fl_t34847 = fl_nothing(); /* «добавить» */
-    FL_TRY(fl_b_dobavit(ctx, stroka, summa, &fl_t34847, error));
-    summa = fl_t34847;
-    FL_TRY(fl_region_recycle(ctx, fl_t34846, &summa, error));
+  const fl_mark fl_t34886 = fl_region_open(ctx);
+  for (size_t fl_t34885 = 0; fl_t34885 < fl_t34884.as.list.count; fl_t34885 += 1) {
+    const fl_value stroka = fl_t34884.as.list.items[fl_t34885]; /* «строка» */
+    fl_value fl_t34887 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, stroka, summa, &fl_t34887, error));
+    summa = fl_t34887;
+    FL_TRY(fl_region_recycle(ctx, fl_t34886, &summa, error));
   }
-  FL_TRY(fl_region_close(ctx, fl_t34846, FL_OK, &summa, error));
+  FL_TRY(fl_region_close(ctx, fl_t34886, FL_OK, &summa, error));
   *result = summa;
   return FL_OK;
 }
@@ -181431,23 +181601,23 @@ fl_status compiler_flang_dopisat_primery(fl_ctx *ctx, fl_value akk, fl_value nov
  * @return значение: список: «Итог примера»
  */
 fl_status compiler_flang_primery_funkcii(fl_ctx *ctx, fl_value funkciya, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34848 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, funkciya, compiler_flang_text_893, &fl_t34848, error));
-  fl_value fl_t34849 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34848, "отобразить", &fl_t34849, error));
-  fl_value *fl_t34850 = NULL;
-  size_t fl_t34851 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34849.as.list.count, &fl_t34850, error));
-  for (size_t fl_t34852 = 0; fl_t34852 < fl_t34849.as.list.count; fl_t34852 += 1) {
-    const fl_value primer = fl_t34849.as.list.items[fl_t34852]; /* «пример» */
-    fl_value fl_t34853 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, funkciya, compiler_flang_text_384, &fl_t34853, error));
-    fl_value fl_t34854 = fl_nothing();
-    FL_TRY(compiler_flang_prognat_primer_funkcii(ctx, primer, fl_t34853, programma, predel_vitkov, predel_glubiny, &fl_t34854, error));
-    fl_t34850[fl_t34851] = fl_t34854;
-    fl_t34851 += 1;
+  fl_value fl_t34888 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, funkciya, compiler_flang_text_893, &fl_t34888, error));
+  fl_value fl_t34889 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34888, "отобразить", &fl_t34889, error));
+  fl_value *fl_t34890 = NULL;
+  size_t fl_t34891 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34889.as.list.count, &fl_t34890, error));
+  for (size_t fl_t34892 = 0; fl_t34892 < fl_t34889.as.list.count; fl_t34892 += 1) {
+    const fl_value primer = fl_t34889.as.list.items[fl_t34892]; /* «пример» */
+    fl_value fl_t34893 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, funkciya, compiler_flang_text_384, &fl_t34893, error));
+    fl_value fl_t34894 = fl_nothing();
+    FL_TRY(compiler_flang_prognat_primer_funkcii(ctx, primer, fl_t34893, programma, predel_vitkov, predel_glubiny, &fl_t34894, error));
+    fl_t34890[fl_t34891] = fl_t34894;
+    fl_t34891 += 1;
   }
-  *result = fl_list(fl_t34850, fl_t34851);
+  *result = fl_list(fl_t34890, fl_t34891);
   return FL_OK;
 }
 
@@ -181463,15 +181633,15 @@ fl_status compiler_flang_primery_funkcii(fl_ctx *ctx, fl_value funkciya, fl_valu
  * @return значение: «Итог примера»
  */
 fl_status compiler_flang_prognat_primer_funkcii(fl_ctx *ctx, fl_value primer, fl_value imya, fl_value programma, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t34855 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, primer, compiler_flang_text_545, &fl_t34855, error));
-  fl_value fl_t34856 = fl_nothing();
-  FL_TRY(compiler_flang_vyzvat(ctx, programma, imya, fl_t34855, predel_vitkov, predel_glubiny, &fl_t34856, error));
-  fl_value fl_t34857 = fl_nothing();
-  FL_TRY(compiler_flang_stroka_polya(ctx, primer, compiler_flang_text_384, &fl_t34857, error));
-  fl_value fl_t34858 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, primer, compiler_flang_text_924, &fl_t34858, error));
-  return compiler_flang_itog_primera_po_progonu(ctx, fl_t34856, imya, fl_t34857, fl_t34858, result, error);
+  fl_value fl_t34895 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, primer, compiler_flang_text_545, &fl_t34895, error));
+  fl_value fl_t34896 = fl_nothing();
+  FL_TRY(compiler_flang_vyzvat(ctx, programma, imya, fl_t34895, predel_vitkov, predel_glubiny, &fl_t34896, error));
+  fl_value fl_t34897 = fl_nothing();
+  FL_TRY(compiler_flang_stroka_polya(ctx, primer, compiler_flang_text_384, &fl_t34897, error));
+  fl_value fl_t34898 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, primer, compiler_flang_text_924, &fl_t34898, error));
+  return compiler_flang_itog_primera_po_progonu(ctx, fl_t34896, imya, fl_t34897, fl_t34898, result, error);
 }
 
 /*
@@ -181485,41 +181655,41 @@ fl_status compiler_flang_prognat_primer_funkcii(fl_ctx *ctx, fl_value primer, fl
  * @return значение: «Итог примера»
  */
 fl_status compiler_flang_itog_primera_po_progonu(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value primer, fl_value ozhidaetsya, fl_value *result, fl_error *error) {
-  fl_value fl_t34859 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t34859, error));
-  bool fl_t34860 = false;
-  FL_TRY(fl_cond(ctx, fl_t34859, &fl_t34860, error));
-  fl_value fl_t34861 = fl_nothing();
-  if (fl_t34860) {
-    fl_t34861 = fl_flag(false);
+  fl_value fl_t34899 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t34899, error));
+  bool fl_t34900 = false;
+  FL_TRY(fl_cond(ctx, fl_t34899, &fl_t34900, error));
+  fl_value fl_t34901 = fl_nothing();
+  if (fl_t34900) {
+    fl_t34901 = fl_flag(false);
   } else {
-    fl_t34861 = fl_flag(true);
+    fl_t34901 = fl_flag(true);
   }
-  bool fl_t34862 = false;
-  FL_TRY(fl_cond(ctx, fl_t34861, &fl_t34862, error));
-  if (fl_t34862) {
-    fl_value fl_t34863 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t34863, error));
-    fl_value fl_t34864 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t34864, error));
-    fl_value fl_t34866[5];
-    fl_t34866[0] = imya; /* «функция» */
-    fl_t34866[1] = primer; /* «пример» */
-    fl_t34866[2] = fl_flag(false); /* «прошёл» */
-    fl_t34866[3] = fl_t34863; /* «код» */
-    fl_t34866[4] = fl_t34864; /* «сообщение» */
-    fl_value fl_t34865 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34866, 5, &fl_t34865, error));
-    *result = fl_t34865;
+  bool fl_t34902 = false;
+  FL_TRY(fl_cond(ctx, fl_t34901, &fl_t34902, error));
+  if (fl_t34902) {
+    fl_value fl_t34903 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t34903, error));
+    fl_value fl_t34904 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t34904, error));
+    fl_value fl_t34906[5];
+    fl_t34906[0] = imya; /* «функция» */
+    fl_t34906[1] = primer; /* «пример» */
+    fl_t34906[2] = fl_flag(false); /* «прошёл» */
+    fl_t34906[3] = fl_t34903; /* «код» */
+    fl_t34906[4] = fl_t34904; /* «сообщение» */
+    fl_value fl_t34905 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34906, 5, &fl_t34905, error));
+    *result = fl_t34905;
     return FL_OK;
   } else {
-    fl_value fl_t34867 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t34867, error));
-    fl_value fl_t34868 = fl_nothing();
-    FL_TRY(compiler_flang_oveschestvit(ctx, ozhidaetsya, &fl_t34868, error));
-    fl_value fl_t34869 = fl_nothing();
-    FL_TRY(compiler_flang_znach_ravny(ctx, fl_t34867, fl_t34868, &fl_t34869, error));
-    return compiler_flang_itog_primera_po_znacheniyu(ctx, fl_t34869, imya, primer, ozhidaetsya, result, error);
+    fl_value fl_t34907 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t34907, error));
+    fl_value fl_t34908 = fl_nothing();
+    FL_TRY(compiler_flang_oveschestvit(ctx, ozhidaetsya, &fl_t34908, error));
+    fl_value fl_t34909 = fl_nothing();
+    FL_TRY(compiler_flang_znach_ravny(ctx, fl_t34907, fl_t34908, &fl_t34909, error));
+    return compiler_flang_itog_primera_po_znacheniyu(ctx, fl_t34909, imya, primer, ozhidaetsya, result, error);
   }
 }
 
@@ -181534,39 +181704,81 @@ fl_status compiler_flang_itog_primera_po_progonu(fl_ctx *ctx, fl_value itog, fl_
  * @return значение: «Итог примера»
  */
 fl_status compiler_flang_itog_primera_po_znacheniyu(fl_ctx *ctx, fl_value soshlos, fl_value imya, fl_value primer, fl_value ozhidaetsya, fl_value *result, fl_error *error) {
-  bool fl_t34870 = false;
-  FL_TRY(fl_cond(ctx, soshlos, &fl_t34870, error));
-  if (fl_t34870) {
-    fl_value fl_t34872[5];
-    fl_t34872[0] = imya; /* «функция» */
-    fl_t34872[1] = primer; /* «пример» */
-    fl_t34872[2] = fl_flag(true); /* «прошёл» */
-    fl_t34872[3] = compiler_flang_text_331; /* «код» */
-    fl_t34872[4] = compiler_flang_text_331; /* «сообщение» */
-    fl_value fl_t34871 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34872, 5, &fl_t34871, error));
-    *result = fl_t34871;
+  bool fl_t34910 = false;
+  FL_TRY(fl_cond(ctx, soshlos, &fl_t34910, error));
+  if (fl_t34910) {
+    fl_value fl_t34912[5];
+    fl_t34912[0] = imya; /* «функция» */
+    fl_t34912[1] = primer; /* «пример» */
+    fl_t34912[2] = fl_flag(true); /* «прошёл» */
+    fl_t34912[3] = compiler_flang_text_331; /* «код» */
+    fl_t34912[4] = compiler_flang_text_331; /* «сообщение» */
+    fl_value fl_t34911 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34912, 5, &fl_t34911, error));
+    *result = fl_t34911;
     return FL_OK;
   } else {
-    fl_value *fl_t34873 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34873, error));
-    fl_t34873[0] = compiler_flang_text_3143;
-    fl_value fl_t34874 = fl_nothing();
-    FL_TRY(compiler_flang_pechat_znacheniya(ctx, ozhidaetsya, &fl_t34874, error));
-    fl_t34873[1] = fl_t34874;
-    fl_value fl_t34875 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34873, 2), compiler_flang_text_331, &fl_t34875, error));
-    fl_value fl_t34877[5];
-    fl_t34877[0] = imya; /* «функция» */
-    fl_t34877[1] = primer; /* «пример» */
-    fl_t34877[2] = fl_flag(false); /* «прошёл» */
-    fl_t34877[3] = compiler_flang_text_331; /* «код» */
-    fl_t34877[4] = fl_t34875; /* «сообщение» */
-    fl_value fl_t34876 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34877, 5, &fl_t34876, error));
-    *result = fl_t34876;
+    fl_value *fl_t34913 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 2, &fl_t34913, error));
+    fl_t34913[0] = compiler_flang_text_3149;
+    fl_value fl_t34914 = fl_nothing();
+    FL_TRY(compiler_flang_pechat_znacheniya(ctx, ozhidaetsya, &fl_t34914, error));
+    fl_t34913[1] = fl_t34914;
+    fl_value fl_t34915 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34913, 2), compiler_flang_text_331, &fl_t34915, error));
+    fl_value fl_t34917[5];
+    fl_t34917[0] = imya; /* «функция» */
+    fl_t34917[1] = primer; /* «пример» */
+    fl_t34917[2] = fl_flag(false); /* «прошёл» */
+    fl_t34917[3] = compiler_flang_text_331; /* «код» */
+    fl_t34917[4] = fl_t34915; /* «сообщение» */
+    fl_value fl_t34916 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_255, fl_t34917, 5, &fl_t34916, error));
+    *result = fl_t34916;
     return FL_OK;
   }
+}
+
+/*
+ * Функция flang «Своих примеров в исходнике».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param ishodnik — «исходник»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_svoih_primerov_v_ishodnike(fl_ctx *ctx, fl_value ishodnik, fl_value *result, fl_error *error) {
+  fl_value fl_t34918 = fl_nothing();
+  FL_TRY(compiler_flang_razobrat_programmu(ctx, ishodnik, &fl_t34918, error));
+  fl_value fl_t34919 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, fl_t34918, compiler_flang_text_602, &fl_t34919, error));
+  return compiler_flang_primerov_v_funkciyah(ctx, fl_t34919, result, error);
+}
+
+/*
+ * Функция flang «Примеров в функциях».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_primerov_v_funkciyah(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error) {
+  fl_value fl_t34920 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, funkcii, "свёртка", &fl_t34920, error));
+  fl_value summa = fl_number(0.0); /* «сумма» */
+  const fl_mark fl_t34922 = fl_region_open(ctx);
+  for (size_t fl_t34921 = 0; fl_t34921 < fl_t34920.as.list.count; fl_t34921 += 1) {
+    const fl_value funkciya = fl_t34920.as.list.items[fl_t34921]; /* «функция» */
+    fl_value fl_t34923 = fl_nothing();
+    FL_TRY(compiler_flang_elementy_polya(ctx, funkciya, compiler_flang_text_893, &fl_t34923, error));
+    fl_value fl_t34924 = fl_nothing(); /* «длина» */
+    FL_TRY(fl_b_dlina(ctx, fl_t34923, &fl_t34924, error));
+    if (summa.tag != FL_NUMBER || fl_t34924.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", summa, fl_t34924, error));
+    summa = fl_number(summa.as.number + fl_t34924.as.number);
+    FL_TRY(fl_region_recycle(ctx, fl_t34922, &summa, error));
+  }
+  FL_TRY(fl_region_close(ctx, fl_t34922, FL_OK, &summa, error));
+  *result = summa;
+  return FL_OK;
 }
 
 /*
@@ -181578,38 +181790,38 @@ fl_status compiler_flang_itog_primera_po_znacheniyu(fl_ctx *ctx, fl_value soshlo
  * @return значение: «Итог ведомости»
  */
 fl_status compiler_flang_vedomost_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error) {
-  fl_value fl_t34878 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34878, error));
-  const fl_value svyazano = fl_t34878; /* пусть «связано» */
-  fl_value fl_t34879 = fl_nothing();
-  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34879, error));
-  fl_value fl_t34880 = fl_nothing();
-  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34880, error));
-  fl_value fl_t34881 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_svyazannoe_s_primerami(ctx, svyazano, fl_t34879, fl_t34880, &fl_t34881, error));
-  const fl_value proverka = fl_t34881; /* пусть «проверка» */
-  fl_value fl_t34882 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, proverka, "диагностики", &fl_t34882, error));
-  fl_value fl_t34883 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t34882, &fl_t34883, error));
-  bool fl_t34884 = false;
-  FL_TRY(fl_cond(ctx, fl_t34883, &fl_t34884, error));
-  if (fl_t34884) {
-    fl_value fl_t34885 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34885, error));
-    return compiler_flang_vedomost_proverennogo(ctx, fl_t34885, result, error);
+  fl_value fl_t34925 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t34925, error));
+  const fl_value svyazano = fl_t34925; /* пусть «связано» */
+  fl_value fl_t34926 = fl_nothing();
+  FL_TRY(compiler_flang_predel_vitkov_proverki(ctx, &fl_t34926, error));
+  fl_value fl_t34927 = fl_nothing();
+  FL_TRY(compiler_flang_predel_glubiny_proverki(ctx, &fl_t34927, error));
+  fl_value fl_t34928 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_svyazannoe_s_primerami(ctx, svyazano, fl_t34926, fl_t34927, &fl_t34928, error));
+  const fl_value proverka = fl_t34928; /* пусть «проверка» */
+  fl_value fl_t34929 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, proverka, "диагностики", &fl_t34929, error));
+  fl_value fl_t34930 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t34929, &fl_t34930, error));
+  bool fl_t34931 = false;
+  FL_TRY(fl_cond(ctx, fl_t34930, &fl_t34931, error));
+  if (fl_t34931) {
+    fl_value fl_t34932 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t34932, error));
+    return compiler_flang_vedomost_proverennogo(ctx, fl_t34932, result, error);
   } else {
-    fl_value fl_t34886 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, proverka, "диагностики", &fl_t34886, error));
-    fl_value fl_t34888[5];
-    fl_t34888[0] = fl_flag(false); /* «годно» */
-    fl_t34888[1] = compiler_flang_text_331; /* «словами» */
-    fl_t34888[2] = compiler_flang_text_331; /* «в JSON» */
-    fl_t34888[3] = compiler_flang_text_331; /* «препятствие» */
-    fl_t34888[4] = fl_t34886; /* «диагностики» */
-    fl_value fl_t34887 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34888, 5, &fl_t34887, error));
-    *result = fl_t34887;
+    fl_value fl_t34933 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, proverka, "диагностики", &fl_t34933, error));
+    fl_value fl_t34935[5];
+    fl_t34935[0] = fl_flag(false); /* «годно» */
+    fl_t34935[1] = compiler_flang_text_331; /* «словами» */
+    fl_t34935[2] = compiler_flang_text_331; /* «в JSON» */
+    fl_t34935[3] = compiler_flang_text_331; /* «препятствие» */
+    fl_t34935[4] = fl_t34933; /* «диагностики» */
+    fl_value fl_t34934 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34935, 5, &fl_t34934, error));
+    *result = fl_t34934;
     return FL_OK;
   }
 }
@@ -181622,29 +181834,29 @@ fl_status compiler_flang_vedomost_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_val
  * @return значение: «Итог ведомости»
  */
 fl_status compiler_flang_vedomost_proverennogo(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
-  fl_value fl_t34889 = fl_nothing();
-  FL_TRY(compiler_flang_neposchitannoe_v_binarnike(ctx, programma, &fl_t34889, error));
-  const fl_value prepyatstvie = fl_t34889; /* пусть «препятствие» */
-  fl_value fl_t34890 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, prepyatstvie, &fl_t34890, error));
-  if (fl_t34890.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34890, fl_number(0.0), error));
-  bool fl_t34891 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_t34890.as.number > 0.0), &fl_t34891, error));
-  if (fl_t34891) {
-    fl_value fl_t34893[5];
-    fl_t34893[0] = fl_flag(false); /* «годно» */
-    fl_t34893[1] = compiler_flang_text_331; /* «словами» */
-    fl_t34893[2] = compiler_flang_text_331; /* «в JSON» */
-    fl_t34893[3] = prepyatstvie; /* «препятствие» */
-    fl_t34893[4] = fl_list(NULL, 0); /* «диагностики» */
-    fl_value fl_t34892 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34893, 5, &fl_t34892, error));
-    *result = fl_t34892;
+  fl_value fl_t34936 = fl_nothing();
+  FL_TRY(compiler_flang_neposchitannoe_v_binarnike(ctx, programma, &fl_t34936, error));
+  const fl_value prepyatstvie = fl_t34936; /* пусть «препятствие» */
+  fl_value fl_t34937 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, prepyatstvie, &fl_t34937, error));
+  if (fl_t34937.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34937, fl_number(0.0), error));
+  bool fl_t34938 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_t34937.as.number > 0.0), &fl_t34938, error));
+  if (fl_t34938) {
+    fl_value fl_t34940[5];
+    fl_t34940[0] = fl_flag(false); /* «годно» */
+    fl_t34940[1] = compiler_flang_text_331; /* «словами» */
+    fl_t34940[2] = compiler_flang_text_331; /* «в JSON» */
+    fl_t34940[3] = prepyatstvie; /* «препятствие» */
+    fl_t34940[4] = fl_list(NULL, 0); /* «диагностики» */
+    fl_value fl_t34939 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34940, 5, &fl_t34939, error));
+    *result = fl_t34939;
     return FL_OK;
   } else {
-    fl_value fl_t34894 = fl_nothing();
-    FL_TRY(compiler_flang_itogi_binarnika(ctx, programma, &fl_t34894, error));
-    return compiler_flang_vedomost_po_itogam(ctx, programma, fl_t34894, result, error);
+    fl_value fl_t34941 = fl_nothing();
+    FL_TRY(compiler_flang_itogi_binarnika(ctx, programma, &fl_t34941, error));
+    return compiler_flang_vedomost_po_itogam(ctx, programma, fl_t34941, result, error);
   }
 }
 
@@ -181657,22 +181869,22 @@ fl_status compiler_flang_vedomost_proverennogo(fl_ctx *ctx, fl_value programma, 
  * @return значение: «Итог ведомости»
  */
 fl_status compiler_flang_vedomost_po_itogam(fl_ctx *ctx, fl_value programma, fl_value itogi, fl_value *result, fl_error *error) {
-  fl_value fl_t34895 = fl_nothing();
-  FL_TRY(compiler_flang_vedomost(ctx, programma, itogi, &fl_t34895, error));
-  const fl_value vedomost = fl_t34895; /* пусть «ведомость» */
-  fl_value fl_t34896 = fl_nothing();
-  FL_TRY(compiler_flang_vedomost_slovami(ctx, vedomost, &fl_t34896, error));
-  fl_value fl_t34897 = fl_nothing();
-  FL_TRY(compiler_flang_vedomost_v_json(ctx, vedomost, &fl_t34897, error));
-  fl_value fl_t34899[5];
-  fl_t34899[0] = fl_flag(true); /* «годно» */
-  fl_t34899[1] = fl_t34896; /* «словами» */
-  fl_t34899[2] = fl_t34897; /* «в JSON» */
-  fl_t34899[3] = compiler_flang_text_331; /* «препятствие» */
-  fl_t34899[4] = fl_list(NULL, 0); /* «диагностики» */
-  fl_value fl_t34898 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34899, 5, &fl_t34898, error));
-  *result = fl_t34898;
+  fl_value fl_t34942 = fl_nothing();
+  FL_TRY(compiler_flang_vedomost(ctx, programma, itogi, &fl_t34942, error));
+  const fl_value vedomost = fl_t34942; /* пусть «ведомость» */
+  fl_value fl_t34943 = fl_nothing();
+  FL_TRY(compiler_flang_vedomost_slovami(ctx, vedomost, &fl_t34943, error));
+  fl_value fl_t34944 = fl_nothing();
+  FL_TRY(compiler_flang_vedomost_v_json(ctx, vedomost, &fl_t34944, error));
+  fl_value fl_t34946[5];
+  fl_t34946[0] = fl_flag(true); /* «годно» */
+  fl_t34946[1] = fl_t34943; /* «словами» */
+  fl_t34946[2] = fl_t34944; /* «в JSON» */
+  fl_t34946[3] = compiler_flang_text_331; /* «препятствие» */
+  fl_t34946[4] = fl_list(NULL, 0); /* «диагностики» */
+  fl_value fl_t34945 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_257, fl_t34946, 5, &fl_t34945, error));
+  *result = fl_t34945;
   return FL_OK;
 }
 
@@ -181684,62 +181896,62 @@ fl_status compiler_flang_vedomost_po_itogam(fl_ctx *ctx, fl_value programma, fl_
  * @return значение: строка
  */
 fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
-  fl_value *fl_t34900 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 9, &fl_t34900, error));
-  fl_t34900[0] = compiler_flang_text_969;
-  fl_t34900[1] = compiler_flang_text_603;
-  fl_t34900[2] = compiler_flang_text_965;
-  fl_t34900[3] = compiler_flang_text_961;
-  fl_t34900[4] = compiler_flang_text_959;
-  fl_t34900[5] = compiler_flang_text_945;
-  fl_t34900[6] = compiler_flang_text_1154;
-  fl_t34900[7] = compiler_flang_text_1344;
-  fl_t34900[8] = compiler_flang_text_970;
-  fl_value fl_t34901 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_list(fl_t34900, 9), "отфильтровать", &fl_t34901, error));
-  fl_value *fl_t34902 = NULL;
-  size_t fl_t34903 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34901.as.list.count, &fl_t34902, error));
-  for (size_t fl_t34904 = 0; fl_t34904 < fl_t34901.as.list.count; fl_t34904 += 1) {
-    const fl_value klyuch = fl_t34901.as.list.items[fl_t34904]; /* «ключ» */
-    fl_value fl_t34905 = fl_nothing();
-    FL_TRY(compiler_flang_elementy_polya(ctx, programma, klyuch, &fl_t34905, error));
-    fl_value fl_t34906 = fl_nothing(); /* «пусто» */
-    FL_TRY(fl_b_pusto(ctx, fl_t34905, &fl_t34906, error));
-    bool fl_t34907 = false;
-    FL_TRY(fl_cond(ctx, fl_t34906, &fl_t34907, error));
-    fl_value fl_t34908 = fl_nothing();
-    if (fl_t34907) {
-      fl_t34908 = fl_flag(false);
+  fl_value *fl_t34947 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 9, &fl_t34947, error));
+  fl_t34947[0] = compiler_flang_text_969;
+  fl_t34947[1] = compiler_flang_text_603;
+  fl_t34947[2] = compiler_flang_text_965;
+  fl_t34947[3] = compiler_flang_text_961;
+  fl_t34947[4] = compiler_flang_text_959;
+  fl_t34947[5] = compiler_flang_text_945;
+  fl_t34947[6] = compiler_flang_text_1154;
+  fl_t34947[7] = compiler_flang_text_1344;
+  fl_t34947[8] = compiler_flang_text_970;
+  fl_value fl_t34948 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_list(fl_t34947, 9), "отфильтровать", &fl_t34948, error));
+  fl_value *fl_t34949 = NULL;
+  size_t fl_t34950 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34948.as.list.count, &fl_t34949, error));
+  for (size_t fl_t34951 = 0; fl_t34951 < fl_t34948.as.list.count; fl_t34951 += 1) {
+    const fl_value klyuch = fl_t34948.as.list.items[fl_t34951]; /* «ключ» */
+    fl_value fl_t34952 = fl_nothing();
+    FL_TRY(compiler_flang_elementy_polya(ctx, programma, klyuch, &fl_t34952, error));
+    fl_value fl_t34953 = fl_nothing(); /* «пусто» */
+    FL_TRY(fl_b_pusto(ctx, fl_t34952, &fl_t34953, error));
+    bool fl_t34954 = false;
+    FL_TRY(fl_cond(ctx, fl_t34953, &fl_t34954, error));
+    fl_value fl_t34955 = fl_nothing();
+    if (fl_t34954) {
+      fl_t34955 = fl_flag(false);
     } else {
-      fl_t34908 = fl_flag(true);
+      fl_t34955 = fl_flag(true);
     }
-    bool fl_t34909 = false;
-    FL_TRY(fl_keep(ctx, fl_t34908, &fl_t34909, error));
-    if (fl_t34909) {
-      fl_t34902[fl_t34903] = klyuch;
-      fl_t34903 += 1;
+    bool fl_t34956 = false;
+    FL_TRY(fl_keep(ctx, fl_t34955, &fl_t34956, error));
+    if (fl_t34956) {
+      fl_t34949[fl_t34950] = klyuch;
+      fl_t34950 += 1;
     }
   }
-  const fl_value nazvannye = fl_list(fl_t34902, fl_t34903); /* пусть «названные» */
-  fl_value fl_t34910 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, nazvannye, &fl_t34910, error));
-  bool fl_t34911 = false;
-  FL_TRY(fl_cond(ctx, fl_t34910, &fl_t34911, error));
-  if (fl_t34911) {
+  const fl_value nazvannye = fl_list(fl_t34949, fl_t34950); /* пусть «названные» */
+  fl_value fl_t34957 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, nazvannye, &fl_t34957, error));
+  bool fl_t34958 = false;
+  FL_TRY(fl_cond(ctx, fl_t34957, &fl_t34958, error));
+  if (fl_t34958) {
     *result = compiler_flang_text_331;
     return FL_OK;
   } else {
-    fl_value *fl_t34912 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 3, &fl_t34912, error));
-    fl_t34912[0] = compiler_flang_text_3144;
-    fl_value fl_t34913 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, nazvannye, compiler_flang_text_432, &fl_t34913, error));
-    fl_t34912[1] = fl_t34913;
-    fl_t34912[2] = compiler_flang_text_3145;
-    fl_value fl_t34914 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34912, 3), compiler_flang_text_331, &fl_t34914, error));
-    *result = fl_t34914;
+    fl_value *fl_t34959 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 3, &fl_t34959, error));
+    fl_t34959[0] = compiler_flang_text_3150;
+    fl_value fl_t34960 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, nazvannye, compiler_flang_text_432, &fl_t34960, error));
+    fl_t34959[1] = fl_t34960;
+    fl_t34959[2] = compiler_flang_text_3151;
+    fl_value fl_t34961 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t34959, 3), compiler_flang_text_331, &fl_t34961, error));
+    *result = fl_t34961;
     return FL_OK;
   }
 }
@@ -181752,133 +181964,133 @@ fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value progra
  * @return значение: «Итоги проверок»
  */
 fl_status compiler_flang_itogi_binarnika(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error) {
-  fl_value fl_t34915 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_totalnost(ctx, programma, &fl_t34915, error));
-  const fl_value totalnost = fl_t34915; /* пусть «тотальность» */
-  fl_value fl_t34916 = fl_nothing();
-  FL_TRY(compiler_flang_nositeli_programmy(ctx, programma, &fl_t34916, error));
-  const fl_value nositeli = fl_t34916; /* пусть «носители» */
-  fl_value fl_t34917 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34917, error));
-  fl_value fl_t34918 = fl_nothing();
-  FL_TRY(compiler_flang_spuski_uzlami(ctx, fl_t34917, &fl_t34918, error));
-  fl_value fl_t34919 = fl_nothing();
-  FL_TRY(compiler_flang_obyazatelstva(ctx, programma, fl_t34918, &fl_t34919, error));
-  const fl_value svod = fl_t34919; /* пусть «свод» */
-  fl_value fl_t34920 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t34920, error));
-  fl_value fl_t34921 = fl_nothing();
-  FL_TRY(compiler_flang_progony_dlya_yadra(ctx, programma, &fl_t34921, error));
-  fl_value fl_t34922 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_dokazatelstva(ctx, programma, fl_t34920, fl_t34921, &fl_t34922, error));
-  fl_value fl_t34923 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, fl_t34922, compiler_flang_text_2831, &fl_t34923, error));
-  const fl_value verdikty = fl_t34923; /* пусть «вердикты» */
-  fl_value fl_t34924 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, nositeli, "циклы", &fl_t34924, error));
-  fl_value fl_t34925 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, nositeli, "структуры", &fl_t34925, error));
-  fl_value fl_t34926 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34925, "отобразить", &fl_t34926, error));
-  fl_value *fl_t34927 = NULL;
-  size_t fl_t34928 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34926.as.list.count, &fl_t34927, error));
-  for (size_t fl_t34929 = 0; fl_t34929 < fl_t34926.as.list.count; fl_t34929 += 1) {
-    const fl_value s = fl_t34926.as.list.items[fl_t34929]; /* «с» */
-    fl_value fl_t34930 = fl_nothing();
-    FL_TRY(compiler_flang_ubyvanie_struktury(ctx, s, &fl_t34930, error));
-    fl_t34927[fl_t34928] = fl_t34930;
-    fl_t34928 += 1;
+  fl_value fl_t34962 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_totalnost(ctx, programma, &fl_t34962, error));
+  const fl_value totalnost = fl_t34962; /* пусть «тотальность» */
+  fl_value fl_t34963 = fl_nothing();
+  FL_TRY(compiler_flang_nositeli_programmy(ctx, programma, &fl_t34963, error));
+  const fl_value nositeli = fl_t34963; /* пусть «носители» */
+  fl_value fl_t34964 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34964, error));
+  fl_value fl_t34965 = fl_nothing();
+  FL_TRY(compiler_flang_spuski_uzlami(ctx, fl_t34964, &fl_t34965, error));
+  fl_value fl_t34966 = fl_nothing();
+  FL_TRY(compiler_flang_obyazatelstva(ctx, programma, fl_t34965, &fl_t34966, error));
+  const fl_value svod = fl_t34966; /* пусть «свод» */
+  fl_value fl_t34967 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t34967, error));
+  fl_value fl_t34968 = fl_nothing();
+  FL_TRY(compiler_flang_progony_dlya_yadra(ctx, programma, &fl_t34968, error));
+  fl_value fl_t34969 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_dokazatelstva(ctx, programma, fl_t34967, fl_t34968, &fl_t34969, error));
+  fl_value fl_t34970 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, fl_t34969, compiler_flang_text_2831, &fl_t34970, error));
+  const fl_value verdikty = fl_t34970; /* пусть «вердикты» */
+  fl_value fl_t34971 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, nositeli, "циклы", &fl_t34971, error));
+  fl_value fl_t34972 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, nositeli, "структуры", &fl_t34972, error));
+  fl_value fl_t34973 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34972, "отобразить", &fl_t34973, error));
+  fl_value *fl_t34974 = NULL;
+  size_t fl_t34975 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34973.as.list.count, &fl_t34974, error));
+  for (size_t fl_t34976 = 0; fl_t34976 < fl_t34973.as.list.count; fl_t34976 += 1) {
+    const fl_value s = fl_t34973.as.list.items[fl_t34976]; /* «с» */
+    fl_value fl_t34977 = fl_nothing();
+    FL_TRY(compiler_flang_ubyvanie_struktury(ctx, s, &fl_t34977, error));
+    fl_t34974[fl_t34975] = fl_t34977;
+    fl_t34975 += 1;
   }
-  fl_value fl_t34931 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "точные", &fl_t34931, error));
-  fl_value fl_t34932 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34931, "отобразить", &fl_t34932, error));
-  fl_value *fl_t34933 = NULL;
-  size_t fl_t34934 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34932.as.list.count, &fl_t34933, error));
-  for (size_t fl_t34935 = 0; fl_t34935 < fl_t34932.as.list.count; fl_t34935 += 1) {
-    const fl_value t = fl_t34932.as.list.items[fl_t34935]; /* «т» */
-    fl_value fl_t34936 = fl_nothing();
-    FL_TRY(compiler_flang_ubyvanie_tochnoe(ctx, t, &fl_t34936, error));
-    fl_t34933[fl_t34934] = fl_t34936;
-    fl_t34934 += 1;
+  fl_value fl_t34978 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "точные", &fl_t34978, error));
+  fl_value fl_t34979 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34978, "отобразить", &fl_t34979, error));
+  fl_value *fl_t34980 = NULL;
+  size_t fl_t34981 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34979.as.list.count, &fl_t34980, error));
+  for (size_t fl_t34982 = 0; fl_t34982 < fl_t34979.as.list.count; fl_t34982 += 1) {
+    const fl_value t = fl_t34979.as.list.items[fl_t34982]; /* «т» */
+    fl_value fl_t34983 = fl_nothing();
+    FL_TRY(compiler_flang_ubyvanie_tochnoe(ctx, t, &fl_t34983, error));
+    fl_t34980[fl_t34981] = fl_t34983;
+    fl_t34981 += 1;
   }
-  fl_value fl_t34937 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "меры", &fl_t34937, error));
-  fl_value fl_t34938 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34937, "отобразить", &fl_t34938, error));
-  fl_value *fl_t34939 = NULL;
-  size_t fl_t34940 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34938.as.list.count, &fl_t34939, error));
-  for (size_t fl_t34941 = 0; fl_t34941 < fl_t34938.as.list.count; fl_t34941 += 1) {
-    const fl_value m = fl_t34938.as.list.items[fl_t34941]; /* «м» */
-    fl_value fl_t34942 = fl_nothing();
-    FL_TRY(compiler_flang_ubyvanie_mery(ctx, m, &fl_t34942, error));
-    fl_t34939[fl_t34940] = fl_t34942;
-    fl_t34940 += 1;
+  fl_value fl_t34984 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "меры", &fl_t34984, error));
+  fl_value fl_t34985 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34984, "отобразить", &fl_t34985, error));
+  fl_value *fl_t34986 = NULL;
+  size_t fl_t34987 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34985.as.list.count, &fl_t34986, error));
+  for (size_t fl_t34988 = 0; fl_t34988 < fl_t34985.as.list.count; fl_t34988 += 1) {
+    const fl_value m = fl_t34985.as.list.items[fl_t34988]; /* «м» */
+    fl_value fl_t34989 = fl_nothing();
+    FL_TRY(compiler_flang_ubyvanie_mery(ctx, m, &fl_t34989, error));
+    fl_t34986[fl_t34987] = fl_t34989;
+    fl_t34987 += 1;
   }
-  fl_value fl_t34943 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34943, error));
-  fl_value fl_t34944 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, fl_t34943, "отобразить", &fl_t34944, error));
-  fl_value *fl_t34945 = NULL;
-  size_t fl_t34946 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34944.as.list.count, &fl_t34945, error));
-  for (size_t fl_t34947 = 0; fl_t34947 < fl_t34944.as.list.count; fl_t34947 += 1) {
-    const fl_value s_2 = fl_t34944.as.list.items[fl_t34947]; /* «с» */
-    fl_value fl_t34948 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, s_2, "откуда", &fl_t34948, error));
-    fl_value fl_t34949 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, s_2, "мера витка", &fl_t34949, error));
-    fl_value fl_t34951[2];
-    fl_t34951[0] = fl_t34948; /* «откуда» */
-    fl_t34951[1] = fl_t34949; /* «мера» */
-    fl_value fl_t34950 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_193, fl_t34951, 2, &fl_t34950, error));
-    fl_t34945[fl_t34946] = fl_t34950;
-    fl_t34946 += 1;
+  fl_value fl_t34990 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, totalnost, "спуски", &fl_t34990, error));
+  fl_value fl_t34991 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, fl_t34990, "отобразить", &fl_t34991, error));
+  fl_value *fl_t34992 = NULL;
+  size_t fl_t34993 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t34991.as.list.count, &fl_t34992, error));
+  for (size_t fl_t34994 = 0; fl_t34994 < fl_t34991.as.list.count; fl_t34994 += 1) {
+    const fl_value s_2 = fl_t34991.as.list.items[fl_t34994]; /* «с» */
+    fl_value fl_t34995 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, s_2, "откуда", &fl_t34995, error));
+    fl_value fl_t34996 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, s_2, "мера витка", &fl_t34996, error));
+    fl_value fl_t34998[2];
+    fl_t34998[0] = fl_t34995; /* «откуда» */
+    fl_t34998[1] = fl_t34996; /* «мера» */
+    fl_value fl_t34997 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_193, fl_t34998, 2, &fl_t34997, error));
+    fl_t34992[fl_t34993] = fl_t34997;
+    fl_t34993 += 1;
   }
-  fl_value fl_t34952 = fl_nothing();
-  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34952, error));
-  fl_value fl_t34953 = fl_nothing();
-  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34953, error));
-  fl_value fl_t34954 = fl_nothing();
-  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34954, error));
-  fl_value fl_t34955 = fl_nothing();
-  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34955, error));
-  fl_value fl_t34956 = fl_nothing();
-  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34956, error));
-  fl_value fl_t34957 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t34957, error));
-  fl_value fl_t34958 = fl_nothing();
-  FL_TRY(compiler_flang_obyazatelstva_vedomosti(ctx, fl_t34957, verdikty, &fl_t34958, error));
-  fl_value fl_t34960[22];
-  fl_t34960[0] = fl_t34924; /* «циклы» */
-  fl_t34960[1] = fl_list(fl_t34927, fl_t34928); /* «структуры» */
-  fl_t34960[2] = fl_list(fl_t34933, fl_t34934); /* «точные» */
-  fl_t34960[3] = fl_list(fl_t34939, fl_t34940); /* «сторожа» */
-  fl_t34960[4] = fl_list(fl_t34945, fl_t34946); /* «спуски» */
-  fl_t34960[5] = fl_list(NULL, 0); /* «моноиды» */
-  fl_t34960[6] = fl_list(NULL, 0); /* «монады» */
-  fl_t34960[7] = fl_list(NULL, 0); /* «изоморфизмы» */
-  fl_t34960[8] = fl_list(NULL, 0); /* «категории» */
-  fl_t34960[9] = fl_list(NULL, 0); /* «множества» */
-  fl_t34960[10] = fl_t34952; /* «идемпотентность» */
-  fl_t34960[11] = fl_t34953; /* «коммутативность» */
-  fl_t34960[12] = fl_t34954; /* «дистрибутивность» */
-  fl_t34960[13] = fl_t34955; /* «частичный порядок» */
-  fl_t34960[14] = fl_t34956; /* «монотонность» */
-  fl_t34960[15] = fl_list(NULL, 0); /* «связи» */
-  fl_t34960[16] = fl_list(NULL, 0); /* «допущения множеств» */
-  fl_t34960[17] = fl_list(NULL, 0); /* «допущения изоморфизмов» */
-  fl_t34960[18] = fl_list(NULL, 0); /* «допущения категорий» */
-  fl_t34960[19] = fl_list(NULL, 0); /* «допущения связей» */
-  fl_t34960[20] = fl_t34958; /* «обязательства» */
-  fl_t34960[21] = fl_list(NULL, 0); /* «поиск» */
-  fl_value fl_t34959 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_213, fl_t34960, 22, &fl_t34959, error));
-  *result = fl_t34959;
+  fl_value fl_t34999 = fl_nothing();
+  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t34999, error));
+  fl_value fl_t35000 = fl_nothing();
+  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t35000, error));
+  fl_value fl_t35001 = fl_nothing();
+  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t35001, error));
+  fl_value fl_t35002 = fl_nothing();
+  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t35002, error));
+  fl_value fl_t35003 = fl_nothing();
+  FL_TRY(compiler_flang_svoystvo_ne_schitalos(ctx, &fl_t35003, error));
+  fl_value fl_t35004 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, svod, compiler_flang_text_2694, &fl_t35004, error));
+  fl_value fl_t35005 = fl_nothing();
+  FL_TRY(compiler_flang_obyazatelstva_vedomosti(ctx, fl_t35004, verdikty, &fl_t35005, error));
+  fl_value fl_t35007[22];
+  fl_t35007[0] = fl_t34971; /* «циклы» */
+  fl_t35007[1] = fl_list(fl_t34974, fl_t34975); /* «структуры» */
+  fl_t35007[2] = fl_list(fl_t34980, fl_t34981); /* «точные» */
+  fl_t35007[3] = fl_list(fl_t34986, fl_t34987); /* «сторожа» */
+  fl_t35007[4] = fl_list(fl_t34992, fl_t34993); /* «спуски» */
+  fl_t35007[5] = fl_list(NULL, 0); /* «моноиды» */
+  fl_t35007[6] = fl_list(NULL, 0); /* «монады» */
+  fl_t35007[7] = fl_list(NULL, 0); /* «изоморфизмы» */
+  fl_t35007[8] = fl_list(NULL, 0); /* «категории» */
+  fl_t35007[9] = fl_list(NULL, 0); /* «множества» */
+  fl_t35007[10] = fl_t34999; /* «идемпотентность» */
+  fl_t35007[11] = fl_t35000; /* «коммутативность» */
+  fl_t35007[12] = fl_t35001; /* «дистрибутивность» */
+  fl_t35007[13] = fl_t35002; /* «частичный порядок» */
+  fl_t35007[14] = fl_t35003; /* «монотонность» */
+  fl_t35007[15] = fl_list(NULL, 0); /* «связи» */
+  fl_t35007[16] = fl_list(NULL, 0); /* «допущения множеств» */
+  fl_t35007[17] = fl_list(NULL, 0); /* «допущения изоморфизмов» */
+  fl_t35007[18] = fl_list(NULL, 0); /* «допущения категорий» */
+  fl_t35007[19] = fl_list(NULL, 0); /* «допущения связей» */
+  fl_t35007[20] = fl_t35005; /* «обязательства» */
+  fl_t35007[21] = fl_list(NULL, 0); /* «поиск» */
+  fl_value fl_t35006 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_213, fl_t35007, 22, &fl_t35006, error));
+  *result = fl_t35006;
   return FL_OK;
 }
 
@@ -181889,13 +182101,13 @@ fl_status compiler_flang_itogi_binarnika(fl_ctx *ctx, fl_value programma, fl_val
  * @return значение: «Проверка свойства»
  */
 fl_status compiler_flang_svoystvo_ne_schitalos(fl_ctx *ctx, fl_value *result, fl_error *error) {
-  fl_value fl_t34962[3];
-  fl_t34962[0] = fl_list(NULL, 0); /* «сетки» */
-  fl_t34962[1] = fl_list(NULL, 0); /* «допущения» */
-  fl_t34962[2] = fl_list(NULL, 0); /* «разрешения» */
-  fl_value fl_t34961 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_207, fl_t34962, 3, &fl_t34961, error));
-  *result = fl_t34961;
+  fl_value fl_t35009[3];
+  fl_t35009[0] = fl_list(NULL, 0); /* «сетки» */
+  fl_t35009[1] = fl_list(NULL, 0); /* «допущения» */
+  fl_t35009[2] = fl_list(NULL, 0); /* «разрешения» */
+  fl_value fl_t35008 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_207, fl_t35009, 3, &fl_t35008, error));
+  *result = fl_t35008;
   return FL_OK;
 }
 
@@ -181907,33 +182119,33 @@ fl_status compiler_flang_svoystvo_ne_schitalos(fl_ctx *ctx, fl_value *result, fl
  * @return значение: «Убывание»
  */
 fl_status compiler_flang_ubyvanie_struktury(fl_ctx *ctx, fl_value s, fl_value *result, fl_error *error) {
-  fl_value fl_t34963 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, s, "откуда", &fl_t34963, error));
-  fl_value fl_t34964 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, s, "куда", &fl_t34964, error));
-  fl_value fl_t34965 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, s, "позиция", &fl_t34965, error));
-  fl_value fl_t34966 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, s, "параметр", &fl_t34966, error));
-  fl_value fl_t34967 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fl_t34966, "есть", &fl_t34967, error));
-  fl_value fl_t34968 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, s, "параметр", &fl_t34968, error));
-  fl_value fl_t34969 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, fl_t34968, "имя", &fl_t34969, error));
-  fl_value fl_t34971[2];
-  fl_t34971[0] = fl_t34967; /* «есть» */
-  fl_t34971[1] = fl_t34969; /* «имя» */
-  fl_value fl_t34970 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t34971, 2, &fl_t34970, error));
-  fl_value fl_t34973[4];
-  fl_t34973[0] = fl_t34963; /* «откуда» */
-  fl_t34973[1] = fl_t34964; /* «куда» */
-  fl_t34973[2] = fl_t34965; /* «позиция» */
-  fl_t34973[3] = fl_t34970; /* «параметр» */
-  fl_value fl_t34972 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_191, fl_t34973, 4, &fl_t34972, error));
-  *result = fl_t34972;
+  fl_value fl_t35010 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, s, "откуда", &fl_t35010, error));
+  fl_value fl_t35011 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, s, "куда", &fl_t35011, error));
+  fl_value fl_t35012 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, s, "позиция", &fl_t35012, error));
+  fl_value fl_t35013 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, s, "параметр", &fl_t35013, error));
+  fl_value fl_t35014 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fl_t35013, "есть", &fl_t35014, error));
+  fl_value fl_t35015 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, s, "параметр", &fl_t35015, error));
+  fl_value fl_t35016 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, fl_t35015, "имя", &fl_t35016, error));
+  fl_value fl_t35018[2];
+  fl_t35018[0] = fl_t35014; /* «есть» */
+  fl_t35018[1] = fl_t35016; /* «имя» */
+  fl_value fl_t35017 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t35018, 2, &fl_t35017, error));
+  fl_value fl_t35020[4];
+  fl_t35020[0] = fl_t35010; /* «откуда» */
+  fl_t35020[1] = fl_t35011; /* «куда» */
+  fl_t35020[2] = fl_t35012; /* «позиция» */
+  fl_t35020[3] = fl_t35017; /* «параметр» */
+  fl_value fl_t35019 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_191, fl_t35020, 4, &fl_t35019, error));
+  *result = fl_t35019;
   return FL_OK;
 }
 
@@ -181945,27 +182157,27 @@ fl_status compiler_flang_ubyvanie_struktury(fl_ctx *ctx, fl_value s, fl_value *r
  * @return значение: «Убывание»
  */
 fl_status compiler_flang_ubyvanie_mery(fl_ctx *ctx, fl_value m, fl_value *result, fl_error *error) {
-  fl_value fl_t34974 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, m, "откуда", &fl_t34974, error));
-  fl_value fl_t34975 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, m, "куда", &fl_t34975, error));
-  fl_value fl_t34976 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, m, "позиция", &fl_t34976, error));
-  fl_value fl_t34977 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, m, "параметр", &fl_t34977, error));
-  fl_value fl_t34979[2];
-  fl_t34979[0] = fl_flag(true); /* «есть» */
-  fl_t34979[1] = fl_t34977; /* «имя» */
-  fl_value fl_t34978 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t34979, 2, &fl_t34978, error));
-  fl_value fl_t34981[4];
-  fl_t34981[0] = fl_t34974; /* «откуда» */
-  fl_t34981[1] = fl_t34975; /* «куда» */
-  fl_t34981[2] = fl_t34976; /* «позиция» */
-  fl_t34981[3] = fl_t34978; /* «параметр» */
-  fl_value fl_t34980 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_191, fl_t34981, 4, &fl_t34980, error));
-  *result = fl_t34980;
+  fl_value fl_t35021 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, m, "откуда", &fl_t35021, error));
+  fl_value fl_t35022 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, m, "куда", &fl_t35022, error));
+  fl_value fl_t35023 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, m, "позиция", &fl_t35023, error));
+  fl_value fl_t35024 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, m, "параметр", &fl_t35024, error));
+  fl_value fl_t35026[2];
+  fl_t35026[0] = fl_flag(true); /* «есть» */
+  fl_t35026[1] = fl_t35024; /* «имя» */
+  fl_value fl_t35025 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t35026, 2, &fl_t35025, error));
+  fl_value fl_t35028[4];
+  fl_t35028[0] = fl_t35021; /* «откуда» */
+  fl_t35028[1] = fl_t35022; /* «куда» */
+  fl_t35028[2] = fl_t35023; /* «позиция» */
+  fl_t35028[3] = fl_t35025; /* «параметр» */
+  fl_value fl_t35027 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_191, fl_t35028, 4, &fl_t35027, error));
+  *result = fl_t35027;
   return FL_OK;
 }
 
@@ -181977,35 +182189,35 @@ fl_status compiler_flang_ubyvanie_mery(fl_ctx *ctx, fl_value m, fl_value *result
  * @return значение: «Точное убывание»
  */
 fl_status compiler_flang_ubyvanie_tochnoe(fl_ctx *ctx, fl_value t, fl_value *result, fl_error *error) {
-  fl_value fl_t34982 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "откуда", &fl_t34982, error));
-  fl_value fl_t34983 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "куда", &fl_t34983, error));
-  fl_value fl_t34984 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "позиция", &fl_t34984, error));
-  fl_value fl_t34985 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "параметр", &fl_t34985, error));
-  fl_value fl_t34986 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, fl_t34985, &fl_t34986, error));
-  if (fl_t34986.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t34986, fl_number(0.0), error));
-  fl_value fl_t34987 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "параметр", &fl_t34987, error));
-  fl_value fl_t34989[2];
-  fl_t34989[0] = fl_flag(fl_t34986.as.number > 0.0); /* «есть» */
-  fl_t34989[1] = fl_t34987; /* «имя» */
-  fl_value fl_t34988 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t34989, 2, &fl_t34988, error));
-  fl_value fl_t34990 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, t, "шаг", &fl_t34990, error));
-  fl_value fl_t34992[5];
-  fl_t34992[0] = fl_t34982; /* «откуда» */
-  fl_t34992[1] = fl_t34983; /* «куда» */
-  fl_t34992[2] = fl_t34984; /* «позиция» */
-  fl_t34992[3] = fl_t34988; /* «параметр» */
-  fl_t34992[4] = fl_t34990; /* «шаг» */
-  fl_value fl_t34991 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_146, fl_t34992, 5, &fl_t34991, error));
-  *result = fl_t34991;
+  fl_value fl_t35029 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "откуда", &fl_t35029, error));
+  fl_value fl_t35030 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "куда", &fl_t35030, error));
+  fl_value fl_t35031 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "позиция", &fl_t35031, error));
+  fl_value fl_t35032 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "параметр", &fl_t35032, error));
+  fl_value fl_t35033 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, fl_t35032, &fl_t35033, error));
+  if (fl_t35033.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t35033, fl_number(0.0), error));
+  fl_value fl_t35034 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "параметр", &fl_t35034, error));
+  fl_value fl_t35036[2];
+  fl_t35036[0] = fl_flag(fl_t35033.as.number > 0.0); /* «есть» */
+  fl_t35036[1] = fl_t35034; /* «имя» */
+  fl_value fl_t35035 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_132, fl_t35036, 2, &fl_t35035, error));
+  fl_value fl_t35037 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, t, "шаг", &fl_t35037, error));
+  fl_value fl_t35039[5];
+  fl_t35039[0] = fl_t35029; /* «откуда» */
+  fl_t35039[1] = fl_t35030; /* «куда» */
+  fl_t35039[2] = fl_t35031; /* «позиция» */
+  fl_t35039[3] = fl_t35035; /* «параметр» */
+  fl_t35039[4] = fl_t35037; /* «шаг» */
+  fl_value fl_t35038 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_146, fl_t35039, 5, &fl_t35038, error));
+  *result = fl_t35038;
   return FL_OK;
 }
 
@@ -182018,49 +182230,49 @@ fl_status compiler_flang_ubyvanie_tochnoe(fl_ctx *ctx, fl_value t, fl_value *res
  * @return значение: список: «Обязательство»
  */
 fl_status compiler_flang_obyazatelstva_vedomosti(fl_ctx *ctx, fl_value uzly, fl_value verdikty, fl_value *result, fl_error *error) {
-  fl_value fl_t34993 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, uzly, "отобразить", &fl_t34993, error));
-  fl_value *fl_t34994 = NULL;
-  size_t fl_t34995 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t34993.as.list.count, &fl_t34994, error));
-  for (size_t fl_t34996 = 0; fl_t34996 < fl_t34993.as.list.count; fl_t34996 += 1) {
-    const fl_value u = fl_t34993.as.list.items[fl_t34996]; /* «у» */
-    fl_value fl_t34997 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_2658, &fl_t34997, error));
-    fl_value fl_t34998 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_535, &fl_t34998, error));
-    fl_value fl_t34999 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_384, &fl_t34999, error));
-    fl_value fl_t35000 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_546, &fl_t35000, error));
-    fl_value fl_t35001 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_898, &fl_t35001, error));
-    fl_value fl_t35002 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35001, compiler_flang_text_384, &fl_t35002, error));
-    fl_value fl_t35003 = fl_nothing();
-    FL_TRY(compiler_flang_tekst_polya_ili_net(ctx, fl_t35002, &fl_t35003, error));
-    fl_value fl_t35004 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_2661, &fl_t35004, error));
-    fl_value fl_t35005 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35004, &fl_t35005, error));
-    fl_value fl_t35006 = fl_nothing();
-    FL_TRY(compiler_flang_sbros_po_yadru(ctx, u, verdikty, &fl_t35006, error));
-    fl_value fl_t35007 = fl_nothing();
-    FL_TRY(compiler_flang_sbros_obyazatelstva(ctx, fl_t35006, &fl_t35007, error));
-    fl_value fl_t35009[7];
-    fl_t35009[0] = fl_t34997; /* «идентификатор» */
-    fl_t35009[1] = fl_t34998; /* «вид» */
-    fl_t35009[2] = fl_t34999; /* «имя» */
-    fl_t35009[3] = fl_t35000; /* «чья» */
-    fl_t35009[4] = fl_t35003; /* «для всех» */
-    fl_t35009[5] = fl_t35005; /* «сетка» */
-    fl_t35009[6] = fl_t35007; /* «сброс» */
-    fl_value fl_t35008 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_212, fl_t35009, 7, &fl_t35008, error));
-    fl_t34994[fl_t34995] = fl_t35008;
-    fl_t34995 += 1;
+  fl_value fl_t35040 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, uzly, "отобразить", &fl_t35040, error));
+  fl_value *fl_t35041 = NULL;
+  size_t fl_t35042 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t35040.as.list.count, &fl_t35041, error));
+  for (size_t fl_t35043 = 0; fl_t35043 < fl_t35040.as.list.count; fl_t35043 += 1) {
+    const fl_value u = fl_t35040.as.list.items[fl_t35043]; /* «у» */
+    fl_value fl_t35044 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_2658, &fl_t35044, error));
+    fl_value fl_t35045 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_535, &fl_t35045, error));
+    fl_value fl_t35046 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_384, &fl_t35046, error));
+    fl_value fl_t35047 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, u, compiler_flang_text_546, &fl_t35047, error));
+    fl_value fl_t35048 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_898, &fl_t35048, error));
+    fl_value fl_t35049 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35048, compiler_flang_text_384, &fl_t35049, error));
+    fl_value fl_t35050 = fl_nothing();
+    FL_TRY(compiler_flang_tekst_polya_ili_net(ctx, fl_t35049, &fl_t35050, error));
+    fl_value fl_t35051 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, u, compiler_flang_text_2661, &fl_t35051, error));
+    fl_value fl_t35052 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35051, &fl_t35052, error));
+    fl_value fl_t35053 = fl_nothing();
+    FL_TRY(compiler_flang_sbros_po_yadru(ctx, u, verdikty, &fl_t35053, error));
+    fl_value fl_t35054 = fl_nothing();
+    FL_TRY(compiler_flang_sbros_obyazatelstva(ctx, fl_t35053, &fl_t35054, error));
+    fl_value fl_t35056[7];
+    fl_t35056[0] = fl_t35044; /* «идентификатор» */
+    fl_t35056[1] = fl_t35045; /* «вид» */
+    fl_t35056[2] = fl_t35046; /* «имя» */
+    fl_t35056[3] = fl_t35047; /* «чья» */
+    fl_t35056[4] = fl_t35050; /* «для всех» */
+    fl_t35056[5] = fl_t35052; /* «сетка» */
+    fl_t35056[6] = fl_t35054; /* «сброс» */
+    fl_value fl_t35055 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_212, fl_t35056, 7, &fl_t35055, error));
+    fl_t35041[fl_t35042] = fl_t35055;
+    fl_t35042 += 1;
   }
-  *result = fl_list(fl_t34994, fl_t34995);
+  *result = fl_list(fl_t35041, fl_t35042);
   return FL_OK;
 }
 
@@ -182073,34 +182285,34 @@ fl_status compiler_flang_obyazatelstva_vedomosti(fl_ctx *ctx, fl_value uzly, fl_
  * @return значение: «Значение»
  */
 fl_status compiler_flang_sbros_po_yadru(fl_ctx *ctx, fl_value obyazatelstvo, fl_value verdikty, fl_value *result, fl_error *error) {
-  fl_value fl_t35010 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, verdikty, "отфильтровать", &fl_t35010, error));
-  fl_value *fl_t35011 = NULL;
-  size_t fl_t35012 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t35010.as.list.count, &fl_t35011, error));
-  for (size_t fl_t35013 = 0; fl_t35013 < fl_t35010.as.list.count; fl_t35013 += 1) {
-    const fl_value v = fl_t35010.as.list.items[fl_t35013]; /* «в» */
-    fl_value fl_t35014 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, v, compiler_flang_text_2658, &fl_t35014, error));
-    fl_value fl_t35015 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, obyazatelstvo, compiler_flang_text_2658, &fl_t35015, error));
-    bool fl_t35016 = false;
-    FL_TRY(fl_keep(ctx, fl_flag(fl_equal(fl_t35014, fl_t35015)), &fl_t35016, error));
-    if (fl_t35016) {
-      fl_t35011[fl_t35012] = v;
-      fl_t35012 += 1;
+  fl_value fl_t35057 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, verdikty, "отфильтровать", &fl_t35057, error));
+  fl_value *fl_t35058 = NULL;
+  size_t fl_t35059 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t35057.as.list.count, &fl_t35058, error));
+  for (size_t fl_t35060 = 0; fl_t35060 < fl_t35057.as.list.count; fl_t35060 += 1) {
+    const fl_value v = fl_t35057.as.list.items[fl_t35060]; /* «в» */
+    fl_value fl_t35061 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, v, compiler_flang_text_2658, &fl_t35061, error));
+    fl_value fl_t35062 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, obyazatelstvo, compiler_flang_text_2658, &fl_t35062, error));
+    bool fl_t35063 = false;
+    FL_TRY(fl_keep(ctx, fl_flag(fl_equal(fl_t35061, fl_t35062)), &fl_t35063, error));
+    if (fl_t35063) {
+      fl_t35058[fl_t35059] = v;
+      fl_t35059 += 1;
     }
   }
-  if (fl_chain_empty(fl_list(fl_t35011, fl_t35012))) {
+  if (fl_chain_empty(fl_list(fl_t35058, fl_t35059))) {
     return compiler_flang_vzyat_pole(ctx, obyazatelstvo, compiler_flang_text_2663, result, error);
-  } else if (fl_chain_cons(fl_list(fl_t35011, fl_t35012))) {
-    const fl_value pervyy = fl_chain_head(fl_list(fl_t35011, fl_t35012)); /* голова «первый» */
-    const fl_value prochie = fl_chain_tail(fl_list(fl_t35011, fl_t35012)); /* хвост «прочие» */
+  } else if (fl_chain_cons(fl_list(fl_t35058, fl_t35059))) {
+    const fl_value pervyy = fl_chain_head(fl_list(fl_t35058, fl_t35059)); /* голова «первый» */
+    const fl_value prochie = fl_chain_tail(fl_list(fl_t35058, fl_t35059)); /* хвост «прочие» */
     (void)prochie;
     *result = pervyy;
     return FL_OK;
   } else {
-    return fl_match_fail(ctx, fl_list(fl_t35011, fl_t35012), error);
+    return fl_match_fail(ctx, fl_list(fl_t35058, fl_t35059), error);
   }
 }
 
@@ -182112,23 +182324,23 @@ fl_status compiler_flang_sbros_po_yadru(fl_ctx *ctx, fl_value obyazatelstvo, fl_
  * @return значение: «Может быть текст»
  */
 fl_status compiler_flang_tekst_polya_ili_net(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35017 = fl_nothing();
-  FL_TRY(compiler_flang_eto_stroka(ctx, uzel, &fl_t35017, error));
-  bool fl_t35018 = false;
-  FL_TRY(fl_cond(ctx, fl_t35017, &fl_t35018, error));
-  if (fl_t35018) {
-    fl_value fl_t35019 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_uzla(ctx, uzel, &fl_t35019, error));
-    fl_value fl_t35021[1];
-    fl_t35021[0] = fl_t35019; /* «текст» */
-    fl_value fl_t35020 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Есть текст", compiler_flang_names_291, fl_t35021, 1, &fl_t35020, error));
-    *result = fl_t35020;
+  fl_value fl_t35064 = fl_nothing();
+  FL_TRY(compiler_flang_eto_stroka(ctx, uzel, &fl_t35064, error));
+  bool fl_t35065 = false;
+  FL_TRY(fl_cond(ctx, fl_t35064, &fl_t35065, error));
+  if (fl_t35065) {
+    fl_value fl_t35066 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_uzla(ctx, uzel, &fl_t35066, error));
+    fl_value fl_t35068[1];
+    fl_t35068[0] = fl_t35066; /* «текст» */
+    fl_value fl_t35067 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Есть текст", compiler_flang_names_291, fl_t35068, 1, &fl_t35067, error));
+    *result = fl_t35067;
     return FL_OK;
   } else {
-    fl_value fl_t35022 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Нет текста", NULL, NULL, 0, &fl_t35022, error));
-    *result = fl_t35022;
+    fl_value fl_t35069 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Нет текста", NULL, NULL, 0, &fl_t35069, error));
+    *result = fl_t35069;
     return FL_OK;
   }
 }
@@ -182141,58 +182353,58 @@ fl_status compiler_flang_tekst_polya_ili_net(fl_ctx *ctx, fl_value uzel, fl_valu
  * @return значение: «Может быть сброс»
  */
 fl_status compiler_flang_sbros_obyazatelstva(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35023 = fl_nothing();
-  FL_TRY(compiler_flang_eto_zapis(ctx, uzel, &fl_t35023, error));
-  bool fl_t35024 = false;
-  FL_TRY(fl_cond(ctx, fl_t35023, &fl_t35024, error));
-  if (fl_t35024) {
-    fl_value fl_t35025 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_2803, &fl_t35025, error));
-    fl_value fl_t35026 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_853, &fl_t35026, error));
-    fl_value fl_t35027 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2819, &fl_t35027, error));
-    fl_value fl_t35028 = fl_nothing();
-    FL_TRY(compiler_flang_eto_istina(ctx, fl_t35027, &fl_t35028, error));
-    fl_value fl_t35029 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_678, &fl_t35029, error));
-    fl_value fl_t35030 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1294, &fl_t35030, error));
-    fl_value fl_t35031 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35030, &fl_t35031, error));
-    fl_value fl_t35032 = fl_nothing();
-    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_588, &fl_t35032, error));
-    fl_value fl_t35033 = fl_nothing(); /* «длина» */
-    FL_TRY(fl_b_dlina(ctx, fl_t35032, &fl_t35033, error));
-    fl_value fl_t35034 = fl_nothing();
-    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_2817, &fl_t35034, error));
-    fl_value fl_t35035 = fl_nothing(); /* «длина» */
-    FL_TRY(fl_b_dlina(ctx, fl_t35034, &fl_t35035, error));
-    fl_value fl_t35036 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1272, &fl_t35036, error));
-    fl_value fl_t35037 = fl_nothing();
-    FL_TRY(compiler_flang_indukciya_sbrosa(ctx, fl_t35036, &fl_t35037, error));
-    fl_value fl_t35039[8];
-    fl_t35039[0] = fl_t35025; /* «вердикт» */
-    fl_t35039[1] = fl_t35026; /* «по» */
-    fl_t35039[2] = fl_t35028; /* «по типу» */
-    fl_t35039[3] = fl_t35029; /* «правило» */
-    fl_t35039[4] = fl_t35031; /* «шагов» */
-    fl_t35039[5] = fl_t35033; /* «случаев» */
-    fl_t35039[6] = fl_t35035; /* «отказов» */
-    fl_t35039[7] = fl_t35037; /* «индукция» */
-    fl_value fl_t35038 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_211, fl_t35039, 8, &fl_t35038, error));
-    fl_value fl_t35041[1];
-    fl_t35041[0] = fl_t35038; /* «сброс» */
-    fl_value fl_t35040 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Есть сброс", compiler_flang_names_321, fl_t35041, 1, &fl_t35040, error));
-    *result = fl_t35040;
+  fl_value fl_t35070 = fl_nothing();
+  FL_TRY(compiler_flang_eto_zapis(ctx, uzel, &fl_t35070, error));
+  bool fl_t35071 = false;
+  FL_TRY(fl_cond(ctx, fl_t35070, &fl_t35071, error));
+  if (fl_t35071) {
+    fl_value fl_t35072 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_2803, &fl_t35072, error));
+    fl_value fl_t35073 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_853, &fl_t35073, error));
+    fl_value fl_t35074 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2819, &fl_t35074, error));
+    fl_value fl_t35075 = fl_nothing();
+    FL_TRY(compiler_flang_eto_istina(ctx, fl_t35074, &fl_t35075, error));
+    fl_value fl_t35076 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_678, &fl_t35076, error));
+    fl_value fl_t35077 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1294, &fl_t35077, error));
+    fl_value fl_t35078 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35077, &fl_t35078, error));
+    fl_value fl_t35079 = fl_nothing();
+    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_588, &fl_t35079, error));
+    fl_value fl_t35080 = fl_nothing(); /* «длина» */
+    FL_TRY(fl_b_dlina(ctx, fl_t35079, &fl_t35080, error));
+    fl_value fl_t35081 = fl_nothing();
+    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_2817, &fl_t35081, error));
+    fl_value fl_t35082 = fl_nothing(); /* «длина» */
+    FL_TRY(fl_b_dlina(ctx, fl_t35081, &fl_t35082, error));
+    fl_value fl_t35083 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1272, &fl_t35083, error));
+    fl_value fl_t35084 = fl_nothing();
+    FL_TRY(compiler_flang_indukciya_sbrosa(ctx, fl_t35083, &fl_t35084, error));
+    fl_value fl_t35086[8];
+    fl_t35086[0] = fl_t35072; /* «вердикт» */
+    fl_t35086[1] = fl_t35073; /* «по» */
+    fl_t35086[2] = fl_t35075; /* «по типу» */
+    fl_t35086[3] = fl_t35076; /* «правило» */
+    fl_t35086[4] = fl_t35078; /* «шагов» */
+    fl_t35086[5] = fl_t35080; /* «случаев» */
+    fl_t35086[6] = fl_t35082; /* «отказов» */
+    fl_t35086[7] = fl_t35084; /* «индукция» */
+    fl_value fl_t35085 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_211, fl_t35086, 8, &fl_t35085, error));
+    fl_value fl_t35088[1];
+    fl_t35088[0] = fl_t35085; /* «сброс» */
+    fl_value fl_t35087 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Есть сброс", compiler_flang_names_321, fl_t35088, 1, &fl_t35087, error));
+    *result = fl_t35087;
     return FL_OK;
   } else {
-    fl_value fl_t35042 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Нет сброса", NULL, NULL, 0, &fl_t35042, error));
-    *result = fl_t35042;
+    fl_value fl_t35089 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Нет сброса", NULL, NULL, 0, &fl_t35089, error));
+    *result = fl_t35089;
     return FL_OK;
   }
 }
@@ -182205,64 +182417,64 @@ fl_status compiler_flang_sbros_obyazatelstva(fl_ctx *ctx, fl_value uzel, fl_valu
  * @return значение: «Может быть индукция»
  */
 fl_status compiler_flang_indukciya_sbrosa(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35043 = fl_nothing();
-  FL_TRY(compiler_flang_eto_zapis(ctx, uzel, &fl_t35043, error));
-  bool fl_t35044 = false;
-  FL_TRY(fl_cond(ctx, fl_t35043, &fl_t35044, error));
-  if (fl_t35044) {
-    fl_value fl_t35045 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_555, &fl_t35045, error));
-    fl_value fl_t35046 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_544, &fl_t35046, error));
-    fl_value fl_t35047 = fl_nothing();
-    FL_TRY(compiler_flang_nositel_indukcii(ctx, uzel, &fl_t35047, error));
-    fl_value fl_t35048 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2586, &fl_t35048, error));
-    fl_value fl_t35049 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35048, &fl_t35049, error));
-    fl_value fl_t35050 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2587, &fl_t35050, error));
-    fl_value fl_t35051 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35050, &fl_t35051, error));
-    fl_value fl_t35052 = fl_nothing();
-    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_1224, &fl_t35052, error));
-    fl_value fl_t35053 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, fl_t35052, "отобразить", &fl_t35053, error));
-    fl_value *fl_t35054 = NULL;
-    size_t fl_t35055 = 0;
-    FL_TRY(fl_list_alloc(ctx, fl_t35053.as.list.count, &fl_t35054, error));
-    for (size_t fl_t35056 = 0; fl_t35056 < fl_t35053.as.list.count; fl_t35056 += 1) {
-      const fl_value p = fl_t35053.as.list.items[fl_t35056]; /* «п» */
-      fl_value fl_t35057 = fl_nothing();
-      FL_TRY(compiler_flang_stroka_uzla(ctx, p, &fl_t35057, error));
-      fl_t35054[fl_t35055] = fl_t35057;
-      fl_t35055 += 1;
+  fl_value fl_t35090 = fl_nothing();
+  FL_TRY(compiler_flang_eto_zapis(ctx, uzel, &fl_t35090, error));
+  bool fl_t35091 = false;
+  FL_TRY(fl_cond(ctx, fl_t35090, &fl_t35091, error));
+  if (fl_t35091) {
+    fl_value fl_t35092 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_555, &fl_t35092, error));
+    fl_value fl_t35093 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_544, &fl_t35093, error));
+    fl_value fl_t35094 = fl_nothing();
+    FL_TRY(compiler_flang_nositel_indukcii(ctx, uzel, &fl_t35094, error));
+    fl_value fl_t35095 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2586, &fl_t35095, error));
+    fl_value fl_t35096 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35095, &fl_t35096, error));
+    fl_value fl_t35097 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2587, &fl_t35097, error));
+    fl_value fl_t35098 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35097, &fl_t35098, error));
+    fl_value fl_t35099 = fl_nothing();
+    FL_TRY(compiler_flang_elementy_polya(ctx, uzel, compiler_flang_text_1224, &fl_t35099, error));
+    fl_value fl_t35100 = fl_nothing();
+    FL_TRY(fl_require_list(ctx, fl_t35099, "отобразить", &fl_t35100, error));
+    fl_value *fl_t35101 = NULL;
+    size_t fl_t35102 = 0;
+    FL_TRY(fl_list_alloc(ctx, fl_t35100.as.list.count, &fl_t35101, error));
+    for (size_t fl_t35103 = 0; fl_t35103 < fl_t35100.as.list.count; fl_t35103 += 1) {
+      const fl_value p = fl_t35100.as.list.items[fl_t35103]; /* «п» */
+      fl_value fl_t35104 = fl_nothing();
+      FL_TRY(compiler_flang_stroka_uzla(ctx, p, &fl_t35104, error));
+      fl_t35101[fl_t35102] = fl_t35104;
+      fl_t35102 += 1;
     }
-    fl_value fl_t35058 = fl_nothing();
-    FL_TRY(compiler_flang_nakopitel_indukcii(ctx, uzel, &fl_t35058, error));
-    fl_value fl_t35059 = fl_nothing();
-    FL_TRY(compiler_flang_verh_indukcii(ctx, uzel, &fl_t35059, error));
-    fl_value fl_t35061[8];
-    fl_t35061[0] = fl_t35045; /* «тип» */
-    fl_t35061[1] = fl_t35046; /* «параметр» */
-    fl_t35061[2] = fl_t35047; /* «носитель» */
-    fl_t35061[3] = fl_t35049; /* «база» */
-    fl_t35061[4] = fl_t35051; /* «шаг» */
-    fl_t35061[5] = fl_list(fl_t35054, fl_t35055); /* «правила» */
-    fl_t35061[6] = fl_t35058; /* «накопитель» */
-    fl_t35061[7] = fl_t35059; /* «верх» */
-    fl_value fl_t35060 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_210, fl_t35061, 8, &fl_t35060, error));
-    fl_value fl_t35063[1];
-    fl_t35063[0] = fl_t35060; /* «индукция» */
-    fl_value fl_t35062 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Есть индукция", compiler_flang_names_320, fl_t35063, 1, &fl_t35062, error));
-    *result = fl_t35062;
+    fl_value fl_t35105 = fl_nothing();
+    FL_TRY(compiler_flang_nakopitel_indukcii(ctx, uzel, &fl_t35105, error));
+    fl_value fl_t35106 = fl_nothing();
+    FL_TRY(compiler_flang_verh_indukcii(ctx, uzel, &fl_t35106, error));
+    fl_value fl_t35108[8];
+    fl_t35108[0] = fl_t35092; /* «тип» */
+    fl_t35108[1] = fl_t35093; /* «параметр» */
+    fl_t35108[2] = fl_t35094; /* «носитель» */
+    fl_t35108[3] = fl_t35096; /* «база» */
+    fl_t35108[4] = fl_t35098; /* «шаг» */
+    fl_t35108[5] = fl_list(fl_t35101, fl_t35102); /* «правила» */
+    fl_t35108[6] = fl_t35105; /* «накопитель» */
+    fl_t35108[7] = fl_t35106; /* «верх» */
+    fl_value fl_t35107 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_210, fl_t35108, 8, &fl_t35107, error));
+    fl_value fl_t35110[1];
+    fl_t35110[0] = fl_t35107; /* «индукция» */
+    fl_value fl_t35109 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Есть индукция", compiler_flang_names_320, fl_t35110, 1, &fl_t35109, error));
+    *result = fl_t35109;
     return FL_OK;
   } else {
-    fl_value fl_t35064 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Нет индукции", NULL, NULL, 0, &fl_t35064, error));
-    *result = fl_t35064;
+    fl_value fl_t35111 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Нет индукции", NULL, NULL, 0, &fl_t35111, error));
+    *result = fl_t35111;
     return FL_OK;
   }
 }
@@ -182275,13 +182487,13 @@ fl_status compiler_flang_indukciya_sbrosa(fl_ctx *ctx, fl_value uzel, fl_value *
  * @return значение: строка
  */
 fl_status compiler_flang_nositel_indukcii(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35065 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1039, &fl_t35065, error));
-  fl_value fl_t35066 = fl_nothing();
-  FL_TRY(compiler_flang_eto_stroka(ctx, fl_t35065, &fl_t35066, error));
-  bool fl_t35067 = false;
-  FL_TRY(fl_cond(ctx, fl_t35066, &fl_t35067, error));
-  if (fl_t35067) {
+  fl_value fl_t35112 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_1039, &fl_t35112, error));
+  fl_value fl_t35113 = fl_nothing();
+  FL_TRY(compiler_flang_eto_stroka(ctx, fl_t35112, &fl_t35113, error));
+  bool fl_t35114 = false;
+  FL_TRY(fl_cond(ctx, fl_t35113, &fl_t35114, error));
+  if (fl_t35114) {
     return compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_1039, result, error);
   } else {
     *result = compiler_flang_text_2585;
@@ -182297,18 +182509,18 @@ fl_status compiler_flang_nositel_indukcii(fl_ctx *ctx, fl_value uzel, fl_value *
  * @return значение: строка
  */
 fl_status compiler_flang_nakopitel_indukcii(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35068 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_718, &fl_t35068, error));
-  fl_value fl_t35069 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35068, compiler_flang_text_815, &fl_t35069, error));
-  fl_value fl_t35070 = fl_nothing();
-  FL_TRY(compiler_flang_eto_stroka(ctx, fl_t35069, &fl_t35070, error));
-  bool fl_t35071 = false;
-  FL_TRY(fl_cond(ctx, fl_t35070, &fl_t35071, error));
-  if (fl_t35071) {
-    fl_value fl_t35072 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_718, &fl_t35072, error));
-    return compiler_flang_stroka_polya(ctx, fl_t35072, compiler_flang_text_815, result, error);
+  fl_value fl_t35115 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_718, &fl_t35115, error));
+  fl_value fl_t35116 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35115, compiler_flang_text_815, &fl_t35116, error));
+  fl_value fl_t35117 = fl_nothing();
+  FL_TRY(compiler_flang_eto_stroka(ctx, fl_t35116, &fl_t35117, error));
+  bool fl_t35118 = false;
+  FL_TRY(fl_cond(ctx, fl_t35117, &fl_t35118, error));
+  if (fl_t35118) {
+    fl_value fl_t35119 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_718, &fl_t35119, error));
+    return compiler_flang_stroka_polya(ctx, fl_t35119, compiler_flang_text_815, result, error);
   } else {
     *result = compiler_flang_text_2721;
     return FL_OK;
@@ -182323,25 +182535,25 @@ fl_status compiler_flang_nakopitel_indukcii(fl_ctx *ctx, fl_value uzel, fl_value
  * @return значение: строка
  */
 fl_status compiler_flang_verh_indukcii(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error) {
-  fl_value fl_t35073 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2629, &fl_t35073, error));
-  fl_value fl_t35074 = fl_nothing();
-  FL_TRY(compiler_flang_eto_zapis(ctx, fl_t35073, &fl_t35074, error));
-  bool fl_t35075 = false;
-  FL_TRY(fl_cond(ctx, fl_t35074, &fl_t35075, error));
-  if (fl_t35075) {
-    fl_value fl_t35076 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2629, &fl_t35076, error));
-    fl_value fl_t35077 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35076, compiler_flang_text_2628, &fl_t35077, error));
-    fl_value fl_t35078 = fl_nothing();
-    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35077, &fl_t35078, error));
-    fl_value fl_t35079 = fl_nothing(); /* «к строке» */
-    FL_TRY(fl_b_k_stroke(ctx, fl_t35078, &fl_t35079, error));
-    *result = fl_t35079;
+  fl_value fl_t35120 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2629, &fl_t35120, error));
+  fl_value fl_t35121 = fl_nothing();
+  FL_TRY(compiler_flang_eto_zapis(ctx, fl_t35120, &fl_t35121, error));
+  bool fl_t35122 = false;
+  FL_TRY(fl_cond(ctx, fl_t35121, &fl_t35122, error));
+  if (fl_t35122) {
+    fl_value fl_t35123 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_2629, &fl_t35123, error));
+    fl_value fl_t35124 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, fl_t35123, compiler_flang_text_2628, &fl_t35124, error));
+    fl_value fl_t35125 = fl_nothing();
+    FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35124, &fl_t35125, error));
+    fl_value fl_t35126 = fl_nothing(); /* «к строке» */
+    FL_TRY(fl_b_k_stroke(ctx, fl_t35125, &fl_t35126, error));
+    *result = fl_t35126;
     return FL_OK;
   } else {
-    *result = compiler_flang_text_3146;
+    *result = compiler_flang_text_3152;
     return FL_OK;
   }
 }
@@ -182355,18 +182567,18 @@ fl_status compiler_flang_verh_indukcii(fl_ctx *ctx, fl_value uzel, fl_value *res
  * @return значение: список: «Вызов утверждения»
  */
 fl_status compiler_flang_slit_vyzovy(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error) {
-  fl_value fl_t35080 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, vtorye, "свёртка", &fl_t35080, error));
+  fl_value fl_t35127 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, vtorye, "свёртка", &fl_t35127, error));
   fl_value akk = pervye; /* «акк» */
-  const fl_mark fl_t35082 = fl_region_open(ctx);
-  for (size_t fl_t35081 = 0; fl_t35081 < fl_t35080.as.list.count; fl_t35081 += 1) {
-    const fl_value vyzov = fl_t35080.as.list.items[fl_t35081]; /* «вызов» */
-    fl_value fl_t35083 = fl_nothing(); /* «добавить» */
-    FL_TRY(fl_b_dobavit(ctx, vyzov, akk, &fl_t35083, error));
-    akk = fl_t35083;
-    FL_TRY(fl_region_recycle(ctx, fl_t35082, &akk, error));
+  const fl_mark fl_t35129 = fl_region_open(ctx);
+  for (size_t fl_t35128 = 0; fl_t35128 < fl_t35127.as.list.count; fl_t35128 += 1) {
+    const fl_value vyzov = fl_t35127.as.list.items[fl_t35128]; /* «вызов» */
+    fl_value fl_t35130 = fl_nothing(); /* «добавить» */
+    FL_TRY(fl_b_dobavit(ctx, vyzov, akk, &fl_t35130, error));
+    akk = fl_t35130;
+    FL_TRY(fl_region_recycle(ctx, fl_t35129, &akk, error));
   }
-  FL_TRY(fl_region_close(ctx, fl_t35082, FL_OK, &akk, error));
+  FL_TRY(fl_region_close(ctx, fl_t35129, FL_OK, &akk, error));
   *result = akk;
   return FL_OK;
 }
@@ -182381,38 +182593,38 @@ fl_status compiler_flang_slit_vyzovy(fl_ctx *ctx, fl_value pervye, fl_value vtor
  * @return значение: список: «Вызов утверждения»
  */
 fl_status compiler_flang_vyzovy_utverzhdeniya(fl_ctx *ctx, fl_value funkcii, fl_value fakty, fl_value utverzhdenie, fl_value *result, fl_error *error) {
-  fl_value fl_t35084 = fl_nothing();
-  FL_TRY(compiler_flang_razrezat_utverzhdenie(ctx, utverzhdenie, &fl_t35084, error));
-  const fl_value razrez = fl_t35084; /* пусть «разрез» */
-  fl_value fl_t35085 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, razrez, "нашли", &fl_t35085, error));
-  bool fl_t35086 = false;
-  FL_TRY(fl_cond(ctx, fl_t35085, &fl_t35086, error));
-  fl_value fl_t35087 = fl_nothing();
-  if (fl_t35086) {
-    fl_t35087 = fl_flag(false);
+  fl_value fl_t35131 = fl_nothing();
+  FL_TRY(compiler_flang_razrezat_utverzhdenie(ctx, utverzhdenie, &fl_t35131, error));
+  const fl_value razrez = fl_t35131; /* пусть «разрез» */
+  fl_value fl_t35132 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, razrez, "нашли", &fl_t35132, error));
+  bool fl_t35133 = false;
+  FL_TRY(fl_cond(ctx, fl_t35132, &fl_t35133, error));
+  fl_value fl_t35134 = fl_nothing();
+  if (fl_t35133) {
+    fl_t35134 = fl_flag(false);
   } else {
-    fl_t35087 = fl_flag(true);
+    fl_t35134 = fl_flag(true);
   }
-  bool fl_t35088 = false;
-  FL_TRY(fl_cond(ctx, fl_t35087, &fl_t35088, error));
-  if (fl_t35088) {
+  bool fl_t35135 = false;
+  FL_TRY(fl_cond(ctx, fl_t35134, &fl_t35135, error));
+  if (fl_t35135) {
     *result = fl_list(NULL, 0);
     return FL_OK;
   } else {
-    fl_value fl_t35089 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, razrez, "левое", &fl_t35089, error));
-    fl_value fl_t35090 = fl_nothing();
-    FL_TRY(compiler_flang_razobrat_chast(ctx, fl_t35089, &fl_t35090, error));
-    fl_value fl_t35091 = fl_nothing();
-    FL_TRY(compiler_flang_vyzovy_chasti(ctx, funkcii, fakty, fl_t35090, &fl_t35091, error));
-    fl_value fl_t35092 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, razrez, "правое", &fl_t35092, error));
-    fl_value fl_t35093 = fl_nothing();
-    FL_TRY(compiler_flang_razobrat_chast(ctx, fl_t35092, &fl_t35093, error));
-    fl_value fl_t35094 = fl_nothing();
-    FL_TRY(compiler_flang_vyzovy_chasti(ctx, funkcii, fakty, fl_t35093, &fl_t35094, error));
-    return compiler_flang_slit_vyzovy(ctx, fl_t35091, fl_t35094, result, error);
+    fl_value fl_t35136 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, razrez, "левое", &fl_t35136, error));
+    fl_value fl_t35137 = fl_nothing();
+    FL_TRY(compiler_flang_razobrat_chast(ctx, fl_t35136, &fl_t35137, error));
+    fl_value fl_t35138 = fl_nothing();
+    FL_TRY(compiler_flang_vyzovy_chasti(ctx, funkcii, fakty, fl_t35137, &fl_t35138, error));
+    fl_value fl_t35139 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, razrez, "правое", &fl_t35139, error));
+    fl_value fl_t35140 = fl_nothing();
+    FL_TRY(compiler_flang_razobrat_chast(ctx, fl_t35139, &fl_t35140, error));
+    fl_value fl_t35141 = fl_nothing();
+    FL_TRY(compiler_flang_vyzovy_chasti(ctx, funkcii, fakty, fl_t35140, &fl_t35141, error));
+    return compiler_flang_slit_vyzovy(ctx, fl_t35138, fl_t35141, result, error);
   }
 }
 
@@ -182471,32 +182683,32 @@ fl_status compiler_flang_vyzovy_razobrannoy_chasti(fl_ctx *ctx, fl_value funkcii
  * @return значение: список: «Вызов утверждения»
  */
 fl_status compiler_flang_vyzov_po_imenam(fl_ctx *ctx, fl_value funkcii, fl_value fakty, fl_value imya, fl_value imena_faktov, fl_value *result, fl_error *error) {
-  fl_value fl_t35095 = fl_nothing();
-  FL_TRY(compiler_flang_nayti_funkciyu_suzhdeniya(ctx, funkcii, imya, &fl_t35095, error));
-  fl_value fl_t35096 = fl_nothing();
-  FL_TRY(compiler_flang_parametry_funkcii(ctx, fl_t35095, &fl_t35096, error));
-  const fl_value parametry = fl_t35096; /* пусть «параметры» */
-  fl_value fl_t35097 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, parametry, &fl_t35097, error));
-  fl_value fl_t35098 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, imena_faktov, &fl_t35098, error));
-  bool fl_t35099 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t35097, fl_t35098)), &fl_t35099, error));
-  fl_value fl_t35100 = fl_nothing();
-  if (fl_t35099) {
-    fl_t35100 = fl_flag(false);
+  fl_value fl_t35142 = fl_nothing();
+  FL_TRY(compiler_flang_nayti_funkciyu_suzhdeniya(ctx, funkcii, imya, &fl_t35142, error));
+  fl_value fl_t35143 = fl_nothing();
+  FL_TRY(compiler_flang_parametry_funkcii(ctx, fl_t35142, &fl_t35143, error));
+  const fl_value parametry = fl_t35143; /* пусть «параметры» */
+  fl_value fl_t35144 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, parametry, &fl_t35144, error));
+  fl_value fl_t35145 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, imena_faktov, &fl_t35145, error));
+  bool fl_t35146 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t35144, fl_t35145)), &fl_t35146, error));
+  fl_value fl_t35147 = fl_nothing();
+  if (fl_t35146) {
+    fl_t35147 = fl_flag(false);
   } else {
-    fl_t35100 = fl_flag(true);
+    fl_t35147 = fl_flag(true);
   }
-  bool fl_t35101 = false;
-  FL_TRY(fl_cond(ctx, fl_t35100, &fl_t35101, error));
-  if (fl_t35101) {
+  bool fl_t35148 = false;
+  FL_TRY(fl_cond(ctx, fl_t35147, &fl_t35148, error));
+  if (fl_t35148) {
     *result = fl_list(NULL, 0);
     return FL_OK;
   } else {
-    fl_value fl_t35102 = fl_nothing();
-    FL_TRY(compiler_flang_sobrat_argumenty(ctx, fakty, parametry, imena_faktov, fl_list(NULL, 0), &fl_t35102, error));
-    return compiler_flang_vyzov_iz_sbora(ctx, imya, fl_t35102, result, error);
+    fl_value fl_t35149 = fl_nothing();
+    FL_TRY(compiler_flang_sobrat_argumenty(ctx, fakty, parametry, imena_faktov, fl_list(NULL, 0), &fl_t35149, error));
+    return compiler_flang_vyzov_iz_sbora(ctx, imya, fl_t35149, result, error);
   }
 }
 
@@ -182509,31 +182721,31 @@ fl_status compiler_flang_vyzov_po_imenam(fl_ctx *ctx, fl_value funkcii, fl_value
  * @return значение: список: «Вызов утверждения»
  */
 fl_status compiler_flang_vyzov_iz_sbora(fl_ctx *ctx, fl_value imya, fl_value sbor, fl_value *result, fl_error *error) {
-  fl_value fl_t35103 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, sbor, "беда", &fl_t35103, error));
-  if (fl_variant_is(fl_t35103, "Беда")) {
+  fl_value fl_t35150 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, sbor, "беда", &fl_t35150, error));
+  if (fl_variant_is(fl_t35150, "Беда")) {
     fl_value tekst = fl_nothing();
-    FL_TRY(fl_variant_field(ctx, fl_t35103, "текст", &tekst, error)); /* «текст» */
+    FL_TRY(fl_variant_field(ctx, fl_t35150, "текст", &tekst, error)); /* «текст» */
     (void)tekst;
     *result = fl_list(NULL, 0);
     return FL_OK;
-  } else if (fl_variant_is(fl_t35103, "Без беды")) {
-    fl_value *fl_t35104 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 1, &fl_t35104, error));
-    fl_value fl_t35105 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, sbor, "поля", &fl_t35105, error));
-    fl_value fl_t35106 = fl_nothing();
-    FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_t35105, &fl_t35106, error));
-    fl_value fl_t35108[2];
-    fl_t35108[0] = imya; /* «функция» */
-    fl_t35108[1] = fl_t35106; /* «аргументы» */
-    fl_value fl_t35107 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_259, fl_t35108, 2, &fl_t35107, error));
-    fl_t35104[0] = fl_t35107;
-    *result = fl_list(fl_t35104, 1);
+  } else if (fl_variant_is(fl_t35150, "Без беды")) {
+    fl_value *fl_t35151 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 1, &fl_t35151, error));
+    fl_value fl_t35152 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, sbor, "поля", &fl_t35152, error));
+    fl_value fl_t35153 = fl_nothing();
+    FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_t35152, &fl_t35153, error));
+    fl_value fl_t35155[2];
+    fl_t35155[0] = imya; /* «функция» */
+    fl_t35155[1] = fl_t35153; /* «аргументы» */
+    fl_value fl_t35154 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_259, fl_t35155, 2, &fl_t35154, error));
+    fl_t35151[0] = fl_t35154;
+    *result = fl_list(fl_t35151, 1);
     return FL_OK;
   } else {
-    return fl_match_fail(ctx, fl_t35103, error);
+    return fl_match_fail(ctx, fl_t35150, error);
   }
 }
 
@@ -182556,75 +182768,75 @@ static fl_status compiler_flang_znacheniem_iz_vychislennogo_body(fl_ctx *ctx, fl
   } else if (fl_variant_is(vychislennoe, "Знач список")) {
     fl_value elementy = fl_nothing();
     FL_TRY(fl_variant_field(ctx, vychislennoe, "элементы", &elementy, error)); /* «элементы» */
-    fl_value fl_t35109 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, elementy, "отобразить", &fl_t35109, error));
-    fl_value *fl_t35110 = NULL;
-    size_t fl_t35111 = 0;
-    FL_TRY(fl_list_alloc(ctx, fl_t35109.as.list.count, &fl_t35110, error));
-    for (size_t fl_t35112 = 0; fl_t35112 < fl_t35109.as.list.count; fl_t35112 += 1) {
-      const fl_value element = fl_t35109.as.list.items[fl_t35112]; /* «элемент» */
-      fl_value fl_t35113 = fl_nothing();
-      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, element, &fl_t35113, error));
-      fl_t35110[fl_t35111] = fl_t35113;
-      fl_t35111 += 1;
+    fl_value fl_t35156 = fl_nothing();
+    FL_TRY(fl_require_list(ctx, elementy, "отобразить", &fl_t35156, error));
+    fl_value *fl_t35157 = NULL;
+    size_t fl_t35158 = 0;
+    FL_TRY(fl_list_alloc(ctx, fl_t35156.as.list.count, &fl_t35157, error));
+    for (size_t fl_t35159 = 0; fl_t35159 < fl_t35156.as.list.count; fl_t35159 += 1) {
+      const fl_value element = fl_t35156.as.list.items[fl_t35159]; /* «элемент» */
+      fl_value fl_t35160 = fl_nothing();
+      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, element, &fl_t35160, error));
+      fl_t35157[fl_t35158] = fl_t35160;
+      fl_t35158 += 1;
     }
-    return compiler_flang_uzlom_spiska(ctx, fl_list(fl_t35110, fl_t35111), result, error);
+    return compiler_flang_uzlom_spiska(ctx, fl_list(fl_t35157, fl_t35158), result, error);
   } else if (fl_variant_is(vychislennoe, "Знач запись")) {
     fl_value polya = fl_nothing();
     FL_TRY(fl_variant_field(ctx, vychislennoe, "поля", &polya, error)); /* «поля» */
-    fl_value fl_t35114 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, polya, "отобразить", &fl_t35114, error));
-    fl_value *fl_t35115 = NULL;
-    size_t fl_t35116 = 0;
-    FL_TRY(fl_list_alloc(ctx, fl_t35114.as.list.count, &fl_t35115, error));
-    for (size_t fl_t35117 = 0; fl_t35117 < fl_t35114.as.list.count; fl_t35117 += 1) {
-      const fl_value pole = fl_t35114.as.list.items[fl_t35117]; /* «поле» */
-      fl_value fl_t35118 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, pole, "ключ", &fl_t35118, error));
-      fl_value fl_t35119 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, pole, "значение", &fl_t35119, error));
-      fl_value fl_t35120 = fl_nothing();
-      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35119, &fl_t35120, error));
-      fl_value fl_t35121 = fl_nothing();
-      FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35118, fl_t35120, &fl_t35121, error));
-      fl_t35115[fl_t35116] = fl_t35121;
-      fl_t35116 += 1;
+    fl_value fl_t35161 = fl_nothing();
+    FL_TRY(fl_require_list(ctx, polya, "отобразить", &fl_t35161, error));
+    fl_value *fl_t35162 = NULL;
+    size_t fl_t35163 = 0;
+    FL_TRY(fl_list_alloc(ctx, fl_t35161.as.list.count, &fl_t35162, error));
+    for (size_t fl_t35164 = 0; fl_t35164 < fl_t35161.as.list.count; fl_t35164 += 1) {
+      const fl_value pole = fl_t35161.as.list.items[fl_t35164]; /* «поле» */
+      fl_value fl_t35165 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, pole, "ключ", &fl_t35165, error));
+      fl_value fl_t35166 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, pole, "значение", &fl_t35166, error));
+      fl_value fl_t35167 = fl_nothing();
+      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35166, &fl_t35167, error));
+      fl_value fl_t35168 = fl_nothing();
+      FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35165, fl_t35167, &fl_t35168, error));
+      fl_t35162[fl_t35163] = fl_t35168;
+      fl_t35163 += 1;
     }
-    return compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35115, fl_t35116), result, error);
+    return compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35162, fl_t35163), result, error);
   } else if (fl_variant_is(vychislennoe, "Знач вариант")) {
     fl_value imya = fl_nothing();
     FL_TRY(fl_variant_field(ctx, vychislennoe, "имя", &imya, error)); /* «имя» */
     fl_value polya_2 = fl_nothing();
     FL_TRY(fl_variant_field(ctx, vychislennoe, "поля", &polya_2, error)); /* «поля» */
-    fl_value *fl_t35122 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 2, &fl_t35122, error));
-    fl_value fl_t35123 = fl_nothing();
-    FL_TRY(compiler_flang_para_teksta(ctx, compiler_flang_text_541, imya, &fl_t35123, error));
-    fl_t35122[0] = fl_t35123;
-    fl_value fl_t35124 = fl_nothing();
-    FL_TRY(fl_require_list(ctx, polya_2, "отобразить", &fl_t35124, error));
-    fl_value *fl_t35125 = NULL;
-    size_t fl_t35126 = 0;
-    FL_TRY(fl_list_alloc(ctx, fl_t35124.as.list.count, &fl_t35125, error));
-    for (size_t fl_t35127 = 0; fl_t35127 < fl_t35124.as.list.count; fl_t35127 += 1) {
-      const fl_value pole_2 = fl_t35124.as.list.items[fl_t35127]; /* «поле» */
-      fl_value fl_t35128 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, pole_2, "ключ", &fl_t35128, error));
-      fl_value fl_t35129 = fl_nothing();
-      FL_TRY(fl_field_get(ctx, pole_2, "значение", &fl_t35129, error));
-      fl_value fl_t35130 = fl_nothing();
-      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35129, &fl_t35130, error));
-      fl_value fl_t35131 = fl_nothing();
-      FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35128, fl_t35130, &fl_t35131, error));
-      fl_t35125[fl_t35126] = fl_t35131;
-      fl_t35126 += 1;
+    fl_value *fl_t35169 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 2, &fl_t35169, error));
+    fl_value fl_t35170 = fl_nothing();
+    FL_TRY(compiler_flang_para_teksta(ctx, compiler_flang_text_541, imya, &fl_t35170, error));
+    fl_t35169[0] = fl_t35170;
+    fl_value fl_t35171 = fl_nothing();
+    FL_TRY(fl_require_list(ctx, polya_2, "отобразить", &fl_t35171, error));
+    fl_value *fl_t35172 = NULL;
+    size_t fl_t35173 = 0;
+    FL_TRY(fl_list_alloc(ctx, fl_t35171.as.list.count, &fl_t35172, error));
+    for (size_t fl_t35174 = 0; fl_t35174 < fl_t35171.as.list.count; fl_t35174 += 1) {
+      const fl_value pole_2 = fl_t35171.as.list.items[fl_t35174]; /* «поле» */
+      fl_value fl_t35175 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, pole_2, "ключ", &fl_t35175, error));
+      fl_value fl_t35176 = fl_nothing();
+      FL_TRY(fl_field_get(ctx, pole_2, "значение", &fl_t35176, error));
+      fl_value fl_t35177 = fl_nothing();
+      FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35176, &fl_t35177, error));
+      fl_value fl_t35178 = fl_nothing();
+      FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35175, fl_t35177, &fl_t35178, error));
+      fl_t35172[fl_t35173] = fl_t35178;
+      fl_t35173 += 1;
     }
-    fl_value fl_t35132 = fl_nothing();
-    FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35125, fl_t35126), &fl_t35132, error));
-    fl_value fl_t35133 = fl_nothing();
-    FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, compiler_flang_text_542, fl_t35132, &fl_t35133, error));
-    fl_t35122[1] = fl_t35133;
-    return compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35122, 2), result, error);
+    fl_value fl_t35179 = fl_nothing();
+    FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35172, fl_t35173), &fl_t35179, error));
+    fl_value fl_t35180 = fl_nothing();
+    FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, compiler_flang_text_542, fl_t35179, &fl_t35180, error));
+    fl_t35169[1] = fl_t35180;
+    return compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35169, 2), result, error);
   } else {
     return fl_match_fail(ctx, vychislennoe, error);
   }
@@ -182660,28 +182872,28 @@ fl_status compiler_flang_znacheniem_iz_vychislennogo(fl_ctx *ctx, fl_value vychi
  * @return значение: «Ответ вычислителя»
  */
 fl_status compiler_flang_otvet_na_vyzov(fl_ctx *ctx, fl_value programma, fl_value vyzov, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t35134 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, vyzov, "функция", &fl_t35134, error));
-  fl_value fl_t35135 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, vyzov, "аргументы", &fl_t35135, error));
-  fl_value fl_t35136 = fl_nothing();
-  FL_TRY(compiler_flang_vyzvat(ctx, programma, fl_t35134, fl_t35135, predel_vitkov, predel_glubiny, &fl_t35136, error));
-  const fl_value itog = fl_t35136; /* пусть «итог» */
-  fl_value fl_t35137 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, vyzov, "функция", &fl_t35137, error));
-  fl_value fl_t35138 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, vyzov, "аргументы", &fl_t35138, error));
-  fl_value fl_t35139 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_znacheniya(ctx, fl_t35138, &fl_t35139, error));
-  fl_value fl_t35140 = fl_nothing();
-  FL_TRY(compiler_flang_ishod_itoga(ctx, itog, &fl_t35140, error));
-  fl_value fl_t35142[3];
-  fl_t35142[0] = fl_t35137; /* «функция» */
-  fl_t35142[1] = fl_t35139; /* «аргументы» */
-  fl_t35142[2] = fl_t35140; /* «исход» */
-  fl_value fl_t35141 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_238, fl_t35142, 3, &fl_t35141, error));
-  *result = fl_t35141;
+  fl_value fl_t35181 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, vyzov, "функция", &fl_t35181, error));
+  fl_value fl_t35182 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, vyzov, "аргументы", &fl_t35182, error));
+  fl_value fl_t35183 = fl_nothing();
+  FL_TRY(compiler_flang_vyzvat(ctx, programma, fl_t35181, fl_t35182, predel_vitkov, predel_glubiny, &fl_t35183, error));
+  const fl_value itog = fl_t35183; /* пусть «итог» */
+  fl_value fl_t35184 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, vyzov, "функция", &fl_t35184, error));
+  fl_value fl_t35185 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, vyzov, "аргументы", &fl_t35185, error));
+  fl_value fl_t35186 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_znacheniya(ctx, fl_t35185, &fl_t35186, error));
+  fl_value fl_t35187 = fl_nothing();
+  FL_TRY(compiler_flang_ishod_itoga(ctx, itog, &fl_t35187, error));
+  fl_value fl_t35189[3];
+  fl_t35189[0] = fl_t35184; /* «функция» */
+  fl_t35189[1] = fl_t35186; /* «аргументы» */
+  fl_t35189[2] = fl_t35187; /* «исход» */
+  fl_value fl_t35188 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_238, fl_t35189, 3, &fl_t35188, error));
+  *result = fl_t35188;
   return FL_OK;
 }
 
@@ -182693,32 +182905,32 @@ fl_status compiler_flang_otvet_na_vyzov(fl_ctx *ctx, fl_value programma, fl_valu
  * @return значение: «Исход вычисления»
  */
 fl_status compiler_flang_ishod_itoga(fl_ctx *ctx, fl_value itog, fl_value *result, fl_error *error) {
-  fl_value fl_t35143 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35143, error));
-  bool fl_t35144 = false;
-  FL_TRY(fl_cond(ctx, fl_t35143, &fl_t35144, error));
-  if (fl_t35144) {
-    fl_value fl_t35145 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35145, error));
-    fl_value fl_t35146 = fl_nothing();
-    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35145, &fl_t35146, error));
-    fl_value fl_t35148[1];
-    fl_t35148[0] = fl_t35146; /* «значение» */
-    fl_value fl_t35147 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Вычислено", compiler_flang_names_263, fl_t35148, 1, &fl_t35147, error));
-    *result = fl_t35147;
+  fl_value fl_t35190 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35190, error));
+  bool fl_t35191 = false;
+  FL_TRY(fl_cond(ctx, fl_t35190, &fl_t35191, error));
+  if (fl_t35191) {
+    fl_value fl_t35192 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35192, error));
+    fl_value fl_t35193 = fl_nothing();
+    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35192, &fl_t35193, error));
+    fl_value fl_t35195[1];
+    fl_t35195[0] = fl_t35193; /* «значение» */
+    fl_value fl_t35194 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Вычислено", compiler_flang_names_263, fl_t35195, 1, &fl_t35194, error));
+    *result = fl_t35194;
     return FL_OK;
   } else {
-    fl_value fl_t35149 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35149, error));
-    fl_value fl_t35150 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35150, error));
-    fl_value fl_t35152[2];
-    fl_t35152[0] = fl_t35149; /* «текст» */
-    fl_t35152[1] = fl_t35150; /* «код» */
-    fl_value fl_t35151 = fl_nothing();
-    FL_TRY(fl_variant_new(ctx, "Сорвалось", compiler_flang_names_330, fl_t35152, 2, &fl_t35151, error));
-    *result = fl_t35151;
+    fl_value fl_t35196 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35196, error));
+    fl_value fl_t35197 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35197, error));
+    fl_value fl_t35199[2];
+    fl_t35199[0] = fl_t35196; /* «текст» */
+    fl_t35199[1] = fl_t35197; /* «код» */
+    fl_value fl_t35198 = fl_nothing();
+    FL_TRY(fl_variant_new(ctx, "Сорвалось", compiler_flang_names_330, fl_t35199, 2, &fl_t35198, error));
+    *result = fl_t35198;
     return FL_OK;
   }
 }
@@ -182736,42 +182948,42 @@ fl_status compiler_flang_ishod_itoga(fl_ctx *ctx, fl_value itog, fl_value *resul
  * @return значение: «Итог фактов»
  */
 fl_status compiler_flang_proverka_faktov_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value fakty, fl_value utverzhdeniya, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t35153 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t35153, error));
-  const fl_value svyazano = fl_t35153; /* пусть «связано» */
-  fl_value fl_t35154 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35154, error));
-  fl_value fl_t35155 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t35154, &fl_t35155, error));
-  bool fl_t35156 = false;
-  FL_TRY(fl_cond(ctx, fl_t35155, &fl_t35156, error));
-  fl_value fl_t35157 = fl_nothing();
-  if (fl_t35156) {
-    fl_t35157 = fl_flag(false);
+  fl_value fl_t35200 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t35200, error));
+  const fl_value svyazano = fl_t35200; /* пусть «связано» */
+  fl_value fl_t35201 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35201, error));
+  fl_value fl_t35202 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t35201, &fl_t35202, error));
+  bool fl_t35203 = false;
+  FL_TRY(fl_cond(ctx, fl_t35202, &fl_t35203, error));
+  fl_value fl_t35204 = fl_nothing();
+  if (fl_t35203) {
+    fl_t35204 = fl_flag(false);
   } else {
-    fl_t35157 = fl_flag(true);
+    fl_t35204 = fl_flag(true);
   }
-  bool fl_t35158 = false;
-  FL_TRY(fl_cond(ctx, fl_t35157, &fl_t35158, error));
-  if (fl_t35158) {
-    fl_value fl_t35159 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35159, error));
-    fl_value fl_t35161[3];
-    fl_t35161[0] = fl_flag(false); /* «годно» */
-    fl_t35161[1] = compiler_flang_text_331; /* «вывод» */
-    fl_t35161[2] = fl_t35159; /* «диагностики» */
-    fl_value fl_t35160 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_258, fl_t35161, 3, &fl_t35160, error));
-    *result = fl_t35160;
+  bool fl_t35205 = false;
+  FL_TRY(fl_cond(ctx, fl_t35204, &fl_t35205, error));
+  if (fl_t35205) {
+    fl_value fl_t35206 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35206, error));
+    fl_value fl_t35208[3];
+    fl_t35208[0] = fl_flag(false); /* «годно» */
+    fl_t35208[1] = compiler_flang_text_331; /* «вывод» */
+    fl_t35208[2] = fl_t35206; /* «диагностики» */
+    fl_value fl_t35207 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_258, fl_t35208, 3, &fl_t35207, error));
+    *result = fl_t35207;
     return FL_OK;
   } else {
-    fl_value fl_t35162 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t35162, error));
-    fl_value fl_t35163 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t35162, &fl_t35163, error));
-    fl_value fl_t35164 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t35163, &fl_t35164, error));
-    return compiler_flang_fakty_svyazannogo(ctx, fl_t35164, fakty, utverzhdeniya, predel_vitkov, predel_glubiny, result, error);
+    fl_value fl_t35209 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t35209, error));
+    fl_value fl_t35210 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t35209, &fl_t35210, error));
+    fl_value fl_t35211 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t35210, &fl_t35211, error));
+    return compiler_flang_fakty_svyazannogo(ctx, fl_t35211, fakty, utverzhdeniya, predel_vitkov, predel_glubiny, result, error);
   }
 }
 
@@ -182787,53 +182999,53 @@ fl_status compiler_flang_proverka_faktov_ishodnikov(fl_ctx *ctx, fl_value fayly,
  * @return значение: «Итог фактов»
  */
 fl_status compiler_flang_fakty_svyazannogo(fl_ctx *ctx, fl_value programma, fl_value fakty, fl_value utverzhdeniya, fl_value predel_vitkov, fl_value predel_glubiny, fl_value *result, fl_error *error) {
-  fl_value fl_t35165 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t35165, error));
-  const fl_value funkcii = fl_t35165; /* пусть «функции» */
-  fl_value fl_t35166 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, utverzhdeniya, "свёртка", &fl_t35166, error));
+  fl_value fl_t35212 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t35212, error));
+  const fl_value funkcii = fl_t35212; /* пусть «функции» */
+  fl_value fl_t35213 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, utverzhdeniya, "свёртка", &fl_t35213, error));
   fl_value akk = fl_list(NULL, 0); /* «акк» */
-  const fl_mark fl_t35168 = fl_region_open(ctx);
-  for (size_t fl_t35167 = 0; fl_t35167 < fl_t35166.as.list.count; fl_t35167 += 1) {
-    const fl_value utverzhdenie = fl_t35166.as.list.items[fl_t35167]; /* «утверждение» */
-    fl_value fl_t35169 = fl_nothing();
-    FL_TRY(compiler_flang_vyzovy_utverzhdeniya(ctx, funkcii, fakty, utverzhdenie, &fl_t35169, error));
-    fl_value fl_t35170 = fl_nothing();
-    FL_TRY(compiler_flang_slit_vyzovy(ctx, akk, fl_t35169, &fl_t35170, error));
-    akk = fl_t35170;
-    FL_TRY(fl_region_recycle(ctx, fl_t35168, &akk, error));
+  const fl_mark fl_t35215 = fl_region_open(ctx);
+  for (size_t fl_t35214 = 0; fl_t35214 < fl_t35213.as.list.count; fl_t35214 += 1) {
+    const fl_value utverzhdenie = fl_t35213.as.list.items[fl_t35214]; /* «утверждение» */
+    fl_value fl_t35216 = fl_nothing();
+    FL_TRY(compiler_flang_vyzovy_utverzhdeniya(ctx, funkcii, fakty, utverzhdenie, &fl_t35216, error));
+    fl_value fl_t35217 = fl_nothing();
+    FL_TRY(compiler_flang_slit_vyzovy(ctx, akk, fl_t35216, &fl_t35217, error));
+    akk = fl_t35217;
+    FL_TRY(fl_region_recycle(ctx, fl_t35215, &akk, error));
   }
-  FL_TRY(fl_region_close(ctx, fl_t35168, FL_OK, &akk, error));
+  FL_TRY(fl_region_close(ctx, fl_t35215, FL_OK, &akk, error));
   const fl_value vyzovy = akk; /* пусть «вызовы» */
-  fl_value fl_t35171 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, vyzovy, "отобразить", &fl_t35171, error));
-  fl_value *fl_t35172 = NULL;
-  size_t fl_t35173 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t35171.as.list.count, &fl_t35172, error));
-  for (size_t fl_t35174 = 0; fl_t35174 < fl_t35171.as.list.count; fl_t35174 += 1) {
-    const fl_value vyzov = fl_t35171.as.list.items[fl_t35174]; /* «вызов» */
-    fl_value fl_t35175 = fl_nothing();
-    FL_TRY(compiler_flang_otvet_na_vyzov(ctx, programma, vyzov, predel_vitkov, predel_glubiny, &fl_t35175, error));
-    fl_t35172[fl_t35173] = fl_t35175;
-    fl_t35173 += 1;
+  fl_value fl_t35218 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, vyzovy, "отобразить", &fl_t35218, error));
+  fl_value *fl_t35219 = NULL;
+  size_t fl_t35220 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t35218.as.list.count, &fl_t35219, error));
+  for (size_t fl_t35221 = 0; fl_t35221 < fl_t35218.as.list.count; fl_t35221 += 1) {
+    const fl_value vyzov = fl_t35218.as.list.items[fl_t35221]; /* «вызов» */
+    fl_value fl_t35222 = fl_nothing();
+    FL_TRY(compiler_flang_otvet_na_vyzov(ctx, programma, vyzov, predel_vitkov, predel_glubiny, &fl_t35222, error));
+    fl_t35219[fl_t35220] = fl_t35222;
+    fl_t35220 += 1;
   }
-  const fl_value otvety = fl_list(fl_t35172, fl_t35173); /* пусть «ответы» */
-  fl_value fl_t35176 = fl_nothing();
-  FL_TRY(compiler_flang_proverit_fakty(ctx, programma, fakty, utverzhdeniya, otvety, &fl_t35176, error));
-  const fl_value verdikt = fl_t35176; /* пусть «вердикт» */
-  fl_value fl_t35177 = fl_nothing();
-  FL_TRY(compiler_flang_klyuch_znacheniya(ctx, verdikt, compiler_flang_text_2747, &fl_t35177, error));
-  fl_value fl_t35178 = fl_nothing();
-  FL_TRY(compiler_flang_eto_istina_suzhdeniya(ctx, fl_t35177, &fl_t35178, error));
-  fl_value fl_t35179 = fl_nothing();
-  FL_TRY(compiler_flang_pechat_znacheniya(ctx, verdikt, &fl_t35179, error));
-  fl_value fl_t35181[3];
-  fl_t35181[0] = fl_t35178; /* «годно» */
-  fl_t35181[1] = fl_t35179; /* «вывод» */
-  fl_t35181[2] = fl_list(NULL, 0); /* «диагностики» */
-  fl_value fl_t35180 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_258, fl_t35181, 3, &fl_t35180, error));
-  *result = fl_t35180;
+  const fl_value otvety = fl_list(fl_t35219, fl_t35220); /* пусть «ответы» */
+  fl_value fl_t35223 = fl_nothing();
+  FL_TRY(compiler_flang_proverit_fakty(ctx, programma, fakty, utverzhdeniya, otvety, &fl_t35223, error));
+  const fl_value verdikt = fl_t35223; /* пусть «вердикт» */
+  fl_value fl_t35224 = fl_nothing();
+  FL_TRY(compiler_flang_klyuch_znacheniya(ctx, verdikt, compiler_flang_text_2747, &fl_t35224, error));
+  fl_value fl_t35225 = fl_nothing();
+  FL_TRY(compiler_flang_eto_istina_suzhdeniya(ctx, fl_t35224, &fl_t35225, error));
+  fl_value fl_t35226 = fl_nothing();
+  FL_TRY(compiler_flang_pechat_znacheniya(ctx, verdikt, &fl_t35226, error));
+  fl_value fl_t35228[3];
+  fl_t35228[0] = fl_t35225; /* «годно» */
+  fl_t35228[1] = fl_t35226; /* «вывод» */
+  fl_t35228[2] = fl_list(NULL, 0); /* «диагностики» */
+  fl_value fl_t35227 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_258, fl_t35228, 3, &fl_t35227, error));
+  *result = fl_t35227;
   return FL_OK;
 }
 
@@ -182846,20 +183058,20 @@ fl_status compiler_flang_fakty_svyazannogo(fl_ctx *ctx, fl_value programma, fl_v
  * @return значение: «Найденный план»
  */
 fl_status compiler_flang_plan_ne_nayden(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value *result, fl_error *error) {
-  fl_value fl_t35183[10];
-  fl_t35183[0] = fl_flag(false); /* «есть» */
-  fl_t35183[1] = kod; /* «код» */
-  fl_t35183[2] = soobschenie; /* «сообщение» */
-  fl_t35183[3] = compiler_flang_text_331; /* «имя» */
-  fl_t35183[4] = compiler_flang_text_331; /* «начало» */
-  fl_t35183[5] = compiler_flang_text_331; /* «шаг» */
-  fl_t35183[6] = compiler_flang_text_331; /* «первый довод» */
-  fl_t35183[7] = compiler_flang_text_331; /* «второй довод» */
-  fl_t35183[8] = fl_number(0.0); /* «строка» */
-  fl_t35183[9] = fl_number(0.0); /* «столбец» */
-  fl_value fl_t35182 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_260, fl_t35183, 10, &fl_t35182, error));
-  *result = fl_t35182;
+  fl_value fl_t35230[10];
+  fl_t35230[0] = fl_flag(false); /* «есть» */
+  fl_t35230[1] = kod; /* «код» */
+  fl_t35230[2] = soobschenie; /* «сообщение» */
+  fl_t35230[3] = compiler_flang_text_331; /* «имя» */
+  fl_t35230[4] = compiler_flang_text_331; /* «начало» */
+  fl_t35230[5] = compiler_flang_text_331; /* «шаг» */
+  fl_t35230[6] = compiler_flang_text_331; /* «первый довод» */
+  fl_t35230[7] = compiler_flang_text_331; /* «второй довод» */
+  fl_t35230[8] = fl_number(0.0); /* «строка» */
+  fl_t35230[9] = fl_number(0.0); /* «столбец» */
+  fl_value fl_t35229 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_260, fl_t35230, 10, &fl_t35229, error));
+  *result = fl_t35229;
   return FL_OK;
 }
 
@@ -182871,28 +183083,28 @@ fl_status compiler_flang_plan_ne_nayden(fl_ctx *ctx, fl_value kod, fl_value soob
  * @return значение: строка
  */
 fl_status compiler_flang_imena_planov(fl_ctx *ctx, fl_value plany, fl_value *result, fl_error *error) {
-  fl_value fl_t35184 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, plany, "отобразить", &fl_t35184, error));
-  fl_value *fl_t35185 = NULL;
-  size_t fl_t35186 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t35184.as.list.count, &fl_t35185, error));
-  for (size_t fl_t35187 = 0; fl_t35187 < fl_t35184.as.list.count; fl_t35187 += 1) {
-    const fl_value plan = fl_t35184.as.list.items[fl_t35187]; /* «план» */
-    fl_value *fl_t35188 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 3, &fl_t35188, error));
-    fl_t35188[0] = compiler_flang_text_366;
-    fl_value fl_t35189 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, plan, compiler_flang_text_384, &fl_t35189, error));
-    fl_t35188[1] = fl_t35189;
-    fl_t35188[2] = compiler_flang_text_442;
-    fl_value fl_t35190 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35188, 3), compiler_flang_text_331, &fl_t35190, error));
-    fl_t35185[fl_t35186] = fl_t35190;
-    fl_t35186 += 1;
+  fl_value fl_t35231 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, plany, "отобразить", &fl_t35231, error));
+  fl_value *fl_t35232 = NULL;
+  size_t fl_t35233 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t35231.as.list.count, &fl_t35232, error));
+  for (size_t fl_t35234 = 0; fl_t35234 < fl_t35231.as.list.count; fl_t35234 += 1) {
+    const fl_value plan = fl_t35231.as.list.items[fl_t35234]; /* «план» */
+    fl_value *fl_t35235 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 3, &fl_t35235, error));
+    fl_t35235[0] = compiler_flang_text_366;
+    fl_value fl_t35236 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, plan, compiler_flang_text_384, &fl_t35236, error));
+    fl_t35235[1] = fl_t35236;
+    fl_t35235[2] = compiler_flang_text_442;
+    fl_value fl_t35237 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35235, 3), compiler_flang_text_331, &fl_t35237, error));
+    fl_t35232[fl_t35233] = fl_t35237;
+    fl_t35233 += 1;
   }
-  fl_value fl_t35191 = fl_nothing(); /* «соединить» */
-  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35185, fl_t35186), compiler_flang_text_432, &fl_t35191, error));
-  *result = fl_t35191;
+  fl_value fl_t35238 = fl_nothing(); /* «соединить» */
+  FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35232, fl_t35233), compiler_flang_text_432, &fl_t35238, error));
+  *result = fl_t35238;
   return FL_OK;
 }
 
@@ -182905,23 +183117,23 @@ fl_status compiler_flang_imena_planov(fl_ctx *ctx, fl_value plany, fl_value *res
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_plan_po_imeni(fl_ctx *ctx, fl_value plany, fl_value imya, fl_value *result, fl_error *error) {
-  fl_value fl_t35192 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, plany, "отфильтровать", &fl_t35192, error));
-  fl_value *fl_t35193 = NULL;
-  size_t fl_t35194 = 0;
-  FL_TRY(fl_list_alloc(ctx, fl_t35192.as.list.count, &fl_t35193, error));
-  for (size_t fl_t35195 = 0; fl_t35195 < fl_t35192.as.list.count; fl_t35195 += 1) {
-    const fl_value plan = fl_t35192.as.list.items[fl_t35195]; /* «план» */
-    fl_value fl_t35196 = fl_nothing();
-    FL_TRY(compiler_flang_stroka_polya(ctx, plan, compiler_flang_text_384, &fl_t35196, error));
-    bool fl_t35197 = false;
-    FL_TRY(fl_keep(ctx, fl_flag(fl_equal(fl_t35196, imya)), &fl_t35197, error));
-    if (fl_t35197) {
-      fl_t35193[fl_t35194] = plan;
-      fl_t35194 += 1;
+  fl_value fl_t35239 = fl_nothing();
+  FL_TRY(fl_require_list(ctx, plany, "отфильтровать", &fl_t35239, error));
+  fl_value *fl_t35240 = NULL;
+  size_t fl_t35241 = 0;
+  FL_TRY(fl_list_alloc(ctx, fl_t35239.as.list.count, &fl_t35240, error));
+  for (size_t fl_t35242 = 0; fl_t35242 < fl_t35239.as.list.count; fl_t35242 += 1) {
+    const fl_value plan = fl_t35239.as.list.items[fl_t35242]; /* «план» */
+    fl_value fl_t35243 = fl_nothing();
+    FL_TRY(compiler_flang_stroka_polya(ctx, plan, compiler_flang_text_384, &fl_t35243, error));
+    bool fl_t35244 = false;
+    FL_TRY(fl_keep(ctx, fl_flag(fl_equal(fl_t35243, imya)), &fl_t35244, error));
+    if (fl_t35244) {
+      fl_t35240[fl_t35241] = plan;
+      fl_t35241 += 1;
     }
   }
-  *result = fl_list(fl_t35193, fl_t35194);
+  *result = fl_list(fl_t35240, fl_t35241);
   return FL_OK;
 }
 
@@ -182935,42 +183147,42 @@ fl_status compiler_flang_plan_po_imeni(fl_ctx *ctx, fl_value plany, fl_value imy
  * @return значение: «Найденный план»
  */
 fl_status compiler_flang_vybrat_plan(fl_ctx *ctx, fl_value plany, fl_value imya, fl_value funkcii, fl_value *result, fl_error *error) {
-  fl_value fl_t35198 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, plany, &fl_t35198, error));
-  bool fl_t35199 = false;
-  FL_TRY(fl_cond(ctx, fl_t35198, &fl_t35199, error));
-  if (fl_t35199) {
-    return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3147, compiler_flang_text_3148, result, error);
+  fl_value fl_t35245 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, plany, &fl_t35245, error));
+  bool fl_t35246 = false;
+  FL_TRY(fl_cond(ctx, fl_t35245, &fl_t35246, error));
+  if (fl_t35246) {
+    return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3153, compiler_flang_text_3154, result, error);
   } else {
-    fl_value fl_t35200 = fl_nothing(); /* «пусто» */
-    FL_TRY(fl_b_pusto(ctx, imya, &fl_t35200, error));
-    bool fl_t35201 = false;
-    FL_TRY(fl_cond(ctx, fl_t35200, &fl_t35201, error));
-    if (fl_t35201) {
-      fl_value fl_t35202 = fl_nothing(); /* «длина» */
-      FL_TRY(fl_b_dlina(ctx, plany, &fl_t35202, error));
-      bool fl_t35203 = false;
-      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t35202, fl_number(1.0))), &fl_t35203, error));
-      if (fl_t35203) {
-        fl_value fl_t35204 = fl_nothing(); /* «голова» */
-        FL_TRY(fl_b_golova_dokazano(ctx, plany, &fl_t35204, error));
-        return compiler_flang_plan_iz_uzla(ctx, fl_t35204, funkcii, result, error);
+    fl_value fl_t35247 = fl_nothing(); /* «пусто» */
+    FL_TRY(fl_b_pusto(ctx, imya, &fl_t35247, error));
+    bool fl_t35248 = false;
+    FL_TRY(fl_cond(ctx, fl_t35247, &fl_t35248, error));
+    if (fl_t35248) {
+      fl_value fl_t35249 = fl_nothing(); /* «длина» */
+      FL_TRY(fl_b_dlina(ctx, plany, &fl_t35249, error));
+      bool fl_t35250 = false;
+      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_t35249, fl_number(1.0))), &fl_t35250, error));
+      if (fl_t35250) {
+        fl_value fl_t35251 = fl_nothing(); /* «голова» */
+        FL_TRY(fl_b_golova_dokazano(ctx, plany, &fl_t35251, error));
+        return compiler_flang_plan_iz_uzla(ctx, fl_t35251, funkcii, result, error);
       } else {
-        fl_value *fl_t35205 = NULL;
-        FL_TRY(fl_list_alloc(ctx, 3, &fl_t35205, error));
-        fl_t35205[0] = compiler_flang_text_3149;
-        fl_value fl_t35206 = fl_nothing();
-        FL_TRY(compiler_flang_imena_planov(ctx, plany, &fl_t35206, error));
-        fl_t35205[1] = fl_t35206;
-        fl_t35205[2] = compiler_flang_text_3150;
-        fl_value fl_t35207 = fl_nothing(); /* «соединить» */
-        FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35205, 3), compiler_flang_text_331, &fl_t35207, error));
-        return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3147, fl_t35207, result, error);
+        fl_value *fl_t35252 = NULL;
+        FL_TRY(fl_list_alloc(ctx, 3, &fl_t35252, error));
+        fl_t35252[0] = compiler_flang_text_3155;
+        fl_value fl_t35253 = fl_nothing();
+        FL_TRY(compiler_flang_imena_planov(ctx, plany, &fl_t35253, error));
+        fl_t35252[1] = fl_t35253;
+        fl_t35252[2] = compiler_flang_text_3156;
+        fl_value fl_t35254 = fl_nothing(); /* «соединить» */
+        FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35252, 3), compiler_flang_text_331, &fl_t35254, error));
+        return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3153, fl_t35254, result, error);
       }
     } else {
-      fl_value fl_t35208 = fl_nothing();
-      FL_TRY(compiler_flang_plan_po_imeni(ctx, plany, imya, &fl_t35208, error));
-      return compiler_flang_vybrat_nazvannyy_plan(ctx, fl_t35208, imya, funkcii, result, error);
+      fl_value fl_t35255 = fl_nothing();
+      FL_TRY(compiler_flang_plan_po_imeni(ctx, plany, imya, &fl_t35255, error));
+      return compiler_flang_vybrat_nazvannyy_plan(ctx, fl_t35255, imya, funkcii, result, error);
     }
   }
 }
@@ -182985,23 +183197,23 @@ fl_status compiler_flang_vybrat_plan(fl_ctx *ctx, fl_value plany, fl_value imya,
  * @return значение: «Найденный план»
  */
 fl_status compiler_flang_vybrat_nazvannyy_plan(fl_ctx *ctx, fl_value podhodyaschie, fl_value imya, fl_value funkcii, fl_value *result, fl_error *error) {
-  fl_value fl_t35209 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, podhodyaschie, &fl_t35209, error));
-  bool fl_t35210 = false;
-  FL_TRY(fl_cond(ctx, fl_t35209, &fl_t35210, error));
-  if (fl_t35210) {
-    fl_value *fl_t35211 = NULL;
-    FL_TRY(fl_list_alloc(ctx, 3, &fl_t35211, error));
-    fl_t35211[0] = compiler_flang_text_3151;
-    fl_t35211[1] = imya;
-    fl_t35211[2] = compiler_flang_text_442;
-    fl_value fl_t35212 = fl_nothing(); /* «соединить» */
-    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35211, 3), compiler_flang_text_331, &fl_t35212, error));
-    return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3147, fl_t35212, result, error);
+  fl_value fl_t35256 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, podhodyaschie, &fl_t35256, error));
+  bool fl_t35257 = false;
+  FL_TRY(fl_cond(ctx, fl_t35256, &fl_t35257, error));
+  if (fl_t35257) {
+    fl_value *fl_t35258 = NULL;
+    FL_TRY(fl_list_alloc(ctx, 3, &fl_t35258, error));
+    fl_t35258[0] = compiler_flang_text_3157;
+    fl_t35258[1] = imya;
+    fl_t35258[2] = compiler_flang_text_442;
+    fl_value fl_t35259 = fl_nothing(); /* «соединить» */
+    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35258, 3), compiler_flang_text_331, &fl_t35259, error));
+    return compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_3153, fl_t35259, result, error);
   } else {
-    fl_value fl_t35213 = fl_nothing(); /* «голова» */
-    FL_TRY(fl_b_golova_dokazano(ctx, podhodyaschie, &fl_t35213, error));
-    return compiler_flang_plan_iz_uzla(ctx, fl_t35213, funkcii, result, error);
+    fl_value fl_t35260 = fl_nothing(); /* «голова» */
+    FL_TRY(fl_b_golova_dokazano(ctx, podhodyaschie, &fl_t35260, error));
+    return compiler_flang_plan_iz_uzla(ctx, fl_t35260, funkcii, result, error);
   }
 }
 
@@ -183014,47 +183226,47 @@ fl_status compiler_flang_vybrat_nazvannyy_plan(fl_ctx *ctx, fl_value podhodyasch
  * @return значение: «Найденный план»
  */
 fl_status compiler_flang_plan_iz_uzla(fl_ctx *ctx, fl_value uzel, fl_value funkcii, fl_value *result, fl_error *error) {
-  fl_value fl_t35214 = fl_nothing();
-  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_1075, &fl_t35214, error));
-  const fl_value shag = fl_t35214; /* пусть «шаг» */
-  fl_value fl_t35215 = fl_nothing();
-  FL_TRY(compiler_flang_nayti_funkciyu_suzhdeniya(ctx, funkcii, shag, &fl_t35215, error));
-  fl_value fl_t35216 = fl_nothing();
-  FL_TRY(compiler_flang_parametry_funkcii(ctx, fl_t35215, &fl_t35216, error));
-  const fl_value dovody = fl_t35216; /* пусть «доводы» */
-  fl_value fl_t35217 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_577, &fl_t35217, error));
-  const fl_value mesto = fl_t35217; /* пусть «место» */
-  fl_value fl_t35218 = fl_nothing();
-  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_384, &fl_t35218, error));
-  fl_value fl_t35219 = fl_nothing();
-  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_1074, &fl_t35219, error));
-  fl_value fl_t35220 = fl_nothing();
-  FL_TRY(compiler_flang_imya_dovoda(ctx, dovody, fl_number(1.0), &fl_t35220, error));
-  fl_value fl_t35221 = fl_nothing();
-  FL_TRY(compiler_flang_imya_dovoda(ctx, dovody, fl_number(2.0), &fl_t35221, error));
-  fl_value fl_t35222 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_673, &fl_t35222, error));
-  fl_value fl_t35223 = fl_nothing();
-  FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35222, &fl_t35223, error));
-  fl_value fl_t35224 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_674, &fl_t35224, error));
-  fl_value fl_t35225 = fl_nothing();
-  FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35224, &fl_t35225, error));
-  fl_value fl_t35227[10];
-  fl_t35227[0] = fl_flag(true); /* «есть» */
-  fl_t35227[1] = compiler_flang_text_331; /* «код» */
-  fl_t35227[2] = compiler_flang_text_331; /* «сообщение» */
-  fl_t35227[3] = fl_t35218; /* «имя» */
-  fl_t35227[4] = fl_t35219; /* «начало» */
-  fl_t35227[5] = shag; /* «шаг» */
-  fl_t35227[6] = fl_t35220; /* «первый довод» */
-  fl_t35227[7] = fl_t35221; /* «второй довод» */
-  fl_t35227[8] = fl_t35223; /* «строка» */
-  fl_t35227[9] = fl_t35225; /* «столбец» */
-  fl_value fl_t35226 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_260, fl_t35227, 10, &fl_t35226, error));
-  *result = fl_t35226;
+  fl_value fl_t35261 = fl_nothing();
+  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_1075, &fl_t35261, error));
+  const fl_value shag = fl_t35261; /* пусть «шаг» */
+  fl_value fl_t35262 = fl_nothing();
+  FL_TRY(compiler_flang_nayti_funkciyu_suzhdeniya(ctx, funkcii, shag, &fl_t35262, error));
+  fl_value fl_t35263 = fl_nothing();
+  FL_TRY(compiler_flang_parametry_funkcii(ctx, fl_t35262, &fl_t35263, error));
+  const fl_value dovody = fl_t35263; /* пусть «доводы» */
+  fl_value fl_t35264 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_577, &fl_t35264, error));
+  const fl_value mesto = fl_t35264; /* пусть «место» */
+  fl_value fl_t35265 = fl_nothing();
+  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_384, &fl_t35265, error));
+  fl_value fl_t35266 = fl_nothing();
+  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_1074, &fl_t35266, error));
+  fl_value fl_t35267 = fl_nothing();
+  FL_TRY(compiler_flang_imya_dovoda(ctx, dovody, fl_number(1.0), &fl_t35267, error));
+  fl_value fl_t35268 = fl_nothing();
+  FL_TRY(compiler_flang_imya_dovoda(ctx, dovody, fl_number(2.0), &fl_t35268, error));
+  fl_value fl_t35269 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_673, &fl_t35269, error));
+  fl_value fl_t35270 = fl_nothing();
+  FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35269, &fl_t35270, error));
+  fl_value fl_t35271 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, mesto, compiler_flang_text_674, &fl_t35271, error));
+  fl_value fl_t35272 = fl_nothing();
+  FL_TRY(compiler_flang_chislo_uzla(ctx, fl_t35271, &fl_t35272, error));
+  fl_value fl_t35274[10];
+  fl_t35274[0] = fl_flag(true); /* «есть» */
+  fl_t35274[1] = compiler_flang_text_331; /* «код» */
+  fl_t35274[2] = compiler_flang_text_331; /* «сообщение» */
+  fl_t35274[3] = fl_t35265; /* «имя» */
+  fl_t35274[4] = fl_t35266; /* «начало» */
+  fl_t35274[5] = shag; /* «шаг» */
+  fl_t35274[6] = fl_t35267; /* «первый довод» */
+  fl_t35274[7] = fl_t35268; /* «второй довод» */
+  fl_t35274[8] = fl_t35270; /* «строка» */
+  fl_t35274[9] = fl_t35272; /* «столбец» */
+  fl_value fl_t35273 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_260, fl_t35274, 10, &fl_t35273, error));
+  *result = fl_t35273;
   return FL_OK;
 }
 
@@ -183067,18 +183279,18 @@ fl_status compiler_flang_plan_iz_uzla(fl_ctx *ctx, fl_value uzel, fl_value funkc
  * @return значение: строка
  */
 fl_status compiler_flang_imya_dovoda(fl_ctx *ctx, fl_value dovody, fl_value nomer, fl_value *result, fl_error *error) {
-  fl_value fl_t35228 = fl_nothing(); /* «длина» */
-  FL_TRY(fl_b_dlina(ctx, dovody, &fl_t35228, error));
-  if (fl_t35228.tag != FL_NUMBER || nomer.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t35228, nomer, error));
-  bool fl_t35229 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_t35228.as.number < nomer.as.number), &fl_t35229, error));
-  if (fl_t35229) {
+  fl_value fl_t35275 = fl_nothing(); /* «длина» */
+  FL_TRY(fl_b_dlina(ctx, dovody, &fl_t35275, error));
+  if (fl_t35275.tag != FL_NUMBER || nomer.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, fl_t35275, nomer, error));
+  bool fl_t35276 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_t35275.as.number < nomer.as.number), &fl_t35276, error));
+  if (fl_t35276) {
     *result = compiler_flang_text_331;
     return FL_OK;
   } else {
-    fl_value fl_t35230 = fl_nothing(); /* «элемент» */
-    FL_TRY(fl_b_element(ctx, nomer, dovody, &fl_t35230, error));
-    return compiler_flang_stroka_polya(ctx, fl_t35230, compiler_flang_text_384, result, error);
+    fl_value fl_t35277 = fl_nothing(); /* «элемент» */
+    FL_TRY(fl_b_element(ctx, nomer, dovody, &fl_t35277, error));
+    return compiler_flang_stroka_polya(ctx, fl_t35277, compiler_flang_text_384, result, error);
   }
 }
 
@@ -183092,46 +183304,46 @@ fl_status compiler_flang_imya_dovoda(fl_ctx *ctx, fl_value dovody, fl_value nome
  * @return значение: «Итог поиска плана»
  */
 fl_status compiler_flang_plan_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value imya, fl_value *result, fl_error *error) {
-  fl_value fl_t35231 = fl_nothing();
-  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t35231, error));
-  const fl_value svyazano = fl_t35231; /* пусть «связано» */
-  fl_value fl_t35232 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35232, error));
-  fl_value fl_t35233 = fl_nothing(); /* «пусто» */
-  FL_TRY(fl_b_pusto(ctx, fl_t35232, &fl_t35233, error));
-  bool fl_t35234 = false;
-  FL_TRY(fl_cond(ctx, fl_t35233, &fl_t35234, error));
-  fl_value fl_t35235 = fl_nothing();
-  if (fl_t35234) {
-    fl_t35235 = fl_flag(false);
+  fl_value fl_t35278 = fl_nothing();
+  FL_TRY(compiler_flang_svyazat_ishodniki(ctx, fayly, vhod, &fl_t35278, error));
+  const fl_value svyazano = fl_t35278; /* пусть «связано» */
+  fl_value fl_t35279 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35279, error));
+  fl_value fl_t35280 = fl_nothing(); /* «пусто» */
+  FL_TRY(fl_b_pusto(ctx, fl_t35279, &fl_t35280, error));
+  bool fl_t35281 = false;
+  FL_TRY(fl_cond(ctx, fl_t35280, &fl_t35281, error));
+  fl_value fl_t35282 = fl_nothing();
+  if (fl_t35281) {
+    fl_t35282 = fl_flag(false);
   } else {
-    fl_t35235 = fl_flag(true);
+    fl_t35282 = fl_flag(true);
   }
-  bool fl_t35236 = false;
-  FL_TRY(fl_cond(ctx, fl_t35235, &fl_t35236, error));
-  if (fl_t35236) {
-    fl_value fl_t35237 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35237, error));
-    fl_value fl_t35238 = fl_nothing();
-    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35238, error));
-    fl_value fl_t35239 = fl_nothing();
-    FL_TRY(compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_331, compiler_flang_text_331, &fl_t35239, error));
-    fl_value fl_t35241[3];
-    fl_t35241[0] = fl_t35237; /* «диагностики» */
-    fl_t35241[1] = fl_t35238; /* «программа» */
-    fl_t35241[2] = fl_t35239; /* «план» */
-    fl_value fl_t35240 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_261, fl_t35241, 3, &fl_t35240, error));
-    *result = fl_t35240;
+  bool fl_t35283 = false;
+  FL_TRY(fl_cond(ctx, fl_t35282, &fl_t35283, error));
+  if (fl_t35283) {
+    fl_value fl_t35284 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "диагностики", &fl_t35284, error));
+    fl_value fl_t35285 = fl_nothing();
+    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35285, error));
+    fl_value fl_t35286 = fl_nothing();
+    FL_TRY(compiler_flang_plan_ne_nayden(ctx, compiler_flang_text_331, compiler_flang_text_331, &fl_t35286, error));
+    fl_value fl_t35288[3];
+    fl_t35288[0] = fl_t35284; /* «диагностики» */
+    fl_t35288[1] = fl_t35285; /* «программа» */
+    fl_t35288[2] = fl_t35286; /* «план» */
+    fl_value fl_t35287 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_261, fl_t35288, 3, &fl_t35287, error));
+    *result = fl_t35287;
     return FL_OK;
   } else {
-    fl_value fl_t35242 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t35242, error));
-    fl_value fl_t35243 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t35242, &fl_t35243, error));
-    fl_value fl_t35244 = fl_nothing();
-    FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t35243, &fl_t35244, error));
-    return compiler_flang_plan_svyazannogo(ctx, fl_t35244, imya, result, error);
+    fl_value fl_t35289 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, svyazano, "программа", &fl_t35289, error));
+    fl_value fl_t35290 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_mery(ctx, fl_t35289, &fl_t35290, error));
+    fl_value fl_t35291 = fl_nothing();
+    FL_TRY(compiler_flang_otmetit_dokazannye(ctx, fl_t35290, &fl_t35291, error));
+    return compiler_flang_plan_svyazannogo(ctx, fl_t35291, imya, result, error);
   }
 }
 
@@ -183144,19 +183356,19 @@ fl_status compiler_flang_plan_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value v
  * @return значение: «Итог поиска плана»
  */
 fl_status compiler_flang_plan_svyazannogo(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value *result, fl_error *error) {
-  fl_value fl_t35245 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_974, &fl_t35245, error));
-  fl_value fl_t35246 = fl_nothing();
-  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t35246, error));
-  fl_value fl_t35247 = fl_nothing();
-  FL_TRY(compiler_flang_vybrat_plan(ctx, fl_t35245, imya, fl_t35246, &fl_t35247, error));
-  fl_value fl_t35249[3];
-  fl_t35249[0] = fl_list(NULL, 0); /* «диагностики» */
-  fl_t35249[1] = programma; /* «программа» */
-  fl_t35249[2] = fl_t35247; /* «план» */
-  fl_value fl_t35248 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_261, fl_t35249, 3, &fl_t35248, error));
-  *result = fl_t35248;
+  fl_value fl_t35292 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_974, &fl_t35292, error));
+  fl_value fl_t35293 = fl_nothing();
+  FL_TRY(compiler_flang_elementy_polya(ctx, programma, compiler_flang_text_602, &fl_t35293, error));
+  fl_value fl_t35294 = fl_nothing();
+  FL_TRY(compiler_flang_vybrat_plan(ctx, fl_t35292, imya, fl_t35293, &fl_t35294, error));
+  fl_value fl_t35296[3];
+  fl_t35296[0] = fl_list(NULL, 0); /* «диагностики» */
+  fl_t35296[1] = programma; /* «программа» */
+  fl_t35296[2] = fl_t35294; /* «план» */
+  fl_value fl_t35295 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_261, fl_t35296, 3, &fl_t35295, error));
+  *result = fl_t35295;
   return FL_OK;
 }
 
@@ -183170,23 +183382,23 @@ fl_status compiler_flang_plan_svyazannogo(fl_ctx *ctx, fl_value programma, fl_va
  * @return значение: «Ход плана»
  */
 fl_status compiler_flang_hod_sboya(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value vitki, fl_value *result, fl_error *error) {
-  fl_value fl_t35250 = fl_nothing();
-  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35250, error));
-  fl_value fl_t35251 = fl_nothing();
-  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35251, error));
-  fl_value fl_t35252 = fl_nothing();
-  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35252, error));
-  fl_value fl_t35254[7];
-  fl_t35254[0] = compiler_flang_text_3152; /* «вид» */
-  fl_t35254[1] = kod; /* «код» */
-  fl_t35254[2] = soobschenie; /* «сообщение» */
-  fl_t35254[3] = fl_t35250; /* «значение» */
-  fl_t35254[4] = fl_t35251; /* «поручение» */
-  fl_t35254[5] = fl_t35252; /* «потом» */
-  fl_t35254[6] = vitki; /* «витки» */
-  fl_value fl_t35253 = fl_nothing();
-  FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35254, 7, &fl_t35253, error));
-  *result = fl_t35253;
+  fl_value fl_t35297 = fl_nothing();
+  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35297, error));
+  fl_value fl_t35298 = fl_nothing();
+  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35298, error));
+  fl_value fl_t35299 = fl_nothing();
+  FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35299, error));
+  fl_value fl_t35301[7];
+  fl_t35301[0] = compiler_flang_text_3158; /* «вид» */
+  fl_t35301[1] = kod; /* «код» */
+  fl_t35301[2] = soobschenie; /* «сообщение» */
+  fl_t35301[3] = fl_t35297; /* «значение» */
+  fl_t35301[4] = fl_t35298; /* «поручение» */
+  fl_t35301[5] = fl_t35299; /* «потом» */
+  fl_t35301[6] = vitki; /* «витки» */
+  fl_value fl_t35300 = fl_nothing();
+  FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35301, 7, &fl_t35300, error));
+  *result = fl_t35300;
   return FL_OK;
 }
 
@@ -183199,53 +183411,53 @@ fl_status compiler_flang_hod_sboya(fl_ctx *ctx, fl_value kod, fl_value soobschen
  * @return значение: «Ход плана»
  */
 fl_status compiler_flang_nachalo_plana(fl_ctx *ctx, fl_value gotovaya, fl_value nachalo, fl_value *result, fl_error *error) {
-  fl_value fl_t35255 = fl_nothing();
-  FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(NULL, 0), &fl_t35255, error));
-  fl_value fl_t35256 = fl_nothing();
-  FL_TRY(compiler_flang_vyzvat_gotovoe(ctx, gotovaya, nachalo, fl_t35255, &fl_t35256, error));
-  const fl_value itog = fl_t35256; /* пусть «итог» */
-  fl_value fl_t35257 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35257, error));
-  bool fl_t35258 = false;
-  FL_TRY(fl_cond(ctx, fl_t35257, &fl_t35258, error));
-  fl_value fl_t35259 = fl_nothing();
-  if (fl_t35258) {
-    fl_t35259 = fl_flag(false);
+  fl_value fl_t35302 = fl_nothing();
+  FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(NULL, 0), &fl_t35302, error));
+  fl_value fl_t35303 = fl_nothing();
+  FL_TRY(compiler_flang_vyzvat_gotovoe(ctx, gotovaya, nachalo, fl_t35302, &fl_t35303, error));
+  const fl_value itog = fl_t35303; /* пусть «итог» */
+  fl_value fl_t35304 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35304, error));
+  bool fl_t35305 = false;
+  FL_TRY(fl_cond(ctx, fl_t35304, &fl_t35305, error));
+  fl_value fl_t35306 = fl_nothing();
+  if (fl_t35305) {
+    fl_t35306 = fl_flag(false);
   } else {
-    fl_t35259 = fl_flag(true);
+    fl_t35306 = fl_flag(true);
   }
-  bool fl_t35260 = false;
-  FL_TRY(fl_cond(ctx, fl_t35259, &fl_t35260, error));
-  if (fl_t35260) {
-    fl_value fl_t35261 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35261, error));
-    fl_value fl_t35262 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35262, error));
-    fl_value fl_t35263 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35263, error));
-    return compiler_flang_hod_sboya(ctx, fl_t35261, fl_t35262, fl_t35263, result, error);
+  bool fl_t35307 = false;
+  FL_TRY(fl_cond(ctx, fl_t35306, &fl_t35307, error));
+  if (fl_t35307) {
+    fl_value fl_t35308 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35308, error));
+    fl_value fl_t35309 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35309, error));
+    fl_value fl_t35310 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35310, error));
+    return compiler_flang_hod_sboya(ctx, fl_t35308, fl_t35309, fl_t35310, result, error);
   } else {
-    fl_value fl_t35264 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35264, error));
-    fl_value fl_t35265 = fl_nothing();
-    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35264, &fl_t35265, error));
-    fl_value fl_t35266 = fl_nothing();
-    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35266, error));
-    fl_value fl_t35267 = fl_nothing();
-    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35267, error));
-    fl_value fl_t35268 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35268, error));
-    fl_value fl_t35270[7];
-    fl_t35270[0] = compiler_flang_text_1078; /* «вид» */
-    fl_t35270[1] = compiler_flang_text_331; /* «код» */
-    fl_t35270[2] = compiler_flang_text_331; /* «сообщение» */
-    fl_t35270[3] = fl_t35265; /* «значение» */
-    fl_t35270[4] = fl_t35266; /* «поручение» */
-    fl_t35270[5] = fl_t35267; /* «потом» */
-    fl_t35270[6] = fl_t35268; /* «витки» */
-    fl_value fl_t35269 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35270, 7, &fl_t35269, error));
-    *result = fl_t35269;
+    fl_value fl_t35311 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35311, error));
+    fl_value fl_t35312 = fl_nothing();
+    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35311, &fl_t35312, error));
+    fl_value fl_t35313 = fl_nothing();
+    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35313, error));
+    fl_value fl_t35314 = fl_nothing();
+    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35314, error));
+    fl_value fl_t35315 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35315, error));
+    fl_value fl_t35317[7];
+    fl_t35317[0] = compiler_flang_text_1078; /* «вид» */
+    fl_t35317[1] = compiler_flang_text_331; /* «код» */
+    fl_t35317[2] = compiler_flang_text_331; /* «сообщение» */
+    fl_t35317[3] = fl_t35312; /* «значение» */
+    fl_t35317[4] = fl_t35313; /* «поручение» */
+    fl_t35317[5] = fl_t35314; /* «потом» */
+    fl_t35317[6] = fl_t35315; /* «витки» */
+    fl_value fl_t35316 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35317, 7, &fl_t35316, error));
+    *result = fl_t35316;
     return FL_OK;
   }
 }
@@ -183261,56 +183473,56 @@ fl_status compiler_flang_nachalo_plana(fl_ctx *ctx, fl_value gotovaya, fl_value 
  * @return значение: «Ход плана»
  */
 fl_status compiler_flang_shag_plana(fl_ctx *ctx, fl_value gotovaya, fl_value plan, fl_value sostoyanie, fl_value otklik, fl_value *result, fl_error *error) {
-  fl_value *fl_t35271 = NULL;
-  FL_TRY(fl_list_alloc(ctx, 2, &fl_t35271, error));
-  fl_value fl_t35272 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, plan, "первый довод", &fl_t35272, error));
-  fl_value fl_t35273 = fl_nothing();
-  FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35272, sostoyanie, &fl_t35273, error));
-  fl_t35271[0] = fl_t35273;
-  fl_value fl_t35274 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, plan, "второй довод", &fl_t35274, error));
-  fl_value fl_t35275 = fl_nothing();
-  FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35274, otklik, &fl_t35275, error));
-  fl_t35271[1] = fl_t35275;
-  fl_value fl_t35276 = fl_nothing();
-  FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35271, 2), &fl_t35276, error));
-  const fl_value dovody = fl_t35276; /* пусть «доводы» */
-  fl_value fl_t35277 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, plan, "шаг", &fl_t35277, error));
-  fl_value fl_t35278 = fl_nothing();
-  FL_TRY(compiler_flang_vyzvat_gotovoe(ctx, gotovaya, fl_t35277, dovody, &fl_t35278, error));
-  const fl_value itog = fl_t35278; /* пусть «итог» */
-  fl_value fl_t35279 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35279, error));
-  bool fl_t35280 = false;
-  FL_TRY(fl_cond(ctx, fl_t35279, &fl_t35280, error));
-  fl_value fl_t35281 = fl_nothing();
-  if (fl_t35280) {
-    fl_t35281 = fl_flag(false);
+  fl_value *fl_t35318 = NULL;
+  FL_TRY(fl_list_alloc(ctx, 2, &fl_t35318, error));
+  fl_value fl_t35319 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, plan, "первый довод", &fl_t35319, error));
+  fl_value fl_t35320 = fl_nothing();
+  FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35319, sostoyanie, &fl_t35320, error));
+  fl_t35318[0] = fl_t35320;
+  fl_value fl_t35321 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, plan, "второй довод", &fl_t35321, error));
+  fl_value fl_t35322 = fl_nothing();
+  FL_TRY(compiler_flang_para_polya_suzhdeniya(ctx, fl_t35321, otklik, &fl_t35322, error));
+  fl_t35318[1] = fl_t35322;
+  fl_value fl_t35323 = fl_nothing();
+  FL_TRY(compiler_flang_uzlom_zapisi(ctx, fl_list(fl_t35318, 2), &fl_t35323, error));
+  const fl_value dovody = fl_t35323; /* пусть «доводы» */
+  fl_value fl_t35324 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, plan, "шаг", &fl_t35324, error));
+  fl_value fl_t35325 = fl_nothing();
+  FL_TRY(compiler_flang_vyzvat_gotovoe(ctx, gotovaya, fl_t35324, dovody, &fl_t35325, error));
+  const fl_value itog = fl_t35325; /* пусть «итог» */
+  fl_value fl_t35326 = fl_nothing();
+  FL_TRY(fl_field_get(ctx, itog, "удалось", &fl_t35326, error));
+  bool fl_t35327 = false;
+  FL_TRY(fl_cond(ctx, fl_t35326, &fl_t35327, error));
+  fl_value fl_t35328 = fl_nothing();
+  if (fl_t35327) {
+    fl_t35328 = fl_flag(false);
   } else {
-    fl_t35281 = fl_flag(true);
+    fl_t35328 = fl_flag(true);
   }
-  bool fl_t35282 = false;
-  FL_TRY(fl_cond(ctx, fl_t35281, &fl_t35282, error));
-  if (fl_t35282) {
-    fl_value fl_t35283 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35283, error));
-    fl_value fl_t35284 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35284, error));
-    fl_value fl_t35285 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35285, error));
-    return compiler_flang_hod_sboya(ctx, fl_t35283, fl_t35284, fl_t35285, result, error);
+  bool fl_t35329 = false;
+  FL_TRY(fl_cond(ctx, fl_t35328, &fl_t35329, error));
+  if (fl_t35329) {
+    fl_value fl_t35330 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "код", &fl_t35330, error));
+    fl_value fl_t35331 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "сообщение", &fl_t35331, error));
+    fl_value fl_t35332 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35332, error));
+    return compiler_flang_hod_sboya(ctx, fl_t35330, fl_t35331, fl_t35332, result, error);
   } else {
-    fl_value fl_t35286 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35286, error));
-    fl_value fl_t35287 = fl_nothing();
-    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35286, &fl_t35287, error));
-    fl_value fl_t35288 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, plan, "имя", &fl_t35288, error));
-    fl_value fl_t35289 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35289, error));
-    return compiler_flang_razobrat_prodolzhenie(ctx, fl_t35287, fl_t35288, fl_t35289, result, error);
+    fl_value fl_t35333 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "значение", &fl_t35333, error));
+    fl_value fl_t35334 = fl_nothing();
+    FL_TRY(compiler_flang_znacheniem_iz_vychislennogo(ctx, fl_t35333, &fl_t35334, error));
+    fl_value fl_t35335 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, plan, "имя", &fl_t35335, error));
+    fl_value fl_t35336 = fl_nothing();
+    FL_TRY(fl_field_get(ctx, itog, "витки", &fl_t35336, error));
+    return compiler_flang_razobrat_prodolzhenie(ctx, fl_t35334, fl_t35335, fl_t35336, result, error);
   }
 }
 
@@ -183324,90 +183536,90 @@ fl_status compiler_flang_shag_plana(fl_ctx *ctx, fl_value gotovaya, fl_value pla
  * @return значение: «Ход плана»
  */
 fl_status compiler_flang_razobrat_prodolzhenie(fl_ctx *ctx, fl_value uzel, fl_value imya_plana, fl_value vitki, fl_value *result, fl_error *error) {
-  fl_value fl_t35290 = fl_nothing();
-  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_541, &fl_t35290, error));
-  const fl_value imya = fl_t35290; /* пусть «имя» */
-  fl_value fl_t35291 = fl_nothing();
-  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_542, &fl_t35291, error));
-  const fl_value polya = fl_t35291; /* пусть «поля» */
-  bool fl_t35292 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_631)), &fl_t35292, error));
-  if (fl_t35292) {
-    fl_value fl_t35293 = fl_nothing();
-    FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1185, &fl_t35293, error));
-    fl_value fl_t35294 = fl_nothing();
-    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35294, error));
-    fl_value fl_t35295 = fl_nothing();
-    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35295, error));
-    fl_value fl_t35297[7];
-    fl_t35297[0] = compiler_flang_text_3153; /* «вид» */
-    fl_t35297[1] = compiler_flang_text_331; /* «код» */
-    fl_t35297[2] = compiler_flang_text_331; /* «сообщение» */
-    fl_t35297[3] = fl_t35293; /* «значение» */
-    fl_t35297[4] = fl_t35294; /* «поручение» */
-    fl_t35297[5] = fl_t35295; /* «потом» */
-    fl_t35297[6] = vitki; /* «витки» */
-    fl_value fl_t35296 = fl_nothing();
-    FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35297, 7, &fl_t35296, error));
-    *result = fl_t35296;
+  fl_value fl_t35337 = fl_nothing();
+  FL_TRY(compiler_flang_stroka_polya(ctx, uzel, compiler_flang_text_541, &fl_t35337, error));
+  const fl_value imya = fl_t35337; /* пусть «имя» */
+  fl_value fl_t35338 = fl_nothing();
+  FL_TRY(compiler_flang_vzyat_pole(ctx, uzel, compiler_flang_text_542, &fl_t35338, error));
+  const fl_value polya = fl_t35338; /* пусть «поля» */
+  bool fl_t35339 = false;
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_631)), &fl_t35339, error));
+  if (fl_t35339) {
+    fl_value fl_t35340 = fl_nothing();
+    FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1185, &fl_t35340, error));
+    fl_value fl_t35341 = fl_nothing();
+    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35341, error));
+    fl_value fl_t35342 = fl_nothing();
+    FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35342, error));
+    fl_value fl_t35344[7];
+    fl_t35344[0] = compiler_flang_text_3159; /* «вид» */
+    fl_t35344[1] = compiler_flang_text_331; /* «код» */
+    fl_t35344[2] = compiler_flang_text_331; /* «сообщение» */
+    fl_t35344[3] = fl_t35340; /* «значение» */
+    fl_t35344[4] = fl_t35341; /* «поручение» */
+    fl_t35344[5] = fl_t35342; /* «потом» */
+    fl_t35344[6] = vitki; /* «витки» */
+    fl_value fl_t35343 = fl_nothing();
+    FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35344, 7, &fl_t35343, error));
+    *result = fl_t35343;
     return FL_OK;
   } else {
-    bool fl_t35298 = false;
-    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_632)), &fl_t35298, error));
-    if (fl_t35298) {
-      fl_value fl_t35299 = fl_nothing();
-      FL_TRY(compiler_flang_stroka_polya(ctx, polya, compiler_flang_text_1183, &fl_t35299, error));
-      fl_value fl_t35300 = fl_nothing();
-      FL_TRY(compiler_flang_stroka_polya(ctx, polya, compiler_flang_text_1194, &fl_t35300, error));
-      fl_value fl_t35301 = fl_nothing();
-      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35301, error));
-      fl_value fl_t35302 = fl_nothing();
-      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35302, error));
-      fl_value fl_t35303 = fl_nothing();
-      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35303, error));
-      fl_value fl_t35305[7];
-      fl_t35305[0] = compiler_flang_text_3154; /* «вид» */
-      fl_t35305[1] = fl_t35299; /* «код» */
-      fl_t35305[2] = fl_t35300; /* «сообщение» */
-      fl_t35305[3] = fl_t35301; /* «значение» */
-      fl_t35305[4] = fl_t35302; /* «поручение» */
-      fl_t35305[5] = fl_t35303; /* «потом» */
-      fl_t35305[6] = vitki; /* «витки» */
-      fl_value fl_t35304 = fl_nothing();
-      FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35305, 7, &fl_t35304, error));
-      *result = fl_t35304;
+    bool fl_t35345 = false;
+    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_632)), &fl_t35345, error));
+    if (fl_t35345) {
+      fl_value fl_t35346 = fl_nothing();
+      FL_TRY(compiler_flang_stroka_polya(ctx, polya, compiler_flang_text_1183, &fl_t35346, error));
+      fl_value fl_t35347 = fl_nothing();
+      FL_TRY(compiler_flang_stroka_polya(ctx, polya, compiler_flang_text_1194, &fl_t35347, error));
+      fl_value fl_t35348 = fl_nothing();
+      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35348, error));
+      fl_value fl_t35349 = fl_nothing();
+      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35349, error));
+      fl_value fl_t35350 = fl_nothing();
+      FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35350, error));
+      fl_value fl_t35352[7];
+      fl_t35352[0] = compiler_flang_text_3160; /* «вид» */
+      fl_t35352[1] = fl_t35346; /* «код» */
+      fl_t35352[2] = fl_t35347; /* «сообщение» */
+      fl_t35352[3] = fl_t35348; /* «значение» */
+      fl_t35352[4] = fl_t35349; /* «поручение» */
+      fl_t35352[5] = fl_t35350; /* «потом» */
+      fl_t35352[6] = vitki; /* «витки» */
+      fl_value fl_t35351 = fl_nothing();
+      FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35352, 7, &fl_t35351, error));
+      *result = fl_t35351;
       return FL_OK;
     } else {
-      bool fl_t35306 = false;
-      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_630)), &fl_t35306, error));
-      if (fl_t35306) {
-        fl_value fl_t35307 = fl_nothing();
-        FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35307, error));
-        fl_value fl_t35308 = fl_nothing();
-        FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1195, &fl_t35308, error));
-        fl_value fl_t35309 = fl_nothing();
-        FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1196, &fl_t35309, error));
-        fl_value fl_t35311[7];
-        fl_t35311[0] = compiler_flang_text_3155; /* «вид» */
-        fl_t35311[1] = compiler_flang_text_331; /* «код» */
-        fl_t35311[2] = compiler_flang_text_331; /* «сообщение» */
-        fl_t35311[3] = fl_t35307; /* «значение» */
-        fl_t35311[4] = fl_t35308; /* «поручение» */
-        fl_t35311[5] = fl_t35309; /* «потом» */
-        fl_t35311[6] = vitki; /* «витки» */
-        fl_value fl_t35310 = fl_nothing();
-        FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35311, 7, &fl_t35310, error));
-        *result = fl_t35310;
+      bool fl_t35353 = false;
+      FL_TRY(fl_cond(ctx, fl_flag(fl_equal(imya, compiler_flang_text_630)), &fl_t35353, error));
+      if (fl_t35353) {
+        fl_value fl_t35354 = fl_nothing();
+        FL_TRY(compiler_flang_pustoy_uzel(ctx, &fl_t35354, error));
+        fl_value fl_t35355 = fl_nothing();
+        FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1195, &fl_t35355, error));
+        fl_value fl_t35356 = fl_nothing();
+        FL_TRY(compiler_flang_vzyat_pole(ctx, polya, compiler_flang_text_1196, &fl_t35356, error));
+        fl_value fl_t35358[7];
+        fl_t35358[0] = compiler_flang_text_3161; /* «вид» */
+        fl_t35358[1] = compiler_flang_text_331; /* «код» */
+        fl_t35358[2] = compiler_flang_text_331; /* «сообщение» */
+        fl_t35358[3] = fl_t35354; /* «значение» */
+        fl_t35358[4] = fl_t35355; /* «поручение» */
+        fl_t35358[5] = fl_t35356; /* «потом» */
+        fl_t35358[6] = vitki; /* «витки» */
+        fl_value fl_t35357 = fl_nothing();
+        FL_TRY(fl_record_new(ctx, compiler_flang_names_262, fl_t35358, 7, &fl_t35357, error));
+        *result = fl_t35357;
         return FL_OK;
       } else {
-        fl_value *fl_t35312 = NULL;
-        FL_TRY(fl_list_alloc(ctx, 3, &fl_t35312, error));
-        fl_t35312[0] = compiler_flang_text_3157;
-        fl_t35312[1] = imya_plana;
-        fl_t35312[2] = compiler_flang_text_3158;
-        fl_value fl_t35313 = fl_nothing(); /* «соединить» */
-        FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35312, 3), compiler_flang_text_331, &fl_t35313, error));
-        return compiler_flang_hod_sboya(ctx, compiler_flang_text_3156, fl_t35313, vitki, result, error);
+        fl_value *fl_t35359 = NULL;
+        FL_TRY(fl_list_alloc(ctx, 3, &fl_t35359, error));
+        fl_t35359[0] = compiler_flang_text_3163;
+        fl_t35359[1] = imya_plana;
+        fl_t35359[2] = compiler_flang_text_3164;
+        fl_value fl_t35360 = fl_nothing(); /* «соединить» */
+        FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t35359, 3), compiler_flang_text_331, &fl_t35360, error));
+        return compiler_flang_hod_sboya(ctx, compiler_flang_text_3162, fl_t35360, vitki, result, error);
       }
     }
   }
@@ -183422,16 +183634,16 @@ fl_status compiler_flang_razobrat_prodolzhenie(fl_ctx *ctx, fl_value uzel, fl_va
  * @return значение: число
  */
 fl_status compiler_flang_mera_ubyvaet(fl_ctx *ctx, fl_value shag, fl_value mera, fl_value *result, fl_error *error) {
-  const fl_value fl_t35314 = shag;
-  fl_value fl_t35315 = fl_nothing();
-  FL_TRY(fl_lt(ctx, fl_t35314, mera, &fl_t35315, error));
+  const fl_value fl_t35361 = shag;
+  fl_value fl_t35362 = fl_nothing();
+  FL_TRY(fl_lt(ctx, fl_t35361, mera, &fl_t35362, error));
   /* постусловие «мера убывает» */
-  bool fl_t35316 = false;
-  FL_TRY(fl_post(ctx, fl_t35315, "мера убывает", "мера убывает", &fl_t35316, error));
-  if (!fl_t35316) {
+  bool fl_t35363 = false;
+  FL_TRY(fl_post(ctx, fl_t35362, "мера убывает", "мера убывает", &fl_t35363, error));
+  if (!fl_t35363) {
     return fl_fail(ctx, error, "FLANG_MEASURE", "%s", "тотальная функция «Повторить»: мера не убыла — аргумент 2 вызова «Повторить» не стал меньше параметра «раз». Завершение доказано убыванием этой меры, а числа flang — IEEE-754 double: при большом |«раз»| постоянный шаг не меняет значение, и спуск не идёт. Отказ здесь честнее зацикливания");
   }
-  *result = fl_t35314;
+  *result = fl_t35361;
   return FL_OK;
 }
 
@@ -183445,34 +183657,34 @@ fl_status compiler_flang_mera_ubyvaet(fl_ctx *ctx, fl_value shag, fl_value mera,
  * @return значение: «Значение под сторожем»
  */
 fl_status compiler_flang_obyavlennaya_mera_ubyvaet(fl_ctx *ctx, fl_value shag, fl_value mera, fl_value znachenie, fl_value *result, fl_error *error) {
-  const fl_value fl_t35317 = znachenie;
-  fl_value fl_t35318 = fl_nothing();
-  FL_TRY(fl_lt(ctx, shag, mera, &fl_t35318, error));
+  const fl_value fl_t35364 = znachenie;
+  fl_value fl_t35365 = fl_nothing();
+  FL_TRY(fl_lt(ctx, shag, mera, &fl_t35365, error));
   /* постусловие «объявленная мера убывает» */
-  bool fl_t35319 = false;
-  FL_TRY(fl_post(ctx, fl_t35318, "объявленная мера убывает", "объявленная мера убывает", &fl_t35319, error));
-  if (!fl_t35319) {
+  bool fl_t35366 = false;
+  FL_TRY(fl_post(ctx, fl_t35365, "объявленная мера убывает", "объявленная мера убывает", &fl_t35366, error));
+  if (!fl_t35366) {
     return fl_fail(ctx, error, "FLANG_MEASURE", "%s", "тотальная функция «Путь под маской»: мера на вызове «Путь под маской» — длина «маска» плюс длина «путь» — не убыла. Завершение доказано тем, что она строго убывает; равенство цепочку не обрывает, а значит этот вызов может не кончиться никогда");
   }
-  fl_value fl_t35320 = fl_nothing();
-  FL_TRY(fl_gte(ctx, shag, fl_number(0.0), &fl_t35320, error));
+  fl_value fl_t35367 = fl_nothing();
+  FL_TRY(fl_gte(ctx, shag, fl_number(0.0), &fl_t35367, error));
   /* постусловие «объявленная мера убывает» */
-  bool fl_t35321 = false;
-  FL_TRY(fl_post(ctx, fl_t35320, "объявленная мера убывает", "объявленная мера убывает", &fl_t35321, error));
-  if (!fl_t35321) {
+  bool fl_t35368 = false;
+  FL_TRY(fl_post(ctx, fl_t35367, "объявленная мера убывает", "объявленная мера убывает", &fl_t35368, error));
+  if (!fl_t35368) {
     return fl_fail(ctx, error, "FLANG_MEASURE", "%s", "тотальная функция «Путь под маской»: мера на вызове «Путь под маской» — длина «маска» плюс длина «путь» — ушла ниже нуля. Мера обязана оставаться неотрицательной: иначе цепочка уходит в минус бесконечность и убывание ничего не доказывает. Чаще всего это выбор меры, а не ошибка вызова — мере, которая на последнем витке становится −1, обычно не хватает «плюс 1»");
   }
-  fl_value fl_t35322 = fl_nothing();
-  FL_TRY(fl_mod(ctx, shag, fl_number(1.0), &fl_t35322, error));
-  fl_value fl_t35323 = fl_nothing();
-  FL_TRY(fl_sub(ctx, shag, fl_t35322, &fl_t35323, error));
+  fl_value fl_t35369 = fl_nothing();
+  FL_TRY(fl_mod(ctx, shag, fl_number(1.0), &fl_t35369, error));
+  fl_value fl_t35370 = fl_nothing();
+  FL_TRY(fl_sub(ctx, shag, fl_t35369, &fl_t35370, error));
   /* постусловие «объявленная мера убывает» */
-  bool fl_t35324 = false;
-  FL_TRY(fl_post(ctx, fl_flag(fl_equal(fl_t35323, shag)), "объявленная мера убывает", "объявленная мера убывает", &fl_t35324, error));
-  if (!fl_t35324) {
+  bool fl_t35371 = false;
+  FL_TRY(fl_post(ctx, fl_flag(fl_equal(fl_t35370, shag)), "объявленная мера убывает", "объявленная мера убывает", &fl_t35371, error));
+  if (!fl_t35371) {
     return fl_fail(ctx, error, "FLANG_MEASURE", "%s", "тотальная функция «Путь под маской»: мера на вызове «Путь под маской» — длина «маска» плюс длина «путь» — перестала быть целой. Целость — это то, чем мера вообще что-то доказывает: строго убывающая цепочка целых неотрицательных чисел не длиннее своего первого члена, а дробная не обрывается вовсе (0.618, 0.382, 0.236 … больше нуля всегда). Отказ здесь честнее зацикливания");
   }
-  *result = fl_t35317;
+  *result = fl_t35364;
   return FL_OK;
 }
 
@@ -210558,6 +210770,27 @@ fl_status compiler_flang_call(fl_ctx *ctx, const char *name, const fl_value *arg
     }
     return compiler_flang_summa_sorvavshihsya(ctx, args[0], result, error);
   }
+  if (strcmp(name, "Сумма своих") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Сумма своих", (unsigned long)1, (unsigned long)count);
+    }
+    return compiler_flang_summa_svoih(ctx, args[0], result, error);
+  }
+  if (strcmp(name, "Файлы без своих примеров") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Файлы без своих примеров", (unsigned long)1, (unsigned long)count);
+    }
+    return compiler_flang_fayly_bez_svoih_primerov(ctx, args[0], result, error);
+  }
+  if (strcmp(name, "Слова о чужих примерах") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Слова о чужих примерах", (unsigned long)1, (unsigned long)count);
+    }
+    return compiler_flang_slova_o_chuzhih_primerah(ctx, args[0], result, error);
+  }
   if (strcmp(name, "Взятые файлы") == 0) {
     if (count != 1) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
@@ -210606,6 +210839,13 @@ fl_status compiler_flang_call(fl_ctx *ctx, const char *name, const fl_value *arg
                      "Дописать строки файла", (unsigned long)2, (unsigned long)count);
     }
     return compiler_flang_dopisat_stroki_fayla(ctx, args[0], args[1], result, error);
+  }
+  if (strcmp(name, "Дописать строки взятого") == 0) {
+    if (count != 2) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Дописать строки взятого", (unsigned long)2, (unsigned long)count);
+    }
+    return compiler_flang_dopisat_stroki_vzyatogo(ctx, args[0], args[1], result, error);
   }
   if (strcmp(name, "Итоговая строка корпуса") == 0) {
     if (count != 3) {
@@ -210893,6 +211133,20 @@ fl_status compiler_flang_call(fl_ctx *ctx, const char *name, const fl_value *arg
                      "Итог примера по значению", (unsigned long)4, (unsigned long)count);
     }
     return compiler_flang_itog_primera_po_znacheniyu(ctx, args[0], args[1], args[2], args[3], result, error);
+  }
+  if (strcmp(name, "Своих примеров в исходнике") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Своих примеров в исходнике", (unsigned long)1, (unsigned long)count);
+    }
+    return compiler_flang_svoih_primerov_v_ishodnike(ctx, args[0], result, error);
+  }
+  if (strcmp(name, "Примеров в функциях") == 0) {
+    if (count != 1) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "функция «%s» принимает %lu аргум., получено %lu",
+                     "Примеров в функциях", (unsigned long)1, (unsigned long)count);
+    }
+    return compiler_flang_primerov_v_funkciyah(ctx, args[0], result, error);
   }
   if (strcmp(name, "Ведомость исходников") == 0) {
     if (count != 2) {
@@ -212299,6 +212553,7 @@ static const fl_type_field compiler_flang_entry_fields[] = {
   { "код", 0 },
   { "сообщение", 0 },
   { "всего", 2 },
+  { "своих", 2 },
   { "прошло", 2 },
   { "сорвалось", 2 },
   { "сорванные", 388 },
@@ -212858,15 +213113,15 @@ static const fl_type compiler_flang_entry_types[] = {
   { FL_TYPE_LIST, "список «Итог утверждения»", "", false, false, false, 0.0, 0.0, 385, 0, 0, 0, 0 },
   { FL_TYPE_RECORD, "«Итог утверждения»", "Итог утверждения", false, false, false, 0.0, 0.0, 0, 1064, 2, 0, 0 },
   { FL_TYPE_LIST, "список «Итог файла корпуса»", "", false, false, false, 0.0, 0.0, 387, 0, 0, 0, 0 },
-  { FL_TYPE_RECORD, "«Итог файла корпуса»", "Итог файла корпуса", false, false, false, 0.0, 0.0, 0, 1070, 8, 0, 0 },
+  { FL_TYPE_RECORD, "«Итог файла корпуса»", "Итог файла корпуса", false, false, false, 0.0, 0.0, 0, 1070, 9, 0, 0 },
   { FL_TYPE_LIST, "список «Сорванный пример»", "", false, false, false, 0.0, 0.0, 389, 0, 0, 0, 0 },
   { FL_TYPE_RECORD, "«Сорванный пример»", "Сорванный пример", false, false, false, 0.0, 0.0, 0, 1066, 4, 0, 0 },
-  { FL_TYPE_RECORD, "«Итог примера»", "Итог примера", false, false, false, 0.0, 0.0, 0, 1078, 5, 0, 0 },
-  { FL_TYPE_RECORD, "«Итог тотальности»", "Итог тотальности", false, false, false, 0.0, 0.0, 0, 1083, 6, 0, 0 },
+  { FL_TYPE_RECORD, "«Итог примера»", "Итог примера", false, false, false, 0.0, 0.0, 0, 1079, 5, 0, 0 },
+  { FL_TYPE_RECORD, "«Итог тотальности»", "Итог тотальности", false, false, false, 0.0, 0.0, 0, 1084, 6, 0, 0 },
   { FL_TYPE_LIST, "список «Итог примера»", "", false, false, false, 0.0, 0.0, 390, 0, 0, 0, 0 },
   { FL_TYPE_LIST, "список «Вызов утверждения»", "", false, false, false, 0.0, 0.0, 394, 0, 0, 0, 0 },
-  { FL_TYPE_RECORD, "«Вызов утверждения»", "Вызов утверждения", false, false, false, 0.0, 0.0, 0, 1089, 2, 0, 0 },
-  { FL_TYPE_RECORD, "«Найденный план»", "Найденный план", false, false, false, 0.0, 0.0, 0, 1091, 10, 0, 0 },
+  { FL_TYPE_RECORD, "«Вызов утверждения»", "Вызов утверждения", false, false, false, 0.0, 0.0, 0, 1090, 2, 0, 0 },
+  { FL_TYPE_RECORD, "«Найденный план»", "Найденный план", false, false, false, 0.0, 0.0, 0, 1092, 10, 0, 0 },
 };
 
 static const fl_entry_param compiler_flang_entry_params[] = {
@@ -221775,6 +222030,9 @@ static const fl_entry_param compiler_flang_entry_params[] = {
   { "Сумма всего", "файлы", 386 },
   { "Сумма прошедших", "файлы", 386 },
   { "Сумма сорвавшихся", "файлы", 386 },
+  { "Сумма своих", "файлы", 386 },
+  { "Файлы без своих примеров", "файлы", 386 },
+  { "Слова о чужих примерах", "файл", 387 },
   { "Взятые файлы", "файлы", 386 },
   { "Невзятые файлы", "файлы", 386 },
   { "Слова отказа файла", "файл", 387 },
@@ -221784,6 +222042,8 @@ static const fl_entry_param compiler_flang_entry_params[] = {
   { "Строки отчёта корпуса", "файлы", 386 },
   { "Дописать строки файла", "накопленное", 1 },
   { "Дописать строки файла", "файл", 387 },
+  { "Дописать строки взятого", "накопленное", 1 },
+  { "Дописать строки взятого", "файл", 387 },
   { "Итоговая строка корпуса", "довод", 0 },
   { "Итоговая строка корпуса", "файлы", 386 },
   { "Итоговая строка корпуса", "миллисекунд", 2 },
@@ -221875,6 +222135,8 @@ static const fl_entry_param compiler_flang_entry_params[] = {
   { "Итог примера по значению", "имя", 0 },
   { "Итог примера по значению", "пример", 0 },
   { "Итог примера по значению", "ожидается", 14 },
+  { "Своих примеров в исходнике", "исходник", 0 },
+  { "Примеров в функциях", "функции", 15 },
   { "Ведомость исходников", "файлы", 366 },
   { "Ведомость исходников", "вход", 0 },
   { "Ведомость проверенного", "программа", 14 },
@@ -221965,9 +222227,9 @@ static const fl_entry_param compiler_flang_entry_params[] = {
 
 static const fl_entry_table compiler_flang_entry_table = {
   compiler_flang_entry_types, 396,
-  compiler_flang_entry_fields, 1101,
+  compiler_flang_entry_fields, 1102,
   compiler_flang_entry_variants, 140,
-  compiler_flang_entry_params, 9091
+  compiler_flang_entry_params, 9098
 };
 
 const fl_entry_table *compiler_flang_entry(void) {

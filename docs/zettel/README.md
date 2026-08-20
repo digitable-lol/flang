@@ -113,6 +113,9 @@
 - [Распределённость делится на мир и провод в отношении 459 к 119, и печатать компилятор умеет только провод](raspredelyonnost-delitsya-na-mir-i-provod.md)
 - [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
+- [Правило «это не отказ» без срока — не осторожность, а поломка](pravilo-eto-ne-otkaz-obyazano-imet-srok.md)
+- [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](etalon-sverennyy-s-tretim-artefaktom.md)
+- [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](rovnoe-chislo-cherez-tcp-obeshchat-nelzya.md)
 
 ## Самораскрутка и метод проверки
 

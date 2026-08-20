@@ -173,14 +173,14 @@ node docs/site/glossary.mjs --check
 
 ### 1.6. Надо ли перепечатывать точку раскрутки
 
-**Да, и это 14 МБ.**
+**Да, и это 22,5 МБ.**
 
 | Файл | Байт | Строк |
 |---|---:|---:|
-| `bootstrap/compiler_flang.c` | 11 420 741 | 235 061 |
-| `bootstrap/compiler_flang.h` | 2 335 182 | 47 391 |
-| остальные шесть | 691 900 | 15 307 |
-| **итого** | **14 447 823** | **279 236** |
+| `bootstrap/compiler_flang.c` | 19 094 792 | 363 670 |
+| `bootstrap/compiler_flang.h` | 3 797 584 | 71 624 |
+| остальные пять | 744 184 | 16 411 |
+| **итого** | **23 636 560** | **451 705** |
 
 Таблица лежит там константами C — `compiler_flang.c:399`,
 `"|модуль:module|module:module|模块:module|…"`. Правило записано в
@@ -188,7 +188,7 @@ node docs/site/glossary.mjs --check
 командой **в том же коммите**, что и правка компилятора. Сторож —
 `flang/test/self-bootstrap.test.mjs:737`, сверка побайтовая.
 
-Команда одна (`npm run bootstrap`), но 13 МБ попадают в дифф.
+Команда одна (`npm run bootstrap`), но 22 МБ попадают в дифф.
 
 ### 1.7. Прецедент: сколько стоила четвёртая
 
@@ -391,7 +391,7 @@ node flang/scripts/word-occupancy.mjs 関数 型 モジュール 受け取る �
 | эталон `flang/self/emit-python.flang` | **3 459** |
 | рантайм `flang/src/emit/python/` (2 файла) | **1 690** |
 | `flang/test/emit-python.test.mjs` | 2 690 |
-| `flang/test/self-emit-python.test.mjs` | 708 |
+| `flang/test/self-emit-python.test.mjs` | 740 |
 | **итого пять новых файлов** | **10 277** |
 
 Для сравнения: самый большой печатник — js, 3190 строк; самый большой рантайм —

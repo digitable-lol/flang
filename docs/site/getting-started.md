@@ -250,9 +250,6 @@ that it names them itself instead of staying quiet:
   category, sets and the five declared properties are checked by computation, and
   that layer is not in it. A program declaring one of those gets a refusal
   naming the obstacle, not a green report with an empty section;
-- **it has one emit target** — `c`. The language has {{цели.поАнглийски}}
-  targets ({{цели.список}}); the rest come from the compiler installed
-  through npm;
 - **`--args` takes a flat object of scalars only** — the binary does not parse
   `[…]` or `{…}` at all and answers `flang run: «--args» разобрать не удалось —
   ждался плоский объект скаляров, вроде '{"н":10}'` with exit code 2. The
@@ -275,8 +272,9 @@ the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
 
 ### For those developing the language itself
 
-The full compiler lives in the repository and is installed through npm. It is
-what emits into the other targets — into Rust, for example:
+The full compiler lives in the repository and is installed through npm. It emits
+into all {{цели.поАнглийски}} targets — and so does the binary now; into Rust,
+for example:
 
 ```bash
 node flang/bin/flang.mjs emit hello.flang --target rust --out ./output-rust

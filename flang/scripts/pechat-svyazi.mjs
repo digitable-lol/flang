@@ -23,6 +23,10 @@ import { linkProgram } from "../src/link.mjs"
 import { parse } from "../src/parser.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
+const ШАПКА = [
+  "/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */",
+  "/* SPDX-License-Identifier: BSD-2-Clause */",
+].join("\n")
 export const ИСХОДНИК = "flang/conc/svyaz.flang"
 export const НАПЕЧАТАННОЕ = "flang/conc/svyaz.js"
 
@@ -35,7 +39,11 @@ export async function напечататьСвязь() {
   const напечатано = emitJs(программа)
   const модуль = напечатано.files.find((файл) => !файл.path.startsWith("flang_cli"))
   if (модуль === undefined) throw new Error("печать не отдала модуля")
-  return модуль.content
+  /* Лицензионная шапка дописывается ЗДЕСЬ, а не печатью. Печать её не ставит и
+     ставить не должна: напечатанное принадлежит автору программы, и клеймить
+     чужой код своей лицензией язык не вправе. Но ЭТОТ напечатанный файл лежит в
+     нашем дереве и публикуется вместе с ним, значит разметка на нём наша. */
+  return `${ШАПКА}\n${модуль.content}`
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

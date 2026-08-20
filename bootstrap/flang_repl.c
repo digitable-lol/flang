@@ -9521,6 +9521,105 @@ static fl_value io_perform(io_host *host, fl_value order) {
   }
 
   /*
+   * ── ОКТЕТЫ ────────────────────────────────────────────────────────────────
+   * Та же труба, что у пары выше, но без единого решения о том, что байты
+   * значат. У двоичного хозяина порча своя, не такая, как у хозяина на Node, и
+   * названа она числом: Node раскодирует поток как UTF-8 и заменяет всякий
+   * не-UTF-8 октет знаком U+FFFD, а здесь байты доезжают сырыми — зато `strlen`
+   * при ЗАПИСИ обрезает содержимое на первом нулевом октете. То есть двоичный
+   * протокол не работал ни под одним из двух хозяев, и не работал по-разному:
+   * один терял на чтении, другой на записи.
+   *
+   * Список чисел лечит обоих сразу и лечит одинаково: переводить нечего, значит
+   * и разойтись негде. Длина берётся из СПИСКА, а не из `strlen`, — вот почему
+   * нулевой октет здесь обычное число 0.
+   */
+  if (io_order_is(order, "Прочитать октеты из соединения")) {
+    double number = 0;
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_READ", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    {
+      unsigned char chunk[8192];
+      const ssize_t got = read(fd, chunk, sizeof(chunk));
+      const size_t count = got > 0 ? (size_t)got : 0;
+      fl_value *values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+      fl_value fields[1];
+      fl_value answer = fl_nothing();
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        values[at] = io_number((double)chunk[at]);
+      }
+      /* Пустой список — это КОНЕЦ, ровно как пустая строка у «Прочитано». */
+      fields[0] = io_pair("октеты", io_list(values, count));
+      free(values);
+      answer = io_variant("Октеты", fields, 1);
+      return answer;
+    }
+  }
+
+  if (io_order_is(order, "Ответить октетами в соединение")) {
+    double number = 0;
+    int fd = -1;
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
+      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
+    }
+    {
+      unsigned char *bytes = count == 0 ? NULL : (unsigned char *)repl_alloc(count);
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        double octet = 0;
+        /* Каждое число проверяется на месте, и отказ называет номер. Молчаливое
+           приведение к байту отправило бы собеседнику не то, что сказала
+           программа, и разница всплыла бы у него, а не здесь. */
+        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
+          char why[128];
+          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
+          free(bytes);
+          return io_fail("FLANG_IO_OCTETS", why);
+        }
+        bytes[at] = (unsigned char)(long)octet;
+      }
+      {
+        /* Правила закрытия — те же самые и взяты у текстового близнеца
+           буквально: закрывает тот, кто завёл; пустое кладёт трубку. Пустое
+           здесь — пустой СПИСОК. */
+        const bool closing = count == 0 || !io_link_outgoing(host, (int)number);
+        fl_value fields[1];
+        if (count > 0 && write(fd, bytes, count) < 0) {
+          free(bytes);
+          close(fd);
+          io_link_drop(host, (int)number);
+          return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
+        }
+        free(bytes);
+        if (closing) {
+          close(fd);
+          io_link_drop(host, (int)number);
+        }
+        /* ОКТЕТЫ, а не кодовые точки: у текстового близнеца здесь названный
+           зазор («Content-Length служба считает знаками»), а тут его нет — что
+           записано, то и посчитано. */
+        fields[0] = io_pair("сколько", io_number((double)count));
+        return io_variant("Записано", fields, 1);
+      }
+    }
+  }
+
+  /*
    * Экрана у двоичного нет, и сказано это ИМЕНОВАННЫМ отказом, а не «не знаю
    * такого поручения». Разница не педантизм: первое значит «хозяин отстал от
    * словаря языка и его надо чинить», второе — «программа просит невозможного
@@ -11305,7 +11404,7 @@ static int package_file(int argc, char **argv) {
     if (!pkg_collect(full, root, decl.name, &modules, &own, &entry_module)) {
       code = 1;
     } else if (!pkg_ledger(program, &own, &ledger)) {
-      fputs("flang package: ведомость не посчиталась\n", stderr);
+      fputs("flang package: отчёт о доказательствах не посчитался\n", stderr);
       code = 1;
     } else {
       const char *own_name = entry_module;

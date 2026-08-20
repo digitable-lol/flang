@@ -24,10 +24,14 @@ module «Towers of Hanoi»
 // tail is the stack above it. Otherwise the recursion would go along the wrong
 // part.
 //
-// One function stayed non-total — «Tower of», which builds the list [n … 1]
-// from the number n. It counts from n down to 1, that is, it runs into the same
-// boundary as «Numbers from and to» in `fizzbuzz.flang`. The task requires it
-// (the input is a number of disks), and hiding that would be dishonest.
+// One function — «Tower of», which builds the list [n … 1] from the number n —
+// is proved not by structure but by NUMBER: the step is constant («n minus 1»)
+// and the floor comes from the check «if count is not greater than 0». The
+// proof is complete, but it is not free: the recursive call carries one check
+// at run time, because on IEEE-754 «x minus 1» equals x itself for large |x|.
+// The task requires such an input (a number of disks is given), and hiding the
+// price would be dishonest: the other four functions of this file cost nothing
+// while running.
 
 object «Move»
   «disk»: number
@@ -121,12 +125,14 @@ total function «Number of moves»
       then (2 times («Number of moves» of tail)) plus 1
 
 // ─────────────────────────────────────────────────────────────────────────
-// Below — an ordinary function: counting by number rather than by structure.
+// Below — counting by number rather than by structure, and it is not free.
 // ─────────────────────────────────────────────────────────────────────────
 
-// A tower of n disks: [n, n−1, …, 1], bottom up. Recursion on a number, hence
-// FLANG_NOT_TOTAL — the same boundary as «Numbers from and to» in
-// `fizzbuzz.flang`.
+// A tower of n disks: [n, n−1, …, 1], bottom up. Recursion on a number: the
+// step is constant and the check gives the floor — proved, but with a guard in
+// the printed code. Declaring «count: nat» to drop the guard is not possible
+// here: «Towers of Hanoi» receives the disk count as «number», and the type
+// checker would reject the call.
 total function «Tower of»
   accepts count: number
   returns list of number

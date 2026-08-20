@@ -145,3 +145,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/progonshchik-korpusa.flang
+
+  # test проверяет программу прежде, чем прогонять её примеры, а --no-check
+  # снимает ровно проверку. Отдельной работой: зависимостей нет, двенадцать секунд.
+  progon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: bootstrap/flang io scripts/proverka-pered-progonom.flang

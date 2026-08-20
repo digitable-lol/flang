@@ -837,6 +837,218 @@ fl_status compiler_flang_sozdat_sekcii_js(fl_ctx *ctx, fl_value sostoyanie, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_plan_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
 
+/* Запись FTS «Пара имён Elixir»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_para_imyon_elixir(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор слов Elixir»: «слово», «готовые». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_slov_elixir(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поиск слова Elixir»: «первый», «предыдущий», «найдено». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poisk_slova_elixir(fl_ctx *ctx, fl_value pervyy, fl_value predyduschiy, fl_value naydeno, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр Elixir»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_elixir(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Постусловие Elixir»: «имя», «выражение», «связывание», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_postuslovie_elixir(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предусловие Elixir»: «имя», «выражение», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_preduslovie_elixir(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция Elixir»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_funkciya_elixir(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле типа Elixir»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_tipa_elixir(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Запись типа Elixir»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapis_tipa_elixir(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант типа Elixir»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_tipa_elixir(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сумма типов Elixir»: «имя», «варианты». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_summa_tipov_elixir(fl_ctx *ctx, fl_value imya, fl_value varianty, fl_value *out, fl_error *error);
+
+/* Запись FTS «Рёбра Elixir»: «имя», «цели». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ryobra_elixir(fl_ctx *ctx, fl_value imya, fl_value celi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Компонента Elixir»: «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_komponenta_elixir(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Метка Elixir»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_metka_elixir(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тарьян Elixir»: «номера», «низы», «на стеке», «стек», «компоненты», «счётчик». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_taryan_elixir(fl_ctx *ctx, fl_value nomera, fl_value nizy, fl_value na_steke, fl_value stek, fl_value komponenty, fl_value schyotchik, fl_value *out, fl_error *error);
+
+/* Запись FTS «Отрезание Elixir»: «индекс», «элементы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_otrezanie_elixir(fl_ctx *ctx, fl_value indeks, fl_value elementy, fl_value *out, fl_error *error);
+
+/* Запись FTS «Зип Elixir»: «индекс», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zip_elixir(fl_ctx *ctx, fl_value indeks, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Строки с индексом Elixir»: «индекс», «строки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_stroki_s_indeksom_elixir(fl_ctx *ctx, fl_value indeks, fl_value stroki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Первая замена Elixir»: «индекс», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pervaya_zamena_elixir(fl_ctx *ctx, fl_value indeks, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Занятое имя Elixir»: «идентификатор», «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zanyatoe_imya_elixir(fl_ctx *ctx, fl_value identifikator, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именование Elixir»: «занятые», «пары», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovanie_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value pary, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Набор имён Elixir»: «взято», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nabor_imyon_elixir(fl_ctx *ctx, fl_value vzyato, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние Elixir»: «счётчик», «взято», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_elixir(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее Elixir»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именованные идентификаторы Elixir»: «имя», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovannye_identifikatory_elixir(fl_ctx *ctx, fl_value imya, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее Elixir»: «псевдоним», «функции», «записи», «варианты», «суммы», «ид функций», «ид фабрик», «ид вариантов», «ид шагов», «ид параметров», «глобальные», «хвостовые», «циклические», «рекурсивные», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_elixir(fl_ctx *ctx, fl_value psevdonim, fl_value funkcii, fl_value zapisi, fl_value varianty, fl_value summy, fl_value id_funkciy, fl_value id_fabrik, fl_value id_variantov, fl_value id_shagov, fl_value id_parametrov, fl_value globalnye, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Проверка программы Elixir»: «имена», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_proverka_programmy_elixir(fl_ctx *ctx, fl_value imena, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог Elixir»: «состояние», «вывод», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок Elixir»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст Elixir»: «общее», «функция», «параметры», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_elixir(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связка Elixir»: «идентификатор», «строка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazka_elixir(fl_ctx *ctx, fl_value identifikator, fl_value stroka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Порядок Elixir»: «блок», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poryadok_elixir(fl_ctx *ctx, fl_value blok, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Проверка образца Elixir»: «есть», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_proverka_obrazca_elixir(fl_ctx *ctx, fl_value est, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог проверки Elixir»: «блок», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_proverki_elixir(fl_ctx *ctx, fl_value blok, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор проверок Elixir»: «блок», «проверки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_proverok_elixir(fl_ctx *ctx, fl_value blok, fl_value proverki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Обстановка разбора Elixir»: «предмет», «отступ», «сдвиг», «внутри», «есть цель», «всего». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obstanovka_razbora_elixir(fl_ctx *ctx, fl_value predmet, fl_value otstup, fl_value sdvig, fl_value vnutri, fl_value est_cel, fl_value vsego, fl_value *out, fl_error *error);
+
+/* Запись FTS «Ветви Elixir»: «блок», «индекс», «закрыто». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_vetvi_elixir(fl_ctx *ctx, fl_value blok, fl_value indeks, fl_value zakryto, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание Elixir»: «блок», «контекст», «связки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_elixir(fl_ctx *ctx, fl_value blok, fl_value kontekst, fl_value svyazki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связка варианта Elixir»: «поле», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazka_varianta_elixir(fl_ctx *ctx, fl_value pole, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Выбор проверки Elixir»: «индекс», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_vybor_proverki_elixir(fl_ctx *ctx, fl_value indeks, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Кусок Elixir»: «состояние», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kusok_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров Elixir»: «контекст», «индекс». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_elixir(fl_ctx *ctx, fl_value kontekst, fl_value indeks, fl_value *out, fl_error *error);
+
+/* Запись FTS «Строки с номером Elixir»: «индекс», «строки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_stroki_s_nomerom_elixir(fl_ctx *ctx, fl_value indeks, fl_value stroki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Файл Elixir»: «путь», «содержимое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_fayl_elixir(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле входа Elixir»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_vhoda_elixir(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант входа Elixir»: «имя», «поле с», «полей». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_vhoda_elixir(fl_ctx *ctx, fl_value imya, fl_value pole_s, fl_value poley, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тип входа Elixir»: «вид», «имя», «владелец», «ничто», «целое», «отрезок», «низ», «верх», «элемент», «поле с», «полей», «вариант с», «вариантов». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tip_vhoda_elixir(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value vladelec, fl_value nichto, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр входа Elixir»: «функция», «параметр», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_vhoda_elixir(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Elixir»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм исходник», «исходник прогонщика», «исходник конкурентности», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_elixir(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value ishodnik_konkurentnosti, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог печати Elixir»: «файлы», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_pechati_elixir(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тела Elixir»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tela_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сообщения прогона Elixir»: «блок», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_soobscheniya_progona_elixir(fl_ctx *ctx, fl_value blok, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Ящики Elixir»: «состояние», «части», «записи», «номер». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_yaschiki_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value zapisi, fl_value nomer, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -1665,6 +1877,10 @@ fl_status compiler_flang_sozdat_itog_sborki_java(fl_ctx *ctx, fl_value fayly, fl
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_sborki_js(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
 
+/* Запись FTS «Итог сборки в Elixir»: «файлы», «ошибка», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_sborki_v_elixir(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог примера»: «функция», «пример», «прошёл», «код», «сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_primera(fl_ctx *ctx, fl_value funkciya, fl_value primer, fl_value proshyol, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
@@ -1832,6 +2048,31 @@ fl_status compiler_flang_variant_net_zanyatogo_java(fl_ctx *ctx, fl_value *out, 
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_est_funkciya_js(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_net_funkcii_js(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть узел Elixir»: «Есть узел Elixir» | «Нет узла Elixir». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_uzel_elixir(fl_ctx *ctx, fl_value uzel, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_uzla_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть имя Elixir»: «Есть имя Elixir» | «Нет имени Elixir». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_imya_elixir(fl_ctx *ctx, fl_value imya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_imeni_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть функция Elixir»: «Есть функция Elixir» | «Нет функции Elixir». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_funkciya_elixir(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_funkcii_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть число Elixir»: «Есть число Elixir» | «Нет числа Elixir». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_chislo_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_chisla_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть занятое Elixir»: «Есть занятое Elixir» | «Нет занятого Elixir». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_zanyatoe_elixir(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_zanyatogo_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -28104,6 +28345,3990 @@ fl_status compiler_flang_hvost_plana_js(fl_ctx *ctx, fl_value *result, fl_error 
  * @return значение: «Блок JS»
  */
 fl_status compiler_flang_pechat_konkurentnosti_js(fl_ctx *ctx, fl_value programma, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел ничто Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_nichto_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из полей Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть узел Elixir»
+ */
+fl_status compiler_flang_pervoe_iz_poley_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть узел Elixir»
+ */
+fl_status compiler_flang_pole_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть поле у узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_pole_u_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять поле Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_vzyat_pole_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка скаляра Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_skalyara_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка в скаляре Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_v_skalyare_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина в скаляре Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_v_skalyare_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число скаляра Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_skalyara_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это запись Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zapis_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это список Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_spisok_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status compiler_flang_polya_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы поля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_polya_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_uzla_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Применить замены Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param zameny — «замены»: список: «Замена»
+ * @return значение: строка
+ */
+fl_status compiler_flang_primenit_zameny_elixir(fl_ctx *ctx, fl_value tekst, fl_value zameny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены кириллицы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_kirillicy_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в нижний регистр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_nizhniy_registr_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Транслитерировать Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_transliterirovat_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В нижний регистр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_nizhniy_registr_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Словарные символы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovarnye_simvoly_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать слово Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @param gotovye — «готовые»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_slovo_elixir(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slova_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Змейка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zmeyka_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в верхний регистр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_verhniy_registr_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В верхний регистр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_verhniy_registr_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из пар Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Пара имён Elixir»
+ * @return значение: «Может быть имя Elixir»
+ */
+fl_status compiler_flang_pervoe_iz_par_elixir(fl_ctx *ctx, fl_value pary, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти в таблице Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть имя Elixir»
+ */
+fl_status compiler_flang_nayti_v_tablice_elixir(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть в таблице Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_v_tablice_elixir(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение по ключу Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znachenie_po_klyuchu_elixir(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить пару Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Пара имён Elixir»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Пара имён Elixir»
+ */
+fl_status compiler_flang_obnovit_paru_elixir(fl_ctx *ctx, fl_value para, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в таблицу Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Elixir»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: список: «Пара имён Elixir»
+ */
+fl_status compiler_flang_polozhit_v_tablicu_elixir(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы слова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_slova_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цифры Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_cifry_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый символ Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_simvol_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последний символ Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_posledniy_simvol_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это символ слова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_simvol_slova_elixir(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Граница слова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param naydeno — «найдено»
+ * @param sleva — «слева»: строка
+ * @param sprava — «справа»: строка
+ * @return значение
+ */
+fl_status compiler_flang_granica_slova_elixir(fl_ctx *ctx, fl_value naydeno, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поиска слова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Поиск слова Elixir»
+ * @param chast — «часть»: строка
+ * @return значение: «Поиск слова Elixir»
+ */
+fl_status compiler_flang_shag_poiska_slova_elixir(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пройти части Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: «Поиск слова Elixir»
+ */
+fl_status compiler_flang_proyti_chasti_elixir(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть слово Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param slovo — «слово»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_slovo_elixir(fl_ctx *ctx, fl_value tekst, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поле типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Поле типа Elixir»
+ */
+fl_status compiler_flang_sobrat_pole_tipa_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Поле типа Elixir»
+ */
+fl_status compiler_flang_sobrat_polya_tipa_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена полей типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_poley_tipa_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать параметр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Параметр Elixir»
+ */
+fl_status compiler_flang_sobrat_parametr_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля или Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @param po_umolchaniyu — «по умолчанию»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_ili_elixir(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value po_umolchaniyu, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать постусловие Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Постусловие Elixir»
+ */
+fl_status compiler_flang_sobrat_postuslovie_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать предусловие Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие Elixir»
+ */
+fl_status compiler_flang_sobrat_preduslovie_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функцию Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Функция Elixir»
+ */
+fl_status compiler_flang_sobrat_funkciyu_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Функция Elixir»
+ */
+fl_status compiler_flang_sobrat_funkcii_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_funkciy_elixir(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из функций Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @return значение: «Может быть функция Elixir»
+ */
+fl_status compiler_flang_pervaya_iz_funkciy_elixir(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти функцию Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Может быть функция Elixir»
+ */
+fl_status compiler_flang_nayti_funkciyu_elixir(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть функция с именем Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_funkciya_s_imenem_elixir(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число параметров Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_parametrov_elixir(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить запись типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: «Запись типа Elixir»
+ * @param novaya — «новая»: «Запись типа Elixir»
+ * @return значение: «Запись типа Elixir»
+ */
+fl_status compiler_flang_obnovit_zapis_tipa_elixir(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена записей Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_zapisey_elixir(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить запись типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Запись типа Elixir»
+ * @param novaya — «новая»: «Запись типа Elixir»
+ * @return значение: список: «Запись типа Elixir»
+ */
+fl_status compiler_flang_slit_zapis_tipa_elixir(fl_ctx *ctx, fl_value akk, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать записи Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Запись типа Elixir»
+ */
+fl_status compiler_flang_sobrat_zapisi_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать вариант Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Вариант типа Elixir»
+ */
+fl_status compiler_flang_sobrat_variant_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать суммы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Сумма типов Elixir»
+ */
+fl_status compiler_flang_sobrat_summy_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить вариант типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhniy — «прежний»: «Вариант типа Elixir»
+ * @param novyy — «новый»: «Вариант типа Elixir»
+ * @return значение: «Вариант типа Elixir»
+ */
+fl_status compiler_flang_obnovit_variant_tipa_elixir(fl_ctx *ctx, fl_value prezhniy, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_variantov_elixir(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить вариант типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Elixir»
+ * @param novyy — «новый»: «Вариант типа Elixir»
+ * @return значение: список: «Вариант типа Elixir»
+ */
+fl_status compiler_flang_slit_variant_tipa_elixir(fl_ctx *ctx, fl_value akk, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты суммы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Elixir»
+ * @param summa — «сумма»: «Сумма типов Elixir»
+ * @return значение: список: «Вариант типа Elixir»
+ */
+fl_status compiler_flang_slit_varianty_summy_elixir(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param summy — «суммы»: список: «Сумма типов Elixir»
+ * @return значение: список: «Вариант типа Elixir»
+ */
+fl_status compiler_flang_sobrat_varianty_elixir(fl_ctx *ctx, fl_value summy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто в скаляре Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_v_skalyare_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из меток Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Elixir»
+ * @return значение: «Может быть число Elixir»
+ */
+fl_status compiler_flang_pervaya_iz_metok_elixir(fl_ctx *ctx, fl_value metki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти метку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть число Elixir»
+ */
+fl_status compiler_flang_nayti_metku_elixir(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть метка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_metka_elixir(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Метка или ноль Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Elixir»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_metka_ili_nol_elixir(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить метку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metka — «метка»: «Метка Elixir»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: «Метка Elixir»
+ */
+fl_status compiler_flang_obnovit_metku_elixir(fl_ctx *ctx, fl_value metka, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить метку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Elixir»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: список: «Метка Elixir»
+ */
+fl_status compiler_flang_polozhit_metku_elixir(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Меньшее Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervoe — «первое»: число
+ * @param vtoroe — «второе»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_menshee_elixir(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цели Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_celi_elixir(fl_ctx *ctx, fl_value ryobra, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить уникальное Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_unikalnoe_elixir(fl_ctx *ctx, fl_value imya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить имя вызова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_imya_vyzova_elixir(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело пусть Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_telo_pust_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случая Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaya_elixir(fl_ctx *ctx, fl_value sluchay, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случаев Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaev_elixir(fl_ctx *ctx, fl_value sluchai, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_elixir(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста ветвей Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_vetvey_elixir(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые вызовы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvostovye_vyzovy_elixir(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить вызов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_vyzov_elixir(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход всего Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_vsego_elixir(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход полей Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_poley_elixir(fl_ctx *ctx, fl_value polya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все вызовы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_vyzovy_elixir(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг отрезания Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Отрезание Elixir»
+ * @param element — «элемент»: строка
+ * @param predel — «предел»: число
+ * @return значение: «Отрезание Elixir»
+ */
+fl_status compiler_flang_shag_otrezaniya_elixir(fl_ctx *ctx, fl_value akk, fl_value element, fl_value predel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без последней строки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_bez_posledney_stroki_elixir(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последняя строка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_poslednyaya_stroka_elixir(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать компоненту Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_zapisat_komponentu_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять компоненту Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять вершину стека Elixir»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_snyat_komponentu_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять вершину стека Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять компоненту Elixir»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_snyat_vershinu_steka_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить низ Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param niz — «низ»: число
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_zamenit_niz_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value niz, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обратное ребро Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_obratnoe_rebro_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрыть вершину Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_zakryt_vershinu_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро вглубь Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_rebro_vglub_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро внутри Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_rebro_vnutri_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро Тарьяна Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_rebro_taryana_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти вершину Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_oboyti_vershinu_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Корень Тарьяна Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Elixir»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: «Тарьян Elixir»
+ */
+fl_status compiler_flang_koren_taryana_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Компоненты связности Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: список: «Компонента Elixir»
+ */
+fl_status compiler_flang_komponenty_svyaznosti_elixir(fl_ctx *ctx, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг выбора Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Elixir»
+ * @param element — «элемент»: строка
+ * @param iskomyy — «искомый»: число
+ * @return значение: «Зип Elixir»
+ */
+fl_status compiler_flang_shag_vybora_elixir(fl_ctx *ctx, fl_value akk, fl_value element, fl_value iskomyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элемент по индексу Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param indeks — «индекс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_element_po_indeksu_elixir(fl_ctx *ctx, fl_value stroki, fl_value indeks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг замены строки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Строки с индексом Elixir»
+ * @param stroka — «строка»: строка
+ * @param iskomyy — «искомый»: число
+ * @param novaya — «новая»: строка
+ * @return значение: «Строки с индексом Elixir»
+ */
+fl_status compiler_flang_shag_zameny_stroki_elixir(fl_ctx *ctx, fl_value akk, fl_value stroka, fl_value iskomyy, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить строку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param indeks — «индекс»: число
+ * @param novaya — «новая»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zamenit_stroku_elixir(fl_ctx *ctx, fl_value stroki, fl_value indeks, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг среза Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Строки с индексом Elixir»
+ * @param stroka — «строка»: строка
+ * @param ot — «от»: число
+ * @return значение: «Строки с индексом Elixir»
+ */
+fl_status compiler_flang_shag_sreza_elixir(fl_ctx *ctx, fl_value akk, fl_value stroka, fl_value ot, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Срез с Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param ot — «от»: число
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_srez_s_elixir(fl_ctx *ctx, fl_value stroki, fl_value ot, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг первой замены Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Первая замена Elixir»
+ * @param chast — «часть»: строка
+ * @param chto — «что»: строка
+ * @param chem — «чем»: строка
+ * @return значение: «Первая замена Elixir»
+ */
+fl_status compiler_flang_shag_pervoy_zameny_elixir(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value chto, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить первое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param chto — «что»: строка
+ * @param chem — «чем»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zamenit_pervoe_elixir(fl_ctx *ctx, fl_value tekst, fl_value chto, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свернуть первую замену Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param chto — «что»: строка
+ * @param chem — «чем»: строка
+ * @return значение: «Первая замена Elixir»
+ */
+fl_status compiler_flang_svernut_pervuyu_zamenu_elixir(fl_ctx *ctx, fl_value tekst, fl_value chto, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить строки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_skleit_stroki_elixir(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить списки строк Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param dobavka — «добавка»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slit_spiski_strok_elixir(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экспонента Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_eksponenta_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число без особых Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_bez_osobyh_elixir(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строчные буквы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_strochnye_bukvy_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заглавные буквы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_zaglavnye_bukvy_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасный идентификатор Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnyy_identifikator_elixir(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заглавная первая Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zaglavnaya_pervaya_elixir(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Паскаль Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_paskal_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сегмент модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chast — «часть»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_segment_modulya_elixir(fl_ctx *ctx, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Модуль Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_modul_elixir(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявлено бэкендом Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyavleno_bekendom_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Модули рантайма Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_moduli_rantayma_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Приставка роли Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pristavka_roli_elixir(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Название роли Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nazvanie_roli_elixir(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Elixir»
+ */
+fl_status compiler_flang_sinonimy_form_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_elixir(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Elixir»
+ */
+fl_status compiler_flang_pomoschniki_form_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка Elixir»
+ */
+fl_status compiler_flang_arnosti_form_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Elixir»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Между Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param ot — «от»: число
+ * @param do_2 — «до»: число
+ * @return значение
+ */
+fl_status compiler_flang_mezhdu_elixir(fl_ctx *ctx, fl_value znachenie, fl_value ot, fl_value do_2, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово аргументов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kolichestvo — «количество»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_argumentov_elixir(fl_ctx *ctx, fl_value kolichestvo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из занятых Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя Elixir»
+ * @return значение: «Может быть занятое Elixir»
+ */
+fl_status compiler_flang_pervoe_iz_zanyatyh_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти занятое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя Elixir»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Может быть занятое Elixir»
+ */
+fl_status compiler_flang_nayti_zanyatoe_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть занятое имя Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя Elixir»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_zanyatoe_imya_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить занятое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatoe — «занятое»: «Занятое имя Elixir»
+ * @param identifikator — «идентификатор»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Занятое имя Elixir»
+ */
+fl_status compiler_flang_obnovit_zanyatoe_elixir(fl_ctx *ctx, fl_value zanyatoe, fl_value identifikator, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить занятое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя Elixir»
+ * @param identifikator — «идентификатор»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: список: «Занятое имя Elixir»
+ */
+fl_status compiler_flang_polozhit_zanyatoe_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value identifikator, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Владелец имени Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatoe — «занятое»: «Занятое имя Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vladelec_imeni_elixir(fl_ctx *ctx, fl_value zanyatoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст столкновения Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: «Занятое имя Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_stolknoveniya_elixir(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это столкновение Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param byloe — «былое»: «Занятое имя Elixir»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_stolknovenie_elixir(fl_ctx *ctx, fl_value byloe, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка занятия Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: «Занятое имя Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_zanyatiya_elixir(fl_ctx *ctx, fl_value prezhnyaya, fl_value rol, fl_value imya, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка после занятия Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть занятое Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_posle_zanyatiya_elixir(fl_ctx *ctx, fl_value prezhnyaya, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять роль Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovanie — «именование»: «Именование Elixir»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Именование Elixir»
+ */
+fl_status compiler_flang_zanyat_rol_elixir(fl_ctx *ctx, fl_value imenovanie, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять роли Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovanie — «именование»: «Именование Elixir»
+ * @param rol — «роль»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: «Именование Elixir»
+ */
+fl_status compiler_flang_zanyat_roli_elixir(fl_ctx *ctx, fl_value imenovanie, fl_value rol, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начать именование Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Именование Elixir»
+ */
+fl_status compiler_flang_nachat_imenovanie_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все занятые идентификаторы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_zanyatye_identifikatory_elixir(fl_ctx *ctx, fl_value zanyatye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только цифры Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_cifry_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на временное Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_vremennoe_elixir(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя занято Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vzyato — «взято»: список: строка
+ * @param kandidat — «кандидат»: строка
+ * @return значение
+ */
+fl_status compiler_flang_imya_zanyato_elixir(fl_ctx *ctx, fl_value vzyato, fl_value kandidat, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_elixir(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор имён Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор имён Elixir»
+ */
+fl_status compiler_flang_shag_unikalnyh_elixir(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param globalnye — «глобальные»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_elixir(fl_ctx *ctx, fl_value imena, fl_value globalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_zamenit_schyotchik_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_zapisat_oshibku_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Свежее Elixir»
+ */
+fl_status compiler_flang_vremennoe_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее Elixir»
+ */
+fl_status compiler_flang_svezhee_imya_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_modulya_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_modulya_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param globalnye — «глобальные»: список: строка
+ * @return значение: «Именованные идентификаторы Elixir»
+ */
+fl_status compiler_flang_identifikatory_parametrov_elixir(fl_ctx *ctx, fl_value funkciya, fl_value globalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы для Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Именованные идентификаторы Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_dlya_elixir(fl_ctx *ctx, fl_value tablica, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые рёбра Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @return значение: список: «Рёбра Elixir»
+ */
+fl_status compiler_flang_hvostovye_ryobra_elixir(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рёбра вызовов Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @return значение: список: «Рёбра Elixir»
+ */
+fl_status compiler_flang_ryobra_vyzovov_elixir(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены компоненты Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Elixir»
+ * @return значение: список: «Рёбра Elixir»
+ */
+fl_status compiler_flang_chleny_komponenty_elixir(fl_ctx *ctx, fl_value komponenta, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить рёбра Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Рёбра Elixir»
+ * @param dobavka — «добавка»: список: «Рёбра Elixir»
+ * @return значение: список: «Рёбра Elixir»
+ */
+fl_status compiler_flang_slit_ryobra_elixir(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Циклические функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Elixir»
+ * @return значение: список: «Рёбра Elixir»
+ */
+fl_status compiler_flang_ciklicheskie_funkcii_elixir(fl_ctx *ctx, fl_value komponenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивная одиночка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Elixir»
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnaya_odinochka_elixir(fl_ctx *ctx, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг рекурсивных Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param komponenta — «компонента»: «Компонента Elixir»
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_rekursivnyh_elixir(fl_ctx *ctx, fl_value akk, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивные функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Elixir»
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnye_funkcii_elixir(fl_ctx *ctx, fl_value komponenty, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена рёбер Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_ryober_elixir(fl_ctx *ctx, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Самовызов в хвосте Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param hvostovye — «хвостовые»: список: «Рёбра Elixir»
+ * @return значение
+ */
+fl_status compiler_flang_samovyzov_v_hvoste_elixir(fl_ctx *ctx, fl_value funkciya, fl_value hvostovye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть члены Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param ciklicheskie — «циклические»: список: «Рёбра Elixir»
+ * @return значение
+ */
+fl_status compiler_flang_est_chleny_elixir(fl_ctx *ctx, fl_value funkciya, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Нужен шаг Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param hvostovye — «хвостовые»: список: «Рёбра Elixir»
+ * @param ciklicheskie — «циклические»: список: «Рёбра Elixir»
+ * @return значение
+ */
+fl_status compiler_flang_nuzhen_shag_elixir(fl_ctx *ctx, fl_value funkciya, fl_value hvostovye, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена для шагов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Elixir»
+ * @param hvostovye — «хвостовые»: список: «Рёбра Elixir»
+ * @param ciklicheskie — «циклические»: список: «Рёбра Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_dlya_shagov_elixir(fl_ctx *ctx, fl_value funkcii, fl_value hvostovye, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param psevdonim — «псевдоним»: строка
+ * @param oshibka — «ошибка»: строка
+ * @return значение: «Общее Elixir»
+ */
+fl_status compiler_flang_sobrat_obschee_elixir(fl_ctx *ctx, fl_value programma, fl_value psevdonim, fl_value oshibka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть шаг Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_shag_elixir(fl_ctx *ctx, fl_value obschee, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shag_funkcii_elixir(fl_ctx *ctx, fl_value obschee, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификатор функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_identifikator_funkcii_elixir(fl_ctx *ctx, fl_value obschee, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая ошибка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: строка
+ * @param novaya — «новая»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervaya_oshibka_elixir(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка параметра Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Значение»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_parametra_elixir(fl_ctx *ctx, fl_value parametr, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить параметры Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_parametry_elixir(fl_ctx *ctx, fl_value uzel, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка постусловия Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_postusloviya_elixir(fl_ctx *ctx, fl_value postuslovie, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить постусловия Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_postusloviya_elixir(fl_ctx *ctx, fl_value uzel, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка тела функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_tela_funkcii_elixir(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_funkcii_elixir(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг проверки функции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Проверка программы Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Проверка программы Elixir»
+ */
+fl_status compiler_flang_shag_proverki_funkcii_elixir(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свернуть проверку функций Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: «Проверка программы Elixir»
+ */
+fl_status compiler_flang_svernut_proverku_funkciy_elixir(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить функции программы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_funkcii_programmy_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить программу Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_programmu_elixir(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить список аргументов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_spisok_argumentov_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок итога Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_blok_itoga_elixir(fl_ctx *ctx, fl_value itog, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог блока Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param blok — «блок»: «Блок Elixir»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_itog_bloka_elixir(fl_ctx *ctx, fl_value blok, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать в блок Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param blok — «блок»: «Блок Elixir»
+ * @param stroka — «строка»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_dopisat_v_blok_elixir(fl_ctx *ctx, fl_value blok, fl_value stroka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок с состоянием Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param blok — «блок»: «Блок Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_blok_s_sostoyaniem_elixir(fl_ctx *ctx, fl_value blok, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст Elixir»
+ */
+fl_status compiler_flang_svyazat_imya_elixir(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_imya_uzla_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы имени Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_imeni_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только символы имени Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_simvoly_imeni_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без знака вопроса Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_znaka_voprosa_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это атом Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_atom_elixir(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Погасить связку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vyvod — «вывод»: список: строка
+ * @param tekst — «текст»: строка
+ * @param svyazka — «связка»: «Связка Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_pogasit_svyazku_elixir(fl_ctx *ctx, fl_value vyvod, fl_value tekst, fl_value svyazka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасить неиспользованные Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vyvod — «вывод»: список: строка
+ * @param ot — «от»: число
+ * @param svyazki — «связки»: список: «Связка Elixir»
+ * @param dobavka — «добавка»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_gasit_neispolzovannye_elixir(fl_ctx *ctx, fl_value vyvod, fl_value ot, fl_value svyazki, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Овеществить Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_oveschestvit_elixir(fl_ctx *ctx, fl_value znachenie, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи полей Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_klyuchi_poley_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значения полей Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_znacheniya_poley_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле из списка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_pole_iz_spiska_elixir(fl_ctx *ctx, fl_value polya, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг пары поля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип Elixir»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: «Зип Elixir»
+ */
+fl_status compiler_flang_shag_pary_polya_elixir(fl_ctx *ctx, fl_value zip, fl_value klyuch, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sobrat_polya_elixir(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_skalyara_elixir(fl_ctx *ctx, fl_value skalyar, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вариант по полям Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть имя Elixir»
+ */
+fl_status compiler_flang_variant_po_polyam_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вариант в литерале Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть имя Elixir»
+ */
+fl_status compiler_flang_variant_v_literale_elixir(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг литерала по порядку Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_shag_literala_po_poryadku_elixir(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг литерала без порядка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_shag_literala_bez_poryadka_elixir(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литералов по порядку Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_pechat_literalov_po_poryadku_elixir(fl_ctx *ctx, fl_value uzly, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерального списка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_literalnogo_spiska_elixir(fl_ctx *ctx, fl_value elementy, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей литерала Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_poley_literala_elixir(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литеральной записи Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_literalnoy_zapisi_elixir(fl_ctx *ctx, fl_value polya, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_literala_elixir(fl_ctx *ctx, fl_value uzel, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить по порядку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог Elixir»
+ * @param chasti — «части»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_polozhit_po_poryadku_elixir(fl_ctx *ctx, fl_value itog, fl_value chasti, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_shag_poryadka_elixir(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг без порядка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Elixir»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_shag_bez_poryadka_elixir(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать по порядку Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Elixir»
+ */
+fl_status compiler_flang_pechat_po_poryadku_elixir(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_razreshit_vyzov_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_arnost_formy_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_elixir(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_zapis_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_proverit_variant_elixir(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_neizvestnyy_vid_elixir(fl_ctx *ctx, fl_value uzel, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_peremennoy_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова значением Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_vyzova_znacheniem_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_elixir(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_elixir(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_formy_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_elixir(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_operacii_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_spiska_elixir(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать узла списка Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_uzla_spiska_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей значения Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_poley_znacheniya_elixir(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_zapisi_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_konstruktora_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть значением Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_pust_znacheniem_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если значением Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_esli_znacheniem_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значением блока Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_pechat_znacheniem_bloka_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_znacheniya_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасимое имя Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_gasimoe_imya_elixir(fl_ctx *ctx, fl_value identifikator, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Та же компонента Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_ta_zhe_komponenta_elixir(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_elixir(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать отскока Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_pechat_otskoka_elixir(fl_ctx *ctx, fl_value imya, fl_value argumenty, fl_value blok, fl_value otstup, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_hvostovoe_pust_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_hvostovoe_esli_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_pechat_hvosta_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг выбора проверки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Выбор проверки Elixir»
+ * @param proverka — «проверка»: «Проверка образца Elixir»
+ * @param iskomyy — «искомый»: число
+ * @return значение: «Выбор проверки Elixir»
+ */
+fl_status compiler_flang_shag_vybora_proverki_elixir(fl_ctx *ctx, fl_value akk, fl_value proverka, fl_value iskomyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка по индексу Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param proverki — «проверки»: список: «Проверка образца Elixir»
+ * @param indeks — «индекс»: число
+ * @return значение: «Проверка образца Elixir»
+ */
+fl_status compiler_flang_proverka_po_indeksu_elixir(fl_ctx *ctx, fl_value proverki, fl_value indeks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param blok — «блок»: «Блок Elixir»
+ * @param tekst — «текст»: строка
+ * @return значение: «Итог проверки Elixir»
+ */
+fl_status compiler_flang_gotovaya_proverka_elixir(fl_ctx *ctx, fl_value blok, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог проверки Elixir»
+ */
+fl_status compiler_flang_proverka_literalom_elixir(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Итог проверки Elixir»
+ */
+fl_status compiler_flang_oshibka_obrazca_elixir(fl_ctx *ctx, fl_value obrazec, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог проверки Elixir»
+ */
+fl_status compiler_flang_proverka_obrazca_elixir(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора проверок Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сбор проверок Elixir»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор проверок Elixir»
+ */
+fl_status compiler_flang_shag_sbora_proverok_elixir(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить связку Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание Elixir»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param est_kommentariy — «есть комментарий»
+ * @param kommentariy — «комментарий»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_dobavit_svyazku_elixir(fl_ctx *ctx, fl_value svyazyvanie, fl_value imya, fl_value kod, fl_value est_kommentariy, fl_value kommentariy, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать голову Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание Elixir»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_svyazat_golovu_elixir(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать хвост Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание Elixir»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_svyazat_hvost_elixir(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Связка варианта Elixir»
+ */
+fl_status compiler_flang_svyazki_varianta_elixir(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание Elixir»
+ * @param para — «пара»: «Связка варианта Elixir»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_elixir(fl_ctx *ctx, fl_value svyazyvanie, fl_value para, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать любое Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание Elixir»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_svyazat_lyuboe_elixir(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать образец Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Elixir»
+ */
+fl_status compiler_flang_svyazat_obrazec_elixir(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @param est_cel — «есть цель»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_telo_vetvi_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value est_cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь дальше Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Ветви Elixir»
+ * @param sluchay — «случай»: «Значение»
+ * @param proverki — «проверки»: список: «Проверка образца Elixir»
+ * @param obstanovka — «обстановка»: «Обстановка разбора Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @return значение: «Ветви Elixir»
+ */
+fl_status compiler_flang_vetv_dalshe_elixir(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value proverki, fl_value obstanovka, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Ветви Elixir»
+ * @param sluchay — «случай»: «Значение»
+ * @param proverki — «проверки»: список: «Проверка образца Elixir»
+ * @param obstanovka — «обстановка»: «Обстановка разбора Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @return значение: «Ветви Elixir»
+ */
+fl_status compiler_flang_pechat_vetvi_elixir(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value proverki, fl_value obstanovka, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь по умолчанию Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param blok — «блок»: «Блок Elixir»
+ * @param obstanovka — «обстановка»: «Обстановка разбора Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_vetv_po_umolchaniyu_elixir(fl_ctx *ctx, fl_value blok, fl_value obstanovka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_pechat_razbora_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value est_cel, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_elixir(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_svyortki_elixir(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сдвинуть строку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sdvinut_stroku_elixir(fl_ctx *ctx, fl_value stroka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param eto_otobrazhenie — «это отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_elixir(fl_ctx *ctx, fl_value uzel, fl_value eto_otobrazhenie, fl_value element, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param eto_otobrazhenie — «это отображение»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Elixir»
+ */
+fl_status compiler_flang_pechat_cikla_elixir(fl_ctx *ctx, fl_value uzel, fl_value eto_otobrazhenie, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Elixir»
+ * @param parametr — «параметр»: «Параметр Elixir»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров Elixir»
+ */
+fl_status compiler_flang_svyazat_parametr_elixir(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: «Контекст Elixir»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Контекст двери Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: «Контекст Elixir»
+ */
+fl_status compiler_flang_kontekst_dveri_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Elixir»
+ * @param parametr — «параметр»: «Параметр Elixir»
+ * @return значение: «Связывание параметров Elixir»
+ */
+fl_status compiler_flang_svyazat_parametr_dveri_elixir(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param parametry — «параметры»: список: строка
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value obschee, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Elixir»
+ * @param postuslovie — «постусловие»: «Постусловие Elixir»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_shag_postusloviya_elixir(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_elixir(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value blok, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_telo_funkcii_elixir(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать доку Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_doku_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка доки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_doki_elixir(fl_ctx *ctx, fl_value stroka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать доки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_pechat_doki_elixir(fl_ctx *ctx, fl_value stroki, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка вида типа Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_vida_tipa_elixir(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка имени типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_imeni_tipa_elixir(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка типа Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_tipa_elixir(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг параметра доки Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Строки с номером Elixir»
+ * @param parametr — «параметр»: «Параметр Elixir»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Строки с номером Elixir»
+ */
+fl_status compiler_flang_shag_parametra_doki_elixir(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Прочие члены Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_prochie_chleny_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки шага доки Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_shaga_doki_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень имён Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imena — «имена»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_imyon_elixir(fl_ctx *ctx, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_elixir(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа Elixir»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_elixir(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Простая функция Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param telo — «тело»: список: строка
+ * @param parametry — «параметры»: список: строка
+ * @param doka — «дока»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_prostaya_funkciya_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value telo, fl_value parametry, fl_value doka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Функция со счётчиком Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param telo — «тело»: список: строка
+ * @param parametry — «параметры»: список: строка
+ * @param doka — «дока»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_funkciya_so_schyotchikom_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value telo, fl_value parametry, fl_value doka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обёртка шага со счётчиком Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param shag — «шаг»: строка
+ * @param vse — «все»: строка
+ * @param nazvanie — «название»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyortka_shaga_so_schyotchikom_elixir(fl_ctx *ctx, fl_value imya, fl_value shag, fl_value vse, fl_value nazvanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обёртка шага простая Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param shag — «шаг»: строка
+ * @param vse — «все»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyortka_shaga_prostaya_elixir(fl_ctx *ctx, fl_value imya, fl_value shag, fl_value vse, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обёртка шага Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param imya — «имя»: строка
+ * @param shag — «шаг»: строка
+ * @param vse — «все»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyortka_shaga_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value imya, fl_value shag, fl_value vse, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Функция с шагом Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param telo — «тело»: список: строка
+ * @param parametry — «параметры»: список: строка
+ * @param doka — «дока»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_funkciya_s_shagom_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value kontekst, fl_value telo, fl_value parametry, fl_value doka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Оболочка функции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param telo — «тело»: список: строка
+ * @param parametry — «параметры»: список: строка
+ * @param doka — «дока»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_obolochka_funkcii_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value kontekst, fl_value telo, fl_value parametry, fl_value doka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Кусок Elixir»
+ */
+fl_status compiler_flang_pechat_funkcii_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг аргумента диспетчера Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип Elixir»
+ * @param parametr — «параметр»: «Параметр Elixir»
+ * @return значение: «Зип Elixir»
+ */
+fl_status compiler_flang_shag_argumenta_dispetchera_elixir(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_dogovor_na_dveri_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_proverki_dogovora_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Elixir»
+ * @param preduslovie — «предусловие»: «Предусловие Elixir»
+ * @param kontekst — «контекст»: «Контекст Elixir»
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_shag_predusloviya_elixir(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_vetka_dispetchera_elixir(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Elixir»
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_elixir(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Блок Elixir»
+ */
+fl_status compiler_flang_pechat_dispetchera_elixir(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка файла Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_fayla_elixir(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать контекста Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param baza — «база»: число
+ * @param glubina — «глубина»: число
+ * @param shagi — «шаги»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konteksta_elixir(fl_ctx *ctx, fl_value baza, fl_value glubina, fl_value shagi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param psevdonim — «псевдоним»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_modulya_elixir(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value psevdonim, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исходник модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shapka — «шапка»: строка
+ * @param tela — «тела»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ishodnik_modulya_elixir(fl_ctx *ctx, fl_value shapka, fl_value tela, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param psevdonim — «псевдоним»: строка
+ * @param fayl — «файл»: строка
+ * @param progonschik — «прогонщик»
+ * @param konkurentno — «конкурентно»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_elixir(fl_ctx *ctx, fl_value psevdonim, fl_value fayl, fl_value progonschik, fl_value konkurentno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число в скаляре Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_v_skalyare_elixir(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Не конечное Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение
+ */
+fl_status compiler_flang_ne_konechnoe_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это конечное число Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_konechnoe_chislo_elixir(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целая часть Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_celaya_chast_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка ящика Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param process — «процесс»: «Значение»
+ * @return значение: «Состояние Elixir»
+ */
+fl_status compiler_flang_oshibka_yaschika_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value process, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запись процесса Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param process — «процесс»: «Значение»
+ * @param totalnye — «тотальные»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zapis_processa_elixir(fl_ctx *ctx, fl_value process, fl_value totalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порог надзора Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nadzor — «надзор»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_porog_nadzora_elixir(fl_ctx *ctx, fl_value nadzor, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запись надзора Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nadzor — «надзор»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_zapis_nadzora_elixir(fl_ctx *ctx, fl_value nadzor, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сообщения Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сообщения прогона Elixir»
+ * @param soobschenie — «сообщение»: «Значение»
+ * @return значение: «Сообщения прогона Elixir»
+ */
+fl_status compiler_flang_shag_soobscheniya_elixir(fl_ctx *ctx, fl_value akk, fl_value soobschenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ящика прогона Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param progon — «прогон»: «Значение»
+ * @param nomer — «номер»: число
+ * @param blok — «блок»: «Блок Elixir»
+ * @return значение: «Кусок Elixir»
+ */
+fl_status compiler_flang_pechat_yaschika_progona_elixir(fl_ctx *ctx, fl_value progon, fl_value nomer, fl_value blok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки ящика Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_yaschika_elixir(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг запятой Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Строки с индексом Elixir»
+ * @param stroka — «строка»: строка
+ * @param predel — «предел»: число
+ * @return значение: «Строки с индексом Elixir»
+ */
+fl_status compiler_flang_shag_zapyatoy_elixir(fl_ctx *ctx, fl_value akk, fl_value stroka, fl_value predel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Расставить запятые Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rasstavit_zapyatye_elixir(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ящика Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Ящики Elixir»
+ * @param progon — «прогон»: «Значение»
+ * @return значение: «Ящики Elixir»
+ */
+fl_status compiler_flang_shag_yaschika_elixir(fl_ctx *ctx, fl_value akk, fl_value progon, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список записей Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: строка
+ * @param imya — «имя»: строка
+ * @param hvost — «хвост»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_spisok_zapisey_elixir(fl_ctx *ctx, fl_value zapisi, fl_value imya, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать плана Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param processy — «процессы»: список: строка
+ * @param nadzory — «надзоры»: список: строка
+ * @param progony — «прогоны»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_plana_elixir(fl_ctx *ctx, fl_value processy, fl_value nadzory, fl_value progony, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать подъёма Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_podyoma_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать прогона Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_progona_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конкурентности Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @return значение: «Тела Elixir»
+ */
+fl_status compiler_flang_pechat_konkurentnosti_elixir(fl_ctx *ctx, fl_value programma, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Elixir»
+ * @param funkciya — «функция»: «Функция Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: «Тела Elixir»
+ */
+fl_status compiler_flang_shag_tela_funkcii_elixir(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тела конструкторов суммы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param chasti — «части»: список: строка
+ * @param summa — «сумма»: «Сумма типов Elixir»
+ * @param obschee — «общее»: «Общее Elixir»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tela_konstruktorov_summy_elixir(fl_ctx *ctx, fl_value chasti, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_elixir(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_elixir(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_elixir(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_elixir(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_elixir(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_elixir(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список границы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param hvost — «хвост»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_spisok_granicy_elixir(fl_ctx *ctx, fl_value stroki, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_elixir(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Elixir»
+ * @param sostoyanie — «состояние»: «Состояние Elixir»
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Тела Elixir»
+ */
+fl_status compiler_flang_pechat_tel_elixir(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст занятого модуля Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param modul — «модуль»: строка
+ * @param psevdonim — «псевдоним»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_zanyatogo_modulya_elixir(fl_ctx *ctx, fl_value modul, fl_value psevdonim, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить псевдоним Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param psevdonim — «псевдоним»: строка
+ * @param modul — «модуль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_psevdonim_elixir(fl_ctx *ctx, fl_value psevdonim, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файлы рантайма Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_fayly_rantayma_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить файл Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: строка
+ * @param modul — «модуль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_fayl_elixir(fl_ctx *ctx, fl_value fayl, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить файлы Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Файл Elixir»
+ * @param vtorye — «вторые»: список: «Файл Elixir»
+ * @return значение: список: «Файл Elixir»
+ */
+fl_status compiler_flang_slit_fayly_elixir(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Очистить файл Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Файл Elixir»
+ * @return значение: «Файл Elixir»
+ */
+fl_status compiler_flang_ochistit_fayl_elixir(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файл конкурентности Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Файл Elixir»
+ */
+fl_status compiler_flang_fayl_konkurentnosti_elixir(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файл прогонщика Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Файл Elixir»
+ */
+fl_status compiler_flang_fayl_progonschika_elixir(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_elixir(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_elixir(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Итог печати Elixir»
+ */
+fl_status compiler_flang_pechat_programmy_elixir(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -58519,6 +62744,36 @@ fl_status compiler_flang_pechat_v_js_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, 
  * @return значение: «Итог сборки JS»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_js(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в Elixir».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Итог печати Elixir»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_elixir(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать в Elixir от исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param nastroyki — «настройки»: «Настройки Elixir»
+ * @return значение: «Итог сборки в Elixir»
+ */
+fl_status compiler_flang_pechat_v_elixir_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка из печати Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог печати Elixir»
+ * @return значение: «Итог сборки в Elixir»
+ */
+fl_status compiler_flang_sborka_iz_pechati_elixir(fl_ctx *ctx, fl_value itog, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

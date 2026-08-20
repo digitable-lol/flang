@@ -128,7 +128,7 @@ jobs:
           ./bootstrap/flang test flang/stdlib/
           ./bootstrap/flang test flang/core/
 
-  # ── Дорогая половина: на слияние, тег и по руке, но не на каждый пуш ───────
+  # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: Примеры всего корпуса
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')

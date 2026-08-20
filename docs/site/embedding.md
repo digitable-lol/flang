@@ -8,22 +8,22 @@ virtual machine is anywhere near it while it runs.
 
 There are {{цели.поАнглийски}} emit targets: {{цели.список}}.
 
-Not one command and not one number here is from memory: everything was run
-against this tree with the compiler from the repository
-(`node flang/bin/flang.mjs`) under Node v26.7.0, `cc` 15.2.0, Python 3.14.4,
-Linux 7.0.0.
+Not one command here is from memory: all of them were run against this tree with
+the `flang` binary — the same one a release archive installs — under `cc` 15.2.0,
+Python 3.14.4, Linux 7.0.0. The numbers beside the commands come from those same
+runs; where a number is missing, the reason is stated.
 
 ## One command
 
 ```bash
-node flang/bin/flang.mjs emit <file> --target <target> --out <directory>
+flang emit <file> --target <target> --out <directory>
 ```
 
 Without `--target` the command names the whole list itself and refuses:
 
 ```bash
-$ node flang/bin/flang.mjs emit
-{"error":"emit требует --target <язык>; доступны: c, csharp, elixir, go, java, js, python, rust", …}
+$ flang emit
+flang emit: не назван файл. Пример: flang emit м.flang --target c --out каталог
 ```
 
 The flags that matter to someone embedding:
@@ -46,45 +46,37 @@ Run against a deliberately broken copy of the example (`returns number` replaced
 by `returns string`):
 
 ```bash
-$ node flang/bin/flang.mjs emit broken.flang --target js --out ./out
-{"error":"печать отменена: программа не проходит проверку (диагностик: 11, первая —
- FLANG_TYPE: функция «Product» объявлена как строка, а тело даёт число). Проверьте
- программу командой check; ключ --no-check печатает непроверенное для отладки самой
- печати", …}
-$ echo $?
-1
+$ flang emit broken.flang --target js --out ./out
+FLANG_TYPE в файле broken.flang, строка 10, столбец 5: функция «Удвоить»
+ объявлена как строка, а тело даёт число
+…
+flang emit: печать отменена — программа не проходит проверку, замечаний 4.
 $ ls ./out
 ls: cannot access './out': No such file or directory
 ```
 
-### What emitted here, and what the installed `flang` emits
+### Where the compiler takes the runtime sources from
 
-This page emits with the compiler from the repository — the one installed through
-npm. The standalone `flang` binary — the one Homebrew installs and `bootstrap/`
-builds — has **all {{цели.поАнглийски}}** as well, and says so itself. Run against
-the binary built from `bootstrap/`:
+Beside the emitted module, emission places the target's runtime — values,
+arithmetic, diagnostics. Its sources live in the tree
+(`flang/src/emit/<target>/`) and emission reads them from disk: it does not
+invent them. It looks in `$FLANG_RUNTIME_DIR`, then in
+`../flang/src/emit/<target>` and `../share/flang/<target>`; a binary built in a
+directory of its own is told the path with `--runtime`.
 
-```bash
-$ ./flang emit --help
-flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
+The `--out` directory is not created by emission: not finding it, it refuses by
+name.
+
+Emission warns separately about the entry boundary, and that is not a detail:
+
+```
+аргументы напечатанной программы по типам не проверяются: это ограничение
+двоичного flang
 ```
 
-Each of its targets needs a directory with the runtime SOURCES — it looks for them
-itself in `$FLANG_RUNTIME_DIR`, `../flang/src/emit/c` and `../share/flang/c`,
-while here the binary was built in a directory of its own, so the path had to be
-named by a flag. And it warns separately about the entry boundary:
-
-```bash
-$ ./flang emit factorial-english.flang --target c --runtime …/flang/src/emit/c --out ./out-c
-напечатано файлов 6, байт 274673, в …/out-c
-граница входа пуста: таблицу объявленных типов строит слой типов свидетеля
-(«таблицаВхода»), которого в бинарнике нет, а впечатанная (параметров 8905) этой
-программе не подходит. Напечатанное соберётся и заработает, но аргументы
-прогонщика объявленным типам сверяться не будут.
-```
-
-Unlike the compiler from the repository, the binary does not create the `--out`
-directory: if it is missing, the binary refuses and names the file.
+The emitted code will build and run; the runner's arguments will simply not be
+checked against the declared types. The full account is below, in the section on
+the runner over a pipe.
 
 ## What arrives in the directory
 
@@ -122,11 +114,10 @@ program rather than quietly doing something else:
 ## C: build it and link it into your program
 
 ```bash
-$ node flang/bin/flang.mjs emit flang/examples/rosetta/factorial-english.flang --target c --out ./out-c
-{"target":"c","module":"Factorial","возможности":{…},"out":"…/out-c","files":[
- {"path":"flang_runtime.h","bytes":…},{"path":"flang_runtime.c","bytes":…},
- {"path":"factorial.h","bytes":…},{"path":"factorial.c","bytes":…},
- {"path":"flang_cli.c","bytes":…},{"path":"Makefile","bytes":…}]}
+$ flang emit flang/examples/rosetta/factorial-english.flang --target c --out ./out-c
+напечатано файлов 6, байт 280565, в ./out-c
+$ ls ./out-c
+Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
 
 The sizes are left out on purpose, and not out of laziness. The bytes of emitted
@@ -234,7 +225,7 @@ the [measurement](../wasm.html) was made over every program in the repository.
 ## The value at the boundary
 
 Inside the evaluator a value has its own representation
-(`flang/src/builtins.mjs`: a record is a plain JS object, a list is an array, a
+(a record is a plain object, a list is an array, a
 variant is a class of its own, plus a hidden "list with spare room" that never
 leaves at all). **Each emit target has its own representation**, and that is not
 a detail: it is precisely the boundary across which you talk to the program.
@@ -351,8 +342,10 @@ self-contained: not a single `import` and not a single `require` at the top leve
 `$callDeep` and is taken dynamically.
 
 ```bash
-$ node flang/bin/flang.mjs emit flang/examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
-{"target":"js","module":"Factorial", …,"files":[{"path":"factorial.js","bytes":…}]}
+$ flang emit flang/examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
+напечатано файлов 1, байт 18621, в ./out-js
+$ ls ./out-js
+factorial.js
 ```
 
 One file, no neighbours. With the runner the module is larger: alongside the
@@ -464,12 +457,10 @@ that is not a hope but an output of `check`.
 
 **A caveat about the file next door.** `serve.mjs` sits beside it running the
 same scenario, and it goes NOT through the emitted module but through the
-evaluator (`loadProgram` from `flang/bin/flang.mjs` and `evaluateFlang` from
-`flang/src/compat.mjs`). The answers agree BYTE FOR BYTE: the scenario above was
-run down both roads and the output matched to the character — `diff` says
-nothing. But only the first road is fit for embedding: `flang/src/*.mjs` is not promised as a library,
-`emit` is. Read `serve.mjs` as a model of the host's SHAPE (state by value, loop
-on the outside), not as a model of binding.
+evaluator of the second implementation of the language. That implementation is no
+longer in the tree, and the scenario does not come up along that road today. Read
+`serve.mjs` as a model of the host's SHAPE — state by value, loop on the outside
+— not as a working path: the working path of embedding is one, and it is `emit`.
 
 ## Any language: the runner over a pipe
 
@@ -523,9 +514,9 @@ a future breakage in your code.
 - **Concurrency exists on three targets out of {{цели.поАнглийски}}** (`c`,
   `elixir`, `js`), parallelism on one (`elixir`). The rest refuse to emit a
   concurrent program.
-- **The installed `flang` binary emits into C only**, and leaves the entry
-  boundary's type table empty. All {{цели.поАнглийски}} targets come from the
-  compiler installed through npm.
+- **The table of declared types on the entry boundary is left empty.** Emission
+  says so itself and does not refuse: the emitted code builds and runs, but the
+  runner's arguments are not checked against the declared types.
 - **About `--index-base`, `--max-steps` and `--max-depth` only one thing was
   checked** — that they reach the emitted code as the lines named above; their
   effect on a running program was not measured here.

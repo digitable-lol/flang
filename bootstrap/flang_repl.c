@@ -274,11 +274,11 @@ static const char REPL_GREETING_NO_EVAL[] =
  * цель втаскивают, каждая его копия становится ЛОЖЬЮ. Копий здесь две, и обе
  * ниже: одна называет, что есть, вторая — чего нет.
  */
-#define EMIT_TARGETS_WORDS "c|go|rust|java"
-#define EMIT_TARGETS_MISSING "четыре цели печати из восьми"
-#define EMIT_TARGETS_SAY "цели здесь четыре — «c», «go», «rust» и «java»"
+#define EMIT_TARGETS_WORDS "c|go|rust|java|js"
+#define EMIT_TARGETS_MISSING "три цели печати из восьми"
+#define EMIT_TARGETS_SAY "цели здесь пять — «c», «go», «rust», «java» и «js»"
 #define EMIT_TARGETS_REST \
-  "Остальные четыре (js, python, csharp, elixir) написаны на flang\n" \
+  "Остальные три (python, csharp, elixir) написаны на flang\n" \
   "(flang/self/emit-*.flang), но в замыкание этой сборки не входят: они есть в\n" \
   "версии для Node — npm install -g @digitable-lol/flang"
 
@@ -377,6 +377,7 @@ static const char HELP_EMIT[] =
     "  --target go       Go: go.mod, пакет рантайма, пакет программы, прогонщик\n"
     "  --target rust     Rust: Cargo.toml, модуль рантайма, модуль программы, прогонщик\n"
     "  --target java     Java: пять файлов рантайма, класс программы, прогонщик, Makefile\n"
+    "  --target js       JavaScript: модуль программы и прогонщик; рантайм внутри\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
@@ -386,8 +387,9 @@ static const char HELP_EMIT[] =
     "РАНТАЙМ ЦЕЛИ уезжает в вывод дословно: у «c» это четыре файла\n"
     "(flang_runtime.h, flang_runtime.c, flang_cli.c, flang_repl.c), у «go» и «rust»\n"
     "— по два (flang_runtime.go/.rs, flang_cli.go/.rs), у «java» шесть (Value.java,\n"
-    "Field.java, FlangError.java, Ctx.java, Flang.java, FlangCli.java). Ищутся они в\n"
-    "«--runtime», затем в\n"
+    "Field.java, FlangError.java, Ctx.java, Flang.java, FlangCli.java), у «js» два\n"
+    "(flang_cli.js, flang_conc.js — сам рантайм у этой цели внутри печати). Ищутся они\n"
+    "в «--runtime», затем в\n"
     "$FLANG_RUNTIME_DIR, затем рядом с установленным flang (share/flang/<цель>).\n"
     "\n"
     "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
@@ -397,7 +399,7 @@ static const char HELP_EMIT[] =
     "ЧЕМ ЭТА ПЕЧАТЬ ОТЛИЧАЕТСЯ ОТ ПЕЧАТИ ПОЛНОГО ИНСТРУМЕНТАРИЯ, по целям:\n"
     "  c   недостижимое НЕ отбрасывается, доказанное не метится («markProven»);\n"
     "      собирается и работает напечатанное одинаково, его просто больше;\n"
-    "  go, rust, java  недостижимое отбрасывается, как у свидетеля; пуста ГРАНИЦА\n"
+    "  go, rust, java, js  недостижимое отбрасывается, как у свидетеля; пуста ГРАНИЦА\n"
     "      ВХОДА — таблицу объявленных типов строит слой типов свидетеля, которого\n"
     "      на flang нет ни строки. Напечатанное собирается и работает, но аргументы\n"
     "      прогонщика объявленным типам не сверяются, и об этом сказано словами.\n"
@@ -5913,7 +5915,7 @@ static int run_file(int argc, char **argv) {
  *      печатью flang₁ побайтово. То есть у печати самого бинарника есть своя
  *      неподвижная точка, и восстановить компилятор из исходников `flang/self`
  *      можно сколько угодно раз, ни разу не позвав Node.
- * • ЦЕЛЕЙ ВТАЩЕНО ЧЕТЫРЕ — `c`, `go`, `rust` и `java`. Остальные четыре написаны на flang
+ * • ЦЕЛЕЙ ВТАЩЕНО ПЯТЬ — `c`, `go`, `rust`, `java` и `js`. Остальные три написаны на flang
  *   (`flang/self/emit-*.flang`) и сверены со свидетелем побайтово, но в
  *   замыкание не втащены. МЕШАЕТ ИМ ОДНО И ТО ЖЕ — СТОЛКНОВЕНИЯ ИМЁН:
  *   связывание сливает объявления в одно плоское пространство, а эталоны печати
@@ -5927,7 +5929,7 @@ static int run_file(int argc, char **argv) {
  *     java     364 →   7   («Есть имя», «Есть узел», «Может быть имя»,
  *                           «Может быть узел», «Нет имени», «Нет узла»,
  *                           «Пара имён») — ВТАЩЕНА
- *     js       336 → 139
+ *     js       336 → 139   — ВТАЩЕНА
  *     elixir   422 → 261
  *     python   377 → 299
  *     csharp   382 → 309
@@ -5951,7 +5953,8 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_GO 1
 #define EMIT_TARGET_RUST 2
 #define EMIT_TARGET_JAVA 3
-#define EMIT_TARGET_COUNT 4
+#define EMIT_TARGET_JS 4
+#define EMIT_TARGET_COUNT 5
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
 #define EMIT_FIELD_MAX 16
@@ -6011,6 +6014,15 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
      "собрать: cd <каталог> && make"},
+    /* У JavaScript рантайм лежит ЛИТЕРАЛАМИ внутри `emit-js.flang`: снаружи
+       приезжают только прогонщик и планировщик, и по прогонщику же узнаётся
+       каталог. */
+    {"js", "JavaScript", "flang_cli.js", {"flang/src/emit/js", "share/flang/js"},
+     "Напечатать связанное в JS", true, 12,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "исходник планировщика",
+      "прогонщик", "исходник прогонщика", "типы входа", "поля входа", "варианты входа",
+      "параметры входа"},
+     2, {"flang_conc.js", "flang_cli.js"}, "запустить: node <каталог>/<имя>.mjs"},
 };
 
 /** Ключи командной строки печати — одни на все цели. */

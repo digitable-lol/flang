@@ -128,6 +128,8 @@
 - [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов](uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata.md)
 - [Планировщик узла переносим: из 224 строк мира в нём пять, а решений 219 — и они печатаются во все восемь целей](planirovshchik-uzla-perenosim-219-resheniy-iz-224-strok.md)
 - [Груз письма едет билетом, а не значением, — и этим отсутствие полиморфизма перестаёт мешать](gruz-pisma-edet-biletom-a-ne-znacheniem.md)
+- [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-v-stdlib-snizhaet-mir-a-ne-razmer.md)
+- [Рукописный хозяин живёт по правилам напечатанного проекта, а не по своим](ruchnoy-hozyain-zhivyot-po-pravilam-napechatannogo-proekta.md)
 - [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
 - [Правило «это не отказ» без срока — не осторожность, а поломка](pravilo-eto-ne-otkaz-obyazano-imet-srok.md)

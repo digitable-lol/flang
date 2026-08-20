@@ -122,9 +122,9 @@ taken by name, so the ruler does not move with the thing it measures.
 | Substantive — fall away against the stub | **9** |
 | Weakened — proved against the stub as well | 5 |
 | Free — body copied into the postcondition | 1 |
-| Not checked — no stub exists for that result type | 1 |
+| Not checked — no stub exists for that result type | 2 |
 
-Something is proved for 9 of the 20 functions. Something substantive, for 5.
+Something is proved for 13 of the 20 functions. Something substantive, for 9.
 
 ```
 node benchmarks/zamer-tseny/schyot-20.mjs

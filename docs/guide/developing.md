@@ -33,6 +33,13 @@ flang check flang/examples/leetcode/035-search-insert-position.flang --pretty
 # run the examples declared inside the functions
 flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
 
+# the same over a CORPUS: a directory or a glob instead of a file (binary only).
+# Every failing example and every file not taken is named; the passing ones are
+# a count. Exit code 0 — clean, 1 — something failed or a file was not taken,
+# 2 — bad invocation.
+flang test flang/stdlib/
+flang test 'flang/examples/**/*.flang' --json
+
 # call a function
 flang run flang/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'

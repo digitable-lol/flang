@@ -136,6 +136,11 @@ public final class Flang {
   /** Доступ к полю записи. */
   public static Value fieldGet(Ctx ctx, Value target, String name) {
     if (target.tag == Value.TAG_VARIANT) {
+      // Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+      Value inVariant = Value.lookup(target.fields, name);
+      if (inVariant != null) {
+        return inVariant;
+      }
       throw fail(
           FlangError.CODE_TYPE,
           "поле «" + name + "» нельзя взять у варианта «" + target.str + "» — нужен разбор");

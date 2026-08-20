@@ -255,8 +255,8 @@ test("totality.flang: каждая объявленная тотальной ф�
      Появилась новая обычная функция — либо она в списке, либо список врёт. */
   const помечено = свой.functions.filter((функция) => функция.total === true).length
   assert.equal(свой.functions.length, 329, "в «Долгах» записано 329 функций")
-  assert.equal(помечено, 257, "из них 257 тотальных")
-  assert.equal(свой.functions.length - помечено, 72, "и 72 обычные")
+  assert.equal(помечено, 261, "из них 261 тотальная")
+  assert.equal(свой.functions.length - помечено, 68, "и 68 обычных")
 })
 
 test("totality.flang: отбор по номеру стоит постоянное время, а не длину списка", (t) => {

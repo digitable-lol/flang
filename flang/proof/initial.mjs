@@ -55,7 +55,7 @@
  * части — сказано образцом. Подбирать не из чего.
  */
 
-import { одинаковы } from "../src/as-written.mjs"
+import { одинаковы } from "./kak-napisan.mjs"
 import { СПИСОК, нормализовать, образецВарианта, связанныеОбразцом } from "./reduce.mjs"
 import { ИМЕНА_НАТ, ТОЧНАЯ_СЕТКА } from "../src/types.mjs"
 

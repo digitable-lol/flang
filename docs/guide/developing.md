@@ -60,7 +60,7 @@ Tests:
 
 ```bash
 npm test              # one suite: flang/test/*.test.mjs, the whole language
-npm run test:backends # the eight code generators on their own
+./ярлык test:backends # the eight code generators on their own
 ```
 
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —

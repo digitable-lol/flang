@@ -63,7 +63,7 @@ for in groups: `{{корпус.строк|разрядами}}` gives {{корп
 The measurement is taken by one command:
 
 ```
-npm run numbers
+./ярлык numbers
 ```
 
 All the flang code in the repository is measured by `flang/scripts/proof-ledger.mjs`, the same instrument
@@ -73,7 +73,7 @@ attributes a module's functions to every importer, and the answer doubles.
 What is written down has no right to go stale:
 
 ```
-npm run numbers:check
+./ярлык numbers:check
 ```
 
 re-measures the tree and turns red on the first number that differs. So the
@@ -118,10 +118,10 @@ nothing is worse than no field.
 
 | Command | What it prevents |
 |---|---|
-| `npm run numbers:check` | leaving a number on the site that has drifted from the tree |
-| `npm run site:check` | a page without its English pair, a link to nowhere, a substitution with no value, a broken search, a code sample on the home page that no longer exists in the tree |
-| `npm run links:check` | breaking a link to a file of the tree by renaming it |
-| `npm run glossary:check` | the glossary page and the surface table drifting apart |
+| `./ярлык numbers:check` | leaving a number on the site that has drifted from the tree |
+| `./ярлык site:check` | a page without its English pair, a link to nowhere, a substitution with no value, a broken search, a code sample on the home page that no longer exists in the tree |
+| `./ярлык links:check` | breaking a link to a file of the tree by renaming it |
+| `./ярлык glossary:check` | the glossary page and the surface table drifting apart |
 
 ## Where things live
 

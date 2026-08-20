@@ -568,7 +568,7 @@ node benchmarks/zamer-skorosti/kompilyaciya.mjs --кругов 5
 node benchmarks/zamer-skorosti/faz.mjs flang/self/types.flang --повторов 7
 
 # 7. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
-npm run proof:ledger
+./ярлык proof:ledger
 ```
 
 Разовая проба одной задачи на трёх языках, с временем и памятью:

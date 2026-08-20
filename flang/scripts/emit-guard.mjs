@@ -42,7 +42,7 @@
  * временем `flang/test/emit-c.test.mjs` и `flang/test/emit-elixir.test.mjs` —
  * там на это есть настоящая программа.
  *
- * Запуск: `node flang/scripts/emit-guard.mjs` (или `npm run emit:check`).
+ * Запуск: `node flang/scripts/emit-guard.mjs` (или `./ярлык emit:check`).
  * Проверяется он сам — тестом `flang/test/emit-guard.test.mjs`.
  */
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs"

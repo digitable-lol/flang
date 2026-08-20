@@ -70,7 +70,7 @@
  * закрытый: он не пополняется молча, потому что каждая запись обязана назвать,
  * какая ИМЕННО узкая правда имеется в виду, и чем она проверена.
  *
- * Запуск: `node flang/scripts/claim-guard.mjs` (или `npm run claims:check`).
+ * Запуск: `node flang/scripts/claim-guard.mjs` (или `./ярлык claims:check`).
  * Проверяется он же тестом `flang/test/claim-guard.test.mjs`, включая
  * самопроверку на подложенных случаях: сторож, который не ловит, — это сторож,
  * выглядящий ровно как сторож, у которого всё хорошо.
@@ -95,7 +95,7 @@ const ПРОПУСК = new Set(["node_modules", ".git", ".claude", "dist", "outp
  * Журнал изменений — не проза, а ЗАПИСЬ истории, и правится он только историей.
  *
  * `CHANGELOG.md` и `docs/site/changelog.md` печатаются из тегов и заголовков
- * коммитов (`npm run changelog`, `npm run changelog:page`), а `AGENTS.md` прямо
+ * коммитов (`./ярлык changelog`, `./ярлык changelog:page`), а `AGENTS.md` прямо
  * запрещает править их руками: `flang/test/changelog.test.mjs` сверяет файлы с
  * историей и покраснеет на любой ручной правке.
  *

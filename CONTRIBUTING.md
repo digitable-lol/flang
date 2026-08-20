@@ -42,11 +42,11 @@ clone, `npm link` gives you `flang` and `flang-lsp`.
 ## Run the checks
 
 ```bash
-npm test
+./ярлык тесты
 ```
 
 One suite — `flang/test/*.test.mjs`, the whole language. It is long: plan for
-tens of minutes, and reach for `npm run test:backends` when you only touched a
+tens of minutes, and reach for `./ярлык test:backends` when you only touched a
 code generator.
 
 Before the run, the preflight prints what is actually going to be checked:
@@ -63,7 +63,7 @@ Before the run, the preflight prints what is actually going to be checked:
   Скрыто тестов:             33 — elixir 33
 ```
 
-Run it on its own with `npm run preflight`. This report is why the suite can be
+Run it on its own with `./ярлык preflight`. This report is why the suite can be
 believed at all. A backend test proves code generation exactly one way: a real
 compiler accepted the emitted code, and the result agreed with the interpreter.
 Eight toolchains rarely live on one machine, the tests of the missing ones skip,
@@ -88,12 +88,12 @@ That second check is dormant today and says so (`зависимостей у п�
 ставить нечего`); it stays because the day a dependency returns is exactly the
 day nobody remembers to add it back.
 
-If you do have a machine with all eight toolchains on it, `npm run test:remote`
+If you do have a machine with all eight toolchains on it, `./ярлык test:remote`
 will copy the tree there and run the suite over ssh with
 `FTS_REQUIRE_TOOLCHAINS=all`. You name the host yourself:
 
 ```bash
-FLANG_REMOTE=<your ssh alias> npm run test:remote
+FLANG_REMOTE=<your ssh alias> ./ярлык test:remote
 ```
 
 It is a convenience and nothing more — CI does not use it, and no change is
@@ -119,44 +119,88 @@ implementation printed the same bytes; that implementation is gone (commit
 `fe8e8a37`), and with it the cheap second opinion. Run `--check` before a merge
 that touches `flang/self/` or `flang/src/emit/c/`, not on every save.
 
-## Every script `package.json` declares, and who runs it
+## Every shortcut, and who runs it
 
-A script nobody ever names is dead weight that still looks like a promise, so
-every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
-`package.json` grows one this page is silent about.
+A shortcut is a name with a command line behind it. They used to live in
+`package.json`, which meant typing `npm run spec:check` to run a command that is
+`bootstrap/flang io fspec/guard.flang` — npm substituted a string and did
+nothing else, yet everyone who read the page concluded the language needs
+Node.js. It does not: one compiler, written in flang, built by one `make`.
+
+The list now lives in `ярлыки.flang`. It is a flang program, not a settings
+file: the names and the command lines are type-checked, the functions that take
+them apart carry examples, and the plan `Целость` walks the tree and goes red
+when a shortcut names a file that is not there. The entry point is `./ярлык` —
+a hundred lines of `sh` that asks the binary for the command line and runs it.
+It holds no list of its own.
+
+```bash
+./ярлык                     print every shortcut
+./ярлык spec:check          run one
+./ярлык word:occupancy это  anything after the name goes to the command
+./ярлык сборка              build the binary compiler (see below)
+```
+
+**The first shortcut cannot be written in flang, and that is stated rather than
+hidden.** Reading `ярлыки.flang` needs the binary, and the binary is what the
+first shortcut builds. Exactly one line resolves it: `./ярлык сборка` is known
+to the shell script itself, before it ever calls the binary. The same line also
+stands in `ярлыки.flang`, and the script compares the two on every run, so the
+duplicate cannot drift in silence.
+
+| shortcut | who runs it |
+| --- | --- |
+| `./ярлык сборка` | build the binary compiler from the C99 in `bootstrap/`; the one shortcut the shell script knows by itself |
+| `./ярлык ярлыки` | every shortcut names a file that exists in the tree |
+| `./ярлык тесты` | the whole suite, `flang/test/*.test.mjs`, preflight first |
+| `./ярлык test:backends` | the emit tests alone, when you do not want the full suite |
+| `./ярлык test:remote` | the same suite on a host of your choosing, over ssh |
+| `./ярлык preflight` | the toolchain report on its own |
+| `./ярлык bootstrap` · `./ярлык bootstrap:check` · `./ярлык stroki:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
+| `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык emit:check` · `./ярлык names:check` | the five prose guards below |
+| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through the shortcut |
+| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
+| `./ярлык site` · `./ярлык site:check` | build the documentation site and check its links; **Pages runs the file directly** |
+| `./ярлык numbers` · `./ярлык numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
+| `./ярлык glossary` · `./ярлык glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
+| `./ярлык surfaces:run` · `./ярлык surfaces:check` | measure the four writing surfaces, and check the page against the run |
+| `./ярлык changelog` · `./ярлык changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
+| `./ярлык changelog:page` · `./ярлык changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
+| `./ярлык releases:page` · `./ярлык releases:page:check` | print the releases page, both halves of it, and check it against the tags |
+| `./ярлык spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
+| `./ярлык comparison:check` | the guard that a comparison does not preprocess the witness the way it preprocesses the reference |
+| `./ярлык rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
+| `./ярлык memory:check` | every peak-memory number stated in prose, remeasured by a run |
+| `./ярлык tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |
+| `./ярлык occupied:check` | how many modules of the corpus would collide with names each target reserves |
+| `./ярлык poddelki:check` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
+| `./ярлык collisions:check` | name collisions inside the closure of imports |
+| `./ярлык proof:ledger` · `./ярлык proof:search` | the proof ledger over the corpus, and the search behind it |
+| `./ярлык word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
+
+Some of these still start with `node`, because the program they run is written
+in JavaScript and lives in the tree (`flang/scripts/*.mjs`, `docs/site/*.mjs`).
+Moving those programs to flang is separate work; a shortcut substitutes a string
+and does not decide what is in it.
+
+Four of these CI and Pages run as `node …` directly rather than through the
+shortcut. That is a place two spellings can drift apart, and it is written down
+here rather than discovered later.
+
+### What is left in `package.json`
+
+Three entries, and none of them is a shortcut a person types. They are npm's own
+lifecycle hooks, and they belong to the *delivery* path — `npm install -g
+@digitable-lol/flang` — which is untouched.
 
 | script | who runs it |
 | --- | --- |
-| `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag, on Node 20, 22 and 24 |
-| `npm run pretest` · `npm run pretest:backends` | npm lifecycle hooks — the preflight report, run automatically before the suite |
-| `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
 | `npm run postinstall` | npm lifecycle hook — builds the binary compiler from the C99 in `bootstrap/` and puts it in `dvoichnyy/flang`. This is what makes `npm install` deliver the *same* compiler `brew` delivers instead of a second implementation. Needs `cc` and `make`; without them the install still succeeds and the refusal names the fix. `FLANG_BEZ_SBORKI=1` skips the build |
-| `npm run preflight` | the toolchain report on its own |
-| `npm run test:backends` | the emit tests alone, when you do not want the full suite |
-| `npm run test:remote` | the same suite on a host of your choosing, over ssh |
-| `npm run bootstrap` · `npm run bootstrap:check` | reprint `bootstrap/` from the current sources, and compare it byte for byte |
-| `npm run claims:check` · `npm run counts:check` · `npm run codes:check` · `npm run emit:check` · `npm run names:check` | the five prose guards below |
-| `npm run license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
-| `npm run links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
-| `npm run site` · `npm run site:check` | build the documentation site and check its links; **Pages runs the file directly** |
-| `npm run numbers` · `npm run numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
-| `npm run glossary` · `npm run glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
-| `npm run surfaces:run` · `npm run surfaces:check` | measure the four writing surfaces, and check the page against the run |
-| `npm run changelog` · `npm run changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
-| `npm run changelog:page` · `npm run changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
-| `npm run releases:page` · `npm run releases:page:check` | print the releases page, both halves of it, and check it against the tags |
-| `npm run spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
-| `npm run comparison:check` | the guard that a comparison does not preprocess the witness the way it preprocesses the reference |
-| `npm run rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
-| `npm run memory:check` | every peak-memory number stated in prose, remeasured by a run |
-| `npm run tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |
-| `npm run occupied:check` | how many modules of the corpus would collide with names each target reserves |
-| `npm run proof:ledger` · `npm run proof:search` | the proof ledger over the corpus, and the search behind it |
-| `npm run word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
+| `npm test` | npm's own verb, and CI spells it that way on every tag, on Node 20, 22 and 24. It forwards to `./ярлык тесты`, so the command line exists in one place only |
+| `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
 
-Four of these CI and Pages run as `node …` directly rather than through npm.
-That is a place two spellings can drift apart, and it is written down here rather
-than discovered later.
+`flang/test/readme-layout.test.mjs` fails if `package.json` grows a script this
+page is silent about.
 
 ## Prose is checked, not trusted
 
@@ -165,11 +209,11 @@ runs goes stale silently. Five guards run them instead. Each is a script you can
 run on its own and a test that also proves the guard itself can go red:
 
 ```bash
-npm run claims:check   # "the language has no such form" — asked of the real lexer
-npm run counts:check   # every "N lines of `path`" and every ledger count, remeasured
-npm run codes:check    # every FLANG_* named in any .md must exist in the sources
-npm run emit:check     # "seven backends emit …, JavaScript emits one file", and the cost table
-npm run names:check    # naming rules, against the parse tree of the whole corpus
+./ярлык claims:check   # "the language has no such form" — asked of the real lexer
+./ярлык counts:check   # every "N lines of `path`" and every ledger count, remeasured
+./ярлык codes:check    # every FLANG_* named in any .md must exist in the sources
+./ярлык emit:check     # "seven backends emit …, JavaScript emits one file", and the cost table
+./ярлык names:check    # naming rules, against the parse tree of the whole corpus
 ```
 
 What this means when you write:

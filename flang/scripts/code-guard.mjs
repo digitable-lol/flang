@@ -54,7 +54,7 @@
  * (печать бросает именно тот код, который назван таблицей возможностей) и
  * `flang/test/failures.test.mjs`.
  *
- * Запуск: `node flang/scripts/code-guard.mjs` (или `npm run codes:check`).
+ * Запуск: `node flang/scripts/code-guard.mjs` (или `./ярлык codes:check`).
  * Проверяется он сам — тестом `flang/test/code-guard.test.mjs`.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs"

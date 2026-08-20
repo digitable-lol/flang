@@ -12,8 +12,8 @@
 # Лечится не уговорами, а местом прогона: на хосте, где стоят все восемь,
 # пропусков нет по построению, и там же прогон банально быстрее — ядер больше.
 #
-#   scripts/test-remote.sh                  весь набор (npm test)
-#   scripts/test-remote.sh test:backends    любой скрипт из package.json
+#   scripts/test-remote.sh                  весь набор (ярлык «тесты»)
+#   scripts/test-remote.sh test:backends    любой ярлык из ярлыки.flang
 #   scripts/test-remote.sh --shell "cmd"    произвольная команда в копии
 #   scripts/test-remote.sh --sync           только синхронизировать
 #   scripts/test-remote.sh --info           что за хост и что на нём стоит
@@ -103,17 +103,17 @@ case "${1:-}" in
     ;;
 esac
 
-TARGET="${1:-test}"
+TARGET="${1:-тесты}"
 
 show_info
 sync_tree
 install_deps
 
-say "Прогон: npm run $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
+say "Прогон: ./ярлык $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
 info "${DIM}отсутствие любого тулчейна на хосте — провал, а не пропуск${RST}"
 START=$(date +%s)
 set +e
-remote_run "FTS_REQUIRE_TOOLCHAINS='$REQUIRE' npm run --silent $TARGET"
+remote_run "FTS_REQUIRE_TOOLCHAINS='$REQUIRE' ./ярлык $TARGET"
 STATUS=$?
 set -e
 ELAPSED=$(( $(date +%s) - START ))

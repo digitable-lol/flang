@@ -51,7 +51,7 @@
  *   node flang/scripts/tempdir-guard.mjs                    — прогон бэкендов
  *   node flang/scripts/tempdir-guard.mjs -- <команда...>     — своя команда
  *
- * Или `npm run tmp:check`. Проверяется он сам — тестом
+ * Или `./ярлык tmp:check`. Проверяется он сам — тестом
  * `flang/test/tempdir-guard.test.mjs`.
  */
 import { spawnSync } from "node:child_process"

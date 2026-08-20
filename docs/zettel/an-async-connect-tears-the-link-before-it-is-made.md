@@ -48,4 +48,4 @@ const сокет = createConnection({ host, port })
 верно на то, что ему сказали.
 
 Связано: [[progon-raboty-i-sverka-celey-lovyat-raznoe]],
-[[the-host-price-has-two-axes-not-one]]
+[[the-host-price-has-three-axes-not-one]]

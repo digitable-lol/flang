@@ -51,7 +51,7 @@ Java (`java.util.Map` после чужой библиотеки) — да, Rust
 из пяти — 651 содержательная строка против 638 у C#. Промах не в признаке, а в
 том, что ось одна: вторую («можно ли менять состояние хозяина на месте») платит
 `elixir`, у которого её нет вовсе. Разложение и таблица пяти хозяев —
-[[the-host-price-has-two-axes-not-one]].
+[[the-host-price-has-three-axes-not-one]].
 
 Вторая поправка, к последнему абзацу про Rust и C: «JSON придётся писать самому»
 опирается на посылку, которой нет. Разбор JSON компилятор ПЕЧАТАЕТ рядом с
@@ -60,7 +60,7 @@ Java (`java.util.Map` после чужой библиотеки) — да, Rust
 [[printed-runner-already-carries-a-json-reader]].
 
 Связано: [[planirovshchik-uzla-perenosim-219-resheniy-iz-224-strok]],
-[[the-host-price-has-two-axes-not-one]],
+[[the-host-price-has-three-axes-not-one]],
 [[printed-runner-already-carries-a-json-reader]],
 [[reshenie-o-mire-perenosimo-a-mir-net]],
 [[ruchnoy-hozyain-zhivyot-po-pravilam-napechatannogo-proekta]]

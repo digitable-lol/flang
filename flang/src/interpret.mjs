@@ -1067,6 +1067,15 @@ function stepPost(machine, frame) {
 function stepField(machine, frame) {
   const target = machine.value
   if (isVariant(target)) {
+    /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант тут ровно один, знает не
+       вычислитель, а проверка типов (`types.mjs`, «единственныйВариантСуммы»):
+       она пропускает `значение.поле` только у такой суммы, и потому сюда
+       приезжает значение, у которого поле есть. Проверка на месте всё равно
+       стоит — вычислитель зовут и мимо типизатора, — и отказ у неё прежний. */
+    if (Object.hasOwn(target.fields ?? {}, frame.field)) {
+      machine.value = target.fields[frame.field]
+      return
+    }
     throw flangError(
       "FLANG_TYPE",
       `поле «${frame.field}» нельзя взять у варианта «${target.variant}» — нужен разбор`,

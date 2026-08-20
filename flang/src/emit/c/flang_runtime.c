@@ -2220,6 +2220,13 @@ bool fl_equal(fl_value left, fl_value right) {
 fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error) {
   size_t index = 0;
   if (target.tag == FL_VARIANT) {
+    /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более. */
+    for (index = 0; index < target.as.variant->count; index += 1) {
+      if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+        *out = target.as.variant->fields[index].value;
+        return FL_OK;
+      }
+    }
     return fl_fail(ctx, error, FL_CODE_TYPE, "поле «%s» нельзя взять у варианта «%s» — нужен разбор", name,
                    target.as.variant->name);
   }

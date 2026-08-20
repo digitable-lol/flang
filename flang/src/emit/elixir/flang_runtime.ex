@@ -805,8 +805,12 @@ defmodule Flang.Rt do
   # ───────────────────────────── операции языка ─────────────────────────────
 
   @doc "Доступ к полю записи."
-  def field_get({:var, name, _}, field) do
-    raise fail(@code_type, "поле «" <> field <> "» нельзя взять у варианта «" <> name <> "» — нужен разбор")
+  # Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+  def field_get({:var, name, fields}, field) do
+    case lookup(fields, field) do
+      {:ok, value} -> value
+      :error -> raise fail(@code_type, "поле «" <> field <> "» нельзя взять у варианта «" <> name <> "» — нужен разбор")
+    end
   end
 
   def field_get({:rec, fields}, field) do

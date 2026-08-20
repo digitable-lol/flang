@@ -177,8 +177,8 @@ node docs/site/glossary.mjs --check
 
 | Файл | Байт | Строк |
 |---|---:|---:|
-| `bootstrap/compiler_flang.c` | 11 420 741 | 219 680 |
-| `bootstrap/compiler_flang.h` | 2 335 182 | 44 249 |
+| `bootstrap/compiler_flang.c` | 11 420 741 | 235 061 |
+| `bootstrap/compiler_flang.h` | 2 335 182 | 47 391 |
 | остальные шесть | 691 900 | 15 307 |
 | **итого** | **14 447 823** | **279 236** |
 

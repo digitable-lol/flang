@@ -67,6 +67,8 @@
 - [Правый край сравнения сам по себе не закрыл ничего: закрыла ЛЕВАЯ сторона, прочитанная как мера списка](right-edge-alone-closes-nothing.md)
 - [Узкое место переехало четвёртый раз: теперь мешает индукция, которую негде объявить](what-blocks-the-kernel-now-is-induction-without-a-theorem.md)
 - [Автоматическая индукция по `разбор`у закрыла 9 утверждений, а из двенадцати заказанных — 5](auto-induction-on-match-closes-nine.md)
+- [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
+- [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
 - [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 - [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](pole-ne-minus-nol-zakrylo-dva-mesta-a-ne-odinnadcat.md) — с поправкой: пара на flang сделана, и правило про нижнюю границу видно через вычитание
@@ -297,6 +299,7 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ложны](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 - [Один нулевой байт внутри исходника прячет весь файл от `grep` — и счётчик по дереву молча теряет 162 примера](odin-nul-v-ishodnike-pryachet-fajl-ot-grep.md)
 - [Поле встроенного словаря, названное ключевым словом, ставится и не читается](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)
 - [Постусловие «обращение не меняет длины строки» ложно, и ломает его одинокий суррогат](obrashchenie-stroki-lozhno-na-odinokom-surrogate.md)

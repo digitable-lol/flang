@@ -81,6 +81,12 @@
 - [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное](nat-snimaet-storozha-tolko-esli-vyzyvayushchiy-uzhe-daet-naturalnoe.md)
 - [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
 - [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)
+- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
+- [Даровое утверждение узнаётся подменой тела заглушкой: 17 из 32 в двух модулях библиотеки](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
+- [Постусловие считается при каждом вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
+- [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
+- [Доказанное постусловие в напечатанный код больше не едет: цена утверждений на сортировке упала с 3,23× до 2,72×](dokazannoe-postuslovie-ne-pechataetsya.md)
+- [Петля постусловия развязана преобразованием программы, а не флажком при работе: круг «туда и обратно» стал выразим](kontrakt-ne-proveryaetsya-vnutri-kontrakta.md)
 
 ## Теория категорий
 
@@ -340,7 +346,6 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
-- [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)
@@ -383,6 +388,8 @@
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
 - [Двоичный хозяин обрывает содержимое на первом нулевом октете, и драйвер PostgreSQL по проводу не идёт](dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
+- [Октетная труба превращает счёт рамки из «ширины знака в UTF-8» в счёт элементов, и весь драйвер PostgreSQL стоит на двух строках](an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count.md)
+- [Слияние, взявшее файл «целиком у них», роняет чужую работу молча — и ADR остаётся стоять с пометкой «реализовано»](a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)
 - [Свой генератор машинного кода — примерно месяц, и на доказуемость не влияет](our-own-machine-code-generator.md)

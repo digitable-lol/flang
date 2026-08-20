@@ -126,6 +126,10 @@
 - [Распределённость делится на мир и провод в отношении 459 к 119, и печатать компилятор умеет только провод](raspredelyonnost-delitsya-na-mir-i-provod.md)
 - [Решение о мире переносимо, даже когда сам мир — нет: у слоя связи узла это 554 строки против 42](reshenie-o-mire-perenosimo-a-mir-net.md)
 - [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов](uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata.md)
+- [Планировщик узла переносим: из 224 строк мира в нём пять, а решений 219 — и они печатаются во все восемь целей](planirovshchik-uzla-perenosim-219-resheniy-iz-224-strok.md)
+- [Груз письма едет билетом, а не значением, — и этим отсутствие полиморфизма перестаёт мешать](gruz-pisma-edet-biletom-a-ne-znacheniem.md)
+- [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-v-stdlib-snizhaet-mir-a-ne-razmer.md)
+- [Рукописный хозяин живёт по правилам напечатанного проекта, а не по своим](ruchnoy-hozyain-zhivyot-po-pravilam-napechatannogo-proekta.md)
 - [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
 - [Правило «это не отказ» без срока — не осторожность, а поломка](pravilo-eto-ne-otkaz-obyazano-imet-srok.md)
@@ -136,6 +140,8 @@
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
 
 ## Самораскрутка и метод проверки
+
+- [Прогон работы и сверка целей ловят разное, и ни один из двух не заменяет другого](progon-raboty-i-sverka-celey-lovyat-raznoe.md)
 
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 
@@ -268,6 +274,9 @@
 - [Проверка в тесте, читавшая `.flang` своим разбором, оживает прогоном двоичного — но не всякая, и граница проходит по лексике и по обязательствам](proverki-v-testah-zhivut-progonom-dvoichnogo-a-ne-vtorym-razborom.md)
 
 ## Найденные ошибки
+
+- [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](strochnoe-imya-varianta-v-golom-sluchae-eto-svyazyvanie-imeni.md)
+- [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](nulyarnuyu-funkciyu-nelzya-pozvat-cherez-vvoz.md)
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
 - [Рукописная копия обнаруживает себя столкновением имён в день, когда библиотека дорастает до неё](rukopisnaya-kopiya-obnaruzhivaet-sebya-stolknoveniem-imyon.md)
 - [`http.flang` считает Content-Length знаками в обе стороны, и потому чинить одну сторону нельзя](content-length-schitaetsya-znakami-v-obe-storony.md)

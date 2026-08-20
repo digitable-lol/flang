@@ -24,6 +24,9 @@
  * c, csharp, elixir, go, java, js, python, rust.
  */
 import assert from "node:assert/strict"
+import { existsSync } from "node:fs"
+import { homedir } from "node:os"
+import { delimiter, join } from "node:path"
 
 const EVERYTHING = new Set(["1", "all", "true", "yes"])
 
@@ -85,4 +88,33 @@ export function missingToolchain(t, id, reason) {
     )
   }
   return t.skip(reason)
+}
+
+/**
+ * Каталоги, где имеет смысл искать компилятор помимо `PATH`.
+ *
+ * Жило это в `flang/src/toolchain.mjs` и уехало 20 августа вместе со всей
+ * реализацией на JavaScript. Поиск тулчейна к компилятору отношения не имеет —
+ * это оснастка прогона, — и место ему здесь, рядом с решением о судьбе
+ * отсутствующего тулчейна: два куска одного вопроса не должны лежать врозь.
+ */
+export function extraBinDirectories() {
+  const названные = String(process.env.FTS_TOOLCHAIN_PATH ?? "").split(delimiter).filter(Boolean)
+  const дом = homedir()
+  const вДоме = дом ? [join(дом, ".local", "bin"), join(дом, "go", "bin")] : []
+  return [...названные, ...вДоме, "/usr/local/go/bin", "/usr/lib/jvm/default/bin", "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
+}
+
+/** Абсолютный путь к исполняемому файлу или `null`, если его нет в системе. */
+export function findExecutable(name, extra = []) {
+  for (const каталог of String(process.env.PATH ?? "").split(delimiter)) {
+    if (!каталог) continue
+    const кандидат = join(каталог, name)
+    if (existsSync(кандидат)) return кандидат
+  }
+  for (const каталог of [...extra, ...extraBinDirectories()]) {
+    const кандидат = join(каталог, name)
+    if (existsSync(кандидат)) return кандидат
+  }
+  return null
 }

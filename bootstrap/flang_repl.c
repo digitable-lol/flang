@@ -267,7 +267,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c|go    напечатать программу в C99 или в Go\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -282,8 +282,8 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 10 команд полного инструментария. Чего у бинарника нет — остальные\n"
-    "семь целей печати и законы на сетке: им нужен Node.\n"
+    "Здесь все 10 команд полного инструментария. Чего у бинарника нет — шесть целей\n"
+    "печати из восьми и законы на сетке: им нужен Node.\n"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -334,23 +334,30 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|go [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу в C99 или в Go без Node; рантайм цели читается с диска\n"
+    "(--runtime, $FLANG_RUNTIME_DIR, ../flang/src/emit/<цель>, ../share/flang/<цель>).\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c        C99: заголовок, модуль, рантайм, прогонщик, Makefile\n"
+    "  --target go       Go: go.mod, пакет рантайма, пакет программы, прогонщик\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
+    "  --runtime каталог откуда читать рантайм цели\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
+    "ЧЕМ ЭТА ПЕЧАТЬ ОТЛИЧАЕТСЯ ОТ ПЕЧАТИ ПОЛНОГО ИНСТРУМЕНТАРИЯ, по целям:\n"
+    "  c   недостижимое НЕ отбрасывается, доказанное не метится («markProven»);\n"
+    "      на компиляторе это 6 файлов из 7 байт в байт;\n"
+    "  go  недостижимое отбрасывается, как у свидетеля; пуста ГРАНИЦА ВХОДА —\n"
+    "      таблицу объявленных типов строит слой типов свидетеля, которого на\n"
+    "      flang нет ни строки. Напечатанное собирается и работает, но аргументы\n"
+    "      прогонщика объявленным типам не сверяются, и об этом сказано числом.\n"
+    "\n"
+    "Остальные шесть целей (js, rust, python, java, csharp, elixir) написаны на\n"
     "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
 static const char HELP_AST[] =
@@ -5835,6 +5842,28 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/*
+ * У Go рантайм — ДВА файла и оба исходники Go: заголовков в языке нет, а
+ * оболочки (`--repl`) у этой цели нет вовсе. Читаются они из каталога цели
+ * (`flang/src/emit/go`), а не из каталога C: там лежит другой язык.
+ */
+#define EMIT_GO_RUNTIME "flang_runtime.go"
+#define EMIT_GO_RUNNER "flang_cli.go"
+
+/** Цели печати, втащенные в этот бинарник. Порядок — как в справке. */
+#define EMIT_TARGET_C 0
+#define EMIT_TARGET_GO 1
+
+/** Имя цели по номеру — для каталога рантайма и для отказов. */
+static const char *emit_target_word(int target) {
+  return target == EMIT_TARGET_GO ? "go" : "c";
+}
+
+/** Файл, по которому узнаётся каталог ИСХОДНИКОВ рантайма этой цели. */
+static const char *emit_probe_name(int target) {
+  return target == EMIT_TARGET_GO ? EMIT_GO_RUNTIME : EMIT_RUNTIME_HEADER;
+}
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -5844,8 +5873,8 @@ static int run_file(int argc, char **argv) {
  * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
  * НЕ пробуется — в отличие от поиска заголовков для оболочки.
  */
-static bool emit_runtime_here(const char *directory) {
-  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+static bool emit_runtime_here(const char *directory, int target) {
+  char *probe = repl_join(directory, emit_probe_name(target));
   size_t bytes = 0;
   char *text = repl_read_file(probe, &bytes);
   bool ok = false;
@@ -5859,16 +5888,19 @@ static bool emit_runtime_here(const char *directory) {
   return ok;
 }
 
-static char *emit_runtime_dir(const char *self_dir, const char *given) {
-  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+static char *emit_runtime_dir(const char *self_dir, const char *given, int target) {
+  /* Каталог зависит от ЦЕЛИ: у каждой свой язык рантайма и свои имена файлов.
+     Собирается он здесь, а не таблицей на восемь строк, потому что цель —
+     последний сегмент пути и только он. */
+  static const char *const places[2] = {"flang/src/emit", "share/flang"};
   size_t index = 0;
   if (given != NULL && given[0] != '\0') {
-    return emit_runtime_here(given) ? repl_say(given) : NULL;
+    return emit_runtime_here(given, target) ? repl_say(given) : NULL;
   }
   {
     const char *set = getenv("FLANG_RUNTIME_DIR");
     if (set != NULL && set[0] != '\0') {
-      return emit_runtime_here(set) ? repl_say(set) : NULL;
+      return emit_runtime_here(set, target) ? repl_say(set) : NULL;
     }
   }
   if (self_dir == NULL) {
@@ -5876,9 +5908,11 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
   }
   for (index = 0; index < 2; index += 1) {
     char *parent = repl_dirname(self_dir);
-    char *directory = repl_join(parent, places[index]);
+    char *where = repl_join(parent, places[index]);
+    char *directory = repl_join(where, emit_target_word(target));
     free(parent);
-    if (emit_runtime_here(directory)) {
+    free(where);
+    if (emit_runtime_here(directory, target)) {
       return directory;
     }
     free(directory);
@@ -6067,6 +6101,20 @@ static bool emit_entry_fits(fl_value program, const fl_entry_table *table) {
   return seen == table->param_count && seen > 0;
 }
 
+/*
+ * Каталоги ПОД `--out` заводит печать, а не человек, и это не отмена прежнего
+ * решения, а его граница. Прежде здесь стояло «каталог человек делает `mkdir`
+ * сам»: у цели `c` все семь файлов лежат плоско, и назвать каталог человек мог.
+ * У Go путь файла — часть ЯЗЫКА: `flangrt/flang_runtime.go`, `flang/имя.go`,
+ * `cli/main.go` суть имена пакетов, человек их не выбирал и знать не обязан.
+ * Заводится ровно то, что ниже `--out`; сам `--out` по-прежнему делает человек,
+ * и его отсутствие отказ назовёт путём.
+ *
+ * Тело — в POSIX-части файла ниже: `mkdir` живёт в <sys/stat.h>, а он
+ * подключается там же, где остальной POSIX (каталоги, процессы, сокеты).
+ */
+static bool repl_make_dirs(const char *base, const char *relative);
+
 /** Запись одного напечатанного файла на диск; путь уже разрешён. */
 static bool emit_write(const char *full, const char *text, size_t bytes) {
   FILE *stream = fopen(full, "wb");
@@ -6110,6 +6158,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   const char *steps = "1000000";
   const char *depth = "10000";
   const char *own = "";
+  int цель = EMIT_TARGET_C;
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -6179,15 +6228,26 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике две цели — «c» и «go»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  if (strcmp(target, "c") == 0) {
+    цель = EMIT_TARGET_C;
+  } else if (strcmp(target, "go") == 0) {
+    цель = EMIT_TARGET_GO;
+  } else {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «go»; остальные\n"
+            "шесть (js, rust, python, java, csharp, elixir) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
+    return 2;
+  }
+  /* Оболочка — это `flang_repl.c`, то есть C и только C. Молча проглотить ключ
+     значило бы напечатать Go, в котором человеческого входа нет, и сказать об
+     этом нечем: файла с ним у цели не существует. */
+  if (shell && цель != EMIT_TARGET_C) {
+    fprintf(stderr, "flang emit: «--repl» есть только у цели «c»: человеческий вход написан на C\n");
     return 2;
   }
   if (out == NULL && one == NULL) {
@@ -6198,13 +6258,14 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = emit_runtime_dir(self_dir, given_runtime, цель);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
-          stderr);
+    fprintf(stderr,
+            "flang emit: не найдены ИСХОДНИКИ рантайма цели «%s» (%s без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/%s, ../share/flang/%s.\n",
+            emit_target_word(цель), emit_probe_name(цель), emit_target_word(цель), emit_target_word(цель));
     return 2;
   }
 
@@ -6219,22 +6280,32 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
 
+  /* Файлов у цели столько, сколько она просит, и просит она их ИМЕНАМИ: у C
+     четыре (заголовок, рантайм, прогонщик, оболочка), у Go два — заголовков в
+     языке нет, оболочки у цели нет вовсе. Недостающие остаются пустой строкой:
+     печать в Go эти поля не читает, а пустой указатель уронил бы `repl_value_text`. */
   {
-    char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
-    runtime_header = repl_read_file(where, &runtime_header_bytes);
-    free(where);
-    where = repl_join(runtime, EMIT_RUNTIME_SOURCE);
+    char *where = repl_join(runtime, цель == EMIT_TARGET_GO ? EMIT_GO_RUNTIME : EMIT_RUNTIME_SOURCE);
     runtime_source = repl_read_file(where, &runtime_source_bytes);
     free(where);
-    where = repl_join(runtime, EMIT_RUNNER_SOURCE);
+    where = repl_join(runtime, цель == EMIT_TARGET_GO ? EMIT_GO_RUNNER : EMIT_RUNNER_SOURCE);
     runner_source = repl_read_file(where, &runner_source_bytes);
     free(where);
-    where = repl_join(runtime, EMIT_SHELL_SOURCE);
-    shell_source = repl_read_file(where, &shell_source_bytes);
-    free(where);
+    if (цель == EMIT_TARGET_C) {
+      where = repl_join(runtime, EMIT_RUNTIME_HEADER);
+      runtime_header = repl_read_file(where, &runtime_header_bytes);
+      free(where);
+      where = repl_join(runtime, EMIT_SHELL_SOURCE);
+      shell_source = repl_read_file(where, &shell_source_bytes);
+      free(where);
+    } else {
+      runtime_header = repl_say("");
+      shell_source = repl_say("");
+    }
   }
   if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма цели «%s»\n", runtime,
+            emit_target_word(цель));
     code = 2;
   }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
@@ -6295,9 +6366,22 @@ static int emit_file(int argc, char **argv, const char *self) {
         values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
         values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
         values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
-        args[0] = program;
+        /* НАСТРОЙКИ ОДНИ НА ОБЕ ЦЕЛИ, а раскладывает их по целевым записям сам
+           flang («Настройки Go из настроек»): восемь целей отличаются двумя-тремя
+           полями, и собирать здесь восемь разных записей значило бы переписать на
+           C то, что уже написано на языке.
+
+           А ВОТ ПЕРВЫЙ ДОВОД У ЦЕЛЕЙ РАЗНЫЙ, и это не мелочь вызова. Печать в C
+           получает ПРОГРАММУ: точка входа оболочки печатает готовую сессию, у
+           которой входного файла нет вовсе, и отбрасывать в ней нечего. Печать в
+           Go получает СВЯЗАННОЕ: отбрасывание недостижимого спрашивает у
+           связывания, какие функции были СВОИ у входного файла, — без этого
+           `использует «Списки»` тащило бы в вывод весь ввезённый модуль. Свидетель
+           (`flang/bin/flang.mjs`) отбрасывает так же и там же. */
+        args[0] = цель == EMIT_TARGET_GO ? linked : program;
         args[1] = repl_value_record(names, values, 15);
-        if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
+        if (repl_call(цель == EMIT_TARGET_GO ? "Напечатать связанное в Go" : "Напечатать связанное", args, 2,
+                      &result) != FL_OK) {
           code = 1;
         } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
           char *say = val_copy(failure);
@@ -6340,14 +6424,13 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       {
         char *destination = repl_join(out, name);
-        /* Каталог НЕ заводится, и это решение, а не пропуск. `mkdir` живёт в
-           <sys/stat.h>, а у этого файла есть обещание: оболочке хватает
-           стандартной библиотеки C плюс signal.h и unistd.h, и стережёт его
-           сторож в flang/test/emit-c.test.mjs («оболочка печатается только по
-           просьбе, и её нужды названы поимённо»). Один заголовок ради одного
-           mkdir — плохая цена: каталог человек делает `mkdir` сам, а если его
-           нет, отказ ниже назовёт путь. */
-        if (!emit_write(destination, body, body_bytes)) {
+        /* Каталоги ниже `--out` — по пути файла: у Go это имена пакетов, и
+           напечатать их плоско значило бы напечатать не Go. Сам `--out`
+           остаётся за человеком: не завёл — отказ ниже назовёт путь. */
+        if (!repl_make_dirs(out, name)) {
+          fprintf(stderr, "flang emit: не заведён каталог под %s\n", destination);
+          code = 1;
+        } else if (!emit_write(destination, body, body_bytes)) {
           code = 1;
         }
         written += body_bytes;
@@ -6383,6 +6466,9 @@ static int emit_file(int argc, char **argv, const char *self) {
                 "программе не подходит. Напечатанное соберётся и заработает, но аргументы\n"
                 "прогонщика объявленным типам сверяться не будут.\n",
                 (unsigned long)table->param_count);
+      }
+      if (цель == EMIT_TARGET_GO) {
+        fputs("собрать: cd <каталог> && go build ./... — или make\n", stderr);
       }
     }
   }
@@ -7141,6 +7227,34 @@ static int facts_file(int argc, char **argv) {
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
+
+/*
+ * Каталоги под путём напечатанного файла — по одному на сегмент.
+ *
+ * Существующий каталог не ошибка (EEXIST), и это главное: печать зовётся по
+ * файлу, а каталог `flangrt` у второго файла уже есть. Прав 0777 хватает —
+ * umask человека их и урежет, как у всякой другой программы.
+ */
+static bool repl_make_dirs(const char *base, const char *relative) {
+  size_t index = 0;
+  for (index = 0; relative[index] != '\0'; index += 1) {
+    if (relative[index] != '/' || index == 0) {
+      continue;
+    }
+    {
+      char *часть = repl_dup(relative, index);
+      char *куда = repl_join(base, часть);
+      int ответ = mkdir(куда, 0777);
+      bool ok = ответ == 0 || errno == EEXIST;
+      free(часть);
+      free(куда);
+      if (!ok) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 #define IO_MAX_PORTS 8
 #define IO_MAX_LINKS 64

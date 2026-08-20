@@ -461,6 +461,22 @@ fl_status compiler_flang_sozdat_svyazyvanie_parametrov(fl_ctx *ctx, fl_value kon
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_imenovatel(fl_ctx *ctx, fl_value tablica, fl_value sostoyanie, fl_value *out, fl_error *error);
 
+/* Запись FTS «Просьба роли»: «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_prosba_roli(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Занятое имя»: «идентификатор», «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zanyatoe_imya(fl_ctx *ctx, fl_value identifikator, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именователь Go»: «занятые», «состояние». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovatel_go(fl_ctx *ctx, fl_value zanyatye, fl_value sostoyanie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Go»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_go(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -1265,6 +1281,11 @@ fl_status compiler_flang_variant_net_funkcii(fl_ctx *ctx, fl_value *out, fl_erro
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_est_chislo(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть занятое»: «Есть занятое» | «Нет занятого». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_zanyatoe(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_zanyatogo(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -15892,6 +15913,2253 @@ fl_status compiler_flang_fayl_obolochki(fl_ctx *ctx, fl_value est_modul, fl_valu
  * @return значение: строка
  */
 fl_status compiler_flang_blok_nastroek(fl_ctx *ctx, fl_value nastroyki, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таб».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tab(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Модуль Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_modul_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пакет рантайма Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_paket_rantayma_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пакет программы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_paket_programmy_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_go(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_go(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Файл»
+ * @return значение: «Файл»
+ */
+fl_status compiler_flang_snyat_dvunapravlennye(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные в файлах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Файл»
+ * @return значение: список: «Файл»
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_v_faylah(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это минус ноль».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_minus_nol(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_go(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_go(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Нужна математика».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение
+ */
+fl_status compiler_flang_nuzhna_matematika(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заглавить».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zaglavit(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строчить».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_strochit(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Паскаль».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_paskal(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Верблюд».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_verblyud(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасный идентификатор».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnyy_identifikator(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печатает бэкенд Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_pechataet_bekend_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_go(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор имён»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор имён»
+ */
+fl_status compiler_flang_shag_unikalnyh_go(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_go(fl_ctx *ctx, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только цифры».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_cifry(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на временное».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_vremennoe(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово роли».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_roli(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ярлык роли».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_yarlyk_roli(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификатор роли».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_identifikator_roli(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из занятых».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя»
+ * @return значение: «Может быть занятое»
+ */
+fl_status compiler_flang_pervoe_iz_zanyatyh(fl_ctx *ctx, fl_value zanyatye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти занятое».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Может быть занятое»
+ */
+fl_status compiler_flang_nayti_zanyatoe(fl_ctx *ctx, fl_value zanyatye, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить занятое».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnee — «прежнее»: «Занятое имя»
+ * @param novoe — «новое»: «Занятое имя»
+ * @return значение: «Занятое имя»
+ */
+fl_status compiler_flang_obnovit_zanyatoe(fl_ctx *ctx, fl_value prezhnee, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить занятое».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое имя»
+ * @param novoe — «новое»: «Занятое имя»
+ * @return значение: список: «Занятое имя»
+ */
+fl_status compiler_flang_polozhit_zanyatoe(fl_ctx *ctx, fl_value zanyatye, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занятые сначала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Занятое имя»
+ */
+fl_status compiler_flang_zanyatye_snachala(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Владелец имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnee — «прежнее»: «Занятое имя»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vladelec_imeni(fl_ctx *ctx, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка столкновения Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param prosba — «просьба»: «Просьба роли»
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Занятое имя»
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_oshibka_stolknoveniya_go(fl_ctx *ctx, fl_value sostoyanie, fl_value prosba, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить прежнее занятое».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param prosba — «просьба»: «Просьба роли»
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть занятое»
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_proverit_prezhnee_zanyatoe(fl_ctx *ctx, fl_value sostoyanie, fl_value prosba, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять имя Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovatel — «именователь»: «Именователь Go»
+ * @param prosba — «просьба»: «Просьба роли»
+ * @return значение: «Именователь Go»
+ */
+fl_status compiler_flang_zanyat_imya_go(fl_ctx *ctx, fl_value imenovatel, fl_value prosba, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить просьбы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Просьба роли»
+ * @param dobavka — «добавка»: список: «Просьба роли»
+ * @return значение: список: «Просьба роли»
+ */
+fl_status compiler_flang_slit_prosby_go(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просьбы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее»
+ * @return значение: список: «Просьба роли»
+ */
+fl_status compiler_flang_prosby_go(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить столкновения Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_proverit_stolknoveniya_go(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица фабрик Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_fabrik_go(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица вариантов Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_variantov_go(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица функций Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_funkciy_go(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица шагов Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ciklicheskie — «циклические»: список: «Рёбра»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_shagov_go(fl_ctx *ctx, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Именованные идентификаторы»
+ */
+fl_status compiler_flang_identifikatory_parametrov_go(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Общее»
+ */
+fl_status compiler_flang_sobrat_obschee_go(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Свежее»
+ */
+fl_status compiler_flang_vremennoe_go(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибочное Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Свежее»
+ */
+fl_status compiler_flang_oshibochnoe_go(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Желаемое имя Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zhelaemoe_imya_go(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее»
+ */
+fl_status compiler_flang_svezhee_imya_go(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_go(fl_ctx *ctx, fl_value sostoyanie, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_sinonimy_form_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_go(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_form_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка»
+ */
+fl_status compiler_flang_arnosti_form_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_proverit_arnost_formy_go(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя в Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст»
+ */
+fl_status compiler_flang_svyazat_imya_v_go(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасить неиспользованные Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vyvod — «вывод»: строка
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_gasit_neispolzovannye_go(fl_ctx *ctx, fl_value vyvod, fl_value identifikatory, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызов с ошибкой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vyrazhenie — «выражение»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_vyzov_s_oshibkoy(fl_ctx *ctx, fl_value vyrazhenie, fl_value vyvod, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка ошибки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverka_oshibki(fl_ctx *ctx, fl_value oshibka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать признака Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_priznaka_go(fl_ctx *ctx, fl_value znachenie, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать числа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_chisla_go(fl_ctx *ctx, fl_value znachenie, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать текста Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_teksta_go(fl_ctx *ctx, fl_value znachenie, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_skalyara_go(fl_ctx *ctx, fl_value skalyar, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это закодированный вариант».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zakodirovannyy_variant(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Два поля варианта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_dva_polya_varianta(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вариант и поля на месте».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_variant_i_polya_na_meste(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_literala_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала записи».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param polya — «поля»: список: «Поле значения»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_literala_zapisi(fl_ctx *ctx, fl_value uzel, fl_value polya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать элемента Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_elementa_go(fl_ctx *ctx, fl_value uzel, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг списка Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка»
+ * @param uzel — «узел»: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @param massiv — «массив»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_shag_spiska_go(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value literal, fl_value kontekst, fl_value otstup, fl_value massiv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_spiska_go(fl_ctx *ctx, fl_value elementy, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать непустого списка Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_nepustogo_spiska_go(fl_ctx *ctx, fl_value elementy, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поля Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка»
+ * @param pole — «поле»: «Поле значения»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_shag_polya_go(fl_ctx *ctx, fl_value akk, fl_value pole, fl_value literal, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param literal — «литерал»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_poley_go(fl_ctx *ctx, fl_value polya, fl_value literal, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения поля Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param massiv — «массив»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_polya_go(fl_ctx *ctx, fl_value akk, fl_value klyuch, fl_value znacheniya, fl_value massiv, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значений полей Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_znacheniy_poley_go(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать непустых полей Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_nepustyh_poley_go(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения в Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_znacheniya_v_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_prosto_znachenie_go(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_neizvestnyy_vid_go(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_peremennoy_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_pust_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать признака в Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param pomoschnik — «помощник»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_priznaka_v_go(fl_ctx *ctx, fl_value uzel, fl_value pomoschnik, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_polozhit_v_go(fl_ctx *ctx, fl_value uzel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_esli_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг аргумента Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_shag_argumenta_go(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать аргументов Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_pechat_argumentov_go(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список с ctx».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_spisok_s_ctx(fl_ctx *ctx, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_vyzova_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_formy_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_go(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_go(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_operacii_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_go(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value vyvod, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_zapisi_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_konstruktora_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Требуется список Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param znachenie — «значение»: строка
+ * @param yarlyk — «ярлык»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_trebuetsya_spisok_go(fl_ctx *ctx, fl_value znachenie, fl_value yarlyk, fl_value vyvod, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_svyortki_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_go(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_cikla_go(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_go(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_cikla_go(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело отображения Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_otobrazheniya_go(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело фильтра Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_filtra_go(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца»
+ */
+fl_status compiler_flang_proverka_obrazca_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param proverka — «проверка»: строка
+ * @return значение: «Итог образца»
+ */
+fl_status compiler_flang_gotovaya_proverka_go(fl_ctx *ctx, fl_value sostoyanie, fl_value proverka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Итог образца»
+ */
+fl_status compiler_flang_oshibka_obrazca_go(fl_ctx *ctx, fl_value obrazec, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца»
+ */
+fl_status compiler_flang_proverka_literalom_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать простое Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания в C»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param est_primechanie — «есть примечание»
+ * @param primechanie — «примечание»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazat_prostoe_go(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value est_primechanie, fl_value primechanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания в C»
+ * @param svyazka — «связка»: «Пара имён»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_go(fl_ctx *ctx, fl_value itog, fl_value svyazka, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание любого Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания в C»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazyvanie_lyubogo_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы и хвоста Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания в C»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_i_hvosta_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания в C»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания в C»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_go(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора случая Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сбор случаев»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор случаев»
+ */
+fl_status compiler_flang_shag_sbora_sluchaya_go(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_pechat_vetvi_go(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_vetvi_go(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост цепочки Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvost_cepochki_go(fl_ctx *ctx, fl_value otkryto, fl_value predmet, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цепочка случаев Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Случай печати»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_cepochka_sluchaev_go(fl_ctx *ctx, fl_value sluchai, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг цепочки Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати»
+ * @param ostalnye — «остальные»: список: «Случай печати»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_shag_cepochki_go(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь с проверкой Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати»
+ * @param ostalnye — «остальные»: список: «Случай печати»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_vetv_s_proverkoy_go(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь без проверки Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_vetv_bez_proverki_go(fl_ctx *ctx, fl_value sluchay, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_pechat_razbora_go(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_pechat_hvosta_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoe_pust_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoe_esli_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_go(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_go(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoy_otskok_go(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отложить аргумент Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка»
+ * @param argument — «аргумент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_otlozhit_argument_go(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка»
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_go(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_go(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_hvostovoy_cikl_go(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление фабрики Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_obyavlenie_fabriki_go(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление конструктора Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_obyavlenie_konstruktora_go(fl_ctx *ctx, fl_value variant, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление функции Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_obyavlenie_funkcii_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Подпись шага Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shag — «шаг»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_podpis_shaga_go(fl_ctx *ctx, fl_value shag, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zip — «зип»: «Зип»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_stroka_parametra_go(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка батута Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_batuta_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поля фабрики Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @param pole — «поле»: «Поле типа в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_polya_fabriki_go(fl_ctx *ctx, fl_value zip, fl_value pole, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень полей Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа в C»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_poley_go(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_go(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_go(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок»
+ * @param postuslovie — «постусловие»: «Постусловие»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_shag_postusloviya_go(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_go(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело циклом Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_ciklom_go(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_telo_funkcii_go(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вход в функцию Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vhod_v_funkciyu_go(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать простой функции Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_prostoy_funkcii_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать со счётчиком Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_so_schyotchikom_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг распаковки Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_raspakovki_go(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гашение параметров Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_gashenie_parametrov_go(fl_ctx *ctx, fl_value parametry, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_batuta_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбор оболочки Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vybor_obolochki_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_pechat_funkcii_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка аргумента вызова Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_stroka_argumenta_vyzova_go(fl_ctx *ctx, fl_value zip, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_dogovor_na_dveri_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_proverki_dogovora_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок»
+ * @param preduslovie — «предусловие»: «Предусловие»
+ * @param kontekst — «контекст»: «Контекст»
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_shag_predusloviya_go(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_vetka_dispetchera_go(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок»
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_go(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Блок»
+ */
+fl_status compiler_flang_pechat_dispetchera_go(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка файла Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_fayla_go(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать go.mod».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_go_mod(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_go(fl_ctx *ctx, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок контекста Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Go»
+ * @return значение: строка
+ */
+fl_status compiler_flang_blok_konteksta_go(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_go(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_go(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_go(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_go(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_go(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_go(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок границы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param tip — «тип»: строка
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_blok_granicy_go(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Go»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_go(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить тела Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_skleit_tela_go(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исходник программы Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ishodnik_programmy_go(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value sostoyanie, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела фабрики Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param chasti — «части»: список: строка
+ * @param zapis — «запись»: «Запись типа»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_tela_fabriki_go(fl_ctx *ctx, fl_value chasti, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела варианта Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param chasti — «части»: список: строка
+ * @param variant — «вариант»: «Вариант типа»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_tela_varianta_go(fl_ctx *ctx, fl_value chasti, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тел суммы Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param chasti — «части»: список: строка
+ * @param summa — «сумма»: «Сумма типов в C»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_tel_summy_go(fl_ctx *ctx, fl_value chasti, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела»
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее»
+ * @return значение: «Тела»
+ */
+fl_status compiler_flang_shag_tela_funkcii_go(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Тела»
+ */
+fl_status compiler_flang_pechat_tel_go(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвосты сборки Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvosty_sborki_go(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост имени файла Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_hvost_imeni_fayla_go(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_go(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя файла программы Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Go»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_fayla_programmy_go(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово о конкурентности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skolko — «сколько»: число
+ * @param slovo — «слово»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slovo_o_konkurentnosti(fl_ctx *ctx, fl_value skolko, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый процесс».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_process(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Требует планировщика Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_trebuet_planirovschika_go(fl_ctx *ctx, fl_value programma, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ без планировщика».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param processov — «процессов»: число
+ * @param nadzorov — «надзоров»: число
+ * @param progonov — «прогонов»: число
+ * @return значение: «Состояние»
+ */
+fl_status compiler_flang_otkaz_bez_planirovschika(fl_ctx *ctx, fl_value programma, fl_value sostoyanie, fl_value processov, fl_value nadzorov, fl_value progonov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы в Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Go»
+ * @return значение: «Итог печати»
+ */
+fl_status compiler_flang_pechat_programmy_v_go(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файл прогонщика Go».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param nastroyki — «настройки»: «Настройки Go»
+ * @return значение: «Файл»
+ */
+fl_status compiler_flang_fayl_progonschika_go(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -43505,6 +45773,25 @@ fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, f
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Настройки Go из настроек».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: «Настройки Go»
+ */
+fl_status compiler_flang_nastroyki_go_iz_nastroek(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

@@ -17,9 +17,9 @@ Every one of them is a run, not an estimate. A negative result stays published
 next to a favourable one: a measurement retracted for giving an inconvenient
 answer is worth nothing.
 
-- [Speed against Python and Node](../benchmark-speed.html) — how much slower we
-  are, and how much of the gap is the price of provability rather than
-  unfinished work.
+- [Speed against Python and Node](../benchmark-speed.html) — where we stand
+  against three languages at once, and how much of the difference is the price
+  of provability rather than unfinished work.
 - [The price of a proof against tests](../benchmark-proof-cost.html) — twenty
   ordinary library functions, both jobs done on each. The first answer: 0 out
   of 20.

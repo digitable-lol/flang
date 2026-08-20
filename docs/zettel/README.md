@@ -114,6 +114,7 @@
 - [Граница мира у горячей замены проходит по пяти чужим проходам, а не по часам и сокетам](hot-swap-boundary-runs-through-five-passes-not-through-a-clock.md)
 - [Кандидат на горячую замену разбирается ОТДЕЛЬНО, поэтому имена типов работающей программы в нём назвать можно, а функции её позвать нельзя](a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions.md)
 - [Из четырёх утверждений, которых ждут от планировщика процессов, ядро не берёт ни одного](what-a-scheduler-needs-proved.md)
+- [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika.md)
 
 ## Самораскрутка и метод проверки
 

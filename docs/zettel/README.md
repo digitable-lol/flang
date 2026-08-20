@@ -98,6 +98,10 @@
 
 - [Чистота обработчика превращает восстановление из журнала в одну свёртку](chistota-obrabotchika-delaet-vosstanovlenie-svyortkoy.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
+- [Октеты в языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](oktety-v-yazyke-vyrazimy-spiskom-chisel-a-ne-strokoy.md)
+- [Два исполнителя портили двоичный поток по-разному, и расхождение было не в кодировке, а в том, где каждый терял](dva-hozyaina-portili-dvoichnyy-potok-po-raznomu.md)
+- [Пустая строка у «Прочитано» значит КОНЕЦ, и раскодировщик, вызванный руками, отдаёт её ещё в одном случае](pustaya-stroka-u-prochitano-znachit-konec-i-eto-lovushka-raskodirovshchika.md)
+- [Открытая труба стандартного ввода — это не «ввода нет», а «ввод будет позже», и потомок ждёт до срока](otkrytaya-truba-vvoda-eto-ne-vvoda-net-a-vvod-budet-pozzhe.md)
 
 ## Процессы и конкурентность
 

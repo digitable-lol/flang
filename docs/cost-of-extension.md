@@ -427,7 +427,7 @@ node flang/scripts/word-occupancy.mjs 関数 型 モジュール 受け取る �
 | `flang/src/emit/python.mjs` | **1 732** |
 | эталон `flang/self/emit-python.flang` | **3 459** |
 | рантайм `flang/src/emit/python/` (2 файла) | **1 690** |
-| `flang/test/emit-python.test.mjs` | 2 690 |
+| `flang/test/emit-python.test.mjs` | 2 695 |
 | `flang/test/self-emit-python.test.mjs` | 708 |
 | **итого пять новых файлов** | **10 277** |
 

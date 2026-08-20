@@ -379,6 +379,7 @@
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
+- [Двоичный хозяин обрывает содержимое на первом нулевом октете, и драйвер PostgreSQL по проводу не идёт](dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)

@@ -267,7 +267,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c       напечатать программу в C99 или Elixir\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -282,8 +282,9 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 10 команд полного инструментария. Чего у бинарника нет — остальные\n"
-    "семь целей печати и законы на сетке: им нужен Node.\n"
+    "Здесь все 10 команд полного инструментария и две цели печати из восьми — C и\n"
+    "Elixir. Чего у бинарника нет — остальные шесть целей и законы на сетке: им\n"
+    "нужен Node.\n"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -334,24 +335,26 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|elixir [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу в C99 или в Elixir без Node; рантайм цели читается с диска\n"
+    "(--runtime, $FLANG_RUNTIME_DIR, ../flang/src/emit/<цель>, ../share/flang/<цель>).\n"
+    "У печати в C ДВУХ ВЕЩЕЙ НЕТ: недостижимое не отбрасывается и доказанное не\n"
+    "метится («markProven») — на компиляторе это 6 файлов из 7 байт в байт. У печати\n"
+    "в Elixir обе есть, и она совпадает со свидетелем везде, кроме ГРАНИЦЫ ВХОДА:\n"
+    "таблицу объявленных типов строит слой типов свидетеля, которого здесь нет.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c|elixir две цели этого бинарника\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --repl            напечатать ещё и человеческий вход (только у C)\n"
+    "  --runtime каталог откуда читать рантайм цели\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
-    "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
+    "Остальные шесть целей (js, go, rust, python, java, csharp) написаны на flang\n"
+    "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
 static const char HELP_AST[] =
     "flang ast <файл.flang> [--pretty]\n"
@@ -5835,6 +5838,15 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/*
+ * То же для Elixir, и файлов здесь ТРИ, а не четыре: заголовка у Elixir нет
+ * вовсе, а конкурентность живёт отдельным файлом, потому что печатается она
+ * только программам с процессами. Пробный файл поиска каталога — рантайм.
+ */
+#define EMIT_EX_RUNTIME "flang_runtime.ex"
+#define EMIT_EX_RUNNER "flang_cli.ex"
+#define EMIT_EX_CONC "flang_conc.ex"
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -5844,8 +5856,8 @@ static int run_file(int argc, char **argv) {
  * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
  * НЕ пробуется — в отличие от поиска заголовков для оболочки.
  */
-static bool emit_runtime_here(const char *directory) {
-  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+static bool emit_runtime_here(const char *directory, const char *probe_name) {
+  char *probe = repl_join(directory, probe_name);
   size_t bytes = 0;
   char *text = repl_read_file(probe, &bytes);
   bool ok = false;
@@ -5859,16 +5871,22 @@ static bool emit_runtime_here(const char *directory) {
   return ok;
 }
 
-static char *emit_runtime_dir(const char *self_dir, const char *given) {
-  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+/*
+ * Места поиска зависят от ЦЕЛИ, а пробный файл — от того, как эта цель зовёт
+ * свой рантайм. У C это `flang_runtime.h`, у Elixir — `flang_runtime.ex`;
+ * дерево держит их в `flang/src/emit/<цель>`, установка — в `share/flang/<цель>`.
+ */
+static char *emit_runtime_dir(const char *self_dir, const char *given, const char *target,
+                              const char *probe_name) {
+  static const char *const places[2] = {"flang/src/emit/", "share/flang/"};
   size_t index = 0;
   if (given != NULL && given[0] != '\0') {
-    return emit_runtime_here(given) ? repl_say(given) : NULL;
+    return emit_runtime_here(given, probe_name) ? repl_say(given) : NULL;
   }
   {
     const char *set = getenv("FLANG_RUNTIME_DIR");
     if (set != NULL && set[0] != '\0') {
-      return emit_runtime_here(set) ? repl_say(set) : NULL;
+      return emit_runtime_here(set, probe_name) ? repl_say(set) : NULL;
     }
   }
   if (self_dir == NULL) {
@@ -5876,9 +5894,11 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
   }
   for (index = 0; index < 2; index += 1) {
     char *parent = repl_dirname(self_dir);
-    char *directory = repl_join(parent, places[index]);
+    char *where = repl_join(places[index], target);
+    char *directory = repl_join(parent, where);
     free(parent);
-    if (emit_runtime_here(directory)) {
+    free(where);
+    if (emit_runtime_here(directory, probe_name)) {
       return directory;
     }
     free(directory);
@@ -6095,7 +6115,20 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
+  /*
+   * Настройки Elixir — СВОЙ объект, а не тот же: заголовка у цели нет, зато
+   * есть отдельный файл конкурентности, и оболочки у неё нет вовсе. Поля и их
+   * порядок — «Настройки Elixir» из flang/self/emit-elixir.flang.
+   */
+  static const char *const ex_names[13] = {"путь",           "есть путь",
+                                           "база",           "предел глубины",
+                                           "предел шагов",   "прогонщик",
+                                           "рантайм исходник", "исходник прогонщика",
+                                           "исходник конкурентности", "типы входа",
+                                           "поля входа",     "варианты входа",
+                                           "параметры входа"};
   fl_value values[15];
+  fl_value ex_values[13];
   fl_value args[2];
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
@@ -6120,10 +6153,13 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *runtime_source = NULL;
   char *runner_source = NULL;
   char *shell_source = NULL;
+  char *conc_source = NULL;
   size_t runtime_header_bytes = 0;
   size_t runtime_source_bytes = 0;
   size_t runner_source_bytes = 0;
   size_t shell_source_bytes = 0;
+  size_t conc_source_bytes = 0;
+  bool elixir = false;
   size_t bytes = 0;
   size_t index = 0;
   size_t written = 0;
@@ -6179,13 +6215,14 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике есть две цели — «c» и «elixir»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  elixir = strcmp(target, "elixir") == 0;
+  if (!elixir && strcmp(target, "c") != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «elixir»;\n"
+            "остальные шесть (js, go, rust, python, java, csharp) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
     return 2;
@@ -6198,13 +6235,14 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = emit_runtime_dir(self_dir, given_runtime, target, elixir ? EMIT_EX_RUNTIME : EMIT_RUNTIME_HEADER);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
-          stderr);
+    fprintf(stderr,
+            "flang emit: не найдены ИСХОДНИКИ рантайма %s (%s без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/%s, ../share/flang/%s.\n",
+            target, elixir ? EMIT_EX_RUNTIME : EMIT_RUNTIME_HEADER, target, target);
     return 2;
   }
 
@@ -6219,7 +6257,21 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
 
-  {
+  if (elixir) {
+    char *where = repl_join(runtime, EMIT_EX_RUNTIME);
+    runtime_source = repl_read_file(where, &runtime_source_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_EX_RUNNER);
+    runner_source = repl_read_file(where, &runner_source_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_EX_CONC);
+    conc_source = repl_read_file(where, &conc_source_bytes);
+    free(where);
+    if (runtime_source == NULL || runner_source == NULL || conc_source == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+      code = 2;
+    }
+  } else {
     char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
     runtime_header = repl_read_file(where, &runtime_header_bytes);
     free(where);
@@ -6232,10 +6284,10 @@ static int emit_file(int argc, char **argv, const char *self) {
     where = repl_join(runtime, EMIT_SHELL_SOURCE);
     shell_source = repl_read_file(where, &shell_source_bytes);
     free(where);
-  }
-  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
-    code = 2;
+    if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+      code = 2;
+    }
   }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
      программа, собранная ИЗ ЗАМКА, а не из того, что случайно лежит на диске. */
@@ -6278,6 +6330,42 @@ static int emit_file(int argc, char **argv, const char *self) {
       } else if (!val_field(linked, "программа", &program)) {
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
+      } else if (elixir) {
+        /*
+         * У Elixir дорога короче на один шаг: точка входа берёт СВЯЗАННОЕ
+         * целиком, а не одну программу, потому что отбрасывание недостижимого
+         * ей нужно так же, как свидетелю («Напечатать связанное в Elixir»
+         * в flang/self/bootstrap/compiler.flang зовёт «Отбросить у отмеченной»).
+         * У печати в C второй хозяин — оболочка, которой отбрасывать нечего, —
+         * и поэтому там программа приходит уже вынутой.
+         */
+        fits = emit_entry_fits(program, table);
+        ex_values[0] = repl_value_say(own);
+        ex_values[1] = fl_flag(own[0] != '\0');
+        ex_values[2] = fl_number((double)base_index);
+        ex_values[3] = fl_number(strtod(depth, NULL));
+        ex_values[4] = fl_number(strtod(steps, NULL));
+        ex_values[5] = fl_flag(cli);
+        ex_values[6] = repl_value_text(runtime_source, runtime_source_bytes);
+        ex_values[7] = repl_value_text(runner_source, runner_source_bytes);
+        ex_values[8] = repl_value_text(conc_source, conc_source_bytes);
+        ex_values[9] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+        ex_values[10] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+        ex_values[11] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+        ex_values[12] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+        args[0] = linked;
+        args[1] = repl_value_record(ex_names, ex_values, 13);
+        if (repl_call("Напечатать связанное в Elixir", args, 2, &result) != FL_OK) {
+          code = 1;
+        } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
+          char *say = val_copy(failure);
+          fprintf(stderr, "flang emit: печать отказала — %s\n", say);
+          free(say);
+          code = 1;
+        } else if (!val_field(result, "файлы", &files) || files.tag != FL_LIST) {
+          fputs("flang emit: печать не вернула файлов\n", stderr);
+          code = 1;
+        }
       } else {
         fits = emit_entry_fits(program, table);
         values[0] = repl_value_say(own);
@@ -6396,6 +6484,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   free(runtime_source);
   free(runner_source);
   free(shell_source);
+  free(conc_source);
   free(runtime);
   free(text);
   free(full);

@@ -333,7 +333,7 @@ flang test  examples/library-api/lib/api.flang
 `package.json` собирается образцом `flang/test/*.test.mjs`, и заводить ради
 одного примера второй образец значит править файл, который правят все. Один
 импорт дешевле:
-[`flang/test/example-library-api.test.mjs`](../../flang/test/example-library-api.test.mjs)
+`flang/test/example-library-api.test.mjs`
 — десять строк, из них девять комментарий.
 
 **Что достаётся бесплатно, а что нет.** Ничего не подхватывается образцом:

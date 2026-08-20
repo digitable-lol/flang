@@ -509,3 +509,15 @@
    получается адрес страницы `knowledge-<слаг>.html`.
 
 Добавили заметку — впишите строку в этот индекс.
+- [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
+- [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
+- [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
+- [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
+- [Динамический ввоз прячет мёртвый файл от обхода по «import»](dynamic-import-hides-a-dead-file.md)
+- [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
+- [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
+- [Слияние двух редакций одного файла роняет общий кусок, и разбор этого не видит](merging-two-editions-drops-the-shared-part.md)
+- [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
+- [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
+- [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
+- [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)

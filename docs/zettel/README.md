@@ -253,6 +253,7 @@
 - [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего](pereimenovanie-razvodit-odno-stolknovenie-i-sozdayot-sleduyuschee.md)
 - [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](proverka-tipov-ne-na-puti-tochki-raskrutki.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
+- [`flang io` не может быть точкой входа для ярлыков: доводов он не принимает, вывод потомка копит до конца, а код возврата теряет](flang-io-cannot-be-the-entry-point-for-shortcuts.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)
 - [Печать в C ищет исходники рантайма рядом с ДВОИЧНЫМ, и в дереве репозитория это работает по совпадению раскладки](pechat-v-c-ishchet-runtime-ryadom-s-dvoichnym.md)

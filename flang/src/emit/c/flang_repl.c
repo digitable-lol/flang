@@ -7636,6 +7636,8 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
   repl_buf err;
   int status = 0;
   bool too_much = false;
+  bool too_long = false;
+  struct timeval deadline;
   if (pipe(out_pipe) != 0) {
     return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
   }
@@ -7718,11 +7720,25 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
     fds[1] = err_pipe[0];
     alive[0] = true;
     alive[1] = true;
+    /* СРОК СЧИТАЕТСЯ ОТ НАЧАЛА, а не заново на каждое ожидание, и это правка, а
+       не уточнение. Прежде `select` получал полный срок КАЖДЫЙ раз, значит
+       программа, печатающая по строке в секунду, жила вечно при любом сроке —
+       ни одно ожидание не истекало. Хозяин на Node так себя не ведёт: у него
+       один таймер на весь процесс. Расхождение закрывается здесь. */
+    gettimeofday(&deadline, NULL);
+    deadline.tv_sec += host->timeout_ms / 1000;
+    deadline.tv_usec += (host->timeout_ms % 1000) * 1000;
+    if (deadline.tv_usec >= 1000000) {
+      deadline.tv_sec += 1;
+      deadline.tv_usec -= 1000000;
+    }
     while (alive[0] || alive[1] || in_pipe[1] >= 0) {
       fd_set set;
       fd_set writable;
       int top = -1;
       int index = 0;
+      int ready = 0;
+      struct timeval now;
       struct timeval wait;
       FD_ZERO(&set);
       FD_ZERO(&writable);
@@ -7740,9 +7756,33 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
         FD_SET(in_pipe[1], &writable);
         if (in_pipe[1] > top) top = in_pipe[1];
       }
-      wait.tv_sec = host->timeout_ms / 1000;
-      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
-      if (select(top + 1, &set, in_pipe[1] >= 0 ? &writable : NULL, NULL, &wait) <= 0) {
+      gettimeofday(&now, NULL);
+      wait.tv_sec = deadline.tv_sec - now.tv_sec;
+      wait.tv_usec = deadline.tv_usec - now.tv_usec;
+      if (wait.tv_usec < 0) {
+        wait.tv_sec -= 1;
+        wait.tv_usec += 1000000;
+      }
+      if (wait.tv_sec < 0) {
+        wait.tv_sec = 0;
+        wait.tv_usec = 0;
+      }
+      ready = select(top + 1, &set, in_pipe[1] >= 0 ? &writable : NULL, NULL, &wait);
+      if (ready < 0) {
+        /* Сигнал прервал ожидание — это не исход, а перерыв: повторяем. Всякая
+           другая беда `select` кончает ожидание, и отвечает за неё `waitpid`. */
+        if (errno == EINTR) continue;
+        kill(child, SIGKILL);
+        break;
+      }
+      if (ready == 0) {
+        /* СРОК ИСТЁК, и это отдельный исход, а не «процесс убит». Прежде здесь
+           стоял тот же `break`, что и на беде, и потому истёкший срок приезжал
+           программе как «Процесс убит» с сигналом SIG9 — неотличимо от того,
+           что процесс остановил кто-то другой. Хозяин на Node различает их с
+           самого начала и отвечает «Сбоем» с кодом FLANG_IO_TIMEOUT; здесь
+           теперь то же самое и теми же словами. */
+        too_long = true;
         kill(child, SIGKILL);
         break;
       }
@@ -7788,6 +7828,15 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
     buf_free(&out);
     buf_free(&err);
     return io_fail("FLANG_IO_SPAWN", buffer);
+  }
+  if (too_long) {
+    /* Текст СЛОВО В СЛОВО тот же, что у хозяина на Node: два хозяина, говорящие
+       об одной беде разными словами, разъезжаются в первом же журнале. */
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "программа «%s» не уложилась в %ld мс", program, host->timeout_ms);
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_TIMEOUT", buffer);
   }
   {
     fl_value fields[3];

@@ -207,7 +207,8 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
-import { требуетИсполнителяПлана, требуетХозяина } from "../conc.mjs"
+import { требуетХозяина } from "../conc.mjs"
+import { требуетИсполнителяПлана } from "../target-plan.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"

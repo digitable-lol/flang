@@ -96,7 +96,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
 import { createNamer, pascal, snake } from "../naming.mjs"
-import { требуетИсполнителяПлана } from "../conc.mjs"
+import { требуетИсполнителяПлана } from "../target-plan.mjs"
 import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════

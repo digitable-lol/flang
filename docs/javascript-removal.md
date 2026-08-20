@@ -958,7 +958,7 @@ flang не может ответить на вопрос «чем кончилс
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/src/conc.mjs` | 2240 | `self/conc.flang` | 13 имён у 5 потребителей — самая широкая подпись пути |
+| `flang/src/conc.mjs` | 2140 | `self/conc.flang` | 13 имён у 5 потребителей — самая широкая подпись пути |
 | `flang/src/failures.mjs` | 1069 | `self/failures.flang` | 5 имён у ОДНОГО (`types.mjs`) |
 | `flang/src/compat.mjs` | 560 | нет | 5 имён у 2: `errorCode`, `evaluateFlang`, `flangError`, `runExamples`, `checkFunctorDictionary` |
 | `flang/src/io.mjs` | 1010 | `self/io.flang` | 10 имён у 3 |

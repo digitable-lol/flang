@@ -371,6 +371,7 @@
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка](biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu.md)
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)
 - [Модуль, не подключённый ни к чему, копит уже занятые имена — и подключить его потом нельзя](dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu.md)
+- [Выборочный ввоз обязан перечислить и те имена, которые зовёт контракт функции, а не только её тело](only-import-must-list-what-the-contract-calls.md)
 - [Адресация по содержимому: версий нет, есть хеши](content-addressing.md)
 - [Unison установлен и измерен: ромб он решает не так, как обещает лозунг](unison-measured.md)
 - [Гипотеза про адресацию по содержимому не работает у нас — и не из-за хешей](names-not-hashes.md)

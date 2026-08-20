@@ -21,7 +21,7 @@ infinity. A PARAMETER also works as the step (`н минус ш`) — provided i
 unchanged in its own position and is known to be strictly `ш больше 0`: the same number is then
 subtracted along the whole chain. Without the strict bound the step may be zero, and a changing
 step never reaches the floor at all — `ш`, `ш делить на 2`, … add up to less than `2ш`. If the analysis cannot prove it, you get `FLANG_NOT_TOTAL` and the file does not
-compile. Every existing `.fts` model lands in the total class by construction.
+compile.
 
 Counting UP is not a measure and stays out of the total class: `«Числа от и до» от 1 и н` grows
 the start, and the end is a parameter rather than a number, so it cannot serve as a floor. String

@@ -145,28 +145,6 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
                                  fl_value *result, fl_error *error);
 
 /*
- * Второй мост к программе — ЕЁ СОБСТВЕННАЯ ГРАНИЦА ВХОДА: объявленные типы
- * параметров, впечатанные в программу данными (fl_entry_table). Нужен он ровно
- * одному месту — `flang emit --target c`, печатающей САМ КОМПИЛЯТОР.
- *
- * Зачем. Таблицу строит слой типов свидетеля (`таблицаВхода`, flang/src/types.mjs),
- * и на flang его нет: `flang/self/types.flang` эту таблицу не строит. Значит
- * бинарнику взять её неоткуда — кроме одного случая, когда она у него уже есть:
- * когда печатаемая программа и есть та программа, которой бинарник является.
- * Тогда его собственная таблица и есть искомая, байт в байт.
- *
- * Случай этот не угадывается, а ПРОВЕРЯЕТСЯ: печать берёт таблицу только если
- * список пар «функция, параметр» связанной программы совпадает с впечатанным
- * — по порядку, по числу и по именам (`emit_entry_fits`). Не совпал — таблица
- * пуста, и об этом сказано числом на stderr, а не умолчанием.
- */
-#ifndef FL_PROGRAM_ENTRY
-#define FL_PROGRAM_ENTRY fl_program_entry
-#endif
-
-extern const fl_entry_table *FL_PROGRAM_ENTRY(void);
-
-/*
  * Чтение файла целиком. У прогонщика есть такое же — и это не досадный повтор,
  * а цена отдельности: файлы обязаны собираться порознь, и общий заголовок между
  * ними завёл бы третий файл ради двадцати строк.
@@ -5761,21 +5739,19 @@ static int run_file(int argc, char **argv) {
  * (`flang/self/emit-c.flang` едет в `compiler.flang`), и не хватало только
  * разбора аргументов и подачи настроек.
  *
- * ── Три вещи, которые печать просит СНАРУЖИ ─────────────────────────────────
+ * ── Две вещи, которые печать просит СНАРУЖИ ─────────────────────────────────
+ *
+ * Их было три: границу входа — объявленные типы параметров таблицей — этот файл
+ * подставлял сам, потому что строил её только слой типов свидетеля. Теперь её
+ * строит «Таблица входа» из `flang/self/types.flang`, то есть печать целиком, и
+ * снаружи её просить незачем.
  *
  * 1. ТЕКСТ РАНТАЙМА — `flang_runtime.[ch]`, `flang_cli.c`, `flang_repl.c`. Это
  *    исходники на C, а не печать: они приезжают в вывод дословно, с приписанной
  *    сверху шапкой. Свидетель читает их с диска (`flang/src/emit/c.mjs`), и здесь
  *    читаются они же и оттуда же — иначе байты разошлись бы.
  *
- * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит слой типов
- *    свидетеля (`таблицаВхода`), которого на flang нет вовсе. Один случай, когда
- *    таблица у бинарника уже есть, — печать САМОГО СЕБЯ: тогда годится его
- *    собственная, впечатанная (`FL_PROGRAM_ENTRY`). Годность не предполагается,
- *    а проверяется парами «функция, параметр» (`emit_entry_fits`); не сошлось —
- *    таблица пуста, и об этом сказано числом.
- *
- * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
+ * 2. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
  *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
  *    БЭКЕНДА (10⁶ и 10⁴); компилятор печатается с 40 000 000 и 20 000, и эти
  *    числа называет тот, кто печатает, а не этот файл.
@@ -5886,187 +5862,6 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
   return NULL;
 }
 
-/** Вид типа границы — обратный перевод к «Виду типа входа» из emit-c.flang. */
-static const char *emit_kind_word(fl_type_kind kind) {
-  switch (kind) {
-    case FL_TYPE_NUMBER:
-      return "число";
-    case FL_TYPE_STRING:
-      return "строка";
-    case FL_TYPE_FLAG:
-      return "признак";
-    case FL_TYPE_NULL:
-      return "ничто";
-    case FL_TYPE_LIST:
-      return "список";
-    case FL_TYPE_RECORD:
-      return "запись";
-    case FL_TYPE_SUM:
-      return "сумма";
-    case FL_TYPE_UNKNOWN:
-    default:
-      return "неизвестно";
-  }
-}
-
-/**
- * Впечатанная граница входа — обратно в значения flang.
- *
- * Порядок полей здесь не свободный: это объекты «Тип входа», «Поле входа»,
- * «Вариант входа» и «Параметр входа» из `flang/self/emit-c.flang`, и разойдись
- * имена — печать получила бы записи не тех форм.
- */
-static fl_value emit_entry_types(const fl_entry_table *table) {
-  static const char *const names[13] = {"вид",  "имя",     "владелец", "ничто",  "целое",
-                                        "отрезок", "низ",  "верх",     "элемент", "поле с",
-                                        "полей", "вариант с", "вариантов"};
-  fl_value *items = NULL;
-  fl_value out = fl_nothing();
-  size_t index = 0;
-  if (table->type_count == 0) {
-    return fl_list(NULL, 0);
-  }
-  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->type_count);
-  for (index = 0; index < table->type_count; index += 1) {
-    const fl_type *type = &table->types[index];
-    fl_value values[13];
-    values[0] = repl_value_say(emit_kind_word(type->kind));
-    values[1] = repl_value_say(type->name == NULL ? "" : type->name);
-    values[2] = repl_value_say(type->owner == NULL ? "" : type->owner);
-    values[3] = fl_flag(type->optional);
-    values[4] = fl_flag(type->integral);
-    values[5] = fl_flag(type->bounded);
-    values[6] = fl_number(type->low);
-    values[7] = fl_number(type->high);
-    values[8] = fl_number((double)type->of);
-    values[9] = fl_number((double)type->field_from);
-    values[10] = fl_number((double)type->field_count);
-    values[11] = fl_number((double)type->variant_from);
-    values[12] = fl_number((double)type->variant_count);
-    items[index] = repl_value_record(names, values, 13);
-  }
-  out = repl_value_list(items, table->type_count);
-  free(items);
-  return out;
-}
-
-static fl_value emit_entry_fields(const fl_entry_table *table) {
-  static const char *const names[2] = {"имя", "тип"};
-  fl_value *items = NULL;
-  fl_value out = fl_nothing();
-  size_t index = 0;
-  if (table->field_count == 0) {
-    return fl_list(NULL, 0);
-  }
-  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->field_count);
-  for (index = 0; index < table->field_count; index += 1) {
-    fl_value values[2];
-    values[0] = repl_value_say(table->fields[index].name == NULL ? "" : table->fields[index].name);
-    values[1] = fl_number((double)table->fields[index].type);
-    items[index] = repl_value_record(names, values, 2);
-  }
-  out = repl_value_list(items, table->field_count);
-  free(items);
-  return out;
-}
-
-static fl_value emit_entry_variants(const fl_entry_table *table) {
-  static const char *const names[3] = {"имя", "поле с", "полей"};
-  fl_value *items = NULL;
-  fl_value out = fl_nothing();
-  size_t index = 0;
-  if (table->variant_count == 0) {
-    return fl_list(NULL, 0);
-  }
-  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->variant_count);
-  for (index = 0; index < table->variant_count; index += 1) {
-    fl_value values[3];
-    values[0] = repl_value_say(table->variants[index].name == NULL ? "" : table->variants[index].name);
-    values[1] = fl_number((double)table->variants[index].field_from);
-    values[2] = fl_number((double)table->variants[index].field_count);
-    items[index] = repl_value_record(names, values, 3);
-  }
-  out = repl_value_list(items, table->variant_count);
-  free(items);
-  return out;
-}
-
-static fl_value emit_entry_params(const fl_entry_table *table) {
-  static const char *const names[3] = {"функция", "параметр", "тип"};
-  fl_value *items = NULL;
-  fl_value out = fl_nothing();
-  size_t index = 0;
-  if (table->param_count == 0) {
-    return fl_list(NULL, 0);
-  }
-  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->param_count);
-  for (index = 0; index < table->param_count; index += 1) {
-    fl_value values[3];
-    values[0] = repl_value_say(table->params[index].function == NULL ? "" : table->params[index].function);
-    values[1] = repl_value_say(table->params[index].name == NULL ? "" : table->params[index].name);
-    values[2] = fl_number((double)table->params[index].type);
-    items[index] = repl_value_record(names, values, 3);
-  }
-  out = repl_value_list(items, table->param_count);
-  free(items);
-  return out;
-}
-
-/**
- * Годится ли впечатанная граница связанной программе.
- *
- * Сверяются ПАРЫ «функция, параметр» по порядку, числу и именам — то же
- * перечисление, каким строит список `таблицаВхода` (по функциям программы, по
- * параметрам каждой). Совпало всё до последней пары — программа та же, и её
- * таблица годится. Разошлось хоть в одном месте — таблица чужая, и печатать по
- * ней значило бы соврать о типах напечатанного.
- *
- * Проверка НЕ доказывает совпадения типов: имена сошлись, а объявления могли
- * разойтись. Именно поэтому неподвижная точка сверяется отдельно и байтами
- * (`flang/test/self-bootstrap.test.mjs`): здесь дешёвый сторож, там приговор.
- */
-static bool emit_entry_fits(fl_value program, const fl_entry_table *table) {
-  const fl_value *functions = NULL;
-  size_t count = 0;
-  size_t index = 0;
-  size_t seen = 0;
-  zn_field_items(program, "functions", &functions, &count);
-  for (index = 0; index < count; index += 1) {
-    const char *function = NULL;
-    size_t function_bytes = 0;
-    const fl_value *params = NULL;
-    size_t params_count = 0;
-    size_t at = 0;
-    if (!zn_field_text(functions[index], "name", &function, &function_bytes)) {
-      return false;
-    }
-    zn_field_items(functions[index], "params", &params, &params_count);
-    for (at = 0; at < params_count; at += 1) {
-      const char *name = NULL;
-      size_t name_bytes = 0;
-      if (seen >= table->param_count) {
-        return false;
-      }
-      if (!zn_field_text(params[at], "name", &name, &name_bytes)) {
-        return false;
-      }
-      if (table->params[seen].function == NULL || table->params[seen].name == NULL) {
-        return false;
-      }
-      if (strlen(table->params[seen].function) != function_bytes ||
-          memcmp(table->params[seen].function, function, function_bytes) != 0) {
-        return false;
-      }
-      if (strlen(table->params[seen].name) != name_bytes ||
-          memcmp(table->params[seen].name, name, name_bytes) != 0) {
-        return false;
-      }
-      seen += 1;
-    }
-  }
-  return seen == table->param_count && seen > 0;
-}
-
 /** Запись одного напечатанного файла на диск; путь уже разрешён. */
 static bool emit_write(const char *full, const char *text, size_t bytes) {
   FILE *stream = fopen(full, "wb");
@@ -6101,7 +5896,6 @@ static int emit_file(int argc, char **argv, const char *self) {
   fl_value result = fl_nothing();
   fl_value files = fl_nothing();
   fl_value failure = fl_nothing();
-  const fl_entry_table *table = FL_PROGRAM_ENTRY();
   const char *path = NULL;
   const char *target = NULL;
   const char *out = NULL;
@@ -6132,7 +5926,6 @@ static int emit_file(int argc, char **argv, const char *self) {
   int base_index = 1;
   bool cli = true;
   bool shell = false;
-  bool fits = false;
   bool opened = false;
 
   for (argument = 2; argument < argc; argument += 1) {
@@ -6279,7 +6072,6 @@ static int emit_file(int argc, char **argv, const char *self) {
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
       } else {
-        fits = emit_entry_fits(program, table);
         values[0] = repl_value_say(own);
         values[1] = fl_flag(own[0] != '\0');
         values[2] = fl_number((double)base_index);
@@ -6291,10 +6083,14 @@ static int emit_file(int argc, char **argv, const char *self) {
         values[8] = repl_value_text(runner_source, runner_source_bytes);
         values[9] = fl_flag(shell);
         values[10] = repl_value_text(shell_source, shell_source_bytes);
-        values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
-        values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
-        values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
-        values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+        /* Границу входа печать строит САМА — «Таблица входа» из
+           `flang/self/types.flang`, — и что бы здесь ни лежало, оно будет
+           заменено. Пустые списки стоят затем, что запись обязана иметь все
+           пятнадцать полей: форма её задана объектом «Настройки». */
+        values[11] = fl_list(NULL, 0);
+        values[12] = fl_list(NULL, 0);
+        values[13] = fl_list(NULL, 0);
+        values[14] = fl_list(NULL, 0);
         args[0] = program;
         args[1] = repl_value_record(names, values, 15);
         if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
@@ -6375,14 +6171,6 @@ static int emit_file(int argc, char **argv, const char *self) {
       if (one == NULL) {
         fprintf(stderr, "напечатано файлов %lu, байт %lu, в %s\n", (unsigned long)files.as.list.count,
                 (unsigned long)written, out);
-      }
-      if (!fits) {
-        fprintf(stderr,
-                "граница входа пуста: таблицу объявленных типов строит слой типов свидетеля\n"
-                "(«таблицаВхода»), которого в бинарнике нет, а впечатанная (параметров %lu) этой\n"
-                "программе не подходит. Напечатанное соберётся и заработает, но аргументы\n"
-                "прогонщика объявленным типам сверяться не будут.\n",
-                (unsigned long)table->param_count);
       }
     }
   }

@@ -593,6 +593,50 @@ fl_status compiler_flang_sozdat_dokazannoe_mesto(fl_ctx *ctx, fl_value forma, fl
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_proverki(fl_ctx *ctx, fl_value godno, fl_value diagnostiki, fl_value signatury, fl_value dokazany, fl_value chisla, fl_value *out, fl_error *error);
 
+/* Запись FTS «Место типа»: «ключ», «номер». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_mesto_tipa(fl_ctx *ctx, fl_value klyuch, fl_value nomer, fl_value *out, fl_error *error);
+
+/* Запись FTS «Склад входа»: «типы», «поля», «варианты», «места». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sklad_vhoda(fl_ctx *ctx, fl_value tipy, fl_value polya, fl_value varianty, fl_value mesta, fl_value *out, fl_error *error);
+
+/* Запись FTS «Номер в складе»: «номер», «склад». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nomer_v_sklade(fl_ctx *ctx, fl_value nomer, fl_value sklad, fl_value *out, fl_error *error);
+
+/* Запись FTS «Описанный тип»: «тип», «склад». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_opisannyy_tip(fl_ctx *ctx, fl_value tip, fl_value sklad, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поля со складом»: «поля», «склад». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_polya_so_skladom(fl_ctx *ctx, fl_value polya, fl_value sklad, fl_value *out, fl_error *error);
+
+/* Запись FTS «Собранный вариант»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sobrannyy_variant(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Собранные варианты»: «варианты», «склад». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sobrannye_varianty(fl_ctx *ctx, fl_value varianty, fl_value sklad, fl_value *out, fl_error *error);
+
+/* Запись FTS «Уложенные варианты»: «варианты», «склад». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ulozhennye_varianty(fl_ctx *ctx, fl_value varianty, fl_value sklad, fl_value *out, fl_error *error);
+
+/* Запись FTS «Укладка типов»: «номер», «готовые». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ukladka_tipov(fl_ctx *ctx, fl_value nomer, fl_value gotovye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Ход входа»: «склад», «параметры». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_hod_vhoda(fl_ctx *ctx, fl_value sklad, fl_value parametry, fl_value *out, fl_error *error);
+
+/* Запись FTS «Граница входа»: «типы», «поля», «варианты», «параметры». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_granica_vhoda(fl_ctx *ctx, fl_value tipy, fl_value polya, fl_value varianty, fl_value parametry, fl_value *out, fl_error *error);
+
 /* Запись FTS «Происхождение»: «известно», «параметр», «имя», «часть», «глубина», «мера», «шаг», «шаг параметром», «параметр шага», «положителен», «ограничен». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_proishozhdenie(fl_ctx *ctx, fl_value izvestno, fl_value parametr, fl_value imya, fl_value chast, fl_value glubina, fl_value mera, fl_value shag, fl_value shag_parametrom, fl_value parametr_shaga, fl_value polozhitelen, fl_value ogranichen, fl_value *out, fl_error *error);
@@ -1326,6 +1370,11 @@ fl_status compiler_flang_variant_otrezok_nomera(fl_ctx *ctx, fl_value niz, fl_va
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_imyon_net(fl_ctx *ctx, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_imya_svyazano(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value dalshe, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Поиск места»: «Место найдено» | «Места нет». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_mesto_naydeno(fl_ctx *ctx, fl_value nomer, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_mesta_net(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Может быть аргумент»: «Есть аргумент» | «Нет аргумента». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -22760,6 +22809,525 @@ fl_status compiler_flang_tablicy_programmy(fl_ctx *ctx, fl_value programma, fl_v
 fl_status compiler_flang_proverit_tipy(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Пустой склад входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Склад входа»
+ */
+fl_status compiler_flang_pustoy_sklad_vhoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заглушка типа входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Тип входа»
+ */
+fl_status compiler_flang_zaglushka_tipa_vhoda(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключ типа входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение: строка
+ */
+fl_status compiler_flang_klyuch_tipa_vhoda(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Концы ключом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: «Вид типа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_koncy_klyuchom(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти место типа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param mesta — «места»: список: «Место типа»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Поиск места»
+ */
+fl_status compiler_flang_nayti_mesto_tipa(fl_ctx *ctx, fl_value mesta, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип с параметром».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Параметр в виде»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_tip_s_parametrom(fl_ctx *ctx, fl_value tip, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметр в виде».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Тип с параметром»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param vid — «вид»: «Вид типа»
+ * @param tip — «тип»: «Тип»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_parametr_v_vide(fl_ctx *ctx, fl_value vid, fl_value tip, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть параметр среди».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tipy — «типы»: список: «Тип»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_est_parametr_sredi(fl_ctx *ctx, fl_value tipy, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметрический вход».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение
+ */
+fl_status compiler_flang_parametricheskiy_vhod(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип входа целиком».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param vid — «вид»: строка
+ * @param celoe — «целое»
+ * @param otrezok — «отрезок»
+ * @param niz — «низ»: число
+ * @param verh — «верх»: число
+ * @param element — «элемент»: число
+ * @param pole_s — «поле с»: число
+ * @param poley — «полей»: число
+ * @param variant_s — «вариант с»: число
+ * @param variantov — «вариантов»: число
+ * @return значение: «Тип входа»
+ */
+fl_status compiler_flang_tip_vhoda_celikom(fl_ctx *ctx, fl_value tip, fl_value vid, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Простой вход».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param vid — «вид»: строка
+ * @return значение: «Тип входа»
+ */
+fl_status compiler_flang_prostoy_vhod(fl_ctx *ctx, fl_value tip, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Числовой вход».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение: «Тип входа»
+ */
+fl_status compiler_flang_chislovoy_vhod(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отрезок входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param niz — «низ»: число
+ * @param verh — «верх»: число
+ * @return значение: «Тип входа»
+ */
+fl_status compiler_flang_otrezok_vhoda(fl_ctx *ctx, fl_value tip, fl_value niz, fl_value verh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В складе».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @param sklad — «склад»: «Склад входа»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_v_sklade(fl_ctx *ctx, fl_value tip, fl_value sklad, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить поля входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Поле входа»
+ * @param vtorye — «вторые»: список: «Поле входа»
+ * @return значение: список: «Поле входа»
+ */
+fl_status compiler_flang_slit_polya_vhoda(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать поля входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sklad — «склад»: «Склад входа»
+ * @param polya — «поля»: список: «Поле входа»
+ * @return значение: «Склад входа»
+ */
+fl_status compiler_flang_dopisat_polya_vhoda(fl_ctx *ctx, fl_value sklad, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Вариант входа»
+ * @param vtorye — «вторые»: список: «Вариант входа»
+ * @return значение: список: «Вариант входа»
+ */
+fl_status compiler_flang_slit_varianty_vhoda(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать варианты входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sklad — «склад»: «Склад входа»
+ * @param varianty — «варианты»: список: «Вариант входа»
+ * @return значение: «Склад входа»
+ */
+fl_status compiler_flang_dopisat_varianty_vhoda(fl_ctx *ctx, fl_value sklad, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг укладки типа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Укладка типов»
+ * @param tip — «тип»: «Тип входа»
+ * @param nomer — «номер»: число
+ * @param chto — «что»: «Тип входа»
+ * @return значение: «Укладка типов»
+ */
+fl_status compiler_flang_shag_ukladki_tipa(fl_ctx *ctx, fl_value hod, fl_value tip, fl_value nomer, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить тип по номеру».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Тип входа»
+ * @param nomer — «номер»: число
+ * @param chto — «что»: «Тип входа»
+ * @return значение: список: «Тип входа»
+ */
+fl_status compiler_flang_polozhit_tip_po_nomeru(fl_ctx *ctx, fl_value tipy, fl_value nomer, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Номер типа входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Номер в складе»
+ */
+fl_status compiler_flang_nomer_tipa_vhoda(fl_ctx *ctx, fl_value tip, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Номер по поиску».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param poisk — «поиск»: «Поиск места»
+ * @param tip — «тип»: «Тип»
+ * @param klyuch — «ключ»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Номер в складе»
+ */
+fl_status compiler_flang_nomer_po_poisku(fl_ctx *ctx, fl_value poisk, fl_value tip, fl_value klyuch, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Завести тип входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param klyuch — «ключ»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Номер в складе»
+ */
+fl_status compiler_flang_zavesti_tip_vhoda(fl_ctx *ctx, fl_value tip, fl_value klyuch, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описать тип входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_opisat_tip_vhoda(fl_ctx *ctx, fl_value tip, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описать вид входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param vid — «вид»: «Вид типа»
+ * @param tip — «тип»: «Тип»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_opisat_vid_vhoda(fl_ctx *ctx, fl_value vid, fl_value tip, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список в таблице входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param element — «элемент»: «Тип»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_spisok_v_tablice_vhoda(fl_ctx *ctx, fl_value tip, fl_value element, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запись входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_zapis_vhoda(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запись входа по объявлению».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_zapis_vhoda_po_obyavleniyu(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля записи входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_polya_zapisi_vhoda(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле типа»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Поля со складом»
+ */
+fl_status compiler_flang_sobrat_polya_vhoda(fl_ctx *ctx, fl_value polya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Одно поле входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param hod — «ход»: «Поля со складом»
+ * @param pole — «поле»: «Поле типа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Поля со складом»
+ */
+fl_status compiler_flang_odno_pole_vhoda(fl_ctx *ctx, fl_value hod, fl_value pole, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сумма входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_summa_vhoda(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сумма входа по объявлению».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_summa_vhoda_po_obyavleniyu(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты суммы входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param imya — «имя»: строка
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Описанный тип»
+ */
+fl_status compiler_flang_varianty_summy_vhoda(fl_ctx *ctx, fl_value tip, fl_value imya, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param varianty — «варианты»: список: «Вариант типов»
+ * @param sklad — «склад»: «Склад входа»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Собранные варианты»
+ */
+fl_status compiler_flang_sobrat_varianty_vhoda(fl_ctx *ctx, fl_value varianty, fl_value sklad, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Один вариант входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param hod — «ход»: «Собранные варианты»
+ * @param variant — «вариант»: «Вариант типов»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Собранные варианты»
+ */
+fl_status compiler_flang_odin_variant_vhoda(fl_ctx *ctx, fl_value hod, fl_value variant, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уложить варианты входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Собранный вариант»
+ * @param sklad — «склад»: «Склад входа»
+ * @return значение: «Уложенные варианты»
+ */
+fl_status compiler_flang_ulozhit_varianty_vhoda(fl_ctx *ctx, fl_value varianty, fl_value sklad, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уложить один вариант».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Уложенные варианты»
+ * @param variant — «вариант»: «Собранный вариант»
+ * @return значение: «Уложенные варианты»
+ */
+fl_status compiler_flang_ulozhit_odin_variant(fl_ctx *ctx, fl_value hod, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Граница входа»
+ */
+fl_status compiler_flang_tablica_vhoda(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметры функции входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param hod — «ход»: «Ход входа»
+ * @param funkciya — «функция»: «Значение»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Ход входа»
+ */
+fl_status compiler_flang_parametry_funkcii_vhoda(fl_ctx *ctx, fl_value hod, fl_value funkciya, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметры по сигнатуре».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param hod — «ход»: «Ход входа»
+ * @param imya — «имя»: строка
+ * @param poisk — «поиск»: «Поиск сигнатуры»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Ход входа»
+ */
+fl_status compiler_flang_parametry_po_signature(fl_ctx *ctx, fl_value hod, fl_value imya, fl_value poisk, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свернуть параметры входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param hod — «ход»: «Ход входа»
+ * @param imya — «имя»: строка
+ * @param parametry — «параметры»: список: «Параметр»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Ход входа»
+ */
+fl_status compiler_flang_svernut_parametry_vhoda(fl_ctx *ctx, fl_value hod, fl_value imya, fl_value parametry, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Один параметр входа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param hod — «ход»: «Ход входа»
+ * @param imya — «имя»: строка
+ * @param parametr — «параметр»: «Параметр»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Ход входа»
+ */
+fl_status compiler_flang_odin_parametr_vhoda(fl_ctx *ctx, fl_value hod, fl_value imya, fl_value parametr, fl_value tablicy, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Проверить аргументы вызова».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -43495,6 +44063,16 @@ fl_status compiler_flang_k_pechati(fl_ctx *ctx, fl_value svyazano, fl_value nast
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Настройки с границей входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки»
+ * @param granica — «граница»: «Граница входа»
+ * @return значение: «Настройки»
+ */
+fl_status compiler_flang_nastroyki_s_granicey_vhoda(fl_ctx *ctx, fl_value nastroyki, fl_value granica, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Напечатать связанное».

@@ -130,7 +130,7 @@
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](cena-komandy-schitaetsya-po-rabote-a-ne-po-snyatomu-prepyatstviyu.md)
 - [Разводить столкновения имён по одному дороже, чем дать всем объявлениям цели один суффикс: у C# столкнулось 314 из 396](suffiks-celi-na-vse-obyavleniya-deshevle-chem-razvedenie-stolknoveniy.md)
 - [«Сверено побайтово» у пяти целей печати означает «кроме одного блока»: сырой `diff` расходится на 107 программах из 107](granica-vhoda-ne-napisana-u-pyati-celey-i-eto-vidno-tolko-syrym-diffom.md)
-- [Втащить цель печати в замыкание двоичного — половина работы: вторая половина живёт в оболочке на C](vtashchit-cel-v-zamykanie-eto-polovina-raboty.md)
+- [Втащенная цель печати работает в двоичном сразу — через прогонщик JSON; ключа `--target` не хватает только человеку](vtashchit-cel-v-zamykanie-eto-polovina-raboty.md)
 - [Ведомость двоичного бывает слабее ведомости на Node и никогда не сильнее](vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним](podmena-chteniya-stoit-vnutri-obhoda-a-ne-pered-nim.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)

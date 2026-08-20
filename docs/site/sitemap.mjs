@@ -124,7 +124,13 @@ export const РАЗДЕЛЫ = [
       // «Неподвижная точка» — наше внутреннее слово, и в меню оно ничего не
       // говорит. Имя пункта названо тем, что за ним стоит: компилятор,
       // написанный на самом flang, печатает сам себя без единого расхождения.
-      { адрес: 'two-implementations.html', имя: 'Две реализации и сверка их между собой', из: 'docs/guide/two-implementations.ru.md' },
+      /* СТРАНИЦА ПЕРЕЕХАЛА И ПЕРЕИМЕНОВАНА. Называлась «Две реализации и сверка
+         их между собой», и обе половины этого имени перестали быть правдой:
+         реализация одна, сверять её не с чем. То, что от страницы осталось
+         правдой и стало главным, — круг раскрутки: компилятор печатает сам
+         себя, и второй двоичный обязан совпасть с первым байт в байт. Прежний
+         адрес не потерян: он в ПЕРЕЕЗДАХ. */
+      { адрес: 'bootstrap-circle.html', имя: 'Круг раскрутки: компилятор собирает сам себя', из: 'docs/guide/bootstrap-circle.ru.md' },
       { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/guide/developing.ru.md' },
       { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/guide/limits.ru.md' },
     ],
@@ -256,7 +262,8 @@ export const ПЕРЕЕЗДЫ = {
   'obzor.html': 'overview.html',
   'odin-istochnik.html': 'single-source.html',
   'totalnost.html': 'totality.html',
-  'dve-realizacii.html': 'two-implementations.html',
+  'dve-realizacii.html': 'bootstrap-circle.html',
+  'two-implementations.html': 'bootstrap-circle.html',
   'razvitie.html': 'developing.html',
   'ogranicheniya.html': 'limits.html',
   'raskladka.html': 'project-layout.html',

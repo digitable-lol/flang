@@ -49,11 +49,14 @@
  * байтам. Место в витке то же, что у select у остальных: между набором и
  * пробегами, иначе первое письмо чужому ушло бы до знакомства.
  *
- * ── Чего здесь нет, и это названо ───────────────────────────────────────────
+ * ── Надзор ──────────────────────────────────────────────────────────────────
  *
- * НАДЗОРА. Отказ процесса доезжает до веления «Уронить процесс» и ложится в
- * журнал, а перезапуска и порога отказов на этой цели нет: надзор выражен на
- * flang отдельно (flang/self/conc.flang).
+ * Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
+ * НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/nadzor.flang. Кого
+ * поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
+ * исполняет. Дерево надзора приезжает данными в плане, как и размещение.
+ *
+ * ── Чего здесь нет, и это названо ───────────────────────────────────────────
  *
  * ПРЕДЕЛЫ ТАБЛИЦ — постоянные: 8 связей, 16 процессов, 64 таймера, 4096 билетов.
  * Узлу этого хватает с запасом, а рост без предела в C стоил бы своей
@@ -810,9 +813,11 @@ static taymer taymery[TAYMEROV];
 static size_t taymerov;
 static json *posledniy_kadr;
 static double sleduyuschiy_storozh;
+static fl_value derevo;
 
 static void svyaz_sluchilas(size_t nomer, fl_value sobytie);
 static void uzel_sluchilsya(fl_value sobytie);
+static void nadzor_sluchilsya(const char *kto, const char *kod);
 
 // ── мир: сокеты ────────────────────────────────────────────────────────
 
@@ -1254,12 +1259,14 @@ static void ispolnit_uzel(fl_value velenie) {
     return;
   }
   if (strcmp(imya, "Уронить процесс") == 0) {
-    // Надзора на этой цели нет — назван в шапке. Отказ виден в журнале.
     char kod[128];
     char chto[512];
     v_tekst(pole(velenie, "код"), kod, sizeof kod);
     v_tekst(pole(velenie, "текст"), chto, sizeof chto);
     skazat("в", "отказ", "узел", moyo_imya, "цель", CEL, "процесс", kto, "код", kod, "текст", chto, NULL);
+    // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный nadzor.flang,
+    // здесь только дорога к нему.
+    nadzor_sluchilsya(kto, kod);
     return;
   }
   if (strcmp(imya, "Письмо пропало") == 0) {
@@ -1280,6 +1287,76 @@ static void uzel_sluchilsya(fl_value sobytie) {
   fl_value veleniya = pole(hod, "веления");
   for (size_t shag = 0; shag < veleniya.as.list.count; shag += 1) {
     ispolnit_uzel(veleniya.as.list.items[shag]);
+  }
+}
+
+// ── единственная дорога от отказа к решению надзора ──────────────────────
+
+static void ispolnit_nadzor(fl_value velenie) {
+  const char *imya = velenie.as.variant->name;
+  char kto[128];
+  char nadzor[128];
+  v_tekst(pole(velenie, "кто"), kto, sizeof kto);
+  v_tekst(pole(velenie, "надзор"), nadzor, sizeof nadzor);
+
+  if (strcmp(imya, "Поднять") == 0) {
+    // Перезапуск трогает состояние и не трогает ящик — это решено на flang;
+    // здесь состояние берётся тем же путём, что при подъёме узла.
+    fl_value novyy = fl_nothing();
+    NADO(uzel_zamera_ozhivit_process_uzla(&ctx, uzel, tekst(kto), &novyy, &beda));
+    uzel = novyy;
+    for (size_t nomer = 0; nomer < planov; nomer += 1) {
+      if (strcmp(plan[nomer].imya, kto) != 0) {
+        continue;
+      }
+      fl_value nachalnoe = fl_nothing();
+      NADO(uzel_zamera_call(&ctx, plan[nomer].nachalnoe, NULL, 0, &nachalnoe, &beda));
+      for (size_t gde = 0; gde < sostoyaniy; gde += 1) {
+        if (strcmp(imena_sostoyaniy[gde], kto) == 0) {
+          sostoyaniya[gde] = nachalnoe;
+        }
+      }
+    }
+    skazat("в", "надзор", "узел", moyo_imya, "цель", CEL, "что", "поднят", "кто", kto, NULL);
+    return;
+  }
+  if (strcmp(imya, "Уложить") == 0) {
+    fl_value novyy = fl_nothing();
+    NADO(uzel_zamera_ulozhit_process_uzla(&ctx, uzel, tekst(kto), tekst("остановлен надзором"),
+                                          &novyy, &beda));
+    uzel = novyy;
+    skazat("в", "надзор", "узел", moyo_imya, "цель", CEL, "что", "уложен", "кто", kto,
+           "надзор", nadzor, NULL);
+    return;
+  }
+  if (strcmp(imya, "Решено") == 0) {
+    char strategiya[128];
+    v_tekst(pole(velenie, "стратегия"), strategiya, sizeof strategiya);
+    skazat("в", "надзор", "узел", moyo_imya, "цель", CEL, "что", "решено", "кто", kto,
+           "надзор", nadzor, "стратегия", strategiya, NULL);
+    return;
+  }
+  if (strcmp(imya, "Некому надзирать") == 0) {
+    fl_value novyy = fl_nothing();
+    NADO(uzel_zamera_ostanovit_uzel_celikom(&ctx, uzel, &novyy, &beda));
+    uzel = novyy;
+    rabotaet = false;
+    skazat("в", "надзор", "узел", moyo_imya, "цель", CEL, "что", "некому", "кто", kto,
+           "надзор", nadzor, NULL);
+    return;
+  }
+  fprintf(stderr, "узел не знает веления надзора «%s»\n", imya);
+  exit(1);
+}
+
+static void nadzor_sluchilsya(const char *kto, const char *kod) {
+  fl_value hod = fl_nothing();
+  NADO(uzel_zamera_shag_nadzora_uzla(&ctx, derevo, tekst(kto), tekst(kod), fl_number(chasy()),
+                                     &hod, &beda));
+  derevo = pole(hod, "дерево");
+  fl_value veleniya = pole(hod, "веления");
+  for (size_t shag = 0; shag < veleniya.as.list.count; shag += 1) {
+    ispolnit_nadzor(veleniya.as.list.items[shag]);
   }
 }
 
@@ -1539,6 +1616,59 @@ int main(int argc, char **argv) {
                                        &kanaly[kanalov].sostoyanie, &beda));
     kanalov += 1;
   }
+
+  // Дерево надзора — данные, ровно как размещение. Решает по нему напечатанный
+  // nadzor.flang, а не этот файл.
+  const json *spisok_nadzorov = j_pole(plan_json, "надзоры");
+  size_t nadzorov = spisok_nadzorov != NULL && spisok_nadzorov->vid == J_SPISOK ? spisok_nadzorov->chlenov : 0;
+  fl_value *nadzirateli = NULL;
+  NADO(fl_list_alloc(&ctx, nadzorov, &nadzirateli, &beda));
+  fl_value svyazi[2][SVYAZEY * PROCESSOV];
+  size_t svyazey[2] = {0, 0};
+  for (size_t nomer = 0; nomer < nadzorov; nomer += 1) {
+    const json *n = spisok_nadzorov->chleny[nomer];
+    const char *imya_nadzora = j_tekst_polya(n, "имя", "");
+    const json *porog = j_pole(n, "порог");
+    const json *okno = j_pole(n, "окно");
+    fl_value nadziratel = fl_nothing();
+    NADO(uzel_zamera_nadziratel_uzla(
+        &ctx, tekst(imya_nadzora),
+        fl_number(porog != NULL && porog->vid == J_CHISLO ? chislo_vnutr(porog->tekst) : 0.0),
+        fl_number(okno != NULL && okno->vid == J_CHISLO ? chislo_vnutr(okno->tekst) : 0.0),
+        tekst(j_tekst_polya(n, "иначе", "остановить")), &nadziratel, &beda));
+    nadzirateli[nomer] = nadziratel;
+    const char *klyuchi_svyazey[2] = {"процессы", "надзоры"};
+    for (size_t vid = 0; vid < 2; vid += 1) {
+      const json *spisok = j_pole(n, klyuchi_svyazey[vid]);
+      if (spisok == NULL || spisok->vid != J_SPISOK) {
+        continue;
+      }
+      for (size_t est = 0; est < spisok->chlenov; est += 1) {
+        if (svyazey[vid] >= SVYAZEY * PROCESSOV) {
+          vstal("связей надзора слишком много");
+        }
+        fl_value svyaz = fl_nothing();
+        NADO(uzel_zamera_svyaz_nadzora_uzla(
+            &ctx, tekst(j_tekst_polya(spisok->chleny[est], "кто", "")), tekst(imya_nadzora),
+            tekst(j_tekst_polya(spisok->chleny[est], "стратегия", "")), &svyaz, &beda));
+        svyazi[vid][svyazey[vid]] = svyaz;
+        svyazey[vid] += 1;
+      }
+    }
+  }
+  fl_value *nad_processom = NULL;
+  fl_value *nad_nadzorom = NULL;
+  NADO(fl_list_alloc(&ctx, svyazey[0], &nad_processom, &beda));
+  NADO(fl_list_alloc(&ctx, svyazey[1], &nad_nadzorom, &beda));
+  for (size_t nomer = 0; nomer < svyazey[0]; nomer += 1) {
+    nad_processom[nomer] = svyazi[0][nomer];
+  }
+  for (size_t nomer = 0; nomer < svyazey[1]; nomer += 1) {
+    nad_nadzorom[nomer] = svyazi[1][nomer];
+  }
+  NADO(uzel_zamera_derevo_nadzora_uzla(&ctx, fl_list(nadzirateli, nadzorov),
+                                       fl_list(nad_processom, svyazey[0]),
+                                       fl_list(nad_nadzorom, svyazey[1]), &derevo, &beda));
 
   const char *adres = dovod("слушать", "");
   int port = adres[0] == '\0' ? 0 : slushat_na(adres);

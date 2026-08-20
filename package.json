@@ -48,6 +48,7 @@
     "memory:check": "node flang/scripts/memory-guard.mjs",
     "emit:check": "node flang/scripts/emit-guard.mjs",
     "comparison:check": "node flang/scripts/comparison-guard.mjs",
+    "rules:check": "node flang/scripts/binary-rules-guard.mjs",
     "tmp:check": "node flang/scripts/tempdir-guard.mjs",
     "occupied:check": "node flang/scripts/target-occupied-guard.mjs",
     "proof:ledger": "node flang/scripts/proof-ledger.mjs",

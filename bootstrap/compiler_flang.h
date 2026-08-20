@@ -609,9 +609,25 @@ fl_status compiler_flang_sozdat_svyazyvanie_parametrov_python(fl_ctx *ctx, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_fayl_python(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
 
-/* Запись FTS «Настройки Python»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм исходник», «исходник прогонщика». */
+/* Запись FTS «Тип входа Python»: «вид», «имя», «владелец», «ничто», «целое», «отрезок», «низ», «верх», «элемент», «поле с», «полей», «вариант с», «вариантов». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_nastroyki_python(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_tip_vhoda_python(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value vladelec, fl_value nichto, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле входа Python»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_vhoda_python(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант входа Python»: «имя», «поле с», «полей». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_vhoda_python(fl_ctx *ctx, fl_value imya, fl_value pole_s, fl_value poley, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр входа Python»: «функция», «параметр», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_vhoda_python(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Python»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм исходник», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_python(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог печати Python»: «файлы», «ошибка». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -16585,49 +16601,49 @@ fl_status compiler_flang_tolko_simvoly_slova_python(fl_ctx *ctx, fl_value tekst,
 fl_status compiler_flang_eto_identifikator_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Замены Python Python».
+ * Функция flang «Замены Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @return значение: список: «Замена»
  */
-fl_status compiler_flang_zameny_python_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+fl_status compiler_flang_zameny_python(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Экранировать Python Python».
+ * Функция flang «Экранировать Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param tekst — «текст»: строка
  * @return значение: строка
  */
-fl_status compiler_flang_ekranirovat_python_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+fl_status compiler_flang_ekranirovat_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Строка Python Python».
+ * Функция flang «Строка Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param znachenie — «значение»: строка
  * @return значение: строка
  */
-fl_status compiler_flang_stroka_python_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+fl_status compiler_flang_stroka_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Число Python Python».
+ * Функция flang «Число Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param znachenie — «значение»: число
  * @return значение: строка
  */
-fl_status compiler_flang_chislo_python_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+fl_status compiler_flang_chislo_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Конечное число Python Python».
+ * Функция flang «Конечное число Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param znachenie — «значение»: число
  * @param tekst — «текст»: строка
  * @return значение: строка
  */
-fl_status compiler_flang_konechnoe_chislo_python_python(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+fl_status compiler_flang_konechnoe_chislo_python(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Это минус ноль Python».
@@ -16658,12 +16674,12 @@ fl_status compiler_flang_bezopasnyy_identifikator_python(fl_ctx *ctx, fl_value i
 fl_status compiler_flang_pohozhe_na_cifru_python(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Зарезервировано в Python Python».
+ * Функция flang «Зарезервировано в Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @return значение: список: строка
  */
-fl_status compiler_flang_zarezervirovano_v_python_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+fl_status compiler_flang_zarezervirovano_v_python(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Объявлено бэкендом Python».
@@ -19601,21 +19617,21 @@ fl_status compiler_flang_imya_modulya_python(fl_ctx *ctx, fl_value programma, fl
 fl_status compiler_flang_est_imya_modulya_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Занято целью Python Python».
+ * Функция flang «Занято целью Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @return значение: список: строка
  */
-fl_status compiler_flang_zanyato_celyu_python_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+fl_status compiler_flang_zanyato_celyu_python(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Обойти занятое целью Python Python».
+ * Функция flang «Обойти занятое целью Python».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param imya — «имя»: строка
  * @return значение: строка
  */
-fl_status compiler_flang_oboyti_zanyatoe_celyu_python_python(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+fl_status compiler_flang_oboyti_zanyatoe_celyu_python(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Имя файла программы Python».
@@ -19696,6 +19712,94 @@ fl_status compiler_flang_pechat_tel_python(fl_ctx *ctx, fl_value obschee, fl_val
  * @return значение: список: «Файл Python»
  */
 fl_status compiler_flang_slit_fayly_python(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_python(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_python(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_python(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_python(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_python(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shapka_granicy_vhoda_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvost_granicy_vhoda_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_granicy_vhoda_python(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_python(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать программы Python».

@@ -136,6 +136,7 @@
 - [Снятая правка обязана красить тест](a-removal-must-turn-a-test-red.md)
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
+- [Побайтовая сверка вычитала блок из вывода свидетеля — и зеленела на том, без чего программа не работает](granica-vhoda-vychitalas-iz-sverki-i-sverka-zelenela-vpustuyu.md)
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)

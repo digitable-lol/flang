@@ -30,7 +30,7 @@ flang \- проверить программу на flang: типы и дока�
 .br
 .B flang emit
 .I файл.flang
-.B \-\-target c
+.B \-\-target c|python
 .br
 .B flang lock
 .I файл.flang
@@ -214,8 +214,15 @@ $ echo '«Сумма» от [3, 1, 2]' | flang repl проба.flang
 двоичный — «6».
 .RE
 .TP
-.BI "emit " "файл.flang " \-\-target " c"
-Напечатать программу в C99. Куда:
+.BI "emit " "файл.flang " \-\-target " c|python"
+Напечатать программу в C99 или в Python: у двоичного втащены две цели из восьми,
+остальные шесть живут в полном инструментарии на Node. Рантайм цели читается с
+диска —
+.B \-\-runtime
+.I каталог
+или
+.BR $FLANG_RUNTIME_DIR .
+Куда:
 .B \-\-out
 .I каталог
 (все файлы) или

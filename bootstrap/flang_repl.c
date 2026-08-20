@@ -267,7 +267,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c|python напечатать программу в C99 или Python\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -283,7 +283,7 @@ static const char FLANG_HELP[] =
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
     "Здесь все 10 команд полного инструментария. Чего у бинарника нет — остальные\n"
-    "семь целей печати и законы на сетке: им нужен Node.\n"
+    "шесть целей печати и законы на сетке: им нужен Node.\n"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -334,23 +334,26 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|python [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу без Node; рантайм цели читается с диска (--runtime,\n"
+    "$FLANG_RUNTIME_DIR): у C это flang_runtime.[ch], flang_cli.c и flang_repl.c,\n"
+    "у Python — flang_runtime.py и flang_cli.py.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "У ЦЕЛИ C ДВУХ ВЕЩЕЙ НЕТ: недостижимое не отбрасывается, доказанное не метится\n"
+    "(«markProven»). На компиляторе это 6 файлов из 7 байт в байт. У цели python\n"
+    "недостижимое отбрасывается, как у свидетеля, и обе отметки кладутся.\n"
+    "\n"
+    "  --target c|python две втащенные цели этого бинарника\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --repl            напечатать ещё и человеческий вход (только у C)\n"
+    "  --runtime каталог откуда читать рантайм цели\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
+    "Остальные шесть целей (js, go, rust, java, csharp, elixir) написаны на\n"
     "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
 static const char HELP_AST[] =
@@ -5835,6 +5838,28 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/*
+ * ВТОРАЯ ЦЕЛЬ — PYTHON, И ОТ C ОНА ОТЛИЧАЕТСЯ ТРЕМЯ ВЕЩАМИ, А НЕ ОДНОЙ.
+ *
+ * 1. Рантайма у неё ДВА файла вместо четырёх: `flang_runtime.py` и
+ *    `flang_cli.py`. Оболочки у Python нет вовсе — звать её неоткуда, — и
+ *    заголовка нет, потому что в Python объявлений отдельно от тел не бывает.
+ * 2. Настроек у неё ДВЕНАДЦАТЬ полей вместо пятнадцати: пропали «рантайм
+ *    заголовок», «оболочка» и «исходник оболочки». Граница входа осталась —
+ *    четыре списка те же и с теми же именами полей.
+ * 3. Отбрасывание недостижимого у неё ЕСТЬ, а у C нет. `flang emit --target
+ *    python` у свидетеля зовёт `dropUnreachable` всегда, оболочки, которая это
+ *    отменяет, у Python не бывает, и точка входа «Напечатать связанное в
+ *    Python» отбрасывает сама. Оттого она и принимает СВЯЗАННОЕ целиком, а не
+ *    голую программу: какие функции свои и надо ли отбирать, знает связывание.
+ */
+#define EMIT_PY_RUNTIME_SOURCE "flang_runtime.py"
+#define EMIT_PY_RUNNER_SOURCE "flang_cli.py"
+
+/** Цели, которые умеет этот бинарник. Порядок — как в справке. */
+#define EMIT_TARGET_C "c"
+#define EMIT_TARGET_PYTHON "python"
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -5844,8 +5869,8 @@ static int run_file(int argc, char **argv) {
  * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
  * НЕ пробуется — в отличие от поиска заголовков для оболочки.
  */
-static bool emit_runtime_here(const char *directory) {
-  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+static bool emit_runtime_here(const char *directory, const char *probe_name) {
+  char *probe = repl_join(directory, probe_name);
   size_t bytes = 0;
   char *text = repl_read_file(probe, &bytes);
   bool ok = false;
@@ -5859,16 +5884,22 @@ static bool emit_runtime_here(const char *directory) {
   return ok;
 }
 
-static char *emit_runtime_dir(const char *self_dir, const char *given) {
-  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+/*
+ * Каталог рантайма ищется по ПРОБНОМУ ФАЙЛУ цели, а не по одному на всех.
+ * `flang_runtime.h` лежит только у C, `flang_runtime.py` — только у Python, и
+ * перепутать каталоги нельзя: рантайм уезжает в вывод дословно, и рантайм не
+ * той цели дал бы файл, который даже не разбирается.
+ */
+static char *emit_runtime_dir(const char *self_dir, const char *given, const char *const places[2],
+                              const char *probe_name) {
   size_t index = 0;
   if (given != NULL && given[0] != '\0') {
-    return emit_runtime_here(given) ? repl_say(given) : NULL;
+    return emit_runtime_here(given, probe_name) ? repl_say(given) : NULL;
   }
   {
     const char *set = getenv("FLANG_RUNTIME_DIR");
     if (set != NULL && set[0] != '\0') {
-      return emit_runtime_here(set) ? repl_say(set) : NULL;
+      return emit_runtime_here(set, probe_name) ? repl_say(set) : NULL;
     }
   }
   if (self_dir == NULL) {
@@ -5878,7 +5909,7 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
     char *parent = repl_dirname(self_dir);
     char *directory = repl_join(parent, places[index]);
     free(parent);
-    if (emit_runtime_here(directory)) {
+    if (emit_runtime_here(directory, probe_name)) {
       return directory;
     }
     free(directory);
@@ -6095,7 +6126,17 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
+  /* Порядок полей здесь — порядок объявления «Настроек Python» в
+     `flang/self/emit-python.flang`. Разойдись он — печать получила бы запись не
+     той формы, и связывание об этом не скажет: запись сверяется по именам. */
+  static const char *const py_names[12] = {"путь",           "есть путь",          "база",
+                                           "предел глубины", "предел шагов",       "прогонщик",
+                                           "рантайм исходник", "исходник прогонщика", "типы входа",
+                                           "поля входа",     "варианты входа",     "параметры входа"};
+  static const char *const places_c[2] = {"flang/src/emit/c", "share/flang/c"};
+  static const char *const places_py[2] = {"flang/src/emit/python", "share/flang/python"};
   fl_value values[15];
+  fl_value py_values[12];
   fl_value args[2];
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
@@ -6120,6 +6161,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *runtime_source = NULL;
   char *runner_source = NULL;
   char *shell_source = NULL;
+  bool python = false;
   size_t runtime_header_bytes = 0;
   size_t runtime_source_bytes = 0;
   size_t runner_source_bytes = 0;
@@ -6179,13 +6221,14 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике две цели — «c» и «python»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  python = strcmp(target, EMIT_TARGET_PYTHON) == 0;
+  if (!python && strcmp(target, EMIT_TARGET_C) != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «python»;\n"
+            "остальные шесть (js, go, rust, java, csharp, elixir) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
     return 2;
@@ -6198,13 +6241,16 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = emit_runtime_dir(self_dir, given_runtime, python ? places_py : places_c,
+                             python ? EMIT_PY_RUNTIME_SOURCE : EMIT_RUNTIME_HEADER);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
-          stderr);
+    fprintf(stderr,
+            "flang emit: не найдены ИСХОДНИКИ рантайма цели «%s» (%s без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../%s, ../%s.\n",
+            target, python ? EMIT_PY_RUNTIME_SOURCE : EMIT_RUNTIME_HEADER,
+            python ? places_py[0] : places_c[0], python ? places_py[1] : places_c[1]);
     return 2;
   }
 
@@ -6220,21 +6266,26 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   {
-    char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
-    runtime_header = repl_read_file(where, &runtime_header_bytes);
-    free(where);
-    where = repl_join(runtime, EMIT_RUNTIME_SOURCE);
+    char *where = repl_join(runtime, python ? EMIT_PY_RUNTIME_SOURCE : EMIT_RUNTIME_SOURCE);
     runtime_source = repl_read_file(where, &runtime_source_bytes);
     free(where);
-    where = repl_join(runtime, EMIT_RUNNER_SOURCE);
+    where = repl_join(runtime, python ? EMIT_PY_RUNNER_SOURCE : EMIT_RUNNER_SOURCE);
     runner_source = repl_read_file(where, &runner_source_bytes);
     free(where);
-    where = repl_join(runtime, EMIT_SHELL_SOURCE);
-    shell_source = repl_read_file(where, &shell_source_bytes);
-    free(where);
+    /* Заголовок и оболочка — только у C: в Python объявлений отдельно от тел не
+       бывает, а человеческий вход у языка ровно один и он здесь. */
+    if (!python) {
+      where = repl_join(runtime, EMIT_RUNTIME_HEADER);
+      runtime_header = repl_read_file(where, &runtime_header_bytes);
+      free(where);
+      where = repl_join(runtime, EMIT_SHELL_SOURCE);
+      shell_source = repl_read_file(where, &shell_source_bytes);
+      free(where);
+    }
   }
-  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+  if (runtime_source == NULL || runner_source == NULL ||
+      (!python && (runtime_header == NULL || shell_source == NULL))) {
+    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма цели «%s»\n", runtime, target);
     code = 2;
   }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
@@ -6280,24 +6331,44 @@ static int emit_file(int argc, char **argv, const char *self) {
         code = 1;
       } else {
         fits = emit_entry_fits(program, table);
-        values[0] = repl_value_say(own);
-        values[1] = fl_flag(own[0] != '\0');
-        values[2] = fl_number((double)base_index);
-        values[3] = fl_number(strtod(depth, NULL));
-        values[4] = fl_number(strtod(steps, NULL));
-        values[5] = fl_flag(cli);
-        values[6] = repl_value_text(runtime_header, runtime_header_bytes);
-        values[7] = repl_value_text(runtime_source, runtime_source_bytes);
-        values[8] = repl_value_text(runner_source, runner_source_bytes);
-        values[9] = fl_flag(shell);
-        values[10] = repl_value_text(shell_source, shell_source_bytes);
-        values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
-        values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
-        values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
-        values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
-        args[0] = program;
-        args[1] = repl_value_record(names, values, 15);
-        if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
+        if (python) {
+          py_values[0] = repl_value_say(own);
+          py_values[1] = fl_flag(own[0] != '\0');
+          py_values[2] = fl_number((double)base_index);
+          py_values[3] = fl_number(strtod(depth, NULL));
+          py_values[4] = fl_number(strtod(steps, NULL));
+          py_values[5] = fl_flag(cli);
+          py_values[6] = repl_value_text(runtime_source, runtime_source_bytes);
+          py_values[7] = repl_value_text(runner_source, runner_source_bytes);
+          py_values[8] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+          py_values[9] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+          py_values[10] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+          py_values[11] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+          /* СВЯЗАННОЕ ЦЕЛИКОМ, а не голая программа: точка входа Python сама
+             отбрасывает недостижимое, и решает она это по полям «свои» и
+             «отбирать», которых в программе нет — они у связывания. */
+          args[0] = linked;
+          args[1] = repl_value_record(py_names, py_values, 12);
+        } else {
+          values[0] = repl_value_say(own);
+          values[1] = fl_flag(own[0] != '\0');
+          values[2] = fl_number((double)base_index);
+          values[3] = fl_number(strtod(depth, NULL));
+          values[4] = fl_number(strtod(steps, NULL));
+          values[5] = fl_flag(cli);
+          values[6] = repl_value_text(runtime_header, runtime_header_bytes);
+          values[7] = repl_value_text(runtime_source, runtime_source_bytes);
+          values[8] = repl_value_text(runner_source, runner_source_bytes);
+          values[9] = fl_flag(shell);
+          values[10] = repl_value_text(shell_source, shell_source_bytes);
+          values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+          values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+          values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+          values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+          args[0] = program;
+          args[1] = repl_value_record(names, values, 15);
+        }
+        if (repl_call(python ? "Напечатать связанное в Python" : "Напечатать связанное", args, 2, &result) != FL_OK) {
           code = 1;
         } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
           char *say = val_copy(failure);

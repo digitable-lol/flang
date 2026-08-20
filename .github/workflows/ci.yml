@@ -116,3 +116,14 @@ jobs:
       - uses: actions/checkout@v4
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/storozh-ssylok.flang
+
+  # Контраст подсветки — рядом с ними и по той же причине. Сборка сайта тоже его
+  # меряет, но она запускается только на правку docs/**, а сюда правка попадает
+  # с любой стороны: цвет живёт в docs/site/style.css, а норма — в замере.
+  # Проверка читает одну таблицу стилей и отвечает за пять секунд.
+  kontrast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: bootstrap/flang io docs/site/storozh-kontrasta.flang

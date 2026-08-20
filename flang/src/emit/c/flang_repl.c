@@ -2546,8 +2546,26 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  * Дорога одна на оба человеческих входа нарочно: разойдись они, оболочка
  * принимала бы объявление, которое `flang check` в том же файле отвергает.
  */
+/*
+ * ДВА КЛЮЧА, А НЕ ОДИН, И ГРАНИЦА МЕЖДУ НИМИ ИЗМЕРЕНА.
+ *
+ * `kernel` — судить ли ядром доказательства, `examples` — прогонять ли примеры.
+ * Раньше это был один ключ на оба шага; разделён затем, что у ПЕЧАТИ
+ * подмножество своё: ядро ей обязательно, а примеры она не тянет.
+ *
+ *   flang check      связывание, типы, завершаемость, ядро, примеры
+ *   flang package    то же
+ *   flang emit       всё, КРОМЕ примеров
+ *   оболочка         связывание, типы, завершаемость
+ *
+ * Печати не гоняются примеры не по вкусу, а по замеру: прогон примеров самого
+ * компилятора стоит 84 614 600 витков, а `flang emit` компилятора — это и есть
+ * раскрутка. Ядро при этом остаётся: без него печать теряет байты, потому что
+ * ложно доказанное постусловие СНИМАЕТ проверку из напечатанной программы.
+ */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
-                               bool *has_program, repl_strings *proven, bool kernel) {
+                               bool *has_program, repl_strings *proven, bool kernel, bool examples,
+                               fl_value *linked_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -2566,6 +2584,13 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     return false;
   }
   *has_program = true;
+  /* Связанная запись ЦЕЛИКОМ — тем целям печати, которые печатают из неё, а не
+     из программы (`from_linked` в таблице целей). Отдаётся отсюда затем, чтобы
+     печать не связывала второй раз: на компиляторе связывание стоит 23,7 млн
+     витков и минуты, дороже всего остального вместе взятого. */
+  if (linked_out != NULL) {
+    *linked_out = linked;
+  }
   if (val_field(linked, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
     for (index = 0; index < diagnostics.as.list.count; index += 1) {
       bads_take(bads, diagnostics.as.list.items[index]);
@@ -2671,7 +2696,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
    * сошлись» — разные утверждения, и молчаливое второе на месте первого и есть
    * та дыра, которую эта правка закрывает.
    */
-  if (kernel && bads->count == 0) {
+  if (examples && bads->count == 0) {
     fl_value example_bads = fl_nothing();
     /* Пределы прогона НЕ называются здесь: они записаны одним местом на flang
        («Предел витков проверки» в `compiler.flang`), и вторая их копия в C
@@ -2693,7 +2718,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false);
+                            false, false, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -5036,7 +5061,7 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -6889,28 +6914,44 @@ static int emit_file(int argc, char **argv, const char *self) {
     {
       fl_value linked = fl_nothing();
       fl_value program = fl_nothing();
-      fl_value bads = fl_nothing();
-      fl_value link_args[2];
-      link_args[0] = sources;
-      link_args[1] = repl_value_say(full);
-      if (repl_call("Связать исходники", link_args, 2, &linked) != FL_OK) {
-        code = 1;
-      } else if (val_field(linked, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
-        repl_bads list;
-        size_t at = 0;
-        bads_init(&list);
-        for (at = 0; at < bads.as.list.count; at += 1) {
-          bads_take(&list, bads.as.list.items[at]);
-        }
+      /*
+       * ПЕЧАТЬ СПРАШИВАЕТ У ПРОВЕРКИ — И ЭТО НЕ ДОБАВКА К ОТЧЁТУ.
+       *
+       * Здесь стоял голый вызов «Связать исходники», и печать смотрела ровно
+       * диагностики СВЯЗЫВАНИЯ: ни типов, ни завершаемости, ни ядра. Улика,
+       * снятая прогоном по программам дерева настоящими командами: полный
+       * инструментарий отказывался печатать 59 программ, и ВСЕ 59 двоичный
+       * печатал — кодом 0 и шестью файлами C на каждую. Почти половина из них —
+       * ложные ДОКАЗАТЕЛЬСТВА: 26 отказов `FLANG_PROOF_INDUCTION_*`.
+       *
+       * Это и есть довод, по которому ядро стоит в подмножестве печати:
+       * доказанное постусловие в напечатанный код НЕ едет проверкой при работе,
+       * а недоказанное — едет. Ложное доказательство СНИМАЕТ проверку из
+       * собранной программы, и заметить это потом нечем.
+       *
+       * Дорога взята ТА ЖЕ, что у `flang check` (`repl_check_sources`), а не
+       * своя: собери печать проверку из тех же кусков рядом — и два входа
+       * одного двоичного разошлись бы молча в первую же правку. Заодно уходит
+       * второе связывание, а оно дороже всего остального вместе взятого.
+       */
+      repl_bads list;
+      bool has_program = false;
+      bads_init(&list);
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked)) {
         check_print_bads(&list, path, paths.count);
-        fprintf(stderr, "flang emit: печать отменена — связывание дало замечаний %lu\n",
+        fprintf(stderr,
+                "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
+                "Разбор, типы, завершаемость и ядро доказательств смотрит «flang check» этого же\n"
+                "двоичного: он назовёт то же самое и полнее.\n",
                 (unsigned long)list.count);
         bads_free(&list);
         code = 1;
-      } else if (!val_field(linked, "программа", &program)) {
+      } else if (!has_program) {
+        bads_free(&list);
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
       } else {
+        bads_free(&list);
         fits = emit_entry_fits(program, table);
         code = emit_call(&EMIT_TARGET_TABLE[chosen],
                          EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table, runtime,
@@ -6948,6 +6989,23 @@ static int emit_file(int argc, char **argv, const char *self) {
               "двоичного flang, полная проверка есть в версии для Node\n",
               stderr);
       }
+      /*
+       * ЧТО ПРОВЕРЕНО ПЕРЕД ПЕЧАТЬЮ, А ЧТО НЕТ — СЛОВАМИ И ВСЕГДА.
+       *
+       * Урезанная проверка вправе чего-то не смотреть. Она не вправе отвечать
+       * на непросмотренное тем же молчанием, что на просмотренное.
+       *
+       * Код при этом 0, а не 2: ответ `check` — это ВЕРДИКТ, и код обязан его
+       * нести; ответ `emit` — это ФАЙЛЫ, и код говорит, напечатались ли они.
+       * Отдай здесь 2 при напечатанных файлах — и всякий `make`, всякий
+       * сценарий сборки и сама пересборка компилятора прочли бы успешную печать
+       * как отказ.
+       */
+      fputs("проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.\n"
+            "ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших\n"
+            "программах он в предел шагов не укладывается — свяжи с ними печать, и компилятор\n"
+            "перестал бы печатать сам себя. Прогоните их отдельно: flang test <файл>\n",
+            stderr);
       if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
         fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
       }
@@ -10919,7 +10977,7 @@ static int package_file(int argc, char **argv) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);

@@ -138,6 +138,12 @@ public static class Flang
     {
         if (target.Tag == Value.TagVariant)
         {
+            // Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+            Value? inVariant = Value.Lookup(target.Fields, name);
+            if (inVariant is not null)
+            {
+                return inVariant;
+            }
             throw Fail(
                 FlangError.CodeType,
                 "поле «" + name + "» нельзя взять у варианта «" + target.Str + "» — нужен разбор");

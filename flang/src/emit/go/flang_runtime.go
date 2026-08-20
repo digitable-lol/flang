@@ -571,6 +571,10 @@ func Trampoline(ctx *Ctx, step StepFunc, args []Value, function string) (Value, 
 // FieldGet — доступ к полю записи.
 func FieldGet(ctx *Ctx, target Value, name string) (Value, error) {
 	if target.Tag == TagVariant {
+		// Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+		if value, found := lookup(target.Fields, name); found {
+			return value, nil
+		}
 		return Nothing(), Fail(CodeType,
 			"поле «%s» нельзя взять у варианта «%s» — нужен разбор", name, target.Str)
 	}

@@ -368,6 +368,7 @@ function $recordsEqual(left, right) {
 
 function $field(target, name) {
   if ($isVariant(target)) {
+    if (Object.hasOwn(target.fields, name)) return target.fields[name]
     $fail("FLANG_TYPE", `поле «${name}» нельзя взять у варианта «${target.variant}» — нужен разбор`)
   }
   if (!$isRecord(target)) {

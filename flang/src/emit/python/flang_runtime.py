@@ -673,6 +673,9 @@ def trampoline(ctx, step, args, function):
 def field_get(ctx, target, name):
     """Доступ к полю записи."""
     if target.tag == TAG_VARIANT:
+        # Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+        if name in target.data:
+            return target.data[name]
         raise fail(
             CODE_TYPE,
             f"поле «{name}» нельзя взять у варианта «{target.name}» — нужен разбор",

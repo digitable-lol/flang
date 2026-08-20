@@ -120,6 +120,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 /*
@@ -149,7 +150,13 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
  * Случай этот не угадывается, а ПРОВЕРЯЕТСЯ: печать берёт таблицу только если
  * список пар «функция, параметр» связанной программы совпадает с впечатанным
  * — по порядку, по числу и по именам (`emit_entry_fits`). Не совпал — таблица
- * пуста, и об этом сказано числом на stderr, а не умолчанием.
+ * пуста, и об этом сказано на stderr, а не умолчанием.
+ *
+ * СКАЗАНО ПРИ ЭТОМ ПРО ДЕЛО ЧЕЛОВЕКА, А НЕ ПРО УСТРОЙСТВО: одной строкой, что
+ * аргументы напечатанной программы по типам не проверяются и где взять полную
+ * проверку. Прежде здесь печатались четыре строки про слой типов, имя нашей
+ * функции и число параметров ЧУЖОЙ программы — попросившему код на C ни одно из
+ * трёх не говорит ничего.
  */
 #ifndef FL_PROGRAM_ENTRY
 #define FL_PROGRAM_ENTRY fl_program_entry
@@ -307,20 +314,28 @@ static const char HELP_TEST[] =
     "  --no-check      не проверять — смотреть на поведение примеров, пока\n"
     "                  программа ещё в правке\n"
     "  --max-steps N   предел шагов вычислителя\n"
-    "  --max-depth N   предел глубины";
+    "  --max-depth N   предел глубины\n"
+    "\n"
+    "У не сошедшегося примера называются ОБЕ стороны: ожидалось и получено.\n"
+    "Длинное значение обрезается на 200 знаках, и длина полного сказана числом.\n"
+    "\n"
+    "Примеры, объявленные при морфизмах теорката, здесь не прогоняются: их считает\n"
+    "версия для Node. На таких программах счёт «примеров N» окажется меньше её.";
 
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
     "                       [--max-depth N]\n"
     "\n"
-    "Вычисляет ОДНУ функцию и печатает значение. Считает вычислитель, втащенный в\n"
-    "замыкание бинарника (flang/self/interpret.flang), — без Node и без «cc».\n"
+    "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
+    "«cc» для этого не нужны.\n"
     "\n"
-    "Аргументы сверяются объявленным типам ДО вычисления, тем же кодом, каким это\n"
-    "делает свидетель: «Факториал» от −3 отвергается FLANG_TYPE, а не считается.\n"
+    "Аргументы сверяются объявленным типам ДО вычисления: «Факториал» от −3\n"
+    "отвергается FLANG_TYPE, а не считается.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
-    "  --args '{…}'       аргументы JSON-объектом\n"
+    "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
+    "                     Списка или вложенного объекта здесь не принимают —\n"
+    "                     их считает версия для Node\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины";
 
@@ -329,20 +344,30 @@ static const char HELP_EMIT[] =
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу в C99 без Node. Каталог из «--out» заводится сам, вместе с\n"
+    "промежуточными.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c        единственная цель этой сборки flang\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
     "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --runtime каталог где лежат исходники рантайма C\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
-    "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
+    "РАНТАЙМ C — четыре файла (flang_runtime.h, flang_runtime.c, flang_cli.c,\n"
+    "flang_repl.c), они уезжают в вывод дословно. Ищутся они в «--runtime», затем в\n"
+    "$FLANG_RUNTIME_DIR, затем рядом с установленным flang (share/flang/c). Отказ\n"
+    "«не найдены исходники рантайма C» значит, что ни одно из трёх мест не подошло.\n"
+    "\n"
+    "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
+    "Прогоняйте «flang check» отдельно: версия для Node печатать непроверенное\n"
+    "отказывается, а эта напечатает.\n"
+    "\n"
+    "Вывод бывает БОЛЬШЕ, чем у версии для Node: недостижимые функции здесь не\n"
+    "отбрасываются. Собирается и работает он одинаково.\n"
+    "\n"
+    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) есть в версии\n"
+    "для Node: npm install -g @digitable-lol/flang";
 
 static const char HELP_AST[] =
     "flang ast <файл.flang> [--pretty]\n"
@@ -457,8 +482,8 @@ static const char HELP_REPL[] =
     "Объявления накапливаются в сессии, выражения вычисляются сразу, «.помощь»\n"
     "показывает команды. Файл в аргументе загружается в сессию при запуске.\n"
     "\n"
-    "Выражение считается так: сессия печатается в C (та же «Печать программы», что\n"
-    "у «flang emit»), собирается системным «cc» против lib/libcompiler_flang.a и\n"
+    "Выражение считается так: сессия печатается в C тем же способом, что у\n"
+    "«flang emit», собирается системным «cc» против lib/libcompiler_flang.a и\n"
     "запускается. Нет «cc» — оболочка не выключается, а проверяет разбор, типы и\n"
     "завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.";
@@ -4897,6 +4922,42 @@ static int check_file(const char *path) {
       printf("; файлов вместе с импортами %lu", (unsigned long)paths.count);
     }
     printf("\n");
+    /*
+     * ЧЬЁ ЗАВЕРШЕНИЕ НЕ ДОКАЗАНО — ПОИМЁННО, А НЕ ЧИСЛОМ.
+     *
+     * Прежде тут стояло только «из них с доказанным завершением 2», и человеку
+     * с тремя функциями оставалось гадать, о которой речь. Знание при этом было
+     * под рукой: список доказанных посчитан строкой выше, и разность с
+     * объявленными — ровно ответ. Версия для Node его называет
+     * (`functions: [{name, total}]`), и молчать о посчитанном хуже, чем не
+     * считать вовсе: число без имён читается как «что-то не так со всем».
+     *
+     * Имена печатаются до REPL_VERBOSE штук, дальше — счёт: у компилятора таких
+     * функций сотни, и вывалить их списком значило бы утопить всё остальное.
+     */
+    if (functions > proved) {
+      const fl_value *items = NULL;
+      size_t count = 0;
+      size_t index = 0;
+      size_t shown = 0;
+      zn_field_items(program, "functions", &items, &count);
+      printf("без доказанного завершения:");
+      for (index = 0; index < count; index += 1) {
+        const char *fname = NULL;
+        size_t fbytes = 0;
+        if (!zn_field_text(items[index], "name", &fname, &fbytes) || strings_has(&proven, fname, fbytes)) {
+          continue;
+        }
+        if (shown < REPL_VERBOSE) {
+          printf(" «%.*s»", (int)fbytes, fname);
+        }
+        shown += 1;
+      }
+      if (shown > REPL_VERBOSE) {
+        printf(" и ещё %lu", (unsigned long)(shown - REPL_VERBOSE));
+      }
+      printf("\n");
+    }
   }
   /* Потоки разные — stdout под ответ, stderr под диагностику, — и порядок между
      ними держится только сбросом: под конвейером stdout копится блоками, и без
@@ -5764,7 +5825,8 @@ static int run_file(int argc, char **argv) {
  *    таблица у бинарника уже есть, — печать САМОГО СЕБЯ: тогда годится его
  *    собственная, впечатанная (`FL_PROGRAM_ENTRY`). Годность не предполагается,
  *    а проверяется парами «функция, параметр» (`emit_entry_fits`); не сошлось —
- *    таблица пуста, и об этом сказано числом.
+ *    таблица пуста, и человеку сказано одной строкой, что аргументы
+ *    напечатанной программы по типам не проверяются.
  *
  * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
  *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
@@ -6058,11 +6120,70 @@ static bool emit_entry_fits(fl_value program, const fl_entry_table *table) {
   return seen == table->param_count && seen > 0;
 }
 
+/**
+ * Каталог вывода заводится САМ, вместе с промежуточными, — ровно как это делает
+ * `flang emit` на Node (`mkdir(dirname(путь), { recursive: true })` в
+ * `flang/bin/flang.mjs`).
+ *
+ * Прежде каталог не заводился, и объяснено это было тем, что `mkdir` живёт в
+ * <sys/stat.h>, а этому файлу хватало стандартной библиотеки. Цена оказалась не
+ * та, что называли: человек, набравший `flang emit … --out каталог/которого/нет`,
+ * получал отказ про ПЕРВЫЙ ФАЙЛ рантайма — «не открыт для записи
+ * …/flang_runtime.h», — и читал его как «сломан рантайм», потому что для такого
+ * текста это и есть правильное чтение. Заголовок к тому же уже нужен хозяину
+ * `flang io` ниже, так что нового у оболочки не прибавилось ничего.
+ *
+ * Неудача называет КАТАЛОГ и причину словами системы (`strerror`), а не первый
+ * файл, который не открылся.
+ */
+static bool emit_make_dir(const char *path) {
+  char *copy = NULL;
+  size_t at = 0;
+  bool ok = true;
+  /* Пустое имя каталога — не «текущий», а недосмотр вызывающего (`--out ""`), и
+     обход ниже начинается со второго знака, потому что первый может быть
+     корневой косой чертой. На пустой строке второго знака нет вовсе. */
+  if (path == NULL || path[0] == '\0') {
+    fputs("flang emit: «--out» назван пустым именем каталога — назовите, куда печатать\n", stderr);
+    return false;
+  }
+  copy = repl_say(path);
+  if (copy == NULL) {
+    fputs("flang emit: не хватило памяти под путь каталога вывода\n", stderr);
+    return false;
+  }
+  for (at = 1; ok && copy[at] != '\0'; at += 1) {
+    if (copy[at] == '/') {
+      copy[at] = '\0';
+      if (copy[at - 1] != '/' && mkdir(copy, 0777) != 0 && errno != EEXIST) {
+        ok = false;
+      }
+      copy[at] = '/';
+    }
+  }
+  if (ok && mkdir(copy, 0777) != 0 && errno != EEXIST) {
+    ok = false;
+  }
+  if (ok) {
+    /* EEXIST мог прийти и от ФАЙЛА с этим именем: тогда запись всё равно не
+       выйдет, и сказать об этом надо здесь, а не первым непонятным отказом. */
+    struct stat info;
+    if (stat(copy, &info) == 0 && !S_ISDIR(info.st_mode)) {
+      fprintf(stderr, "flang emit: «%s» — не каталог, а файл; выберите другое место для --out\n", copy);
+      ok = false;
+    }
+  } else {
+    fprintf(stderr, "flang emit: не удалось завести каталог «%s»: %s\n", copy, strerror(errno));
+  }
+  free(copy);
+  return ok;
+}
+
 /** Запись одного напечатанного файла на диск; путь уже разрешён. */
 static bool emit_write(const char *full, const char *text, size_t bytes) {
   FILE *stream = fopen(full, "wb");
   if (stream == NULL) {
-    fprintf(stderr, "flang emit: не открыт для записи %s\n", full);
+    fprintf(stderr, "flang emit: не открыт для записи %s: %s\n", full, strerror(errno));
     return false;
   }
   if (bytes > 0 && fwrite(text, 1, bytes, stream) != bytes) {
@@ -6175,9 +6296,9 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
   if (strcmp(target, "c") != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
-            "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
+            "flang emit: цели «%s» у этой сборки flang нет — есть одна, «c». Остальные семь\n"
+            "(js, go, rust, python, java, csharp, elixir) есть в версии для Node:\n"
+            "npm install -g @digitable-lol/flang\n",
             target);
     return 2;
   }
@@ -6192,9 +6313,11 @@ static int emit_file(int argc, char **argv, const char *self) {
   runtime = emit_runtime_dir(self_dir, given_runtime);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
+    fputs("flang emit: не найдены исходники рантайма C — четыре файла (flang_runtime.h,\n"
+          "flang_runtime.c, flang_cli.c, flang_repl.c), которые уезжают в вывод дословно.\n"
+          "Искали в «--runtime», в $FLANG_RUNTIME_DIR и рядом с установленным flang\n"
+          "(share/flang/c). Что делать: назвать каталог с ними ключом «--runtime каталог»\n"
+          "или переменной FLANG_RUNTIME_DIR; в дереве исходников это flang/src/emit/c.\n",
           stderr);
     return 2;
   }
@@ -6303,6 +6426,10 @@ static int emit_file(int argc, char **argv, const char *self) {
     }
   }
 
+  if (code == 0 && one == NULL && !emit_make_dir(out)) {
+    code = 2;
+  }
+
   if (code == 0) {
     bool found = false;
     for (index = 0; index < files.as.list.count && code == 0; index += 1) {
@@ -6331,13 +6458,6 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       {
         char *destination = repl_join(out, name);
-        /* Каталог НЕ заводится, и это решение, а не пропуск. `mkdir` живёт в
-           <sys/stat.h>, а у этого файла есть обещание: оболочке хватает
-           стандартной библиотеки C плюс signal.h и unistd.h, и стережёт его
-           сторож в flang/test/emit-c.test.mjs («оболочка печатается только по
-           просьбе, и её нужды названы поимённо»). Один заголовок ради одного
-           mkdir — плохая цена: каталог человек делает `mkdir` сам, а если его
-           нет, отказ ниже назовёт путь. */
         if (!emit_write(destination, body, body_bytes)) {
           code = 1;
         }
@@ -6367,13 +6487,21 @@ static int emit_file(int argc, char **argv, const char *self) {
         fprintf(stderr, "напечатано файлов %lu, байт %lu, в %s\n", (unsigned long)files.as.list.count,
                 (unsigned long)written, out);
       }
+      /*
+       * ЧТО ЗДЕСЬ СКАЗАНО ЧЕЛОВЕКУ, А ЧТО — НЕТ.
+       *
+       * Прежде здесь стояли четыре строки про устройство инструмента: про слой
+       * типов, про имя нашей функции и про число параметров ЧУЖОЙ программы,
+       * впечатанной в двоичный. Человеку, попросившему код на C, ни одно из
+       * трёх не говорит ничего и делать ему с этим нечего.
+       *
+       * Остаётся ровно то, что меняет его работу: у напечатанного прогонщика
+       * аргументы по типам не проверяются, и где взять проверку.
+       */
       if (!fits) {
-        fprintf(stderr,
-                "граница входа пуста: таблицу объявленных типов строит слой типов свидетеля\n"
-                "(«таблицаВхода»), которого в бинарнике нет, а впечатанная (параметров %lu) этой\n"
-                "программе не подходит. Напечатанное соберётся и заработает, но аргументы\n"
-                "прогонщика объявленным типам сверяться не будут.\n",
-                (unsigned long)table->param_count);
+        fputs("аргументы напечатанной программы по типам не проверяются: это ограничение "
+              "двоичного flang, полная проверка есть в версии для Node\n",
+              stderr);
       }
     }
   }
@@ -7127,7 +7255,6 @@ static int facts_file(int argc, char **argv) {
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -10022,9 +10149,9 @@ int fl_human_main(int argc, char **argv, const char *self) {
   fl_arena_init(&repl_arena);
   fl_ctx_init(&repl_ctx, &repl_arena);
   if (!repl_is_compiler()) {
-    fputs("человеческие команды есть только у компилятора flang: в этой программе нет его точек\n"
-          "входа («Разбор исходника», «Связать исходники», «Проверить типы»). Прогонщик\n"
-          "по-прежнему читает JSON со стандартного ввода.\n",
+    fputs("человеческие команды есть только у компилятора flang, а эта программа — не он:\n"
+          "«--help», «--version», «check» и «repl» ей делать нечего. Прогонщик по-прежнему\n"
+          "читает JSON со стандартного ввода.\n",
           stderr);
     fl_arena_release(&repl_arena);
     return 2;

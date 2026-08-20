@@ -1,0 +1,1058 @@
+цель	судья	род	было	стало	идентификатор
+go	связывание	функция	Слить просьбы	Слить просьбы Go	slit_prosby_go
+rust	связывание	функция	Без ведущих пробелов	Без ведущих пробелов Rust	bez_veduschih_probelov_rust
+rust	связывание	функция	Ключи полей	Ключи полей Rust	klyuchi_poley_rust
+python	связывание	тип	Блок	Блок Python	sozdat_blok_python
+python	связывание	тип	Вариант типа	Вариант типа Python	sozdat_variant_tipa_python
+python	связывание	тип	Запись типа	Запись типа Python	sozdat_zapis_tipa_python
+python	связывание	тип	Зип	Зип Python	sozdat_zip_python
+python	связывание	тип	Именованные идентификаторы	Именованные идентификаторы Python	sozdat_imenovannye_identifikatory_python
+python	связывание	тип	Именователь	Именователь Python	sozdat_imenovatel_python
+python	связывание	тип	Итог	Итог Python	sozdat_itog_python
+python	связывание	тип	Итог образца	Итог образца Python	sozdat_itog_obrazca_python
+python	связывание	тип	Итог печати	Итог печати Python	sozdat_itog_pechati_python
+python	связывание	тип	Компонента	Компонента Python	sozdat_komponenta_python
+python	связывание	тип	Контекст	Контекст Python	sozdat_kontekst_python
+python	связывание	тип	Метка	Метка Python	sozdat_metka_python
+python	связывание	тип	Может быть имя	Может быть имя Python	—
+python	связывание	тип	Может быть узел	Может быть узел Python	—
+python	связывание	тип	Может быть функция	Может быть функция Python	—
+python	связывание	тип	Может быть число	Может быть число Python	—
+python	связывание	тип	Набор имён	Набор имён Python	sozdat_nabor_imyon_python
+python	связывание	тип	Настройки	Настройки Python	sozdat_nastroyki_python
+python	связывание	тип	Общее	Общее Python	sozdat_obschee_python
+python	связывание	тип	Отрезание	Отрезание Python	sozdat_otrezanie_python
+python	связывание	тип	Пара имён	Пара имён Python	sozdat_para_imyon_python
+python	связывание	тип	Параметр	Параметр Python	sozdat_parametr_python
+python	связывание	тип	Поиск слова	Поиск слова Python	sozdat_poisk_slova_python
+python	связывание	тип	Поле типа	Поле типа Python	sozdat_pole_tipa_python
+python	связывание	тип	Постусловие	Постусловие Python	sozdat_postuslovie_python
+python	связывание	тип	Предусловие	Предусловие Python	sozdat_preduslovie_python
+python	связывание	тип	Рёбра	Рёбра Python	sozdat_ryobra_python
+python	связывание	тип	Сбор слов	Сбор слов Python	sozdat_sbor_slov_python
+python	связывание	тип	Сбор случаев	Сбор случаев Python	sozdat_sbor_sluchaev_python
+python	связывание	тип	Сборка	Сборка Python	sozdat_sborka_python
+python	связывание	тип	Свежее	Свежее Python	sozdat_svezhee_python
+python	связывание	тип	Связывание	Связывание Python	sozdat_svyazyvanie_python
+python	связывание	тип	Связывание параметров	Связывание параметров Python	sozdat_svyazyvanie_parametrov_python
+python	связывание	тип	Случай печати	Случай печати Python	sozdat_sluchay_pechati_python
+python	связывание	тип	Состояние	Состояние Python	sozdat_sostoyanie_python
+python	связывание	тип	Сумма типов	Сумма типов Python	sozdat_summa_tipov_python
+python	связывание	тип	Тарьян	Тарьян Python	sozdat_taryan_python
+python	связывание	тип	Тела	Тела Python	sozdat_tela_python
+python	связывание	тип	Файл	Файл Python	sozdat_fayl_python
+python	связывание	тип	Функция	Функция Python	sozdat_funkciya_python
+python	связывание	функция	Аргумент можно оставить	Аргумент можно оставить Python	argument_mozhno_ostavit_python
+python	связывание	функция	Аргументы после ctx	Аргументы после ctx Python	argumenty_posle_ctx_python
+python	связывание	функция	Арности форм	Арности форм Python	arnosti_form_python
+python	связывание	функция	Без перевода в конце	Без перевода в конце Python	bez_perevoda_v_konce_python
+python	связывание	функция	Без последней строки	Без последней строки Python	bez_posledney_stroki_python
+python	связывание	функция	В нижний регистр	В нижний регистр Python	v_nizhniy_registr_python
+python	связывание	функция	Ветвь без проверки	Ветвь без проверки Python	vetv_bez_proverki_python
+python	связывание	функция	Ветвь с проверкой	Ветвь с проверкой Python	vetv_s_proverkoy_python
+python	связывание	функция	Ветка диспетчера	Ветка диспетчера Python	vetka_dispetchera_python
+python	связывание	функция	Взять поле	Взять поле Python	vzyat_pole_python
+python	связывание	функция	Вид узла	Вид узла Python	vid_uzla_python
+python	связывание	функция	Временное	Временное Python	vremennoe_python
+python	связывание	функция	Все вызовы	Все вызовы Python	vse_vyzovy_python
+python	связывание	функция	Выбор оболочки	Выбор оболочки Python	vybor_obolochki_python
+python	связывание	функция	Глубже	Глубже Python	glubzhe_python
+python	связывание	функция	Готовая проверка	Готовая проверка Python	gotovaya_proverka_python
+python	связывание	функция	Граница слова	Граница слова Python	granica_slova_python
+python	связывание	функция	Добавить вызов	Добавить вызов Python	dobavit_vyzov_python
+python	связывание	функция	Добавить имя вызова	Добавить имя вызова Python	dobavit_imya_vyzova_python
+python	связывание	функция	Добавить уникальное	Добавить уникальное Python	dobavit_unikalnoe_python
+python	связывание	функция	Договор на двери	Договор на двери Python	dogovor_na_dveri_python
+python	связывание	функция	Дописать слово	Дописать слово Python	dopisat_slovo_python
+python	связывание	функция	Есть батут	Есть батут Python	est_batut_python
+python	связывание	функция	Есть в таблице	Есть в таблице Python	est_v_tablice_python
+python	связывание	функция	Есть имя модуля	Есть имя модуля Python	est_imya_modulya_python
+python	связывание	функция	Есть метка	Есть метка Python	est_metka_python
+python	связывание	функция	Есть поле у узла	Есть поле у узла Python	est_pole_u_uzla_python
+python	связывание	функция	Есть слово	Есть слово Python	est_slovo_python
+python	связывание	функция	Есть функция с именем	Есть функция с именем Python	est_funkciya_s_imenem_python
+python	связывание	функция	Закрыть вершину	Закрыть вершину Python	zakryt_vershinu_python
+python	связывание	функция	Заменить взятое	Заменить взятое Python	zamenit_vzyatoe_python
+python	связывание	функция	Заменить низ	Заменить низ Python	zamenit_niz_python
+python	связывание	функция	Заменить счётчик	Заменить счётчик Python	zamenit_schyotchik_python
+python	связывание	функция	Замены в нижний регистр	Замены в нижний регистр Python	zameny_v_nizhniy_registr_python
+python	связывание	функция	Замены кириллицы	Замены кириллицы Python	zameny_kirillicy_python
+python	связывание	функция	Занять имя	Занять имя Python	zanyat_imya_python
+python	связывание	функция	Записать компоненту	Записать компоненту Python	zapisat_komponentu_python
+python	связывание	функция	Записать ошибку	Записать ошибку Python	zapisat_oshibku_python
+python	связывание	функция	Змейка	Змейка Python	zmeyka_python
+python	связывание	функция	Значение по ключу	Значение по ключу Python	znachenie_po_klyuchu_python
+python	связывание	функция	Идентификаторы для	Идентификаторы для Python	identifikatory_dlya_python
+python	связывание	функция	Идентификаторы параметров	Идентификаторы параметров Python	identifikatory_parametrov_python
+python	связывание	функция	Имена вариантов	Имена вариантов Python	imena_variantov_python
+python	связывание	функция	Имена записей	Имена записей Python	imena_zapisey_python
+python	связывание	функция	Имена полей типа	Имена полей типа Python	imena_poley_tipa_python
+python	связывание	функция	Имена рёбер	Имена рёбер Python	imena_ryober_python
+python	связывание	функция	Имена функций	Имена функций Python	imena_funkciy_python
+python	связывание	функция	Имя модуля	Имя модуля Python	imya_modulya_python
+python	связывание	функция	Имя файла программы	Имя файла программы Python	imya_fayla_programmy_python
+python	связывание	функция	Исходник модуля	Исходник модуля Python	ishodnik_modulya_python
+python	связывание	функция	Каноническое имя формы	Каноническое имя формы Python	kanonicheskoe_imya_formy_python
+python	связывание	функция	Компоненты связности	Компоненты связности Python	komponenty_svyaznosti_python
+python	связывание	функция	Контекст двери	Контекст двери Python	kontekst_dveri_python
+python	связывание	функция	Корень Тарьяна	Корень Тарьяна Python	koren_taryana_python
+python	связывание	функция	Между	Между Python	mezhdu_python
+python	связывание	функция	Меньшее	Меньшее Python	menshee_python
+python	связывание	функция	Метка или ноль	Метка или ноль Python	metka_ili_nol_python
+python	связывание	функция	Найти в таблице	Найти в таблице Python	nayti_v_tablice_python
+python	связывание	функция	Найти метку	Найти метку Python	nayti_metku_python
+python	связывание	функция	Найти функцию	Найти функцию Python	nayti_funkciyu_python
+python	связывание	функция	Начальное взятое	Начальное взятое Python	nachalnoe_vzyatoe_python
+python	связывание	функция	Начальный контекст	Начальный контекст Python	nachalnyy_kontekst_python
+python	связывание	функция	Неизвестный вид	Неизвестный вид Python	neizvestnyy_vid_python
+python	связывание	функция	Обновить вариант типа	Обновить вариант типа Python	obnovit_variant_tipa_python
+python	связывание	функция	Обновить запись типа	Обновить запись типа Python	obnovit_zapis_tipa_python
+python	связывание	функция	Обновить метку	Обновить метку Python	obnovit_metku_python
+python	связывание	функция	Обновить пару	Обновить пару Python	obnovit_paru_python
+python	связывание	функция	Обойти вершину	Обойти вершину Python	oboyti_vershinu_python
+python	связывание	функция	Обратное ребро	Обратное ребро Python	obratnoe_rebro_python
+python	связывание	функция	Обход всего	Обход всего Python	obhod_vsego_python
+python	связывание	функция	Обход полей	Обход полей Python	obhod_poley_python
+python	связывание	функция	Обход хвоста	Обход хвоста Python	obhod_hvosta_python
+python	связывание	функция	Обход хвоста ветвей	Обход хвоста ветвей Python	obhod_hvosta_vetvey_python
+python	связывание	функция	Обход хвоста случаев	Обход хвоста случаев Python	obhod_hvosta_sluchaev_python
+python	связывание	функция	Обход хвоста случая	Обход хвоста случая Python	obhod_hvosta_sluchaya_python
+python	связывание	функция	Описание функции	Описание функции Python	opisanie_funkcii_python
+python	связывание	функция	Ошибка образца	Ошибка образца Python	oshibka_obrazca_python
+python	связывание	функция	Первая из меток	Первая из меток Python	pervaya_iz_metok_python
+python	связывание	функция	Первая из функций	Первая из функций Python	pervaya_iz_funkciy_python
+python	связывание	функция	Первое из пар	Первое из пар Python	pervoe_iz_par_python
+python	связывание	функция	Первое из полей	Первое из полей Python	pervoe_iz_poley_python
+python	связывание	функция	Первый символ	Первый символ Python	pervyy_simvol_python
+python	связывание	функция	Печать Makefile	Печать Makefile Python	pechat_makefile_python
+python	связывание	функция	Печать батута	Печать батута Python	pechat_batuta_python
+python	связывание	функция	Печать ветви	Печать ветви Python	pechat_vetvi_python
+python	связывание	функция	Печать вызова	Печать вызова Python	pechat_vyzova_python
+python	связывание	функция	Печать диспетчера	Печать диспетчера Python	pechat_dispetchera_python
+python	связывание	функция	Печать если	Печать если Python	pechat_esli_python
+python	связывание	функция	Печать записи	Печать записи Python	pechat_zapisi_python
+python	связывание	функция	Печать значения	Печать значения Python	pechat_znacheniya_python
+python	связывание	функция	Печать известной формы	Печать известной формы Python	pechat_izvestnoy_formy_python
+python	связывание	функция	Печать конструктора	Печать конструктора Python	pechat_konstruktora_python
+python	связывание	функция	Печать конструктора варианта	Печать конструктора варианта Python	pechat_konstruktora_varianta_python
+python	связывание	функция	Печать литерала	Печать литерала Python	pechat_literala_python
+python	связывание	функция	Печать операции	Печать операции Python	pechat_operacii_python
+python	связывание	функция	Печать переменной	Печать переменной Python	pechat_peremennoy_python
+python	связывание	функция	Печать поля записи	Печать поля записи Python	pechat_polya_zapisi_python
+python	связывание	функция	Печать помощника операции	Печать помощника операции Python	pechat_pomoschnika_operacii_python
+python	связывание	функция	Печать программы	Печать программы Python	pechat_programmy_python
+python	связывание	функция	Печать простой функции	Печать простой функции Python	pechat_prostoy_funkcii_python
+python	связывание	функция	Печать пусть	Печать пусть Python	pechat_pust_python
+python	связывание	функция	Печать разбора	Печать разбора Python	pechat_razbora_python
+python	связывание	функция	Печать разбора значением	Печать разбора значением Python	pechat_razbora_znacheniem_python
+python	связывание	функция	Печать свёртки	Печать свёртки Python	pechat_svyortki_python
+python	связывание	функция	Печать свёртки дальше	Печать свёртки дальше Python	pechat_svyortki_dalshe_python
+python	связывание	функция	Печать скаляра	Печать скаляра Python	pechat_skalyara_python
+python	связывание	функция	Печать списка	Печать списка Python	pechat_spiska_python
+python	связывание	функция	Печать тел	Печать тел Python	pechat_tel_python
+python	связывание	функция	Печать фабрики	Печать фабрики Python	pechat_fabriki_python
+python	связывание	функция	Печать формы	Печать формы Python	pechat_formy_python
+python	связывание	функция	Печать функции	Печать функции Python	pechat_funkcii_python
+python	связывание	функция	Печать хвоста	Печать хвоста Python	pechat_hvosta_python
+python	связывание	функция	Печать цикла	Печать цикла Python	pechat_cikla_python
+python	связывание	функция	Печать цикла дальше	Печать цикла дальше Python	pechat_cikla_dalshe_python
+python	связывание	функция	Поле узла	Поле узла Python	pole_uzla_python
+python	связывание	функция	Положить в	Положить в Python	polozhit_v_python
+python	связывание	функция	Положить в таблицу	Положить в таблицу Python	polozhit_v_tablicu_python
+python	связывание	функция	Положить метку	Положить метку Python	polozhit_metku_python
+python	связывание	функция	Поля узла	Поля узла Python	polya_uzla_python
+python	связывание	функция	Пометка вида типа	Пометка вида типа Python	pometka_vida_tipa_python
+python	связывание	функция	Пометка имени типа	Пометка имени типа Python	pometka_imeni_tipa_python
+python	связывание	функция	Пометка типа	Пометка типа Python	pometka_tipa_python
+python	связывание	функция	Помощник формы	Помощник формы Python	pomoschnik_formy_python
+python	связывание	функция	Помощники операций	Помощники операций Python	pomoschniki_operaciy_python
+python	связывание	функция	Помощники форм	Помощники форм Python	pomoschniki_form_python
+python	связывание	функция	Последний символ	Последний символ Python	posledniy_simvol_python
+python	связывание	функция	Последняя строка	Последняя строка Python	poslednyaya_stroka_python
+python	связывание	функция	Применить замены	Применить замены Python	primenit_zameny_python
+python	связывание	функция	Проверить арность вызова	Проверить арность вызова Python	proverit_arnost_vyzova_python
+python	связывание	функция	Проверить арность формы	Проверить арность формы Python	proverit_arnost_formy_python
+python	связывание	функция	Проверить вариант	Проверить вариант Python	proverit_variant_python
+python	связывание	функция	Проверить запись	Проверить запись Python	proverit_zapis_python
+python	связывание	функция	Проверить имя записи	Проверить имя записи Python	proverit_imya_zapisi_python
+python	связывание	функция	Проверить имя узла	Проверить имя узла Python	proverit_imya_uzla_python
+python	связывание	функция	Проверить случай	Проверить случай Python	proverit_sluchay_python
+python	связывание	функция	Проверка литералом	Проверка литералом Python	proverka_literalom_python
+python	связывание	функция	Проверка образца	Проверка образца Python	proverka_obrazca_python
+python	связывание	функция	Проверки договора	Проверки договора Python	proverki_dogovora_python
+python	связывание	функция	Пройти части	Пройти части Python	proyti_chasti_python
+python	связывание	функция	Просто значение	Просто значение Python	prosto_znachenie_python
+python	связывание	функция	Пустая сборка	Пустая сборка Python	pustaya_sborka_python
+python	связывание	функция	Пустое состояние	Пустое состояние Python	pustoe_sostoyanie_python
+python	связывание	функция	Разрешить вызов	Разрешить вызов Python	razreshit_vyzov_python
+python	связывание	функция	Ребро Тарьяна	Ребро Тарьяна Python	rebro_taryana_python
+python	связывание	функция	Ребро вглубь	Ребро вглубь Python	rebro_vglub_python
+python	связывание	функция	Ребро внутри	Ребро внутри Python	rebro_vnutri_python
+python	связывание	функция	Рекурсивная одиночка	Рекурсивная одиночка Python	rekursivnaya_odinochka_python
+python	связывание	функция	Рекурсивные функции	Рекурсивные функции Python	rekursivnye_funkcii_python
+python	связывание	функция	Рёбра вызовов	Рёбра вызовов Python	ryobra_vyzovov_python
+python	связывание	функция	Самовызов в хвосте	Самовызов в хвосте Python	samovyzov_v_hvoste_python
+python	связывание	функция	Свежее имя	Свежее имя Python	svezhee_imya_python
+python	связывание	функция	Свободное имя	Свободное имя Python	svobodnoe_imya_python
+python	связывание	функция	Связать имя	Связать имя Python	svyazat_imya_python
+python	связывание	функция	Связать параметр	Связать параметр Python	svyazat_parametr_python
+python	связывание	функция	Связать параметр двери	Связать параметр двери Python	svyazat_parametr_dveri_python
+python	связывание	функция	Связать поле варианта	Связать поле варианта Python	svyazat_pole_varianta_python
+python	связывание	функция	Связки варианта	Связки варианта Python	svyazki_varianta_python
+python	связывание	функция	Связывание головы	Связывание головы Python	svyazyvanie_golovy_python
+python	связывание	функция	Связывание головы и хвоста	Связывание головы и хвоста Python	svyazyvanie_golovy_i_hvosta_python
+python	связывание	функция	Связывание любого	Связывание любого Python	svyazyvanie_lyubogo_python
+python	связывание	функция	Связывание образца	Связывание образца Python	svyazyvanie_obrazca_python
+python	связывание	функция	Символы слова	Символы слова Python	simvoly_slova_python
+python	связывание	функция	Синонимы форм	Синонимы форм Python	sinonimy_form_python
+python	связывание	функция	Слить вариант типа	Слить вариант типа Python	slit_variant_tipa_python
+python	связывание	функция	Слить варианты суммы	Слить варианты суммы Python	slit_varianty_summy_python
+python	связывание	функция	Слить запись типа	Слить запись типа Python	slit_zapis_tipa_python
+python	связывание	функция	Слить рёбра	Слить рёбра Python	slit_ryobra_python
+python	связывание	функция	Слить строки	Слить строки Python	slit_stroki_python
+python	связывание	функция	Слить файлы	Слить файлы Python	slit_fayly_python
+python	связывание	функция	Слова	Слова Python	slova_python
+python	связывание	функция	Словарные символы	Словарные символы Python	slovarnye_simvoly_python
+python	связывание	функция	Слово аргументов	Слово аргументов Python	slovo_argumentov_python
+python	связывание	функция	Снять вершину стека	Снять вершину стека Python	snyat_vershinu_steka_python
+python	связывание	функция	Снять компоненту	Снять компоненту Python	snyat_komponentu_python
+python	связывание	функция	Собрать вариант	Собрать вариант Python	sobrat_variant_python
+python	связывание	функция	Собрать варианты	Собрать варианты Python	sobrat_varianty_python
+python	связывание	функция	Собрать записи	Собрать записи Python	sobrat_zapisi_python
+python	связывание	функция	Собрать общее	Собрать общее Python	sobrat_obschee_python
+python	связывание	функция	Собрать параметр	Собрать параметр Python	sobrat_parametr_python
+python	связывание	функция	Собрать поле типа	Собрать поле типа Python	sobrat_pole_tipa_python
+python	связывание	функция	Собрать поля типа	Собрать поля типа Python	sobrat_polya_tipa_python
+python	связывание	функция	Собрать постусловие	Собрать постусловие Python	sobrat_postuslovie_python
+python	связывание	функция	Собрать предусловие	Собрать предусловие Python	sobrat_preduslovie_python
+python	связывание	функция	Собрать суммы	Собрать суммы Python	sobrat_summy_python
+python	связывание	функция	Собрать функции	Собрать функции Python	sobrat_funkcii_python
+python	связывание	функция	Собрать функцию	Собрать функцию Python	sobrat_funkciyu_python
+python	связывание	функция	Строка аргумента вызова	Строка аргумента вызова Python	stroka_argumenta_vyzova_python
+python	связывание	функция	Строка батута	Строка батута Python	stroka_batuta_python
+python	связывание	функция	Строка вывода	Строка вывода Python	stroka_vyvoda_python
+python	связывание	функция	Строка параметра	Строка параметра Python	stroka_parametra_python
+python	связывание	функция	Строка поля	Строка поля Python	stroka_polya_python
+python	связывание	функция	Строка поля или	Строка поля или Python	stroka_polya_ili_python
+python	связывание	функция	Строка скаляра	Строка скаляра Python	stroka_skalyara_python
+python	связывание	функция	Строка узла	Строка узла Python	stroka_uzla_python
+python	связывание	функция	Суффикс доказанного помощника	Суффикс доказанного помощника Python	suffiks_dokazannogo_pomoschnika_python
+python	связывание	функция	Тело ветви	Тело ветви Python	telo_vetvi_python
+python	связывание	функция	Тело отображения	Тело отображения Python	telo_otobrazheniya_python
+python	связывание	функция	Тело пусть	Тело пусть Python	telo_pust_python
+python	связывание	функция	Тело с постусловиями	Тело с постусловиями Python	telo_s_postusloviyami_python
+python	связывание	функция	Тело фильтра	Тело фильтра Python	telo_filtra_python
+python	связывание	функция	Тело функции	Тело функции Python	telo_funkcii_python
+python	связывание	функция	Тело цикла	Тело цикла Python	telo_cikla_python
+python	связывание	функция	Тело циклом	Тело циклом Python	telo_ciklom_python
+python	связывание	функция	Только символы слова	Только символы слова Python	tolko_simvoly_slova_python
+python	связывание	функция	Транслитерировать	Транслитерировать Python	transliterirovat_python
+python	связывание	функция	Узел ничто	Узел ничто Python	uzel_nichto_python
+python	связывание	функция	Уникальные имена	Уникальные имена Python	unikalnye_imena_python
+python	связывание	функция	Формы, снимаемые непустотой	Формы, снимаемые непустотой Python	formy_snimaemye_nepustotoy_python
+python	связывание	функция	Хвост цепочки	Хвост цепочки Python	hvost_cepochki_python
+python	связывание	функция	Хвостовое если	Хвостовое если Python	hvostovoe_esli_python
+python	связывание	функция	Хвостовое значение	Хвостовое значение Python	hvostovoe_znachenie_python
+python	связывание	функция	Хвостовое пусть	Хвостовое пусть Python	hvostovoe_pust_python
+python	связывание	функция	Хвостовой возврат	Хвостовой возврат Python	hvostovoy_vozvrat_python
+python	связывание	функция	Хвостовой вызов	Хвостовой вызов Python	hvostovoy_vyzov_python
+python	связывание	функция	Хвостовой отскок	Хвостовой отскок Python	hvostovoy_otskok_python
+python	связывание	функция	Хвостовой цикл	Хвостовой цикл Python	hvostovoy_cikl_python
+python	связывание	функция	Хвостовые вызовы	Хвостовые вызовы Python	hvostovye_vyzovy_python
+python	связывание	функция	Хвостовые рёбра	Хвостовые рёбра Python	hvostovye_ryobra_python
+python	связывание	функция	Цели	Цели Python	celi_python
+python	связывание	функция	Цепочка случаев	Цепочка случаев Python	cepochka_sluchaev_python
+python	связывание	функция	Циклические функции	Циклические функции Python	ciklicheskie_funkcii_python
+python	связывание	функция	Цифры	Цифры Python	cifry_python
+python	связывание	функция	Число параметров	Число параметров Python	chislo_parametrov_python
+python	связывание	функция	Число скаляра	Число скаляра Python	chislo_skalyara_python
+python	связывание	функция	Число узла	Число узла Python	chislo_uzla_python
+python	связывание	функция	Члены батута	Члены батута Python	chleny_batuta_python
+python	связывание	функция	Члены компоненты	Члены компоненты Python	chleny_komponenty_python
+python	связывание	функция	Шаг аргумента	Шаг аргумента Python	shag_argumenta_python
+python	связывание	функция	Шаг ветки диспетчера	Шаг ветки диспетчера Python	shag_vetki_dispetchera_python
+python	связывание	функция	Шаг временного аргумента	Шаг временного аргумента Python	shag_vremennogo_argumenta_python
+python	связывание	функция	Шаг выбора	Шаг выбора Python	shag_vybora_python
+python	связывание	функция	Шаг отрезания	Шаг отрезания Python	shag_otrezaniya_python
+python	связывание	функция	Шаг поиска слова	Шаг поиска слова Python	shag_poiska_slova_python
+python	связывание	функция	Шаг постусловия	Шаг постусловия Python	shag_postusloviya_python
+python	связывание	функция	Шаг предусловия	Шаг предусловия Python	shag_predusloviya_python
+python	связывание	функция	Шаг присвоения параметра	Шаг присвоения параметра Python	shag_prisvoeniya_parametra_python
+python	связывание	функция	Шаг присвоения поля	Шаг присвоения поля Python	shag_prisvoeniya_polya_python
+python	связывание	функция	Шаг распаковки	Шаг распаковки Python	shag_raspakovki_python
+python	связывание	функция	Шаг рекурсивных	Шаг рекурсивных Python	shag_rekursivnyh_python
+python	связывание	функция	Шаг сбора случая	Шаг сбора случая Python	shag_sbora_sluchaya_python
+python	связывание	функция	Шаг тела функции	Шаг тела функции Python	shag_tela_funkcii_python
+python	связывание	функция	Шаг уникальных	Шаг уникальных Python	shag_unikalnyh_python
+python	связывание	функция	Шаг цепочки	Шаг цепочки Python	shag_cepochki_python
+python	связывание	функция	Элемент по индексу	Элемент по индексу Python	element_po_indeksu_python
+python	связывание	функция	Элементы поля	Элементы поля Python	elementy_polya_python
+python	связывание	функция	Элементы узла	Элементы узла Python	elementy_uzla_python
+python	связывание	функция	Это запись	Это запись Python	eto_zapis_python
+python	связывание	функция	Это идентификатор	Это идентификатор Python	eto_identifikator_python
+python	связывание	функция	Это истина	Это истина Python	eto_istina_python
+python	связывание	функция	Это истина в скаляре	Это истина в скаляре Python	eto_istina_v_skalyare_python
+python	связывание	функция	Это ничто	Это ничто Python	eto_nichto_python
+python	связывание	функция	Это ничто в скаляре	Это ничто в скаляре Python	eto_nichto_v_skalyare_python
+python	связывание	функция	Это отскок	Это отскок Python	eto_otskok_python
+python	связывание	функция	Это признак	Это признак Python	eto_priznak_python
+python	связывание	функция	Это признак в скаляре	Это признак в скаляре Python	eto_priznak_v_skalyare_python
+python	связывание	функция	Это самовызов	Это самовызов Python	eto_samovyzov_python
+python	связывание	функция	Это символ слова	Это символ слова Python	eto_simvol_slova_python
+python	связывание	функция	Это список	Это список Python	eto_spisok_python
+python	связывание	функция	Это строка	Это строка Python	eto_stroka_python
+python	связывание	функция	Это строка в скаляре	Это строка в скаляре Python	eto_stroka_v_skalyare_python
+python	связывание	функция	Это число	Это число Python	eto_chislo_python
+python	связывание	функция	Это число в скаляре	Это число в скаляре Python	eto_chislo_v_skalyare_python
+python	типы	вариант	Есть число	Есть число Python	variant_est_chislo_python
+python	типы	вариант	Есть функция	Есть функция Python	variant_est_funkciya_python
+python	типы	вариант	Есть имя	Есть имя Python	variant_est_imya_python
+python	типы	вариант	Есть узел	Есть узел Python	variant_est_uzel_python
+python	типы	вариант	Нет числа	Нет числа Python	variant_net_chisla_python
+python	типы	вариант	Нет функции	Нет функции Python	variant_net_funkcii_python
+python	типы	вариант	Нет имени	Нет имени Python	variant_net_imeni_python
+python	типы	вариант	Нет узла	Нет узла Python	variant_net_uzla_python
+java	связывание	тип	Может быть имя	Может быть имя Java	—
+java	связывание	тип	Может быть узел	Может быть узел Java	—
+java	связывание	тип	Пара имён	Пара имён Java	sozdat_para_imyon_java
+java	типы	вариант	Есть имя	Есть имя Java	variant_est_imya_java
+java	типы	вариант	Есть узел	Есть узел Java	variant_est_uzel_java
+java	типы	вариант	Нет имени	Нет имени Java	variant_net_imeni_java
+java	типы	вариант	Нет узла	Нет узла Java	variant_net_uzla_java
+csharp	связывание	тип	Блок	Блок CSharp	sozdat_blok_csharp
+csharp	связывание	тип	Вариант типа	Вариант типа CSharp	sozdat_variant_tipa_csharp
+csharp	связывание	тип	Запись типа	Запись типа CSharp	sozdat_zapis_tipa_csharp
+csharp	связывание	тип	Зип	Зип CSharp	sozdat_zip_csharp
+csharp	связывание	тип	Именованные идентификаторы	Именованные идентификаторы CSharp	sozdat_imenovannye_identifikatory_csharp
+csharp	связывание	тип	Именователь	Именователь CSharp	sozdat_imenovatel_csharp
+csharp	связывание	тип	Итог	Итог CSharp	sozdat_itog_csharp
+csharp	связывание	тип	Итог образца	Итог образца CSharp	sozdat_itog_obrazca_csharp
+csharp	связывание	тип	Итог печати	Итог печати CSharp	sozdat_itog_pechati_csharp
+csharp	связывание	тип	Итог связывания	Итог связывания CSharp	sozdat_itog_svyazyvaniya_csharp
+csharp	связывание	тип	Компонента	Компонента CSharp	sozdat_komponenta_csharp
+csharp	связывание	тип	Контекст	Контекст CSharp	sozdat_kontekst_csharp
+csharp	связывание	тип	Метка	Метка CSharp	sozdat_metka_csharp
+csharp	связывание	тип	Может быть имя	Может быть имя CSharp	—
+csharp	связывание	тип	Может быть узел	Может быть узел CSharp	—
+csharp	связывание	тип	Может быть функция	Может быть функция CSharp	—
+csharp	связывание	тип	Может быть число	Может быть число CSharp	—
+csharp	связывание	тип	Набор имён	Набор имён CSharp	sozdat_nabor_imyon_csharp
+csharp	связывание	тип	Настройки	Настройки CSharp	sozdat_nastroyki_csharp
+csharp	связывание	тип	Общее	Общее CSharp	sozdat_obschee_csharp
+csharp	связывание	тип	Отрезание	Отрезание CSharp	sozdat_otrezanie_csharp
+csharp	связывание	тип	Пара имён	Пара имён CSharp	sozdat_para_imyon_csharp
+csharp	связывание	тип	Параметр	Параметр CSharp	sozdat_parametr_csharp
+csharp	связывание	тип	Поиск слова	Поиск слова CSharp	sozdat_poisk_slova_csharp
+csharp	связывание	тип	Поле типа	Поле типа CSharp	sozdat_pole_tipa_csharp
+csharp	связывание	тип	Постусловие	Постусловие CSharp	sozdat_postuslovie_csharp
+csharp	связывание	тип	Предусловие	Предусловие CSharp	sozdat_preduslovie_csharp
+csharp	связывание	тип	Просьба	Просьба CSharp	sozdat_prosba_csharp
+csharp	связывание	тип	Рёбра	Рёбра CSharp	sozdat_ryobra_csharp
+csharp	связывание	тип	Сбор слов	Сбор слов CSharp	sozdat_sbor_slov_csharp
+csharp	связывание	тип	Сбор случаев	Сбор случаев CSharp	sozdat_sbor_sluchaev_csharp
+csharp	связывание	тип	Свежее	Свежее CSharp	sozdat_svezhee_csharp
+csharp	связывание	тип	Связка	Связка CSharp	sozdat_svyazka_csharp
+csharp	связывание	тип	Связывание параметров	Связывание параметров CSharp	sozdat_svyazyvanie_parametrov_csharp
+csharp	связывание	тип	Случай печати	Случай печати CSharp	sozdat_sluchay_pechati_csharp
+csharp	связывание	тип	Состояние	Состояние CSharp	sozdat_sostoyanie_csharp
+csharp	связывание	тип	Сумма типов	Сумма типов CSharp	sozdat_summa_tipov_csharp
+csharp	связывание	тип	Тарьян	Тарьян CSharp	sozdat_taryan_csharp
+csharp	связывание	тип	Тела	Тела CSharp	sozdat_tela_csharp
+csharp	связывание	тип	Файл	Файл CSharp	sozdat_fayl_csharp
+csharp	связывание	тип	Функция	Функция CSharp	sozdat_funkciya_csharp
+csharp	связывание	функция	Аргумент можно оставить	Аргумент можно оставить CSharp	argument_mozhno_ostavit_csharp
+csharp	связывание	функция	Арности форм	Арности форм CSharp	arnosti_form_csharp
+csharp	связывание	функция	Без последней строки	Без последней строки CSharp	bez_posledney_stroki_csharp
+csharp	связывание	функция	В верхний регистр	В верхний регистр CSharp	v_verhniy_registr_csharp
+csharp	связывание	функция	В нижний регистр	В нижний регистр CSharp	v_nizhniy_registr_csharp
+csharp	связывание	функция	Ветвь без проверки	Ветвь без проверки CSharp	vetv_bez_proverki_csharp
+csharp	связывание	функция	Ветвь с проверкой	Ветвь с проверкой CSharp	vetv_s_proverkoy_csharp
+csharp	связывание	функция	Ветка диспетчера	Ветка диспетчера CSharp	vetka_dispetchera_csharp
+csharp	связывание	функция	Взять поле	Взять поле CSharp	vzyat_pole_csharp
+csharp	связывание	функция	Вид узла	Вид узла CSharp	vid_uzla_csharp
+csharp	связывание	функция	Временное	Временное CSharp	vremennoe_csharp
+csharp	связывание	функция	Все вызовы	Все вызовы CSharp	vse_vyzovy_csharp
+csharp	связывание	функция	Выбор оболочки	Выбор оболочки CSharp	vybor_obolochki_csharp
+csharp	связывание	функция	Глубже	Глубже CSharp	glubzhe_csharp
+csharp	связывание	функция	Готовая проверка	Готовая проверка CSharp	gotovaya_proverka_csharp
+csharp	связывание	функция	Граница слова	Граница слова CSharp	granica_slova_csharp
+csharp	связывание	функция	Добавить вызов	Добавить вызов CSharp	dobavit_vyzov_csharp
+csharp	связывание	функция	Добавить имя вызова	Добавить имя вызова CSharp	dobavit_imya_vyzova_csharp
+csharp	связывание	функция	Добавить уникальное	Добавить уникальное CSharp	dobavit_unikalnoe_csharp
+csharp	связывание	функция	Договор на двери	Договор на двери CSharp	dogovor_na_dveri_csharp
+csharp	связывание	функция	Дописать слово	Дописать слово CSharp	dopisat_slovo_csharp
+csharp	связывание	функция	Есть батут	Есть батут CSharp	est_batut_csharp
+csharp	связывание	функция	Есть в таблице	Есть в таблице CSharp	est_v_tablice_csharp
+csharp	связывание	функция	Есть имя модуля	Есть имя модуля CSharp	est_imya_modulya_csharp
+csharp	связывание	функция	Есть метка	Есть метка CSharp	est_metka_csharp
+csharp	связывание	функция	Есть поле у узла	Есть поле у узла CSharp	est_pole_u_uzla_csharp
+csharp	связывание	функция	Есть слово	Есть слово CSharp	est_slovo_csharp
+csharp	связывание	функция	Есть функция с именем	Есть функция с именем CSharp	est_funkciya_s_imenem_csharp
+csharp	связывание	функция	Закрыть вершину	Закрыть вершину CSharp	zakryt_vershinu_csharp
+csharp	связывание	функция	Заменить взятое	Заменить взятое CSharp	zamenit_vzyatoe_csharp
+csharp	связывание	функция	Заменить низ	Заменить низ CSharp	zamenit_niz_csharp
+csharp	связывание	функция	Заменить счётчик	Заменить счётчик CSharp	zamenit_schyotchik_csharp
+csharp	связывание	функция	Замены в верхний регистр	Замены в верхний регистр CSharp	zameny_v_verhniy_registr_csharp
+csharp	связывание	функция	Замены в нижний регистр	Замены в нижний регистр CSharp	zameny_v_nizhniy_registr_csharp
+csharp	связывание	функция	Замены кириллицы	Замены кириллицы CSharp	zameny_kirillicy_csharp
+csharp	связывание	функция	Занять имя	Занять имя CSharp	zanyat_imya_csharp
+csharp	связывание	функция	Записать компоненту	Записать компоненту CSharp	zapisat_komponentu_csharp
+csharp	связывание	функция	Записать ошибку	Записать ошибку CSharp	zapisat_oshibku_csharp
+csharp	связывание	функция	Значение по ключу	Значение по ключу CSharp	znachenie_po_klyuchu_csharp
+csharp	связывание	функция	Значения полей	Значения полей CSharp	znacheniya_poley_csharp
+csharp	связывание	функция	Идентификатор с ролью	Идентификатор с ролью CSharp	identifikator_s_rolyu_csharp
+csharp	связывание	функция	Идентификаторы для	Идентификаторы для CSharp	identifikatory_dlya_csharp
+csharp	связывание	функция	Идентификаторы параметров	Идентификаторы параметров CSharp	identifikatory_parametrov_csharp
+csharp	связывание	функция	Имена вариантов	Имена вариантов CSharp	imena_variantov_csharp
+csharp	связывание	функция	Имена записей	Имена записей CSharp	imena_zapisey_csharp
+csharp	связывание	функция	Имена полей типа	Имена полей типа CSharp	imena_poley_tipa_csharp
+csharp	связывание	функция	Имена рёбер	Имена рёбер CSharp	imena_ryober_csharp
+csharp	связывание	функция	Имена функций	Имена функций CSharp	imena_funkciy_csharp
+csharp	связывание	функция	Имя модуля	Имя модуля CSharp	imya_modulya_csharp
+csharp	связывание	функция	Исходник модуля	Исходник модуля CSharp	ishodnik_modulya_csharp
+csharp	связывание	функция	Каноническое имя формы	Каноническое имя формы CSharp	kanonicheskoe_imya_formy_csharp
+csharp	связывание	функция	Ключи полей	Ключи полей CSharp	klyuchi_poley_csharp
+csharp	связывание	функция	Компоненты связности	Компоненты связности CSharp	komponenty_svyaznosti_csharp
+csharp	связывание	функция	Контекст двери	Контекст двери CSharp	kontekst_dveri_csharp
+csharp	связывание	функция	Корень Тарьяна	Корень Тарьяна CSharp	koren_taryana_csharp
+csharp	связывание	функция	Между	Между CSharp	mezhdu_csharp
+csharp	связывание	функция	Меньшее	Меньшее CSharp	menshee_csharp
+csharp	связывание	функция	Метка или ноль	Метка или ноль CSharp	metka_ili_nol_csharp
+csharp	связывание	функция	Найти в таблице	Найти в таблице CSharp	nayti_v_tablice_csharp
+csharp	связывание	функция	Найти метку	Найти метку CSharp	nayti_metku_csharp
+csharp	связывание	функция	Найти функцию	Найти функцию CSharp	nayti_funkciyu_csharp
+csharp	связывание	функция	Начальное взятое	Начальное взятое CSharp	nachalnoe_vzyatoe_csharp
+csharp	связывание	функция	Начальный контекст	Начальный контекст CSharp	nachalnyy_kontekst_csharp
+csharp	связывание	функция	Неизвестный вид	Неизвестный вид CSharp	neizvestnyy_vid_csharp
+csharp	связывание	функция	Обновить вариант типа	Обновить вариант типа CSharp	obnovit_variant_tipa_csharp
+csharp	связывание	функция	Обновить запись типа	Обновить запись типа CSharp	obnovit_zapis_tipa_csharp
+csharp	связывание	функция	Обновить метку	Обновить метку CSharp	obnovit_metku_csharp
+csharp	связывание	функция	Обновить пару	Обновить пару CSharp	obnovit_paru_csharp
+csharp	связывание	функция	Обойти вершину	Обойти вершину CSharp	oboyti_vershinu_csharp
+csharp	связывание	функция	Обратное ребро	Обратное ребро CSharp	obratnoe_rebro_csharp
+csharp	связывание	функция	Обход всего	Обход всего CSharp	obhod_vsego_csharp
+csharp	связывание	функция	Обход полей	Обход полей CSharp	obhod_poley_csharp
+csharp	связывание	функция	Обход хвоста	Обход хвоста CSharp	obhod_hvosta_csharp
+csharp	связывание	функция	Обход хвоста ветвей	Обход хвоста ветвей CSharp	obhod_hvosta_vetvey_csharp
+csharp	связывание	функция	Обход хвоста случаев	Обход хвоста случаев CSharp	obhod_hvosta_sluchaev_csharp
+csharp	связывание	функция	Обход хвоста случая	Обход хвоста случая CSharp	obhod_hvosta_sluchaya_csharp
+csharp	связывание	функция	Описание функции	Описание функции CSharp	opisanie_funkcii_csharp
+csharp	связывание	функция	Ошибка образца	Ошибка образца CSharp	oshibka_obrazca_csharp
+csharp	связывание	функция	Ошибка столкновения	Ошибка столкновения CSharp	oshibka_stolknoveniya_csharp
+csharp	связывание	функция	Первая из меток	Первая из меток CSharp	pervaya_iz_metok_csharp
+csharp	связывание	функция	Первая из функций	Первая из функций CSharp	pervaya_iz_funkciy_csharp
+csharp	связывание	функция	Первое из пар	Первое из пар CSharp	pervoe_iz_par_csharp
+csharp	связывание	функция	Первое из полей	Первое из полей CSharp	pervoe_iz_poley_csharp
+csharp	связывание	функция	Первый символ	Первый символ CSharp	pervyy_simvol_csharp
+csharp	связывание	функция	Печать Makefile	Печать Makefile CSharp	pechat_makefile_csharp
+csharp	связывание	функция	Печать батута	Печать батута CSharp	pechat_batuta_csharp
+csharp	связывание	функция	Печать ветви	Печать ветви CSharp	pechat_vetvi_csharp
+csharp	связывание	функция	Печать вызова	Печать вызова CSharp	pechat_vyzova_csharp
+csharp	связывание	функция	Печать диспетчера	Печать диспетчера CSharp	pechat_dispetchera_csharp
+csharp	связывание	функция	Печать если	Печать если CSharp	pechat_esli_csharp
+csharp	связывание	функция	Печать записи	Печать записи CSharp	pechat_zapisi_csharp
+csharp	связывание	функция	Печать значения	Печать значения CSharp	pechat_znacheniya_csharp
+csharp	связывание	функция	Печать известной формы	Печать известной формы CSharp	pechat_izvestnoy_formy_csharp
+csharp	связывание	функция	Печать конструктора	Печать конструктора CSharp	pechat_konstruktora_csharp
+csharp	связывание	функция	Печать конструктора варианта	Печать конструктора варианта CSharp	pechat_konstruktora_varianta_csharp
+csharp	связывание	функция	Печать литерала	Печать литерала CSharp	pechat_literala_csharp
+csharp	связывание	функция	Печать операции	Печать операции CSharp	pechat_operacii_csharp
+csharp	связывание	функция	Печать переменной	Печать переменной CSharp	pechat_peremennoy_csharp
+csharp	связывание	функция	Печать поля записи	Печать поля записи CSharp	pechat_polya_zapisi_csharp
+csharp	связывание	функция	Печать помощника операции	Печать помощника операции CSharp	pechat_pomoschnika_operacii_csharp
+csharp	связывание	функция	Печать программы	Печать программы CSharp	pechat_programmy_csharp
+csharp	связывание	функция	Печать простой функции	Печать простой функции CSharp	pechat_prostoy_funkcii_csharp
+csharp	связывание	функция	Печать пусть	Печать пусть CSharp	pechat_pust_csharp
+csharp	связывание	функция	Печать разбора	Печать разбора CSharp	pechat_razbora_csharp
+csharp	связывание	функция	Печать разбора значением	Печать разбора значением CSharp	pechat_razbora_znacheniem_csharp
+csharp	связывание	функция	Печать свёртки	Печать свёртки CSharp	pechat_svyortki_csharp
+csharp	связывание	функция	Печать свёртки дальше	Печать свёртки дальше CSharp	pechat_svyortki_dalshe_csharp
+csharp	связывание	функция	Печать скаляра	Печать скаляра CSharp	pechat_skalyara_csharp
+csharp	связывание	функция	Печать тел	Печать тел CSharp	pechat_tel_csharp
+csharp	связывание	функция	Печать фабрики	Печать фабрики CSharp	pechat_fabriki_csharp
+csharp	связывание	функция	Печать формы	Печать формы CSharp	pechat_formy_csharp
+csharp	связывание	функция	Печать функции	Печать функции CSharp	pechat_funkcii_csharp
+csharp	связывание	функция	Печать хвоста	Печать хвоста CSharp	pechat_hvosta_csharp
+csharp	связывание	функция	Печать цикла	Печать цикла CSharp	pechat_cikla_csharp
+csharp	связывание	функция	Печать цикла дальше	Печать цикла дальше CSharp	pechat_cikla_dalshe_csharp
+csharp	связывание	функция	Поле узла	Поле узла CSharp	pole_uzla_csharp
+csharp	связывание	функция	Положить в	Положить в CSharp	polozhit_v_csharp
+csharp	связывание	функция	Положить в таблицу	Положить в таблицу CSharp	polozhit_v_tablicu_csharp
+csharp	связывание	функция	Положить метку	Положить метку CSharp	polozhit_metku_csharp
+csharp	связывание	функция	Поля узла	Поля узла CSharp	polya_uzla_csharp
+csharp	связывание	функция	Пометка вида типа	Пометка вида типа CSharp	pometka_vida_tipa_csharp
+csharp	связывание	функция	Пометка имени типа	Пометка имени типа CSharp	pometka_imeni_tipa_csharp
+csharp	связывание	функция	Пометка типа	Пометка типа CSharp	pometka_tipa_csharp
+csharp	связывание	функция	Помощник формы	Помощник формы CSharp	pomoschnik_formy_csharp
+csharp	связывание	функция	Помощники операций	Помощники операций CSharp	pomoschniki_operaciy_csharp
+csharp	связывание	функция	Помощники форм	Помощники форм CSharp	pomoschniki_form_csharp
+csharp	связывание	функция	Последний символ	Последний символ CSharp	posledniy_simvol_csharp
+csharp	связывание	функция	Последняя строка	Последняя строка CSharp	poslednyaya_stroka_csharp
+csharp	связывание	функция	Применить замены	Применить замены CSharp	primenit_zameny_csharp
+csharp	связывание	функция	Проверить арность вызова	Проверить арность вызова CSharp	proverit_arnost_vyzova_csharp
+csharp	связывание	функция	Проверить арность формы	Проверить арность формы CSharp	proverit_arnost_formy_csharp
+csharp	связывание	функция	Проверить вариант	Проверить вариант CSharp	proverit_variant_csharp
+csharp	связывание	функция	Проверить запись	Проверить запись CSharp	proverit_zapis_csharp
+csharp	связывание	функция	Проверить имя записи	Проверить имя записи CSharp	proverit_imya_zapisi_csharp
+csharp	связывание	функция	Проверить имя узла	Проверить имя узла CSharp	proverit_imya_uzla_csharp
+csharp	связывание	функция	Проверить случай	Проверить случай CSharp	proverit_sluchay_csharp
+csharp	связывание	функция	Проверить столкновения	Проверить столкновения CSharp	proverit_stolknoveniya_csharp
+csharp	связывание	функция	Проверка литералом	Проверка литералом CSharp	proverka_literalom_csharp
+csharp	связывание	функция	Проверка образца	Проверка образца CSharp	proverka_obrazca_csharp
+csharp	связывание	функция	Проверки договора	Проверки договора CSharp	proverki_dogovora_csharp
+csharp	связывание	функция	Пройти части	Пройти части CSharp	proyti_chasti_csharp
+csharp	связывание	функция	Просто значение	Просто значение CSharp	prosto_znachenie_csharp
+csharp	связывание	функция	Просьбы имён	Просьбы имён CSharp	prosby_imyon_csharp
+csharp	связывание	функция	Пустое состояние	Пустое состояние CSharp	pustoe_sostoyanie_csharp
+csharp	связывание	функция	Разрешить вызов	Разрешить вызов CSharp	razreshit_vyzov_csharp
+csharp	связывание	функция	Ребро Тарьяна	Ребро Тарьяна CSharp	rebro_taryana_csharp
+csharp	связывание	функция	Ребро вглубь	Ребро вглубь CSharp	rebro_vglub_csharp
+csharp	связывание	функция	Ребро внутри	Ребро внутри CSharp	rebro_vnutri_csharp
+csharp	связывание	функция	Рекурсивная одиночка	Рекурсивная одиночка CSharp	rekursivnaya_odinochka_csharp
+csharp	связывание	функция	Рекурсивные функции	Рекурсивные функции CSharp	rekursivnye_funkcii_csharp
+csharp	связывание	функция	Рёбра вызовов	Рёбра вызовов CSharp	ryobra_vyzovov_csharp
+csharp	связывание	функция	Самовызов в хвосте	Самовызов в хвосте CSharp	samovyzov_v_hvoste_csharp
+csharp	связывание	функция	Свежее имя	Свежее имя CSharp	svezhee_imya_csharp
+csharp	связывание	функция	Свободное имя	Свободное имя CSharp	svobodnoe_imya_csharp
+csharp	связывание	функция	Связать имя	Связать имя CSharp	svyazat_imya_csharp
+csharp	связывание	функция	Связать параметр	Связать параметр CSharp	svyazat_parametr_csharp
+csharp	связывание	функция	Связать параметр двери	Связать параметр двери CSharp	svyazat_parametr_dveri_csharp
+csharp	связывание	функция	Связать поле варианта	Связать поле варианта CSharp	svyazat_pole_varianta_csharp
+csharp	связывание	функция	Связки варианта	Связки варианта CSharp	svyazki_varianta_csharp
+csharp	связывание	функция	Связывание головы	Связывание головы CSharp	svyazyvanie_golovy_csharp
+csharp	связывание	функция	Связывание головы и хвоста	Связывание головы и хвоста CSharp	svyazyvanie_golovy_i_hvosta_csharp
+csharp	связывание	функция	Связывание любого	Связывание любого CSharp	svyazyvanie_lyubogo_csharp
+csharp	связывание	функция	Связывание образца	Связывание образца CSharp	svyazyvanie_obrazca_csharp
+csharp	связывание	функция	Символы слова	Символы слова CSharp	simvoly_slova_csharp
+csharp	связывание	функция	Синонимы форм	Синонимы форм CSharp	sinonimy_form_csharp
+csharp	связывание	функция	Склеить тела	Склеить тела CSharp	skleit_tela_csharp
+csharp	связывание	функция	Слить вариант типа	Слить вариант типа CSharp	slit_variant_tipa_csharp
+csharp	связывание	функция	Слить варианты суммы	Слить варианты суммы CSharp	slit_varianty_summy_csharp
+csharp	связывание	функция	Слить запись типа	Слить запись типа CSharp	slit_zapis_tipa_csharp
+csharp	связывание	функция	Слить просьбы	Слить просьбы CSharp	slit_prosby_csharp
+csharp	связывание	функция	Слить рёбра	Слить рёбра CSharp	slit_ryobra_csharp
+csharp	связывание	функция	Слить строки	Слить строки CSharp	slit_stroki_csharp
+csharp	связывание	функция	Слить файлы	Слить файлы CSharp	slit_fayly_csharp
+csharp	связывание	функция	Слова	Слова CSharp	slova_csharp
+csharp	связывание	функция	Словарные символы	Словарные символы CSharp	slovarnye_simvoly_csharp
+csharp	связывание	функция	Слово аргументов	Слово аргументов CSharp	slovo_argumentov_csharp
+csharp	связывание	функция	Снять вершину стека	Снять вершину стека CSharp	snyat_vershinu_steka_csharp
+csharp	связывание	функция	Снять компоненту	Снять компоненту CSharp	snyat_komponentu_csharp
+csharp	связывание	функция	Собрать вариант	Собрать вариант CSharp	sobrat_variant_csharp
+csharp	связывание	функция	Собрать варианты	Собрать варианты CSharp	sobrat_varianty_csharp
+csharp	связывание	функция	Собрать записи	Собрать записи CSharp	sobrat_zapisi_csharp
+csharp	связывание	функция	Собрать общее	Собрать общее CSharp	sobrat_obschee_csharp
+csharp	связывание	функция	Собрать параметр	Собрать параметр CSharp	sobrat_parametr_csharp
+csharp	связывание	функция	Собрать поле типа	Собрать поле типа CSharp	sobrat_pole_tipa_csharp
+csharp	связывание	функция	Собрать поля	Собрать поля CSharp	sobrat_polya_csharp
+csharp	связывание	функция	Собрать поля типа	Собрать поля типа CSharp	sobrat_polya_tipa_csharp
+csharp	связывание	функция	Собрать постусловие	Собрать постусловие CSharp	sobrat_postuslovie_csharp
+csharp	связывание	функция	Собрать предусловие	Собрать предусловие CSharp	sobrat_preduslovie_csharp
+csharp	связывание	функция	Собрать суммы	Собрать суммы CSharp	sobrat_summy_csharp
+csharp	связывание	функция	Собрать функции	Собрать функции CSharp	sobrat_funkcii_csharp
+csharp	связывание	функция	Собрать функцию	Собрать функцию CSharp	sobrat_funkciyu_csharp
+csharp	связывание	функция	Строка аргумента вызова	Строка аргумента вызова CSharp	stroka_argumenta_vyzova_csharp
+csharp	связывание	функция	Строка батута	Строка батута CSharp	stroka_batuta_csharp
+csharp	связывание	функция	Строка вывода	Строка вывода CSharp	stroka_vyvoda_csharp
+csharp	связывание	функция	Строка параметра	Строка параметра CSharp	stroka_parametra_csharp
+csharp	связывание	функция	Строка поля	Строка поля CSharp	stroka_polya_csharp
+csharp	связывание	функция	Строка поля или	Строка поля или CSharp	stroka_polya_ili_csharp
+csharp	связывание	функция	Строка скаляра	Строка скаляра CSharp	stroka_skalyara_csharp
+csharp	связывание	функция	Строка узла	Строка узла CSharp	stroka_uzla_csharp
+csharp	связывание	функция	Суффикс доказанного помощника	Суффикс доказанного помощника CSharp	suffiks_dokazannogo_pomoschnika_csharp
+csharp	связывание	функция	Таблица вариантов	Таблица вариантов CSharp	tablica_variantov_csharp
+csharp	связывание	функция	Таблица фабрик	Таблица фабрик CSharp	tablica_fabrik_csharp
+csharp	связывание	функция	Таблица функций	Таблица функций CSharp	tablica_funkciy_csharp
+csharp	связывание	функция	Таблица шагов	Таблица шагов CSharp	tablica_shagov_csharp
+csharp	связывание	функция	Тело ветви	Тело ветви CSharp	telo_vetvi_csharp
+csharp	связывание	функция	Тело пусть	Тело пусть CSharp	telo_pust_csharp
+csharp	связывание	функция	Тело с постусловиями	Тело с постусловиями CSharp	telo_s_postusloviyami_csharp
+csharp	связывание	функция	Тело функции	Тело функции CSharp	telo_funkcii_csharp
+csharp	связывание	функция	Тело цикла	Тело цикла CSharp	telo_cikla_csharp
+csharp	связывание	функция	Тело циклом	Тело циклом CSharp	telo_ciklom_csharp
+csharp	связывание	функция	Только символы слова	Только символы слова CSharp	tolko_simvoly_slova_csharp
+csharp	связывание	функция	Транслитерировать	Транслитерировать CSharp	transliterirovat_csharp
+csharp	связывание	функция	Узел ничто	Узел ничто CSharp	uzel_nichto_csharp
+csharp	связывание	функция	Уникальные имена	Уникальные имена CSharp	unikalnye_imena_csharp
+csharp	связывание	функция	Формы, снимаемые непустотой	Формы, снимаемые непустотой CSharp	formy_snimaemye_nepustotoy_csharp
+csharp	связывание	функция	Хвост цепочки	Хвост цепочки CSharp	hvost_cepochki_csharp
+csharp	связывание	функция	Хвостовое если	Хвостовое если CSharp	hvostovoe_esli_csharp
+csharp	связывание	функция	Хвостовое значение	Хвостовое значение CSharp	hvostovoe_znachenie_csharp
+csharp	связывание	функция	Хвостовое пусть	Хвостовое пусть CSharp	hvostovoe_pust_csharp
+csharp	связывание	функция	Хвостовой возврат	Хвостовой возврат CSharp	hvostovoy_vozvrat_csharp
+csharp	связывание	функция	Хвостовой вызов	Хвостовой вызов CSharp	hvostovoy_vyzov_csharp
+csharp	связывание	функция	Хвостовой отскок	Хвостовой отскок CSharp	hvostovoy_otskok_csharp
+csharp	связывание	функция	Хвостовой цикл	Хвостовой цикл CSharp	hvostovoy_cikl_csharp
+csharp	связывание	функция	Хвостовые вызовы	Хвостовые вызовы CSharp	hvostovye_vyzovy_csharp
+csharp	связывание	функция	Хвостовые рёбра	Хвостовые рёбра CSharp	hvostovye_ryobra_csharp
+csharp	связывание	функция	Цели	Цели CSharp	celi_csharp
+csharp	связывание	функция	Цепочка случаев	Цепочка случаев CSharp	cepochka_sluchaev_csharp
+csharp	связывание	функция	Циклические функции	Циклические функции CSharp	ciklicheskie_funkcii_csharp
+csharp	связывание	функция	Цифры	Цифры CSharp	cifry_csharp
+csharp	связывание	функция	Число параметров	Число параметров CSharp	chislo_parametrov_csharp
+csharp	связывание	функция	Число скаляра	Число скаляра CSharp	chislo_skalyara_csharp
+csharp	связывание	функция	Число узла	Число узла CSharp	chislo_uzla_csharp
+csharp	связывание	функция	Члены батута	Члены батута CSharp	chleny_batuta_csharp
+csharp	связывание	функция	Члены компоненты	Члены компоненты CSharp	chleny_komponenty_csharp
+csharp	связывание	функция	Шаг ветки диспетчера	Шаг ветки диспетчера CSharp	shag_vetki_dispetchera_csharp
+csharp	связывание	функция	Шаг временного аргумента	Шаг временного аргумента CSharp	shag_vremennogo_argumenta_csharp
+csharp	связывание	функция	Шаг выбора	Шаг выбора CSharp	shag_vybora_csharp
+csharp	связывание	функция	Шаг отрезания	Шаг отрезания CSharp	shag_otrezaniya_csharp
+csharp	связывание	функция	Шаг поиска слова	Шаг поиска слова CSharp	shag_poiska_slova_csharp
+csharp	связывание	функция	Шаг постусловия	Шаг постусловия CSharp	shag_postusloviya_csharp
+csharp	связывание	функция	Шаг предусловия	Шаг предусловия CSharp	shag_predusloviya_csharp
+csharp	связывание	функция	Шаг присвоения параметра	Шаг присвоения параметра CSharp	shag_prisvoeniya_parametra_csharp
+csharp	связывание	функция	Шаг распаковки	Шаг распаковки CSharp	shag_raspakovki_csharp
+csharp	связывание	функция	Шаг рекурсивных	Шаг рекурсивных CSharp	shag_rekursivnyh_csharp
+csharp	связывание	функция	Шаг сбора случая	Шаг сбора случая CSharp	shag_sbora_sluchaya_csharp
+csharp	связывание	функция	Шаг тела функции	Шаг тела функции CSharp	shag_tela_funkcii_csharp
+csharp	связывание	функция	Шаг уникальных	Шаг уникальных CSharp	shag_unikalnyh_csharp
+csharp	связывание	функция	Шаг цепочки	Шаг цепочки CSharp	shag_cepochki_csharp
+csharp	связывание	функция	Шапка файла	Шапка файла CSharp	shapka_fayla_csharp
+csharp	связывание	функция	Элемент по индексу	Элемент по индексу CSharp	element_po_indeksu_csharp
+csharp	связывание	функция	Элементы поля	Элементы поля CSharp	elementy_polya_csharp
+csharp	связывание	функция	Элементы узла	Элементы узла CSharp	elementy_uzla_csharp
+csharp	связывание	функция	Это запись	Это запись CSharp	eto_zapis_csharp
+csharp	связывание	функция	Это истина	Это истина CSharp	eto_istina_csharp
+csharp	связывание	функция	Это истина в скаляре	Это истина в скаляре CSharp	eto_istina_v_skalyare_csharp
+csharp	связывание	функция	Это ничто	Это ничто CSharp	eto_nichto_csharp
+csharp	связывание	функция	Это ничто в скаляре	Это ничто в скаляре CSharp	eto_nichto_v_skalyare_csharp
+csharp	связывание	функция	Это отскок	Это отскок CSharp	eto_otskok_csharp
+csharp	связывание	функция	Это признак	Это признак CSharp	eto_priznak_csharp
+csharp	связывание	функция	Это признак в скаляре	Это признак в скаляре CSharp	eto_priznak_v_skalyare_csharp
+csharp	связывание	функция	Это самовызов	Это самовызов CSharp	eto_samovyzov_csharp
+csharp	связывание	функция	Это символ слова	Это символ слова CSharp	eto_simvol_slova_csharp
+csharp	связывание	функция	Это список	Это список CSharp	eto_spisok_csharp
+csharp	связывание	функция	Это строка	Это строка CSharp	eto_stroka_csharp
+csharp	связывание	функция	Это строка в скаляре	Это строка в скаляре CSharp	eto_stroka_v_skalyare_csharp
+csharp	связывание	функция	Это число	Это число CSharp	eto_chislo_csharp
+csharp	связывание	функция	Это число в скаляре	Это число в скаляре CSharp	eto_chislo_v_skalyare_csharp
+csharp	печать	функция	Число C#	Число CSharp	chislo_csharp
+csharp	печать	функция	Экранировать C#	Экранировать CSharp	ekranirovat_csharp
+csharp	печать	функция	Конечное число C#	Конечное число CSharp	konechnoe_chislo_csharp
+csharp	печать	функция	Обойти занятое целью C#	Обойти занятое целью CSharp	oboyti_zanyatoe_celyu_csharp
+csharp	печать	функция	Строка C#	Строка CSharp	stroka_csharp
+csharp	печать	функция	Замены C#	Замены CSharp	zameny_csharp
+csharp	печать	функция	Занято целью C#	Занято целью CSharp	zanyato_celyu_csharp
+csharp	печать	функция	Зарезервировано в C#	Зарезервировано в CSharp	zarezervirovano_v_csharp
+csharp	типы	вариант	Есть число	Есть число CSharp	variant_est_chislo_csharp
+csharp	типы	вариант	Есть функция	Есть функция CSharp	variant_est_funkciya_csharp
+csharp	типы	вариант	Есть имя	Есть имя CSharp	variant_est_imya_csharp
+csharp	типы	вариант	Есть узел	Есть узел CSharp	variant_est_uzel_csharp
+csharp	типы	вариант	Нет числа	Нет числа CSharp	variant_net_chisla_csharp
+csharp	типы	вариант	Нет функции	Нет функции CSharp	variant_net_funkcii_csharp
+csharp	типы	вариант	Нет имени	Нет имени CSharp	variant_net_imeni_csharp
+csharp	типы	вариант	Нет узла	Нет узла CSharp	variant_net_uzla_csharp
+elixir	связывание	тип	Блок	Блок Elixir	sozdat_blok_elixir
+elixir	связывание	тип	Вариант типа	Вариант типа Elixir	sozdat_variant_tipa_elixir
+elixir	связывание	тип	Запись типа	Запись типа Elixir	sozdat_zapis_tipa_elixir
+elixir	связывание	тип	Зип	Зип Elixir	sozdat_zip_elixir
+elixir	связывание	тип	Именованные идентификаторы	Именованные идентификаторы Elixir	sozdat_imenovannye_identifikatory_elixir
+elixir	связывание	тип	Итог	Итог Elixir	sozdat_itog_elixir
+elixir	связывание	тип	Итог печати	Итог печати Elixir	sozdat_itog_pechati_elixir
+elixir	связывание	тип	Итог проверки	Итог проверки Elixir	sozdat_itog_proverki_elixir
+elixir	связывание	тип	Компонента	Компонента Elixir	sozdat_komponenta_elixir
+elixir	связывание	тип	Контекст	Контекст Elixir	sozdat_kontekst_elixir
+elixir	связывание	тип	Метка	Метка Elixir	sozdat_metka_elixir
+elixir	связывание	тип	Может быть имя	Может быть имя Elixir	—
+elixir	связывание	тип	Может быть узел	Может быть узел Elixir	—
+elixir	связывание	тип	Может быть функция	Может быть функция Elixir	—
+elixir	связывание	тип	Может быть число	Может быть число Elixir	—
+elixir	связывание	тип	Набор имён	Набор имён Elixir	sozdat_nabor_imyon_elixir
+elixir	связывание	тип	Настройки	Настройки Elixir	sozdat_nastroyki_elixir
+elixir	связывание	тип	Общее	Общее Elixir	sozdat_obschee_elixir
+elixir	связывание	тип	Отрезание	Отрезание Elixir	sozdat_otrezanie_elixir
+elixir	связывание	тип	Пара имён	Пара имён Elixir	sozdat_para_imyon_elixir
+elixir	связывание	тип	Параметр	Параметр Elixir	sozdat_parametr_elixir
+elixir	связывание	тип	Поиск слова	Поиск слова Elixir	sozdat_poisk_slova_elixir
+elixir	связывание	тип	Поле типа	Поле типа Elixir	sozdat_pole_tipa_elixir
+elixir	связывание	тип	Постусловие	Постусловие Elixir	sozdat_postuslovie_elixir
+elixir	связывание	тип	Предусловие	Предусловие Elixir	sozdat_preduslovie_elixir
+elixir	связывание	тип	Рёбра	Рёбра Elixir	sozdat_ryobra_elixir
+elixir	связывание	тип	Сбор слов	Сбор слов Elixir	sozdat_sbor_slov_elixir
+elixir	связывание	тип	Свежее	Свежее Elixir	sozdat_svezhee_elixir
+elixir	связывание	тип	Связка	Связка Elixir	sozdat_svyazka_elixir
+elixir	связывание	тип	Связывание	Связывание Elixir	sozdat_svyazyvanie_elixir
+elixir	связывание	тип	Связывание параметров	Связывание параметров Elixir	sozdat_svyazyvanie_parametrov_elixir
+elixir	связывание	тип	Состояние	Состояние Elixir	sozdat_sostoyanie_elixir
+elixir	связывание	тип	Сумма типов	Сумма типов Elixir	sozdat_summa_tipov_elixir
+elixir	связывание	тип	Тарьян	Тарьян Elixir	sozdat_taryan_elixir
+elixir	связывание	тип	Тела	Тела Elixir	sozdat_tela_elixir
+elixir	связывание	тип	Файл	Файл Elixir	sozdat_fayl_elixir
+elixir	связывание	тип	Функция	Функция Elixir	sozdat_funkciya_elixir
+elixir	связывание	функция	Арности форм	Арности форм Elixir	arnosti_form_elixir
+elixir	связывание	функция	Без последней строки	Без последней строки Elixir	bez_posledney_stroki_elixir
+elixir	связывание	функция	В верхний регистр	В верхний регистр Elixir	v_verhniy_registr_elixir
+elixir	связывание	функция	В нижний регистр	В нижний регистр Elixir	v_nizhniy_registr_elixir
+elixir	связывание	функция	Ветка диспетчера	Ветка диспетчера Elixir	vetka_dispetchera_elixir
+elixir	связывание	функция	Взять поле	Взять поле Elixir	vzyat_pole_elixir
+elixir	связывание	функция	Вид узла	Вид узла Elixir	vid_uzla_elixir
+elixir	связывание	функция	Временное	Временное Elixir	vremennoe_elixir
+elixir	связывание	функция	Все вызовы	Все вызовы Elixir	vse_vyzovy_elixir
+elixir	связывание	функция	Гасить неиспользованные	Гасить неиспользованные Elixir	gasit_neispolzovannye_elixir
+elixir	связывание	функция	Готовая проверка	Готовая проверка Elixir	gotovaya_proverka_elixir
+elixir	связывание	функция	Граница слова	Граница слова Elixir	granica_slova_elixir
+elixir	связывание	функция	Добавить вызов	Добавить вызов Elixir	dobavit_vyzov_elixir
+elixir	связывание	функция	Добавить имя вызова	Добавить имя вызова Elixir	dobavit_imya_vyzova_elixir
+elixir	связывание	функция	Добавить уникальное	Добавить уникальное Elixir	dobavit_unikalnoe_elixir
+elixir	связывание	функция	Договор на двери	Договор на двери Elixir	dogovor_na_dveri_elixir
+elixir	связывание	функция	Дописать слово	Дописать слово Elixir	dopisat_slovo_elixir
+elixir	связывание	функция	Есть в таблице	Есть в таблице Elixir	est_v_tablice_elixir
+elixir	связывание	функция	Есть имя модуля	Есть имя модуля Elixir	est_imya_modulya_elixir
+elixir	связывание	функция	Есть метка	Есть метка Elixir	est_metka_elixir
+elixir	связывание	функция	Есть поле у узла	Есть поле у узла Elixir	est_pole_u_uzla_elixir
+elixir	связывание	функция	Есть слово	Есть слово Elixir	est_slovo_elixir
+elixir	связывание	функция	Есть функция с именем	Есть функция с именем Elixir	est_funkciya_s_imenem_elixir
+elixir	связывание	функция	Закрыть вершину	Закрыть вершину Elixir	zakryt_vershinu_elixir
+elixir	связывание	функция	Заменить взятое	Заменить взятое Elixir	zamenit_vzyatoe_elixir
+elixir	связывание	функция	Заменить низ	Заменить низ Elixir	zamenit_niz_elixir
+elixir	связывание	функция	Заменить счётчик	Заменить счётчик Elixir	zamenit_schyotchik_elixir
+elixir	связывание	функция	Замены в верхний регистр	Замены в верхний регистр Elixir	zameny_v_verhniy_registr_elixir
+elixir	связывание	функция	Замены в нижний регистр	Замены в нижний регистр Elixir	zameny_v_nizhniy_registr_elixir
+elixir	связывание	функция	Замены кириллицы	Замены кириллицы Elixir	zameny_kirillicy_elixir
+elixir	связывание	функция	Записать компоненту	Записать компоненту Elixir	zapisat_komponentu_elixir
+elixir	связывание	функция	Записать ошибку	Записать ошибку Elixir	zapisat_oshibku_elixir
+elixir	связывание	функция	Змейка	Змейка Elixir	zmeyka_elixir
+elixir	связывание	функция	Значение по ключу	Значение по ключу Elixir	znachenie_po_klyuchu_elixir
+elixir	связывание	функция	Значения полей	Значения полей Elixir	znacheniya_poley_elixir
+elixir	связывание	функция	Идентификаторы для	Идентификаторы для Elixir	identifikatory_dlya_elixir
+elixir	связывание	функция	Идентификаторы параметров	Идентификаторы параметров Elixir	identifikatory_parametrov_elixir
+elixir	связывание	функция	Имена вариантов	Имена вариантов Elixir	imena_variantov_elixir
+elixir	связывание	функция	Имена записей	Имена записей Elixir	imena_zapisey_elixir
+elixir	связывание	функция	Имена полей типа	Имена полей типа Elixir	imena_poley_tipa_elixir
+elixir	связывание	функция	Имена рёбер	Имена рёбер Elixir	imena_ryober_elixir
+elixir	связывание	функция	Имена функций	Имена функций Elixir	imena_funkciy_elixir
+elixir	связывание	функция	Имя модуля	Имя модуля Elixir	imya_modulya_elixir
+elixir	связывание	функция	Исходник модуля	Исходник модуля Elixir	ishodnik_modulya_elixir
+elixir	связывание	функция	Каноническое имя формы	Каноническое имя формы Elixir	kanonicheskoe_imya_formy_elixir
+elixir	связывание	функция	Ключи полей	Ключи полей Elixir	klyuchi_poley_elixir
+elixir	связывание	функция	Компоненты связности	Компоненты связности Elixir	komponenty_svyaznosti_elixir
+elixir	связывание	функция	Контекст двери	Контекст двери Elixir	kontekst_dveri_elixir
+elixir	связывание	функция	Корень Тарьяна	Корень Тарьяна Elixir	koren_taryana_elixir
+elixir	связывание	функция	Между	Между Elixir	mezhdu_elixir
+elixir	связывание	функция	Меньшее	Меньшее Elixir	menshee_elixir
+elixir	связывание	функция	Метка или ноль	Метка или ноль Elixir	metka_ili_nol_elixir
+elixir	связывание	функция	Найти в таблице	Найти в таблице Elixir	nayti_v_tablice_elixir
+elixir	связывание	функция	Найти метку	Найти метку Elixir	nayti_metku_elixir
+elixir	связывание	функция	Найти функцию	Найти функцию Elixir	nayti_funkciyu_elixir
+elixir	связывание	функция	Начальное взятое	Начальное взятое Elixir	nachalnoe_vzyatoe_elixir
+elixir	связывание	функция	Начальный контекст	Начальный контекст Elixir	nachalnyy_kontekst_elixir
+elixir	связывание	функция	Не конечное	Не конечное Elixir	ne_konechnoe_elixir
+elixir	связывание	функция	Неизвестный вид	Неизвестный вид Elixir	neizvestnyy_vid_elixir
+elixir	связывание	функция	Обновить вариант типа	Обновить вариант типа Elixir	obnovit_variant_tipa_elixir
+elixir	связывание	функция	Обновить запись типа	Обновить запись типа Elixir	obnovit_zapis_tipa_elixir
+elixir	связывание	функция	Обновить метку	Обновить метку Elixir	obnovit_metku_elixir
+elixir	связывание	функция	Обновить пару	Обновить пару Elixir	obnovit_paru_elixir
+elixir	связывание	функция	Обойти вершину	Обойти вершину Elixir	oboyti_vershinu_elixir
+elixir	связывание	функция	Обратное ребро	Обратное ребро Elixir	obratnoe_rebro_elixir
+elixir	связывание	функция	Обход всего	Обход всего Elixir	obhod_vsego_elixir
+elixir	связывание	функция	Обход полей	Обход полей Elixir	obhod_poley_elixir
+elixir	связывание	функция	Обход хвоста	Обход хвоста Elixir	obhod_hvosta_elixir
+elixir	связывание	функция	Обход хвоста ветвей	Обход хвоста ветвей Elixir	obhod_hvosta_vetvey_elixir
+elixir	связывание	функция	Обход хвоста случаев	Обход хвоста случаев Elixir	obhod_hvosta_sluchaev_elixir
+elixir	связывание	функция	Обход хвоста случая	Обход хвоста случая Elixir	obhod_hvosta_sluchaya_elixir
+elixir	связывание	функция	Овеществить	Овеществить Elixir	oveschestvit_elixir
+elixir	связывание	функция	Описание функции	Описание функции Elixir	opisanie_funkcii_elixir
+elixir	связывание	функция	Ошибка образца	Ошибка образца Elixir	oshibka_obrazca_elixir
+elixir	связывание	функция	Первая из меток	Первая из меток Elixir	pervaya_iz_metok_elixir
+elixir	связывание	функция	Первая из функций	Первая из функций Elixir	pervaya_iz_funkciy_elixir
+elixir	связывание	функция	Первое из пар	Первое из пар Elixir	pervoe_iz_par_elixir
+elixir	связывание	функция	Первое из полей	Первое из полей Elixir	pervoe_iz_poley_elixir
+elixir	связывание	функция	Первый символ	Первый символ Elixir	pervyy_simvol_elixir
+elixir	связывание	функция	Печать Makefile	Печать Makefile Elixir	pechat_makefile_elixir
+elixir	связывание	функция	Печать ветви	Печать ветви Elixir	pechat_vetvi_elixir
+elixir	связывание	функция	Печать диспетчера	Печать диспетчера Elixir	pechat_dispetchera_elixir
+elixir	связывание	функция	Печать записи	Печать записи Elixir	pechat_zapisi_elixir
+elixir	связывание	функция	Печать значения	Печать значения Elixir	pechat_znacheniya_elixir
+elixir	связывание	функция	Печать известной формы	Печать известной формы Elixir	pechat_izvestnoy_formy_elixir
+elixir	связывание	функция	Печать конструктора	Печать конструктора Elixir	pechat_konstruktora_elixir
+elixir	связывание	функция	Печать конструктора варианта	Печать конструктора варианта Elixir	pechat_konstruktora_varianta_elixir
+elixir	связывание	функция	Печать литерала	Печать литерала Elixir	pechat_literala_elixir
+elixir	связывание	функция	Печать операции	Печать операции Elixir	pechat_operacii_elixir
+elixir	связывание	функция	Печать переменной	Печать переменной Elixir	pechat_peremennoy_elixir
+elixir	связывание	функция	Печать поля записи	Печать поля записи Elixir	pechat_polya_zapisi_elixir
+elixir	связывание	функция	Печать помощника операции	Печать помощника операции Elixir	pechat_pomoschnika_operacii_elixir
+elixir	связывание	функция	Печать программы	Печать программы Elixir	pechat_programmy_elixir
+elixir	связывание	функция	Печать разбора	Печать разбора Elixir	pechat_razbora_elixir
+elixir	связывание	функция	Печать разбора значением	Печать разбора значением Elixir	pechat_razbora_znacheniem_elixir
+elixir	связывание	функция	Печать свёртки	Печать свёртки Elixir	pechat_svyortki_elixir
+elixir	связывание	функция	Печать свёртки дальше	Печать свёртки дальше Elixir	pechat_svyortki_dalshe_elixir
+elixir	связывание	функция	Печать скаляра	Печать скаляра Elixir	pechat_skalyara_elixir
+elixir	связывание	функция	Печать списка	Печать списка Elixir	pechat_spiska_elixir
+elixir	связывание	функция	Печать тел	Печать тел Elixir	pechat_tel_elixir
+elixir	связывание	функция	Печать фабрики	Печать фабрики Elixir	pechat_fabriki_elixir
+elixir	связывание	функция	Печать формы	Печать формы Elixir	pechat_formy_elixir
+elixir	связывание	функция	Печать функции	Печать функции Elixir	pechat_funkcii_elixir
+elixir	связывание	функция	Печать хвоста	Печать хвоста Elixir	pechat_hvosta_elixir
+elixir	связывание	функция	Печать цикла	Печать цикла Elixir	pechat_cikla_elixir
+elixir	связывание	функция	Печать цикла дальше	Печать цикла дальше Elixir	pechat_cikla_dalshe_elixir
+elixir	связывание	функция	Поле узла	Поле узла Elixir	pole_uzla_elixir
+elixir	связывание	функция	Положить в таблицу	Положить в таблицу Elixir	polozhit_v_tablicu_elixir
+elixir	связывание	функция	Положить метку	Положить метку Elixir	polozhit_metku_elixir
+elixir	связывание	функция	Поля узла	Поля узла Elixir	polya_uzla_elixir
+elixir	связывание	функция	Пометка вида типа	Пометка вида типа Elixir	pometka_vida_tipa_elixir
+elixir	связывание	функция	Пометка имени типа	Пометка имени типа Elixir	pometka_imeni_tipa_elixir
+elixir	связывание	функция	Пометка типа	Пометка типа Elixir	pometka_tipa_elixir
+elixir	связывание	функция	Помощник формы	Помощник формы Elixir	pomoschnik_formy_elixir
+elixir	связывание	функция	Помощники операций	Помощники операций Elixir	pomoschniki_operaciy_elixir
+elixir	связывание	функция	Помощники форм	Помощники форм Elixir	pomoschniki_form_elixir
+elixir	связывание	функция	Последний символ	Последний символ Elixir	posledniy_simvol_elixir
+elixir	связывание	функция	Последняя строка	Последняя строка Elixir	poslednyaya_stroka_elixir
+elixir	связывание	функция	Применить замены	Применить замены Elixir	primenit_zameny_elixir
+elixir	связывание	функция	Проверить арность вызова	Проверить арность вызова Elixir	proverit_arnost_vyzova_elixir
+elixir	связывание	функция	Проверить арность формы	Проверить арность формы Elixir	proverit_arnost_formy_elixir
+elixir	связывание	функция	Проверить вариант	Проверить вариант Elixir	proverit_variant_elixir
+elixir	связывание	функция	Проверить запись	Проверить запись Elixir	proverit_zapis_elixir
+elixir	связывание	функция	Проверить имя записи	Проверить имя записи Elixir	proverit_imya_zapisi_elixir
+elixir	связывание	функция	Проверить имя узла	Проверить имя узла Elixir	proverit_imya_uzla_elixir
+elixir	связывание	функция	Проверить постусловия	Проверить постусловия Elixir	proverit_postusloviya_elixir
+elixir	связывание	функция	Проверка литералом	Проверка литералом Elixir	proverka_literalom_elixir
+elixir	связывание	функция	Проверка образца	Проверка образца Elixir	proverka_obrazca_elixir
+elixir	связывание	функция	Проверки договора	Проверки договора Elixir	proverki_dogovora_elixir
+elixir	связывание	функция	Пройти части	Пройти части Elixir	proyti_chasti_elixir
+elixir	связывание	функция	Пустое состояние	Пустое состояние Elixir	pustoe_sostoyanie_elixir
+elixir	связывание	функция	Разрешить вызов	Разрешить вызов Elixir	razreshit_vyzov_elixir
+elixir	связывание	функция	Ребро Тарьяна	Ребро Тарьяна Elixir	rebro_taryana_elixir
+elixir	связывание	функция	Ребро вглубь	Ребро вглубь Elixir	rebro_vglub_elixir
+elixir	связывание	функция	Ребро внутри	Ребро внутри Elixir	rebro_vnutri_elixir
+elixir	связывание	функция	Рекурсивная одиночка	Рекурсивная одиночка Elixir	rekursivnaya_odinochka_elixir
+elixir	связывание	функция	Рекурсивные функции	Рекурсивные функции Elixir	rekursivnye_funkcii_elixir
+elixir	связывание	функция	Рёбра вызовов	Рёбра вызовов Elixir	ryobra_vyzovov_elixir
+elixir	связывание	функция	Самовызов в хвосте	Самовызов в хвосте Elixir	samovyzov_v_hvoste_elixir
+elixir	связывание	функция	Свежее имя	Свежее имя Elixir	svezhee_imya_elixir
+elixir	связывание	функция	Свободное имя	Свободное имя Elixir	svobodnoe_imya_elixir
+elixir	связывание	функция	Связать имя	Связать имя Elixir	svyazat_imya_elixir
+elixir	связывание	функция	Связать любое	Связать любое Elixir	svyazat_lyuboe_elixir
+elixir	связывание	функция	Связать образец	Связать образец Elixir	svyazat_obrazec_elixir
+elixir	связывание	функция	Связать параметр	Связать параметр Elixir	svyazat_parametr_elixir
+elixir	связывание	функция	Связать параметр двери	Связать параметр двери Elixir	svyazat_parametr_dveri_elixir
+elixir	связывание	функция	Связать поле варианта	Связать поле варианта Elixir	svyazat_pole_varianta_elixir
+elixir	связывание	функция	Связки варианта	Связки варианта Elixir	svyazki_varianta_elixir
+elixir	связывание	функция	Символы слова	Символы слова Elixir	simvoly_slova_elixir
+elixir	связывание	функция	Синонимы форм	Синонимы форм Elixir	sinonimy_form_elixir
+elixir	связывание	функция	Слить вариант типа	Слить вариант типа Elixir	slit_variant_tipa_elixir
+elixir	связывание	функция	Слить варианты суммы	Слить варианты суммы Elixir	slit_varianty_summy_elixir
+elixir	связывание	функция	Слить запись типа	Слить запись типа Elixir	slit_zapis_tipa_elixir
+elixir	связывание	функция	Слить рёбра	Слить рёбра Elixir	slit_ryobra_elixir
+elixir	связывание	функция	Слить файлы	Слить файлы Elixir	slit_fayly_elixir
+elixir	связывание	функция	Слова	Слова Elixir	slova_elixir
+elixir	связывание	функция	Словарные символы	Словарные символы Elixir	slovarnye_simvoly_elixir
+elixir	связывание	функция	Слово аргументов	Слово аргументов Elixir	slovo_argumentov_elixir
+elixir	связывание	функция	Снять вершину стека	Снять вершину стека Elixir	snyat_vershinu_steka_elixir
+elixir	связывание	функция	Снять компоненту	Снять компоненту Elixir	snyat_komponentu_elixir
+elixir	связывание	функция	Собрать вариант	Собрать вариант Elixir	sobrat_variant_elixir
+elixir	связывание	функция	Собрать варианты	Собрать варианты Elixir	sobrat_varianty_elixir
+elixir	связывание	функция	Собрать записи	Собрать записи Elixir	sobrat_zapisi_elixir
+elixir	связывание	функция	Собрать общее	Собрать общее Elixir	sobrat_obschee_elixir
+elixir	связывание	функция	Собрать параметр	Собрать параметр Elixir	sobrat_parametr_elixir
+elixir	связывание	функция	Собрать поле типа	Собрать поле типа Elixir	sobrat_pole_tipa_elixir
+elixir	связывание	функция	Собрать поля типа	Собрать поля типа Elixir	sobrat_polya_tipa_elixir
+elixir	связывание	функция	Собрать постусловие	Собрать постусловие Elixir	sobrat_postuslovie_elixir
+elixir	связывание	функция	Собрать предусловие	Собрать предусловие Elixir	sobrat_preduslovie_elixir
+elixir	связывание	функция	Собрать суммы	Собрать суммы Elixir	sobrat_summy_elixir
+elixir	связывание	функция	Собрать функции	Собрать функции Elixir	sobrat_funkcii_elixir
+elixir	связывание	функция	Собрать функцию	Собрать функцию Elixir	sobrat_funkciyu_elixir
+elixir	связывание	функция	Строка поля	Строка поля Elixir	stroka_polya_elixir
+elixir	связывание	функция	Строка поля или	Строка поля или Elixir	stroka_polya_ili_elixir
+elixir	связывание	функция	Строка скаляра	Строка скаляра Elixir	stroka_skalyara_elixir
+elixir	связывание	функция	Строка узла	Строка узла Elixir	stroka_uzla_elixir
+elixir	связывание	функция	Суффикс доказанного помощника	Суффикс доказанного помощника Elixir	suffiks_dokazannogo_pomoschnika_elixir
+elixir	связывание	функция	Тело ветви	Тело ветви Elixir	telo_vetvi_elixir
+elixir	связывание	функция	Тело пусть	Тело пусть Elixir	telo_pust_elixir
+elixir	связывание	функция	Тело с постусловиями	Тело с постусловиями Elixir	telo_s_postusloviyami_elixir
+elixir	связывание	функция	Тело функции	Тело функции Elixir	telo_funkcii_elixir
+elixir	связывание	функция	Транслитерировать	Транслитерировать Elixir	transliterirovat_elixir
+elixir	связывание	функция	Узел ничто	Узел ничто Elixir	uzel_nichto_elixir
+elixir	связывание	функция	Уникальные имена	Уникальные имена Elixir	unikalnye_imena_elixir
+elixir	связывание	функция	Файл прогонщика	Файл прогонщика Elixir	fayl_progonschika_elixir
+elixir	связывание	функция	Формы, снимаемые непустотой	Формы, снимаемые непустотой Elixir	formy_snimaemye_nepustotoy_elixir
+elixir	связывание	функция	Хвостовое если	Хвостовое если Elixir	hvostovoe_esli_elixir
+elixir	связывание	функция	Хвостовое пусть	Хвостовое пусть Elixir	hvostovoe_pust_elixir
+elixir	связывание	функция	Хвостовой вызов	Хвостовой вызов Elixir	hvostovoy_vyzov_elixir
+elixir	связывание	функция	Хвостовые вызовы	Хвостовые вызовы Elixir	hvostovye_vyzovy_elixir
+elixir	связывание	функция	Хвостовые рёбра	Хвостовые рёбра Elixir	hvostovye_ryobra_elixir
+elixir	связывание	функция	Цели	Цели Elixir	celi_elixir
+elixir	связывание	функция	Циклические функции	Циклические функции Elixir	ciklicheskie_funkcii_elixir
+elixir	связывание	функция	Цифры	Цифры Elixir	cifry_elixir
+elixir	связывание	функция	Число параметров	Число параметров Elixir	chislo_parametrov_elixir
+elixir	связывание	функция	Число скаляра	Число скаляра Elixir	chislo_skalyara_elixir
+elixir	связывание	функция	Число узла	Число узла Elixir	chislo_uzla_elixir
+elixir	связывание	функция	Члены компоненты	Члены компоненты Elixir	chleny_komponenty_elixir
+elixir	связывание	функция	Шаг ветки диспетчера	Шаг ветки диспетчера Elixir	shag_vetki_dispetchera_elixir
+elixir	связывание	функция	Шаг выбора	Шаг выбора Elixir	shag_vybora_elixir
+elixir	связывание	функция	Шаг отрезания	Шаг отрезания Elixir	shag_otrezaniya_elixir
+elixir	связывание	функция	Шаг поиска слова	Шаг поиска слова Elixir	shag_poiska_slova_elixir
+elixir	связывание	функция	Шаг постусловия	Шаг постусловия Elixir	shag_postusloviya_elixir
+elixir	связывание	функция	Шаг предусловия	Шаг предусловия Elixir	shag_predusloviya_elixir
+elixir	связывание	функция	Шаг рекурсивных	Шаг рекурсивных Elixir	shag_rekursivnyh_elixir
+elixir	связывание	функция	Шаг тела функции	Шаг тела функции Elixir	shag_tela_funkcii_elixir
+elixir	связывание	функция	Шаг уникальных	Шаг уникальных Elixir	shag_unikalnyh_elixir
+elixir	связывание	функция	Шапка модуля	Шапка модуля Elixir	shapka_modulya_elixir
+elixir	связывание	функция	Шапка файла	Шапка файла Elixir	shapka_fayla_elixir
+elixir	связывание	функция	Элемент по индексу	Элемент по индексу Elixir	element_po_indeksu_elixir
+elixir	связывание	функция	Элементы поля	Элементы поля Elixir	elementy_polya_elixir
+elixir	связывание	функция	Элементы узла	Элементы узла Elixir	elementy_uzla_elixir
+elixir	связывание	функция	Это запись	Это запись Elixir	eto_zapis_elixir
+elixir	связывание	функция	Это истина	Это истина Elixir	eto_istina_elixir
+elixir	связывание	функция	Это истина в скаляре	Это истина в скаляре Elixir	eto_istina_v_skalyare_elixir
+elixir	связывание	функция	Это конечное число	Это конечное число Elixir	eto_konechnoe_chislo_elixir
+elixir	связывание	функция	Это ничто	Это ничто Elixir	eto_nichto_elixir
+elixir	связывание	функция	Это ничто в скаляре	Это ничто в скаляре Elixir	eto_nichto_v_skalyare_elixir
+elixir	связывание	функция	Это отскок	Это отскок Elixir	eto_otskok_elixir
+elixir	связывание	функция	Это символ слова	Это символ слова Elixir	eto_simvol_slova_elixir
+elixir	связывание	функция	Это список	Это список Elixir	eto_spisok_elixir
+elixir	связывание	функция	Это строка	Это строка Elixir	eto_stroka_elixir
+elixir	связывание	функция	Это строка в скаляре	Это строка в скаляре Elixir	eto_stroka_v_skalyare_elixir
+elixir	связывание	функция	Это число	Это число Elixir	eto_chislo_elixir
+elixir	связывание	функция	Это число в скаляре	Это число в скаляре Elixir	eto_chislo_v_skalyare_elixir
+elixir	типы	вариант	Есть число	Есть число Elixir	variant_est_chislo_elixir
+elixir	типы	вариант	Есть функция	Есть функция Elixir	variant_est_funkciya_elixir
+elixir	типы	вариант	Есть имя	Есть имя Elixir	variant_est_imya_elixir
+elixir	типы	вариант	Есть узел	Есть узел Elixir	variant_est_uzel_elixir
+elixir	типы	вариант	Нет числа	Нет числа Elixir	variant_net_chisla_elixir
+elixir	типы	вариант	Нет функции	Нет функции Elixir	variant_net_funkcii_elixir
+elixir	типы	вариант	Нет имени	Нет имени Elixir	variant_net_imeni_elixir
+elixir	типы	вариант	Нет узла	Нет узла Elixir	variant_net_uzla_elixir
+js	связывание	тип	Блок	Блок JavaScript	sozdat_blok_javascript
+js	связывание	тип	Вариант типа	Вариант типа JavaScript	sozdat_variant_tipa_javascript
+js	связывание	тип	Запись типа	Запись типа JavaScript	sozdat_zapis_tipa_javascript
+js	связывание	тип	Итог	Итог JavaScript	sozdat_itog_javascript
+js	связывание	тип	Итог образца	Итог образца JavaScript	sozdat_itog_obrazca_javascript
+js	связывание	тип	Итог печати	Итог печати JavaScript	sozdat_itog_pechati_javascript
+js	связывание	тип	Контекст	Контекст JavaScript	sozdat_kontekst_javascript
+js	связывание	тип	Может быть функция	Может быть функция JavaScript	—
+js	связывание	тип	Настройки	Настройки JavaScript	sozdat_nastroyki_javascript
+js	связывание	тип	Общее	Общее JavaScript	sozdat_obschee_javascript
+js	связывание	тип	Параметр	Параметр JavaScript	sozdat_parametr_javascript
+js	связывание	тип	Поле типа	Поле типа JavaScript	sozdat_pole_tipa_javascript
+js	связывание	тип	Постусловие	Постусловие JavaScript	sozdat_postuslovie_javascript
+js	связывание	тип	Предусловие	Предусловие JavaScript	sozdat_preduslovie_javascript
+js	связывание	тип	Сборка	Сборка JavaScript	sozdat_sborka_javascript
+js	связывание	тип	Свежее	Свежее JavaScript	sozdat_svezhee_javascript
+js	связывание	тип	Связывание	Связывание JavaScript	sozdat_svyazyvanie_javascript
+js	связывание	тип	Связывание параметров	Связывание параметров JavaScript	sozdat_svyazyvanie_parametrov_javascript
+js	связывание	тип	Состояние	Состояние JavaScript	sozdat_sostoyanie_javascript
+js	связывание	тип	Сумма типов	Сумма типов JavaScript	sozdat_summa_tipov_javascript
+js	связывание	тип	Файл	Файл JavaScript	sozdat_fayl_javascript
+js	связывание	тип	Функция	Функция JavaScript	sozdat_funkciya_javascript
+js	связывание	функция	Аргумент можно оставить	Аргумент можно оставить JavaScript	argument_mozhno_ostavit_javascript
+js	связывание	функция	Арности форм	Арности форм JavaScript	arnosti_form_javascript
+js	связывание	функция	Временное	Временное JavaScript	vremennoe_javascript
+js	связывание	функция	Все вызовы	Все вызовы JavaScript	vse_vyzovy_javascript
+js	связывание	функция	Есть имя модуля	Есть имя модуля JavaScript	est_imya_modulya_javascript
+js	связывание	функция	Есть функция с именем	Есть функция с именем JavaScript	est_funkciya_s_imenem_javascript
+js	связывание	функция	Заменить взятое	Заменить взятое JavaScript	zamenit_vzyatoe_javascript
+js	связывание	функция	Заменить счётчик	Заменить счётчик JavaScript	zamenit_schyotchik_javascript
+js	связывание	функция	Записать ошибку	Записать ошибку JavaScript	zapisat_oshibku_javascript
+js	связывание	функция	Имена вариантов	Имена вариантов JavaScript	imena_variantov_javascript
+js	связывание	функция	Имена записей	Имена записей JavaScript	imena_zapisey_javascript
+js	связывание	функция	Имена функций	Имена функций JavaScript	imena_funkciy_javascript
+js	связывание	функция	Имя модуля	Имя модуля JavaScript	imya_modulya_javascript
+js	связывание	функция	Имя файла программы	Имя файла программы JavaScript	imya_fayla_programmy_javascript
+js	связывание	функция	Каноническое имя формы	Каноническое имя формы JavaScript	kanonicheskoe_imya_formy_javascript
+js	связывание	функция	Литерал скаляра	Литерал скаляра JavaScript	literal_skalyara_javascript
+js	связывание	функция	Найти функцию	Найти функцию JavaScript	nayti_funkciyu_javascript
+js	связывание	функция	Начальное взятое	Начальное взятое JavaScript	nachalnoe_vzyatoe_javascript
+js	связывание	функция	Начальный контекст	Начальный контекст JavaScript	nachalnyy_kontekst_javascript
+js	связывание	функция	Неизвестный вид	Неизвестный вид JavaScript	neizvestnyy_vid_javascript
+js	связывание	функция	Обновить вариант типа	Обновить вариант типа JavaScript	obnovit_variant_tipa_javascript
+js	связывание	функция	Обновить запись типа	Обновить запись типа JavaScript	obnovit_zapis_tipa_javascript
+js	связывание	функция	Описание функции	Описание функции JavaScript	opisanie_funkcii_javascript
+js	связывание	функция	Отложить аргумент	Отложить аргумент JavaScript	otlozhit_argument_javascript
+js	связывание	функция	Первая из функций	Первая из функций JavaScript	pervaya_iz_funkciy_javascript
+js	связывание	функция	Печать батута	Печать батута JavaScript	pechat_batuta_javascript
+js	связывание	функция	Печать ветви	Печать ветви JavaScript	pechat_vetvi_javascript
+js	связывание	функция	Печать вызова	Печать вызова JavaScript	pechat_vyzova_javascript
+js	связывание	функция	Печать двуместной	Печать двуместной JavaScript	pechat_dvumestnoy_javascript
+js	связывание	функция	Печать если	Печать если JavaScript	pechat_esli_javascript
+js	связывание	функция	Печать записи	Печать записи JavaScript	pechat_zapisi_javascript
+js	связывание	функция	Печать значения	Печать значения JavaScript	pechat_znacheniya_javascript
+js	связывание	функция	Печать известной формы	Печать известной формы JavaScript	pechat_izvestnoy_formy_javascript
+js	связывание	функция	Печать конструктора	Печать конструктора JavaScript	pechat_konstruktora_javascript
+js	связывание	функция	Печать литерала	Печать литерала JavaScript	pechat_literala_javascript
+js	связывание	функция	Печать операции	Печать операции JavaScript	pechat_operacii_javascript
+js	связывание	функция	Печать переменной	Печать переменной JavaScript	pechat_peremennoy_javascript
+js	связывание	функция	Печать поля записи	Печать поля записи JavaScript	pechat_polya_zapisi_javascript
+js	связывание	функция	Печать программы	Печать программы JavaScript	pechat_programmy_javascript
+js	связывание	функция	Печать пусть	Печать пусть JavaScript	pechat_pust_javascript
+js	связывание	функция	Печать разбора	Печать разбора JavaScript	pechat_razbora_javascript
+js	связывание	функция	Печать разбора значением	Печать разбора значением JavaScript	pechat_razbora_znacheniem_javascript
+js	связывание	функция	Печать свёртки	Печать свёртки JavaScript	pechat_svyortki_javascript
+js	связывание	функция	Печать списка	Печать списка JavaScript	pechat_spiska_javascript
+js	связывание	функция	Печать формы	Печать формы JavaScript	pechat_formy_javascript
+js	связывание	функция	Печать функции	Печать функции JavaScript	pechat_funkcii_javascript
+js	связывание	функция	Печать хвоста	Печать хвоста JavaScript	pechat_hvosta_javascript
+js	связывание	функция	Печать цикла	Печать цикла JavaScript	pechat_cikla_javascript
+js	связывание	функция	Положить в	Положить в JavaScript	polozhit_v_javascript
+js	связывание	функция	Пометка вида типа	Пометка вида типа JavaScript	pometka_vida_tipa_javascript
+js	связывание	функция	Пометка типа	Пометка типа JavaScript	pometka_tipa_javascript
+js	связывание	функция	Помощник формы	Помощник формы JavaScript	pomoschnik_formy_javascript
+js	связывание	функция	Помощники операций	Помощники операций JavaScript	pomoschniki_operaciy_javascript
+js	связывание	функция	Помощники форм	Помощники форм JavaScript	pomoschniki_form_javascript
+js	связывание	функция	Проверить арность вызова	Проверить арность вызова JavaScript	proverit_arnost_vyzova_javascript
+js	связывание	функция	Проверить арность формы	Проверить арность формы JavaScript	proverit_arnost_formy_javascript
+js	связывание	функция	Проверить вариант	Проверить вариант JavaScript	proverit_variant_javascript
+js	связывание	функция	Проверить запись	Проверить запись JavaScript	proverit_zapis_javascript
+js	связывание	функция	Проверить имя записи	Проверить имя записи JavaScript	proverit_imya_zapisi_javascript
+js	связывание	функция	Проверить имя узла	Проверить имя узла JavaScript	proverit_imya_uzla_javascript
+js	связывание	функция	Проверить столкновения	Проверить столкновения JavaScript	proverit_stolknoveniya_javascript
+js	связывание	функция	Проверка образца	Проверка образца JavaScript	proverka_obrazca_javascript
+js	связывание	функция	Просто значение	Просто значение JavaScript	prosto_znachenie_javascript
+js	связывание	функция	Пустая сборка	Пустая сборка JavaScript	pustaya_sborka_javascript
+js	связывание	функция	Пустое состояние	Пустое состояние JavaScript	pustoe_sostoyanie_javascript
+js	связывание	функция	Разрешить вызов	Разрешить вызов JavaScript	razreshit_vyzov_javascript
+js	связывание	функция	Рёбра вызовов	Рёбра вызовов JavaScript	ryobra_vyzovov_javascript
+js	связывание	функция	Свежее имя	Свежее имя JavaScript	svezhee_imya_javascript
+js	связывание	функция	Связать голову и хвост	Связать голову и хвост JavaScript	svyazat_golovu_i_hvost_javascript
+js	связывание	функция	Связать имя	Связать имя JavaScript	svyazat_imya_javascript
+js	связывание	функция	Связать любое	Связать любое JavaScript	svyazat_lyuboe_javascript
+js	связывание	функция	Связать параметр	Связать параметр JavaScript	svyazat_parametr_javascript
+js	связывание	функция	Связать поля варианта	Связать поля варианта JavaScript	svyazat_polya_varianta_javascript
+js	связывание	функция	Связать простое	Связать простое JavaScript	svyazat_prostoe_javascript
+js	связывание	функция	Связки варианта	Связки варианта JavaScript	svyazki_varianta_javascript
+js	связывание	функция	Связывание образца	Связывание образца JavaScript	svyazyvanie_obrazca_javascript
+js	связывание	функция	Синонимы форм	Синонимы форм JavaScript	sinonimy_form_javascript
+js	связывание	функция	Слить вариант типа	Слить вариант типа JavaScript	slit_variant_tipa_javascript
+js	связывание	функция	Слить варианты суммы	Слить варианты суммы JavaScript	slit_varianty_summy_javascript
+js	связывание	функция	Слить запись типа	Слить запись типа JavaScript	slit_zapis_tipa_javascript
+js	связывание	функция	Слово аргументов	Слово аргументов JavaScript	slovo_argumentov_javascript
+js	связывание	функция	Собрать вариант	Собрать вариант JavaScript	sobrat_variant_javascript
+js	связывание	функция	Собрать варианты	Собрать варианты JavaScript	sobrat_varianty_javascript
+js	связывание	функция	Собрать записи	Собрать записи JavaScript	sobrat_zapisi_javascript
+js	связывание	функция	Собрать общее	Собрать общее JavaScript	sobrat_obschee_javascript
+js	связывание	функция	Собрать параметр	Собрать параметр JavaScript	sobrat_parametr_javascript
+js	связывание	функция	Собрать поле типа	Собрать поле типа JavaScript	sobrat_pole_tipa_javascript
+js	связывание	функция	Собрать поля типа	Собрать поля типа JavaScript	sobrat_polya_tipa_javascript
+js	связывание	функция	Собрать постусловие	Собрать постусловие JavaScript	sobrat_postuslovie_javascript
+js	связывание	функция	Собрать предусловие	Собрать предусловие JavaScript	sobrat_preduslovie_javascript
+js	связывание	функция	Собрать суммы	Собрать суммы JavaScript	sobrat_summy_javascript
+js	связывание	функция	Собрать функции	Собрать функции JavaScript	sobrat_funkcii_javascript
+js	связывание	функция	Собрать функцию	Собрать функцию JavaScript	sobrat_funkciyu_javascript
+js	связывание	функция	Суффикс доказанного помощника	Суффикс доказанного помощника JavaScript	suffiks_dokazannogo_pomoschnika_javascript
+js	связывание	функция	Таблица шагов	Таблица шагов JavaScript	tablica_shagov_javascript
+js	связывание	функция	Тело ветви	Тело ветви JavaScript	telo_vetvi_javascript
+js	связывание	функция	Тело с постусловиями	Тело с постусловиями JavaScript	telo_s_postusloviyami_javascript
+js	связывание	функция	Тело функции	Тело функции JavaScript	telo_funkcii_javascript
+js	связывание	функция	Тело цикла	Тело цикла JavaScript	telo_cikla_javascript
+js	связывание	функция	Формы, снимаемые непустотой	Формы, снимаемые непустотой JavaScript	formy_snimaemye_nepustotoy_javascript
+js	связывание	функция	Хвостовое если	Хвостовое если JavaScript	hvostovoe_esli_javascript
+js	связывание	функция	Хвостовое значение	Хвостовое значение JavaScript	hvostovoe_znachenie_javascript
+js	связывание	функция	Хвостовое пусть	Хвостовое пусть JavaScript	hvostovoe_pust_javascript
+js	связывание	функция	Хвостовой возврат	Хвостовой возврат JavaScript	hvostovoy_vozvrat_javascript
+js	связывание	функция	Хвостовой вызов	Хвостовой вызов JavaScript	hvostovoy_vyzov_javascript
+js	связывание	функция	Хвостовой отскок	Хвостовой отскок JavaScript	hvostovoy_otskok_javascript
+js	связывание	функция	Хвостовой цикл	Хвостовой цикл JavaScript	hvostovoy_cikl_javascript
+js	связывание	функция	Хвостовые вызовы	Хвостовые вызовы JavaScript	hvostovye_vyzovy_javascript
+js	связывание	функция	Хвостовые рёбра	Хвостовые рёбра JavaScript	hvostovye_ryobra_javascript
+js	связывание	функция	Число параметров	Число параметров JavaScript	chislo_parametrov_javascript
+js	связывание	функция	Шаг временного аргумента	Шаг временного аргумента JavaScript	shag_vremennogo_argumenta_javascript
+js	связывание	функция	Шаг записи	Шаг записи JavaScript	shag_zapisi_javascript
+js	связывание	функция	Шаг постусловия	Шаг постусловия JavaScript	shag_postusloviya_javascript
+js	связывание	функция	Шаг присвоения параметра	Шаг присвоения параметра JavaScript	shag_prisvoeniya_parametra_javascript
+js	связывание	функция	Шапка модуля	Шапка модуля JavaScript	shapka_modulya_javascript
+js	связывание	функция	Это отскок	Это отскок JavaScript	eto_otskok_javascript
+js	связывание	функция	Это самовызов	Это самовызов JavaScript	eto_samovyzov_javascript
+js	связывание	функция	Это число	Это число JavaScript	eto_chislo_javascript
+js	связывание	функция	Это число в скаляре	Это число в скаляре JavaScript	eto_chislo_v_skalyare_javascript
+js	типы	вариант	Есть функция	Есть функция JavaScript	variant_est_funkciya_javascript
+js	типы	вариант	Нет функции	Нет функции JavaScript	variant_net_funkcii_javascript

@@ -5830,7 +5830,7 @@ static int run_file(int argc, char **argv) {
 /*
  * То же для цели C#, и файлов у неё шесть, а не четыре: рантайм .NET разложен по
  * классам (значение, поле, диагностика, контекст, операции) плюс прогонщик.
- * Порядок здесь — порядок полей в «Настройки шарп» из `flang/self/emit-csharp.flang`.
+ * Порядок здесь — порядок полей в «Настройки CSharp» из `flang/self/emit-csharp.flang`.
  */
 #define EMIT_CSHARP_VALUE "Value.cs"
 #define EMIT_CSHARP_FIELD "Field.cs"
@@ -6121,7 +6121,7 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
-  /* Поля «Настройки шарп»: у .NET рантайм разложен по пяти классам, оболочки нет
+  /* Поля «Настройки CSharp»: у .NET рантайм разложен по пяти классам, оболочки нет
      вовсе, а четыре списка границы входа те же, что у C. Порядок обязан совпасть
      с объявлением в `flang/self/emit-csharp.flang`. */
   static const char *const csharp_names[16] = {"путь",            "есть путь",        "база",
@@ -6339,7 +6339,12 @@ static int emit_file(int argc, char **argv, const char *self) {
         code = 1;
       } else {
         fits = emit_entry_fits(program, table);
-        args[0] = program;
+        /* Цели C уезжает ПРОГРАММА, цели C# — СВЯЗАННОЕ целиком: отбрасывание
+           недостижимого спрашивает у связывания, какие функции были свои у
+           входного файла (см. «Напечатать связанное в CSharp»). Печать в C
+           отбрасывания намеренно не делает — у неё бывает оболочка, а у той
+           точек входа больше, чем собственных функций программы. */
+        args[0] = csharp ? linked : program;
         if (csharp) {
           /* Шесть текстов рантайма .NET подряд, потом четыре списка границы
              входа. Оболочки у этой цели нет: `flang repl` — это C, а не C#. */
@@ -6375,7 +6380,7 @@ static int emit_file(int argc, char **argv, const char *self) {
           values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
           args[1] = repl_value_record(names, values, 15);
         }
-        if (repl_call(csharp ? "Напечатать связанное в C-шарп" : "Напечатать связанное", args, 2, &result) != FL_OK) {
+        if (repl_call(csharp ? "Напечатать связанное в CSharp" : "Напечатать связанное", args, 2, &result) != FL_OK) {
           code = 1;
         } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
           char *say = val_copy(failure);

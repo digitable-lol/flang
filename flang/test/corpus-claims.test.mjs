@@ -1463,7 +1463,7 @@ const ОХВАТ = [
   "flang/self/emit-c.flang «Байтов у символа»",
   "flang/self/emit-c.flang «Наибольшая арность»",
   "flang/self/emit-c.flang «Число параметров»",
-  "flang/self/emit-csharp.flang «Число параметров шарп»",
+  "flang/self/emit-csharp.flang «Число параметров CSharp»",
   "flang/self/emit-elixir.flang «Число параметров»",
   "flang/self/emit-java.flang «Число параметров Java»",
   "flang/self/emit-js.flang «Число параметров»",

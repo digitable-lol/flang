@@ -10,7 +10,7 @@ Everything below lives in one file, `docs/examples/operations.flang`, and runs:
 flang test docs/examples/operations.flang
 ```
 
-Run on 18 August 2026: **224 examples, 224 passed, 0 failed**. Two hundred
+The answer: **224 examples, 224 passed, 0 failed**. Two hundred
 eighteen of those are the library's own examples, pulled in by the imports —
 counting someone else's examples as yours would be dishonest, so the number is
 given whole rather than as a share.

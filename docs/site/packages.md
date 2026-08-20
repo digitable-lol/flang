@@ -5,7 +5,7 @@ depends on. No registry, no store, no `~/.flang`. Publishing a package means
 committing a file to git; using one means writing a single line; building on
 another machine means copying two files over and running `flang check`.
 
-Everything below was run on 18 August 2026 against `flang 0.5.0` installed the
+Everything below was run against `flang` installed the
 [fourth way](install.html) (`npm install`, `node_modules/.bin/flang`). The
 standalone `flang` binary — the one Homebrew installs and `bootstrap/` builds —
 has no `package` and no `lock`, and says so:

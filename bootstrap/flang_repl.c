@@ -7612,11 +7612,13 @@ static int test_corpus(const char *given, bool check, const char *steps, const c
     fl_value arg = repl_value_say(given);
     fl_value answer = fl_nothing();
     if (repl_call("Корень обхода", &arg, 1, &answer) != FL_OK) {
+      strings_free(&skip);
       return 1;
     }
     root = val_copy(answer);
     if (repl_call("Каталоги мимо корпуса", NULL, 0, &answer) != FL_OK) {
       free(root);
+      strings_free(&skip);
       return 1;
     }
     corpus_take_strings(answer, &skip);
@@ -7647,6 +7649,7 @@ static int test_corpus(const char *given, bool check, const char *steps, const c
       if (repl_call("Отбор корпуса", pair, 2, &answer) != FL_OK) {
         strings_free(&skip);
         strings_free(&found);
+        strings_free(&chosen);
         return 1;
       }
       corpus_take_strings(answer, &chosen);

@@ -33,6 +33,12 @@ flang check flang/examples/leetcode/035-search-insert-position.flang --pretty
 # прогнать примеры, объявленные внутри функций
 flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
 
+# то же по КОРПУСУ: каталог или маска вместо файла (только у двоичного).
+# Печатается каждый не прошедший пример и каждый не взятый файл, прошедшие —
+# числом; код возврата 0 — чисто, 1 — упало или файл не взят, 2 — кривой вызов.
+flang test flang/stdlib/
+flang test 'flang/examples/**/*.flang' --json
+
 # вызвать функцию
 flang run flang/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'

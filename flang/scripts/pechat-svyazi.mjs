@@ -14,13 +14,33 @@
  * может — он покраснеет раньше.
  *
  *   node flang/scripts/pechat-svyazi.mjs
+ *
+ * ── ЧТО ИЗМЕНИЛОСЬ 20 августа и что при этом ПОТЕРЯНО ───────────────────────
+ *
+ * Печатал этот шаг `emitJs` из `flang/src/emit/js.mjs`; реализации на
+ * JavaScript больше нет, печатает двоичный. Байты сошлись почти целиком: из
+ * 1117 строк разошлись 105, и почти все — в одну сторону.
+ *
+ * Прибавилась одна строка в `$field`: двоичный умеет взять поле у варианта,
+ * когда оно там есть, а старый печатник отказывал сразу. Это лучше, и это
+ * поведение самого языка, а не печати.
+ *
+ * УБЫЛА ТАБЛИЦА ГРАНИЦЫ ВХОДА — сто строк `entry.types` и `entry.fields`. Их
+ * строил слой типов свидетеля, которого на flang не написано ни строки, и
+ * двоичный оставляет раздел пустым у всех восьми целей. Для этого дерева цена
+ * ноль: `flang/conc/distributed.mjs` ввозит функции модуля напрямую и до
+ * `$PROGRAM.entry` не доходит, а таблицей пользуется только напечатанный
+ * прогонщик `flang_cli.js`, который здесь и не печатается. Но у чужой
+ * программы, напечатанной в JavaScript и запускаемой прогонщиком, аргументы
+ * теперь НЕ сверяются объявленным типам. Это зазор двоичного, а не этого шага,
+ * и он назван здесь, чтобы не потеряться молча.
  */
-import { readFileSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { emitJs } from "../src/emit/js.mjs"
-import { linkProgram } from "../src/link.mjs"
-import { parse } from "../src/parser.mjs"
+import { позвать } from "./dvoichnyy.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const ШАПКА = [
@@ -30,15 +50,24 @@ const ШАПКА = [
 export const ИСХОДНИК = "flang/conc/svyaz.flang"
 export const НАПЕЧАТАННОЕ = "flang/conc/svyaz.js"
 
-/** Напечатать модуль связи в JavaScript. Возвращает содержимое файла. */
+/** Напечатать модуль связи в JavaScript. Возвращает содержимое файла.
+    Печатает ДВОИЧНЫЙ: своего печатника на JavaScript в дереве больше нет, и
+    заводить второй значило бы вернуть удалённое. Прогонщик (`flang_cli.js`)
+    печатается заодно и отбрасывается — в дерево едет один модуль, — но НЕ
+    ключом `--no-cli`: строка про соседний прогонщик стоит в шапке модуля, и
+    без прогонщика она пропала бы, а с ней и байтовое совпадение. */
 export async function напечататьСвязь() {
-  const путь = корень + ИСХОДНИК
-  const { diagnostics, ...программа } = await linkProgram(путь, readFileSync(путь, "utf8"), parse)
-  const беды = (diagnostics ?? []).filter((это) => это.severity === "error")
-  if (беды.length > 0) throw new Error(`«${ИСХОДНИК}» не собрался: ${беды[0].message}`)
-  const напечатано = emitJs(программа)
-  const модуль = напечатано.files.find((файл) => !файл.path.startsWith("flang_cli"))
-  if (модуль === undefined) throw new Error("печать не отдала модуля")
+  const куда = mkdtempSync(join(tmpdir(), "flang-svyaz-"))
+  let модуль
+  try {
+    const { код, вывод, ошибки } = позвать(["emit", корень + ИСХОДНИК, "--target", "js", "--out", куда])
+    if (код !== 0) throw new Error(`«${ИСХОДНИК}» не напечатался: ${(ошибки || вывод).trim()}`)
+    const имена = readdirSync(куда).filter((имя) => !имя.startsWith("flang_cli"))
+    if (имена.length !== 1) throw new Error(`печать отдала не один модуль, а ${имена.length}: ${имена.join(", ")}`)
+    модуль = { content: readFileSync(join(куда, имена[0]), "utf8") }
+  } finally {
+    rmSync(куда, { recursive: true, force: true })
+  }
   /* Лицензионная шапка дописывается ЗДЕСЬ, а не печатью. Печать её не ставит и
      ставить не должна: напечатанное принадлежит автору программы, и клеймить
      чужой код своей лицензией язык не вправе. Но ЭТОТ напечатанный файл лежит в

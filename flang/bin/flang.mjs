@@ -151,8 +151,8 @@ const ПОДРОБНО = {
   --pretty            JSON с отступами
 `,
   io: `flang io <файл> [--plan «Имя»] [--seed N] [--in-dir] [--max-orders N]
-                [--no-read] [--no-write] [--no-net] [--no-clock] [--no-random]
-                [--no-spawn]
+                [--timeout МС] [--no-read] [--no-write] [--no-net] [--no-clock]
+                [--no-random] [--no-spawn]
 
 Исполняет объявленный в файле план — или СЛУЖБУ, если планов нет, а есть
 процессы и прогон: седьмое действие «поручить» даёт процессу выдать поручение и
@@ -165,6 +165,7 @@ const ПОДРОБНО = {
   --seed N            зерно случайности
   --in-dir            работать во временном каталоге
   --max-orders N      предел числа поручений
+  --timeout МС        срок хозяина на одно ждущее поручение (по умолчанию 30000)
   --no-read --no-write --no-net --no-clock --no-random --no-spawn
                       отнять у хозяина полномочие
 
@@ -543,6 +544,7 @@ async function commandIo(options) {
       разрешено: options.allow,
       seed: options.seed,
       внутриКорня: options.inDir === true,
+      таймаут: options.timeout,
     })
 
     let итог
@@ -620,6 +622,7 @@ function commandSluzhba(program, options, nodeHostSync) {
     разрешено: options.allow,
     seed: options.seed,
     внутриКорня: options.inDir === true,
+    таймаут: options.timeout,
   })
   const итог = runConcurrent(program, { ...прогон, seed: options.seed ?? прогон.seed }, {
     исполнить: хозяин,
@@ -1996,6 +1999,24 @@ function parseArgs(argv) {
       const orders = Number(require_(argv[++index], "--max-orders требует число"))
       if (!Number.isInteger(orders) || orders <= 0) throw usage("--max-orders должен быть целым положительным числом")
       options.maxOrders = orders
+    } else if (arg === "--timeout") {
+      /* Срок хозяина в миллисекундах — тот, за который обязано уложиться
+         поручение, ждущее снаружи: запуск процесса, соединение, `«Запросить»`.
+         Ключа не было вовсе, и умолчание в 30 000 мс стояло числом в трёх
+         хозяевах сразу. Цена измерена: одна сборка релизного C идёт 128 000 мс,
+         то есть четыре с лишним срока, — и планом на flang сборкой управлять
+         было НЕЛЬЗЯ ни при каком терпении.
+
+         Ключ ПОДНИМАЕТ и опускает, а не отменяет: срока «без предела» здесь нет
+         намеренно. Хозяин обязан ОТВЕТИТЬ, а `flang io`, зависший навсегда на
+         программе, которая ждёт ввода, — это не ответ, и никакой `--max-orders`
+         его не спасёт: предел считает поручения, а висит одно.
+
+         Стоит рядом с `--max-orders`, а не отдельной командой: оба ключа об
+         одном — о пределах, которые хозяин кладёт на программу. */
+      const срок = Number(require_(argv[++index], "--timeout требует число миллисекунд"))
+      if (!Number.isInteger(срок) || срок <= 0) throw usage("--timeout должен быть целым положительным числом миллисекунд")
+      options.timeout = срок
     } else if (
       arg === "--no-read" ||
       arg === "--no-write" ||

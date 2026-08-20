@@ -170,6 +170,7 @@
 - [Без блока «Граница входа» напечатанный C# собирается, но падает при запуске; чинится 136 строками на flang, а не вычитанием в проверке](granica-vhoda-ne-napisana-u-pyati-celey-i-eto-vidno-tolko-syrym-diffom.md)
 - [У двоичного два входа: цель печати достаётся прогонщику JSON даром, а ключу `--target` — в 90 строк C](vtashchit-cel-v-zamykanie-eto-polovina-raboty.md)
 - [Ведомость двоичного бывает слабее ведомости на Node и никогда не сильнее](vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.md)
+- [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя, а не молчать](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки: одна неиспользуемая функция красит побайтовую сверку](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним](podmena-chteniya-stoit-vnutri-obhoda-a-ne-pered-nim.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)

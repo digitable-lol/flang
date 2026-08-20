@@ -46700,13 +46700,34 @@ fl_status compiler_flang_korotko_dlya_otchyota(fl_ctx *ctx, fl_value tekst, fl_v
 fl_status compiler_flang_vedomost_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Текст входа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_vhoda(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобранный вход».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_razobrannyy_vhod(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Ведомость проверенного».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param programma — «программа»: «Значение»
+ * @param razobrannaya — «разобранная»: «Значение»
  * @return значение: «Итог ведомости»
  */
-fl_status compiler_flang_vedomost_proverennogo(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+fl_status compiler_flang_vedomost_proverennogo(fl_ctx *ctx, fl_value programma, fl_value razobrannaya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ведомость по итогам».
@@ -46725,15 +46746,6 @@ fl_status compiler_flang_vedomost_po_itogam(fl_ctx *ctx, fl_value programma, fl_
  * @return значение: список: строка
  */
 fl_status compiler_flang_klyuchi_poverhnostey(fl_ctx *ctx, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Поверхности программы».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param programma — «программа»: «Значение»
- * @return значение: список: строка
- */
-fl_status compiler_flang_poverhnosti_programmy(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Поверхности двух».
@@ -46757,15 +46769,6 @@ fl_status compiler_flang_poverhnosti_dvuh(fl_ctx *ctx, fl_value svyazannaya, fl_
 fl_status compiler_flang_elementy_dvuh(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value klyuch, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Названия непосчитанного».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param programma — «программа»: «Значение»
- * @return значение: строка
- */
-fl_status compiler_flang_nazvaniya_neposchitannogo(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Связи модулей есть».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -46778,10 +46781,11 @@ fl_status compiler_flang_svyazi_moduley_est(fl_ctx *ctx, fl_value programma, fl_
  * Функция flang «Непосчитанное в бинарнике».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param programma — «программа»: «Значение»
+ * @param svyazannaya — «связанная»: «Значение»
+ * @param razobrannaya — «разобранная»: «Значение»
  * @return значение: строка
  */
-fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Что бинарник не судил».

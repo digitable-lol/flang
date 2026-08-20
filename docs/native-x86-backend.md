@@ -55,10 +55,10 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 | файл | строк |
 |---|---:|
 | `flang/src/emit/c/flang_repl.c` | 10 079 |
-| `flang/src/emit/c/flang_runtime.c` | 3 222 |
+| `flang/src/emit/c/flang_runtime.c` | 3 273 |
 | `flang/src/emit/c/flang_conc.c` | 3 463 |
 | `flang/src/emit/c/flang_cli.c` | 1 084 |
-| `flang/src/emit/c/flang_runtime.h` | 837 |
+| `flang/src/emit/c/flang_runtime.h` | 838 |
 | `flang/src/emit/c/flang_conc.h` | 371 |
 | **итого** | **11 146** |
 
@@ -213,7 +213,7 @@ fl_status stupen_1_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *e
 
 ## 4. Чего это стоит — по частям, строками
 
-Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **4019 строк**
+Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **4021 строк**
 на flang против **2015 строк** того же бэкенда на JS (`flang/src/emit/c.mjs`):
 коэффициент перевода **1.80×**, и он взят из дерева, а не из головы.
 
@@ -419,7 +419,7 @@ for (precision = 1; precision < 17; precision += 1) {
 разобраться, что именно в нём побайтово, потому что «для x86 сверять не с чем» —
 верно наполовину.
 
-**Что сверяется побайтово сегодня** (`flang/test/self-bootstrap.test.mjs`, 2751
+**Что сверяется побайтово сегодня** (`flang/test/self-bootstrap.test.mjs`, 2776
 строк): C, напечатанный свидетелем на JS, C, напечатанный flang₁, и C,
 напечатанный flang₂, — три текста обязаны совпасть знак в знак; и каталог
 `bootstrap/` обязан совпасть с сегодняшней печатью, 7 файлов, 7 897 188 байт.

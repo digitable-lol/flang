@@ -45,7 +45,7 @@ price of the `тотальная` marker on real tasks is measurable, and it is 
 
 ## Case 2. The URL-shortener service
 
-`flang/examples/web/shortener/` — **2 167 lines**: 1 743 of flang across seven
+`flang/examples/web/shortener/` — **2 185 lines**: 1 743 of flang across seven
 files plus 419 lines of three Node hosts that read bytes off the connection and
 hand bytes back. Between input and output there is not one line that is not flang.
 

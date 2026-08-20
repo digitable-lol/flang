@@ -24,6 +24,7 @@
 - [Развилки, которые владелец выбрал сам](owner-decisions.md)
 - [Отчёты пишутся простым инженерным языком, без проектного жаргона](write-in-plain-language.md)
 - [Восемь десятых внутренних слов на сайте приходятся на одну печатаемую страницу, а не на прозу](most-site-jargon-comes-from-one-printed-page.md)
+- [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
 
 ## Числа
 
@@ -88,6 +89,10 @@
 - [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 - [Доказанное постусловие в напечатанный код больше не едет: цена утверждений на сортировке упала с 3,23× до 2,72×](dokazannoe-postuslovie-ne-pechataetsya.md)
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе: круг «туда и обратно» стал выразим](kontrakt-ne-proveryaetsya-vnutri-kontrakta.md)
+- [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
+- [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
+- [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
+- [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 
 ## Теория категорий
 
@@ -271,6 +276,9 @@
 - [Двоичный `flang lsp` не отвечает, пока стандартный ввод открыт, — и потому редактору не годится, хотя побайтовую сверку проходит](dvoichnyy-lsp-ne-otvechaet-poka-vvod-otkryt.md)
 - [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](tablica-poverhnostey-otstala-na-chetyre-frazy.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор](napechatannye-pravila-podsvetki-proveryayutsya-tolko-samim-redaktorom.md)
+- [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
+- [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](proverka-tipov-ne-na-puti-tochki-raskrutki.md)
+- [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 
 ## Устройство репозитория
 
@@ -311,6 +319,7 @@
 - [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](proizvodnye-tablicy-odnogo-fakta-rashodyatsya-molcha.md)
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
+- [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя числом, а не молчанием](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
 
 ## Найденные ошибки
 
@@ -355,6 +364,8 @@
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [`git stash` общий на все рабочие деревья](git-stash-is-shared-across-worktrees.md)
+- [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
+- [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](vlozhennyy-esli-v-skobkah-cherez-stroku-ne-razbiraetsya.md)
 
 ## Отвергнутые пути
 
@@ -385,6 +396,7 @@
 - [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](paket-eto-zamok-s-imenem-i-versiey.md)
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
 - [Столкновения имён в замыкании компилятора считаются обходом текста за 0,1 с — там же, где связывание отвечает за 6 минут](stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy.md)
+- [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего](pereimenovanie-razvodit-odno-stolknovenie-i-sozdayot-sleduyuschee.md)
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
@@ -404,6 +416,7 @@
 ## Передача работы
 
 - [Состояние проекта передаётся файлом `docs/PEREDACHA.md`, а не пересказом](handoff-goes-in-a-file.md)
+- [Когда ствол заменил свою функцию библиотечной, а ветка ту же свою дополнила, обе стороны столкновения неверны](bibliotechnaya-zamena-i-svoyo-dopolnenie-obe-storony-nevernny.md)
 
 **Начинаете работу с чистого листа или с другой учётной записи — читайте
 передачу состояния первой.** Там пути, ветки, что сделано, чего не хватает, что

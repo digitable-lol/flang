@@ -165,6 +165,14 @@ docs/kurs/proverka.flang: проверено — разбор, типы, зав�
 Перед правкой чисел прогоняйте `node docs/site/site-numbers.mjs --check` и
 смотрите, что он скажет.
 
+**Ствол уехал, пока курс писался.** Основание курса — `cb3b7a18`; за время
+работы `github/main` ушёл вперёд на шесть коммитов до `d3e27dad`, и туда приехал
+выпуск 0.5.1. Числа корпуса и строка `flang --version` от этого поедут, поэтому
+**перед заливкой прогоните заново**: `node flang/scripts/proof-ledger.mjs`,
+`flang --version` и `flang io docs/kurs/proverka.flang`. Главная находка курса при
+этом на новом стволе держится — `grep -c FUNCTOR bootstrap/compiler_flang.c`
+по-прежнему отвечает `0`.
+
 ## Что делать перед заливкой
 
 1. сверить front matter с главой существующего трека `content/post/flang/`;

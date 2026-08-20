@@ -1,0 +1,187 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>flang → wasm в браузере</title>
+<style>
+ body{font:14px/1.5 system-ui,sans-serif;margin:2rem;max-width:60rem}
+ pre{background:#f4f4f4;padding:.75rem;overflow-x:auto;white-space:pre-wrap}
+ td,th{border:1px solid #ccc;padding:.3rem .6rem;text-align:left;vertical-align:top}
+ table{border-collapse:collapse;margin:1rem 0}
+</style>
+<h1>flang → C → wasm, исполнение в браузере</h1>
+<div id="out">считаем…</div>
+
+<script type="module">
+// ── Минимальный WASI: ровно те восемь импортов, которые просит модуль ──────
+function makeWasi(stdinText) {
+  const enc = new TextEncoder();
+  const stdin = enc.encode(stdinText);
+  let stdinPos = 0;
+  let stdout = [];
+  let mem = null;
+  const view = () => new DataView(mem.buffer);
+  const u8 = () => new Uint8Array(mem.buffer);
+  const argv = ["proba"];
+
+  const wasi = {
+    args_sizes_get(cntPtr, bufPtr) {
+      const d = view();
+      d.setUint32(cntPtr, argv.length, true);
+      d.setUint32(bufPtr, argv.reduce((n, a) => n + enc.encode(a).length + 1, 0), true);
+      return 0;
+    },
+    args_get(ptrsPtr, bufPtr) {
+      const d = view(), m = u8();
+      let off = bufPtr;
+      argv.forEach((a, i) => {
+        d.setUint32(ptrsPtr + i * 4, off, true);
+        const b = enc.encode(a);
+        m.set(b, off); off += b.length;
+        m[off++] = 0;
+      });
+      return 0;
+    },
+    fd_fdstat_get(fd, ptr) { const d = view(); d.setUint8(ptr, 2); d.setUint16(ptr + 2, 0, true); d.setBigUint64(ptr + 8, 0n, true); d.setBigUint64(ptr + 16, 0n, true); return 0; },
+    fd_read(fd, iovs, iovsLen, nreadPtr) {
+      const d = view(), m = u8();
+      let total = 0;
+      for (let i = 0; i < iovsLen; i++) {
+        const p = d.getUint32(iovs + i * 8, true), len = d.getUint32(iovs + i * 8 + 4, true);
+        const n = Math.min(len, stdin.length - stdinPos);
+        if (n <= 0) break;
+        m.set(stdin.subarray(stdinPos, stdinPos + n), p);
+        stdinPos += n; total += n;
+      }
+      d.setUint32(nreadPtr, total, true);
+      return 0;
+    },
+    fd_write(fd, iovs, iovsLen, nwrittenPtr) {
+      const d = view(), m = u8();
+      let total = 0;
+      for (let i = 0; i < iovsLen; i++) {
+        const p = d.getUint32(iovs + i * 8, true), len = d.getUint32(iovs + i * 8 + 4, true);
+        // Испорченная теневым стеком память приходит сюда неправдоподобной длиной.
+        // Без этой границы вкладка умирает на выделении, и причина смерти теряется.
+        if (len > (1 << 20) || p + len > m.length) {
+          stdout.push(new TextEncoder().encode(`[fd_write просит ${len} байт по адресу ${p} при памяти ${m.length} — память испорчена]`));
+          d.setUint32(nwrittenPtr, 0, true);
+          return 0;
+        }
+        stdout.push(m.slice(p, p + len));
+        total += len;
+      }
+      d.setUint32(nwrittenPtr, total, true);
+      return 0;
+    },
+    fd_close() { return 0; },
+    fd_seek() { return 70; },  // ESPIPE: труба, а не файл
+    proc_exit(code) { throw { exit: code }; },
+  };
+  return {
+    imports: { wasi_snapshot_preview1: wasi },
+    bind(m) { mem = m; },
+    text() {
+      let n = 0; for (const c of stdout) n += c.length;
+      if (n > 1 << 20) return `[вывод ${n} байт — обрезан]`;
+      const all = new Uint8Array(n); let o = 0;
+      for (const c of stdout) { all.set(c, o); o += c.length; }
+      return new TextDecoder().decode(all);
+    },
+  };
+}
+
+const CASES = [
+  ['«Обратный отсчёт» 1..5 — тотальная функция с объявленной мерой', '{"fn":"Обратный отсчёт","args":[{"n":"1"},{"n":"5"}]}'],
+  ['«Обратный отсчёт» 5..4 — пустой отрезок', '{"fn":"Обратный отсчёт","args":[{"n":"5"},{"n":"4"}]}'],
+  ['«Разобрать» "42" — частичная форма на пригодной строке', '{"fn":"Разобрать","args":[{"s":"42"}]}'],
+  ['«Разобрать» "сорок два" — ОТКАЗ вида «частичная форма»', '{"fn":"Разобрать","args":[{"s":"сорок два"}]}'],
+  ['«Обратный отсчёт» 1.5..5 — мера перестала быть целой', '{"fn":"Обратный отсчёт","args":[{"n":"1.5"},{"n":"5"}]}'],
+  ['предел глубины 30, спуск на 1000 — ждём FLANG_RECURSION_LIMIT', '{"fn":"Обратный отсчёт","depth":"30","args":[{"n":"1"},{"n":"1000"}]}'],
+  ['предел глубины 60, спуск на 1000 — ЭТОТ СЛУЧАЙ УБИВАЛ ВКЛАДКУ', '{"fn":"Обратный отсчёт","depth":"60","args":[{"n":"1"},{"n":"1000"}]}'],
+  ['предел 10 000 по умолчанию, спуск на 1 000 000 — сторож стека', '{"fn":"Обратный отсчёт","args":[{"n":"1"},{"n":"1000000"}]}'],
+];
+
+/*
+ * ── Ловушка стека ХОЗЯИНА, переведённая в объявленный отказ ─────────────────
+ *
+ * Пределов глубины здесь два, и модуль видит только один. Свой теневой стек он
+ * меряет сам (`fl_wasm_room` в flang_runtime.c) и на его исчерпании отвечает
+ * объявленным FLANG_RECURSION_LIMIT — это первый слой, и при сборке из
+ * `build.sh` до второго дело не доходит вовсе. Но стек ВКЛАДКИ модулю не виден
+ * и виден быть не может, а он тоже кончается: замер (Chrome 151.0.7922.34, тот
+ * же двоичный файл, менялся один флаг компоновки) — 8 МиБ теневого стека дают
+ * глубину 7 474 и объявленный отказ, 16 МиБ дают `RangeError: Maximum call
+ * stack size exceeded`, то есть отказ БЕЗ КОДА.
+ *
+ * Поэтому второй слой ставит тот, кто модуль завёл, — эта страница. Ровно так же
+ * устроено везде: в C хозяина называет `fl_enter`, в печати JavaScript —
+ * `$hostDepth`, здесь — код ниже. Нового вида отказа не заводится ни одного:
+ * вид тот же самый, «предел витков планировщика», и код у него тот же.
+ *
+ * Что сюда НЕ попадает и попасть не должно: `memory access out of bounds` и
+ * `function signature mismatch`. Это не предел, а порча памяти — тот самый
+ * дефект, которым теневой стек заезжал в кучу, — и называть её отказом языка
+ * значило бы спрятать дефект под именем отказа. Она остаётся ЛОВУШКОЙ и видна.
+ */
+// Образец тот же, что у `$STACK_OVERFLOW` в печати JavaScript (flang/src/emit/js.mjs):
+// V8 и JavaScriptCore говорят «Maximum call stack size exceeded», SpiderMonkey —
+// «too much recursion», wasmtime — «call stack exhausted». Два разных образца на
+// один вопрос разошлись бы молча в тот день, когда добавится четвёртый движок.
+const СТЕК_ХОЗЯИНА = /call stack|too much recursion|recursion too deep/iu;
+function отказХозяина(e) {
+  if (!(e instanceof RangeError) && !(e instanceof WebAssembly.RuntimeError)) return null;
+  if (!СТЕК_ХОЗЯИНА.test(String(e && e.message))) return null;
+  return JSON.stringify({
+    ok: false,
+    code: 'FLANG_RECURSION_LIMIT',
+    message: 'рекурсия исчерпала стек вкладки, не дойдя до предела глубины вызовов: ' +
+      'ни функции, ни глубины модуль назвать не успел — теневой стек сборки больше, ' +
+      'чем несёт хозяин. Соберите с меньшим -Wl,-z,stack-size',
+  });
+}
+
+const t0 = performance.now();
+const bytes = await (await fetch('spusk.wasm')).arrayBuffer();
+const tFetch = performance.now() - t0;
+
+const t1 = performance.now();
+const module = await WebAssembly.compile(bytes);
+const tCompile = performance.now() - t1;
+
+// Каждый случай — отдельная загрузка страницы: ловушка wasm способна уронить
+// вкладку целиком, и тогда без изоляции не узнать, какой именно случай её уронил.
+const only = new URLSearchParams(location.search).get('case');
+const chosen = only === null ? CASES : [CASES[Number(only)]];
+
+const rows = [];
+for (const [label, request] of chosen) {
+  const w = makeWasi(request + '\n');
+  const ti = performance.now();
+  const inst = await WebAssembly.instantiate(module, w.imports);
+  const tInst = performance.now() - ti;
+  w.bind(inst.exports.memory);
+  const tr = performance.now();
+  let verdict = '';
+  let сказаноХозяином = '';
+  try { inst.exports._start(); }
+  catch (e) {
+    if (e && typeof e.exit === 'number') verdict = '';
+    else {
+      сказаноХозяином = отказХозяина(e) ?? '';
+      if (сказаноХозяином === '') verdict = `ЛОВУШКА wasm: ${e.constructor ? e.constructor.name : '?'}: ${e.message || e}`;
+    }
+  }
+  const tRun = performance.now() - tr;
+  const сказано = w.text().trim();
+  rows.push({ label, out: сказано === '' ? сказаноХозяином : сказано, verdict, tInst, tRun });
+}
+
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+document.getElementById('out').innerHTML = `
+<p><b>Вес:</b> spusk.wasm = ${bytes.byteLength.toLocaleString('ru')} байт.
+<b>Загрузка:</b> ${tFetch.toFixed(1)} мс. <b>WebAssembly.compile:</b> ${tCompile.toFixed(1)} мс.</p>
+<table><tr><th>случай</th><th>ответ wasm</th><th>instantiate, мс</th><th>run, мс</th></tr>
+${rows.map(r => `<tr><td>${esc(r.label)}</td><td><pre>${esc(r.out || r.verdict)}${r.out && r.verdict ? '\n' + esc(r.verdict) : ''}</pre></td><td>${r.tInst.toFixed(2)}</td><td>${r.tRun.toFixed(2)}</td></tr>`).join('')}
+</table>
+<pre id="machine">${esc(JSON.stringify({ bytes: bytes.byteLength, tFetch, tCompile, rows: rows.map(r => ({ label: r.label, out: r.out, verdict: r.verdict, tInst: +r.tInst.toFixed(3), tRun: +r.tRun.toFixed(3) })) }, null, 1))}</pre>`;
+window.__done = true;
+</script>

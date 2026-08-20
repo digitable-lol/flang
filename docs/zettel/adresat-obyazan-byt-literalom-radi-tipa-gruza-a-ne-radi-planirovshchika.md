@@ -56,4 +56,4 @@
 пункта 4 перестаёт быть молчаливой.
 
 Связано: [[oktety-v-yazyke-vyrazimy-spiskom-chisel-a-ne-strokoy]],
-[[proverka-perestala-sravnivat-no-zeleneet]]
+[[checks-that-stopped-comparing]]

@@ -135,5 +135,4 @@ if (fl_t1.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", fl_t1, fl_number(1
 `flang/self/emit-c.flang` и оттуда же импортируются слоем типов — объявить их
 второй раз в соседней цели нельзя, связывание ответит `FLANG_DUPLICATE_NAME`.
 
-Связано: [[printed-program-has-two-doors]], [[a-dropped-type-check-gives-a-wrong-answer]],
-[[lazy-refusal-text-cut-entry-door-13x]]
+Связано: [[printed-program-has-two-doors]], [[a-dropped-type-check-gives-a-wrong-answer]]

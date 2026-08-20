@@ -195107,30 +195107,30 @@ fl_status compiler_flang_razobrat_prodolzhenie(fl_ctx *ctx, fl_value uzel, fl_va
  * Функция flang «Диагностика сервера из беды».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param b — «б»: «Беда»
+ * @param beda — «беда»: «Беда»
  * @param fayl — «файл»: строка
  * @param fayl_izvesten — «файл известен»
  * @return значение: «Диагностика ядра»
  */
-fl_status compiler_flang_diagnostika_servera_iz_bedy(fl_ctx *ctx, fl_value b, fl_value fayl, fl_value fayl_izvesten, fl_value *result, fl_error *error) {
+fl_status compiler_flang_diagnostika_servera_iz_bedy(fl_ctx *ctx, fl_value beda, fl_value fayl, fl_value fayl_izvesten, fl_value *result, fl_error *error) {
   fl_value fl_t37603 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "код", &fl_t37603, error));
+  FL_TRY(fl_field_get(ctx, beda, "код", &fl_t37603, error));
   fl_value fl_t37604 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "сообщение", &fl_t37604, error));
+  FL_TRY(fl_field_get(ctx, beda, "сообщение", &fl_t37604, error));
   fl_value fl_t37605 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "место", &fl_t37605, error));
+  FL_TRY(fl_field_get(ctx, beda, "место", &fl_t37605, error));
   fl_value fl_t37606 = fl_nothing();
   FL_TRY(fl_field_get(ctx, fl_t37605, "есть", &fl_t37606, error));
   fl_value fl_t37607 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "место", &fl_t37607, error));
+  FL_TRY(fl_field_get(ctx, beda, "место", &fl_t37607, error));
   fl_value fl_t37608 = fl_nothing();
   FL_TRY(fl_field_get(ctx, fl_t37607, "строка", &fl_t37608, error));
   fl_value fl_t37609 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "место", &fl_t37609, error));
+  FL_TRY(fl_field_get(ctx, beda, "место", &fl_t37609, error));
   fl_value fl_t37610 = fl_nothing();
   FL_TRY(fl_field_get(ctx, fl_t37609, "столбец", &fl_t37610, error));
   fl_value fl_t37611 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, b, "место", &fl_t37611, error));
+  FL_TRY(fl_field_get(ctx, beda, "место", &fl_t37611, error));
   fl_value fl_t37612 = fl_nothing();
   FL_TRY(fl_field_get(ctx, fl_t37611, "есть", &fl_t37612, error));
   bool fl_t37613 = false;
@@ -195258,11 +195258,11 @@ fl_status compiler_flang_teksty_servera(fl_ctx *ctx, fl_value fayly, fl_value *r
   size_t fl_t37639 = 0;
   FL_TRY(fl_list_alloc(ctx, fl_t37637.as.list.count, &fl_t37638, error));
   for (size_t fl_t37640 = 0; fl_t37640 < fl_t37637.as.list.count; fl_t37640 += 1) {
-    const fl_value f = fl_t37637.as.list.items[fl_t37640]; /* «ф» */
+    const fl_value fayl = fl_t37637.as.list.items[fl_t37640]; /* «файл» */
     fl_value fl_t37641 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, f, "путь", &fl_t37641, error));
+    FL_TRY(fl_field_get(ctx, fayl, "путь", &fl_t37641, error));
     fl_value fl_t37642 = fl_nothing();
-    FL_TRY(fl_field_get(ctx, f, "текст", &fl_t37642, error));
+    FL_TRY(fl_field_get(ctx, fayl, "текст", &fl_t37642, error));
     fl_value fl_t37644[2];
     fl_t37644[0] = fl_t37641; /* «путь» */
     fl_t37644[1] = fl_t37642; /* «текст» */
@@ -195296,11 +195296,11 @@ fl_status compiler_flang_otvet_servera_o_svyazyvanii(fl_ctx *ctx, fl_value svyaz
   size_t fl_t37649 = 0;
   FL_TRY(fl_list_alloc(ctx, fl_t37647.as.list.count, &fl_t37648, error));
   for (size_t fl_t37650 = 0; fl_t37650 < fl_t37647.as.list.count; fl_t37650 += 1) {
-    const fl_value b = fl_t37647.as.list.items[fl_t37650]; /* «б» */
+    const fl_value beda = fl_t37647.as.list.items[fl_t37650]; /* «беда» */
     fl_value fl_t37651 = fl_nothing();
     FL_TRY(compiler_flang_fayl_bedy_izvesten(ctx, fayly, &fl_t37651, error));
     fl_value fl_t37652 = fl_nothing();
-    FL_TRY(compiler_flang_diagnostika_servera_iz_bedy(ctx, b, vhod, fl_t37651, &fl_t37652, error));
+    FL_TRY(compiler_flang_diagnostika_servera_iz_bedy(ctx, beda, vhod, fl_t37651, &fl_t37652, error));
     fl_t37648[fl_t37649] = fl_t37652;
     fl_t37649 += 1;
   }
@@ -195353,9 +195353,9 @@ fl_status compiler_flang_otvet_servera_o_proverennom(fl_ctx *ctx, fl_value svyaz
   size_t fl_t37663 = 0;
   FL_TRY(fl_list_alloc(ctx, fl_t37661.as.list.count, &fl_t37662, error));
   for (size_t fl_t37664 = 0; fl_t37664 < fl_t37661.as.list.count; fl_t37664 += 1) {
-    const fl_value b = fl_t37661.as.list.items[fl_t37664]; /* «б» */
+    const fl_value beda = fl_t37661.as.list.items[fl_t37664]; /* «беда» */
     fl_value fl_t37665 = fl_nothing();
-    FL_TRY(compiler_flang_diagnostika_servera_iz_bedy(ctx, b, vhod, izvesten, &fl_t37665, error));
+    FL_TRY(compiler_flang_diagnostika_servera_iz_bedy(ctx, beda, vhod, izvesten, &fl_t37665, error));
     fl_t37662[fl_t37663] = fl_t37665;
     fl_t37663 += 1;
   }
@@ -195444,9 +195444,9 @@ static fl_status compiler_flang_pometit_faylom_body(fl_ctx *ctx, fl_value uzel, 
     size_t fl_t37693 = 0;
     FL_TRY(fl_list_alloc(ctx, fl_t37691.as.list.count, &fl_t37692, error));
     for (size_t fl_t37694 = 0; fl_t37694 < fl_t37691.as.list.count; fl_t37694 += 1) {
-      const fl_value e = fl_t37691.as.list.items[fl_t37694]; /* «э» */
+      const fl_value element = fl_t37691.as.list.items[fl_t37694]; /* «элемент» */
       fl_value fl_t37695 = fl_nothing();
-      FL_TRY(compiler_flang_pometit_faylom(ctx, e, fayl, &fl_t37695, error));
+      FL_TRY(compiler_flang_pometit_faylom(ctx, element, fayl, &fl_t37695, error));
       fl_t37692[fl_t37693] = fl_t37695;
       fl_t37693 += 1;
     }
@@ -195622,26 +195622,26 @@ fl_status compiler_flang_est_klyuch_u_poley(fl_ctx *ctx, fl_value polya, fl_valu
  * Функция flang «Пометить разбор».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param r — «р»: «Разобранное»
+ * @param razobrannoe — «разобранное»: «Разобранное»
  * @return значение: «Разобранное»
  */
-fl_status compiler_flang_pometit_razbor(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error) {
+fl_status compiler_flang_pometit_razbor(fl_ctx *ctx, fl_value razobrannoe, fl_value *result, fl_error *error) {
   fl_value fl_t37726 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "путь", &fl_t37726, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "путь", &fl_t37726, error));
   fl_value fl_t37727 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "текст", &fl_t37727, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "текст", &fl_t37727, error));
   fl_value fl_t37728 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "программа", &fl_t37728, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "программа", &fl_t37728, error));
   fl_value fl_t37729 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "путь", &fl_t37729, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "путь", &fl_t37729, error));
   fl_value fl_t37730 = fl_nothing();
   FL_TRY(compiler_flang_pometit_faylom(ctx, fl_t37728, fl_t37729, &fl_t37730, error));
   fl_value fl_t37731 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "диагностики", &fl_t37731, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "диагностики", &fl_t37731, error));
   fl_value fl_t37732 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "переразбор", &fl_t37732, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "переразбор", &fl_t37732, error));
   fl_value fl_t37733 = fl_nothing();
-  FL_TRY(fl_field_get(ctx, r, "путь", &fl_t37733, error));
+  FL_TRY(fl_field_get(ctx, razobrannoe, "путь", &fl_t37733, error));
   fl_value fl_t37734 = fl_nothing();
   FL_TRY(compiler_flang_pometit_faylom(ctx, fl_t37732, fl_t37733, &fl_t37734, error));
   fl_value fl_t37736[5];
@@ -195712,13 +195712,13 @@ fl_status compiler_flang_svyazat_pomechennye(fl_ctx *ctx, fl_value pervye, fl_va
   size_t fl_t37749 = 0;
   FL_TRY(fl_list_alloc(ctx, fl_t37747.as.list.count, &fl_t37748, error));
   for (size_t fl_t37750 = 0; fl_t37750 < fl_t37747.as.list.count; fl_t37750 += 1) {
-    const fl_value r = fl_t37747.as.list.items[fl_t37750]; /* «р» */
+    const fl_value razobrannoe = fl_t37747.as.list.items[fl_t37750]; /* «разобранное» */
     fl_value fl_t37751 = fl_nothing();
     FL_TRY(fl_field_get(ctx, shag, "связка", &fl_t37751, error));
     fl_value fl_t37752 = fl_nothing();
     FL_TRY(fl_field_get(ctx, fl_t37751, "с импортами", &fl_t37752, error));
     fl_value fl_t37753 = fl_nothing();
-    FL_TRY(compiler_flang_pererazobrat_fayl(ctx, r, imena, fl_t37752, &fl_t37753, error));
+    FL_TRY(compiler_flang_pererazobrat_fayl(ctx, razobrannoe, imena, fl_t37752, &fl_t37753, error));
     fl_value fl_t37754 = fl_nothing();
     FL_TRY(compiler_flang_pometit_razbor(ctx, fl_t37753, &fl_t37754, error));
     fl_t37748[fl_t37749] = fl_t37754;
@@ -237149,7 +237149,7 @@ static const fl_entry_param compiler_flang_entry_params[] = {
   { "Разобрать продолжение", "узел", 14 },
   { "Разобрать продолжение", "имя плана", 0 },
   { "Разобрать продолжение", "витки", 2 },
-  { "Диагностика сервера из беды", "б", 146 },
+  { "Диагностика сервера из беды", "беда", 146 },
   { "Диагностика сервера из беды", "файл", 0 },
   { "Диагностика сервера из беды", "файл известен", 3 },
   { "Файл беды известен", "файлы", 379 },
@@ -237173,7 +237173,7 @@ static const fl_entry_param compiler_flang_entry_params[] = {
   { "Место с именем файла", "файл", 0 },
   { "Есть ключ у полей", "поля", 16 },
   { "Есть ключ у полей", "ключ", 0 },
-  { "Пометить разбор", "р", 373 },
+  { "Пометить разбор", "разобранное", 373 },
   { "Связать с именами файлов", "файлы", 379 },
   { "Связать с именами файлов", "вход", 0 },
   { "Связать помеченные", "первые", 372 },

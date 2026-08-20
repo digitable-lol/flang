@@ -47687,12 +47687,12 @@ fl_status compiler_flang_razobrat_prodolzhenie(fl_ctx *ctx, fl_value uzel, fl_va
  * Функция flang «Диагностика сервера из беды».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param b — «б»: «Беда»
+ * @param beda — «беда»: «Беда»
  * @param fayl — «файл»: строка
  * @param fayl_izvesten — «файл известен»
  * @return значение: «Диагностика ядра»
  */
-fl_status compiler_flang_diagnostika_servera_iz_bedy(fl_ctx *ctx, fl_value b, fl_value fayl, fl_value fayl_izvesten, fl_value *result, fl_error *error);
+fl_status compiler_flang_diagnostika_servera_iz_bedy(fl_ctx *ctx, fl_value beda, fl_value fayl, fl_value fayl_izvesten, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Файл беды известен».
@@ -47803,10 +47803,10 @@ fl_status compiler_flang_est_klyuch_u_poley(fl_ctx *ctx, fl_value polya, fl_valu
  * Функция flang «Пометить разбор».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param r — «р»: «Разобранное»
+ * @param razobrannoe — «разобранное»: «Разобранное»
  * @return значение: «Разобранное»
  */
-fl_status compiler_flang_pometit_razbor(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+fl_status compiler_flang_pometit_razbor(fl_ctx *ctx, fl_value razobrannoe, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Связать с именами файлов».

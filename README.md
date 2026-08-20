@@ -154,13 +154,13 @@ lists the commands and `man flang` describes them. Running a program or its exam
 non-interactively still needs the full toolchain below.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
-the language server and seven of the eight backends exist only in JavaScript. The
-self-hosted compiler — the one in the release — prints to **C and nothing else**.
+the language server and seven of the eight backends exist only in JavaScript. The self-hosted
+compiler — the one in the release — prints to **C and nothing else**.
 
-**Install from the clone, not from the registry.** The package is named
-`@digitable-lol/flang`, but nothing is published under that name yet: what sits on npm today is
-a build from 7 August under the previous name, and it drags commands into your `$PATH` that this
-tree no longer has. Until the new name reaches npm, take the clone:
+**Install from the clone, not from the registry.** The package is named `@digitable-lol/flang`,
+but nothing is published under that name yet: what sits on npm today is a build from 7 August
+under the previous name, and it drags commands into your `$PATH` that this tree no longer has.
+Until the new name reaches npm, take the clone:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
@@ -445,8 +445,8 @@ How that scales to a full-size project is shown by
 [`examples/library-api`](examples/library-api/README.md), a REST service for a library: the
 domain rules, the parsing and the data handling are seven flang modules, and HTTP and storage
 stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
-have an example, it moves into a module, where the example is executable* — and the
-naming, layout, module-splitting and CI conventions derived from that project are collected in
+have an example, it moves into a module, where the example is executable* — and the naming,
+layout, module-splitting and CI conventions derived from that project are collected in
 [Раскладка проекта](docs/guide/project-layout.ru.md).
 
 ---

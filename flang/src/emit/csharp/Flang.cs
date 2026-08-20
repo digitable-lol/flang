@@ -628,6 +628,32 @@ public static class Flang
         return Value.Number(char.ConvertToUtf32(value, 0));
     }
 
+    /// <summary>«символ по коду»: строка ровно из одного символа.</summary>
+    /// <remarks>
+    /// char.ConvertFromUtf32 — обратная к ConvertToUtf32, которой считает
+    /// BCharCode: точка за основной плоскостью разворачивается в суррогатную
+    /// пару внутри строки, а «длина» flang считает её одним символом. Суррогат
+    /// отвергается явно, хотя строка C# его хранить умеет: в четырёх целях
+    /// печати из восьми строка — UTF-8, и половины пары там нет.
+    /// </remarks>
+    public static Value BCharFromCode(Ctx ctx, Value code)
+    {
+        double point = ExpectInteger("символ по коду", code, "код");
+        if (point < 0 || point > 1114111)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«символ по коду»: код " + Value.NumberText(point) + " вне диапазона Unicode [0, 1114111]");
+        }
+        if (point >= 55296 && point <= 57343)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«символ по коду»: код " + Value.NumberText(point) + " — половина суррогатной пары, а не символ");
+        }
+        return Value.Text(char.ConvertFromUtf32((int)point));
+    }
+
     public static Value BSplit(Ctx ctx, Value source, Value separator)
     {
         string value = ExpectString("разделить", source, "строка");

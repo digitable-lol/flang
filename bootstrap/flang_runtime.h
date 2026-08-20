@@ -8,7 +8,7 @@
    #ifndef, поэтому он собирается и без этого блока. */
 #define FL_INDEX_BASE 1
 #define FL_MAX_DEPTH 20000
-#define FL_MAX_STEPS 200000000
+#define FL_MAX_STEPS 40000000
 #define FL_MAX_TAIL_ARGS 9
 #define FL_MAX_ARGS 14
 
@@ -790,6 +790,7 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
 fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
 fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
 fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
+fl_status fl_b_simvol_po_kodu(fl_ctx *ctx, fl_value code, fl_value *out, fl_error *error);
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error);
 fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);

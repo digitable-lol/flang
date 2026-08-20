@@ -1303,6 +1303,45 @@ pub fn b_char_code(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
     }
 }
 
+/// «символ по коду»: строка ровно из одного символа.
+///
+/// `char::from_u32` отдаёт `None` на суррогате и за концом Unicode — то есть
+/// сам Rust называет ровно ту границу, которую форма обязана держать. Проверки
+/// выписаны до вызова, чтобы текст отказа был тем же, что у семи остальных
+/// целей; ветка `None` после них недостижима и оставлена отказом, а не
+/// `unwrap()`, потому что паника рантайма не является отказом языка.
+pub fn b_char_from_code(_ctx: &Ctx, code: Value) -> Result<Value, Error> {
+    let point = expect_integer("символ по коду", &code, "код")?;
+    if point < 0.0 || point > 1_114_111.0 {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«символ по коду»: код {} вне диапазона Unicode [0, 1114111]",
+                number_text(point)
+            ),
+        ));
+    }
+    if (55_296.0..=57_343.0).contains(&point) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«символ по коду»: код {} — половина суррогатной пары, а не символ",
+                number_text(point)
+            ),
+        ));
+    }
+    match char::from_u32(point as u32) {
+        Some(sign) => Ok(text(&sign.to_string())),
+        None => Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«символ по коду»: код {} вне диапазона Unicode [0, 1114111]",
+                number_text(point)
+            ),
+        )),
+    }
+}
+
 /// «содержит»: подстрока в строке либо значение в списке.
 pub fn b_contains(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     if let Value::List(items) = &left {

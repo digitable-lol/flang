@@ -51,7 +51,7 @@ hand bytes back. Between input and output there is not one line that is not flan
 
 | File | Lines | What is in it |
 | --- | --- | --- |
-| `service.flang` | 594 | outcome, theorems, routing, HTTP parsing and printing |
+| `service.flang` | 580 | outcome, theorems, routing, HTTP parsing and printing |
 | `plan-durable.flang` | 381 | the same service on top of a write-ahead log |
 | `server.flang` | 229 | processes, supervision, three runs |
 | `plan-network.flang` | 201 | the same service through a real socket |
@@ -66,9 +66,9 @@ flang check flang/examples/web/shortener/service.flang --proof
 ```
 
 ```
-функций 83: тотальных 83, обычных 0
-обещание несёт: композиция 80, структура 2, точный шаг 0, постоянный шаг 1, объявленная мера 0
-утверждений 24: доказано 7 (из них индукцией 3) (из них без теоремы 4), сетка 17, объявлено, не доказано 0 (шагов в термах 30)
+функций 88: тотальных 88, обычных 0
+обещание несёт: композиция 83, структура 4, точный шаг 0, постоянный шаг 1, объявленная мера 0
+утверждений 25: доказано 8 (из них индукцией 3) (из них без теоремы 5), сетка 17, объявлено, не доказано 0 (шагов в термах 30)
 ```
 
 **Why this is valuable.** A web service whose **all 83 functions are total** is a

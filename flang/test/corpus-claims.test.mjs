@@ -1933,7 +1933,6 @@ const ВНЕ_ОХВАТА = [
   "flang/stdlib/higher-order.flang «Утроить»",
   "flang/stdlib/http.flang «Байт процентами»",
   "flang/stdlib/http.flang «Закодировать проценты»",
-  "flang/stdlib/http.flang «Знак по коду»",
   "flang/stdlib/http.flang «Обрезать края»",
   "flang/stdlib/http.flang «Обрезать слева»",
   "flang/stdlib/http.flang «Обрезать справа»",

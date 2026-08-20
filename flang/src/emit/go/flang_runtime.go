@@ -1018,6 +1018,28 @@ func BCharCode(ctx *Ctx, text Value) (Value, error) {
 	return Number(float64(runes[0])), nil
 }
 
+// BCharFromCode — «символ по коду»: строка ровно из одного символа.
+//
+// string(rune(...)) годится только ПОСЛЕ обеих проверок: на непригодной руне
+// Go молча подставляет U+FFFD, то есть портит данные вместо отказа. Суррогат
+// отвергается потому, что строка Go — UTF-8, и половина пары в неё не
+// записывается; тот же отказ дают все восемь целей.
+func BCharFromCode(ctx *Ctx, code Value) (Value, error) {
+	point, err := expectInteger("символ по коду", code, "код")
+	if err != nil {
+		return Nothing(), err
+	}
+	if point < 0 || point > 1114111 {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«символ по коду»: код %s вне диапазона Unicode [0, 1114111]", NumberText(point))
+	}
+	if point >= 55296 && point <= 57343 {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«символ по коду»: код %s — половина суррогатной пары, а не символ", NumberText(point))
+	}
+	return Text(string(rune(int32(point)))), nil
+}
+
 // BContains — «содержит»: подстрока в строке либо значение в списке.
 func BContains(ctx *Ctx, left, right Value) (Value, error) {
 	if left.Tag == TagList {

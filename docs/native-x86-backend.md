@@ -58,7 +58,7 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 | `flang/src/emit/c/flang_runtime.c` | 3 222 |
 | `flang/src/emit/c/flang_conc.c` | 3 501 |
 | `flang/src/emit/c/flang_cli.c` | 1 084 |
-| `flang/src/emit/c/flang_runtime.h` | 837 |
+| `flang/src/emit/c/flang_runtime.h` | 838 |
 | `flang/src/emit/c/flang_conc.h` | 371 |
 | **итого** | **11 146** |
 
@@ -213,7 +213,7 @@ fl_status stupen_1_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *e
 
 ## 4. Чего это стоит — по частям, строками
 
-Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **4019 строк**
+Опора: печатники, которые уже есть. `flang/self/emit-c.flang` — **4021 строк**
 на flang против **2015 строк** того же бэкенда на JS (`flang/src/emit/c.mjs`):
 коэффициент перевода **1.80×**, и он взят из дерева, а не из головы.
 

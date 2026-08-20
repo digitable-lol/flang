@@ -418,6 +418,7 @@ from the [glossary](../glossary.html).
 | `contains`, `begins with` | checks over a string |
 | `to number`, `to number or failure`, `to text` | conversions |
 | `character code X`, `decompose X into characters` | character by character |
+| `character by code N` | code point as a number → a one-character string; refuses on fractions, outside [0, 1114111], and on a lone surrogate |
 
 ```
 module «Built-in forms»

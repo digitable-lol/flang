@@ -338,8 +338,7 @@ static const char HELP_EMIT[] =
     "  --target js  JavaScript; недостижимое отбрасывается, как у полного\n"
     "               инструментария. Рантайм модуля печатается ИЗНУТРИ эталона, с\n"
     "               диска читаются только прогонщик (flang_cli.js) и планировщик\n"
-    "               (flang_conc.js). ГРАНИЦЫ ВХОДА эта цель не печатает — таблицы\n"
-    "               объявленных типов параметров в выводе нет.\n"
+    "               (flang_conc.js).\n"
     "\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
@@ -6159,18 +6158,25 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
   fl_value values[15];
-  /* Настройки цели JavaScript — восемь полей, порядок как в объявлении
-     «Настройки JS» (`flang/self/emit-js.flang`). Границы входа среди них нет:
-     эталон её не печатает, и это названный долг, а не упущение здесь. */
-  static const char *const js_names[8] = {"путь",
-                                          "есть путь",
-                                          "база",
-                                          "предел глубины",
-                                          "предел шагов",
-                                          "исходник планировщика",
-                                          "прогонщик",
-                                          "исходник прогонщика"};
-  fl_value js_values[8];
+  /* Настройки цели JavaScript — двенадцать полей, порядок как в объявлении
+     «Настройки JS» (`flang/self/emit-js.flang`). Последние четыре — граница
+     входа, и приходит она ОТТУДА ЖЕ, ОТКУДА У ЦЕЛИ C: из впечатанной таблицы
+     собственной программы, если она этой программе годится, и пустой иначе.
+     Посчитать её двоичному нечем — `таблицаВхода` слоя типов на flang не
+     написана ни одной строкой. */
+  static const char *const js_names[12] = {"путь",
+                                           "есть путь",
+                                           "база",
+                                           "предел глубины",
+                                           "предел шагов",
+                                           "исходник планировщика",
+                                           "прогонщик",
+                                           "исходник прогонщика",
+                                           "типы входа",
+                                           "поля входа",
+                                           "варианты входа",
+                                           "параметры входа"};
+  fl_value js_values[12];
   fl_value args[2];
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
@@ -6391,6 +6397,7 @@ static int emit_file(int argc, char **argv, const char *self) {
            и свидетель (`dropUnreachable` в `commandEmit`) отбрасывает всегда. */
         fl_value ready = fl_nothing();
         fl_value js_args[2];
+        fits = emit_entry_fits(program, table);
         js_args[0] = linked;
         if (repl_call("К печати JS", js_args, 1, &ready) != FL_OK) {
           code = 1;
@@ -6403,8 +6410,12 @@ static int emit_file(int argc, char **argv, const char *self) {
           js_values[5] = repl_value_text(js_scheduler_source, js_scheduler_bytes);
           js_values[6] = fl_flag(cli);
           js_values[7] = repl_value_text(js_runner_source, js_runner_bytes);
+          js_values[8] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+          js_values[9] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+          js_values[10] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+          js_values[11] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
           js_args[0] = ready;
-          js_args[1] = repl_value_record(js_names, js_values, 8);
+          js_args[1] = repl_value_record(js_names, js_values, 12);
           if (repl_call("Напечатать к печати JS", js_args, 2, &result) != FL_OK) {
             code = 1;
           } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {

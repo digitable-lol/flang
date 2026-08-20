@@ -573,9 +573,9 @@ fl_status compiler_flang_sozdat_svyazyvanie_parametrov_js(fl_ctx *ctx, fl_value 
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_fayl_js(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
 
-/* Запись FTS «Настройки JS»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «исходник планировщика», «прогонщик», «исходник прогонщика». */
+/* Запись FTS «Настройки JS»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «исходник планировщика», «прогонщик», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_nastroyki_js(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value ishodnik_planirovschika, fl_value progonschik, fl_value ishodnik_progonschika, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_nastroyki_js(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value ishodnik_planirovschika, fl_value progonschik, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог печати JS»: «файлы», «ошибка». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -18853,14 +18853,98 @@ fl_status compiler_flang_stroka_geyta_js(fl_ctx *ctx, fl_value para, fl_value *r
 fl_status compiler_flang_blok_geytov_js(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Ряд границы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ryad_granicy_js(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список границы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param ryady — «ряды»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_spisok_granicy_js(fl_ctx *ctx, fl_value imya, fl_value ryady, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ряд типа входа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_ryad_tipa_vhoda_js(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ряд поля входа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_ryad_polya_vhoda_js(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ряд варианта входа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_ryad_varianta_vhoda_js(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ряд параметра входа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_ryad_parametra_vhoda_js(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Граница входа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_granica_vhoda_js(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Таблица программы JS».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param obschee — «общее»: «Общее JS»
  * @param stek — «стек»: число
+ * @param nastroyki — «настройки»: «Настройки JS»
  * @return значение: строка
  */
-fl_status compiler_flang_tablica_programmy_js(fl_ctx *ctx, fl_value obschee, fl_value stek, fl_value *result, fl_error *error);
+fl_status compiler_flang_tablica_programmy_js(fl_ctx *ctx, fl_value obschee, fl_value stek, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост таблицы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stek — «стек»: число
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvost_tablicy_js(fl_ctx *ctx, fl_value stek, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Шапка прогонщика JS».

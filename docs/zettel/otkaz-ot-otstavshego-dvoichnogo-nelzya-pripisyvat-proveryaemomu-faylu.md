@@ -39,6 +39,13 @@
 причина исчезнет; останется правило: не записывать файл в «сам себя не
 проверяет», не сверив тем двоичным, который проходит всё дерево.
 
+**Догон подтверждён на стволе.** Пока шла эта работа, `github/main` уехал
+вперёд до `5dba79c5` (20 августа, 23:03), и точка раскрутки там уже знает
+форму: в `bootstrap/compiler_flang.c` 27 вхождений `charFromCode`. Двоичный,
+собранный из этого ствола (`make -C bootstrap -j8`, 13 022 920 байт),
+проверяет все двенадцать слоёв с кодом 0 — тот же ответ, что дал двоичный
+соседней копии. Отставание было состоянием одного дня, а правило остаётся.
+
 Связано: [[bootstrap-seed-lags-the-sources-by-one-language-form]],
 [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]],
 [[cena-vtaskivaniya-kategornoy-poverhnosti-eto-ne-zamykanie-a-nenapisannye-pravila]]

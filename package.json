@@ -67,7 +67,7 @@
     "changelog:page:check": "node scripts/build-changelog-page.mjs --check",
     "releases:page": "node scripts/build-releases-page.mjs",
     "releases:page:check": "node scripts/build-releases-page.mjs --check",
-    "links:check": "node scripts/link-guard.mjs",
+    "links:check": "bootstrap/flang io scripts/storozh-ssylok.flang",
     "site": "node docs/site/build.mjs",
     "site:check": "node docs/site/build.mjs --check",
     "bootstrap": "sh scripts/raskrutka.sh",

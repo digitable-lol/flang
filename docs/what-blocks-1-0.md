@@ -81,7 +81,7 @@
 |---|---:|
 | `node flang/scripts/count-guard.mjs` | **30** |
 | `node docs/site/site-numbers.mjs --check` | **24** |
-| `node scripts/link-guard.mjs` | **0** — 11 битых ссылок README на несуществующий `docs/rukovodstvo/` починены 18 августа (`1ff9bd06`) |
+| `bootstrap/flang io scripts/storozh-ssylok.flang` | **0** — 11 битых ссылок README на несуществующий `docs/rukovodstvo/` починены 18 августа (`1ff9bd06`) |
 
 И **CI красный на самом теге релиза `v0.5.0`**: задания `test (20)` и `licensing`
 упали.

@@ -137,7 +137,7 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm run bootstrap` · `npm run bootstrap:check` | reprint `bootstrap/` from the current sources, and compare it byte for byte |
 | `npm run claims:check` · `npm run counts:check` · `npm run codes:check` · `npm run emit:check` · `npm run names:check` | the five prose guards below |
 | `npm run license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through npm |
-| `npm run links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
+| `npm run links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-ssylok.flang`) |
 | `npm run site` · `npm run site:check` | build the documentation site and check its links; **Pages runs the file directly** |
 | `npm run numbers` · `npm run numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `npm run glossary` · `npm run glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |

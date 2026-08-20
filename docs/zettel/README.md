@@ -105,6 +105,14 @@
 - [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](u-yadra-net-pravila-ne-menshe.md)
 - [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
 - [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](oslablennoe-utverzhdenie-byvaet-nesushchim.md)
+- [Даровое утверждение узнаётся подменой тела заглушкой, и в двух модулях библиотеки таких оказалось 17 из 32](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
+- [Постусловие считается при КАЖДОМ вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
+- [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
+- [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
+- [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
+- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
+- [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ — а сузить их до правильных деревьев нечем](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
+- [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 
 ## Теория категорий
 
@@ -293,6 +301,9 @@
 - [Двоичный `flang lsp` не отвечает, пока стандартный ввод открыт, — и потому редактору не годится, хотя побайтовую сверку проходит](dvoichnyy-lsp-ne-otvechaet-poka-vvod-otkryt.md)
 - [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](tablica-poverhnostey-otstala-na-chetyre-frazy.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор](napechatannye-pravila-podsvetki-proveryayutsya-tolko-samim-redaktorom.md)
+- [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](proverka-tipov-ne-na-puti-tochki-raskrutki.md)
+- [Путь, названный в прозе обратными кавычками, не сверяется с деревом ничем — так контракт категорной поверхности пережил свои файлы на 28 упоминаний](put-v-obratnyh-kavychkah-ne-svyeryaetsya-s-derevom.md)
+- [Семя в `bootstrap/` отстаёт от исходников ядра, и разница видна прямо в отказе: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 
 ## Устройство репозитория
 
@@ -334,6 +345,8 @@
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
 - [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](srok-potomka-u-hozyaina-glavnoe-prepyatstvie-dlya-dolgih-proverok.md)
 - [«Показать» у двоичного отвечает отказом, а прогон продолжается — прежний замер устарел](pokazat-otvechaet-sboem-a-ne-ronyaet-progon.md)
+- [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя числом, а не молчанием](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
+- [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
 
 ## Найденные ошибки
 
@@ -379,6 +392,9 @@
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [`git stash` общий на все рабочие деревья](git-stash-is-shared-across-worktrees.md)
+- [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
+- [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](vlozhennyy-esli-v-skobkah-cherez-stroku-ne-razbiraetsya.md)
+- [Когда ствол заменил свою функцию библиотечной, а ветка ту же свою дополнила, обе стороны столкновения неверны](bibliotechnaya-zamena-i-svoyo-dopolnenie-obe-storony-nevernny.md)
 
 ## Отвергнутые пути
 
@@ -389,6 +405,7 @@
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)
 - [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](paket-npm-ne-uedet-v-podkatalog.md)
 - [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
+- [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
 
 ## Модульность и пакеты
 
@@ -414,6 +431,7 @@
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
 - [Предел шагов у прогона примеров — один на весь запуск, и примеры ввезённых модулей считаются в него же](one-step-budget-covers-a-whole-run-including-imported-examples.md)
 - [Столкновения имён в замыкании компилятора считаются обходом текста за 0,1 с — там же, где связывание отвечает за 6 минут](stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy.md)
+- [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего, и до правки его не видно ни одним пересечением множеств](pereimenovanie-razvodit-odno-stolknovenie-i-sozdayot-sleduyuschee.md)
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)

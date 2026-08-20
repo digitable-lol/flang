@@ -294,6 +294,11 @@
       "зачем": "страница цены доказательства"
     },
     {
+      "маска": "docs/benchmark-proof-cost-2.md",
+      "вид": "проза",
+      "зачем": "второй замер цены доказательства, опубликован на сайте"
+    },
+    {
       "маска": "docs/scheduler-benchmark.md",
       "вид": "проза",
       "зачем": "страница замера процессов"
@@ -492,6 +497,7 @@
     "CONTRIBUTING.md": 7,
     "README.md": 9,
     "README.ru.md": 12,
+    "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,
     "docs/guide/developing.md": 4,

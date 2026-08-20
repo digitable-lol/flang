@@ -31,8 +31,8 @@ archive with the formula's flags.
 **The formula in this tree lags behind the published one.**
 `packaging/homebrew/flang.rb` here still says `version "0.5.0"` with hash
 `7dc75fec…`, while `digitable-lol/homebrew-tap` already carries 0.5.1. The
-mismatch used to be guarded the other way round — "the copy in the tap has not
-fallen behind"; today it is the original that has.
+The check watches this the other way round — whether the copy in the tap has
+fallen behind; here it is the original that has.
 
 ## Why 0.5.0 had to be replaced: it did not build on macOS at all
 
@@ -100,9 +100,8 @@ measurement.
 
 ## From source: a fresh clone holds no built file
 
-It used to say here that `bootstrap/` ships from the repository with `flang` and
-`*.o` already built, and that measuring therefore requires an empty directory.
-**That is wrong, and a clone proves it.** `bootstrap/flang` is in `.gitignore`,
+**A fresh clone holds no built file, and a clone proves it.** `bootstrap/flang`
+is in `.gitignore`,
 `git ls-files bootstrap/` names eight files, and `git clone --depth 1` from
 GitHub puts down exactly those: `Makefile`, `README.md`, four `.c`, two `.h`.
 Nothing built.
@@ -160,10 +159,9 @@ lags behind the release.
 
 ## The binary has ten commands, not six
 
-Both this page and the install page used to say the binary knows six commands
-and that `flang lock` is rejected with exit code 2, pointing at "the full
-toolchain". Re-measured: `./bootstrap/flang --help` names all ten, and
-`flang lock проба.flang` answers with a JSON lock and exit code 0. The help of
+`./bootstrap/flang --help` names all ten, and `flang lock проба.flang` answers
+with a JSON lock and exit code 0 — not a refusal pointing at "the full
+toolchain", as one might expect. The help of
 the binary and of the Node package list the same set of commands.
 
 So the difference between the paths is exactly one thing, and it is about

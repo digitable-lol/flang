@@ -8,10 +8,15 @@ You need `flang` installed ([how](install.html)) and the five minutes of the
 
 The code below is written in the Russian surface of the language — the same
 program can be written in English words, see [Four writing
-surfaces](../surfaces.html). All the tutorial's programs live in one file:
+surfaces](../surfaces.html). All the tutorial's programs live in one file, in
+the language repository. If you installed `flang` from Homebrew or asdf you do
+not have that file, and it does not matter: every program below is shown in
+full and can simply be retyped. To run the whole tutorial at once, clone the
+tree:
 
 ```bash
-flang test docs/examples/tutorial.flang
+git clone https://github.com/digitable-lol/flang.git
+flang test flang/docs/examples/tutorial.flang
 ```
 
 ```
@@ -82,7 +87,7 @@ A condition may live inside the fold; no separate "maximum" form is needed:
 language ("list item by index") and cannot be taken. On that attempt the
 compiler answers `FLANG_PARSE: не разобрана конструкция` pointing at the end of
 the line — the message does not name the cause. The taken names are listed in
-the [glossary](../glossary.html): 149 concepts.
+the [glossary](../glossary.html): {{словарь.понятий}} concepts.
 
 **Exercise 2.** The sum of squares of `[1, 2, 3]` is 14.
 
@@ -156,7 +161,7 @@ straight past `равен 0` (equals 0). The fix is exactly the one named: `ра
 ```
 
 After that `flang check` answers "замечаний нет" (no diagnostics), and the
-ledger names what carries the promise:
+report of `flang check --proof` names what the promise rests on:
 
 ```
 «Сумма до»  доказано постоянным шагом: аргумент 1 («н») убывает на постоянный
@@ -219,7 +224,7 @@ A claim about the result is written with `обеспечивает` (ensures):
   обеспечивает «сумма до неотрицательна» результат не меньше 0
 ```
 
-By itself that is not a proof, and the ledger says what actually carries it:
+By itself that is not a proof, and the report says what it actually rests on:
 
 ```
 постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение
@@ -290,7 +295,7 @@ A theorem with nothing under it is not accepted. That is the difference between
 
 **Exercise 5.** Prove the same about `«Тройная норма»` with the body `норма
 умножить на 3`. Answer: the same `требует` line and the same four lines of
-theorem; the ledger answers "доказано: терм принят ядром, 1 шаг".
+theorem; the report answers "доказано: терм принят ядром, 1 шаг".
 
 ## What the compiler says when you got it wrong
 
@@ -315,4 +320,5 @@ The full list of codes is in the manual page (`man flang`), section
 - [Operations](operations.html) — lists, strings, sets, numbers
 - [Proofs: why and how](proofs.html) — the kernel's three answers and zero axioms
 - [Case studies](case-studies.html) — 82 tasks and a live service
-- [Glossary](../glossary.html) (in Russian) — all 149 words on four surfaces
+- [Glossary](../glossary.html) (in Russian) — {{словарь.понятий}} concepts, of
+  which {{словарь.наЧетырёх}} are open on all four writing surfaces

@@ -23,6 +23,7 @@
 - [Разрыв между «доказано» и «правильно» — это спецификация](proven-is-not-correct.md)
 - [Развилки, которые владелец выбрал сам](owner-decisions.md)
 - [Отчёты пишутся простым инженерным языком, без проектного жаргона](write-in-plain-language.md)
+- [Восемь десятых внутренних слов на сайте приходятся на одну печатаемую страницу, а не на прозу](most-site-jargon-comes-from-one-printed-page.md)
 
 ## Числа
 
@@ -37,6 +38,7 @@
 - [`нат` в объявлении снимает отказ по целости, но почти не добавляет доказанных мест](nat-v-obyavlenii-snimaet-celost-no-ne-granicy.md)
 
 ## Доказательства
+- [Точный шаг по `нат` доказывает только прямую рекурсию: цикл через три функции ядро отвергает](tochnyy-shag-dokazyvaet-tolko-pryamuyu-rekursiyu.md)
 
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
@@ -65,6 +67,9 @@
 - [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](klass-nomera-uperlsya-v-celost-a-ne-v-granicy.md)
 - [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](pole-ne-minus-nol-zakrylo-dva-mesta-a-ne-odinnadcat.md) — с поправкой: пара на flang сделана, и правило про нижнюю границу видно через вычитание
+- [Пометки не хватало 293 функциям из 2242 — остальным 1949 не хватает правил](pometki-ne-hvatalo-293-iz-2242.md)
+- [Два правила завершаемости поодиночке дают 54 и 74, а вместе — 574](dva-pravila-zavershaemosti-vmeste-dayut-574.md)
+- [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное](nat-snimaet-storozha-tolko-esli-vyzyvayushchiy-uzhe-daet-naturalnoe.md)
 
 ## Теория категорий
 
@@ -110,6 +115,14 @@
 - [Граница мира у горячей замены проходит по пяти чужим проходам, а не по часам и сокетам](hot-swap-boundary-runs-through-five-passes-not-through-a-clock.md)
 - [Кандидат на горячую замену разбирается ОТДЕЛЬНО, поэтому имена типов работающей программы в нём назвать можно, а функции её позвать нельзя](a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions.md)
 - [Из четырёх утверждений, которых ждут от планировщика процессов, ядро не берёт ни одного](what-a-scheduler-needs-proved.md)
+- [Распределённость делится на мир и провод в отношении 459 к 119, и печатать компилятор умеет только провод](raspredelyonnost-delitsya-na-mir-i-provod.md)
+- [Решение о мире переносимо, даже когда сам мир — нет: у слоя связи узла это 554 строки против 42](reshenie-o-mire-perenosimo-a-mir-net.md)
+- [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов](uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata.md)
+- [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
+- [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
+- [Правило «это не отказ» без срока — не осторожность, а поломка](pravilo-eto-ne-otkaz-obyazano-imet-srok.md)
+- [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](etalon-sverennyy-s-tretim-artefaktom.md)
+- [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](rovnoe-chislo-cherez-tcp-obeshchat-nelzya.md)
 
 ## Самораскрутка и метод проверки
 
@@ -146,6 +159,11 @@
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Побайтовая сверка вычитала блок из вывода свидетеля — и зеленела на том, без чего программа не работает](granica-vhoda-vychitalas-iz-sverki-i-sverka-zelenela-vpustuyu.md)
+- [Два правила языка живут только в реализации на JavaScript, и сверка двух реализаций их не видит](dva-pravila-yazyka-zhivut-tolko-v-javascript.md)
+- [`flang test` на слое без своих примеров зеленеет всегда — а таких слоёв 11 683 строки](flang-test-na-etalone-bez-svoih-primerov-zeleneet-vsegda.md)
+- [Правило, на которое не наступает ни одна программа корпуса, невидимо для сверки эталона](pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki.md)
+- [Отказ компилятора на стороне flang — значение, поэтому «программа отвергнута» проверяется обычным примером](otkaz-na-storone-flang-eto-znachenie-znachit-ego-vidit-primer.md)
+- [Блок кода в документации, который обязан отказать, помечается внутри самого блока](blok-dokumentacii-obyazannyy-otkazat-pomechaetsya-vnutri-sebya.md)
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
@@ -176,11 +194,14 @@
 - [Команда может ответить «проверено», не проверив ничего](checked-without-checking.md)
 - [Число прозы без названного измерителя не перепроверяется, а заменяется другим числом](a-number-without-a-named-measure.md)
 - [Набранное число расходится между страницами; подставленное — не может](typed-numbers-drift-substituted-ones-cannot.md)
+- [Число, у которого нет ключа подстановки, расходится не с другой страницей, а со своим же отчётом](a-number-with-no-key-drifts-from-its-own-report.md) — главная сайта цитировала предыдущее поколение замера скорости, и знак сравнения был перевёрнут
+- [Объявленный и ни разу не вызванный список — это обещание без исполнителя](a-declared-and-never-called-list-is-a-promise-with-no-executor.md) — комментарий над мёртвым кодом неотличим от комментария над живым
 - [Журнал, записывающий короткий хеш коммита, догнать правкой коммита нельзя](amend-cannot-catch-up-a-journal-that-records-hashes.md)
 - [Относительная ссылка ломается ровно при копировании каталога](relative-links-break-on-copy.md)
 - [Замер собранного артефакта врёт молча: `make` не пересобирает, а отвечает «nothing to be done»](measuring-a-stale-artifact.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
+- [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
 - [Граница входа была долгом печати, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается](granica-vhoda-eto-dolg-pechati-a-ne-vychitanie-v-proverke.md)
 - [Разбиение имени на слова у эталонов печати сделано таблицей ASCII, а у свидетеля — классами Юникода](slovar-simvolov-slova-na-flang-asciiynyy-a-u-svidetelya-yunikodnyy.md)
@@ -189,20 +210,27 @@
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)
+- [Двоичный `flang lsp` не отвечает, пока стандартный ввод открыт, — и потому редактору не годится, хотя побайтовую сверку проходит](dvoichnyy-lsp-ne-otvechaet-poka-vvod-otkryt.md)
+- [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](tablica-poverhnostey-otstala-na-chetyre-frazy.md)
+- [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор](napechatannye-pravila-podsvetki-proveryayutsya-tolko-samim-redaktorom.md)
 
 ## Устройство репозитория
 
 - [Старый проект FTS нельзя вынести дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
+- [Прощальный абзац — «что здесь было и куда делось» — переживает то, о чём прощается, и держит мёртвые пути дольше всей остальной прозы](a-farewell-paragraph-outlives-what-it-says-goodbye-to.md)
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны](a-packaging-copy-in-another-repository-drifts-both-ways.md)
 - [Указатель поиска по 244 страницам весит 371 КиБ, если класть заголовки и первые 700 знаков, а не весь текст](a-client-side-index-holds-headings-not-full-text.md)
+- [Страница, написанная как отчёт о нашей работе, читателю языка бесполезна — даже если каждое число в ней верно](a-page-that-reports-our-work-is-not-a-guide.md)
+- [Подстановка, не попавшая в образец, доезжает до читателя двойными скобками — и молча](a-substitution-that-misses-the-pattern-reaches-the-reader.md)
 
 ## Интерфейс инструмента
 
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя](the-installed-binary-is-a-named-subset.md)
 - [Справка расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
+- [У двоичного нет целых проверок, а не только более слабая ведомость, — и его собственная справка об этом молчит](dvoichnyy-molchit-o-proverkah-kotoryh-v-nyom-net.md)
 - [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал ни у одного поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
@@ -210,7 +238,11 @@
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
 
 ## Найденные ошибки
+- [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
+- [Рукописная копия обнаруживает себя столкновением имён в день, когда библиотека дорастает до неё](rukopisnaya-kopiya-obnaruzhivaet-sebya-stolknoveniem-imyon.md)
+- [`http.flang` считает Content-Length знаками в обе стороны, и потому чинить одну сторону нельзя](content-length-schitaetsya-znakami-v-obe-storony.md)
 
+- [Вариант суммы, названный как вариант встроенного «Отклик», отключает все встроенные типы ввода-вывода, а диагностика жалуется на другое](variant-nazvannyy-kak-vstroennyy-vyrubaet-vstroennye-tipy.md)
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)
 - [Поле записи отмывало значение из-за симметричного сравнения типов](a-record-field-laundered-a-value.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
@@ -268,11 +300,16 @@
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
 
 ## Внешнее и объёмы
+- [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
+- [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)
 - [Свой генератор машинного кода — примерно месяц, и на доказуемость не влияет](our-own-machine-code-generator.md)
 - [WebAssembly получается через C даром: девятая цель печати не нужна](wasm-via-c-is-free.md)
-- [До настоящего приложения в браузере не хватает трёх кусков, и они посчитаны](browser-app-gap.md)
+- [До настоящего приложения в браузере не хватает трёх кусков, и они посчитаны](browser-app-gap.md) — с поправкой: два утверждения опровергнуты замером
+- [Генератор печатает все функции приложения и молча роняет объявление `план`](emit-pechataet-funkcii-plana-no-ne-sam-plan.md) — с поправкой: закрыто, и все три части закрыты по-разному
+- [Признак «печатать отдельным файлом» — это «во вкладку не едет», а не «одинаково для всех программ»](ispolnitel-plana-pechataetsya-vnutr-modulya-a-progonshchik-ryadom.md) — и ещё два: сверка зеленеет на том, чего не видно в следе (2 дыры из 5 порч), и потолок рабочего пути
+- [Браузер не говорит со службой на flang, и корень у пяти расхождений один — нет формы «символ по коду»](brauzer-ne-govorit-so-sluzhboy-iz-za-otsutstviya-znaka-po-kodu.md)
 - [Песочницу в браузере держит POSIX-слой оболочки, а не размер компилятора](playground-blocked-by-repl-posix-not-by-size.md)
 - [Обёртка, которая ругается на ненулевой код возврата, прячет результат под видом сбоя](a-wrapper-that-rejects-on-nonzero-exit-hides-the-result.md)
 

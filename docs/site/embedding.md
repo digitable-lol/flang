@@ -8,10 +8,10 @@ virtual machine is anywhere near it while it runs.
 
 There are {{цели.поАнглийски}} emit targets: {{цели.список}}.
 
-Everything on this page was run on 19 August 2026 against this tree: the
-reference implementation `node flang/bin/flang.mjs`, Node v26.7.0, `cc` 15.2.0,
-Python 3.14.4, Linux 7.0.0. Not one command and not one number here is from
-memory.
+Not one command and not one number here is from memory: everything was run
+against this tree with the compiler from the repository
+(`node flang/bin/flang.mjs`) under Node v26.7.0, `cc` 15.2.0, Python 3.14.4,
+Linux 7.0.0.
 
 ## One command
 
@@ -59,9 +59,9 @@ ls: cannot access './out': No such file or directory
 
 ### What emitted here, and what the installed `flang` emits
 
-This page emits with the reference implementation from the repository. The
-standalone `flang` binary — the one Homebrew installs and `bootstrap/` builds —
-has **all {{цели.поАнглийски}}**, and says so itself. Run against
+This page emits with the compiler from the repository — the one installed through
+npm. The standalone `flang` binary — the one Homebrew installs and `bootstrap/`
+builds — has **all {{цели.поАнглийски}}** as well, and says so itself. Run against
 the binary built from `bootstrap/`:
 
 ```bash
@@ -83,7 +83,7 @@ $ ./flang emit factorial-english.flang --target c --runtime …/flang/src/emit/c
 прогонщика объявленным типам сверяться не будут.
 ```
 
-Unlike the reference implementation, the binary does not create the `--out`
+Unlike the compiler from the repository, the binary does not create the `--out`
 directory: if it is missing, the binary refuses and names the file.
 
 ## What arrives in the directory
@@ -225,11 +225,11 @@ Three rules are visible right there, and you will have to keep them:
 2. **A refusal is not thrown.** There are no exceptions, neither in the language
    nor in the emitted C: a refusal is `FL_ERROR` plus a filled `fl_error` with
    fields `code` and `message`.
-3. **`fl_ctx` carries the limits**: depth, steps and the stack guard. One context
-   can be reused across calls, as above.
+3. **`fl_ctx` carries the limits**: depth, step count and a check on remaining
+   stack. One context can be reused across calls, as above.
 
 WebAssembly comes from the same place: the emitted C moves there without edits —
-the [measurement](../wasm.html) was made over the whole corpus.
+the [measurement](../wasm.html) was made over every program in the repository.
 
 ## The value at the boundary
 
@@ -508,8 +508,8 @@ the runner answers earlier and more precisely — «аргумент «n» не 
 Written not for completeness but because a promise read wider than it was made is
 a future breakage in your code.
 
-- **`flang/src/*.mjs` is not a library.** The internal modules of the reference
-  implementation can be imported, but at your own risk: they are
+- **`flang/src/*.mjs` is not a library.** The compiler's internal modules can be
+  imported, but at your own risk: they are
   [not promised](../what-blocks-1-0.md) and change without warning. There is one
   promised road for embedding, and it is `emit`.
 - **The bytes of the emitted code are not promised.** The promise is behavioural:
@@ -524,8 +524,8 @@ a future breakage in your code.
   `elixir`, `js`), parallelism on one (`elixir`). The rest refuse to emit a
   concurrent program.
 - **The installed `flang` binary emits into C only**, and leaves the entry
-  boundary's type table empty. All {{цели.поАнглийски}} targets belong to the reference
-  implementation in the repository.
+  boundary's type table empty. All {{цели.поАнглийски}} targets come from the
+  compiler installed through npm.
 - **About `--index-base`, `--max-steps` and `--max-depth` only one thing was
   checked** — that they reach the emitted code as the lines named above; their
   effect on a running program was not measured here.

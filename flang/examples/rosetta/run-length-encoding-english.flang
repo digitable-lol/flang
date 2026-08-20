@@ -16,19 +16,25 @@ module «Run-length encoding»
 // there is a counter, but it sits in the accumulator and does not decide how
 // many turns are left.
 //
-// «Decode» is ordinary. And the reason is not laziness: expanding MUST repeat a
-// character as many times as the number says, and «as many as the number says»
-// is an arbitrary number read from the input. Repeating n times can only be
-// done by recursing on «n minus 1», and the termination analysis does not
-// accept a decreasing number. There is nowhere to get a list of the right
-// length: to obtain one you would have to count up to n.
+// «Decode» is proved too, but proved DIFFERENTLY, and the difference shows up
+// in the printed code. Expanding MUST repeat a character as many times as the
+// number says, and «as many as the number says» is an arbitrary number read
+// from the input. Repeating n times can only be done by recursing on «n minus
+// 1»; the termination analysis does accept that — the step is constant and the
+// check «if count is not greater than 0» gives the floor — but it charges for
+// it. The charge is named: the recursive call to «Repeat symbol» carries ONE
+// CHECK AT RUN TIME. It stands there not out of distrust of the proof but
+// because of how numbers are represented: over the reals the reasoning is
+// complete, while on IEEE-754 «x minus 1» equals x itself for large |x|, and
+// the chain does not move at all.
 //
-// Compare with `roman-numerals.flang`, where BOTH sides are proved: there the
-// repetition is bounded by three, and instead of counting there is a fold over
-// the ready list [1, 2, 3]. The difference between the two files is neither
-// skill nor luck — it is whether the repetition has a bound known in advance.
-// That is the real content of the word «total»: not «the program is good» but
-// «the bound is named».
+// Compare with `roman-numerals.flang`, where there is no such check at all:
+// there the repetition is bounded by three, and instead of counting there is a
+// fold over the ready list [1, 2, 3]. The difference between the two files is
+// neither skill nor luck — it is whether the repetition has a bound known in
+// advance and known as a VALUE rather than as a number. That is the real
+// content of the word «total»: not «the program is good» but «the bound is
+// named»; and when it is named by a number alone, the running program pays.
 
 object «Packing»
   «done»: string
@@ -82,7 +88,7 @@ total function «Encode»
 // Below — ordinary functions: repetition by a number that has no bound.
 // ─────────────────────────────────────────────────────────────────────────
 
-function «Repeat symbol»
+total function «Repeat symbol»
   accepts symbol: string, count: number
   returns string
   example «Three times»
@@ -101,7 +107,7 @@ function «Repeat symbol»
 // spends them. `to number` is safe here: a string is turned into a number only
 // after the check «this is a digit» — there is nothing in the language to catch
 // the failure of a built-in form.
-function «Decode»
+total function «Decode»
   accepts text: string
   returns string
   example «The string from the task»
@@ -119,9 +125,10 @@ function «Decode»
         else record «Unpacking» with «done» equals (join acc.«done» with («Repeat symbol» of symbol and acc.«count»)) and «count» equals 0
   outcome.«done»
 
-// A claim: encoding and decoding are inverse to each other. Ordinary — because
-// it calls «Decode»; a function is no more total than what it calls.
-function «Round trip»
+// A claim: encoding and decoding are inverse to each other. Total — because
+// both halves are total; a function is no more total than what it calls, and
+// that is exactly why this one rose together with «Decode».
+total function «Round trip»
   accepts text: string
   returns boolean
   example «The string from the task»

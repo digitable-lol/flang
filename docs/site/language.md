@@ -116,7 +116,7 @@ Edges:
 - in emitted code `requires` sits only on the boundary of the program — where a
   value arrives from outside. Internal calls do not pay for it;
 - `ensures` cannot be written without a name: the name is how the claim is found
-  in the ledger and how a theorem refers to it;
+  in the `flang check --proof` report and how a theorem refers to it;
 - examples run on **every** check. If one does not hold: `FLANG_EXAMPLE`, and
   the compiler refuses to emit the program.
 
@@ -124,7 +124,7 @@ Edges:
 
 `total` is carried by one of five means. The first three cost nothing at run
 time; the last two put a check into the emitted code. Which one carried which
-function is in the ledger, `flang check --proof`; the counts across the tree are
+function is in the `flang check --proof` report; the counts across the tree are
 on [Why and how](proofs.html).
 
 | Means | When it applies |
@@ -696,7 +696,7 @@ Edges, worth knowing before you start:
 - the structure (ends, composition, identities, completeness of a link) is
   proved by comparing declarations. The functor square and the arrow laws are
   **checked on a grid** built from the author's examples, and that is not a
-  proof. The ledger prints the size of the grid;
+  proof. The report prints the size of the grid;
 - a category stays a note to the reader until it is given a list of its own
   arrows; there is nothing to check a claim that an object belongs to one;
 - a translation without an implementation (`maps to` without `gives`) is not
@@ -866,8 +866,8 @@ the table are named here so that nobody has to hunt for them.
 | `maps to`, `maps to field`, `maps to morphism` | the lines of a functor | the same |
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
 | `plan` | input and output: declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
-| `date`, `money` | FTS heritage: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
-| `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | FTS heritage: constructions of the previous kernel | [Glossary](../glossary.html) |
+| `date`, `money` | heritage of the earlier surface: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
+| `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
 
 ## What the language does not have
 

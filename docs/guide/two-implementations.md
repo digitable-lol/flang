@@ -6,21 +6,27 @@ Two implementations exist, and both are kept deliberately. The **witness** one i
 TypeScript and JavaScript and defines the behaviour of the language. The **self-hosted** one is
 written in flang.
 
-### The FTS core, written in flang
+### Domain-model parsing, written in flang
 
-[`flang/core/`](../../flang/core) is the FTS core — lexer, parser, evaluator, JSON printer — rewritten
-in flang: 300 functions, every one of them `тотальная` and proven so. `fts check` is not allowed
-to hang either.
+[`flang/core/`](../../flang/core) is the lexer, parser, evaluator and JSON printer for the
+indentation-based notation of domain objects and rules (`категория`, `объект`, `утилита`),
+written in flang itself: 300 functions, every one of them `тотальная` and proven so. These are
+the largest programs in the tree, and they are no more allowed to hang than anything else.
 
-The correctness criterion is not "its own tests pass". It is a differential one, stated in
+The correctness criterion is not "its own tests pass". It is stated in
 [`flang/core/SPEC.md`](../../flang/core/SPEC.md): run the whole chain — *text → lexer in flang →
-parser in flang → JSON printer in flang* — and require the output string to equal
-`JSON.stringify(compile(text))` of the TypeScript core **byte for byte**. It runs over every
-`.fts` model in this repository — 50 of them on a clean clone, on both surfaces (47 indentation,
-3 braced) — with zero divergences. If an external model directory is present, its models join the
-same run, so your local count may be higher; the promise is the corpus, not the number.
-Diagnostics are compared separately, on 34 deliberately broken indentation models and 13 braced
-ones — code *and* message text.
+parser in flang → JSON printer in flang* — and require the output to match the reference answer
+**byte for byte**. It runs over the whole model set — 53 files, 50 indentation and 3 braced
+(`flang/test/fixtures/fts/` and `benchmarks/model-authoring/reference/`) — with zero divergences.
+Diagnostics are compared separately, on deliberately broken models of both notations — code *and*
+message text.
+
+**That check is no longer a differential one, and you should know it.** The second
+implementation it used to be compared against is not in the tree; its answers are frozen in
+`flang/test/fixtures/fts-oracle.json`. So a regression in `flang/core/*.flang` is still caught
+byte for byte, but a divergence between two independent implementations is not — there is
+nothing to diverge from. The reason and the price are written down in the header of
+`flang/test/fts-oracle.mjs`.
 
 ### The compiler, written in flang, and the fixed point
 
@@ -30,11 +36,11 @@ component of the result:
 
 | Layer                 | Functions | Witness            | What must match                                                     |
 |-----------------------|----------:|--------------------|---------------------------------------------------------------------|
-| `self/lexer.flang`    |        88 | `src/lexer.mjs`    | token stream: kind, value, quotedness, line and column               |
-| `self/parser.flang`   |       372 | `src/parser.mjs`   | the AST — **byte for byte** after serialization                      |
-| `self/types.flang`    |       276 | `src/types.mjs`    | diagnostics (code, text, line, column) and the signature table       |
-| `self/totality.flang` |       124 | `src/totality.mjs` | the verdict: proven functions in the same order, diagnostics, `ok`   |
-| `self/emit-c.flang`   |       328 | `src/emit/c.mjs`   | the printed C — **byte for byte**, and it compiles without warnings  |
+| `self/lexer.flang`    |        88 | `flang/src/lexer.mjs`    | token stream: kind, value, quotedness, line and column               |
+| `self/parser.flang`   |       372 | `flang/src/parser.mjs`   | the AST — **byte for byte** after serialization                      |
+| `self/types.flang`    |       276 | `flang/src/types.mjs`    | diagnostics (code, text, line, column) and the signature table       |
+| `self/totality.flang` |       124 | `flang/src/totality.mjs` | the verdict: proven functions in the same order, diagnostics, `ok`   |
+| `self/emit-c.flang`   |       328 | `flang/src/emit/c.mjs`   | the printed C — **byte for byte**, and it compiles without warnings  |
 
 Readiness is not "it built". It is the classical fixed point:
 

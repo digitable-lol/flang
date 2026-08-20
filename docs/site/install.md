@@ -29,9 +29,14 @@ Installs `flang 0.5.1`, `libcompiler_flang.a`, the headers and the
 
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
-asdf install flang 0.5.1
-asdf set -u flang 0.5.1
+asdf install flang 0.5.0
+asdf set -u flang 0.5.0
 ```
+
+0.5.0 rather than the latest release, and that is not a typo: with the published
+plugin, installing 0.5.1 fails — its script looks for a file under the old name.
+The fix is in the tree but not yet in the plugin repository, so until it ships,
+asdf installs 0.5.0 and Homebrew gives you the latest release.
 
 Installs `bin/flang`, `lib/libcompiler_flang.a` and two headers into the
 version directory. The third line is `asdf set`, not `asdf global`: `global`

@@ -120,6 +120,7 @@ import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
 import { требуетПланировщика } from "../conc.mjs"
+import { требуетИсполнителяПлана } from "../target-plan.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiUnicode4 } from "../bidi.mjs"
@@ -586,6 +587,11 @@ export function emitGo(program, options = {}) {
      всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
      `требуетПланировщика`). */
   требуетПланировщика(program, "go")
+  /* План — вход программы ввода-вывода, и потерять его молча было бы тем же,
+     чем была молчаливая потеря процессов: модуль собирается, код возврата ноль,
+     а работать он не умеет. Отказ живёт в бэкенде, а не в команде, по той же
+     причине, что и два его соседа: бэкенды зовут напрямую из Node. */
+  требуетИсполнителяПлана(program, "go")
   /* Граница входа читает типы ДО дефункционализации: после неё параметр,
      объявленный функцией, становится суммой тегов, а `checkArguments` на границе
      интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы

@@ -21,7 +21,7 @@ forever, and a proof is written once.
 `total` is a promise that the function finishes on every input. The compiler
 **checks** it and refuses the file if it cannot prove it.
 
-There are five carriers of that promise, and each leaves a trace in the ledger:
+There are five carriers of that promise, and each leaves a trace in the report printed by `flang check --proof`:
 
 | Carrier | Functions |
 |---|---:|
@@ -32,7 +32,7 @@ There are five carriers of that promise, and each leaves a trace in the ledger:
 | By a declared measure with a run-time check | {{носители.мера}} |
 
 The last two lines are separated honestly: termination there is not proved all
-the way, and a run-time check picks up the difference. The ledger shows that as
+the way, and a run-time check picks up the difference. The report shows that as
 its own number — **{{сторож.мест}} sites across {{сторож.функций}} functions** — instead of folding it into
 the total.
 
@@ -42,7 +42,7 @@ The kernel answers in three different ways, and mixing them is not allowed:
 
 **Proved by the kernel** — the claim holds for all inputs. There are **{{утверждения.доказано}} of {{утверждения.высказано}}**.
 
-**On a grid** — a set of values was run, no violation found. The ledger line for
+**On a grid** — a set of values was run, no violation found. The report line for
 this ends with the words **"this is not a proof"**, and it ends that way on
 purpose: exhausting a finite set proves nothing.
 
@@ -77,8 +77,8 @@ where the kernel printed "proved for ALL inputs" on claims a run refutes with a
 counterexample.
 
 All six are closed, and a check now stands **over the whole class**: if the
-ledger said "for all inputs", a run must fail to find a counterexample. It is
-checked on every claim in the corpus, not on the ones somebody remembered.
+report said "for all inputs", a run must fail to find a counterexample. It is
+checked on every claim in the repository, not on the ones somebody remembered.
 
 ## How the kernel is built
 
@@ -108,39 +108,34 @@ years, and no kernel repeals it.
 
 ## What it costs
 
-We measured this, because whether the language is worth building depends on the
-answer.
+Whether the language is worth building depends on this answer, so the price is
+measured, not estimated.
 
-Twenty ordinary library functions were taken — **every ninth of all {{библиотека.функций}}**, so
-that the convenient ones could not be picked — and each got both tests and a
-proof.
+Twenty ordinary library functions — **every ninth of all
+{{библиотека.функций}}**, so that the convenient ones could not be picked — and
+each got both tests and a proof.
 
 | | tests | proof |
 |---|---:|---:|
 | Lines | 390 | 196 |
 | Time | 7 min 49 s | 9 min 39 s |
 | Real bugs found | **4** | 0 |
-| Accepted by the kernel | — | **0 of 20** |
+| Accepted by the kernel | — | **2 of 20** |
 
-Zero. And that turned out to be the most useful result of the day: the
-measurement showed the bottleneck was not where everyone assumed. In 13 cases out
-of 15 the cause was the same — **no built-in type had an induction principle**:
-not the list, not the string, not the number.
+Read that table as: **today a proof costs more than tests and finds less**. Four
+more claims were closed only after they had been weakened, which makes **6 of
+20** counting those. **Not one human-written theorem has been accepted by the
+kernel.**
 
-Once that was fixed the measurement was repeated — the same twenty functions,
-on 16 August. **It became 2 of 20**: that many claims the kernel closed on its
-own, and they are claims that say something about the function. Four more closed
-for free, but only after the claim had been weakened, which makes **6 of 20**
-counting those. **Not one human-written theorem has been accepted by the kernel**
-— not the first time, not the second.
+The first pass gave **0 of 20**, and that was the most useful number in the
+measurement: it showed the obstacle was not where it had been assumed. In 13
+cases out of 15 the cause was the same — **no built-in type had an induction
+principle**: not the list, not the string, not the number. Induction was added,
+the measurement was repeated over the same twenty functions, and the zero became
+a two.
 
-The figure "7 of 20" travelled across these pages for a while as a result. It was
-not one: the first report's plan carried a row reading "up to 7 of 20" — what an
-unbuilt rule would give. An estimate was read as a measurement, and that is
-corrected here.
-
-The measurement repeats, and it is a ruler: it shows whether we are moving toward
-the goal or merely growing features. The condition everything is for:
+The measurement is a ruler: it shows whether the language is moving toward the
+goal or merely growing features. The goal is one line:
 
 > **A proof must cost less than the tests it replaces.**
 
@@ -151,6 +146,6 @@ written once and covers all inputs, tests are written forever.
 
 ## Further
 
-- [Roadmap](roadmap.html) — where the proof work stands today
+- [What comes next](roadmap.html) — where the proof work stands today
 - [Kernel specification](../spec-proof.html) — in Russian; the rules in full
 - [The price of a proof, measured](../benchmark-proof-cost.html) — in Russian; the report with numbers

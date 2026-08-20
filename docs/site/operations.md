@@ -4,13 +4,16 @@ The [glossary](../glossary.html) (in Russian) answers "what does this word mean"
 answers a different question: **"I have a list and I need the sum without
 duplicates — what do I write?"**
 
-Everything below lives in one file, `docs/examples/operations.flang`, and runs:
+Everything below lives in one file, `docs/examples/operations.flang`, in the
+language repository — the page reads fine without it, and running the whole
+thing is easiest from a clone of the tree:
 
 ```bash
-flang test docs/examples/operations.flang
+git clone https://github.com/digitable-lol/flang.git
+flang test flang/docs/examples/operations.flang
 ```
 
-Run on 18 August 2026: **224 examples, 224 passed, 0 failed**. Two hundred
+The answer: **224 examples, 224 passed, 0 failed**. Two hundred
 eighteen of those are the library's own examples, pulled in by the imports —
 counting someone else's examples as yours would be dishonest, so the number is
 given whole rather than as a share.
@@ -339,7 +342,8 @@ flang run docs/examples/operations.flang \
 | gcd, lcm | `«НОД»`, `«НОК»` — **ordinary, not total** |
 | digits | `«Цифры»`, `«Сумма цифр»` — ordinary as well |
 
-Four of the fourteen functions in «Числа» are **not total**, and the ledger names
+Four of the fourteen functions in «Числа» are **not total**, and the `--proof`
+report names
 them one by one. That is not an omission: Euclid's algorithm does not terminate
 by structural descent, and its measure does not decrease along the declared type.
 
@@ -371,23 +375,23 @@ flang run docs/examples/operations.flang \
 The `если размер не больше 0` branch is not tidiness: without it division by zero
 would give infinity, while the function promises a number.
 
-## What the ledger says about this file
+## What the proof report says about this file
 
 ```bash
 flang check docs/examples/operations.flang --proof
 ```
 
-Three lines out of the ledger's summary; above them it names every function and
+Three lines out of the report's summary; above them it names every function and
 every claim one by one:
 
 ```
 функций 99: тотальных 95, обычных 4
 обещание несёт: композиция 79, структура 11, точный шаг 3, постоянный шаг 2, объявленная мера 0
-утверждений 53: доказано 6 (из них без теоремы 6, объявленным типом 1), сетка 47, объявлено, не доказано 0
+утверждений 53: доказано 20 (из них индукцией 3) (из них без теоремы 17, объявленным типом 1), сетка 33, объявлено, не доказано 0
 ```
 
 **Both postconditions written in this file landed on a grid, not on a proof.**
-The ledger says so plainly:
+The report says so plainly:
 
 ```
 постусловие «результат не меньше минимума» функции «Третий по порядку» — сетка 1
@@ -395,14 +399,14 @@ The ledger says so plainly:
 не доказательство — теоремы при утверждении нет
 ```
 
-All six proven claims come **from the library**, not from here: `«Знак»`,
-`«Чётное»`, `«Сколько дополнить»`, `«Считать вхождения»`, `«Позиция подстроки»`,
-`«Размер множества»`. Writing a postcondition is easy; getting a
+All twenty proven claims come **from the library** this file imports, not from
+here: `«Длина»`, `«Соединить списки»`, `«Обратить»`, `«Считать вхождения»`,
+`«Позиция подстроки»` and others. Writing a postcondition is easy; getting a
 proof under it is separate work, and the kernel does not pretend that work is
 done. What it costs and when it succeeds: see [Why and how](proofs.html).
 
 ## Next
 
-- [Glossary](../glossary.html) — in Russian; 149 concepts, printed from the surface table
+- [Glossary](../glossary.html) — in Russian; {{словарь.понятий}} concepts, printed from the surface table
 - [Writing packages](packages.html) — when operations stop being enough
 - [Real case studies](case-studies.html) — the same operations on 82 tasks and a service

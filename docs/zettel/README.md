@@ -138,6 +138,7 @@
 - [Стена «слой связывается асинхронно» стоит 263 синхронных места вызова, а не одной правки](the-sync-wall-costs-263-call-sites.md)
 - [Внутренний предел витков умножается на цену витка и обязан помещаться во внешний бюджет слоя](an-inner-step-limit-multiplies-into-the-outer-budget.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
+- [Node ушёл с пути сборки: точку раскрутки печатает сам двоичный, и обе печати совпали байт в байт](node-ushyol-s-puti-sborki.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)

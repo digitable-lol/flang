@@ -6580,6 +6580,18 @@ fl_status compiler_flang_slovo_razlozheniem(fl_ctx *ctx, fl_value r, fl_value to
 fl_status compiler_flang_slovo_kodom_simvola(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Слово символом по коду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param r — «р»: «Разборщик»
+ * @param token — «токен»: «Токен»
+ * @return значение: «Шаг»
+ */
+fl_status compiler_flang_slovo_simvolom_po_kodu(fl_ctx *ctx, fl_value r, fl_value token, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Слово добавлением».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -21515,6 +21527,40 @@ fl_status compiler_flang_forma_kod_simvola(fl_ctx *ctx, fl_value uzel, fl_value 
 fl_status compiler_flang_kod_simvola_stroki(fl_ctx *ctx, fl_value itog, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Форма символ по коду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param imena — «имена»: «Имена»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: «Итог вывода»
+ */
+fl_status compiler_flang_forma_simvol_po_kodu(fl_ctx *ctx, fl_value uzel, fl_value argumenty, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символ по коду числа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог вывода»
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Итог вывода»
+ */
+fl_status compiler_flang_simvol_po_kodu_chisla(fl_ctx *ctx, fl_value itog, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отрезок годен для символа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @return значение
+ */
+fl_status compiler_flang_otrezok_goden_dlya_simvola(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Форма начинается с».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -29239,6 +29285,33 @@ fl_status compiler_flang_forma_kod_simvola_pri_vychislenii(fl_ctx *ctx, fl_value
  * @return значение: «Итог формы»
  */
 fl_status compiler_flang_forma_kod_nepustoy(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма символ по коду при вычислении».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zn — «зн»: «Знач»
+ * @return значение: «Итог формы»
+ */
+fl_status compiler_flang_forma_simvol_po_kodu_pri_vychislenii(fl_ctx *ctx, fl_value zn, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма символ по числовому коду».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zn — «зн»: «Знач»
+ * @return значение: «Итог формы»
+ */
+fl_status compiler_flang_forma_simvol_po_chislovomu_kodu(fl_ctx *ctx, fl_value zn, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма символ по целому коду».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kod — «код»: число
+ * @return значение: «Итог формы»
+ */
+fl_status compiler_flang_forma_simvol_po_celomu_kodu(fl_ctx *ctx, fl_value kod, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Форма подстрока при вычислении».

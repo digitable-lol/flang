@@ -1057,6 +1057,27 @@ def b_char_code(ctx, source):
     return Value(TAG_NUMBER, float(ord(value[0])))
 
 
+def b_char_from_code(ctx, code):
+    """«символ по коду»: строка ровно из одного символа.
+
+    chr() в Python суррогат построить умеет, и потому проверка стоит ЯВНО:
+    строка в четырёх целях печати из восьми — UTF-8, где половина пары не
+    записывается вовсе, а язык обещает у восьми целей одинаковые значения.
+    """
+    point = _expect_integer("символ по коду", code, "код")
+    if point < 0 or point > 1114111:
+        raise fail(
+            CODE_BUILTIN_ARGS,
+            f"«символ по коду»: код {number_text(point)} вне диапазона Unicode [0, 1114111]",
+        )
+    if 55296 <= point <= 57343:
+        raise fail(
+            CODE_BUILTIN_ARGS,
+            f"«символ по коду»: код {number_text(point)} — половина суррогатной пары, а не символ",
+        )
+    return Value(TAG_STRING, chr(int(point)))
+
+
 def b_contains(ctx, left, right):
     """«содержит»: подстрока в строке либо значение в списке."""
     if left.tag == TAG_LIST:

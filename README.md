@@ -300,7 +300,7 @@ is: *«Правьте исходник на flang и печатайте зано
 
 Each backend is checked differentially, not by golden files. The corpus is the standard library
 and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-102 programs with 782 functions and 2020 examples between them. For every function a grid of inputs
+102 programs with 784 functions and 2030 examples between them. For every function a grid of inputs
 is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
 wanted, a variant that does not exist), the program is printed into an empty directory, compiled
 with the real toolchain from nothing but what the backend emitted, and run as a real process.
@@ -308,9 +308,9 @@ The run reports what it covered, so the claim is checkable rather than quoted:
 
 ```
 ✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 102, функций: 782, сверенных входов: 12762, убегающих (сверены отказом по пределу): 2 — убегающих точек 2, все названы поимённо в УБЕГАЮЩИЕ, за 264 с
+ℹ программ: 102, функций: 784, сверенных входов: 12762, убегающих (сверены отказом по пределу): 2 — убегающих точек 2, все названы поимённо в УБЕГАЮЩИЕ, за 264 с
 ✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 2020
+ℹ сверенных примеров: 2030
 ```
 
 The C backend additionally compiles under `gcc` *and* `clang` with
@@ -392,7 +392,7 @@ border of the language, so a border that moves has to break a test rather than q
 comment. The standard library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`,
 `hashmap`, `higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`,
 `postgres`, `result`, `sets`, `sha256`, `strings`, `strlists`, `tree`, `utf8`) is written the
-same way — 20 modules, 482 functions, of which 478 are proven total. `higher-order` is the one built on
+same way — 20 modules, 484 functions, of which 480 are proven total. `higher-order` is the one built on
 first-class functions: fold, map, filter, search, sort and composition take a function as an
 argument.
 

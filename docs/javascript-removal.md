@@ -657,12 +657,12 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/src/types.mjs` | 7910 | `self/types.flang` | 10 имён у 5 потребителей пути |
-| `flang/src/parser.mjs` | 4695 | `self/parser.flang` | разбор нужен всем |
+| `flang/src/types.mjs` | 7945 | `self/types.flang` | 10 имён у 5 потребителей пути |
+| `flang/src/parser.mjs` | 4704 | `self/parser.flang` | разбор нужен всем |
 | `flang/src/totality.mjs` | 1803 | `self/totality.flang` | 3 имени у 3 потребителей |
 | `flang/src/interpret.mjs` | 1366 | `self/interpret.flang` | 6 имён у **13** потребителей — на нём считают все |
-| `flang/src/lexer.mjs` | 1094 | `self/lexer.flang` | 6 имён у 2 |
-| `flang/src/builtins.mjs` | 956 | нет | 25 имён у **20** потребителей: встроенные формы самого языка |
+| `flang/src/lexer.mjs` | 1112 | `self/lexer.flang` | 6 имён у 2 |
+| `flang/src/builtins.mjs` | 1045 | нет | 25 имён у **20** потребителей: встроенные формы самого языка |
 | `flang/src/defunc.mjs` | 888 | `self/defunc.flang` | 1 имя у 1 |
 | `flang/src/link.mjs` | 661 | `self/link.flang` | 2 имени у 2 |
 | `flang/src/tags.mjs` | 186 | `self/tags.flang` | 4 имени у 5 |
@@ -959,7 +959,7 @@ flang не может ответить на вопрос «чем кончилс
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
 | `flang/src/conc.mjs` | 2140 | `self/conc.flang` | 13 имён у 5 потребителей — самая широкая подпись пути |
-| `flang/src/failures.mjs` | 1069 | `self/failures.flang` | 5 имён у ОДНОГО (`types.mjs`) |
+| `flang/src/failures.mjs` | 1075 | `self/failures.flang` | 5 имён у ОДНОГО (`types.mjs`) |
 | `flang/src/compat.mjs` | 560 | нет | 5 имён у 2: `errorCode`, `evaluateFlang`, `flangError`, `runExamples`, `checkFunctorDictionary` |
 | `flang/src/io.mjs` | 1010 | `self/io.flang` | 10 имён у 3 |
 | `flang/src/bounded.mjs` | 721 | `self/bounded.flang` | 4 имени у ОДНОГО (`failures.mjs`) |

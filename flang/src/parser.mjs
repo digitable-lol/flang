@@ -2204,6 +2204,15 @@ class Parser {
         if (!this.startsExpression()) this.fail("у 'код символа' ожидался аргумент")
         return { kind: "builtin", name: "код символа", args: [this.parsePostfix()], span: начало.span }
       }
+      /* Обратная форма разбирается ТОЧНО ТАК ЖЕ, как прямая, и это не лень:
+         одна и та же запись «слово-фраза и один постфиксный аргумент» читается
+         одним правилом, а второе правило для того же вида записи означало бы
+         второе место, где скобки вокруг аргумента ставятся по-разному. */
+      case "charFromCode": {
+        const начало = this.next()
+        if (!this.startsExpression()) this.fail("у 'символ по коду' ожидался аргумент")
+        return { kind: "builtin", name: "символ по коду", args: [this.parsePostfix()], span: начало.span }
+      }
       case "substring": {
         this.next()
         const text = this.parsePostfix()

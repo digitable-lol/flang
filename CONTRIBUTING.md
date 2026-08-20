@@ -104,9 +104,15 @@ expected to have gone through it.
 A change to `flang/self/` must reprint the bootstrap point in the same commit:
 
 ```bash
-node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
-node scripts/bootstrap-c.mjs --check   # compare it against the sources, exit 1 on drift
+sh scripts/bootstrap-c.sh              # reprint bootstrap/ — the BINARY prints it, no Node
+sh scripts/bootstrap-c.sh --check      # compare it against the sources, exit 1 on drift
 ```
+
+The binary that prints is `bootstrap/flang` itself, built by `make -C bootstrap`
+from the point already committed in the tree — that is how the chicken-and-egg is
+resolved. Node is no longer on the build path. The JavaScript implementation
+still prints the same point (`npm run bootstrap:js`), and on 20 August 2026 both
+prints matched byte for byte: 7 files, 15 641 371 bytes.
 
 `bootstrap/` is an artifact, never edited by hand. The guard "точка раскрутки
 bootstrap/ совпадает с печатью текущих исходников, побайтово" in

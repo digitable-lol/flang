@@ -15,9 +15,15 @@ A change to the compiler in `flang/self/` must reprint the bootstrap point in th
 `bootstrap/` starts building the previous compiler silently:
 
 ```bash
-node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
-node scripts/bootstrap-c.mjs --check   # compare against the sources byte for byte, exit 1 on drift
+sh scripts/bootstrap-c.sh              # reprint bootstrap/ — the BINARY prints it, no Node
+sh scripts/bootstrap-c.sh --check      # compare against the sources byte for byte, exit 1 on drift
 ```
+
+The printer is `bootstrap/flang` itself, built by `make -C bootstrap` from the
+point already committed in the tree. The JavaScript implementation prints the
+same point and stays as the second print to compare against: `npm run
+bootstrap:js`. Run of 20 August 2026: both prints matched byte for byte — 7
+files, 15 641 371 bytes.
 
 The guard is the test «точка раскрутки `bootstrap/` совпадает с печатью текущих исходников,
 побайтово» in `flang/test/self-bootstrap.test.mjs`. It needs no C compiler, so it always runs —

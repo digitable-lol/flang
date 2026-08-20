@@ -461,6 +461,134 @@ fl_status compiler_flang_sozdat_svyazyvanie_parametrov(fl_ctx *ctx, fl_value kon
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_imenovatel(fl_ctx *ctx, fl_value tablica, fl_value sostoyanie, fl_value *out, fl_error *error);
 
+/* Запись FTS «Параметр JS»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_js(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Постусловие JS»: «имя», «выражение», «связывание», «код», «сообщение», «есть сообщение», «есть след», «след». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_postuslovie_js(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value est_sled, fl_value sled, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предусловие JS»: «имя», «выражение», «код», «сообщение», «есть сообщение», «есть след», «след». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_preduslovie_js(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value est_sled, fl_value sled, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция JS»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_funkciya_js(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле типа JS»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_tipa_js(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Запись типа JS»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapis_tipa_js(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант типа JS»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_tipa_js(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сумма типов JS»: «имя», «варианты». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_summa_tipov_js(fl_ctx *ctx, fl_value imya, fl_value varianty, fl_value *out, fl_error *error);
+
+/* Запись FTS «Выдача JS»: «таблица», «ошибка», «идентификатор». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_vydacha_js(fl_ctx *ctx, fl_value tablica, fl_value oshibka, fl_value identifikator, fl_value *out, fl_error *error);
+
+/* Запись FTS «Раздача JS»: «типы», «варианты», «значения», «ид записей», «ид фабрик», «ид сумм», «ид вариантов», «ид функций», «ид границ», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_razdacha_js(fl_ctx *ctx, fl_value tipy, fl_value varianty, fl_value znacheniya, fl_value id_zapisey, fl_value id_fabrik, fl_value id_summ, fl_value id_variantov, fl_value id_funkciy, fl_value id_granic, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Верхний уровень JS»: «таблица», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_verhniy_uroven_js(fl_ctx *ctx, fl_value tablica, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее JS»: «функции», «записи», «суммы», «варианты», «ид записей», «ид фабрик», «ид сумм», «ид вариантов», «ид функций», «ид границ», «ид шагов», «хвостовые», «циклические», «рекурсивные», «конкурентная», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_js(fl_ctx *ctx, fl_value funkcii, fl_value zapisi, fl_value summy, fl_value varianty, fl_value id_zapisey, fl_value id_fabrik, fl_value id_summ, fl_value id_variantov, fl_value id_funkciy, fl_value id_granic, fl_value id_shagov, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value konkurentnaya, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние JS»: «счётчик», «взято», «нужно», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_js(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value nuzhno, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее JS»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_js(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог JS»: «состояние», «вывод», «значение», «чистое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value chistoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок JS»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст JS»: «общее», «функция», «параметры», «сам хвост», «есть члены», «члены», «выходит», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_js(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value sam_hvost, fl_value est_chleny, fl_value chleny, fl_value vyhodit, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Кусок рантайма JS»: «имя», «нужно», «исходник». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kusok_rantayma_js(fl_ctx *ctx, fl_value imya, fl_value nuzhno, fl_value ishodnik, fl_value *out, fl_error *error);
+
+/* Запись FTS «Операнд JS»: «вывод», «значение», «чистое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_operand_js(fl_ctx *ctx, fl_value vyvod, fl_value znachenie, fl_value chistoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор операндов JS»: «состояние», «операнды». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_operandov_js(fl_ctx *ctx, fl_value sostoyanie, fl_value operandy, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка JS»: «состояние», «вывод», «индекс», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sborka_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value indeks, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Позже JS»: «индекс», «есть». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pozzhe_js(fl_ctx *ctx, fl_value indeks, fl_value est, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог образца JS»: «состояние», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_obrazca_js(fl_ctx *ctx, fl_value sostoyanie, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание JS»: «состояние», «вывод», «контекст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value kontekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Цепь JS»: «состояние», «вывод», «открыто», «закрыто». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_cep_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value otkryto, fl_value zakryto, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предмет JS»: «состояние», «вывод», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_predmet_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров JS»: «состояние», «контекст», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_js(fl_ctx *ctx, fl_value sostoyanie, fl_value kontekst, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Файл JS»: «путь», «содержимое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_fayl_js(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки JS»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «исходник планировщика», «прогонщик», «исходник прогонщика». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_js(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value ishodnik_planirovschika, fl_value progonschik, fl_value ishodnik_progonschika, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог печати JS»: «файлы», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_pechati_js(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Секции JS»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sekcii_js(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «План JS»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_plan_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -1133,6 +1261,10 @@ fl_status compiler_flang_sozdat_itog_sborki(fl_ctx *ctx, fl_value fayly, fl_valu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_proverki_ishodnikov(fl_ctx *ctx, fl_value godno, fl_value diagnostiki, fl_value *out, fl_error *error);
 
+/* Запись FTS «Итог сборки JS»: «файлы», «ошибка», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_sborki_js(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог примера»: «функция», «пример», «прошёл», «код», «сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_primera(fl_ctx *ctx, fl_value funkciya, fl_value primer, fl_value proshyol, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
@@ -1265,6 +1397,11 @@ fl_status compiler_flang_variant_net_funkcii(fl_ctx *ctx, fl_value *out, fl_erro
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_est_chislo(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть функция JS»: «Есть функция JS» | «Нет функции JS». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_funkciya_js(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_funkcii_js(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -15892,6 +16029,3188 @@ fl_status compiler_flang_fayl_obolochki(fl_ctx *ctx, fl_value est_modul, fl_valu
  * @return значение: строка
  */
 fl_status compiler_flang_blok_nastroek(fl_ctx *ctx, fl_value nastroyki, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальные символы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_nachalnye_simvoly_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы имени JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_imeni_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасное имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnoe_imya_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заглавная JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zaglavnaya_js(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Паскаль JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_paskal_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Верблюд JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_verblyud_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип-имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_tip_imya_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение-имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znachenie_imya_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только символы имени JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_simvoly_imeni_js(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_imya_js(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Литерал скаляра JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: строка
+ */
+fl_status compiler_flang_literal_skalyara_js(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Литерал полей JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: строка
+ */
+fl_status compiler_flang_literal_poley_js(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_literala_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_js(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поле типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Поле типа JS»
+ */
+fl_status compiler_flang_sobrat_pole_tipa_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Поле типа JS»
+ */
+fl_status compiler_flang_sobrat_polya_tipa_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать параметр JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Параметр JS»
+ */
+fl_status compiler_flang_sobrat_parametr_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать постусловие JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Постусловие JS»
+ */
+fl_status compiler_flang_sobrat_postuslovie_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать предусловие JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие JS»
+ */
+fl_status compiler_flang_sobrat_preduslovie_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функцию JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Функция JS»
+ */
+fl_status compiler_flang_sobrat_funkciyu_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функции JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Функция JS»
+ */
+fl_status compiler_flang_sobrat_funkcii_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_funkciy_js(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из функций JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @return значение: «Может быть функция JS»
+ */
+fl_status compiler_flang_pervaya_iz_funkciy_js(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти функцию JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Может быть функция JS»
+ */
+fl_status compiler_flang_nayti_funkciyu_js(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть функция с именем JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_funkciya_s_imenem_js(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число параметров JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_parametrov_js(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить запись типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: «Запись типа JS»
+ * @param novaya — «новая»: «Запись типа JS»
+ * @return значение: «Запись типа JS»
+ */
+fl_status compiler_flang_obnovit_zapis_tipa_js(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена записей JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_zapisey_js(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить запись типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Запись типа JS»
+ * @param novaya — «новая»: «Запись типа JS»
+ * @return значение: список: «Запись типа JS»
+ */
+fl_status compiler_flang_slit_zapis_tipa_js(fl_ctx *ctx, fl_value akk, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать записи JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Запись типа JS»
+ */
+fl_status compiler_flang_sobrat_zapisi_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать вариант JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Вариант типа JS»
+ */
+fl_status compiler_flang_sobrat_variant_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать суммы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Сумма типов JS»
+ */
+fl_status compiler_flang_sobrat_summy_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить вариант типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhniy — «прежний»: «Вариант типа JS»
+ * @param novyy — «новый»: «Вариант типа JS»
+ * @return значение: «Вариант типа JS»
+ */
+fl_status compiler_flang_obnovit_variant_tipa_js(fl_ctx *ctx, fl_value prezhniy, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_variantov_js(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить вариант типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа JS»
+ * @param novyy — «новый»: «Вариант типа JS»
+ * @return значение: список: «Вариант типа JS»
+ */
+fl_status compiler_flang_slit_variant_tipa_js(fl_ctx *ctx, fl_value akk, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты суммы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа JS»
+ * @param summa — «сумма»: «Сумма типов JS»
+ * @return значение: список: «Вариант типа JS»
+ */
+fl_status compiler_flang_slit_varianty_summy_js(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param summy — «суммы»: список: «Сумма типов JS»
+ * @return значение: список: «Вариант типа JS»
+ */
+fl_status compiler_flang_sobrat_varianty_js(fl_ctx *ctx, fl_value summy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая ошибка JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: строка
+ * @param novaya — «новая»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervaya_oshibka_js(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Столкновение имён JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param znachenie — «значение»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть имя»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stolknovenie_imyon_js(fl_ctx *ctx, fl_value oshibka, fl_value znachenie, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выдать имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён»
+ * @param oshibka — «ошибка»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Выдача JS»
+ */
+fl_status compiler_flang_vydat_imya_js(fl_ctx *ctx, fl_value tablica, fl_value oshibka, fl_value identifikator, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занятые слова JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slova — «слова»: список: строка
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_zanyatye_slova_js(fl_ctx *ctx, fl_value slova, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустая раздача JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_pustaya_razdacha_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять запись JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_zanyat_zapis_js(fl_ctx *ctx, fl_value razdacha, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять сумму JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_zanyat_summu_js(fl_ctx *ctx, fl_value razdacha, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять вариант JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_zanyat_variant_js(fl_ctx *ctx, fl_value razdacha, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять функцию JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_zanyat_funkciyu_js(fl_ctx *ctx, fl_value razdacha, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять границу JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_zanyat_granicu_js(fl_ctx *ctx, fl_value razdacha, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Раздать имена JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа JS»
+ * @param summy — «суммы»: список: «Сумма типов JS»
+ * @param varianty — «варианты»: список: «Вариант типа JS»
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @return значение: «Раздача JS»
+ */
+fl_status compiler_flang_razdat_imena_js(fl_ctx *ctx, fl_value zapisi, fl_value summy, fl_value varianty, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять верхнее JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uroven — «уровень»: «Верхний уровень JS»
+ * @param identifikator — «идентификатор»: строка
+ * @param istochnik — «источник»: строка
+ * @return значение: «Верхний уровень JS»
+ */
+fl_status compiler_flang_zanyat_verhnee_js(fl_ctx *ctx, fl_value uroven, fl_value identifikator, fl_value istochnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Столкновение верхнего JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param istochnik — «источник»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть имя»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stolknovenie_verhnego_js(fl_ctx *ctx, fl_value oshibka, fl_value istochnik, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять пары JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uroven — «уровень»: «Верхний уровень JS»
+ * @param pary — «пары»: список: «Пара имён»
+ * @param rol — «роль»: строка
+ * @return значение: «Верхний уровень JS»
+ */
+fl_status compiler_flang_zanyat_pary_js(fl_ctx *ctx, fl_value uroven, fl_value pary, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить столкновения JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razdacha — «раздача»: «Раздача JS»
+ * @param konkurentnaya — «конкурентная»
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_stolknoveniya_js(fl_ctx *ctx, fl_value razdacha, fl_value konkurentnaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые вызовы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvostovye_vyzovy_js(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все вызовы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_vyzovy_js(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые рёбра JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @return значение: список: «Рёбра»
+ */
+fl_status compiler_flang_hvostovye_ryobra_js(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рёбра вызовов JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция JS»
+ * @return значение: список: «Рёбра»
+ */
+fl_status compiler_flang_ryobra_vyzovov_js(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица шагов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ciklicheskie — «циклические»: список: «Рёбра»
+ * @param id_funkciy — «ид функций»: список: «Пара имён»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_shagov_js(fl_ctx *ctx, fl_value ciklicheskie, fl_value id_funkciy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конкурентная программа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_konkurentnaya_programma_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Общее JS»
+ */
+fl_status compiler_flang_sobrat_obschee_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_zamenit_schyotchik_js(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_js(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Затребовать JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_zatrebovat_js(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_zapisat_oshibku_js(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_vremennoe_js(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_js(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_svezhee_imya_js(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст JS»
+ */
+fl_status compiler_flang_svyazat_imya_js(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Возврат значения JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param kod — «код»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_vozvrat_znacheniya_js(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value kod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_sinonimy_form_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_js(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_form_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка»
+ */
+fl_status compiler_flang_arnosti_form_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово аргументов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kolichestvo — «количество»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_argumentov_js(fl_ctx *ctx, fl_value kolichestvo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст FlangError JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_flangerror_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст fail JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_fail_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст FlangVariant JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_flangvariant_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isList JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_islist_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isVariant JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isvariant_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isRecord JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isrecord_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isScalar JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isscalar_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст chainEmpty JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_chainempty_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст chainCons JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_chaincons_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст chainHead JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_chainhead_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст chainTail JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_chaintail_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст typeName JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_typename_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст describe JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_describe_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст equal JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_equal_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст recordsEqual JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_recordsequal_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст field JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_field_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст cond JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_cond_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст matchFail JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_matchfail_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст variantField JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_variantfield_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст requireList JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_requirelist_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст keep JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_keep_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст post JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_post_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст pre JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_pre_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст nums JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_nums_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст ord JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_ord_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст add JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_add_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст sub JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_sub_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст mul JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_mul_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст div JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_div_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст mod JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_mod_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст percent JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_percent_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст gt JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gt_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст lt JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_lt_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст gte JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст lte JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_lte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст concat JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_concat_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст expectString JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_expectstring_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст expectNumber JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_expectnumber_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст expectInteger JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_expectinteger_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст expectList JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_expectlist_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_dlina JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_dlina_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_simvol JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_simvol_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_podstroka JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_podstroka_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_soedinit JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_soedinit_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_razdelit JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_razdelit_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_simvoly JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_simvoly_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_kod_simvola JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_kod_simvola_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_soderzhit JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_soderzhit_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_nachinaetsya_s JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_nachinaetsya_s_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_k_chislu JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_k_chislu_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_k_chislu_ili_beda JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_k_chislu_ili_beda_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_k_stroke JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_k_stroke_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_pusto JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_pusto_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_golova JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_golova_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_hvost JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_hvost_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_golova_dokazano JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_golova_dokazano_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_hvost_dokazano JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_hvost_dokazano_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_razdelit_dokazano JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_razdelit_dokazano_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_kod_simvola_dokazano JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_kod_simvola_dokazano_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_element JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_element_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_dobavit JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_dobavit_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_pripisat JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_pripisat_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст indexKey JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_indexkey_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст VIEWS JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_views_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст view JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_view_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_ostatok_ot JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_ostatok_ot_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст b_procentov_ot JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_b_procentov_ot_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст Bounce JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_bounce_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст trampoline JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_trampoline_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст enter JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_enter_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст leave JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_leave_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст step JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_step_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст hostDepth JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_hostdepth_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст top JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_top_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст stackMb JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_stackmb_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст wireOut JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_wireout_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст wireFields JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_wirefields_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст wireIn JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_wirein_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст unwireFields JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_unwirefields_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст callHere JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_callhere_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст deepSource JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_deepsource_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст deepEntry JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_deepentry_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст callDeep JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_calldeep_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рантайм JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Кусок рантайма JS»
+ */
+fl_status compiler_flang_rantaym_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Нужное для JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_nuzhnoe_dlya_js(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замкнуть имя JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zamknut_imya_js(fl_ctx *ctx, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замкнуть нужное JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param nuzhno — «нужно»: список: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zamknut_nuzhnoe_js(fl_ctx *ctx, fl_value nuzhno, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка рантайма JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_rantayma_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок базы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param baza — «база»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_blok_bazy_js(fl_ctx *ctx, fl_value baza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок пределов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predel_glubiny — «предел глубины»: число
+ * @param predel_shagov — «предел шагов»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_blok_predelov_js(fl_ctx *ctx, fl_value predel_glubiny, fl_value predel_shagov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Куски замыкания JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zamykanie — «замыкание»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_kuski_zamykaniya_js(fl_ctx *ctx, fl_value zamykanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пробельные JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_probelnye_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без хвостовых пробелов JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_hvostovyh_probelov_js(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать рантайма JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param nuzhno — «нужно»: список: строка
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @param konkurentnaya — «конкурентная»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_rantayma_js(fl_ctx *ctx, fl_value nuzhno, fl_value nastroyki, fl_value konkurentnaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Числовые имена JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chislovye_imena_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка вида типа JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_vida_tipa_js(fl_ctx *ctx, fl_value tip, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка имени JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_imeni_js(fl_ctx *ctx, fl_value tip, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка известного имени JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_izvestnogo_imeni_js(fl_ctx *ctx, fl_value imya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка типа JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_tipa_js(fl_ctx *ctx, fl_value tip, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка с необязательностью JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_s_neobyazatelnostyu_js(fl_ctx *ctx, fl_value tip, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля в документации JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param polya — «поля»: список: «Поле типа JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_polya_v_dokumentacii_js(fl_ctx *ctx, fl_value polya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis_tipa — «запись типа»: «Запись типа JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_zapisi_js(fl_ctx *ctx, fl_value zapis_tipa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень вариантов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_variantov_js(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа JS»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_js(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать суммы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param summa — «сумма»: «Сумма типов JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_summy_js(fl_ctx *ctx, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустая сборка JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_pustaya_sborka_js(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param znachenie — «значение»: строка
+ * @param chistoe — «чистое»
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_prosto_znachenie_js(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value chistoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг позже JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Позже JS»
+ * @param operand — «операнд»: «Операнд JS»
+ * @param granica — «граница»: число
+ * @return значение: «Позже JS»
+ */
+fl_status compiler_flang_shag_pozzhe_js(fl_ctx *ctx, fl_value akk, fl_value operand, fl_value granica, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть вывод позже JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operandy — «операнды»: список: «Операнд JS»
+ * @param granica — «граница»: число
+ * @return значение
+ */
+fl_status compiler_flang_est_vyvod_pozzhe_js(fl_ctx *ctx, fl_value operandy, fl_value granica, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора операнда JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сбор операндов JS»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор операндов JS»
+ */
+fl_status compiler_flang_shag_sbora_operanda_js(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг слияния операнда JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка JS»
+ * @param operand — «операнд»: «Операнд JS»
+ * @param operandy — «операнды»: список: «Операнд JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_shag_sliyaniya_operanda_js(fl_ctx *ctx, fl_value akk, fl_value operand, fl_value operandy, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отложить операнд JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка JS»
+ * @param operand — «операнд»: «Операнд JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_otlozhit_operand_js(fl_ctx *ctx, fl_value akk, fl_value operand, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операндов JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_pechat_operandov_js(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_znacheniya_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_neizvestnyy_vid_js(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_peremennoy_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_imya_uzla_js(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_pust_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_polozhit_v_js(fl_ctx *ctx, fl_value uzel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_esli_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_razreshit_vyzov_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_vyzova_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param imya — «имя»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_arnost_formy_js(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_formy_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_js(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_js(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_operacii_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать равенства JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка JS»
+ * @param sleva — «слева»: строка
+ * @param sprava — «справа»: строка
+ * @param otricanie — «отрицание»
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_ravenstva_js(fl_ctx *ctx, fl_value argumenty, fl_value sleva, fl_value sprava, fl_value otricanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать двуместной JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка JS»
+ * @param pomoschnik — «помощник»: строка
+ * @param sleva — «слева»: строка
+ * @param sprava — «справа»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_dvumestnoy_js(fl_ctx *ctx, fl_value argumenty, fl_value pomoschnik, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_spiska_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_zapis_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_proverit_variant_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пары полей JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pary_poley_js(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг пары поля JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_pary_polya_js(fl_ctx *ctx, fl_value akk, fl_value klyuch, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Литерал объекта JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_literal_obekta_js(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи значением JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_zapisi_znacheniem_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора значением JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_konstruktora_znacheniem_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_svyortki_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог JS»
+ */
+fl_status compiler_flang_pechat_cikla_js(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otobrazhenie — «отображение»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param itog — «итог»: строка
+ * @param znachenie — «значение»: строка
+ * @param element — «элемент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_telo_cikla_js(fl_ctx *ctx, fl_value otobrazhenie, fl_value sostoyanie, fl_value itog, fl_value znachenie, fl_value element, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Итог образца JS»
+ */
+fl_status compiler_flang_proverka_obrazca_js(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать простое JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание JS»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_svyazat_prostoe_js(fl_ctx *ctx, fl_value svyazyvanie, fl_value imya, fl_value kod, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать голову и хвост JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание JS»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_svyazat_golovu_i_hvost_js(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Затребовано в связывании JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazyvanie — «связывание»: «Связывание JS»
+ * @param imya — «имя»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_zatrebovano_v_svyazyvanii_js(fl_ctx *ctx, fl_value svyazyvanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_svyazki_varianta_js(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поля варианта JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание JS»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_svyazat_polya_varianta_js(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать любое JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazyvanie — «связывание»: «Связывание JS»
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_svyazat_lyuboe_js(fl_ctx *ctx, fl_value svyazyvanie, fl_value obrazec, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание JS»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_js(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_vetvi_js(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_telo_vetvi_js(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг случая JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param cep — «цепь»: «Цепь JS»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Цепь JS»
+ */
+fl_status compiler_flang_shag_sluchaya_js(fl_ctx *ctx, fl_value cep, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Открыть случай JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param cep — «цепь»: «Цепь JS»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Цепь JS»
+ */
+fl_status compiler_flang_otkryt_sluchay_js(fl_ctx *ctx, fl_value cep, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заголовок случая JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param est_proverka — «есть проверка»
+ * @param proverka — «проверка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zagolovok_sluchaya_js(fl_ctx *ctx, fl_value otkryto, fl_value est_proverka, fl_value proverka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_razbora_js(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрепить предмет JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predmet — «предмет»: «Итог JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Предмет JS»
+ */
+fl_status compiler_flang_zakrepit_predmet_js(fl_ctx *ctx, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост разбора JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cep — «цепь»: «Цепь JS»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvost_razbora_js(fl_ctx *ctx, fl_value cep, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_hvosta_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoe_pust_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoe_esli_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это самовызов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_samovyzov_js(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_js(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_js(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка JS»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_js(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка JS»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoy_otskok_js(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргумент можно оставить JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @return значение
+ */
+fl_status compiler_flang_argument_mozhno_ostavit_js(fl_ctx *ctx, fl_value argument, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка JS»
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_js(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отложить аргумент JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка JS»
+ * @param argument — «аргумент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_otlozhit_argument_js(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_js(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_hvostovoy_cikl_js(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_js(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Связывание параметров JS»
+ * @param parametr — «параметр»: «Параметр JS»
+ * @return значение: «Связывание параметров JS»
+ */
+fl_status compiler_flang_svyazat_parametr_js(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Контекст JS»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить параметры JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param parametry — «параметры»: список: строка
+ * @return значение: «Контекст JS»
+ */
+fl_status compiler_flang_zamenit_parametry_js(fl_ctx *ctx, fl_value kontekst, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок JS»
+ * @param postuslovie — «постусловие»: «Постусловие JS»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_shag_postusloviya_js(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_js(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_telo_funkcii_js(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра документации JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zip — «зип»: «Зип»
+ * @param parametr — «параметр»: «Параметр JS»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_stroka_parametra_dokumentacii_js(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка взаимной рекурсии JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_vzaimnoy_rekursii_js(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_js(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value identifikatory, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Преамбула JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rekursivnaya — «рекурсивная»
+ * @param identifikator — «идентификатор»: строка
+ * @param podpis — «подпись»: строка
+ * @param metka — «метка»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_preambula_js(fl_ctx *ctx, fl_value rekursivnaya, fl_value identifikator, fl_value podpis, fl_value metka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Затребовать преамбулу JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param rekursivnaya — «рекурсивная»
+ * @return значение: «Состояние JS»
+ */
+fl_status compiler_flang_zatrebovat_preambulu_js(fl_ctx *ctx, fl_value sostoyanie, fl_value rekursivnaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять перевод JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_perevod_js(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_funkcii_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст двери JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Контекст JS»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_dveri_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое двери JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_dveri_js(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг гейта JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок JS»
+ * @param preduslovie — «предусловие»: «Предусловие JS»
+ * @param kontekst — «контекст»: «Контекст JS»
+ * @param imya_funkcii — «имя функции»: строка
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_shag_geyta_js(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value imya_funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать гейта JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_geyta_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param opisanie — «описание»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param podpis — «подпись»: строка
+ * @param metka — «метка»: строка
+ * @param preambula — «преамбула»: строка
+ * @param telo — «тело»: строка
+ * @param rekursivnaya — «рекурсивная»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_batuta_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value opisanie, fl_value identifikator, fl_value podpis, fl_value metka, fl_value preambula, fl_value telo, fl_value rekursivnaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг записи JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Секции JS»
+ * @param zapis_tipa — «запись типа»: «Запись типа JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Секции JS»
+ */
+fl_status compiler_flang_shag_zapisi_js(fl_ctx *ctx, fl_value akk, fl_value zapis_tipa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг суммы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Секции JS»
+ * @param summa — «сумма»: «Сумма типов JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Секции JS»
+ */
+fl_status compiler_flang_shag_summy_js(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг функции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Секции JS»
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @param progonschik — «прогонщик»
+ * @return значение: «Секции JS»
+ */
+fl_status compiler_flang_shag_funkcii_js(fl_ctx *ctx, fl_value akk, fl_value funkciya, fl_value obschee, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг гейта функции JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Секции JS»
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Секции JS»
+ */
+fl_status compiler_flang_shag_geyta_funkcii_js(fl_ctx *ctx, fl_value akk, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать секций JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param progonschik — «прогонщик»
+ * @return значение: «Секции JS»
+ */
+fl_status compiler_flang_pechat_sekciy_js(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка модуля JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param konkurentnaya — «конкурентная»
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_modulya_js(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value konkurentnaya, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Стек в МиБ JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predel_glubiny — «предел глубины»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_stek_v_mib_js(fl_ctx *ctx, fl_value predel_glubiny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка таблицы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tablicy_js(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка гейта JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Пара имён»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_geyta_js(fl_ctx *ctx, fl_value para, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок гейтов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_blok_geytov_js(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица программы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее JS»
+ * @param stek — «стек»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_tablica_programmy_js(fl_ctx *ctx, fl_value obschee, fl_value stek, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка прогонщика JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param put — «путь»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_progonschika_js(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value put, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя модуля JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_modulya_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя модуля JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_modulya_js(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_js(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя файла программы JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_fayla_programmy_js(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Непустые части JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_nepustye_chasti_js(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: «Итог печати JS»
+ */
+fl_status compiler_flang_pechat_programmy_js(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число в скаляре JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_v_skalyare_js(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение
+ */
+fl_status compiler_flang_konechnoe_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целая часть JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_celaya_chast_js(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя из плана JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param obschee — «общее»: «Общее JS»
+ * @param imya — «имя»: строка
+ * @param rol — «роль»: строка
+ * @param process — «процесс»: строка
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_imya_iz_plana_js(fl_ctx *ctx, fl_value sostoyanie, fl_value obschee, fl_value imya, fl_value rol, fl_value process, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тотальный обработчик JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее JS»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_totalnyy_obrabotchik_js(fl_ctx *ctx, fl_value obschee, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запас процесса JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param totalnyy — «тотальный»
+ * @return значение: число
+ */
+fl_status compiler_flang_zapas_processa_js(fl_ctx *ctx, fl_value uzel, fl_value totalnyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Целое поле или ноль JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_celoe_pole_ili_nol_js(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ящик процесса JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_yaschik_processa_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать процесса JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param plan — «план»: «План JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «План JS»
+ */
+fl_status compiler_flang_pechat_processa_js(fl_ctx *ctx, fl_value plan, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пары надзора JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzly — «узлы»: список: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pary_nadzora_js(fl_ctx *ctx, fl_value uzly, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порог надзора JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_porog_nadzora_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать надзора JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param plan — «план»: «План JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «План JS»
+ */
+fl_status compiler_flang_pechat_nadzora_js(fl_ctx *ctx, fl_value plan, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вариант непустой JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_variant_nepustoy_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это закодированный вариант JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zakodirovannyy_variant_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сообщения JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_shag_soobscheniya_js(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поля сообщения JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка JS»
+ * @param pole — «поле»: «Поле значения»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_shag_polya_soobscheniya_js(fl_ctx *ctx, fl_value akk, fl_value pole, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сообщения списком JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param elementy — «элементы»: список: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_soobscheniya_spiskom_js(fl_ctx *ctx, fl_value sostoyanie, fl_value elementy, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сообщение записью JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param polya — «поля»: список: «Поле значения»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_soobschenie_zapisyu_js(fl_ctx *ctx, fl_value sostoyanie, fl_value polya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сообщение вариантом JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_soobschenie_variantom_js(fl_ctx *ctx, fl_value sostoyanie, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сообщение прогона JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Свежее JS»
+ */
+fl_status compiler_flang_soobschenie_progona_js(fl_ctx *ctx, fl_value sostoyanie, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг входа JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сборка JS»
+ * @param zapis_vhoda — «запись входа»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «Сборка JS»
+ */
+fl_status compiler_flang_shag_vhoda_js(fl_ctx *ctx, fl_value akk, fl_value zapis_vhoda, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «До семени JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_do_semeni_js(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать прогона JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param plan — «план»: «План JS»
+ * @param uzel — «узел»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @return значение: «План JS»
+ */
+fl_status compiler_flang_pechat_progona_js(fl_ctx *ctx, fl_value plan, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост плана JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_hvost_plana_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конкурентности JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param obschee — «общее»: «Общее JS»
+ * @param sostoyanie — «состояние»: «Состояние JS»
+ * @return значение: «Блок JS»
+ */
+fl_status compiler_flang_pechat_konkurentnosti_js(fl_ctx *ctx, fl_value programma, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -43505,6 +46824,46 @@ fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, f
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «К печати JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_k_pechati_js(fl_ctx *ctx, fl_value svyazano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать к печати JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: «Итог сборки JS»
+ */
+fl_status compiler_flang_napechatat_k_pechati_js(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать в JS от исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: «Итог сборки JS»
+ */
+fl_status compiler_flang_pechat_v_js_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в JS».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки JS»
+ * @return значение: «Итог сборки JS»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_js(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

@@ -99,9 +99,10 @@ the seed has fallen behind — not the removal.
 ## What the circle does not check
 
 **The compiler does not check its own sources.** `flang check` on
-`flang/self/bootstrap/compiler.flang` runs into the step limit and answers
-`FLANG_RECURSION_LIMIT`. It can emit itself, but it cannot yet judge itself with
-the same checks it applies to other programs.
+`flang/self/bootstrap/compiler.flang` answers "не проверено — замечаний 29" with
+exit code 1: the same names it does not know that made emission refuse. The
+compiler built from the seed cannot today judge itself with the checks it applies
+to other programs.
 
 **Rebuilding needs the tree, not the seed directory.** Emission reads the C
 runtime sources from disk (`flang/src/emit/c/`), and there are no copies of them

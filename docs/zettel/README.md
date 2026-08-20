@@ -87,6 +87,7 @@
 - [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
 - [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)
 - [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md) — с дополнением: снято, сортировка вставками доказана, доказано ядром 62 → 65
+- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
 - [Даровое утверждение узнаётся подменой тела заглушкой: 17 из 32 в двух модулях библиотеки](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
 - [Постусловие считается при каждом вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
 - [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
@@ -96,6 +97,10 @@
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе: круг «туда и обратно» стал выразим](kontrakt-ne-proveryaetsya-vnutri-kontrakta.md)
 - [Список стен, переписанный руками из отчёта в отчёт, устарел на две трети: из 24 записанных «ядро не берёт» держатся 9](a-hand-copied-wall-list-goes-stale-in-silence.md)
 - [Встроенное `приписать` в рекурсивной ветви `разбор`а рвёт индукцию, а тот же шаг через функцию с доказанным постусловием — не рвёт](builtin-prepend-in-a-recursive-branch-blocks-the-induction-hypothesis.md)
+- [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](cel-konyunkciya-yadru-ne-po-zubam-no-stoit-shesti.md)
+- [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](u-yadra-net-pravila-ne-menshe.md)
+- [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
+- [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](oslablennoe-utverzhdenie-byvaet-nesushchim.md)
 
 ## Теория категорий
 

@@ -22,8 +22,8 @@ sh scripts/bootstrap-c.sh --check      # compare against the sources byte for by
 The printer is `bootstrap/flang` itself, built by `make -C bootstrap` from the
 point already committed in the tree. The JavaScript implementation prints the
 same point and stays as the second print to compare against: `npm run
-bootstrap:js`. Run of 20 August 2026: both prints matched byte for byte — 7
-files, 15 641 371 bytes.
+bootstrap:js`. Run of 20 August 2026: the two prints came out identical down to
+the last byte — 7 files, 15 641 371 bytes.
 
 The guard is the test «точка раскрутки `bootstrap/` совпадает с печатью текущих исходников,
 побайтово» in `flang/test/self-bootstrap.test.mjs`. It needs no C compiler, so it always runs —

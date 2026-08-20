@@ -2,11 +2,12 @@
 
 # flang — a language whose specification runs, and prints itself into your language
 
-A written specification drifts from the code the day after it is merged. This repository takes
-the other route: the specification **is** the program. You write the rules once, run them, test
-them against their own examples, and then print them into C, Go, Rust, Python, Java, C#, Elixir
-or JavaScript — where the printed code is required to produce the same values and the same error
-codes as the interpreter, checked input by input.
+Write a rule once, in the words its domain already uses, and the same file is the
+implementation, the test suite and the documentation at once: the examples sit inside the
+function and run on every check, the compiler *proves* termination instead of taking your word
+for it, and one command prints the rule into C, Go, Rust, Java, JavaScript, Elixir, Python or
+C#. A written specification drifts from the code the day after it is merged. Here there is
+nothing to drift, because the specification **is** the program.
 
 The authoring surface is Russian; an English surface exists and lexes to the same identifiers
 (`функция` / `function`, `свёртка` / `fold`). The prose below is English, the code is not
@@ -19,11 +20,25 @@ carries its own examples and its own promise about the result right next to its 
 `тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
 it cannot prove. The language has sum types, lists, strings as data, recursion, pattern
 matching, module linking, a category surface and a concurrency surface, and one source is
-printed into eight target languages. Its implementation is [`flang/src/`](flang/src).
+printed into eight target languages.
 
-Two documents carry the rest: [`docs/overview.ru.md`](docs/overview.ru.md) describes the language
-and draws the line between what is *proven* and what is *checked*, and
-[`flang/SPEC.md`](flang/SPEC.md) is the specification. This page does not go past that line.
+**There is one compiler, and it is written in flang.** It lives in
+[`flang/self/`](flang/self) — 57 files, 95,880 lines — and it builds into a single binary that
+needs nothing but a C compiler:
+
+```bash
+make -C bootstrap -j8    # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2, no warnings
+./bootstrap/flang --version
+```
+
+It also prints itself. `sh scripts/raskrutka.sh` runs the binary over the compiler's own
+sources and produces the seven C files the binary was built from; `--check` compares them with
+what is committed and finds no difference: 7 files, 24,074,977 bytes, every one of them
+identical. Node is needed neither to run the compiler nor to build it, and that is checked the
+only way it can be — by running the whole thing where `node` cannot be found.
+
+The specification is [`flang/SPEC.md`](flang/SPEC.md); what the compiler's five layers owe each
+other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past those.
 
 ---
 
@@ -33,25 +48,27 @@ There are 12 directories at the root, and the layout is plain: nearly everything
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
 point, packaging, measurements, documentation and one full-size example project.
 
-<!-- КАРТА-НАЧАЛО. Каталоги ниже сверяются с деревом: flang/test/readme-layout.test.mjs
-     падает, если названный каталог исчез или если появился каталог верхнего уровня,
-     о котором обе редакции README молчат. Правьте карту вместе с деревом. -->
+<!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs. Сегодня
+     он не запускается: как и почти весь набор проб, он ввозит модули удалённой реализации на
+     JavaScript. Пока проба не переписана, карта держится рукой — правьте её вместе с деревом. -->
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap», no Node
-flang/src/        the flang implementation in JavaScript — the witness for the language
-flang/self/       the same compiler, written in flang itself
+flang/self/       the compiler: lexer, parser, types, totality, proof core, eight printers
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
+flang/src/        the target runtimes, copied verbatim into printed code — C, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
 flang/examples/   flang programs: leetcode, rosetta, cat, monad, io, web, errors
-flang/test/       the language test run — from the lexer to all eight backends
-flang/bin/        flang and flang-lsp: adapters over flang/src, never a home for meaning
+flang/proof/      what the proof core may and may not conclude, and why
+flang/проверки/   checks written in flang, walked by the binary — no Node on the path
+flang/test/       the old test run: written against the deleted implementation, and today it does not start
+flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
 examples/         library-api — a whole REST service on flang and Node
-editors/          the .flang language server and a github-linguist submission stub
-packaging/        Homebrew, asdf and the flang.1 man page
-scripts/          printing the library index, the changelog and the release C
+editors/          the .flang language server, a vim plugin and a github-linguist submission stub
+packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
+scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
 benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
 web/              flang in a tab: building a program to WebAssembly and running it in a browser
 .claude/          developer assistant skills: knowledge-base rules
@@ -62,9 +79,8 @@ docs/             documentation; README and SPEC files stay next to the code the
 
 <!-- КАРТА-КОНЕЦ -->
 
-<!-- КОРЕНЬ-НАЧАЛО. The root files are checked against the tree the same way the directories
-     above are: flang/test/readme-layout.test.mjs fails if a file appears in the root that both
-     editions of the README are silent about, or if a named root file is gone. -->
+<!-- КОРЕНЬ-НАЧАЛО. Файлы корня сверялись той же пробой и по той же причине сегодня не
+     сверяются. Правьте таблицу вместе с корнем. -->
 
 **The loose files in the root, and what keeps each one there.**
 
@@ -75,24 +91,36 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms; it looks in the root, in `.github/` and in `docs/` |
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
-| `package.json` · `package-lock.json` | the manifest of the **second mould** — the one that embeds the language into somebody else's Node project. npm reads them only from the root of the package it publishes |
+| `package.json` · `package-lock.json` | the manifest of the npm install path. It declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
-**The binary builds without Node.** `make -C bootstrap` builds the compiler with a single
-`cc` — no Node, no npm, not one line from here. `package.json` does not describe how the language
-is built; it describes the package the language is embedded with. It declares zero dependencies
-(`npm ls --all` prints `(empty)`). Since 20 August 2026 `npm install` does two things: it puts
-`flang` into `node_modules/.bin` and it runs `make` over that same `bootstrap/`, so that the
-`flang` command is the SAME binary compiler `brew` installs and not a second implementation in
-JavaScript. About 35 seconds, and it needs `cc` and `make`; without them the install still
-succeeds and the refusal names both the cause and the fix.
+**The binary builds without Node.** `make -C bootstrap` builds the compiler with a single `cc`
+— no Node, no npm, not one line of JavaScript. `package.json` does not describe how the
+language is built; it describes how the language is installed from npm, and it declares zero
+dependencies (`npm ls --all` prints `(empty)`). `npm install` does two things: it puts `flang`
+into `node_modules/.bin` and it runs `make` over that same `bootstrap/`, so the `flang` command
+is the SAME binary compiler `brew` installs. It needs `cc` and `make`; without them the install
+still succeeds and the refusal names both the cause and the fix. The two commands the package
+puts on `$PATH` — `flang` and `flang-lsp` — are thin launchers that hand the call straight to
+that binary, because npm requires a `bin` entry Node can start; nothing about the language is
+decided in them, and there is no quiet fallback if the binary is missing — a refusal naming the
+cause instead.
 
 <!-- КОРЕНЬ-КОНЕЦ -->
 
-**How to tell what checks a file without opening it.** There is one run: `npm test` executes
-`flang/test/*.test.mjs`, and everything is checked there — from the lexer to all eight backends,
-including the `examples/library-api/` project (wired in through an adapter file). A file you
-cannot immediately assign to a check is filed in the wrong place.
+**What checks a file today, and what does not.** Two runs cover the language, and both are
+driven by the binary: `sh flang/проверки/обход.sh` — 98 checks written in flang itself, three
+seconds — and `flang test <directory>`, which runs the examples declared inside functions
+(1,216 in the standard library, 229 in the core, 804 in the LeetCode set). On every push CI
+builds the binary and runs the 98 checks and the 1,445 library-and-core examples with it,
+without installing Node at all; the LeetCode set and the rest of the tree are walked on a tag,
+because that walk takes over an hour.
+
+**`npm test` does not start.** It fails in `pretest` with `ERR_MODULE_NOT_FOUND`, before the
+first check runs: 162 of the 199 files in `flang/test/` import modules of the deleted
+JavaScript implementation. Deciding which of them to rewrite against the binary and which to
+drop has not been done, and until it is, that directory checks nothing. Said here rather than
+left to be discovered from a red log.
 
 Laying out **your own** project is a separate document:
 [Раскладка проекта](docs/guide/project-layout.ru.md).
@@ -115,8 +143,8 @@ tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 ma
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
 sudo make install           # from 0.5.1; in the 0.5.0 archive there is no such
                             # target — copy `flang_cli` to bin/flang by hand
-flang --help                # what it does: check, test, run, emit, repl
-flang check m.flang         # parse, types, totality — in words, not JSON
+flang --help                # ten commands and the language server
+flang check m.flang         # parse, types, totality, proofs, examples — in words, not JSON
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
 
@@ -137,7 +165,8 @@ flang emit m.flang --target c --out out --runtime flang/flang/src/emit/c
 
 The files at the top of the unpacked archive will **not** do, despite the identical names: those
 are printed copies whose first line is the «Сгенерировано flang» header, and printing rejects them
-so as not to stamp that header a second time.
+so as not to stamp that header a second time. The other seven targets read their runtimes the
+same way, from `flang/src/emit/<target>/`.
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
 tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
@@ -146,36 +175,21 @@ repository, and that repository is not published yet, so for now the plugin is s
 an install path. Neither needs anything but a C compiler. This is how self-hosting languages
 ship — Go carried generated C for years, Nim still does.
 
-**Be clear about what that binary is.** It is the five layers of [`flang/self/`](flang/self):
-lexer, parser, types, totality, printing to C. There is no evaluator among them — which is why
-`flang repl` there evaluates the only honest way this binary can: it prints the session to C,
-builds it with the system `cc` against the runtime installed beside it, and runs that. Without a
-`cc` the shell does not switch off — it keeps checking parse, types and totality, and says so
-once. Checking a file needs nothing else: `flang check file.flang` runs parse, linking, types and
-totality and prints its findings in words — with a code and a place, not JSON. `flang --help`
-lists the commands and `man flang` describes them. Running a program or its examples
-non-interactively still needs the full toolchain below.
-
-**The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
-the language server and seven of the eight backends exist only in JavaScript. The self-hosted
-compiler — the one in the release — prints to **C and nothing else**.
+**Be clear about what that binary is.** It answers to all ten commands and to the editor
+language server: `check`, `test`, `run`, `emit`, `ast`, `facts`, `io`, `lock`, `package`,
+`repl` and `lsp`. It prints into all eight targets. What it does not have is a separate
+evaluator — which is why `flang repl` evaluates the only honest way it can: it prints the
+session to C, builds it with the system `cc` against the runtime installed beside it, and runs
+that. Without a `cc` the shell does not switch off — it keeps checking parse, types and
+totality, and says so once. What it also does not judge is the category and concurrency
+surface: monoids, monads, morphisms, processes and the declared properties. It does not pass
+such a program in silence either — `flang check` names what it left unchecked and exits with
+code 2, because saying "no findings" there would be untrue.
 
 **Install from the clone, not from the registry.** The package is named `@digitable-lol/flang`,
 but nothing is published under that name yet: what sits on npm today is a build from 7 August
 under the previous name, and it drags commands into your `$PATH` that this tree no longer has.
-Until the new name reaches npm, take the clone:
-
-```bash
-git clone https://github.com/digitable-lol/flang && cd flang
-node flang/bin/flang.mjs check flang/examples/rosetta/factorial.flang
-```
-
-`npm link` inside that clone puts exactly two commands on `$PATH` and nothing else: `flang` for
-the language and `flang-lsp` for the editor language server — the two names this page uses. There
-is no build step and no install step; the package declares no dependencies.
-
-**In a clone, too, the compiler builds without Node.** The tree carries a bootstrap point — the
-same compiler printed to C99, 7 files and 5,823,370 bytes:
+Until the new name reaches npm, take the clone and build the compiler out of it:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
@@ -184,9 +198,8 @@ sudo make -C bootstrap install
 flang --version
 ```
 
-What it is, what guards it and how it is updated: [`bootstrap/README.md`](bootstrap/README.md).
-Node is still needed for the witness implementation and seven of the eight backends, but not to
-build the compiler; see [Developing the language](#developing-the-language).
+What the bootstrap point is, what guards it and how it is updated:
+[`bootstrap/README.md`](bootstrap/README.md).
 
 ---
 
@@ -236,26 +249,31 @@ fl_status mesto_vstavki_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value c
   fl_value fl_t1 = fl_nothing();
   FL_TRY(fl_require_list(ctx, elementy, "свёртка", &fl_t1, error));
   fl_value akk = fl_number(0.0); /* «акк» */
+  const fl_mark fl_t3 = fl_region_open(ctx);
   for (size_t fl_t2 = 0; fl_t2 < fl_t1.as.list.count; fl_t2 += 1) {
     const fl_value el = fl_t1.as.list.items[fl_t2]; /* «эл» */
-    fl_value fl_t3 = fl_nothing();
-    FL_TRY(fl_lt(ctx, el, cel, &fl_t3, error));
+    if (el.tag != FL_NUMBER || cel.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, el, cel, error));
     bool fl_t4 = false;
-    FL_TRY(fl_cond(ctx, fl_t3, &fl_t4, error));
+    FL_TRY(fl_cond(ctx, fl_flag(el.as.number < cel.as.number), &fl_t4, error));
     fl_value fl_t5 = fl_nothing();
     if (fl_t4) {
-      fl_value fl_t6 = fl_nothing();
-      FL_TRY(fl_add(ctx, akk, fl_number(1.0), &fl_t6, error));
-      fl_t5 = fl_t6;
+      if (akk.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", akk, fl_number(1.0), error));
+      fl_t5 = fl_number(akk.as.number + 1.0);
     } else {
       fl_t5 = akk;
     }
     akk = fl_t5;
+    FL_TRY(fl_region_recycle(ctx, fl_t3, &akk, error));
   }
+  FL_TRY(fl_region_close(ctx, fl_t3, FL_OK, &akk, error));
   *result = akk;
   return FL_OK;
 }
 ```
+
+The header of that file still names `totality.mjs` — a file this tree no longer has. The
+printer writes that string, and it is left here exactly as printed rather than tidied: a paste
+that has been corrected by hand is no longer evidence of anything.
 
 </details>
 
@@ -296,29 +314,29 @@ it is what makes the declared call-depth limit real.
 </details>
 
 The generated code is not a sketch you finish by hand. It carries the domain names in comments,
-it reports the interpreter's diagnostic codes and messages verbatim, and the header says what it
+it reports the compiler's diagnostic codes and messages verbatim, and the header says what it
 is: *«Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.»*
 
-### Why the backends are believable
+### How far the backends are actually checked
 
-Each backend is checked differentially, not by golden files. The corpus is the standard library
-and the LeetCode solutions — `flang/stdlib/*.flang` and `flang/examples/leetcode/*.flang`,
-102 programs with 782 functions and 2020 examples between them. For every function a grid of inputs
-is built from its own examples plus deliberately wrong arguments (`null`, a string where a list is
-wanted, a variant that does not exist), the program is printed into an empty directory, compiled
-with the real toolchain from nothing but what the backend emitted, and run as a real process.
-The run reports what it covered, so the claim is checkable rather than quoted:
+Honestly, and the answer is uneven.
 
-```
-✔ stdlib и leetcode: собранный C# совпадает с интерпретатором
-ℹ программ: 102, функций: 782, сверенных входов: 12762, убегающих (сверены отказом по пределу): 2 — убегающих точек 2, все названы поимённо в УБЕГАЮЩИЕ, за 264 с
-✔ примеры stdlib и leetcode сходятся у C# так же, как у интерпретатора
-ℹ сверенных примеров: 2020
-```
+**C is checked hardest, and by the strongest program there is — the compiler itself.**
+`sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
+the 29 files it pulls in — and `make -C bootstrap` compiles those 24 megabytes under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one
+warning. Then the binary built from that C prints the same sources again and the result matches
+what is committed, all 24,074,977 bytes of it. A backend that miscompiled anything at that scale
+would not survive being run through itself.
 
-The C backend additionally compiles under `gcc` *and* `clang` with
-`-std=c99 -Wall -Wextra -Werror -pedantic -O2` and is checked under `valgrind` for zero
-unreachable bytes.
+**The other seven have no automated check running today.** Each of them was checked
+differentially against the deleted implementation — the same program printed into an empty
+directory, built with the real toolchain and run as a real process on a grid of inputs from its
+own examples plus deliberately wrong arguments. Those runs lived in `flang/test/emit-*.test.mjs`,
+they went with the implementation they compared against, and nothing has replaced them. What can
+be said today is only that all eight targets print, which is checked by running each of them.
+
+The cost of that gap is named where the difference shows: `flang emit` does not check the
+program at all — not types, not totality — so run `flang check` first and read what it says.
 
 ---
 
@@ -374,30 +392,26 @@ the first line is a claim the compiler had to prove before accepting the file. T
 part of the function, not a separate test file:
 
 ```bash
-flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang --pretty
+flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
+flang test flang/examples/leetcode/     # all 82 files, 804 examples, one run
 ```
 
-Two example sets are kept, and both are guarded by tests rather than by good intentions.
-[`flang/examples/leetcode/`](flang/examples/leetcode) holds 82 solutions; 81 of them are total,
-as are 301 functions out of 303 — the single exception is deliberate and explained in the file
-(`202-happy-number.flang`: the "until the number repeats" loop does terminate, but the language
-has nothing to prove it with). Each carries a comment explaining not only the algorithm but where
-the language pushed back — why "is this character already in the window" is linear (there is no set
-in the language), why a dynamic-programming table costs a square (appending copies the list), why
-Single Number is O(n²) because there are no bitwise operations. Of the twelve tasks previously
-listed as inexpressible, eight are solved by this batch, and their entries in `index.json` have
-been rewritten.
+Two example sets are kept. [`flang/examples/leetcode/`](flang/examples/leetcode) holds
+82 solutions with 300 functions between them, 298 of them proven total; the two exceptions are
+deliberate and explained in the file (`202-happy-number.flang`: the "until the number repeats"
+loop does terminate, but the language has nothing to prove it with). Each carries a comment
+explaining not only the algorithm but where the language pushed back — why "is this character
+already in the window" is linear (there is no set in the language), why a dynamic-programming
+table costs a square (appending copies the list), why Single Number is O(n²) because there are no
+bitwise operations.
 [`flang/examples/rosetta/`](flang/examples/rosetta) holds 14 canonical Rosetta Code tasks, each
-written twice — 28 files: once on the Russian surface and once on the English one, with a test
-comparing each pair as trees, up to a renaming of names. That test also pins the number of
-functions each file proves total: the set exists to show the
-border of the language, so a border that moves has to break a test rather than quietly outdate a
-comment. The standard library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`,
-`hashmap`, `higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`,
-`postgres`, `result`, `sets`, `sha256`, `strings`, `strlists`, `tree`, `utf8`) is written the
-same way — 20 modules, 482 functions, of which 478 are proven total. `higher-order` is the one built on
-first-class functions: fold, map, filter, search, sort and composition take a function as an
-argument.
+written twice — 28 files: once on the Russian surface and once on the English one. The standard
+library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`, `hashmap`,
+`higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `postgres`,
+`result`, `sets`, `sha256`, `strings`, `strlists`, `tree`, `utf8`) is written the same way —
+20 modules, 482 functions, of which 478 are proven total, and 1,216 examples that run on every
+check. `higher-order` is the one built on first-class functions: fold, map, filter, search, sort
+and composition take a function as an argument.
 
 ---
 
@@ -413,17 +427,35 @@ Which kinds of descent are accepted, what a declared measure is, and why this is
 
 ---
 
-## Two implementations, and the fixed point
+## One compiler, and how it is rebuilt
 
-There are two implementations, and both are maintained on purpose. The **witness** one is
-written in TypeScript and JavaScript and defines the behaviour of the language. The
-**self-hosted** one is written in flang itself: [`flang/core/`](flang/core) is the lexer,
-parser, evaluator and JSON printer, [`flang/self/`](flang/self) is the compiler — five layers,
-each checked byte for byte against its own witness.
+The compiler that builds and the compiler that is written in flang are the same compiler. It is
+[`flang/self/`](flang/self) — five layers, lexer through printing — plus
+[`flang/core/`](flang/core), a lexer, parser, evaluator and JSON printer also written in flang.
+Nothing in the tree is a second implementation of any of it.
 
-Readiness is not "it built" but the classical fixed point, and it **has converged**. How it
-works, what checks it and where the release comes from — [Two implementations, and the fixed
-point](docs/guide/two-implementations.md).
+That leaves the classic question of where the first binary comes from, and the answer is
+committed rather than promised: `bootstrap/` holds this compiler already printed to C99 — seven
+files, 24,074,977 bytes — so `make` alone turns it into a working `flang`. That binary then
+prints the compiler's sources again and the result is identical to what is in `bootstrap/`;
+`sh scripts/raskrutka.sh --check` is that comparison, and a compiler whose printing had drifted
+from the tree would fail it.
+
+**Two things about that circle are worth knowing before you rely on it.**
+
+The check is expensive now. On this machine it takes 10 minutes 52 seconds, needs `cc` and
+`make`, and peaks at about 20 GB of memory. While a second implementation was there to do the
+comparing, the same check took 3.4 seconds and no C compiler at all — so the strongest check in
+the repository grew roughly two hundred times dearer. It does not fit on an ordinary GitHub
+runner, so it is not in CI; it is called by hand before a change to `flang/self/` or
+`flang/src/emit/c/` goes in.
+
+And the binary cannot check its own sources. `flang check flang/self/bootstrap/compiler.flang`
+runs out of its step budget and answers `FLANG_RECURSION_LIMIT`; the step budget is one per
+command rather than one per evaluation, and `check` has no flag to raise it. `flang emit` does
+not check the program at all, which is why printing still works. So the compiler can be rebuilt
+without Node, but confirming that the thing you rebuilt is sound needs something this tree does
+not have.
 
 ---
 
@@ -456,16 +488,26 @@ layout, module-splitting and CI conventions derived from that project are collec
 
 ## Developing the language
 
-The JavaScript witness implementation stays forever: the fixed point is checked against it,
-and removing it would make that check impossible. Work happens in a clone, and **there is nothing
-to build**: the package declares zero dependencies (`npm ls --all` prints `(empty)`), and the
-language reads its sources instead of compiling them. A fresh clone answers
-`node flang/bin/flang.mjs check flang/stdlib/lists.flang` straight away; `npm install` puts
-`flang` into `node_modules/.bin` and builds the binary compiler out of `bootstrap/`.
+Work happens in a clone, and the only thing to build is the compiler itself:
+`make -C bootstrap -j8` takes about a minute and gives you `bootstrap/flang`, which answers
+`./bootstrap/flang check flang/stdlib/lists.flang` straight away. Node is not on that path at
+any step, and neither is npm.
 
-What to run when you change the compiler, how the bootstrap point is guarded, and the full list
-of commands the language answers to — [Developing the
-language](docs/guide/developing.md).
+What to run after a change:
+
+```bash
+sh flang/проверки/обход.sh            # 98 checks written in flang, three seconds
+./bootstrap/flang test flang/stdlib/  # 1,216 examples, 40 seconds
+./bootstrap/flang test flang/core/    # 229 examples, 12 seconds
+sh scripts/raskrutka.sh               # only after flang/self/ or the C runtime changed
+sh scripts/raskrutka.sh --check       # …and confirm the reprint matches the tree
+```
+
+The bootstrap point is reprinted in the same commit as the change that moved it. CI runs the
+first three on every push and never installs Node.
+
+`flang/test/` is not part of that list, and will not be until it is rewritten: see the note
+above about `npm test`.
 
 ---
 
@@ -474,20 +516,21 @@ language](docs/guide/developing.md).
 - **A full-size example** — [`examples/library-api`](examples/library-api/README.md): a REST
   service on flang and Node, six routes, storage, response codes. It answers one question: what
   goes where, and why there.
-- **Editors** — the `.flang` language server in
-  [`editors/flang-lsp`](editors/flang-lsp/README.md). There is no `.flang` syntax highlighting in
-  the tree at all, and that is a named debt, not a forgotten task.
+- **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
+  [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting
+  in [`editors/vim`](editors/vim/README.md).
 - **Measurements** — the speed harness and the model-authoring measurement in
   [`benchmarks/`](benchmarks).
 
 All documentation, with an index — [`docs/README.md`](docs/README.md): the guide, measurement
-reports, the knowledge base and the conference submission.
+reports, the knowledge base and the conference submission. Parts of it still describe a tree
+with two implementations in it and have not caught up with this page.
 
 Further reading — in Russian (the language surface is Russian, and so is most of the prose):
-[Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/guide/project-layout.ru.md) ·
-[flang SPEC](flang/SPEC.md) · [core-in-flang contract](flang/core/SPEC.md) ·
-[self-hosting contract](flang/self/SPEC.md) · [category contract](flang/cat/SPEC.md) ·
-[concurrency contract](flang/conc/SPEC.md).
+[Раскладка проекта](docs/guide/project-layout.ru.md) ·
+[flang SPEC](flang/SPEC.md) · [self-hosting contract](flang/self/SPEC.md) ·
+[core-in-flang contract](flang/core/SPEC.md) · [proof core](flang/proof/SPEC.md) ·
+[category contract](flang/cat/SPEC.md) · [concurrency contract](flang/conc/SPEC.md).
 
 The documentation naming rule: an `.md` file with no language suffix is English, `X.ru.md` is its
 Russian version. The exception is `README.md` and `SPEC.md` next to code — they keep those names
@@ -497,11 +540,30 @@ in whichever language they are written, because GitHub shows them as a directory
 
 ## Known limits
 
-Stated plainly, because a project with unmarked boundaries cannot be relied on. The full list
-is [Known limits](docs/guide/limits.md): what *proven* means against *checked*, what the
-language does not have, where the categorical surface stops, and what is done in concurrency.
-The same boundary is drawn in [`docs/overview.ru.md`](docs/overview.ru.md); the complete lists
-are in [`flang/SPEC.md`](flang/SPEC.md) §10 and in the "Долги" sections of the contracts.
+Stated plainly, because a project with unmarked boundaries cannot be relied on.
+
+- **Proving an ordinary library function is still mostly out of reach.** The repeatable measure
+  is twenty functions of the standard library taken in file-and-declaration order, every ninth
+  one, so that convenient ones cannot be picked: on that sample the proof core closes claims for
+  nine files out of twenty, and most of what it closes is a weakened form — "the length is not
+  negative" — or a postcondition that restates the body. The count of claims that genuinely say
+  something about the function was four when it was last read one by one
+  (`docs/benchmark-proof-cost-2.md`); the tool that produced these numbers is one of the
+  casualties of the removal and no longer runs, so today's figure is read from the binary's own
+  report by hand.
+- **There is no second opinion about the language any more.** The comparison that used to matter
+  proved that two independent implementations understood the same program the same way. What is
+  left proves that the committed C matches what today's sources print — which catches a stale
+  artefact, and cannot catch a misunderstanding, because there is no second understanding to
+  disagree with.
+- **Seven of the eight backends have no check running.** See above.
+- **The category and concurrency surface is not judged by the binary.** It says so and exits 2
+  rather than passing such a program in silence.
+
+The longer list — what *proven* means against *checked*, what the language does not have, where
+the categorical surface stops — is [Known limits](docs/guide/limits.md) and
+[`flang/SPEC.md`](flang/SPEC.md) §10; both were written while there were two implementations and
+still say so in places.
 
 ---
 
@@ -512,5 +574,6 @@ as compatibility surfaces; syntax may grow through documented proposals.
 
 ## License
 
-BSD 2-Clause. The project previously carried Apache-2.0, inherited from the repository it grew
-out of rather than chosen; BSD 2-Clause is the deliberate choice. See [LICENSE](LICENSE).
+BSD 2-Clause — see [LICENSE](LICENSE). Earlier versions were released under Apache-2.0, and
+anyone who received the code that way keeps those rights: the change applies to versions from
+here on.

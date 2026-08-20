@@ -232,6 +232,9 @@
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
+- [Примеров по корпусу прогоняется вдвое больше, чем объявлено, а девять файлов на 11 683 строки отчитываются чужими](primerov-progonyaetsya-vdvoe-bolshe-chem-obyavleno.md)
+- [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 419 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
+- [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](progon-po-korpusu-nashyol-shest-rashozhdeniy-mezhdu-realizaciyami.md)
 
 ## Найденные ошибки
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
@@ -244,6 +247,7 @@
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Один нулевой байт внутри исходника прячет весь файл от `grep` — и счётчик по дереву молча теряет 162 примера](odin-nul-v-ishodnike-pryachet-fajl-ot-grep.md)
 - [Поле встроенного словаря, названное ключевым словом, ставится и не читается](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)
 - [Постусловие «обращение не меняет длины строки» ложно, и ломает его одинокий суррогат](obrashchenie-stroki-lozhno-na-odinokom-surrogate.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)

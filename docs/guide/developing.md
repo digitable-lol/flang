@@ -43,15 +43,8 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 
-**`.fts` models are no longer read.** They were until 16 August 2026, through a bridge to the
-older project's TypeScript core; that project left the repository and the bridge lost its other
-side. There is no `fts` command in this tree either — `flang/bin/` holds `flang` and `flang-lsp`
-and nothing more. The refusal is explicit and names where the removed part now lives:
-
-```bash
-flang check model.fts
-# {"diagnostics":[{"code":"FLANG_FTS_REMOVED", … "github.com/digitable-lol/fts" …}]}
-```
+**There are exactly two commands in this tree.** `flang/bin/` holds `flang` and `flang-lsp`,
+nothing more; `npm link` puts those same two into `$PATH`.
 
 Tests:
 

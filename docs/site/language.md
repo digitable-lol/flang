@@ -866,8 +866,8 @@ the table are named here so that nobody has to hunt for them.
 | `maps to`, `maps to field`, `maps to morphism` | the lines of a functor | the same |
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
 | `plan` | input and output: declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
-| `date`, `money` | FTS heritage: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
-| `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | FTS heritage: constructions of the previous kernel | [Glossary](../glossary.html) |
+| `date`, `money` | heritage of the earlier surface: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
+| `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
 
 ## What the language does not have
 

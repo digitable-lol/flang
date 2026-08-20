@@ -185,6 +185,7 @@
 - [Замер собранного артефакта врёт молча: `make` не пересобирает, а отвечает «nothing to be done»](measuring-a-stale-artifact.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
+- [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
@@ -196,6 +197,7 @@
 ## Устройство репозитория
 
 - [Старый проект FTS нельзя вынести дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
+- [Прощальный абзац — «что здесь было и куда делось» — переживает то, о чём прощается, и держит мёртвые пути дольше всей остальной прозы](a-farewell-paragraph-outlives-what-it-says-goodbye-to.md)
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны](a-packaging-copy-in-another-repository-drifts-both-ways.md)

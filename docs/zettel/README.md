@@ -76,7 +76,7 @@
 - [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
 - [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)
 - [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
-- [Даровое утверждение узнаётся подменой тела заглушкой: 16 из 32 в двух модулях библиотеки](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
+- [Даровое утверждение узнаётся подменой тела заглушкой: 17 из 32 в двух модулях библиотеки](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
 - [Постусловие считается при каждом вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
 - [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 

@@ -31,7 +31,7 @@ a tail. `flang/examples/rosetta/reverse-string.flang` is total throughout becaus
 Cyrillic included.
 
 This is not pedantry, and the reason is concrete. The embedded fact-checking mode
-([`flang/src/factcheck.mjs`](../../flang/src/factcheck.mjs)) answers "does this claim hold about this
+([`flang/self/factcheck.flang`](../../flang/self/factcheck.flang)) answers "does this claim hold about this
 data" — and a system that must answer yes or no is not allowed to hang. So it refuses to run a
 function that was not proven to terminate, before evaluating anything — `flang facts` answers with
 `holds: false` and says why. The mode has no file, network or clock access, and a hard step budget:

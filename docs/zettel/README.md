@@ -279,6 +279,9 @@
 - [Проверка в тесте, читавшая `.flang` своим разбором, оживает прогоном двоичного — но не всякая, и граница проходит по лексике и по обязательствам](proverki-v-testah-zhivut-progonom-dvoichnogo-a-ne-vtorym-razborom.md)
 - [Проверку, которая зовёт компилятор, а не разбирает `.flang` сама, переносить на flang почти нечего — мешает только чтение ответа](proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski.md)
 - [Двоичный уже отвечает про любую свою функцию, и новую команду под это заводить не надо](dvoichnyy-otvechaet-pro-lyubuyu-svoyu-funkciyu-cherez-progonshchik.md)
+- [Поток токенов наружу стоит вчетверо дешевле дерева, и две проверки прозы оживают именно им, а не `flang ast`](potok-tokenov-naruzhu-deshevle-dereva-vchetvero.md)
+- [Прогонщик двоичного открывает ВСЁ замыкание компилятора — новая команда нужна только там, где у ответа свой вид вывода](progonshchik-dvoichnogo-otkryvaet-vsyo-zamykanie.md)
+- [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](proizvodnye-tablicy-odnogo-fakta-rashodyatsya-molcha.md)
 
 ## Найденные ошибки
 

@@ -41,8 +41,7 @@ import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
-import { KEYWORDS, SURFACE_ORDER, wordOn } from "../../flang/src/lexer.mjs"
-import { parse } from "../../flang/src/parser.mjs"
+import { деревоРазбора, таблицаСлов } from "../../flang/scripts/dvoichnyy.mjs"
 import { связаноИмён, сверитьПоверхности } from "../../flang/test/surface-pair.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
@@ -143,7 +142,7 @@ function различия(слева, справа) {
 export function прогон() {
   const разобранные = ФАЙЛЫ.map((ф) => {
     const исходник = прочесть(ф.путь)
-    return { ...ф, исходник, дерево: безПозиций(parse(исходник, ф.путь)), байт: Buffer.byteLength(исходник) }
+    return { ...ф, исходник, дерево: безПозиций(деревоРазбора(исходник)), байт: Buffer.byteLength(исходник) }
   })
 
   const образец = разобранные[0]
@@ -191,6 +190,7 @@ export function прогон() {
  * ошибку не заметишь. `wordOn` читает саму таблицу и потому не ошибается.
  */
 export function покрытие() {
+  const { поверхности: SURFACE_ORDER, фразы: KEYWORDS, наПоверхности: wordOn } = таблицаСлов()
   const понятия = Object.keys(KEYWORDS)
   const по = { 0: [], 1: [], 2: [], 3: [], 4: [] }
   const дырявые = []
@@ -345,7 +345,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`  на двух:            ${т.наДвух}`)
   console.log(`  на одной:           ${т.наОдной}`)
   console.log(`  всего фраз:         ${т.фраз}`)
-  console.log(`  по поверхностям:    ${SURFACE_ORDER.map((п) => `${п}=${т.наПоверхность[п]}`).join("  ")}`)
+  console.log(`  по поверхностям:    ${Object.keys(т.наПоверхность).map((п) => `${п}=${т.наПоверхность[п]}`).join("  ")}`)
   console.log("\n  Понятия не на всех четырёх:")
   for (const д of т.дырявые) {
     console.log(`    ${д.ид.padEnd(14)} ${String(д.ru).padEnd(24)} молчит: ${д.молчит.join(", ")}`)

@@ -77,6 +77,6 @@
 одной типизацией. Дальше обязан ехать ИСХОДНЫЙ список, а попутное — рядом
 вторым доводом.
 
-Связано: [[tipizirovannoe-derevo-razbora-zakryvaet-ne-704-a-29]],
+Связано: типизация дерева разбора сама по себе закрывает 29 функций из 704,
 [[structural-size-becomes-total-when-you-descend-into-the-pattern-field]],
 [[dva-pravila-zavershaemosti-vmeste-dayut-574]]

@@ -142,6 +142,9 @@
 - [Планировщик узла переносим: из 224 строк мира в нём пять, а решений 219 — и они печатаются во все восемь целей](planirovshchik-uzla-perenosim-219-resheniy-iz-224-strok.md)
 - [Груз письма едет билетом, а не значением, — и этим отсутствие полиморфизма перестаёт мешать](gruz-pisma-edet-biletom-a-ne-znacheniem.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-v-stdlib-snizhaet-mir-a-ne-razmer.md)
+- [Цена хозяина узла считается по ДВУМ осям, а не по одной](the-host-price-has-two-axes-not-one.md)
+- [Разбор JSON компилятор печатает сам во все восемь целей — хозяину нужна его ВИДИМОСТЬ, а не написание](printed-runner-already-carries-a-json-reader.md)
+- [Асинхронный `connect` рвёт связь, не дав ей завестись, если сокет назначен каналу раньше события «Сокет завёлся»](an-async-connect-tears-the-link-before-it-is-made.md)
 - [Рукописный хозяин живёт по правилам напечатанного проекта, а не по своим](ruchnoy-hozyain-zhivyot-po-pravilam-napechatannogo-proekta.md)
 - [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
@@ -155,6 +158,7 @@
 ## Самораскрутка и метод проверки
 
 - [Прогон работы и сверка целей ловят разное, и ни один из двух не заменяет другого](progon-raboty-i-sverka-celey-lovyat-raznoe.md)
+- [Прогон работы перестал измерять что-либо, когда умер его второй конец, — и остался при этом зелёным по форме](the-work-run-measured-nothing-because-its-reference-end-died.md)
 
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 

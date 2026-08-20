@@ -115,6 +115,7 @@
 
 #include "flang_runtime.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -706,7 +707,8 @@ static const char *const REPL_BLOCKS[] = {
  * чужая, место лучше не показывать вовсе — неверное место хуже отсутствующего.
  */
 static const char *const REPL_FOREIGN[] = {
-    "FLANG_DUPLICATE_NAME", "FLANG_IMPORT_CYCLE", "FLANG_IMPORT_NOT_FOUND", "FLANG_IMPORT_NAME", NULL};
+    "FLANG_DUPLICATE_NAME", "FLANG_IMPORT_CYCLE", "FLANG_IMPORT_NOT_FOUND",
+    "FLANG_IMPORT_AMBIGUOUS", "FLANG_IMPORT_NAME",       NULL};
 
 static bool repl_in_list(const char *const *list, const char *word, size_t bytes) {
   size_t index = 0;
@@ -1456,6 +1458,8 @@ typedef struct repl_decls {
 
 typedef struct repl_import {
   char *category;
+  /* Путь ввоза; NULL — ввоз по имени (`использует «Списки»`), пути нет вовсе.
+     Пустой строкой это записать нельзя: она означала бы каталог сессии. */
   char *from;
   repl_strings only;
   bool has_only;
@@ -1559,7 +1563,7 @@ static repl_import import_copy(const repl_import *item) {
   repl_import copy;
   size_t index = 0;
   copy.category = repl_say(item->category);
-  copy.from = repl_say(item->from);
+  copy.from = item->from == NULL ? NULL : repl_say(item->from);
   copy.has_only = item->has_only;
   strings_init(&copy.only);
   for (index = 0; index < item->only.count; index += 1) {
@@ -1659,8 +1663,11 @@ static bool repl_header_text(const char *module, const repl_imports *imports, co
     size_t inner = 0;
     buf_put(out, "\n  использует «");
     buf_put(out, item->category);
-    buf_put(out, "» из ");
-    buf_json_text(out, item->from);
+    buf_put(out, "»");
+    if (item->from != NULL) {
+      buf_put(out, " из ");
+      buf_json_text(out, item->from);
+    }
     if (item->has_only) {
       buf_put(out, " только ");
       for (inner = 0; inner < item->only.count; inner += 1) {
@@ -1949,6 +1956,332 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
   return repl_value_record(names, values, 2);
 }
 
+/* ═══════════════ ввоз по имени: где ищется модуль «Списки» ═══════════════ */
+
+/*
+ * `использует «Списки»` — без пути. Файла с таким именем на диске нет: есть
+ * файл, чья ПЕРВАЯ значащая строка говорит `модуль «Списки»`. Значит имя надо
+ * искать, и искать в названных местах, а не по всему диску.
+ *
+ * МЕСТА, В ПОРЯДКЕ ПРОСМОТРА:
+ *
+ *   1. каталог самого файла, который пишет `использует`;
+ *   2. каждый каталог ВЫШЕ него — пока в каталоге лежит хоть один `.flang`.
+ *      Каталог без единого файла на flang — это уже не программа, а то, что
+ *      вокруг неё, и подъём там кончается. Условие дешёвое и не зависит от
+ *      того, откуда запущен компилятор;
+ *   3. каталоги из FLANG_MODULE_DIR (через двоеточие) — этим местом приедет
+ *      склад менеджера пакетов, когда он появится;
+ *   4. библиотека, поставленная с компилятором: `<каталог двоичного>/../flang/
+ *      stdlib` и `…/flang/core`, затем `…/share/flang/stdlib` и
+ *      `…/share/flang/core` — тем же правилом, каким уже ищется рантайм C.
+ *
+ * ВГЛУБЬ ПОИСК НЕ ИДЁТ, и это решено замером, а не вкусом. На 210 ввозах этого
+ * репозитория обход ВСЕГО дерева от корня переставляет три ввоза на ЧУЖОЙ
+ * модуль (`docs/zamer-teorkat/iso-object-to-category.flang` вместо
+ * несуществующего `flang/examples/cat/moduli/zakazy.flang` находит
+ * `…/cat/modules/orders.flang`) и заводит один спор имён на сгенерированных
+ * прогонах `benchmarks/`. Правило выше на тех же 210 ввозах даёт 200 попаданий
+ * ровно в тот файл, который назван путём сегодня, и НОЛЬ споров.
+ *
+ * Найдено два файла с одним именем — берутся ОБА, и об этом говорит связывание
+ * (FLANG_IMPORT_AMBIGUOUS), назвав оба пути. Молчаливый выбор первого зависел
+ * бы от порядка `readdir`, а он не назван нигде.
+ */
+
+/** Каталог, из которого запущен бинарник: нужен, чтобы найти его библиотеку. */
+static const char *repl_self_kept = NULL;
+
+/*
+ * Прочитанные каталоги: путь файла → имя его модуля. Без этого каждый ввоз по
+ * имени перечитывал бы каталог целиком, а `flang/self` — это сорок файлов по
+ * сотне килобайт: тридцать ввозов компилятора стоили бы сотню мегабайт чтения
+ * там, где хватает одного прохода. Живёт кеш ровно одну команду и стирается в
+ * конце `repl_closure`: между вводами оболочки файл на диске мог измениться.
+ */
+typedef struct {
+  char *dir;
+  repl_strings paths;
+  repl_strings names;
+} repl_place_index;
+
+static repl_place_index *repl_place_seen = NULL;
+static size_t repl_place_count = 0;
+
+static void repl_place_forget(void) {
+  size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    free(repl_place_seen[index].dir);
+    strings_free(&repl_place_seen[index].paths);
+    strings_free(&repl_place_seen[index].names);
+  }
+  free(repl_place_seen);
+  repl_place_seen = NULL;
+  repl_place_count = 0;
+}
+
+/*
+ * Начало файла, а не весь файл: заголовок модуля стоит первой значащей строкой,
+ * и глубже всех в дереве он отстоит от начала на 6181 байт
+ * (`flang/проверки/встроенные-формы.flang`). Шестьдесят четыре килобайта берут
+ * его с десятикратным запасом и не тянут остальные четыреста.
+ */
+static char *repl_read_head(const char *path, size_t cap, size_t *bytes) {
+  FILE *stream = fopen(path, "rb");
+  char *text = NULL;
+  size_t got = 0;
+  if (stream == NULL) {
+    return NULL;
+  }
+  text = malloc(cap + 1);
+  if (text == NULL) {
+    fclose(stream);
+    repl_oom();
+  }
+  got = fread(text, 1, cap, stream);
+  fclose(stream);
+  text[got] = '\0';
+  *bytes = got;
+  return text;
+}
+
+/**
+ * Имя модуля файла: первая значащая строка, `модуль «Имя»`.
+ *
+ * Пустые строки и `//` пропускаются — ровно так же, как их пропускает сторож
+ * столкновений (`flang/scripts/link-collision-guard.mjs`). Первая же ЗНАЧАЩАЯ
+ * строка обязана быть заголовком модуля: так требует язык, и на дереве это
+ * выполнено у 601 файла из 602, где слово `модуль` вообще встречается.
+ */
+static bool repl_module_name(const char *text, size_t bytes, char **out, size_t *out_bytes) {
+  static const char *const WORDS[3] = {"модуль", "module", "模块"};
+  size_t at = 0;
+  while (at < bytes) {
+    size_t end = at;
+    size_t scan = 0;
+    size_t word = 0;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    scan = at;
+    while (scan < end && (text[scan] == ' ' || text[scan] == '\t' || text[scan] == '\r')) {
+      scan += 1;
+    }
+    if (scan == end || (scan + 1 < end && text[scan] == '/' && text[scan + 1] == '/')) {
+      at = end + 1;
+      continue;
+    }
+    /* Первая значащая строка — она и решает: заголовок модуля стоит первым, так
+       требует язык. Не заголовок — у файла имени модуля нет вовсе. */
+    for (word = 0; word < 3; word += 1) {
+      const size_t length = strlen(WORDS[word]);
+      size_t left = 0;
+      size_t right = 0;
+      if (scan + length >= end || memcmp(text + scan, WORDS[word], length) != 0) {
+        continue;
+      }
+      if (text[scan + length] != ' ' && text[scan + length] != '\t') {
+        continue;
+      }
+      left = scan + length;
+      /* «ёлочки» — U+00AB и U+00BB, в UTF-8 это C2 AB и C2 BB. */
+      while (left + 1 < end && !((unsigned char)text[left] == 0xC2 && (unsigned char)text[left + 1] == 0xAB)) {
+        left += 1;
+      }
+      if (left + 1 >= end) {
+        return false;
+      }
+      left += 2;
+      right = left;
+      while (right + 1 < end && !((unsigned char)text[right] == 0xC2 && (unsigned char)text[right + 1] == 0xBB)) {
+        right += 1;
+      }
+      if (right + 1 >= end || right <= left) {
+        return false;
+      }
+      *out = repl_dup(text + left, right - left);
+      *out_bytes = right - left;
+      return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/** Каталог, прочитанный один раз: пути его `.flang` и имена их модулей. */
+static const repl_place_index *repl_place_read(const char *dir) {
+  DIR *directory = NULL;
+  repl_strings names;
+  repl_place_index *slot = NULL;
+  size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    if (strcmp(repl_place_seen[index].dir, dir) == 0) {
+      return &repl_place_seen[index];
+    }
+  }
+  {
+    repl_place_index *grown = realloc(repl_place_seen, (repl_place_count + 1) * sizeof(repl_place_index));
+    if (grown == NULL) {
+      repl_oom();
+    }
+    repl_place_seen = grown;
+  }
+  slot = &repl_place_seen[repl_place_count];
+  repl_place_count += 1;
+  slot->dir = repl_say(dir);
+  strings_init(&slot->paths);
+  strings_init(&slot->names);
+  directory = opendir(dir[0] == '\0' ? "." : dir);
+  if (directory == NULL) {
+    return slot;
+  }
+  strings_init(&names);
+  for (;;) {
+    const struct dirent *entry = readdir(directory);
+    size_t length = 0;
+    if (entry == NULL) {
+      break;
+    }
+    length = strlen(entry->d_name);
+    if (length > 6 && strcmp(entry->d_name + length - 6, ".flang") == 0) {
+      strings_say(&names, entry->d_name);
+    }
+  }
+  closedir(directory);
+  /* СОРТИРОВКА — не причёсывание: `readdir` отдаёт файлы в порядке файловой
+     системы, и без неё пара одноимённых модулей приезжала бы в разном порядке
+     на разных машинах, а с ней сообщение об их споре одинаково везде. */
+  for (index = 1; index < names.count; index += 1) {
+    size_t back = index;
+    while (back > 0 && strcmp(names.items[back - 1], names.items[back]) > 0) {
+      char *keep = names.items[back - 1];
+      size_t keep_bytes = names.sizes[back - 1];
+      names.items[back - 1] = names.items[back];
+      names.sizes[back - 1] = names.sizes[back];
+      names.items[back] = keep;
+      names.sizes[back] = keep_bytes;
+      back -= 1;
+    }
+  }
+  for (index = 0; index < names.count; index += 1) {
+    char *full = repl_join(dir, names.items[index]);
+    size_t bytes = 0;
+    char *text = repl_read_head(full, 65536, &bytes);
+    char *module = NULL;
+    size_t module_bytes = 0;
+    strings_say(&slot->paths, full);
+    if (text != NULL && repl_module_name(text, bytes, &module, &module_bytes)) {
+      strings_add(&slot->names, module, module_bytes);
+      free(module);
+    } else {
+      strings_say(&slot->names, "");
+    }
+    free(text);
+    free(full);
+  }
+  strings_free(&names);
+  return slot;
+}
+
+/** Есть ли в каталоге хоть один `.flang`: этим кончается подъём вверх. */
+static bool repl_dir_has_flang(const char *dir) {
+  return repl_place_read(dir)->paths.count > 0;
+}
+
+/** Файлы каталога, чей `модуль «…»` совпал с именем. Вглубь не заходит. */
+static void repl_place_scan(const char *dir, const char *name, repl_strings *found) {
+  const repl_place_index *place = repl_place_read(dir);
+  const size_t want = strlen(name);
+  size_t index = 0;
+  for (index = 0; index < place->paths.count; index += 1) {
+    if (place->names.sizes[index] == want && memcmp(place->names.items[index], name, want) == 0) {
+      strings_say(found, place->paths.items[index]);
+    }
+  }
+}
+
+/** Библиотека, поставленная с компилятором: подкаталоги рядом с бинарником. */
+static void repl_library_places(repl_strings *places) {
+  static const char *const SUBS[4] = {"flang/stdlib", "flang/core", "share/flang/stdlib", "share/flang/core"};
+  char *self_dir = NULL;
+  char *parent = NULL;
+  size_t index = 0;
+  const char *named = getenv("FLANG_MODULE_DIR");
+  if (named != NULL && named[0] != '\0') {
+    const char *scan = named;
+    while (*scan != '\0') {
+      const char *colon = strchr(scan, ':');
+      const size_t bytes = colon == NULL ? strlen(scan) : (size_t)(colon - scan);
+      if (bytes > 0) {
+        char *directory = repl_dup(scan, bytes);
+        strings_say(places, directory);
+        free(directory);
+      }
+      if (colon == NULL) {
+        break;
+      }
+      scan = colon + 1;
+    }
+  }
+  self_dir = repl_self_dir(repl_self_kept);
+  if (self_dir == NULL) {
+    return;
+  }
+  parent = repl_dirname(self_dir);
+  for (index = 0; index < 4; index += 1) {
+    char *candidate = repl_join(parent, SUBS[index]);
+    if (repl_exists(candidate)) {
+      strings_say(places, candidate);
+    }
+    free(candidate);
+  }
+  free(parent);
+  free(self_dir);
+}
+
+/** Все места для файла `importer`, в порядке просмотра. */
+static void repl_places_of(const char *importer, repl_strings *places) {
+  char *directory = repl_dirname(importer);
+  char *walk = repl_say(directory);
+  for (;;) {
+    char *up = NULL;
+    if (!strings_has(places, walk, strlen(walk))) {
+      strings_say(places, walk);
+    }
+    if (strcmp(walk, "/") == 0 || strcmp(walk, ".") == 0) {
+      break;
+    }
+    up = repl_dirname(walk);
+    free(walk);
+    walk = up;
+    if (!repl_dir_has_flang(walk)) {
+      break;
+    }
+  }
+  free(walk);
+  free(directory);
+  repl_library_places(places);
+}
+
+/**
+ * Модуль по имени: первое место, где он нашёлся, отдаёт ВСЕ свои совпадения.
+ * Ничего не нашлось — молчим: скажет об этом связывание, и скажет кодом.
+ */
+static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
+  repl_strings places;
+  size_t index = 0;
+  strings_init(&places);
+  repl_places_of(importer, &places);
+  for (index = 0; index < places.count; index += 1) {
+    repl_place_scan(places.items[index], name, found);
+    if (found->count > 0) {
+      break;
+    }
+  }
+  strings_free(&places);
+}
+
+
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
@@ -1991,6 +2324,29 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
         strings_say(queue, full);
         free(relative);
         free(full);
+        continue;
+      }
+      /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
+         тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
+         «путь есть, он пустой». */
+      {
+        const char *name = NULL;
+        size_t name_bytes = 0;
+        repl_strings found;
+        size_t at = 0;
+        if (!zn_field_text(items[inner], "category", &name, &name_bytes) || name_bytes == 0) {
+          continue;
+        }
+        strings_init(&found);
+        {
+          char *wanted = repl_dup(name, name_bytes);
+          repl_find_module(from, wanted, &found);
+          free(wanted);
+        }
+        for (at = 0; at < found.count; at += 1) {
+          strings_say(queue, found.items[at]);
+        }
+        strings_free(&found);
       }
     }
   }
@@ -2547,6 +2903,7 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     }
     list = fl_list(items, paths->count);
   }
+  repl_place_forget();
   return list;
 }
 
@@ -2563,9 +2920,25 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
   strings_say(&paths, session->file);
   strings_say(&texts, source);
   for (index = 0; index < imports->count; index += 1) {
-    char *full = repl_resolve(session->base, imports->items[index].from);
-    strings_say(&queue, full);
-    free(full);
+    const repl_import *item = &imports->items[index];
+    if (item->from == NULL) {
+      /* Ввоз по имени: те же места, что и у файла на диске, только отсчёт идёт
+         от файла сессии. */
+      repl_strings found;
+      size_t at = 0;
+      strings_init(&found);
+      repl_find_module(session->file, item->category, &found);
+      for (at = 0; at < found.count; at += 1) {
+        strings_say(&queue, found.items[at]);
+      }
+      strings_free(&found);
+      continue;
+    }
+    {
+      char *full = repl_resolve(session->base, item->from);
+      strings_say(&queue, full);
+      free(full);
+    }
   }
   list = repl_closure(&paths, &texts, &queue);
   strings_free(&paths);
@@ -3584,14 +3957,13 @@ static void repl_merge_header(repl_session *session, fl_value program, const cha
       repl_import item;
       size_t scan = 0;
       bool replaced = false;
-      if (!zn_field_text(items[inner], "from", &path, &path_bytes)) {
-        continue;
-      }
       zn_field_text(items[inner], "category", &category, &category_bytes);
-      {
+      if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
         char *own = repl_dup(path, path_bytes);
         item.from = repl_rewrite_path(own, from, session->base);
         free(own);
+      } else {
+        item.from = NULL;
       }
       item.category = category == NULL ? repl_say("") : repl_dup(category, category_bytes);
       strings_init(&item.only);
@@ -3607,7 +3979,11 @@ static void repl_merge_header(repl_session *session, fl_value program, const cha
         }
       }
       for (scan = 0; scan < imports->count; scan += 1) {
-        if (strcmp(imports->items[scan].from, item.from) == 0) {
+        const repl_import *had = &imports->items[scan];
+        const bool same = item.from == NULL || had->from == NULL
+                              ? had->from == item.from && strcmp(had->category, item.category) == 0
+                              : strcmp(had->from, item.from) == 0;
+        if (same) {
           import_free(&imports->items[scan]);
           imports->items[scan] = item;
           replaced = true;
@@ -4443,9 +4819,11 @@ static bool repl_command_save(repl_session *session, const char *path) {
   imports_init(&imports);
   for (index = 0; index < session->imports.count; index += 1) {
     repl_import item = import_copy(&session->imports.items[index]);
-    char *rewritten = repl_rewrite_path(item.from, session->base, directory);
-    free(item.from);
-    item.from = rewritten;
+    if (item.from != NULL) {
+      char *rewritten = repl_rewrite_path(item.from, session->base, directory);
+      free(item.from);
+      item.from = rewritten;
+    }
     imports_push(&imports, item);
   }
   buf_init(&source);
@@ -8039,7 +8417,7 @@ static int facts_file(int argc, char **argv) {
 
 /*
  * ХОЗЯИН С ЭФФЕКТАМИ. Всё, что здесь есть, — POSIX, и потому всё это живёт в
- * этом файле, а не в переносимом `flang_cli.c`: каталоги (`opendir`), процессы
+ * этом файле, а не в переносимом `flang_cli.c`: процессы
  * (`fork`/`execvp`/`waitpid`), сокеты, часы. Программа на flang ни одного из
  * этих вызовов не делает и делать не может — она СТРОИТ ОПИСАНИЕ действия, а
  * исполняет его тот, кто снаружи.
@@ -8055,7 +8433,6 @@ static int facts_file(int argc, char **argv) {
  * программы догадываться, что означает ноль.
  */
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -12207,6 +12584,10 @@ int fl_human_bare(void) {
  */
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
+  /* Откуда запущен бинарник — запоминается здесь и только здесь: библиотеку,
+     поставленную рядом с ним, ищет `repl_library_places`, а до неё довод
+     `self` не доходит (`check` его не получает). */
+  repl_self_kept = self;
   const bool named_help = human_word(command, "--help", "-h", "help");
   /* Версия отвечает РАНЬШЕ справки: `flang --help --version` — это вопрос о
      версии, а не просьба показать справку о ней. Порядок тот же, что у свидетеля

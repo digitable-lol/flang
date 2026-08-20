@@ -495,8 +495,8 @@
   ],
   "долг": {
     "CONTRIBUTING.md": 7,
-    "README.md": 9,
-    "README.ru.md": 12,
+    "README.md": 0,
+    "README.ru.md": 0,
     "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,

@@ -51,13 +51,10 @@ warning, and the message names what is missing — "с запасом". Name the
 the program is accepted, but then `надзор` becomes mandatory, otherwise
 `FLANG_UNCOVERED_FAILURE`: a failure nobody catches does not pass either.
 
-This is guarded by `flang/test/conc.test.mjs`, the test "нетотальный обработчик
-без запаса витков — ошибка, а не предупреждение". The test looks at the severity
-precisely because a warning can be missed and an error cannot.
-
-```sh
-LC_ALL=C.UTF-8 node --test --test-name-pattern='обработчик' flang/test/conc.test.mjs
-```
-
-Run of 18 August: five tests, all green, 148 ms.
+This rule is about the `процесс` declaration, and process declarations are not
+judged by the binary compiler at all: it says so in words and answers with exit
+code 2. They were judged by separate tooling written in JavaScript and removed
+together with the second implementation of the language; there is no new judge
+yet. So the severity cannot be demonstrated today — the rule is written down, its
+check is waiting to be moved over.
 

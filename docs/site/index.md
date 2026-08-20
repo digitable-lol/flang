@@ -57,7 +57,9 @@ flang run hello.flang --function Double --args '{"n": 21}'
 - [Tutorial](tutorial.html) — six chapters, from a first function to a claim the
   kernel proved;
 - [Operations](operations.html) and [Language reference](language.html) — what
-  does what, for when the path ends and the work begins.
+  does what, for when the path ends and the work begins;
+- [How to keep learning the language](learning.html) — a reading order in eight
+  steps: what comes after what, and what counts as a step taken.
 
 ## How this differs from languages you know
 
@@ -77,6 +79,21 @@ codes, step counters. The targets are {{цели.список}}.
 **No loops, no mutable variables, no exceptions.** A list is walked with a fold,
 branching is `if … then … else`, a failure comes back as a value. This is not
 purity for its own sake: the termination proof rests on exactly these limits.
+
+## What the language can do today
+
+Not "planned" — what lies in the tree and runs on a command. The border of every
+line is named by its own page; all three are written so that the border stands
+in the text rather than in a footnote.
+
+| | what exists | where the border is |
+| --- | --- | --- |
+| **Emitting** | one program is emitted into {{цели.поАнглийски}} languages: {{цели.список}} | sockets, clocks and the process table are not emitted |
+| **[Databases](database.html)** | PostgreSQL: the protocol is built and parsed, {{база.функций}} total functions, {{база.примеров}} examples | `trust` and cleartext password only, no encryption, and the wire conversation does not run today |
+| **[Processes and supervision](processes.html)** | processes, supervision, back pressure, a scheduler written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
+| **[The categorical surface](categories.html)** | monoid, monad, functor, category, isomorphism | the shape is proved, the laws are checked on a grid, and the binary has no judge for them |
+| **Library** | {{библиотека.файлов}} modules, {{библиотека.функций}} functions | not every claim about behaviour is proved, see below |
+| **Browser** | an application written entirely in flang: `web/app/` | the page looks for modules of the removed second implementation and does not come up today |
 
 ## How this differs from Coq, Agda and Lean
 
@@ -115,8 +132,8 @@ pitch, but not one of them has been dropped:
   measurement took every ninth function out of all {{библиотека.функций}} library
   functions, so the convenient ones could not be picked, and it was run twice on
   the same material — [what backs that](proofs.html);
-- **speed: we are 1.28× faster than Python, Node is 1.81× faster than us, and
-  hand-written C is 4.52× faster** (geometric mean over five tasks,
+- **speed: the emitted program is 1.28× faster than Python, 1.81× slower than
+  Node and 4.52× slower than hand-written C** (geometric mean over five tasks,
   [the speed report](../benchmark-speed.html) — in Russian). The gap to C is
   **not the price of provability**: where a proof leaves no run-time check
   behind, the difference disappears into the spread between runs. A check is
@@ -144,8 +161,8 @@ pitch, but not one of them has been dropped:
   line is drawn explicitly, and it matters more than any number on this page.
 - [Roadmap](roadmap.html) — done, in progress, not started, decided against. No
   dates.
-- [Language specification](../spec.html) — in Russian; the full contract, for
-  when you need precision.
+- [How to keep learning the language](learning.html) — a reading order, for when
+  there are many pages and no obvious place to start.
 - [For contributors](contributing.html) — measurements, the knowledge base, the
-  journals: everything a project participant needs and a user of the language
-  does not.
+  journals and the full surface contracts: everything a project participant
+  needs and a user of the language does not.

@@ -92,6 +92,26 @@ hello.flang: проверено — разбор, типы, завершаемо
 Exit code 0. Had termination not been provable, it would be exit code 1 and a
 diagnostic with a code, a line and a column.
 
+Behind the single word `check` stand six jobs in a row, and stopping at any of
+them means there will be no emission: what is not checked is not emitted.
+
+```mermaid The path of a program: from source to the emit targets
+flowchart LR
+  A[source .flang] --> B[parsing]
+  B --> C[types]
+  C --> D[termination]
+  D --> E[proof kernel]
+  E --> F[examples]
+  F --> G([emitted into every target])
+  B -.->|trouble| X([refusal with a code,<br>a line and a column])
+  C -.->|trouble| X
+  D -.->|trouble| X
+  E -.->|trouble| X
+  F -.->|trouble| X
+  class G vyvod
+  class X otkaz
+```
+
 **The answer comes in Russian, and that is not a fault of your file.** The
 surfaces are about the words of the language, not about the compiler's own
 prose: the prose of a diagnostic is Russian whichever surface you write on, and
@@ -270,16 +290,22 @@ the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
 - [Four writing surfaces](../surfaces.html) (in Russian) — the same program in
   Russian, English, Esperanto and Chinese, and one tree under all four
 
-### For those developing the language itself
+### Emitting into the other targets
 
-The full compiler lives in the repository and is installed through npm. It emits
-into all {{цели.поАнглийски}} targets — and so does the binary now; into Rust,
-for example:
+A program is emitted into all {{цели.поАнглийски}} targets by one and the same
+command — into Rust, for example:
 
 ```bash
-node flang/bin/flang.mjs emit hello.flang --target rust --out ./output-rust
+flang emit hello.flang --target rust --out ./output-rust
 ```
 
-Seven files, 126 679 bytes. It also builds this site and recomputes its numbers.
-Someone who merely writes in the language does not need it: everything above was
-done by the installed binary.
+The answer: "напечатано файлов 7, байт 128 859". Next to the emitted sources lie
+a `Makefile` and a `Cargo.toml`: `cargo build` builds it, and the resulting
+`flang_cli` calls the same function.
+
+Emitting also states what it did not do — nothing is passed over in silence:
+examples are **not** run during emission (they are computed by the evaluator
+written in the language itself, and on the largest programs it does not fit in
+the step limit), and the binary compiler does not typecheck the arguments of the
+emitted program. The first is cured by `flang test`, the second is a border
+named in [Known limitations](limits.html).

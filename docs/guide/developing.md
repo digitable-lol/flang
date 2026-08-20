@@ -2,9 +2,8 @@
 
 # Developing the language
 
-The JavaScript witness implementation stays for good: it is what the fixed point is checked
-against, and deleting it would delete the check. Working on it takes a clone and nothing else:
-the package has no dependencies and there is nothing to build, so the scripts run straight after
+There is one compiler, written in flang itself and built into a binary. Working on it takes a
+clone and nothing else: the package has no dependencies, so the commands run straight after
 `git clone`.
 
 ```bash
@@ -53,15 +52,18 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 
-**There are exactly two commands in this tree.** `flang/bin/` holds `flang` and `flang-lsp`,
-nothing more; `npm link` puts those same two into `$PATH`.
-
-Tests:
+Checks:
 
 ```bash
-npm test              # one suite: flang/test/*.test.mjs, the whole language
-./ярлык test:backends # the eight code generators on their own
+sh flang/проверки/обход.sh          # the walker's checks, run by the binary
+sh flang/проверки/обход-примеров.sh # every example in the tree
+sh scripts/raskrutka.sh --check     # the seed against what the sources emit
+./ярлык тесты                       # the JavaScript suite — does not start today
 ```
+
+The former all-in-one `npm test` does not start today: its preparation step imports a module of
+the removed second implementation and fails before the first check. Moving the checks onto the
+binary is separate work, and until it is done only the commands above count as green.
 
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
 the same contract everywhere, which is what makes it usable from CI, editors and agents. The one

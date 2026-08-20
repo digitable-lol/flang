@@ -160,8 +160,8 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык preflight` | the toolchain report on its own |
 | `./ярлык bootstrap` · `./ярлык bootstrap:check` · `./ярлык stroki:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык emit:check` · `./ярлык names:check` | the five prose guards below |
-| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`node scripts/check-licensing.mjs`), not through the shortcut |
-| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`node scripts/link-guard.mjs`) |
+| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-licenzii.flang`), not through the shortcut |
+| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-ssylok.flang`) |
 | `./ярлык site` · `./ярлык site:check` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык numbers` · `./ярлык numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `./ярлык glossary` · `./ярлык glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
@@ -170,7 +170,6 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык changelog:page` · `./ярлык changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
 | `./ярлык releases:page` · `./ярлык releases:page:check` | print the releases page, both halves of it, and check it against the tags |
 | `./ярлык spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
-| `./ярлык comparison:check` | the guard that a comparison does not preprocess the witness the way it preprocesses the reference |
 | `./ярлык rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
 | `./ярлык memory:check` | every peak-memory number stated in prose, remeasured by a run |
 | `./ярлык tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |

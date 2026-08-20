@@ -393,6 +393,8 @@
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
 - [Двоичный хозяин обрывает содержимое на первом нулевом октете, и драйвер PostgreSQL по проводу не идёт](dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
+- [Октетная труба превращает счёт рамки из «ширины знака в UTF-8» в счёт элементов, и весь драйвер PostgreSQL стоит на двух строках](an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count.md)
+- [Слияние, взявшее файл «целиком у них», роняет чужую работу молча — и ADR остаётся стоять с пометкой «реализовано»](a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)
 - [Свой генератор машинного кода — примерно месяц, и на доказуемость не влияет](our-own-machine-code-generator.md)

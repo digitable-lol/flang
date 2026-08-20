@@ -5,8 +5,8 @@
 This page shows where the `flang` command comes from when the compiler is
 written in flang itself, and how it is checked that the built compiler
 understands the language the same way its sources do. By the end you can rebuild
-the compiler from scratch with nothing but `cc` and `make`, and see with your own
-eyes that the circle closes.
+the compiler from scratch with nothing but `cc` and `make`, run that check
+yourself and read its answer — today it refuses, and the reason is below.
 
 ## The problem
 
@@ -32,6 +32,27 @@ itself from the flang sources, a second binary is built from that emission, and
 If they match, the built compiler understands the language exactly as the
 sources it was built from do. If they do not, they have diverged — and what
 diverged is shown by file and by byte.
+
+## Today the circle is open, and here is where
+
+The check refuses, and it refuses loudly. On this tree
+`sh scripts/raskrutka.sh --check` never reaches the file comparison: the compiler
+built from the seed **refuses to emit today's sources** — 29 diagnostics, the
+first `FLANG_PARSE`, then `FLANG_UNKNOWN_NAME` on the names `«Вызвать»`, `«Знач»`,
+`«Итог прогона»`, `«Готовая программа»`, and one `FLANG_NOT_TOTAL`.
+
+```
+flang emit: печать отменена — программа не проходит проверку, замечаний 29.
+```
+
+It reads unambiguously: **the seed has fallen behind the sources.** Names and
+forms have appeared in the sources that the compiler in the seed does not know —
+and until the seed is re-emitted, the circle does not close: there is a first
+binary but no second one.
+
+This is not a broken build — `make -C bootstrap` works, and the `flang` it
+produces checks and emits ordinary programs. What is open is the circle itself:
+the step where the compiler proves it understands itself.
 
 ## How to run it
 
@@ -71,8 +92,9 @@ today's compiler disagreeing with a recorded answer — and nothing beyond that.
 disagreement between two independent implementations is not caught: there is
 nothing to compare against.
 
-The bootstrap circle itself survived and works without the second
-implementation: the compiler is now emitted by itself, not by it.
+The bootstrap circle never depended on the second implementation and does not
+now: the compiler emits itself. What has it open today is a different reason —
+the seed has fallen behind — not the removal.
 
 ## What the circle does not check
 

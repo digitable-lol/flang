@@ -49,9 +49,9 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { findExecutable } from "../src/toolchain.mjs"
+import { позвать } from "../scripts/dvoichnyy.mjs"
 import { globSync } from "./glob.mjs"
-import { missingToolchain } from "./toolchain-guard.mjs"
+import { findExecutable, missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
@@ -256,10 +256,11 @@ for (const цель of ЦЕЛИ) {
     const каталог = join(рабочий, цель.имя)
     const среда = средаСборки(рабочий, { LC_ALL: "C.UTF-8" })
 
-    const печать = spawnSync(process.execPath, [join(корень, "flang/bin/flang.mjs"), "emit", эталон, "--target", цель.имя, "--out", каталог], {
-      cwd: корень, encoding: "utf8", env: среда, maxBuffer: 256 * 1024 * 1024,
-    })
-    assert.equal(печать.status, 0, `печать в ${цель.имя} отказала:\n${печать.stdout}\n${печать.stderr}`)
+    /* Печатает ДВОИЧНЫЙ: реализации компилятора на JavaScript в дереве больше
+       нет, и звать её через `flang/bin/flang.mjs` некого. Ключей у печати те же
+       три, поэтому переделка здесь механическая. */
+    const печать = позвать(["emit", эталон, "--target", цель.имя, "--out", каталог])
+    assert.equal(печать.код, 0, `печать в ${цель.имя} отказала:\n${печать.вывод}\n${печать.ошибки}`)
 
     if (цель.собрать !== null) {
       const сборка = spawnSync("make", цель.собрать, { cwd: каталог, encoding: "utf8", env: среда, maxBuffer: 256 * 1024 * 1024, timeout: 900_000 })

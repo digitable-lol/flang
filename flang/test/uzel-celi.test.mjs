@@ -46,13 +46,14 @@
  */
 import assert from "node:assert/strict"
 import { spawn, spawnSync } from "node:child_process"
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { findExecutable } from "../src/toolchain.mjs"
-import { missingToolchain } from "./toolchain-guard.mjs"
+import { позвать } from "../scripts/dvoichnyy.mjs"
+import { globSync } from "./glob.mjs"
+import { findExecutable, missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
@@ -75,6 +76,15 @@ const ЦЕЛИ = [
        `func main`, и два `main` в одном пакете не собираются. */
     собрать: (каталог) => ["go", ["build", "-o", "flang_node", "./node"], "node"],
     запуск: (каталог) => [join(каталог, "flang_node"), []],
+  },
+  {
+    имя: "csharp", тулчейн: "dotnet", ищем: ["dotnet"], хозяин: "node.cs",
+    /* Хозяин кладётся РЯДОМ с напечатанным, а не в свой каталог: сборка C#
+       забирает все `*.cs` дерева проекта. Вторая точка входа при этом не мешает
+       первой — её выбирает КЛЮЧ СБОРКИ `-p:StartupObject`, перекрывающий
+       свойство напечатанного `flang.csproj`. Напечатанное не правится. */
+    собрать: () => ["dotnet", ["build", "-v", "quiet", "--nologo", "-p:StartupObject=HozyainUzla"], "."],
+    запуск: (каталог, чем) => [чем, [globSync("bin/**/flang.dll", { cwd: каталог })[0]]],
   },
 ]
 
@@ -126,13 +136,44 @@ function новаяЗапись(записи, подходит, срок) {
   })
 }
 
+/**
+ * Второй конец каждой пары — узел на JavaScript, `flang/conc/bin/node.mjs`.
+ *
+ * На стволе он НЕ ЗАПУСКАЕТСЯ, и это не поломка узла: 20 августа со ствола
+ * удалили реализацию компилятора на JavaScript (`fe8e8a37`, 48 файлов), а
+ * `node.mjs` ввозит из неё разбор, связывание и печать, а `distributed.mjs` —
+ * ещё и планировщик из `flang/src/conc.mjs`. Пока их не перевели на двоичный,
+ * сверять новую цель здесь не с чем.
+ *
+ * Прогон об этом МОЛЧАТЬ НЕ ИМЕЕТ ПРАВА: зелёный набор, который ничего не
+ * проверил, — худший вид поломки. Поэтому пропуск НАЗВАН, и названа команда,
+ * которой проверка воспроизводится на дереве до удаления.
+ */
+const ПРОПАВШЕЕ = "flang/src/conc.mjs"
+const сосед = existsSync(join(корень, ПРОПАВШЕЕ))
+const почемуНетСоседа =
+  `узел на JavaScript не поднимается: «${ПРОПАВШЕЕ}» удалён со ствола вместе со всей ` +
+  "реализацией на JavaScript, а `flang/conc/bin/node.mjs` и `flang/conc/distributed.mjs` " +
+  "ввозят из неё разбор, печать и планировщик. Перевод их на двоичный — отдельная работа " +
+  "(«Долг, названный прямо» в состоянии соседа). Пара «новая цель ↔ js» до тех пор " +
+  "воспроизводится на дереве ДО удаления: " +
+  "git worktree add /tmp/uzel-baza --detach 4fce859d && node --test flang/test/uzel-celi.test.mjs"
+
+/** Напечатанная в JavaScript программа примера — то, по чему считается хэш рукопожатия. */
+function напечатаннаяПрограмма(каталог) {
+  const куда = join(каталог, "программа-js")
+  const печать = позвать(["emit", "flang/conc/examples/distributed.flang", "--target", "js", "--out", куда])
+  assert.equal(печать.код, 0, `печать программы в js отказала:\n${печать.вывод}\n${печать.ошибки}`)
+  const имя = globSync("*.js", { cwd: куда }).find((ф) => !ф.startsWith("flang_cli"))
+  assert.ok(имя !== undefined, "печать программы не отдала модуля")
+  return readFileSync(join(куда, имя), "utf8")
+}
+
 /** Напечатать узел в цель, положить рядом хозяина и собрать. */
 function собратьУзел(каталог, цель) {
   const среда = средаСборки(каталог, { LC_ALL: "C.UTF-8" })
-  const печать = spawnSync(process.execPath, [
-    join(корень, "flang/bin/flang.mjs"), "emit", "flang/conc/uzel-zamer.flang", "--target", цель.имя, "--out", каталог,
-  ], { cwd: корень, encoding: "utf8", env: среда, maxBuffer: 256 * 1024 * 1024 })
-  assert.equal(печать.status, 0, `печать узла в ${цель.имя} отказала:\n${печать.stdout}\n${печать.stderr}`)
+  const печать = позвать(["emit", "flang/conc/uzel-zamer.flang", "--target", цель.имя, "--out", каталог])
+  assert.equal(печать.код, 0, `печать узла в ${цель.имя} отказала:\n${печать.вывод}\n${печать.ошибки}`)
 
   const собрать = цель.собрать === null ? null : цель.собрать(каталог)
   const куда = собрать === null ? каталог : join(каталог, собрать[2] ?? ".")
@@ -155,6 +196,7 @@ for (const цель of ЦЕЛИ) {
   if (чем === undefined || чем === null) {
     return missingToolchain(t, цель.тулчейн, `тулчейн «${цель.тулчейн}» не найден — пропуск`)
   }
+  if (!сосед) return t.skip(почемуНетСоседа)
 
   const каталог = рабочийКаталог(`uzel-${цель.имя}`)
   const узлы = []
@@ -181,14 +223,7 @@ for (const цель of ЦЕЛИ) {
        рукопожатие не сойдётся, и это правильно: разные программы говорить не
        должны. */
     const { createHash } = await import("node:crypto")
-    const { emitJs } = await import("../src/emit/js.mjs")
-    const { parse } = await import("../src/parser.mjs")
-    const { linkProgram } = await import("../src/link.mjs")
-    const путьПрограммы = "flang/conc/examples/distributed.flang"
-    const { diagnostics: _, ...программа } = await linkProgram(
-      корень + путьПрограммы, readFileSync(корень + путьПрограммы, "utf8"), parse,
-    )
-    const хэш = createHash("sha256").update(emitJs(программа).files[0].content, "utf8").digest("hex")
+    const хэш = createHash("sha256").update(напечатаннаяПрограмма(каталог), "utf8").digest("hex")
     assert.equal(хэш.slice(0, 12), поднят.хэш, "хэш посчитан не так, как считает узел")
 
     /* ── узел на второй цели, звонящий, несёт «Счётчика» ──────────────────── */
@@ -264,7 +299,7 @@ for (const цель of ЦЕЛИ) {
  *  `node.py` каждая такая строка помечена комментарием «# МИР», и пометка эта
  *  проверяемая — снимите её с настоящего вызова, и число здесь соврёт заметно. */
 function мираВФайле(путь, цель) {
-  const знак = цель === "go" ? "//" : "#"
+  const знак = цель === "go" || цель === "csharp" ? "//" : "#"
   const строки = readFileSync(путь, "utf8").split("\n")
   const кода = строки.filter((это) => это.trim() !== "" && !это.trim().startsWith(знак)).length
   const мира = строки.filter((это) => это.includes(`${знак} МИР`)).length
@@ -276,22 +311,20 @@ test("начальные состояния узла и программы — �
      счёт» не связано» и с ключом «только», и без него), поэтому два начальных
      состояния выписаны в `uzel-zamer.flang` ЗАНОВО. Два источника правды об
      одном расходятся молча — вот проверка, которая молчать не даёт. */
-  const { readFileSync: читать } = await import("node:fs")
-  const { parse } = await import("../src/parser.mjs")
-  const { linkProgram } = await import("../src/link.mjs")
-  const { evaluate } = await import("../src/interpret.mjs")
-
-  const посчитать = async (путь, имя) => {
-    const { diagnostics: _, ...программа } = await linkProgram(корень + путь, читать(корень + путь, "utf8"), parse)
-    return JSON.stringify(evaluate(программа, имя, {}).value)
+  /* Считает ДВОИЧНЫЙ: вычислителя на JavaScript в дереве больше нет.
+     `flang run --function` отдаёт значение JSON-ом, и сверять надо его текст. */
+  const посчитать = (путь, имя) => {
+    const итог = позвать(["run", корень + путь, "--function", имя])
+    assert.equal(итог.код, 0, `«${имя}» из «${путь}» не вычислилось:\n${итог.вывод}\n${итог.ошибки}`)
+    return итог.вывод.trim()
   }
   const пары = [
     ["Начальный счёт", "пустой счёт"],
     ["Начальные записи", "пустые записи"],
   ]
   for (const [уУзла, уПрограммы] of пары) {
-    const узел = await посчитать("flang/conc/uzel-zamer.flang", уУзла)
-    const программа = await посчитать("flang/conc/examples/distributed.flang", уПрограммы)
+    const узел = посчитать("flang/conc/uzel-zamer.flang", уУзла)
+    const программа = посчитать("flang/conc/examples/distributed.flang", уПрограммы)
     assert.equal(узел, программа, `«${уУзла}» узла разошлось с «${уПрограммы}» программы`)
   }
   console.log(`начальных состояний сверено ${пары.length}, расхождений 0`)
@@ -299,7 +332,14 @@ test("начальные состояния узла и программы — �
 
 test.after(() => {
   /* Цель js считается работающей без отдельного прогона: она — второй конец
-     каждой пары выше, и без её работы ни одна пара не сошлась бы. */
+     каждой пары выше, и без её работы ни одна пара не сошлась бы. Ровно поэтому
+     её нельзя приписывать себе, когда пар НЕ БЫЛО: без соседа этот прогон не
+     измерил ничего, и число обязано это показывать, а не прятать. */
+  if (!сосед) {
+    console.log("ПОЛНЫЙ УЗЕЛ: НЕ ИЗМЕРЕНО НА ЭТОМ ДЕРЕВЕ")
+    console.log(почемуНетСоседа)
+    return
+  }
   const всего = целейРаботает.length + 1
   console.log(`ПОЛНЫЙ УЗЕЛ РАБОТАЕТ НА ${всего} ЦЕЛЯХ ИЗ 8: js, ${целейРаботает.join(", ")}`)
   console.log("решения при этом печатаются во все восемь — это другое число и другой прогон")

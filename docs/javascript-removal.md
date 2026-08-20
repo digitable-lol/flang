@@ -657,10 +657,10 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/src/types.mjs` | 7910 | `self/types.flang` | 10 имён у 5 потребителей пути |
-| `flang/src/parser.mjs` | 4695 | `self/parser.flang` | разбор нужен всем |
+| `flang/src/types.mjs` | 7962 | `self/types.flang` | 10 имён у 5 потребителей пути |
+| `flang/src/parser.mjs` | 4738 | `self/parser.flang` | разбор нужен всем |
 | `flang/src/totality.mjs` | 1803 | `self/totality.flang` | 3 имени у 3 потребителей |
-| `flang/src/interpret.mjs` | 1366 | `self/interpret.flang` | 6 имён у **13** потребителей — на нём считают все |
+| `flang/src/interpret.mjs` | 1375 | `self/interpret.flang` | 6 имён у **13** потребителей — на нём считают все |
 | `flang/src/lexer.mjs` | 1094 | `self/lexer.flang` | 6 имён у 2 |
 | `flang/src/builtins.mjs` | 956 | нет | 25 имён у **20** потребителей: встроенные формы самого языка |
 | `flang/src/defunc.mjs` | 888 | `self/defunc.flang` | 1 имя у 1 |
@@ -677,7 +677,7 @@ flang и **что именно держит**.
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/src/self.mjs` | 1100 | нет и не нужен | это ОН зовёт эталонов |
+| `flang/src/self.mjs` | 1366 | нет и не нужен | это ОН зовёт эталонов |
 | `flang/src/bridge.mjs` | 131 | нет и не нужен | перевод значений в обе стороны |
 
 Уходят последними по построению: пока хоть один эталон зовётся из JavaScript,
@@ -944,7 +944,7 @@ flang не может ответить на вопрос «чем кончилс
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/proof/reduce.mjs` | 2814 | `self/proof-kernel.flang` | 7 имён у 2; горячий цикл переписывания |
+| `flang/proof/reduce.mjs` | 2858 | `self/proof-kernel.flang` | 7 имён у 2; горячий цикл переписывания |
 | `flang/src/proofterm.mjs` | 2380 | `self/proofterm.flang` | проводка головы конвейера |
 | `flang/proof/initial.mjs` | 1411 | `self/proof-initial.flang` | 9 имён у 1; тот же горячий цикл |
 
@@ -1012,7 +1012,7 @@ flang не может ответить на вопрос «чем кончилс
 
 | Файл | Строк | Эталон на flang | Что держит |
 |---|---:|---|---|
-| `flang/bin/flang.mjs` | 2094 | `self/cli.flang` (чистая половина) | эффекты: файлы, каталоги, поток, код возврата |
+| `flang/bin/flang.mjs` | 2139 | `self/cli.flang` (чистая половина) | эффекты: файлы, каталоги, поток, код возврата |
 
 Эталон покрывает то, что РЕШАЕТ; всё, что ТРОГАЕТ МИР, на flang невыразимо —
 эффектов в языке нет by design. Оболочка уходит не переписыванием, а тем же

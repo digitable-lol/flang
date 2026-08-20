@@ -75,7 +75,7 @@ them, in the hardware — but not in a separate list of exemptions.
 
 This half of the page matters more than the first.
 
-### Substantive claims: 5 out of 20
+### Substantive claims: 9 out of 20
 
 Empty statements can be proved, and the figure is easy to inflate. The
 postcondition `результат равен (0 минус х)` over the body `0 минус х` closes in

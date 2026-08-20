@@ -88,7 +88,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What changed
 
-- `тотальная` stopped promising more than is proved: where termination rests on a number, a measure guard is emitted.
+- `тотальная` stopped promising more than is proved: where termination rests on a number, a run-time check that the measure decreases is emitted.
 - The library collapsed along its types once polymorphism was closed; the second parameter found a defect in self-application.
 
 ## 0.4.6 — 7 August 2026

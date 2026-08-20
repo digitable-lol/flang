@@ -198,6 +198,7 @@
 - [Номера строк и числа в задании — это дешёвая проверка того, на той ли ветке заведено рабочее дерево](line-numbers-in-a-task-verify-the-branch-it-was-written-against.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
 - [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
+- [Круг взаимной рекурсии по дереву разрезается записью-нагрузкой, слияние функций не обязательно](krug-obhoda-dereva-razrezaetsya-zapisyu-nagruzki.md)
 - [Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом](a-sticky-bit-in-a-shared-tree-stops-git-merge.md)
 - [Объединение вариантов закрытой суммы — законное слияние, и оно обязано покраснеть у каждого, кто эту сумму разбирает](merging-two-branches-into-one-closed-sum.md)
 - [Два ядра, выросшие порознь от одной точки, текстом не сливаются](two-cores-do-not-merge-as-text.md)

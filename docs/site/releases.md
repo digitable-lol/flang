@@ -32,8 +32,8 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What appeared
 
-- All eight emission targets now have a twin written in flang itself. `js` was the last one closed; no target is left without.
-- The proof ledger is computed by a layer written in flang: `flang check --proof` no longer calls the JavaScript reference.
+- Each of the eight emission targets is now also written in flang itself; `js` was the last one closed. No target is left without its own flang version.
+- The proof report is computed by code written in flang itself: `flang check --proof` no longer calls the JavaScript implementation.
 - The type `вес` — the segment from zero to infinity. Three operations over it are allowed, four refuse and show the pair they refused on.
 - Exact decimals: money is computed without a binary fraction, and the binary handles it itself.
 - The permission "safe to repeat" is now granted explicitly instead of being assumed.
@@ -45,7 +45,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - Emitted C got faster: link-time optimisation is on by default — that is 1.14× — and the type check is not emitted where the type is already proved: 4.9× on arithmetic, 1.6× together.
 - The memory region in the C target learned to roll back: merge sort over four thousand numbers takes 3.5 MiB instead of 1655.
-- The declared depth limit in WebAssembly became a limit: 7474 frames and the same refusal text as the reference, instead of a dead tab at depth 60.
+- The declared depth limit in WebAssembly became a limit: 7474 nested calls and the same refusal text as an ordinary run, instead of a dead tab at depth 60.
 - Diagnostics quote the word of the surface the file is written in: 0 mismatches out of 186.
 - The language server stopped answering an argument it did not understand with zero bytes and exit code 0.
 
@@ -70,7 +70,7 @@ The entries below are about the language, not about the work on it. What has lan
 ### What changed
 
 - Hot swap runs under a live scheduler, and state is carried over by a checked function.
-- The emitted compiler now installs the measure guard and no longer loops where the reference refused.
+- The compiler emitted into C now installs the run-time check that the measure decreases, and no longer loops where the JavaScript implementation refused.
 
 ### What broke
 
@@ -88,7 +88,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What changed
 
-- `тотальная` stopped promising more than is proved: where termination rests on a number, a measure guard is emitted.
+- `тотальная` stopped promising more than is proved: where termination rests on a number, a run-time check that the measure decreases is emitted.
 - The library collapsed along its types once polymorphism was closed; the second parameter found a defect in self-application.
 
 ## 0.4.6 — 7 August 2026
@@ -98,7 +98,7 @@ The entries below are about the language, not about the work on it. What has lan
 ### What appeared
 
 - The installed binary became a tool for a human: `flang check`, help, version, a `man` page.
-- A function became a value: defunctionalisation kept the call graph finite, and a function-value reached every emission target.
+- A function became a value: the compiler replaces it with a tag and dispatches on tags, so the call graph stays finite and a function-value reached every emission target.
 - The language got a dictionary.
 - Logical operations arrived as functions — the word "и" is already taken in this language.
 
@@ -159,7 +159,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What changed
 
-- Self-application is complete: the fixed point converged.
+- The compiler written in flang itself emitted itself with no differences at all.
 - The package description was five emission targets behind — fixed.
 
 ## 0.4.1 — 5 August 2026

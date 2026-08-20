@@ -71,8 +71,8 @@ cover the inputs you thought of. A postcondition accepted by the proof kernel
 covers all of them at once.
 
 **One program is emitted into {{цели.поАнглийски}} languages, and the behaviour
-is compared.** Not "should match" — checked to match: values, error codes, step
-counters. The targets are {{цели.список}}.
+is compared byte for byte.** Not "should match" — checked to match: values, error
+codes, step counters. The targets are {{цели.список}}.
 
 **No loops, no mutable variables, no exceptions.** A list is walked with a fold,
 branching is `if … then … else`, a failure comes back as a value. This is not
@@ -100,7 +100,7 @@ it go stale quietly — [how that works](about-docs.html).
 
 | | |
 |---|---:|
-| Functions in the language tree | {{корпус.функций}} |
+| Functions written in flang | {{корпус.функций}} |
 | Of them total (termination proved) | {{корпус.тотальных}} |
 | Behaviour claims stated | {{утверждения.высказано}} |
 | Of them **proved by the kernel** — for all inputs | {{утверждения.доказано}} |

@@ -5,7 +5,7 @@ depends on. No registry, no store, no `~/.flang`. Publishing a package means
 committing a file to git; using one means writing a single line; building on
 another machine means copying two files over and running `flang check`.
 
-Everything below was run on 18 August 2026 against `flang 0.5.0` installed the
+Everything below was run against `flang` installed the
 [fourth way](install.html) (`npm install`, `node_modules/.bin/flang`). The
 standalone `flang` binary — the one Homebrew installs and `bootstrap/` builds —
 has no `package` and no `lock`, and says so:
@@ -85,13 +85,14 @@ $ flang package skidka/discount.flang > skidka/discount.flang-package
 
 $ ls -la skidka/
 -rw-rw-r-- 1 b b 3644 discount.flang
--rw-rw-r-- 1 b b 1554 discount.flang-package
+-rw-rw-r-- 1 b b 4343 discount.flang-package
 -rw-rw-r-- 1 b b  122 flang.package
 ```
 
-**3,644 bytes of source become a 1,554-byte package.** The package is smaller
-than the source because it holds the parse tree — no comments, no spans —
-reversibly compressed.
+**3,644 bytes of source become a 4,343-byte package.** The package is larger
+than the source: it holds the module's full text plus a content address, a proof
+report and a header. The format does not compress — why is explained below, in
+the section on a multi-module library.
 
 A package is built **only from checked code**: `flang package` first runs the
 same checks `flang check` runs, and refuses on a program with a type error.
@@ -116,7 +117,7 @@ readability:
       "сила": "доказано" }
   ],
   "источник": "https://github.com/digitable-lol/flang",
-  "печать": "bf6453bfc8b5545adb0ee5d3930fb2e59e7410bd3c2e7c3a9513f396e55ec565"
+  "печать": "bac0aa0fc8fe3c0b39885d79bdd628cedf8063fad686d76838b248bd4c7fda13"
 }
 ```
 
@@ -204,9 +205,10 @@ matched emitting it from sources exactly
 
 ## What a package carries about proofs, and what it does not
 
-A package holds a `ведомость` — what the kernel said about the author's
-functions: `доказано`, `сетка N`, `объявлено, не доказано`. It is a **statement
-of record**, used to choose a library, not a trusted root: whoever imports the
+A package holds a `ведомость` field — the proof report: what the kernel said
+about the author's functions (`доказано`, `сетка N`, `объявлено, не доказано`).
+The report is a **statement of record**, used to choose a library, not something
+taken on trust: whoever imports the
 package proves everything again, because the bodies of those functions travelled
 whole.
 
@@ -226,9 +228,9 @@ Otherwise a precondition would be an axiom under another name — and in a langu
 whose axiom list is an empty `Object.freeze([])` there is nowhere for one to come
 from.
 
-Why the ledger is a record and not a verdict cache is answered with a number. The
+Why it is a record and not a cache of verdicts to be trusted is answered with a number. The
 tree does have a content-addressed verdict cache, and it was re-measured over 99
-corpus files carrying obligations, in one process, on warm code:
+files carrying obligations, in one process, on warm code:
 
 | what | time |
 | --- | ---: |

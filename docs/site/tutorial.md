@@ -161,7 +161,7 @@ straight past `равен 0` (equals 0). The fix is exactly the one named: `ра
 ```
 
 After that `flang check` answers "замечаний нет" (no diagnostics), and the
-ledger names what carries the promise:
+report of `flang check --proof` names what the promise rests on:
 
 ```
 «Сумма до»  доказано постоянным шагом: аргумент 1 («н») убывает на постоянный
@@ -224,7 +224,7 @@ A claim about the result is written with `обеспечивает` (ensures):
   обеспечивает «сумма до неотрицательна» результат не меньше 0
 ```
 
-By itself that is not a proof, and the ledger says what actually carries it:
+By itself that is not a proof, and the report says what it actually rests on:
 
 ```
 постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение
@@ -295,7 +295,7 @@ A theorem with nothing under it is not accepted. That is the difference between
 
 **Exercise 5.** Prove the same about `«Тройная норма»` with the body `норма
 умножить на 3`. Answer: the same `требует` line and the same four lines of
-theorem; the ledger answers "доказано: терм принят ядром, 1 шаг".
+theorem; the report answers "доказано: терм принят ядром, 1 шаг".
 
 ## What the compiler says when you got it wrong
 

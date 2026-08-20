@@ -66,7 +66,7 @@ The measurement is taken by one command:
 npm run numbers
 ```
 
-The corpus is measured by `flang/scripts/proof-ledger.mjs`, the same instrument
+All the flang code in the repository is measured by `flang/scripts/proof-ledger.mjs`, the same instrument
 the number guard uses. A quick ad-hoc count lies instead: import linking
 attributes a module's functions to every importer, and the answer doubles.
 
@@ -79,7 +79,7 @@ npm run numbers:check
 re-measures the tree and turns red on the first number that differs. So the
 numbers in `numbers.json` are not "numbers as of some day" but the numbers of
 THIS tree — the very one whose commit stands at the bottom of the page. Today
-that is {{корпус.функций}} functions in the corpus and {{утверждения.доказано}}
+that is {{корпус.функций}} functions written in flang and {{утверждения.доказано}}
 claims proved by the kernel, and no page may name others.
 
 ## Search

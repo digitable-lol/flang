@@ -48,7 +48,7 @@ export const РАЗДЕЛЫ = [
          вопрос пришедшего впервые она не отвечает ни строкой.
          Здесь она на месте: «что приехало» и «что приедет» — один вопрос,
          заданный дважды. */
-      { адрес: 'roadmap.html', имя: 'Роадмап', из: 'docs/site/roadmap.ru.md' },
+      { адрес: 'roadmap.html', имя: 'Что будет дальше', из: 'docs/site/roadmap.ru.md' },
     ],
   },
   {
@@ -95,7 +95,10 @@ export const РАЗДЕЛЫ = [
     страницы: [
       { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
       { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/guide/totality.ru.md' },
-      { адрес: 'two-implementations.html', имя: 'Две реализации и неподвижная точка', из: 'docs/guide/two-implementations.ru.md' },
+      // «Неподвижная точка» — наше внутреннее слово, и в меню оно ничего не
+      // говорит. Имя пункта названо тем, что за ним стоит: компилятор,
+      // написанный на самом flang, печатает сам себя без единого расхождения.
+      { адрес: 'two-implementations.html', имя: 'Две реализации и сверка их между собой', из: 'docs/guide/two-implementations.ru.md' },
       { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/guide/developing.ru.md' },
       { адрес: 'limits.html', имя: 'Известные ограничения', из: 'docs/guide/limits.ru.md' },
     ],

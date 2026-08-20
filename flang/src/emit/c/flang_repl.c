@@ -258,7 +258,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c|csharp напечатать программу в C99 или C#\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -325,24 +325,25 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|csharp [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу в C99 или C# без Node; рантайм цели читается с диска\n"
+    "(--runtime, $FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У ПЕЧАТИ НЕТ: недостижимое не\n"
+    "отбрасывается, доказанное не метится («markProven»). На компиляторе это\n"
+    "6 файлов из 7 байт в байт.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c        C99: рантайм, прогонщик, при --repl человеческий вход\n"
+    "  --target csharp   C#: класс программы, пять классов рантайма, проект .NET\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --repl            напечатать ещё и человеческий вход (только --target c)\n"
+    "  --runtime каталог откуда читать рантайм цели\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
-    "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
+    "Остальные шесть целей (js, go, rust, python, java, elixir) написаны на flang\n"
+    "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
 static const char HELP_AST[] =
     "flang ast <файл.flang> [--pretty]\n"
@@ -5826,6 +5827,22 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/*
+ * То же для цели C#, и файлов у неё шесть, а не четыре: рантайм .NET разложен по
+ * классам (значение, поле, диагностика, контекст, операции) плюс прогонщик.
+ * Порядок здесь — порядок полей в «Настройки шарп» из `flang/self/emit-csharp.flang`.
+ */
+#define EMIT_CSHARP_VALUE "Value.cs"
+#define EMIT_CSHARP_FIELD "Field.cs"
+#define EMIT_CSHARP_ERROR "FlangError.cs"
+#define EMIT_CSHARP_CTX "Ctx.cs"
+#define EMIT_CSHARP_OPS "Flang.cs"
+#define EMIT_CSHARP_CLI "FlangCli.cs"
+
+/** Цели, которые этот бинарник печатает. Одна строка на цель, и она же в справке. */
+#define EMIT_TARGET_C "c"
+#define EMIT_TARGET_CSHARP "csharp"
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -5835,8 +5852,8 @@ static int run_file(int argc, char **argv) {
  * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
  * НЕ пробуется — в отличие от поиска заголовков для оболочки.
  */
-static bool emit_runtime_here(const char *directory) {
-  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+static bool emit_probe_here(const char *directory, const char *probe_name) {
+  char *probe = repl_join(directory, probe_name);
   size_t bytes = 0;
   char *text = repl_read_file(probe, &bytes);
   bool ok = false;
@@ -5850,16 +5867,24 @@ static bool emit_runtime_here(const char *directory) {
   return ok;
 }
 
-static char *emit_runtime_dir(const char *self_dir, const char *given) {
-  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+/*
+ * Каталог рантайма ЦЕЛИ: пробный файл и два места поиска у каждой свои.
+ *
+ * Обобщено, а не скопировано, по той же причине, по какой рантайм вообще
+ * читается с диска: правило поиска одно на все цели, и разойдись оно — печать
+ * одной цели молча брала бы напечатанное вместо исходного. Отличается ровно
+ * три вещи: имя пробного файла и два подкаталога.
+ */
+static char *emit_target_dir(const char *self_dir, const char *given, const char *probe_name,
+                             const char *const places[2]) {
   size_t index = 0;
   if (given != NULL && given[0] != '\0') {
-    return emit_runtime_here(given) ? repl_say(given) : NULL;
+    return emit_probe_here(given, probe_name) ? repl_say(given) : NULL;
   }
   {
     const char *set = getenv("FLANG_RUNTIME_DIR");
     if (set != NULL && set[0] != '\0') {
-      return emit_runtime_here(set) ? repl_say(set) : NULL;
+      return emit_probe_here(set, probe_name) ? repl_say(set) : NULL;
     }
   }
   if (self_dir == NULL) {
@@ -5869,12 +5894,22 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
     char *parent = repl_dirname(self_dir);
     char *directory = repl_join(parent, places[index]);
     free(parent);
-    if (emit_runtime_here(directory)) {
+    if (emit_probe_here(directory, probe_name)) {
       return directory;
     }
     free(directory);
   }
   return NULL;
+}
+
+static char *emit_runtime_dir(const char *self_dir, const char *given) {
+  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+  return emit_target_dir(self_dir, given, EMIT_RUNTIME_HEADER, places);
+}
+
+static char *emit_csharp_dir(const char *self_dir, const char *given) {
+  static const char *const places[2] = {"flang/src/emit/csharp", "share/flang/csharp"};
+  return emit_target_dir(self_dir, given, EMIT_CSHARP_VALUE, places);
 }
 
 /** Вид типа границы — обратный перевод к «Виду типа входа» из emit-c.flang. */
@@ -6086,7 +6121,19 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
+  /* Поля «Настройки шарп»: у .NET рантайм разложен по пяти классам, оболочки нет
+     вовсе, а четыре списка границы входа те же, что у C. Порядок обязан совпасть
+     с объявлением в `flang/self/emit-csharp.flang`. */
+  static const char *const csharp_names[16] = {"путь",            "есть путь",        "база",
+                                               "предел глубины",  "предел шагов",     "прогонщик",
+                                               "рантайм значение", "рантайм поле",    "рантайм ошибка",
+                                               "рантайм контекст", "рантайм операции", "исходник прогонщика",
+                                               "типы входа",      "поля входа",       "варианты входа",
+                                               "параметры входа"};
+  static const char *const csharp_files[6] = {EMIT_CSHARP_VALUE, EMIT_CSHARP_FIELD, EMIT_CSHARP_ERROR,
+                                              EMIT_CSHARP_CTX,   EMIT_CSHARP_OPS,   EMIT_CSHARP_CLI};
   fl_value values[15];
+  fl_value csharp_values[16];
   fl_value args[2];
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
@@ -6111,6 +6158,8 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *runtime_source = NULL;
   char *runner_source = NULL;
   char *shell_source = NULL;
+  char *csharp_source[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+  size_t csharp_bytes[6] = {0, 0, 0, 0, 0, 0};
   size_t runtime_header_bytes = 0;
   size_t runtime_source_bytes = 0;
   size_t runner_source_bytes = 0;
@@ -6125,6 +6174,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   bool shell = false;
   bool fits = false;
   bool opened = false;
+  bool csharp = false;
 
   for (argument = 2; argument < argc; argument += 1) {
     if (strcmp(argv[argument], "--target") == 0 && argument + 1 < argc) {
@@ -6166,17 +6216,18 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   if (path == NULL) {
-    fputs("flang emit: не назван файл. Пример: flang emit м.flang --target c --out каталог\n", stderr);
+    fputs("flang emit: не назван файл. Пример: flang emit м.flang --target csharp --out каталог\n", stderr);
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике есть две цели — «c» и «csharp»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  csharp = strcmp(target, EMIT_TARGET_CSHARP) == 0;
+  if (!csharp && strcmp(target, EMIT_TARGET_C) != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «csharp»;\n"
+            "остальные шесть (js, go, rust, python, java, elixir) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
     return 2;
@@ -6189,13 +6240,20 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = csharp ? emit_csharp_dir(self_dir, given_runtime) : emit_runtime_dir(self_dir, given_runtime);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
-          stderr);
+    if (csharp) {
+      fputs("flang emit: не найдены ИСХОДНИКИ рантайма C# (Value.cs без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/csharp, ../share/flang/csharp.\n",
+            stderr);
+    } else {
+      fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
+            stderr);
+    }
     return 2;
   }
 
@@ -6210,7 +6268,17 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
 
-  {
+  if (csharp) {
+    for (index = 0; index < 6; index += 1) {
+      char *where = repl_join(runtime, csharp_files[index]);
+      csharp_source[index] = repl_read_file(where, &csharp_bytes[index]);
+      free(where);
+      if (csharp_source[index] == NULL) {
+        fprintf(stderr, "flang emit: в %s не хватает %s\n", runtime, csharp_files[index]);
+        code = 2;
+      }
+    }
+  } else {
     char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
     runtime_header = repl_read_file(where, &runtime_header_bytes);
     free(where);
@@ -6223,10 +6291,10 @@ static int emit_file(int argc, char **argv, const char *self) {
     where = repl_join(runtime, EMIT_SHELL_SOURCE);
     shell_source = repl_read_file(where, &shell_source_bytes);
     free(where);
-  }
-  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
-    code = 2;
+    if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+      code = 2;
+    }
   }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
      программа, собранная ИЗ ЗАМКА, а не из того, что случайно лежит на диске. */
@@ -6271,24 +6339,43 @@ static int emit_file(int argc, char **argv, const char *self) {
         code = 1;
       } else {
         fits = emit_entry_fits(program, table);
-        values[0] = repl_value_say(own);
-        values[1] = fl_flag(own[0] != '\0');
-        values[2] = fl_number((double)base_index);
-        values[3] = fl_number(strtod(depth, NULL));
-        values[4] = fl_number(strtod(steps, NULL));
-        values[5] = fl_flag(cli);
-        values[6] = repl_value_text(runtime_header, runtime_header_bytes);
-        values[7] = repl_value_text(runtime_source, runtime_source_bytes);
-        values[8] = repl_value_text(runner_source, runner_source_bytes);
-        values[9] = fl_flag(shell);
-        values[10] = repl_value_text(shell_source, shell_source_bytes);
-        values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
-        values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
-        values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
-        values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
         args[0] = program;
-        args[1] = repl_value_record(names, values, 15);
-        if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
+        if (csharp) {
+          /* Шесть текстов рантайма .NET подряд, потом четыре списка границы
+             входа. Оболочки у этой цели нет: `flang repl` — это C, а не C#. */
+          csharp_values[0] = repl_value_say(own);
+          csharp_values[1] = fl_flag(own[0] != '\0');
+          csharp_values[2] = fl_number((double)base_index);
+          csharp_values[3] = fl_number(strtod(depth, NULL));
+          csharp_values[4] = fl_number(strtod(steps, NULL));
+          csharp_values[5] = fl_flag(cli);
+          for (index = 0; index < 6; index += 1) {
+            csharp_values[6 + index] = repl_value_text(csharp_source[index], csharp_bytes[index]);
+          }
+          csharp_values[12] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+          csharp_values[13] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+          csharp_values[14] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+          csharp_values[15] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+          args[1] = repl_value_record(csharp_names, csharp_values, 16);
+        } else {
+          values[0] = repl_value_say(own);
+          values[1] = fl_flag(own[0] != '\0');
+          values[2] = fl_number((double)base_index);
+          values[3] = fl_number(strtod(depth, NULL));
+          values[4] = fl_number(strtod(steps, NULL));
+          values[5] = fl_flag(cli);
+          values[6] = repl_value_text(runtime_header, runtime_header_bytes);
+          values[7] = repl_value_text(runtime_source, runtime_source_bytes);
+          values[8] = repl_value_text(runner_source, runner_source_bytes);
+          values[9] = fl_flag(shell);
+          values[10] = repl_value_text(shell_source, shell_source_bytes);
+          values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+          values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+          values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+          values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+          args[1] = repl_value_record(names, values, 15);
+        }
+        if (repl_call(csharp ? "Напечатать связанное в C-шарп" : "Напечатать связанное", args, 2, &result) != FL_OK) {
           code = 1;
         } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
           char *say = val_copy(failure);
@@ -6387,6 +6474,9 @@ static int emit_file(int argc, char **argv, const char *self) {
   free(runtime_source);
   free(runner_source);
   free(shell_source);
+  for (index = 0; index < 6; index += 1) {
+    free(csharp_source[index]);
+  }
   free(runtime);
   free(text);
   free(full);

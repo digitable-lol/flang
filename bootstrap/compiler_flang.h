@@ -1253,9 +1253,25 @@ fl_status compiler_flang_sozdat_sbor_sluchaev_sharp(fl_ctx *ctx, fl_value sostoy
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_fayl_sharp(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
 
-/* Запись FTS «Настройки шарп»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм значение», «рантайм поле», «рантайм ошибка», «рантайм контекст», «рантайм операции», «исходник прогонщика». */
+/* Запись FTS «Поле входа шарп»: «имя», «тип». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_nastroyki_sharp(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_znachenie, fl_value rantaym_pole, fl_value rantaym_oshibka, fl_value rantaym_kontekst, fl_value rantaym_operacii, fl_value ishodnik_progonschika, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_pole_vhoda_sharp(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант входа шарп»: «имя», «поле с», «полей». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_vhoda_sharp(fl_ctx *ctx, fl_value imya, fl_value pole_s, fl_value poley, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тип входа шарп»: «вид», «имя», «владелец», «ничто», «целое», «отрезок», «низ», «верх», «элемент», «поле с», «полей», «вариант с», «вариантов». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tip_vhoda_sharp(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value vladelec, fl_value nichto, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр входа шарп»: «функция», «параметр», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_vhoda_sharp(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки шарп»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм значение», «рантайм поле», «рантайм ошибка», «рантайм контекст», «рантайм операции», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_sharp(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_znachenie, fl_value rantaym_pole, fl_value rantaym_oshibka, fl_value rantaym_kontekst, fl_value rantaym_operacii, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог печати шарп»: «файлы», «ошибка». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -47181,6 +47197,69 @@ fl_status compiler_flang_proverit_stolknoveniya_sharp(fl_ctx *ctx, fl_value obsc
  * @return значение: «Тела шарп»
  */
 fl_status compiler_flang_shag_tela_funkcii_sharp(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак C# шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_c_sharp(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_sharp(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_sharp(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_sharp(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_sharp(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_sharp(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа шарп».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки шарп»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_sharp(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать тел шарп».

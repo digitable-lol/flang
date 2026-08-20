@@ -477,6 +477,86 @@ fl_status compiler_flang_sozdat_imenovatel_go(fl_ctx *ctx, fl_value zanyatye, fl
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_nastroyki_go(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
 
+/* Запись FTS «Набор Rust»: «взято», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nabor_rust(fl_ctx *ctx, fl_value vzyato, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Куски литералов»: «первая», «в строке», «экранировано», «готово», «отложено». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kuski_literalov(fl_ctx *ctx, fl_value pervaya, fl_value v_stroke, fl_value ekranirovano, fl_value gotovo, fl_value otlozheno, fl_value *out, fl_error *error);
+
+/* Запись FTS «Развод слов»: «первая», «предыдущая», «готово». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_razvod_slov(fl_ctx *ctx, fl_value pervaya, fl_value predyduschaya, fl_value gotovo, fl_value *out, fl_error *error);
+
+/* Запись FTS «Обрезка слева»: «начало», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obrezka_sleva(fl_ctx *ctx, fl_value nachalo, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Гашение имён»: «текст», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_gashenie_imyon(fl_ctx *ctx, fl_value tekst, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние Rust»: «счётчик», «взято», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_rust(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее Rust»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог Rust»: «состояние», «вывод», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок Rust»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее Rust»: «функции», «записи», «варианты», «суммы», «ид функций», «ид фабрик», «ид вариантов», «ид шагов», «ид параметров», «хвостовые», «циклические», «рекурсивные». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_rust(fl_ctx *ctx, fl_value funkcii, fl_value zapisi, fl_value varianty, fl_value summy, fl_value id_funkciy, fl_value id_fabrik, fl_value id_variantov, fl_value id_shagov, fl_value id_parametrov, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст Rust»: «общее», «функция», «параметры», «сам хвост», «есть члены», «члены», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_rust(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value sam_hvost, fl_value est_chleny, fl_value chleny, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка Rust»: «состояние», «вывод», «индекс», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sborka_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value indeks, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Проверка Rust»: «состояние», «вывод», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_proverka_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание Rust»: «состояние», «вывод», «контекст», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value kontekst, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Случай Rust»: «тело», «образец», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sluchay_rust(fl_ctx *ctx, fl_value telo, fl_value obrazec, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор случаев Rust»: «состояние», «вывод», «случаи». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_sluchaev_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value sluchai, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров Rust»: «контекст», «индекс». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_rust(fl_ctx *ctx, fl_value kontekst, fl_value indeks, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именователь Rust»: «таблица», «состояние». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovatel_rust(fl_ctx *ctx, fl_value tablica, fl_value sostoyanie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Rust»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм исходник», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_rust(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тела Rust»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tela_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -18349,6 +18429,2511 @@ fl_status compiler_flang_pechat_programmy_v_go(fl_ctx *ctx, fl_value programma, 
  * @return значение: «Файл»
  */
 fl_status compiler_flang_fayl_progonschika_go(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято бэкендом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_bekendom(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только ASCII».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_tolko_ascii(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «ASCII идентификатор».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ascii_identifikator(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Змейка Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zmeyka_rust(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Локальное имя Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_lokalnoe_imya_rust(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_rust(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор Rust»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор Rust»
+ */
+fl_status compiler_flang_shag_unikalnyh_rust(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_rust(fl_ctx *ctx, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_rust(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неконечное число Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nekonechnoe_chislo_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_rust(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Нечётный хвост слешей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_nechyotnyy_hvost_sleshey(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг после кавычки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Куски литералов»
+ * @param chast — «часть»: строка
+ * @return значение: «Куски литералов»
+ */
+fl_status compiler_flang_shag_posle_kavychki(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг кусков литералов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Куски литералов»
+ * @param chast — «часть»: строка
+ * @return значение: «Куски литералов»
+ */
+fl_status compiler_flang_shag_kuskov_literalov(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять литералы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_literaly(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Голова до примечания».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_golova_do_primechaniya(fl_ctx *ctx, fl_value stroka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять шум в строке».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_shum_v_stroke(fl_ctx *ctx, fl_value stroka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять шум».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_shum(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг развода слов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Развод слов»
+ * @param chast — «часть»: строка
+ * @param slovo — «слово»: строка
+ * @param zamena — «замена»: строка
+ * @return значение: «Развод слов»
+ */
+fl_status compiler_flang_shag_razvoda_slov(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value slovo, fl_value zamena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пройти развод».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @param slovo — «слово»: строка
+ * @param zamena — «замена»: строка
+ * @return значение: «Развод слов»
+ */
+fl_status compiler_flang_proyti_razvod(fl_ctx *ctx, fl_value chasti, fl_value slovo, fl_value zamena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить слово».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param slovo — «слово»: строка
+ * @param zamena — «замена»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zamenit_slovo(fl_ctx *ctx, fl_value tekst, fl_value slovo, fl_value zamena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг обрезки слева».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Обрезка слева»
+ * @param znak — «знак»: строка
+ * @return значение: «Обрезка слева»
+ */
+fl_status compiler_flang_shag_obrezki_sleva(fl_ctx *ctx, fl_value akk, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без ведущих пробелов Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_veduschih_probelov_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Переприсваивание точно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pereprisvaivanie_tochno(fl_ctx *ctx, fl_value stroka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это переприсваивание».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_pereprisvaivanie(fl_ctx *ctx, fl_value stroka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки без переприсваивания».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroki_bez_pereprisvaivaniya(fl_ctx *ctx, fl_value tekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг гашения имён».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Гашение имён»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Гашение имён»
+ */
+fl_status compiler_flang_shag_gasheniya_imyon(fl_ctx *ctx, fl_value akk, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасить мёртвые параметры».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tekst — «текст»: строка
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Гашение имён»
+ */
+fl_status compiler_flang_gasit_myortvye_parametry(fl_ctx *ctx, fl_value tekst, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя если нужно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_esli_nuzhno(fl_ctx *ctx, fl_value tekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасить связанные».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param segment — «сегмент»: строка
+ * @param dop — «доп»: строка
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_gasit_svyazannye(fl_ctx *ctx, fl_value segment, fl_value dop, fl_value identifikatory, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Гасить связанные дальше».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param segment — «сегмент»: строка
+ * @param dop — «доп»: строка
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_gasit_svyazannye_dalshe(fl_ctx *ctx, fl_value segment, fl_value dop, fl_value identifikatory, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_form_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка»
+ */
+fl_status compiler_flang_arnosti_form_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_sinonimy_form_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_rust(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_zamenit_schyotchik_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_zapisat_oshibku_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Свежее Rust»
+ */
+fl_status compiler_flang_vremennoe_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только цифры Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_cifry_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на временное Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_vremennoe_rust(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее Rust»
+ */
+fl_status compiler_flang_svezhee_imya_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя в Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст Rust»
+ */
+fl_status compiler_flang_svyazat_imya_v_rust(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Именованные идентификаторы»
+ */
+fl_status compiler_flang_identifikatory_parametrov_rust(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просьба с ролью».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_prosba_s_rolyu(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица фабрик Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_fabrik_rust(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица вариантов Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_variantov_rust(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица функций Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_funkciy_rust(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблица шагов Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ciklicheskie — «циклические»: список: «Рёбра»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_tablica_shagov_rust(fl_ctx *ctx, fl_value ciklicheskie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Общее Rust»
+ */
+fl_status compiler_flang_sobrat_obschee_rust(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Самовызов в хвосте Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение
+ */
+fl_status compiler_flang_samovyzov_v_hvoste_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены батута Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chleny_batuta_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть батут Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение
+ */
+fl_status compiler_flang_est_batut_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отступ внутрь».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otstup_vnutr(fl_ctx *ctx, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «После ctx».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_posle_ctx(fl_ctx *ctx, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_prosto_znachenie_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустая сборка Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_pustaya_sborka_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи полей Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_klyuchi_poley_rust(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это закодированный вариант Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zakodirovannyy_variant_rust(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключи кодированного варианта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuchi — «ключи»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_klyuchi_kodirovannogo_varianta(fl_ctx *ctx, fl_value uzel, fl_value klyuchi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя и поля варианта на месте».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_imya_i_polya_varianta_na_meste(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_skalyara_rust(fl_ctx *ctx, fl_value skalyar, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_literala_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи литерала».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param polya — «поля»: список: «Поле значения»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_zapisi_literala(fl_ctx *ctx, fl_value uzel, fl_value polya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать элемента Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_elementa_rust(fl_ctx *ctx, fl_value uzel, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг списка Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка Rust»
+ * @param uzel — «узел»: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @param massiv — «массив»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_shag_spiska_rust(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value literal, fl_value kontekst, fl_value otstup, fl_value massiv, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_spiska_rust(fl_ctx *ctx, fl_value elementy, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать непустого списка Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_nepustogo_spiska_rust(fl_ctx *ctx, fl_value elementy, fl_value literal, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поля значения».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка Rust»
+ * @param pole — «поле»: «Поле значения»
+ * @param literal — «литерал»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_shag_polya_znacheniya(fl_ctx *ctx, fl_value akk, fl_value pole, fl_value literal, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param literal — «литерал»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_poley_rust(fl_ctx *ctx, fl_value polya, fl_value literal, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустая запись Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pustaya_zapis_rust(fl_ctx *ctx, fl_value est_variant, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения поля Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param massiv — «массив»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_polya_rust(fl_ctx *ctx, fl_value akk, fl_value klyuch, fl_value znacheniya, fl_value massiv, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значений полей Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_znacheniy_poley_rust(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать непустых полей Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_nepustyh_poley_rust(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызов с попыткой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param vyrazhenie — «выражение»: строка
+ * @param otstup — «отступ»: строка
+ * @param vyvod — «вывод»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_vyzov_s_popytkoy(fl_ctx *ctx, fl_value sostoyanie, fl_value vyrazhenie, fl_value otstup, fl_value vyvod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_znacheniya_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_neizvestnyy_vid_rust(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_peremennoy_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_imya_uzla_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_pust_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать признака Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param pomoschnik — «помощник»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_priznaka_rust(fl_ctx *ctx, fl_value uzel, fl_value pomoschnik, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_esli_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг аргумента Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка Rust»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_shag_argumenta_rust(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать аргументов Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_pechat_argumentov_rust(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_razreshit_vyzov_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_vyzova_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_arnost_formy_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_formy_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_rust(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_rust(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_operacii_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_rust(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value vyvod, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_zapisi_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_zapis_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_rust(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_konstruktora_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_variant_rust(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_svyortki_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_rust(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_cikla_rust(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Rust»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_rust(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_cikla_rust(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело отображения Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_otobrazheniya_rust(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело фильтра Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_filtra_rust(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param proverka — «проверка»: строка
+ * @return значение: «Проверка Rust»
+ */
+fl_status compiler_flang_gotovaya_proverka_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value proverka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Проверка Rust»
+ */
+fl_status compiler_flang_oshibka_obrazca_rust(fl_ctx *ctx, fl_value obrazec, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Проверка Rust»
+ */
+fl_status compiler_flang_proverka_obrazca_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Проверка Rust»
+ */
+fl_status compiler_flang_proverka_literalom_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Пара имён»
+ */
+fl_status compiler_flang_svyazki_varianta_rust(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать простое Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Связывание Rust»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param est_primechanie — «есть примечание»
+ * @param primechanie — «примечание»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazat_prostoe_rust(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value est_primechanie, fl_value primechanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Связывание Rust»
+ * @param svyazka — «связка»: «Пара имён»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_rust(fl_ctx *ctx, fl_value itog, fl_value svyazka, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание любого Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazyvanie_lyubogo_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы и хвоста Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_i_hvosta_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Rust»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_rust(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить случай Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_sluchay_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора случая Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сбор случаев Rust»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор случаев Rust»
+ */
+fl_status compiler_flang_shag_sbora_sluchaya_rust(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_vetvi_rust(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай Rust»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_pechat_vetvi_rust(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ разбора Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param predmet — «предмет»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_razbora_rust(fl_ctx *ctx, fl_value est_cel, fl_value cel, fl_value predmet, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрытие цепочки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_cel — «есть цель»
+ * @return значение: строка
+ */
+fl_status compiler_flang_zakrytie_cepochki_rust(fl_ctx *ctx, fl_value est_cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ без цепочки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_bez_cepochki_rust(fl_ctx *ctx, fl_value predmet, fl_value est_cel, fl_value cel, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ в конце цепочки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_v_konce_cepochki_rust(fl_ctx *ctx, fl_value predmet, fl_value est_cel, fl_value cel, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост цепочки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvost_cepochki_rust(fl_ctx *ctx, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цепочка случаев Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Случай Rust»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_cepochka_sluchaev_rust(fl_ctx *ctx, fl_value sluchai, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг цепочки Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай Rust»
+ * @param ostalnye — «остальные»: список: «Случай Rust»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_shag_cepochki_rust(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Голова цепочки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_golova_cepochki_rust(fl_ctx *ctx, fl_value est_cel, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь с проверкой Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай Rust»
+ * @param ostalnye — «остальные»: список: «Случай Rust»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_vetv_s_proverkoy_rust(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь без проверки Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай Rust»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_vetv_bez_proverki_rust(fl_ctx *ctx, fl_value sluchay, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_pechat_razbora_rust(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_pechat_hvosta_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoe_pust_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoe_esli_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это самовызов Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_samovyzov_rust(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_rust(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_rust(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Rust»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_rust(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Rust»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoy_otskok_rust(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Rust»
+ * @param argument — «аргумент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_rust(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отложить аргумент Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Rust»
+ * @param argument — «аргумент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Rust»
+ */
+fl_status compiler_flang_otlozhit_argument_rust(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_rust(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Rust»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_hvostovoy_cikl_rust(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zip — «зип»: «Зип»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_stroka_parametra_rust(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка батута Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_batuta_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление функции Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param imya_ctx — «имя ctx»: строка
+ * @param sam_hvost — «сам хвост»
+ * @return значение: строка
+ */
+fl_status compiler_flang_obyavlenie_funkcii_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value identifikatory, fl_value imya_ctx, fl_value sam_hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень полей Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа в C»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_poley_rust(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения фабрики Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @param pole — «поле»: «Поле типа в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_prisvoeniya_fabriki_rust(fl_ctx *ctx, fl_value zip, fl_value pole, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело фабрики Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param itog — «итог»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_telo_fabriki_rust(fl_ctx *ctx, fl_value polya, fl_value identifikatory, fl_value itog, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_rust(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_rust(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Rust»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров Rust»
+ */
+fl_status compiler_flang_svyazat_parametr_rust(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: «Контекст Rust»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Контекст двери Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: «Контекст Rust»
+ */
+fl_status compiler_flang_kontekst_dveri_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Rust»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @return значение: «Связывание параметров Rust»
+ */
+fl_status compiler_flang_svyazat_parametr_dveri_rust(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Rust»
+ * @param postuslovie — «постусловие»: «Постусловие»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_shag_postusloviya_rust(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_rust(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело циклом Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_ciklom_rust(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_telo_funkcii_rust(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг распаковки Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @param parametr — «параметр»: «Параметр в C»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param izmenyaemo — «изменяемо»: строка
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_shag_raspakovki_rust(fl_ctx *ctx, fl_value zip, fl_value parametr, fl_value identifikatory, fl_value izmenyaemo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_batuta_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value kontekst, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать простой функции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @param storozh — «сторож»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_prostoy_funkcii_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value kontekst, fl_value tekst, fl_value opisanie, fl_value storozh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_pechat_funkcii_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбор оболочки Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vybor_obolochki_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value kontekst, fl_value tekst, fl_value opisanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_dogovor_na_dveri_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_proverki_dogovora_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Rust»
+ * @param preduslovie — «предусловие»: «Предусловие»
+ * @param kontekst — «контекст»: «Контекст Rust»
+ * @param funkciya — «функция»: «Функция»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_shag_predusloviya_rust(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргумент диспетчера Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zip — «зип»: «Зип»
+ * @return значение: «Зип»
+ */
+fl_status compiler_flang_argument_dispetchera_rust(fl_ctx *ctx, fl_value zip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_vetka_dispetchera_rust(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Rust»
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_rust(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Блок Rust»
+ */
+fl_status compiler_flang_pechat_dispetchera_rust(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя крейта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_kreyta(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка файла Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_fayla_rust(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Cargo».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_cargo(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_rust(fl_ctx *ctx, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать lib».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param fayl — «файл»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_lib(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value fayl, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать main».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_main(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блок настроек Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param baza — «база»: число
+ * @param glubina — «глубина»: число
+ * @param shagi — «шаги»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_blok_nastroek_rust(fl_ctx *ctx, fl_value baza, fl_value glubina, fl_value shagi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить тела Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_skleit_tela_rust(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать исходника Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param tela — «тела»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_ishodnika_rust(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value tela, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка столкновения Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param znachenie — «значение»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: строка
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_oshibka_stolknoveniya_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить прежнее имя Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @param znachenie — «значение»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть имя»
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_prezhnee_imya_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять имя Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovatel — «именователь»: «Именователь Rust»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Именователь Rust»
+ */
+fl_status compiler_flang_zanyat_imya_rust(fl_ctx *ctx, fl_value imenovatel, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просьбы имён Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_prosby_imyon_rust(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить столкновения Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Состояние Rust»
+ */
+fl_status compiler_flang_proverit_stolknoveniya_rust(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Счёт узлов поля».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_schyot_uzlov_polya(fl_ctx *ctx, fl_value programma, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Часть счёта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skolko — «сколько»: число
+ * @param slovo — «слово»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chast_schyota(fl_ctx *ctx, fl_value skolko, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый процесс Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_process_rust(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ по конкурентности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_po_konkurentnosti(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Rust»
+ * @param funkciya — «функция»: «Функция»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: «Тела Rust»
+ */
+fl_status compiler_flang_shag_tela_funkcii_rust(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тела вариантов суммы Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param chasti — «части»: список: строка
+ * @param summa — «сумма»: «Сумма типов в C»
+ * @param obschee — «общее»: «Общее Rust»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tela_variantov_summy_rust(fl_ctx *ctx, fl_value chasti, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Rust»
+ * @param sostoyanie — «состояние»: «Состояние Rust»
+ * @return значение: «Тела Rust»
+ */
+fl_status compiler_flang_pechat_tel_rust(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_rust(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_rust(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_rust(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_rust(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_rust(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_rust(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка границы входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shapka_granicy_vhoda_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост границы входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvost_granicy_vhoda_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки границы входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_granicy_vhoda_rust(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_rust(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_rust(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_rust(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя файла программы Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_fayla_programmy_rust(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файлы прогонщика Rust».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Файл»
+ * @param progonschik — «прогонщик»
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: список: «Файл»
+ */
+fl_status compiler_flang_fayly_progonschika_rust(fl_ctx *ctx, fl_value fayly, fl_value progonschik, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные в файле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Файл»
+ * @return значение: «Файл»
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_v_fayle(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы в Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: «Итог печати»
+ */
+fl_status compiler_flang_pechat_programmy_v_rust(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать понижённой программы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: «Итог печати»
+ */
+fl_status compiler_flang_pechat_ponizhyonnoy_programmy(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -48674,6 +51259,16 @@ fl_status compiler_flang_nastroyki_go_iz_nastroek(fl_ctx *ctx, fl_value nastroyk
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

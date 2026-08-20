@@ -43754,11 +43754,11 @@ fl_status compiler_flang_stroki_otchyota_korpusa(fl_ctx *ctx, fl_value fayly, fl
  * Функция flang «Дописать строки файла».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param akk — «акк»: список: строка
+ * @param nakoplennoe — «накопленное»: список: строка
  * @param fayl — «файл»: «Итог файла корпуса»
  * @return значение: список: строка
  */
-fl_status compiler_flang_dopisat_stroki_fayla(fl_ctx *ctx, fl_value akk, fl_value fayl, fl_value *result, fl_error *error);
+fl_status compiler_flang_dopisat_stroki_fayla(fl_ctx *ctx, fl_value nakoplennoe, fl_value fayl, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Итоговая строка корпуса».

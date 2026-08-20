@@ -46,12 +46,14 @@ defmodule HozyainUzla do
   компилятор в `flang_cli.ex`, и писать свой было бы третьим источником правды о
   том же. Печать JSON своя: `Flang.Json` только читает.
 
-  ── Чего здесь нет, и это названо ───────────────────────────────────────────
+  ── Надзор ──────────────────────────────────────────────────────────────────
 
-  НАДЗОРА. Отказ процесса доезжает до веления «Уронить процесс» и ложится в
-  журнал, а перезапуска и порога отказов на этой цели нет: надзор выражен на
-  flang отдельно (`flang/self/conc.flang`), и переносить его сюда третьим
-  текстом значило бы завести третий источник правды.
+  Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
+  НАДЗОРУ — четвёртому напечатанному модулю, `flang/conc/nadzor.flang`. Кого
+  поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
+  исполняет. Дерево надзора приезжает данными в плане, как и размещение.
+
+  ── Чего здесь нет, и это названо ───────────────────────────────────────────
 
   БИЛЕТЫ НЕ ЧИСТЯТСЯ: словарь «билет → груз» растёт на долгой работе. То же у
   `node.py`, `node.go` и `node.cs`; названо, не починено.
@@ -477,7 +479,6 @@ defmodule HozyainUzla do
         u
 
       "Уронить процесс" ->
-        # Надзора на этой цели нет — назван в шапке. Отказ виден в журнале.
         skazat(
           {:o,
            [
@@ -490,7 +491,9 @@ defmodule HozyainUzla do
            ]}
         )
 
-        u
+        # Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный
+        # `nadzor.flang`, здесь только дорога к нему.
+        nadzor_sluchilsya(u, vn(pole(velenie, "кто")), vn(pole(velenie, "код")))
 
       "Письмо пропало" ->
         skazat(
@@ -518,6 +521,100 @@ defmodule HozyainUzla do
       u
     else
       poslat(u, kto, "письмо", [{"кому", komu}, {"что", zakodirovat(gruz)}])
+    end
+  end
+
+  # ── единственная дорога от отказа к решению надзора ────────────────────
+  defp nadzor_sluchilsya(u, kto, kod) do
+    hod =
+      UzelZamera.fn_shag_nadzora_uzla(
+        u.derevo,
+        Flang.Rt.text(kto),
+        Flang.Rt.text(kod),
+        Flang.Rt.number(chasy())
+      )
+
+    Enum.reduce(spisok(pole(hod, "веления")), %{u | derevo: pole(hod, "дерево")}, fn velenie, akk ->
+      ispolnit_nadzor(akk, velenie)
+    end)
+  end
+
+  defp ispolnit_nadzor(u, {:var, imya, _} = velenie) do
+    kto = vn(pole(velenie, "кто"))
+
+    case imya do
+      "Поднять" ->
+        # Перезапуск трогает состояние и не трогает ящик — это решено на flang;
+        # здесь состояние берётся тем же путём, что при подъёме узла.
+        u = %{u | uzel: UzelZamera.fn_ozhivit_process_uzla(u.uzel, Flang.Rt.text(kto))}
+
+        u =
+          case Enum.find(u.plan, fn p -> p.imya == kto end) do
+            nil -> u
+            p -> %{u | sostoyaniya: Map.put(u.sostoyaniya, kto, UzelZamera.call(p.nachalnoe, []))}
+          end
+
+        skazat({:o, [{"в", "надзор"}, {"узел", u.imya}, {"цель", @cel}, {"что", "поднят"}, {"кто", kto}]})
+        u
+
+      "Уложить" ->
+        u = %{
+          u
+          | uzel:
+              UzelZamera.fn_ulozhit_process_uzla(
+                u.uzel,
+                Flang.Rt.text(kto),
+                Flang.Rt.text("остановлен надзором")
+              )
+        }
+
+        skazat(
+          {:o,
+           [
+             {"в", "надзор"},
+             {"узел", u.imya},
+             {"цель", @cel},
+             {"что", "уложен"},
+             {"кто", kto},
+             {"надзор", vn(pole(velenie, "надзор"))}
+           ]}
+        )
+
+        u
+
+      "Решено" ->
+        skazat(
+          {:o,
+           [
+             {"в", "надзор"},
+             {"узел", u.imya},
+             {"цель", @cel},
+             {"что", "решено"},
+             {"кто", kto},
+             {"надзор", vn(pole(velenie, "надзор"))},
+             {"стратегия", vn(pole(velenie, "стратегия"))}
+           ]}
+        )
+
+        u
+
+      "Некому надзирать" ->
+        skazat(
+          {:o,
+           [
+             {"в", "надзор"},
+             {"узел", u.imya},
+             {"цель", @cel},
+             {"что", "некому"},
+             {"кто", kto},
+             {"надзор", vn(pole(velenie, "надзор"))}
+           ]}
+        )
+
+        %{u | uzel: UzelZamera.fn_ostanovit_uzel_celikom(u.uzel), rabotaet: false}
+
+      inoe ->
+        raise("узел не знает веления надзора «#{inoe}»")
     end
   end
 
@@ -685,7 +782,7 @@ defmodule HozyainUzla do
   end
 
   # ── сборка узла из плана и размещения ─────────────────────────────────────
-  defp novyy_uzel(imya, plan, razmeschenie, hesh, sroki, semya) do
+  defp novyy_uzel(imya, plan, razmeschenie, hesh, sroki, semya, razmeschenie_nadzora) do
     processy =
       Enum.map(plan, fn p ->
         gde = gde_zhivyot(razmeschenie, p.imya)
@@ -744,8 +841,41 @@ defmodule HozyainUzla do
       gruzy: %{},
       taymery: [],
       posledniy_kadr: nil,
-      sleduyuschiy_storozh: 0.0
+      sleduyuschiy_storozh: 0.0,
+      derevo: derevo_nadzora(razmeschenie_nadzora)
     }
+  end
+
+  # Дерево надзора — данные, ровно как размещение. Решает по нему напечатанный
+  # `nadzor.flang`, а не этот файл.
+  defp derevo_nadzora(nadzory) do
+    nadzirateli =
+      Enum.map(nadzory, fn n ->
+        UzelZamera.fn_nadziratel_uzla(
+          Flang.Rt.text(n.imya),
+          Flang.Rt.number(n.porog),
+          Flang.Rt.number(n.okno),
+          Flang.Rt.text(n.inache)
+        )
+      end)
+
+    svyazi = fn klyuch ->
+      Enum.flat_map(nadzory, fn n ->
+        Enum.map(Map.get(n, klyuch, []), fn s ->
+          UzelZamera.fn_svyaz_nadzora_uzla(
+            Flang.Rt.text(s.kto),
+            Flang.Rt.text(n.imya),
+            Flang.Rt.text(s.strategiya)
+          )
+        end)
+      end)
+    end
+
+    UzelZamera.fn_derevo_nadzora_uzla(
+      Flang.Rt.list(nadzirateli),
+      Flang.Rt.list(svyazi.(:processy)),
+      Flang.Rt.list(svyazi.(:nadzory))
+    )
   end
 
   # ── доводы, план, размещение ──────────────────────────────────────────────
@@ -766,14 +896,18 @@ defmodule HozyainUzla do
     end
   end
 
-  defp plan_iz(klyuchi) do
+  defp plan_iz_teksta(klyuchi) do
     tekst =
       case Map.get(klyuchi, "план") do
         gotovyy when is_binary(gotovyy) -> gotovyy
         _ -> File.read!(Map.fetch!(klyuchi, "план-файл"))  # МИР
       end
 
-    {:ok, spisok_processov} = Flang.Json.field(json_iz_teksta(tekst), "процессы")
+    json_iz_teksta(tekst)
+  end
+
+  defp plan_iz(plan) do
+    {:ok, spisok_processov} = Flang.Json.field(plan, "процессы")
 
     Enum.map(spisok_processov, fn p ->
       %{
@@ -783,6 +917,45 @@ defmodule HozyainUzla do
         yaschik: yaschik_iz(p)
       }
     end)
+  end
+
+  # Надзоры плана — данные для дерева надзора.
+  defp nadzory_iz(plan) do
+    spisok =
+      case Flang.Json.field(plan, "надзоры") do
+        {:ok, spisok} when is_list(spisok) -> spisok
+        _ -> []
+      end
+
+    Enum.map(spisok, fn n ->
+      %{
+        imya: tekst_polya(n, "имя", ""),
+        porog: chislo_polya(n, "порог"),
+        okno: chislo_polya(n, "окно"),
+        inache: tekst_polya(n, "иначе", "остановить"),
+        processy: svyazi_iz(n, "процессы"),
+        nadzory: svyazi_iz(n, "надзоры")
+      }
+    end)
+  end
+
+  defp svyazi_iz(n, klyuch) do
+    case Flang.Json.field(n, klyuch) do
+      {:ok, spisok} when is_list(spisok) ->
+        Enum.map(spisok, fn s ->
+          %{kto: tekst_polya(s, "кто", ""), strategiya: tekst_polya(s, "стратегия", "")}
+        end)
+
+      _ ->
+        []
+    end
+  end
+
+  defp chislo_polya(gde, imya) do
+    case Flang.Json.field(gde, imya) do
+      {:ok, tekst} when is_binary(tekst) -> chislo_vnutr(tekst)
+      _ -> 0
+    end
   end
 
   defp yaschik_iz(p) do
@@ -830,14 +1003,17 @@ defmodule HozyainUzla do
       pauza: chislo_klyucha(klyuchi, "пауза", 250.0)
     }
 
+    plan = plan_iz_teksta(klyuchi)
+
     u =
       novyy_uzel(
         Map.fetch!(klyuchi, "я"),
-        plan_iz(klyuchi),
+        plan_iz(plan),
         json_iz_teksta(Map.fetch!(klyuchi, "размещение")),
         Map.fetch!(klyuchi, "хэш"),
         sroki,
-        trunc(chislo_klyucha(klyuchi, "семя", 7.0))
+        trunc(chislo_klyucha(klyuchi, "семя", 7.0)),
+        nadzory_iz(plan)
       )
 
     {u, port} = slushat(u, if(is_binary(klyuchi["слушать"]), do: klyuchi["слушать"], else: nil))

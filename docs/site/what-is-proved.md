@@ -127,7 +127,7 @@ taken by name, so the ruler does not move with the thing it measures.
 Something is proved for 13 of the 20 functions. Something substantive, for 9.
 
 ```
-node benchmarks/zamer-tseny/schyot-20.mjs
+./ярлык proof:20
 ```
 
 ### Some of the unproved is unprovable because it is untrue
@@ -301,7 +301,7 @@ None of the numbers above have to be taken on trust — commands print all of th
 | Report for one file | `flang check <file> --proof` |
 | The same for a machine | `flang check <file> --proof --json` |
 | Summary over every program in the repository | `node flang/scripts/proof-ledger.mjs` |
-| Substantive claims out of the twenty | `node benchmarks/zamer-tseny/schyot-20.mjs` |
+| Substantive claims out of the twenty | `./ярлык proof:20` |
 
 ## Further
 

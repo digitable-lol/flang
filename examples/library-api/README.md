@@ -65,7 +65,7 @@ node flang/bin/flang.mjs test  examples/library-api/lib/api.flang
 ```
 
 `check` входного модуля собирает всю программу целиком — связывание идёт по
-`использует «Модуль» из "путь"`:
+`использует «Модуль»`:
 
 ```
 api.flang ──> catalog.flang ──> isbn.flang

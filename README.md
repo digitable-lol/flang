@@ -466,7 +466,7 @@ not have.
 
 ```flang
 модуль «Проба импорта»
-  использует «Списки» из "../stdlib/lists.flang"
+  использует «Списки»
 
 тотальная функция «Сумма пробы»
   принимает элементы: список числа
@@ -474,7 +474,13 @@ not have.
   «Сумма» от элементы
 ```
 
-A selective form takes only what you name — `использует «Списки» из "…" только «Сумма», «Длина»` —
+There is no path in the line: a module is found by its name — the one written on the file's first
+line as `модуль «Списки»`. The search looks in the file's own directory, then in every directory
+above it while that directory still holds `.flang` files, then in the library shipped with the
+compiler. Moving a module to another directory does not break anything; a module off that road is
+named directly — `использует «Списки» из "path"`.
+
+A selective form takes only what you name — `использует «Списки» только «Сумма», «Длина»` —
 which is also how a name conflict between two modules is resolved.
 
 How that scales to a full-size project is shown by
@@ -549,7 +555,7 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
   thirteen files out of twenty, and **nine** of those say something about the function: the
   rest are either weakened (the claim survives replacing the body with a stub of the same
   signature, so it holds of any such function) or restate the body. A run tells them apart,
-  not a reading: `node benchmarks/zamer-tseny/schyot-20.mjs`. Day by day: 0, 2, 4, 5, 9.
+  not a reading: `./ярлык proof:20`. Day by day: 0, 2, 4, 5, 9.
   And two of the twenty are unprovable because they are **false**: one fails at infinity,
   the other writes "or" where an implication was meant.
 - **There is no second opinion about the language any more.** The comparison that used to matter

@@ -90,28 +90,36 @@ silence. It names the unjudged list itself: morphism, category, module link,
 bifunctor, transformation, isomorphism, monoid, monad, sets, declared
 properties, requirements.
 
-They were judged by separate tooling written in JavaScript; that tooling was
-removed from the tree together with the second implementation of the language,
-and there is no new judge for the surface yet. So, plainly: **you can declare a
-structure today, but you cannot get it checked.**
+They were judged by the second implementation of the language, written in
+JavaScript, and that implementation was removed from the tree. The rules
+themselves are not lost: they were rewritten in flang and lie right there —
+`flang/self/monoid.flang`, `monad.flang`, `functor.flang`, `setoid.flang` and
+eight more files, 7,895 lines in all. **Not one of them is part of the compiler
+build**: it is assembled from 29 files, and none of those twelve is among them.
+
+So, plainly: **you can declare a structure today, but you cannot get it
+checked** — not because the rule is unwritten, but because the written rule is
+not wired in.
 
 The same border is why the `в монаде` form — writing a chain without manual
 binding — appears nowhere in the tree's examples even though monads are
 declared. Expanding that form lived in a separate layer, and it was not carried
 into the binary compiler.
 
-## The surface contract is a draft, and says so itself
+## Where the rest is written down
 
-The full description of the surface — `flang/cat/SPEC.md`, some fifteen hundred
-lines — calls itself a draft for approval in its very first line. Beside it lie
-analyses of individual pieces: `HOF.md`, `POLY.md`, `MONAD.md`, `SETS.md`,
-`ZAKONY.md`.
+The full description of the surface — `flang/cat/SPEC.md` — holds the written
+form of every declaration down to the last case
+ending, the diagnostic code for every failure, and a by-name list of what the
+compiler does not check. Beside it lie analyses of individual pieces: `HOF.md`,
+`POLY.md`, `MONAD.md`, `SETS.md`, `ZAKONY.md`.
 
-These are working documents: next to a rule of the language stands a discussion
-of why the rule is what it is, and the mark "declared, not done" appears there
-as often as "done". They are worth reading if you want to argue about how the
-surface should work, not if you want to use it; on this site they now sit behind
-the [for contributors](contributing.html) door and have gone nowhere.
+It is a contract, not a tutorial: next to a rule of the language stands a
+discussion of why the rule is what it is, and the mark "declared, not done"
+appears there as often as "done". It is worth reading if you port or judge the
+language; if you merely use the surface, this page is enough. On this site the
+contract sits behind the [for contributors](contributing.html) door and has gone
+nowhere.
 
 ## Where to go next
 

@@ -47,11 +47,14 @@
 // байтам. Место в витке то же, что у select у остальных: между набором и
 // пробегами, иначе первое письмо чужому ушло бы до знакомства.
 //
-// ── Чего здесь нет, и это названо ───────────────────────────────────────────
+// ── Надзор ──────────────────────────────────────────────────────────────────
 //
-// НАДЗОРА. Отказ процесса доезжает до веления «Уронить процесс» и ложится в
-// журнал, а перезапуска и порога отказов на этой цели нет: надзор выражен на
-// flang отдельно (flang/self/conc.flang).
+// Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
+// НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/nadzor.flang. Кого
+// поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
+// исполняет. Дерево надзора приезжает данными в плане, как и размещение.
+//
+// ── Чего здесь нет, и это названо ───────────────────────────────────────────
 //
 // БИЛЕТЫ НЕ ЧИСТЯТСЯ: словарь «билет → груз» растёт на долгой работе. То же у
 // остальных хозяев; названо, не починено.
@@ -493,9 +496,10 @@ final class HozyainUzla {
     private final List<Taymer> taymery = new ArrayList<>();
     private Object posledniyKadr;
     private double sleduyuschiyStorozh;
+    private Value derevo;
 
     Uzel(String imya, List<Process> plan, Object razmeschenie, String hesh,
-        double srok, double puls, double pauza, int semya) {
+        double srok, double puls, double pauza, int semya, Object nadzory) {
       this.imya = imya;
       this.plan = plan;
       this.hesh = hesh;
@@ -531,6 +535,83 @@ final class HozyainUzla {
         Value svyaz = UzelZamera.fn_svyaz_uzla_zanovo(ctx, Value.text(gde), Value.flag(false),
             Value.flag(false), Value.flag(false), Value.flag(false), Value.flag(false), Value.number(0));
         kanaly.add(new Kanal(gde, tekstPolya(zvonit, gde, ""), svyaz));
+      }
+
+      /* Дерево надзора — данные, ровно как размещение. Решает по нему
+         напечатанный nadzor.flang, а не этот файл. */
+      List<Value> nadzirateli = new ArrayList<>();
+      List<Value> nadProcessom = new ArrayList<>();
+      List<Value> nadNadzorom = new ArrayList<>();
+      if (nadzory instanceof List<?> chleny) {
+        for (Object n : chleny) {
+          String imyaNadzora = tekstPolya(n, "имя", "");
+          nadzirateli.add(UzelZamera.fn_nadziratel_uzla(ctx, Value.text(imyaNadzora),
+              Value.number(chisloPolya(n, "порог")), Value.number(chisloPolya(n, "окно")),
+              Value.text(tekstPolya(n, "иначе", "остановить"))));
+          svyaziNadzora(nadProcessom, pole(n, "процессы"), imyaNadzora);
+          svyaziNadzora(nadNadzorom, pole(n, "надзоры"), imyaNadzora);
+        }
+      }
+      derevo = UzelZamera.fn_derevo_nadzora_uzla(ctx,
+          Value.list(nadzirateli.toArray(new Value[0])),
+          Value.list(nadProcessom.toArray(new Value[0])),
+          Value.list(nadNadzorom.toArray(new Value[0])));
+    }
+
+    private void svyaziNadzora(List<Value> kuda, Object spisok, String imyaNadzora) {
+      if (!(spisok instanceof List<?> chleny)) {
+        return;
+      }
+      for (Object svyaz : chleny) {
+        kuda.add(UzelZamera.fn_svyaz_nadzora_uzla(ctx, Value.text(tekstPolya(svyaz, "кто", "")),
+            Value.text(imyaNadzora), Value.text(tekstPolya(svyaz, "стратегия", ""))));
+      }
+    }
+
+    // ── единственная дорога от отказа к решению надзора ────────────────────
+    private void nadzorSluchilsya(String kto, String kod) {
+      Value hod = UzelZamera.fn_shag_nadzora_uzla(ctx, derevo, Value.text(kto), Value.text(kod),
+          Value.number(chasy()));
+      derevo = Flang.fieldGet(ctx, hod, "дерево");
+      for (Value velenie : Value.elements(Flang.fieldGet(ctx, hod, "веления"))) {
+        ispolnitNadzor(velenie);
+      }
+    }
+
+    private void ispolnitNadzor(Value velenie) {
+      String kto = vzyatTekst(velenie, "кто");
+      switch (velenie.str) {
+        case "Поднять" -> {
+          /* Перезапуск трогает состояние и не трогает ящик — это решено на
+             flang; здесь состояние берётся тем же путём, что при подъёме узла. */
+          uzel = UzelZamera.fn_ozhivit_process_uzla(ctx, uzel, Value.text(kto));
+          for (Process process : plan) {
+            if (process.imya.equals(kto)) {
+              sostoyaniya.put(kto, UzelZamera.call(ctx, process.nachalnoe, new Value[] {}));
+            }
+          }
+          skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
+              "что", tekst("поднят"), "кто", tekst(kto));
+        }
+        case "Уложить" -> {
+          uzel = UzelZamera.fn_ulozhit_process_uzla(ctx, uzel, Value.text(kto),
+              Value.text("остановлен надзором"));
+          skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
+              "что", tekst("уложен"), "кто", tekst(kto),
+              "надзор", tekst(vzyatTekst(velenie, "надзор")));
+        }
+        case "Решено" -> skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
+            "что", tekst("решено"), "кто", tekst(kto),
+            "надзор", tekst(vzyatTekst(velenie, "надзор")),
+            "стратегия", tekst(vzyatTekst(velenie, "стратегия")));
+        case "Некому надзирать" -> {
+          uzel = UzelZamera.fn_ostanovit_uzel_celikom(ctx, uzel);
+          rabotaet = false;
+          skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
+              "что", tekst("некому"), "кто", tekst(kto),
+              "надзор", tekst(vzyatTekst(velenie, "надзор")));
+        }
+        default -> throw new IllegalStateException("узел не знает веления надзора «" + velenie.str + "»");
       }
     }
 
@@ -798,10 +879,14 @@ final class HozyainUzla {
         case "Записать в журнал" -> skazat("в", tekst(vzyatTekst(velenie, "вид")),
             "узел", tekst(imya), "цель", tekst(CEL), "кто", tekst(vzyatTekst(velenie, "кто")),
             "почему", tekst(vzyatTekst(velenie, "почему")));
-        // Надзора на этой цели нет — назван в шапке. Отказ виден в журнале.
-        case "Уронить процесс" -> skazat("в", tekst("отказ"), "узел", tekst(imya), "цель", tekst(CEL),
-            "процесс", tekst(vzyatTekst(velenie, "кто")), "код", tekst(vzyatTekst(velenie, "код")),
-            "текст", tekst(vzyatTekst(velenie, "текст")));
+        case "Уронить процесс" -> {
+          skazat("в", tekst("отказ"), "узел", tekst(imya), "цель", tekst(CEL),
+              "процесс", tekst(vzyatTekst(velenie, "кто")), "код", tekst(vzyatTekst(velenie, "код")),
+              "текст", tekst(vzyatTekst(velenie, "текст")));
+          // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный
+          // nadzor.flang, здесь только дорога к нему.
+          nadzorSluchilsya(vzyatTekst(velenie, "кто"), vzyatTekst(velenie, "код"));
+        }
         case "Письмо пропало" -> skazat("в", tekst("потеря"), "узел", tekst(imya), "цель", tekst(CEL),
             "кому", tekst(vzyatTekst(velenie, "кому")), "почему", tekst(vzyatTekst(velenie, "почему")));
         default ->
@@ -1004,12 +1089,20 @@ final class HozyainUzla {
     return chto == null || chto.isEmpty() ? poUmolchaniyu : Double.parseDouble(chto);
   }
 
-  private static List<Process> planIz(Map<String, String> klyuchi) throws IOException {
+  private static double chisloPolya(Object gde, String imya) {
+    Object chto = pole(gde, imya);
+    return chto instanceof String tekstChisla ? chisloVnutr(tekstChisla) : 0.0;
+  }
+
+  private static Object planJson(Map<String, String> klyuchi) throws IOException {
     String tekstPlana = klyuchi.getOrDefault("план", "");
     if (tekstPlana.isEmpty()) {
       tekstPlana = Files.readString(Path.of(nuzhen(klyuchi, "план-файл")), StandardCharsets.UTF_8); // МИР
     }
-    Object plan = razobrat(tekstPlana);
+    return razobrat(tekstPlana);
+  }
+
+  private static List<Process> planIz(Object plan) {
     List<Process> processy = new ArrayList<>();
     Object spisok = pole(plan, "процессы");
     if (spisok instanceof List<?> chleny) {
@@ -1027,15 +1120,17 @@ final class HozyainUzla {
 
   public static void main(String[] argv) throws IOException {
     Map<String, String> klyuchi = dovody(argv);
+    Object plan = planJson(klyuchi);
     Uzel uzel = new Uzel(
         nuzhen(klyuchi, "я"),
-        planIz(klyuchi),
+        planIz(plan),
         razobrat(nuzhen(klyuchi, "размещение")),
         nuzhen(klyuchi, "хэш"),
         chisloKlyucha(klyuchi, "срок", 1000),
         chisloKlyucha(klyuchi, "пульс", 200),
         chisloKlyucha(klyuchi, "пауза", 250),
-        (int) chisloKlyucha(klyuchi, "семя", 7));
+        (int) chisloKlyucha(klyuchi, "семя", 7),
+        pole(plan, "надзоры"));
 
     String adres = klyuchi.getOrDefault("слушать", "");
     int port = adres.isEmpty() ? 0 : uzel.slushat(adres);

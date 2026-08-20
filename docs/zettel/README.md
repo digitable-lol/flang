@@ -216,6 +216,7 @@
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)
+- [Печать в C ищет исходники рантайма рядом с ДВОИЧНЫМ, и в дереве репозитория это работает по совпадению раскладки](pechat-v-c-ishchet-runtime-ryadom-s-dvoichnym.md)
 - [Двоичный `flang lsp` не отвечает, пока стандартный ввод открыт, — и потому редактору не годится, хотя побайтовую сверку проходит](dvoichnyy-lsp-ne-otvechaet-poka-vvod-otkryt.md)
 - [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](tablica-poverhnostey-otstala-na-chetyre-frazy.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор](napechatannye-pravila-podsvetki-proveryayutsya-tolko-samim-redaktorom.md)

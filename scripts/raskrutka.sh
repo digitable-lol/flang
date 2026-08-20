@@ -167,8 +167,17 @@ trap 'rm -rf "$TMP"' EXIT INT TERM
 say "компилятор: $INPUT"
 say "печатает:   $BINARY"
 say "пределы:    шагов $MAX_STEPS, глубины $MAX_DEPTH"
+# `--runtime` НАЗЫВАЕТСЯ, а не оставляется на поиск. Рантайм, прогонщик и
+# оболочка уезжают в вывод дословно, и печать читает их с диска; сама она ищет
+# их рядом с СОБОЙ (`<каталог двоичного>/../flang/src/emit/c`, затем
+# `share/flang/c`), а не рядом с исходником. Двоичный из `bootstrap/` попадает
+# туда случайно — на один уровень выше как раз корень дерева. Любой другой не
+# попадает: `FLANG=` на собранный в стороне двоичный отвечал
+# «не найдены исходники рантайма C» кодом 2. Названный путь снимает эту
+# случайность и делает рецепт полным.
 ( cd "$ROOT" && "$BINARY" emit "$INPUT" --target c --out "$TMP" \
-    --cli --repl --max-steps "$MAX_STEPS" --max-depth "$MAX_DEPTH" ) >&2
+    --cli --repl --runtime "$ROOT/$RUNTIME" \
+    --max-steps "$MAX_STEPS" --max-depth "$MAX_DEPTH" ) >&2
 
 PRINTED=$(cd "$TMP" && ls | sort)
 TOTAL=0

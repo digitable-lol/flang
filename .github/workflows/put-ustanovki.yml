@@ -35,7 +35,7 @@ on:
     paths:
       - "packaging/**"
       - "scripts/build-release-c.mjs"
-      - "scripts/bootstrap-c.mjs"
+      - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - "flang/test/install-path.test.mjs"
@@ -45,7 +45,7 @@ on:
     paths:
       - "packaging/**"
       - "scripts/build-release-c.mjs"
-      - "scripts/bootstrap-c.mjs"
+      - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - "flang/test/install-path.test.mjs"

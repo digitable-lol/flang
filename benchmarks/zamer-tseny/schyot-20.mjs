@@ -57,7 +57,18 @@ import { fileURLToPath } from "node:url"
 
 const корень = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..")
 const каталог = join(корень, "docs", "benchmark2")
-const { parse } = await import(join(корень, "flang", "src", "parser.mjs"))
+const двоичный = join(корень, "bootstrap", "flang")
+
+/* Разбор берётся у ДВОИЧНОГО: реализации на JavaScript больше нет (fe8e8a37),
+   а второй разбор `.flang` заводить нельзя — он разойдётся с настоящим. */
+function parse(_исходник, путь) {
+  const итог = execFileSync(двоичный, ["ast", путь], {
+    encoding: "utf8",
+    env: { ...process.env, LC_ALL: "C.UTF-8" },
+    maxBuffer: 1 << 26,
+  })
+  return JSON.parse(итог)
+}
 const времянка = mkdtempSync(join(tmpdir(), "schyot-20-"))
 
 /* ── ведомость одного файла ───────────────────────────────────────────────── */
@@ -65,8 +76,8 @@ const времянка = mkdtempSync(join(tmpdir(), "schyot-20-"))
 function прогон(путь) {
   try {
     return execFileSync(
-      process.execPath,
-      [join(корень, "flang", "bin", "flang.mjs"), "check", путь, "--proof", "--pretty"],
+      двоичный,
+      ["check", путь, "--proof"],
       {
         encoding: "utf8",
         env: { ...process.env, LC_ALL: "C.UTF-8" },
@@ -205,7 +216,7 @@ const врем = (имя, текст) => { const п = join(времянка, и�
 for (const имя of файлы) {
   const путь = join(каталог, имя)
   const исходник = readFileSync(путь, "utf8")
-  const дерево = parse(исходник, имя)
+  const дерево = parse(исходник, путь)
   const какЕсть = вердикты(прогон(путь))
   const голый = вердикты(прогон(врем("golyy-" + имя, безПримеров(исходник))))
   const строки = []

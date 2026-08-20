@@ -250,6 +250,8 @@
 - [Разбиение имени на слова у эталонов печати сделано таблицей ASCII, а у свидетеля — классами Юникода](slovar-simvolov-slova-na-flang-asciiynyy-a-u-svidetelya-yunikodnyy.md)
 - [Вычтенный в сверке блок «границы входа» был дырой: напечатанная Java без него не запускается](printed-java-without-entry-table-does-not-start.md)
 - [Двоичный не печатает сам себя в Java: список занятых имён пересобирается на каждую функцию](java-printer-rebuilds-the-taken-name-list-per-function.md)
+- [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего](pereimenovanie-razvodit-odno-stolknovenie-i-sozdayot-sleduyuschee.md)
+- [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](proverka-tipov-ne-na-puti-tochki-raskrutki.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)

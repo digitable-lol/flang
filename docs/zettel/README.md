@@ -102,6 +102,7 @@
 - [Два исполнителя портили двоичный поток по-разному, и расхождение было не в кодировке, а в том, где каждый терял](dva-hozyaina-portili-dvoichnyy-potok-po-raznomu.md)
 - [Пустая строка у «Прочитано» значит КОНЕЦ, и раскодировщик, вызванный руками, отдаёт её ещё в одном случае](pustaya-stroka-u-prochitano-znachit-konec-i-eto-lovushka-raskodirovshchika.md)
 - [Открытая труба стандартного ввода — это не «ввода нет», а «ввод будет позже», и потомок ждёт до срока](otkrytaya-truba-vvoda-eto-ne-vvoda-net-a-vvod-budet-pozzhe.md)
+- [Срок хозяина был не называем, и это одно держало сборку на JavaScript](srok-hozyaina-byl-ne-nazyvaem-i-eto-derzhalo-sborku-na-javascript.md)
 
 ## Процессы и конкурентность
 

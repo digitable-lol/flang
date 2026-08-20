@@ -43,6 +43,7 @@
 
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
+- [Квантор по соседним парам выразим сегодня и работает сторожем — стена в доказуемости](kvantor-po-sosednim-param-vyrazim-segodnya-no-nedokazuem.md)
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти](kvantor-po-sosednim-param-stoil-dvuh-faylov-vmesto-dvadcati-devyati.md)
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](uporyadochennost-nastoyashchey-sortirovki-lozhna-na-ne-chisle.md)
 - [Полная упорядоченность сортировки упирается во вторую стену: лемме нужна добавочная переменная-порог](lemma-s-dobavochnym-porogom-postusloviem-nevyrazima.md)

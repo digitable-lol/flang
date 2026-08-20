@@ -110,6 +110,28 @@ Something is proved for 9 of the 20 functions. Something substantive, for 5.
 node benchmarks/zamer-tseny/schyot-20.mjs
 ```
 
+### Some of the unproved is unprovable because it is untrue
+
+"The kernel did not take it" and "the kernel was too weak" are also different
+things, and on the same twenty they came apart twice. Two of the twenty claims are
+**false**, and the kernel is right to have refused them:
+
+- `«Противоположное»` — "negate" — with the claim that the result plus the input
+  is zero: `(результат плюс х) равен 0`. At an infinite `х` this works out to
+  `(0 − ∞) + ∞`, that is, "not a number", and "not a number" does not equal zero.
+  The same at minus infinity and at "not a number" itself;
+- `«Первый элемент или запасное»` — "first element or fallback" — with the claim
+  that the list is empty OR the result equals the fallback. On the list `[7]` with
+  fallback `0` the list is not empty and the result is seven, so the claim is
+  false. An implication was meant — if empty, then the fallback — and a
+  disjunction without the negation was written.
+
+So the denominator is not twenty honest claims but eighteen honest ones and two
+wrong ones. Hence a rule worth more than any number on this page: **before fixing
+the kernel to satisfy an unproved claim, run the claim itself against a hostile
+sample** — `±0`, `±∞`, "not a number", the empty string. Unprovability often turns
+out to be a property of the claim rather than of the kernel.
+
 ### "On a grid" is not a proof
 
 {{утверждения.сеткой}} claims are closed by walking a set of values: the program
@@ -172,24 +194,57 @@ unfinished work.
 
 ### What blocks proving the rest
 
-A run across every program in the repository answers this with a number, and the
-answer is inconvenient: it is not one cause but two at once, and **neither alone
-gives almost anything**.
+It is easy to swap the question here. "Which rule closes more functions" and
+"which rule is true" are different questions, and on this work they came apart
+loudly.
 
-| Added to the analysis | Functions closed |
+A measurement named two rules and promised that together they close 574
+functions. The number reproduced twice; it is real. But one of the two rules —
+"every call returns a strict part of its first argument" — is **false**. A
+three-line program refutes it:
+
+```flang
+тотальная функция «Само»
+  принимает значение: список числа
+  возвращает список числа
+  значение
+
+тотальная функция «Вечно»
+  принимает значение: список числа
+  возвращает число
+  «Вечно» от («Само» от значение)
+```
+
+`«Само»` hands back its argument whole, so `«Вечно»` spins forever. Under that
+rule every turn of it looks like a strict descent, and the analysis would declare
+a non-terminating program terminating. A rule closing five hundred functions at a
+stroke would be proving a falsehood — so it was rejected. That program sits in the
+repository and is required to be refused; a check watches that it has not turned
+green.
+
+Its honest replacement closes **exactly zero**, and the reason is substantive
+rather than a matter of effort: in a tree walker the base branch returns a
+constructed value (`пусто`, a literal, a constructor), and a constructed value is
+never part of the argument under any reading.
+
+What is actually reachable:
+
+| Rule | Functions closed |
 |---|---:|
-| Size-change graphs: a descent may move the argument position | 54 |
-| Types on the parse tree: a descent through a field lookup becomes visible | 74 |
-| Both at once | **574** |
+| Size-change graphs: the descent is spread around the call cycle | 47 |
+| The argument grows by a constant step, bounded by an unchanging parameter | 28 |
+| The same, but bounded by a numeric literal | 0 |
+| Total | **75** |
 
-The whole exceeds the sum because a recursion cycle is proved entirely or not at
-all, and the cycles here are large: the tree walk in one code generator is a
-single component of roughly 60 functions. One edge where the descent is invisible
-is enough to refuse the whole component. The first row fixes one kind of edge, the
-second another, and a large component holds both.
+Not 574 but 75. The first rule is already written in the language itself and
+checked by five programs: two legitimate ones it is meant to cover turned green,
+and three forgeries — including the one above — stayed refused. The zero in the
+third row is no accident either: the real upward walks compare against a
+parameter, not against a number.
 
-Hence the honest conclusion: taking on either one of the two for the sake of a
-number in the report is not worth it.
+The five hundred functions between 574 and 75 are reachable by nothing short of
+types on the parse tree — and that is no longer a rule somebody can write down but
+work the language does not yet have.
 
 ### The compiler does not check its own sources
 

@@ -191,7 +191,7 @@
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
 - [Примеров по корпусу прогоняется вдвое больше, чем объявлено, а девять файлов на 11 683 строки отчитываются чужими](primerov-progonyaetsya-vdvoe-bolshe-chem-obyavleno.md)
-- [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 410 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
+- [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 419 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
 - [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](progon-po-korpusu-nashyol-shest-rashozhdeniy-mezhdu-realizaciyami.md)
 
 ## Найденные ошибки

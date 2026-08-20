@@ -327,6 +327,7 @@ static const char HELP_TEST[] =
     "  --no-check      не проверять — смотреть на поведение примеров, пока\n"
     "                  программа ещё в правке\n"
     "  --json          машиночитаемый итог одной строкой\n"
+    "  --ledger        ведомость: по строке на файл, для сверки диффом\n"
     "  --max-steps N   предел шагов вычислителя\n"
     "  --max-depth N   предел глубины";
 
@@ -5079,7 +5080,7 @@ static int proof_file(const char *path, bool json) {
 /* Прогон по корпусу живёт в хозяйской половине файла: ему нужен `opendir`, а
    заголовки POSIX подключаются ниже, у `flang io`. Здесь — только объявление. */
 static int test_corpus(const char *given, bool check, const char *steps, const char *depth, bool json,
-                       bool many);
+                       bool ledger, bool many);
 
 /**
  * `flang test <файл|каталог|маска> [--no-check] [--json]` — прогон примеров.
@@ -5116,6 +5117,7 @@ static int test_file(int argc, char **argv) {
   size_t index = 0;
   bool check = true;
   bool json = false;
+  bool ledger = false;
   int argi = 0;
   int code = 0;
 
@@ -5124,6 +5126,8 @@ static int test_file(int argc, char **argv) {
       check = false;
     } else if (strcmp(argv[argi], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[argi], "--ledger") == 0) {
+      ledger = true;
     } else if (strcmp(argv[argi], "--max-steps") == 0 && argi + 1 < argc) {
       argi += 1;
       steps = argv[argi];
@@ -5155,8 +5159,8 @@ static int test_file(int argc, char **argv) {
     /* Машиночитаемый вывод у одного файла — тот же свод, что у корпуса из
        одного файла. Второй формы для одного файла не заводится: разбирающий
        вывод обязан разбирать одну форму, а не две. */
-    if (many || json) {
-      return test_corpus(path, check, steps, depth, json, many);
+    if (many || json || ledger) {
+      return test_corpus(path, check, steps, depth, json, ledger, many);
     }
   }
 
@@ -7602,7 +7606,7 @@ static double corpus_now(void) {
  * обязан разбирать одну форму, а не две.
  */
 static int test_corpus(const char *given, bool check, const char *steps, const char *depth, bool json,
-                       bool many) {
+                       bool ledger, bool many) {
   repl_strings skip;
   repl_strings found;
   repl_strings chosen;
@@ -7704,7 +7708,14 @@ static int test_corpus(const char *given, bool check, const char *steps, const c
   } else {
     const char *utf8 = NULL;
     size_t bytes = 0;
-    if (json) {
+    if (ledger) {
+      /* Ведомость по строке на файл: её записывают и сверяют диффом. Ни
+         замечаний, ни итога — они бы поехали в тот же поток и попали в дифф. */
+      if (val_field(result, "ведомостью", &field) && val_text(field, &utf8, &bytes) && bytes > 0) {
+        fwrite(utf8, 1, bytes, stdout);
+        fputc('\n', stdout);
+      }
+    } else if (json) {
       if (val_field(result, "в JSON", &field) && val_text(field, &utf8, &bytes)) {
         fwrite(utf8, 1, bytes, stdout);
         fputc('\n', stdout);

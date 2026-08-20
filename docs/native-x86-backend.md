@@ -54,7 +54,7 @@ Ubuntu, `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`, `GNU ld 2.46`, `glibc 2.43`.
 
 | файл | строк |
 |---|---:|
-| `flang/src/emit/c/flang_repl.c` | 10 670 |
+| `flang/src/emit/c/flang_repl.c` | 10 681 |
 | `flang/src/emit/c/flang_runtime.c` | 3 222 |
 | `flang/src/emit/c/flang_conc.c` | 3 463 |
 | `flang/src/emit/c/flang_cli.c` | 1 084 |

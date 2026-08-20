@@ -1133,9 +1133,9 @@ fl_status compiler_flang_sozdat_sorvannyy_primer(fl_ctx *ctx, fl_value funkciya,
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_fayla_korpusa(fl_ctx *ctx, fl_value put, fl_value vzyat, fl_value kod, fl_value soobschenie, fl_value vsego, fl_value svoih, fl_value proshlo, fl_value sorvalos, fl_value sorvannye, fl_value *out, fl_error *error);
 
-/* Запись FTS «Свод корпуса»: «файлов», «взято», «отказано», «всего», «прошло», «сорвалось», «замечания», «итог», «в JSON», «код». */
+/* Запись FTS «Свод корпуса»: «файлов», «взято», «отказано», «всего», «прошло», «сорвалось», «замечания», «итог», «ведомостью», «в JSON», «код». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_svod_korpusa(fl_ctx *ctx, fl_value faylov, fl_value vzyato, fl_value otkazano, fl_value vsego, fl_value proshlo, fl_value sorvalos, fl_value zamechaniya, fl_value itog, fl_value v_json, fl_value kod, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_svod_korpusa(fl_ctx *ctx, fl_value faylov, fl_value vzyato, fl_value otkazano, fl_value vsego, fl_value proshlo, fl_value sorvalos, fl_value zamechaniya, fl_value itog, fl_value vedomostyu, fl_value v_json, fl_value kod, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог сборки»: «файлы», «ошибка», «диагностики». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -43834,6 +43834,24 @@ fl_status compiler_flang_itogovaya_stroka_korpusa(fl_ctx *ctx, fl_value dovod, f
  * @return значение: строка
  */
 fl_status compiler_flang_zamechaniya_o_korpuse(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка ведомости».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Итог файла корпуса»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_vedomosti(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ведомость корпуса».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayly — «файлы»: список: «Итог файла корпуса»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vedomost_korpusa(fl_ctx *ctx, fl_value fayly, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сорванный в JSON».

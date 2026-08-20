@@ -1,0 +1,106 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Стойка ссылок — клиент сокращателя на flang</title>
+<!--
+  Страница приложения «Стойка ссылок».
+
+  Здесь НЕТ ни одной строки прикладной логики. Всё, что решает, что показать,
+  что делать с нажатием и как читать ответ службы, написано на flang
+  (`klient.flang`, 32 тотальных функции, 50 примеров). Здесь — разметка и четыре
+  строки запуска: разобрать программу, взять хозяина браузера, отдать ему план.
+
+  Разметка размечена тремя признаками, и это весь договор между страницей и
+  хозяином:
+
+    данные-место     — сюда хозяин пишет текст поручения «Показать»;
+    данные-событие   — отсюда хозяин берёт события для «Ждать событие»,
+    данные-значение  — и вот это значение он к событию прикладывает; у поля
+                       ввода его нет, и тогда хозяин берёт содержимое поля.
+
+  Ни одно из этих имён язык не знает. Программа называет место строкой «экран»,
+  которую придумала сама.
+
+  Запуск: `node web/shortener/stend.mjs` из корня дерева и открыть
+  http://127.0.0.1:8912/web/shortener/index.html — стенд отдаёт и страницу, и
+  ответы службы-сокращателя, той самой, что написана на flang в
+  `flang/examples/web/shortener/`.
+-->
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    margin: 0; padding: 2rem; display: grid; gap: 1.25rem;
+    justify-items: start; max-width: 46rem;
+  }
+  h1 { font-size: 1.2rem; margin: 0; font-weight: 600; }
+  p { margin: 0; opacity: .75; font-size: .85rem; }
+  pre[данные-место] {
+    margin: 0; padding: 1rem 1.25rem; min-width: 30rem; min-height: 11rem;
+    border: 1px solid currentColor; border-radius: .5rem; font-size: 1rem;
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .ряд { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+  label { font-size: .85rem; opacity: .75; min-width: 4.5rem; }
+  input {
+    font: inherit; padding: .4rem .6rem; min-width: 22rem;
+    border: 1px solid currentColor; border-radius: .4rem; background: transparent;
+    color: inherit;
+  }
+  input[данные-событие="код"] { min-width: 6rem; }
+  button {
+    font: inherit; padding: .45rem .9rem; cursor: pointer;
+    border: 1px solid currentColor; border-radius: .4rem; background: transparent;
+    color: inherit;
+  }
+  button:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+  p[данные-место="итог"] { color: #c00; opacity: 1; }
+</style>
+
+<h1>Стойка ссылок — клиент службы-сокращателя</h1>
+<p>Наберите длинный адрес, нажмите «сократить». «обновить» перечитывает список,
+«перейти» идёт по короткой ссылке и двигает счётчик переходов.</p>
+
+<pre данные-место="экран">загружаем…</pre>
+
+<div class="ряд">
+  <label for="адрес">адрес</label>
+  <input id="адрес" данные-событие="адрес" placeholder="https://пример.рф/очень/длинный/путь">
+</div>
+<div class="ряд">
+  <label for="код">код</label>
+  <input id="код" данные-событие="код" placeholder="к1">
+</div>
+
+<div class="ряд">
+  <button данные-событие="кнопка" данные-значение="сократить">сократить</button>
+  <button данные-событие="кнопка" данные-значение="обновить">обновить</button>
+  <button данные-событие="кнопка" данные-значение="перейти">перейти</button>
+  <button данные-событие="кнопка" данные-значение="очистить">очистить</button>
+</div>
+
+<p данные-место="итог"></p>
+
+<script type="module">
+  import { parse } from "../../flang/src/parser.mjs"
+  import { runPlan } from "../../flang/src/io.mjs"
+  import { browserHost } from "../../flang/src/host/browser.mjs"
+
+  const исходник = await (await fetch("./klient.flang")).text()
+  const программа = parse(исходник, { file: "klient.flang" })
+  const хозяин = browserHost({ документ: document })
+
+  /*
+   * Предел поручений снят по той же причине, что и у соседнего приложения
+   * (`web/app/index.html`): умолчание `runPlan` — 10 000 поручений на прогон —
+   * мера ПАКЕТНОЙ программы, которая кончается. Вкладка не кончается, и то же
+   * число здесь означало бы «приложение умрёт после нескольких тысяч нажатий».
+   * Своей завершаемости приложение и не обещает: ветки «Конец работы» в нём нет
+   * ни одной, кончает его человек.
+   */
+  runPlan(программа, "Стойка ссылок", хозяин, { maxOrders: Infinity }).catch((беда) => {
+    /* Отказ плана — такой же результат, как ответ, и он показывается человеку,
+       а не прячется в консоль. */
+    const место = document.querySelector('[данные-место="итог"]')
+    if (место !== null) место.textContent = `${беда.code ?? "FLANG"}: ${беда.message}`
+  })
+</script>

@@ -111,6 +111,8 @@
 - [Кандидат на горячую замену разбирается ОТДЕЛЬНО, поэтому имена типов работающей программы в нём назвать можно, а функции её позвать нельзя](a-candidate-parses-alone-so-it-names-types-but-cannot-call-functions.md)
 - [Из четырёх утверждений, которых ждут от планировщика процессов, ядро не берёт ни одного](what-a-scheduler-needs-proved.md)
 - [Распределённость делится на мир и провод в отношении 459 к 119, и печатать компилятор умеет только провод](raspredelyonnost-delitsya-na-mir-i-provod.md)
+- [Решение о мире переносимо, даже когда сам мир — нет: у слоя связи узла это 554 строки против 42](reshenie-o-mire-perenosimo-a-mir-net.md)
+- [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов](uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata.md)
 - [Воспроизводимость по семени кончается ровно на границе узла](seme-uporyadochivaet-tolko-vnutri-uzla.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
 

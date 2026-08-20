@@ -527,12 +527,12 @@ export function PoraBezhat(fields = {}) {
   return new $FlangVariant("Пора бежать", fields)
 }
 
-/** Сумма типов FTS «Действие узла»: «отправить» | «через» | «отложить» | «продолжить» | «остановить». */
+/** Сумма типов FTS «Действие узла»: «Велено слать» | «Велено слать позже» | «Велено отложить» | «Велено продолжить» | «Велено остановить». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} DeystvieUzla */
 
 /**
- * Конструктор варианта «отправить» суммы «Действие узла».
+ * Конструктор варианта «Велено слать» суммы «Действие узла».
  *
  * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
  * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
@@ -540,12 +540,12 @@ export function PoraBezhat(fields = {}) {
  * @param {{ "кому": string, "билет": number }} fields
  * @returns {$FlangVariant}
  */
-export function Otpravit(fields = {}) {
-  return new $FlangVariant("отправить", fields)
+export function VelenoSlat(fields = {}) {
+  return new $FlangVariant("Велено слать", fields)
 }
 
 /**
- * Конструктор варианта «через» суммы «Действие узла».
+ * Конструктор варианта «Велено слать позже» суммы «Действие узла».
  *
  * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
  * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
@@ -553,36 +553,36 @@ export function Otpravit(fields = {}) {
  * @param {{ "кому": string, "билет": number, "задержка": number }} fields
  * @returns {$FlangVariant}
  */
-export function Cherez(fields = {}) {
-  return new $FlangVariant("через", fields)
+export function VelenoSlatPozzhe(fields = {}) {
+  return new $FlangVariant("Велено слать позже", fields)
 }
 
 /**
- * Конструктор варианта «отложить» суммы «Действие узла».
+ * Конструктор варианта «Велено отложить» суммы «Действие узла».
  *
  * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
  * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
  *
  * @returns {$FlangVariant}
  */
-export function Otlozhit(fields = {}) {
-  return new $FlangVariant("отложить", fields)
+export function VelenoOtlozhit(fields = {}) {
+  return new $FlangVariant("Велено отложить", fields)
 }
 
 /**
- * Конструктор варианта «продолжить» суммы «Действие узла».
+ * Конструктор варианта «Велено продолжить» суммы «Действие узла».
  *
  * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
  * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
  *
  * @returns {$FlangVariant}
  */
-export function Prodolzhit(fields = {}) {
-  return new $FlangVariant("продолжить", fields)
+export function VelenoProdolzhit(fields = {}) {
+  return new $FlangVariant("Велено продолжить", fields)
 }
 
 /**
- * Конструктор варианта «остановить» суммы «Действие узла».
+ * Конструктор варианта «Велено остановить» суммы «Действие узла».
  *
  * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
  * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
@@ -590,8 +590,8 @@ export function Prodolzhit(fields = {}) {
  * @param {{ "почему": string }} fields
  * @returns {$FlangVariant}
  */
-export function Ostanovit(fields = {}) {
-  return new $FlangVariant("остановить", fields)
+export function VelenoOstanovit(fields = {}) {
+  return new $FlangVariant("Велено остановить", fields)
 }
 
 /** Сумма типов FTS «Веление узлу»: «Позвать обработчик» | «Послать по проводу» | «Поставить таймер» | «Записать в журнал» | «Уронить процесс» | «Письмо пропало». */
@@ -1481,20 +1481,20 @@ export function slitHod(hod, novyy) {
  * @returns {HodUzla}
  */
 export function odnoDeystvie(hod, d, kto, chto) {
-  if ($isVariant(d) && d.variant === "отправить") {
+  if ($isVariant(d) && d.variant === "Велено слать") {
     const komu = $variantField(d, "кому")
     const bilet = $variantField(d, "билет")
     return slitHod(hod, otpravit($field(hod, "узел"), komu, bilet))
-  } else if ($isVariant(d) && d.variant === "через") {
+  } else if ($isVariant(d) && d.variant === "Велено слать позже") {
     const komu$2 = $variantField(d, "кому")
     const bilet$2 = $variantField(d, "билет")
     const zaderzhka = $variantField(d, "задержка")
     return { "узел": $field(hod, "узел"), "веления": $b_dobavit(PostavitTaymer({ "кому": komu$2, "билет": bilet$2, "задержка": zaderzhka }), $field(hod, "веления")) }
-  } else if ($isVariant(d) && d.variant === "отложить") {
+  } else if ($isVariant(d) && d.variant === "Велено отложить") {
     return { "узел": polozhit($field(hod, "узел"), kto, chto, false, true, true), "веления": $field(hod, "веления") }
-  } else if ($isVariant(d) && d.variant === "продолжить") {
+  } else if ($isVariant(d) && d.variant === "Велено продолжить") {
     return { "узел": polozhit($field(hod, "узел"), kto, chto, true, true, true), "веления": $field(hod, "веления") }
-  } else if ($isVariant(d) && d.variant === "остановить") {
+  } else if ($isVariant(d) && d.variant === "Велено остановить") {
     const pochemu = $variantField(d, "почему")
     return ostanovit(hod, kto, pochemu)
   } else {
@@ -1681,11 +1681,11 @@ export const $PROGRAM = {
       { name: "Легло", fieldAt: 16, fieldCount: 0 },
       { name: "Некому", fieldAt: 16, fieldCount: 0 },
       { name: "Полон", fieldAt: 16, fieldCount: 0 },
-      { name: "отправить", fieldAt: 16, fieldCount: 2 },
-      { name: "через", fieldAt: 18, fieldCount: 3 },
-      { name: "отложить", fieldAt: 21, fieldCount: 0 },
-      { name: "продолжить", fieldAt: 21, fieldCount: 0 },
-      { name: "остановить", fieldAt: 21, fieldCount: 1 },
+      { name: "Велено слать", fieldAt: 16, fieldCount: 2 },
+      { name: "Велено слать позже", fieldAt: 18, fieldCount: 3 },
+      { name: "Велено отложить", fieldAt: 21, fieldCount: 0 },
+      { name: "Велено продолжить", fieldAt: 21, fieldCount: 0 },
+      { name: "Велено остановить", fieldAt: 21, fieldCount: 1 },
       { name: "Письмо снаружи", fieldAt: 22, fieldCount: 2 },
       { name: "Обработчик вернул", fieldAt: 24, fieldCount: 1 },
       { name: "Обработчик отказал", fieldAt: 25, fieldCount: 2 },

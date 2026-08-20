@@ -21,6 +21,7 @@
 - [Из восьми целей печати важна только C, остальное отложено](what-is-deferred.md)
 - [Революция наступит ровно тогда, когда доказательство станет дешевле тестов](condition-for-the-revolution.md)
 - [Разрыв между «доказано» и «правильно» — это спецификация](proven-is-not-correct.md)
+- [Утверждение о форме результата переживает подмену тела заглушкой: содержательными оказались 30 из 42](a-shape-only-postcondition-survives-a-stub-and-says-nothing.md)
 - [Развилки, которые владелец выбрал сам](owner-decisions.md)
 - [Отчёты пишутся простым инженерным языком, без проектного жаргона](write-in-plain-language.md)
 - [Восемь десятых внутренних слов на сайте приходятся на одну печатаемую страницу, а не на прозу](most-site-jargon-comes-from-one-printed-page.md)
@@ -382,6 +383,7 @@
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)
 - [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](paket-npm-ne-uedet-v-podkatalog.md)
+- [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
 
 ## Модульность и пакеты
 
@@ -404,11 +406,14 @@
 - [Вывод из спецификации работает там, где область сузили нарочно, — и у flang такая область уже есть: словарь между спеками](vyvod-rabotaet-na-uzkoy-oblasti.md)
 - [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](paket-eto-zamok-s-imenem-i-versiey.md)
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
+- [Предел шагов у прогона примеров — один на весь запуск, и примеры ввезённых модулей считаются в него же](one-step-budget-covers-a-whole-run-including-imported-examples.md)
 - [Столкновения имён в замыкании компилятора считаются обходом текста за 0,1 с — там же, где связывание отвечает за 6 минут](stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy.md)
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
 - [Двоичный хозяин обрывает содержимое на первом нулевом октете, и драйвер PostgreSQL по проводу не идёт](dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md)
+- [Октетная пара поручений объявлена в словаре, но ни один хозяин её не исполняет](octet-orders-are-in-the-dictionary-but-no-host-executes-them.md)
+- [Сравнения за постоянное время в этом языке не написать, и функции с таким именем заводить нельзя](constant-time-comparison-cannot-be-promised-by-this-language.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 - [Октетная труба превращает счёт рамки из «ширины знака в UTF-8» в счёт элементов, и весь драйвер PostgreSQL стоит на двух строках](an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count.md)
 - [Слияние, взявшее файл «целиком у них», роняет чужую работу молча — и ADR остаётся стоять с пометкой «реализовано»](a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently.md)

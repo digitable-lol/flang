@@ -1,8 +1,9 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /**
- * Напечатать `flang/conc/svyaz.flang` в цель JavaScript и положить результат в
- * `flang/conc/svyaz.js`.
+ * Напечатать модули узла в цель JavaScript и положить результат рядом с
+ * исходником: `flang/conc/svyaz.flang` → `flang/conc/svyaz.js`,
+ * `flang/conc/planirovshchik.flang` → `flang/conc/planirovshchik.js`.
  *
  * Зачем это отдельным шагом, а не печатью при запуске: узел — работающая
  * программа, и печатать компилятором на старте значило бы ввозить в неё весь
@@ -50,18 +51,33 @@ const ШАПКА = [
 export const ИСХОДНИК = "flang/conc/svyaz.flang"
 export const НАПЕЧАТАННОЕ = "flang/conc/svyaz.js"
 
-/** Напечатать модуль связи в JavaScript. Возвращает содержимое файла.
+/**
+ * Модули узла, которые печатаются заранее. Два, и оба по одной причине: узел —
+ * работающая программа, и звать компилятор на старте значило бы ввозить его
+ * целиком.
+ */
+export const МОДУЛИ = Object.freeze([
+  Object.freeze({ исходник: ИСХОДНИК, напечатанное: НАПЕЧАТАННОЕ }),
+  Object.freeze({ исходник: "flang/conc/planirovshchik.flang", напечатанное: "flang/conc/planirovshchik.js" }),
+])
+
+/** Напечатать модуль связи в JavaScript. Возвращает содержимое файла. */
+export async function напечататьСвязь() {
+  return напечатать(ИСХОДНИК)
+}
+
+/** Напечатать один модуль узла в JavaScript. Возвращает содержимое файла.
     Печатает ДВОИЧНЫЙ: своего печатника на JavaScript в дереве больше нет, и
     заводить второй значило бы вернуть удалённое. Прогонщик (`flang_cli.js`)
     печатается заодно и отбрасывается — в дерево едет один модуль, — но НЕ
     ключом `--no-cli`: строка про соседний прогонщик стоит в шапке модуля, и
     без прогонщика она пропала бы, а с ней и байтовое совпадение. */
-export async function напечататьСвязь() {
+export async function напечатать(исходник) {
   const куда = mkdtempSync(join(tmpdir(), "flang-svyaz-"))
   let модуль
   try {
-    const { код, вывод, ошибки } = позвать(["emit", корень + ИСХОДНИК, "--target", "js", "--out", куда])
-    if (код !== 0) throw new Error(`«${ИСХОДНИК}» не напечатался: ${(ошибки || вывод).trim()}`)
+    const { код, вывод, ошибки } = позвать(["emit", корень + исходник, "--target", "js", "--out", куда])
+    if (код !== 0) throw new Error(`«${исходник}» не напечатался: ${(ошибки || вывод).trim()}`)
     const имена = readdirSync(куда).filter((имя) => !имя.startsWith("flang_cli"))
     if (имена.length !== 1) throw new Error(`печать отдала не один модуль, а ${имена.length}: ${имена.join(", ")}`)
     модуль = { content: readFileSync(join(куда, имена[0]), "utf8") }
@@ -76,7 +92,9 @@ export async function напечататьСвязь() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const содержимое = await напечататьСвязь()
-  writeFileSync(корень + НАПЕЧАТАННОЕ, содержимое, "utf8")
-  console.log(`${НАПЕЧАТАННОЕ}: ${Buffer.byteLength(содержимое, "utf8")} байт`)
+  for (const модуль of МОДУЛИ) {
+    const содержимое = await напечатать(модуль.исходник)
+    writeFileSync(корень + модуль.напечатанное, содержимое, "utf8")
+    console.log(`${модуль.напечатанное}: ${Buffer.byteLength(содержимое, "utf8")} байт`)
+  }
 }

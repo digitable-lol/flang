@@ -720,6 +720,7 @@ flang/self/monad-expand.flang	20 20 0
 flang/self/monad.flang	90 90 0
 flang/self/monoid.flang	33 33 0
 flang/self/obligations.flang	5 5 0
+flang/self/obyazatelstva-i-yadro.flang	181 181 0
 flang/self/otkazy-tipov.flang	202 202 0
 flang/self/otkazy-totalnosti.flang	234 234 0
 flang/self/parser.flang	148 148 0

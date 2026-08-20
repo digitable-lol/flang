@@ -127,7 +127,7 @@ total function «Number of moves»
 // A tower of n disks: [n, n−1, …, 1], bottom up. Recursion on a number, hence
 // FLANG_NOT_TOTAL — the same boundary as «Numbers from and to» in
 // `fizzbuzz.flang`.
-function «Tower of»
+total function «Tower of»
   accepts count: number
   returns list of number
   example «No disks»
@@ -143,7 +143,7 @@ function «Tower of»
       fold upper starting with [count] as acc and disk → add disk to acc
 
 // The whole task: given a number of disks, give the list of moves.
-function «Towers of Hanoi»
+total function «Towers of Hanoi»
   accepts disks: number
   returns list of «Move»
   example «The task: three disks»

@@ -274,11 +274,11 @@ static const char REPL_GREETING_NO_EVAL[] =
  * цель втаскивают, каждая его копия становится ЛОЖЬЮ. Копий здесь две, и обе
  * ниже: одна называет, что есть, вторая — чего нет.
  */
-#define EMIT_TARGETS_WORDS "c|go|rust"
-#define EMIT_TARGETS_MISSING "пять целей печати из восьми"
-#define EMIT_TARGETS_SAY "цели здесь три — «c», «go» и «rust»"
+#define EMIT_TARGETS_WORDS "c|go|rust|java"
+#define EMIT_TARGETS_MISSING "четыре цели печати из восьми"
+#define EMIT_TARGETS_SAY "цели здесь четыре — «c», «go», «rust» и «java»"
 #define EMIT_TARGETS_REST \
-  "Остальные пять (js, python, java, csharp, elixir) написаны на flang\n" \
+  "Остальные четыре (js, python, csharp, elixir) написаны на flang\n" \
   "(flang/self/emit-*.flang), но в замыкание этой сборки не входят: они есть в\n" \
   "версии для Node — npm install -g @digitable-lol/flang"
 
@@ -376,6 +376,7 @@ static const char HELP_EMIT[] =
     "  --target c        C99: заголовок, модуль, рантайм, прогонщик, Makefile\n"
     "  --target go       Go: go.mod, пакет рантайма, пакет программы, прогонщик\n"
     "  --target rust     Rust: Cargo.toml, модуль рантайма, модуль программы, прогонщик\n"
+    "  --target java     Java: пять файлов рантайма, класс программы, прогонщик, Makefile\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
@@ -384,7 +385,9 @@ static const char HELP_EMIT[] =
     "\n"
     "РАНТАЙМ ЦЕЛИ уезжает в вывод дословно: у «c» это четыре файла\n"
     "(flang_runtime.h, flang_runtime.c, flang_cli.c, flang_repl.c), у «go» и «rust»\n"
-    "— по два (flang_runtime.go/.rs, flang_cli.go/.rs). Ищутся они в «--runtime», затем в\n"
+    "— по два (flang_runtime.go/.rs, flang_cli.go/.rs), у «java» шесть (Value.java,\n"
+    "Field.java, FlangError.java, Ctx.java, Flang.java, FlangCli.java). Ищутся они в\n"
+    "«--runtime», затем в\n"
     "$FLANG_RUNTIME_DIR, затем рядом с установленным flang (share/flang/<цель>).\n"
     "\n"
     "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
@@ -394,7 +397,7 @@ static const char HELP_EMIT[] =
     "ЧЕМ ЭТА ПЕЧАТЬ ОТЛИЧАЕТСЯ ОТ ПЕЧАТИ ПОЛНОГО ИНСТРУМЕНТАРИЯ, по целям:\n"
     "  c   недостижимое НЕ отбрасывается, доказанное не метится («markProven»);\n"
     "      собирается и работает напечатанное одинаково, его просто больше;\n"
-    "  go, rust  недостижимое отбрасывается, как у свидетеля; пуста ГРАНИЦА\n"
+    "  go, rust, java  недостижимое отбрасывается, как у свидетеля; пуста ГРАНИЦА\n"
     "      ВХОДА — таблицу объявленных типов строит слой типов свидетеля, которого\n"
     "      на flang нет ни строки. Напечатанное собирается и работает, но аргументы\n"
     "      прогонщика объявленным типам не сверяются, и об этом сказано словами.\n"
@@ -5910,7 +5913,7 @@ static int run_file(int argc, char **argv) {
  *      печатью flang₁ побайтово. То есть у печати самого бинарника есть своя
  *      неподвижная точка, и восстановить компилятор из исходников `flang/self`
  *      можно сколько угодно раз, ни разу не позвав Node.
- * • ЦЕЛЕЙ ВТАЩЕНО ТРИ — `c`, `go` и `rust`. Остальные пять написаны на flang
+ * • ЦЕЛЕЙ ВТАЩЕНО ЧЕТЫРЕ — `c`, `go`, `rust` и `java`. Остальные четыре написаны на flang
  *   (`flang/self/emit-*.flang`) и сверены со свидетелем побайтово, но в
  *   замыкание не втащены. МЕШАЕТ ИМ ОДНО И ТО ЖЕ — СТОЛКНОВЕНИЯ ИМЁН:
  *   связывание сливает объявления в одно плоское пространство, а эталоны печати
@@ -5923,7 +5926,7 @@ static int run_file(int argc, char **argv) {
  *                           «Обрезка слева», «Только цифры») — ВТАЩЕНА
  *     java     364 →   7   («Есть имя», «Есть узел», «Может быть имя»,
  *                           «Может быть узел», «Нет имени», «Нет узла»,
- *                           «Пара имён»)
+ *                           «Пара имён») — ВТАЩЕНА
  *     js       336 → 139
  *     elixir   422 → 261
  *     python   377 → 299
@@ -5947,7 +5950,8 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_C 0
 #define EMIT_TARGET_GO 1
 #define EMIT_TARGET_RUST 2
-#define EMIT_TARGET_COUNT 3
+#define EMIT_TARGET_JAVA 3
+#define EMIT_TARGET_COUNT 4
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
 #define EMIT_FIELD_MAX 16
@@ -5956,7 +5960,8 @@ static int run_file(int argc, char **argv) {
 /**
  * Что двоичный знает о цели печати — ОДНОЙ СТРОКОЙ ТАБЛИЦЫ.
  *
- * Слово ключа «--target»; файл, по которому узнаётся каталог ИСХОДНИКОВ её
+ * Слово ключа «--target»; имя цели, каким его читает человек в отказе; файл, по
+ * которому узнаётся каталог ИСХОДНИКОВ её
  * рантайма; два места, где он ищется рядом с установленным flang; имя точки
  * входа на flang; чем эта точка входа кормится — СВЯЗАННЫМ (тогда она сама
  * отбрасывает недостижимое, как свидетель) или уже готовой программой; имена
@@ -5968,6 +5973,7 @@ static int run_file(int argc, char **argv) {
  */
 typedef struct {
   const char *word;
+  const char *title;
   const char *probe;
   const char *places[2];
   const char *entry;
@@ -5986,16 +5992,25 @@ typedef struct {
    "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа"}
 
 static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
-    {"c", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 15,
+    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 15,
      EMIT_FIELDS_C, 4, {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c"}, NULL},
-    {"go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go", true,
+    {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
+     true,
      15, EMIT_FIELDS_C, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./..."},
-    {"rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
+    {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build"},
+    {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
+     "Напечатать связанное в Java",
+     true, 16,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
+      "рантайм поле", "рантайм ошибка", "рантайм контекст", "рантайм формы", "исходник прогонщика",
+      "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
+     "собрать: cd <каталог> && make"},
 };
 
 /** Ключи командной строки печати — одни на все цели. */
@@ -6616,12 +6631,12 @@ static int emit_file(int argc, char **argv, const char *self) {
   free(self_dir);
   if (runtime == NULL) {
     fprintf(stderr,
-            "flang emit: не найдены ИСХОДНИКИ рантайма цели «%s» (%s без шапки «Сгенерировано»).\n"
-            "Они уезжают в вывод дословно, и без них печать соврала бы. Искали в «--runtime», в\n"
-            "$FLANG_RUNTIME_DIR и рядом с установленным flang (%s). Что делать: назвать каталог\n"
-            "с ними ключом «--runtime каталог» или переменной FLANG_RUNTIME_DIR; в дереве\n"
-            "исходников это %s.\n",
-            EMIT_TARGET_TABLE[chosen].word, EMIT_TARGET_TABLE[chosen].probe,
+            "flang emit: не найдены исходники рантайма %s — они уезжают в вывод ДОСЛОВНО, и\n"
+            "без них печать соврала бы. Узнаются они по %s без шапки «Сгенерировано flang».\n"
+            "Искали в «--runtime», в $FLANG_RUNTIME_DIR и рядом с установленным flang (%s).\n"
+            "Что делать: назвать каталог с ними ключом «--runtime каталог» или переменной\n"
+            "FLANG_RUNTIME_DIR; в дереве исходников это %s.\n",
+            EMIT_TARGET_TABLE[chosen].title, EMIT_TARGET_TABLE[chosen].probe,
             EMIT_TARGET_TABLE[chosen].places[1], EMIT_TARGET_TABLE[chosen].places[0]);
     return 2;
   }

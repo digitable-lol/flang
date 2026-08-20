@@ -557,6 +557,158 @@ fl_status compiler_flang_sozdat_nastroyki_rust(fl_ctx *ctx, fl_value put, fl_val
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tela_rust(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
 
+/* Запись FTS «Пара имён Java»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_para_imyon_java(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор слов Java»: «слово», «готовые». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_slov_java(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Набор имён Java»: «взято», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nabor_imyon_java(fl_ctx *ctx, fl_value vzyato, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр Java»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_java(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Постусловие Java»: «имя», «выражение», «связывание», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_postuslovie_java(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предусловие Java»: «имя», «выражение», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_preduslovie_java(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция Java»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_funkciya_java(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле типа Java»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_tipa_java(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Запись типа Java»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapis_tipa_java(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант типа Java»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_tipa_java(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сумма типов Java»: «имя», «варианты». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_summa_tipov_java(fl_ctx *ctx, fl_value imya, fl_value varianty, fl_value *out, fl_error *error);
+
+/* Запись FTS «Рёбра Java»: «имя», «цели». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ryobra_java(fl_ctx *ctx, fl_value imya, fl_value celi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Компонента Java»: «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_komponenta_java(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Метка Java»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_metka_java(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тарьян Java»: «номера», «низы», «на стеке», «стек», «компоненты», «счётчик». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_taryan_java(fl_ctx *ctx, fl_value nomera, fl_value nizy, fl_value na_steke, fl_value stek, fl_value komponenty, fl_value schyotchik, fl_value *out, fl_error *error);
+
+/* Запись FTS «Отрезание Java»: «индекс», «элементы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_otrezanie_java(fl_ctx *ctx, fl_value indeks, fl_value elementy, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние Java»: «счётчик», «взято», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_java(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее Java»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог Java»: «состояние», «вывод», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок Java»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именованные идентификаторы Java»: «имя», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovannye_identifikatory_java(fl_ctx *ctx, fl_value imya, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Занятое Java»: «идентификатор», «есть роль», «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zanyatoe_java(fl_ctx *ctx, fl_value identifikator, fl_value est_rol, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Заявка Java»: «занятые», «состояние», «таблица». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zayavka_java(fl_ctx *ctx, fl_value zanyatye, fl_value sostoyanie, fl_value tablica, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее Java»: «класс», «функции», «записи», «варианты», «суммы», «ид функций», «ид фабрик», «ид вариантов», «ид шагов», «ид параметров», «глобальные», «хвостовые», «циклические», «рекурсивные». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_java(fl_ctx *ctx, fl_value klass, fl_value funkcii, fl_value zapisi, fl_value varianty, fl_value summy, fl_value id_funkciy, fl_value id_fabrik, fl_value id_variantov, fl_value id_shagov, fl_value id_parametrov, fl_value globalnye, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свод Java»: «общее», «состояние». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svod_java(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Зип Java»: «индекс», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zip_java(fl_ctx *ctx, fl_value indeks, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст Java»: «общее», «функция», «параметры», «сам хвост», «есть члены», «члены», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_java(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value sam_hvost, fl_value est_chleny, fl_value chleny, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Порядок Java»: «состояние», «вывод», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poryadok_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог образца Java»: «состояние», «вывод», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_obrazca_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог связывания Java»: «состояние», «вывод», «контекст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_svyazyvaniya_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value kontekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Случай печати Java»: «тело», «образец», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sluchay_pechati_java(fl_ctx *ctx, fl_value telo, fl_value obrazec, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор случаев Java»: «состояние», «вывод», «случаи». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_sluchaev_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value sluchai, fl_value *out, fl_error *error);
+
+/* Запись FTS «Строки с индексом Java»: «индекс», «строки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_stroki_s_indeksom_java(fl_ctx *ctx, fl_value indeks, fl_value stroki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров Java»: «контекст», «индекс». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_java(fl_ctx *ctx, fl_value kontekst, fl_value indeks, fl_value *out, fl_error *error);
+
+/* Запись FTS «Файл Java»: «путь», «содержимое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_fayl_java(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Java»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм значение», «рантайм поле», «рантайм ошибка», «рантайм контекст», «рантайм формы», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_java(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_znachenie, fl_value rantaym_pole, fl_value rantaym_oshibka, fl_value rantaym_kontekst, fl_value rantaym_formy, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог печати Java»: «файлы», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_pechati_java(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тела Java»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tela_java(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -1377,6 +1529,10 @@ fl_status compiler_flang_sozdat_itog_sborki(fl_ctx *ctx, fl_value fayly, fl_valu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_proverki_ishodnikov(fl_ctx *ctx, fl_value godno, fl_value diagnostiki, fl_value *out, fl_error *error);
 
+/* Запись FTS «Итог сборки Java»: «файлы», «ошибка», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_sborki_java(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог примера»: «функция», «пример», «прошёл», «код», «сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_primera(fl_ctx *ctx, fl_value funkciya, fl_value primer, fl_value proshyol, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
@@ -1514,6 +1670,31 @@ fl_status compiler_flang_variant_net_chisla(fl_ctx *ctx, fl_value *out, fl_error
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_est_zanyatoe(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_net_zanyatogo(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть узел Java»: «Есть узел Java» | «Нет узла Java». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_uzel_java(fl_ctx *ctx, fl_value uzel, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_uzla_java(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть имя Java»: «Есть имя Java» | «Нет имени Java». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_imya_java(fl_ctx *ctx, fl_value imya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_imeni_java(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть функция Java»: «Есть функция Java» | «Нет функции Java». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_funkciya_java(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_funkcii_java(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть число Java»: «Есть число Java» | «Нет числа Java». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_chislo_java(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_chisla_java(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть занятое Java»: «Есть занятое Java» | «Нет занятого Java». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_zanyatoe_java(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_zanyatogo_java(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -20934,6 +21115,3592 @@ fl_status compiler_flang_pechat_programmy_v_rust(fl_ctx *ctx, fl_value programma
  * @return значение: «Итог печати»
  */
 fl_status compiler_flang_pechat_ponizhyonnoy_programmy(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел ничто в Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_nichto_v_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из полей Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть узел Java»
+ */
+fl_status compiler_flang_pervoe_iz_poley_java(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть узел Java»
+ */
+fl_status compiler_flang_pole_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть поле у узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_pole_u_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять поле Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_vzyat_pole_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка скаляра Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_skalyara_java(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка в скаляре Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_v_skalyare_java(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина в скаляре Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_v_skalyare_java(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это запись Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zapis_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это список Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_spisok_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто в скаляре Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_v_skalyare_java(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status compiler_flang_polya_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы поля Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_polya_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_uzla_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело пусть Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_telo_pust_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Применить замены Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param zameny — «замены»: список: «Замена»
+ * @return значение: строка
+ */
+fl_status compiler_flang_primenit_zameny_java(fl_ctx *ctx, fl_value tekst, fl_value zameny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены кириллицы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_kirillicy_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в нижний Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_nizhniy_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в верхний Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_verhniy_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Транслитерировать Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_transliterirovat_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В нижний регистр Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_nizhniy_registr_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В верхний регистр Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_verhniy_registr_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Словарные символы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovarnye_simvoly_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы слова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_slova_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цифры Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_cifry_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый символ Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_simvol_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без первого символа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_pervogo_simvola_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это символ слова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_simvol_slova_java(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать слово Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @param gotovye — «готовые»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_slovo_java(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slova_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Змейка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zmeyka_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово с заглавной Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_s_zaglavnoy_java(fl_ctx *ctx, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Паскаль Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_paskal_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из пар Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Пара имён Java»
+ * @return значение: «Может быть имя Java»
+ */
+fl_status compiler_flang_pervoe_iz_par_java(fl_ctx *ctx, fl_value pary, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти в таблице Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть имя Java»
+ */
+fl_status compiler_flang_nayti_v_tablice_java(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть в таблице Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_v_tablice_java(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение по ключу Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znachenie_po_klyuchu_java(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить пару Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Пара имён Java»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Пара имён Java»
+ */
+fl_status compiler_flang_obnovit_paru_java(fl_ctx *ctx, fl_value para, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в таблицу Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Java»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: список: «Пара имён Java»
+ */
+fl_status compiler_flang_polozhit_v_tablicu_java(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены двунаправленных Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_dvunapravlennyh_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять двунаправленные Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_snyat_dvunapravlennye_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасный идентификатор Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnyy_identifikator_java(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Типы рантайма Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tipy_rantayma_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявлено бэкендом Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyavleno_bekendom_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Приставка роли Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pristavka_roli_java(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Название роли Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nazvanie_roli_java(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификатор роли Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_identifikator_roli_java(fl_ctx *ctx, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это временное имя Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_vremennoe_imya_java(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_java(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор имён Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор имён Java»
+ */
+fl_status compiler_flang_shag_unikalnyh_java(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить строки Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param dobavka — «добавка»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slit_stroki_java(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param zanyatoe — «занятое»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_java(fl_ctx *ctx, fl_value imena, fl_value zanyatoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поле типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Поле типа Java»
+ */
+fl_status compiler_flang_sobrat_pole_tipa_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Поле типа Java»
+ */
+fl_status compiler_flang_sobrat_polya_tipa_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена полей типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_poley_tipa_java(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать параметр Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Параметр Java»
+ */
+fl_status compiler_flang_sobrat_parametr_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля или Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @param po_umolchaniyu — «по умолчанию»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_ili_java(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value po_umolchaniyu, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать постусловие Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Постусловие Java»
+ */
+fl_status compiler_flang_sobrat_postuslovie_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать предусловие Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие Java»
+ */
+fl_status compiler_flang_sobrat_preduslovie_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функцию Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Функция Java»
+ */
+fl_status compiler_flang_sobrat_funkciyu_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Функция Java»
+ */
+fl_status compiler_flang_sobrat_funkcii_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_funkciy_java(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из функций Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @return значение: «Может быть функция Java»
+ */
+fl_status compiler_flang_pervaya_iz_funkciy_java(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти функцию Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Может быть функция Java»
+ */
+fl_status compiler_flang_nayti_funkciyu_java(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть функция с именем Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_funkciya_s_imenem_java(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число параметров Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_parametrov_java(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить запись типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: «Запись типа Java»
+ * @param novaya — «новая»: «Запись типа Java»
+ * @return значение: «Запись типа Java»
+ */
+fl_status compiler_flang_obnovit_zapis_tipa_java(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена записей Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_zapisey_java(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить запись типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Запись типа Java»
+ * @param novaya — «новая»: «Запись типа Java»
+ * @return значение: список: «Запись типа Java»
+ */
+fl_status compiler_flang_slit_zapis_tipa_java(fl_ctx *ctx, fl_value akk, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать записи Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Запись типа Java»
+ */
+fl_status compiler_flang_sobrat_zapisi_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать вариант Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Вариант типа Java»
+ */
+fl_status compiler_flang_sobrat_variant_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать суммы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Сумма типов Java»
+ */
+fl_status compiler_flang_sobrat_summy_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить вариант типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhniy — «прежний»: «Вариант типа Java»
+ * @param novyy — «новый»: «Вариант типа Java»
+ * @return значение: «Вариант типа Java»
+ */
+fl_status compiler_flang_obnovit_variant_tipa_java(fl_ctx *ctx, fl_value prezhniy, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_variantov_java(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить вариант типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Java»
+ * @param novyy — «новый»: «Вариант типа Java»
+ * @return значение: список: «Вариант типа Java»
+ */
+fl_status compiler_flang_slit_variant_tipa_java(fl_ctx *ctx, fl_value akk, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты суммы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Java»
+ * @param summa — «сумма»: «Сумма типов Java»
+ * @return значение: список: «Вариант типа Java»
+ */
+fl_status compiler_flang_slit_varianty_summy_java(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param summy — «суммы»: список: «Сумма типов Java»
+ * @return значение: список: «Вариант типа Java»
+ */
+fl_status compiler_flang_sobrat_varianty_java(fl_ctx *ctx, fl_value summy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из меток Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Java»
+ * @return значение: «Может быть число Java»
+ */
+fl_status compiler_flang_pervaya_iz_metok_java(fl_ctx *ctx, fl_value metki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти метку Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть число Java»
+ */
+fl_status compiler_flang_nayti_metku_java(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть метка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_metka_java(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Метка или ноль Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Java»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_metka_ili_nol_java(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить метку Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metka — «метка»: «Метка Java»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: «Метка Java»
+ */
+fl_status compiler_flang_obnovit_metku_java(fl_ctx *ctx, fl_value metka, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить метку Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Java»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: список: «Метка Java»
+ */
+fl_status compiler_flang_polozhit_metku_java(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Меньшее Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervoe — «первое»: число
+ * @param vtoroe — «второе»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_menshee_java(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цели Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_celi_java(fl_ctx *ctx, fl_value ryobra, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена рёбер Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_ryober_java(fl_ctx *ctx, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить уникальное Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_unikalnoe_java(fl_ctx *ctx, fl_value imya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить имя вызова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_imya_vyzova_java(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случая Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaya_java(fl_ctx *ctx, fl_value sluchay, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случаев Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaev_java(fl_ctx *ctx, fl_value sluchai, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста ветвей Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Обход хвоста Java»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_vetvey_java(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Взаимная хвостовая рекурсия с «Обход хвоста ветвей Java»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_java(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые вызовы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvostovye_vyzovy_java(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить вызов Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_vyzov_java(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход полей Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_poley_java(fl_ctx *ctx, fl_value polya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход всего Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_vsego_java(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все вызовы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_vyzovy_java(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг отрезания Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Отрезание Java»
+ * @param element — «элемент»: строка
+ * @param predel — «предел»: число
+ * @return значение: «Отрезание Java»
+ */
+fl_status compiler_flang_shag_otrezaniya_java(fl_ctx *ctx, fl_value akk, fl_value element, fl_value predel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без последней строки Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_bez_posledney_stroki_java(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последняя строка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_poslednyaya_stroka_java(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать компоненту Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_zapisat_komponentu_java(fl_ctx *ctx, fl_value sostoyanie, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять вершину стека Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять компоненту Java»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_snyat_vershinu_steka_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять компоненту Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять вершину стека Java»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_snyat_komponentu_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить низ Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param niz — «низ»: число
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_zamenit_niz_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value niz, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обратное ребро Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_obratnoe_rebro_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрыть вершину Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_zakryt_vershinu_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро вглубь Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_rebro_vglub_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро внутри Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_rebro_vnutri_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро Тарьяна Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_rebro_taryana_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти вершину Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_oboyti_vershinu_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Корень Тарьяна Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Java»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: «Тарьян Java»
+ */
+fl_status compiler_flang_koren_taryana_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Компоненты связности Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: список: «Компонента Java»
+ */
+fl_status compiler_flang_komponenty_svyaznosti_java(fl_ctx *ctx, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены компоненты Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Java»
+ * @return значение: список: «Рёбра Java»
+ */
+fl_status compiler_flang_chleny_komponenty_java(fl_ctx *ctx, fl_value komponenta, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить рёбра Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Рёбра Java»
+ * @param dobavka — «добавка»: список: «Рёбра Java»
+ * @return значение: список: «Рёбра Java»
+ */
+fl_status compiler_flang_slit_ryobra_java(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Циклические функции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Java»
+ * @return значение: список: «Рёбра Java»
+ */
+fl_status compiler_flang_ciklicheskie_funkcii_java(fl_ctx *ctx, fl_value komponenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивная одиночка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Java»
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnaya_odinochka_java(fl_ctx *ctx, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг рекурсивных Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param komponenta — «компонента»: «Компонента Java»
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_rekursivnyh_java(fl_ctx *ctx, fl_value akk, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивные функции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Java»
+ * @param ryobra — «рёбра»: список: «Рёбра Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnye_funkcii_java(fl_ctx *ctx, fl_value komponenty, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_zamenit_schyotchik_java(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_java(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_zapisat_oshibku_java(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Свежее Java»
+ */
+fl_status compiler_flang_vremennoe_java(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее Java»
+ */
+fl_status compiler_flang_svezhee_imya_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка вывода Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_vyvoda_java(fl_ctx *ctx, fl_value otstup, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без перевода в конце Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_perevoda_v_konce_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из занятых Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое Java»
+ * @return значение: «Может быть занятое Java»
+ */
+fl_status compiler_flang_pervoe_iz_zanyatyh_java(fl_ctx *ctx, fl_value zanyatye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти занятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое Java»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Может быть занятое Java»
+ */
+fl_status compiler_flang_nayti_zanyatoe_java(fl_ctx *ctx, fl_value zanyatye, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить занятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnee — «прежнее»: «Занятое Java»
+ * @param novoe — «новое»: «Занятое Java»
+ * @return значение: «Занятое Java»
+ */
+fl_status compiler_flang_obnovit_zanyatoe_java(fl_ctx *ctx, fl_value prezhnee, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить занятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое Java»
+ * @param novoe — «новое»: «Занятое Java»
+ * @return значение: список: «Занятое Java»
+ */
+fl_status compiler_flang_polozhit_zanyatoe_java(fl_ctx *ctx, fl_value zanyatye, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Владелец занятого Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatoe — «занятое»: «Занятое Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vladelec_zanyatogo_java(fl_ctx *ctx, fl_value zanyatoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка столкновения Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Занятое Java»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_oshibka_stolknoveniya_java(fl_ctx *ctx, fl_value sostoyanie, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить занятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть занятое Java»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_zanyatoe_java(fl_ctx *ctx, fl_value sostoyanie, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять роль Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zayavka — «заявка»: «Заявка Java»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Заявка Java»
+ */
+fl_status compiler_flang_zanyat_rol_java(fl_ctx *ctx, fl_value zayavka, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять имена Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: «Занятое Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param rol — «роль»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: «Заявка Java»
+ */
+fl_status compiler_flang_zanyat_imena_java(fl_ctx *ctx, fl_value zanyatye, fl_value sostoyanie, fl_value rol, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальные занятые Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Занятое Java»
+ */
+fl_status compiler_flang_nachalnye_zanyatye_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы для Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Именованные идентификаторы Java»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_dlya_java(fl_ctx *ctx, fl_value tablica, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param globalnye — «глобальные»: список: строка
+ * @return значение: «Именованные идентификаторы Java»
+ */
+fl_status compiler_flang_identifikatory_parametrov_java(fl_ctx *ctx, fl_value funkciya, fl_value globalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые рёбра Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @return значение: список: «Рёбра Java»
+ */
+fl_status compiler_flang_hvostovye_ryobra_java(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рёбра вызовов Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Java»
+ * @return значение: список: «Рёбра Java»
+ */
+fl_status compiler_flang_ryobra_vyzovov_java(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя модуля Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_modulya_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя модуля Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_modulya_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_java(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя класса Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param est_put — «есть путь»
+ * @param put — «путь»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_klassa_java(fl_ctx *ctx, fl_value programma, fl_value est_put, fl_value put, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить класс Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param klass — «класс»: строка
+ * @param modul — «модуль»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_klass_java(fl_ctx *ctx, fl_value sostoyanie, fl_value klass, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param klass — «класс»: строка
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Свод Java»
+ */
+fl_status compiler_flang_sobrat_obschee_java(fl_ctx *ctx, fl_value programma, fl_value klass, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Java»
+ */
+fl_status compiler_flang_sinonimy_form_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_java(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Java»
+ */
+fl_status compiler_flang_pomoschniki_form_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка Java»
+ */
+fl_status compiler_flang_arnosti_form_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Java»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Между Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param ot — «от»: число
+ * @param do_2 — «до»: число
+ * @return значение
+ */
+fl_status compiler_flang_mezhdu_java(fl_ctx *ctx, fl_value znachenie, fl_value ot, fl_value do_2, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово аргументов Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kolichestvo — «количество»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_argumentov_java(fl_ctx *ctx, fl_value kolichestvo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг выбора Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Java»
+ * @param element — «элемент»: строка
+ * @param iskomyy — «искомый»: число
+ * @return значение: «Зип Java»
+ */
+fl_status compiler_flang_shag_vybora_java(fl_ctx *ctx, fl_value akk, fl_value element, fl_value iskomyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элемент по индексу Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param indeks — «индекс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_element_po_indeksu_java(fl_ctx *ctx, fl_value stroki, fl_value indeks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только символы слова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_simvoly_slova_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это идентификатор Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_identifikator_java(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст Java»
+ */
+fl_status compiler_flang_svyazat_imya_java(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргументы после ctx Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_argumenty_posle_ctx_java(fl_ctx *ctx, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_prosto_znachenie_java(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_imya_uzla_java(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустой порядок Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_pustoy_poryadok_java(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг подъёма Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок Java»
+ * @param chast — «часть»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_shag_podyoma_java(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поднять части Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_podnyat_chasti_java(fl_ctx *ctx, fl_value chasti, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить порядок Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок Java»
+ * @param itog — «итог»: «Итог Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_slit_poryadok_java(fl_ctx *ctx, fl_value akk, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка значений Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Java»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_shag_poryadka_znacheniy_java(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порядок значений Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_poryadok_znacheniy_java(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка литералов Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Порядок Java»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_shag_poryadka_literalov_java(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порядок литералов Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_poryadok_literalov_java(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Материализовать Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @param tip — «тип»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_materializovat_java(fl_ctx *ctx, fl_value znachenie, fl_value sostoyanie, fl_value otstup, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело полей Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_telo_poley_java(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поля значения Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Java»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: «Зип Java»
+ */
+fl_status compiler_flang_shag_polya_znacheniya_java(fl_ctx *ctx, fl_value akk, fl_value klyuch, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка полей Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sborka_poley_java(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка списка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sborka_spiska_java(fl_ctx *ctx, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_skalyara_java(fl_ctx *ctx, fl_value skalyar, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это записанный вариант Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zapisannyy_variant_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала списка Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_literala_spiska_java(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала записи Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param polya — «поля»: список: «Поле значения»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_literala_zapisi_java(fl_ctx *ctx, fl_value uzel, fl_value polya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_literala_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала варианта Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_literala_varianta_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала полей Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_literala_poley_java(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_neizvestnyy_vid_java(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_peremennoy_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_pust_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_polozhit_v_java(fl_ctx *ctx, fl_value uzel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_esli_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_razreshit_vyzov_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_vyzova_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_arnost_formy_java(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_formy_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_java(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_java(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_operacii_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_java(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value vyvod, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_spiska_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей значений Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_poley_znacheniy_java(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_java(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_zapis_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_zapisi_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_variant_java(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_konstruktora_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_svyortki_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_java(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_cikla_java(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_java(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param nabor — «набор»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_telo_cikla_java(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value nabor, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Java»
+ */
+fl_status compiler_flang_pechat_znacheniya_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param proverka — «проверка»: строка
+ * @return значение: «Итог образца Java»
+ */
+fl_status compiler_flang_gotovaya_proverka_java(fl_ctx *ctx, fl_value sostoyanie, fl_value proverka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Итог образца Java»
+ */
+fl_status compiler_flang_oshibka_obrazca_java(fl_ctx *ctx, fl_value obrazec, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца Java»
+ */
+fl_status compiler_flang_proverka_literalom_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца Java»
+ */
+fl_status compiler_flang_proverka_obrazca_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Пара имён Java»
+ */
+fl_status compiler_flang_svyazki_varianta_java(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать простое Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания Java»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param est_primechanie — «есть примечание»
+ * @param primechanie — «примечание»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazat_prostoe_java(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value est_primechanie, fl_value primechanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Итог связывания Java»
+ * @param svyazka — «связка»: «Пара имён Java»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_java(fl_ctx *ctx, fl_value itog, fl_value svyazka, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы и хвоста Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_i_hvosta_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание любого Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Итог связывания Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazyvanie_lyubogo_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог связывания Java»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_java(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить случай Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_sluchay_java(fl_ctx *ctx, fl_value sostoyanie, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора случая Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сбор случаев Java»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор случаев Java»
+ */
+fl_status compiler_flang_shag_sbora_sluchaya_java(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_telo_vetvi_java(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Java»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_pechat_vetvi_java(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост цепочки Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvost_cepochki_java(fl_ctx *ctx, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь с проверкой Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Java»
+ * @param ostalnye — «остальные»: список: «Случай печати Java»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_vetv_s_proverkoy_java(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь без проверки Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Java»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_vetv_bez_proverki_java(fl_ctx *ctx, fl_value sluchay, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг цепочки Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Java»
+ * @param ostalnye — «остальные»: список: «Случай печати Java»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_shag_cepochki_java(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цепочка случаев Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Случай печати Java»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_cepochka_sluchaev_java(fl_ctx *ctx, fl_value sluchai, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_pechat_razbora_java(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это самовызов Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_samovyzov_java(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_java(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Порядок Java»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_java(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Порядок Java»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoy_otskok_java(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргумент можно оставить Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @return значение
+ */
+fl_status compiler_flang_argument_mozhno_ostavit_java(fl_ctx *ctx, fl_value argument, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отложить аргумент Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок Java»
+ * @param argument — «аргумент»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_otlozhit_argument_java(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Порядок Java»
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Порядок Java»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_java(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Java»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип Java»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Порядок Java»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoy_cikl_java(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoe_pust_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_hvostovoe_esli_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_pechat_hvosta_java(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать комментарий Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_kommentariy_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка javadoc Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_javadoc_java(fl_ctx *ctx, fl_value stroka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Javadoc Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_javadoc_java(fl_ctx *ctx, fl_value stroki, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка типа Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_tipa_java(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка вида типа Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_vida_tipa_java(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка имени типа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_imeni_tipa_java(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Самовызов в хвосте Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение
+ */
+fl_status compiler_flang_samovyzov_v_hvoste_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены батута Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chleny_batuta_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть батут Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение
+ */
+fl_status compiler_flang_est_batut_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка батута Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_batuta_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг строки параметра Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Строки с индексом Java»
+ * @param parametr — «параметр»: «Параметр Java»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Строки с индексом Java»
+ */
+fl_status compiler_flang_shag_stroki_parametra_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Java»
+ * @param parametr — «параметр»: «Параметр Java»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров Java»
+ */
+fl_status compiler_flang_svyazat_parametr_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Контекст Java»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Контекст двери Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Контекст Java»
+ */
+fl_status compiler_flang_kontekst_dveri_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Java»
+ * @param parametr — «параметр»: «Параметр Java»
+ * @return значение: «Связывание параметров Java»
+ */
+fl_status compiler_flang_svyazat_parametr_dveri_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_java(fl_ctx *ctx, fl_value sostoyanie, fl_value obschee, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Java»
+ * @param postuslovie — «постусловие»: «Постусловие Java»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param funkciya — «функция»: «Функция Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_shag_postusloviya_java(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_java(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело циклом Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_telo_ciklom_java(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_telo_funkcii_java(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список параметров Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_spisok_parametrov_java(fl_ctx *ctx, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Подпись функции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param parametry — «параметры»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_podpis_funkcii_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать простой функции Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param dokument — «документ»: строка
+ * @param podpis — «подпись»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_prostoy_funkcii_java(fl_ctx *ctx, fl_value dokument, fl_value podpis, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать со сторожем Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param dokument — «документ»: строка
+ * @param podpis — «подпись»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_so_storozhem_java(fl_ctx *ctx, fl_value funkciya, fl_value dokument, fl_value podpis, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг распаковки Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Java»
+ * @param parametr — «параметр»: «Параметр Java»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип Java»
+ */
+fl_status compiler_flang_shag_raspakovki_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param dokument — «документ»: строка
+ * @param podpis — «подпись»: строка
+ * @param tekst — «текст»: строка
+ * @param parametry — «параметры»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_batuta_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value dokument, fl_value podpis, fl_value tekst, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбор оболочки Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param dokument — «документ»: строка
+ * @param podpis — «подпись»: строка
+ * @param tekst — «текст»: строка
+ * @param parametry — «параметры»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vybor_obolochki_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value dokument, fl_value podpis, fl_value tekst, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отступ тела Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otstup_tela_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_pechat_funkcii_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень полей Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_poley_java(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Подпись фабрики Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_podpis_fabriki_java(fl_ctx *ctx, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_java(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа Java»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_java(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг аргумента диспетчера Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Java»
+ * @param parametr — «параметр»: «Параметр Java»
+ * @return значение: «Зип Java»
+ */
+fl_status compiler_flang_shag_argumenta_dispetchera_java(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргументы диспетчера Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: «Параметр Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_argumenty_dispetchera_java(fl_ctx *ctx, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_dogovor_na_dveri_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_proverki_dogovora_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Java»
+ * @param preduslovie — «предусловие»: «Предусловие Java»
+ * @param kontekst — «контекст»: «Контекст Java»
+ * @param funkciya — «функция»: «Функция Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_shag_predusloviya_java(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_vetka_dispetchera_java(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Java»
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_java(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Блок Java»
+ */
+fl_status compiler_flang_pechat_dispetchera_java(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка файла Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_fayla_java(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файл рантайма Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param put — «путь»: строка
+ * @param chto — «что»: строка
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param ishodnik — «исходник»: строка
+ * @return значение: «Файл Java»
+ */
+fl_status compiler_flang_fayl_rantayma_java(fl_ctx *ctx, fl_value put, fl_value chto, fl_value est_modul, fl_value modul, fl_value ishodnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Правило прогонщика Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pravilo_progonschika_java(fl_ctx *ctx, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klass — «класс»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_java(fl_ctx *ctx, fl_value klass, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать контекста Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konteksta_java(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка класса Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param klass — «класс»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_klassa_java(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value klass, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить класс Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shapka — «шапка»: строка
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_skleit_klass_java(fl_ctx *ctx, fl_value shapka, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_java(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_java(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_java(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_java(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_java(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_java(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка границы входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shapka_granicy_vhoda_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост границы входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvost_granicy_vhoda_java(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки границы входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_granicy_vhoda_java(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_java(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела фабрики Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Java»
+ * @param zapis — «запись»: «Запись типа Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Тела Java»
+ */
+fl_status compiler_flang_shag_tela_fabriki_java(fl_ctx *ctx, fl_value tela, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела варианта Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Java»
+ * @param variant — «вариант»: «Вариант типа Java»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Тела Java»
+ */
+fl_status compiler_flang_shag_tela_varianta_java(fl_ctx *ctx, fl_value tela, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тел суммы Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Java»
+ * @param summa — «сумма»: «Сумма типов Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Тела Java»
+ */
+fl_status compiler_flang_shag_tel_summy_java(fl_ctx *ctx, fl_value tela, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Java»
+ * @param funkciya — «функция»: «Функция Java»
+ * @param obschee — «общее»: «Общее Java»
+ * @return значение: «Тела Java»
+ */
+fl_status compiler_flang_shag_tela_funkcii_java(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Java»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: «Тела Java»
+ */
+fl_status compiler_flang_pechat_tel_java(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Часть конкурентности Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skolko — «сколько»: число
+ * @param slovo — «слово»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chast_konkurentnosti_java(fl_ctx *ctx, fl_value skolko, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя процесса Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть имя Java»
+ */
+fl_status compiler_flang_imya_processa_java(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя первого процесса Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Может быть имя Java»
+ */
+fl_status compiler_flang_imya_pervogo_processa_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Про первый процесс Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pro_pervyy_process_java(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка планировщика Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @param processov — «процессов»: число
+ * @param nadzorov — «надзоров»: число
+ * @param progonov — «прогонов»: число
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_oshibka_planirovschika_java(fl_ctx *ctx, fl_value programma, fl_value sostoyanie, fl_value processov, fl_value nadzorov, fl_value progonov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить планировщик Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Java»
+ * @return значение: «Состояние Java»
+ */
+fl_status compiler_flang_proverit_planirovschik_java(fl_ctx *ctx, fl_value programma, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить файлы Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Файл Java»
+ * @param vtorye — «вторые»: список: «Файл Java»
+ * @return значение: список: «Файл Java»
+ */
+fl_status compiler_flang_slit_fayly_java(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Очистить файл Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: «Файл Java»
+ * @return значение: «Файл Java»
+ */
+fl_status compiler_flang_ochistit_fayl_java(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Файлы рантайма Java».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: список: «Файл Java»
+ */
+fl_status compiler_flang_fayly_rantayma_java(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы в Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: «Итог печати Java»
+ */
+fl_status compiler_flang_pechat_programmy_v_java(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -51269,6 +55036,46 @@ fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyaza
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать в Java от исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: «Итог сборки Java»
+ */
+fl_status compiler_flang_pechat_v_java_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «К печати в Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_k_pechati_v_java(fl_ctx *ctx, fl_value svyazano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать к печати в Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: «Итог сборки Java»
+ */
+fl_status compiler_flang_napechatat_k_pechati_v_java(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в Java».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Java»
+ * @return значение: «Итог сборки Java»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_java(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

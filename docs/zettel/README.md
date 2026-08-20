@@ -176,6 +176,8 @@
 - [Втаскивание модуля в компилятор стоит по столкновениям имён, а не по размеру модуля](vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer.md)
 - [Граница входа была долгом печати, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается](granica-vhoda-eto-dolg-pechati-a-ne-vychitanie-v-proverke.md)
 - [Разбиение имени на слова у эталонов печати сделано таблицей ASCII, а у свидетеля — классами Юникода](slovar-simvolov-slova-na-flang-asciiynyy-a-u-svidetelya-yunikodnyy.md)
+- [Вычтенный в сверке блок «границы входа» был дырой: напечатанная Java без него не запускается](printed-java-without-entry-table-does-not-start.md)
+- [Двоичный не печатает сам себя в Java: список занятых имён пересобирается на каждую функцию](java-printer-rebuilds-the-taken-name-list-per-function.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)

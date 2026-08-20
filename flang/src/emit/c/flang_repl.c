@@ -5133,7 +5133,10 @@ static int test_file(int argc, char **argv) {
     }
   }
   if (path == NULL) {
-    fputs("flang test: не назван файл. Пример: flang test модуль.flang\n", stderr);
+    fputs("flang test: не назван ни файл, ни каталог.\n"
+          "  flang test модуль.flang        один файл\n"
+          "  flang test flang/stdlib/       весь каталог\n",
+          stderr);
     return 2;
   }
 

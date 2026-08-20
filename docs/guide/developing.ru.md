@@ -61,7 +61,7 @@ flang emit flang/examples/leetcode/035-search-insert-position.flang \
 
 ```bash
 npm test              # прогон один: flang/test/*.test.mjs, весь язык
-npm run test:backends # восемь целей печати отдельно
+./ярлык test:backends # восемь целей печати отдельно
 ```
 
 Каждая команда пишет JSON в stdout, диагностику в stderr и возвращает ненулевой код при отказе —

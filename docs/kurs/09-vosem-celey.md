@@ -198,7 +198,7 @@ dotnet bin/Debug/net8.0/flang.dll MestoVstavki
 плюс решения LeetCode, 94 программы.
 
 ```bash
-npm run test:backends
+./ярлык test:backends
 ```
 
 **2. Эталон против близнеца, побайтово.** У каждой из восьми целей есть **два**

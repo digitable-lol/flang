@@ -95,7 +95,7 @@
  *   про хозяина, а не про программу. Судящими считаются ровно те файлы, что
  *   названы в `СУДЬИ_*`.
  *
- * Запуск: `node flang/scripts/binary-rules-guard.mjs` (или `npm run rules:check`).
+ * Запуск: `node flang/scripts/binary-rules-guard.mjs` (или `./ярлык rules:check`).
  * Проверяется он сам — `flang/test/binary-rules-guard.test.mjs`.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs"

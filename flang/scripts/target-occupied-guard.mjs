@@ -61,7 +61,7 @@
  *     двоичный, а не наше мнение: занята та, которую обход изменил. Дальше
  *     требуется, чтобы второй обход уже ничего не менял.
  *
- * Запуск: `node flang/scripts/target-occupied-guard.mjs` (или `npm run occupied:check`).
+ * Запуск: `node flang/scripts/target-occupied-guard.mjs` (или `./ярлык occupied:check`).
  */
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"

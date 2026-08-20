@@ -9,7 +9,7 @@ finds out when it stopped being true.
 
 So this page is split in two, and the split is not cosmetic:
 
-- a **rule** is settled by a run and goes red — `npm run names:check`;
+- a **rule** is settled by a run and goes red — `./ярлык names:check`;
 - **advice** cannot be settled by a run, and therefore stays advice.
 
 Turning something into a rule that is not one is forbidden here separately. A guard that goes red on
@@ -245,7 +245,7 @@ the change.
 ## Running it
 
 ```bash
-npm run names:check                            # the guard
+./ярлык names:check                            # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
 node --test flang/test/name-guard.test.mjs     # the guard's own check

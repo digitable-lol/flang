@@ -46675,9 +46675,19 @@ fl_status compiler_flang_itog_primera_po_progonu(fl_ctx *ctx, fl_value itog, fl_
  * @param imya — «имя»: строка
  * @param primer — «пример»: строка
  * @param ozhidaetsya — «ожидается»: «Значение»
+ * @param polucheno — «получено»: «Значение»
  * @return значение: «Итог примера»
  */
-fl_status compiler_flang_itog_primera_po_znacheniyu(fl_ctx *ctx, fl_value soshlos, fl_value imya, fl_value primer, fl_value ozhidaetsya, fl_value *result, fl_error *error);
+fl_status compiler_flang_itog_primera_po_znacheniyu(fl_ctx *ctx, fl_value soshlos, fl_value imya, fl_value primer, fl_value ozhidaetsya, fl_value polucheno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Коротко для отчёта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_korotko_dlya_otchyota(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ведомость исходников».

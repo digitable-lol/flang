@@ -76,6 +76,8 @@
 - [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](pole-ne-minus-nol-zakrylo-dva-mesta-a-ne-odinnadcat.md) — с поправкой: пара на flang сделана, и правило про нижнюю границу видно через вычитание
 - [Пометки не хватало 293 функциям из 2242 — остальным 1949 не хватает правил](pometki-ne-hvatalo-293-iz-2242.md)
 - [Два правила завершаемости поодиночке дают 54 и 74, а вместе — 574](dva-pravila-zavershaemosti-vmeste-dayut-574.md)
+- [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
+- [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 - [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное](nat-snimaet-storozha-tolko-esli-vyzyvayushchiy-uzhe-daet-naturalnoe.md)
 - [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
 - [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)

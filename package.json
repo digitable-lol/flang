@@ -55,6 +55,7 @@
     "rules:check": "node flang/scripts/binary-rules-guard.mjs",
     "tmp:check": "node flang/scripts/tempdir-guard.mjs",
     "occupied:check": "node flang/scripts/target-occupied-guard.mjs",
+    "poddelki:check": "node flang/scripts/poddelki-yadra.mjs",
     "proof:ledger": "node flang/scripts/proof-ledger.mjs",
     "proof:search": "node flang/scripts/proof-search.mjs",
     "word:occupancy": "node flang/scripts/word-occupancy.mjs",

@@ -158,6 +158,7 @@
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Когда ствол заменил свою функцию библиотечной, а ветка ту же свою дополнила, обе стороны столкновения неверны](bibliotechnaya-zamena-i-svoyo-dopolnenie-obe-storony-nevernny.md)
 - [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
 - [Номера строк и числа в задании — это дешёвая проверка того, на той ли ветке заведено рабочее дерево](line-numbers-in-a-task-verify-the-branch-it-was-written-against.md)

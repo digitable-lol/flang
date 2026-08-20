@@ -72,64 +72,7 @@ parameter name exactly as written in `принимает`; the value is the valu
 The function name goes in ordinary quotes on the command line — guillemets are
 not quotes to the shell, and it would split the name at the space.
 
-**Scalars** — two numbers:
-
-```bash
-flang run docs/examples/operations.flang \
-  --function "Страниц под записи" --args '{"записей": 23, "размер": 10}'
-```
-
-```json
-{"function":"Страниц под записи","args":{"записей":23,"размер":10},"result":3}
-```
-
-**A list** — an array:
-
-```bash
-flang run docs/examples/operations.flang \
-  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
-```
-
-```json
-{"function":"Сумма без повторов","args":{"элементы":[3,1,3,2,1]},"result":6}
-```
-
-**A record, and a list of records** — an object with field names. There is no
-record in `operations.flang`, so this example is taken from another file in the
-tree:
-
-```bash
-flang run flang/examples/leetcode/056-merge-intervals.flang \
-  --function "Приписать отрезок в начало" \
-  --args '{"первый": {"начало": 1, "конец": 2}, "отрезки": [{"начало": 5, "конец": 6}]}'
-```
-
-```json
-{"function":"Приписать отрезок в начало","args":{"первый":{"начало":1,"конец":2},"отрезки":[{"начало":5,"конец":6}]},"result":[{"начало":1,"конец":2},{"начало":5,"конец":6}]}
-```
-
-### The binary takes scalars only
-
-The command `flang` is two different programs under one name: the full toolchain
-from npm (`@digitable-lol/flang`, runs on Node) and the binary from `brew` and
-`asdf` (no Node needed). The output above was taken off the full toolchain.
-
-The binary takes **a flat object of scalars only** for `--args`: a number, a
-string, `true`, `false`, `null`. It does not parse an array or an object at all:
-
-```bash
-flang run docs/examples/operations.flang \
-  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
-```
-
-```
-flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
-```
-
-The refusal goes to the error stream; the exit code is 2.
-
-Scalars the binary does take, and it computes the same answer. It prints one
-value, with no envelope:
+**Scalars** — two numbers. One value is printed, with no envelope:
 
 ```bash
 flang run docs/examples/operations.flang \
@@ -140,8 +83,25 @@ flang run docs/examples/operations.flang \
 3
 ```
 
-A composite value reaches the binary through the shell: there it is written in
-words of the language rather than in JSON, and the compiler itself reads it.
+**A list and a record do not travel through `--args`, and that is a border, not
+a typo.** The flag takes a FLAT object of scalars — a number, a string, `true`,
+`false`, `null` — and refuses on an array or a nested object:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
+```
+
+```
+flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
+```
+
+The refusal goes to the error stream; the exit code is 2. The table of types
+above is about the language itself: a function does accept such values, they
+just cannot be handed to it through `--args` today.
+
+A composite value reaches the compiler through the shell: there it is written
+in words of the language rather than in JSON, and the compiler itself reads it.
 
 ```bash
 echo '«Сумма без повторов» от [3, 1, 3, 2, 1]' | flang repl docs/examples/operations.flang

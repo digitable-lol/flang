@@ -1,4 +1,4 @@
-# Публикация пакета @digitable-lol/flang в npm.
+# Выпуск версии: релизный архив C на GitHub и пакет @digitable-lol/flang в npm.
 #
 # Запускается только на теге вида v0.4.0 — не на каждый push в main. Причина в
 # необратимости: опубликованную версию нельзя переиздать под тем же номером, а
@@ -6,10 +6,30 @@
 # явное решение человека «вот эту версию наружу», и оно должно приниматься
 # отдельно от решения «влить ветку».
 #
-# Проверки идут ДО публикации и в полном объёме: npm test и сверка версии в теге
-# с версией в package.json.
-# Расхождение тега и package.json — самая частая причина того, что в реестр
-# уезжает не то, что ожидали, поэтому это отдельный шаг с внятным сообщением.
+# ── ЧТО БЫЛО СЛОМАНО ДО 20 АВГУСТА 2026 ─────────────────────────────────────
+#
+# Порядок шагов был замкнут сам на себя, и выпуск не мог состояться НИ РАЗУ.
+# `npm test` шёл первым шагом проверок, а в наборе есть
+# `flang/test/release-exists.test.mjs`: он спрашивает у GitHub, существует ли
+# релиз с версией из `package.json` и лежит ли в нём архив
+# `flang-<версия>-c.tar.gz`. На новом теге такого релиза, разумеется, ещё нет —
+# и ни один шаг этого прогона архив не собирал и никуда не клал. Проверка
+# краснела, публикация не наступала, а собрать архив было нечем: скрипт
+# `scripts/build-release-c.mjs` звали руками с чьей-то машины.
+#
+# Отсюда починка, и она не косметическая: архив СОБИРАЕТСЯ И ПРИКЛАДЫВАЕТСЯ К
+# РЕЛИЗУ ЗДЕСЬ ЖЕ, до `npm test`. После этого набор проверяет то, что уже
+# существует, и порядок перестаёт быть кругом: собрали → приложили → проверили
+# → опубликовали.
+#
+# ── ВТОРОЕ, ЧТО БЫЛО СЛОМАНО ────────────────────────────────────────────────
+#
+# Шаг «Проверить, что flang запускается из пакета» распаковывал тарбол и звал
+# `flang/bin/flang.mjs` — реализацию на JavaScript. С 20 августа 2026 пакет
+# отдаёт человеку ДВОИЧНЫЙ компилятор (`packaging/postinstall.mjs` собирает его
+# при установке), и звать `.mjs` напрямую значило проверять не то, что получает
+# человек. Теперь шаг ставит тарбол в пустой каталог обычным `npm install` и
+# зовёт `node_modules/.bin/flang` — то есть ровно ту команду и тем же путём.
 #
 # Требуется секрет NPM_TOKEN — токен npm с правом публикации в scope
 # @digitable-lol. Без него шаг публикации не выполняется, а workflow сообщает
@@ -20,7 +40,7 @@
 # workflow и коммитом, и любой сможет проверить, откуда взялся тарбол. Для
 # этого нужны права id-token: write, они выданы ниже.
 
-name: Публикация в npm
+name: Выпуск — релиз на GitHub и публикация в npm
 
 on:
   push:
@@ -33,7 +53,10 @@ on:
         default: true
 
 permissions:
-  contents: read
+  # contents: write — не расширение полномочий ради удобства, а то, без чего
+  # порядок шагов остаётся кругом: релиз и вложение к нему создаются этим же
+  # прогоном. Прежде стояло `read`, и приложить архив было нечем.
+  contents: write
   id-token: write
 
 jobs:
@@ -41,6 +64,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Вся история и все теги: журнал изменений печатается из них
+          # (scripts/build-changelog.mjs), и flang/test/changelog.test.mjs
+          # сверяет записанный файл с историей. В клоне из одной ревизии эта
+          # сверка сравнивает пустоту с пустотой и молчит.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -48,6 +77,9 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Установить зависимости
+        # `npm ci` здесь заодно собирает двоичный компилятор: у пакета появился
+        # postinstall. Это около 35 секунд и это НУЖНО — набор тестов проверяет
+        # путь установки целиком (flang/test/ustanovka-npm.test.mjs).
         run: npm ci
 
       - name: Проверить, что тег совпадает с версией пакета
@@ -67,12 +99,71 @@ jobs:
           fi
           echo "версия $package_version подтверждена тегом"
 
+      - name: Собрать релизный архив C
+        # Скрипт не только печатает компилятор в C99, но и СОБИРАЕТ напечатанное
+        # в окружении без Node в PATH и запускает собранное. Битый архив дальше
+        # этого шага не уедет.
+        #
+        # Список файлов берётся вычитанием, а не перечислением: сборка идёт в том
+        # же каталоге и оставляет рядом *.o, libcompiler_flang.a и сам бинарник —
+        # `tar … .` унёс бы человеку бинарник чужой машины вместо исходников.
+        # Перечислять имена поимённо тоже нельзя: между 0.5.1 и 0.5.2 два файла
+        # из девяти переименовались, и список молча отстал бы.
+        #
+        # Ключи tar — ради ПОВТОРИМОСТИ: простой `tar -czf` кладёт в архив время
+        # правки, права и владельца, и один и тот же каталог даёт разные байты.
+        # Хеш, который нельзя повторить, нельзя и проверить.
+        run: |
+          set -eu
+          node scripts/build-release-c.mjs
+          version="$(node -p 'require("./package.json").version')"
+          files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
+          echo "в архив идут файлы:"; echo "$files" | sed 's/^/  /'
+          tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
+              --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - $files \
+            | gzip -9n > "output/flang-$version-c.tar.gz"
+          ls -l "output/flang-$version-c.tar.gz"
+          sha256sum "output/flang-$version-c.tar.gz"
+          echo "ARHIV=output/flang-$version-c.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Сверить хеш архива с формулой Homebrew
+        # Формула несёт sha256 архива, и brew сверяет его сам: разойдись он —
+        # `brew install` встанет на скачивании, у ВСЕХ и сразу. Проверять это
+        # надо здесь, до того как архив уедет в релиз, а не по жалобам.
+        run: |
+          set -eu
+          sobran="$(sha256sum "$ARHIV" | cut -d' ' -f1)"
+          v_formule="$(sed -n 's/^ *sha256 "\([0-9a-f]\{64\}\)".*/\1/p' packaging/homebrew/flang.rb)"
+          if [ "$sobran" != "$v_formule" ]; then
+            echo "::error::архив собрался с sha256 $sobran, а packaging/homebrew/flang.rb ждёт $v_formule."
+            echo "::error::Хеш описывает ДЕРЕВО, а не номер версии, и пересчитывается при каждом выпуске."
+            echo "::error::Впишите в формулу: sha256 \"$sobran\" — и повторите тег."
+            exit 1
+          fi
+          echo "хеш архива совпал с формулой: $sobran"
+
+      - name: Приложить архив к релизу
+        # Порядок здесь и есть починка: архив ложится в релиз ДО `npm test`,
+        # потому что набор его существования и требует. `gh release create` на
+        # уже существующем релизе отвечает ошибкой — поэтому сначала спрашиваем.
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes "Архив C99: собирается одним \`make\`, Node не нужен. Пакет npm: \`npm i -g @digitable-lol/flang\`."
+          fi
+          gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
+          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
+
       - name: Прогнать весь набор тестов
-        # Шага сборки здесь больше нет: собирать было нечего с тех пор, как из
-        # репозитория вынесен старый проект FTS на TypeScript (тег
-        # `fts-pered-udaleniem`). Язык исходники не собирает — он их читает.
-        # prepublishOnly сделал бы то же самое, но отдельным шагом видно, что
-        # именно упало, не разбирая вывод publish.
+        # Идёт ПОСЛЕ выкладки архива, и это не вкусовщина: в наборе есть
+        # flang/test/release-exists.test.mjs, который ходит в GitHub и требует,
+        # чтобы релиз с этой версией существовал и нёс архив. Раньше архива он
+        # краснел всегда, и выпуск не мог состояться ни разу.
         run: npm test
 
       - name: Проверить состав пакета
@@ -91,25 +182,25 @@ jobs:
             console.log(`файлов ${pkg.entryCount}, размер ${(pkg.size / 1024).toFixed(0)} КБ`)
           '
 
-      - name: Проверить, что flang запускается из пакета
-        # Пакет объявляет исполняемый файл flang; если он не находит свои
-        # модули, потребитель узнает об этом первым. Дешевле узнать здесь.
+      - name: Проверить, что пакет ставится и отдаёт двоичный
+        # Не «распаковать и позвать .mjs», а поставить обычным `npm install` и
+        # позвать ту команду, которую получает человек. Разница принципиальная:
+        # двоичный компилятор появляется только на установке (postinstall), и
+        # распакованный тарбол его не содержит вовсе.
         run: |
           set -eu
-          # Каталог назначения создаём ДО упаковки: npm --pack-destination его
-          # не заводит, и шаг падал с ENOENT на файле, который сам же собирался
-          # положить. mkdir стоял строкой ниже — этого хватило, чтобы workflow
-          # ни разу не дошёл до публикации.
-          mkdir -p /tmp/pkg/распакованный
-          npm pack --pack-destination /tmp/pkg >/dev/null
-          tar -xzf /tmp/pkg/*.tgz -C /tmp/pkg/распакованный
-          node /tmp/pkg/распакованный/package/flang/bin/flang.mjs check \
-               /tmp/pkg/распакованный/package/flang/stdlib/lists.flang > /tmp/pkg/итог.json
-          node -e '
-            const итог = require("/tmp/pkg/итог.json")
-            if (итог.valid !== true) { console.error("flang из пакета не работает"); process.exit(1) }
-            console.log(`flang из пакета проверил модуль «${итог.module}»: ${итог.functions.length} функций`)
-          '
+          rm -rf /tmp/pustoy && mkdir -p /tmp/pustoy
+          npm pack --pack-destination /tmp >/dev/null
+          cd /tmp/pustoy
+          echo '{"name":"proba","private":true}' > package.json
+          npm install /tmp/digitable-lol-flang-*.tgz --no-audit --no-fund --foreground-scripts
+          ./node_modules/.bin/flang --version
+          # Версия ОТ ДВОИЧНОГО начинается словом «flang»; реализация на Node
+          # печатает голый номер. По этой строке видно, кто ответил.
+          ./node_modules/.bin/flang --version | grep -q '^flang '
+          cp node_modules/@digitable-lol/flang/flang/stdlib/lists.flang .
+          ./node_modules/.bin/flang check lists.flang
+          ./node_modules/.bin/flang test lists.flang
 
       - name: Проверить, настроен ли секрет
         id: guard

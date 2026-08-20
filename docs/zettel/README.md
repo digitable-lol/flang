@@ -267,6 +267,8 @@
 - [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](progon-po-korpusu-nashyol-shest-rashozhdeniy-mezhdu-realizaciyami.md)
 - [Проверка в тесте, читавшая `.flang` своим разбором, оживает прогоном двоичного — но не всякая, и граница проходит по лексике и по обязательствам](proverki-v-testah-zhivut-progonom-dvoichnogo-a-ne-vtorym-razborom.md)
 - [Поток токенов наружу стоит вчетверо дешевле дерева, и две проверки прозы оживают именно им, а не `flang ast`](potok-tokenov-naruzhu-deshevle-dereva-vchetvero.md)
+- [Прогонщик двоичного открывает ВСЁ замыкание компилятора — новая команда нужна только там, где у ответа свой вид вывода](progonshchik-dvoichnogo-otkryvaet-vsyo-zamykanie.md)
+- [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](proizvodnye-tablicy-odnogo-fakta-rashodyatsya-molcha.md)
 
 ## Найденные ошибки
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)

@@ -42,11 +42,14 @@
 //! витка от этого не меняется: набрать → ждать мира → таймеры → пульсы →
 //! сторож → пробеги.
 //!
-//! ── Чего здесь нет, и это названо ───────────────────────────────────────────
+//! ── Надзор ──────────────────────────────────────────────────────────────────
 //!
-//! НАДЗОРА. Отказ процесса доезжает до веления «Уронить процесс» и ложится в
-//! журнал, а перезапуска и порога отказов на этой цели нет: надзор выражен на
-//! flang отдельно (`flang/self/conc.flang`).
+//! Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
+//! НАДЗОРУ — четвёртому напечатанному модулю, `flang/conc/nadzor.flang`. Кого
+//! поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
+//! исполняет. Дерево надзора приезжает данными в плане, как и размещение.
+//!
+//! ── Чего здесь нет, и это названо ───────────────────────────────────────────
 //!
 //! БИЛЕТЫ НЕ ЧИСТЯТСЯ: словарь «билет → груз» растёт на долгой работе. То же у
 //! остальных хозяев; названо, не починено.
@@ -450,10 +453,11 @@ struct Uzel {
     taymery: Vec<(f64, String, f64)>,
     posledniy_kadr: Option<Json>,
     sleduyuschiy_storozh: f64,
+    derevo: rt::Value,
 }
 
 impl Uzel {
-    fn novyy(imya: &str, plan: Vec<Process>, razmeschenie: &Json, hesh: &str, sroki: (f64, f64, f64), semya: u32) -> Uzel {
+    fn novyy(imya: &str, plan: Vec<Process>, razmeschenie: &Json, hesh: &str, sroki: (f64, f64, f64), semya: u32, nadzory: &[Json]) -> Uzel {
         let ctx = resh::new_context();
         let mut processy = Vec::new();
         let mut sostoyaniya = Vec::new();
@@ -518,6 +522,40 @@ impl Uzel {
             }
         }
 
+        // Дерево надзора — данные, ровно как размещение. Решает по нему
+        // напечатанный `nadzor.flang`, а не этот файл.
+        let mut nadzirateli = Vec::new();
+        let mut nad_processom = Vec::new();
+        let mut nad_nadzorom = Vec::new();
+        for n in nadzory {
+            let imya_nadzora = n.tekst_polya("имя", "");
+            nadzirateli.push(dolzhno(resh::funkciya_nadziratel_uzla(
+                &ctx,
+                rt::text(&imya_nadzora),
+                rt::number(chislo_polya(n, "порог")),
+                rt::number(chislo_polya(n, "окно")),
+                rt::text(&n.tekst_polya("иначе", "остановить")),
+            )));
+            for (klyuch, kuda) in [("процессы", &mut nad_processom), ("надзоры", &mut nad_nadzorom)] {
+                if let Some(Json::Spisok(svyazi)) = n.pole(klyuch) {
+                    for svyaz in svyazi {
+                        kuda.push(dolzhno(resh::funkciya_svyaz_nadzora_uzla(
+                            &ctx,
+                            rt::text(&svyaz.tekst_polya("кто", "")),
+                            rt::text(&imya_nadzora),
+                            rt::text(&svyaz.tekst_polya("стратегия", "")),
+                        )));
+                    }
+                }
+            }
+        }
+        let derevo = dolzhno(resh::funkciya_derevo_nadzora_uzla(
+            &ctx,
+            rt::list(nadzirateli),
+            rt::list(nad_processom),
+            rt::list(nad_nadzorom),
+        ));
+
         Uzel {
             imya: imya.to_string(),
             plan,
@@ -537,6 +575,97 @@ impl Uzel {
             taymery: Vec::new(),
             posledniy_kadr: None,
             sleduyuschiy_storozh: 0.0,
+            derevo,
+        }
+    }
+
+    // ── единственная дорога от отказа к решению надзора ────────────────────
+    fn nadzor_sluchilsya(&mut self, kto: &str, kod: &str) {
+        let hod = dolzhno(resh::funkciya_shag_nadzora_uzla(
+            &self.ctx,
+            self.derevo.clone(),
+            rt::text(kto),
+            rt::text(kod),
+            rt::number(chasy()),
+        ));
+        self.derevo = pole(&self.ctx, &hod, "дерево");
+        for velenie in spisok(&pole(&self.ctx, &hod, "веления")) {
+            self.ispolnit_nadzor(&velenie);
+        }
+    }
+
+    fn ispolnit_nadzor(&mut self, velenie: &rt::Value) {
+        let (imya, polya) = match velenie {
+            rt::Value::Variant(vnutri) => (vnutri.name.to_string(), vnutri.clone()),
+            _ => return,
+        };
+        let tekst = |kak: &str| -> String {
+            polya.fields.iter().find(|p| p.name.as_ref() == kak).map(|p| vn_tekst(&p.value)).unwrap_or_default()
+        };
+        let kto = tekst("кто");
+        match imya.as_str() {
+            "Поднять" => {
+                // Перезапуск трогает состояние и не трогает ящик — это решено на
+                // flang; здесь состояние берётся тем же путём, что при подъёме узла.
+                self.uzel = dolzhno(resh::funkciya_ozhivit_process_uzla(&self.ctx, self.uzel.clone(), rt::text(&kto)));
+                let nachalnoe = self.plan.iter().find(|p| p.imya == kto).map(|p| p.nachalnoe.clone());
+                if let Some(nachalnoe) = nachalnoe {
+                    let novoe = dolzhno(resh::call(&self.ctx, &nachalnoe, vec![]));
+                    for para in self.sostoyaniya.iter_mut() {
+                        if para.0 == kto {
+                            para.1 = novoe.clone();
+                        }
+                    }
+                }
+                skazat(vec![
+                    ("в".into(), stroka("надзор")),
+                    ("узел".into(), stroka(&self.imya)),
+                    ("цель".into(), stroka(CEL)),
+                    ("что".into(), stroka("поднят")),
+                    ("кто".into(), stroka(&kto)),
+                ]);
+            }
+            "Уложить" => {
+                self.uzel = dolzhno(resh::funkciya_ulozhit_process_uzla(
+                    &self.ctx,
+                    self.uzel.clone(),
+                    rt::text(&kto),
+                    rt::text("остановлен надзором"),
+                ));
+                skazat(vec![
+                    ("в".into(), stroka("надзор")),
+                    ("узел".into(), stroka(&self.imya)),
+                    ("цель".into(), stroka(CEL)),
+                    ("что".into(), stroka("уложен")),
+                    ("кто".into(), stroka(&kto)),
+                    ("надзор".into(), stroka(&tekst("надзор"))),
+                ]);
+            }
+            "Решено" => skazat(vec![
+                ("в".into(), stroka("надзор")),
+                ("узел".into(), stroka(&self.imya)),
+                ("цель".into(), stroka(CEL)),
+                ("что".into(), stroka("решено")),
+                ("кто".into(), stroka(&kto)),
+                ("надзор".into(), stroka(&tekst("надзор"))),
+                ("стратегия".into(), stroka(&tekst("стратегия"))),
+            ]),
+            "Некому надзирать" => {
+                self.uzel = dolzhno(resh::funkciya_ostanovit_uzel_celikom(&self.ctx, self.uzel.clone()));
+                self.rabotaet = false;
+                skazat(vec![
+                    ("в".into(), stroka("надзор")),
+                    ("узел".into(), stroka(&self.imya)),
+                    ("цель".into(), stroka(CEL)),
+                    ("что".into(), stroka("некому")),
+                    ("кто".into(), stroka(&kto)),
+                    ("надзор".into(), stroka(&tekst("надзор"))),
+                ]);
+            }
+            inoe => {
+                eprintln!("узел не знает веления надзора «{inoe}»");
+                std::process::exit(1)
+            }
         }
     }
 
@@ -831,15 +960,19 @@ impl Uzel {
                 ("кто".into(), stroka(&tekst("кто"))),
                 ("почему".into(), stroka(&tekst("почему"))),
             ]),
-            // Надзора на этой цели нет — назван в шапке. Отказ виден в журнале.
-            "Уронить процесс" => skazat(vec![
-                ("в".into(), stroka("отказ")),
-                ("узел".into(), stroka(&self.imya)),
-                ("цель".into(), stroka(CEL)),
-                ("процесс".into(), stroka(&tekst("кто"))),
-                ("код".into(), stroka(&tekst("код"))),
-                ("текст".into(), stroka(&tekst("текст"))),
-            ]),
+            "Уронить процесс" => {
+                skazat(vec![
+                    ("в".into(), stroka("отказ")),
+                    ("узел".into(), stroka(&self.imya)),
+                    ("цель".into(), stroka(CEL)),
+                    ("процесс".into(), stroka(&tekst("кто"))),
+                    ("код".into(), stroka(&tekst("код"))),
+                    ("текст".into(), stroka(&tekst("текст"))),
+                ]);
+                // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный
+                // `nadzor.flang`, здесь только дорога к нему.
+                self.nadzor_sluchilsya(&tekst("кто"), &tekst("код"));
+            }
             "Письмо пропало" => skazat(vec![
                 ("в".into(), stroka("потеря")),
                 ("узел".into(), stroka(&self.imya)),
@@ -1063,7 +1196,22 @@ fn json_iz_teksta(tekst: &str) -> Json {
     }
 }
 
-fn plan_iz(klyuchi: &HashMap<String, String>) -> Vec<Process> {
+fn chislo_polya(gde: &Json, imya: &str) -> f64 {
+    match gde.pole(imya) {
+        Some(Json::Chislo(tekst)) => chislo_vnutr(tekst),
+        _ => 0.0,
+    }
+}
+
+/// Надзоры плана — данные для дерева надзора.
+fn nadzory_iz(plan: &Json) -> Vec<Json> {
+    match plan.pole("надзоры") {
+        Some(Json::Spisok(nadzory)) => nadzory.clone(),
+        _ => Vec::new(),
+    }
+}
+
+fn plan_iz_teksta(klyuchi: &HashMap<String, String>) -> Json {
     let tekst = match klyuchi.get("план") {
         Some(gotovyy) if !gotovyy.is_empty() => gotovyy.clone(),
         _ => std::fs::read_to_string(nuzhen(klyuchi, "план-файл")).unwrap_or_else(|beda| { // МИР
@@ -1071,7 +1219,10 @@ fn plan_iz(klyuchi: &HashMap<String, String>) -> Vec<Process> {
             std::process::exit(1)
         }),
     };
-    let plan = json_iz_teksta(&tekst);
+    json_iz_teksta(&tekst)
+}
+
+fn plan_iz(plan: &Json) -> Vec<Process> {
     let processy = match plan.pole("процессы") {
         Some(Json::Spisok(processy)) => processy.clone(),
         _ => Vec::new(),
@@ -1099,13 +1250,15 @@ fn main() {
         chislo_klyucha(&klyuchi, "пауза", 250.0),
     );
     let razmeschenie = json_iz_teksta(nuzhen(&klyuchi, "размещение"));
+    let plan = plan_iz_teksta(&klyuchi);
     let mut uzel = Uzel::novyy(
         nuzhen(&klyuchi, "я"),
-        plan_iz(&klyuchi),
+        plan_iz(&plan),
         &razmeschenie,
         nuzhen(&klyuchi, "хэш"),
         sroki,
         chislo_klyucha(&klyuchi, "семя", 7.0) as u32,
+        &nadzory_iz(&plan),
     );
 
     let port = match klyuchi.get("слушать") {

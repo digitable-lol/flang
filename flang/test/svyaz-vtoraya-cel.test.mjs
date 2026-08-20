@@ -46,14 +46,14 @@
  */
 import assert from "node:assert/strict"
 import { spawn, spawnSync } from "node:child_process"
-import { copyFileSync, mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { copyFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
 import { findExecutable } from "../src/toolchain.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const питон = findExecutable("python3") ?? findExecutable("python")
@@ -81,13 +81,13 @@ const ждать = (мс) => new Promise((готово) => setTimeout(готов
 test("конец связи на Python здоровается с узлом на JavaScript и получает письмо", async (t) => {
   if (питон === null) return missingToolchain(t, "python", "python не найден — пропуск")
 
-  const каталог = mkdtempSync(join(tmpdir(), "flang-vtoraya-cel-"))
+  const каталог = рабочийКаталог("vtoraya-cel")
   const узлы = []
   try {
     /* Печать эталона связи в цель python — рядом с шимом, чтобы он её ввёз. */
     const печать = spawnSync(process.execPath, [
       join(корень, "flang/bin/flang.mjs"), "emit", "flang/conc/svyaz.flang", "--target", "python", "--out", каталог,
-    ], { cwd: корень, encoding: "utf8", env: { ...process.env, LC_ALL: "C.UTF-8" }, maxBuffer: 256 * 1024 * 1024 })
+    ], { cwd: корень, encoding: "utf8", env: средаСборки(каталог, { LC_ALL: "C.UTF-8" }), maxBuffer: 256 * 1024 * 1024 })
     assert.equal(печать.status, 0, `печать в python отказала:\n${печать.stdout}\n${печать.stderr}`)
     copyFileSync(join(корень, "flang/conc/bin/peer.py"), join(каталог, "peer.py"))
 
@@ -129,7 +129,7 @@ test("конец связи на Python здоровается с узлом н�
       "--я", "счёт", "--сосед", `127.0.0.1:${порт}`, "--хэш", хэш,
       "--срок", "1000", "--пульс", "200", "--жить", "4",
       "--письмо", JSON.stringify(письмо),
-    ], { cwd: каталог, env: { ...process.env, LC_ALL: "C.UTF-8", PYTHONIOENCODING: "utf-8" }, stdio: ["pipe", "pipe", "pipe"] })
+    ], { cwd: каталог, env: средаСборки(каталог, { LC_ALL: "C.UTF-8", PYTHONIOENCODING: "utf-8" }), stdio: ["pipe", "pipe", "pipe"] })
     узлы.push(конец)
     журнал(конец, (з) => питонЗаписи.push(з))
 
@@ -182,13 +182,13 @@ test("конец связи на Python объявляет потерю ПО М�
 
      Поэтому собеседник тут не узел, а ПОДДЕЛЬНЫЙ сосед: он здоровается верным
      хэшем и замолкает навсегда, оставив сокет открытым. */
-  const каталог = mkdtempSync(join(tmpdir(), "flang-molchanie-"))
+  const каталог = рабочийКаталог("molchanie")
   const дети = []
   let сервер = null
   try {
     const печать = spawnSync(process.execPath, [
       join(корень, "flang/bin/flang.mjs"), "emit", "flang/conc/svyaz.flang", "--target", "python", "--out", каталог,
-    ], { cwd: корень, encoding: "utf8", env: { ...process.env, LC_ALL: "C.UTF-8" }, maxBuffer: 256 * 1024 * 1024 })
+    ], { cwd: корень, encoding: "utf8", env: средаСборки(каталог, { LC_ALL: "C.UTF-8" }), maxBuffer: 256 * 1024 * 1024 })
     assert.equal(печать.status, 0, `печать в python отказала:\n${печать.stderr}`)
     copyFileSync(join(корень, "flang/conc/bin/peer.py"), join(каталог, "peer.py"))
 
@@ -208,7 +208,7 @@ test("конец связи на Python объявляет потерю ПО М�
     const конец = spawn(питон, [
       "-B", "peer.py", "--я", "счёт", "--сосед", `127.0.0.1:${порт}`, "--хэш", хэш,
       "--срок", "600", "--пульс", "150", "--жить", "6",
-    ], { cwd: каталог, env: { ...process.env, LC_ALL: "C.UTF-8", PYTHONIOENCODING: "utf-8" }, stdio: ["pipe", "pipe", "pipe"] })
+    ], { cwd: каталог, env: средаСборки(каталог, { LC_ALL: "C.UTF-8", PYTHONIOENCODING: "utf-8" }), stdio: ["pipe", "pipe", "pipe"] })
     дети.push(конец)
     журнал(конец, (з) => записи.push(з))
 

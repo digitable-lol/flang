@@ -142,6 +142,7 @@
 - [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`, а `lock` с `package` держал brotli (поправлено дважды: не держит, и цена вышла в 7 раз выше пересчёта)](pyat-komand-dvoichnogo-cena-kazhdoy.md)
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](cena-komandy-schitaetsya-po-rabote-a-ne-po-snyatomu-prepyatstviyu.md)
 - [Ведомость двоичного бывает слабее ведомости на Node и никогда не сильнее](vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.md)
+- [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя, а не молчать](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки: одна неиспользуемая функция красит побайтовую сверку](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним](podmena-chteniya-stoit-vnutri-obhoda-a-ne-pered-nim.md)
 - [Побайтовая сверка со свидетелем — главный метод проверки](byte-for-byte-comparison.md)

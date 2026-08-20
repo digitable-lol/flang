@@ -41,6 +41,9 @@
 - [Отметка слоя типов в дерево не выезжает: места проверок считаются только внутри компилятора, снаружи выйдет на 56 % больше](otmetka-sloya-tipov-ne-vyezzhaet-v-derevo-poetomu-schitat-mozhno-tolko-vnutri.md)
 - [Точный шаг по `нат` доказывает только прямую рекурсию: цикл через три функции ядро отвергает](tochnyy-shag-dokazyvaet-tolko-pryamuyu-rekursiyu.md)
 
+- [Язык доказательств у flang ЕСТЬ; чего в нём нет — шага, несущего промежуточный факт](yazyk-dokazatelstv-est-a-shag-ne-nesyot-fakta.md)
+- [Цепочка шагов уже копит известное — и тратит его только на текст отказа](cepochka-kopit-izvestnoe-i-tratit-ego-na-tekst-otkaza.md)
+- [Промежуточный факт открыл дверь, а взять через неё в библиотеке нечего: 1545 цепочек, ноль](promezhutochnyy-fakt-otkryl-dver-a-vzyat-cherez-neyo-nechego.md)
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
 - [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест](equality-on-a-type-parameter-is-banned-only-in-bodies.md)

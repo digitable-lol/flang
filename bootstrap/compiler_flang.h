@@ -1801,17 +1801,17 @@ fl_status compiler_flang_sozdat_sluchai_otrezka(fl_ctx *ctx, fl_value dno, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_svod_obyazatelstv(fl_ctx *ctx, fl_value obyazatelstva, fl_value diagnostika, fl_value *out, fl_error *error);
 
-/* Запись FTS «Итог шага»: «принято», «сила», «правило», «код», «почему», «факт». */
+/* Запись FTS «Итог шага»: «принято», «сила», «правило», «код», «почему», «факт», «закрыл», «утверждение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_itog_shaga(fl_ctx *ctx, fl_value prinyato, fl_value sila, fl_value pravilo, fl_value kod, fl_value pochemu, fl_value fakt, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_itog_shaga(fl_ctx *ctx, fl_value prinyato, fl_value sila, fl_value pravilo, fl_value kod, fl_value pochemu, fl_value fakt, fl_value zakryl, fl_value utverzhdenie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Обстановка терма»: «программа», «обязательство», «посылка», «место», «прогоны». */
+/* Запись FTS «Обстановка терма»: «программа», «обязательство», «посылка», «место», «прогоны», «факты». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_obstanovka_terma(fl_ctx *ctx, fl_value programma, fl_value obyazatelstvo, fl_value posylka, fl_value mesto, fl_value progony, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_obstanovka_terma(fl_ctx *ctx, fl_value programma, fl_value obyazatelstvo, fl_value posylka, fl_value mesto, fl_value progony, fl_value fakty, fl_value *out, fl_error *error);
 
-/* Запись FTS «Ход цепочки»: «сила», «правило», «известно», «отказы», «номер». */
+/* Запись FTS «Ход цепочки»: «сила», «правило», «известно», «отказы», «номер», «закрыто», «факты». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_hod_cepochki(fl_ctx *ctx, fl_value sila, fl_value pravilo, fl_value izvestno, fl_value otkazy, fl_value nomer, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_hod_cepochki(fl_ctx *ctx, fl_value sila, fl_value pravilo, fl_value izvestno, fl_value otkazy, fl_value nomer, fl_value zakryto, fl_value fakty, fl_value *out, fl_error *error);
 
 /* Запись FTS «Итог цепочки»: «сила», «отказы», «шагов», «правило», «случаи», «индукция». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -26885,6 +26885,54 @@ fl_status compiler_flang_tekst_gte_js(fl_ctx *ctx, fl_value *result, fl_error *e
  * @return значение: строка
  */
 fl_status compiler_flang_tekst_lte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст pairSplits JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_pairsplits_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glueCheck JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gluecheck_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glue JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_glue_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isTorn JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_istorn_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isBoundary JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isboundary_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст findAligned JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_findaligned_js(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Текст concat JS».
@@ -61777,6 +61825,17 @@ fl_status compiler_flang_chastyami(fl_ctx *ctx, fl_value chasti, fl_value *resul
 fl_status compiler_flang_shag_vyveden(fl_ctx *ctx, fl_value sila, fl_value pravilo, fl_value fakt, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Шаг промежуточным».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pravilo — «правило»: строка
+ * @param utverzhdenie — «утверждение»: «Значение»
+ * @param fakt — «факт»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_shag_promezhutochnym(fl_ctx *ctx, fl_value pravilo, fl_value utverzhdenie, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Шаг не выведен».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -62473,6 +62532,75 @@ fl_status compiler_flang_fakt_zakona(fl_ctx *ctx, fl_value imya, fl_value *resul
 fl_status compiler_flang_proverit_shag(fl_ctx *ctx, fl_value shag, fl_value obstanovka, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «По свойству промежуточным».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param imya — «имя»: строка
+ * @param chya — «чья»: «Значение»
+ * @param vypisano — «выписано»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_svoystvu_promezhutochnym(fl_ctx *ctx, fl_value obstanovka, fl_value imya, fl_value chya, fl_value vypisano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Промежуточное при инстанциях».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param imya — «имя»: строка
+ * @param chya — «чья»: «Значение»
+ * @param vypisano — «выписано»: «Значение»
+ * @param instancii — «инстанции»: список: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_promezhutochnoe_pri_instanciyah(fl_ctx *ctx, fl_value obstanovka, fl_value imya, fl_value chya, fl_value vypisano, fl_value instancii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести промежуточное».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param imya — «имя»: строка
+ * @param chya — «чья»: «Значение»
+ * @param vypisano — «выписано»: «Значение»
+ * @param instancii — «инстанции»: список: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_svesti_promezhutochnoe(fl_ctx *ctx, fl_value obstanovka, fl_value imya, fl_value chya, fl_value vypisano, fl_value instancii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По предположению промежуточным».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param posylka — «посылка»: «Значение»
+ * @param vypisano — «выписано»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_predpolozheniyu_promezhutochnym(fl_ctx *ctx, fl_value obstanovka, fl_value posylka, fl_value vypisano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По предусловиям промежуточным».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param predusloviya — «предусловия»: список: «Значение»
+ * @param vypisano — «выписано»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_predusloviyam_promezhutochnym(fl_ctx *ctx, fl_value obstanovka, fl_value predusloviya, fl_value vypisano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Факт выписанного шага».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_fakt_vypisannogo_shaga(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Шагнуть по цепочке».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -62482,6 +62610,15 @@ fl_status compiler_flang_proverit_shag(fl_ctx *ctx, fl_value shag, fl_value obst
  * @return значение: «Ход цепочки»
  */
 fl_status compiler_flang_shagnut_po_cepochke(fl_ctx *ctx, fl_value shag, fl_value hod, fl_value obstanovka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Факт выписанного».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param utverzhdenie — «утверждение»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_fakt_vypisannogo(fl_ctx *ctx, fl_value utverzhdenie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отказ шага».
@@ -62520,6 +62657,17 @@ fl_status compiler_flang_proyti_cepochku(fl_ctx *ctx, fl_value shagi, fl_value h
  * @return значение: «Итог цепочки»
  */
 fl_status compiler_flang_proverit_cepochku(fl_ctx *ctx, fl_value shagi, fl_value obstanovka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог по закрытию».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param shagi — «шаги»: список: «Значение»
+ * @param hod — «ход»: «Ход цепочки»
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @return значение: «Итог цепочки»
+ */
+fl_status compiler_flang_itog_po_zakrytiyu(fl_ctx *ctx, fl_value shagi, fl_value hod, fl_value obstanovka, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свернуть принцип».

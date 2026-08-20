@@ -120,6 +120,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 /*
@@ -134,6 +135,34 @@
 
 extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,
                                  fl_value *result, fl_error *error);
+
+/*
+ * Второй мост к программе — ЕЁ СОБСТВЕННАЯ ГРАНИЦА ВХОДА: объявленные типы
+ * параметров, впечатанные в программу данными (fl_entry_table). Нужен он ровно
+ * одному месту — `flang emit --target c`, печатающей САМ КОМПИЛЯТОР.
+ *
+ * Зачем. Таблицу строит слой типов свидетеля (`таблицаВхода`, flang/src/types.mjs),
+ * и на flang его нет: `flang/self/types.flang` эту таблицу не строит. Значит
+ * бинарнику взять её неоткуда — кроме одного случая, когда она у него уже есть:
+ * когда печатаемая программа и есть та программа, которой бинарник является.
+ * Тогда его собственная таблица и есть искомая, байт в байт.
+ *
+ * Случай этот не угадывается, а ПРОВЕРЯЕТСЯ: печать берёт таблицу только если
+ * список пар «функция, параметр» связанной программы совпадает с впечатанным
+ * — по порядку, по числу и по именам (`emit_entry_fits`). Не совпал — таблица
+ * пуста, и об этом сказано на stderr, а не умолчанием.
+ *
+ * СКАЗАНО ПРИ ЭТОМ ПРО ДЕЛО ЧЕЛОВЕКА, А НЕ ПРО УСТРОЙСТВО: одной строкой, что
+ * аргументы напечатанной программы по типам не проверяются и где взять полную
+ * проверку. Прежде здесь печатались четыре строки про слой типов, имя нашей
+ * функции и число параметров ЧУЖОЙ программы — попросившему код на C ни одно из
+ * трёх не говорит ничего.
+ */
+#ifndef FL_PROGRAM_ENTRY
+#define FL_PROGRAM_ENTRY fl_program_entry
+#endif
+
+extern const fl_entry_table *FL_PROGRAM_ENTRY(void);
 
 /*
  * Чтение файла целиком. У прогонщика есть такое же — и это не досадный повтор,
@@ -192,7 +221,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.5.0"
+#define FLANG_VERSION "0.5.1"
 
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
@@ -266,6 +295,7 @@ static const char FLANG_HELP[] =
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
+    "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
     "\n"
     "  flang --help                       эта справка\n"
     "  flang --version                    версия\n"
@@ -333,20 +363,28 @@ static const char HELP_TEST[] =
     "  --json          машиночитаемый итог одной строкой\n"
     "  --ledger        ведомость: по строке на файл, для сверки диффом\n"
     "  --max-steps N   предел шагов вычислителя\n"
-    "  --max-depth N   предел глубины";
+    "  --max-depth N   предел глубины\n"
+    "\n"
+    "У не сошедшегося примера называются ОБЕ стороны: ожидалось и получено.\n"
+    "Длинное значение обрезается на 200 знаках, и длина полного сказана числом.\n"
+    "\n"
+    "Примеры, объявленные при морфизмах теорката, здесь не прогоняются: их считает\n"
+    "версия для Node. На таких программах счёт «примеров N» окажется меньше её.";
 
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
     "                       [--max-depth N]\n"
     "\n"
-    "Вычисляет ОДНУ функцию и печатает значение. Считает вычислитель, втащенный в\n"
-    "замыкание бинарника (flang/self/interpret.flang), — без Node и без «cc».\n"
+    "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
+    "«cc» для этого не нужны.\n"
     "\n"
-    "Аргументы сверяются объявленным типам ДО вычисления, тем же кодом, каким это\n"
-    "делает свидетель: «Факториал» от −3 отвергается FLANG_TYPE, а не считается.\n"
+    "Аргументы сверяются объявленным типам ДО вычисления: «Факториал» от −3\n"
+    "отвергается FLANG_TYPE, а не считается.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
-    "  --args '{…}'       аргументы JSON-объектом\n"
+    "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
+    "                     Списка или вложенного объекта здесь не принимают —\n"
+    "                     их считает версия для Node\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины";
 
@@ -494,6 +532,26 @@ static const char HELP_PACKAGE[] =
     "Пакет собирается ТОЛЬКО ИЗ ПРОВЕРЕННОГО: пакет — это обещание, а обещать за\n"
     "непроверенное нельзя.";
 
+static const char HELP_LSP[] =
+    "flang lsp [--stdio]\n"
+    "\n"
+    "Языковой сервер flang по стандартному вводу-выводу: рамки Content-Length, тело\n"
+    "JSON, как требует спецификация LSP. Запускается редактором, а не человеком —\n"
+    "вручную он будет молча ждать сообщений.\n"
+    "\n"
+    "Умеет то же, что «flang-lsp» из инструментария на Node, и ТЕМ ЖЕ СЛОЕМ\n"
+    "(«flang/self/lsp.flang»): диагностику той же дорогой, что «flang check» —\n"
+    "разбор, связывание, типы, завершаемость, — дополнение, наведение с подписью и\n"
+    "переход к объявлению.\n"
+    "\n"
+    "Расхождение со свидетелем одно, и оно названо: у программы с «использует» беда\n"
+    "импортированного модуля уходит в журнал редактора, а не подчёркивается в его\n"
+    "буфере. «Место» (self/types.flang) поля файла не имеет, поэтому файл беды\n"
+    "называется тогда и только тогда, когда исходник один.\n"
+    "\n"
+    "Печатать в stdout что-либо, кроме сообщений протокола, нельзя: редактор читает\n"
+    "оттуда рамки. Всё человеческое уходит в stderr.";
+
 static const char HELP_REPL[] =
     "flang repl [<файл.flang>] [--max-steps N] [--max-depth N]\n"
     "\n"
@@ -501,8 +559,8 @@ static const char HELP_REPL[] =
     "Объявления накапливаются в сессии, выражения вычисляются сразу, «.помощь»\n"
     "показывает команды. Файл в аргументе загружается в сессию при запуске.\n"
     "\n"
-    "Выражение считается так: сессия печатается в C (та же «Печать программы», что\n"
-    "у «flang emit»), собирается системным «cc» против lib/libcompiler_flang.a и\n"
+    "Выражение считается так: сессия печатается в C тем же способом, что у\n"
+    "«flang emit», собирается системным «cc» против lib/libcompiler_flang.a и\n"
     "запускается. Нет «cc» — оболочка не выключается, а проверяет разбор, типы и\n"
     "завершаемость и говорит об этом при запуске.\n"
     "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.";
@@ -527,6 +585,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_EMIT);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
+  } else if (strcmp(topic, "lsp") == 0) {
+    printf("%s\n", HELP_LSP);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "facts") == 0) {
@@ -4967,6 +5027,42 @@ static int check_file(const char *path) {
       printf("; файлов вместе с импортами %lu", (unsigned long)paths.count);
     }
     printf("\n");
+    /*
+     * ЧЬЁ ЗАВЕРШЕНИЕ НЕ ДОКАЗАНО — ПОИМЁННО, А НЕ ЧИСЛОМ.
+     *
+     * Прежде тут стояло только «из них с доказанным завершением 2», и человеку
+     * с тремя функциями оставалось гадать, о которой речь. Знание при этом было
+     * под рукой: список доказанных посчитан строкой выше, и разность с
+     * объявленными — ровно ответ. Версия для Node его называет
+     * (`functions: [{name, total}]`), и молчать о посчитанном хуже, чем не
+     * считать вовсе: число без имён читается как «что-то не так со всем».
+     *
+     * Имена печатаются до REPL_VERBOSE штук, дальше — счёт: у компилятора таких
+     * функций сотни, и вывалить их списком значило бы утопить всё остальное.
+     */
+    if (functions > proved) {
+      const fl_value *items = NULL;
+      size_t count = 0;
+      size_t index = 0;
+      size_t shown = 0;
+      zn_field_items(program, "functions", &items, &count);
+      printf("без доказанного завершения:");
+      for (index = 0; index < count; index += 1) {
+        const char *fname = NULL;
+        size_t fbytes = 0;
+        if (!zn_field_text(items[index], "name", &fname, &fbytes) || strings_has(&proven, fname, fbytes)) {
+          continue;
+        }
+        if (shown < REPL_VERBOSE) {
+          printf(" «%.*s»", (int)fbytes, fname);
+        }
+        shown += 1;
+      }
+      if (shown > REPL_VERBOSE) {
+        printf(" и ещё %lu", (unsigned long)(shown - REPL_VERBOSE));
+      }
+      printf("\n");
+    }
   }
   /* Потоки разные — stdout под ответ, stderr под диагностику, — и порядок между
      ними держится только сбросом: под конвейером stdout копится блоками, и без
@@ -5928,19 +6024,22 @@ static int run_file(int argc, char **argv) {
  * (`flang/self/emit-c.flang` едет в `compiler.flang`), и не хватало только
  * разбора аргументов и подачи настроек.
  *
- * ── Две вещи, которые печать просит СНАРУЖИ ─────────────────────────────────
- *
- * Их было три: границу входа — объявленные типы параметров таблицей — этот файл
- * подставлял сам, потому что строил её только слой типов свидетеля. Теперь её
- * строит «Таблица входа» из `flang/self/types.flang`, то есть печать целиком, и
- * снаружи её просить незачем.
+ * ── Три вещи, которые печать просит СНАРУЖИ ─────────────────────────────────
  *
  * 1. ТЕКСТ РАНТАЙМА — `flang_runtime.[ch]`, `flang_cli.c`, `flang_repl.c`. Это
  *    исходники на C, а не печать: они приезжают в вывод дословно, с приписанной
  *    сверху шапкой. Свидетель читает их с диска (`flang/src/emit/c.mjs`), и здесь
  *    читаются они же и оттуда же — иначе байты разошлись бы.
  *
- * 2. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
+ * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит слой типов
+ *    свидетеля (`таблицаВхода`), которого на flang нет вовсе. Один случай, когда
+ *    таблица у бинарника уже есть, — печать САМОГО СЕБЯ: тогда годится его
+ *    собственная, впечатанная (`FL_PROGRAM_ENTRY`). Годность не предполагается,
+ *    а проверяется парами «функция, параметр» (`emit_entry_fits`); не сошлось —
+ *    таблица пуста, и человеку сказано одной строкой, что аргументы
+ *    напечатанной программы по типам не проверяются.
+ *
+ * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
  *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
  *    БЭКЕНДА (10⁶ и 10⁴); компилятор печатается с 40 000 000 и 20 000, и эти
  *    числа называет тот, кто печатает, а не этот файл.
@@ -6168,11 +6267,251 @@ static char *emit_target_dir(const char *self_dir, const char *given, const char
   return NULL;
 }
 
+/** Вид типа границы — обратный перевод к «Виду типа входа» из emit-c.flang. */
+static const char *emit_kind_word(fl_type_kind kind) {
+  switch (kind) {
+    case FL_TYPE_NUMBER:
+      return "число";
+    case FL_TYPE_STRING:
+      return "строка";
+    case FL_TYPE_FLAG:
+      return "признак";
+    case FL_TYPE_NULL:
+      return "ничто";
+    case FL_TYPE_LIST:
+      return "список";
+    case FL_TYPE_RECORD:
+      return "запись";
+    case FL_TYPE_SUM:
+      return "сумма";
+    case FL_TYPE_UNKNOWN:
+    default:
+      return "неизвестно";
+  }
+}
+
+/**
+ * Впечатанная граница входа — обратно в значения flang.
+ *
+ * Порядок полей здесь не свободный: это объекты «Тип входа», «Поле входа»,
+ * «Вариант входа» и «Параметр входа» из `flang/self/emit-c.flang`, и разойдись
+ * имена — печать получила бы записи не тех форм.
+ */
+static fl_value emit_entry_types(const fl_entry_table *table) {
+  static const char *const names[13] = {"вид",  "имя",     "владелец", "ничто",  "целое",
+                                        "отрезок", "низ",  "верх",     "элемент", "поле с",
+                                        "полей", "вариант с", "вариантов"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->type_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->type_count);
+  for (index = 0; index < table->type_count; index += 1) {
+    const fl_type *type = &table->types[index];
+    fl_value values[13];
+    values[0] = repl_value_say(emit_kind_word(type->kind));
+    values[1] = repl_value_say(type->name == NULL ? "" : type->name);
+    values[2] = repl_value_say(type->owner == NULL ? "" : type->owner);
+    values[3] = fl_flag(type->optional);
+    values[4] = fl_flag(type->integral);
+    values[5] = fl_flag(type->bounded);
+    values[6] = fl_number(type->low);
+    values[7] = fl_number(type->high);
+    values[8] = fl_number((double)type->of);
+    values[9] = fl_number((double)type->field_from);
+    values[10] = fl_number((double)type->field_count);
+    values[11] = fl_number((double)type->variant_from);
+    values[12] = fl_number((double)type->variant_count);
+    items[index] = repl_value_record(names, values, 13);
+  }
+  out = repl_value_list(items, table->type_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_fields(const fl_entry_table *table) {
+  static const char *const names[2] = {"имя", "тип"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->field_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->field_count);
+  for (index = 0; index < table->field_count; index += 1) {
+    fl_value values[2];
+    values[0] = repl_value_say(table->fields[index].name == NULL ? "" : table->fields[index].name);
+    values[1] = fl_number((double)table->fields[index].type);
+    items[index] = repl_value_record(names, values, 2);
+  }
+  out = repl_value_list(items, table->field_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_variants(const fl_entry_table *table) {
+  static const char *const names[3] = {"имя", "поле с", "полей"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->variant_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->variant_count);
+  for (index = 0; index < table->variant_count; index += 1) {
+    fl_value values[3];
+    values[0] = repl_value_say(table->variants[index].name == NULL ? "" : table->variants[index].name);
+    values[1] = fl_number((double)table->variants[index].field_from);
+    values[2] = fl_number((double)table->variants[index].field_count);
+    items[index] = repl_value_record(names, values, 3);
+  }
+  out = repl_value_list(items, table->variant_count);
+  free(items);
+  return out;
+}
+
+static fl_value emit_entry_params(const fl_entry_table *table) {
+  static const char *const names[3] = {"функция", "параметр", "тип"};
+  fl_value *items = NULL;
+  fl_value out = fl_nothing();
+  size_t index = 0;
+  if (table->param_count == 0) {
+    return fl_list(NULL, 0);
+  }
+  items = (fl_value *)repl_alloc(sizeof(fl_value) * table->param_count);
+  for (index = 0; index < table->param_count; index += 1) {
+    fl_value values[3];
+    values[0] = repl_value_say(table->params[index].function == NULL ? "" : table->params[index].function);
+    values[1] = repl_value_say(table->params[index].name == NULL ? "" : table->params[index].name);
+    values[2] = fl_number((double)table->params[index].type);
+    items[index] = repl_value_record(names, values, 3);
+  }
+  out = repl_value_list(items, table->param_count);
+  free(items);
+  return out;
+}
+
+/**
+ * Годится ли впечатанная граница связанной программе.
+ *
+ * Сверяются ПАРЫ «функция, параметр» по порядку, числу и именам — то же
+ * перечисление, каким строит список `таблицаВхода` (по функциям программы, по
+ * параметрам каждой). Совпало всё до последней пары — программа та же, и её
+ * таблица годится. Разошлось хоть в одном месте — таблица чужая, и печатать по
+ * ней значило бы соврать о типах напечатанного.
+ *
+ * Проверка НЕ доказывает совпадения типов: имена сошлись, а объявления могли
+ * разойтись. Именно поэтому неподвижная точка сверяется отдельно и байтами
+ * (`flang/test/self-bootstrap.test.mjs`): здесь дешёвый сторож, там приговор.
+ */
+static bool emit_entry_fits(fl_value program, const fl_entry_table *table) {
+  const fl_value *functions = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  size_t seen = 0;
+  zn_field_items(program, "functions", &functions, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *function = NULL;
+    size_t function_bytes = 0;
+    const fl_value *params = NULL;
+    size_t params_count = 0;
+    size_t at = 0;
+    if (!zn_field_text(functions[index], "name", &function, &function_bytes)) {
+      return false;
+    }
+    zn_field_items(functions[index], "params", &params, &params_count);
+    for (at = 0; at < params_count; at += 1) {
+      const char *name = NULL;
+      size_t name_bytes = 0;
+      if (seen >= table->param_count) {
+        return false;
+      }
+      if (!zn_field_text(params[at], "name", &name, &name_bytes)) {
+        return false;
+      }
+      if (table->params[seen].function == NULL || table->params[seen].name == NULL) {
+        return false;
+      }
+      if (strlen(table->params[seen].function) != function_bytes ||
+          memcmp(table->params[seen].function, function, function_bytes) != 0) {
+        return false;
+      }
+      if (strlen(table->params[seen].name) != name_bytes ||
+          memcmp(table->params[seen].name, name, name_bytes) != 0) {
+        return false;
+      }
+      seen += 1;
+    }
+  }
+  return seen == table->param_count && seen > 0;
+}
+
+/**
+ * Каталог вывода заводится САМ, вместе с промежуточными, — ровно как это делает
+ * `flang emit` на Node (`mkdir(dirname(путь), { recursive: true })` в
+ * `flang/bin/flang.mjs`).
+ *
+ * Прежде каталог не заводился, и объяснено это было тем, что `mkdir` живёт в
+ * <sys/stat.h>, а этому файлу хватало стандартной библиотеки. Цена оказалась не
+ * та, что называли: человек, набравший `flang emit … --out каталог/которого/нет`,
+ * получал отказ про ПЕРВЫЙ ФАЙЛ рантайма — «не открыт для записи
+ * …/flang_runtime.h», — и читал его как «сломан рантайм», потому что для такого
+ * текста это и есть правильное чтение. Заголовок к тому же уже нужен хозяину
+ * `flang io` ниже, так что нового у оболочки не прибавилось ничего.
+ *
+ * Неудача называет КАТАЛОГ и причину словами системы (`strerror`), а не первый
+ * файл, который не открылся.
+ */
+static bool emit_make_dir(const char *path) {
+  char *copy = NULL;
+  size_t at = 0;
+  bool ok = true;
+  /* Пустое имя каталога — не «текущий», а недосмотр вызывающего (`--out ""`), и
+     обход ниже начинается со второго знака, потому что первый может быть
+     корневой косой чертой. На пустой строке второго знака нет вовсе. */
+  if (path == NULL || path[0] == '\0') {
+    fputs("flang emit: «--out» назван пустым именем каталога — назовите, куда печатать\n", stderr);
+    return false;
+  }
+  copy = repl_say(path);
+  if (copy == NULL) {
+    fputs("flang emit: не хватило памяти под путь каталога вывода\n", stderr);
+    return false;
+  }
+  for (at = 1; ok && copy[at] != '\0'; at += 1) {
+    if (copy[at] == '/') {
+      copy[at] = '\0';
+      if (copy[at - 1] != '/' && mkdir(copy, 0777) != 0 && errno != EEXIST) {
+        ok = false;
+      }
+      copy[at] = '/';
+    }
+  }
+  if (ok && mkdir(copy, 0777) != 0 && errno != EEXIST) {
+    ok = false;
+  }
+  if (ok) {
+    /* EEXIST мог прийти и от ФАЙЛА с этим именем: тогда запись всё равно не
+       выйдет, и сказать об этом надо здесь, а не первым непонятным отказом. */
+    struct stat info;
+    if (stat(copy, &info) == 0 && !S_ISDIR(info.st_mode)) {
+      fprintf(stderr, "flang emit: «%s» — не каталог, а файл; выберите другое место для --out\n", copy);
+      ok = false;
+    }
+  } else {
+    fprintf(stderr, "flang emit: не удалось завести каталог «%s»: %s\n", copy, strerror(errno));
+  }
+  free(copy);
+  return ok;
+}
+
 /** Запись одного напечатанного файла на диск; путь уже разрешён. */
 static bool emit_write(const char *full, const char *text, size_t bytes) {
   FILE *stream = fopen(full, "wb");
   if (stream == NULL) {
-    fprintf(stderr, "flang emit: не открыт для записи %s\n", full);
+    fprintf(stderr, "flang emit: не открыт для записи %s: %s\n", full, strerror(errno));
     return false;
   }
   if (bytes > 0 && fwrite(text, 1, bytes, stream) != bytes) {
@@ -6546,6 +6885,10 @@ static int emit_file(int argc, char **argv, const char *self) {
                          &wish, &files);
       }
     }
+  }
+
+  if (code == 0 && one == NULL && !emit_make_dir(out)) {
+    code = 2;
   }
 
   if (code == 0) {
@@ -7324,7 +7667,6 @@ static int facts_file(int argc, char **argv) {
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -8188,32 +8530,14 @@ static void io_close(io_host *host) {
  * заведено. Слить «убит» с «вернул 0» нельзя ни в какую сторону, поэтому
  * `WIFSIGNALED` спрашивается раньше `WEXITSTATUS`.
  */
-/*
- * `input` равен NULL — ввода у потомка НЕТ, и ему даётся пустота
- * (`/dev/null`), а не унаследованный ввод хозяина. Прежде здесь не было ни
- * одного `dup2` на нулевой дескриптор, то есть потомок читал ввод САМОГО
- * `flang io`: программа, запустившая `cat`, съедала ввод оболочки и висела до
- * срока. Замер той же беды на трубе: двоичный языковой сервер при открытом
- * вводе отвечал НУЛЁМ байтов, при закрытом — 334 байтами.
- *
- * `input` не NULL — заводится третья труба, в неё пишут и её ЗАКРЫВАЮТ. Пишут в
- * том же `select`, что читает вывод: писать сначала, а читать потом значило бы
- * поймать взаимную блокировку на первом же потомке, который отвечает раньше,
- * чем дочитает (труба конечна, 64 КиБ на Linux).
- */
-static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
-                         const char *input, size_t input_bytes) {
+static fl_value io_spawn(io_host *host, const char *program, char *const *argv) {
   int out_pipe[2];
   int err_pipe[2];
-  int in_pipe[2];
-  size_t input_sent = 0;
   pid_t child = 0;
   repl_buf out;
   repl_buf err;
   int status = 0;
   bool too_much = false;
-  bool too_long = false;
-  struct timeval deadline;
   if (pipe(out_pipe) != 0) {
     return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
   }
@@ -8222,43 +8546,17 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
     close(out_pipe[1]);
     return io_fail_errno("FLANG_IO_SPAWN", "труба ошибок не заведена");
   }
-  in_pipe[0] = -1;
-  in_pipe[1] = -1;
-  if (input != NULL && pipe(in_pipe) != 0) {
-    close(out_pipe[0]);
-    close(out_pipe[1]);
-    close(err_pipe[0]);
-    close(err_pipe[1]);
-    return io_fail_errno("FLANG_IO_SPAWN", "труба ввода не заведена");
-  }
   child = fork();
   if (child < 0) {
     close(out_pipe[0]);
     close(out_pipe[1]);
     close(err_pipe[0]);
     close(err_pipe[1]);
-    if (in_pipe[0] >= 0) {
-      close(in_pipe[0]);
-      close(in_pipe[1]);
-    }
     return io_fail_errno("FLANG_IO_SPAWN", "процесс не порождён");
   }
   if (child == 0) {
     /* Дитя: трубы на место, каталог работы — корень хозяина, и execvp. Промах
        execvp сообщается кодом 127 — тем же, каким о нём говорит оболочка. */
-    if (in_pipe[0] >= 0) {
-      dup2(in_pipe[0], 0);
-      close(in_pipe[0]);
-      close(in_pipe[1]);
-    } else {
-      /* Ввода нет — значит ПУСТОТА, а не ввод хозяина: чтение из `/dev/null`
-         сразу отвечает концом, и потомок, читающий свой ввод, не ждёт никого. */
-      const int nothing = open("/dev/null", O_RDONLY);
-      if (nothing >= 0) {
-        dup2(nothing, 0);
-        close(nothing);
-      }
-    }
     dup2(out_pipe[1], 1);
     dup2(err_pipe[1], 2);
     close(out_pipe[0]);
@@ -8273,17 +8571,6 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
   }
   close(out_pipe[1]);
   close(err_pipe[1]);
-  if (in_pipe[0] >= 0) {
-    close(in_pipe[0]);
-    in_pipe[0] = -1;
-    /* Труба ввода — неблокирующая: иначе `write` на полной трубе усыпил бы
-       хозяина, который в этот самый миг обязан читать вывод. */
-    fcntl(in_pipe[1], F_SETFL, fcntl(in_pipe[1], F_GETFL, 0) | O_NONBLOCK);
-    if (input_bytes == 0) {
-      close(in_pipe[1]);
-      in_pipe[1] = -1;
-    }
-  }
   buf_init(&out);
   buf_init(&err);
   {
@@ -8296,83 +8583,23 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
     fds[1] = err_pipe[0];
     alive[0] = true;
     alive[1] = true;
-    /* СРОК СЧИТАЕТСЯ ОТ НАЧАЛА, а не заново на каждое ожидание, и это правка, а
-       не уточнение. Прежде `select` получал полный срок КАЖДЫЙ раз, значит
-       программа, печатающая по строке в секунду, жила вечно при любом сроке —
-       ни одно ожидание не истекало. Хозяин на Node так себя не ведёт: у него
-       один таймер на весь процесс. Расхождение закрывается здесь. */
-    gettimeofday(&deadline, NULL);
-    deadline.tv_sec += host->timeout_ms / 1000;
-    deadline.tv_usec += (host->timeout_ms % 1000) * 1000;
-    if (deadline.tv_usec >= 1000000) {
-      deadline.tv_sec += 1;
-      deadline.tv_usec -= 1000000;
-    }
-    while (alive[0] || alive[1] || in_pipe[1] >= 0) {
+    while (alive[0] || alive[1]) {
       fd_set set;
-      fd_set writable;
       int top = -1;
       int index = 0;
-      int ready = 0;
-      struct timeval now;
       struct timeval wait;
       FD_ZERO(&set);
-      FD_ZERO(&writable);
       for (index = 0; index < 2; index += 1) {
         if (alive[index]) {
           FD_SET(fds[index], &set);
           if (fds[index] > top) top = fds[index];
         }
       }
-      /* Ввод стоит В ТОМ ЖЕ ожидании, что и вывод, и это не оформление:
-         потомок, отвечающий раньше, чем дочитает, наполнит трубу вывода и
-         остановится — а хозяин, занятый записью, её не разберёт. Обе стороны
-         обязаны двигаться поочерёдно, и решает это `select`. */
-      if (in_pipe[1] >= 0) {
-        FD_SET(in_pipe[1], &writable);
-        if (in_pipe[1] > top) top = in_pipe[1];
-      }
-      gettimeofday(&now, NULL);
-      wait.tv_sec = deadline.tv_sec - now.tv_sec;
-      wait.tv_usec = deadline.tv_usec - now.tv_usec;
-      if (wait.tv_usec < 0) {
-        wait.tv_sec -= 1;
-        wait.tv_usec += 1000000;
-      }
-      if (wait.tv_sec < 0) {
-        wait.tv_sec = 0;
-        wait.tv_usec = 0;
-      }
-      ready = select(top + 1, &set, in_pipe[1] >= 0 ? &writable : NULL, NULL, &wait);
-      if (ready < 0) {
-        /* Сигнал прервал ожидание — это не исход, а перерыв: повторяем. Всякая
-           другая беда `select` кончает ожидание, и отвечает за неё `waitpid`. */
-        if (errno == EINTR) continue;
+      wait.tv_sec = host->timeout_ms / 1000;
+      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
+      if (select(top + 1, &set, NULL, NULL, &wait) <= 0) {
         kill(child, SIGKILL);
         break;
-      }
-      if (ready == 0) {
-        /* СРОК ИСТЁК, и это отдельный исход, а не «процесс убит». Прежде здесь
-           стоял тот же `break`, что и на беде, и потому истёкший срок приезжал
-           программе как «Процесс убит» с сигналом SIG9 — неотличимо от того,
-           что процесс остановил кто-то другой. Хозяин на Node различает их с
-           самого начала и отвечает «Сбоем» с кодом FLANG_IO_TIMEOUT; здесь
-           теперь то же самое и теми же словами. */
-        too_long = true;
-        kill(child, SIGKILL);
-        break;
-      }
-      if (in_pipe[1] >= 0 && FD_ISSET(in_pipe[1], &writable)) {
-        const ssize_t put = write(in_pipe[1], input + input_sent, input_bytes - input_sent);
-        if (put > 0) input_sent += (size_t)put;
-        /* Написали всё — ЗАКРЫВАЕМ. Без закрытия потомок, читающий свой ввод до
-           конца, ждёт нас вечно, и ждать он будет до срока хозяина.
-           `EPIPE` — не беда, а обычное дело: потомок вправе кончиться, не
-           дочитав; ответ придёт от `waitpid` с кодом и выводом. */
-        if (input_sent >= input_bytes || (put < 0 && errno != EINTR && errno != EAGAIN)) {
-          close(in_pipe[1]);
-          in_pipe[1] = -1;
-        }
       }
       for (index = 0; index < 2; index += 1) {
         if (alive[index] && FD_ISSET(fds[index], &set)) {
@@ -8394,7 +8621,6 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
   }
   close(out_pipe[0]);
   close(err_pipe[0]);
-  if (in_pipe[1] >= 0) close(in_pipe[1]);
   while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
     /* повтор */
   }
@@ -8404,15 +8630,6 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
     buf_free(&out);
     buf_free(&err);
     return io_fail("FLANG_IO_SPAWN", buffer);
-  }
-  if (too_long) {
-    /* Текст СЛОВО В СЛОВО тот же, что у хозяина на Node: два хозяина, говорящие
-       об одной беде разными словами, разъезжаются в первом же журнале. */
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "программа «%s» не уложилась в %ld мс", program, host->timeout_ms);
-    buf_free(&out);
-    buf_free(&err);
-    return io_fail("FLANG_IO_TIMEOUT", buffer);
   }
   {
     fl_value fields[3];
@@ -8686,28 +8903,19 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
-  /* Два поручения запуска, и разбираются они одной веткой: всё, чем они
-     различаются, — есть ли у потомка ВВОД. Заводить второй разбор аргументов
-     ради одного поля значило бы завести второе место, где эти два поручения
-     могут разойтись. */
-  if (io_order_is(order, "Запустить процесс") || io_order_is(order, "Запустить процесс с вводом")) {
-    const bool with_input = io_order_is(order, "Запустить процесс с вводом");
+  if (io_order_is(order, "Запустить процесс")) {
     char *program = io_order_text(order, "программа");
-    char *input = with_input ? io_order_text(order, "ввод") : NULL;
     fl_value list = fl_nothing();
     const fl_value *items = NULL;
     size_t count = 0;
     if (!host->spawn) {
       free(program);
-      free(input);
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено запускать процессы");
     }
     if (program == NULL || program[0] == '\0') {
       free(program);
-      free(input);
       return io_fail("FLANG_IO_SPAWN", "поручению нужно непустое имя программы");
     }
-    if (with_input && input == NULL) input = repl_say("");
     if (io_order_field(order, "аргументы", &list)) {
       zn_items(list, &items, &count);
     }
@@ -8722,13 +8930,12 @@ static fl_value io_perform(io_host *host, fl_value order) {
         argv[index + 1] = zn_text(items[index], &utf8, &bytes) ? repl_dup(utf8, bytes) : repl_say("");
       }
       argv[count + 1] = NULL;
-      answer = io_spawn(host, program, argv, input, input == NULL ? 0 : strlen(input));
+      answer = io_spawn(host, program, argv);
       for (index = 0; index < count; index += 1) {
         free(argv[index + 1]);
       }
       free(argv);
       free(program);
-      free(input);
       return answer;
     }
   }
@@ -8908,105 +9115,6 @@ static fl_value io_perform(io_host *host, fl_value order) {
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
       free(content);
       return io_variant("Записано", fields, 1);
-    }
-  }
-
-  /*
-   * ── ОКТЕТЫ ────────────────────────────────────────────────────────────────
-   * Та же труба, что у пары выше, но без единого решения о том, что байты
-   * значат. У двоичного хозяина порча своя, не такая, как у хозяина на Node, и
-   * названа она числом: Node раскодирует поток как UTF-8 и заменяет всякий
-   * не-UTF-8 октет знаком U+FFFD, а здесь байты доезжают сырыми — зато `strlen`
-   * при ЗАПИСИ обрезает содержимое на первом нулевом октете. То есть двоичный
-   * протокол не работал ни под одним из двух хозяев, и не работал по-разному:
-   * один терял на чтении, другой на записи.
-   *
-   * Список чисел лечит обоих сразу и лечит одинаково: переводить нечего, значит
-   * и разойтись негде. Длина берётся из СПИСКА, а не из `strlen`, — вот почему
-   * нулевой октет здесь обычное число 0.
-   */
-  if (io_order_is(order, "Прочитать октеты из соединения")) {
-    double number = 0;
-    int fd = -1;
-    if (!host->net) {
-      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
-    }
-    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
-      return io_fail("FLANG_IO_READ", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
-    }
-    {
-      unsigned char chunk[8192];
-      const ssize_t got = read(fd, chunk, sizeof(chunk));
-      const size_t count = got > 0 ? (size_t)got : 0;
-      fl_value *values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
-      fl_value fields[1];
-      fl_value answer = fl_nothing();
-      size_t at = 0;
-      for (at = 0; at < count; at += 1) {
-        values[at] = io_number((double)chunk[at]);
-      }
-      /* Пустой список — это КОНЕЦ, ровно как пустая строка у «Прочитано». */
-      fields[0] = io_pair("октеты", io_list(values, count));
-      free(values);
-      answer = io_variant("Октеты", fields, 1);
-      return answer;
-    }
-  }
-
-  if (io_order_is(order, "Ответить октетами в соединение")) {
-    double number = 0;
-    int fd = -1;
-    fl_value list = fl_nothing();
-    const fl_value *items = NULL;
-    size_t count = 0;
-    if (!host->net) {
-      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
-    }
-    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
-      return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
-    }
-    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
-      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
-    }
-    {
-      unsigned char *bytes = count == 0 ? NULL : (unsigned char *)repl_alloc(count);
-      size_t at = 0;
-      for (at = 0; at < count; at += 1) {
-        double octet = 0;
-        /* Каждое число проверяется на месте, и отказ называет номер. Молчаливое
-           приведение к байту отправило бы собеседнику не то, что сказала
-           программа, и разница всплыла бы у него, а не здесь. */
-        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
-          char why[128];
-          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
-          free(bytes);
-          return io_fail("FLANG_IO_OCTETS", why);
-        }
-        bytes[at] = (unsigned char)(long)octet;
-      }
-      {
-        /* Правила закрытия — те же самые и взяты у текстового близнеца
-           буквально: закрывает тот, кто завёл; пустое кладёт трубку. Пустое
-           здесь — пустой СПИСОК. */
-        const bool closing = count == 0 || !io_link_outgoing(host, (int)number);
-        fl_value fields[1];
-        if (count > 0 && write(fd, bytes, count) < 0) {
-          free(bytes);
-          close(fd);
-          io_link_drop(host, (int)number);
-          return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
-        }
-        free(bytes);
-        if (closing) {
-          close(fd);
-          io_link_drop(host, (int)number);
-        }
-        /* ОКТЕТЫ, а не кодовые точки: у текстового близнеца здесь названный
-           зазор («Content-Length служба считает знаками»), а тут его нет — что
-           записано, то и посчитано. */
-        fields[0] = io_pair("сколько", io_number((double)count));
-        return io_variant("Записано", fields, 1);
-      }
     }
   }
 
@@ -9279,13 +9387,6 @@ static int io_file(int argc, char **argv) {
   host.spawn = true;
   host.timeout_ms = 30000;
   host.next_link = 1;
-  /* SIGPIPE ЗАГЛУШЕН, и это не мелочь настройки. Умолчание POSIX убивает
-     процесс, написавший в закрытую трубу, — а хозяин пишет и в сокет, который
-     собеседник вправе закрыть, и в стандартный ввод потомка, который вправе
-     кончиться, не дочитав. Умереть от этого значило бы нарушить единственное
-     правило этого файла: неудача — ОТКЛИК, а не поломка. С заглушкой `write`
-     возвращает −1 и `EPIPE`, и он уезжает в «Сбой», как всякая другая беда. */
-  signal(SIGPIPE, SIG_IGN);
 
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--pretty") == 0) {
@@ -10895,6 +10996,732 @@ static int package_file(int argc, char **argv) {
   return code;
 }
 
+/* ═══════════════════ языковой сервер: `flang lsp` ═════════════════════════ */
+
+/*
+ * ЧТО ЗДЕСЬ ЖИВЁТ И ЧЕГО ЗДЕСЬ НЕТ.
+ *
+ * Здесь ТОЛЬКО хозяин: рамки `Content-Length`, разбор входящего JSON, чтение
+ * файлов с диска, перевод пути в адрес `file://` и обратно. Всё, что решает,
+ * чем является сообщение и что на него ответить, живёт в `flang/self/lsp.flang`
+ * — 2 893 строки на самом языке, — и зовётся отсюда по именам «Новый сервер»,
+ * «Принять», «Принять проверенное», «Открытые тексты».
+ *
+ * Разделение то же самое, что у свидетеля между `bin/flang-lsp.mjs` (транспорт,
+ * 185 строк) и `src/lsp.mjs` (сервер, 900): разойдись оно — и сверка двух
+ * реализаций сравнивала бы разные вещи.
+ *
+ * РАЗБОР JSON — ЧУЖОЙ, а не свой: тело сообщения читает `facts_json`, тот же,
+ * каким приезжают факты в `flang facts`. Печать исходящего своего кода не
+ * заводит вовсе — сервер отдаёт УЖЕ НАПЕЧАТАННЫЕ строки («Печать значения» из
+ * `core/json.flang`), и порядок ключей в них — часть договора с редактором.
+ *
+ * ЧТО ЭТОТ РАЗБОР НЕ УМЕЕТ: `\uXXXX` в строке JSON (`run_text` отказывает на
+ * нём намеренно). Редакторы шлют UTF-8 буквами (`JSON.stringify` не экранирует
+ * не-ASCII), поэтому на живом клиенте это не встречается; названо здесь, чтобы
+ * не считалось незамеченным.
+ *
+ * АРЕНА. Сервер живёт дольше одного сообщения, а арена компилятора сбрасывается
+ * на каждом (иначе память росла бы всю сессию: проверка одного файла стоит
+ * десятки мегабайт). Поэтому значение «Сервер» между сообщениями хранится ВНЕ
+ * арены — `lsp_keep` копирует его в malloc, `lsp_restore` возвращает в свежую
+ * арену. Имена полей и вариантов при этом не копируются: они статические строки
+ * напечатанного кода и сброс арены переживают.
+ */
+
+static fl_value lsp_keep(fl_value node);
+
+static const fl_field *lsp_keep_fields(const fl_field *fields, size_t count) {
+  fl_field *copy = NULL;
+  size_t index = 0;
+  if (count == 0) {
+    return NULL;
+  }
+  copy = (fl_field *)repl_alloc(count * sizeof(fl_field));
+  for (index = 0; index < count; index += 1) {
+    copy[index].name = fields[index].name;
+    copy[index].value = lsp_keep(fields[index].value);
+  }
+  return copy;
+}
+
+/** Значение из арены — в память, которую сброс арены не тронет. */
+static fl_value lsp_keep(fl_value node) {
+  fl_value out = node;
+  size_t index = 0;
+  switch (node.tag) {
+    case FL_STRING:
+      out.as.string.utf8 = repl_dup(node.as.string.utf8, node.as.string.bytes);
+      break;
+    case FL_LIST: {
+      fl_value *items = NULL;
+      if (node.as.list.count > 0) {
+        items = (fl_value *)repl_alloc(node.as.list.count * sizeof(fl_value));
+        for (index = 0; index < node.as.list.count; index += 1) {
+          items[index] = lsp_keep(node.as.list.items[index]);
+        }
+      }
+      out.as.list.items = items;
+      /* Запас массива принадлежит арене; копия его не наследует. */
+      out.as.list.grow = NULL;
+      break;
+    }
+    case FL_RECORD: {
+      fl_record *record = (fl_record *)repl_alloc(sizeof(fl_record));
+      record->count = node.as.record->count;
+      record->fields = lsp_keep_fields(node.as.record->fields, node.as.record->count);
+      out.as.record = record;
+      break;
+    }
+    case FL_VARIANT: {
+      fl_variant *variant = (fl_variant *)repl_alloc(sizeof(fl_variant));
+      variant->name = node.as.variant->name;
+      variant->count = node.as.variant->count;
+      variant->fields = lsp_keep_fields(node.as.variant->fields, node.as.variant->count);
+      out.as.variant = variant;
+      break;
+    }
+    default:
+      break;
+  }
+  return out;
+}
+
+static void lsp_drop(fl_value node) {
+  size_t index = 0;
+  switch (node.tag) {
+    case FL_STRING:
+      free((void *)(size_t)node.as.string.utf8);
+      break;
+    case FL_LIST:
+      for (index = 0; index < node.as.list.count; index += 1) {
+        lsp_drop(node.as.list.items[index]);
+      }
+      free((void *)(size_t)node.as.list.items);
+      break;
+    case FL_RECORD:
+      for (index = 0; index < node.as.record->count; index += 1) {
+        lsp_drop(node.as.record->fields[index].value);
+      }
+      free((void *)(size_t)node.as.record->fields);
+      free((void *)(size_t)node.as.record);
+      break;
+    case FL_VARIANT:
+      for (index = 0; index < node.as.variant->count; index += 1) {
+        lsp_drop(node.as.variant->fields[index].value);
+      }
+      free((void *)(size_t)node.as.variant->fields);
+      free((void *)(size_t)node.as.variant);
+      break;
+    default:
+      break;
+  }
+}
+
+static fl_value lsp_restore(fl_value node) {
+  size_t index = 0;
+  switch (node.tag) {
+    case FL_STRING:
+      return repl_value_text(node.as.string.utf8, node.as.string.bytes);
+    case FL_LIST: {
+      fl_value *items = NULL;
+      fl_error error;
+      error.code = NULL;
+      error.message = NULL;
+      if (fl_list_alloc(&repl_ctx, node.as.list.count, &items, &error) != FL_OK) {
+        repl_oom();
+      }
+      for (index = 0; index < node.as.list.count; index += 1) {
+        items[index] = lsp_restore(node.as.list.items[index]);
+      }
+      return fl_list(items, node.as.list.count);
+    }
+    case FL_RECORD:
+    case FL_VARIANT: {
+      const size_t count = node.tag == FL_RECORD ? node.as.record->count : node.as.variant->count;
+      const fl_field *fields = node.tag == FL_RECORD ? node.as.record->fields : node.as.variant->fields;
+      const char **names = (const char **)repl_alloc((count + 1) * sizeof(const char *));
+      fl_value *values = (fl_value *)repl_alloc((count + 1) * sizeof(fl_value));
+      fl_value out = fl_nothing();
+      fl_error error;
+      fl_status status = FL_OK;
+      error.code = NULL;
+      error.message = NULL;
+      for (index = 0; index < count; index += 1) {
+        names[index] = fields[index].name;
+        values[index] = lsp_restore(fields[index].value);
+      }
+      status = node.tag == FL_RECORD
+                   ? fl_record_new(&repl_ctx, names, values, count, &out, &error)
+                   : fl_variant_new(&repl_ctx, node.as.variant->name, names, values, count, &out, &error);
+      free(names);
+      free(values);
+      if (status != FL_OK) {
+        repl_oom();
+      }
+      return out;
+    }
+    default:
+      break;
+  }
+  return node;
+}
+
+/* ───────────────────── адрес `file://` ↔ путь на диске ──────────────────── */
+
+/*
+ * Кодировка та же, что у `pathToFileURL` свидетеля, и «та же» здесь означает
+ * побайтово: адрес документа — это КЛЮЧ, по которому редактор узнаёт свою
+ * диагностику, и один лишний процент разводит две реализации молча.
+ *
+ * Свидетель делает два шага: сперва экранирует то, что иначе потерялось бы в
+ * разборе адреса (`%`, `\`, перевод строки, возврат каретки, табуляция), потом
+ * отдаёт результат `URL.pathname`, а тот кодирует управляющие знаки, пробел,
+ * «"#<>?`{}» и всё, что за ASCII.
+ */
+static void lsp_percent(repl_buf *out, unsigned char byte) {
+  static const char HEX[] = "0123456789ABCDEF";
+  buf_char(out, '%');
+  buf_char(out, HEX[(byte >> 4) & 0x0F]);
+  buf_char(out, HEX[byte & 0x0F]);
+}
+
+static bool lsp_path_set(unsigned char byte) {
+  return byte <= 0x20 || byte > 0x7E || byte == '"' || byte == '#' || byte == '<' || byte == '>' ||
+         byte == '?' || byte == '`' || byte == '{' || byte == '}';
+}
+
+static char *lsp_uri_of(const char *path) {
+  repl_buf out;
+  size_t index = 0;
+  char *result = NULL;
+  buf_init(&out);
+  buf_put(&out, "file://");
+  for (index = 0; path[index] != '\0'; index += 1) {
+    const unsigned char byte = (unsigned char)path[index];
+    if (byte == '%' || byte == '\\' || lsp_path_set(byte)) {
+      lsp_percent(&out, byte);
+    } else {
+      buf_char(&out, (char)byte);
+    }
+  }
+  result = repl_dup(out.data, out.used);
+  buf_free(&out);
+  return result;
+}
+
+static int lsp_hex(char symbol) {
+  if (symbol >= '0' && symbol <= '9') {
+    return symbol - '0';
+  }
+  if (symbol >= 'a' && symbol <= 'f') {
+    return symbol - 'a' + 10;
+  }
+  if (symbol >= 'A' && symbol <= 'F') {
+    return symbol - 'A' + 10;
+  }
+  return -1;
+}
+
+/*
+ * `resolve(fileURLToPath(uri))` свидетеля. Не адрес `file:` — не путь вовсе, и
+ * ответ на это «пути нет», а не выдуманный путь: документ без пути сервер
+ * держит в памяти и не проверяет, потому что проверять нечем — его импорты
+ * ссылаются в никуда.
+ */
+static char *lsp_path_of(const char *uri, const char *base) {
+  repl_buf out;
+  size_t index = 7;
+  char *raw = NULL;
+  char *result = NULL;
+  if (strncmp(uri, "file://", 7) != 0) {
+    /* `file:` без двух косых — тоже адрес файла (так пишут не все, но пишут). */
+    if (strncmp(uri, "file:", 5) != 0) {
+      return NULL;
+    }
+    index = 5;
+  }
+  /* `file://localhost/…` — тот же локальный файл. */
+  if (strncmp(uri + index, "localhost/", 10) == 0) {
+    index += 9;
+  }
+  buf_init(&out);
+  for (; uri[index] != '\0'; index += 1) {
+    if (uri[index] == '%' && lsp_hex(uri[index + 1]) >= 0 && lsp_hex(uri[index + 2]) >= 0) {
+      buf_char(&out, (char)((lsp_hex(uri[index + 1]) << 4) | lsp_hex(uri[index + 2])));
+      index += 2;
+      continue;
+    }
+    if (uri[index] == '?' || uri[index] == '#') {
+      break;
+    }
+    buf_char(&out, uri[index]);
+  }
+  raw = repl_dup(out.data, out.used);
+  buf_free(&out);
+  result = repl_resolve(base, raw);
+  free(raw);
+  return result;
+}
+
+/* ─────────────────────────── рамки Content-Length ───────────────────────── */
+
+/*
+ * Длина в заголовке — в БАЙТАХ, а не в знаках: в исходниках flang имена
+ * русские, и на первом же «использует» длина, посчитанная в знаках, обрезала бы
+ * тело на середине.
+ *
+ * Разделителей два, как и у свидетеля: `\r\n\r\n` по спецификации и `\n\n` — то,
+ * что присылают редакторы, писанные наспех. Рамка без `Content-Length` —
+ * единственное, чего протокол починить не даёт: где кончается тело, неизвестно,
+ * поэтому шапка выбрасывается и ищется следующая.
+ */
+static char *lsp_read_frame(repl_buf *tail, size_t *bytes) {
+  for (;;) {
+    size_t index = 0;
+    size_t head = 0;
+    size_t length = 0;
+    bool found = false;
+    for (index = 0; index + 1 < tail->used; index += 1) {
+      if (index + 3 < tail->used && tail->data[index] == '\r' && tail->data[index + 1] == '\n' &&
+          tail->data[index + 2] == '\r' && tail->data[index + 3] == '\n') {
+        head = index + 4;
+        found = true;
+        break;
+      }
+      if (tail->data[index] == '\n' && tail->data[index + 1] == '\n') {
+        head = index + 2;
+        found = true;
+        break;
+      }
+    }
+    if (found) {
+      size_t scan = 0;
+      bool named = false;
+      for (scan = 0; scan + 15 <= head; scan += 1) {
+        if (strncmp(tail->data + scan, "Content-Length:", 15) == 0 ||
+            strncmp(tail->data + scan, "content-length:", 15) == 0) {
+          size_t digit = scan + 15;
+          while (digit < head && (tail->data[digit] == ' ' || tail->data[digit] == '\t')) {
+            digit += 1;
+          }
+          length = 0;
+          while (digit < head && tail->data[digit] >= '0' && tail->data[digit] <= '9') {
+            length = length * 10 + (size_t)(tail->data[digit] - '0');
+            digit += 1;
+          }
+          named = true;
+          break;
+        }
+      }
+      if (!named) {
+        fputs("flang lsp: рамка без Content-Length, пропущена\n", stderr);
+        memmove(tail->data, tail->data + head, tail->used - head);
+        tail->used -= head;
+        tail->data[tail->used] = '\0';
+        continue;
+      }
+      if (tail->used >= head + length) {
+        char *body = repl_dup(tail->data + head, length);
+        memmove(tail->data, tail->data + head + length, tail->used - head - length);
+        tail->used -= head + length;
+        tail->data[tail->used] = '\0';
+        *bytes = length;
+        return body;
+      }
+    }
+    {
+      char chunk[8192];
+      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
+      if (got == 0) {
+        return NULL;
+      }
+      buf_add(tail, chunk, got);
+    }
+  }
+}
+
+static void lsp_write_frame(const char *body, size_t bytes) {
+  printf("Content-Length: %lu\r\n\r\n", (unsigned long)bytes);
+  fwrite(body, 1, bytes, stdout);
+  fflush(stdout);
+}
+
+/* ──────────────────── входящее сообщение в «Сообщение» ──────────────────── */
+
+/** `null` в JSON и «ключа нет» — разные вещи, и сервер их различает. */
+static bool lsp_is_null(fl_value node) {
+  fl_value scalar = fl_nothing();
+  return val_is(node, "Значение скаляра") && val_field(node, "скаляр", &scalar) &&
+         val_is(scalar, "Скаляр ничто");
+}
+
+static fl_value lsp_text_or(fl_value node, const char *key, bool *present) {
+  fl_value field = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  *present = zn_field(node, key, &field);
+  if (*present && zn_text(field, &utf8, &bytes)) {
+    return repl_value_text(utf8, bytes);
+  }
+  return repl_value_say("");
+}
+
+static double lsp_number_or(fl_value node, const char *key, double fallback, bool *present) {
+  fl_value field = fl_nothing();
+  double number = 0.0;
+  *present = zn_field(node, key, &field);
+  if (*present && zn_number(field, &number)) {
+    return number;
+  }
+  return fallback;
+}
+
+/*
+ * `contentChanges` — список правок. Различать «область есть» и «области нет»
+ * обязательно: правка без области заменяет документ целиком, и свидетель берёт
+ * ПОСЛЕДНЮЮ такую, а правки с областью пропускает.
+ */
+static fl_value lsp_edits(fl_value params) {
+  static const char *const names[3] = {"есть область", "текст", "есть текст"};
+  fl_value changes = fl_nothing();
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  fl_value *array = NULL;
+  fl_error error;
+  error.code = NULL;
+  error.message = NULL;
+  if (zn_field(params, "contentChanges", &changes)) {
+    zn_items(changes, &items, &count);
+  }
+  if (fl_list_alloc(&repl_ctx, count, &array, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < count; index += 1) {
+    fl_value values[3];
+    fl_value range = fl_nothing();
+    bool has_text = false;
+    values[0] = fl_flag(zn_field(items[index], "range", &range));
+    values[1] = lsp_text_or(items[index], "text", &has_text);
+    values[2] = fl_flag(has_text);
+    array[index] = repl_value_record(names, values, 3);
+  }
+  return fl_list(array, count);
+}
+
+static fl_value lsp_empty_object(void) {
+  return repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
+}
+
+static fl_value lsp_message(fl_value json, const char *base) {
+  static const char *const names[15] = {"метод",  "есть номер",   "номер",  "адрес",   "есть адрес",
+                                        "путь",   "есть путь",    "текст",  "есть текст", "версия",
+                                        "есть версия", "правки", "строка", "столбец", "есть место"};
+  fl_value values[15];
+  fl_value params = fl_nothing();
+  fl_value document = fl_nothing();
+  fl_value position = fl_nothing();
+  fl_value id = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  bool present = false;
+  bool has_id = false;
+  bool has_uri = false;
+  bool has_text = false;
+  bool has_version = false;
+  bool has_place = false;
+  char *uri = NULL;
+  char *path = NULL;
+  double number = 0.0;
+
+  if (!zn_field(json, "params", &params)) {
+    params = lsp_empty_object();
+  }
+  if (!zn_field(params, "textDocument", &document)) {
+    document = lsp_empty_object();
+  }
+  has_place = zn_field(params, "position", &position) && !lsp_is_null(position);
+  has_id = zn_field(json, "id", &id);
+
+  values[0] = lsp_text_or(json, "method", &present);
+  values[1] = fl_flag(has_id && !lsp_is_null(id));
+  values[2] = fl_number(has_id && zn_number(id, &number) ? number : 0.0);
+  values[3] = lsp_text_or(document, "uri", &has_uri);
+  values[4] = fl_flag(has_uri);
+  if (has_uri && val_text(values[3], &utf8, &bytes) && bytes > 0) {
+    uri = repl_dup(utf8, bytes);
+    path = lsp_path_of(uri, base);
+    free(uri);
+  }
+  values[5] = repl_value_say(path == NULL ? "" : path);
+  values[6] = fl_flag(path != NULL);
+  free(path);
+  values[7] = lsp_text_or(document, "text", &has_text);
+  values[8] = fl_flag(has_text);
+  values[9] = fl_number(lsp_number_or(document, "version", 0.0, &has_version));
+  values[10] = fl_flag(has_version);
+  values[11] = lsp_edits(params);
+  values[12] = fl_number(has_place ? lsp_number_or(position, "line", 0.0, &present) : 0.0);
+  values[13] = fl_number(has_place ? lsp_number_or(position, "character", 0.0, &present) : 0.0);
+  values[14] = fl_flag(has_place);
+  return repl_value_record(names, values, 15);
+}
+
+/* ────────────────────────── поручение проверки ──────────────────────────── */
+
+/*
+ * `checkSource` свидетеля: разбор со связыванием, типы, завершаемость. Хозяину
+ * здесь принадлежит ровно одно — ЧТЕНИЕ: замыкание `использует` собирается из
+ * ОТКРЫТЫХ БУФЕРОВ, а с диска берётся только то, чего в редакторе не открыто.
+ * Иначе сервер показывал бы ошибки по сохранённой версии соседнего файла,
+ * которую человек уже правит на экране.
+ */
+static fl_value lsp_check(fl_value server, const char *path, const char *text, size_t text_bytes) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value opened = fl_nothing();
+  fl_value files = fl_nothing();
+  fl_value pairs = fl_nothing();
+  fl_value args[3];
+  fl_value verdict = fl_nothing();
+  fl_value *items = NULL;
+  size_t index = 0;
+  fl_error error;
+  error.code = NULL;
+  error.message = NULL;
+
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, path);
+  strings_add(&texts, text, text_bytes);
+  repl_imports_of(text, text_bytes, path, &queue);
+
+  if (repl_call("Открытые тексты", &server, 1, &opened) != FL_OK) {
+    opened = repl_value_list(NULL, 0);
+  }
+  for (index = 0; index < queue.count; index += 1) {
+    const char *needed = queue.items[index];
+    char *found = NULL;
+    size_t bytes = 0;
+    size_t inner = 0;
+    if (strings_has(&paths, needed, strlen(needed))) {
+      continue;
+    }
+    if (opened.tag == FL_LIST) {
+      for (inner = 0; inner < opened.as.list.count; inner += 1) {
+        fl_value field = fl_nothing();
+        const char *utf8 = NULL;
+        size_t got = 0;
+        if (!val_field(opened.as.list.items[inner], "путь", &field) || !val_text(field, &utf8, &got)) {
+          continue;
+        }
+        if (got != strlen(needed) || memcmp(utf8, needed, got) != 0) {
+          continue;
+        }
+        if (val_field(opened.as.list.items[inner], "текст", &field) && val_text(field, &utf8, &got)) {
+          found = repl_dup(utf8, got);
+          bytes = got;
+        }
+        break;
+      }
+    }
+    if (found == NULL) {
+      found = repl_read_file(needed, &bytes);
+    }
+    if (found == NULL) {
+      /* Файла нет — молчим: об этом скажет сам компилятор, кодом
+         FLANG_IMPORT_NOT_FOUND, а не нашим пересказом. */
+      continue;
+    }
+    strings_say(&paths, needed);
+    strings_add(&texts, found, bytes);
+    repl_imports_of(found, bytes, needed, &queue);
+    free(found);
+  }
+
+  if (fl_list_alloc(&repl_ctx, paths.count, &items, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < paths.count; index += 1) {
+    items[index] = repl_source_value(paths.items[index], texts.items[index], texts.sizes[index]);
+  }
+  files = fl_list(items, paths.count);
+
+  {
+    static const char *const names[2] = {"путь", "адрес"};
+    fl_value *array = NULL;
+    if (fl_list_alloc(&repl_ctx, paths.count, &array, &error) != FL_OK) {
+      repl_oom();
+    }
+    for (index = 0; index < paths.count; index += 1) {
+      fl_value values[2];
+      char *uri = lsp_uri_of(paths.items[index]);
+      values[0] = repl_value_say(paths.items[index]);
+      values[1] = repl_value_say(uri);
+      array[index] = repl_value_record(names, values, 2);
+      free(uri);
+    }
+    pairs = fl_list(array, paths.count);
+  }
+
+  args[0] = files;
+  args[1] = repl_value_say(path);
+  args[2] = pairs;
+  if (repl_call("Проверка для сервера", args, 3, &verdict) != FL_OK) {
+    fl_value bad = repl_value_say("проверка не отработала");
+    if (repl_call("Сорванная проверка сервера", &bad, 1, &verdict) != FL_OK) {
+      verdict = fl_nothing();
+    }
+  }
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  return verdict;
+}
+
+/* ──────────────────────────── сам сервер ────────────────────────────────── */
+
+/*
+ * КОД ВОЗВРАТА ТОТ ЖЕ, ЧТО У СВИДЕТЕЛЯ: 0 после `shutdown`, 1 без него.
+ * Спецификация LSP требует именно этого, и требует не из вкуса — редактор по
+ * коду отличает нормальное прощание от падения сервера.
+ */
+static int lsp_serve(int argc, char **argv) {
+  repl_buf tail;
+  fl_value kept = fl_nothing();
+  char buffer[4096];
+  char *base = NULL;
+  int index = 0;
+  int code = 0;
+  bool closed = false;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--stdio") != 0) {
+      fprintf(stderr, "flang lsp: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  buf_init(&tail);
+  repl_cycle();
+  {
+    fl_value server = fl_nothing();
+    if (repl_call("Новый сервер", NULL, 0, &server) != FL_OK) {
+      fputs("flang lsp: сервер не завёлся\n", stderr);
+      buf_free(&tail);
+      free(base);
+      return 2;
+    }
+    kept = lsp_keep(server);
+  }
+
+  while (!closed) {
+    size_t bytes = 0;
+    char *body = lsp_read_frame(&tail, &bytes);
+    fl_value json = fl_nothing();
+    fl_value step = fl_nothing();
+    fl_value server = fl_nothing();
+    fl_value field = fl_nothing();
+    size_t at = 0;
+    size_t turn = 0;
+    if (body == NULL) {
+      break;
+    }
+    repl_cycle();
+    server = lsp_restore(kept);
+    lsp_drop(kept);
+    kept = fl_nothing();
+    if (!facts_json(body, &at, &json)) {
+      fputs("flang lsp: неразобранный JSON, сообщение пропущено\n", stderr);
+      free(body);
+      kept = lsp_keep(server);
+      continue;
+    }
+    free(body);
+    {
+      fl_value args[2];
+      args[0] = server;
+      args[1] = lsp_message(json, base);
+      if (repl_call("Принять", args, 2, &step) != FL_OK) {
+        fputs("flang lsp: сообщение не обработалось\n", stderr);
+        kept = lsp_keep(server);
+        continue;
+      }
+    }
+    while (val_field(step, "ждёт", &field) && field.tag == FL_FLAG && field.as.flag) {
+      fl_value args[2];
+      fl_value inner = fl_nothing();
+      const char *path_utf8 = NULL;
+      const char *text_utf8 = NULL;
+      size_t path_bytes = 0;
+      size_t text_bytes = 0;
+      char *path = NULL;
+      char *text = NULL;
+      turn += 1;
+      if (turn > 4096) {
+        fputs("flang lsp: поручения проверки не кончаются\n", stderr);
+        break;
+      }
+      if (!val_field(step, "путь", &field) || !val_text(field, &path_utf8, &path_bytes)) {
+        break;
+      }
+      path = repl_dup(path_utf8, path_bytes);
+      if (!val_field(step, "текст", &field) || !val_text(field, &text_utf8, &text_bytes)) {
+        free(path);
+        break;
+      }
+      text = repl_dup(text_utf8, text_bytes);
+      if (!val_field(step, "сервер", &inner)) {
+        free(path);
+        free(text);
+        break;
+      }
+      args[0] = step;
+      args[1] = lsp_check(inner, path, text, text_bytes);
+      free(path);
+      free(text);
+      if (repl_call("Принять проверенное", args, 2, &step) != FL_OK) {
+        fputs("flang lsp: проверенное не улеглось\n", stderr);
+        break;
+      }
+    }
+    if (val_field(step, "исходящие", &field) && field.tag == FL_LIST) {
+      size_t out = 0;
+      for (out = 0; out < field.as.list.count; out += 1) {
+        const char *utf8 = NULL;
+        size_t got = 0;
+        if (val_text(field.as.list.items[out], &utf8, &got)) {
+          lsp_write_frame(utf8, got);
+        }
+      }
+    }
+    if (val_field(step, "выход", &field) && field.tag == FL_FLAG && field.as.flag) {
+      closed = true;
+      if (val_field(step, "код выхода", &field) && field.tag == FL_NUMBER) {
+        code = (int)field.as.number;
+      }
+    }
+    if (!closed) {
+      if (val_field(step, "сервер", &field)) {
+        kept = lsp_keep(field);
+      } else {
+        kept = lsp_keep(server);
+      }
+    }
+  }
+
+  if (kept.tag != FL_NOTHING) {
+    lsp_drop(kept);
+  }
+  buf_free(&tail);
+  free(base);
+  return code;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -11004,9 +11831,9 @@ int fl_human_main(int argc, char **argv, const char *self) {
   fl_arena_init(&repl_arena);
   fl_ctx_init(&repl_ctx, &repl_arena);
   if (!repl_is_compiler()) {
-    fputs("человеческие команды есть только у компилятора flang: в этой программе нет его точек\n"
-          "входа («Разбор исходника», «Связать исходники», «Проверить типы»). Прогонщик\n"
-          "по-прежнему читает JSON со стандартного ввода.\n",
+    fputs("человеческие команды есть только у компилятора flang, а эта программа — не он:\n"
+          "«--help», «--version», «check» и «repl» ей делать нечего. Прогонщик по-прежнему\n"
+          "читает JSON со стандартного ввода.\n",
           stderr);
     fl_arena_release(&repl_arena);
     return 2;
@@ -11041,6 +11868,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = lock_file(argc, argv);
   } else if (strcmp(command, "package") == 0) {
     code = package_file(argc, argv);
+  } else if (strcmp(command, "lsp") == 0) {
+    code = lsp_serve(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

@@ -339,7 +339,8 @@ flang run docs/examples/operations.flang \
 | gcd, lcm | `«НОД»`, `«НОК»` — **ordinary, not total** |
 | digits | `«Цифры»`, `«Сумма цифр»` — ordinary as well |
 
-Four of the fourteen functions in «Числа» are **not total**, and the ledger names
+Four of the fourteen functions in «Числа» are **not total**, and the `--proof`
+report names
 them one by one. That is not an omission: Euclid's algorithm does not terminate
 by structural descent, and its measure does not decrease along the declared type.
 
@@ -371,13 +372,13 @@ flang run docs/examples/operations.flang \
 The `если размер не больше 0` branch is not tidiness: without it division by zero
 would give infinity, while the function promises a number.
 
-## What the ledger says about this file
+## What the proof report says about this file
 
 ```bash
 flang check docs/examples/operations.flang --proof
 ```
 
-Three lines out of the ledger's summary; above them it names every function and
+Three lines out of the report's summary; above them it names every function and
 every claim one by one:
 
 ```
@@ -387,7 +388,7 @@ every claim one by one:
 ```
 
 **Both postconditions written in this file landed on a grid, not on a proof.**
-The ledger says so plainly:
+The report says so plainly:
 
 ```
 постусловие «результат не меньше минимума» функции «Третий по порядку» — сетка 1

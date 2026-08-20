@@ -40,7 +40,7 @@ compiler answers for: **{{корпус.тотальных}} functions out of {{�
 cover the inputs you thought of. A postcondition accepted by the proof kernel
 covers the rest.
 
-**One program is emitted into {{цели.поАнглийски}} languages with byte-compared behaviour.** Not
+**One program is emitted into {{цели.поАнглийски}} languages, and the behaviour is compared byte for byte.** Not
 "should match" — checked to match: values, error codes, step counters.
 
 ## How this differs from Coq, Agda and Lean
@@ -64,7 +64,7 @@ it go stale quietly — [how that works](about-docs.html).
 
 | | |
 |---|---:|
-| Functions in the corpus | {{корпус.функций}} |
+| Functions written in flang | {{корпус.функций}} |
 | Of them total (termination proved) | {{корпус.тотальных}} |
 | Behaviour claims stated | {{утверждения.высказано}} |
 | Of them **proved by the kernel** — for all inputs | {{утверждения.доказано}} |

@@ -1,6 +1,6 @@
 # Your first program
 
-Five minutes: write a function, check it, run it, read the proof ledger, and emit
+Five minutes: write a function, check it, run it, read the proof report, and emit
 the program into C. You need `flang` installed — [how to install
 it](install.html).
 
@@ -27,7 +27,7 @@ Five parts, each doing its own job:
   **checks** it and refuses the file if it cannot prove it;
 - `accepts` / `returns` — types, checked before the run;
 - `ensures` — a postcondition about the result. The name in guillemets is
-  required: that is how the claim is found in the ledger;
+  required: that is how the claim is found in the proof report;
 - `example` — an executable example. It is part of the program, not a test on
   the side, and it runs on EVERY check: if it does not hold, `check` answers
   `FLANG_EXAMPLE` with a non-zero exit code, and the compiler refuses to emit
@@ -179,7 +179,7 @@ When standard input is not a terminal (`flang < script.flang`, a pipe), the
 shell reads it as a script: no prompts, diagnostics to the error stream, and a
 non-zero exit code means there was diagnostics.
 
-## What the ledger says
+## What the proof report says
 
 ```bash
 flang check hello.flang --proof
@@ -195,7 +195,7 @@ input, not only on the 2 from the example. About this program it answers:
 утверждении нет
 ```
 
-Three words of the ledger, and they are not interchangeable:
+Three words of that report, and they are not interchangeable:
 
 | word | what it means |
 | --- | --- |
@@ -242,24 +242,25 @@ code 1.
 `check`, `run`, `test`, `repl`, `emit --target c` — that is all it has, and it
 names its boundaries itself instead of staying quiet about them:
 
-- **the ledger does not search for violations over examples** — it writes
-  "нарушений НЕ ИСКАЛИ" (did not look) where the reference implementation writes
+- **the report does not search for violations over examples** — it writes
+  "нарушений НЕ ИСКАЛИ" (did not look) where the compiler from the repository writes
   "нарушений не найдено (искали прогоном)" (looked and found none);
 - **the binary does not check laws on a grid** — monoid, monad, isomorphism,
   category, sets and the five declared properties are checked by computation, and
   that layer is not in it. A program declaring one of those gets a refusal
-  naming the obstacle, not a green ledger with an empty section;
+  naming the obstacle, not a green report with an empty section;
 - **it has one emit target** — `c`. There are eight targets: `c`, `csharp`,
-  `elixir`, `go`, `java`, `js`, `python`, `rust`. The other seven stayed with the
-  reference implementation;
+  `elixir`, `go`, `java`, `js`, `python`, `rust`. The other seven come only from
+  the compiler installed through npm;
 - **`--args` takes a flat object of scalars only** — the binary does not parse
   `[…]` or `{…}` at all and answers `flang run: «--args» разобрать не удалось —
   ждался плоский объект скаляров, вроде '{"н":10}'` with exit code 2. The
-  reference implementation takes a list and a record as ordinary JSON; the binary
+  compiler from the repository takes a list and a record as ordinary JSON; the binary
   is given a composite value through the shell (`flang repl`). Both ways, with
   runs, are on [Operations](operations.html).
 
-On permitted inputs the binary and the reference answer the same — measured on
+On permitted inputs the installed binary and the compiler from the repository
+answer the same — measured on
 the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
 `Fibonacci(20) = 6765`, `Palindrome("racecar") = true`.
 
@@ -273,13 +274,13 @@ the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
 
 ### For those developing the language itself
 
-The reference implementation lives in the repository and runs from it. It is
+The full compiler lives in the repository and is installed through npm. It is
 what emits into the other seven targets — into Rust, for example:
 
 ```bash
 node flang/bin/flang.mjs emit hello.flang --target rust --out ./output-rust
 ```
 
-Seven files, 126 679 bytes. It also builds this site and computes the number
-guards. Someone who merely writes in the language does not need it: everything
-above was done by the binary.
+Seven files, 126 679 bytes. It also builds this site and recomputes its numbers.
+Someone who merely writes in the language does not need it: everything above was
+done by the installed binary.

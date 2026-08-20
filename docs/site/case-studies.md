@@ -24,7 +24,7 @@ show that the recursion bottoms out. For tasks like "search in a rotated sorted
 array" or "trapping rain water" that is exactly where infinite loops live, and it
 is closed before the program runs.
 
-**What is not proven, visible in the same table.** The whole corpus holds **two**
+**What is not proven, visible in the same table.** All eighty-two problems hold **two**
 postconditions, both in task 13, roman numerals to integer:
 
 ```
@@ -35,7 +35,7 @@ postconditions, both in task 13, roman numerals to integer:
 So for 298 functions it is proven that they **stop**, and for almost none of them
 that they **compute the right thing**. Correctness here is carried by 804
 examples, and an example is a claim about one input. The gap between "proven" and
-"correct" is the specification, and the leetcode corpus puts a number on its size.
+"correct" is the specification, and eighty-two leetcode problems put a number on its size.
 
 **The two ordinary functions are named.** `«Шаг счастья»` and `«Счастливое»` from
 task 202. They do terminate — the sequence of digit-square sums falls into a
@@ -59,7 +59,7 @@ hand bytes back. Between input and output there is not one line that is not flan
 | `plan.flang` | 133 | the same handler through file I/O |
 | `handler-without-budget.flang` | 53 | the exhibit: it does not compile, and that is the point |
 
-The ledger run:
+The proof report:
 
 ```bash
 flang check flang/examples/web/shortener/service.flang --proof
@@ -82,14 +82,14 @@ that the code's explanation is non-empty, and that "the outcome succeeded" and
 "the code succeeded" are the same thing. A bug of the form "returned 200 with an
 error body" fails type checking here rather than being caught by a test.
 
-**Two claims landed on a grid, not on a proof,** and the ledger says so verbatim:
+**Two claims landed on a grid, not on a proof,** and the report says so verbatim:
 "сетка 1 значение (примеры функции) … Это не доказательство — теоремы при
 утверждении нет". About "the response body is no longer than the declared limit"
 exactly this much is known: no violation was found on the written examples.
 
 Running the service's examples: `flang test …/server.flang` — **240 examples,
 240 passed, 0 failed**. The binary does not run the three process runs at all;
-with them there are 243 examples, and all 243 pass under the reference
+with them there are 243 examples, and all 243 pass under the compiler from the repository
 implementation.
 
 ## Case 3. Supervision: what happens when the loop budget runs out
@@ -141,6 +141,6 @@ arithmetic.
 
 ## Next
 
-- [What is proven and what is checked](../overview.html) — in Russian; the ledger for the whole tree
+- [What is proven and what is checked](../overview.html) — in Russian; the proof report for the whole tree
 - [Why and how](proofs.html) — how the proof kernel works
 - [Processes and fault tolerance](../spec-conc.html) — in Russian; the supervision spec

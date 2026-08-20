@@ -204,9 +204,10 @@ matched emitting it from sources exactly
 
 ## What a package carries about proofs, and what it does not
 
-A package holds a `ведомость` — what the kernel said about the author's
-functions: `доказано`, `сетка N`, `объявлено, не доказано`. It is a **statement
-of record**, used to choose a library, not a trusted root: whoever imports the
+A package holds a `ведомость` field — the proof report: what the kernel said
+about the author's functions (`доказано`, `сетка N`, `объявлено, не доказано`).
+The report is a **statement of record**, used to choose a library, not something
+taken on trust: whoever imports the
 package proves everything again, because the bodies of those functions travelled
 whole.
 
@@ -226,9 +227,9 @@ Otherwise a precondition would be an axiom under another name — and in a langu
 whose axiom list is an empty `Object.freeze([])` there is nowhere for one to come
 from.
 
-Why the ledger is a record and not a verdict cache is answered with a number. The
+Why it is a record and not a cache of verdicts to be trusted is answered with a number. The
 tree does have a content-addressed verdict cache, and it was re-measured over 99
-corpus files carrying obligations, in one process, on warm code:
+files carrying obligations, in one process, on warm code:
 
 | what | time |
 | --- | ---: |

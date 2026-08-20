@@ -7249,14 +7249,32 @@ static void io_close(io_host *host) {
  * заведено. Слить «убит» с «вернул 0» нельзя ни в какую сторону, поэтому
  * `WIFSIGNALED` спрашивается раньше `WEXITSTATUS`.
  */
-static fl_value io_spawn(io_host *host, const char *program, char *const *argv) {
+/*
+ * `input` равен NULL — ввода у потомка НЕТ, и ему даётся пустота
+ * (`/dev/null`), а не унаследованный ввод хозяина. Прежде здесь не было ни
+ * одного `dup2` на нулевой дескриптор, то есть потомок читал ввод САМОГО
+ * `flang io`: программа, запустившая `cat`, съедала ввод оболочки и висела до
+ * срока. Замер той же беды на трубе: двоичный языковой сервер при открытом
+ * вводе отвечал НУЛЁМ байтов, при закрытом — 334 байтами.
+ *
+ * `input` не NULL — заводится третья труба, в неё пишут и её ЗАКРЫВАЮТ. Пишут в
+ * том же `select`, что читает вывод: писать сначала, а читать потом значило бы
+ * поймать взаимную блокировку на первом же потомке, который отвечает раньше,
+ * чем дочитает (труба конечна, 64 КиБ на Linux).
+ */
+static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
+                         const char *input, size_t input_bytes) {
   int out_pipe[2];
   int err_pipe[2];
+  int in_pipe[2];
+  size_t input_sent = 0;
   pid_t child = 0;
   repl_buf out;
   repl_buf err;
   int status = 0;
   bool too_much = false;
+  bool too_long = false;
+  struct timeval deadline;
   if (pipe(out_pipe) != 0) {
     return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
   }
@@ -7265,17 +7283,43 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     close(out_pipe[1]);
     return io_fail_errno("FLANG_IO_SPAWN", "труба ошибок не заведена");
   }
+  in_pipe[0] = -1;
+  in_pipe[1] = -1;
+  if (input != NULL && pipe(in_pipe) != 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    return io_fail_errno("FLANG_IO_SPAWN", "труба ввода не заведена");
+  }
   child = fork();
   if (child < 0) {
     close(out_pipe[0]);
     close(out_pipe[1]);
     close(err_pipe[0]);
     close(err_pipe[1]);
+    if (in_pipe[0] >= 0) {
+      close(in_pipe[0]);
+      close(in_pipe[1]);
+    }
     return io_fail_errno("FLANG_IO_SPAWN", "процесс не порождён");
   }
   if (child == 0) {
     /* Дитя: трубы на место, каталог работы — корень хозяина, и execvp. Промах
        execvp сообщается кодом 127 — тем же, каким о нём говорит оболочка. */
+    if (in_pipe[0] >= 0) {
+      dup2(in_pipe[0], 0);
+      close(in_pipe[0]);
+      close(in_pipe[1]);
+    } else {
+      /* Ввода нет — значит ПУСТОТА, а не ввод хозяина: чтение из `/dev/null`
+         сразу отвечает концом, и потомок, читающий свой ввод, не ждёт никого. */
+      const int nothing = open("/dev/null", O_RDONLY);
+      if (nothing >= 0) {
+        dup2(nothing, 0);
+        close(nothing);
+      }
+    }
     dup2(out_pipe[1], 1);
     dup2(err_pipe[1], 2);
     close(out_pipe[0]);
@@ -7290,6 +7334,17 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
   }
   close(out_pipe[1]);
   close(err_pipe[1]);
+  if (in_pipe[0] >= 0) {
+    close(in_pipe[0]);
+    in_pipe[0] = -1;
+    /* Труба ввода — неблокирующая: иначе `write` на полной трубе усыпил бы
+       хозяина, который в этот самый миг обязан читать вывод. */
+    fcntl(in_pipe[1], F_SETFL, fcntl(in_pipe[1], F_GETFL, 0) | O_NONBLOCK);
+    if (input_bytes == 0) {
+      close(in_pipe[1]);
+      in_pipe[1] = -1;
+    }
+  }
   buf_init(&out);
   buf_init(&err);
   {
@@ -7302,23 +7357,83 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     fds[1] = err_pipe[0];
     alive[0] = true;
     alive[1] = true;
-    while (alive[0] || alive[1]) {
+    /* СРОК СЧИТАЕТСЯ ОТ НАЧАЛА, а не заново на каждое ожидание, и это правка, а
+       не уточнение. Прежде `select` получал полный срок КАЖДЫЙ раз, значит
+       программа, печатающая по строке в секунду, жила вечно при любом сроке —
+       ни одно ожидание не истекало. Хозяин на Node так себя не ведёт: у него
+       один таймер на весь процесс. Расхождение закрывается здесь. */
+    gettimeofday(&deadline, NULL);
+    deadline.tv_sec += host->timeout_ms / 1000;
+    deadline.tv_usec += (host->timeout_ms % 1000) * 1000;
+    if (deadline.tv_usec >= 1000000) {
+      deadline.tv_sec += 1;
+      deadline.tv_usec -= 1000000;
+    }
+    while (alive[0] || alive[1] || in_pipe[1] >= 0) {
       fd_set set;
+      fd_set writable;
       int top = -1;
       int index = 0;
+      int ready = 0;
+      struct timeval now;
       struct timeval wait;
       FD_ZERO(&set);
+      FD_ZERO(&writable);
       for (index = 0; index < 2; index += 1) {
         if (alive[index]) {
           FD_SET(fds[index], &set);
           if (fds[index] > top) top = fds[index];
         }
       }
-      wait.tv_sec = host->timeout_ms / 1000;
-      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
-      if (select(top + 1, &set, NULL, NULL, &wait) <= 0) {
+      /* Ввод стоит В ТОМ ЖЕ ожидании, что и вывод, и это не оформление:
+         потомок, отвечающий раньше, чем дочитает, наполнит трубу вывода и
+         остановится — а хозяин, занятый записью, её не разберёт. Обе стороны
+         обязаны двигаться поочерёдно, и решает это `select`. */
+      if (in_pipe[1] >= 0) {
+        FD_SET(in_pipe[1], &writable);
+        if (in_pipe[1] > top) top = in_pipe[1];
+      }
+      gettimeofday(&now, NULL);
+      wait.tv_sec = deadline.tv_sec - now.tv_sec;
+      wait.tv_usec = deadline.tv_usec - now.tv_usec;
+      if (wait.tv_usec < 0) {
+        wait.tv_sec -= 1;
+        wait.tv_usec += 1000000;
+      }
+      if (wait.tv_sec < 0) {
+        wait.tv_sec = 0;
+        wait.tv_usec = 0;
+      }
+      ready = select(top + 1, &set, in_pipe[1] >= 0 ? &writable : NULL, NULL, &wait);
+      if (ready < 0) {
+        /* Сигнал прервал ожидание — это не исход, а перерыв: повторяем. Всякая
+           другая беда `select` кончает ожидание, и отвечает за неё `waitpid`. */
+        if (errno == EINTR) continue;
         kill(child, SIGKILL);
         break;
+      }
+      if (ready == 0) {
+        /* СРОК ИСТЁК, и это отдельный исход, а не «процесс убит». Прежде здесь
+           стоял тот же `break`, что и на беде, и потому истёкший срок приезжал
+           программе как «Процесс убит» с сигналом SIG9 — неотличимо от того,
+           что процесс остановил кто-то другой. Хозяин на Node различает их с
+           самого начала и отвечает «Сбоем» с кодом FLANG_IO_TIMEOUT; здесь
+           теперь то же самое и теми же словами. */
+        too_long = true;
+        kill(child, SIGKILL);
+        break;
+      }
+      if (in_pipe[1] >= 0 && FD_ISSET(in_pipe[1], &writable)) {
+        const ssize_t put = write(in_pipe[1], input + input_sent, input_bytes - input_sent);
+        if (put > 0) input_sent += (size_t)put;
+        /* Написали всё — ЗАКРЫВАЕМ. Без закрытия потомок, читающий свой ввод до
+           конца, ждёт нас вечно, и ждать он будет до срока хозяина.
+           `EPIPE` — не беда, а обычное дело: потомок вправе кончиться, не
+           дочитав; ответ придёт от `waitpid` с кодом и выводом. */
+        if (input_sent >= input_bytes || (put < 0 && errno != EINTR && errno != EAGAIN)) {
+          close(in_pipe[1]);
+          in_pipe[1] = -1;
+        }
       }
       for (index = 0; index < 2; index += 1) {
         if (alive[index] && FD_ISSET(fds[index], &set)) {
@@ -7340,6 +7455,7 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
   }
   close(out_pipe[0]);
   close(err_pipe[0]);
+  if (in_pipe[1] >= 0) close(in_pipe[1]);
   while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
     /* повтор */
   }
@@ -7349,6 +7465,15 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     buf_free(&out);
     buf_free(&err);
     return io_fail("FLANG_IO_SPAWN", buffer);
+  }
+  if (too_long) {
+    /* Текст СЛОВО В СЛОВО тот же, что у хозяина на Node: два хозяина, говорящие
+       об одной беде разными словами, разъезжаются в первом же журнале. */
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "программа «%s» не уложилась в %ld мс", program, host->timeout_ms);
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_TIMEOUT", buffer);
   }
   {
     fl_value fields[3];
@@ -7622,19 +7747,28 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
-  if (io_order_is(order, "Запустить процесс")) {
+  /* Два поручения запуска, и разбираются они одной веткой: всё, чем они
+     различаются, — есть ли у потомка ВВОД. Заводить второй разбор аргументов
+     ради одного поля значило бы завести второе место, где эти два поручения
+     могут разойтись. */
+  if (io_order_is(order, "Запустить процесс") || io_order_is(order, "Запустить процесс с вводом")) {
+    const bool with_input = io_order_is(order, "Запустить процесс с вводом");
     char *program = io_order_text(order, "программа");
+    char *input = with_input ? io_order_text(order, "ввод") : NULL;
     fl_value list = fl_nothing();
     const fl_value *items = NULL;
     size_t count = 0;
     if (!host->spawn) {
       free(program);
+      free(input);
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено запускать процессы");
     }
     if (program == NULL || program[0] == '\0') {
       free(program);
+      free(input);
       return io_fail("FLANG_IO_SPAWN", "поручению нужно непустое имя программы");
     }
+    if (with_input && input == NULL) input = repl_say("");
     if (io_order_field(order, "аргументы", &list)) {
       zn_items(list, &items, &count);
     }
@@ -7649,12 +7783,13 @@ static fl_value io_perform(io_host *host, fl_value order) {
         argv[index + 1] = zn_text(items[index], &utf8, &bytes) ? repl_dup(utf8, bytes) : repl_say("");
       }
       argv[count + 1] = NULL;
-      answer = io_spawn(host, program, argv);
+      answer = io_spawn(host, program, argv, input, input == NULL ? 0 : strlen(input));
       for (index = 0; index < count; index += 1) {
         free(argv[index + 1]);
       }
       free(argv);
       free(program);
+      free(input);
       return answer;
     }
   }
@@ -7834,6 +7969,105 @@ static fl_value io_perform(io_host *host, fl_value order) {
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
       free(content);
       return io_variant("Записано", fields, 1);
+    }
+  }
+
+  /*
+   * ── ОКТЕТЫ ────────────────────────────────────────────────────────────────
+   * Та же труба, что у пары выше, но без единого решения о том, что байты
+   * значат. У двоичного хозяина порча своя, не такая, как у хозяина на Node, и
+   * названа она числом: Node раскодирует поток как UTF-8 и заменяет всякий
+   * не-UTF-8 октет знаком U+FFFD, а здесь байты доезжают сырыми — зато `strlen`
+   * при ЗАПИСИ обрезает содержимое на первом нулевом октете. То есть двоичный
+   * протокол не работал ни под одним из двух хозяев, и не работал по-разному:
+   * один терял на чтении, другой на записи.
+   *
+   * Список чисел лечит обоих сразу и лечит одинаково: переводить нечего, значит
+   * и разойтись негде. Длина берётся из СПИСКА, а не из `strlen`, — вот почему
+   * нулевой октет здесь обычное число 0.
+   */
+  if (io_order_is(order, "Прочитать октеты из соединения")) {
+    double number = 0;
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_READ", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    {
+      unsigned char chunk[8192];
+      const ssize_t got = read(fd, chunk, sizeof(chunk));
+      const size_t count = got > 0 ? (size_t)got : 0;
+      fl_value *values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+      fl_value fields[1];
+      fl_value answer = fl_nothing();
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        values[at] = io_number((double)chunk[at]);
+      }
+      /* Пустой список — это КОНЕЦ, ровно как пустая строка у «Прочитано». */
+      fields[0] = io_pair("октеты", io_list(values, count));
+      free(values);
+      answer = io_variant("Октеты", fields, 1);
+      return answer;
+    }
+  }
+
+  if (io_order_is(order, "Ответить октетами в соединение")) {
+    double number = 0;
+    int fd = -1;
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
+      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
+    }
+    {
+      unsigned char *bytes = count == 0 ? NULL : (unsigned char *)repl_alloc(count);
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        double octet = 0;
+        /* Каждое число проверяется на месте, и отказ называет номер. Молчаливое
+           приведение к байту отправило бы собеседнику не то, что сказала
+           программа, и разница всплыла бы у него, а не здесь. */
+        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
+          char why[128];
+          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
+          free(bytes);
+          return io_fail("FLANG_IO_OCTETS", why);
+        }
+        bytes[at] = (unsigned char)(long)octet;
+      }
+      {
+        /* Правила закрытия — те же самые и взяты у текстового близнеца
+           буквально: закрывает тот, кто завёл; пустое кладёт трубку. Пустое
+           здесь — пустой СПИСОК. */
+        const bool closing = count == 0 || !io_link_outgoing(host, (int)number);
+        fl_value fields[1];
+        if (count > 0 && write(fd, bytes, count) < 0) {
+          free(bytes);
+          close(fd);
+          io_link_drop(host, (int)number);
+          return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
+        }
+        free(bytes);
+        if (closing) {
+          close(fd);
+          io_link_drop(host, (int)number);
+        }
+        /* ОКТЕТЫ, а не кодовые точки: у текстового близнеца здесь названный
+           зазор («Content-Length служба считает знаками»), а тут его нет — что
+           записано, то и посчитано. */
+        fields[0] = io_pair("сколько", io_number((double)count));
+        return io_variant("Записано", fields, 1);
+      }
     }
   }
 
@@ -8106,6 +8340,13 @@ static int io_file(int argc, char **argv) {
   host.spawn = true;
   host.timeout_ms = 30000;
   host.next_link = 1;
+  /* SIGPIPE ЗАГЛУШЕН, и это не мелочь настройки. Умолчание POSIX убивает
+     процесс, написавший в закрытую трубу, — а хозяин пишет и в сокет, который
+     собеседник вправе закрыть, и в стандартный ввод потомка, который вправе
+     кончиться, не дочитав. Умереть от этого значило бы нарушить единственное
+     правило этого файла: неудача — ОТКЛИК, а не поломка. С заглушкой `write`
+     возвращает −1 и `EPIPE`, и он уезжает в «Сбой», как всякая другая беда. */
+  signal(SIGPIPE, SIG_IGN);
 
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--pretty") == 0) {
@@ -8132,6 +8373,20 @@ static int io_file(int argc, char **argv) {
       host.seeded = true;
       host.seed_state = (unsigned long)strtod(argv[index], NULL) & 0xffffffffUL;
       if (host.seed_state == 0) host.seed_state = 0x9e3779b9UL;
+    } else if (strcmp(argv[index], "--timeout") == 0 && index + 1 < argc) {
+      /* СРОК ХОЗЯИНА, в миллисекундах, и ключ этот обязан быть в обоих
+         прогонщиках сразу: разойдись `flang io` на Node и `flang io` двоичный
+         хотя бы одним ключом — и «то же самое, только быстрее» перестало бы
+         быть правдой. Умолчание прежнее (30 000 мс), и довод к нему прежний:
+         хозяин обязан ОТВЕТИТЬ, а зависший навсегда — не ответ. Ключ поднимает
+         срок там, где работа честно длиннее: одна сборка релизного C идёт
+         128 000 мс. */
+      index += 1;
+      host.timeout_ms = (long)strtod(argv[index], NULL);
+      if (host.timeout_ms <= 0) {
+        fputs("flang io: --timeout должен быть целым положительным числом миллисекунд\n", stderr);
+        return 2;
+      }
     } else if (strcmp(argv[index], "--max-orders") == 0 && index + 1 < argc) {
       index += 1;
       orders_limit = strtod(argv[index], NULL);

@@ -26887,6 +26887,54 @@ fl_status compiler_flang_tekst_gte_js(fl_ctx *ctx, fl_value *result, fl_error *e
 fl_status compiler_flang_tekst_lte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Текст pairSplits JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_pairsplits_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glueCheck JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gluecheck_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glue JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_glue_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isTorn JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_istorn_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isBoundary JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isboundary_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст findAligned JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_findaligned_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Текст concat JS».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -57600,9 +57648,10 @@ fl_status compiler_flang_meroy_v_normalnoy_forme(fl_ctx *ctx, fl_value uzel, fl_
  * @param levoe — «левое»: «Значение»
  * @param pravoe — «правое»: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
+ * @param ravenstva — «равенства»: список: «Значение»
  * @return значение
  */
-fl_status compiler_flang_svyortka_rovno_na_odin(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value opredeleniya, fl_value *result, fl_error *error);
+fl_status compiler_flang_svyortka_rovno_na_odin(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value opredeleniya, fl_value ravenstva, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Шаг ровно на один».
@@ -57612,9 +57661,70 @@ fl_status compiler_flang_svyortka_rovno_na_odin(fl_ctx *ctx, fl_value levoe, fl_
  * @param pravoe — «правое»: «Значение»
  * @param svyortka — «свёртка»: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
+ * @param ravenstva — «равенства»: список: «Значение»
  * @return значение
  */
-fl_status compiler_flang_shag_rovno_na_odin(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value svyortka, fl_value opredeleniya, fl_value *result, fl_error *error);
+fl_status compiler_flang_shag_rovno_na_odin(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value svyortka, fl_value opredeleniya, fl_value ravenstva, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера шага».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levoe — «левое»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param godnye — «годные»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_mera_shaga(fl_ctx *ctx, fl_value levoe, fl_value telo, fl_value opredeleniya, fl_value godnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Годные шагу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param ravenstva — «равенства»: список: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param svyortka — «свёртка»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_godnye_shagu(fl_ctx *ctx, fl_value ravenstva, fl_value telo, fl_value pravoe, fl_value svyortka, fl_value nakopitel, fl_value element, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена витка снаружи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pravoe — «правое»: «Значение»
+ * @param svyortka — «свёртка»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @return значение
+ */
+fl_status compiler_flang_imena_vitka_snaruzhi(fl_ctx *ctx, fl_value pravoe, fl_value svyortka, fl_value nakopitel, fl_value element, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Годно шагу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param ravenstvo — «равенство»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_godno_shagu(fl_ctx *ctx, fl_value ravenstvo, fl_value telo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Стоит внутри».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param chto — «что»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_stoit_vnutri(fl_ctx *ctx, fl_value uzel, fl_value chto, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Основание правой стороны».

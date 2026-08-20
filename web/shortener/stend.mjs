@@ -58,15 +58,35 @@ import { fileURLToPath } from "node:url"
 
 import { loadProgram } from "../../flang/bin/flang.mjs"
 import { evaluateFlang } from "../../flang/src/compat.mjs"
+import { emitJs } from "../../flang/src/emit/js.mjs"
 
 const здесь = fileURLToPath(new URL(".", import.meta.url))
 const корень = resolve(здесь, "../..")
 const служба = resolve(корень, "flang/examples/web/shortener/service.flang")
+const клиент = resolve(здесь, "klient.flang")
 const порт = Number(process.argv[2] ?? process.env.ПОРТ ?? 8912)
 
 /* Программа читается ОДИН раз, а не на каждый запрос — как и в настоящем
    сервере, где разбор исходника случается при запуске. */
 const программа = await loadProgram(служба)
+
+/*
+ * Приложение ПЕЧАТАЕТСЯ при запуске стенда и отдаётся из памяти по адресу
+ * `./klient.js`. Три довода, и ни один не про удобство:
+ *
+ *   • напечатанного файла нет в дереве — значит нечему устареть. Артефакт,
+ *     который коммитят, расходится с исходником молча, и увидит это только тот,
+ *     кто вспомнит его перепечатать;
+ *   • вкладка везёт РЕЗУЛЬТАТ печати, а не компилятор. Печать случается ЗДЕСЬ,
+ *     в Node, один раз за запуск стенда;
+ *   • прогон в настоящем браузере (`probe.mjs`) поднимает стенд сам, значит
+ *     проверяется всегда свежая печать.
+ *
+ * Прогонщик не печатается (`cli: false`): `flang_cli.js` — командная строка,
+ * во вкладку она не едет.
+ */
+const напечатано = emitJs(await loadProgram(клиент), { cli: false }).files[0].content
+console.log(`приложение: ${клиент} → ${[...напечатано].length} знаков напечатанного JavaScript`)
 
 /** Хранилище ссылок. Одно на стенд: значение, а не база. */
 let хранилище = { записи: [], выдано: 0 }
@@ -131,6 +151,13 @@ createServer(async (запрос, ответ) => {
   /* Расхождение 3: браузер закодировал кириллицу процентами, служба ждёт сырых
      байтов. `pathname` возвращает закодированное, раскодируем обратно. */
   const путь = decodeURIComponent(адрес.pathname)
+
+  /* Напечатанный модуль — из памяти, а не с диска: на диске его нет. */
+  if (путь === "/web/shortener/klient.js") {
+    ответ.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8" })
+    ответ.end(напечатано)
+    return
+  }
 
   if (служебный(путь)) {
     const куски = []

@@ -59,6 +59,7 @@
     "proof:search": "node flang/scripts/proof-search.mjs",
     "word:occupancy": "node flang/scripts/word-occupancy.mjs",
     "names:check": "node flang/scripts/name-guard.mjs",
+    "collisions:check": "node flang/scripts/link-collision-guard.mjs",
     "changelog": "node scripts/build-changelog.mjs",
     "changelog:check": "node scripts/build-changelog.mjs --check && node scripts/build-changelog.mjs --self-test",
     "changelog:page": "node scripts/build-changelog-page.mjs",

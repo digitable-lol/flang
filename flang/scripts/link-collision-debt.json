@@ -1,0 +1,28 @@
+{
+  "collisions": [
+    {
+      "kind": "functions",
+      "name": "Это литерал числа",
+      "files": [
+        "flang/self/emit-c.flang",
+        "flang/self/proof-kernel.flang"
+      ]
+    },
+    {
+      "kind": "functions",
+      "name": "Число литерала",
+      "files": [
+        "flang/self/proof-kernel.flang",
+        "flang/self/totality.flang"
+      ]
+    },
+    {
+      "kind": "functions",
+      "name": "Слить вызовы",
+      "files": [
+        "flang/self/bootstrap/compiler.flang",
+        "flang/self/proof-initial.flang"
+      ]
+    }
+  ]
+}

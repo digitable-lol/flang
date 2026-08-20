@@ -133,6 +133,7 @@
 - [Цена втаскивания цели печати в двоичный считается встречей имён: у Elixir 262 столкновения на 436 объявлений](cena-celi-pechati-v-dvoichnom-eto-vstrecha-imyon.md)
 - [Двоичный расходится с Node на корпусе не печатью, а границей входа: у цели C — 161 программа из 163](granica-vhoda-a-ne-pechat-razvodit-dvoichnyy-s-node.md)
 - [Разводить столкновения имён по одному дороже, чем дать всем объявлениям цели один суффикс: у C# столкнулось 322 из 392, и судей у них три](suffiks-celi-na-vse-obyavleniya-deshevle-chem-razvedenie-stolknoveniy.md)
+- [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей между собой: у go с rust их пять](karta-stolknoveniy-schitala-cel-so-stvolom-a-ne-cel-s-celyu.md)
 - [Без блока «Граница входа» напечатанный C# собирается, но падает при запуске; чинится 136 строками на flang, а не вычитанием в проверке](granica-vhoda-ne-napisana-u-pyati-celey-i-eto-vidno-tolko-syrym-diffom.md)
 - [У двоичного два входа: цель печати достаётся прогонщику JSON даром, а ключу `--target` — в 90 строк C](vtashchit-cel-v-zamykanie-eto-polovina-raboty.md)
 - [Ведомость двоичного бывает слабее ведомости на Node и никогда не сильнее](vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.md)

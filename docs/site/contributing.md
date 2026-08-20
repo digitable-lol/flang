@@ -38,6 +38,24 @@ answer is worth nothing.
 - [What backs the install](install-evidence.html) — hashes, sizes, build times
   and what could not be checked.
 
+## Surface contracts
+
+The full contracts are working documents: next to a rule of the language stands
+an analysis of what the decision cost, and the mark "declared, not done" appears
+as often as "done". A reader who came to write in the language is answered by
+[Reference of constructs](language.html), [Databases](database.html),
+[Processes, supervision, distribution](processes.html) and
+[The categorical surface](categories.html); what those rest on lives here.
+
+- [Language specification — the contract](../spec.html) — forms, values, types,
+  diagnostic codes, implementation layers.
+- [Categories and functors — draft contract](../spec-cat.html) — its first line
+  calls it a draft for approval, which is why it stands here and not in the main
+  menu.
+- [Processes and fault tolerance — the contract](../spec-conc.html) — the whole
+  process model, including the honesty border.
+- [Kernel specification](../spec-proof.html) — what the proof kernel accepts.
+
 ## Knowledge base
 
 [The index of notes](../knowledge.html). One note is one established fact: a

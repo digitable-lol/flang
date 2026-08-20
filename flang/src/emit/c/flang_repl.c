@@ -11240,7 +11240,7 @@ static int package_file(int argc, char **argv) {
     if (!pkg_collect(full, root, decl.name, &modules, &own, &entry_module)) {
       code = 1;
     } else if (!pkg_ledger(program, &own, &ledger)) {
-      fputs("flang package: ведомость не посчиталась\n", stderr);
+      fputs("flang package: отчёт о доказательствах не посчитался\n", stderr);
       code = 1;
     } else {
       const char *own_name = entry_module;

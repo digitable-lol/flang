@@ -155,19 +155,20 @@ methods have not taken over the industry in fifty years.
 
 The language's evaluator is written in the language itself, and its main loop
 runs somebody else's program. Promising that somebody else's program ends is not
-possible: an ordinary program is allowed to loop forever. So the three functions
-of that loop are declared ordinary on purpose — `«Прогон»`, `«Виток»` and
-`«Дальше после шага»` in `flang/self/interpret.flang`. What guards them is not a
-proof but a step limit: on hitting it the evaluator answers
-`FLANG_RECURSION_LIMIT` and says so.
+possible: an ordinary program is allowed to loop forever. So that machine's loop
+— three functions, `«Прогон»`, `«Виток»` and `«Дальше после шага»` in
+`flang/self/interpret.flang` — is declared ordinary rather than total. The
+comment above `«Прогон»` says so outright: this is a property of the task, not
+unfinished work. What guards the loop is not a proof but a step limit: on hitting
+it the evaluator answers `FLANG_RECURSION_LIMIT` and says so.
 
-Declare them total and the language's promise would become false on the first
+Declare it total and the language's promise would become false on the first
 looping program. A separate check watches for exactly that, so the mark cannot be
 flipped quietly.
 
-Ordinary functions in the repository number {{корпус.обычных}} in total. The
-three named ones are those whose ordinariness is a property of the task rather
-than unfinished work; the rest are unfinished work.
+Ordinary functions in the repository number {{корпус.обычных}} in total. The loop
+just named is the place where ordinariness is a property of the task; the rest is
+unfinished work.
 
 ### What blocks proving the rest
 

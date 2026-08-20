@@ -1,147 +1,126 @@
-# Roadmap
+# What comes next
 
-No dates here — no quarters, no months. Order and dependencies are named because
-they are known; dates are not named because they are not, and an uncovered
-promise is worse than silence.
+This page is about **what the language does not have yet**: what is being worked
+on, what is queued behind what, and what has been ruled out for good.
 
-The numbers on this page are substituted from a measurement of the tree, not
-typed. Which tree they belong to is stated in one line at the bottom of the
-page; how that works is on [How these docs are made](about-docs.html).
+There are no dates here — no quarters, no months. Order and dependencies are
+named because they are known; dates are not named because they are not, and an
+uncovered promise is worse than silence.
 
-## Done
+What the language **already has** is not read here:
+[Language reference](language.html) — the forms you can write,
+[Language operations](operations.html) — what does what,
+[Releases](releases.html) — what arrived in the latest version.
 
-**The proof kernel is written in flang itself, with zero axioms.** The list of
-axioms is held empty by a check, not by a promise: one cannot be added quietly.
+## Where the language stands
 
-**The corpus is measured, not estimated:**
+Four numbers, so that the plan below has something to count from. The site build
+measures them against the tree; nobody types them and nobody can forget to
+refresh them.
 
 | | |
 |---|---:|
-| Functions in the corpus | {{корпус.функций}} |
-| Of them total | {{корпус.тотальных}} |
-| Claims stated | {{утверждения.высказано}} |
-| Proved by the kernel | {{утверждения.доказано}} |
-| Refuted by the kernel | {{утверждения.отвергнуто}} |
-| Laws taken on faith | {{законы.наВеру}} |
+| Functions written in flang | {{корпус.функций}} |
+| Of them with termination proved | {{корпус.тотальных}} |
+| Behaviour claims stated | {{утверждения.высказано}} |
+| Of them proved by the kernel — for all inputs | {{утверждения.доказано}} |
 
-**Emission into {{цели.всего}} targets**: {{цели.список}}. All
-{{цели.поАнглийски}} have a twin written in flang itself; none is left without.
-
-**The binary builds with a single compiler invocation, without Node.** Checked
-on a clean export of the tree into an empty directory (`git archive HEAD`): one
-compiler invocation over four `.c` files, not one warning under `-std=c99 -Wall
--Wextra -Werror -pedantic -O2`, no external dependency beyond `libm` and
-`libpthread`. It takes **72.6 s** and yields a binary of **7 275 248 bytes**.
-
-Building the same export through the `Makefile` yields **7 260 216 bytes** —
-15 032 bytes less, and that difference is not about thread count: four threads
-and one gave the same size to the byte, while the time went from 32.4 s to three
-times that. The difference is **`-flto`**, which stands in the `Makefile` and is
-absent from the single invocation: there the translation unit is one, and
-link-time optimisation has nothing to optimise across. The bytes repeat, the
-time floats with machine load (cc 15.2.0, Linux 7.0.0). All the runs are on
-[How the install was verified](install-evidence.html).
-
-**The compiler's emission of itself matches byte for byte.** The bootstrap check
-links the flang sources (**3616 functions, 315 types**), emits them into C and
-compares that with what sits in `bootstrap/`: **7 files, 13 304 108 bytes,
-0 differences**. It compares bytes, not a build, so the check always runs and
-needs no C compiler.
-
-**The evaluator is pulled into the binary.** `flang run` and `flang test`
-compute with it — no Node, no external compiler. The `flang repl` shell does
-**not** call the evaluator yet: without the built library next to it, it does
-not switch off but checks parsing, types and termination, and says so at
-start-up. The difference is named because "there is a shell" and "there is an
-evaluator" are different promises.
-
-**What the binary can do, as a list.** Taken from a run of a binary built in a
-clean directory, not from the help text:
-
-| command | run | answer |
-|---|---|---|
-| `flang check` | `check flang/stdlib/higher-order.flang` | 34 functions, 34 with proved termination; no findings |
-| `flang check --proof` | the same with `--proof` | the ledger is printed: 65 lines against 2 without the flag |
-| `flang test` | `test flang/stdlib/higher-order.flang` | 55 examples, 55 passed, 0 failed |
-| `flang run` | `run … --function 'Удвоить' --args '{"х":21}'` | `42`, exit code 0 |
-| `flang emit` | `emit flang/examples/rosetta/merge-sort.flang --target c` | 6 files, 285 301 bytes printed; `make` built them |
-| `flang repl` | `repl` with no built library | does not switch off, checks parsing, types and termination |
-
-Emission from the binary has one named limit: the table of declared types is
-built by the reference layer, so runner arguments are not checked against
-declared types. The binary says so itself, as it emits, rather than keeping
-quiet.
-
-**An OTP alternative of our own**: processes, supervision, hot swap, scheduler.
-
-**Four writing surfaces** — Russian, English, Esperanto, Chinese. Of the
-{{словарь.понятий}} concepts in the glossary, {{словарь.наЧетырёх}} are open on
-all four; {{словарь.дырявых}} have holes, and those are named one by one on
-[Four writing surfaces](../surfaces.html) (in Russian).
-
-**The flang corpus** — {{корпус.строк|разрядами}} lines across
-{{корпус.файлов}} files: the very files the functions in the table above were
-counted over.
+The main limit of the language shows up right there, and it is also the main
+item of the plan: **termination is proved in bulk, behaviour is proved rarely**.
+The first column grows by itself; the second has to be pushed by hand.
 
 ## In progress
 
-**The input boundary of an emitted program.** The binary itself already checks
-arguments against declared types: `Факториал` is declared over `нат`, and given
-−3 it answers `FLANG_TYPE: аргумент «н»: -3 вне нат` with exit code 1, as the
-reference does. What stays empty is the boundary of a program emitted through
-`flang emit`: the table of declared types is built by the reference's type
-layer, which the binary does not have. Until this is closed, the caller answers
-for an emitted program's input.
+### The kernel proves few ordinary functions
 
-**The English version of the site.** The site's own pages are translated; the
-guide, the measurement reports and the specifications are still Russian only.
+Twenty ordinary library functions were taken — the kernel closed **two**; four
+more only after the claim was weakened. Not one human-written theorem was
+accepted. How it was counted — [Proofs: why and how](proofs.html).
 
-## Not started
+The obstacle is not search speed but the **strength of the rules themselves**:
+there are three deciding rules, and they run out on the body shape of an ordinary
+function. That is where the work is.
 
-This is the important part of the page. Below is what does not exist, in the
-order in which each item blocks the next.
+### An emitted program has an empty input boundary
 
-**There is no package manager.** Packages themselves exist: `flang package`
-puts a library and its whole closure into one file, imported with a single line
-(`использует «Скидка» из "discount.flang-package"`) — [how it is done](packages.html).
-Run: 8 modules and 53 functions travelled in 13,161 bytes against 99,508 bytes of
-sources, and on another machine two files rebuilt the same program with byte-for-byte
-the same C output.
+The installed `flang` does check arguments against declared types: `Факториал` is
+declared over `нат`, and given −3 it answers `FLANG_TYPE: аргумент «н»: -3 вне
+нат` with exit code 1.
 
-What is missing is everything ABOVE a package: a registry, search by name,
-version ranges (`^1.2`) and dependency resolution. Updating means taking the new
-file and replacing the old one. That no longer blocks distributing a library, as
-it used to — it makes it manual.
+A program emitted through `flang emit` does not: the table of declared types is
+built by a layer the installed language does not carry. Until that is closed,
+**the caller answers for an emitted program's input** — and `flang emit` says so
+itself as it emits, rather than keeping quiet.
 
-**The standard library is small**: {{библиотека.файлов}} files,
-{{библиотека.строк|разрядами}} lines, {{библиотека.функций}} functions. No
-database, no full networking. The list of what is there is shorter than the list
-of what is not.
+### The installed language emits into C only
 
-**There is almost no application code.** The backend is one example of 7 files
-and 563 lines (`examples/library-api`). The frontend is a browser demo, not an
-application.
+There are {{цели.поАнглийски}} emit targets: {{цели.список}}. The installed
+binary can do one of them, `c`. The other seven come only from the compiler
+installed through npm — [how to embed flang](embedding.html).
 
-## Decided against
+### The English half of the site is incomplete
 
-A refusal is a decision, and each one has a stated reason.
+The site's own pages are translated. The guide, the measurement reports and the
+specifications are still Russian only.
 
-**No closures.** Capturing an environment breaks the termination analysis and
-direct emission into C, Go and Rust. First-class functions do exist — through
-defunctionalisation (Reynolds, 1972): the compiler replaces a function-value
-with a tag and dispatches on tags. `flang/stdlib/higher-order.flang` is written
-that way. A closure and a first-class function are different things, and only
-the first is refused.
+## Next, and each holds the one after it
 
-**No two versions of one library in one program.** A diamond dependency is
-resolved by raising a version, not by coexistence. The argument is worked out in
-[Modularity and packages](../modules.html) (in Russian).
+### 1. There is no package manager
 
-**Not the full Unison model.** Storing code in a database instead of files means
-owning an editor, owning a host, and losing git. We take half of Unison —
-content addressing; we do not take the other half, and the reason is spelled out
-in the same place.
+Packages themselves exist: `flang package` puts a library and everything it pulls
+into one file, imported with a single line — [how it is done](packages.html).
 
-## What is not promised here
+What is missing is everything **above** a package: a registry, search by name,
+version ranges (`^1.2`), dependency resolution. Updating today means taking the
+new file and putting it where the old one was. That does not block handing a
+library out; it makes it manual.
 
-Not one date. Order of work yes, dependencies yes, dates no.
+### 2. The standard library is small
+
+{{библиотека.файлов}} files, {{библиотека.строк|разрядами}} lines,
+{{библиотека.функций}} functions. No database, no full networking. The list of
+what is there is shorter than the list of what is not.
+
+This comes after the package manager, not before it: while a library cannot be
+handed out by name and version, there is little point in growing it.
+
+### 3. There is almost no application code
+
+The backend is one example of seven files (`flang/examples/library-api`). The
+frontend is a browser demo, not an application. Application code waits on the
+library, the library waits on packages.
+
+## Ruled out
+
+A refusal is a decision too, and each one has a stated reason.
+
+### No closures
+
+Capturing an environment breaks the termination proof and direct emission into C,
+Go and Rust.
+
+First-class functions do **exist**: the compiler replaces a function-value with a
+tag and dispatches on tags — a technique known since 1972 (Reynolds), and that is
+how `flang/stdlib/higher-order.flang` is written. A closure and a first-class
+function are different things, and only the first is refused.
+
+### No two versions of one library in one program
+
+When two dependencies pull one library at different versions, that is settled by
+raising a version, not by letting both live in the program side by side. The
+argument is worked out in [Modularity and packages](../modules.html) (in
+Russian).
+
+### Not the full Unison model
+
+Storing code in a database instead of files means owning an editor, owning a
+host, and losing git. Half of it — content addressing — we take; the other half
+we do not, and the reason is spelled out in the same place.
+
+## What this page does not carry
+
+**Dates.** Order of work yes, dependencies yes, dates no.
+
+**A report on work done.** How many bytes the built binary weighs, how many
+seconds the build takes and how the install was verified belong on [How the
+install was verified](install-evidence.html), not on a plan.

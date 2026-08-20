@@ -55,13 +55,16 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { test } from "node:test"
 
 import { globSync } from "./glob.mjs"
+/* Временный каталог — через помощника, а не своим `mkdtemp`: он вешает уборку
+   и на сигнал, и на выход, а свой каталог переживал бы убитый прогон
+   (`flang/test/tempdir.mjs`, и `flang/scripts/tempdir-guard.mjs` это стережёт). */
+import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 import { missingToolchain } from "./toolchain-guard.mjs"
 
 const корень = join(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -136,6 +139,7 @@ const ЛОЖНЫЙ_ПРИМЕР = {
 const коды = (текст) =>
   [...new Set([...текст.matchAll(/\bFLANG_[A-Z_]+/gu)].map((пара) => пара[0]))].sort()
 
+const workdir = рабочийКаталог("emit-sudit-kak-check")
 let рабочий = null
 let двоичный = null
 
@@ -155,7 +159,8 @@ function собрать(t) {
     missingToolchain(t, "c", "точки раскрутки bootstrap/ нет — собирать нечего, пропуск")
     return null
   }
-  рабочий = mkdtempSync(join(tmpdir(), "emit-zakon-"))
+  рабочий = join(workdir, "sborka")
+  mkdirSync(рабочий, { recursive: true })
   for (const имя of readdirSync(точка)) {
     if (!/\.(?:c|h)$/u.test(имя) && имя !== "Makefile") continue
     writeFileSync(join(рабочий, имя), execFileSync("cat", [join(точка, имя)], { maxBuffer: 1 << 28 }))
@@ -164,6 +169,7 @@ function собрать(t) {
     execFileSync("make", ["-C", рабочий, "-j", "8", "CFLAGS=-std=c99 -O0"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      env: средаСборки(workdir),
     })
   } catch (ошибка) {
     missingToolchain(t, "c", `компилятора C нет или сборка не прошла — пропуск: ${(ошибка.stderr ?? "").slice(0, 300)}`)
@@ -179,8 +185,11 @@ function собрать(t) {
  * Ожидаемое не собирается здесь ни из чего: вердикт `check` берётся у самой
  * команды, как она его печатает человеку.
  */
+let счётчик = 0
 function спросить(флаг, файл, откуда) {
-  const мешок = mkdtempSync(join(tmpdir(), "emit-zakon-vyhod-"))
+  счётчик += 1
+  const мешок = join(workdir, `vyhod-${счётчик}`)
+  mkdirSync(мешок, { recursive: true })
   const общее = { encoding: "utf8", cwd: откуда, input: "", maxBuffer: 256 * 1024 * 1024 }
   try {
     const печать = spawnSync(флаг, ["emit", файл, "--target", "c", "--runtime", РАНТАЙМ, "--out", join(мешок, "c")], общее)
@@ -214,6 +223,11 @@ test("flang emit судит ровно то же, что flang check того ж
   const ДЕРЕВО = [
     ...globSync("flang/stdlib/*.flang", { cwd: корень }).slice(0, 8),
     ...globSync("flang/examples/cat/*.flang", { cwd: корень }).slice(0, 6),
+    /* Стоит здесь ИМЕННО ПОТОМУ, что печать её отвергает, а `check` доволен:
+       два имени на китайском дают один идентификатор C. Без неё вторая половина
+       закона не отличала бы отказ ПРОВЕРКИ от отказа ПЕЧАТИ и зеленела бы на
+       обоих. */
+    "flang/examples/surfaces/factorial.zh.flang",
   ].sort()
 
   const итоги = [
@@ -234,13 +248,25 @@ test("flang emit судит ровно то же, что flang check того ж
 
   /* ── половина вторая: печать не СТРОЖЕ собственного суда ───────────────────
      Без неё закон был бы однобоким: печать, отвергающая всё подряд, его тоже
-     удовлетворяла бы. */
+     удовлетворяла бы.
+
+     НО ОТКАЗЫ У ПЕЧАТИ ДВУХ РОДОВ, и путать их нельзя. Один — «программа не
+     проходит проверку»: это и есть вердикт, и он обязан совпадать с вердиктом
+     `check`. Второй — «печать отказала»: программа ВЕРНА, а напечатать её в C
+     нечем. Живой случай из дерева, найденный этим замером:
+     `flang/examples/surfaces/factorial.zh.flang` — `check` доволен, а печать
+     отвергает, потому что имена «乘积» и «前置» дают один идентификатор C
+     «value». Требовать здесь согласия с `check` значило бы требовать, чтобы
+     печатались программы, которые печатать нечем.
+
+     Различаются они СЛОВАМИ самой команды, а не списком файлов: «не проходит
+     проверку» пишет только шаг проверки. */
   assert.deepEqual(
     итоги
-      .filter((с) => с.печать !== 0 && с.суд === 0)
-      .map((с) => `${с.файл}: печать отказала (${с.кодыПечати.join(",")}), а свой же check доволен`),
+      .filter((с) => с.печать !== 0 && с.суд === 0 && /не проходит проверку/u.test(с.словаПечати))
+      .map((с) => `${с.файл}: печать отказала ПРОВЕРКОЙ (${с.кодыПечати.join(",")}), а свой же check доволен`),
     [],
-    "печать отвергает то, что собственный check принимает — два входа одного двоичного разошлись",
+    "печать отвергает проверкой то, что собственный check принимает — два входа одного двоичного разошлись",
   )
 
   /* ── инструмент, отвергающий всё, не доказывает ничего ─────────────────── */

@@ -3005,7 +3005,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples,
-                               fl_value *linked_out) {
+                               fl_value *linked_out, fl_value *dropped_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -3080,16 +3080,29 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
    */
   if (kernel) {
     fl_value kernel_args[2];
+    fl_value verdict = fl_nothing();
     fl_value kernel_bads = fl_nothing();
     kernel_args[0] = *program;
     kernel_args[1] = total;
-    if (repl_call("Беды ядра", kernel_args, 2, &kernel_bads) != FL_OK) {
+    /*
+     * ОДИН ВЫЗОВ НА ДВА ОТВЕТА, и это не украшение вызова. Ядро отвечает и чем
+     * программа плоха, и какие сторожа с неё можно снять при печати, — считает
+     * оно то и другое ОДНИМ проходом по обязательствам, и второй вызов ради
+     * второго ответа стоил бы второго прохода ядра целиком.
+     */
+    if (repl_call("Суд ядра о программе", kernel_args, 2, &verdict) != FL_OK) {
       bads_say(bads, "ядро доказательства прекращено");
       return false;
     }
-    if (kernel_bads.tag == FL_LIST) {
+    if (val_field(verdict, "диагностики", &kernel_bads) && kernel_bads.tag == FL_LIST) {
       for (index = 0; index < kernel_bads.as.list.count; index += 1) {
         bads_take(bads, kernel_bads.as.list.items[index]);
+      }
+    }
+    if (dropped_out != NULL) {
+      fl_value dropped = fl_nothing();
+      if (val_field(verdict, "снятые", &dropped)) {
+        *dropped_out = dropped;
       }
     }
   }
@@ -3159,7 +3172,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, NULL);
+                            false, false, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -5507,7 +5520,8 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -7393,10 +7407,11 @@ static int emit_file(int argc, char **argv, const char *self) {
        */
       fl_value program = fl_nothing();
       fl_value linked = fl_nothing();
+      fl_value dropped = fl_nothing();
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked, &dropped)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -7410,7 +7425,47 @@ static int emit_file(int argc, char **argv, const char *self) {
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
       } else {
+        /*
+         * ДОКАЗАННОЕ ПОСТУСЛОВИЕ СНИМАЕТСЯ ЗДЕСЬ, ПЕРЕД ПЕЧАТЬЮ, И НИГДЕ БОЛЬШЕ.
+         *
+         * До этой правки печать ставила сторожа `fl_post` на КАЖДОЕ постусловие,
+         * включая те, о которых ядро в этой же команде сказало «доказано обо
+         * ВСЕХ входах»: `flang emit flang/stdlib/result.flang --target c` давал
+         * десять сторожей на десять постусловий, из них четыре доказанных.
+         * Доказательство выходило наказанием — чем больше докажешь, тем
+         * медленнее станет собранная программа.
+         *
+         * Список снимаемых считает ядро (`Суд ядра о программе`), и условий у
+         * него два: вердикт «доказано» И хотя бы один `пример` у функции. Здесь
+         * он только применяется: C ничего не решает и в узлы не заглядывает —
+         * список уезжает обратно в flang нетронутым.
+         *
+         * Вычислителя это не касается: `flang run`, `flang test` и прогон
+         * примеров при `flang check` считают все постусловия по-прежнему.
+         */
+        size_t drop_count = dropped.tag == FL_LIST ? dropped.as.list.count : 0;
         bads_free(&list);
+        if (drop_count > 0) {
+          fl_value drop_args[2];
+          fl_value thinner = fl_nothing();
+          drop_args[0] = program;
+          drop_args[1] = dropped;
+          if (repl_call("Программа без снятых постусловий", drop_args, 2, &thinner) == FL_OK) {
+            program = thinner;
+          }
+          if (EMIT_TARGET_TABLE[chosen].from_linked) {
+            fl_value thinner_linked = fl_nothing();
+            drop_args[0] = linked;
+            drop_args[1] = dropped;
+            if (repl_call("Связанное без снятых постусловий", drop_args, 2, &thinner_linked) == FL_OK) {
+              linked = thinner_linked;
+            }
+          }
+          fprintf(stderr,
+                  "проверок при работе снято %lu: постусловие доказано ядром обо всех входах и\n"
+                  "проверено примерами функции — в напечатанный код оно не едет.\n",
+                  (unsigned long)drop_count);
+        }
         fits = emit_entry_fits(program, table);
         code = emit_call(&EMIT_TARGET_TABLE[chosen],
                          EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table, runtime,
@@ -11611,7 +11666,8 @@ static int package_file(int argc, char **argv) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);
@@ -11626,7 +11682,7 @@ static int package_file(int argc, char **argv) {
     if (!pkg_collect(full, root, decl.name, &modules, &own, &entry_module)) {
       code = 1;
     } else if (!pkg_ledger(program, &own, &ledger)) {
-      fputs("flang package: ведомость не посчиталась\n", stderr);
+      fputs("flang package: отчёт о доказательствах не посчитался\n", stderr);
       code = 1;
     } else {
       const char *own_name = entry_module;

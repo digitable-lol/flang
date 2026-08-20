@@ -1463,10 +1463,10 @@ const ОХВАТ = [
   "flang/self/emit-c.flang «Байтов у символа»",
   "flang/self/emit-c.flang «Наибольшая арность»",
   "flang/self/emit-c.flang «Число параметров»",
-  "flang/self/emit-csharp.flang «Число параметров»",
-  "flang/self/emit-elixir.flang «Число параметров»",
+  "flang/self/emit-csharp.flang «Число параметров CSharp»",
+  "flang/self/emit-elixir.flang «Число параметров Elixir»",
   "flang/self/emit-java.flang «Число параметров Java»",
-  "flang/self/emit-js.flang «Число параметров»",
+  "flang/self/emit-js.flang «Число параметров JS»",
   "flang/self/emit-python.flang «Число параметров»",
   "flang/self/emit-rust.flang «Счёт узлов поля»",
   /* ОТСЮДА ЖЕ ОДНА СТРОКА УБЫЛА, и убыла не молча: `failures.flang «Мест

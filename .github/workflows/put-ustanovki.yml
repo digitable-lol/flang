@@ -1,0 +1,150 @@
+name: Путь установки
+
+# ПОЧЕМУ ОТДЕЛЬНОЙ РАБОТОЙ, И ПОЧЕМУ НА ДВУХ ПЛАТФОРМАХ.
+#
+# 19 августа 2026 путь установки сломался ПЯТЬ раз за вечер, и ни одну поломку
+# не поймал ни один прогон. Общее у всех пяти: проверки в дереве гоняли то, что
+# лежит в дереве, а человек получал архив, в котором лежало другое.
+#
+# ── Почему не в ci.yml ─────────────────────────────────────────────────────
+# `ci.yml` нарочно ходит только на тег: полный прогон идёт около двух часов.
+# Довод верный, но он же и пропустил четыре поломки из пяти: между правкой
+# упаковки и следующим тегом упаковку не запускал никто. Эта работа идёт
+# 6,5—8,6 минуты — замерено целиком, а не сложено из частей: 391 с на свободной
+# машине, 518 с на занятой; с готовым архивом 260 с. Ходит она на КАЖДУЮ правку
+# упаковки, релизного скрипта и точки раскрутки.
+#
+# ── Почему macOS обязателен ────────────────────────────────────────────────
+# Первая из пяти поломок видна ТОЛЬКО вне Linux: `_POSIX_C_SOURCE 200809L`
+# открывает `mkdtemp` на glibc и ЗАКРЫВАЕТ на Darwin, и `brew install` не
+# доходил до конца ни у кого на Mac — при том что три работы CI из трёх шли на
+# ubuntu и все три были зелёные. Разбор:
+# docs/zettel/a-feature-macro-that-opens-on-glibc-closes-on-darwin.md
+#
+# `build-macos.yml` собирает на Маке точку раскрутки — это ловит СБОРКУ, но не
+# установку. Здесь на Маке проходит весь путь: архив, раскладка, запуск.
+#
+# ── Чего этой работой всё равно не видно ───────────────────────────────────
+# Названо, а не умолчано. Условной компиляцией мы проверяем ноль: строка
+# `#if defined(__APPLE__)` на Linux не выполняется вовсе, и «зелёный Linux»
+# про Darwin не говорит ничего. Единственная улика — сборка на Маке, и она
+# ниже. Windows не проверяется ни здесь, ни где-либо ещё.
+
+on:
+  push:
+    paths:
+      - "packaging/**"
+      - "scripts/build-release-c.mjs"
+      - "scripts/bootstrap-c.mjs"
+      - "bootstrap/**"
+      - "flang/src/emit/**"
+      - "flang/test/install-path.test.mjs"
+      - ".github/workflows/put-ustanovki.yml"
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "packaging/**"
+      - "scripts/build-release-c.mjs"
+      - "scripts/bootstrap-c.mjs"
+      - "bootstrap/**"
+      - "flang/src/emit/**"
+      - "flang/test/install-path.test.mjs"
+      - ".github/workflows/put-ustanovki.yml"
+  # Раз в сутки — потому что ломает путь установки не только своя правка.
+  # `asdf global` удалили в ЧУЖОМ инструменте, и наше дерево в тот день не
+  # менялось вовсе: проверка, ходящая только на свои правки, такое пропустит.
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  put:
+    name: Путь установки на ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Красный на одной платформе не отменяет прогон на второй: нам важно
+      # знать, обе сломаны или одна, — в этом и была вся беда с Маком.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # GNU tar. Обычный `tar` на macOS — это bsdtar, у него нет ни `--sort`,
+      # ни `--mtime`, и архив вышел бы с другими байтами и другим sha256, чем
+      # тот, что сверяет brew. Формула это оговаривает словами; проверка сама
+      # ищет `gtar`, но найти его она может, только если он поставлен.
+      - name: GNU tar на macOS
+        if: runner.os == 'macOS'
+        run: brew install gnu-tar
+
+      - name: Путь установки целиком — четыре способа
+        run: node --test --test-timeout=1800000 flang/test/install-path.test.mjs
+
+  # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────
+  #
+  # Работа выше повторяет раскладку формулы своими руками — потому что на
+  # машине разработчика brew нет. Здесь он есть, и здесь проверяется ровно то,
+  # чего повторение проверить не может: что файл РАЗБИРАЕТСЯ как Ruby, что
+  # `bin.install`, `man1.install` и `share.install` делают обещанное и что
+  # блок `test do` формулы проходит.
+  #
+  # Формула ставится на СВЕЖИЙ архив, а не на выпущенный: `url` и `sha256`
+  # подменяются на локально собранный. Иначе проверялся бы прошлый релиз, то
+  # есть ровно то дерево, которое уже уехало, — а нам нужно узнать про то,
+  # которое уедет.
+  brew:
+    name: Настоящий brew на macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: brew install gnu-tar
+
+      - name: Собрать архив и упаковать той же командой, что в формуле
+        run: |
+          set -eu
+          node scripts/build-release-c.mjs output/release-c
+          gtar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
+               --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - \
+               LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
+               flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h share \
+            | gzip -9n > "$PWD/output/flang-local-c.tar.gz"
+
+      - name: Формула на свежий архив
+        run: |
+          set -eu
+          # Имена переменных латиницей: оболочка берёт в имена только ASCII, и
+          # «архив=…» она читает как команду. Эта ошибка в этом репозитории уже
+          # случалась, в workflow публикации, и стоила шага с кодом 127.
+          archive="$PWD/output/flang-local-c.tar.gz"
+          digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
+          mkdir -p output/tap
+          sed -e "s|^  url .*|  url \"file://${archive}\"|" \
+              -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
+              packaging/homebrew/flang.rb > output/tap/flang.rb
+          brew install --build-from-source --verbose ./output/tap/flang.rb
+
+      - name: Блок test do формулы
+        run: brew test flang
+
+      - name: Поставленное brew умеет печатать в C
+        run: |
+          set -eu
+          printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
+          "$(brew --prefix)/bin/flang" --version
+          "$(brew --prefix)/bin/flang" emit проба.flang --target c --out печать
+          test -f печать/flang_runtime.h
+          grep -q 'SPDX-FileCopyrightText' печать/flang_runtime.h

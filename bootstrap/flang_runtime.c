@@ -2226,6 +2226,13 @@ bool fl_equal(fl_value left, fl_value right) {
 fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error) {
   size_t index = 0;
   if (target.tag == FL_VARIANT) {
+    /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более. */
+    for (index = 0; index < target.as.variant->count; index += 1) {
+      if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+        *out = target.as.variant->fields[index].value;
+        return FL_OK;
+      }
+    }
     return fl_fail(ctx, error, FL_CODE_TYPE, "поле «%s» нельзя взять у варианта «%s» — нужен разбор", name,
                    target.as.variant->name);
   }
@@ -2727,57 +2734,6 @@ fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out, f
   *out = fl_number(
       (double)fl_utf8_decode(text.as.string.utf8, text.as.string.bytes, 0, &width));
   return FL_OK;
-}
-
-/* «символ по коду»: строка ровно из одного символа.
- *
- * Обратной к `fl_utf8_decode` в рантайме не было, и здесь она выписана — четыре
- * ветки по длине записи, ровно те же границы, по которым декодер читает. Больше
- * ей нигде не нужно, поэтому она стоит внутри формы, а не рядом с декодером.
- *
- * Суррогат отвергается ДО кодирования. Записать его в UTF-8 технически можно —
- * три байта лягут, — но это была бы не UTF-8, а WTF-8, и строка перестала бы
- * быть тем, чем её объявляет `flang_runtime.h`: «строка — UTF-8, длина в байтах
- * и в кодовых точках». Тот же отказ дают все восемь целей.
- */
-fl_status fl_b_simvol_po_kodu(fl_ctx *ctx, fl_value code, fl_value *out, fl_error *error) {
-  char buffer[4];
-  size_t bytes = 0;
-  unsigned long point = 0;
-  FL_TRY(fl_expect_integer(ctx, "символ по коду", code, "код", error));
-  if (code.as.number < 0.0 || code.as.number > 1114111.0) {
-    char number[FL_NUMBER_TEXT_MAX];
-    fl_number_text(code.as.number, number);
-    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
-                   "«символ по коду»: код %s вне диапазона Unicode [0, 1114111]", number);
-  }
-  if (code.as.number >= 55296.0 && code.as.number <= 57343.0) {
-    char number[FL_NUMBER_TEXT_MAX];
-    fl_number_text(code.as.number, number);
-    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
-                   "«символ по коду»: код %s — половина суррогатной пары, а не символ", number);
-  }
-  point = (unsigned long)code.as.number;
-  if (point < 0x80ul) {
-    buffer[0] = (char)point;
-    bytes = 1;
-  } else if (point < 0x800ul) {
-    buffer[0] = (char)(0xC0ul | (point >> 6));
-    buffer[1] = (char)(0x80ul | (point & 0x3Ful));
-    bytes = 2;
-  } else if (point < 0x10000ul) {
-    buffer[0] = (char)(0xE0ul | (point >> 12));
-    buffer[1] = (char)(0x80ul | ((point >> 6) & 0x3Ful));
-    buffer[2] = (char)(0x80ul | (point & 0x3Ful));
-    bytes = 3;
-  } else {
-    buffer[0] = (char)(0xF0ul | (point >> 18));
-    buffer[1] = (char)(0x80ul | ((point >> 12) & 0x3Ful));
-    buffer[2] = (char)(0x80ul | ((point >> 6) & 0x3Ful));
-    buffer[3] = (char)(0x80ul | (point & 0x3Ful));
-    bytes = 4;
-  }
-  return fl_text(ctx, buffer, bytes, out, error);
 }
 
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {

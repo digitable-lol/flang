@@ -78,11 +78,14 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `package.json` · `package-lock.json` | the manifest of the **second mould** — the one that embeds the language into somebody else's Node project. npm reads them only from the root of the package it publishes |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
-**Nothing in that set builds the binary.** `make -C bootstrap` builds the compiler with a single
+**The binary builds without Node.** `make -C bootstrap` builds the compiler with a single
 `cc` — no Node, no npm, not one line from here. `package.json` does not describe how the language
 is built; it describes the package the language is embedded with. It declares zero dependencies
-(`npm ls --all` prints `(empty)`), and `npm install` in a clone is needed for exactly one thing:
-to put `flang` into `node_modules/.bin`.
+(`npm ls --all` prints `(empty)`). Since 20 August 2026 `npm install` does two things: it puts
+`flang` into `node_modules/.bin` and it runs `make` over that same `bootstrap/`, so that the
+`flang` command is the SAME binary compiler `brew` installs and not a second implementation in
+JavaScript. About 35 seconds, and it needs `cc` and `make`; without them the install still
+succeeds and the refusal names both the cause and the fix.
 
 <!-- КОРЕНЬ-КОНЕЦ -->
 
@@ -457,8 +460,8 @@ The JavaScript witness implementation stays forever: the fixed point is checked 
 and removing it would make that check impossible. Work happens in a clone, and **there is nothing
 to build**: the package declares zero dependencies (`npm ls --all` prints `(empty)`), and the
 language reads its sources instead of compiling them. A fresh clone answers
-`node flang/bin/flang.mjs check flang/stdlib/lists.flang` straight away; `npm install` only puts
-`flang` into `node_modules/.bin`.
+`node flang/bin/flang.mjs check flang/stdlib/lists.flang` straight away; `npm install` puts
+`flang` into `node_modules/.bin` and builds the binary compiler out of `bootstrap/`.
 
 What to run when you change the compiler, how the bootstrap point is guarded, and the full list
 of commands the language answers to — [Developing the

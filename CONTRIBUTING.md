@@ -124,6 +124,7 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm test` | the whole suite, `flang/test/*.test.mjs`; CI runs it on every tag, on Node 20, 22 and 24 |
 | `npm run pretest` · `npm run pretest:backends` | npm lifecycle hooks — the preflight report, run automatically before the suite |
 | `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
+| `npm run postinstall` | npm lifecycle hook — builds the binary compiler from the C99 in `bootstrap/` and puts it in `dvoichnyy/flang`. This is what makes `npm install` deliver the *same* compiler `brew` delivers instead of a second implementation. Needs `cc` and `make`; without them the install still succeeds and the refusal names the fix. `FLANG_BEZ_SBORKI=1` skips the build |
 | `npm run preflight` | the toolchain report on its own |
 | `npm run test:backends` | the emit tests alone, when you do not want the full suite |
 | `npm run test:remote` | the same suite on a host of your choosing, over ssh |
@@ -140,6 +141,7 @@ every name below is named here, and `flang/test/readme-layout.test.mjs` fails if
 | `npm run releases:page` · `npm run releases:page:check` | print the releases page, both halves of it, and check it against the tags |
 | `npm run spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
 | `npm run comparison:check` | the guard that a comparison does not preprocess the witness the way it preprocesses the reference |
+| `npm run rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
 | `npm run memory:check` | every peak-memory number stated in prose, remeasured by a run |
 | `npm run tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |
 | `npm run occupied:check` | how many modules of the corpus would collide with names each target reserves |
@@ -167,7 +169,7 @@ npm run names:check    # naming rules, against the parse tree of the whole corpu
 What this means when you write:
 
 - **Numbers.** Put the path in backticks next to the count — either order works:
-  `` `flang/src/parser.mjs`, 4704 lines `` or `` 4704 lines in `flang/src/parser.mjs` ``.
+  `` `flang/src/parser.mjs`, 4738 lines `` or `` 4738 lines in `flang/src/parser.mjs` ``.
   It will be remeasured against the tree. If you mean an approximation, write
   `~3900` — the guard leaves those alone, on purpose. Both languages are read:
   `строк` and `lines`, `в` and `in`.

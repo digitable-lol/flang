@@ -887,10 +887,14 @@ pub fn arg(args: &[Value], index: usize) -> Value {
 /// Доступ к полю записи.
 pub fn field_get(_ctx: &Ctx, target: Value, name: &str) -> Result<Value, Error> {
     match &target {
-        Value::Variant(data) => Err(fail(
-            CODE_TYPE,
-            format!("поле «{name}» нельзя взять у варианта «{}» — нужен разбор", data.name),
-        )),
+        // Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более.
+        Value::Variant(data) => match lookup(&data.fields, name) {
+            Some(value) => Ok(value.clone()),
+            None => Err(fail(
+                CODE_TYPE,
+                format!("поле «{name}» нельзя взять у варианта «{}» — нужен разбор", data.name),
+            )),
+        },
         Value::Record(fields) => match lookup(fields, name) {
             Some(value) => Ok(value.clone()),
             None => Err(fail(CODE_UNKNOWN_NAME, format!("запись не содержит поле «{name}»"))),

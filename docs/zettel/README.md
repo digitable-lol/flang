@@ -60,6 +60,8 @@
 - [Файл, записанный на четырёх поверхностях, доказательство нести не может](proof-words-live-on-two-surfaces-of-four.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
+- [Ядро доказало ровно те утверждения библиотеки HTTP и JSON, которые не говорят ни о чём: 9 из 9 даровые](proved-claims-in-http-and-json-were-all-gratis.md)
+- [Круговое тождество «разобрал и собрал обратно» постусловием не выразить: мешают две разные стены](round-trip-claims-are-unstatable-in-postconditions.md)
 - [Цели «равно» упёрлись в порядок слагаемых, а не в отсутствие индукции](ravenstvo-uperlos-v-poryadok-slagaemyh-a-ne-v-indukciyu.md)
 - [Перенесённое правило состоит из ТРЁХ частей: самого правила, места вызова и текста отказа](porting-a-rule-means-porting-its-refusal-text.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
@@ -290,6 +292,7 @@
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
 - [Рукописная копия обнаруживает себя столкновением имён в день, когда библиотека дорастает до неё](rukopisnaya-kopiya-obnaruzhivaet-sebya-stolknoveniem-imyon.md)
 - [`http.flang` считает Content-Length знаками в обе стороны, и потому чинить одну сторону нельзя](content-length-schitaetsya-znakami-v-obe-storony.md)
+- [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
 
 - [Вариант суммы, названный как вариант встроенного «Отклик», отключает все встроенные типы ввода-вывода, а диагностика жалуется на другое](variant-nazvannyy-kak-vstroennyy-vyrubaet-vstroennye-tipy.md)
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)

@@ -222,9 +222,12 @@
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
+- [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](vlozhennyy-esli-v-skobkah-cherez-stroku-ne-razbiraetsya.md)
+- [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
 
 ## Отвергнутые пути
 
+- [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
 - [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](oraculu-meshala-totalnost-a-ne-pervyy-klass.md)
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](vynut-iz-resheniya-i-vynut-iz-zagruzki-eto-dva-sobytiya.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)

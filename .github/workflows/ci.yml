@@ -154,3 +154,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/proverka-pered-progonom.flang
+
+  # Граница входа: довод «--args» сверяется объявленному типу до вычисления.
+  # Отдельной работой: зависимостей нет, две секунды.
+  granica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: bootstrap/flang io scripts/granica-vhoda.flang

@@ -131,8 +131,8 @@ The list now lives in `ярлыки.flang`. It is a flang program, not a setting
 file: the names and the command lines are type-checked, the functions that take
 them apart carry examples, and the plan `Целость` walks the tree and goes red
 when a shortcut names a file that is not there. The entry point is `./ярлык` —
-a hundred lines of `sh` that asks the binary for the command line and runs it.
-It holds no list of its own.
+`sh`, 66 lines of code inside 143 with the reasoning written down, which asks
+the binary for the command line and runs it. It holds no list of its own.
 
 ```bash
 ./ярлык                     print every shortcut

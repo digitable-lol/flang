@@ -545,12 +545,12 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
 - **Proving an ordinary library function is still mostly out of reach.** The repeatable measure
   is twenty functions of the standard library taken in file-and-declaration order, every ninth
   one, so that convenient ones cannot be picked: on that sample the proof core closes claims for
-  nine files out of twenty, and most of what it closes is a weakened form — "the length is not
-  negative" — or a postcondition that restates the body. The count of claims that genuinely say
-  something about the function was four when it was last read one by one
-  (`docs/benchmark-proof-cost-2.md`); the tool that produced these numbers is one of the
-  casualties of the removal and no longer runs, so today's figure is read from the binary's own
-  report by hand.
+  thirteen files out of twenty, and **nine** of those say something about the function: the
+  rest are either weakened (the claim survives replacing the body with a stub of the same
+  signature, so it holds of any such function) or restate the body. A run tells them apart,
+  not a reading: `node benchmarks/zamer-tseny/schyot-20.mjs`. Day by day: 0, 2, 4, 5, 9.
+  And two of the twenty are unprovable because they are **false**: one fails at infinity,
+  the other writes "or" where an implication was meant.
 - **There is no second opinion about the language any more.** The comparison that used to matter
   proved that two independent implementations understood the same program the same way. What is
   left proves that the committed C matches what today's sources print — which catches a stale

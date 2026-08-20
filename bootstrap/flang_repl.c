@@ -267,7 +267,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл>                  прогон примеров, объявленных внутри функций\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target c|js    напечатать программу в C99 или JavaScript\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -334,23 +334,29 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
+    "flang emit <файл.flang> --target c|js [--out каталог | --file имя]\n"
     "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
     "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node; рантайм C читается с диска (--runtime,\n"
-    "$FLANG_RUNTIME_DIR). ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается,\n"
-    "доказанное не метится («markProven»). На компиляторе это 6 файлов из 7 байт в\n"
-    "байт.\n"
+    "Печатает программу без Node. Целей две.\n"
     "\n"
-    "  --target c        единственная цель этого бинарника\n"
+    "  --target c   C99; рантайм C читается с диска (--runtime, $FLANG_RUNTIME_DIR).\n"
+    "               ДВУХ ВЕЩЕЙ У НЕЁ НЕТ: недостижимое не отбрасывается, доказанное\n"
+    "               не метится («markProven»). На компиляторе это 6 файлов из 7\n"
+    "               байт в байт.\n"
+    "  --target js  JavaScript; недостижимое отбрасывается, как у полного\n"
+    "               инструментария. Рантайм модуля печатается ИЗНУТРИ эталона, с\n"
+    "               диска читаются только прогонщик (flang_cli.js) и планировщик\n"
+    "               (flang_conc.js). ГРАНИЦЫ ВХОДА эта цель не печатает — таблицы\n"
+    "               объявленных типов параметров в выводе нет.\n"
+    "\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог откуда читать рантайм C\n"
+    "  --repl            напечатать ещё и человеческий вход (только у цели «c»)\n"
+    "  --runtime каталог откуда читать рантайм цели\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) написаны на\n"
+    "Остальные шесть целей (go, rust, python, java, csharp, elixir) написаны на\n"
     "flang (flang/self/emit-*.flang), но в замыкание этого бинарника не входят.";
 
 static const char HELP_AST[] =
@@ -5835,6 +5841,24 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/*
+ * У ЦЕЛИ JavaScript ФАЙЛОВ ДВА, А НЕ ЧЕТЫРЕ, И ЭТО ГЛАВНОЕ ОТЛИЧИЕ ОТ C.
+ *
+ * Рантайм печатаемого модуля у неё едет ИЗНУТРИ `flang/self/emit-js.flang`:
+ * 83 помощника лежат там строковыми литералами (около 1040 строк файла), и
+ * печатаются они по потребности — реестром «Кусок рантайма JS» и замыканием по
+ * нему. Читать их с диска не надо и нечем: у свидетеля они лежат настоящими
+ * функциями и печатаются через `Function.prototype.toString()`, а языку файлов
+ * не читать.
+ *
+ * Снаружи приезжают ровно два текста, и оба одинаковы для ЛЮБОЙ программы:
+ * прогонщик (`flang_cli.js`, 34 388 байт) и планировщик конкурентности
+ * (`flang_conc.js`, 39 485 байт). Держать их копией в модуле значило бы завести
+ * вторую правду о чужом файле — ровно тот довод, по которому они и вынесены.
+ */
+#define EMIT_JS_RUNNER_SOURCE "flang_cli.js"
+#define EMIT_JS_SCHEDULER_SOURCE "flang_conc.js"
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -5857,6 +5881,54 @@ static bool emit_runtime_here(const char *directory) {
   ok = strstr(text, "Сгенерировано flang") == NULL;
   free(text);
   return ok;
+}
+
+/**
+ * Каталог с ИСХОДНИКАМИ рантайма JavaScript.
+ *
+ * Признак тот же, что у C, и по той же причине: напечатанный `flang_cli.js`
+ * начинается шапкой «Сгенерировано flang», исходник — строкой SPDX. Подсунуть
+ * печати напечатанное значило бы приписать шапку второй раз.
+ */
+static bool emit_js_runtime_here(const char *directory) {
+  char *probe = repl_join(directory, EMIT_JS_RUNNER_SOURCE);
+  size_t bytes = 0;
+  char *text = repl_read_file(probe, &bytes);
+  bool ok = false;
+  free(probe);
+  if (text == NULL) {
+    return false;
+  }
+  ok = strstr(text, "Сгенерировано flang") == NULL;
+  free(text);
+  return ok;
+}
+
+static char *emit_js_runtime_dir(const char *self_dir, const char *given) {
+  static const char *const places[2] = {"flang/src/emit/js", "share/flang/js"};
+  size_t index = 0;
+  if (given != NULL && given[0] != '\0') {
+    return emit_js_runtime_here(given) ? repl_say(given) : NULL;
+  }
+  {
+    const char *set = getenv("FLANG_RUNTIME_DIR");
+    if (set != NULL && set[0] != '\0') {
+      return emit_js_runtime_here(set) ? repl_say(set) : NULL;
+    }
+  }
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  for (index = 0; index < 2; index += 1) {
+    char *parent = repl_dirname(self_dir);
+    char *directory = repl_join(parent, places[index]);
+    free(parent);
+    if (emit_js_runtime_here(directory)) {
+      return directory;
+    }
+    free(directory);
+  }
+  return NULL;
 }
 
 static char *emit_runtime_dir(const char *self_dir, const char *given) {
@@ -6096,6 +6168,18 @@ static int emit_file(int argc, char **argv, const char *self) {
                                         "оболочка",          "исходник оболочки", "типы входа",
                                         "поля входа",        "варианты входа",    "параметры входа"};
   fl_value values[15];
+  /* Настройки цели JavaScript — восемь полей, порядок как в объявлении
+     «Настройки JS» (`flang/self/emit-js.flang`). Границы входа среди них нет:
+     эталон её не печатает, и это названный долг, а не упущение здесь. */
+  static const char *const js_names[8] = {"путь",
+                                          "есть путь",
+                                          "база",
+                                          "предел глубины",
+                                          "предел шагов",
+                                          "исходник планировщика",
+                                          "прогонщик",
+                                          "исходник прогонщика"};
+  fl_value js_values[8];
   fl_value args[2];
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
@@ -6120,6 +6204,10 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *runtime_source = NULL;
   char *runner_source = NULL;
   char *shell_source = NULL;
+  char *js_runner_source = NULL;
+  char *js_scheduler_source = NULL;
+  size_t js_runner_bytes = 0;
+  size_t js_scheduler_bytes = 0;
   size_t runtime_header_bytes = 0;
   size_t runtime_source_bytes = 0;
   size_t runner_source_bytes = 0;
@@ -6132,6 +6220,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   int base_index = 1;
   bool cli = true;
   bool shell = false;
+  bool js = false;
   bool fits = false;
   bool opened = false;
 
@@ -6179,15 +6268,22 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fputs("flang emit требует «--target»: в этом бинарнике их две — «c» и «js»\n", stderr);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  js = strcmp(target, "js") == 0;
+  if (!js && strcmp(target, "c") != 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» в этом бинарнике нет. Втащена одна — «c»; остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) написаны на flang\n"
+            "flang emit: цели «%s» в этом бинарнике нет. Втащены две — «c» и «js»;\n"
+            "остальные шесть (go, rust, python, java, csharp, elixir) написаны на flang\n"
             "(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.\n",
             target);
+    return 2;
+  }
+  if (js && shell) {
+    fputs("flang emit --target js: ключа «--repl» у этой цели нет — оболочки в JavaScript\n"
+          "не печатается вовсе.\n",
+          stderr);
     return 2;
   }
   if (out == NULL && one == NULL) {
@@ -6198,13 +6294,21 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = js ? emit_js_runtime_dir(self_dir, given_runtime) : emit_runtime_dir(self_dir, given_runtime);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
-          "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
-          "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
-          stderr);
+    if (js) {
+      fputs("flang emit: не найдены ИСХОДНИКИ рантайма JavaScript (flang_cli.js без шапки\n"
+            "«Сгенерировано»). Прогонщик и планировщик уезжают в вывод дословно, и без них\n"
+            "печать соврала бы. Где искать: «--runtime каталог», $FLANG_RUNTIME_DIR,\n"
+            "../flang/src/emit/js, ../share/flang/js.\n",
+            stderr);
+    } else {
+      fputs("flang emit: не найдены ИСХОДНИКИ рантайма C (flang_runtime.h без шапки «Сгенерировано»).\n"
+            "Они уезжают в вывод дословно, и без них печать соврала бы. Где искать:\n"
+            "«--runtime каталог», $FLANG_RUNTIME_DIR, ../flang/src/emit/c, ../share/flang/c.\n",
+            stderr);
+    }
     return 2;
   }
 
@@ -6219,7 +6323,18 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
 
-  {
+  if (js) {
+    char *where = repl_join(runtime, EMIT_JS_RUNNER_SOURCE);
+    js_runner_source = repl_read_file(where, &js_runner_bytes);
+    free(where);
+    where = repl_join(runtime, EMIT_JS_SCHEDULER_SOURCE);
+    js_scheduler_source = repl_read_file(where, &js_scheduler_bytes);
+    free(where);
+    if (js_runner_source == NULL || js_scheduler_source == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает исходников рантайма JavaScript\n", runtime);
+      code = 2;
+    }
+  } else {
     char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
     runtime_header = repl_read_file(where, &runtime_header_bytes);
     free(where);
@@ -6232,10 +6347,10 @@ static int emit_file(int argc, char **argv, const char *self) {
     where = repl_join(runtime, EMIT_SHELL_SOURCE);
     shell_source = repl_read_file(where, &shell_source_bytes);
     free(where);
-  }
-  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
-    code = 2;
+    if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
+      fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
+      code = 2;
+    }
   }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
      программа, собранная ИЗ ЗАМКА, а не из того, что случайно лежит на диске. */
@@ -6278,6 +6393,39 @@ static int emit_file(int argc, char **argv, const char *self) {
       } else if (!val_field(linked, "программа", &program)) {
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
+      } else if (js) {
+        /* У этой цели ДВА шага, а не один, и оба — свои функции замыкания.
+           «К печати JS» кладёт обе отметки анализа и отбрасывает недостижимое:
+           оболочки у JavaScript нет вовсе, значит отменять отбрасывание нечем,
+           и свидетель (`dropUnreachable` в `commandEmit`) отбрасывает всегда. */
+        fl_value ready = fl_nothing();
+        fl_value js_args[2];
+        js_args[0] = linked;
+        if (repl_call("К печати JS", js_args, 1, &ready) != FL_OK) {
+          code = 1;
+        } else {
+          js_values[0] = repl_value_say(own);
+          js_values[1] = fl_flag(own[0] != '\0');
+          js_values[2] = fl_number((double)base_index);
+          js_values[3] = fl_number(strtod(depth, NULL));
+          js_values[4] = fl_number(strtod(steps, NULL));
+          js_values[5] = repl_value_text(js_scheduler_source, js_scheduler_bytes);
+          js_values[6] = fl_flag(cli);
+          js_values[7] = repl_value_text(js_runner_source, js_runner_bytes);
+          js_args[0] = ready;
+          js_args[1] = repl_value_record(js_names, js_values, 8);
+          if (repl_call("Напечатать к печати JS", js_args, 2, &result) != FL_OK) {
+            code = 1;
+          } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
+            char *say = val_copy(failure);
+            fprintf(stderr, "flang emit: печать отказала — %s\n", say);
+            free(say);
+            code = 1;
+          } else if (!val_field(result, "файлы", &files) || files.tag != FL_LIST) {
+            fputs("flang emit: печать не вернула файлов\n", stderr);
+            code = 1;
+          }
+        }
       } else {
         fits = emit_entry_fits(program, table);
         values[0] = repl_value_say(own);
@@ -6396,6 +6544,8 @@ static int emit_file(int argc, char **argv, const char *self) {
   free(runtime_source);
   free(runner_source);
   free(shell_source);
+  free(js_runner_source);
+  free(js_scheduler_source);
   free(runtime);
   free(text);
   free(full);

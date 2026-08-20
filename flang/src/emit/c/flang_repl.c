@@ -265,13 +265,13 @@ static const char REPL_GREETING_NO_EVAL[] =
  * цель втаскивают, каждая его копия становится ЛОЖЬЮ. Копий здесь две, и обе
  * ниже: одна называет, что есть, вторая — чего нет.
  */
-#define EMIT_TARGETS_WORDS "c|go|rust|java|js|elixir"
-#define EMIT_TARGETS_MISSING "две цели печати из восьми"
-#define EMIT_TARGETS_SAY "цели здесь шесть — «c», «go», «rust», «java», «js» и «elixir»"
+#define EMIT_TARGETS_WORDS "c|go|rust|java|js|elixir|python"
+#define EMIT_TARGETS_MISSING "одна цель печати из восьми"
+#define EMIT_TARGETS_SAY "цели здесь семь — «c», «go», «rust», «java», «js», «elixir» и «python»"
 #define EMIT_TARGETS_REST \
-  "Остальные две (python, csharp) написаны на flang\n" \
-  "(flang/self/emit-*.flang), но в замыкание этой сборки не входят: они есть в\n" \
-  "версии для Node — npm install -g @digitable-lol/flang"
+  "Восьмая (csharp) написана на flang (flang/self/emit-csharp.flang), но в\n" \
+  "замыкание этой сборки не входит: она есть в версии для Node —\n" \
+  "npm install -g @digitable-lol/flang"
 
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
@@ -370,6 +370,7 @@ static const char HELP_EMIT[] =
     "  --target java     Java: пять файлов рантайма, класс программы, прогонщик, Makefile\n"
     "  --target js       JavaScript: модуль программы и прогонщик; рантайм внутри\n"
     "  --target elixir   Elixir: рантайм, планировщик, модуль программы, прогонщик\n"
+    "  --target python   Python: рантайм, модуль программы, прогонщик\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
@@ -381,7 +382,8 @@ static const char HELP_EMIT[] =
     "— по два (flang_runtime.go/.rs, flang_cli.go/.rs), у «java» шесть (Value.java,\n"
     "Field.java, FlangError.java, Ctx.java, Flang.java, FlangCli.java), у «js» два\n"
     "(flang_cli.js, flang_conc.js — сам рантайм у этой цели внутри печати), у «elixir»\n"
-    "три (flang_runtime.ex, flang_cli.ex, flang_conc.ex). Ищутся они в «--runtime», затем в\n"
+    "три (flang_runtime.ex, flang_cli.ex, flang_conc.ex), у «python» два\n"
+    "(flang_runtime.py, flang_cli.py). Ищутся они в «--runtime», затем в\n"
     "$FLANG_RUNTIME_DIR, затем рядом с установленным flang (share/flang/<цель>).\n"
     "\n"
     "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
@@ -5907,8 +5909,8 @@ static int run_file(int argc, char **argv) {
  *      печатью flang₁ побайтово. То есть у печати самого бинарника есть своя
  *      неподвижная точка, и восстановить компилятор из исходников `flang/self`
  *      можно сколько угодно раз, ни разу не позвав Node.
- * • ЦЕЛЕЙ ВТАЩЕНО ШЕСТЬ — `c`, `go`, `rust`, `java`, `js` и `elixir`. Остальные две
- *   написаны на flang
+ * • ЦЕЛЕЙ ВТАЩЕНО СЕМЬ — `c`, `go`, `rust`, `java`, `js`, `elixir` и `python`.
+ *   Восьмая написана на flang
  *   (`flang/self/emit-*.flang`) и сверены со свидетелем побайтово, но в
  *   замыкание не втащены. МЕШАЕТ ИМ ОДНО И ТО ЖЕ — СТОЛКНОВЕНИЯ ИМЁН:
  *   связывание сливает объявления в одно плоское пространство, а эталоны печати
@@ -5924,7 +5926,7 @@ static int run_file(int argc, char **argv) {
  *                           «Пара имён») — ВТАЩЕНА
  *     js       336 → 139   — ВТАЩЕНА
  *     elixir   422 → 261   — ВТАЩЕНА
- *     python   377 → 299
+ *     python   377 → 299   — ВТАЩЕНА
  *     csharp   382 → 309
  *
  *   Разрыв между go/rust и остальными — не случайность: `emit-go.flang` и
@@ -5948,7 +5950,8 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_JAVA 3
 #define EMIT_TARGET_JS 4
 #define EMIT_TARGET_ELIXIR 5
-#define EMIT_TARGET_COUNT 6
+#define EMIT_TARGET_PYTHON 6
+#define EMIT_TARGET_COUNT 7
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
 #define EMIT_FIELD_MAX 16
@@ -6023,6 +6026,11 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "исходник прогонщика", "исходник конкурентности", "типы входа", "поля входа", "варианты входа",
       "параметры входа"},
      3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "запустить: elixir <каталог>/<имя>.exs"},
+    {"python", "Python", "flang_runtime.py", {"flang/src/emit/python", "share/flang/python"},
+     "Напечатать связанное в Python", true, 12,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
+      "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     2, {"flang_runtime.py", "flang_cli.py"}, "запустить: python3 <каталог>/<имя>.py"},
 };
 
 /** Ключи командной строки печати — одни на все цели. */

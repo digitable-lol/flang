@@ -1049,6 +1049,182 @@ fl_status compiler_flang_sozdat_soobscheniya_progona_elixir(fl_ctx *ctx, fl_valu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_yaschiki_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value zapisi, fl_value nomer, fl_value *out, fl_error *error);
 
+/* Запись FTS «Пара имён Python»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_para_imyon_python(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор слов Python»: «слово», «готовые». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_slov_python(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поиск слова Python»: «первый», «предыдущий», «найдено». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poisk_slova_python(fl_ctx *ctx, fl_value pervyy, fl_value predyduschiy, fl_value naydeno, fl_value *out, fl_error *error);
+
+/* Запись FTS «Набор имён Python»: «взято», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nabor_imyon_python(fl_ctx *ctx, fl_value vzyato, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр Python»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_python(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Постусловие Python»: «имя», «выражение», «связывание», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_postuslovie_python(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value svyazyvanie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Предусловие Python»: «имя», «выражение», «код», «сообщение», «есть сообщение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_preduslovie_python(fl_ctx *ctx, fl_value imya, fl_value vyrazhenie, fl_value kod, fl_value soobschenie, fl_value est_soobschenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Функция Python»: «имя», «тотальная», «параметры», «возвращает», «тело», «постусловия», «предусловия». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_funkciya_python(fl_ctx *ctx, fl_value imya, fl_value totalnaya, fl_value parametry, fl_value vozvraschaet, fl_value telo, fl_value postusloviya, fl_value predusloviya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле типа Python»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_tipa_python(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Запись типа Python»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapis_tipa_python(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант типа Python»: «имя», «поля». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_tipa_python(fl_ctx *ctx, fl_value imya, fl_value polya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сумма типов Python»: «имя», «варианты». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_summa_tipov_python(fl_ctx *ctx, fl_value imya, fl_value varianty, fl_value *out, fl_error *error);
+
+/* Запись FTS «Рёбра Python»: «имя», «цели». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_ryobra_python(fl_ctx *ctx, fl_value imya, fl_value celi, fl_value *out, fl_error *error);
+
+/* Запись FTS «Компонента Python»: «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_komponenta_python(fl_ctx *ctx, fl_value imena, fl_value *out, fl_error *error);
+
+/* Запись FTS «Метка Python»: «ключ», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_metka_python(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тарьян Python»: «номера», «низы», «на стеке», «стек», «компоненты», «счётчик». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_taryan_python(fl_ctx *ctx, fl_value nomera, fl_value nizy, fl_value na_steke, fl_value stek, fl_value komponenty, fl_value schyotchik, fl_value *out, fl_error *error);
+
+/* Запись FTS «Отрезание Python»: «индекс», «элементы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_otrezanie_python(fl_ctx *ctx, fl_value indeks, fl_value elementy, fl_value *out, fl_error *error);
+
+/* Запись FTS «Занятое Python»: «идентификатор», «роль», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zanyatoe_python(fl_ctx *ctx, fl_value identifikator, fl_value rol, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именователь Python»: «взято», «пары», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovatel_python(fl_ctx *ctx, fl_value vzyato, fl_value pary, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Именованные идентификаторы Python»: «имя», «идентификаторы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_imenovannye_identifikatory_python(fl_ctx *ctx, fl_value imya, fl_value identifikatory, fl_value *out, fl_error *error);
+
+/* Запись FTS «Общее Python»: «функции», «записи», «варианты», «суммы», «ид функций», «ид фабрик», «ид вариантов», «ид шагов», «ид параметров», «глобальные», «хвостовые», «циклические», «рекурсивные», «ошибка имён». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_obschee_python(fl_ctx *ctx, fl_value funkcii, fl_value zapisi, fl_value varianty, fl_value summy, fl_value id_funkciy, fl_value id_fabrik, fl_value id_variantov, fl_value id_shagov, fl_value id_parametrov, fl_value globalnye, fl_value hvostovye, fl_value ciklicheskie, fl_value rekursivnye, fl_value oshibka_imyon, fl_value *out, fl_error *error);
+
+/* Запись FTS «Состояние Python»: «счётчик», «взято», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sostoyanie_python(fl_ctx *ctx, fl_value schyotchik, fl_value vzyato, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Свежее Python»: «состояние», «имя». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svezhee_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог Python»: «состояние», «вывод», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value znachenie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Блок Python»: «состояние», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_blok_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сборка Python»: «состояние», «вывод», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sborka_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Кусок вывода Python»: «текст», «идентификатор». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kusok_vyvoda_python(fl_ctx *ctx, fl_value tekst, fl_value identifikator, fl_value *out, fl_error *error);
+
+/* Запись FTS «Контекст Python»: «общее», «функция», «параметры», «сам хвост», «есть члены», «члены», «область». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_kontekst_python(fl_ctx *ctx, fl_value obschee, fl_value funkciya, fl_value parametry, fl_value sam_hvost, fl_value est_chleny, fl_value chleny, fl_value oblast, fl_value *out, fl_error *error);
+
+/* Запись FTS «Пары полей Python»: «индекс», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pary_poley_python(fl_ctx *ctx, fl_value indeks, fl_value chasti, fl_value *out, fl_error *error);
+
+/* Запись FTS «Зип Python»: «индекс», «текст». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zip_python(fl_ctx *ctx, fl_value indeks, fl_value tekst, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог образца Python»: «состояние», «вывод», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_obrazca_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Случай печати Python»: «тело», «образец», «есть проверка», «проверка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sluchay_pechati_python(fl_ctx *ctx, fl_value telo, fl_value obrazec, fl_value est_proverka, fl_value proverka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Сбор случаев Python»: «состояние», «вывод», «случаи». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_sluchaev_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vyvod, fl_value sluchai, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание Python»: «состояние», «контекст», «куски». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_python(fl_ctx *ctx, fl_value sostoyanie, fl_value kontekst, fl_value kuski, fl_value *out, fl_error *error);
+
+/* Запись FTS «Строки с индексом Python»: «индекс», «строки». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_stroki_s_indeksom_python(fl_ctx *ctx, fl_value indeks, fl_value stroki, fl_value *out, fl_error *error);
+
+/* Запись FTS «Связывание параметров Python»: «контекст», «индекс». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_svyazyvanie_parametrov_python(fl_ctx *ctx, fl_value kontekst, fl_value indeks, fl_value *out, fl_error *error);
+
+/* Запись FTS «Файл Python»: «путь», «содержимое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_fayl_python(fl_ctx *ctx, fl_value put, fl_value soderzhimoe, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тип входа Python»: «вид», «имя», «владелец», «ничто», «целое», «отрезок», «низ», «верх», «элемент», «поле с», «полей», «вариант с», «вариантов». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tip_vhoda_python(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value vladelec, fl_value nichto, fl_value celoe, fl_value otrezok, fl_value niz, fl_value verh, fl_value element, fl_value pole_s, fl_value poley, fl_value variant_s, fl_value variantov, fl_value *out, fl_error *error);
+
+/* Запись FTS «Поле входа Python»: «имя», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_pole_vhoda_python(fl_ctx *ctx, fl_value imya, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Вариант входа Python»: «имя», «поле с», «полей». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_variant_vhoda_python(fl_ctx *ctx, fl_value imya, fl_value pole_s, fl_value poley, fl_value *out, fl_error *error);
+
+/* Запись FTS «Параметр входа Python»: «функция», «параметр», «тип». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_parametr_vhoda_python(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value tip, fl_value *out, fl_error *error);
+
+/* Запись FTS «Настройки Python»: «путь», «есть путь», «база», «предел глубины», «предел шагов», «прогонщик», «рантайм исходник», «исходник прогонщика», «типы входа», «поля входа», «варианты входа», «параметры входа». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_nastroyki_python(fl_ctx *ctx, fl_value put, fl_value est_put, fl_value baza, fl_value predel_glubiny, fl_value predel_shagov, fl_value progonschik, fl_value rantaym_ishodnik, fl_value ishodnik_progonschika, fl_value tipy_vhoda, fl_value polya_vhoda, fl_value varianty_vhoda, fl_value parametry_vhoda, fl_value *out, fl_error *error);
+
+/* Запись FTS «Итог печати Python»: «файлы», «ошибка». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_pechati_python(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value *out, fl_error *error);
+
+/* Запись FTS «Тела Python»: «состояние», «части». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_tela_python(fl_ctx *ctx, fl_value sostoyanie, fl_value chasti, fl_value *out, fl_error *error);
+
 /* Запись FTS «Тип»: «вид», «необязательный». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_tip(fl_ctx *ctx, fl_value vid, fl_value neobyazatelnyy, fl_value *out, fl_error *error);
@@ -1881,6 +2057,10 @@ fl_status compiler_flang_sozdat_itog_sborki_js(fl_ctx *ctx, fl_value fayly, fl_v
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_sborki_v_elixir(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
 
+/* Запись FTS «Итог сборки Python»: «файлы», «ошибка», «диагностики». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_itog_sborki_python(fl_ctx *ctx, fl_value fayly, fl_value oshibka, fl_value diagnostiki, fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог примера»: «функция», «пример», «прошёл», «код», «сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_primera(fl_ctx *ctx, fl_value funkciya, fl_value primer, fl_value proshyol, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
@@ -2073,6 +2253,31 @@ fl_status compiler_flang_variant_net_chisla_elixir(fl_ctx *ctx, fl_value *out, f
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_est_zanyatoe_elixir(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_net_zanyatogo_elixir(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть узел Python»: «Есть узел Python» | «Нет узла Python». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_uzel_python(fl_ctx *ctx, fl_value uzel, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_uzla_python(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть имя Python»: «Есть имя Python» | «Нет имени Python». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_imya_python(fl_ctx *ctx, fl_value imya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_imeni_python(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть функция Python»: «Есть функция Python» | «Нет функции Python». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_funkciya_python(fl_ctx *ctx, fl_value funkciya, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_funkcii_python(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть число Python»: «Есть число Python» | «Нет числа Python». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_chislo_python(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_chisla_python(fl_ctx *ctx, fl_value *out, fl_error *error);
+
+/* Сумма типов FTS «Может быть занятое Python»: «Есть занятое Python» | «Нет занятого Python». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_est_zanyatoe_python(fl_ctx *ctx, fl_value zanyatoe, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_net_zanyatogo_python(fl_ctx *ctx, fl_value *out, fl_error *error);
 
 /* Сумма типов FTS «Вид типа»: «Вид неизвестного» | «Вид числа» | «Вид отрезка» | «Вид неотрицательного» | «Вид веса» | «Вид строки» | «Вид признака» | «Вид ничего» | «Вид списка» | «Вид записи» | «Вид суммы» | «Вид функции» | «Вид параметра». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
@@ -32329,6 +32534,3719 @@ fl_status compiler_flang_oboyti_zanyatoe_celyu_elixir(fl_ctx *ctx, fl_value imya
  * @return значение: «Итог печати Elixir»
  */
 fl_status compiler_flang_pechat_programmy_elixir(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел ничто Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_nichto_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из полей Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение: «Может быть узел Python»
+ */
+fl_status compiler_flang_pervoe_iz_poley_python(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть узел Python»
+ */
+fl_status compiler_flang_pole_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть поле у узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_pole_u_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять поле Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_vzyat_pole_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка скаляра Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_skalyara_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка в скаляре Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_v_skalyare_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это строка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_stroka_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина в скаляре Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_v_skalyare_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это истина Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_istina_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто в скаляре Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_v_skalyare_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ничто Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_nichto_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это признак в скаляре Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_priznak_v_skalyare_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это признак Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_priznak_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число в скаляре Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_v_skalyare_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это число Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_chislo_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число скаляра Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_skalyara_python(fl_ctx *ctx, fl_value skalyar, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это запись Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_zapis_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это список Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_spisok_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поля узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Поле значения»
+ */
+fl_status compiler_flang_polya_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элементы поля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_elementy_polya_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_uzla_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Применить замены Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param zameny — «замены»: список: «Замена»
+ * @return значение: строка
+ */
+fl_status compiler_flang_primenit_zameny_python(fl_ctx *ctx, fl_value tekst, fl_value zameny, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить первое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param chto — «что»: строка
+ * @param chem — «чем»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zamenit_pervoe_python(fl_ctx *ctx, fl_value tekst, fl_value chto, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить первое из частей Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @param chto — «что»: строка
+ * @param chem — «чем»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zamenit_pervoe_iz_chastey_python(fl_ctx *ctx, fl_value chasti, fl_value chto, fl_value chem, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены кириллицы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_kirillicy_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены в нижний регистр Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_v_nizhniy_registr_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Транслитерировать Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_transliterirovat_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «В нижний регистр Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_v_nizhniy_registr_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Словарные символы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovarnye_simvoly_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать слово Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @param gotovye — «готовые»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_slovo_python(fl_ctx *ctx, fl_value slovo, fl_value gotovye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slova_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Змейка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zmeyka_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из пар Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Пара имён Python»
+ * @return значение: «Может быть имя Python»
+ */
+fl_status compiler_flang_pervoe_iz_par_python(fl_ctx *ctx, fl_value pary, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти в таблице Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть имя Python»
+ */
+fl_status compiler_flang_nayti_v_tablice_python(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть в таблице Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_v_tablice_python(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение по ключу Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znachenie_po_klyuchu_python(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить пару Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Пара имён Python»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Пара имён Python»
+ */
+fl_status compiler_flang_obnovit_paru_python(fl_ctx *ctx, fl_value para, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в таблицу Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Пара имён Python»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: список: «Пара имён Python»
+ */
+fl_status compiler_flang_polozhit_v_tablicu_python(fl_ctx *ctx, fl_value tablica, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Символы слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_simvoly_slova_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цифры Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_cifry_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первый символ Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pervyy_simvol_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последний символ Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_posledniy_simvol_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это символ слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_simvol_slova_python(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Граница слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param naydeno — «найдено»
+ * @param sleva — «слева»: строка
+ * @param sprava — «справа»: строка
+ * @return значение
+ */
+fl_status compiler_flang_granica_slova_python(fl_ctx *ctx, fl_value naydeno, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поиска слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Поиск слова Python»
+ * @param chast — «часть»: строка
+ * @return значение: «Поиск слова Python»
+ */
+fl_status compiler_flang_shag_poiska_slova_python(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пройти части Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @return значение: «Поиск слова Python»
+ */
+fl_status compiler_flang_proyti_chasti_python(fl_ctx *ctx, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть слово Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param slovo — «слово»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_slovo_python(fl_ctx *ctx, fl_value tekst, fl_value slovo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Только символы слова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tolko_simvoly_slova_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это идентификатор Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_identifikator_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Замены Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Замена»
+ */
+fl_status compiler_flang_zameny_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Экранировать Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ekranirovat_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_chislo_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное число Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_konechnoe_chislo_python(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это минус ноль Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_minus_nol_python(fl_ctx *ctx, fl_value znachenie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасный идентификатор Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnyy_identifikator_python(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на цифру Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param identifikator — «идентификатор»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_cifru_python(fl_ctx *ctx, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зарезервировано в Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zarezervirovano_v_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявлено бэкендом Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obyavleno_bekendom_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Похоже на временное Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_pohozhe_na_vremennoe_python(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Одни цифры Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_odni_cifry_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя занято Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kandidat — «кандидат»: строка
+ * @param vzyato — «взято»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_imya_zanyato_python(fl_ctx *ctx, fl_value kandidat, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободное имя Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param zhelaemoe — «желаемое»: строка
+ * @param vzyato — «взято»: список: строка
+ * @param suffiks — «суффикс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_svobodnoe_imya_python(fl_ctx *ctx, fl_value zhelaemoe, fl_value vzyato, fl_value suffiks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг уникальных Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Набор имён Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Набор имён Python»
+ */
+fl_status compiler_flang_shag_unikalnyh_python(fl_ctx *ctx, fl_value akk, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить строки Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param dobavka — «добавка»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_slit_stroki_python(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Уникальные имена Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param globalnye — «глобальные»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_unikalnye_imena_python(fl_ctx *ctx, fl_value imena, fl_value globalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поле типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Поле типа Python»
+ */
+fl_status compiler_flang_sobrat_pole_tipa_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать поля типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: список: «Поле типа Python»
+ */
+fl_status compiler_flang_sobrat_polya_tipa_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена полей типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_poley_tipa_python(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать параметр Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Параметр Python»
+ */
+fl_status compiler_flang_sobrat_parametr_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля или Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @param po_umolchaniyu — «по умолчанию»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_ili_python(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value po_umolchaniyu, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать постусловие Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Постусловие Python»
+ */
+fl_status compiler_flang_sobrat_postuslovie_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать предусловие Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Предусловие Python»
+ */
+fl_status compiler_flang_sobrat_preduslovie_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функцию Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Функция Python»
+ */
+fl_status compiler_flang_sobrat_funkciyu_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать функции Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Функция Python»
+ */
+fl_status compiler_flang_sobrat_funkcii_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена функций Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_funkciy_python(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из функций Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @return значение: «Может быть функция Python»
+ */
+fl_status compiler_flang_pervaya_iz_funkciy_python(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти функцию Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Может быть функция Python»
+ */
+fl_status compiler_flang_nayti_funkciyu_python(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть функция с именем Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_funkciya_s_imenem_python(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число параметров Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_parametrov_python(fl_ctx *ctx, fl_value funkcii, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить запись типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnyaya — «прежняя»: «Запись типа Python»
+ * @param novaya — «новая»: «Запись типа Python»
+ * @return значение: «Запись типа Python»
+ */
+fl_status compiler_flang_obnovit_zapis_tipa_python(fl_ctx *ctx, fl_value prezhnyaya, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена записей Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapisi — «записи»: список: «Запись типа Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_zapisey_python(fl_ctx *ctx, fl_value zapisi, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить запись типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Запись типа Python»
+ * @param novaya — «новая»: «Запись типа Python»
+ * @return значение: список: «Запись типа Python»
+ */
+fl_status compiler_flang_slit_zapis_tipa_python(fl_ctx *ctx, fl_value akk, fl_value novaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать записи Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Запись типа Python»
+ */
+fl_status compiler_flang_sobrat_zapisi_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать вариант Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Вариант типа Python»
+ */
+fl_status compiler_flang_sobrat_variant_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать суммы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: список: «Сумма типов Python»
+ */
+fl_status compiler_flang_sobrat_summy_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить вариант типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhniy — «прежний»: «Вариант типа Python»
+ * @param novyy — «новый»: «Вариант типа Python»
+ * @return значение: «Вариант типа Python»
+ */
+fl_status compiler_flang_obnovit_variant_tipa_python(fl_ctx *ctx, fl_value prezhniy, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена вариантов Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: «Вариант типа Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_variantov_python(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить вариант типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Python»
+ * @param novyy — «новый»: «Вариант типа Python»
+ * @return значение: список: «Вариант типа Python»
+ */
+fl_status compiler_flang_slit_variant_tipa_python(fl_ctx *ctx, fl_value akk, fl_value novyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить варианты суммы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Вариант типа Python»
+ * @param summa — «сумма»: «Сумма типов Python»
+ * @return значение: список: «Вариант типа Python»
+ */
+fl_status compiler_flang_slit_varianty_summy_python(fl_ctx *ctx, fl_value akk, fl_value summa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать варианты Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param summy — «суммы»: список: «Сумма типов Python»
+ * @return значение: список: «Вариант типа Python»
+ */
+fl_status compiler_flang_sobrat_varianty_python(fl_ctx *ctx, fl_value summy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первая из меток Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Python»
+ * @return значение: «Может быть число Python»
+ */
+fl_status compiler_flang_pervaya_iz_metok_python(fl_ctx *ctx, fl_value metki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти метку Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Может быть число Python»
+ */
+fl_status compiler_flang_nayti_metku_python(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть метка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_metka_python(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Метка или ноль Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Python»
+ * @param klyuch — «ключ»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_metka_ili_nol_python(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить метку Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metka — «метка»: «Метка Python»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: «Метка Python»
+ */
+fl_status compiler_flang_obnovit_metku_python(fl_ctx *ctx, fl_value metka, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить метку Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param metki — «метки»: список: «Метка Python»
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: число
+ * @return значение: список: «Метка Python»
+ */
+fl_status compiler_flang_polozhit_metku_python(fl_ctx *ctx, fl_value metki, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Меньшее Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervoe — «первое»: число
+ * @param vtoroe — «второе»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_menshee_python(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цели Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_celi_python(fl_ctx *ctx, fl_value ryobra, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить уникальное Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_unikalnoe_python(fl_ctx *ctx, fl_value imya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить имя вызова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_imya_vyzova_python(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело пусть Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_telo_pust_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случая Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaya_python(fl_ctx *ctx, fl_value sluchay, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста случаев Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_sluchaev_python(fl_ctx *ctx, fl_value sluchai, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_python(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход хвоста ветвей Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_hvosta_vetvey_python(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые вызовы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvostovye_vyzovy_python(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить вызов Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dobavit_vyzov_python(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход всего Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_vsego_python(fl_ctx *ctx, fl_value uzel, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обход полей Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param naydeno — «найдено»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_obhod_poley_python(fl_ctx *ctx, fl_value polya, fl_value naydeno, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все вызовы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_vse_vyzovy_python(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг отрезания Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Отрезание Python»
+ * @param element — «элемент»: строка
+ * @param predel — «предел»: число
+ * @return значение: «Отрезание Python»
+ */
+fl_status compiler_flang_shag_otrezaniya_python(fl_ctx *ctx, fl_value akk, fl_value element, fl_value predel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без последней строки Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_bez_posledney_stroki_python(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Последняя строка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_poslednyaya_stroka_python(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать компоненту Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_zapisat_komponentu_python(fl_ctx *ctx, fl_value sostoyanie, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять компоненту Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять вершину стека Python»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_snyat_komponentu_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Снять вершину стека Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Снять компоненту Python»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param nabrano — «набрано»: список: строка
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_snyat_vershinu_steka_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value nabrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить низ Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param niz — «низ»: число
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_zamenit_niz_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value niz, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обратное ребро Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_obratnoe_rebro_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закрыть вершину Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_zakryt_vershinu_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро вглубь Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_rebro_vglub_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро внутри Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_rebro_vnutri_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ребро Тарьяна Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param cel — «цель»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_rebro_taryana_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value cel, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти вершину Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_oboyti_vershinu_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Корень Тарьяна Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Тарьян Python»
+ * @param imya — «имя»: строка
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: «Тарьян Python»
+ */
+fl_status compiler_flang_koren_taryana_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Компоненты связности Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param imena — «имена»: список: строка
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: список: «Компонента Python»
+ */
+fl_status compiler_flang_komponenty_svyaznosti_python(fl_ctx *ctx, fl_value imena, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены компоненты Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Python»
+ * @return значение: список: «Рёбра Python»
+ */
+fl_status compiler_flang_chleny_komponenty_python(fl_ctx *ctx, fl_value komponenta, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить рёбра Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Рёбра Python»
+ * @param dobavka — «добавка»: список: «Рёбра Python»
+ * @return значение: список: «Рёбра Python»
+ */
+fl_status compiler_flang_slit_ryobra_python(fl_ctx *ctx, fl_value akk, fl_value dobavka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Циклические функции Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Python»
+ * @return значение: список: «Рёбра Python»
+ */
+fl_status compiler_flang_ciklicheskie_funkcii_python(fl_ctx *ctx, fl_value komponenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивная одиночка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenta — «компонента»: «Компонента Python»
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnaya_odinochka_python(fl_ctx *ctx, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг рекурсивных Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: строка
+ * @param komponenta — «компонента»: «Компонента Python»
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shag_rekursivnyh_python(fl_ctx *ctx, fl_value akk, fl_value komponenta, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рекурсивные функции Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param komponenty — «компоненты»: список: «Компонента Python»
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_rekursivnye_funkcii_python(fl_ctx *ctx, fl_value komponenty, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена рёбер Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ryobra — «рёбра»: список: «Рёбра Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_ryober_python(fl_ctx *ctx, fl_value ryobra, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Приставка роли Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pristavka_roli_python(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ярлык роли Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rol — «роль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_yarlyk_roli_python(fl_ctx *ctx, fl_value rol, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первое из занятых Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param spisok — «список»: список: «Занятое Python»
+ * @return значение: «Может быть занятое Python»
+ */
+fl_status compiler_flang_pervoe_iz_zanyatyh_python(fl_ctx *ctx, fl_value spisok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти занятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vzyato — «взято»: список: «Занятое Python»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Может быть занятое Python»
+ */
+fl_status compiler_flang_nayti_zanyatoe_python(fl_ctx *ctx, fl_value vzyato, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обновить занятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnee — «прежнее»: «Занятое Python»
+ * @param novoe — «новое»: «Занятое Python»
+ * @return значение: «Занятое Python»
+ */
+fl_status compiler_flang_obnovit_zanyatoe_python(fl_ctx *ctx, fl_value prezhnee, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы занятых Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vzyato — «взято»: список: «Занятое Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_zanyatyh_python(fl_ctx *ctx, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить занятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vzyato — «взято»: список: «Занятое Python»
+ * @param novoe — «новое»: «Занятое Python»
+ * @return значение: список: «Занятое Python»
+ */
+fl_status compiler_flang_polozhit_zanyatoe_python(fl_ctx *ctx, fl_value vzyato, fl_value novoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Владелец имени Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnee — «прежнее»: «Занятое Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vladelec_imeni_python(fl_ctx *ctx, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка занятого имени Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Занятое Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_zanyatogo_imeni_python(fl_ctx *ctx, fl_value oshibka, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить занятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param prezhnee — «прежнее»: «Может быть занятое Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_proverit_zanyatoe_python(fl_ctx *ctx, fl_value oshibka, fl_value rol, fl_value imya, fl_value identifikator, fl_value prezhnee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сверить прежнее имя Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oshibka — «ошибка»: строка
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param byloe — «былое»: «Занятое Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_sverit_prezhnee_imya_python(fl_ctx *ctx, fl_value oshibka, fl_value rol, fl_value imya, fl_value identifikator, fl_value byloe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять имя Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imenovatel — «именователь»: «Именователь Python»
+ * @param rol — «роль»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Именователь Python»
+ */
+fl_status compiler_flang_zanyat_imya_python(fl_ctx *ctx, fl_value imenovatel, fl_value rol, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустой именователь Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Именователь Python»
+ */
+fl_status compiler_flang_pustoy_imenovatel_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занять роль Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vzyato — «взято»: список: «Занятое Python»
+ * @param oshibka — «ошибка»: строка
+ * @param rol — «роль»: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: «Именователь Python»
+ */
+fl_status compiler_flang_zanyat_rol_python(fl_ctx *ctx, fl_value vzyato, fl_value oshibka, fl_value rol, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы параметров Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param globalnye — «глобальные»: список: строка
+ * @return значение: «Именованные идентификаторы Python»
+ */
+fl_status compiler_flang_identifikatory_parametrov_python(fl_ctx *ctx, fl_value funkciya, fl_value globalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Идентификаторы для Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablica — «таблица»: список: «Именованные идентификаторы Python»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_identifikatory_dlya_python(fl_ctx *ctx, fl_value tablica, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовые рёбра Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @return значение: список: «Рёбра Python»
+ */
+fl_status compiler_flang_hvostovye_ryobra_python(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Рёбра вызовов Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Функция Python»
+ * @return значение: список: «Рёбра Python»
+ */
+fl_status compiler_flang_ryobra_vyzovov_python(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать общее Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Общее Python»
+ */
+fl_status compiler_flang_sobrat_obschee_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустое состояние Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_pustoe_sostoyanie_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить счётчик Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param schyotchik — «счётчик»: число
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_zamenit_schyotchik_python(fl_ctx *ctx, fl_value sostoyanie, fl_value schyotchik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заменить взятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param vzyato — «взято»: список: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_zamenit_vzyatoe_python(fl_ctx *ctx, fl_value sostoyanie, fl_value vzyato, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записать ошибку Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param tekst — «текст»: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_zapisat_oshibku_python(fl_ctx *ctx, fl_value sostoyanie, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Временное Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Свежее Python»
+ */
+fl_status compiler_flang_vremennoe_python(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свежее имя Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Свежее Python»
+ */
+fl_status compiler_flang_svezhee_imya_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка вывода Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_vyvoda_python(fl_ctx *ctx, fl_value otstup, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Глубже Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_glubzhe_python(fl_ctx *ctx, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать имя Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Контекст Python»
+ */
+fl_status compiler_flang_svyazat_imya_python(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Погасить кусок Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kusok — «кусок»: «Кусок вывода Python»
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pogasit_kusok_python(fl_ctx *ctx, fl_value kusok, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать куски Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kuski — «куски»: список: «Кусок вывода Python»
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_sobrat_kuski_python(fl_ctx *ctx, fl_value kuski, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто кусок Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: «Кусок вывода Python»
+ */
+fl_status compiler_flang_prosto_kusok_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустая сборка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_pustaya_sborka_python(fl_ctx *ctx, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг подъёма Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Python»
+ * @param chast — «часть»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_shag_podyoma_python(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поднять часть Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Python»
+ * @param chast — «часть»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_podnyat_chast_python(fl_ctx *ctx, fl_value akk, fl_value chast, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поднять части Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: строка
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_podnyat_chasti_python(fl_ctx *ctx, fl_value chasti, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Материализовать Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_materializovat_python(fl_ctx *ctx, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Материализовать всегда Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Итог Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_materializovat_vsegda_python(fl_ctx *ctx, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Просто значение Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param znachenie — «значение»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_prosto_znachenie_python(fl_ctx *ctx, fl_value sostoyanie, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргументы после ctx Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_argumenty_posle_ctx_python(fl_ctx *ctx, fl_value argumenty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Синонимы форм Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Python»
+ */
+fl_status compiler_flang_sinonimy_form_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Каноническое имя формы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kanonicheskoe_imya_formy_python(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники форм Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Python»
+ */
+fl_status compiler_flang_pomoschniki_form_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арности форм Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Метка Python»
+ */
+fl_status compiler_flang_arnosti_form_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощники операций Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Пара имён Python»
+ */
+fl_status compiler_flang_pomoschniki_operaciy_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Между Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param ot — «от»: число
+ * @param do_2 — «до»: число
+ * @return значение
+ */
+fl_status compiler_flang_mezhdu_python(fl_ctx *ctx, fl_value znachenie, fl_value ot, fl_value do_2, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово аргументов Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kolichestvo — «количество»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_argumentov_python(fl_ctx *ctx, fl_value kolichestvo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать скаляра Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param skalyar — «скаляр»: «Скаляр»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_skalyara_python(fl_ctx *ctx, fl_value skalyar, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закодированный вариант Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть имя Python»
+ */
+fl_status compiler_flang_zakodirovannyy_variant_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закодированный вариант дальше Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть имя Python»
+ */
+fl_status compiler_flang_zakodirovannyy_variant_dalshe_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Закодированный вариант по полям Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть имя Python»
+ */
+fl_status compiler_flang_zakodirovannyy_variant_po_polyam_python(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг пары поля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Пары полей Python»
+ * @param klyuch — «ключ»: строка
+ * @param znacheniya — «значения»: список: строка
+ * @return значение: «Пары полей Python»
+ */
+fl_status compiler_flang_shag_pary_polya_python(fl_ctx *ctx, fl_value akk, fl_value klyuch, fl_value znacheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей записи Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuchi — «ключи»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_poley_zapisi_python(fl_ctx *ctx, fl_value klyuchi, fl_value znacheniya, fl_value est_variant, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг выбора Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Python»
+ * @param element — «элемент»: строка
+ * @param iskomyy — «искомый»: число
+ * @return значение: «Зип Python»
+ */
+fl_status compiler_flang_shag_vybora_python(fl_ctx *ctx, fl_value akk, fl_value element, fl_value iskomyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Элемент по индексу Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param indeks — «индекс»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_element_po_indeksu_python(fl_ctx *ctx, fl_value stroki, fl_value indeks, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать литерала Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_literala_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг литерала Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка Python»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_shag_literala_python(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сложить упорядоченное Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Python»
+ * @param itog — «итог»: «Итог Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_slozhit_uporyadochennoe_python(fl_ctx *ctx, fl_value akk, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сложить с подъёмом Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Python»
+ * @param itog — «итог»: «Итог Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_slozhit_s_podyomom_python(fl_ctx *ctx, fl_value akk, fl_value itog, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Упорядоченные литералы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_uporyadochennye_literaly_python(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка литералов Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_spiska_literalov_python(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи литералом Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_zapisi_literalom_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей литералом Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_poley_literalom_python(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать значения Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_znacheniya_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неизвестный вид Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_neizvestnyy_vid_python(fl_ctx *ctx, fl_value uzel, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать переменной Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_peremennoy_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать поля записи Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_polya_zapisi_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя узла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param imya — «имя»: строка
+ * @param vid — «вид»: строка
+ * @param pole — «поле»: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_imya_uzla_python(fl_ctx *ctx, fl_value sostoyanie, fl_value imya, fl_value vid, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Куски связывания Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param identifikator — «идентификатор»: строка
+ * @param znachenie — «значение»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: список: «Кусок вывода Python»
+ */
+fl_status compiler_flang_kuski_svyazyvaniya_python(fl_ctx *ctx, fl_value imya, fl_value identifikator, fl_value znachenie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать пусть Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_pust_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положить в Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_polozhit_v_python(fl_ctx *ctx, fl_value uzel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать если Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_esli_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора значением Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_razbora_znacheniem_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг аргумента Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param akk — «акк»: «Сборка Python»
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_shag_argumenta_python(fl_ctx *ctx, fl_value akk, fl_value uzel, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Упорядоченные значения Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzly — «узлы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_uporyadochennye_znacheniya_python(fl_ctx *ctx, fl_value uzly, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность вызова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_arnost_vyzova_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разрешить вызов Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_razreshit_vyzov_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вызова Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_vyzova_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить арность формы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param dano — «дано»: число
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_arnost_formy_python(fl_ctx *ctx, fl_value sostoyanie, fl_value kanonicheskoe, fl_value dano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать формы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_formy_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Формы, снимаемые непустотой Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_formy_snimaemye_nepustotoy_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Суффикс доказанного помощника Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_suffiks_dokazannogo_pomoschnika_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Помощник формы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pomoschnik_formy_python(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать известной формы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kanonicheskoe — «каноническое»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_izvestnoy_formy_python(fl_ctx *ctx, fl_value uzel, fl_value kanonicheskoe, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать операции Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_operacii_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать помощника операции Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param levoe — «левое»: строка
+ * @param pravoe — «правое»: строка
+ * @param vyvod — «вывод»: строка
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_pomoschnika_operacii_python(fl_ctx *ctx, fl_value operaciya, fl_value levoe, fl_value pravoe, fl_value vyvod, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать списка Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_spiska_python(fl_ctx *ctx, fl_value elementy, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать полей значениями Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param est_variant — «есть вариант»
+ * @param variant — «вариант»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_poley_znacheniyami_python(fl_ctx *ctx, fl_value polya, fl_value est_variant, fl_value variant, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать записи Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_zapisi_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить запись Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_zapis_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить имя записи Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_imya_zapisi_python(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_konstruktora_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить вариант Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param imya — «имя»: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_variant_python(fl_ctx *ctx, fl_value kontekst, fl_value sostoyanie, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_svyortki_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать свёртки дальше Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_svyortki_dalshe_python(fl_ctx *ctx, fl_value uzel, fl_value nakopitel, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_cikla_python(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать цикла дальше Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог Python»
+ */
+fl_status compiler_flang_pechat_cikla_dalshe_python(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value element, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело цикла Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param otobrazhenie — «отображение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_cikla_python(fl_ctx *ctx, fl_value uzel, fl_value otobrazhenie, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело отображения Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_otobrazheniya_python(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело фильтра Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param massiv — «массив»: строка
+ * @param imya_elementa — «имя элемента»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param vnutri — «внутри»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_filtra_python(fl_ctx *ctx, fl_value uzel, fl_value massiv, fl_value imya_elementa, fl_value kontekst, fl_value sostoyanie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка образца Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца Python»
+ */
+fl_status compiler_flang_proverka_obrazca_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Готовая проверка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param proverka — «проверка»: строка
+ * @return значение: «Итог образца Python»
+ */
+fl_status compiler_flang_gotovaya_proverka_python(fl_ctx *ctx, fl_value sostoyanie, fl_value proverka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка образца Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Итог образца Python»
+ */
+fl_status compiler_flang_oshibka_obrazca_python(fl_ctx *ctx, fl_value obrazec, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверка литералом Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог образца Python»
+ */
+fl_status compiler_flang_proverka_literalom_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связки варианта Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @return значение: список: «Пара имён Python»
+ */
+fl_status compiler_flang_svyazki_varianta_python(fl_ctx *ctx, fl_value obrazec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать с примечанием Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Связывание Python»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param primechanie — «примечание»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazat_s_primechaniem_python(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value primechanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать без примечания Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Связывание Python»
+ * @param imya — «имя»: строка
+ * @param kod — «код»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazat_bez_primechaniya_python(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value kod, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать поле варианта Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Связывание Python»
+ * @param svyazka — «связка»: «Пара имён Python»
+ * @param predmet — «предмет»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazat_pole_varianta_python(fl_ctx *ctx, fl_value itog, fl_value svyazka, fl_value predmet, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание образца Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazyvanie_obrazca_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание любого Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazyvanie_lyubogo_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы и хвоста Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_i_hvosta_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связывание головы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obrazec — «образец»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param pusto — «пусто»: «Связывание Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Связывание Python»
+ */
+fl_status compiler_flang_svyazyvanie_golovy_python(fl_ctx *ctx, fl_value obrazec, fl_value predmet, fl_value pusto, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверить случай Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param sluchay — «случай»: «Значение»
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_proverit_sluchay_python(fl_ctx *ctx, fl_value sostoyanie, fl_value sluchay, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг сбора случая Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Сбор случаев Python»
+ * @param sluchay — «случай»: «Значение»
+ * @param predmet — «предмет»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сбор случаев Python»
+ */
+fl_status compiler_flang_shag_sbora_sluchaya_python(fl_ctx *ctx, fl_value akk, fl_value sluchay, fl_value predmet, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ветви Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Python»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_pechat_vetvi_python(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело ветви Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_vetvi_python(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост цепочки Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvost_cepochki_python(fl_ctx *ctx, fl_value otkryto, fl_value predmet, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цепочка случаев Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Случай печати Python»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_cepochka_sluchaev_python(fl_ctx *ctx, fl_value sluchai, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг цепочки Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Python»
+ * @param ostalnye — «остальные»: список: «Случай печати Python»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_shag_cepochki_python(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь с проверкой Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Python»
+ * @param ostalnye — «остальные»: список: «Случай печати Python»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_vetv_s_proverkoy_python(fl_ctx *ctx, fl_value sluchay, fl_value ostalnye, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь без проверки Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Python»
+ * @param otkryto — «открыто»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_vetv_bez_proverki_python(fl_ctx *ctx, fl_value sluchay, fl_value otkryto, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветвь через иначе Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchay — «случай»: «Случай печати Python»
+ * @param predmet — «предмет»: строка
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_vetv_cherez_inache_python(fl_ctx *ctx, fl_value sluchay, fl_value predmet, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param est_cel — «есть цель»
+ * @param cel — «цель»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_pechat_razbora_python(fl_ctx *ctx, fl_value uzel, fl_value est_cel, fl_value cel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать хвоста Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_pechat_hvosta_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое значение Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoe_znachenie_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое пусть Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoe_pust_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовое если Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoe_esli_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это самовызов Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_samovyzov_python(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отскок Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_otskok_python(fl_ctx *ctx, fl_value kontekst, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой вызов Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoy_vyzov_python(fl_ctx *ctx, fl_value uzel, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой возврат Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Python»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoy_vozvrat_python(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой отскок Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Python»
+ * @param imya — «имя»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoy_otskok_python(fl_ctx *ctx, fl_value argumenty, fl_value imya, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Аргумент можно оставить Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @return значение
+ */
+fl_status compiler_flang_argument_mozhno_ostavit_python(fl_ctx *ctx, fl_value argument, fl_value kontekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг временного аргумента Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сборка Python»
+ * @param argument — «аргумент»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Сборка Python»
+ */
+fl_status compiler_flang_shag_vremennogo_argumenta_python(fl_ctx *ctx, fl_value akk, fl_value argument, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения параметра Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Python»
+ * @param parametr — «параметр»: строка
+ * @param vremennye — «временные»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: «Зип Python»
+ */
+fl_status compiler_flang_shag_prisvoeniya_parametra_python(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value vremennye, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвостовой цикл Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param argumenty — «аргументы»: «Сборка Python»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_hvostovoy_cikl_python(fl_ctx *ctx, fl_value argumenty, fl_value kontekst, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Безопасная строка документации Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bezopasnaya_stroka_dokumentacii_python(fl_ctx *ctx, fl_value stroka, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка документации Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_dokumentacii_python(fl_ctx *ctx, fl_value stroka, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Документация Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_dokumentaciya_python(fl_ctx *ctx, fl_value stroki, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Документация с началом Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golova — «голова»: строка
+ * @param hvost — «хвост»: список: строка
+ * @param otstup — «отступ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_dokumentaciya_s_nachalom_python(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка типа Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_tipa_python(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка вида типа Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_vida_tipa_python(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пометка имени типа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pometka_imeni_tipa_python(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param akk — «акк»: «Строки с индексом Python»
+ * @param parametr — «параметр»: «Параметр Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Строки с индексом Python»
+ */
+fl_status compiler_flang_stroka_parametra_python(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Самовызов в хвосте Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение
+ */
+fl_status compiler_flang_samovyzov_v_hvoste_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Члены батута Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chleny_batuta_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть батут Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение
+ */
+fl_status compiler_flang_est_batut_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка батута Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_batuta_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Описание функции Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_opisanie_funkcii_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Python»
+ * @param parametr — «параметр»: «Параметр Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров Python»
+ */
+fl_status compiler_flang_svyazat_parametr_python(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальный контекст Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: «Контекст Python»
+ */
+fl_status compiler_flang_nachalnyy_kontekst_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Контекст двери Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: «Контекст Python»
+ */
+fl_status compiler_flang_kontekst_dveri_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести параметры двери Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: «Параметр Python»
+ * @param nul — «нуль»: «Связывание параметров Python»
+ * @return значение: «Связывание параметров Python»
+ */
+fl_status compiler_flang_svesti_parametry_dveri_python(fl_ctx *ctx, fl_value parametry, fl_value nul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связать параметр двери Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Связывание параметров Python»
+ * @param parametr — «параметр»: «Параметр Python»
+ * @return значение: «Связывание параметров Python»
+ */
+fl_status compiler_flang_svyazat_parametr_dveri_python(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести параметры Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: «Параметр Python»
+ * @param nul — «нуль»: «Связывание параметров Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Связывание параметров Python»
+ */
+fl_status compiler_flang_svesti_parametry_python(fl_ctx *ctx, fl_value parametry, fl_value nul, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начальное взятое Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param parametry — «параметры»: список: строка
+ * @return значение: «Состояние Python»
+ */
+fl_status compiler_flang_nachalnoe_vzyatoe_python(fl_ctx *ctx, fl_value sostoyanie, fl_value obschee, fl_value parametry, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг постусловия Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Python»
+ * @param postuslovie — «постусловие»: «Постусловие Python»
+ * @param rezultat — «результат»: строка
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param funkciya — «функция»: «Функция Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_shag_postusloviya_python(fl_ctx *ctx, fl_value blok, fl_value postuslovie, fl_value rezultat, fl_value kontekst, fl_value funkciya, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело с постусловиями Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_s_postusloviyami_python(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело циклом Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_ciklom_python(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело функции Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_telo_funkcii_python(fl_ctx *ctx, fl_value funkciya, fl_value kontekst, fl_value sostoyanie, fl_value otstup, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без перевода в конце Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_perevoda_v_konce_python(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг распаковки Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Python»
+ * @param parametr — «параметр»: «Параметр Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип Python»
+ */
+fl_status compiler_flang_shag_raspakovki_python(fl_ctx *ctx, fl_value akk, fl_value parametr, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать батута Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @param podpis — «подпись»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_batuta_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value podpis, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать со сторожем Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Функция Python»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @param podpis — «подпись»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_so_storozhem_python(fl_ctx *ctx, fl_value funkciya, fl_value tekst, fl_value opisanie, fl_value podpis, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать простой функции Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @param podpis — «подпись»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_prostoy_funkcii_python(fl_ctx *ctx, fl_value tekst, fl_value opisanie, fl_value podpis, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Выбор оболочки Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param tekst — «текст»: строка
+ * @param opisanie — «описание»: строка
+ * @param podpis — «подпись»: строка
+ * @param est_batut — «есть батут»
+ * @param storozh — «сторож»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vybor_obolochki_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value tekst, fl_value opisanie, fl_value podpis, fl_value est_batut, fl_value storozh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отступ тела Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_batut — «есть батут»
+ * @param storozh — «сторож»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otstup_tela_python(fl_ctx *ctx, fl_value est_batut, fl_value storozh, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать функции Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_pechat_funkcii_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг присвоения поля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Python»
+ * @param pole — «поле»: «Поле типа Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @return значение: «Зип Python»
+ */
+fl_status compiler_flang_shag_prisvoeniya_polya_python(fl_ctx *ctx, fl_value akk, fl_value pole, fl_value identifikatory, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перечень полей Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_poley_python(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело фабрики Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param polya — «поля»: список: «Поле типа Python»
+ * @param identifikatory — «идентификаторы»: список: строка
+ * @param nachalo — «начало»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_telo_fabriki_python(fl_ctx *ctx, fl_value polya, fl_value identifikatory, fl_value nachalo, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать фабрики Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zapis — «запись»: «Запись типа Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_fabriki_python(fl_ctx *ctx, fl_value zapis, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать конструктора варианта Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param variant — «вариант»: «Вариант типа Python»
+ * @param summa — «сумма»: строка
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_konstruktora_varianta_python(fl_ctx *ctx, fl_value variant, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать нового контекста Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_novogo_konteksta_python(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка аргумента вызова Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Зип Python»
+ * @param identifikator — «идентификатор»: строка
+ * @return значение: «Зип Python»
+ */
+fl_status compiler_flang_stroka_argumenta_vyzova_python(fl_ctx *ctx, fl_value akk, fl_value identifikator, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Договор на двери Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_dogovor_na_dveri_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Проверки договора Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_proverki_dogovora_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг предусловия Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Python»
+ * @param preduslovie — «предусловие»: «Предусловие Python»
+ * @param kontekst — «контекст»: «Контекст Python»
+ * @param funkciya — «функция»: «Функция Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_shag_predusloviya_python(fl_ctx *ctx, fl_value blok, fl_value preduslovie, fl_value kontekst, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ветка диспетчера Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_vetka_dispetchera_python(fl_ctx *ctx, fl_value funkciya, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг ветки диспетчера Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param blok — «блок»: «Блок Python»
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_shag_vetki_dispetchera_python(fl_ctx *ctx, fl_value blok, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать диспетчера Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @return значение: «Блок Python»
+ */
+fl_status compiler_flang_pechat_dispetchera_python(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chto — «что»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shapka_python(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Makefile Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: строка
+ * @param progonschik — «прогонщик»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_makefile_python(fl_ctx *ctx, fl_value fayl, fl_value progonschik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Заголовок исходника Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zagolovok_ishodnika_python(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исходник модуля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_modul — «есть модуль»
+ * @param modul — «модуль»: строка
+ * @param chasti — «части»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_ishodnik_modulya_python(fl_ctx *ctx, fl_value est_modul, fl_value modul, fl_value chasti, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Части с заголовком Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervyy — «первый»: строка
+ * @param ostalnye — «остальные»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_chasti_s_zagolovkom_python(fl_ctx *ctx, fl_value pervyy, fl_value ostalnye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя модуля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_modulya_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя модуля Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_modulya_python(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято целью Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyato_celyu_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Обойти занятое целью Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oboyti_zanyatoe_celyu_python(fl_ctx *ctx, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя файла программы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_fayla_programmy_python(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ошибка имени файла Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: строка
+ * @param modul — «модуль»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_oshibka_imeni_fayla_python(fl_ctx *ctx, fl_value fayl, fl_value modul, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занято рантаймом Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: строка
+ * @return значение
+ */
+fl_status compiler_flang_zanyato_rantaymom_python(fl_ctx *ctx, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг тела функции Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param tela — «тела»: «Тела Python»
+ * @param funkciya — «функция»: «Функция Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: «Тела Python»
+ */
+fl_status compiler_flang_shag_tela_funkcii_python(fl_ctx *ctx, fl_value tela, fl_value funkciya, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тела вариантов суммы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param summa — «сумма»: «Сумма типов Python»
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tela_variantov_summy_python(fl_ctx *ctx, fl_value summa, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тела конструкторов Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_tela_konstruktorov_python(fl_ctx *ctx, fl_value obschee, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать тел Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obschee — «общее»: «Общее Python»
+ * @param sostoyanie — «состояние»: «Состояние Python»
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: «Тела Python»
+ */
+fl_status compiler_flang_pechat_tel_python(fl_ctx *ctx, fl_value obschee, fl_value sostoyanie, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить файлы Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pervye — «первые»: список: «Файл Python»
+ * @param vtorye — «вторые»: список: «Файл Python»
+ * @return значение: список: «Файл Python»
+ */
+fl_status compiler_flang_slit_fayly_python(fl_ctx *ctx, fl_value pervye, fl_value vtorye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Признак Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_priznak_python(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид типа входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_tipa_vhoda_python(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка типа входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tipa_vhoda_python(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_vhoda_python(fl_ctx *ctx, fl_value pole, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка варианта входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param variant — «вариант»: «Вариант входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_varianta_vhoda_python(fl_ctx *ctx, fl_value variant, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка параметра входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: «Параметр входа Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_parametra_vhoda_python(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шапка границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shapka_granicy_vhoda_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hvost_granicy_vhoda_python(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строки границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_granicy_vhoda_python(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать границы входа Python».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_granicy_vhoda_python(fl_ctx *ctx, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать программы Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: «Итог печати Python»
+ */
+fl_status compiler_flang_pechat_programmy_python(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестного».
@@ -62774,6 +66692,46 @@ fl_status compiler_flang_pechat_v_elixir_ot_ishodnikov(fl_ctx *ctx, fl_value fay
  * @return значение: «Итог сборки в Elixir»
  */
 fl_status compiler_flang_sborka_iz_pechati_elixir(fl_ctx *ctx, fl_value itog, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать в Python от исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: «Итог сборки Python»
+ */
+fl_status compiler_flang_pechat_v_python_ot_ishodnikov(fl_ctx *ctx, fl_value fayly, fl_value vhod, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «К печати в Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_k_pechati_v_python(fl_ctx *ctx, fl_value svyazano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать к печати в Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: «Итог сборки Python»
+ */
+fl_status compiler_flang_napechatat_k_pechati_v_python(fl_ctx *ctx, fl_value programma, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать связанное в Python».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Python»
+ * @return значение: «Итог печати Python»
+ */
+fl_status compiler_flang_napechatat_svyazannoe_v_python(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

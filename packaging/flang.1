@@ -30,7 +30,7 @@ flang \- проверить программу на flang: типы и дока�
 .br
 .B flang emit
 .I файл.flang
-.B \-\-target c|go|rust|java|js|elixir
+.B \-\-target c|go|rust|java|js|elixir|python
 .br
 .B flang lock
 .I файл.flang
@@ -214,8 +214,9 @@ $ echo '«Сумма» от [3, 1, 2]' | flang repl проба.flang
 двоичный — «6».
 .RE
 .TP
-.BI "emit " "файл.flang " \-\-target " c|go|rust|java|js|elixir"
-Напечатать программу в C99, в Go, в Rust, в Java, в JavaScript или в Elixir. Куда:
+.BI "emit " "файл.flang " \-\-target " c|go|rust|java|js|elixir|python"
+Напечатать программу в C99, в Go, в Rust, в Java, в JavaScript, в Elixir или в
+Python. Куда:
 .B \-\-out
 .I каталог
 (все файлы) или
@@ -250,7 +251,11 @@ $ echo '«Сумма» от [3, 1, 2]' | flang repl проба.flang
 сам рантайм этой цели лежит внутри печати, а не файлом, — у
 .B elixir
 три
-.RI ( flang_runtime.ex ", " flang_cli.ex ", " flang_conc.ex ).
+.RI ( flang_runtime.ex ", " flang_cli.ex ", " flang_conc.ex ),
+у
+.B python
+два
+.RI ( flang_runtime.py ", " flang_cli.py ).
 Ищет она их по очереди в
 .BI \-\-runtime " каталог" \fR,
 в
@@ -554,9 +559,8 @@ $ echo '{"fn":"Число связанных функций","args":[{"l":[{"r":
 .RE
 .SH ЧЕГО ЗДЕСЬ НЕТ
 Команд не недостаёт ни одной: все десять команд полного инструментария этот
-двоичный файл исполняет сам, без Node. Недостаёт другого — остальных двух
-целей печати
-.RB ( "\-\-target python" ", " csharp ),
+двоичный файл исполняет сам, без Node. Недостаёт другого — восьмой цели печати
+.RB ( "\-\-target csharp" ),
 законов на сетке (моноид, монада, изоморфизм и пять объявленных свойств
 считаются ВЫЧИСЛЕНИЕМ, и слоёв, которые это делают, здесь нет) и языкового
 сервера. На программе, где объявлен такой закон,

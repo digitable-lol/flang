@@ -11,6 +11,26 @@ functions, {{корпус.строк|разрядами}} lines.
 flang check <file> --proof --json
 ```
 
+For every claim that is stated, the kernel answers with one of three words, and
+they are not interchangeable.
+
+```mermaid The kernel's three answers, and what each is worth
+flowchart TD
+  A[a claim about a function] --> B{derivable from declarations<br>and structure?}
+  B -->|yes| C([proved<br>on ALL inputs])
+  B -->|no| D{computed on the author's<br>own values?}
+  D -->|yes| E([grid of N<br>no violation found<br>on N values])
+  D -->|no| F([declared, not proved<br>no proof attached])
+  C --> G[nothing is left behind<br>in the emitted program]
+  E --> H[this is NOT a proof:<br>it holds exactly on the grid]
+  class C vyvod
+  class E glavnoe
+  class F otkaz
+```
+
+There is a fourth word too — "on trust": a claim computed by nothing at all.
+Assumptions of that kind in the tree: {{законы.наВеру}}.
+
 ---
 
 ## Proved

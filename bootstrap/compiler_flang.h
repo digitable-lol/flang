@@ -7219,6 +7219,126 @@ fl_status compiler_flang_hvost_soderzhaniya(fl_ctx *ctx, fl_value r, fl_value sl
 fl_status compiler_flang_hvost_varianta(fl_ctx *ctx, fl_value r, fl_value sleva, fl_value token, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Имя прежнего».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_prezhnego(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя текущего».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_tekuschego(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел имени при разборе».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_imeni_pri_razbore(fl_ctx *ctx, fl_value imya, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел литерала числа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: число
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_literala_chisla(fl_ctx *ctx, fl_value znachenie, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел литерала да или нет».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_literala_da_ili_net(fl_ctx *ctx, fl_value znachenie, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел встроенной по месту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_vstroennoy_po_mestu(fl_ctx *ctx, fl_value imya, fl_value argumenty, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел сравнения по месту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @param sleva — «слева»: «Значение»
+ * @param sprava — «справа»: «Значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_sravneniya_po_mestu(fl_ctx *ctx, fl_value operaciya, fl_value sleva, fl_value sprava, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел списка по месту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param elementy — «элементы»: список: «Значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_spiska_po_mestu(fl_ctx *ctx, fl_value elementy, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел если по месту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uslovie — «условие»: «Значение»
+ * @param kogda_da — «когда да»: «Значение»
+ * @param kogda_net — «когда нет»: «Значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_esli_po_mestu(fl_ctx *ctx, fl_value uslovie, fl_value kogda_da, fl_value kogda_net, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг порядка соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_shag_poryadka_sosednih(fl_ctx *ctx, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порядок соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param spisok — «список»: «Значение»
+ * @param mesto — «место»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_poryadok_sosednih(fl_ctx *ctx, fl_value spisok, fl_value mesto, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост порядка».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param r — «р»: «Разборщик»
+ * @param sleva — «слева»: «Значение»
+ * @return значение: «Шаг»
+ */
+fl_status compiler_flang_hvost_poryadka(fl_ctx *ctx, fl_value r, fl_value sleva, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Разобрать сложение».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -26885,6 +27005,54 @@ fl_status compiler_flang_tekst_gte_js(fl_ctx *ctx, fl_value *result, fl_error *e
  * @return значение: строка
  */
 fl_status compiler_flang_tekst_lte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст pairSplits JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_pairsplits_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glueCheck JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gluecheck_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glue JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_glue_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isTorn JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_istorn_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isBoundary JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isboundary_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст findAligned JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_findaligned_js(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Текст concat JS».
@@ -58057,6 +58225,339 @@ fl_status compiler_flang_est_takoy_element(fl_ctx *ctx, fl_value elementy, fl_va
 fl_status compiler_flang_pribavlennoe_ili_prezhnee(fl_ctx *ctx, fl_value argumenty, fl_value iskomoe, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Правило соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pravilo_sosednih(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_sosednih(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отказ соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_sosednih(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это пустой выписанный».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_pustoy_vypisannyy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список из свёртки соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть узел»
+ */
+fl_status compiler_flang_spisok_iz_svyortki_sosednih(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список из длины соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть узел»
+ */
+fl_status compiler_flang_spisok_iz_dliny_sosednih(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Список соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: «Значение»
+ * @return значение: «Может быть узел»
+ */
+fl_status compiler_flang_spisok_sosednih(fl_ctx *ctx, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это соседние».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_sosednie(fl_ctx *ctx, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это конструкция варианта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_konstrukciya_varianta(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это приписывание».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_pripisyvanie(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Пустой список термом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_pustoy_spisok_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Одинокий список термом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_odinokiy_spisok_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Короткий список термом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_korotkiy_spisok_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Голова списка термом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть узел»
+ */
+fl_status compiler_flang_golova_spiska_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост списка термом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Может быть узел»
+ */
+fl_status compiler_flang_hvost_spiska_termom(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел не больше».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_ne_bolshe(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тот же список соседних».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @param spisok — «список»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_tot_zhe_spisok_sosednih(fl_ctx *ctx, fl_value fakt, fl_value spisok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть соседними в фактах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param spisok — «список»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_sosednimi_v_faktah(fl_ctx *ctx, fl_value spisok, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Соседние по построению».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Соседние по выбору»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param spisok — «список»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_sosednie_po_postroeniyu(fl_ctx *ctx, fl_value spisok, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Соседние по выбору».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Соседние по построению»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param spisok — «список»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_sosednie_po_vyboru(fl_ctx *ctx, fl_value spisok, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Соседние при голове».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param golova — «голова»: «Может быть узел»
+ * @param hvost — «хвост»: «Может быть узел»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_sosednie_pri_golove(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Соседние при хвосте».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param g — «г»: «Значение»
+ * @param hvost — «хвост»: «Может быть узел»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_sosednie_pri_hvoste(fl_ctx *ctx, fl_value g, fl_value hvost, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Соседние звеном».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param g — «г»: «Значение»
+ * @param h — «х»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param glubina — «глубина»: число
+ * @return значение
+ */
+fl_status compiler_flang_sosednie_zvenom(fl_ctx *ctx, fl_value g, fl_value h, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Порядок с головой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param g — «г»: «Значение»
+ * @param golova — «голова»: «Может быть узел»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_poryadok_s_golovoy(fl_ctx *ctx, fl_value g, fl_value golova, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить факты».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: список: «Значение»
+ * @param novye — «новые»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_slit_fakty(fl_ctx *ctx, fl_value akk, fl_value novye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Насыщение парой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golova — «голова»: «Значение»
+ * @param hvost — «хвост»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_nasyschenie_paroy(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Насыщение хвостом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golova — «голова»: «Может быть узел»
+ * @param hvost — «хвост»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_nasyschenie_hvostom(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Насыщение звена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param golova — «голова»: «Может быть узел»
+ * @param hvost — «хвост»: «Может быть узел»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_nasyschenie_zvena(fl_ctx *ctx, fl_value golova, fl_value hvost, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Насыщение факта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_nasyschenie_fakta(fl_ctx *ctx, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Насытить соседними».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_nasytit_sosednimi(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести соседними».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param spisok — «список»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_sosednimi(fl_ctx *ctx, fl_value spisok, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Утверждение допущения».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -58539,6 +59040,8 @@ fl_status compiler_flang_est_dopuscheniem(fl_ctx *ctx, fl_value cel, fl_value fa
  * Функция flang «Свести правилами».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param zaklyuchenie — «заключение»: «Значение»
  * @param dopuscheniya — «допущения»: список: «Значение»
  * @param obyavleniya — «объявления»: список: «Значение»
@@ -58546,6 +59049,21 @@ fl_status compiler_flang_est_dopuscheniem(fl_ctx *ctx, fl_value cel, fl_value fa
  * @return значение: «Сведение»
  */
 fl_status compiler_flang_svesti_pravilami(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести соседними или отказать».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param spisok — «список»: «Может быть узел»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_sosednimi_ili_otkazat(fl_ctx *ctx, fl_value spisok, fl_value fakty, fl_value obyavleniya, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести».

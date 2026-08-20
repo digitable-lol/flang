@@ -106,6 +106,11 @@
 
 - [Чистота обработчика превращает восстановление из журнала в одну свёртку](chistota-obrabotchika-delaet-vosstanovlenie-svyortkoy.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](sluzhba-poluchila-pravo-podumat-mezhdu-zaprosom-i-otvetom.md)
+- [Октеты в языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](oktety-v-yazyke-vyrazimy-spiskom-chisel-a-ne-strokoy.md)
+- [Два исполнителя портили двоичный поток по-разному, и расхождение было не в кодировке, а в том, где каждый терял](dva-hozyaina-portili-dvoichnyy-potok-po-raznomu.md)
+- [Пустая строка у «Прочитано» значит КОНЕЦ, и раскодировщик, вызванный руками, отдаёт её ещё в одном случае](pustaya-stroka-u-prochitano-znachit-konec-i-eto-lovushka-raskodirovshchika.md)
+- [Открытая труба стандартного ввода — это не «ввода нет», а «ввод будет позже», и потомок ждёт до срока](otkrytaya-truba-vvoda-eto-ne-vvoda-net-a-vvod-budet-pozzhe.md)
+- [Срок хозяина был не называем, и это одно держало сборку на JavaScript](srok-hozyaina-byl-ne-nazyvaem-i-eto-derzhalo-sborku-na-javascript.md)
 
 ## Процессы и конкурентность
 
@@ -126,6 +131,7 @@
 - [Правило «это не отказ» без срока — не осторожность, а поломка](pravilo-eto-ne-otkaz-obyazano-imet-srok.md)
 - [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](etalon-sverennyy-s-tretim-artefaktom.md)
 - [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](rovnoe-chislo-cherez-tcp-obeshchat-nelzya.md)
+- [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika.md)
 - [Девяти обработчикам из десяти вытеснение не нужно: срок известен до запуска](nine-handlers-in-ten-need-no-preemption.md)
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
 
@@ -166,6 +172,7 @@
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](proverka-perevedyonnaya-na-dvoichnyy-vypadaet-iz-ci-molcha.md)
 - [После удаления реализации на JavaScript набор проб отдаёт ноль, а не «почти всё»](posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol.md)
+- [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](avtopochinka-chisel-pravit-list-i-ostavlyaet-itog.md)
 - [Побайтовая сверка вычитала блок из вывода свидетеля — и зеленела на том, без чего программа не работает](granica-vhoda-vychitalas-iz-sverki-i-sverka-zelenela-vpustuyu.md)
 - [Два правила языка живут только в реализации на JavaScript, и сверка двух реализаций их не видит](dva-pravila-yazyka-zhivut-tolko-v-javascript.md)
 - [`flang test` на слое без своих примеров зеленеет всегда — а таких слоёв 11 683 строки](flang-test-na-etalone-bez-svoih-primerov-zeleneet-vsegda.md)
@@ -176,8 +183,10 @@
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Разрешать конфликт «по блоку за раз» — лотерея: автослияние уже применило удаления другой стороны](resolving-a-conflict-block-by-block-is-a-lottery.md)
 - [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
+- [Отставшая ведомость чаще отстала на стволе, чем на ветке, — и раскладывать её надо пофайльно, иначе убыль спрячется](a-stale-ledger-must-be-split-per-file-or-the-decrease-hides.md)
 - [Номера строк и числа в задании — это дешёвая проверка того, на той ли ветке заведено рабочее дерево](line-numbers-in-a-task-verify-the-branch-it-was-written-against.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
 - [Структурный размер значения доказывается тотальным, если спускаться в поле образца, а не в результат поиска по ключу](structural-size-becomes-total-when-you-descend-into-the-pattern-field.md)
@@ -208,6 +217,7 @@
 - [Журнал, записывающий короткий хеш коммита, догнать правкой коммита нельзя](amend-cannot-catch-up-a-journal-that-records-hashes.md)
 - [Относительная ссылка ломается ровно при копировании каталога](relative-links-break-on-copy.md)
 - [Замер собранного артефакта врёт молча: `make` не пересобирает, а отвечает «nothing to be done»](measuring-a-stale-artifact.md)
+- [`git ls-files | grep '\.flang$'` насчитал 390 файлов там, где их 826: git берёт пути с не-ASCII в кавычки](git-quotes-non-ascii-paths-and-a-count-loses-them.md)
 - [Прогон в общем каталоге теряется молча: чужой процесс пишет в файл с тем же именем](a-shared-log-path-silently-replaces-your-run.md)
 - [Числа в прозе сторожатся, имена модулей — нет, и врут дольше](module-names-in-prose-are-unguarded.md)
 - [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
@@ -289,6 +299,7 @@
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)
+- [Граница входа у программ, напечатанных двоичным, была пуста, и закрыл её перенос одной таблицы на flang](entry-table-moved-to-flang-closes-the-binary-border.md)
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 
 ## Отвергнутые пути

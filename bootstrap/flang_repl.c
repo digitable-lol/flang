@@ -9422,6 +9422,20 @@ static int io_file(int argc, char **argv) {
       host.seeded = true;
       host.seed_state = (unsigned long)strtod(argv[index], NULL) & 0xffffffffUL;
       if (host.seed_state == 0) host.seed_state = 0x9e3779b9UL;
+    } else if (strcmp(argv[index], "--timeout") == 0 && index + 1 < argc) {
+      /* СРОК ХОЗЯИНА, в миллисекундах, и ключ этот обязан быть в обоих
+         прогонщиках сразу: разойдись `flang io` на Node и `flang io` двоичный
+         хотя бы одним ключом — и «то же самое, только быстрее» перестало бы
+         быть правдой. Умолчание прежнее (30 000 мс), и довод к нему прежний:
+         хозяин обязан ОТВЕТИТЬ, а зависший навсегда — не ответ. Ключ поднимает
+         срок там, где работа честно длиннее: одна сборка релизного C идёт
+         128 000 мс. */
+      index += 1;
+      host.timeout_ms = (long)strtod(argv[index], NULL);
+      if (host.timeout_ms <= 0) {
+        fputs("flang io: --timeout должен быть целым положительным числом миллисекунд\n", stderr);
+        return 2;
+      }
     } else if (strcmp(argv[index], "--max-orders") == 0 && index + 1 < argc) {
       index += 1;
       orders_limit = strtod(argv[index], NULL);

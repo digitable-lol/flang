@@ -35,4 +35,24 @@
 именно на этом сторже откатили прошлую попытку горячей замены (`5a7a460b`,
 497 строк, исчерпание 280 000 000 шагов) — её собственные проверки были зелены.
 
-Связано: [[a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk]], [[handler-postcondition-escapes-the-closed-set]], [[four-pieces-of-javascript]]
+**Дополнение, 20 августа: дыра измерена НАПРЯМУЮ, а не через расхождение
+множеств.** Цепочка `«Разбор исходника»` → `«Проверить тотальность»` собрана
+файлом `flang/self/otkazy-totalnosti.flang` и позволяет спросить эталон о любом
+исходнике. На программе
+
+    функция «Вечная» … «Вечная» от н
+    тотальная функция «Ф»
+      для всех н обеспечивает «всегда» «Вечная» от н
+      н
+
+свидетель отвечает `FLANG_NOT_TOTAL` и называет обе функции, эталон — пустой
+строкой, то есть отказов нет. Дыра, значит, не только на «сыром» вердикте: она
+видна и на связанной программе, если постусловие зовёт функцию, объявленную
+рядом. Держит это правило ровно один тест дерева —
+`flang/test/totality.test.mjs` «постусловие — тоже код: вызов обычной функции из
+него отвергается», и он на JavaScript.
+
+Это оказался не единичный случай, а класс:
+[[pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki]].
+
+Связано: [[pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki]], [[a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk]], [[handler-postcondition-escapes-the-closed-set]], [[four-pieces-of-javascript]]

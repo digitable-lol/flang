@@ -355,6 +355,7 @@
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)
 - [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](paket-npm-ne-uedet-v-podkatalog.md)
+- [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
 
 ## Модульность и пакеты
 
@@ -375,10 +376,13 @@
 - [Вывод из спецификации работает там, где область сузили нарочно, — и у flang такая область уже есть: словарь между спеками](vyvod-rabotaet-na-uzkoy-oblasti.md)
 - [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](paket-eto-zamok-s-imenem-i-versiey.md)
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
+- [Предел шагов у прогона примеров — один на весь запуск, и примеры ввезённых модулей считаются в него же](one-step-budget-covers-a-whole-run-including-imported-examples.md)
 - [Столкновения имён в замыкании компилятора считаются обходом текста за 0,1 с — там же, где связывание отвечает за 6 минут](stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy.md)
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
+- [Октетная пара поручений объявлена в словаре, но ни один хозяин её не исполняет](octet-orders-are-in-the-dictionary-but-no-host-executes-them.md)
+- [Сравнения за постоянное время в этом языке не написать, и функции с таким именем заводить нельзя](constant-time-comparison-cannot-be-promised-by-this-language.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)

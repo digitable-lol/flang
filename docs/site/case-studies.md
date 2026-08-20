@@ -45,8 +45,8 @@ price of the `тотальная` marker on real tasks is measurable, and it is 
 
 ## Case 2. The URL-shortener service
 
-`flang/examples/web/shortener/` — **2 167 lines**: 1 743 of flang across seven
-files plus 419 lines of three Node hosts that read bytes off the connection and
+`flang/examples/web/shortener/` — **2 167 lines**: 1 746 of flang across seven
+files plus 421 lines of three Node hosts that read bytes off the connection and
 hand bytes back. Between input and output there is not one line that is not flang.
 
 | File | Lines | What is in it |
@@ -54,7 +54,7 @@ hand bytes back. Between input and output there is not one line that is not flan
 | `service.flang` | 594 | outcome, theorems, routing, HTTP parsing and printing |
 | `plan-durable.flang` | 381 | the same service on top of a write-ahead log |
 | `server.flang` | 229 | processes, supervision, three runs |
-| `plan-network.flang` | 198 | the same service through a real socket |
+| `plan-network.flang` | 201 | the same service through a real socket |
 | `store.flang` | 155 | codes, addresses, redirect counter |
 | `plan.flang` | 133 | the same handler through file I/O |
 | `handler-without-budget.flang` | 53 | the exhibit: it does not compile, and that is the point |
@@ -67,8 +67,8 @@ flang check flang/examples/web/shortener/service.flang --proof
 
 ```
 функций 83: тотальных 83, обычных 0
-обещание несёт: композиция 80, структура 2, постоянный шаг 1
-утверждений 7: доказано 5 (из них индукцией 3), сетка 2, аксиом 0 (шагов в термах 30)
+обещание несёт: композиция 80, структура 2, точный шаг 0, постоянный шаг 1, объявленная мера 0
+утверждений 24: доказано 7 (из них индукцией 3) (из них без теоремы 4), сетка 17, объявлено, не доказано 0 (шагов в термах 30)
 ```
 
 **Why this is valuable.** A web service whose **all 83 functions are total** is a
@@ -82,15 +82,17 @@ that the code's explanation is non-empty, and that "the outcome succeeded" and
 "the code succeeded" are the same thing. A bug of the form "returned 200 with an
 error body" fails type checking here rather than being caught by a test.
 
-**Two claims landed on a grid, not on a proof,** and the report says so verbatim:
-"сетка 1 значение (примеры функции) … Это не доказательство — теоремы при
-утверждении нет". About "the response body is no longer than the declared limit"
-exactly this much is known: no violation was found on the written examples.
+**Seventeen claims out of twenty-four landed on a grid, not on a proof,** and the
+report says so verbatim: "сетка 1 значение (примеры функции) … Это не
+доказательство — теоремы при утверждении нет". About "the response body is no
+longer than the declared limit" exactly this much is known: no violation was
+found on the written examples — and that is the line the report draws between
+"proved" and "grid".
 
 Running the service's examples: `flang test …/server.flang` — **240 examples,
 240 passed, 0 failed**. The binary does not run the three process runs at all;
-with them there are 243 examples, and all 243 pass under the compiler from the repository
-implementation.
+with them there are 243 examples, and all 243 pass under the compiler from the
+repository.
 
 ## Case 3. Supervision: what happens when the loop budget runs out
 

@@ -384,7 +384,7 @@ every claim one by one:
 ```
 функций 99: тотальных 95, обычных 4
 обещание несёт: композиция 79, структура 11, точный шаг 3, постоянный шаг 2, объявленная мера 0
-утверждений 53: доказано 6 (из них без теоремы 6, объявленным типом 1), сетка 47, объявлено, не доказано 0
+утверждений 53: доказано 20 (из них индукцией 3) (из них без теоремы 17, объявленным типом 1), сетка 33, объявлено, не доказано 0
 ```
 
 **Both postconditions written in this file landed on a grid, not on a proof.**
@@ -396,9 +396,9 @@ The report says so plainly:
 не доказательство — теоремы при утверждении нет
 ```
 
-All six proven claims come **from the library**, not from here: `«Знак»`,
-`«Чётное»`, `«Сколько дополнить»`, `«Считать вхождения»`, `«Позиция подстроки»`,
-`«Размер множества»`. Writing a postcondition is easy; getting a
+All twenty proven claims come **from the library** this file imports, not from
+here: `«Длина»`, `«Соединить списки»`, `«Обратить»`, `«Считать вхождения»`,
+`«Позиция подстроки»` and others. Writing a postcondition is easy; getting a
 proof under it is separate work, and the kernel does not pretend that work is
 done. What it costs and when it succeeds: see [Why and how](proofs.html).
 

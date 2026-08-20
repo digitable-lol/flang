@@ -213,7 +213,7 @@ flang emit hello.flang --target c --out ./output
 make -C ./output
 ```
 
-Emitting gives **6 files, 266 373 bytes**; `make` builds them in 0.6 s with the
+Emitting gives **6 files, 268 219 bytes**; `make` builds them in 0.6 s with the
 same `cc`, with no warning at all under `-Wall -Wextra -Werror -pedantic`. The
 output directory is not created for you.
 

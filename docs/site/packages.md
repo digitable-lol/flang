@@ -85,13 +85,14 @@ $ flang package skidka/discount.flang > skidka/discount.flang-package
 
 $ ls -la skidka/
 -rw-rw-r-- 1 b b 3644 discount.flang
--rw-rw-r-- 1 b b 1554 discount.flang-package
+-rw-rw-r-- 1 b b 4343 discount.flang-package
 -rw-rw-r-- 1 b b  122 flang.package
 ```
 
-**3,644 bytes of source become a 1,554-byte package.** The package is smaller
-than the source because it holds the parse tree — no comments, no spans —
-reversibly compressed.
+**3,644 bytes of source become a 4,343-byte package.** The package is larger
+than the source: it holds the module's full text plus a content address, a proof
+report and a header. The format does not compress — why is explained below, in
+the section on a multi-module library.
 
 A package is built **only from checked code**: `flang package` first runs the
 same checks `flang check` runs, and refuses on a program with a type error.
@@ -116,7 +117,7 @@ readability:
       "сила": "доказано" }
   ],
   "источник": "https://github.com/digitable-lol/flang",
-  "печать": "bf6453bfc8b5545adb0ee5d3930fb2e59e7410bd3c2e7c3a9513f396e55ec565"
+  "печать": "bac0aa0fc8fe3c0b39885d79bdd628cedf8063fad686d76838b248bd4c7fda13"
 }
 ```
 

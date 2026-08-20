@@ -205,6 +205,10 @@ fl_status compiler_flang_sozdat_sborka_zvenev(fl_ctx *ctx, fl_value nomer, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_razbora(fl_ctx *ctx, fl_value programma, fl_value diagnostiki, fl_value *out, fl_error *error);
 
+/* Запись FTS «Вид потока»: «машинно», «словами», «беды». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_vid_potoka(fl_ctx *ctx, fl_value mashinno, fl_value slovami, fl_value bedy, fl_value *out, fl_error *error);
+
 /* Запись FTS «Сборка правила»: «р», «условия», «действие». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_sborka_pravila(fl_ctx *ctx, fl_value r, fl_value usloviya, fl_value deystvie, fl_value *out, fl_error *error);
@@ -9941,6 +9945,138 @@ fl_status compiler_flang_diagnostiki_razbora(fl_ctx *ctx, fl_value ishodnik, fl_
  * @return значение: список: строка
  */
 fl_status compiler_flang_kody_razbora(fl_ctx *ctx, fl_value ishodnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить куски при токенах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kuski — «куски»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_slit_kuski_pri_tokenah(fl_ctx *ctx, fl_value kuski, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Место при токенах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: число
+ * @param stolbec — «столбец»: число
+ * @return значение: «Поле значения»
+ */
+fl_status compiler_flang_mesto_pri_tokenah(fl_ctx *ctx, fl_value nomer, fl_value stolbec, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение токена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param token — «токен»: «Токен»
+ * @return значение: «Поле значения»
+ */
+fl_status compiler_flang_znachenie_tokena(fl_ctx *ctx, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел токена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param token — «токен»: «Токен»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_tokena(fl_ctx *ctx, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел беды лексера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: «Диагностика»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_bedy_leksera(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка беды лексера».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: «Диагностика»
+ * @param fayl — «файл»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_bedy_leksera(fl_ctx *ctx, fl_value beda, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка токена».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param token — «токен»: «Токен»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_tokena(fl_ctx *ctx, fl_value token, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать разбора токенов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param leksika — «лексика»: «Разбор»
+ * @param fayl — «файл»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_razbora_tokenov(fl_ctx *ctx, fl_value leksika, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать токенов исходника».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishodnik — «исходник»: строка
+ * @param fayl — «файл»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_tokenov_ishodnika(fl_ctx *ctx, fl_value ishodnik, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Токены машинно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishodnik — «исходник»: строка
+ * @param fayl — «файл»: строка
+ * @return значение: «Вид потока»
+ */
+fl_status compiler_flang_tokeny_mashinno(fl_ctx *ctx, fl_value ishodnik, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Токены словами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishodnik — «исходник»: строка
+ * @param fayl — «файл»: строка
+ * @return значение: «Вид потока»
+ */
+fl_status compiler_flang_tokeny_slovami(fl_ctx *ctx, fl_value ishodnik, fl_value fayl, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значащие токены фразы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fraza — «фраза»: строка
+ * @return значение: список: «Токен»
+ */
+fl_status compiler_flang_znachaschie_tokeny_frazy(fl_ctx *ctx, fl_value fraza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключевое слово фразы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fraza — «фраза»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_klyuchevoe_slovo_frazy(fl_ctx *ctx, fl_value fraza, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать ключевого слова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fraza — «фраза»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_klyuchevogo_slova(fl_ctx *ctx, fl_value fraza, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Это слово 1».

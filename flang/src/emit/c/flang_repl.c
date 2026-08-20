@@ -290,6 +290,7 @@ static const char FLANG_HELP[] =
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
     "  flang emit <файл> --target «цель»  напечатать программу: " EMIT_TARGETS_WORDS "\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
+    "  flang tokens <файл>                поток токенов: чем каждое слово стало у лексера\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
@@ -304,8 +305,9 @@ static const char FLANG_HELP[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 10 команд полного инструментария плюс языковой сервер, у свидетеля\n"
-    "живущий отдельной командой «flang-lsp». Чего у бинарника нет — " EMIT_TARGETS_MISSING "\n"
+    "Здесь все 10 команд полного инструментария, языковой сервер (у свидетеля он\n"
+    "живёт отдельной командой «flang-lsp») и «tokens», которого у свидетеля нет\n"
+    "вовсе. Чего у бинарника нет — " EMIT_TARGETS_MISSING "\n"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -439,6 +441,29 @@ static const char HELP_AST[] =
     "Проверок типов и завершаемости здесь нет НАМЕРЕННО: дерево — это то, что\n"
     "прочитано, а не то, что признано годным. Отказывает команда только на том, из\n"
     "чего дерева не выходит вовсе, — на разборе и на связывании.";
+
+static const char HELP_TOKENS[] =
+    "flang tokens <файл.flang> [--json] [--pretty]\n"
+    "flang tokens --keyword «фраза»\n"
+    "\n"
+    "Печатает поток токенов — то, что прочитал ЛЕКСЕР, до разбора и до связывания.\n"
+    "Вопрос, ради которого команда есть, один: чем станет это слово, если его\n"
+    "написать. Грепом он не решается — ломает программу не текст, а токен: слово в\n"
+    "комментарии, слово внутри строкового литерала и имя в ёлочках ключевым словом\n"
+    "не становятся никогда.\n"
+    "\n"
+    "  --json      машинный вид: те же ключи, что у «flang ast» — kind, value, text,\n"
+    "              quoted и span со строкой и столбцом\n"
+    "  --pretty    с отступами в два пробела; машинный вид включает сам\n"
+    "  --keyword «фраза»   ключевое ли это слово: имя конструкции или отказ. Фраза\n"
+    "              из нескольких слов проверяется как фраза — «код символа» лексер\n"
+    "              отдаёт ОДНИМ токеном, а «элемент или беда» тремя, и формой языка\n"
+    "              вторая не является\n"
+    "\n"
+    "Связывания здесь нет, в отличие от «flang ast»: токены файла от подключений не\n"
+    "зависят вовсе. Отказ бывает там же, где отказал сам лексер, — незакрытый\n"
+    "литерал, рваный отступ; тогда код 1, а машинный вид всё равно печатается, с\n"
+    "пустым tokens и заполненным diagnostics.";
 
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
@@ -589,6 +614,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LSP);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
+  } else if (strcmp(topic, "tokens") == 0) {
+    printf("%s\n", HELP_TOKENS);
   } else if (strcmp(topic, "facts") == 0) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
@@ -7169,6 +7196,175 @@ static void ast_pretty_to(FILE *stdout_or_stderr, const char *utf8, size_t bytes
 
 static void ast_pretty(const char *utf8, size_t bytes) { ast_pretty_to(stdout, utf8, bytes); }
 
+
+/**
+ * `flang tokens <файл> [--json] [--pretty]` — поток токенов, как его прочитал
+ * лексер, и ответ «ключевое ли это слово».
+ *
+ * ── Зачем команда есть ──────────────────────────────────────────────────────
+ *
+ * Проверки, живущие снаружи языка, спрашивают о программе одно и то же: чем
+ * будет это слово, если его написать. Ответ знает только лексер, и до этой
+ * команды достать его было нечем — приходилось писать второй разбор `.flang`
+ * рядом с настоящим. Второй разбор разъезжается с первым на первой же правке
+ * языка, и разъезжается молча.
+ *
+ * Грепом вопрос не решается, и это замерено на заведении слова `убывает`:
+ * текста «убывает» в дереве было 58 вхождений, а голым именем — НИ ОДНОГО.
+ * Ломает программу не текст, а токен: слово в комментарии, слово внутри
+ * литерала и имя в ёлочках ключевым не становятся никогда.
+ *
+ * ── Три вида вывода ─────────────────────────────────────────────────────────
+ *
+ *   flang tokens <файл>                    человеку: место и вид каждого токена
+ *   flang tokens <файл> --json             машине: тот же JSON-вид, что у `ast`
+ *   flang tokens --keyword «код символа»   ключевое ли это слово
+ *
+ * `--pretty` включает машинный вид сам: расставлять отступы в человеческом
+ * выводе нечему.
+ *
+ * ЛЕКСЕР ЗДЕСЬ ОДИН И ТОТ ЖЕ во всех трёх видах, и «ключевое ли это слово»
+ * отвечается ПРОГОНОМ, а не заглядыванием в таблицу: таблица — ещё одно место,
+ * которое может разъехаться с языком.
+ *
+ * Связывания здесь нет, в отличие от `flang ast`, и это не недоделка: токены
+ * файла от его подключений не зависят вовсе, а чтение чужих файлов сделало бы
+ * ответ про этот файл зависящим от того, лежат ли рядом его соседи.
+ *
+ * Отказ бывает ровно там, где лексер отказал сам: незакрытый литерал, рваный
+ * отступ. Тогда код 1, беды идут в stderr, а машинный вид всё равно печатается
+ * — с пустым `tokens` и заполненным `diagnostics`.
+ */
+static int tokens_file(int argc, char **argv) {
+  fl_value args[2];
+  fl_value view = fl_nothing();
+  fl_value field = fl_nothing();
+  const char *path = NULL;
+  const char *phrase = NULL;
+  bool machine = false;
+  bool pretty = false;
+  char buffer[4096];
+  char *base = NULL;
+  char *full = NULL;
+  char *text = NULL;
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  size_t at = 0;
+  int index = 0;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--json") == 0) {
+      machine = true;
+    } else if (strcmp(argv[index], "--pretty") == 0) {
+      machine = true;
+      pretty = true;
+    } else if (strcmp(argv[index], "--keyword") == 0) {
+      index += 1;
+      if (index >= argc) {
+        fputs("flang tokens: у «--keyword» не названа фраза. Пример: flang tokens --keyword «код символа»\n", stderr);
+        return 2;
+      }
+      phrase = argv[index];
+    } else if (argv[index][0] != '-' && path == NULL) {
+      path = argv[index];
+    } else {
+      fprintf(stderr, "flang tokens: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+
+  if (phrase != NULL) {
+    if (path != NULL) {
+      fprintf(stderr, "flang tokens: «--keyword» спрашивает про фразу, и файл «%s» при нём лишний\n", path);
+      return 2;
+    }
+    repl_cycle();
+    args[0] = repl_value_say(phrase);
+    if (repl_call(machine ? "Печать ключевого слова" : "Ключевое слово фразы", args, 1, &view) != FL_OK ||
+        !val_text(view, &utf8, &bytes)) {
+      fputs("flang tokens: лексер не ответил про фразу\n", stderr);
+      return 1;
+    }
+    if (machine) {
+      if (pretty) {
+        ast_pretty(utf8, bytes);
+      } else {
+        fwrite(utf8, 1, bytes, stdout);
+      }
+      fputc('\n', stdout);
+    } else if (bytes == 0) {
+      /* «Не ключевое» — это и «лексер отдал имя», и «отдал несколько токенов»:
+         `элемент или беда` — три ключевых слова подряд, а формы такой нет
+         вовсе. Обе причины ведут к одному ответу, и называть одну из них
+         значило бы соврать про вторую. */
+      printf("«%s» — не ключевое слово языка: одним ключевым токеном лексер это не отдаёт\n", phrase);
+    } else {
+      printf("«%s» — ключевое слово, конструкция «%.*s»\n", phrase, (int)bytes, utf8);
+    }
+    fflush(stdout);
+    return 0;
+  }
+
+  if (path == NULL) {
+    fputs("flang tokens: не назван файл. Пример: flang tokens модуль.flang --json\n", stderr);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  full = repl_resolve(base, path);
+  text = repl_read_file(full, &bytes);
+  free(base);
+  if (text == NULL) {
+    fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(full);
+    return 2;
+  }
+
+  repl_cycle();
+  args[0] = repl_value_text(text, bytes);
+  /* Путь едет в ответ ТЕМ ЖЕ, каким его набрали: ключ `file` машинного вида
+     обязан совпадать с тем, о чём спрашивали, иначе зовущий не узнает свой
+     файл в ответе. */
+  args[1] = repl_value_say(path);
+
+  if (repl_call(machine ? "Токены машинно" : "Токены словами", args, 2, &view) != FL_OK) {
+    code = 1;
+  } else if (machine && (!val_field(view, "машинно", &field) || !val_text(field, &utf8, &bytes))) {
+    fputs("flang tokens: поток токенов не напечатался\n", stderr);
+    code = 1;
+  } else {
+    if (machine) {
+      if (pretty) {
+        ast_pretty(utf8, bytes);
+      } else {
+        fwrite(utf8, 1, bytes, stdout);
+      }
+      fputc('\n', stdout);
+    } else if (val_field(view, "словами", &field) && field.tag == FL_LIST) {
+      for (at = 0; at < field.as.list.count; at += 1) {
+        if (val_text(field.as.list.items[at], &utf8, &bytes)) {
+          fwrite(utf8, 1, bytes, stdout);
+          fputc('\n', stdout);
+        }
+      }
+    }
+    fflush(stdout);
+    if (val_field(view, "беды", &field) && field.tag == FL_LIST && field.as.list.count > 0) {
+      for (at = 0; at < field.as.list.count; at += 1) {
+        if (val_text(field.as.list.items[at], &utf8, &bytes)) {
+          fprintf(stderr, "%.*s\n", (int)bytes, utf8);
+        }
+      }
+      code = 1;
+    }
+  }
+
+  free(text);
+  free(full);
+  return code;
+}
+
 /**
  * `flang ast <файл> [--pretty]` — дерево разбора в JSON, без Node.
  *
@@ -11860,6 +12056,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = emit_file(argc, argv, self);
   } else if (strcmp(command, "ast") == 0) {
     code = ast_file(argc, argv);
+  } else if (strcmp(command, "tokens") == 0) {
+    code = tokens_file(argc, argv);
   } else if (strcmp(command, "facts") == 0) {
     code = facts_file(argc, argv);
   } else if (strcmp(command, "io") == 0) {

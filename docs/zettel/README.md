@@ -180,6 +180,7 @@
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](nevernyy-dovod-pri-vernom-vyvode.md)
 - [Бывают конфликты слияния, которых git не показывает](silent-merge-conflicts.md)
+- [Разрешать конфликт «по блоку за раз» — лотерея: автослияние уже применило удаления другой стороны](resolving-a-conflict-block-by-block-is-a-lottery.md)
 - [Ветка, у последнего коммита которой оба родителя уже в стволе, не несёт ничего](vetka-bez-svoih-roditeley-nichego-ne-neset.md)
 - [Красное после слияния — не обязательно своё: мерить его надо на самом стволе, отдельным рабочим деревом](a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk.md)
 - [Отставшая ведомость чаще отстала на стволе, чем на ветке, — и раскладывать её надо пофайльно, иначе убыль спрячется](a-stale-ledger-must-be-split-per-file-or-the-decrease-hides.md)

@@ -610,6 +610,17 @@ function $b_kod_simvola(text) {
   return first.codePointAt(0)
 }
 
+function $b_simvol_po_kodu(code) {
+  $expectInteger("символ по коду", code, "код")
+  if (code < 0 || code > 0x10ffff) {
+    $fail("FLANG_BUILTIN_ARGS", `«символ по коду»: код ${code} вне диапазона Unicode [0, 1114111]`)
+  }
+  /* String.fromCodePoint, а не fromCharCode: точка за основной плоскостью
+     обязана дать ОДИН символ строки, ровно тот, у которого «код символа»
+     вернёт её обратно. fromCharCode отдал бы половину суррогатной пары. */
+  return String.fromCodePoint(code)
+}
+
 function $b_soderzhit(left, right) {
   if ($isList(left)) return left.some((item) => $equal(item, right))
   const text = $expectString("содержит", left, "строка или список")
@@ -1170,6 +1181,7 @@ runtimeEntry("$b_soedinit", ["$fail", "$isList", "$expectString", "$typeName"], 
 runtimeEntry("$b_razdelit", ["$fail", "$expectString"], fromSource($b_razdelit))
 runtimeEntry("$b_simvoly", ["$expectString"], fromSource($b_simvoly))
 runtimeEntry("$b_kod_simvola", ["$fail", "$expectString"], fromSource($b_kod_simvola))
+runtimeEntry("$b_simvol_po_kodu", ["$fail", "$expectInteger"], fromSource($b_simvol_po_kodu))
 runtimeEntry("$b_soderzhit", ["$isList", "$equal", "$expectString"], fromSource($b_soderzhit))
 runtimeEntry("$b_nachinaetsya_s", ["$expectString"], fromSource($b_nachinaetsya_s))
 runtimeEntry("$b_k_chislu", ["$fail", "$expectString"], fromSource($b_k_chislu))
@@ -1281,6 +1293,7 @@ const BUILTIN_HELPERS = new Map([
   ["разделить", "$b_razdelit"],
   ["символы", "$b_simvoly"],
   ["код символа", "$b_kod_simvola"],
+  ["символ по коду", "$b_simvol_po_kodu"],
   ["содержит", "$b_soderzhit"],
   ["начинается с", "$b_nachinaetsya_s"],
   ["к числу", "$b_k_chislu"],
@@ -1316,6 +1329,7 @@ const BUILTIN_ARITY = new Map([
   ["разделить", 2],
   ["символы", 1],
   ["код символа", 1],
+  ["символ по коду", 1],
   ["содержит", 2],
   ["начинается с", 2],
   ["к числу", 1],

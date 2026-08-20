@@ -266,6 +266,7 @@
 - [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 419 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
 - [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](progon-po-korpusu-nashyol-shest-rashozhdeniy-mezhdu-realizaciyami.md)
 - [Проверка в тесте, читавшая `.flang` своим разбором, оживает прогоном двоичного — но не всякая, и граница проходит по лексике и по обязательствам](proverki-v-testah-zhivut-progonom-dvoichnogo-a-ne-vtorym-razborom.md)
+- [Двоичный уже отвечает про любую свою функцию, и новую команду под это заводить не надо](dvoichnyy-otvechaet-pro-lyubuyu-svoyu-funkciyu-cherez-progonshchik.md)
 
 ## Найденные ошибки
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)

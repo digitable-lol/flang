@@ -3,6 +3,10 @@
 /**
  * Сторож совместности спек (`fspec/guard.mjs`) — и проверка САМОГО сторожа.
  *
+ * Компилятор здесь один — двоичный из `bootstrap/`. Реализации на JavaScript в
+ * дереве больше нет, и путь `flang/bin/flang.mjs`, которым этот файл звал её,
+ * не существует: до правки из девяти проверок ниже проходила ОДНА.
+ *
  * ── Почему этот файл лежит в `flang/test/`, а не отдельным шагом в CI ───────
  *
  * Потому что иначе сторож не просыпается. До 18 августа 2026 `spec:check` не
@@ -35,13 +39,13 @@
  *      нечем. Случай «индукцией» ниже — замок на неё.
  */
 import assert from "node:assert/strict"
-import { execFileSync } from "node:child_process"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
 
 import { КАТАЛОГ_СПЕК, проверить } from "../../fspec/guard.mjs"
+import { позвать } from "../scripts/dvoichnyy.mjs"
 
 /** Подложенный каталог спек: пишем файлы, зовём сторожа, убираем за собой. */
 function наПодложенных(файлы, дело) {
@@ -210,30 +214,54 @@ test("МОЛЧИТ на утверждении, доказанном индук�
  * Проверки ниже держат файл живым. Без них он стал бы ровно тем, чем был
  * `spec:check` до 18 августа, — вещью, которую никто не зовёт.
  */
-const ФЛАНГ = new URL("../bin/flang.mjs", import.meta.url).pathname
 const ПОЛИТИКА = new URL("../../fspec/policy.flang", import.meta.url).pathname
 
-const прогон = (аргументы) =>
-  execFileSync(process.execPath, [ФЛАНГ, ...аргументы], {
-    encoding: "utf8",
-    maxBuffer: 1 << 26,
-    env: { ...process.env, LC_ALL: "C.UTF-8" },
-  })
+function прогон(аргументы) {
+  const { код, вывод, ошибки } = позвать(аргументы)
+  if (код !== 0) throw new Error(`flang ${аргументы.join(" ")} → код ${код}\n${ошибки || вывод}`)
+  return вывод
+}
 
 /** Ведомость спеки, сведённая к тому, чем спеки согласуются между собой. */
 function проекция(путь) {
   const о = JSON.parse(прогон(["check", путь, "--proof", "--json"]))
-  return (о.proof?.claims ?? []).map((у) => ({ чья: у.of, имя: у.name, вердикт: у.verdict }))
+  return (о.claims ?? []).map((у) => ({ чья: у.of, имя: у.name, вердикт: у.verdict }))
 }
 
-const политика = (предки, наследники) =>
-  JSON.parse(
-    прогон(["run", ПОЛИТИКА, "--function", "Спеки согласны", "--args", JSON.stringify({ предки, наследники })]),
-  ).result
+/**
+ * Спросить политику на её же языке.
+ *
+ * Через файл, а не через `--args`: двоичный компилятор принимает в `--args`
+ * только ПЛОСКИЙ объект скаляров («ждался плоский объект скаляров, вроде
+ * '{"н":10}'»), а здесь довод — два списка записей. Поэтому обёртка пишется
+ * рядом с политикой обычным `использует`, и спрашивается функция без доводов.
+ */
+const строкой = (т) => JSON.stringify(т)
+const записью = (у) =>
+  `запись «Утверждение» с «чья» равным ${строкой(у.чья)} и «имя» равным ${строкой(у.имя)}` +
+  ` и «вердикт» равным ${строкой(у.вердикт)}`
+const списком = (пункты) =>
+  пункты.length === 0 ? "пустой список" : `[${пункты.map(записью).join(", ")}]`
+
+function политика(предки, наследники) {
+  const каталог = mkdtempSync(join(tmpdir(), "fspec-policy-"))
+  const файл = join(каталог, "spros.flang")
+  try {
+    writeFileSync(
+      файл,
+      `модуль «Спрос политики»\n  использует «Политика согласия спек» из ${строкой(ПОЛИТИКА)}\n\n` +
+        `тотальная функция «Ответ»\n  возвращает признак\n` +
+        `  «Спеки согласны» от ${списком(предки)} и ${списком(наследники)}\n`,
+      "utf8",
+    )
+    return прогон(["run", файл, "--function", "Ответ"]).trim() === "true"
+  } finally {
+    rmSync(каталог, { recursive: true, force: true })
+  }
+}
 
 test("политика на flang: семь функций, все тотальные, аксиом ноль", () => {
   const о = JSON.parse(прогон(["check", ПОЛИТИКА, "--proof", "--json"]))
-  assert.equal(о.valid, true, "политика не проходит проверку языка")
   assert.equal(о.functions.length, 7)
   assert.deepEqual(
     о.functions.filter((ф) => !ф.total),

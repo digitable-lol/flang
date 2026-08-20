@@ -353,6 +353,71 @@ public final class Flang {
     return Value.flag(left.num <= right.num);
   }
 
+  /**
+   * Сойдутся ли на стыке двух строк высокая и низкая половины суррогатной пары.
+   *
+   * <p>В UTF-16 такие половины слились бы в ОДИН знак: два знака на входе, один
+   * на выходе, — и всякое утверждение о длине склейки стало бы ложным.
+   */
+  private static boolean pairSplits(String left, String right) {
+    if (left.isEmpty() || right.isEmpty()) {
+      return false;
+    }
+    char last = left.charAt(left.length() - 1);
+    char first = right.charAt(0);
+    return Character.isHighSurrogate(last) && Character.isLowSurrogate(first);
+  }
+
+  /**
+   * Отказ на стыке, где склейка слила бы два знака в один.
+   *
+   * <p>Отказ, а не тихая порча: показать разницу это представление не может. У
+   * целей, где строка — UTF-8 или последовательность кодовых точек, такого
+   * стыка не бывает вовсе, и проверки там нет.
+   */
+  private static void glueCheck(String left, String right) {
+    if (pairSplits(left, right)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«соединить»: на стыке сошлись половины суррогатной пары — два знака слились бы в один");
+    }
+  }
+
+  /**
+   * Разорван ли край подстроки: начинается низкой половиной суррогатной пары
+   * или кончается высокой.
+   *
+   * <p>Вхождение способно разрезать знак пополам ТОЛЬКО у такой подстроки —
+   * значит у всякой другой обычный поиск по единицам UTF-16 уже считает знаки,
+   * и обходить строку незачем.
+   */
+  private static boolean isTorn(String part) {
+    if (part.isEmpty()) {
+      return false;
+    }
+    return Character.isLowSurrogate(part.charAt(0))
+        || Character.isHighSurrogate(part.charAt(part.length() - 1));
+  }
+
+  /** Стоит ли позиция на границе знака, а не в середине суррогатной пары. */
+  private static boolean isBoundary(String text, int at) {
+    if (at <= 0 || at >= text.length()) {
+      return true;
+    }
+    return !Character.isLowSurrogate(text.charAt(at))
+        || !Character.isHighSurrogate(text.charAt(at - 1));
+  }
+
+  /** Первое вхождение, не разрезающее знак ни началом, ни концом. */
+  private static int findAligned(String text, String part, int from) {
+    for (int at = text.indexOf(part, from); at >= 0; at = text.indexOf(part, at + 1)) {
+      if (isBoundary(text, at) && isBoundary(text, at + part.length())) {
+        return at;
+      }
+    }
+    return -1;
+  }
+
   /** «соединить» как двуместная операция над строками. */
   public static Value concat(Ctx ctx, Value left, Value right) {
     if (left.tag != Value.TAG_STRING || right.tag != Value.TAG_STRING) {
@@ -361,6 +426,7 @@ public final class Flang {
           "«соединить» допустимо только для строк, получено "
               + Value.typeName(left) + " и " + Value.typeName(right));
     }
+    glueCheck(left.str, right.str);
     return Value.text(left.str + right.str);
   }
 
@@ -503,6 +569,7 @@ public final class Flang {
     if (left.tag == Value.TAG_LIST) {
       String separator = expectString("соединить", right, "разделитель");
       StringBuilder out = new StringBuilder();
+      String tail = "";
       for (int index = 0; index < Value.size(left); index++) {
         Value item = Value.at(left, index);
         if (item.tag != Value.TAG_STRING) {
@@ -512,7 +579,15 @@ public final class Flang {
                   + Value.typeName(item));
         }
         if (index > 0) {
+          glueCheck(tail, separator);
+          if (!separator.isEmpty()) {
+            tail = separator;
+          }
           out.append(separator);
+        }
+        glueCheck(tail, item.str);
+        if (!item.str.isEmpty()) {
+          tail = item.str;
         }
         out.append(item.str);
       }
@@ -520,6 +595,7 @@ public final class Flang {
     }
     String first = expectString("соединить", left, "первая строка");
     String second = expectString("соединить", right, "вторая строка");
+    glueCheck(first, second);
     return Value.text(first + second);
   }
 
@@ -586,10 +662,10 @@ public final class Flang {
   /**
    * «разделить … по …».
    *
-   * Поиск разделителя идёт по единицам UTF-16, а не по кодовым точкам, — ровно
-   * как String.prototype.split в интерпретаторе. Разницы это не даёт: искомое
-   * тоже строка flang, и совпадение подстроки в UTF-16 совпадает с совпадением
-   * в кодовых точках всюду, где обе строки корректны.
+   * Поиск идёт по единицам UTF-16, пока у разделителя целые края: у такого
+   * совпадение в UTF-16 и совпадение по кодовым точкам — одно и то же. Если
+   * край разорван половиной суррогатной пары, вхождение может разрезать знак,
+   * и тогда берётся поиск, который такие места пропускает.
    */
   public static Value bSplit(Ctx ctx, Value source, Value separator) {
     String value = expectString("разделить", source, "строка");
@@ -598,9 +674,10 @@ public final class Flang {
       throw fail(FlangError.CODE_BUILTIN_ARGS, "«разделить»: разделитель не может быть пустым");
     }
     java.util.ArrayList<Value> parts = new java.util.ArrayList<>();
+    boolean torn = isTorn(mark);
     int from = 0;
     for (; ; ) {
-      int found = value.indexOf(mark, from);
+      int found = torn ? findAligned(value, mark, from) : value.indexOf(mark, from);
       if (found < 0) {
         parts.add(Value.text(value.substring(from)));
         break;
@@ -623,14 +700,20 @@ public final class Flang {
     }
     String value = expectString("содержит", left, "строка или список");
     String part = expectString("содержит", right, "искомая подстрока");
-    return Value.flag(value.contains(part));
+    if (!isTorn(part)) {
+      return Value.flag(value.contains(part));
+    }
+    return Value.flag(findAligned(value, part, 0) >= 0);
   }
 
   /** «начинается с». */
   public static Value bStartsWith(Ctx ctx, Value source, Value prefix) {
     String value = expectString("начинается с", source, "строка");
     String start = expectString("начинается с", prefix, "префикс");
-    return Value.flag(value.startsWith(start));
+    if (!value.startsWith(start)) {
+      return Value.FALSE;
+    }
+    return Value.flag(!isTorn(start) || isBoundary(value, start.length()));
   }
 
   /**
@@ -845,9 +928,10 @@ public final class Flang {
     String value = expectString("разделить", source, "строка");
     String mark = expectString("разделить", separator, "разделитель");
     java.util.ArrayList<Value> parts = new java.util.ArrayList<>();
+    boolean torn = isTorn(mark);
     int from = 0;
     for (; ; ) {
-      int found = value.indexOf(mark, from);
+      int found = torn ? findAligned(value, mark, from) : value.indexOf(mark, from);
       if (found < 0) {
         parts.add(Value.text(value.substring(from)));
         break;

@@ -1328,6 +1328,83 @@
     "}"
   ] по "\n"
 
+тотальная функция «Текст pairSplits JS»
+  возвращает строка
+  соединить [
+    "function $pairSplits(left, right) {",
+    "  /* Сойдутся ли на стыке двух строк высокая и низкая половины суррогатной пары.",
+    "     В UTF-16 они слились бы в ОДИН знак: два знака на входе, один на выходе. */",
+    "  if (left.length === 0 || right.length === 0) return false",
+    "  const last = left.charCodeAt(left.length - 1)",
+    "  const first = right.charCodeAt(0)",
+    "  return last >= 0xd800 && last <= 0xdbff && first >= 0xdc00 && first <= 0xdfff",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст glueCheck JS»
+  возвращает строка
+  соединить [
+    "function $glueCheck(left, right) {",
+    "  /* Отказ, а не тихая порча: слияние на стыке сделало бы ложным всякое",
+    "     утверждение о длине склейки, а показать разницу это представление не может.",
+    "     У целей, где строка — UTF-8 или последовательность кодовых точек, такого",
+    "     стыка не бывает вовсе, и проверка там не нужна. */",
+    "  if ($pairSplits(left, right)) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", \"«соединить»: на стыке сошлись половины суррогатной пары — два знака слились бы в один\")",
+    "  }",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст glue JS»
+  возвращает строка
+  соединить [
+    "function $glue(left, right) {",
+    "  $glueCheck(left, right)",
+    "  return left + right",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст isTorn JS»
+  возвращает строка
+  соединить [
+    "function $isTorn(part) {",
+    "  /* Разорван ли край подстроки: начинается низкой половиной суррогатной пары",
+    "     или кончается высокой. Вхождение способно разрезать знак пополам ТОЛЬКО у",
+    "     такой подстроки — значит у всякой другой обычный поиск по единицам UTF-16",
+    "     уже считает знаки, и обходить строку незачем. */",
+    "  if (part.length === 0) return false",
+    "  const first = part.charCodeAt(0)",
+    "  if (first >= 0xdc00 && first <= 0xdfff) return true",
+    "  const last = part.charCodeAt(part.length - 1)",
+    "  return last >= 0xd800 && last <= 0xdbff",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст isBoundary JS»
+  возвращает строка
+  соединить [
+    "function $isBoundary(text, at) {",
+    "  /* Стоит ли позиция на границе знака, а не в середине суррогатной пары. */",
+    "  if (at <= 0 || at >= text.length) return true",
+    "  const here = text.charCodeAt(at)",
+    "  if (here < 0xdc00 || here > 0xdfff) return true",
+    "  const before = text.charCodeAt(at - 1)",
+    "  return before < 0xd800 || before > 0xdbff",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст findAligned JS»
+  возвращает строка
+  соединить [
+    "function $findAligned(text, part, from) {",
+    "  /* Первое вхождение, не разрезающее знак ни началом, ни концом. */",
+    "  for (let at = text.indexOf(part, from); at !== -1; at = text.indexOf(part, at + 1)) {",
+    "    if ($isBoundary(text, at) && $isBoundary(text, at + part.length)) return at",
+    "  }",
+    "  return -1",
+    "}"
+  ] по "\n"
+
 тотальная функция «Текст concat JS»
   возвращает строка
   соединить [
@@ -1335,7 +1412,7 @@
     "  if (typeof left !== \"string\" || typeof right !== \"string\") {",
     "    $fail(\"FLANG_TYPE\", `«соединить» допустимо только для строк, получено ${$typeName(left)} и ${$typeName(right)}`)",
     "  }",
-    "  return left + right",
+    "  return $glue(left, right)",
     "}"
   ] по "\n"
 
@@ -1444,11 +1521,20 @@
     "      }",
     "      return item",
     "    })",
+    "    let tail = \"\"",
+    "    for (let index = 0; index < parts.length; index++) {",
+    "      if (index !== 0) {",
+    "        $glueCheck(tail, separator)",
+    "        if (separator.length !== 0) tail = separator",
+    "      }",
+    "      $glueCheck(tail, parts[index])",
+    "      if (parts[index].length !== 0) tail = parts[index]",
+    "    }",
     "    return parts.join(separator)",
     "  }",
     "  $expectString(\"соединить\", left, \"первая строка\")",
     "  $expectString(\"соединить\", right, \"вторая строка\")",
-    "  return left + right",
+    "  return $glue(left, right)",
     "}"
   ] по "\n"
 
@@ -1459,7 +1545,15 @@
     "  $expectString(\"разделить\", text, \"строка\")",
     "  $expectString(\"разделить\", separator, \"разделитель\")",
     "  if (separator === \"\") $fail(\"FLANG_BUILTIN_ARGS\", \"«разделить»: разделитель не может быть пустым\")",
-    "  return text.split(separator)",
+    "  if (!$isTorn(separator)) return text.split(separator)",
+    "  const parts = []",
+    "  let from = 0",
+    "  for (let at = $findAligned(text, separator, from); at !== -1; at = $findAligned(text, separator, from)) {",
+    "    parts.push(text.slice(from, at))",
+    "    from = at + separator.length",
+    "  }",
+    "  parts.push(text.slice(from))",
+    "  return parts",
     "}"
   ] по "\n"
 
@@ -1517,7 +1611,8 @@
     "  if ($isList(left)) return left.some((item) => $equal(item, right))",
     "  const text = $expectString(\"содержит\", left, \"строка или список\")",
     "  const part = $expectString(\"содержит\", right, \"искомая подстрока\")",
-    "  return text.includes(part)",
+    "  if (!$isTorn(part)) return text.includes(part)",
+    "  return $findAligned(text, part, 0) !== -1",
     "}"
   ] по "\n"
 
@@ -1527,7 +1622,8 @@
     "function $b_nachinaetsya_s(text, prefix) {",
     "  $expectString(\"начинается с\", text, \"строка\")",
     "  $expectString(\"начинается с\", prefix, \"префикс\")",
-    "  return text.startsWith(prefix)",
+    "  if (!text.startsWith(prefix)) return false",
+    "  return !$isTorn(prefix) || $isBoundary(text, prefix.length)",
     "}"
   ] по "\n"
 
@@ -1627,7 +1723,15 @@
     "function $b_razdelit_dokazano(text, separator) {",
     "  $expectString(\"разделить\", text, \"строка\")",
     "  $expectString(\"разделить\", separator, \"разделитель\")",
-    "  return text.split(separator)",
+    "  if (!$isTorn(separator)) return text.split(separator)",
+    "  const parts = []",
+    "  let from = 0",
+    "  for (let at = $findAligned(text, separator, from); at !== -1; at = $findAligned(text, separator, from)) {",
+    "    parts.push(text.slice(from, at))",
+    "    from = at + separator.length",
+    "  }",
+    "  parts.push(text.slice(from))",
+    "  return parts",
     "}"
   ] по "\n"
 
@@ -2053,7 +2157,13 @@
     (запись «Кусок рантайма JS» с «имя» равным "$lt" и «нужно» равным ["$ord"] и «исходник» равным «Текст lt JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$gte" и «нужно» равным ["$ord"] и «исходник» равным «Текст gte JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$lte" и «нужно» равным ["$ord"] и «исходник» равным «Текст lte JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$concat" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст concat JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$pairSplits" и «нужно» равным пустой список и «исходник» равным «Текст pairSplits JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$glueCheck" и «нужно» равным ["$fail", "$pairSplits"] и «исходник» равным «Текст glueCheck JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$glue" и «нужно» равным ["$glueCheck"] и «исходник» равным «Текст glue JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$isTorn" и «нужно» равным пустой список и «исходник» равным «Текст isTorn JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$isBoundary" и «нужно» равным пустой список и «исходник» равным «Текст isBoundary JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$findAligned" и «нужно» равным ["$isBoundary"] и «исходник» равным «Текст findAligned JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$concat" и «нужно» равным ["$fail", "$typeName", "$glue"] и «исходник» равным «Текст concat JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$expectString" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст expectString JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$expectNumber" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст expectNumber JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$expectInteger" и «нужно» равным ["$fail", "$expectNumber"] и «исходник» равным «Текст expectInteger JS»),
@@ -2061,13 +2171,13 @@
     (запись «Кусок рантайма JS» с «имя» равным "$b_dlina" и «нужно» равным ["$fail", "$isList", "$typeName"] и «исходник» равным «Текст b_dlina JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_simvol" и «нужно» равным ["$fail", "$expectInteger", "$expectString", "$INDEX_BASE"] и «исходник» равным «Текст b_simvol JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_podstroka" и «нужно» равным ["$fail", "$expectInteger", "$expectString", "$INDEX_BASE"] и «исходник» равным «Текст b_podstroka JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_soedinit" и «нужно» равным ["$fail", "$isList", "$expectString", "$typeName"] и «исходник» равным «Текст b_soedinit JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_razdelit" и «нужно» равным ["$fail", "$expectString"] и «исходник» равным «Текст b_razdelit JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$b_soedinit" и «нужно» равным ["$fail", "$isList", "$expectString", "$typeName", "$glue", "$glueCheck"] и «исходник» равным «Текст b_soedinit JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$b_razdelit" и «нужно» равным ["$fail", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_razdelit JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_simvoly" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_simvoly JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_kod_simvola" и «нужно» равным ["$fail", "$expectString"] и «исходник» равным «Текст b_kod_simvola JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_simvol_po_kodu" и «нужно» равным ["$fail", "$expectInteger"] и «исходник» равным «Текст b_simvol_po_kodu JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString"] и «исходник» равным «Текст b_soderzhit JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_nachinaetsya_s JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_soderzhit JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString", "$isTorn", "$isBoundary"] и «исходник» равным «Текст b_nachinaetsya_s JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_k_chislu" и «нужно» равным ["$fail", "$expectString"] и «исходник» равным «Текст b_k_chislu JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_k_chislu_ili_beda" и «нужно» равным ["$FlangVariant", "$b_k_chislu"] и «исходник» равным «Текст b_k_chislu_ili_beda JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_k_stroke" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст b_k_stroke JS»),
@@ -2076,7 +2186,7 @@
     (запись «Кусок рантайма JS» с «имя» равным "$b_hvost" и «нужно» равным ["$fail", "$expectList"] и «исходник» равным «Текст b_hvost JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_golova_dokazano" и «нужно» равным ["$expectList"] и «исходник» равным «Текст b_golova_dokazano JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_hvost_dokazano" и «нужно» равным ["$expectList"] и «исходник» равным «Текст b_hvost_dokazano JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_razdelit_dokazano" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_razdelit_dokazano JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$b_razdelit_dokazano" и «нужно» равным ["$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_razdelit_dokazano JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_kod_simvola_dokazano" и «нужно» равным ["$expectString"] и «исходник» равным «Текст b_kod_simvola_dokazano JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_element" и «нужно» равным ["$fail", "$expectInteger", "$expectList", "$INDEX_BASE"] и «исходник» равным «Текст b_element JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$indexKey" и «нужно» равным пустой список и «исходник» равным «Текст indexKey JS»),

@@ -15,14 +15,17 @@ A change to the compiler in `flang/self/` must reprint the bootstrap point in th
 `bootstrap/` starts building the previous compiler silently:
 
 ```bash
-node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
-node scripts/bootstrap-c.mjs --check   # compare against the sources byte for byte, exit 1 on drift
+sh scripts/raskrutka.sh           # reprint bootstrap/ (~11 min: the binary prints itself)
+sh scripts/raskrutka.sh --check   # compare against the sources byte for byte, exit 1 on drift
+sh scripts/raskrutka.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
 ```
 
-The guard is the test «точка раскрутки `bootstrap/` совпадает с печатью текущих исходников,
-побайтово» in `flang/test/self-bootstrap.test.mjs`. It needs no C compiler, so it always runs —
-unlike the fixed point itself, which needs `cc` and which CI turns on with
-`FTS_REQUIRE_TOOLCHAINS=c`.
+The binary itself does the printing (`bootstrap/flang emit … --target c`), so no Node is
+involved; if the binary is missing, the script builds it from `bootstrap/` first.
+
+The check now costs what the print costs — about eleven minutes, plus a `make` if the binary
+is not built. It used to be seconds, because a JavaScript implementation printed the same
+bytes; that implementation is gone (commit `fe8e8a37`), and with it the cheap second opinion.
 
 The commands the language answers to:
 

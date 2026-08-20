@@ -104,14 +104,20 @@ expected to have gone through it.
 A change to `flang/self/` must reprint the bootstrap point in the same commit:
 
 ```bash
-node scripts/bootstrap-c.mjs           # reprint bootstrap/ (~10 s of CPU)
-node scripts/bootstrap-c.mjs --check   # compare it against the sources, exit 1 on drift
+sh scripts/raskrutka.sh           # reprint bootstrap/ (~11 min: the binary prints itself)
+sh scripts/raskrutka.sh --check   # compare it against the sources, exit 1 on drift
+sh scripts/raskrutka.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
 ```
 
-`bootstrap/` is an artifact, never edited by hand. The guard "точка раскрутки
-bootstrap/ совпадает с печатью текущих исходников, побайтово" in
-`flang/test/self-bootstrap.test.mjs` compares bytes and needs no C compiler, so
-it runs everywhere.
+`bootstrap/` is an artifact, never edited by hand. Reprinting is done by the
+binary itself (`bootstrap/flang emit … --target c`), so no Node is involved; if
+the binary is missing, the script builds it from `bootstrap/` first.
+
+The check now costs what the print costs — about eleven minutes, plus a `make`
+if the binary is not built. It used to be seconds, because a JavaScript
+implementation printed the same bytes; that implementation is gone (commit
+`fe8e8a37`), and with it the cheap second opinion. Run `--check` before a merge
+that touches `flang/self/` or `flang/src/emit/c/`, not on every save.
 
 ## Every script `package.json` declares, and who runs it
 

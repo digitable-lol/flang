@@ -238,8 +238,9 @@ static const char REPL_GREETING_NO_EVAL[] =
 
 /*
  * СПРАВКА В ДВА ЭТАЖА, и здесь перечислено то, что умеет ФАЙЛ, поставленный из
- * brew или asdf, — ровно оно. Печати в остальные семь целей и проверки суждений
- * в этом бинарнике нет, поэтому их здесь нет тоже: справка, обещающая
+ * brew или asdf, — ровно оно. Законов на сетке в этой сборке нет, поэтому их
+ * здесь нет тоже (а вот все восемь целей печати есть, и все восемь названы:
+ * `flang emit --help`): справка, обещающая
  * несуществующее, обходится дороже отсутствующей — по ней человек строит работу.
  * Команда попадает сюда ПОСЛЕ того, как заработала, а не вместе с замыслом.
  *
@@ -258,6 +259,28 @@ static const char REPL_GREETING_NO_EVAL[] =
    -Werror=overlength-strings` уже отказался собирать компилятор, и неподвижная
    точка встала целиком. Оттого справка и разложена по массиву на команду: каждый
    этаж меряется отдельно, и запас у каждого свой. */
+/*
+ * ЧТО ОТКАЗ ГОВОРИТ ПРО ЦЕЛИ — в одном месте на весь файл.
+ *
+ * Список втащенных целей встречается в отказах и в справке, и всякий раз, когда
+ * цель втаскивают, каждая его копия становится ЛОЖЬЮ. Копий здесь две, и обе
+ * ниже: одна называет, что есть, вторая — чего нет.
+ */
+#define EMIT_TARGETS_WORDS "c|go|rust|java|js|elixir|python|csharp"
+#define EMIT_TARGETS_MISSING \
+  "СУД НАД КАТЕГОРНОЙ ПОВЕРХНОСТЬЮ И ПРОЦЕССАМИ: морфизм, категория, связь\n"\
+  "модулей, бифунктор, преобразование, изоморфизм, моноид, монада, множества,\n"\
+  "объявленные свойства, требования, процесс, надзор, прогон. Часть их правил\n"\
+  "доказывается сличением объявлений, часть считается вычислением на сетке; ни\n"\
+  "те ни другие в бинарник не втащены, и им нужен Node. Программу с такими\n"\
+  "объявлениями «flang check» НЕ пропускает молча: он называет, чего не\n"\
+  "проверил, и отвечает кодом 2."
+#define EMIT_TARGETS_SAY \
+  "целей здесь ВОСЕМЬ — «c», «go», «rust», «java», «js», «elixir», «python», «csharp»"
+#define EMIT_TARGETS_REST \
+  "Невтащенных целей больше нет: все восемь живут в замыкании этой сборки, и\n" \
+  "печатает их она сама, без Node."
+
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
     "\n"
@@ -265,7 +288,7 @@ static const char FLANG_HELP[] =
     "  flang check <файл>                 разбор, типы, завершаемость, доказательства\n"
     "  flang test <файл|каталог>          прогон примеров: один файл или весь корпус\n"
     "  flang run <файл> --function «Имя»  вычислить одну функцию и напечатать значение\n"
-    "  flang emit <файл> --target c       напечатать программу в C99\n"
+    "  flang emit <файл> --target «цель»  напечатать программу: " EMIT_TARGETS_WORDS "\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
@@ -282,14 +305,8 @@ static const char FLANG_HELP[] =
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
     "Здесь все 10 команд полного инструментария плюс языковой сервер, у свидетеля\n"
-    "живущий отдельной командой «flang-lsp». Чего у бинарника нет — остальные\n"
-    "семь целей печати и СУД НАД КАТЕГОРНОЙ ПОВЕРХНОСТЬЮ И ПРОЦЕССАМИ: морфизм,\n"
-    "категория, связь модулей, бифунктор, преобразование, изоморфизм, моноид,\n"
-    "монада, множества, объявленные свойства, требования, процесс, надзор,\n"
-    "прогон. Часть их правил доказывается сличением объявлений, часть считается\n"
-    "вычислением на сетке; ни те ни другие в бинарник не втащены, и им нужен\n"
-    "Node. Программу с такими объявлениями «flang check» НЕ пропускает молча:\n"
-    "он называет, чего не проверил, и отвечает кодом 2.\n"
+    "живущий отдельной командой «flang-lsp». Чего у бинарника нет — " EMIT_TARGETS_MISSING "
+"
     "Полный инструментарий: npm install -g @digitable-lol/flang\n"
     "\n"
     "Подробности: man flang";
@@ -373,34 +390,42 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины";
 
 static const char HELP_EMIT[] =
-    "flang emit <файл.flang> --target c [--out каталог | --file имя]\n"
-    "                        [--cli|--no-cli] [--repl] [--runtime каталог]\n"
-    "                        [--index-base 0|1] [--max-steps N] [--max-depth N]\n"
+    "flang emit <файл.flang> --target " EMIT_TARGETS_WORDS "\n"
+    "                        [--out каталог | --file имя] [--cli|--no-cli] [--repl]\n"
+    "                        [--runtime каталог] [--index-base 0|1]\n"
+    "                        [--max-steps N] [--max-depth N]\n"
     "\n"
-    "Печатает программу в C99 без Node. Каталог из «--out» заводится сам, вместе с\n"
-    "промежуточными.\n"
+    "Печатает программу без Node — во все восемь целей. Каталог из «--out»\n"
+    "заводится сам, вместе с промежуточными и с подкаталогами, которых просит цель\n"
+    "(у Go путь файла — это имя пакета).\n"
     "\n"
-    "  --target c        единственная цель этой сборки flang\n"
     "  --out каталог     записать все файлы в каталог\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
-    "  --repl            напечатать ещё и человеческий вход\n"
-    "  --runtime каталог где лежат исходники рантайма C\n"
+    "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
+    "  --runtime каталог где лежат исходники рантайма цели\n"
     "\n"
-    "РАНТАЙМ C — четыре файла (flang_runtime.h, flang_runtime.c, flang_cli.c,\n"
-    "flang_repl.c), они уезжают в вывод дословно. Ищутся они в «--runtime», затем в\n"
-    "$FLANG_RUNTIME_DIR, затем рядом с установленным flang (share/flang/c). Отказ\n"
-    "«не найдены исходники рантайма C» значит, что ни одно из трёх мест не подошло.\n"
+    "РАНТАЙМ ЦЕЛИ уезжает в вывод ДОСЛОВНО, поэтому читается с диска: от двух\n"
+    "файлов у go, rust, js и python до шести у java и csharp. Ищутся они в\n"
+    "«--runtime», затем в $FLANG_RUNTIME_DIR, затем рядом с установленным flang\n"
+    "(share/flang/<цель>); в дереве исходников это flang/src/emit/<цель>. Полный\n"
+    "перечень имён — man flang.\n"
     "\n"
     "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
     "Прогоняйте «flang check» отдельно: версия для Node печатать непроверенное\n"
     "отказывается, а эта напечатает.\n"
     "\n"
-    "Вывод бывает БОЛЬШЕ, чем у версии для Node: недостижимые функции здесь не\n"
-    "отбрасываются. Собирается и работает он одинаково.\n"
+    "ЧЕМ ЭТА ПЕЧАТЬ ОТЛИЧАЕТСЯ ОТ ПЕЧАТИ ПОЛНОГО ИНСТРУМЕНТАРИЯ:\n"
+    "  c            недостижимое НЕ отбрасывается, доказанное не метится\n"
+    "               («markProven»); напечатанного просто больше, работает так же;\n"
+    "  все прочие   недостижимое отбрасывается, как у свидетеля.\n"
     "\n"
-    "Остальные семь целей (js, go, rust, python, java, csharp, elixir) есть в версии\n"
-    "для Node: npm install -g @digitable-lol/flang";
+    "У ВСЕХ ВОСЬМИ ПУСТА ГРАНИЦА ВХОДА: таблицу объявленных типов строит слой\n"
+    "типов свидетеля, которого на flang нет ни строки. Напечатанное собирается и\n"
+    "работает, но аргументы прогонщика объявленным типам не сверяются, и об этом\n"
+    "сказано словами после печати.\n"
+    "\n"
+    EMIT_TARGETS_REST;
 
 static const char HELP_AST[] =
     "flang ast <файл.flang> [--pretty]\n"
@@ -6043,23 +6068,24 @@ static int run_file(int argc, char **argv) {
  *      печатью flang₁ побайтово. То есть у печати самого бинарника есть своя
  *      неподвижная точка, и восстановить компилятор из исходников `flang/self`
  *      можно сколько угодно раз, ни разу не позвав Node.
- * • Цель одна — `c`. Остальные семь написаны на flang (`flang/self/emit-*.flang`)
- *   и сверены со свидетелем побайтово, но в замыкание не втащены. МЕШАЕТ ИМ ОДНО И
- *   ТО ЖЕ — СТОЛКНОВЕНИЯ ИМЁН: связывание сливает объявления в одно плоское
- *   пространство, а эталоны печати — братья одного строения и зовут свои части
- *   одинаково. Померено по замыканию компилятора (18 файлов, 3978 объявленных
- *   имён), числом новых объявлений цели и числом столкнувшихся:
+ * • ЦЕЛЕЙ ВТАЩЕНО ВОСЕМЬ — ВСЕ. Прежде здесь стояло «цель одна — c, остальные
+ *   семь в замыкание не втащены», и мешали им СТОЛКНОВЕНИЯ ИМЁН: связывание
+ *   сливает объявления в одно плоское пространство, а эталоны печати — братья
+ *   одного строения и зовут свои части одинаково. Столкновения разведены
+ *   суффиксом имени цели. Цена, померенная по замыканию ДО втаскивания
+ *   (18 файлов, 3978 объявленных имён), — числом новых объявлений цели и числом
+ *   столкнувшихся:
  *
- *     go       189 →   2   («Слить просьбы», «Только цифры»)
+ *     go       189 →   2   («Слить просьбы», «Только цифры») — ВТАЩЕНА
  *     rust     223 →   4   («Без ведущих пробелов», «Ключи полей»,
- *                           «Обрезка слева», «Только цифры»)
+ *                           «Обрезка слева», «Только цифры») — ВТАЩЕНА
  *     java     364 →   7   («Есть имя», «Есть узел», «Может быть имя»,
  *                           «Может быть узел», «Нет имени», «Нет узла»,
- *                           «Пара имён»)
- *     js       336 → 139
- *     elixir   422 → 261
- *     python   377 → 299
- *     csharp   382 → 309
+ *                           «Пара имён») — ВТАЩЕНА
+ *     js       336 → 139   — ВТАЩЕНА
+ *     elixir   422 → 261   — ВТАЩЕНА
+ *     python   377 → 299   — ВТАЩЕНА
+ *     csharp   382 → 309   — ВТАЩЕНА
  *
  *   Разрыв между go/rust и остальными — не случайность: `emit-go.flang` и
  *   `emit-rust.flang` называют свои части с именем цели («Модуль Go», «Змейка
@@ -6075,6 +6101,114 @@ static int run_file(int argc, char **argv) {
 #define EMIT_RUNNER_SOURCE "flang_cli.c"
 #define EMIT_SHELL_SOURCE "flang_repl.c"
 
+/** Цели печати, втащенные в замыкание этой сборки. Порядок — как в справке. */
+#define EMIT_TARGET_C 0
+#define EMIT_TARGET_GO 1
+#define EMIT_TARGET_RUST 2
+#define EMIT_TARGET_JAVA 3
+#define EMIT_TARGET_JS 4
+#define EMIT_TARGET_ELIXIR 5
+#define EMIT_TARGET_PYTHON 6
+#define EMIT_TARGET_CSHARP 7
+#define EMIT_TARGET_COUNT 8
+
+/** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
+#define EMIT_FIELD_MAX 16
+#define EMIT_RUNTIME_MAX 6
+
+/**
+ * Что двоичный знает о цели печати — ОДНОЙ СТРОКОЙ ТАБЛИЦЫ.
+ *
+ * Слово ключа «--target»; имя цели, каким его читает человек в отказе; файл, по
+ * которому узнаётся каталог ИСХОДНИКОВ её
+ * рантайма; два места, где он ищется рядом с установленным flang; имя точки
+ * входа на flang; чем эта точка входа кормится — СВЯЗАННЫМ (тогда она сама
+ * отбрасывает недостижимое, как свидетель) или уже готовой программой; имена
+ * полей записи настроек по порядку; файлы рантайма, которые уезжают в эти поля
+ * текстом; и строка, которую стоит сказать человеку про сборку напечатанного.
+ *
+ * Пустое имя файла — поле, которого у цели нет по существу: у Go нет ни
+ * заголовка рантайма, ни человеческого входа, и печать этих полей не читает.
+ */
+typedef struct {
+  const char *word;
+  const char *title;
+  const char *probe;
+  const char *places[2];
+  const char *entry;
+  bool from_linked;
+  size_t field_count;
+  const char *fields[EMIT_FIELD_MAX];
+  size_t runtime_count;
+  const char *runtime_files[EMIT_RUNTIME_MAX];
+  const char *build_say;
+} emit_target;
+
+/* Поля записи «Настройки» из `emit-c.flang` — общие у целей «c» и «go». */
+#define EMIT_FIELDS_C                                                                                 \
+  {"путь",           "есть путь",         "база",            "предел глубины", "предел шагов",        \
+   "прогонщик",      "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "оболочка",      \
+   "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа"}
+
+static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
+    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 15,
+     EMIT_FIELDS_C, 4, {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c"}, NULL},
+    {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
+     true,
+     15, EMIT_FIELDS_C, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
+     "собрать: cd <каталог> && go build ./..."},
+    {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
+     "Напечатать связанное в Rust", true, 12,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
+      "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>"},
+    {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
+     "Напечатать связанное в Java",
+     true, 16,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
+      "рантайм поле", "рантайм ошибка", "рантайм контекст", "рантайм формы", "исходник прогонщика",
+      "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
+     "собрать: cd <каталог> && make"},
+    /* У JavaScript рантайм лежит ЛИТЕРАЛАМИ внутри `emit-js.flang`: снаружи
+       приезжают только прогонщик и планировщик, и по прогонщику же узнаётся
+       каталог. */
+    {"js", "JavaScript", "flang_cli.js", {"flang/src/emit/js", "share/flang/js"},
+     "Напечатать связанное в JS", true, 12,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "исходник планировщика",
+      "прогонщик", "исходник прогонщика", "типы входа", "поля входа", "варианты входа",
+      "параметры входа"},
+     2, {"flang_conc.js", "flang_cli.js"}, "запустить: cd <каталог> && node flang_cli.js ./<имя>.js"},
+    {"elixir", "Elixir", "flang_runtime.ex", {"flang/src/emit/elixir", "share/flang/elixir"},
+     "Напечатать связанное в Elixir", true, 13,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
+      "исходник прогонщика", "исходник конкурентности", "типы входа", "поля входа", "варианты входа",
+      "параметры входа"},
+     3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "собрать и запустить: cd <каталог> && make run"},
+    {"python", "Python", "flang_runtime.py", {"flang/src/emit/python", "share/flang/python"},
+     "Напечатать связанное в Python", true, 12,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
+      "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     2, {"flang_runtime.py", "flang_cli.py"}, "запустить: cd <каталог> && python3 flang_cli.py <модуль>"},
+    {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
+     "Напечатать связанное в CSharp", true, 16,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
+      "рантайм поле", "рантайм ошибка", "рантайм контекст", "рантайм операции", "исходник прогонщика",
+      "типы входа", "поля входа", "варианты входа", "параметры входа"},
+     6, {"Value.cs", "Field.cs", "FlangError.cs", "Ctx.cs", "Flang.cs", "FlangCli.cs"},
+     "собрать: cd <каталог> && dotnet build"},
+};
+
+/** Ключи командной строки печати — одни на все цели. */
+typedef struct {
+  const char *own;
+  const char *steps;
+  const char *depth;
+  int base_index;
+  bool cli;
+  bool shell;
+} emit_wish;
+
 /**
  * Каталог с ИСХОДНИКАМИ рантайма — не с напечатанными.
  *
@@ -6084,8 +6218,8 @@ static int run_file(int argc, char **argv) {
  * значило бы приписать шапку второй раз. Поэтому каталог самого бинарника здесь
  * НЕ пробуется — в отличие от поиска заголовков для оболочки.
  */
-static bool emit_runtime_here(const char *directory) {
-  char *probe = repl_join(directory, EMIT_RUNTIME_HEADER);
+static bool emit_probe_here(const char *directory, const char *probe_name) {
+  char *probe = repl_join(directory, probe_name);
   size_t bytes = 0;
   char *text = repl_read_file(probe, &bytes);
   bool ok = false;
@@ -6099,16 +6233,24 @@ static bool emit_runtime_here(const char *directory) {
   return ok;
 }
 
-static char *emit_runtime_dir(const char *self_dir, const char *given) {
-  static const char *const places[2] = {"flang/src/emit/c", "share/flang/c"};
+/**
+ * Каталог исходников рантайма ОДНОЙ цели: три места в одном порядке у всех.
+ *
+ * Цель отличается двумя вещами — пробным файлом, по которому каталог узнаётся,
+ * и последним сегментом пути (`flang/src/emit/go`, `share/flang/go`). Всё
+ * остальное — порядок «--runtime», $FLANG_RUNTIME_DIR, рядом с установленным —
+ * общее, и восемь копий этого порядка разъехались бы на первой же правке.
+ */
+static char *emit_target_dir(const char *self_dir, const char *given, const char *probe_name,
+                             const char *const *places) {
   size_t index = 0;
   if (given != NULL && given[0] != '\0') {
-    return emit_runtime_here(given) ? repl_say(given) : NULL;
+    return emit_probe_here(given, probe_name) ? repl_say(given) : NULL;
   }
   {
     const char *set = getenv("FLANG_RUNTIME_DIR");
     if (set != NULL && set[0] != '\0') {
-      return emit_runtime_here(set) ? repl_say(set) : NULL;
+      return emit_probe_here(set, probe_name) ? repl_say(set) : NULL;
     }
   }
   if (self_dir == NULL) {
@@ -6118,7 +6260,7 @@ static char *emit_runtime_dir(const char *self_dir, const char *given) {
     char *parent = repl_dirname(self_dir);
     char *directory = repl_join(parent, places[index]);
     free(parent);
-    if (emit_runtime_here(directory)) {
+    if (emit_probe_here(directory, probe_name)) {
       return directory;
     }
     free(directory);
@@ -6385,54 +6527,216 @@ static bool emit_write(const char *full, const char *text, size_t bytes) {
   return true;
 }
 
+/**
+ * Раскладка напечатанного по диску — одна на все цели.
+ *
+ * Что здесь общего у восьми целей: имя файла приходит полем «путь», содержимое —
+ * полем «содержимое», при «--file имя» ровно один файл уходит на стандартный
+ * вывод, а не названный печатью файл — отказ со списком того, что печать даёт.
+ *
+ * ПОДКАТАЛОГИ ЗАВОДЯТСЯ ПО ПУТИ ФАЙЛА. У цели `c` все файлы лежат плоско, и для
+ * неё не меняется ничего; у Go путь — это имя пакета (`flangrt/flang_runtime.go`),
+ * человек его не выбирал и знать не обязан. Сам `--out` заведён выше.
+ */
+static int emit_files_out(fl_value files, const char *out, const char *one, size_t *written) {
+  size_t index = 0;
+  int code = 0;
+  bool found = false;
+  for (index = 0; index < files.as.list.count && code == 0; index += 1) {
+    fl_value where = fl_nothing();
+    fl_value content = fl_nothing();
+    const char *body = NULL;
+    size_t body_bytes = 0;
+    char *name = NULL;
+    if (!val_field(files.as.list.items[index], "путь", &where) ||
+        !val_field(files.as.list.items[index], "содержимое", &content) ||
+        !val_text(content, &body, &body_bytes)) {
+      continue;
+    }
+    name = val_copy(where);
+    if (one != NULL) {
+      if (strcmp(name, one) == 0) {
+        found = true;
+        if (body_bytes > 0 && fwrite(body, 1, body_bytes, stdout) != body_bytes) {
+          fputs("flang emit: вывод оборван\n", stderr);
+          code = 1;
+        }
+        *written += body_bytes;
+      }
+      free(name);
+      continue;
+    }
+    {
+      char *destination = repl_join(out, name);
+      char *holder = strchr(name, '/') == NULL ? NULL : repl_dirname(destination);
+      if (holder != NULL && !emit_make_dir(holder)) {
+        code = 1;
+      } else if (!emit_write(destination, body, body_bytes)) {
+        code = 1;
+      }
+      *written += body_bytes;
+      free(holder);
+      free(destination);
+    }
+    free(name);
+  }
+  fflush(stdout);
+  if (one != NULL && !found && code == 0) {
+    fprintf(stderr, "flang emit: файла «%s» печать не даёт. Что даёт:", one);
+    for (index = 0; index < files.as.list.count; index += 1) {
+      fl_value where = fl_nothing();
+      if (val_field(files.as.list.items[index], "путь", &where)) {
+        char *name = val_copy(where);
+        fprintf(stderr, " %s", name);
+        free(name);
+      }
+    }
+    fputc('\n', stderr);
+    code = 2;
+  }
+  return code;
+}
+
+/**
+ * Настройки печати собираются ПО ИМЕНАМ ПОЛЕЙ, а не по счёту рук.
+ *
+ * У восьми целей запись настроек одна и та же в главном — путь, три предела,
+ * признак прогонщика и четыре списка границы входа, — и разная в ТЕКСТАХ
+ * РАНТАЙМА: у «c» их четыре, у Go два, у Java и C# шесть, у Elixir три. Поэтому
+ * здесь один обход по именам полей цели: поле, чьё имя известно, заполняется
+ * известным; всякое ДРУГОЕ поле — текст рантайма, и он берётся из списка файлов
+ * цели по порядку. Пустое имя файла означает поле, которого у цели нет по
+ * существу (у Go нет ни заголовка, ни человеческого входа), — оно приезжает
+ * пустой строкой, потому что печать этих полей не читает, а пустой указатель
+ * уронил бы `repl_value_text`.
+ *
+ * Восьми копий этой сборки настроек не будет: цель добавляется СТРОКОЙ ТАБЛИЦЫ.
+ */
+static int emit_call(const emit_target *target, fl_value subject, bool fits, const fl_entry_table *table,
+                     const char *runtime, const emit_wish *wish, fl_value *files) {
+  fl_value values[EMIT_FIELD_MAX];
+  fl_value args[2];
+  fl_value result = fl_nothing();
+  fl_value failure = fl_nothing();
+  char *texts[EMIT_RUNTIME_MAX];
+  size_t sizes[EMIT_RUNTIME_MAX];
+  size_t index = 0;
+  size_t taken = 0;
+  int code = 0;
+
+  for (index = 0; index < EMIT_RUNTIME_MAX; index += 1) {
+    texts[index] = NULL;
+    sizes[index] = 0;
+  }
+
+  for (index = 0; index < target->runtime_count; index += 1) {
+    if (target->runtime_files[index][0] == '\0') {
+      texts[index] = repl_say("");
+      continue;
+    }
+    {
+      char *where = repl_join(runtime, target->runtime_files[index]);
+      texts[index] = repl_read_file(where, &sizes[index]);
+      free(where);
+      if (texts[index] == NULL) {
+        fprintf(stderr, "flang emit: в %s не хватает %s\n", runtime, target->runtime_files[index]);
+        code = 2;
+      }
+    }
+  }
+
+  for (index = 0; code == 0 && index < target->field_count; index += 1) {
+    const char *name = target->fields[index];
+    if (strcmp(name, "путь") == 0) {
+      values[index] = repl_value_say(wish->own);
+    } else if (strcmp(name, "есть путь") == 0) {
+      values[index] = fl_flag(wish->own[0] != '\0');
+    } else if (strcmp(name, "база") == 0) {
+      values[index] = fl_number((double)wish->base_index);
+    } else if (strcmp(name, "предел глубины") == 0) {
+      values[index] = fl_number(strtod(wish->depth, NULL));
+    } else if (strcmp(name, "предел шагов") == 0) {
+      values[index] = fl_number(strtod(wish->steps, NULL));
+    } else if (strcmp(name, "прогонщик") == 0) {
+      values[index] = fl_flag(wish->cli);
+    } else if (strcmp(name, "оболочка") == 0) {
+      values[index] = fl_flag(wish->shell);
+    } else if (strcmp(name, "типы входа") == 0) {
+      values[index] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+    } else if (strcmp(name, "поля входа") == 0) {
+      values[index] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+    } else if (strcmp(name, "варианты входа") == 0) {
+      values[index] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+    } else if (strcmp(name, "параметры входа") == 0) {
+      values[index] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+    } else if (taken < target->runtime_count) {
+      values[index] = repl_value_text(texts[taken], sizes[taken]);
+      taken += 1;
+    } else {
+      /* Полей рантайма у цели больше, чем названо файлов, — это опечатка в
+         таблице целей, а не положение дел. Молча подставить пустую строку
+         значило бы напечатать программу без рантайма и промолчать. */
+      fprintf(stderr, "flang emit: у цели «%s» поле «%s» без файла рантайма\n", target->word, name);
+      code = 1;
+    }
+  }
+
+  if (code == 0) {
+    args[0] = subject;
+    args[1] = repl_value_record(target->fields, values, target->field_count);
+    if (repl_call(target->entry, args, 2, &result) != FL_OK) {
+      code = 1;
+    } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
+      char *say = val_copy(failure);
+      fprintf(stderr, "flang emit: печать отказала — %s\n", say);
+      free(say);
+      code = 1;
+    } else if (!val_field(result, "файлы", files) || files->tag != FL_LIST) {
+      fputs("flang emit: печать не вернула файлов\n", stderr);
+      code = 1;
+    }
+  }
+
+  for (index = 0; index < EMIT_RUNTIME_MAX; index += 1) {
+    free(texts[index]);
+  }
+  return code;
+}
+
 static int emit_file(int argc, char **argv, const char *self) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
-  static const char *const names[15] = {"путь",              "есть путь",         "база",
-                                        "предел глубины",    "предел шагов",      "прогонщик",
-                                        "рантайм заголовок", "рантайм исходник",  "исходник прогонщика",
-                                        "оболочка",          "исходник оболочки", "типы входа",
-                                        "поля входа",        "варианты входа",    "параметры входа"};
-  fl_value values[15];
-  fl_value args[2];
+  emit_wish wish;
   fl_value sources = fl_nothing();
-  fl_value result = fl_nothing();
   fl_value files = fl_nothing();
-  fl_value failure = fl_nothing();
   const fl_entry_table *table = FL_PROGRAM_ENTRY();
   const char *path = NULL;
   const char *target = NULL;
   const char *out = NULL;
   const char *one = NULL;
   const char *given_runtime = NULL;
-  const char *steps = "1000000";
-  const char *depth = "10000";
-  const char *own = "";
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
   char *text = NULL;
   char *self_dir = NULL;
   char *runtime = NULL;
-  char *runtime_header = NULL;
-  char *runtime_source = NULL;
-  char *runner_source = NULL;
-  char *shell_source = NULL;
-  size_t runtime_header_bytes = 0;
-  size_t runtime_source_bytes = 0;
-  size_t runner_source_bytes = 0;
-  size_t shell_source_bytes = 0;
   size_t bytes = 0;
   size_t index = 0;
   size_t written = 0;
   int argument = 0;
   int code = 0;
-  int base_index = 1;
-  bool cli = true;
-  bool shell = false;
+  int chosen = -1;
   bool fits = false;
   bool opened = false;
+
+  wish.own = "";
+  wish.steps = "1000000";
+  wish.depth = "10000";
+  wish.base_index = 1;
+  wish.cli = true;
+  wish.shell = false;
 
   for (argument = 2; argument < argc; argument += 1) {
     if (strcmp(argv[argument], "--target") == 0 && argument + 1 < argc) {
@@ -6449,22 +6753,22 @@ static int emit_file(int argc, char **argv, const char *self) {
       given_runtime = argv[argument];
     } else if (strcmp(argv[argument], "--max-steps") == 0 && argument + 1 < argc) {
       argument += 1;
-      steps = argv[argument];
+      wish.steps = argv[argument];
     } else if (strcmp(argv[argument], "--max-depth") == 0 && argument + 1 < argc) {
       argument += 1;
-      depth = argv[argument];
+      wish.depth = argv[argument];
     } else if (strcmp(argv[argument], "--index-base") == 0 && argument + 1 < argc) {
       argument += 1;
-      base_index = strcmp(argv[argument], "0") == 0 ? 0 : 1;
+      wish.base_index = strcmp(argv[argument], "0") == 0 ? 0 : 1;
     } else if (strcmp(argv[argument], "--path") == 0 && argument + 1 < argc) {
       argument += 1;
-      own = argv[argument];
+      wish.own = argv[argument];
     } else if (strcmp(argv[argument], "--cli") == 0) {
-      cli = true;
+      wish.cli = true;
     } else if (strcmp(argv[argument], "--no-cli") == 0) {
-      cli = false;
+      wish.cli = false;
     } else if (strcmp(argv[argument], "--repl") == 0) {
-      shell = true;
+      wish.shell = true;
     } else if (argv[argument][0] != '-' && path == NULL) {
       path = argv[argument];
     } else {
@@ -6478,15 +6782,26 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
   if (target == NULL) {
-    fputs("flang emit требует «--target»: в этом бинарнике есть одна цель — «c»\n", stderr);
+    fprintf(stderr, "flang emit требует «--target»: %s\n", EMIT_TARGETS_SAY);
     return 2;
   }
-  if (strcmp(target, "c") != 0) {
+  for (index = 0; index < EMIT_TARGET_COUNT; index += 1) {
+    if (strcmp(target, EMIT_TARGET_TABLE[index].word) == 0) {
+      chosen = (int)index;
+    }
+  }
+  if (chosen < 0) {
     fprintf(stderr,
-            "flang emit: цели «%s» у этой сборки flang нет — есть одна, «c». Остальные семь\n"
-            "(js, go, rust, python, java, csharp, elixir) есть в версии для Node:\n"
-            "npm install -g @digitable-lol/flang\n",
-            target);
+            "flang emit: цели «%s» у этой сборки flang нет — %s.\n"
+            "%s\n",
+            target, EMIT_TARGETS_SAY, EMIT_TARGETS_REST);
+    return 2;
+  }
+  /* Человеческий вход — это `flang_repl.c`, то есть C и только C. Молча
+     проглотить ключ значило бы напечатать цель, у которой такого файла нет
+     вовсе, и промолчать об этом. */
+  if (wish.shell && chosen != EMIT_TARGET_C) {
+    fputs("flang emit: «--repl» есть только у цели «c»: человеческий вход написан на C\n", stderr);
     return 2;
   }
   if (out == NULL && one == NULL) {
@@ -6497,15 +6812,18 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_runtime_dir(self_dir, given_runtime);
+  runtime = emit_target_dir(self_dir, given_runtime, EMIT_TARGET_TABLE[chosen].probe,
+                            EMIT_TARGET_TABLE[chosen].places);
   free(self_dir);
   if (runtime == NULL) {
-    fputs("flang emit: не найдены исходники рантайма C — четыре файла (flang_runtime.h,\n"
-          "flang_runtime.c, flang_cli.c, flang_repl.c), которые уезжают в вывод дословно.\n"
-          "Искали в «--runtime», в $FLANG_RUNTIME_DIR и рядом с установленным flang\n"
-          "(share/flang/c). Что делать: назвать каталог с ними ключом «--runtime каталог»\n"
-          "или переменной FLANG_RUNTIME_DIR; в дереве исходников это flang/src/emit/c.\n",
-          stderr);
+    fprintf(stderr,
+            "flang emit: не найдены исходники рантайма %s — они уезжают в вывод ДОСЛОВНО, и\n"
+            "без них печать соврала бы. Узнаются они по %s без шапки «Сгенерировано flang».\n"
+            "Искали в «--runtime», в $FLANG_RUNTIME_DIR и рядом с установленным flang (%s).\n"
+            "Что делать: назвать каталог с ними ключом «--runtime каталог» или переменной\n"
+            "FLANG_RUNTIME_DIR; в дереве исходников это %s.\n",
+            EMIT_TARGET_TABLE[chosen].title, EMIT_TARGET_TABLE[chosen].probe,
+            EMIT_TARGET_TABLE[chosen].places[1], EMIT_TARGET_TABLE[chosen].places[0]);
     return 2;
   }
 
@@ -6520,27 +6838,9 @@ static int emit_file(int argc, char **argv, const char *self) {
     return 2;
   }
 
-  {
-    char *where = repl_join(runtime, EMIT_RUNTIME_HEADER);
-    runtime_header = repl_read_file(where, &runtime_header_bytes);
-    free(where);
-    where = repl_join(runtime, EMIT_RUNTIME_SOURCE);
-    runtime_source = repl_read_file(where, &runtime_source_bytes);
-    free(where);
-    where = repl_join(runtime, EMIT_RUNNER_SOURCE);
-    runner_source = repl_read_file(where, &runner_source_bytes);
-    free(where);
-    where = repl_join(runtime, EMIT_SHELL_SOURCE);
-    shell_source = repl_read_file(where, &shell_source_bytes);
-    free(where);
-  }
-  if (runtime_header == NULL || runtime_source == NULL || runner_source == NULL || shell_source == NULL) {
-    fprintf(stderr, "flang emit: в %s не хватает исходников рантайма\n", runtime);
-    code = 2;
-  }
   /* Замок рядом со входом — та же подмена, что у остальных команд: печатается
      программа, собранная ИЗ ЗАМКА, а не из того, что случайно лежит на диске. */
-  if (code == 0 && !lock_beside(full)) {
+  if (!lock_beside(full)) {
     code = 1;
   }
 
@@ -6581,34 +6881,9 @@ static int emit_file(int argc, char **argv, const char *self) {
         code = 1;
       } else {
         fits = emit_entry_fits(program, table);
-        values[0] = repl_value_say(own);
-        values[1] = fl_flag(own[0] != '\0');
-        values[2] = fl_number((double)base_index);
-        values[3] = fl_number(strtod(depth, NULL));
-        values[4] = fl_number(strtod(steps, NULL));
-        values[5] = fl_flag(cli);
-        values[6] = repl_value_text(runtime_header, runtime_header_bytes);
-        values[7] = repl_value_text(runtime_source, runtime_source_bytes);
-        values[8] = repl_value_text(runner_source, runner_source_bytes);
-        values[9] = fl_flag(shell);
-        values[10] = repl_value_text(shell_source, shell_source_bytes);
-        values[11] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
-        values[12] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
-        values[13] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
-        values[14] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
-        args[0] = program;
-        args[1] = repl_value_record(names, values, 15);
-        if (repl_call("Напечатать связанное", args, 2, &result) != FL_OK) {
-          code = 1;
-        } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
-          char *say = val_copy(failure);
-          fprintf(stderr, "flang emit: печать отказала — %s\n", say);
-          free(say);
-          code = 1;
-        } else if (!val_field(result, "файлы", &files) || files.tag != FL_LIST) {
-          fputs("flang emit: печать не вернула файлов\n", stderr);
-          code = 1;
-        }
+        code = emit_call(&EMIT_TARGET_TABLE[chosen],
+                         EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table, runtime,
+                         &wish, &files);
       }
     }
   }
@@ -6618,55 +6893,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   if (code == 0) {
-    bool found = false;
-    for (index = 0; index < files.as.list.count && code == 0; index += 1) {
-      fl_value where = fl_nothing();
-      fl_value content = fl_nothing();
-      const char *body = NULL;
-      size_t body_bytes = 0;
-      char *name = NULL;
-      if (!val_field(files.as.list.items[index], "путь", &where) ||
-          !val_field(files.as.list.items[index], "содержимое", &content) ||
-          !val_text(content, &body, &body_bytes)) {
-        continue;
-      }
-      name = val_copy(where);
-      if (one != NULL) {
-        if (strcmp(name, one) == 0) {
-          found = true;
-          if (body_bytes > 0 && fwrite(body, 1, body_bytes, stdout) != body_bytes) {
-            fputs("flang emit: вывод оборван\n", stderr);
-            code = 1;
-          }
-          written += body_bytes;
-        }
-        free(name);
-        continue;
-      }
-      {
-        char *destination = repl_join(out, name);
-        if (!emit_write(destination, body, body_bytes)) {
-          code = 1;
-        }
-        written += body_bytes;
-        free(destination);
-      }
-      free(name);
-    }
-    fflush(stdout);
-    if (one != NULL && !found && code == 0) {
-      fprintf(stderr, "flang emit: файла «%s» печать не даёт. Что даёт:", one);
-      for (index = 0; index < files.as.list.count; index += 1) {
-        fl_value where = fl_nothing();
-        if (val_field(files.as.list.items[index], "путь", &where)) {
-          char *name = val_copy(where);
-          fprintf(stderr, " %s", name);
-          free(name);
-        }
-      }
-      fputc('\n', stderr);
-      code = 2;
-    }
+    code = emit_files_out(files, out, one, &written);
     if (code == 0) {
       /* Число файлов и байт — на stderr, потому что stdout занят печатью:
          `flang emit … --file x.c > x.c` обязан дать РОВНО файл. */
@@ -6690,6 +6917,9 @@ static int emit_file(int argc, char **argv, const char *self) {
               "двоичного flang, полная проверка есть в версии для Node\n",
               stderr);
       }
+      if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
+        fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
+      }
     }
   }
 
@@ -6698,10 +6928,6 @@ static int emit_file(int argc, char **argv, const char *self) {
     strings_free(&texts);
     strings_free(&queue);
   }
-  free(runtime_header);
-  free(runtime_source);
-  free(runner_source);
-  free(shell_source);
   free(runtime);
   free(text);
   free(full);

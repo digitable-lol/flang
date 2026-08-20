@@ -206,7 +206,7 @@
   `wireFields`) или данные примеров (`kitten`, `sitting`, `horse`, `MCMXCIX`).
 
   Транслит в именах есть ровно в одном месте, и он **не небрежность**: 31 функция
-  `flang/self/emit-js.flang` названа «Текст b_dlina», «Текст b_soedinit», «Текст b_kod_simvola» — по
+  `flang/self/emit-js.flang` названа «Текст b_dlina JS», «Текст b_soedinit JS», «Текст b_kod_simvola JS» — по
   идентификатору, который она печатает в JavaScript. Идентификатор транслитерирован
   `flang/src/naming.mjs`, потому что JavaScript кириллицы в именах помощников не принимает, а имя
   печатающей функции повторяет напечатанное дословно. Это тот же довод, что и у `сkind` в Р4, только

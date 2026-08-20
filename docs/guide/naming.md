@@ -209,7 +209,7 @@ the change.
   `MCMXCIX`).
 
   Transliteration appears in names in exactly one place, and it is **not carelessness**: 31 functions
-  in `flang/self/emit-js.flang` are named «Текст b_dlina», «Текст b_soedinit», «Текст b_kod_simvola»
+  in `flang/self/emit-js.flang` are named «Текст b_dlina JS», «Текст b_soedinit JS», «Текст b_kod_simvola JS»
   — after the identifier each one prints into JavaScript. That identifier is transliterated by
   `flang/src/naming.mjs`, because JavaScript will not take Cyrillic in helper names, and the printing
   function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except

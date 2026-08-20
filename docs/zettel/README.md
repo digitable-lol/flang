@@ -72,6 +72,8 @@
 - [Пометки не хватало 293 функциям из 2242 — остальным 1949 не хватает правил](pometki-ne-hvatalo-293-iz-2242.md)
 - [Два правила завершаемости поодиночке дают 54 и 74, а вместе — 574](dva-pravila-zavershaemosti-vmeste-dayut-574.md)
 - [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное](nat-snimaet-storozha-tolko-esli-vyzyvayushchiy-uzhe-daet-naturalnoe.md)
+- [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
+- [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)
 
 ## Теория категорий
 
@@ -311,6 +313,8 @@
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)
 - [Граница входа у программ, напечатанных двоичным, была пуста, и закрыл её перенос одной таблицы на flang](entry-table-moved-to-flang-closes-the-binary-border.md)
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
+- [Изменившийся вердикт при снятии правки — ещё не доказанная ложь](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
+- [`git stash` общий на все рабочие деревья](git-stash-is-shared-across-worktrees.md)
 
 ## Отвергнутые пути
 

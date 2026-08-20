@@ -73,6 +73,7 @@ export function позвать(аргументы, настройки = {}) {
 }
 
 const памятьДеревьев = new Map()
+const памятьВедомостей = new Map()
 
 /**
  * ПРОГРЕВ: разобрать много файлов СРАЗУ, в несколько процессов.
@@ -124,7 +125,6 @@ export function прогреть(пути, потоков = 0) {
   }
 }
 
-const памятьВедомостей = new Map()
 
 /**
  * СВЯЗАННОЕ дерево файла — то же, что видит печать в целевой язык.
@@ -206,6 +206,55 @@ export function отсеятьЧужое(д, откуда) {
   }
 }
 
+/**
+ * ПРОГРЕВ ВЕДОМОСТЕЙ — тем же приёмом и по той же причине, что прогрев деревьев.
+ *
+ * `flang check --proof` считает типы, завершаемость и ядро доказательства; на
+ * корпусе из 277 файлов по одному это часы. Разводится по ядрам тем же
+ * `xargs -P`. Код возврата у `check` значащий (1 — программа не прошла, 2 —
+ * названный пробел), поэтому он сохраняется рядом с выводом и читается отсюда.
+ */
+export function прогретьВедомости(пути, потоков = 0) {
+  const нужны = [...new Set(пути.map((п) => resolve(КОРЕНЬ, п)))].filter((п) => !памятьВедомостей.has(п))
+  if (нужны.length < 2) return
+  const сколько = потоков || Math.max(1, Math.min(64, cpus().length))
+  const где = mkdtempSync(join(tmpdir(), "flang-vedomosti-"))
+  try {
+    const задания = нужны.map((путь, и) => `${путь}\0${join(где, `${и}`)}\0`).join("")
+    const итог = spawnSync(
+      "xargs",
+      ["-0", "-n", "2", "-P", String(сколько), "sh", "-c",
+        `${JSON.stringify(путьДвоичного())} check "$1" --proof --json >"$2.json" 2>"$2.err"; echo $? >"$2.kod"`, "sh"],
+      { input: задания, encoding: "utf8", maxBuffer: 1024 * 1024 * 64 },
+    )
+    if (итог.error) return
+    нужны.forEach((путь, и) => {
+      const имя = join(где, `${и}`)
+      let код = 1
+      try {
+        код = Number.parseInt(readFileSync(`${имя}.kod`, "utf8").trim(), 10)
+      } catch {
+        return /* xargs до этого файла не дошёл — возьмётся по одному */
+      }
+      let ответ
+      try {
+        ответ = { ok: код === 0, код, ведомость: JSON.parse(readFileSync(`${имя}.json`, "utf8")), why: код === 0 ? null : readFileSync(`${имя}.err`, "utf8").trim() }
+      } catch {
+        let почему = ""
+        try {
+          почему = `${readFileSync(`${имя}.err`, "utf8")}${readFileSync(`${имя}.json`, "utf8")}`.trim()
+        } catch {
+          почему = "двоичный не ответил"
+        }
+        ответ = { ok: false, код, why: почему }
+      }
+      памятьВедомостей.set(путь, ответ)
+    })
+  } finally {
+    rmSync(где, { recursive: true, force: true })
+  }
+}
+
 /** Ведомость доказательств: `flang check --proof --json`. */
 export function ведомость(путь) {
   const ключ = resolve(КОРЕНЬ, путь)
@@ -213,12 +262,30 @@ export function ведомость(путь) {
   const { код, вывод, ошибки } = позвать(["check", ключ, "--proof", "--json"])
   let ответ
   try {
-    ответ = { ok: код === 0, код, ведомость: JSON.parse(вывод) }
+    ответ = { ok: код === 0, код, ведомость: JSON.parse(вывод), why: код === 0 ? null : (ошибки || "").trim() }
   } catch {
     ответ = { ok: false, код, why: (ошибки || вывод).trim() }
   }
   памятьВедомостей.set(ключ, ответ)
   return ответ
+}
+
+/** Ведомость для ИСХОДНИКА, которого нет на диске: через временный файл рядом. */
+export function ведомостьИсходника(текст, рядомС) {
+  const где = рядомС ? dirname(resolve(КОРЕНЬ, рядомС)) : КОРЕНЬ
+  const каталог = mkdtempSync(join(где, ".flang-storozh-"))
+  const файл = join(каталог, "проба.flang")
+  try {
+    writeFileSync(файл, текст)
+    const { код, вывод, ошибки } = позвать(["check", файл, "--proof", "--json"])
+    try {
+      return { ok: код === 0, код, ведомость: JSON.parse(вывод) }
+    } catch {
+      return { ok: false, код, why: (ошибки || вывод).trim() }
+    }
+  } finally {
+    rmSync(каталог, { recursive: true, force: true })
+  }
 }
 
 /** Проверка без ведомости: `flang check`. Замечания приходят текстом. */

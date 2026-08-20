@@ -1,8 +1,9 @@
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /**
- * Напечатать `flang/conc/svyaz.flang` в цель JavaScript и положить результат в
- * `flang/conc/svyaz.js`.
+ * Напечатать модули узла в цель JavaScript и положить результат рядом с
+ * исходником: `flang/conc/svyaz.flang` → `flang/conc/svyaz.js`,
+ * `flang/conc/planirovshchik.flang` → `flang/conc/planirovshchik.js`.
  *
  * Зачем это отдельным шагом, а не печатью при запуске: узел — работающая
  * программа, и печатать компилятором на старте значило бы ввозить в неё весь
@@ -30,8 +31,23 @@ const ШАПКА = [
 export const ИСХОДНИК = "flang/conc/svyaz.flang"
 export const НАПЕЧАТАННОЕ = "flang/conc/svyaz.js"
 
+/**
+ * Модули узла, которые печатаются заранее. Два, и оба по одной причине: узел —
+ * работающая программа, и звать компилятор на старте значило бы ввозить его
+ * целиком.
+ */
+export const МОДУЛИ = Object.freeze([
+  Object.freeze({ исходник: ИСХОДНИК, напечатанное: НАПЕЧАТАННОЕ }),
+  Object.freeze({ исходник: "flang/conc/planirovshchik.flang", напечатанное: "flang/conc/planirovshchik.js" }),
+])
+
 /** Напечатать модуль связи в JavaScript. Возвращает содержимое файла. */
 export async function напечататьСвязь() {
+  return напечатать(ИСХОДНИК)
+}
+
+/** Напечатать один модуль узла в JavaScript. Возвращает содержимое файла. */
+export async function напечатать(ИСХОДНИК) {
   const путь = корень + ИСХОДНИК
   const { diagnostics, ...программа } = await linkProgram(путь, readFileSync(путь, "utf8"), parse)
   const беды = (diagnostics ?? []).filter((это) => это.severity === "error")
@@ -47,7 +63,9 @@ export async function напечататьСвязь() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const содержимое = await напечататьСвязь()
-  writeFileSync(корень + НАПЕЧАТАННОЕ, содержимое, "utf8")
-  console.log(`${НАПЕЧАТАННОЕ}: ${Buffer.byteLength(содержимое, "utf8")} байт`)
+  for (const модуль of МОДУЛИ) {
+    const содержимое = await напечатать(модуль.исходник)
+    writeFileSync(корень + модуль.напечатанное, содержимое, "utf8")
+    console.log(`${модуль.напечатанное}: ${Buffer.byteLength(содержимое, "utf8")} байт`)
+  }
 }

@@ -116,7 +116,7 @@ remarks" and {{планировщик.примеров}} passing examples.
 ## Distribution: a node carries a subset of the processes
 
 A node is a separate running program that holds **part** of the declared
-processes. The program itself is the same on every node, byte for byte:
+processes. The program itself is the same on every node, to the byte:
 distribution added not one word to the language.
 
 Who lives where is stated by a **placement** — data next to the program, not

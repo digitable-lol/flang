@@ -1,47 +1,82 @@
-# flang — the specification is the program
+# flang — a language whose compiler proves your program cannot hang
 
-A written specification drifts away from the code the day after it is signed off,
-and it drifts **silently**: nothing breaks when the two stop being about the same
-thing.
+flang is a language for ordinary programs that asks more of its compiler than
+type checking. The word `total` in front of a function is a promise that it
+terminates on every input; the compiler **proves** it, and refuses the file when
+it cannot. The language is written in words rather than punctuation, and the
+keywords come in two surfaces — English and Russian.
 
-flang takes the other road. The specification **is** the program. Rules are
-written once, they execute, they check themselves against their own examples —
-and then they are emitted into C, Go, Rust, Python, Java, C# or Elixir, where the
-emitted code must return the same values and the same error codes as the
-interpreter, input for input.
+@@пример:factorial@@
 
+What is unusual here. The function is recursive and still marked `total`: the
+compiler saw that the step is constant (`minus 1`) and that the guard
+`n is at most 1` pins `n` from below, and concluded that there can be no more
+than `n` calls. The examples live inside the function rather than in a separate
+test file, and they run on every check of the file.
+
+## Try it in five minutes
+
+**1. Install.** One command; no Node, no building from source:
+
+```bash
+brew install digitable-lol/tap/flang
 ```
-total function «Product»
-  accepts items: list of number
+
+The other paths — asdf, from source, via npm — are on the
+[Install](install.html) page.
+
+**2. Write.** Put this in `hello.flang`:
+
+```flang
+module «Hello»
+
+total function «Double»
+  accepts n: number
   returns number
-  example «Product of four»
-    given items equals [1, 2, 3, 4]
-    expected 24
-  example «Product of nothing is one»
-    given items equals empty list
-    expected 1
-  fold items starting with 1 as acc and elem → acc times elem
+  example «twice two»
+    given n equals 2
+    expected 4
+  n plus n
 ```
 
-`total` here is not a wish. The compiler **proved** that this function terminates
-on every input, and would have refused to accept it otherwise.
+**3. Check it and run it:**
 
-Those keywords are flang's English surface. The Russian one — `тотальная
-функция`, `свёртка … начиная с` — parses to the same syntax tree; the two are
-compared tree against tree, not described as equal.
+```bash
+flang check hello.flang
+flang run hello.flang --function Double --args '{"n": 21}'
+```
 
-## Three things ordinary languages do not have
+`check` parses the file, checks types, proves termination and runs the examples;
+`run` answers `42`.
 
-**Termination is proved at compile time.** In C, Python and JavaScript a function
-may loop forever and you find out in production. Here `total` is a promise the
-compiler answers for: **{{корпус.тотальных}} functions out of {{корпус.функций}}** carry it.
+**4. Then follow the path**, one page per step:
+
+- [Install](install.html) — four paths and what each needs on the machine;
+- [Your first program](getting-started.html) — the same five minutes in full,
+  down to emitting the program into C;
+- [Tutorial](tutorial.html) — six chapters, from a first function to a claim the
+  kernel proved;
+- [Operations](operations.html) and [Language reference](language.html) — what
+  does what, for when the path ends and the work begins.
+
+## How this differs from languages you know
+
+**Termination is checked before the program runs.** In C, Python and JavaScript
+a function may loop forever and you find out in production. Here `total` is a
+promise the compiler answers for: **{{корпус.тотальных}} functions out of
+{{корпус.функций}}** in the language tree carry it.
 
 **A promise about the result is checked on all inputs, not on examples.** Tests
 cover the inputs you thought of. A postcondition accepted by the proof kernel
-covers the rest.
+covers all of them at once.
 
-**One program is emitted into {{цели.поАнглийски}} languages with byte-compared behaviour.** Not
-"should match" — checked to match: values, error codes, step counters.
+**One program is emitted into {{цели.поАнглийски}} languages, and the behaviour
+is compared.** Not "should match" — checked to match: values, error codes, step
+counters. The targets are {{цели.список}}.
+
+**No loops, no mutable variables, no exceptions.** A list is walked with a fold,
+branching is `if … then … else`, a failure comes back as a value. This is not
+purity for its own sake: the termination proof rests on exactly these limits.
 
 ## How this differs from Coq, Agda and Lean
 
@@ -50,13 +85,14 @@ Programs are *extracted* out of Coq into OCaml, because writing an application i
 Coq is not practical.
 
 flang tries to close that gap: one language you prove in, write ordinary code in,
-and can still read.
+and can still read aloud.
 
 **The proof kernel takes nothing on faith.** Zero axioms, and the list is
 provably empty — a separate test holds it at zero, so one cannot be added
-quietly. There are three decision rules, and each one fits in a single reading.
+quietly. There are three decision rules, and each one fits in a single reading:
+[why proofs, and how they work](proofs.html).
 
-## Where we actually are
+## Where the language actually is
 
 The numbers below are substituted from a measurement of the tree, not typed: one
 number lives in one place, and two pages have nothing to drift apart on. Nor can
@@ -64,35 +100,33 @@ it go stale quietly — [how that works](about-docs.html).
 
 | | |
 |---|---:|
-| Functions in the corpus | {{корпус.функций}} |
+| Functions in the language tree | {{корпус.функций}} |
 | Of them total (termination proved) | {{корпус.тотальных}} |
 | Behaviour claims stated | {{утверждения.высказано}} |
 | Of them **proved by the kernel** — for all inputs | {{утверждения.доказано}} |
 | Laws taken on faith | **{{законы.наВеру}}** |
-| Claims refuted | **{{утверждения.отвергнуто}}** |
 
-And, honestly, what is not there:
+And what is not there yet. These caveats stand here rather than in the sales
+pitch, but not one of them has been dropped:
 
 - **of ordinary library functions the kernel closes 2 out of 20**; four more it
   closed only after the claim had been weakened, which makes 6 out of 20 counting
   those. **Not one human-written theorem has been accepted by the kernel.** The
-  measurement took every ninth function out of all {{библиотека.функций}}, so the
-  convenient ones could not be picked, and it was run twice on the same material —
-  [what backs that](proofs.html);
-- **the language is 1.4× slower than Python, 3.3× slower than Node, and
-  hand-written C is 8.6× faster than we are** (geometric mean over five tasks,
-  [the speed report](../benchmark-speed.html) — in Russian). That is **not the
-  price of provability**: where a proof leaves no guard in the running program it
-  costs **1–9 %, indistinguishable from zero** against the spread between runs.
-  A guard is left behind rarely: **{{сторож.функций}} functions out of
-  {{корпус.тотальных}} total ones carry it** — {{носители.постоянныйШаг}} by a
-  constant step, {{носители.мера}} by a declared measure,
-  {{сторож.мест}} sites. There it really is expensive — **three
-  times the cost of the function itself**. The gap is unfinished work, not the
-  price of proofs, and it is fixable;
+  measurement took every ninth function out of all {{библиотека.функций}} library
+  functions, so the convenient ones could not be picked, and it was run twice on
+  the same material — [what backs that](proofs.html);
+- **speed: we are 1.28× faster than Python, Node is 1.81× faster than us, and
+  hand-written C is 4.52× faster** (geometric mean over five tasks,
+  [the speed report](../benchmark-speed.html) — in Russian). The gap to C is
+  **not the price of provability**: where a proof leaves no run-time check
+  behind, the difference disappears into the spread between runs. A check is
+  left behind rarely — **{{сторож.функций}} functions out of
+  {{корпус.тотальных}} total ones** carry it ({{носители.постоянныйШаг}} by a
+  constant step, {{носители.мера}} by a declared measure, {{сторож.мест}} sites)
+  — and there it really is expensive: **the function costs three times as much**;
 - **the compiler is not written in flang all the way**: the proof chain is, and
-  {{цели.близнецовПоАнглийски}} code generators out of {{цели.поАнглийски}} are, but the processes and the shell are
-  not yet;
+  {{цели.близнецовПоАнглийски}} code generators out of {{цели.поАнглийски}} are,
+  but the processes and the shell are not yet;
 - **memory is not returned until the call ends**. There are no leaks at all —
   valgrind reports zero bytes in zero blocks — but the arena holds everything it
   ever took. The scale of the trouble dropped by hundreds of times in three days:
@@ -101,11 +135,17 @@ And, honestly, what is not there:
   sort: **176 MiB** for 2000 elements, and for 4000 it hits the recursion limit
   before it finishes ([the memory report](../memory.html) — in Russian).
 
-## Where to start
+## Where to go next
 
-- [Releases](releases.html) — what arrived in the language since the previous version: what appeared, what changed, what broke.
-- [Your first program](getting-started.html) — built and running in five minutes.
-- [Why proofs, and how they work](proofs.html) — the point of the language.
-- [Roadmap](roadmap.html) — done, in progress, not started, decided against.
-- [Language specification](../spec.html) — in Russian.
-- [What is proved and what is only checked](../overview.html) — in Russian; the line is drawn explicitly.
+- [Your first program](getting-started.html) — if you skipped the path above.
+- [Releases](releases.html) — what arrived in the language since the previous
+  version: what appeared, what changed, what broke.
+- [What is proved and what is only checked](../overview.html) — in Russian; the
+  line is drawn explicitly, and it matters more than any number on this page.
+- [Roadmap](roadmap.html) — done, in progress, not started, decided against. No
+  dates.
+- [Language specification](../spec.html) — in Russian; the full contract, for
+  when you need precision.
+- [For contributors](contributing.html) — measurements, the knowledge base, the
+  journals: everything a project participant needs and a user of the language
+  does not.

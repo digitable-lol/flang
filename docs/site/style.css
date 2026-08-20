@@ -322,6 +322,12 @@ body {
 .side a.here { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
 .nav-count { color: var(--faint); font-size: .8rem; padding: .26rem 0; font-style: italic; }
 
+/* Дверь во внутреннюю половину сайта: одна строка внизу меню, отчёркнутая от
+   разделов. Она намеренно тише прочих пунктов — за ней замеры и база знаний,
+   и тому, кто пришёл посмотреть язык, они не нужны. */
+.nav-dver { border-top: 1px solid var(--rule); padding-top: 1rem; margin-bottom: 0; }
+.nav-dver a { color: var(--faint); font-size: .84rem; }
+
 /* ── Содержание ────────────────────────────────────────────────────── */
 
 .content {

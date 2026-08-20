@@ -125,7 +125,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
-import { требуетХозяина } from "../conc.mjs"
+import { требуетИсполнителяПлана, требуетХозяина } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
@@ -592,6 +592,11 @@ export function emitElixir(program, options = {}) {
      изменить, и говорит ОТДЕЛЬНЫМ кодом, потому что беда другая: процессы цель
      печатает прекрасно (`src/conc.mjs`, `требуетХозяина`). */
   требуетХозяина(program, "elixir")
+  /* План — вход программы ввода-вывода, и потерять его молча было бы тем же,
+     чем была молчаливая потеря процессов: модуль собирается, код возврата ноль,
+     а работать он не умеет. Отказ живёт в бэкенде, а не в команде, по той же
+     причине, что и два его соседа: бэкенды зовут напрямую из Node. */
+  требуетИсполнителяПлана(program, "elixir")
   /* Граница входа читает типы ДО дефункционализации: после неё параметр,
      объявленный функцией, становится суммой тегов, а `checkArguments` на границе
      интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы

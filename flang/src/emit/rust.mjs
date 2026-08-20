@@ -122,7 +122,7 @@
 import { readFileSync } from "node:fs"
 
 import { canonicalBuiltinName, flangError, hasBuiltin, помощникФормы } from "../builtins.mjs"
-import { требуетПланировщика } from "../conc.mjs"
+import { требуетИсполнителяПлана, требуетПланировщика } from "../conc.mjs"
 import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiBraced, escapeBidiInFiles } from "../bidi.mjs"
@@ -535,6 +535,11 @@ export function emitRust(program, options = {}) {
      всякой работы, потому что печатать нечего вовсе (см. `conc.mjs`,
      `требуетПланировщика`). */
   требуетПланировщика(program, "rust")
+  /* План — вход программы ввода-вывода, и потерять его молча было бы тем же,
+     чем была молчаливая потеря процессов: модуль собирается, код возврата ноль,
+     а работать он не умеет. Отказ живёт в бэкенде, а не в команде, по той же
+     причине, что и два его соседа: бэкенды зовут напрямую из Node. */
+  требуетИсполнителяПлана(program, "rust")
   /* Граница входа читает типы ДО дефункционализации: после неё параметр,
      объявленный функцией, становится суммой тегов, а `checkArguments` на границе
      интерпретатора видит его функцией. Два ответа на один вопрос разошлись бы

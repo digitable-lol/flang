@@ -96,6 +96,7 @@ import { defunctionalize } from "../defunc.mjs"
 import { таблицаВхода } from "../types.mjs"
 import { BIDI_CONTROLS, escapeBidiInFiles, escapeBidiOctalBytes } from "../bidi.mjs"
 import { createNamer, pascal, snake } from "../naming.mjs"
+import { требуетИсполнителяПлана } from "../conc.mjs"
 import { обойтиЗанятоеЦелью } from "../target-occupied.mjs"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -499,6 +500,11 @@ function needsMath(value) {
  * @returns {{ files: Array<{ path: string, content: string }> }}
  */
 export function emitC(program, options = {}) {
+  /* План — вход программы ввода-вывода, и потерять его молча было бы тем же,
+     чем была молчаливая потеря процессов: модуль собирается, код возврата ноль,
+     а работать он не умеет. Отказ живёт в бэкенде, а не в команде, по той же
+     причине, что и два его соседа: бэкенды зовут напрямую из Node. */
+  требуетИсполнителяПлана(program, "c")
   /* Граница входа читает типы ДО дефункционализации: после неё параметр,
      объявленный функцией, становится суммой тегов, а `checkArguments` на
      границе интерпретатора видит его функцией. Сверять один и тот же вход двумя

@@ -1453,9 +1453,9 @@ fl_status compiler_flang_sozdat_signatura(fl_ctx *ctx, fl_value imya, fl_value p
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_parametry_obyavleniya(fl_ctx *ctx, fl_value imya, fl_value imena, fl_value *out, fl_error *error);
 
-/* Запись FTS «Таблицы»: «база номера», «записи», «суммы», «владельцы», «сигнатуры», «параметры типов». */
+/* Запись FTS «Таблицы»: «база номера», «записи», «суммы», «владельцы», «сигнатуры», «параметры типов», «в утверждении». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_tablicy(fl_ctx *ctx, fl_value baza_nomera, fl_value zapisi, fl_value summy, fl_value vladelcy, fl_value signatury, fl_value parametry_tipov, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_tablicy(fl_ctx *ctx, fl_value baza_nomera, fl_value zapisi, fl_value summy, fl_value vladelcy, fl_value signatury, fl_value parametry_tipov, fl_value v_utverzhdenii, fl_value *out, fl_error *error);
 
 /* Запись FTS «Ход захвата»: «сбой», «беды». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -44469,10 +44469,11 @@ fl_status compiler_flang_tip_ravenstva(fl_ctx *ctx, fl_value uzel, fl_value op, 
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param tip — «тип»: «Тип»
  * @param uzel — «узел»: «Значение»
+ * @param v_utverzhdenii — «в утверждении»
  * @param bedy — «беды»: список: «Беда»
  * @return значение: список: «Беда»
  */
-fl_status compiler_flang_skazat_o_skalyarah(fl_ctx *ctx, fl_value tip, fl_value uzel, fl_value bedy, fl_value *result, fl_error *error);
+fl_status compiler_flang_skazat_o_skalyarah(fl_ctx *ctx, fl_value tip, fl_value uzel, fl_value v_utverzhdenii, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестной операции».
@@ -46496,6 +46497,15 @@ fl_status compiler_flang_shag_postusloviy(fl_ctx *ctx, fl_value postusloviya, fl
  * @return значение: список: «Беда»
  */
 fl_status compiler_flang_proverit_postuslovie(fl_ctx *ctx, fl_value postuslovie, fl_value funkciya, fl_value signatura, fl_value gde, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Таблицы утверждения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Таблицы»
+ */
+fl_status compiler_flang_tablicy_utverzhdeniya(fl_ctx *ctx, fl_value tablicy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сверить постусловие».
@@ -57576,6 +57586,14 @@ fl_status compiler_flang_utverzhdenie_dopuscheniya(fl_ctx *ctx, fl_value dopusch
 fl_status compiler_flang_vetvleniem(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Истинной ветвью».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_istinnoy_vetvyu(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Предел ветвления».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -57974,6 +57992,42 @@ fl_status compiler_flang_svesti_hodami(fl_ctx *ctx, fl_value itog, fl_value zakl
 fl_status compiler_flang_svesti_posle_schyota(fl_ctx *ctx, fl_value itog, fl_value ishod, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Свести истинной ветвью».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_istinnoy_vetvyu(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Учесть истинную ветвь».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param pod — «под»: «Сведение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_uchest_istinnuyu_vetv(fl_ctx *ctx, fl_value itog, fl_value pod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это выбор с истиной».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_vybor_s_istinoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Свести ветвлением».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -58056,6 +58110,8 @@ fl_status compiler_flang_svesti_vitkami(fl_ctx *ctx, fl_value zaklyuchenie, fl_v
  * Функция flang «Свести счётом».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param zaklyuchenie — «заключение»: «Значение»
  * @param dopuscheniya — «допущения»: список: «Значение»
  * @param obyavleniya — «объявления»: список: «Значение»

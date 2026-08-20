@@ -12,25 +12,14 @@ The authoring surface is Russian; an English surface exists and lexes to the sam
 (`функция` / `function`, `свёртка` / `fold`). The prose below is English, the code is not
 translated — names in a specification belong to the domain that wrote them.
 
-## Where the language came from
+## What kind of language this is
 
-**[`flang`](flang/SPEC.md)** (`.flang`) grew out of FTS — an indentation-based executable
-specification language with domain objects, deterministic utilities, examples and checked
-properties. The language added sum types, lists, strings as data, recursion, pattern matching,
-module linking, a category surface, a concurrency surface and eight code generators. Its
-implementation is [`flang/src/`](flang/src).
-
-**The older project was taken out of this repository on 16 August 2026.** Its home is
-[digitable-lol/fts](https://github.com/digitable-lol/fts); the state on the day it left is kept
-under the `fts-pered-udaleniem` tag. What is left here is the language alone: 179 thousand lines
-went, and with them the TypeScript reference core, nine tools built on it, `.fts` highlighting for
-four editors and a GitHub Action. The language no longer reads `.fts` and says so plainly —
-`FLANG_FTS_REMOVED`, naming where the removed part can be found.
-
-The FTS surface itself stayed IN THE LANGUAGE: the parser reads `категория`, `объект` and
-`утилита` into legacy nodes, and a corpus of fifty-three models lives as fixtures
-(`flang/test/fixtures/fts/`), holding up the checks over the four `flang/core/*.flang` programs —
-the largest in the tree.
+**[`flang`](flang/SPEC.md)** (`.flang`) is an indentation-based language where a function
+carries its own examples and its own promise about the result right next to its body. The
+`тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
+it cannot prove. The language has sum types, lists, strings as data, recursion, pattern
+matching, module linking, a category surface and a concurrency surface, and one source is
+printed into eight target languages. Its implementation is [`flang/src/`](flang/src).
 
 Two documents carry the rest: [`docs/overview.ru.md`](docs/overview.ru.md) describes the language
 and draws the line between what is *proven* and what is *checked*, and
@@ -66,7 +55,7 @@ scripts/          printing the library index, the changelog and the release C
 benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
 web/              flang in a tab: building a program to WebAssembly and running it in a browser
 .claude/          developer assistant skills: knowledge-base rules
-fspec/            the executable specification of the FTS surface and its guard
+fspec/            the system's specification written in the language itself, and its guard
 docs/             documentation; README and SPEC files stay next to the code they describe
 .github/          CI and the npm release
 ```
@@ -165,14 +154,13 @@ lists the commands and `man flang` describes them. Running a program or its exam
 non-interactively still needs the full toolchain below.
 
 **The full toolchain does need Node.js 20 or newer**, and here is exactly why: the interpreter,
-the language server, the MCP server and seven of the eight backends exist only in JavaScript. The
+the language server and seven of the eight backends exist only in JavaScript. The
 self-hosted compiler — the one in the release — prints to **C and nothing else**.
 
-**Install from the clone, not from the registry.** The package is now named
-`@digitable-lol/flang`, after the language, but nothing is published under it yet. On npm today
-there is still `@digitable-lol/fts` 0.4.7, from 7 August — the name of the older project, since
-moved out of this repository, and it drags five of that project's commands (`fts`, `fts-mcp`,
-`ftsc`, `ftspec`, `ftsvm`) into your `$PATH`. Until the new name reaches npm, take the clone:
+**Install from the clone, not from the registry.** The package is named
+`@digitable-lol/flang`, but nothing is published under that name yet: what sits on npm today is
+a build from 7 August under the previous name, and it drags commands into your `$PATH` that this
+tree no longer has. Until the new name reaches npm, take the clone:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
@@ -426,9 +414,9 @@ Which kinds of descent are accepted, what a declared measure is, and why this is
 
 There are two implementations, and both are maintained on purpose. The **witness** one is
 written in TypeScript and JavaScript and defines the behaviour of the language. The
-**self-hosted** one is written in flang itself: [`flang/core/`](flang/core) is the FTS core,
-[`flang/self/`](flang/self) is the compiler — five layers, each checked byte for byte against
-its own witness.
+**self-hosted** one is written in flang itself: [`flang/core/`](flang/core) is the lexer,
+parser, evaluator and JSON printer, [`flang/self/`](flang/self) is the compiler — five layers,
+each checked byte for byte against its own witness.
 
 Readiness is not "it built" but the classical fixed point, and it **has converged**. How it
 works, what checks it and where the release comes from — [Two implementations, and the fixed
@@ -455,9 +443,9 @@ which is also how a name conflict between two modules is resolved.
 
 How that scales to a full-size project is shown by
 [`examples/library-api`](examples/library-api/README.md), a REST service for a library: the
-domain is two FTS models, parsing and data handling are five flang modules, and HTTP and storage
+domain rules, the parsing and the data handling are seven flang modules, and HTTP and storage
 stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
-have an example, it moves into a model or a module, where the example is executable* — and the
+have an example, it moves into a module, where the example is executable* — and the
 naming, layout, module-splitting and CI conventions derived from that project are collected in
 [Раскладка проекта](docs/guide/project-layout.ru.md).
 
@@ -476,16 +464,6 @@ What to run when you change the compiler, how the bootstrap point is guarded, an
 of commands the language answers to — [Developing the
 language](docs/guide/developing.md).
 
-**The language no longer reads `.fts` models.** It did until 16 August 2026 — through a bridge to
-the older project's TypeScript core; the project left the repository, and the bridge lost its
-other side. The refusal is explicit and says where the removed part now lives:
-
-```bash
-flang check model.fts
-# {"diagnostics":[{"code":"FLANG_FTS_REMOVED","message":"формат .fts больше не читается: …
-#   … github.com/digitable-lol/fts …"}]}
-```
-
 ---
 
 ## The rest of the repository
@@ -501,13 +479,6 @@ flang check model.fts
 
 All documentation, with an index — [`docs/README.md`](docs/README.md): the guide, measurement
 reports, the knowledge base and the conference submission.
-
-**What is no longer here.** Until 16 August 2026 this repository carried a second project, FTS:
-the TypeScript reference core, nine tools built on it (`ftsc`, `ftsvm`, `ftspec` and the rest), an
-MCP server, `.fts` highlighting for four editors, a demo page and a GitHub Action. All of it was
-taken out — 357 files, 180 thousand lines — and lives at
-[digitable-lol/fts](https://github.com/digitable-lol/fts); the state on the day it left is kept
-under the `fts-pered-udaleniem` tag.
 
 Further reading — in Russian (the language surface is Russian, and so is most of the prose):
 [Описание языка](docs/overview.ru.md) · [Раскладка проекта](docs/guide/project-layout.ru.md) ·

@@ -23,7 +23,7 @@
  */
 import assert from "node:assert/strict"
 import { execFile, spawn } from "node:child_process"
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { connect } from "node:net"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
@@ -62,13 +62,20 @@ const портСвободен = () =>
     сокет.on("error", () => готово(true))
   })
 
-async function поднятьКластер(bin) {
+async function поднятьКластер(bin, вход = "trust") {
   const каталог = mkdtempSync(join(tmpdir(), "flang-pg-"))
   const данные = join(каталог, "data")
   /* Сокет домена Unix кладётся в короткий путь: у него предел 107 байтов, а
      каталог временных файлов бывает длиннее. */
   const сокеты = mkdtempSync(join(tmpdir(), "fpg-"))
-  await выполнить(join(bin, "initdb"), ["-D", данные, "-U", "flang", "--auth=trust", "-E", "UTF8", "--locale=C"])
+  const ключи = ["-D", данные, "-U", "flang", `--auth=${вход}`, "-E", "UTF8", "--locale=C"]
+  if (вход === "password") {
+    /* Пароль тот же, что назван литералом в плане («Пароль»). */
+    const файлПароля = join(каталог, "parol")
+    writeFileSync(файлПароля, "проба\n", "utf8")
+    ключи.push("--pwfile", файлПароля)
+  }
+  await выполнить(join(bin, "initdb"), ключи)
   const сервер = spawn(join(bin, "postgres"), [
     "-D", данные,
     "-p", String(ПОРТ),
@@ -206,6 +213,34 @@ test("ЗАМЕР ГРАНИЦЫ: сколько октетов настояще�
     assert.ok(замен > 0, "порчи не нашлось: хозяин больше не раскодирует сокет как UTF-8?")
     assert.ok(битые.some((имя) => имя.startsWith("T ")), `описание строк уцелело: ${битые.join(", ")}`)
   } finally {
+    кластер.остановить()
+  }
+})
+
+test("НАСТОЯЩАЯ БАЗА: вход по паролю открытым текстом — тот же план, кластер с --auth=password", async (t) => {
+  if (bin === null) return t.skip("в системе нет initdb: настоящую базу поднять нечем")
+  if (!(await портСвободен())) return t.skip(`порт ${ПОРТ} занят: настоящую базу поднять некуда`)
+
+  /* Второй способ входа из двух поддержанных. `md5` и `scram-sha-256` не
+     поддержаны и поддержаны быть не могут: у первого соль, у второго подпись —
+     двоичные, а труба соединения возит текст (см. шапку `stdlib/postgres.flang`).
+     Здесь проверяется, что план УЗНАЁТ просьбу о пароле по хвосту потока и
+     отвечает на неё, не сбившись с шага. */
+  const кластер = await поднятьКластер(bin, "password")
+  const хозяин = nodeHost({})
+  try {
+    const программа = await loadProgram(resolve(здесь, "../examples/db/postgres-plan.flang"))
+    const итог = await runPlan(программа, "Поговорить с постгресом", хозяин, { maxSteps: 200_000_000 })
+    const строки = String(итог.значение).split("\n")
+    for (const строка of строки) t.diagnostic(строка)
+
+    assert.equal(строки.length, 5, итог.значение)
+    assert.match(строки[0], /server_encoding=UTF8/)
+    assert.match(строки[3], /^4 выборка: SELECT 2\|/)
+    assert.match(строки[3], /1\tМир/)
+    assert.match(строки[4], /ERROR 42703/)
+  } finally {
+    хозяин.закрыть()
     кластер.остановить()
   }
 })

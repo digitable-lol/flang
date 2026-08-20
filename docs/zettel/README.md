@@ -192,6 +192,7 @@
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
 - [Примеров по корпусу прогоняется вдвое больше, чем объявлено в файлах: 8408 против 3947](primerov-progonyaetsya-vdvoe-bolshe-chem-obyavleno.md)
 - [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 415 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
+- [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](progon-po-korpusu-nashyol-shest-rashozhdeniy-mezhdu-realizaciyami.md)
 
 ## Найденные ошибки
 

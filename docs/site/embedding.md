@@ -61,17 +61,15 @@ ls: cannot access './out': No such file or directory
 
 This page emits with the reference implementation from the repository. The
 standalone `flang` binary — the one Homebrew installs and `bootstrap/` builds —
-has **one target out of {{цели.поАнглийски}}**, and says so itself. Run against
+has **all {{цели.поАнглийски}}**, and says so itself. Run against
 the binary built from `bootstrap/`:
 
 ```bash
-$ ./flang emit factorial-english.flang --target js
-flang emit: цели «js» в этом бинарнике нет. Втащена одна — «c»; остальные семь
-(js, go, rust, python, java, csharp, elixir) написаны на flang
-(flang/self/emit-*.flang), но в замыкание этого бинарника не входят.
+$ ./flang emit --help
+flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
 ```
 
-Its `c` target needs a directory with the runtime SOURCES — it looks for them
+Each of its targets needs a directory with the runtime SOURCES — it looks for them
 itself in `$FLANG_RUNTIME_DIR`, `../flang/src/emit/c` and `../share/flang/c`,
 while here the binary was built in a directory of its own, so the path had to be
 named by a flag. And it warns separately about the entry boundary:

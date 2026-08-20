@@ -249,9 +249,6 @@ names its boundaries itself instead of staying quiet about them:
   category, sets and the five declared properties are checked by computation, and
   that layer is not in it. A program declaring one of those gets a refusal
   naming the obstacle, not a green ledger with an empty section;
-- **it has one emit target** — `c`. There are eight targets: `c`, `csharp`,
-  `elixir`, `go`, `java`, `js`, `python`, `rust`. The other seven stayed with the
-  reference implementation;
 - **`--args` takes a flat object of scalars only** — the binary does not parse
   `[…]` or `{…}` at all and answers `flang run: «--args» разобрать не удалось —
   ждался плоский объект скаляров, вроде '{"н":10}'` with exit code 2. The
@@ -274,7 +271,8 @@ the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
 ### For those developing the language itself
 
 The reference implementation lives in the repository and runs from it. It is
-what emits into the other seven targets — into Rust, for example:
+what emits into any of the eight targets — the binary now does all eight too;
+into Rust, for example:
 
 ```bash
 node flang/bin/flang.mjs emit hello.flang --target rust --out ./output-rust

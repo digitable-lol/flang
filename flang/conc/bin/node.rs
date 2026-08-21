@@ -611,10 +611,14 @@ impl Uzel {
                 let nachalnoe = self.plan.iter().find(|p| p.imya == kto).map(|p| p.nachalnoe.clone());
                 if let Some(nachalnoe) = nachalnoe {
                     let novoe = dolzhno(resh::call(&self.ctx, &nachalnoe, vec![]));
-                    for para in self.sostoyaniya.iter_mut() {
-                        if para.0 == kto {
-                            para.1 = novoe.clone();
-                        }
+                    // Строки может и НЕ БЫТЬ: при подъёме узла состояние заводят
+                    // только своим процессам, а подхваченный чужой становится
+                    // своим сейчас. Без этой ветки он поднимался бы в таблице
+                    // процессов и оставался без состояния — то есть навсегда
+                    // молчащим.
+                    match self.sostoyaniya.iter_mut().find(|para| para.0 == kto) {
+                        Some(para) => para.1 = novoe,
+                        None => self.sostoyaniya.push((kto.clone(), novoe)),
                     }
                 }
                 skazat(vec![

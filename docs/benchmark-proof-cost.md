@@ -465,10 +465,10 @@ export LC_ALL=C.UTF-8
 node benchmarks/zamer-tseny/otbor.mjs
 
 # тестовая сторона одной функции замера: 7 примеров, все зелёные
-node flang/bin/flang.mjs test docs/benchmark/17-est-v-mnozhestve.flang
+bootstrap/flang test docs/benchmark/17-est-v-mnozhestve.flang
 
 # сторона доказательства той же функции: отказ ядра
-node flang/bin/flang.mjs check docs/benchmark/17-est-v-mnozhestve.flang --proof
+bootstrap/flang check docs/benchmark/17-est-v-mnozhestve.flang --proof
 
 # ведомость по всему дереву: высказано, доказано, функций
 node flang/scripts/proof-ledger.mjs

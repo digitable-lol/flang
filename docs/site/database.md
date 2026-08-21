@@ -71,7 +71,7 @@ The conversation itself is a separate command, and it does need a live server:
 flang io flang/examples/db/postgres-plan.flang
 ```
 
-The plan connects to `127.0.0.1:55432` as user `flang`, database `postgres`.
+The plan connects to `127.0.0.1:55434` as user `flang`, database `postgres`.
 Address, port, user and password stand in the plan as literals: a plan takes no
 arguments, and a program does not see the environment.
 
@@ -82,63 +82,62 @@ run.
 
 **Login is `trust` and cleartext password only.** `md5` and `scram-sha-256`
 require HMAC, and the library has none: it has `sha256`, and `scram` wants
-PBKDF2 on top of that. The salt and the signature of both methods are binary,
-which is a second reason independent of the first.
+PBKDF2 on top of that. The four raw octets of an `md5` salt do now arrive
+intact — over the old text pipe they did not, in five requests out of five —
+but there is still nothing to compute the digest with. A request the plan does
+not understand is not refused today: the plan keeps reading and waits.
 
 **There is no encryption.** The conversation runs in the clear; there is nothing
 to build or parse TLS with. That is fine for a database on the same machine, and
 for nothing beyond it.
 
-**The program has no column types.** `RowDescription` carries a type modifier
-equal to minus one — four `FF` octets. That is never a valid UTF-8 sequence, so
-selects go through the extended query protocol, whose answer contains no row
-description at all. The consequence: the type number of a column is named by
-whoever knows the schema and is passed as an argument. There is no "Column" type
-in the module: declaring a type nobody can construct would promise an ability
-that does not exist.
+**The program has no column types.** `RowDescription` now arrives intact, but
+parsing takes only the number of columns out of it. The consequence: the type
+number of a column is named by whoever knows the schema and is passed as an
+argument. There is no "Column" type in the module: declaring a type nobody can
+construct would promise an ability that does not exist. Selects still go through
+the extended query protocol, for a different reason — it is the one that sends
+values as parameters.
 
-**A null value is not parsed.** Its length is the same four `FF` octets.
+**A null value is not parsed.** Its length is minus one, that is 4 294 967 295
+octets, and parsing asks for that many and runs out.
 
 **Message length is bounded.** A message the program sends must have a length
 whose four octets are all below 128; a query is padded with spaces when needed,
 with 200 in reserve. A parameter value is at most 127 bytes. One parsing pass
 takes at most 1000 messages.
 
-**Corruption is recognised, not swallowed.** Decoding puts a replacement
-character where an octet is unusable; parsing catches it, stops, and says so
-with a distinct answer.
+**Corruption is recognised, not swallowed.** An element of the stream that is
+not an octet stops the parse with a distinct answer instead of being counted
+modulo something.
 
-## What is missing today, and it is the main border
+## The conversation runs over a real wire
 
-**The conversation does not currently run over a real wire.** The `flang` binary
-passes the content of an order as text terminated by a zero character — and the
-very first PostgreSQL protocol message begins with a zero octet: it is the high
-byte of the four-byte length. There turns out to be nothing to write, and the
-connection closes.
+The bytes travel as a list of numbers, not as text: the orders are
+`Прочитать октеты из соединения` and `Ответить октетами в соединение`. That is
+what makes a binary protocol possible at all. With text it was not: an order's
+content was measured with `strlen`, and the very first PostgreSQL message begins
+with a zero octet — the high byte of the four-byte length — so nothing was
+written and the connection closed.
 
-One command and one number show it. A run that sends the startup packet into the
-connection answers:
+One command shows the state today. Against a live PostgreSQL 17.10:
 
-```json
-{"поручение":{"variant":"Ответить в соединение",
-              "содержимое":"   &   user flang …"},
- "отклик":{"variant":"Записано","fields":{"сколько":0}}}
+```
+$ flang io flang/examples/db/postgres-plan.flang
+1 пуск: | | | … server_encoding=UTF8
+2 создание: INSERT 0 1| | |
+3 вставка с параметрами: INSERT 0 1| | |
+4 выборка: SELECT 2| | 1	Мир ; 2	dva|
+5 отказ: | ERROR 42703 column "netakoykolonki" does not exist| |
 ```
 
-`сколько: 0` — not a single character written. The next read answers
-`FLANG_IO_READ`: the runner no longer has that connection. That is exactly how
-`flang io flang/examples/db/postgres-plan.flang` ends today against a live
-PostgreSQL 17.
+Five steps: start-up with a cleartext password, create, insert with parameters,
+select, and a deliberate failure answered with the server's own code. Cyrillic
+travels in both directions.
 
-The fix belongs in the runner, not in the program: an order needs a length
-alongside its content, or a separate pair of orders carrying octets rather than
-characters. The names for those already exist in the language
-(`Прочитать октеты из соединения`, `Ответить октетами в соединение`); the binary
-runner does not know them yet.
-
-Until then, this is what is established: every message built and every answer
-parsed — {{база.примеров}} module examples and {{план.примеров}} plan
-examples, run on every check of the file and independent of any database.
+Independently of any database, this is what a check establishes: every message
+built and every answer parsed — {{база.примеров}} module examples and
+{{план.примеров}} plan examples, run on every check of the file.
 
 ## Where to go next
 

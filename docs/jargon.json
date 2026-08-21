@@ -450,8 +450,6 @@
     "docs/site/what-is-proved.ru.md": 9,
     "docs/surfaces.md": 1,
     "docs/wasm-via-c.md": 19,
-    "flang/SPEC.md": 54,
-    "flang/cat/SPEC.md": 19,
     "flang/conc/SPEC.md": 197,
     "flang/proof/SPEC.md": 478,
     "flang/src/emit/c/flang_repl.c": 24

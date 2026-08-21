@@ -52,7 +52,7 @@ Emscripten не понадобился и, судя по замеру, не ну
 двумя подменёнными переменными:
 
 ```sh
-node flang/bin/flang.mjs emit программа.flang --target c --out каталог
+bootstrap/flang emit программа.flang --target c --out каталог
 make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 ```
 
@@ -121,13 +121,9 @@ make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 строка сборки: при 1 МиБ расхождений снова ноль. Ради этого `web/wasm/build.sh`
 и ставит 8 МиБ.
 
-Повторить:
-
-```sh
-node scripts/wasm-compare.mjs --stack 1048576                     # node:wasi
-node scripts/wasm-compare.mjs --stack 1048576 --host wasmtime     # wasmtime
-node scripts/wasm-compare.mjs                                     # умолчание: мелкий стек, §7
-```
+Повторить сейчас нечем: `scripts/wasm-compare.mjs` удалён 20 августа вместе со
+второй реализацией — он печатал C её кодом (`flang/src/emit/c.mjs`) и после
+удаления не запускался вовсе. Числа ниже сняты до удаления.
 
 ---
 
@@ -496,21 +492,13 @@ clang --version && node --version && ~/.local/bin/wasmtime --version
 dpkg -l wasi-libc lld libclang-rt-21-dev-wasm32 | tail -3
 
 # 2. Одна программа руками
-node flang/bin/flang.mjs emit flang/examples/rosetta/merge-sort.flang --target c --out /tmp/ms
+bootstrap/flang emit flang/examples/rosetta/merge-sort.flang --target c --out /tmp/ms
 make -C /tmp/ms CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 echo '{"fn":"Сортировка слиянием","args":[{"l":[{"n":"3"},{"n":"1"},{"n":"2"}]}]}' \
   | ~/.local/bin/wasmtime run -W max-wasm-stack=8388608 /tmp/ms/flang_cli
 
-# 3. Сверка всего корпуса (94 программы, 8799 точек)
-node scripts/wasm-compare.mjs --stack 1048576 --host wasmtime
-node scripts/wasm-compare.mjs --stack 1048576            # то же под node:wasi
-node scripts/wasm-compare.mjs                            # умолчание: видно ловушку §7
-
-# 4. Потолок памяти: где программа перестаёт помещаться
-node scripts/wasm-ceiling.mjs --n 1000,2000,4000,8000,12000
-
-# 5. Размер, запуск, скорость
-node scripts/wasm-speed.mjs --repeats 7
+# 3—5. Сверка корпуса, потолок памяти, скорость — ОСНАСТКИ БОЛЬШЕ НЕТ,
+#       см. таблицу ниже: три прогона удалены вместе со второй реализацией.
 
 # 6. Точка раскрутки: компилятор flang в WebAssembly
 cp -r bootstrap /tmp/boot-wasm
@@ -524,9 +512,23 @@ make -C /tmp/boot-wasm CC="clang --target=wasm32-wasi" LDLIBS="-lm" -j4
 | файл | что делает |
 |---|---|
 | `scripts/wasm-run.mjs` | запускает модуль поверх `node:wasi`; `FLANG_WASM_PAMYAT=1` печатает размер линейной памяти |
-| `scripts/wasm-compare.mjs` | корпус через два бинарника, побайтовая сверка ответов |
-| `scripts/wasm-ceiling.mjs` | на каком размере входа программа перестаёт помещаться |
-| `scripts/wasm-speed.mjs` | размер модуля, цена запуска, скорость счёта |
+| ~~`scripts/wasm-compare.mjs`~~ | корпус через два бинарника, побайтовая сверка ответов — **удалён** |
+| ~~`scripts/wasm-ceiling.mjs`~~ | на каком размере входа программа перестаёт помещаться — **удалён** |
+| ~~`scripts/wasm-speed.mjs`~~ | размер модуля, цена запуска, скорость счёта — **удалён** |
 
-Ни один из них не трогает `flang/src/emit/` — цель печати не написана и не
-нужна.
+**Здесь стояло: «ни один из них не трогает `flang/src/emit/` — цель печати не
+написана и не нужна». Это было неправдой, и она обнаружилась ровно тогда, когда
+стала дорогой.** Все три прогона печатали C не командой, а ВВОЗОМ печатника
+второй реализации:
+
+```js
+const { emitC } = await import(new URL("../flang/src/emit/c.mjs", import.meta.url).href)
+```
+
+Реализацию удалили — и три прогона умерли молча, потому что ввоз этот
+динамический и в глаза не бросается. Удалены 20 августа. Числа выше сняты до
+удаления и остаются как замер того дня; чтобы перемерить, оснастку надо написать
+заново поверх настоящей команды `flang emit --target c`.
+
+`scripts/wasm-run.mjs` жив и от второй реализации не зависел: он запускает
+готовый модуль поверх `node:wasi` и ничего не печатает.

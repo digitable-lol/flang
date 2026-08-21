@@ -47,7 +47,7 @@
 #   scripts/stolknoveniya-celey.sh --без-пар                 без 21 пары
 #   FLANG=/путь/к/двоичному scripts/stolknoveniya-celey.sh   судит двоичный
 #
-# Без FLANG зовётся `node flang/bin/flang.mjs` — вторая реализация. Она здесь
+# Без FLANG зовётся `bootstrap/flang` — вторая реализация. Она здесь
 # только машинка прогона: обе стороны сверены побайтово тестом самораскрутки, и
 # `FLANG=<двоичный>` даёт те же числа без Node вовсе.
 #
@@ -65,9 +65,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 3
 
 FL=${FLANG:-}
-if [ -z "$FL" ]; then FL="node $ROOT/flang/bin/flang.mjs"; fi
+if [ -z "$FL" ]; then FL="$ROOT/bootstrap/flang"; fi
 
-TMP="$(mktemp -d)"
+TMP="$(mktemp -d -p "${TMPDIR:-/srv/tmp}")"
 PROBE="flang/self/bootstrap/proba-stolknoveniy.flang"
 trap 'rm -rf "$TMP" "$ROOT/$PROBE"' EXIT
 

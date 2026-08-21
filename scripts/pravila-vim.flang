@@ -1,5 +1,5 @@
 модуль «Правила Vim»
-  использует «Слова языка» из "slova-yazyka.flang"
+  использует «Слова языка»
 
 // Текст файла правил подсветки для Vim и Neovim — `editors/vim/syntax/flang.vim`.
 //

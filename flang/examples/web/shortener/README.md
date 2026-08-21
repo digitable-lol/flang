@@ -10,9 +10,8 @@ service.flang                  580   исход, теоремы, маршрут�
 server.flang                   229   процессы, надзор, три прогона
 plan.flang                     133   тот же обслуживатель через файловый ввод-вывод
 handler-without-budget.flang    53   УЛИКА: не собирается, и в этом смысл
-serve.mjs                      106   хозяин: шестнадцать запросов подряд
                               ─────
-                              1 256   строк, из них 1 150 на flang
+                              1 150   строк, и все на flang
 ```
 
 Опирается на `flang/stdlib/http.flang` (1 358 строк, 58 тотальных функций).
@@ -35,10 +34,9 @@ serve.mjs                      106   хозяин: шестнадцать зап
 
 ```sh
 export LC_ALL=C.UTF-8
-node flang/bin/flang.mjs check flang/examples/web/shortener/service.flang --proof
-node flang/bin/flang.mjs test  flang/examples/web/shortener/server.flang
-node flang/examples/web/shortener/serve.mjs
-node flang/bin/flang.mjs io    flang/examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check flang/examples/web/shortener/service.flang --proof
+bootstrap/flang test  flang/examples/web/shortener/server.flang
+bootstrap/flang io    flang/examples/web/shortener/plan.flang --in-dir
 ```
 
 ## Что доказано, а что проверено

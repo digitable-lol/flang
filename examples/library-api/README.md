@@ -60,12 +60,12 @@ examples/library-api/
 Проверить модели и модули:
 
 ```bash
-node flang/bin/flang.mjs check examples/library-api/lib/api.flang
-node flang/bin/flang.mjs test  examples/library-api/lib/api.flang
+bootstrap/flang check examples/library-api/lib/api.flang
+bootstrap/flang test  examples/library-api/lib/api.flang
 ```
 
 `check` входного модуля собирает всю программу целиком — связывание идёт по
-`использует «Модуль» из "путь"`:
+`использует «Модуль»`:
 
 ```
 api.flang ──> catalog.flang ──> isbn.flang
@@ -136,7 +136,7 @@ node --test examples/library-api/test/library-api.test.mjs
 печатается в целевой язык целиком:
 
 ```bash
-node flang/bin/flang.mjs emit examples/library-api/lib/api.flang --target js --out ./out-js
+bootstrap/flang emit examples/library-api/lib/api.flang --target js --out ./out-js
 node -e 'import("./out-js/prikladnoy_sloy.js").then(m => console.log(m.kodVeren("978-5-17-118366-0")))'
 # true
 ```

@@ -115,6 +115,7 @@
 
 #include "flang_runtime.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -330,7 +331,8 @@ static const char HELP_CHECK[] =
     "получает отказ с названным пробелом и код 2 — и у check, и у --proof:\n"
     "«замечаний нет» и пустой раздел ведомости читались бы как «проверено», а это\n"
     "неправда. Поиск нарушений по примерам тоже не переехал: ведомость говорит «не\n"
-    "искали», а не «не найдено».\n"
+    "искали», а не «не найдено». Печать такую программу ПЕЧАТАЕТ, но называет тот же\n"
+    "пробел и уходит кодом 3: файлы есть, ручаться за них целиком нельзя.\n"
     "\n"
     "ДВА ЗАЗОРА, которые бинарник не умеет даже НАЗВАТЬ, и потому названы здесь.\n"
     "Уточнённые числовые типы («сотых», «вес») стоят типом в подписи, а не\n"
@@ -413,6 +415,11 @@ static const char HELP_EMIT_2[] =
     "ПЕЧАТАЕТСЯ ТОЛЬКО ПРОВЕРЕННОЕ. Перед печатью программа судится той же дорогой,\n"
     "что и «flang check»: разбор, связывание, типы, завершаемость и ядро\n"
     "доказательств. Замечание — печать отменена и код 1, ни файла не записано.\n"
+    "ЧЕГО ЭТА СБОРКА НЕ СУДИТ, она называет. Категорную поверхность и процессы с\n"
+    "надзором она не судит вовсе. Такая программа ПЕЧАТАЕТСЯ — иначе эту часть языка\n"
+    "нечем было бы собрать без Node, — но несуждённое зовётся поимённо, а код 3.\n"
+    "Коды: 0 напечатано и пробелов нет, 1 не прошло проверку, 2 неверен вызов,\n"
+    "3 напечатано, но проверено не всё.\n"
     "ПРИМЕРЫ не прогоняются, и это названо, а не умолчано: их считает вычислитель на\n"
     "самом языке, и на самых больших программах дерева он в предел шагов этой сборки\n"
     "не укладывается — свяжи с ними печать, и компилятор перестал бы печатать сам\n"
@@ -706,7 +713,8 @@ static const char *const REPL_BLOCKS[] = {
  * чужая, место лучше не показывать вовсе — неверное место хуже отсутствующего.
  */
 static const char *const REPL_FOREIGN[] = {
-    "FLANG_DUPLICATE_NAME", "FLANG_IMPORT_CYCLE", "FLANG_IMPORT_NOT_FOUND", "FLANG_IMPORT_NAME", NULL};
+    "FLANG_DUPLICATE_NAME", "FLANG_IMPORT_CYCLE", "FLANG_IMPORT_NOT_FOUND",
+    "FLANG_IMPORT_AMBIGUOUS", "FLANG_IMPORT_NAME",       NULL};
 
 static bool repl_in_list(const char *const *list, const char *word, size_t bytes) {
   size_t index = 0;
@@ -1456,6 +1464,8 @@ typedef struct repl_decls {
 
 typedef struct repl_import {
   char *category;
+  /* Путь ввоза; NULL — ввоз по имени (`использует «Списки»`), пути нет вовсе.
+     Пустой строкой это записать нельзя: она означала бы каталог сессии. */
   char *from;
   repl_strings only;
   bool has_only;
@@ -1559,7 +1569,7 @@ static repl_import import_copy(const repl_import *item) {
   repl_import copy;
   size_t index = 0;
   copy.category = repl_say(item->category);
-  copy.from = repl_say(item->from);
+  copy.from = item->from == NULL ? NULL : repl_say(item->from);
   copy.has_only = item->has_only;
   strings_init(&copy.only);
   for (index = 0; index < item->only.count; index += 1) {
@@ -1659,8 +1669,11 @@ static bool repl_header_text(const char *module, const repl_imports *imports, co
     size_t inner = 0;
     buf_put(out, "\n  использует «");
     buf_put(out, item->category);
-    buf_put(out, "» из ");
-    buf_json_text(out, item->from);
+    buf_put(out, "»");
+    if (item->from != NULL) {
+      buf_put(out, " из ");
+      buf_json_text(out, item->from);
+    }
     if (item->has_only) {
       buf_put(out, " только ");
       for (inner = 0; inner < item->only.count; inner += 1) {
@@ -1949,6 +1962,332 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
   return repl_value_record(names, values, 2);
 }
 
+/* ═══════════════ ввоз по имени: где ищется модуль «Списки» ═══════════════ */
+
+/*
+ * `использует «Списки»` — без пути. Файла с таким именем на диске нет: есть
+ * файл, чья ПЕРВАЯ значащая строка говорит `модуль «Списки»`. Значит имя надо
+ * искать, и искать в названных местах, а не по всему диску.
+ *
+ * МЕСТА, В ПОРЯДКЕ ПРОСМОТРА:
+ *
+ *   1. каталог самого файла, который пишет `использует`;
+ *   2. каждый каталог ВЫШЕ него — пока в каталоге лежит хоть один `.flang`.
+ *      Каталог без единого файла на flang — это уже не программа, а то, что
+ *      вокруг неё, и подъём там кончается. Условие дешёвое и не зависит от
+ *      того, откуда запущен компилятор;
+ *   3. каталоги из FLANG_MODULE_DIR (через двоеточие) — этим местом приедет
+ *      склад менеджера пакетов, когда он появится;
+ *   4. библиотека, поставленная с компилятором: `<каталог двоичного>/../flang/
+ *      stdlib` и `…/flang/core`, затем `…/share/flang/stdlib` и
+ *      `…/share/flang/core` — тем же правилом, каким уже ищется рантайм C.
+ *
+ * ВГЛУБЬ ПОИСК НЕ ИДЁТ, и это решено замером, а не вкусом. На 210 ввозах этого
+ * репозитория обход ВСЕГО дерева от корня переставляет три ввоза на ЧУЖОЙ
+ * модуль (`docs/zamer-teorkat/iso-object-to-category.flang` вместо
+ * несуществующего `flang/examples/cat/moduli/zakazy.flang` находит
+ * `…/cat/modules/orders.flang`) и заводит один спор имён на сгенерированных
+ * прогонах `benchmarks/`. Правило выше на тех же 210 ввозах даёт 200 попаданий
+ * ровно в тот файл, который назван путём сегодня, и НОЛЬ споров.
+ *
+ * Найдено два файла с одним именем — берутся ОБА, и об этом говорит связывание
+ * (FLANG_IMPORT_AMBIGUOUS), назвав оба пути. Молчаливый выбор первого зависел
+ * бы от порядка `readdir`, а он не назван нигде.
+ */
+
+/** Каталог, из которого запущен бинарник: нужен, чтобы найти его библиотеку. */
+static const char *repl_self_kept = NULL;
+
+/*
+ * Прочитанные каталоги: путь файла → имя его модуля. Без этого каждый ввоз по
+ * имени перечитывал бы каталог целиком, а `flang/self` — это сорок файлов по
+ * сотне килобайт: тридцать ввозов компилятора стоили бы сотню мегабайт чтения
+ * там, где хватает одного прохода. Живёт кеш ровно одну команду и стирается в
+ * конце `repl_closure`: между вводами оболочки файл на диске мог измениться.
+ */
+typedef struct {
+  char *dir;
+  repl_strings paths;
+  repl_strings names;
+} repl_place_index;
+
+static repl_place_index *repl_place_seen = NULL;
+static size_t repl_place_count = 0;
+
+static void repl_place_forget(void) {
+  size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    free(repl_place_seen[index].dir);
+    strings_free(&repl_place_seen[index].paths);
+    strings_free(&repl_place_seen[index].names);
+  }
+  free(repl_place_seen);
+  repl_place_seen = NULL;
+  repl_place_count = 0;
+}
+
+/*
+ * Начало файла, а не весь файл: заголовок модуля стоит первой значащей строкой,
+ * и глубже всех в дереве он отстоит от начала на 6181 байт
+ * (`flang/проверки/встроенные-формы.flang`). Шестьдесят четыре килобайта берут
+ * его с десятикратным запасом и не тянут остальные четыреста.
+ */
+static char *repl_read_head(const char *path, size_t cap, size_t *bytes) {
+  FILE *stream = fopen(path, "rb");
+  char *text = NULL;
+  size_t got = 0;
+  if (stream == NULL) {
+    return NULL;
+  }
+  text = malloc(cap + 1);
+  if (text == NULL) {
+    fclose(stream);
+    repl_oom();
+  }
+  got = fread(text, 1, cap, stream);
+  fclose(stream);
+  text[got] = '\0';
+  *bytes = got;
+  return text;
+}
+
+/**
+ * Имя модуля файла: первая значащая строка, `модуль «Имя»`.
+ *
+ * Пустые строки и `//` пропускаются — ровно так же, как их пропускает сторож
+ * столкновений (`flang/scripts/link-collision-guard.mjs`). Первая же ЗНАЧАЩАЯ
+ * строка обязана быть заголовком модуля: так требует язык, и на дереве это
+ * выполнено у 601 файла из 602, где слово `модуль` вообще встречается.
+ */
+static bool repl_module_name(const char *text, size_t bytes, char **out, size_t *out_bytes) {
+  static const char *const WORDS[3] = {"модуль", "module", "模块"};
+  size_t at = 0;
+  while (at < bytes) {
+    size_t end = at;
+    size_t scan = 0;
+    size_t word = 0;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    scan = at;
+    while (scan < end && (text[scan] == ' ' || text[scan] == '\t' || text[scan] == '\r')) {
+      scan += 1;
+    }
+    if (scan == end || (scan + 1 < end && text[scan] == '/' && text[scan + 1] == '/')) {
+      at = end + 1;
+      continue;
+    }
+    /* Первая значащая строка — она и решает: заголовок модуля стоит первым, так
+       требует язык. Не заголовок — у файла имени модуля нет вовсе. */
+    for (word = 0; word < 3; word += 1) {
+      const size_t length = strlen(WORDS[word]);
+      size_t left = 0;
+      size_t right = 0;
+      if (scan + length >= end || memcmp(text + scan, WORDS[word], length) != 0) {
+        continue;
+      }
+      if (text[scan + length] != ' ' && text[scan + length] != '\t') {
+        continue;
+      }
+      left = scan + length;
+      /* «ёлочки» — U+00AB и U+00BB, в UTF-8 это C2 AB и C2 BB. */
+      while (left + 1 < end && !((unsigned char)text[left] == 0xC2 && (unsigned char)text[left + 1] == 0xAB)) {
+        left += 1;
+      }
+      if (left + 1 >= end) {
+        return false;
+      }
+      left += 2;
+      right = left;
+      while (right + 1 < end && !((unsigned char)text[right] == 0xC2 && (unsigned char)text[right + 1] == 0xBB)) {
+        right += 1;
+      }
+      if (right + 1 >= end || right <= left) {
+        return false;
+      }
+      *out = repl_dup(text + left, right - left);
+      *out_bytes = right - left;
+      return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/** Каталог, прочитанный один раз: пути его `.flang` и имена их модулей. */
+static const repl_place_index *repl_place_read(const char *dir) {
+  DIR *directory = NULL;
+  repl_strings names;
+  repl_place_index *slot = NULL;
+  size_t index = 0;
+  for (index = 0; index < repl_place_count; index += 1) {
+    if (strcmp(repl_place_seen[index].dir, dir) == 0) {
+      return &repl_place_seen[index];
+    }
+  }
+  {
+    repl_place_index *grown = realloc(repl_place_seen, (repl_place_count + 1) * sizeof(repl_place_index));
+    if (grown == NULL) {
+      repl_oom();
+    }
+    repl_place_seen = grown;
+  }
+  slot = &repl_place_seen[repl_place_count];
+  repl_place_count += 1;
+  slot->dir = repl_say(dir);
+  strings_init(&slot->paths);
+  strings_init(&slot->names);
+  directory = opendir(dir[0] == '\0' ? "." : dir);
+  if (directory == NULL) {
+    return slot;
+  }
+  strings_init(&names);
+  for (;;) {
+    const struct dirent *entry = readdir(directory);
+    size_t length = 0;
+    if (entry == NULL) {
+      break;
+    }
+    length = strlen(entry->d_name);
+    if (length > 6 && strcmp(entry->d_name + length - 6, ".flang") == 0) {
+      strings_say(&names, entry->d_name);
+    }
+  }
+  closedir(directory);
+  /* СОРТИРОВКА — не причёсывание: `readdir` отдаёт файлы в порядке файловой
+     системы, и без неё пара одноимённых модулей приезжала бы в разном порядке
+     на разных машинах, а с ней сообщение об их споре одинаково везде. */
+  for (index = 1; index < names.count; index += 1) {
+    size_t back = index;
+    while (back > 0 && strcmp(names.items[back - 1], names.items[back]) > 0) {
+      char *keep = names.items[back - 1];
+      size_t keep_bytes = names.sizes[back - 1];
+      names.items[back - 1] = names.items[back];
+      names.sizes[back - 1] = names.sizes[back];
+      names.items[back] = keep;
+      names.sizes[back] = keep_bytes;
+      back -= 1;
+    }
+  }
+  for (index = 0; index < names.count; index += 1) {
+    char *full = repl_join(dir, names.items[index]);
+    size_t bytes = 0;
+    char *text = repl_read_head(full, 65536, &bytes);
+    char *module = NULL;
+    size_t module_bytes = 0;
+    strings_say(&slot->paths, full);
+    if (text != NULL && repl_module_name(text, bytes, &module, &module_bytes)) {
+      strings_add(&slot->names, module, module_bytes);
+      free(module);
+    } else {
+      strings_say(&slot->names, "");
+    }
+    free(text);
+    free(full);
+  }
+  strings_free(&names);
+  return slot;
+}
+
+/** Есть ли в каталоге хоть один `.flang`: этим кончается подъём вверх. */
+static bool repl_dir_has_flang(const char *dir) {
+  return repl_place_read(dir)->paths.count > 0;
+}
+
+/** Файлы каталога, чей `модуль «…»` совпал с именем. Вглубь не заходит. */
+static void repl_place_scan(const char *dir, const char *name, repl_strings *found) {
+  const repl_place_index *place = repl_place_read(dir);
+  const size_t want = strlen(name);
+  size_t index = 0;
+  for (index = 0; index < place->paths.count; index += 1) {
+    if (place->names.sizes[index] == want && memcmp(place->names.items[index], name, want) == 0) {
+      strings_say(found, place->paths.items[index]);
+    }
+  }
+}
+
+/** Библиотека, поставленная с компилятором: подкаталоги рядом с бинарником. */
+static void repl_library_places(repl_strings *places) {
+  static const char *const SUBS[4] = {"flang/stdlib", "flang/core", "share/flang/stdlib", "share/flang/core"};
+  char *self_dir = NULL;
+  char *parent = NULL;
+  size_t index = 0;
+  const char *named = getenv("FLANG_MODULE_DIR");
+  if (named != NULL && named[0] != '\0') {
+    const char *scan = named;
+    while (*scan != '\0') {
+      const char *colon = strchr(scan, ':');
+      const size_t bytes = colon == NULL ? strlen(scan) : (size_t)(colon - scan);
+      if (bytes > 0) {
+        char *directory = repl_dup(scan, bytes);
+        strings_say(places, directory);
+        free(directory);
+      }
+      if (colon == NULL) {
+        break;
+      }
+      scan = colon + 1;
+    }
+  }
+  self_dir = repl_self_dir(repl_self_kept);
+  if (self_dir == NULL) {
+    return;
+  }
+  parent = repl_dirname(self_dir);
+  for (index = 0; index < 4; index += 1) {
+    char *candidate = repl_join(parent, SUBS[index]);
+    if (repl_exists(candidate)) {
+      strings_say(places, candidate);
+    }
+    free(candidate);
+  }
+  free(parent);
+  free(self_dir);
+}
+
+/** Все места для файла `importer`, в порядке просмотра. */
+static void repl_places_of(const char *importer, repl_strings *places) {
+  char *directory = repl_dirname(importer);
+  char *walk = repl_say(directory);
+  for (;;) {
+    char *up = NULL;
+    if (!strings_has(places, walk, strlen(walk))) {
+      strings_say(places, walk);
+    }
+    if (strcmp(walk, "/") == 0 || strcmp(walk, ".") == 0) {
+      break;
+    }
+    up = repl_dirname(walk);
+    free(walk);
+    walk = up;
+    if (!repl_dir_has_flang(walk)) {
+      break;
+    }
+  }
+  free(walk);
+  free(directory);
+  repl_library_places(places);
+}
+
+/**
+ * Модуль по имени: первое место, где он нашёлся, отдаёт ВСЕ свои совпадения.
+ * Ничего не нашлось — молчим: скажет об этом связывание, и скажет кодом.
+ */
+static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
+  repl_strings places;
+  size_t index = 0;
+  strings_init(&places);
+  repl_places_of(importer, &places);
+  for (index = 0; index < places.count; index += 1) {
+    repl_place_scan(places.items[index], name, found);
+    if (found->count > 0) {
+      break;
+    }
+  }
+  strings_free(&places);
+}
+
+
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
@@ -1991,6 +2330,29 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
         strings_say(queue, full);
         free(relative);
         free(full);
+        continue;
+      }
+      /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
+         тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
+         «путь есть, он пустой». */
+      {
+        const char *name = NULL;
+        size_t name_bytes = 0;
+        repl_strings found;
+        size_t at = 0;
+        if (!zn_field_text(items[inner], "category", &name, &name_bytes) || name_bytes == 0) {
+          continue;
+        }
+        strings_init(&found);
+        {
+          char *wanted = repl_dup(name, name_bytes);
+          repl_find_module(from, wanted, &found);
+          free(wanted);
+        }
+        for (at = 0; at < found.count; at += 1) {
+          strings_say(queue, found.items[at]);
+        }
+        strings_free(&found);
       }
     }
   }
@@ -2547,6 +2909,7 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     }
     list = fl_list(items, paths->count);
   }
+  repl_place_forget();
   return list;
 }
 
@@ -2563,9 +2926,25 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
   strings_say(&paths, session->file);
   strings_say(&texts, source);
   for (index = 0; index < imports->count; index += 1) {
-    char *full = repl_resolve(session->base, imports->items[index].from);
-    strings_say(&queue, full);
-    free(full);
+    const repl_import *item = &imports->items[index];
+    if (item->from == NULL) {
+      /* Ввоз по имени: те же места, что и у файла на диске, только отсчёт идёт
+         от файла сессии. */
+      repl_strings found;
+      size_t at = 0;
+      strings_init(&found);
+      repl_find_module(session->file, item->category, &found);
+      for (at = 0; at < found.count; at += 1) {
+        strings_say(&queue, found.items[at]);
+      }
+      strings_free(&found);
+      continue;
+    }
+    {
+      char *full = repl_resolve(session->base, item->from);
+      strings_say(&queue, full);
+      free(full);
+    }
   }
   list = repl_closure(&paths, &texts, &queue);
   strings_free(&paths);
@@ -2623,7 +3002,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples,
-                               fl_value *linked_out) {
+                               fl_value *linked_out, fl_value *dropped_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -2698,16 +3077,29 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
    */
   if (kernel) {
     fl_value kernel_args[2];
+    fl_value verdict = fl_nothing();
     fl_value kernel_bads = fl_nothing();
     kernel_args[0] = *program;
     kernel_args[1] = total;
-    if (repl_call("Беды ядра", kernel_args, 2, &kernel_bads) != FL_OK) {
+    /*
+     * ОДИН ВЫЗОВ НА ДВА ОТВЕТА, и это не украшение вызова. Ядро отвечает и чем
+     * программа плоха, и какие сторожа с неё можно снять при печати, — считает
+     * оно то и другое ОДНИМ проходом по обязательствам, и второй вызов ради
+     * второго ответа стоил бы второго прохода ядра целиком.
+     */
+    if (repl_call("Суд ядра о программе", kernel_args, 2, &verdict) != FL_OK) {
       bads_say(bads, "ядро доказательства прекращено");
       return false;
     }
-    if (kernel_bads.tag == FL_LIST) {
+    if (val_field(verdict, "диагностики", &kernel_bads) && kernel_bads.tag == FL_LIST) {
       for (index = 0; index < kernel_bads.as.list.count; index += 1) {
         bads_take(bads, kernel_bads.as.list.items[index]);
+      }
+    }
+    if (dropped_out != NULL) {
+      fl_value dropped = fl_nothing();
+      if (val_field(verdict, "снятые", &dropped)) {
+        *dropped_out = dropped;
       }
     }
   }
@@ -2777,7 +3169,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, NULL);
+                            false, false, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -3571,14 +3963,13 @@ static void repl_merge_header(repl_session *session, fl_value program, const cha
       repl_import item;
       size_t scan = 0;
       bool replaced = false;
-      if (!zn_field_text(items[inner], "from", &path, &path_bytes)) {
-        continue;
-      }
       zn_field_text(items[inner], "category", &category, &category_bytes);
-      {
+      if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
         char *own = repl_dup(path, path_bytes);
         item.from = repl_rewrite_path(own, from, session->base);
         free(own);
+      } else {
+        item.from = NULL;
       }
       item.category = category == NULL ? repl_say("") : repl_dup(category, category_bytes);
       strings_init(&item.only);
@@ -3594,7 +3985,11 @@ static void repl_merge_header(repl_session *session, fl_value program, const cha
         }
       }
       for (scan = 0; scan < imports->count; scan += 1) {
-        if (strcmp(imports->items[scan].from, item.from) == 0) {
+        const repl_import *had = &imports->items[scan];
+        const bool same = item.from == NULL || had->from == NULL
+                              ? had->from == item.from && strcmp(had->category, item.category) == 0
+                              : strcmp(had->from, item.from) == 0;
+        if (same) {
           import_free(&imports->items[scan]);
           imports->items[scan] = item;
           replaced = true;
@@ -4430,9 +4825,11 @@ static bool repl_command_save(repl_session *session, const char *path) {
   imports_init(&imports);
   for (index = 0; index < session->imports.count; index += 1) {
     repl_import item = import_copy(&session->imports.items[index]);
-    char *rewritten = repl_rewrite_path(item.from, session->base, directory);
-    free(item.from);
-    item.from = rewritten;
+    if (item.from != NULL) {
+      char *rewritten = repl_rewrite_path(item.from, session->base, directory);
+      free(item.from);
+      item.from = rewritten;
+    }
     imports_push(&imports, item);
   }
   buf_init(&source);
@@ -5120,7 +5517,8 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -6839,6 +7237,11 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *text = NULL;
   char *self_dir = NULL;
   char *runtime = NULL;
+  /* Слова о непосуждённой поверхности считаются РЯДОМ С ПРОВЕРКОЙ (там жива
+     связанная запись), а говорятся в самом конце — вместе с остальными
+     строками о том, что проверено перед печатью. Между этими двумя точками
+     лежит сама печать, поэтому строку приходится нести с собой. */
+  char *unjudged = NULL;
   size_t bytes = 0;
   size_t index = 0;
   size_t written = 0;
@@ -7006,10 +7409,11 @@ static int emit_file(int argc, char **argv, const char *self) {
        */
       fl_value program = fl_nothing();
       fl_value linked = fl_nothing();
+      fl_value dropped = fl_nothing();
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked, &dropped)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -7023,7 +7427,95 @@ static int emit_file(int argc, char **argv, const char *self) {
         fputs("flang emit: связывание не вернуло программы\n", stderr);
         code = 1;
       } else {
+        /*
+         * ДОКАЗАННОЕ ПОСТУСЛОВИЕ СНИМАЕТСЯ ЗДЕСЬ, ПЕРЕД ПЕЧАТЬЮ, И НИГДЕ БОЛЬШЕ.
+         *
+         * До этой правки печать ставила сторожа `fl_post` на КАЖДОЕ постусловие,
+         * включая те, о которых ядро в этой же команде сказало «доказано обо
+         * ВСЕХ входах»: `flang emit flang/stdlib/result.flang --target c` давал
+         * десять сторожей на десять постусловий, из них четыре доказанных.
+         * Доказательство выходило наказанием — чем больше докажешь, тем
+         * медленнее станет собранная программа.
+         *
+         * Список снимаемых считает ядро (`Суд ядра о программе`), и условий у
+         * него два: вердикт «доказано» И хотя бы один `пример` у функции. Здесь
+         * он только применяется: C ничего не решает и в узлы не заглядывает —
+         * список уезжает обратно в flang нетронутым.
+         *
+         * Вычислителя это не касается: `flang run`, `flang test` и прогон
+         * примеров при `flang check` считают все постусловия по-прежнему.
+         */
+        size_t drop_count = dropped.tag == FL_LIST ? dropped.as.list.count : 0;
         bads_free(&list);
+        /*
+         * ЧЕГО ПЕЧАТЬ НЕ СУДИЛА — СПРАШИВАЕТСЯ ЗДЕСЬ, ОТВЕЧАЕТСЯ В КОНЦЕ.
+         *
+         * Проверка научилась говорить о непосуждённом кодом 2 («я не судила»),
+         * печать научилась не выпускать не прошедшее проверку кодом 1. Вместе
+         * эти две правки дыру не закрывали: код 2 печать не останавливал, и
+         * программа с категорной поверхностью выходила из печати кодом 0 со
+         * словами «проверено перед печатью — разбор, типы, завершаемость и
+         * ядро», то есть с прямой неправдой.
+         *
+         * Улика ДО, снятая прогоном на дереве 20 августа 2026: 41 программа из
+         * 951 получает у `flang check` код 2, и ВСЕ 41 печатались кодом 0 —
+         * шестью файлами C на каждую. В корпусе ведомости — 26 из 294.
+         *
+         * Список имён считает СЛОЙ НА FLANG («Чего печать не судила» в
+         * `flang/self/bootstrap/compiler.flang`), а не этот файл, и по тому же
+         * доводу, что у `check`: назови его C сам — и две копии разошлись бы
+         * молча. Фраза у печати СВОЯ, третья: ведомость не печатается вовсе,
+         * проверка не заканчивается словами «замечаний нет», а печать печатает
+         * — и сказать ей надо не «я не берусь», а «вот файлы, и вот чего за
+         * ними не проверено».
+         *
+         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ по той же причине, что у `check`:
+         * связывание теряет свойства и преобразования, и по одной связанной
+         * записи бинарник промолчал бы ровно о двух поверхностях из
+         * четырнадцати. Цена — один разбор входного файла.
+         */
+        {
+          fl_value parsed = fl_nothing();
+          fl_value parse_args[2];
+          fl_value obstacle = fl_nothing();
+          fl_value obstacle_args[2];
+          const char *utf8 = NULL;
+          size_t obstacle_bytes = 0;
+          parse_args[0] = repl_value_text(text, bytes);
+          parse_args[1] = repl_value_list(NULL, 0);
+          if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
+            parsed = fl_nothing();
+          }
+          obstacle_args[0] = linked;
+          if (!val_field(parsed, "программа", &obstacle_args[1])) {
+            obstacle_args[1] = program;
+          }
+          if (repl_call("Чего печать не судила", obstacle_args, 2, &obstacle) == FL_OK
+              && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+            unjudged = val_copy(obstacle);
+          }
+        }
+        if (drop_count > 0) {
+          fl_value drop_args[2];
+          fl_value thinner = fl_nothing();
+          drop_args[0] = program;
+          drop_args[1] = dropped;
+          if (repl_call("Программа без снятых постусловий", drop_args, 2, &thinner) == FL_OK) {
+            program = thinner;
+          }
+          if (EMIT_TARGET_TABLE[chosen].from_linked) {
+            fl_value thinner_linked = fl_nothing();
+            drop_args[0] = linked;
+            drop_args[1] = dropped;
+            if (repl_call("Связанное без снятых постусловий", drop_args, 2, &thinner_linked) == FL_OK) {
+              linked = thinner_linked;
+            }
+          }
+          fprintf(stderr,
+                  "проверок при работе снято %lu: постусловие доказано ядром обо всех входах и\n"
+                  "проверено примерами функции — в напечатанный код оно не едет.\n",
+                  (unsigned long)drop_count);
+        }
         fits = emit_entry_fits(program, table);
         code = emit_call(&EMIT_TARGET_TABLE[chosen],
                          EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table, runtime,
@@ -7085,6 +7577,47 @@ static int emit_file(int argc, char **argv, const char *self) {
             "печать, и компилятор перестал бы печатать сам себя. Прогоните их отдельно:\n"
             "flang test <файл>\n",
             stderr);
+      /*
+       * КОД 3: НАПЕЧАТАНО, НО ПРОВЕРЕНО НЕ ВСЁ.
+       *
+       * Строкой выше печать говорит, ЧТО она проверила. Если в программе
+       * объявлено то, чего этот бинарник не судит вовсе, — та строка одна была
+       * бы полуправдой: перечисленное действительно проверено, а про остальное
+       * не сказано ничего. Здесь названо остальное, поимённо.
+       *
+       * ── ПОЧЕМУ КОД МЕНЯЕТСЯ, ХОТЯ РЯДОМ НАПИСАНО «НЕ МЕНЯЕТ КОДА» ─────────
+       * Довод выше («ответ emit — это ФАЙЛЫ, и код говорит, напечатались ли
+       * они») остаётся верным для строк о том, что печать УМЕЕТ, но не проверяет
+       * — про типы аргументов прогонщика и про непрогнанные примеры. Там нечего
+       * различать: так печать ведёт себя на КАЖДОЙ программе, и код, меняющийся
+       * всегда, не несёт новости.
+       *
+       * Здесь новость есть, и она про конкретную программу: у 41 файла дерева
+       * из 951 она приходит, у остальных 910 — нет. Молчание кодом означало бы,
+       * что сценарий сборки, ждущий нуля, узнаёт о пробеле ровно никогда.
+       *
+       * ── ПОЧЕМУ 3, А НЕ 2 ─────────────────────────────────────────────────
+       * Код 2 у печати занят ошибкой ВЫЗОВА (FLANG_CLI: непонятный ключ, не
+       * назван файл, нет «--target», не завёлся каталог вывода) — восемь мест
+       * выше, и все означают «файлов нет вовсе». Отдай его же при напечатанных
+       * файлах — и по коду стало бы не отличить «ты неправильно позвал,
+       * собирать нечего» от «файлы есть, но за них не ручаются». Это два
+       * противоположных исхода, и одно число на оба — та же молчаливая подмена,
+       * ради устранения которой правка и написана.
+       *
+       * ── ЧТО ЭТО СТОИТ РАСКРУТКЕ ──────────────────────────────────────────
+       * `scripts/raskrutka.sh` стоит под `set -e`, и любой ненулевой код печати
+       * её останавливает. Замерено на этом дереве: ни один модуль замыкания
+       * `flang/self/bootstrap/compiler.flang` не объявляет ни одной из
+       * четырнадцати поверхностей, поэтому компилятор получает здесь 0 и
+       * печатает себя как прежде. Появится поверхность в его замыкании —
+       * раскрутка встанет, и это правильно: собирать компилятор из
+       * непроверенного нельзя молча.
+       */
+      if (unjudged != NULL) {
+        fprintf(stderr, "%s\n", unjudged);
+        code = 3;
+      }
       if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
         fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
       }
@@ -7097,6 +7630,7 @@ static int emit_file(int argc, char **argv, const char *self) {
     strings_free(&queue);
   }
   free(runtime);
+  free(unjudged);
   free(text);
   free(full);
   return code;
@@ -7984,7 +8518,7 @@ static int facts_file(int argc, char **argv) {
 
 /*
  * ХОЗЯИН С ЭФФЕКТАМИ. Всё, что здесь есть, — POSIX, и потому всё это живёт в
- * этом файле, а не в переносимом `flang_cli.c`: каталоги (`opendir`), процессы
+ * этом файле, а не в переносимом `flang_cli.c`: процессы
  * (`fork`/`execvp`/`waitpid`), сокеты, часы. Программа на flang ни одного из
  * этих вызовов не делает и делать не может — она СТРОИТ ОПИСАНИЕ действия, а
  * исполняет его тот, кто снаружи.
@@ -8000,7 +8534,6 @@ static int facts_file(int argc, char **argv) {
  * программы догадываться, что означает ноль.
  */
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -9453,6 +9986,105 @@ static fl_value io_perform(io_host *host, fl_value order) {
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
       free(content);
       return io_variant("Записано", fields, 1);
+    }
+  }
+
+  /*
+   * ── ОКТЕТЫ ────────────────────────────────────────────────────────────────
+   * Та же труба, что у пары выше, но без единого решения о том, что байты
+   * значат. У двоичного хозяина порча своя, не такая, как у хозяина на Node, и
+   * названа она числом: Node раскодирует поток как UTF-8 и заменяет всякий
+   * не-UTF-8 октет знаком U+FFFD, а здесь байты доезжают сырыми — зато `strlen`
+   * при ЗАПИСИ обрезает содержимое на первом нулевом октете. То есть двоичный
+   * протокол не работал ни под одним из двух хозяев, и не работал по-разному:
+   * один терял на чтении, другой на записи.
+   *
+   * Список чисел лечит обоих сразу и лечит одинаково: переводить нечего, значит
+   * и разойтись негде. Длина берётся из СПИСКА, а не из `strlen`, — вот почему
+   * нулевой октет здесь обычное число 0.
+   */
+  if (io_order_is(order, "Прочитать октеты из соединения")) {
+    double number = 0;
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_READ", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    {
+      unsigned char chunk[8192];
+      const ssize_t got = read(fd, chunk, sizeof(chunk));
+      const size_t count = got > 0 ? (size_t)got : 0;
+      fl_value *values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+      fl_value fields[1];
+      fl_value answer = fl_nothing();
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        values[at] = io_number((double)chunk[at]);
+      }
+      /* Пустой список — это КОНЕЦ, ровно как пустая строка у «Прочитано». */
+      fields[0] = io_pair("октеты", io_list(values, count));
+      free(values);
+      answer = io_variant("Октеты", fields, 1);
+      return answer;
+    }
+  }
+
+  if (io_order_is(order, "Ответить октетами в соединение")) {
+    double number = 0;
+    int fd = -1;
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
+      return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
+    }
+    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
+      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
+    }
+    {
+      unsigned char *bytes = count == 0 ? NULL : (unsigned char *)repl_alloc(count);
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        double octet = 0;
+        /* Каждое число проверяется на месте, и отказ называет номер. Молчаливое
+           приведение к байту отправило бы собеседнику не то, что сказала
+           программа, и разница всплыла бы у него, а не здесь. */
+        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
+          char why[128];
+          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
+          free(bytes);
+          return io_fail("FLANG_IO_OCTETS", why);
+        }
+        bytes[at] = (unsigned char)(long)octet;
+      }
+      {
+        /* Правила закрытия — те же самые и взяты у текстового близнеца
+           буквально: закрывает тот, кто завёл; пустое кладёт трубку. Пустое
+           здесь — пустой СПИСОК. */
+        const bool closing = count == 0 || !io_link_outgoing(host, (int)number);
+        fl_value fields[1];
+        if (count > 0 && write(fd, bytes, count) < 0) {
+          free(bytes);
+          close(fd);
+          io_link_drop(host, (int)number);
+          return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
+        }
+        free(bytes);
+        if (closing) {
+          close(fd);
+          io_link_drop(host, (int)number);
+        }
+        /* ОКТЕТЫ, а не кодовые точки: у текстового близнеца здесь названный
+           зазор («Content-Length служба считает знаками»), а тут его нет — что
+           записано, то и посчитано. */
+        fields[0] = io_pair("сколько", io_number((double)count));
+        return io_variant("Записано", fields, 1);
+      }
     }
   }
 
@@ -11225,7 +11857,8 @@ static int package_file(int argc, char **argv) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);
@@ -12151,6 +12784,10 @@ int fl_human_bare(void) {
  */
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
+  /* Откуда запущен бинарник — запоминается здесь и только здесь: библиотеку,
+     поставленную рядом с ним, ищет `repl_library_places`, а до неё довод
+     `self` не доходит (`check` его не получает). */
+  repl_self_kept = self;
   const bool named_help = human_word(command, "--help", "-h", "help");
   /* Версия отвечает РАНЬШЕ справки: `flang --help --version` — это вопрос о
      версии, а не просьба показать справку о ней. Порядок тот же, что у свидетеля

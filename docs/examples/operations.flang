@@ -1,9 +1,9 @@
 модуль «Операции»
-  использует «Списки» из "../../flang/stdlib/lists.flang"
-  использует «Строки» из "../../flang/stdlib/strings.flang"
-  использует «Множество строк» из "../../flang/stdlib/sets.flang"
-  использует «Списки строк» из "../../flang/stdlib/strlists.flang"
-  использует «Числа» из "../../flang/stdlib/numbers.flang"
+  использует «Списки»
+  использует «Строки»
+  использует «Множество строк»
+  использует «Списки строк»
+  использует «Числа»
 
 // Прогоняется целиком:
 //   flang test docs/examples/operations.flang

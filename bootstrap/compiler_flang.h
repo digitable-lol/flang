@@ -29355,6 +29355,25 @@ fl_status compiler_flang_celaya_chast_js(fl_ctx *ctx, fl_value znachenie, fl_val
 fl_status compiler_flang_imya_iz_plana_js(fl_ctx *ctx, fl_value sostoyanie, fl_value obschee, fl_value imya, fl_value rol, fl_value process, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Варианты типа JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_varianty_tipa_js(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вариантов JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_variantov_js(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Тотальный обработчик JS».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -29400,9 +29419,10 @@ fl_status compiler_flang_yaschik_processa_js(fl_ctx *ctx, fl_value uzel, fl_valu
  * @param plan — «план»: «План JS»
  * @param uzel — «узел»: «Значение»
  * @param obschee — «общее»: «Общее JS»
+ * @param programma — «программа»: «Значение»
  * @return значение: «План JS»
  */
-fl_status compiler_flang_pechat_processa_js(fl_ctx *ctx, fl_value plan, fl_value uzel, fl_value obschee, fl_value *result, fl_error *error);
+fl_status compiler_flang_pechat_processa_js(fl_ctx *ctx, fl_value plan, fl_value uzel, fl_value obschee, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Пары надзора JS».
@@ -33259,14 +33279,34 @@ fl_status compiler_flang_celaya_chast_elixir(fl_ctx *ctx, fl_value znachenie, fl
 fl_status compiler_flang_oshibka_yaschika_elixir(fl_ctx *ctx, fl_value sostoyanie, fl_value process, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Варианты типа Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_varianty_tipa_elixir(fl_ctx *ctx, fl_value programma, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать вариантов Elixir».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param varianty — «варианты»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_pechat_variantov_elixir(fl_ctx *ctx, fl_value varianty, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Запись процесса Elixir».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param process — «процесс»: «Значение»
  * @param totalnye — «тотальные»: список: строка
+ * @param programma — «программа»: «Значение»
  * @return значение: строка
  */
-fl_status compiler_flang_zapis_processa_elixir(fl_ctx *ctx, fl_value process, fl_value totalnye, fl_value *result, fl_error *error);
+fl_status compiler_flang_zapis_processa_elixir(fl_ctx *ctx, fl_value process, fl_value totalnye, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Порог надзора Elixir».

@@ -197,6 +197,7 @@
 - [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](rovnoe-chislo-cherez-tcp-obeshchat-nelzya.md)
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika.md)
 - [Типизированная ссылка на процесс выражается сегодняшним языком без единой правки компилятора, и подделка с чужим грузом отвергается](typed-process-reference-is-already-expressible.md)
+- [Вычисленный адресат стоит ровно одного названного отказа, и платит за него отправитель](a-computed-addressee-costs-one-named-failure.md)
 - [Девяти обработчикам из десяти вытеснение не нужно: срок известен до запуска](nine-handlers-in-ten-need-no-preemption.md)
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
 - [Вычислитель уже держит стек кадров явно — значит пауза стоит не сопрограммы, а двух правок](interpreter-already-has-an-explicit-frame-stack.md)

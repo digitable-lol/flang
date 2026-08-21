@@ -144,12 +144,12 @@ jobs:
   # раньше двух с половиной минут сборки и на порядки раньше семнадцати минут
   # перепечатки, от которой столкновение узнавали до сих пор.
   imena:
-    name: Столкновения имён в замыкании
+    name: Столкновения имён и ввозы во всех программах дерева
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: node flang/scripts/link-collision-guard.mjs
+      - run: node flang/scripts/link-collision-guard.mjs --дерево
 
       # ── ПОЛОМКИ ОТ СЛИЯНИЯ: сюда же, и по той же причине ──────────────────
       #

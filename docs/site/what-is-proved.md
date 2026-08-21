@@ -206,6 +206,27 @@ over a hostile sample** — `0`, `−0`, `±∞`, "not a number", `2⁵³`. Ever
 claim written without a finiteness proviso means "for finite numbers" — and is
 false on the rest.
 
+### An unproved postcondition costs run time, and the cost is measured
+
+If the kernel accepted a claim, nothing of it remains in the emitted program. If
+the kernel did not, the claim is **computed on every return of the function**,
+and whoever runs the program pays for it.
+
+The cost was measured over the whole library. `flang test flang/stdlib/` over 20
+files and 1216 examples: 360 150 ms at 454 claims before, 469 284 ms at 620
+after — **a factor of 1.30**. Measured by interleaving (the variants run one
+after another inside a single repetition), minimum of three pairs; a single run
+cannot measure this at all — the corpus spread of ±20% is larger than the effect.
+
+What is paid for is not the claims but the **actions inside them**: every
+comparison, every field read, every call, about 14 µs per action. So the
+expensive claim is not the most complex one but the one attached to a function a
+fold calls on every element: in `json.flang`, 19 claims on seven step functions
+accounted for 78% of the increase on 40% of the claims.
+
+By module: `json` ×2.90, `base64` ×1.94, `sha256` ×1.76, `http` ×1.73,
+`postgres` ×1.20.
+
 ### "On a grid" is not a proof
 
 {{утверждения.сеткой}} claims are closed by walking a set of values: the program

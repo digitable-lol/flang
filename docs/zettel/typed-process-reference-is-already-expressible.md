@@ -66,6 +66,10 @@
   «адресат обязан быть литералом», а «действие `отправить` строится только
   через ссылку».
 
+**Этот предел снят 21 августа 2026**, разбор — в
+[[a-computed-addressee-costs-one-named-failure]]. Ниже оставлен замер, которым он
+был предъявлен.
+
 Динамическим остаётся ровно одно и по существу: имя с провода может назвать
 процесс другого вида. **Замерено прогоном на BEAM:** узел, которому с провода
 назвали «Журнал» (он принимает «Строка журнала»), чеканит `«Ссылка» от
@@ -79,7 +83,8 @@
 не падение получателя на неполном разборе. Так же устроен Akka Typed: тип
 `ActorRef[T]` статичен, а поиск по `ServiceKey[T]` проверяется при работе.
 
-Связано: [[adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika]],
+Связано: [[a-computed-addressee-costs-one-named-failure]],
+[[adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika]],
 [[uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata]],
 [[equality-on-a-type-parameter-is-banned-only-in-bodies]],
 [[gruz-pisma-edet-biletom-a-ne-znacheniem]]

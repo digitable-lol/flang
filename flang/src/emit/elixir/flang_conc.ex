@@ -328,14 +328,21 @@ defmodule Flang.Proc do
   end
 
   defp act({"отправить", fields}, acc, _message) do
-    Flang.Conc.send_to(field_text(fields, "кому"), field_value(fields, "что"))
+    to = field_text(fields, "кому")
+    value = field_value(fields, "что")
+    refuse_alien(to, value)
+    Flang.Conc.send_to(to, value)
     acc
   end
 
   defp act({"через", fields}, acc, _message) do
+    to = field_text(fields, "кому")
+    value = field_value(fields, "что")
+    refuse_alien(to, value)
+
     Flang.Conc.send_after(
-      field_text(fields, "кому"),
-      field_value(fields, "что"),
+      to,
+      value,
       field_delay(fields, "задержка")
     )
 
@@ -355,6 +362,31 @@ defmodule Flang.Proc do
 
   defp act({"остановить", fields}, acc, _message) do
     %{acc | stop: field_text(fields, "почему")}
+  end
+
+  # Письмо не тому виду — отказ ОТПРАВИТЕЛЯ, а не получателя: адресата выбрал он,
+  # и выбрал по строке, за которую отвечает он же. Отказ уходит обычным путём
+  # `Flang.Error` — тем же, каким уходят остальные отказы контракта, — и потому
+  # доходит до надзора, а не теряется. Без этого правила умирал ПОЛУЧАТЕЛЬ, на
+  # неполном разборе и кодом про разбор, а прогон при этом доходил до покоя и
+  # звался удавшимся.
+  defp refuse_alien(to, value) do
+    case Flang.Conc.alien(to, value) do
+      nil ->
+        :ok
+
+      {variant, type} ->
+        raise Flang.Rt.fail(
+                "FLANG_PROCESS_ACCEPTS",
+                "процесс «" <>
+                  to <>
+                  "» принимает «" <>
+                  type <>
+                  "», а ему послано «" <>
+                  variant <>
+                  "»: имя адресата пришло значением и совпало с процессом другого вида"
+              )
+    end
   end
 
   defp field_value(fields, name) do
@@ -501,6 +533,51 @@ defmodule Flang.Conc do
   end
 
   @doc """
+  Запомнить, что каждый процесс объявил принимать: имя типа и имена его
+  вариантов.
+
+  Нужно не отправке, а проверке при доставке (`alien/2`). Кладётся в ту же
+  таблицу, что и наблюдение, потому что спрашивает её ОТПРАВИТЕЛЬ — чужой
+  процесс, у которого объявления адресата нет и взяться ему больше неоткуда.
+  """
+  def remember_accepts(plan) do
+    ensure_table()
+
+    Enum.each(plan.processes, fn process ->
+      :ets.insert(
+        @table,
+        {{:accepts, process.name}, Map.get(process, :accepts, ""),
+         Map.get(process, :accepts_variants, [])}
+      )
+    end)
+
+    :ok
+  end
+
+  @doc """
+  Подходит ли письмо тому, кому его шлют.
+
+  Имя адресата вправе приехать значением — строкой из поля сообщения, с провода,
+  откуда угодно. Проверка типов про такую строку сказать ничего не может: в
+  исходнике её нет. Сказать может здесь: у адресата в объявлении написано
+  `принимает «Т»`, а у письма — имя варианта, и сличить их стоит одного поиска в
+  списке.
+
+  Возвращает `nil`, если подходит, и пару «имя варианта, объявленный тип», если
+  нет. Не сверяется ничего, когда сверять нечем: объявления адресата нет,
+  принимаемый тип не сумма, письмо не вариант.
+  """
+  def alien(name, value) do
+    with {:var, variant, _fields} <- value,
+         [{_key, type, [_ | _] = variants}] <- :ets.lookup(@table, {:accepts, name}),
+         false <- variant in variants do
+      {variant, type}
+    else
+      _ -> nil
+    end
+  end
+
+  @doc """
   Таймер: «через N миллисекунд отправить».
 
   Имя адресата, а не pid: к моменту срабатывания процесс мог быть перезапущен, и
@@ -634,6 +711,7 @@ defmodule Flang.Conc do
   def start(module) do
     ensure_table()
     plan = apply(module, :conc_plan, [])
+    remember_accepts(plan)
 
     Supervisor.start_link(root_children(module, plan),
       strategy: :one_for_one,

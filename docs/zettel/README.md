@@ -459,6 +459,7 @@
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)
 - [Модуль, не подключённый ни к чему, копит уже занятые имена — и подключить его потом нельзя](dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu.md)
 - [Выборочный ввоз обязан перечислить и те имена, которые зовёт контракт функции, а не только её тело](only-import-must-list-what-the-contract-calls.md)
+- [`только` не провозит типы — поэтому общий модуль с собственными типами берётся целиком, со всеми его именами](tolko-ne-provozit-tipy-poetomu-obshchiy-modul-beryotsya-celikom.md)
 - [Адресация по содержимому: версий нет, есть хеши](content-addressing.md)
 - [Unison установлен и измерен: ромб он решает не так, как обещает лозунг](unison-measured.md)
 - [Гипотеза про адресацию по содержимому не работает у нас — и не из-за хешей](names-not-hashes.md)
@@ -486,6 +487,7 @@
 - [Сравнения за постоянное время в этом языке не написать, и функции с таким именем заводить нельзя](constant-time-comparison-cannot-be-promised-by-this-language.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 - [Октетная труба превращает счёт рамки из «ширины знака в UTF-8» в счёт элементов, и весь драйвер PostgreSQL стоит на двух строках](an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count.md)
+- [Про PostgreSQL в драйвере PostgreSQL — меньше половины функций: 39 из 83, остальные 44 годятся любой базе](pro-postgresql-v-drayvere-postgresql-tolko-polovina-funkciy.md)
 - [Слияние, взявшее файл «целиком у них», роняет чужую работу молча — и ADR остаётся стоять с пометкой «реализовано»](a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently.md)
 
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)

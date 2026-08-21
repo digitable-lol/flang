@@ -13,8 +13,8 @@ language. There are exactly {{отказы.всего}} refusals, and here they 
 The first {{отказы.обязательств}} say the theorem does not line up with the
 function and are fixed inside the theorem; the other {{отказы.вывода}} say the
 derivation was not built, and half of those name a limit the language does not
-cross today. Every refusal below was produced by an actual run: the program that
-triggers it stands next to the text the compiler prints on it.
+cross today. All thirteen were produced by actual runs on small programs: the
+message texts below are the compiler's output, not a retelling.
 
 ## A diagnostic has five parts
 
@@ -30,10 +30,13 @@ Code, file, line, column, text. The exit code is 1, and the file counts as
 unchecked as a whole: `flang check` ends with the line
 `не проверено — замечаний N`.
 
-Read the tail of the message, and not out of politeness: for the derivation
-refusals the tail is exactly where the kernel says what it knew at that point
-(`известно: предусловие функции «Сумма»`) and which ways it tried
-(`правил пять — …`). That is the answer to "mine or not mine".
+Read the tail of the message, and not out of politeness. For three of the six
+derivation refusals — `FLANG_PROOF_STEP`, `FLANG_PROOF_INDUCTION_STEP`,
+`FLANG_PROOF_INDUCTION_BRANCH` — the tail is exactly where the kernel says what
+it knew at that point (`известно: предусловие функции «Сумма»`) and which ways
+it tried (`правил пять — …`). That is the answer to "mine or not mine": an empty
+`известно:` means nothing to stand on, a list of rules means the wrong goal
+shape.
 
 ## A refusal is not the worst outcome. Exit code 0 is
 

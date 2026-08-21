@@ -417,6 +417,7 @@
 - [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
 - [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](vlozhennyy-esli-v-skobkah-cherez-stroku-ne-razbiraetsya.md)
 - [Когда ствол заменил свою функцию библиотечной, а ветка ту же свою дополнила, обе стороны столкновения неверны](bibliotechnaya-zamena-i-svoyo-dopolnenie-obe-storony-nevernny.md)
+- [Поиск по сайту не находил код отказа ни разу из тринадцати, и ломался он с двух сторон сразу](search-never-found-a-refusal-code.md)
 
 ## Отвергнутые пути
 

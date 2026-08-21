@@ -4170,6 +4170,10 @@
 // Свидетель этих же наборов — `flang/src/target-occupied.mjs`. Правка одной
 // стороны без другой молчит до первой подходящей формы в корпусе.
 
+// Три последних имени — не библиотека, а псевдонимы, которые Elixir оставляет за
+// собой: `defmodule False do` отвечает «module False is reserved and cannot be
+// defined». Улика — `модуль «False»`, `«True»`, `«Nil»`: печать проходила,
+// компилятор Elixir отказывал.
 тотальная функция «Занято целью Elixir»
   возвращает список строки
   [
@@ -4180,7 +4184,8 @@
     "Kernel", "Keyword", "List", "Macro", "Map", "MapSet", "Module", "NaiveDateTime", "Node",
     "OptionParser", "Path", "Port", "Process", "Protocol", "Range", "Record", "Regex",
     "Registry", "Runtime", "Stream", "String", "StringIO", "Supervisor", "System", "Task",
-    "Time", "Tuple", "URI", "Version", "Duration"
+    "Time", "Tuple", "URI", "Version", "Duration",
+    "False", "True", "Nil"
   ]
 
 тотальная функция «Обойти занятое целью Elixir»

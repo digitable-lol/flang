@@ -125,7 +125,7 @@ flowchart TD
 Хоть что-нибудь доказано у 13 функций из 20. Содержательно — у 9.
 
 ```
-node benchmarks/zamer-tseny/schyot-20.mjs
+./ярлык proof:20
 ```
 
 ### Часть недоказанного недоказуема потому, что неправда
@@ -291,7 +291,7 @@ node flang/scripts/proof-ledger.mjs
 | Отчёт по одному файлу | `flang check <файл> --proof` |
 | То же машине | `flang check <файл> --proof --json` |
 | Сводка по всем программам репозитория | `node flang/scripts/proof-ledger.mjs` |
-| Содержательные утверждения из двадцати | `node benchmarks/zamer-tseny/schyot-20.mjs` |
+| Содержательные утверждения из двадцати | `./ярлык proof:20` |
 
 ## Дальше
 

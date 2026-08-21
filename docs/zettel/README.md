@@ -59,6 +59,7 @@
 - [Цена доказательства измерена: 0 из 20, и тесты нашли четыре ошибки против нуля](proof-cost-0-of-20.md)
 - [Принципа индукции нет ни у одного встроенного типа](no-induction-for-builtin-types.md)
 - [Узкое место переехало: принцип индукции появился, а цепляться ему не за что](bottleneck-moved-to-body-shape.md)
+- [Индукция по строке закрыла одно утверждение на весь корпус, а не сотню: за стеной стоит вторая](indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.md)
 - [Тавтология закрывается даром, поэтому число «доказано без теоремы» само по себе ничего не значит](tautologies-close-for-free.md)
 - [Форма, которую разбор уже отвергает, — самое дешёвое место для нового синтаксиса, и цена измерена](occupy-a-form-the-parser-already-rejects.md)
 - [Новая форма языка, не доехавшая до генераторов кода, расходится с типами молча](a-language-form-must-reach-code-generation.md)
@@ -208,6 +209,8 @@
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Node ушёл с пути сборки: точку раскрутки печатает сам двоичный, и обе печати совпали байт в байт](node-ushyol-s-puti-sborki.md)
 - [Закоммиченная точка раскрутки отстала от исходников на одну форму языка, и двоичный не проверяет три своих модуля](bootstrap-seed-lags-the-sources-by-one-language-form.md)
+- [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](otkaz-ot-otstavshego-dvoichnogo-nelzya-pripisyvat-proveryaemomu-faylu.md)
+- [Цена подключения категорной поверхности к компилятору — не рост замыкания, а сорок ненаписанных правил](cena-vtaskivaniya-kategornoy-poverhnosti-eto-ne-zamykanie-a-nenapisannye-pravila.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)
@@ -348,6 +351,8 @@
 - [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя числом, а не молчанием](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
 - [Печать при непосуждённой поверхности печатает, но уходит своим кодом 3: код 2 у неё занят ошибкой вызова](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md#поправка-21-августа-2026-код-у-печати-всё-таки-меняется--но-не-на-2-а-на-3)
 - [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
+- [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](pole-chuzhogo-otveta-beryotsya-po-mestu-a-ne-poiskom-klyucha.md)
+- [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)
 
 ## Найденные ошибки
 
@@ -363,6 +368,7 @@
 - [Поле записи отмывало значение из-за симметричного сравнения типов](a-record-field-laundered-a-value.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
+- [Проверка замкнутости цели стояла только на ветви индукции, и прямой шаг «по примеру» шёл мимо неё](closedness-check-guarded-only-the-induction-branch.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
 - [Поправка, написанная под деление с усечением, применённая к делению вниз, срабатывает дважды — и календарь до нашей эры уезжает на год](a-correction-written-for-truncation-fires-twice-under-floor-division.md)
 - [Один нулевой байт внутри исходника прячет весь файл от `grep` — и счётчик по дереву молча теряет 162 примера](odin-nul-v-ishodnike-pryachet-fajl-ot-grep.md)

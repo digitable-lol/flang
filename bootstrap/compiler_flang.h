@@ -62103,7 +62103,7 @@ fl_status compiler_flang_tot_progon(fl_ctx *ctx, fl_value progon, fl_value funkc
 /*
  * Функция flang «По примеру».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param shag — «шаг»: «Значение»
  * @param obstanovka — «обстановка»: «Обстановка терма»
  * @return значение: «Итог шага»
@@ -62113,15 +62113,55 @@ fl_status compiler_flang_po_primeru(fl_ctx *ctx, fl_value shag, fl_value obstano
 /*
  * Функция flang «По примеру при посылке».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param shag — «шаг»: «Значение»
  * @param obstanovka — «обстановка»: «Обстановка терма»
  * @param primer — «пример»: «Значение»
  * @param imya_primera — «имя примера»: строка
  * @param imya_funkcii — «имя функции»: строка
+ * @param funkciya — «функция»: «Значение»
  * @return значение: «Итог шага»
  */
-fl_status compiler_flang_po_primeru_pri_posylke(fl_ctx *ctx, fl_value shag, fl_value obstanovka, fl_value primer, fl_value imya_primera, fl_value imya_funkcii, fl_value *result, fl_error *error);
+fl_status compiler_flang_po_primeru_pri_posylke(fl_ctx *ctx, fl_value shag, fl_value obstanovka, fl_value primer, fl_value imya_primera, fl_value imya_funkcii, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По примеру прямым шагом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param primer — «пример»: «Значение»
+ * @param imya_primera — «имя примера»: строка
+ * @param imya_funkcii — «имя функции»: строка
+ * @param funkciya — «функция»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_primeru_pryamym_shagom(fl_ctx *ctx, fl_value obstanovka, fl_value primer, fl_value imya_primera, fl_value imya_funkcii, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По примеру при цели с телом».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param primer — «пример»: «Значение»
+ * @param imya_primera — «имя примера»: строка
+ * @param imya_funkcii — «имя функции»: строка
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_primeru_pri_celi_s_telom(fl_ctx *ctx, fl_value obstanovka, fl_value primer, fl_value imya_primera, fl_value imya_funkcii, fl_value zaklyuchenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «По примеру при свободных цели».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obstanovka — «обстановка»: «Обстановка терма»
+ * @param primer — «пример»: «Значение»
+ * @param imya_primera — «имя примера»: строка
+ * @param imya_funkcii — «имя функции»: строка
+ * @param svobodnye — «свободные»: список: строка
+ * @return значение: «Итог шага»
+ */
+fl_status compiler_flang_po_primeru_pri_svobodnyh_celi(fl_ctx *ctx, fl_value obstanovka, fl_value primer, fl_value imya_primera, fl_value imya_funkcii, fl_value svobodnye, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «По примеру в случае».
@@ -73789,16 +73829,6 @@ fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value svyaza
  * @return значение: строка
  */
 fl_status compiler_flang_chto_binarnik_ne_sudil(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Чего печать не судила».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param svyazannaya — «связанная»: «Значение»
- * @param razobrannaya — «разобранная»: «Значение»
- * @return значение: строка
- */
-fl_status compiler_flang_chego_pechat_ne_sudila(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Названия двух».

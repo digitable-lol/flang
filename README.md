@@ -555,7 +555,7 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
   thirteen files out of twenty, and **nine** of those say something about the function: the
   rest are either weakened (the claim survives replacing the body with a stub of the same
   signature, so it holds of any such function) or restate the body. A run tells them apart,
-  not a reading: `node benchmarks/zamer-tseny/schyot-20.mjs`. Day by day: 0, 2, 4, 5, 9.
+  not a reading: `./ярлык proof:20`. Day by day: 0, 2, 4, 5, 9.
   And two of the twenty are unprovable because they are **false**: one fails at infinity,
   the other writes "or" where an implication was meant.
 - **There is no second opinion about the language any more.** The comparison that used to matter

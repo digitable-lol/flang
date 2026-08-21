@@ -55762,6 +55762,69 @@ fl_status compiler_flang_nenulevoy_celyy_literal(fl_ctx *ctx, fl_value uzel, fl_
 fl_status compiler_flang_eto_neotricatelnost(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Это разность себя».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_raznost_sebya(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это конечность терма».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_konechnost_terma(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это отрицание конечности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_otricanie_konechnosti(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это оговорка о конечности».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_ogovorka_o_konechnosti(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Терм оговорки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_term_ogovorki(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конечное оговоркой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_konechnoe_ogovorkoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цель под оговоркой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_cel_pod_ogovorkoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Форма вхождения».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -56952,6 +57015,17 @@ fl_status compiler_flang_v_otrezke_bez_nulya(fl_ctx *ctx, fl_value vyrazhenie, f
  * @return значение
  */
 fl_status compiler_flang_umnozhenie_vtorym_sluchaem(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value izvestnye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Квадрат конечного».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_kvadrat_konechnogo(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value konechnye, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Умножение неотрицательно».

@@ -53,6 +53,7 @@
 - [Мера содержательности слепа к утверждениям о порядке: пустой список упорядочен](mera-soderzhatelnosti-slepa-k-utverzhdeniyam-o-poryadke.md)
 - [Полная упорядоченность сортировки упирается во вторую стену: лемме нужна добавочная переменная-порог](lemma-s-dobavochnym-porogom-postusloviem-nevyrazima.md)
 - [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест](equality-on-a-type-parameter-is-banned-only-in-bodies.md)
+- [Запрет равенства в теле оказался засидевшимся, а не границей: довод «запрет держит цену видимой» падает от двух прогонов, а спека языка требовала обратного](equality-in-a-body-was-a-stale-restriction-not-a-boundary.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)
 - [Поиск доказательства не должен ничему верить](proof-search-must-trust-nothing.md)
 - [Ноль аксиом — проверяемое свойство, а не лозунг](zero-axioms.md)

@@ -56903,6 +56903,15 @@ fl_status compiler_flang_ogranichennoe_po_tipu(fl_ctx *ctx, fl_value obyavleniya
 fl_status compiler_flang_naturalnoe_po_tipu(fl_ctx *ctx, fl_value obyavleniya, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Это равенство литералу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_ravenstvo_literalu(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Граница допущения годится».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -57388,6 +57397,26 @@ fl_status compiler_flang_mera_pribavleniya(fl_ctx *ctx, fl_value uzel, fl_value 
  * @return значение: «Значение»
  */
 fl_status compiler_flang_mera_vstroennoy(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера склейки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param vnutri — «внутри»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_mera_skleyki(fl_ctx *ctx, fl_value uzel, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Длиной довода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param dovod — «довод»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_dlinoy_dovoda(fl_ctx *ctx, fl_value uzel, fl_value dovod, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Мера построения».
@@ -58194,6 +58223,50 @@ fl_status compiler_flang_obyavleno_naturalnym(fl_ctx *ctx, fl_value obyavlenie, 
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_izvestnoe_po_tipu(fl_ctx *ctx, fl_value obyavleniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это тип знака».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_tip_znaka(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявлено знаком».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obyavlenie — «объявление»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_obyavleno_znakom(fl_ctx *ctx, fl_value obyavlenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Факт длины знака».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obyavlenie — «объявление»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_fakt_dliny_znaka(fl_ctx *ctx, fl_value obyavlenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Форма длины имени».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_forma_dliny_imeni(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Длины по типу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_dliny_po_tipu(fl_ctx *ctx, fl_value obyavleniya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Слить известные».

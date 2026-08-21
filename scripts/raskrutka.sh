@@ -229,7 +229,12 @@ say "  все литералы закрыты"
 [ "$mode" = literals ] && exit 0
 
 BINARY=$(pick_binary)
-TMP=$(mktemp -d -p /srv/tmp raskrutka.XXXXXX)
+
+# Каталог печати ОБЯЗАН пережить перезагрузку и отключение питания: на этой
+# машине волатильные каталоги запрещены хуком, а TMPDIR по умолчанию ведёт
+# именно туда. Печать компилятора — 23 МБ и около часа работы, терять её на
+# ребуте нельзя. Каталог задаётся FLANG_TMP, по умолчанию /srv/tmp.
+TMP=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" raskrutka.XXXXXX)
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
 say "компилятор: $INPUT"

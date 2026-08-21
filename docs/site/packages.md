@@ -145,8 +145,14 @@ $ ls -la api.flang-package
 -rw-rw-r-- 1 b b 13161 api.flang-package
 ```
 
-Inside: **8 modules and 53 functions**, 13,161 bytes against **99,508 bytes** of
-sources — 7.6 times smaller than what it replaces, at 248 bytes per function.
+Inside: **8 modules and 53 functions**, 105,937 bytes: the package carries their
+code as source, so it is about the size of what it replaces, not smaller. In the
+repository it takes 21,111 bytes — git compresses objects itself.
+
+The payload is **not compressed**: the compiler cannot compress, and compression
+would have to be written into the compiler itself. A module's address is the
+sha256 of its source, 64 characters, and the payload is checked against it when
+the package is used: change a byte and the address changes.
 
 The closure follows import edges and leaves the library's own directory when the
 author wrote it that way: `catalog.flang` pulls `«Списки»` from
@@ -199,9 +205,20 @@ $ flang check shop.flang
 ```
 
 That is also the answer to "will it build on another machine": move two files and
-it builds. Verified byte for byte — emitting the program to C from the package
-matched emitting it from sources exactly
-([`flang/test/package.test.mjs`](https://github.com/digitable-lol/flang/blob/main/flang/test/package.test.mjs)).
+it builds.
+
+To check that the package yields the same thing as the sources, emit the program
+twice — once next to the package, once next to the sources — and compare the
+directories.
+
+```bash
+flang emit shop.flang --target c --out ./from-package   # where the package lives
+flang emit shop.flang --target c --out ./from-sources   # where the sources live
+diff -r ./from-package ./from-sources && echo same
+```
+
+A run over a trial pair of two modules: both emissions gave **6 files and 272,974
+bytes**, and `diff -r` returned 0 — not one file differs.
 
 ## What a package carries about proofs, and what it does not
 

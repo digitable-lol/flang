@@ -10,11 +10,12 @@ Latest release — **0.5.1**, commit `6d845f9`
 | [From source](#from-source) | the `flang` command from a clone | `git`, `cc`, `make` |
 | [With npm](#with-npm) | `flang` and `flang-lsp` for a Node project | Node ≥ 20 |
 
-The first three paths give the same binary. It has ten commands — `check`,
-`test`, `run`, `emit`, `ast`, `facts`, `io`, `lock`, `package`, `repl` — and
-the bare `flang` command opens a shell, like `python` or `iex`. It emits to C
-only; all {{цели.поАнглийски}} emit targets and the language server come from
-the fourth path.
+All four paths give the same binary: the fourth puts it in the project's
+`node_modules/.bin`, the other three into the system. It has twelve commands —
+`check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`, `lock`,
+`package`, `repl`, `lsp` — and the bare `flang` command opens a shell, like
+`python` or `iex`. It emits to all {{цели.поАнглийски}} targets, and it carries
+its own language server: `flang lsp --stdio`.
 
 ## Homebrew
 

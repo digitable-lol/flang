@@ -152,6 +152,60 @@ the kernel to satisfy an unproved claim, run the claim itself against a hostile
 sample** — `±0`, `±∞`, "not a number", the empty string. Unprovability often turns
 out to be a property of the claim rather than of the kernel.
 
+### A bound claim silently means "for finite numbers"
+
+This is a trap the tree has already been caught by, and it is worth its own
+section.
+
+The language's numbers are machine IEEE-754, and "not a number" (`NaN`) is
+produced from inside the language without breaking a rule. `0 делить на 0` passes
+the check with no diagnostic at all:
+
+```
+$ flang run граница.flang --function '«Ноль на ноль»'
+NaN
+$ echo $?
+0
+```
+
+`NaN` sits **outside the ordering**: both `NaN не меньше 0` and `NaN меньше 0`
+are false. So the "obvious" postcondition "the absolute value of the result is
+non-negative" is not a cautious wording but a **false claim**. The kernel does
+not take it, and it is right not to:
+
+```flang
+тотальная функция «Модуль»
+  принимает х: число
+  возвращает число
+  обеспечивает «модуль неотрицателен» результат не меньше 0
+  если х не меньше 0
+    то х
+    иначе 0 минус х
+```
+
+```
+$ flang check граница.flang --proof
+постусловие «модуль неотрицателен» функции «Модуль» — объявлено, не доказано:
+ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех
+входах, которые придут
+$ echo $?
+0
+```
+
+The runtime check catches it on the first "not a number":
+
+```
+$ flang run граница.flang --function '«Модуль не числа»'
+FLANG_PROPERTY: нарушено свойство «модуль неотрицателен» функции «Модуль»
+$ echo $?
+1
+```
+
+The working rule: **before asking the kernel for a rule, run the claim itself
+over a hostile sample** — `0`, `−0`, `±∞`, "not a number", `2⁵³`. Every bound
+claim written without a finiteness proviso means "for finite numbers" — and is
+false on the rest.
+
 ### "On a grid" is not a proof
 
 {{утверждения.сеткой}} claims are closed by walking a set of values: the program

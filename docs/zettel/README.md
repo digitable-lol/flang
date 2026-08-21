@@ -135,6 +135,8 @@
 
 ## Скорость и цена доказуемости
 
+- [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а по одному файлу проходит за 19 минут](progon-primerov-katalogom-kopit-pamyat-a-po-faylam-net.md)
+
 - [Цена доказуемости — 2,5 % функций, а всё остальное медленно по другим причинам](provability-costs-2-5-percent.md)
 - [Доля протухает молча, а счёт — нет: цена доказуемости за два дня уехала с 2,4 % на 1,1 %](a-share-goes-stale-a-count-does-not.md)
 - [Мы медленнее Python в 1,4 раза, и компиляция сегодня не окупается никогда](slower-than-python-by-1-4.md)
@@ -356,6 +358,8 @@
 
 ## Найденные ошибки
 
+- [Ветка влита в ствол, а её работы в стволе нет: ловится счётом имён, заведённых веткой от её предка](vetka-vlita-a-eyo-raboty-v-stvole-net.md)
+
 - [Печать в C ломается на параметре, чьё имя транслитерируется в ключевое слово C — но только у рекурсивной функции](c-backend-emits-a-c-keyword-as-a-parameter-name.md)
 - [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](strochnoe-imya-varianta-v-golom-sluchae-eto-svyazyvanie-imeni.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](nulyarnuyu-funkciyu-nelzya-pozvat-cherez-vvoz.md)
@@ -414,6 +418,9 @@
 - [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
 
 ## Модульность и пакеты
+
+- [Одинаковые имена в двух модулях библиотеки спят, пока оба модуля не встретятся в одном замыкании](odinakovye-imena-spyat-poka-oba-modulya-ne-vstretyatsya-v-odnom-zamykanii.md)
+- [Два разных списка `только` для одного модуля не объединяются, и имя из одного лишь списка становится неизвестным](dva-spiska-tolko-dlya-odnogo-modulya-ne-obedinyayutsya.md)
 
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка](biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu.md)
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)

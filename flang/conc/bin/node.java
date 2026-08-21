@@ -584,7 +584,7 @@ final class HozyainUzla {
         case "Поднять" -> {
           /* Перезапуск трогает состояние и не трогает ящик — это решено на
              flang; здесь состояние берётся тем же путём, что при подъёме узла. */
-          uzel = UzelZamera.fn_ozhivit_process_uzla(ctx, uzel, Value.text(kto));
+          uzel = UzelZamera.fn_podnyat_process_uzla(ctx, uzel, Value.text(kto));
           for (Process process : plan) {
             if (process.imya.equals(kto)) {
               sostoyaniya.put(kto, UzelZamera.call(ctx, process.nachalnoe, new Value[] {}));
@@ -841,9 +841,13 @@ final class HozyainUzla {
       }
     }
 
+    /* Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
+       терять было нечего, и по второму разу на одном разрыве, а доклад слой
+       связи выдаёт ровно один раз на разрыв — доказано в `svyaz.flang». */
     private void dokladOSvyazi(Kanal kanal, String chto, String pochemu) {
       skazat("в", tekst("связь"), "узел", tekst(imya), "цель", tekst(CEL),
           "сосед", tekst(kanal.kto), "что", tekst(chto), "почему", tekst(pochemu));
+      uzelSluchilsya(UzelZamera.v_uzel_propal(Value.text(kanal.kto), Value.text(pochemu)));
     }
 
     // ── билеты: груз живёт у хозяина, в таблице едет число ─────────────────

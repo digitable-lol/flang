@@ -37,7 +37,16 @@
 set -u
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
+# Цели без сборки: хозяин кладётся рядом с напечатанным и запускается как есть.
+# Остальные шесть целей требуют тулчейна и своей сборки — их прогоняет
+# `flang/test/uzel-celi.test.mjs` со своей оснасткой, и повторять её здесь не
+# надо: решения у всех восьми одни и те же, напечатанные.
 CEL=${CEL:-python}
+case "$CEL" in
+  python) HOZ=node.py; RUN=(python3 -B node.py) ;;
+  js)     HOZ=node.js; RUN=(node node.js) ;;
+  *) echo "цель «$CEL» этим прогоном не поднимается: нужен тулчейн и сборка"; exit 2 ;;
+esac
 SROK=${SROK:-2000}
 PULS=${PULS:-200}
 HESH=${HESH:-0123456789abcdef}
@@ -62,8 +71,14 @@ echo "== печать узла в цель $CEL"
 kod=$?
 if [ $kod -ne 0 ]; then echo "печать отказала, код $kod"; tail -20 "$RAB/pechat.log"; exit 1; fi
 cp -r "$RAB/uchyot" "$RAB/schyot"
-cp "$ROOT/flang/conc/bin/node.py" "$RAB/uchyot/"
-cp "$ROOT/flang/conc/bin/node.py" "$RAB/schyot/"
+cp "$ROOT/flang/conc/bin/$HOZ" "$RAB/uchyot/"
+cp "$ROOT/flang/conc/bin/$HOZ" "$RAB/schyot/"
+# Без этого Node прочтёт напечатанный `.js` как модуль старого вида и споткнётся
+# на первом же `export`.
+if [ "$CEL" = js ]; then
+  printf '{"type":"module"}\n' >"$RAB/uchyot/package.json"
+  printf '{"type":"module"}\n' >"$RAB/schyot/package.json"
+fi
 
 # Дерево надзора — данные, слово в слово как объявлено в
 # `flang/conc/examples/distributed.flang`: «Связь» ведёт «Учётчика» с
@@ -89,10 +104,12 @@ POZZHE='[{"через":6000,"кому":"Счётчик","что":["в","заме
          {"через":7000,"кому":"Счётчик","что":["в","замерить",{"сколько":["ч",6]}]}]'
 SRAZU='[{"кому":"Счётчик","что":["в","замерить",{"сколько":["ч",2]}]}]'
 
-zhdat() { # файл, образец, секунд
+# Образец читается grep -E: пробел после двоеточия печатает python, а js — нет,
+# и прогон обязан быть одним на обе цели.
+zhdat() { # файл, образец (ERE), секунд
   local kray=$((SECONDS + $3))
   while [ $SECONDS -lt "$kray" ]; do
-    grep -q "$2" "$1" 2>/dev/null && return 0
+    grep -Eq "$2" "$1" 2>/dev/null && return 0
     sleep 0.1
   done
   return 1
@@ -106,26 +123,26 @@ sluchay() { # имя, план, удар
   : >"$ju"; : >"$js"
 
   ( cd "$RAB/uchyot" && exec env LC_ALL=C.UTF-8 PYTHONIOENCODING=utf-8 \
-      python3 -B node.py --я учёт --слушать 127.0.0.1:0 --хэш "$HESH" \
+      "${RUN[@]}" --я учёт --слушать 127.0.0.1:0 --хэш "$HESH" \
       --план-файл "$plan" --размещение '{"Счётчик":"счёт","Учётчик":"учёт"}' \
       --срок "$SROK" --пульс "$PULS" --жить 16 >"$ju" 2>"$RAB/$imya-uchyot.err" ) &
   local pu=$!
   MOI+=("$pu")
-  zhdat "$ju" '"в": "поднят"' 20 || { echo "учёт не поднялся"; cat "$RAB/$imya-uchyot.err"; return 1; }
+  zhdat "$ju" '"в": *"поднят"' 20 || { echo "учёт не поднялся"; cat "$RAB/$imya-uchyot.err"; return 1; }
   local port; port=$(grep -o '"порт": *[0-9]*' "$ju" | tail -1 | grep -o '[0-9]*$')
   # `exec` выше означает, что pid подоболочки И ЕСТЬ pid узла — снимать будем
   # именно его, а не угадывать по имени.
   echo "учёт поднят: pid $pu, порт $port, cwd $(readlink -f "/proc/$pu/cwd")"
 
   ( cd "$RAB/schyot" && exec env LC_ALL=C.UTF-8 PYTHONIOENCODING=utf-8 \
-      python3 -B node.py --я счёт --слушать 127.0.0.1:0 --хэш "$HESH" \
+      "${RUN[@]}" --я счёт --слушать 127.0.0.1:0 --хэш "$HESH" \
       --план-файл "$plan" \
       --размещение "{\"Счётчик\":\"счёт\",\"Учётчик\":\"учёт\",\"звонить\":{\"учёт\":\"127.0.0.1:$port\"}}" \
       --вбросить "$SRAZU" --вбросить-позже "$POZZHE" \
       --срок "$SROK" --пульс "$PULS" --жить 14 >"$js" 2>"$RAB/$imya-schyot.err" ) &
   local ps=$!
   MOI+=("$ps")
-  zhdat "$js" '"что": "заведена"' 20 || { echo "связь не завелась"; cat "$RAB/$imya-schyot.err"; return 1; }
+  zhdat "$js" '"что": *"заведена"' 20 || { echo "связь не завелась"; cat "$RAB/$imya-schyot.err"; return 1; }
   echo "счёт поднят: pid $ps, связь заведена"
 
   sleep 2
@@ -156,9 +173,9 @@ sluchay() { # имя, план, удар
   # десятками. Это отдельный изъян слоя связи («Звонок не удался» при
   # состоявшемся знакомстве не ставит «Позвонить снова»), он назван в отчёте и
   # здесь только сворачивается, а не прячется — число повторов видно.
-  grep -E '"в": ("связь"|"надзор"|"потеря"|"конец")' "$js" | uniq -c || echo "  (пусто)"
+  grep -E '"в": *("связь"|"надзор"|"потеря"|"конец")' "$js" | uniq -c || echo "  (пусто)"
   echo "── чем кончил узел «учёт» ──"
-  grep '"в": "конец"' "$ju" || echo "  узел «учёт» до конца не дожил"
+  grep -E '"в": *"конец"' "$ju" || echo "  узел «учёт» до конца не дожил"
   if [ -s "$RAB/$imya-schyot.err" ]; then echo "── stderr счёта ──"; tail -5 "$RAB/$imya-schyot.err"; fi
 }
 

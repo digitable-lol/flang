@@ -52,9 +52,10 @@ se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
 
 Write your file on whichever surface you like — the compiler decides which one
 it is by a majority of the keywords in it, not by the first word. There is one
-table of words, `SURFACE_TABLE` in `flang/src/lexer.mjs`, and every English word
-on this page is taken from its English column; the surface is a column of that
-table, never a dialect with its own grammar.
+table of words, and every English word on this page is taken from its English
+column; a surface is a column of that table, never a dialect with its own
+grammar. The whole table is on the [Language dictionary](../glossary.html) page, and
+`./ярлык slovar:check` verifies that the page covers it completely.
 
 The table is honest about where it is thin: of {{словарь.понятий}} concepts,
 {{словарь.наЧетырёх}} are open on all four surfaces and {{словарь.дырявых}} are

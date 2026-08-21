@@ -492,10 +492,6 @@ the runner answers earlier and more precisely — «аргумент «n» не 
 Written not for completeness but because a promise read wider than it was made is
 a future breakage in your code.
 
-- **`flang/src/*.mjs` is not a library.** The compiler's internal modules can be
-  imported, but at your own risk: they are
-  [not promised](../what-blocks-1-0.md) and change without warning. There is one
-  promised road for embedding, and it is `emit`.
 - **The bytes of the emitted code are not promised.** The promise is behavioural:
   the same program yields the same values and the same refusal codes, not the
   same bytes. The generator is being optimised, and the files will differ.

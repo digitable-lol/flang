@@ -43,7 +43,7 @@
  * разбирал бы его тридцать раз.
  */
 import { spawnSync } from "node:child_process"
-import { cpus, tmpdir } from "node:os"
+import { cpus, freemem, tmpdir } from "node:os"
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -96,7 +96,20 @@ const памятьВедомостей = new Map()
 export function прогреть(пути, потоков = 0) {
   const нужны = [...new Set(пути.map((п) => resolve(КОРЕНЬ, п)))].filter((п) => !памятьДеревьев.has(п))
   if (нужны.length < 2) return
-  const сколько = потоков || Math.max(1, Math.min(64, cpus().length))
+  // Сколько разборов пускать разом. Считается по ПАМЯТИ, а не по ядрам.
+  //
+  // Было `Math.min(64, cpus().length)`. На машине с 256 ядрами это давало 64
+  // процесса, а один разбор большого файла берёт до 11 ГиБ — то есть 700 ГиБ
+  // при 499 ГиБ всего. 21 августа 2026 машина от этого встала на 87 минут:
+  // убийца памяти сработал 12 раз, каждый раз жертвой был flang, и снёс
+  // пользовательские менеджеры двух учётных записей. Ядер много, памяти —
+  // на два порядка меньше, чем нужно такому вееру.
+  //
+  // Держим запас: 12 ГиБ на разбор и не больше половины свободного, потому
+  // что машина общая и на ней работают другие.
+  const НА_РАЗБОР = 12 * 1024 * 1024 * 1024
+  const поПамяти = Math.floor(freemem() / 2 / НА_РАЗБОР)
+  const сколько = потоков || Math.max(1, Math.min(64, cpus().length, поПамяти))
   const где = mkdtempSync(join(tmpdir(), "flang-progrev-"))
   try {
     const задания = нужны.map((путь, и) => `${путь}\0${join(где, `${и}.json`)}\0`).join("")

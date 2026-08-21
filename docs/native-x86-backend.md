@@ -550,7 +550,7 @@ objdump -d flang_cli | grep -P '^\s+[0-9a-f]+:' \
 readelf -r compiler_flang.o | grep -oP 'R_X86_64_\w+' | sort | uniq -c
 
 # 9. Сорок четыре инструкции на одно умножение
-node flang/bin/flang.mjs emit МОДУЛЬ.flang --target c --out /tmp/s1
+bootstrap/flang emit МОДУЛЬ.flang --target c --out /tmp/s1
 cc -std=c99 -w -O2 -I/tmp/s1 -S -o /tmp/s1.s /tmp/s1/*_1.c
 
 # 10. Что покупает -O2: собрать точку раскрутки дважды и погонять

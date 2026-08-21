@@ -177,7 +177,9 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык occupied:check` | how many modules of the corpus would collide with names each target reserves |
 | `./ярлык poddelki:check` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
 | `./ярлык collisions:check` | name collisions inside the closure of imports |
-| `./ярлык proof:ledger` · `./ярлык proof:search` | the proof ledger over the corpus, and the search behind it |
+| `./ярлык proof:ledger` | the proof ledger over the corpus |
+| `./ярлык storozha:check` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
+| `./ярлык codes:podlog` | the code guard turns red on a planted code and goes silent once it is removed |
 | `./ярлык word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
 
 Some of these still start with `node`, because the program they run is written

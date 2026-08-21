@@ -23,8 +23,8 @@
 // процесса. Запускает хозяин.
 //
 // Прогон:
-//   node flang/bin/flang.mjs io flang/examples/io/potomok.flang --plan «Эхо через ввод»
-//   node flang/bin/flang.mjs io flang/examples/io/potomok.flang --plan «Долгая работа» --timeout 90000
+//   bootstrap/flang io flang/examples/io/potomok.flang --plan «Эхо через ввод»
+//   bootstrap/flang io flang/examples/io/potomok.flang --plan «Долгая работа» --timeout 90000
 
 // Состояние плана — продолжение, записанное значением: две точки, в которых
 // программа ждёт хозяина.

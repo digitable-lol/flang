@@ -312,8 +312,12 @@ diagnostic is a code, a file, a line, a column and a text; the exit code is 1.
 | `FLANG_PROOF_INDUCTION_STEP` | the proof step has nothing to stand on | add `требует` or `индукция по` |
 | `FLANG_RECURSION_LIMIT` | the computation hit the step limit | the limit is set by `--max-steps` |
 
-The full list of codes is in the manual page (`man flang`), section
-ДИАГНОСТИКА.
+Every refusal from the proof kernel — and `FLANG_PROOF_INDUCTION_STEP` is one
+of them — is covered by name on
+[The kernel refused: whose mistake is it](proof-refused.html), where each one
+says whether it is fixed in the theorem or runs into a limit of the language.
+The compiler's remaining codes are listed in the manual page (`man flang`),
+section ДИАГНОСТИКА.
 
 ## Next
 

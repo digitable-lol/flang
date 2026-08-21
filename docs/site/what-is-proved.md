@@ -305,6 +305,7 @@ None of the numbers above have to be taken on trust — commands print all of th
 
 ## Further
 
+- [The kernel refused: whose mistake is it](proof-refused.html) — every kernel refusal by name
 - [Proofs: why and how](proofs.html) — how a proof differs from a test
 - [Kernel specification](../spec-proof.html) — in Russian; the rules in full
 - [Known limitations](limits.html) — what the language cannot do

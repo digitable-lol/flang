@@ -364,6 +364,7 @@
 - [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
 - [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](pole-chuzhogo-otveta-beryotsya-po-mestu-a-ne-poiskom-klyucha.md)
 - [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)
+- [Ссылка на «полный список кодов» вела туда, где нет ни одного отказа ядра: 0 из 13](the-full-list-of-codes-named-none-of-the-kernel-refusals.md)
 
 ## Найденные ошибки
 

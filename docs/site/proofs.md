@@ -146,6 +146,7 @@ written once and covers all inputs, tests are written forever.
 
 ## Further
 
+- [The kernel refused: whose mistake is it](proof-refused.html) — what to do with each refusal
 - [What comes next](roadmap.html) — where the proof work stands today
 - [Kernel specification](../spec-proof.html) — in Russian; the rules in full
 - [The price of a proof, measured](../benchmark-proof-cost.html) — in Russian; the report with numbers

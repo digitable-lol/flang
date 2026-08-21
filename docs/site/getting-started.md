@@ -52,9 +52,10 @@ se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
 
 Write your file on whichever surface you like — the compiler decides which one
 it is by a majority of the keywords in it, not by the first word. There is one
-table of words, `SURFACE_TABLE` in `flang/src/lexer.mjs`, and every English word
-on this page is taken from its English column; the surface is a column of that
-table, never a dialect with its own grammar.
+table of words, and every English word on this page is taken from its English
+column; a surface is a column of that table, never a dialect with its own
+grammar. The whole table is on the [Language dictionary](../glossary.html) page, and
+`./ярлык slovar:check` verifies that the page covers it completely.
 
 The table is honest about where it is thin: of {{словарь.понятий}} concepts,
 {{словарь.наЧетырёх}} are open on all four surfaces and {{словарь.дырявых}} are
@@ -159,7 +160,7 @@ flang
 ```
 
 ```
-flang 0.5.0 — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
+flang {{выпуск.версия}} — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
 Объявление заканчивается пустой строкой, выражение вычисляется сразу.
 » 2 plus 2
 4
@@ -195,9 +196,11 @@ surfaces as well, and `.help` prints the list, ending it with the line
 По-английски: .help .list .source .save .load .reset .quit
 ```
 
-When standard input is not a terminal (`flang < script.flang`, a pipe), the
-shell reads it as a script: no prompts, diagnostics to the error stream, and a
-non-zero exit code means there was diagnostics.
+A script is fed to the same shell called by name: `flang repl < script.flang`.
+Then there are no prompts, diagnostics go to the error stream, and a non-zero
+exit code means there was diagnostics. The bare `flang` behaves differently over
+a pipe — it expects a JSON request and answers
+`{"ok":false,"code":"CLI","message":"ожидался объект запроса"}`.
 
 ## What the proof report says
 
@@ -233,9 +236,9 @@ flang emit hello.flang --target c --out ./output
 make -C ./output
 ```
 
-Emitting gives **6 files, 268 219 bytes**; `make` builds them in 0.6 s with the
-same `cc`, with no warning at all under `-Wall -Wextra -Werror -pedantic`. The
-output directory is not created for you.
+Emitting gives **6 files**; `make` builds them in 0.6 s with the same `cc`, with
+no warning at all under `-Wall -Wextra -Werror -pedantic`. The output directory
+is created for you if it does not exist.
 
 One trap that bites on the English surface and never on the Russian one: a name
 becomes an identifier of the target language, and a collision is refused **by

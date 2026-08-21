@@ -143,6 +143,6 @@ arithmetic.
 
 ## Next
 
-- [What is proven and what is checked](../overview.html) — in Russian; the proof report for the whole tree
+- [What is proved and what is not](what-is-proved.html) — the line drawn in numbers
 - [Why and how](proofs.html) — how the proof kernel works
 - [Processes and fault tolerance](../spec-conc.html) — in Russian; the supervision spec

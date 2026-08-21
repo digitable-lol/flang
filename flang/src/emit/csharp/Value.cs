@@ -282,9 +282,16 @@ public sealed class Value
     public static bool ChainCons(Value value) =>
         value.Tag == TagString ? value.Str.Length > 0 : value.Tag == TagList && value.Count > 0;
 
-    /// <summary>Ширина первой кодовой точки строки в единицах UTF-16.</summary>
+    /// <summary>
+    /// Ширина первой кодовой точки строки в единицах UTF-16. Две — только у
+    /// настоящей пары: высокая половина, за которой стоит низкая. Одинокая
+    /// высокая половина перед обычной буквой — точка шириной в одну единицу, и
+    /// голова строки «\uD83Da» это «\uD83D», а не «\uD83Da». Считать иначе
+    /// значило бы, что индукция по строке идёт не той мерой, какой считает
+    /// «длина».
+    /// </summary>
     private static int FirstPointWidth(string value) =>
-        char.IsHighSurrogate(value[0]) && value.Length > 1 ? 2 : 1;
+        char.IsHighSurrogate(value[0]) && value.Length > 1 && char.IsLowSurrogate(value[1]) ? 2 : 1;
 
     /// <summary>Голова цепочки: первый элемент списка или первый символ строки.</summary>
     public static Value ChainHead(Value value) =>

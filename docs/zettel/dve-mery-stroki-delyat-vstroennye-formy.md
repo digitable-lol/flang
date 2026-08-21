@@ -136,6 +136,15 @@ UTF-16 не умеет, а молча склеить значило бы, что
 функций С ПОСТУСЛОВИЯМИ — 257 из 347: доводы записями и вариантами драйвер не
 порождает. Про остальные ничего не измерено.
 
-Связано: [[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
+**Мер стало одна не везде сразу.** Перемер 21 августа 2026 через прогонщик
+напечатанной программы нашёл, что у C# `длина` и `разложить … на символы`
+расходились на ОДИНОКОЙ половине пары ещё сутки после этой правки — четыре входа
+из двенадцати. Разбор и починка:
+[[odinokaya-nizkaya-polovina-schitalas-nulem-v-csharp]]. Отсюда поправка к
+способу проверки: «форма считает знаки» проверяется не поодиночке, а сверкой
+РАЗНЫХ форм о том же тексте.
+
+Связано: [[odinokaya-nizkaya-polovina-schitalas-nulem-v-csharp]],
+[[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
 [[obrashchenie-stroki-lozhno-na-odinokom-surrogate]],
 [[literal-s-odinokim-surrogatom-lomaet-samoprimenenie]], [[minus-zero-is-a-class]]

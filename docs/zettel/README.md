@@ -88,6 +88,10 @@
 - [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 - [Доказанное постусловие в напечатанный код больше не едет: цена утверждений на сортировке упала с 3,23× до 2,72×](dokazannoe-postuslovie-ne-pechataetsya.md)
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе: круг «туда и обратно» стал выразим](kontrakt-ne-proveryaetsya-vnutri-kontrakta.md)
+- [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](cel-konyunkciya-yadru-ne-po-zubam-no-stoit-shesti.md)
+- [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](u-yadra-net-pravila-ne-menshe.md)
+- [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
+- [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](oslablennoe-utverzhdenie-byvaet-nesushchim.md)
 
 ## Теория категорий
 

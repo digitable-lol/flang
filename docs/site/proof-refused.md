@@ -109,13 +109,25 @@ all seven are fixed in the theorem itself. None of them touch the language.
 | `FLANG_PROOF_UNKNOWN_VAR` | `дано` introduces a name the function does not have | use the parameter name the function declares |
 | `FLANG_PROOF_VAR_TYPE` | the theorem's variable and the parameter have different types | use the declared type of the parameter |
 
-What it looks like. A function and a theorem whose names drifted apart:
+Here it is in full. A function and a theorem whose names drifted apart:
 
 ```flang
+модуль «Проба»
+
+тип «Светофор»
+  вариант «Красный»
+  вариант «Зелёный»
+
 тотальная функция «Штраф»
   принимает свет: «Светофор»
   возвращает число
   для всех свет обеспечивает «штраф неотрицателен» результат не меньше 0
+  пример «красный»
+    дано свет равно вариант «Красный»
+    ожидается 500
+  пример «зелёный»
+    дано свет равно вариант «Зелёный»
+    ожидается 0
   разбор свет
     случай вариант «Красный»
       то 500
@@ -134,8 +146,16 @@ What it looks like. A function and a theorem whose names drifted apart:
 ```
 
 ```
-FLANG_PROOF_NO_GOAL … теорема «штраф положителен» ничего не закрывает:
-постусловия «штраф положителен» нет ни у одной функции модуля
+$ flang check проба.flang
+модуль «Проба»: функций 1, из них с доказанным завершением 1; типов 1
+FLANG_PROOF_NO_GOAL в файле проба.flang, строка 23, столбец 1: теорема
+«штраф положителен» ничего не закрывает: постусловия «штраф положителен» нет
+ни у одной функции модуля. Теорема доказывает названное утверждение, а не
+утверждение вообще — назовите её так же, как постусловие, которое она
+закрывает
+проба.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 The theorem here is true, and it proves something nobody promised. The kernel

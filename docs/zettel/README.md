@@ -311,6 +311,7 @@
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
 - [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](srok-potomka-u-hozyaina-glavnoe-prepyatstvie-dlya-dolgih-proverok.md)
 - [«Показать» у двоичного отвечает отказом, а прогон продолжается — прежний замер устарел](pokazat-otvechaet-sboem-a-ne-ronyaet-progon.md)
+- [Итоговая строка проверки врёт рядом с верным списком бед — порча смотрит на список и этого не видит](itogovaya-stroka-vryot-ryadom-s-vernym-spiskom-bed.md)
 
 ## Найденные ошибки
 

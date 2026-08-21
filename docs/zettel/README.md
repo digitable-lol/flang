@@ -121,6 +121,8 @@
 - [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
 - [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
 - [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
+- [Дизъюнкция в допущении разбирается СЛУЧАЯМИ, а расщеплять её нельзя ни в какую сторону](dizyunkciya-v-dopushchenii-razbiraetsya-sluchayami-a-ne-rasshchepliaetsya.md)
+- [Дизъюнкция — самый частый верхний вид цели в библиотеке (344 из 1011, доказано 4), но упирается она НЕ в дизъюнкцию](dizyunkciya-samyy-chastyy-vid-celi-no-upiraetsya-ne-v-neyo.md)
 - [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ — а сузить их до правильных деревьев нечем](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 - [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ: 28 утверждений в шести файлах библиотеки](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)

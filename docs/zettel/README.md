@@ -148,6 +148,7 @@
 - [Прогон примеров при каждой проверке стоит 3 мс обычному файлу и 35 секунд двум самым большим](examples-cost-lands-on-two-files.md)
 - [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок](sha256-bez-bitovyh-operaciy-stoit-925-tysyach-shagov.md)
 - [Предел шагов интерпретатора решает, что вообще может быть примером](predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom.md)
+- [Перенос проверки на flang стоит от одного до полутора порядков времени, и упирается он в предел шагов, а не в выразительность](what-a-check-costs-when-it-moves-from-javascript-to-flang.md)
 
 ## Службы и долговечность
 

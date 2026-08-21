@@ -377,7 +377,6 @@
 - [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](pole-chuzhogo-otveta-beryotsya-po-mestu-a-ne-poiskom-klyucha.md)
 - [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)
 - [Итоговая строка проверки врёт рядом с верным списком бед — порча смотрит на список и этого не видит](itogovaya-stroka-vryot-ryadom-s-vernym-spiskom-bed.md)
-
 - [Ссылка на «полный список кодов» вела туда, где нет ни одного отказа ядра: 0 из 13](the-full-list-of-codes-named-none-of-the-kernel-refusals.md)
 
 ## Найденные ошибки

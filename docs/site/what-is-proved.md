@@ -95,7 +95,7 @@ them, in the hardware — but not in a separate list of exemptions.
 
 This half of the page matters more than the first.
 
-### Substantive claims: 9 out of 20
+### Substantively proved: 10 functions out of 20
 
 Empty statements can be proved, and the figure is easy to inflate. The
 postcondition `результат равен (0 минус х)` over the body `0 минус х` closes in
@@ -119,12 +119,12 @@ taken by name, so the ruler does not move with the thing it measures.
 
 | | Claims |
 |---|---:|
-| Substantive — fall away against the stub | **9** |
-| Weakened — proved against the stub as well | 5 |
+| Substantive — fall away against the stub | **11** |
+| Weakened — proved against the stub as well | 6 |
 | Free — body copied into the postcondition | 1 |
 | Not checked — no stub exists for that result type | 2 |
 
-Something is proved for 13 of the 20 functions. Something substantive, for 9.
+Something is proved for 14 of the 20 functions. Something substantive, for 10.
 
 ```
 ./ярлык proof:20
@@ -287,7 +287,7 @@ language itself. Printing itself is something the compiler does, and does withou
 a single divergence; checking what it prints is something it cannot do.
 
 ```
-node flang/scripts/proof-ledger.mjs
+./ярлык proof:ledger
 ```
 
 ---
@@ -300,7 +300,7 @@ None of the numbers above have to be taken on trust — commands print all of th
 |---|---|
 | Report for one file | `flang check <file> --proof` |
 | The same for a machine | `flang check <file> --proof --json` |
-| Summary over every program in the repository | `node flang/scripts/proof-ledger.mjs` |
+| Summary over every program in the repository | `./ярлык proof:ledger` |
 | Substantive claims out of the twenty | `./ярлык proof:20` |
 
 ## Further

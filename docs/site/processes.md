@@ -188,17 +188,12 @@ going green in silence:
 processes, supervisors, runs.
 ```
 
-The rules of those declarations are partly proved by comparing declarations and
-partly computed over a grid of interleavings, and neither was pulled into the
-binary. The tooling that judged them was written in JavaScript and was removed
-from the tree together with the second implementation of the language; there is
-no new judge for them yet. The same holds for starting a real node: the tree
-carries four node runners — in JavaScript, Python, Go and C# — and every one of
-them today looks for a deleted module.
-
-Plainly, for the reader: **the process model can be declared, read and run
-against its examples today, but it cannot be brought up as a node.** Everything
-else on this page is not a promise but what a run shows.
+Plainly, for the reader: **the process model can be declared, checked and run
+against its examples today, and it cannot be brought up as a real node.** The
+declarations are read and checked as part of the program; the rules of the
+processes themselves — that supervision covers every failure, that an
+interleaving loses no message — are judged by nothing today. Everything else on
+this page is not a promise but what a run shows.
 
 ## Where to go next
 

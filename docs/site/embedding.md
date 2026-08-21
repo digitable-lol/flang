@@ -455,13 +455,6 @@ for (const [имя, текст] of СЦЕНАРИЙ) {
 Non-termination lives in the host's loop, while the handler always terminates —
 that is not a hope but an output of `check`.
 
-**A caveat about the file next door.** `serve.mjs` sits beside it running the
-same scenario, and it goes NOT through the emitted module but through the
-evaluator of the second implementation of the language. That implementation is no
-longer in the tree, and the scenario does not come up along that road today. Read
-`serve.mjs` as a model of the host's SHAPE — state by value, loop on the outside
-— not as a working path: the working path of embedding is one, and it is `emit`.
-
 ## Any language: the runner over a pipe
 
 If there is no target for your language, or you would rather not bind by source,

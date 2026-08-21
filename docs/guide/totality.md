@@ -53,8 +53,6 @@ the program is accepted, but then `надзор` becomes mandatory, otherwise
 
 This rule is about the `процесс` declaration, and process declarations are not
 judged by the binary compiler at all: it says so in words and answers with exit
-code 2. They were judged by separate tooling written in JavaScript and removed
-together with the second implementation of the language; there is no new judge
-yet. So the severity cannot be demonstrated today — the rule is written down, its
-check is waiting to be moved over.
+code 2. So the severity cannot be demonstrated today — the rule is written down in
+the specification, and the compiler carries no check for it.
 

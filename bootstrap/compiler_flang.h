@@ -45199,7 +45199,7 @@ fl_status compiler_flang_skazat_o_sravnenii(fl_ctx *ctx, fl_value op, fl_value s
 fl_status compiler_flang_tip_ravenstva(fl_ctx *ctx, fl_value uzel, fl_value op, fl_value imena, fl_value tablicy, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Сказать о скалярах».
+ * Функция flang «Сказать о сличимости».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param tip — «тип»: «Тип»
@@ -45208,7 +45208,7 @@ fl_status compiler_flang_tip_ravenstva(fl_ctx *ctx, fl_value uzel, fl_value op, 
  * @param bedy — «беды»: список: «Беда»
  * @return значение: список: «Беда»
  */
-fl_status compiler_flang_skazat_o_skalyarah(fl_ctx *ctx, fl_value tip, fl_value uzel, fl_value v_utverzhdenii, fl_value bedy, fl_value *result, fl_error *error);
+fl_status compiler_flang_skazat_o_slichimosti(fl_ctx *ctx, fl_value tip, fl_value uzel, fl_value v_utverzhdenii, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Тип неизвестной операции».

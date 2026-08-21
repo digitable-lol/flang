@@ -100,6 +100,9 @@ This is the middle of the language, and it is worth the longest stop.
   explicitly;
 - [Why and how](proofs.html) — the three deciding rules of the kernel, each
   readable in full;
+- [The kernel refused: whose mistake is it](proof-refused.html) — every kernel
+  refusal by name: which are fixed in the theorem and which hit a limit of the
+  language;
 - [Case studies](case-studies.html) — what this bought on live code.
 
 The short truth the step stands here for: **termination is proved in bulk,
@@ -154,3 +157,9 @@ flang check file.flang --proof # what exactly is proved and what is not
 flang --help                   # ten commands and what each one does
 man flang                      # the same in detail, if installed from a release
 ```
+
+A refusal starts with a name: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,
+`FLANG_PROOF_INDUCTION_STEP`. The names that start with `FLANG_PROOF_` are
+refusals from the proof kernel, and each of them is covered on
+[The kernel refused: whose mistake is it](proof-refused.html). The rest are
+listed in `man flang`, section ДИАГНОСТИКА.

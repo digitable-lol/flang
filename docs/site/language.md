@@ -15,11 +15,17 @@ Neighbouring pages answer other questions:
 
 ## How to read the examples
 
-Every example below is a whole program, and every one of them was checked with:
+Most examples below are whole programs, and every such one was checked with:
 
 ```bash
 flang check file.flang
 ```
+
+Where that is not so it is said. Four snippets are given without a `модуль` line
+because they show one form of writing, not a program. And the examples of the
+categorical surface, of monads and of processes answer with **exit code 2**, not
+0: parsing, types, termination and their own examples pass, while the rules of
+those declarations are not judged by the binary compiler, which says so in words.
 
 Everything is written on two surfaces out of four: English and Russian. These
 are the same word of the language, not a translation, and both parse to one
@@ -637,58 +643,43 @@ chain «process an order»
 | `functor` / `bifunctor` | a link between categories |
 | `monoid` / `carrier` / `operation` / `identity` / `inverse element` | a structure with its own laws |
 
-### What it gives a developer
+### What it gives a developer today
 
-Three refusals, each of them taken from a real run.
+One thing it gives, three promised refusals it does not, and the two must not be
+confused. Measured by a run on 21 August 2026.
 
-**1. The pipeline is declared, not called.** Type checking catches a mismatch in
-the call `«Bill shipment» of («Ship order» of order)` — there is a call site
-there. In a declared pipeline there is no call site. Arrows give it something to
-check: swap the order of composition in the example above —
-
-```
-morphism «process» это «ship» after «bill»
-```
-
-— and `flang check` answers (diagnostic prose is Russian on every surface):
+**It gives: the laws of a category are computed.** If a category declares its own
+equality (`объект «Х» даёт «Х равны»`), the compiler computes over a finite grid
+of values that the equality is an equivalence, that composition respects it, and
+that composition is associative. The report states the grid size:
 
 ```
-FLANG_COMPOSE_MISMATCH: композиция «process» не стыкуется: «bill»
-приводит в «Invoice», а «ship» ожидает «Order»
+категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
+нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
 
-The same refusal comes from `chain` if `first` and `next` are swapped.
+A violation is a refusal with exit code 1 and the offending pair of values shown,
+and emitting such a program is cancelled: zero files. The same holds for a
+natural transformation — `FLANG_TRANSFORM_NOT_NATURAL`, with both paths and their
+values.
 
-**2. The arrow drifted away from its implementation.** Change what `«Bill
-shipment»` accepts — from `«Shipment»` to `«Order»`. It has no call sites in the
-file, and its own types agree. The refusal comes from the arrow:
+**It does not give: the shape of the declarations is not checked.** Closure of a
+category under composition, identities on objects, the endpoints of composed
+arrows agreeing, the shape of a functor — none of that is checked by anything
+today, and the compiler says so in a separate line and answers with exit code 2
+rather than going green in silence. So:
 
-```
-FLANG_MORPHISM_SHAPE: морфизм «bill» ведёт из «Shipment»,
-а «Bill shipment» принимает «Order»
-```
+- a swapped composition order (`«отгрузить» после «выставить»`) yields **no**
+  refusal, although `FLANG_COMPOSE_MISMATCH` is described in the contract;
+- an arrow drifting from its function yields **no** refusal, although
+  `FLANG_MORPHISM_SHAPE` is described;
+- a functor square that does not commute yields **no** refusal: functors are not
+  judged at all, and `FLANG_FUNCTOR_SQUARE` does not fire.
 
-**3. Two modules drifted apart in how they translate data.** This is the one a
-type system does not catch at all. The tree holds a four-file example —
-`flang/examples/cat/modules/` — where an orders module, a payments module and a
-shipping module describe one thing three ways, and a functor names the
-translation between them with the word `gives`. Copy the directory aside and
-forget to carry one field over: in the function `«Платёж по заказу»` write
-`возвращён равным 0` instead of `возвращён равным заказ.отменён`, and adjust its
-example to the new body.
-
-Every function stays total. The types agree. Their own examples are green.
-`flang check` answers:
-
-```
-FLANG_FUNCTOR_SQUARE: функтор «Заказ в платёж»: квадрат не сходится на стрелке
-«отменить заказ»: на {"сумма":500,"отменён":0} путь «Платёж по заказу» после
-«отменить заказ» дал {"копейки":50000,"возвращён":0}, а «вернуть платёж» после
-«Платёж по заказу» — {"копейки":50000,"возвращён":1}
-```
-
-In business terms this is "a cancelled order is cancelled everywhere", and the
-refusal names the order on which the two paths diverged.
+All three codes exist in the sources and the rules are written down — the binary
+simply does not get to them. Read it this way: **a category declaration today
+documents intent and gives you the laws counted over a grid; it is not a check of
+the shape.** With runs: [The categorical surface](categories.html).
 
 Edges, worth knowing before you start:
 

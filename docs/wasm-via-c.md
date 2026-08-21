@@ -52,7 +52,7 @@ Emscripten не понадобился и, судя по замеру, не ну
 двумя подменёнными переменными:
 
 ```sh
-node flang/bin/flang.mjs emit программа.flang --target c --out каталог
+bootstrap/flang emit программа.flang --target c --out каталог
 make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 ```
 
@@ -492,7 +492,7 @@ clang --version && node --version && ~/.local/bin/wasmtime --version
 dpkg -l wasi-libc lld libclang-rt-21-dev-wasm32 | tail -3
 
 # 2. Одна программа руками
-node flang/bin/flang.mjs emit flang/examples/rosetta/merge-sort.flang --target c --out /tmp/ms
+bootstrap/flang emit flang/examples/rosetta/merge-sort.flang --target c --out /tmp/ms
 make -C /tmp/ms CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 echo '{"fn":"Сортировка слиянием","args":[{"l":[{"n":"3"},{"n":"1"},{"n":"2"}]}]}' \
   | ~/.local/bin/wasmtime run -W max-wasm-stack=8388608 /tmp/ms/flang_cli

@@ -63,7 +63,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 NAME=$(basename "$SOURCE" .flang)
 
-node "$ROOT/flang/bin/flang.mjs" emit "$SOURCE" --target c --out "$TMP" >/dev/null
+"$ROOT/bootstrap/flang" emit "$SOURCE" --target c --out "$TMP" >/dev/null
 
 mkdir -p "$OUT"
 clang --target=wasm32-wasi --sysroot="$SYSROOT" -O2 -std=c99 \

@@ -352,6 +352,7 @@
 - [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](srok-potomka-u-hozyaina-glavnoe-prepyatstvie-dlya-dolgih-proverok.md)
 - [«Показать» у двоичного отвечает отказом, а прогон продолжается — прежний замер устарел](pokazat-otvechaet-sboem-a-ne-ronyaet-progon.md)
 - [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя числом, а не молчанием](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
+- [Печать при непосуждённой поверхности печатает, но уходит своим кодом 3: код 2 у неё занят ошибкой вызова](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md#поправка-21-августа-2026-код-у-печати-всё-таки-меняется--но-не-на-2-а-на-3)
 - [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
 - [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](pole-chuzhogo-otveta-beryotsya-po-mestu-a-ne-poiskom-klyucha.md)
 - [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)

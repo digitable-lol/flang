@@ -209,9 +209,9 @@ Coq `nat` — построенный индуктивный тип (ноль и 
 ## Как проверять свою работу
 
 ```bash
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang            # типы, тотальность, примеры
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang --proof --pretty   # плюс доказательства
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs run файл.flang --function «Имя» --args '{"н": 5}'
+LC_ALL=C.UTF-8 bootstrap/flang check файл.flang            # типы, тотальность, примеры
+LC_ALL=C.UTF-8 bootstrap/flang check файл.flang --proof --pretty   # плюс доказательства
+LC_ALL=C.UTF-8 bootstrap/flang run файл.flang --function «Имя» --args '{"н": 5}'
 LC_ALL=C.UTF-8 node flang/scripts/proof-ledger.mjs                  # ведомость по всему корпусу
 ```
 

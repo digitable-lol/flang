@@ -32,15 +32,20 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 3
 
 FL=${FLANG:-}
-if [ -z "$FL" ]; then FL="node $ROOT/flang/bin/flang.mjs"; fi
+if [ -z "$FL" ]; then FL="$ROOT/bootstrap/flang"; fi
 
-TMP="$(mktemp -d)"
+TMP="$(mktemp -d -p "${TMPDIR:-/srv/tmp}")"
 trap 'rm -rf "$TMP"' EXIT
 
 # «род|имя<TAB>отпечаток объявления» для одного файла.
 decls() {
   local src="$1"
-  $FL ast - <"$src" 2>/dev/null | jq -r '
+  local ast
+  if ! ast=$("$FL" ast "$src" 2>&1); then
+    printf 'НЕ ВЗЯТ %s: %s\n' "$src" "$(printf '%s' "$ast" | head -1)" >&2
+    return 1
+  fi
+  printf '%s' "$ast" | jq -r '
     def bez: walk(if type == "object" then del(.span) else . end);
     (.functions[]? | "функция|" + .name + "\t" + ((. | bez) | @json)),
     (.types[]?     | "тип|"     + .name + "\t" + ((. | bez) | @json))
@@ -60,6 +65,16 @@ while IFS= read -r rel; do
   path=$(cd flang/self/bootstrap && realpath -m --relative-to="$ROOT" "$rel")
   decls "$path" >>"$TMP/base.decl"
 done < <(grep '^  использует ' "$ENTRY" | grep -o 'из "[^"]*"' | sed 's/^из "//; s/"$//')
+
+# База пуста — значит смотреть было НЕЧЕМ, а не «столкновений нет». Раньше
+# здесь звался `flang ast -`, которого у двоичного нет: он уходил кодом 2,
+# отказ глотался в /dev/null, и отчёт печатал нули по всем целям. Ноль от
+# «чисто» неотличим, поэтому пустая база теперь красная.
+if [ ! -s "$TMP/base.decl" ]; then
+  printf 'НЕ СУДИЛ: база объявлений пуста — ни один модуль замыкания не разобран.\n' >&2
+  printf 'Это не «столкновений нет», это «смотреть нечем».\n' >&2
+  exit 3
+fi
 sort -t"$(printf '\t')" -k1,1 -u "$TMP/base.decl" -o "$TMP/base.decl"
 
 printf 'объявлений в базе (свои у пятнадцати модулей): %s\n\n' "$(wc -l <"$TMP/base.decl")"

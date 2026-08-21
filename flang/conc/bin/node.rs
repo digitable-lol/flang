@@ -607,14 +607,18 @@ impl Uzel {
             "Поднять" => {
                 // Перезапуск трогает состояние и не трогает ящик — это решено на
                 // flang; здесь состояние берётся тем же путём, что при подъёме узла.
-                self.uzel = dolzhno(resh::funkciya_ozhivit_process_uzla(&self.ctx, self.uzel.clone(), rt::text(&kto)));
+                self.uzel = dolzhno(resh::funkciya_podnyat_process_uzla(&self.ctx, self.uzel.clone(), rt::text(&kto)));
                 let nachalnoe = self.plan.iter().find(|p| p.imya == kto).map(|p| p.nachalnoe.clone());
                 if let Some(nachalnoe) = nachalnoe {
                     let novoe = dolzhno(resh::call(&self.ctx, &nachalnoe, vec![]));
-                    for para in self.sostoyaniya.iter_mut() {
-                        if para.0 == kto {
-                            para.1 = novoe.clone();
-                        }
+                    // Строки может и НЕ БЫТЬ: при подъёме узла состояние заводят
+                    // только своим процессам, а подхваченный чужой становится
+                    // своим сейчас. Без этой ветки он поднимался бы в таблице
+                    // процессов и оставался без состояния — то есть навсегда
+                    // молчащим.
+                    match self.sostoyaniya.iter_mut().find(|para| para.0 == kto) {
+                        Some(para) => para.1 = novoe,
+                        None => self.sostoyaniya.push((kto.clone(), novoe)),
                     }
                 }
                 skazat(vec![
@@ -897,6 +901,9 @@ impl Uzel {
         }
     }
 
+    /// Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
+    /// терять было нечего, и по второму разу на одном разрыве, а доклад слой
+    /// связи выдаёт ровно один раз на разрыв — доказано в `svyaz.flang`.
     fn doklad_o_svyazi(&mut self, nomer: usize, chto: &str, pochemu: &str) {
         skazat(vec![
             ("в".into(), stroka("связь")),
@@ -906,6 +913,8 @@ impl Uzel {
             ("что".into(), stroka(chto)),
             ("почему".into(), stroka(pochemu)),
         ]);
+        let kto = self.kanaly[nomer].kto.clone();
+        self.uzel_sluchilsya(resh::variant_uzel_propal(rt::text(&kto), rt::text(pochemu)));
     }
 
     // ── билеты: груз живёт у хозяина, в таблице едет число ─────────────────

@@ -413,6 +413,9 @@ defmodule HozyainUzla do
     end
   end
 
+  # Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
+  # терять было нечего, и по второму разу на одном разрыве, а доклад слой связи
+  # выдаёт ровно один раз на разрыв — доказано в `svyaz.flang`.
   defp doklad_o_svyazi(u, kto, chto, pochemu) do
     skazat(
       {:o,
@@ -426,7 +429,7 @@ defmodule HozyainUzla do
        ]}
     )
 
-    u
+    uzel_sluchilsya(u, UzelZamera.v_uzel_propal(Flang.Rt.text(kto), Flang.Rt.text(pochemu)))
   end
 
   defp chto_kadra(kadr) do
@@ -546,7 +549,7 @@ defmodule HozyainUzla do
       "Поднять" ->
         # Перезапуск трогает состояние и не трогает ящик — это решено на flang;
         # здесь состояние берётся тем же путём, что при подъёме узла.
-        u = %{u | uzel: UzelZamera.fn_ozhivit_process_uzla(u.uzel, Flang.Rt.text(kto))}
+        u = %{u | uzel: UzelZamera.fn_podnyat_process_uzla(u.uzel, Flang.Rt.text(kto))}
 
         u =
           case Enum.find(u.plan, fn p -> p.imya == kto end) do

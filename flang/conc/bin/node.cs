@@ -478,7 +478,7 @@ public static class HozyainUzla
             case "Поднять":
                 // Перезапуск трогает состояние и не трогает ящик — это решено на
                 // flang; здесь состояние берётся тем же путём, что при подъёме узла.
-                u.Sostoyanie = Pozvat(u, "Оживить процесс узла", u.Sostoyanie, Value.Text(Stroka("кто")));
+                u.Sostoyanie = Pozvat(u, "Поднять процесс узла", u.Sostoyanie, Value.Text(Stroka("кто")));
                 foreach (ProcessPlana p in u.Plan)
                 {
                     if (p.Imya == Stroka("кто"))
@@ -746,12 +746,14 @@ public static class HozyainUzla
                     ["что"] = "отвергнута", ["почему"] = Stroka("почему"),
                 });
                 break;
+            // Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда терять было нечего, и по второму разу на одном разрыве, а доклад слой связи выдаёт ровно один раз на разрыв.
             case "Доложить о потере":
                 Skazat(new Dictionary<string, object?>
                 {
                     ["в"] = "связь", ["узел"] = u.Imya, ["цель"] = Cel, ["сосед"] = k.Kto,
                     ["что"] = "потеряна", ["почему"] = Stroka("почему"),
                 });
+                UzelSluchilsya(u, Variant("Узел пропал", PoleZn("узел", Value.Text(k.Kto)), PoleZn("почему", Value.Text(Stroka("почему")))));
                 break;
             case "Доложить о несостоявшемся знакомстве":
                 Skazat(new Dictionary<string, object?>
@@ -759,6 +761,7 @@ public static class HozyainUzla
                     ["в"] = "связь", ["узел"] = u.Imya, ["цель"] = Cel, ["сосед"] = k.Kto,
                     ["что"] = "не состоялась", ["почему"] = Stroka("почему"),
                 });
+                UzelSluchilsya(u, Variant("Узел пропал", PoleZn("узел", Value.Text(k.Kto)), PoleZn("почему", Value.Text(Stroka("почему")))));
                 break;
             case "Позвонить снова":
                 k.KogdaZvonit = Chasy() + Pole(velenie, "пауза").Num;

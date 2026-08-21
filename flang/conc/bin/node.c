@@ -1085,14 +1085,23 @@ static void ispolnit_svyaz(size_t nomer, fl_value velenie) {
            "почему", pochemu, NULL);
     return;
   }
+  /* Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
+     терять было нечего, и по второму разу на одном разрыве, а доклад слой связи
+     выдаёт ровно один раз на разрыв — доказано в svyaz.flang. */
   if (strcmp(imya, "Доложить о потере") == 0) {
     skazat("в", "связь", "узел", moyo_imya, "цель", CEL, "сосед", k->kto, "что", "потеряна",
            "почему", pochemu, NULL);
+    fl_value propal = fl_nothing();
+    NADO(uzel_zamera_variant_uzel_propal(&ctx, tekst(k->kto), tekst(pochemu), &propal, &beda));
+    uzel_sluchilsya(propal);
     return;
   }
   if (strcmp(imya, "Доложить о несостоявшемся знакомстве") == 0) {
     skazat("в", "связь", "узел", moyo_imya, "цель", CEL, "сосед", k->kto, "что", "не состоялась",
            "почему", pochemu, NULL);
+    fl_value propal = fl_nothing();
+    NADO(uzel_zamera_variant_uzel_propal(&ctx, tekst(k->kto), tekst(pochemu), &propal, &beda));
+    uzel_sluchilsya(propal);
     return;
   }
   if (strcmp(imya, "Позвонить снова") == 0) {
@@ -1303,7 +1312,7 @@ static void ispolnit_nadzor(fl_value velenie) {
     // Перезапуск трогает состояние и не трогает ящик — это решено на flang;
     // здесь состояние берётся тем же путём, что при подъёме узла.
     fl_value novyy = fl_nothing();
-    NADO(uzel_zamera_ozhivit_process_uzla(&ctx, uzel, tekst(kto), &novyy, &beda));
+    NADO(uzel_zamera_podnyat_process_uzla(&ctx, uzel, tekst(kto), &novyy, &beda));
     uzel = novyy;
     for (size_t nomer = 0; nomer < planov; nomer += 1) {
       if (strcmp(plan[nomer].imya, kto) != 0) {
@@ -1311,10 +1320,23 @@ static void ispolnit_nadzor(fl_value velenie) {
       }
       fl_value nachalnoe = fl_nothing();
       NADO(uzel_zamera_call(&ctx, plan[nomer].nachalnoe, NULL, 0, &nachalnoe, &beda));
-      for (size_t gde = 0; gde < sostoyaniy; gde += 1) {
-        if (strcmp(imena_sostoyaniy[gde], kto) == 0) {
-          sostoyaniya[gde] = nachalnoe;
+      // Строки может и НЕ БЫТЬ: при подъёме узла состояние заводят только своим
+      // процессам, а подхваченный чужой становится своим сейчас. Без этой ветки
+      // он поднимался бы в таблице процессов и оставался без состояния — то
+      // есть навсегда молчащим.
+      size_t gde = sostoyaniy;
+      for (size_t i = 0; i < sostoyaniy; i += 1) {
+        if (strcmp(imena_sostoyaniy[i], kto) == 0) {
+          gde = i;
+          break;
         }
+      }
+      if (gde == sostoyaniy && sostoyaniy < PROCESSOV) {
+        snprintf(imena_sostoyaniy[sostoyaniy], sizeof imena_sostoyaniy[0], "%s", kto);
+        sostoyaniy += 1;
+      }
+      if (gde < sostoyaniy) {
+        sostoyaniya[gde] = nachalnoe;
       }
     }
     skazat("в", "надзор", "узел", moyo_imya, "цель", CEL, "что", "поднят", "кто", kto, NULL);

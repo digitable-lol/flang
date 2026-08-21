@@ -243,7 +243,7 @@ What this means when you write:
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
-  an exact snippet of the target's runtime in `flang/scripts/emit-guard.mjs`;
+  an exact snippet of the target's runtime in `scripts/storozh-pechati.flang`;
   change the runtime and the guard demands the table be revisited.
 - **Licence headers.** Every file the package ships carries an SPDX header. The
   file list is derived from the tree, not written down, so a new file without a

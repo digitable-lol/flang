@@ -454,7 +454,7 @@ c, 14 450 строк в шести файлах. Всего по восьми ц
 * `flang/src/targets.mjs:41–51` — таблица `ЦЕЛИ`;
 * `flang/src/conc.mjs:493–518` — `ВОЗМОЖНОСТИ_ЦЕЛЕЙ`, без строки тест падает;
 * `flang/src/target-occupied.mjs:231–240` — `ЗАНЯТО_ЦЕЛЬЮ`;
-* `flang/scripts/emit-guard.mjs:56–65` — свой зашитый список целей;
+* `scripts/storozh-pechati.flang:61–68` — свой зашитый список целей;
 * **`flang/scripts/target-occupied-guard.mjs:117,125` — арифметика
   `модулей * 8`. На девятой цели сторож просто падает.**
 * `flang/test/precondition.test.mjs:399–408` — таблица `ЦЕНА` с точными байтами

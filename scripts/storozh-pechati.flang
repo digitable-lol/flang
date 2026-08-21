@@ -8,8 +8,9 @@
 //   bootstrap/flang io scripts/storozh-pechati.flang
 //
 // Код возврата 0 — проза сходится с печатью; 1 — разошлась, и каждое
-// расхождение названо. Раньше это была `flang/test/emit-guard.test.mjs` на
-// JavaScript (143 строки) поверх `flang/scripts/emit-guard.mjs`.
+// расхождение названо. Раньше это была пара `flang/test/emit-guard.test.mjs`
+// (143 строки) и `flang/scripts/emit-guard.mjs` на JavaScript; обеих в дереве
+// больше нет — считает и краснеет только этот файл.
 //
 // ── Что стерегут ────────────────────────────────────────────────────────────
 //

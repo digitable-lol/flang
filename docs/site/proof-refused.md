@@ -178,11 +178,10 @@ the message: it can be either.
 
 ### `FLANG_PROOF_INDUCTION_TYPE`: there is no induction over numbers
 
-A type has to carry an induction
-principle, and only three things carry one: a declared sum (from its variants),
-the built-in list (from the two patterns that exhaust it), and the `нат`
-segment (from the two ends of the range). The kernel prints the reason together
-with the refusal:
+A type has to carry an induction principle, and only three things carry one: a
+declared sum (from its variants), the built-in list (from the two patterns that
+exhaust it), and the `нат` segment (from the two ends of the range). The kernel
+prints the reason together with the refusal:
 
 ```
 FLANG_PROOF_INDUCTION_TYPE … индукция теоремы «двойная норма неотрицательна»
@@ -197,9 +196,8 @@ The way around it is to declare the parameter as `нат` rather than `числ�
 
 ### `FLANG_PROOF_INDUCTION_BRANCH`: the body has to be one of two forms
 
-To build the conclusion of a case, the
-kernel needs to know what `результат` becomes in that case, and it reads that
-from the function body:
+To build the conclusion of a case, the kernel needs to know what `результат`
+becomes in that case, and it reads that from the function body:
 
 ```
 FLANG_PROOF_INDUCTION_BRANCH … тело функции «Штраф» не разбирает «свет» на
@@ -214,9 +212,8 @@ induction runs on.
 
 ### `FLANG_PROOF_INDUCTION_DESCENT`: the descent is read as exactly one
 
-For the `нат` segment the principle
-holds because the chain `н, н−1, …` cannot step over the floor, and the kernel
-verifies that in the body:
+For the `нат` segment the principle holds because the chain `н, н−1, …` cannot
+step over the floor, and the kernel verifies that in the body:
 
 ```
 FLANG_PROOF_INDUCTION_DESCENT … спуск в шаге «Сумма до» не строгий: вычитают
@@ -245,18 +242,11 @@ proof. If the shape does fit but `известно:` is empty or names the wrong
 what is missing is something to stand on — a `требует` on the function or an
 `индукция по` in the theorem.
 
-## All thirteen names
+## The compiler's other codes
 
-`FLANG_PROOF_NO_GOAL`, `FLANG_PROOF_AMBIGUOUS`, `FLANG_PROOF_DUPLICATE`,
-`FLANG_PROOF_CLAIM_MISMATCH`, `FLANG_PROOF_UNFINISHED`,
-`FLANG_PROOF_UNKNOWN_VAR`, `FLANG_PROOF_VAR_TYPE`, `FLANG_PROOF_STEP`,
-`FLANG_PROOF_INDUCTION_STEP`, `FLANG_PROOF_INDUCTION_TYPE`,
-`FLANG_PROOF_INDUCTION_BRANCH`, `FLANG_PROOF_INDUCTION_CASES`,
-`FLANG_PROOF_INDUCTION_DESCENT`.
-
-The proof kernel has no other refusals. The compiler's remaining codes — about
-parsing, types, names and termination — are listed in `man flang`, section
-ДИАГНОСТИКА.
+The proof kernel has no further refusals: the thirteen named at the top of this
+page are all of them. The codes about parsing, types, names and termination are
+listed in `man flang`, section ДИАГНОСТИКА.
 
 ## Where to go next
 

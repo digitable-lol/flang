@@ -38,8 +38,11 @@ attaching a solver to the verification conditions is an open task, not a feature
   category layer: `checkFunctors` knows a type's name, not its application — phase 3 in
   `flang/cat/POLY.md`. Until then, sequencing is expressed by a continuation machine where the
   continuation is a declared value rather than a hidden closure; how that differs from a monad is
-  in `flang/cat/SPEC.md`. The execution layer exists for one target out of eight (Node); emitting
-  a program with a plan works for all eight.
+  in `flang/cat/SPEC.md`. Emitting a program with a `план` declaration works for
+  NO target today, and that is measured: seven targets emit the program with exit code 0 and
+  silently drop the declaration, the eighth (`js`) refuses over a field its own emitter lacks.
+  Neither a plan descriptor nor an executor appears in the output. The breakdown is in
+  `docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md`.
 - An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
   a dictionary comes in three kinds: a list of pairs with linear lookup (`dictionary.flang`), a
   search tree whose priority is the hash of the key, O(log n) (`tree.flang`), and a trie over the

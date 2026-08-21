@@ -59,12 +59,32 @@ decls() {
 # объявления каждого модуля. Оттого «столкнулось» расходится со связыванием на
 # единицы имён — оно судит по суженному. Для вопроса «одинаково ли объявление»
 # это безразлично, а мера остаётся в одну сторону завышенной, не заниженной.
+#
+# ── ПОЧЕМУ СПИСОК ЗАМЫКАНИЯ БЕРЁТСЯ У СТОРОЖА, А НЕ ГРЕПОМ ──────────────────
+# Здесь стояло `grep -o 'из "[^"]*"'` — то есть замер сторожил ФОРМУ ЗАПИСИ
+# ввоза, а не сам ввоз. Когда ввоз стал писаться именем (`использует «Лексер
+# flang»`, без `из "…"`), греп перестал находить хоть что-нибудь: база
+# оказывалась пуста, и замер уходил кодом 3 со словами «смотреть нечем».
+# Замерено на этом дереве: 27 строк `использует` в `compiler.flang`, путей в них
+# ноль.
+#
+# Замыкание теперь спрашивается у того, кто разрешает имя в файл ровно так же,
+# как двоичный, — у сторожа столкновений (`flang/scripts/link-collision-guard.mjs`,
+# функция «замыкание»). Одно место на две работы: разойтись им нечем.
 ENTRY=flang/self/bootstrap/compiler.flang
 : >"$TMP/base.decl"
-while IFS= read -r rel; do
-  path=$(cd flang/self/bootstrap && realpath -m --relative-to="$ROOT" "$rel")
+while IFS= read -r path; do
+  [ "$path" = "$ENTRY" ] && continue
   decls "$path" >>"$TMP/base.decl"
-done < <(grep '^  использует ' "$ENTRY" | grep -o 'из "[^"]*"' | sed 's/^из "//; s/"$//')
+done < <(node --input-type=module -e '
+  import { замыкание } from "./flang/scripts/link-collision-guard.mjs"
+  const { порядок, пропали } = замыкание(process.argv[1])
+  if (пропали.length > 0) {
+    process.stderr.write("НЕ РАЗРЕШЕНЫ ввозы: " + пропали.join(", ") + "\n")
+    process.exit(3)
+  }
+  for (const файл of порядок) console.log(файл.путь)
+' "$ENTRY")
 
 # База пуста — значит смотреть было НЕЧЕМ, а не «столкновений нет». Раньше
 # здесь звался `flang ast -`, которого у двоичного нет: он уходил кодом 2,
@@ -77,7 +97,7 @@ if [ ! -s "$TMP/base.decl" ]; then
 fi
 sort -t"$(printf '\t')" -k1,1 -u "$TMP/base.decl" -o "$TMP/base.decl"
 
-printf 'объявлений в базе (свои у пятнадцати модулей): %s\n\n' "$(wc -l <"$TMP/base.decl")"
+printf 'объявлений в базе (свои у модулей замыкания): %s\n\n' "$(wc -l <"$TMP/base.decl")"
 printf '%-12s %10s %10s %10s\n' цель столкнулось одинаковых разошлось
 for module in emit-go emit-rust emit-python emit-java emit-csharp emit-elixir emit-js; do
   decls "flang/self/$module.flang" >"$TMP/t.decl"

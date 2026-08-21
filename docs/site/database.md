@@ -40,12 +40,25 @@ The PostgreSQL conversation lives in two files.
 
 | file | what is in it | lines | functions | examples |
 | --- | --- | ---: | ---: | ---: |
+| `flang/stdlib/provod.flang` | the shared half: octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
 | `flang/stdlib/postgres.flang` | protocol version 3.0: client messages built, server messages parsed | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
 | `flang/examples/db/postgres-plan.flang` | the whole five-step conversation | {{план.строк}} | | {{план.примеров}} |
 
 All {{база.тотальных}} functions of the module are total: termination of each is
-proved by the compiler, not promised. The module imports nothing, so it is
-checked on its own.
+proved by the compiler, not promised.
+
+There are two library files rather than one, and that is the answer to "what
+about other databases". `provod.flang` holds {{провод.функций}} functions that
+know nothing about PostgreSQL — nor about databases at all: an octet, a
+network-order integer, a NUL-terminated string, cutting a stream into pieces. A
+second driver takes them as they stand.
+
+`postgres.flang` keeps {{база.функций}}. Of those, 39 are about the PostgreSQL
+protocol itself — message tags, the protocol version, column type numbers — and
+the remaining 13 are about the shape of an ANSWER (rows, a refusal, a completion
+tag) and would suit any database. They stay where they are until a second driver
+stands next to them: generalising from one example costs more than waiting for
+the second.
 
 The five steps are what one writes a driver for: startup and login, creating a
 table, an insert with parameters (`$1`, `$2`), a select, and a refusal on a

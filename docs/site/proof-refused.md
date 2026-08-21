@@ -1,14 +1,20 @@
 # The kernel refused: whose mistake is it
 
-This page tells you what stands behind every refusal from the proof kernel, so
-that the code in the diagnostic tells you whether the mistake is yours or the
-boundary of the language. The kernel has exactly {{отказы.всего}} refusals:
-{{отказы.обязательств}} say the theorem does not line up with the function and
-are fixed inside the theorem; {{отказы.вывода}} say the derivation was not
-built, and half of those name a limit the language does not cross today.
+This page tells you what every refusal from the proof kernel means, so that the
+code alone tells you whether the mistake is yours or the boundary of the
+language. There are exactly {{отказы.всего}} refusals, and here they all are:
+`FLANG_PROOF_NO_GOAL`, `FLANG_PROOF_AMBIGUOUS`, `FLANG_PROOF_DUPLICATE`,
+`FLANG_PROOF_CLAIM_MISMATCH`, `FLANG_PROOF_UNFINISHED`,
+`FLANG_PROOF_UNKNOWN_VAR`, `FLANG_PROOF_VAR_TYPE`, `FLANG_PROOF_STEP`,
+`FLANG_PROOF_INDUCTION_STEP`, `FLANG_PROOF_INDUCTION_TYPE`,
+`FLANG_PROOF_INDUCTION_BRANCH`, `FLANG_PROOF_INDUCTION_CASES`,
+`FLANG_PROOF_INDUCTION_DESCENT`.
 
-Every refusal below was produced by an actual run: the program that triggers it
-stands next to the text the compiler prints on it.
+The first {{отказы.обязательств}} say the theorem does not line up with the
+function and are fixed inside the theorem; the other {{отказы.вывода}} say the
+derivation was not built, and half of those name a limit the language does not
+cross today. Every refusal below was produced by an actual run: the program that
+triggers it stands next to the text the compiler prints on it.
 
 ## A diagnostic has five parts
 
@@ -147,9 +153,9 @@ the message: it can be either.
 | `FLANG_PROOF_INDUCTION_BRANCH` | the body is written in a form the conclusion cannot be read from | boundary: only `разбор` and `свёртка` yield it |
 | `FLANG_PROOF_INDUCTION_DESCENT` | the descent over `нат` is not strict | boundary: exactly `н минус 1` is read, and nothing else |
 
-### Three boundaries, in the kernel's own words
+### `FLANG_PROOF_INDUCTION_TYPE`: there is no induction over numbers
 
-**There is no induction over numbers.** A type has to carry an induction
+A type has to carry an induction
 principle, and only three things carry one: a declared sum (from its variants),
 the built-in list (from the two patterns that exhaust it), and the `нат`
 segment (from the two ends of the range). The kernel prints the reason together
@@ -166,7 +172,9 @@ FLANG_PROOF_INDUCTION_TYPE … индукция теоремы «двойная 
 
 The way around it is to declare the parameter as `нат` rather than `число`.
 
-**The body has to be one of two forms.** To build the conclusion of a case, the
+### `FLANG_PROOF_INDUCTION_BRANCH`: the body has to be one of two forms
+
+To build the conclusion of a case, the
 kernel needs to know what `результат` becomes in that case, and it reads that
 from the function body:
 
@@ -181,7 +189,9 @@ FLANG_PROOF_INDUCTION_BRANCH … тело функции «Штраф» не р�
 The way around it is to rewrite the body as a `разбор` over the variable the
 induction runs on.
 
-**The descent is read as exactly one.** For the `нат` segment the principle
+### `FLANG_PROOF_INDUCTION_DESCENT`: the descent is read as exactly one
+
+For the `нат` segment the principle
 holds because the chain `н, н−1, …` cannot step over the floor, and the kernel
 verifies that in the body:
 
@@ -193,7 +203,7 @@ FLANG_PROOF_INDUCTION_DESCENT … спуск в шаге «Сумма до» н�
 
 There is no way around this one: a step that subtracts two is not proved today.
 
-### Five goal shapes, and a sixth way
+### `FLANG_PROOF_STEP`: five goal shapes, and a sixth way
 
 `FLANG_PROOF_STEP` is the one refusal that lists everything it tried:
 

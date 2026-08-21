@@ -26887,6 +26887,54 @@ fl_status compiler_flang_tekst_gte_js(fl_ctx *ctx, fl_value *result, fl_error *e
 fl_status compiler_flang_tekst_lte_js(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Текст pairSplits JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_pairsplits_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glueCheck JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_gluecheck_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст glue JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_glue_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isTorn JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_istorn_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст isBoundary JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_isboundary_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст findAligned JS».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_findaligned_js(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Текст concat JS».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -58534,6 +58582,54 @@ fl_status compiler_flang_svesti_vetvleniem(fl_ctx *ctx, fl_value itog, fl_value 
  * @return значение
  */
 fl_status compiler_flang_est_dopuscheniem(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это конъюнкция допущения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_konyunkciya_dopuscheniya(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Предел расщепления».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «нат»
+ */
+fl_status compiler_flang_predel_rasschepleniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слить конъюнкты».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sleva — «слева»: список: «Значение»
+ * @param sprava — «справа»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_slit_konyunkty(fl_ctx *ctx, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Конъюнкты допущения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param fakt — «факт»: «Значение»
+ * @param glubina — «глубина»: «нат»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_konyunkty_dopuscheniya(fl_ctx *ctx, fl_value fakt, fl_value glubina, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Расщепить допущения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести правилами».

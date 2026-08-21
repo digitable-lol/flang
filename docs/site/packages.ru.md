@@ -203,12 +203,15 @@ $ flang check shop.flang
 ```
 
 Это же и ответ на «соберётся ли на другой машине»: перенесите два файла — и
-соберётся. Сверить это можно у себя — напечатать программу в C из пакета и из
-исходников и сравнить:
+соберётся.
+
+Сверить, что из пакета выходит то же самое, что из исходников, можно у себя:
+напечатайте программу дважды — рядом с пакетом и рядом с исходниками — и
+сравните каталоги.
 
 ```bash
-flang emit shop.flang --target c --out ./iz-paketa
-flang emit ../ishodniki/shop.flang --target c --out ./iz-ishodnikov
+flang emit shop.flang --target c --out ./iz-paketa    # там, где лежит пакет
+flang emit shop.flang --target c --out ./iz-ishodnikov  # там, где лежат исходники
 diff -r ./iz-paketa ./iz-ishodnikov && echo совпало
 ```
 

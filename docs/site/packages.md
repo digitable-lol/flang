@@ -205,12 +205,15 @@ $ flang check shop.flang
 ```
 
 That is also the answer to "will it build on another machine": move two files and
-it builds. You can check it yourself — emit the program to C from the package and
-from the sources, and compare:
+it builds.
+
+To check that the package yields the same thing as the sources, emit the program
+twice — once next to the package, once next to the sources — and compare the
+directories.
 
 ```bash
-flang emit shop.flang --target c --out ./from-package
-flang emit ../sources/shop.flang --target c --out ./from-sources
+flang emit shop.flang --target c --out ./from-package    # where the package lives
+flang emit shop.flang --target c --out ./from-sources    # where the sources live
 diff -r ./from-package ./from-sources && echo same
 ```
 

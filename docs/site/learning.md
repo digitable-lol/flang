@@ -108,9 +108,11 @@ This is the middle of the language, and it is worth the longest stop.
 The short truth the step stands here for: **termination is proved in bulk,
 behaviour rarely.** Of the claims about behaviour, {{утверждения.высказано}} are
 stated and {{утверждения.доказано}} are proved by the kernel; the rest are
-checked by running a grid of values. Of the library's ordinary functions the
-kernel closes 2 out of 20, and of the theorems written by a human it has
-accepted none.
+checked by running a grid of values. On a sample of twenty library functions the
+kernel proves something for 14 and something substantive for 10: the rest is
+proved against a stub body too, so it says nothing about that function — only
+about any function with that signature. The figure comes from a run:
+`./ярлык proof:20`.
 
 ## 7. Talking to the world
 

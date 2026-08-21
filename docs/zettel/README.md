@@ -379,6 +379,8 @@
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)
 - [Поле записи отмывало значение из-за симметричного сравнения типов](a-record-field-laundered-a-value.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
+- [Печать плана обещана наизнанку: семь целей молча забывают план, восьмая отказывает не про него](pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md)
+- [Веер оснастки считается по ядрам, а кончается память](veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Проверка замкнутости цели стояла только на ветви индукции, и прямой шаг «по примеру» шёл мимо неё](closedness-check-guarded-only-the-induction-branch.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)

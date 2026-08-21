@@ -16,7 +16,7 @@ test file, and they run on every check of the file.
 
 ## Try it in five minutes
 
-**1. Install.** One command; no Node, no building from source:
+**1. Install.** One command, no building from source:
 
 ```bash
 brew install digitable-lol/tap/flang
@@ -93,7 +93,6 @@ in the text rather than in a footnote.
 | **[Processes and supervision](processes.html)** | processes, supervision, back pressure, a scheduler written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
 | **[The categorical surface](categories.html)** | monoid, monad, functor, category, isomorphism | the shape is proved, the laws are checked on a grid, and the binary has no judge for them |
 | **Library** | {{библиотека.файлов}} modules, {{библиотека.функций}} functions | not every claim about behaviour is proved, see below |
-| **Browser** | an application written entirely in flang: `web/app/` | the page looks for modules of the removed second implementation and does not come up today |
 
 ## How this differs from Coq, Agda and Lean
 
@@ -157,8 +156,8 @@ pitch, but not one of them has been dropped:
 - [Your first program](getting-started.html) — if you skipped the path above.
 - [Releases](releases.html) — what arrived in the language since the previous
   version: what appeared, what changed, what broke.
-- [What is proved and what is only checked](../overview.html) — in Russian; the
-  line is drawn explicitly, and it matters more than any number on this page.
+- [What is proved and what is not](what-is-proved.html) — the line is drawn
+  explicitly, and it matters more than any number on this page.
 - [Roadmap](roadmap.html) — done, in progress, not started, decided against. No
   dates.
 - [How to keep learning the language](learning.html) — a reading order, for when

@@ -343,6 +343,13 @@ What is actually reachable:
 | The same, but bounded by a numeric literal | 0 |
 | Total | **75** |
 
+These figures were taken from a run over the corpus, but there is no command in
+the tree to reproduce them today, and no note recording that run either. The
+neighbouring note [[dva-pravila-zavershaemosti-vmeste-dayut-574]] gives **54**
+for size-change graphs, not 47 — the number was taken twice and disagreed. Trust
+the order of magnitude and the conclusion "not 574 but a few dozen", not the
+digits themselves.
+
 Not 574 but 75. The first rule is already written in the language itself and
 checked by five programs: two legitimate ones it is meant to cover turned green,
 and three forgeries — including the one above — stayed refused. The zero in the

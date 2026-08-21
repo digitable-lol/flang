@@ -1,0 +1,153 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# ПЕРЕПИСЬ УТВЕРЖДЕНИЙ БИБЛИОТЕКИ ПО ВИДУ ЦЕЛИ: сколько их какого вида и
+# сколько из них доказано СЕГОДНЯ.
+#
+# ── Почему это скрипт, а не список в документе ──────────────────────────────
+# Список, набранный руками, устареет за сутки: библиотека растёт, ядро учится
+# новым правилам, и вчерашнее число «доказано 77» сегодня уже неправда. Здесь
+# обе половины спрашиваются у самого языка:
+#
+#   ВИД ЦЕЛИ  — с разбора (`bootstrap/flang ast`): читается форма выражения
+#               постусловия, а не текст строки. `грепом` это не считается:
+#               одна и та же мысль пишется десятком записей.
+#   ВЕРДИКТ   — оттуда же, откуда его берёт `flang check`
+#               (`bootstrap/flang check ФАЙЛ --proof`), из раздела
+#               «что высказано и чем это несётся».
+#
+# ── Почему уникальность по паре (функция, утверждение) ──────────────────────
+# Разбор связывает импорты, и одно и то же утверждение приезжает в разбор
+# каждого модуля, который зовёт его функцию. Без склейки `lists.flang`
+# посчитался бы столько раз, сколько модулей его зовут.
+#
+# ── Охрана снимается, потому что она не вид цели ────────────────────────────
+# `если <охрана о входе> то <настоящая цель> иначе да` — оберег от «не числа» и
+# от пустого входа, а не вид. Настоящий вид сидит внутри, и перепись смотрит
+# туда. Сколько охран было снято, печатается отдельным числом.
+#
+# Прогон:  sh scripts/perepis-celey.sh [каталог]
+# Имена переменных оболочки здесь латиницей нарочно: `dash` (то есть `sh` на
+# этой машине) кириллических имён переменных не принимает вовсе.
+# По умолчанию каталог — flang/stdlib. Ответ — таблица на стандартный вывод.
+#
+# Модуль, у которого ведомость не поместилась в память, называется поимённо в
+# строке «НЕ ИЗМЕРЕН» и в знаменатель не идёт: молчание о нём читалось бы как
+# «утверждений там нет».
+set -u
+koren=$(cd "$(dirname "$0")/.." && pwd)
+katalog=${1:-flang/stdlib}
+rab=$(mktemp -d -p /srv/tmp perepis.XXXXXX)
+trap 'rm -rf "$rab"' EXIT
+
+cd "$koren" || exit 1
+for fajl in "$katalog"/*.flang; do
+  imya=$(basename "$fajl" .flang)
+  ./bootstrap/flang ast "$fajl" > "$rab/ast-$imya.json" 2>"$rab/ast-$imya.err"
+  ./bootstrap/flang check "$fajl" --proof > "$rab/led-$imya.txt" 2>&1
+done
+
+python3 - "$rab" <<'PYEOF'
+# -*- coding: utf-8 -*-
+import json, os, re, sys, collections
+РАБ = sys.argv[1]
+
+def это(н, в): return isinstance(н, dict) and н.get("kind") == в
+def лит(н): return это(н, "literal")
+def истина(н): return лит(н) and н.get("value") is True
+def ноль(н): return лит(н) and н.get("value") == 0
+def длина(н): return это(н, "builtin") and н.get("name") in ("длина", "length")
+def вызов(н): return это(н, "call")
+
+def снять_охрану(e):
+    сколько = 0
+    while это(e, "if") and сколько < 8:
+        if истина(e.get("else")): e = e.get("then")
+        elif истина(e.get("then")): e = e.get("else")
+        else: break
+        сколько += 1
+    return e, сколько
+
+def вид(e):
+    if not isinstance(e, dict): return "прочее"
+    k = e.get("kind")
+    if k == "binary":
+        op, л, п = e.get("op"), e.get("left"), e.get("right")
+        if op == "and": return "связка: конъюнкция"
+        if op == "or":  return "связка: дизъюнкция"
+        if op == "gte":
+            if ноль(п): return "граница: не меньше нуля"
+            if лит(п):  return "граница: не меньше литерала"
+            return "граница: не меньше терма"
+        if op == "lte":
+            if лит(п): return "граница: не больше литерала"
+            if лит(л): return "граница: литерал не больше терма"
+            return "граница: не больше терма"
+        if op in ("gt", "lt"): return "граница: строгое неравенство"
+        if op == "eq":
+            if вызов(л) and вызов(п): return "равенство: круг (вызов равен вызову)"
+            if вызов(л) or вызов(п):  return "равенство: вызов равен терму"
+            if длина(л) and длина(п): return "равенство: длин (сохранение)"
+            if лит(п) or лит(л):      return "равенство: с литералом"
+            return "равенство: термов"
+        if op == "neq": return "равенство: отрицание равенства"
+        return "сравнение: " + str(op)
+    if k == "builtin":
+        и = e.get("name")
+        if и in ("содержит", "contains"): return "принадлежность: содержит"
+        if и in ("не", "not"): return "отрицание"
+        return "встроенное: " + str(и)
+    if k == "if":      return "условное: дерево условий"
+    if k == "call":    return "голый вызов предиката"
+    if k == "var":     return "голое имя"
+    if k == "literal": return "цель-литерал"
+    if k == "match":   return "условное: разбор"
+    if k == "let":     return "прочее: пусть"
+    return "прочее: " + str(k)
+
+виды, охран = {}, 0
+for ф in sorted(os.listdir(РАБ)):
+    if not (ф.startswith("ast-") and ф.endswith(".json")): continue
+    try: d = json.load(open(os.path.join(РАБ, ф), encoding="utf-8"))
+    except Exception: continue
+    for функция in d.get("functions", []):
+        for п in функция.get("postconditions", []) or []:
+            ядро, с = снять_охрану(п.get("expr"))
+            ключ = (функция["name"], п["name"])
+            if ключ not in виды: охран += 1 if с else 0
+            виды[ключ] = вид(ядро)
+
+СТРОКА = re.compile(r"^\s{2}постусловие «(.+?)» функции «(.+?)» — (.*)$")
+def вердикт(т):
+    if т.startswith("доказано индукцией"): return "индукцией"
+    if т.startswith("доказано"):           return "доказано"
+    if т.startswith("сетка"):              return "на сетке"
+    if т.startswith("объявлено, не доказано"): return "объявлено"
+    return "НАРУШЕНО"
+
+вердикты, измерено, неизмерено = {}, 0, []
+for ф in sorted(os.listdir(РАБ)):
+    if not (ф.startswith("led-") and ф.endswith(".txt")): continue
+    т = open(os.path.join(РАБ, ф), encoding="utf-8", errors="replace").read()
+    if "что высказано и чем это несётся" not in т:
+        неизмерено.append(ф[4:-4]); continue
+    измерено += 1
+    for стр in т.splitlines():
+        м = СТРОКА.match(стр)
+        if м: вердикты[(м.group(2), м.group(1))] = вердикт(м.group(3))
+
+for имя in неизмерено: print("НЕ ИЗМЕРЕН:", имя)
+общий = set(виды) & set(вердикты)
+print(f"модулей измерено: {измерено}, не измерено: {len(неизмерено)}")
+print(f"утверждений в разборе: {len(виды)}; с вердиктом: {len(общий)}; охран «иначе да» снято: {охран}")
+т = collections.defaultdict(collections.Counter)
+for к in общий: т[виды[к]][вердикты[к]] += 1
+print()
+print(f"{'вид цели':46} {'всего':>5} {'дказ':>5} {'инд':>4} {'сетка':>6} {'объявл':>7}")
+итого = collections.Counter()
+for в, c in sorted(т.items(), key=lambda kv: -sum(kv[1].values())):
+    итого.update(c)
+    print(f"{в:46} {sum(c.values()):5d} {c['доказано']:5d} {c['индукцией']:4d} {c['на сетке']:6d} {c['объявлено']:7d}")
+print(f"{'ИТОГО':46} {sum(итого.values()):5d} {итого['доказано']:5d} {итого['индукцией']:4d} {итого['на сетке']:6d} {итого['объявлено']:7d}")
+PYEOF

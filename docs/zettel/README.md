@@ -392,6 +392,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Файл проверок, упавший на загрузке, в отчёте прогона неотличим от отсутствующего](nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.md)
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [У напечатанной программы две двери, а граница входа стояла только у одной](printed-program-has-two-doors.md)

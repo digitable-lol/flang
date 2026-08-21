@@ -96,6 +96,30 @@ categories, morphisms. … Ответ «замечаний нет» здесь �
 двух реализаций больше не с чем — реализация на JavaScript удалена, — и вопрос
 «примет ли молча» спрашивается теперь прогоном подделок, а не чтением текстов.
 
-Связано: [[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
+**Дополнение: правила не потеряны — они не подключены, и это меняет размер
+работы.** Здесь и в соседних заметках разрыв читается как «проверок нет и писать
+их заново». Замер говорит другое: правила поверхности переписаны на самом flang
+и лежат в дереве — `flang/self/monoid.flang` (822 строки), `monad.flang` (620),
+`iso.flang` (334), `functor.flang` (751), `sets.flang` (1026), `setoid.flang`
+(1727), `svoystva.flang` (386), `grid.flang` (443) и четыре спрашивающих слоя
+`law-oracle`, `functor-oracle`, `setoid-oracle`, `sets-oracle` (1786 суммарно).
+Двенадцать файлов, **7 895 строк**.
+
+Ни один не входит в сборку двоичного. Замыкание по слову `использует` от
+`flang/self/bootstrap/compiler.flang` — **29 файлов**, и этих двенадцати среди
+них нет; между собой они подключаются (`setoid` зовёт `functor` и `monoid`,
+`monad` зовёт `sets`), то есть образуют собственный остров рядом с компилятором.
+
+Значит вопрос «почему двоичный не судит поверхность» — не про ненаписанное
+правило, а про строку `использует`, которой нет. Но одной строкой не кончится:
+**семь из двенадцати слоёв сами не проходят `flang check`** — `monad`, `sets`,
+`grid`, `law-oracle`, `functor-oracle`, `setoid-oracle`, `sets-oracle` дают
+код 1; проходят `monoid`, `iso`, `functor`, `setoid`, `svoystva`.
+
+**Чем подтверждено.** Обход `использует` от `compiler.flang` прогоном, ветка
+`u/spec-cat` от `github/main` (`702a3602`). Размеры — `wc -l`.
+
+Связано: [[put-v-obratnyh-kavychkah-ne-svyeryaetsya-s-derevom]],
+[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
 [[cli-help-diverges-between-the-two-implementations]],
 [[checks-that-stopped-comparing]], [[the-installed-path-was-never-walked-end-to-end]]

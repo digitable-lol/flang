@@ -671,6 +671,50 @@ export function таблицаСлов() {
   return памятьТаблицы
 }
 
+/* ЧЕТЫРЕ ОБЪЯВЛЕНИЯ, ПОТЕРЯННЫЕ СЛИЯНИЕМ И ВЕРНУТЫЕ СЮДА ДОСЛОВНО.
+   Слияние двух редакций этого файла (df055a6b, «канал к двоичному сращён из
+   двух независимых редакций») унесло `вЗначение`, `изЗначения`,
+   `памятьОтветов` и `ключВопроса`, оставив четыре обращения к ним ниже. Файл
+   при этом разбирается без единого замечания — имена не связываются только при
+   РАБОТЕ, — и обе звавшие их проверки падали одинаково:
+
+     node flang/scripts/target-occupied-guard.mjs
+     node flang/scripts/weight-gain.mjs
+       ReferenceError: ключВопроса is not defined
+         at спроситьПачкой (flang/scripts/dvoichnyy.mjs:686)
+
+   Текст восстановлен из соседних рабочих копий того же дерева, где он уцелел
+   (например /srv/flang-rabota/svod-st2, строки 349—377), а не написан заново. */
+
+/** Значение языка в вид прогонщика: 5 → {"n":"5"}, "а" → {"s":"а"}. */
+export function вЗначение(что) {
+  if (что === null || что === undefined) return null
+  if (typeof что === "boolean") return что
+  if (typeof что === "number") return { n: Object.is(что, -0) ? "-0" : String(что) }
+  if (typeof что === "string") return { s: что }
+  if (Array.isArray(что)) return { l: что.map((э) => вЗначение(э)) }
+  if (typeof что === "object") return { r: Object.entries(что).map(([ключ, значение]) => [ключ, вЗначение(значение)]) }
+  throw new Error(`нечего послать двоичному: ${typeof что}`)
+}
+
+/** Ответ прогонщика обратно в значение JavaScript. */
+export function изЗначения(ответ) {
+  if (ответ === null || ответ === undefined) return null
+  if (typeof ответ === "boolean") return ответ
+  if (typeof ответ !== "object") return ответ
+  if (Object.hasOwn(ответ, "n")) return Number(ответ.n)
+  if (Object.hasOwn(ответ, "s")) return ответ.s
+  if (Object.hasOwn(ответ, "l")) return ответ.l.map((э) => изЗначения(э))
+  if (Object.hasOwn(ответ, "r")) return Object.fromEntries(ответ.r.map(([ключ, значение]) => [ключ, изЗначения(значение)]))
+  if (Object.hasOwn(ответ, "v")) {
+    return { вариант: ответ.v, поля: Object.fromEntries((ответ.f ?? []).map(([к, з]) => [к, изЗначения(з)])) }
+  }
+  return ответ
+}
+
+const памятьОтветов = new Map()
+const ключВопроса = (имя, аргументы) => `${имя} ${JSON.stringify(аргументы)}`
+
 /** Один вопрос. Ответ помнится: тот же вопрос второй раз процесса не стоит. */
 export function спросить(имя, ...аргументы) {
   return спроситьПачкой([{ имя, аргументы }])[0]

@@ -42,8 +42,16 @@
 - [Отметка слоя типов в дерево не выезжает: места проверок считаются только внутри компилятора, снаружи выйдет на 56 % больше](otmetka-sloya-tipov-ne-vyezzhaet-v-derevo-poetomu-schitat-mozhno-tolko-vnutri.md)
 - [Точный шаг по `нат` доказывает только прямую рекурсию: цикл через три функции ядро отвергает](tochnyy-shag-dokazyvaet-tolko-pryamuyu-rekursiyu.md)
 
+- [Язык доказательств у flang ЕСТЬ; чего в нём нет — шага, несущего промежуточный факт](yazyk-dokazatelstv-est-a-shag-ne-nesyot-fakta.md)
+- [Цепочка шагов уже копит известное — и тратит его только на текст отказа](cepochka-kopit-izvestnoe-i-tratit-ego-na-tekst-otkaza.md)
+- [Промежуточный факт открыл дверь, а взять через неё в библиотеке нечего: 1545 цепочек, ноль](promezhutochnyy-fakt-otkryl-dver-a-vzyat-cherez-neyo-nechego.md)
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
+- [Квантор по соседним парам выразим сегодня и работает сторожем — стена в доказуемости](kvantor-po-sosednim-param-vyrazim-segodnya-no-nedokazuem.md)
+- [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти](kvantor-po-sosednim-param-stoil-dvuh-faylov-vmesto-dvadcati-devyati.md)
+- [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](uporyadochennost-nastoyashchey-sortirovki-lozhna-na-ne-chisle.md)
+- [Мера содержательности слепа к утверждениям о порядке: пустой список упорядочен](mera-soderzhatelnosti-slepa-k-utverzhdeniyam-o-poryadke.md)
+- [Полная упорядоченность сортировки упирается во вторую стену: лемме нужна добавочная переменная-порог](lemma-s-dobavochnym-porogom-postusloviem-nevyrazima.md)
 - [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест](equality-on-a-type-parameter-is-banned-only-in-bodies.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)
 - [Поиск доказательства не должен ничему верить](proof-search-must-trust-nothing.md)
@@ -51,6 +59,7 @@
 - [Цена доказательства измерена: 0 из 20, и тесты нашли четыре ошибки против нуля](proof-cost-0-of-20.md)
 - [Принципа индукции нет ни у одного встроенного типа](no-induction-for-builtin-types.md)
 - [Узкое место переехало: принцип индукции появился, а цепляться ему не за что](bottleneck-moved-to-body-shape.md)
+- [Индукция по строке закрыла одно утверждение на весь корпус, а не сотню: за стеной стоит вторая](indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.md)
 - [Тавтология закрывается даром, поэтому число «доказано без теоремы» само по себе ничего не значит](tautologies-close-for-free.md)
 - [Форма, которую разбор уже отвергает, — самое дешёвое место для нового синтаксиса, и цена измерена](occupy-a-form-the-parser-already-rejects.md)
 - [Новая форма языка, не доехавшая до генераторов кода, расходится с типами молча](a-language-form-must-reach-code-generation.md)
@@ -59,14 +68,14 @@
 - [Узкое место переехало третий раз: мешает форма утверждения, а не форма тела](bottleneck-moved-to-claim-shape.md)
 - [Правило неотрицательности читает объявленное имя, но не вызов и не поле — и на этом обрывается цепочка лемм](rule-one-does-not-read-calls-and-fields.md)
 - [Постусловие вызванной функции годится ядру в факты только ПОСЛЕ того, как оно доказано, — и этим же закрыт круг](callee-postcondition-is-a-fact-only-after-it-is-proved.md)
-- [Постусловие вычисляется и при вложенных вызовах, поэтому граф «кто кого называет» обязан быть без циклов — и часть функций сказать о себе не может вовсе](postcondition-runs-on-nested-calls-so-some-functions-cannot-be-stated-about.md)
+- [Постусловие вычисляется и при вложенных вызовах, поэтому граф «кто кого называет» обязан быть без циклов — и часть функций сказать о себе не может вовсе](postcondition-runs-on-nested-calls-so-some-functions-cannot-be-stated-about.md) — требование «без циклов» отменено 20 августа: контракт не проверяется внутри контракта
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
 - [Файл, записанный на четырёх поверхностях, доказательство нести не может](proof-words-live-on-two-surfaces-of-four.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Ядро доказало ровно те утверждения библиотеки HTTP и JSON, которые не говорят ни о чём: 9 из 9 даровые](proved-claims-in-http-and-json-were-all-gratis.md)
 - [Содержательных доказанных утверждений пишется много, если выбирать форму утверждения: 53 из 53 в корпусе спек](substantive-claims-are-provable-when-you-pick-the-shape.md)
-- [Круговое тождество «разобрал и собрал обратно» постусловием не выразить: мешают две разные стены](round-trip-claims-are-unstatable-in-postconditions.md)
+- [Круговое тождество «разобрал и собрал обратно» постусловием не выразить: мешают две разные стены](round-trip-claims-are-unstatable-in-postconditions.md) — обе стены сняты 20 августа, поправка внутри: круг ВЫРАЗИМ, но не доказан
 - [Цели «равно» упёрлись в порядок слагаемых, а не в отсутствие индукции](ravenstvo-uperlos-v-poryadok-slagaemyh-a-ne-v-indukciyu.md)
 - [Перенесённое правило состоит из ТРЁХ частей: самого правила, места вызова и текста отказа](porting-a-rule-means-porting-its-refusal-text.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)
@@ -82,16 +91,29 @@
 - [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное](nat-snimaet-storozha-tolko-esli-vyzyvayushchiy-uzhe-daet-naturalnoe.md)
 - [Отвергнутая теорема заслоняет прямой путь](a-rejected-theorem-blocks-the-direct-path.md)
 - [Допущение индукции строится по месту вызова](an-induction-hypothesis-must-be-instantiated-at-the-call-site.md)
+- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md) — с дополнением: снято, сортировка вставками доказана, доказано ядром 62 → 65
 - [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
 - [Даровое утверждение узнаётся подменой тела заглушкой: 17 из 32 в двух модулях библиотеки](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
 - [Постусловие считается при каждом вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
 - [Семя в `bootstrap/` отстаёт от исходников ядра: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 - [Доказанное постусловие в напечатанный код больше не едет: цена утверждений на сортировке упала с 3,23× до 2,72×](dokazannoe-postuslovie-ne-pechataetsya.md)
+- [Доказали самое видное утверждение сортировки — цена при работе не сдвинулась: платит не оно](the-guard-that-costs-the-time-is-not-the-one-you-proved.md)
+- [Одно и то же действие, записанное вызовом и встроенной формой, доказывалось по-разному: виноват момент переписки, а не сила правила](one-action-written-two-ways-was-proved-differently.md)
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе: круг «туда и обратно» стал выразим](kontrakt-ne-proveryaetsya-vnutri-kontrakta.md)
+- [Список стен, переписанный руками из отчёта в отчёт, устарел на две трети: из 24 записанных «ядро не берёт» держатся 9](a-hand-copied-wall-list-goes-stale-in-silence.md)
+- [Встроенное `приписать` в рекурсивной ветви `разбор`а рвёт индукцию, а тот же шаг через функцию с доказанным постусловием — не рвёт](builtin-prepend-in-a-recursive-branch-blocks-the-induction-hypothesis.md)
 - [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](cel-konyunkciya-yadru-ne-po-zubam-no-stoit-shesti.md)
 - [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](u-yadra-net-pravila-ne-menshe.md)
 - [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
 - [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](oslablennoe-utverzhdenie-byvaet-nesushchim.md)
+- [Даровое утверждение узнаётся подменой тела заглушкой, и в двух модулях библиотеки таких оказалось 17 из 32](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
+- [Постусловие считается при КАЖДОМ вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](postuslovie-schitaetsya-pri-kazhdom-vyzove.md)
+- [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
+- [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
+- [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
+- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
+- [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ — а сузить их до правильных деревьев нечем](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
+- [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 
 ## Теория категорий
 
@@ -170,6 +192,8 @@
 - [Типизированная ссылка на процесс выражается сегодняшним языком без единой правки компилятора, и подделка с чужим грузом отвергается](typed-process-reference-is-already-expressible.md)
 - [Девяти обработчикам из десяти вытеснение не нужно: срок известен до запуска](nine-handlers-in-ten-need-no-preemption.md)
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
+- [Вычислитель уже держит стек кадров явно — значит пауза стоит не сопрограммы, а двух правок](interpreter-already-has-an-explicit-frame-stack.md)
+- [Счётчик витков в напечатанном коде уже стоит и не стоит ничего: миллиард витков, разница нулевая](printed-reduction-counter-is-free.md)
 
 ## Самораскрутка и метод проверки
 
@@ -185,6 +209,8 @@
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Node ушёл с пути сборки: точку раскрутки печатает сам двоичный, и обе печати совпали байт в байт](node-ushyol-s-puti-sborki.md)
 - [Закоммиченная точка раскрутки отстала от исходников на одну форму языка, и двоичный не проверяет три своих модуля](bootstrap-seed-lags-the-sources-by-one-language-form.md)
+- [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](otkaz-ot-otstavshego-dvoichnogo-nelzya-pripisyvat-proveryaemomu-faylu.md)
+- [Цена подключения категорной поверхности к компилятору — не рост замыкания, а сорок ненаписанных правил](cena-vtaskivaniya-kategornoy-poverhnosti-eto-ne-zamykanie-a-nenapisannye-pravila.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)
@@ -278,6 +304,9 @@
 - [Двоичный `flang lsp` не отвечает, пока стандартный ввод открыт, — и потому редактору не годится, хотя побайтовую сверку проходит](dvoichnyy-lsp-ne-otvechaet-poka-vvod-otkryt.md)
 - [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](tablica-poverhnostey-otstala-na-chetyre-frazy.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор](napechatannye-pravila-podsvetki-proveryayutsya-tolko-samim-redaktorom.md)
+- [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](proverka-tipov-ne-na-puti-tochki-raskrutki.md)
+- [Путь, названный в прозе обратными кавычками, не сверяется с деревом ничем — так контракт категорной поверхности пережил свои файлы на 28 упоминаний](put-v-obratnyh-kavychkah-ne-svyeryaetsya-s-derevom.md)
+- [Семя в `bootstrap/` отстаёт от исходников ядра, и разница видна прямо в отказе: четыре вида цели против пяти](semya-bootstrap-otstayot-ot-yadra.md)
 
 ## Устройство репозитория
 
@@ -317,9 +346,16 @@
 - [Прогонщик двоичного открывает ВСЁ замыкание компилятора — новая команда нужна только там, где у ответа свой вид вывода](progonshchik-dvoichnogo-otkryvaet-vsyo-zamykanie.md)
 - [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](proizvodnye-tablicy-odnogo-fakta-rashodyatsya-molcha.md)
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
+- [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](srok-potomka-u-hozyaina-glavnoe-prepyatstvie-dlya-dolgih-proverok.md)
+- [«Показать» у двоичного отвечает отказом, а прогон продолжается — прежний замер устарел](pokazat-otvechaet-sboem-a-ne-ronyaet-progon.md)
+- [Печать обязана спросить у проверки, а урезанное подмножество — назвать себя числом, а не молчанием](pechat-obyazana-sprosit-u-proverki-a-podmnozhestvo-nazvat.md)
+- [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](surrogat-reshaet-granicu-formy-a-ne-unicode.md)
+- [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](pole-chuzhogo-otveta-beryotsya-po-mestu-a-ne-poiskom-klyucha.md)
+- [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)
 
 ## Найденные ошибки
 
+- [Печать в C ломается на параметре, чьё имя транслитерируется в ключевое слово C — но только у рекурсивной функции](c-backend-emits-a-c-keyword-as-a-parameter-name.md)
 - [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](strochnoe-imya-varianta-v-golom-sluchae-eto-svyazyvanie-imeni.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](nulyarnuyu-funkciyu-nelzya-pozvat-cherez-vvoz.md)
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
@@ -340,7 +376,7 @@
 - [Литерал `"\uD83D"` в любом `.flang` этого дерева ломает сверку самоприменения — и это не чинится](literal-s-odinokim-surrogatom-lomaet-samoprimenenie.md)
 - [У строки flang БЫЛО две меры, и делило формы между ними представление строки у цели печати, а не язык](dve-mery-stroki-delyat-vstroennye-formy.md)
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми](dokazannye-yadrom-utverzhdeniya-pochti-rovno-darovye.md)
-- [Четыре вещи, которых в `обеспечивает` написать нельзя, и одна из них ВЕШАЕТ проверку вместо отказа](chto-nelzya-napisat-v-obespechivaet.md)
+- [Четыре вещи, которых в `обеспечивает` написать нельзя, и одна из них ВЕШАЕТ проверку вместо отказа](chto-nelzya-napisat-v-obespechivaet.md) — перемерено 20 августа: из четырёх осталась одна (`нат минус нат`)
 - [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](celochislennoe-delenie-ne-daet-yadru-nat.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
@@ -361,6 +397,9 @@
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [`git stash` общий на все рабочие деревья](git-stash-is-shared-across-worktrees.md)
+- [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
+- [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](vlozhennyy-esli-v-skobkah-cherez-stroku-ne-razbiraetsya.md)
+- [Когда ствол заменил свою функцию библиотечной, а ветка ту же свою дополнила, обе стороны столкновения неверны](bibliotechnaya-zamena-i-svoyo-dopolnenie-obe-storony-nevernny.md)
 
 ## Отвергнутые пути
 
@@ -371,12 +410,14 @@
 - [Чтение условий `если` закрывает ноль целей](reading-if-conditions-closed-zero-goals.md)
 - [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](paket-npm-ne-uedet-v-podkatalog.md)
 - [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
+- [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
 
 ## Модульность и пакеты
 
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка](biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu.md)
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)
 - [Модуль, не подключённый ни к чему, копит уже занятые имена — и подключить его потом нельзя](dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu.md)
+- [Выборочный ввоз обязан перечислить и те имена, которые зовёт контракт функции, а не только её тело](only-import-must-list-what-the-contract-calls.md)
 - [Адресация по содержимому: версий нет, есть хеши](content-addressing.md)
 - [Unison установлен и измерен: ромб он решает не так, как обещает лозунг](unison-measured.md)
 - [Гипотеза про адресацию по содержимому не работает у нас — и не из-за хешей](names-not-hashes.md)
@@ -395,6 +436,7 @@
 - [Кешировать доказательство сегодня дороже, чем доказать заново: 111 мс против 145 мс на всём корпусе](keshirovat-dokazatelstvo-dorozhe-chem-dokazat.md)
 - [Предел шагов у прогона примеров — один на весь запуск, и примеры ввезённых модулей считаются в него же](one-step-budget-covers-a-whole-run-including-imported-examples.md)
 - [Столкновения имён в замыкании компилятора считаются обходом текста за 0,1 с — там же, где связывание отвечает за 6 минут](stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy.md)
+- [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего, и до правки его не видно ни одним пересечением множеств](pereimenovanie-razvodit-odno-stolknovenie-i-sozdayot-sleduyuschee.md)
 
 ## Внешнее и объёмы
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы](truba-soedineniya-vozit-tekst-a-ne-oktety.md)
@@ -472,3 +514,15 @@
    получается адрес страницы `knowledge-<слаг>.html`.
 
 Добавили заметку — впишите строку в этот индекс.
+- [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
+- [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
+- [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
+- [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
+- [Динамический ввоз прячет мёртвый файл от обхода по «import»](dynamic-import-hides-a-dead-file.md)
+- [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
+- [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
+- [Слияние двух редакций одного файла роняет общий кусок, и разбор этого не видит](merging-two-editions-drops-the-shared-part.md)
+- [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
+- [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
+- [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
+- [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)

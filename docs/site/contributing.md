@@ -49,9 +49,10 @@ as often as "done". A reader who came to write in the language is answered by
 
 - [Language specification — the contract](../spec.html) — forms, values, types,
   diagnostic codes, implementation layers.
-- [Categories and functors — draft contract](../spec-cat.html) — its first line
-  calls it a draft for approval, which is why it stands here and not in the main
-  menu.
+- [Categories and functors — the contract](../spec-cat.html) — category,
+  functor, monoid, monad, isomorphism and natural transformation: the written
+  form, the diagnostic codes, and a by-name list of what the binary does not
+  judge.
 - [Processes and fault tolerance — the contract](../spec-conc.html) — the whole
   process model, including the honesty border.
 - [Kernel specification](../spec-proof.html) — what the proof kernel accepts.

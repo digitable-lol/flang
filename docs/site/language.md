@@ -705,7 +705,7 @@ Edges, worth knowing before you start:
 
 The full contract: [Categories and functors](../spec-cat.html) (in Russian).
 Where "proved" ends and "checked" begins: [What is proved and what is
-checked](../overview.html) (in Russian).
+not](what-is-proved.html).
 
 ## Monads and `in monad`
 

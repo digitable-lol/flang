@@ -77,24 +77,22 @@ consumes 23 726 585 steps, typechecking 3 919 602, the termination analysis
 222 863, and the proof kernel 56 355 645. The previous limit of 40 000 000 would
 have collapsed even without the kernel: linking alone takes more than half.
 
-## There is no second opinion about the language any more
+## What this circle does NOT mean
 
 This is the main caveat on the page, and it must not be skipped.
 
-There used to be two implementations: one in JavaScript, which served as the
-definition of behaviour, and one in flang itself. Comparing them caught what no
-set of checks catches: **a disagreement between two independent readings of one
-rule**. The JavaScript implementation is no longer in the tree.
+Two binaries agreeing says: the compiler reads the language the same way the
+compiler that emitted these sources read it. **It does not say the language is
+read correctly.** A mistake written the same way into the sources and into the
+seed survives the circle unnoticed: the circle compares an implementation with
+itself.
 
-What stands in its place: the previous implementation's answers are frozen in
-tables (`flang/test/fixtures/`). Comparing against them catches a **regression** —
-today's compiler disagreeing with a recorded answer — and nothing beyond that. A
-disagreement between two independent implementations is not caught: there is
-nothing to compare against.
-
-The bootstrap circle never depended on the second implementation and does not
-now: the compiler emits itself. What has it open today is a different reason —
-the seed has fallen behind — not the removal.
+What catches that kind of mistake in the tree are the frozen answer tables
+(`flang/test/fixtures/`): today's compiler is run against them, and disagreeing
+with a recorded answer is red. That catches a **regression** — "yesterday it
+answered this, today it answers that" — and nothing beyond. There is one
+implementation of the language, and no independent reading of the same rules to
+compare its answers against.
 
 ## What the circle does not check
 

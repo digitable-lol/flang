@@ -120,19 +120,24 @@ each got both tests and a proof.
 | Lines | 390 | 196 |
 | Time | 7 min 49 s | 9 min 39 s |
 | Real bugs found | **4** | 0 |
-| Accepted by the kernel | — | **2 of 20** |
 
-Read that table as: **today a proof costs more than tests and finds less**. Four
-more claims were closed only after they had been weakened, which makes **6 of
-20** counting those. **Not one human-written theorem has been accepted by the
-kernel.**
+Read that table as: **a proof costs more than tests and finds less.**
 
-The first pass gave **0 of 20**, and that was the most useful number in the
-measurement: it showed the obstacle was not where it had been assumed. In 13
-cases out of 15 the cause was the same — **no built-in type had an induction
-principle**: not the list, not the string, not the number. Induction was added,
-the measurement was repeated over the same twenty functions, and the zero became
-a two.
+How many of those same twenty functions the kernel closes is counted by a
+separate run, and counted mechanically — by replacing the body with a stub, not
+by keeping a list of names:
+
+```
+./ярлык proof:20
+```
+
+On today's tree it answers: something is proved for **14 functions of 20**,
+something substantive for **10**. By claim: 11 substantive, 6 weakened (proved
+against a stub body too, so true of any function with that signature), 1 free
+(the body was copied into the postcondition), 2 not checked.
+
+That number moves up and down with the kernel, so it is not typed into prose by
+hand — it is taken from a run.
 
 The measurement is a ruler: it shows whether the language is moving toward the
 goal or merely growing features. The goal is one line:

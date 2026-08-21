@@ -455,13 +455,6 @@ for (const [имя, текст] of СЦЕНАРИЙ) {
 Non-termination lives in the host's loop, while the handler always terminates —
 that is not a hope but an output of `check`.
 
-**A caveat about the file next door.** `serve.mjs` sits beside it running the
-same scenario, and it goes NOT through the emitted module but through the
-evaluator of the second implementation of the language. That implementation is no
-longer in the tree, and the scenario does not come up along that road today. Read
-`serve.mjs` as a model of the host's SHAPE — state by value, loop on the outside
-— not as a working path: the working path of embedding is one, and it is `emit`.
-
 ## Any language: the runner over a pipe
 
 If there is no target for your language, or you would rather not bind by source,
@@ -499,10 +492,6 @@ the runner answers earlier and more precisely — «аргумент «n» не 
 Written not for completeness but because a promise read wider than it was made is
 a future breakage in your code.
 
-- **`flang/src/*.mjs` is not a library.** The compiler's internal modules can be
-  imported, but at your own risk: they are
-  [not promised](../what-blocks-1-0.md) and change without warning. There is one
-  promised road for embedding, and it is `emit`.
 - **The bytes of the emitted code are not promised.** The promise is behavioural:
   the same program yields the same values and the same refusal codes, not the
   same bytes. The generator is being optimised, and the files will differ.

@@ -229,7 +229,11 @@ say "  все литералы закрыты"
 [ "$mode" = literals ] && exit 0
 
 BINARY=$(pick_binary)
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/raskrutka.XXXXXX")
+# Каталог временных файлов — ТОЛЬКО /srv/tmp. На этой машине /tmp,
+# /var/tmp и /dev/shm запрещены: они не переживают перезагрузку, и общая
+# уборка сносит чужие печати — это уже случилось с двумя прогонами. TMPDIR
+# тоже не спрашивается: на общей машине он показывает ровно в запрещённое.
+TMP=$(mktemp -d -p /srv/tmp raskrutka.XXXXXX)
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
 say "компилятор: $INPUT"

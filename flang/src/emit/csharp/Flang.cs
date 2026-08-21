@@ -531,19 +531,35 @@ public static class Flang
     /// что у Length, для эмодзи — вдвое меньше, и именно эмодзи ловит ошибку.
     /// StringInfo здесь не годится: он считает графемные кластеры, а не кодовые
     /// точки, и «е» с комбинирующим ударением дал бы единицу вместо двух.
+    ///
+    /// Пару делает ПАРОЙ соседство, а не одна половина. Считать «всё, что не
+    /// низкая половина» — значит терять ОДИНОКУЮ низкую половину: она кодовая
+    /// точка не хуже прочих, а счёт отдавал её за ноль. Ровно на этом «длина» и
+    /// «разложить … на символы» расходились внутри одной цели: «длина "\uDE00"»
+    /// давала 0, а список символов — один элемент. Мера у всех форм над строкой
+    /// одна, и держит её здесь PointWidth: две единицы — только когда высокая
+    /// половина стоит перед низкой.
     /// </summary>
     public static int CodePointLength(string value)
     {
         int count = 0;
-        for (int index = 0; index < value.Length; index += 1)
+        for (int index = 0; index < value.Length; index += PointWidth(value, index))
         {
-            if (!char.IsLowSurrogate(value[index]))
-            {
-                count += 1;
-            }
+            count += 1;
         }
         return count;
     }
+
+    /// <summary>
+    /// Ширина кодовой точки в единицах UTF-16, начиная с позиции index. Две —
+    /// только у настоящей суррогатной пары: высокая половина, за которой стоит
+    /// низкая. Одинокая половина — точка шириной в одну единицу.
+    /// </summary>
+    public static int PointWidth(string value, int index) =>
+        char.IsHighSurrogate(value[index]) && index + 1 < value.Length
+            && char.IsLowSurrogate(value[index + 1])
+            ? 2
+            : 1;
 
     /// <summary>Смещение в единицах UTF-16 по номеру кодовой точки.</summary>
     private static int OffsetOf(string value, int codePoints)
@@ -551,7 +567,7 @@ public static class Flang
         int offset = 0;
         for (int seen = 0; seen < codePoints; seen += 1)
         {
-            offset += char.IsHighSurrogate(value[offset]) && offset + 1 < value.Length ? 2 : 1;
+            offset += PointWidth(value, offset);
         }
         return offset;
     }
@@ -589,8 +605,7 @@ public static class Flang
                     + length.ToString(CultureInfo.InvariantCulture));
         }
         int begin = OffsetOf(value, (int)at);
-        int width = char.IsHighSurrogate(value[begin]) && begin + 1 < value.Length ? 2 : 1;
-        return Value.Text(value.Substring(begin, width));
+        return Value.Text(value.Substring(begin, PointWidth(value, begin)));
     }
 
     /// <summary>«подстрока … с … по …»: оба конца включительно при базе 1.</summary>
@@ -690,7 +705,7 @@ public static class Flang
         int index = 0;
         while (index < value.Length)
         {
-            int width = char.IsHighSurrogate(value[index]) && index + 1 < value.Length ? 2 : 1;
+            int width = PointWidth(value, index);
             points.Add(Value.Text(value.Substring(index, width)));
             index += width;
         }
@@ -701,6 +716,12 @@ public static class Flang
     /// <remarks>
     /// char.ConvertToUtf32 собирает суррогатную пару в одну точку; value[0]
     /// отдал бы половину пары, и цель разошлась бы со свидетелем на эмодзи.
+    ///
+    /// Зовётся он только на НАСТОЯЩЕЙ паре. На одинокой половине он бросает
+    /// ArgumentException, и та уезжала наружу сырым английским текстом .NET под
+    /// кодом «CLI», тогда как остальные цели отвечали числом половины. Первая
+    /// единица одинокой половины и есть её кодовая точка — «длина» такой строки
+    /// уже считает её за один знак, и «код символа» обязан считать так же.
     /// </remarks>
     public static Value BCharCode(Ctx ctx, Value source)
     {
@@ -709,7 +730,7 @@ public static class Flang
         {
             throw Fail(FlangError.CodeBuiltinArgs, "«код символа»: строка пуста");
         }
-        return Value.Number(char.ConvertToUtf32(value, 0));
+        return Value.Number(PointWidth(value, 0) == 2 ? char.ConvertToUtf32(value, 0) : value[0]);
     }
 
     /// <summary>«символ по коду»: строка ровно из одного символа.</summary>
@@ -1070,9 +1091,13 @@ public static class Flang
     }
 
     /// <summary>«код символа» доказанно непустой строки.</summary>
+    /// <remarks>Пара собирается ConvertToUtf32, одинокая половина отдаётся сама
+    /// собой — ровно как в BCharCode: доказанная непустота снимает проверку на
+    /// пустоту, а не меру, которой считается первая кодовая точка.</remarks>
     public static Value BCharCodeProven(Ctx ctx, Value source)
     {
-        return Value.Number(char.ConvertToUtf32(ExpectString("код символа", source, "строка"), 0));
+        string value = ExpectString("код символа", source, "строка");
+        return Value.Number(PointWidth(value, 0) == 2 ? char.ConvertToUtf32(value, 0) : value[0]);
     }
 
     /// <summary>«голова» доказанно непустого списка.</summary>

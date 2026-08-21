@@ -68,3 +68,10 @@ dvoichnyy/
 # намеренно: так их не подберёт ни один обход корпуса.
 benchmarks/zamer-tseny/.proba-golyy
 benchmarks/zamer-tseny/.proba-zaglushka
+
+# Напечатанные браузерные модули: производная от .flang рядом со страницей.
+# Печатает их `sh web/sobrat.sh`; в истории им делать нечего — исходник это
+# `web/app/hailstone.flang` и `web/shortener/klient.flang`.
+web/app/*.js
+web/shortener/*.js
+web/*.png

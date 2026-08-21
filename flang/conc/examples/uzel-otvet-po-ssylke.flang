@@ -21,7 +21,7 @@
 //
 // ── Прогнано ────────────────────────────────────────────────────────────────
 //
-//     flang emit flang/conc/examples/uzel-otvet-po-ссылке.flang --target elixir --out КАТАЛОГ
+//     flang emit flang/conc/examples/uzel-otvet-po-ssylke.flang --target elixir --out КАТАЛОГ
 //     make -C КАТАЛОГ build
 //     echo '{"run":"ответ приходит по пересланной ссылке"}' | \
 //       elixir -pa КАТАЛОГ/_build -e 'Flang.Cli.main(["UzelOtvetPoSsylke"])'

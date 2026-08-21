@@ -362,10 +362,17 @@ work the language does not yet have.
 
 ### The compiler does not check its own sources
 
-`flang check` on the compiler's own sources answers `FLANG_RECURSION_LIMIT` and
-stops. The cause has been measured in the code: the step budget is handed out
-once per command rather than per evaluation, and `check` has no flag that raises
-the limit.
+`flang check` on the compiler's own sources runs into the step limit and stops:
+`FLANG_RECURSION_LIMIT`. Parsing and linking do go all the way through — 29 files
+including imports, zero import errors — and it is the example run that exhausts
+the budget.
+
+**`check` has no flag that raises the limit, and that is by design, not an
+omission.** The number is baked into the binary itself and is changed by
+reprinting the bootstrap point, not by a command-line option: it takes part in the
+byte-for-byte match during self-assembly, and a binary built with a different
+limit would stop emitting itself. The procedure is written at the top of
+`scripts/raskrutka.sh`.
 
 Of the {{корпус.файлов}} files, the report came out for 244. The rest are
 named one by one, and they are three different things:

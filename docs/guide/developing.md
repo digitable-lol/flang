@@ -38,10 +38,10 @@ flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
 flang test flang/stdlib/
 flang test 'flang/examples/**/*.flang' --json
 
-# call a function
+# call a function: --args takes a FLAT object of scalars, a list cannot go there
 flang run flang/examples/leetcode/035-search-insert-position.flang \
-  --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'
-# {"function":"Место вставки","args":{...},"result":1}
+  --function "Место вставки" --args '{"цель":2}'
+# functions with a list argument are called by their own examples: flang test <file>
 
 # print it — targets: c | csharp | elixir | go | java | js | python | rust
 flang emit flang/examples/leetcode/035-search-insert-position.flang \

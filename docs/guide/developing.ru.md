@@ -37,10 +37,10 @@ flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
 flang test flang/stdlib/
 flang test 'flang/examples/**/*.flang' --json
 
-# вызвать функцию
+# вызвать функцию: --args берёт ПЛОСКИЙ объект скаляров, список туда не подать
 flang run flang/examples/leetcode/035-search-insert-position.flang \
-  --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'
-# {"function":"Место вставки","args":{...},"result":1}
+  --function "Место вставки" --args '{"цель":2}'
+# функции со списочным доводом зовутся своими примерами: flang test <файл>
 
 # напечатать — цели: c | csharp | elixir | go | java | js | python | rust
 flang emit flang/examples/leetcode/035-search-insert-position.flang \

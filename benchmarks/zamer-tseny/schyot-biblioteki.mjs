@@ -25,6 +25,16 @@
  * НЕ ПРОВЕРЕНО — а не записывается в содержательные по умолчанию.
  *
  * Прогон:  LC_ALL=C.UTF-8 node benchmarks/zamer-tseny/schyot-biblioteki.mjs
+ *
+ * ПОФАЙЛОВО, и это не удобство, а правило дерева: счёт зовёт ведомость по разу
+ * на КАЖДОЕ доказанное утверждение, а ведомость иного файла библиотеки идёт
+ * минутами (`scram.flang` — пятнадцать). Всей библиотекой разом счёт занимает
+ * часы и на общей машине упирается в память. Имена файлов доводами — считаются
+ * только они:
+ *
+ *   LC_ALL=C.UTF-8 node benchmarks/zamer-tseny/schyot-biblioteki.mjs lists.flang higher-order.flang
+ *
+ * Без доводов берётся вся библиотека, как и прежде.
  */
 import { execFileSync } from "node:child_process"
 import { readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs"
@@ -133,7 +143,14 @@ function безПримеров(исходник) {
   return итог.join("\n")
 }
 
-const файлы = readdirSync(каталог).filter((и) => и.endsWith(".flang")).sort()
+const отбор = new Set(process.argv.slice(2).map((и) => и.replace(/^.*\//, "")))
+const всеФайлы = readdirSync(каталог).filter((и) => и.endsWith(".flang")).sort()
+for (const имя of отбор) {
+  if (всеФайлы.includes(имя)) continue
+  console.error(`нет такого файла библиотеки: ${имя}`)
+  process.exit(2)
+}
+const файлы = отбор.size === 0 ? всеФайлы : всеФайлы.filter((и) => отбор.has(и))
 const счёт = { высказано: 0, доказано: 0, содержательных: 0, ослабленных: 0, даровых: 0, непроверенных: 0 }
 const строкиОтчёта = []
 

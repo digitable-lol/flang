@@ -76,7 +76,7 @@ if [ ! -x "$dvoichnyy" ]; then
   exit 2
 fi
 
-kuda=$(mktemp -d "${TMPDIR:-/tmp}/flang-tochka.XXXXXX")
+kuda=$(mktemp -d "${TMPDIR:-/srv/tmp}/flang-tochka.XXXXXX")
 trap 'rm -rf "$kuda"' EXIT INT TERM
 
 echo "компилятор: $FLANG_ENTRY"

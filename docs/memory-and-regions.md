@@ -1404,7 +1404,7 @@ Idris и Agda **не даёт никаких гарантий по памяти*
 
 ```
 # печать в C и сборка
-node flang/bin/flang.mjs emit ЗАМЕР.flang --target c --out КАТАЛОГ \
+bootstrap/flang emit ЗАМЕР.flang --target c --out КАТАЛОГ \
      --max-steps 2000000000 --max-depth 4000000
 make -C КАТАЛОГ
 

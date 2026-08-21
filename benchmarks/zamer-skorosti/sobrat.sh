@@ -37,7 +37,7 @@ mkdir -p "$OUT/base"
 # Предел шагов поднят, потому что задачи замера крупнее любой учебной: при
 # умолчании 1 000 000 сортировка ста тысяч чисел упёрлась бы в предел и
 # отказала. Сам СЧЁТЧИК при этом остаётся — его цену и меряем.
-node "$ROOT/flang/bin/flang.mjs" emit "$PROG/zadachi.flang" --target c --out "$OUT/base" \
+"$ROOT/bootstrap/flang" emit "$PROG/zadachi.flang" --target c --out "$OUT/base" \
   --max-steps 2000000000 > "$OUT/emit.json"
 make -C "$OUT/base" -j4 > "$OUT/base/make.log" 2>&1
 

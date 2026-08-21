@@ -43,7 +43,7 @@ for line in sys.stdin:
 no_toolchain() { printf '%-12s %s\n' "$1" "тулчейна нет — не запускалось"; }
 
 # ── свидетель: интерпретатор на Node ───────────────────────────────────────────
-node flang/bin/flang.mjs run "$SRC" --function 'НОД' \
+bootstrap/flang run "$SRC" --function 'НОД' \
   --args '{"а":1.618033988749895,"б":1}' 2>&1 \
   | python3 -c 'import sys,json; print(json.load(sys.stdin)["diagnostics"][0]["message"])' \
   > "$WORK/otvety/interpretator.txt"
@@ -55,7 +55,7 @@ if [ "$FAST" = "1" ]; then
 fi
 
 for target in c go rust python java csharp elixir js; do
-  node flang/bin/flang.mjs emit "$SRC" --target "$target" --out "$WORK/$target" >/dev/null 2>&1 \
+  bootstrap/flang emit "$SRC" --target "$target" --out "$WORK/$target" >/dev/null 2>&1 \
     || echo "печать в $target не удалась"
 done
 

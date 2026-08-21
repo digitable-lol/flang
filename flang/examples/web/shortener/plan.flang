@@ -18,7 +18,7 @@
 //
 // Работает это одной строкой и работает сегодня:
 //
-//   node flang/bin/flang.mjs io flang/examples/web/shortener/plan.flang \
+//   bootstrap/flang io flang/examples/web/shortener/plan.flang \
 //        --in-dir flang/examples/web/shortener/mail
 //
 // ЧЕМ ЭТО ОТЛИЧАЕТСЯ ОТ НАСТОЯЩЕГО СЕРВЕРА — ровно одним, и это надо назвать

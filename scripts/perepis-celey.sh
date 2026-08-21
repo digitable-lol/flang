@@ -60,17 +60,33 @@ def ноль(н): return лит(н) and н.get("value") == 0
 def длина(н): return это(н, "builtin") and н.get("name") in ("длина", "length")
 def вызов(н): return это(н, "call")
 
+def ложь(н): return лит(н) and н.get("value") is False
+
+def связка(e):
+    """Три записи языка приезжают в разбор одним узлом `если`, и различает их
+    только то, какие литералы стоят в ветвях. Не различишь — и `A и притом B`
+    посчитается «деревом условий», то есть вид цели будет назван неверно."""
+    if not это(e, "if"): return None
+    т, и = e.get("then"), e.get("else")
+    if ложь(т) and истина(и): return "отрицание"
+    if истина(т) and not истина(и) and not ложь(и): return "связка: дизъюнкция"
+    if ложь(и) and not истина(т) and not ложь(т): return "связка: конъюнкция"
+    return None
+
 def снять_охрану(e):
+    """`если <охрана о входе> то <цель> иначе да` — оберег от «не числа» и от
+    пустого входа, а не вид цели. Снимается ТОЛЬКО эта форма: `иначе да`."""
     сколько = 0
-    while это(e, "if") and сколько < 8:
+    while это(e, "if") and сколько < 8 and связка(e) is None:
         if истина(e.get("else")): e = e.get("then")
-        elif истина(e.get("then")): e = e.get("else")
         else: break
         сколько += 1
     return e, сколько
 
 def вид(e):
     if not isinstance(e, dict): return "прочее"
+    св = связка(e)
+    if св: return св
     k = e.get("kind")
     if k == "binary":
         op, л, п = e.get("op"), e.get("left"), e.get("right")

@@ -43,7 +43,7 @@
  * разбирал бы его тридцать раз.
  */
 import { spawnSync } from "node:child_process"
-import { cpus, tmpdir } from "node:os"
+import { cpus, freemem, tmpdir } from "node:os"
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -74,6 +74,58 @@ export function позвать(аргументы, настройки = {}) {
   return { код: итог.status ?? 1, вывод: итог.stdout ?? "", ошибки: итог.stderr ?? "" }
 }
 
+/**
+ * СКОЛЬКО ПОТОКОВ ПУСКАТЬ В ВЕЕР — считается по ПАМЯТИ, а не по числу ядер.
+ *
+ * Было: `Math.max(1, Math.min(64, cpus().length))` — то есть на этой машине
+ * ровно 64, потому что ядер 256. Веер из 64 вызовов `flang check --proof`
+ * ценой 5–11 ГиБ каждый просит от 320 до 700 ГиБ. Оперативной памяти 499 ГиБ.
+ *
+ * Это не рассуждение, это разбор ночи 21 августа 2026: машина стояла 87 минут,
+ * убийца памяти снял за ночь 24 процесса flang размером от 26,0 до 57,4 ГиБ,
+ * и в каждой записи `constraint=CONSTRAINT_NONE` — кончалась вся память
+ * машины. Ядер много, памяти на два порядка меньше, чем нужно такому вееру.
+ *
+ * Стало: потолок берётся с ТРЁХ сторон, и побеждает наименьшая.
+ *   1. сколько ядер — как было;
+ *   2. сколько прогонов по названной цене влезает в СВОБОДНУЮ память;
+ *   3. общий потолок 64 — как было.
+ *
+ * Половина свободного, а не всё: машина общая, на ней работают под разными
+ * учётными записями, и веер, съевший всё до последнего байта, кладёт чужое.
+ *
+ * Цена прогона по умолчанию 8 ГиБ — не с потолка: замер 21 августа на живой
+ * машине дал `flang check --proof --json` от 5,6 до 11,5 ГиБ на файл
+ * (`ps -eo rss` по шести одновременным прогонам). Другая цена — назовите её
+ * числом байт в `FLANG_CENA_PROGONA`, число потоков напрямую — в
+ * `FLANG_POTOKOV`.
+ */
+const ЦЕНА_ПРОГОНА = Number(process.env.FLANG_CENA_PROGONA) || 8 * 1024 * 1024 * 1024
+
+/**
+ * Свободная память в байтах. Именно MemAvailable, а не `os.freemem()`:
+ * `freemem()` отдаёт MemFree, а страничный кэш ядро вернёт по первому запросу,
+ * и на машине с 45 ГиБ кэша MemFree занижает свободное в разы. Где /proc нет
+ * (macOS, Windows) — остаётся `freemem()`.
+ */
+function свободнойПамяти() {
+  try {
+    const мета = readFileSync("/proc/meminfo", "utf8")
+    const строка = /^MemAvailable:\s+(\d+) kB$/m.exec(мета)
+    if (строка) return Number(строка[1]) * 1024
+  } catch {
+    /* не Linux либо /proc не смонтирован — падать здесь незачем */
+  }
+  return freemem()
+}
+
+export function потоковВеера(потолок = 64) {
+  const названо = Number(process.env.FLANG_POTOKOV)
+  if (Number.isFinite(названо) && названо >= 1) return Math.floor(названо)
+  const поПамяти = Math.floor(свободнойПамяти() / 2 / ЦЕНА_ПРОГОНА)
+  return Math.max(1, Math.min(потолок, cpus().length, поПамяти))
+}
+
 const памятьДеревьев = new Map()
 const памятьВедомостей = new Map()
 
@@ -96,7 +148,7 @@ const памятьВедомостей = new Map()
 export function прогреть(пути, потоков = 0) {
   const нужны = [...new Set(пути.map((п) => resolve(КОРЕНЬ, п)))].filter((п) => !памятьДеревьев.has(п))
   if (нужны.length < 2) return
-  const сколько = потоков || Math.max(1, Math.min(64, cpus().length))
+  const сколько = потоков || потоковВеера()
   const где = mkdtempSync(join(tmpdir(), "flang-progrev-"))
   try {
     const задания = нужны.map((путь, и) => `${путь}\0${join(где, `${и}.json`)}\0`).join("")
@@ -219,7 +271,7 @@ export function отсеятьЧужое(д, откуда) {
 export function прогретьВедомости(пути, потоков = 0) {
   const нужны = [...new Set(пути.map((п) => resolve(КОРЕНЬ, п)))].filter((п) => !памятьВедомостей.has(п))
   if (нужны.length < 2) return
-  const сколько = потоков || Math.max(1, Math.min(64, cpus().length))
+  const сколько = потоков || потоковВеера()
   const где = mkdtempSync(join(tmpdir(), "flang-vedomosti-"))
   try {
     const задания = нужны.map((путь, и) => `${путь}\0${join(где, `${и}`)}\0`).join("")
@@ -393,7 +445,7 @@ export function токеныМногих(пути, потоков = 0) {
     итог.set(нужны[0], токены(нужны[0]))
     return итог
   }
-  const сколько = потоков || Math.max(1, Math.min(64, cpus().length))
+  const сколько = потоков || потоковВеера()
   const где = mkdtempSync(join(tmpdir(), "flang-tokeny-"))
   try {
     const задания = нужны.map((путь, и) => `${resolve(КОРЕНЬ, путь)}\0${join(где, `${и}`)}\0`).join("")

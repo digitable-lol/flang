@@ -31,8 +31,10 @@ attaching a solver to the verification conditions is an open task, not a feature
   programs (`stdlib`, `examples`) do not use it.
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and whoever ran the plan executes it (`flang io`).
-  There are five orders — read a file, write a file, make a network request, read the clock,
-  draw a random number — and the set is closed. There is no I/O monad, though, and the reason is
+  There are sixteen orders and the set is closed: read a file, write a file, list a directory,
+  make a network request, open and accept a connection, read and write a connection as characters
+  and separately as octets, spawn a process and spawn a process with input, draw on the screen,
+  wait for an event, read the clock, draw a random number. There is no I/O monad, though, and the reason is
   no longer polymorphism: parametric types are in the language, in self-application and in the
   standard library (`«Возможно» от «А»` in `flang/stdlib/optional.flang`). What is missing is the
   category layer: `checkFunctors` knows a type's name, not its application — phase 3 in
@@ -57,9 +59,11 @@ attaching a solver to the verification conditions is an open task, not a feature
   either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
   positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there
   is nothing to infer it from, so the author NAMES the measure — a `убывает <expression>` line.
-  That is how binary search (`убывает верх минус низ плюс 1`), Euclid (`убывает б`) and counting up
-  (`убывает предел минус н`) are written; they no longer need a "fuel" list — see
-  `flang/examples/measure/`. Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
+  That is how binary search (`убывает верх минус низ плюс 1`) and Euclid (`убывает б`) are
+  written; they no longer need a "fuel" list — see `flang/examples/measure/`. **Counting UP is not
+  written with a measure**: it has no upper bound and nothing to prove with. It is turned into
+  counting down over a `нат` parameter, and then the type itself proves it
+  (`flang/examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
   forever, so the guard on a declared measure checks three things at once — strict decrease,
   non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
@@ -69,9 +73,11 @@ attaching a solver to the verification conditions is an open task, not a feature
   whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
   0 and a ceiling below which `н минус c` for whole c ≥ 1 is EXACTLY smaller than н. The proof
   becomes complete, and the ledger names a fifth carrier of the promise — «точным шагом», the
-  only one without a guard. Measured on the corpus: 16 functions carried the promise by constant
-  step with a guard, 2 remain; guard sites 100 instead of 115, ZERO added — overflow is caught by
-  widening the type (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
+  only one without a guard. Measured on the corpus at the time: 16 functions carried the promise
+  by constant step with a guard, and 2 remained. Today's site measurement
+  (`docs/site/numbers.json`) names 11 such functions and 113 guard sites: the corpus has grown
+  since. The move to `нат` added ZERO sites — overflow is caught by widening the type
+  (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
   example: `flang/examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use

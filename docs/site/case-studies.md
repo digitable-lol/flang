@@ -45,9 +45,9 @@ price of the `тотальная` marker on real tasks is measurable, and it is 
 
 ## Case 2. The URL-shortener service
 
-`flang/examples/web/shortener/` — **2 153 lines**: 1 702 of flang across seven
-files plus 421 lines of three Node hosts that read bytes off the connection and
-hand bytes back. Between input and output there is not one line that is not flang.
+`flang/examples/web/shortener/` — **1 732 lines of flang across seven files**.
+Between parsing the request and printing the response there is not one line that
+is not flang: the bytes are carried by the plan's executor.
 
 | File | Lines | What is in it |
 | --- | --- | --- |
@@ -71,7 +71,14 @@ flang check flang/examples/web/shortener/service.flang --proof
 утверждений 25: доказано 8 (из них индукцией 3) (из них без теоремы 5), сетка 17, объявлено, не доказано 0 (шагов в термах 30)
 ```
 
-**Why this is valuable.** A web service whose **all 83 functions are total** is a
+**This report does not print today, and here is why.** On a run of 21 August 2026
+the command answers with exit code 1: three examples of the function `«Решить»`
+disagree — the ones about a path the browser sent percent-encoded (`%D0%BB…`).
+Percent decoding returns "no such path" where a route was expected. A program with
+diagnostics prints no ledger at all, so the numbers above are from the run when
+those examples were green, not from today's.
+
+**Why this is valuable.** A web service whose **all 88 functions are total** is a
 service where no request can drive a handler into an infinite loop. Not "we found
 no such request" but "no such request exists". For an HTTP parser fed bytes off
 the network that is the most expensive property available.
@@ -82,17 +89,17 @@ that the code's explanation is non-empty, and that "the outcome succeeded" and
 "the code succeeded" are the same thing. A bug of the form "returned 200 with an
 error body" fails type checking here rather than being caught by a test.
 
-**Seventeen claims out of twenty-four landed on a grid, not on a proof,** and the
+**Seventeen claims out of twenty-five landed on a grid, not on a proof,** and the
 report says so verbatim: "сетка 1 значение (примеры функции) … Это не
 доказательство — теоремы при утверждении нет". About "the response body is no
 longer than the declared limit" exactly this much is known: no violation was
 found on the written examples — and that is the line the report draws between
 "proved" and "grid".
 
-Running the service's examples: `flang test …/server.flang` — **240 examples,
-240 passed, 0 failed**. The binary does not run the three process runs at all;
-with them there are 243 examples, and all 243 pass under the compiler from the
-repository.
+Running the service's examples: `flang test …/server.flang` — **255 examples, 252
+passed, 3 failed**, exit code 1. The three that fail are the same percent-encoded
+path ones. That is a real red in the tree, not a caveat on this page: until it is
+fixed, the service does not parse every path a browser sends.
 
 ## Case 3. Supervision: what happens when the loop budget runs out
 

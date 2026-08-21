@@ -254,8 +254,8 @@ The library function `«Чётное»` — "even". Its report line:
 The same function on the same tree:
 
 ```
-$ flang run flang/stdlib/numbers.flang --function «Чётное» --args '{"число": -4}'
-{"result":false}
+$ flang run flang/stdlib/numbers.flang --function "Чётное" --args '{"число": -4}'
+false
 ```
 
 Minus four is an even number. There is no contradiction between those two
@@ -313,9 +313,21 @@ three-line program refutes it:
 `«Само»` hands back its argument whole, so `«Вечно»` spins forever. Under that
 rule every turn of it looks like a strict descent, and the analysis would declare
 a non-terminating program terminating. A rule closing five hundred functions at a
-stroke would be proving a falsehood — so it was rejected. That program sits in the
-repository and is required to be refused; a check watches that it has not turned
-green.
+stroke would be proving a falsehood — so it was rejected.
+
+Today's compiler does refuse that program, and names what was missing:
+
+```
+$ flang check вечность.flang
+FLANG_NOT_TOTAL, строка 11: тотальная функция «Вечно»: рекурсивный вызов «Вечно»
+не убывает — аргумент 1 («Само» от «значение») не выведен ни из одного параметра
+$ echo $?
+1
+```
+
+There is no check today that keeps that program in the tree and watches it has
+not turned green: the fixture directory `flang/test/fixtures/binary-rules/` does
+not hold it.
 
 Its honest replacement closes **exactly zero**, and the reason is substantive
 rather than a matter of effort: in a tree walker the base branch returns a
@@ -348,7 +360,7 @@ stops. The cause has been measured in the code: the step budget is handed out
 once per command rather than per evaluation, and `check` has no flag that raises
 the limit.
 
-Of the {{корпус.файлов}} files, the report came out for 244. The remaining 35 are
+Of the {{корпус.файлов}} files, the report came out for 244. The rest are
 named one by one, and they are three different things:
 
 | Why there is no report | Files |

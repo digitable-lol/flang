@@ -229,7 +229,7 @@ say "  все литералы закрыты"
 [ "$mode" = literals ] && exit 0
 
 BINARY=$(pick_binary)
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/raskrutka.XXXXXX")
+TMP=$(mktemp -d -p /srv/tmp raskrutka.XXXXXX)
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
 say "компилятор: $INPUT"

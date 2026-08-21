@@ -2896,6 +2896,11 @@ fl_status compiler_flang_variant_forma_otkaz(fl_ctx *ctx, fl_value kod, fl_value
 fl_status compiler_flang_variant_razobrano(fl_ctx *ctx, fl_value znachenie, fl_value *out, fl_error *error);
 fl_status compiler_flang_variant_ne_razobrano(fl_ctx *ctx, fl_value kod, fl_value soobschenie, fl_value *out, fl_error *error);
 
+/* Сумма типов FTS «Случаи допущения»: «Дизъюнкции нет» | «Есть дизъюнкция». */
+/* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_dizyunkcii_net(fl_ctx *ctx, fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_est_dizyunkciya(fl_ctx *ctx, fl_value levoe, fl_value pravoe, fl_value prochie, fl_value *out, fl_error *error);
+
 /* Сумма типов FTS «Исход счёта»: «Счёт не звался» | «Счёт истиной» | «Счёт ложью» | «Счёт не признаком» | «Счёт сорвался». */
 /* Дискриминант — имя варианта; проверяется через fl_variant_is(значение, "Имя"). */
 fl_status compiler_flang_variant_schyot_ne_zvalsya(fl_ctx *ctx, fl_value *out, fl_error *error);
@@ -58668,6 +58673,14 @@ fl_status compiler_flang_vetvleniem(fl_ctx *ctx, fl_value *result, fl_error *err
 fl_status compiler_flang_istinnoy_vetvyu(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Разбором случаев».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_razborom_sluchaev(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Предел ветвления».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -59100,6 +59113,122 @@ fl_status compiler_flang_uchest_istinnuyu_vetv(fl_ctx *ctx, fl_value itog, fl_va
  * @return значение
  */
 fl_status compiler_flang_eto_vybor_s_istinoy(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Найти дизъюнкцию».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @return значение: «Случаи допущения»
+ */
+fl_status compiler_flang_nayti_dizyunkciyu(fl_ctx *ctx, fl_value dopuscheniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дизъюнкция в голове».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param g — «г»: «Значение»
+ * @param h — «х»: список: «Значение»
+ * @return значение: «Случаи допущения»
+ */
+fl_status compiler_flang_dizyunkciya_v_golove(fl_ctx *ctx, fl_value g, fl_value h, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это дизъюнкция».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_dizyunkciya(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Оставить голову».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param g — «г»: «Значение»
+ * @param dalshe — «дальше»: «Случаи допущения»
+ * @return значение: «Случаи допущения»
+ */
+fl_status compiler_flang_ostavit_golovu(fl_ctx *ctx, fl_value g, fl_value dalshe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести разбором случаев».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_razborom_sluchaev(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случаи дизъюнкции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param sluchai — «случаи»: «Случаи допущения»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_sluchai_dizyunkcii(fl_ctx *ctx, fl_value itog, fl_value sluchai, fl_value zaklyuchenie, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Правый случай».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param levyy — «левый»: «Сведение»
+ * @param pravoe — «правое»: «Значение»
+ * @param prochie — «прочие»: список: «Значение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_pravyy_sluchay(fl_ctx *ctx, fl_value itog, fl_value levyy, fl_value pravoe, fl_value prochie, fl_value zaklyuchenie, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свод случаев».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param pravyy — «правый»: «Сведение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svod_sluchaev(fl_ctx *ctx, fl_value itog, fl_value pravyy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Случай не сведён».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param imya — «имя»: строка
+ * @param svedenie — «сведение»: «Сведение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_sluchay_ne_svedyon(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value svedenie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести ветвлением».

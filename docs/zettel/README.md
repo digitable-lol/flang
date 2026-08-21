@@ -119,6 +119,7 @@
 - [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
 - [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
 - [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
+- [Дизъюнкция в допущении разбирается СЛУЧАЯМИ, а расщеплять её нельзя ни в какую сторону](dizyunkciya-v-dopushchenii-razbiraetsya-sluchayami-a-ne-rasshchepliaetsya.md)
 - [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ — а сузить их до правильных деревьев нечем](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 

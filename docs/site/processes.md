@@ -185,8 +185,13 @@ going green in silence:
 
 ```
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
-processes, supervisors, runs.
+processes, supervisors, runs. […]
+flang/conc/examples/supervision.flang: проверено НЕ ДО КОНЦА — разбор, типы,
+завершаемость, ядро и примеры прошли
 ```
+
+The exit code is 2, and it means "not checked all the way through", not "all
+good".
 
 Plainly, for the reader: **the process model can be declared, checked and run
 against its examples today, and it cannot be brought up as a real node.** The

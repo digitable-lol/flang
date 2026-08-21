@@ -142,6 +142,9 @@
 
 ## Скорость и цена доказуемости
 
+- [Контрольный вектор, не влезающий в предел шагов, проверяется напечатанным C, и это в 1250 раз дешевле толкователя](reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c.md)
+- [Арена рантайма не возвращает память, поэтому длинное вычисление упирается в ОЗУ раньше, чем во время](arena-makes-memory-not-time-the-limit-of-a-long-computation.md)
+
 - [Цена доказуемости — 2,5 % функций, а всё остальное медленно по другим причинам](provability-costs-2-5-percent.md)
 - [Доля протухает молча, а счёт — нет: цена доказуемости за два дня уехала с 2,4 % на 1,1 %](a-share-goes-stale-a-count-does-not.md)
 - [Мы медленнее Python в 1,4 раза, и компиляция сегодня не окупается никогда](slower-than-python-by-1-4.md)
@@ -403,6 +406,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Пример зеленеет на варианте, которого разбор не производит никогда, — и это класс](an-example-can-green-on-a-variant-the-parser-never-produces.md)
 - [Файл проверок, упавший на загрузке, в отчёте прогона неотличим от отсутствующего](nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.md)
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
@@ -418,6 +422,7 @@
 ## Отвергнутые пути
 
 - [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](oraculu-meshala-totalnost-a-ne-pervyy-klass.md)
+- [MD5 в библиотеку заводить не стоит, и цена отказа — ровно один способ входа в PostgreSQL](md5-is-not-worth-adding-and-what-that-costs.md)
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](vynut-iz-resheniya-i-vynut-iz-zagruzki-eto-dva-sobytiya.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)

@@ -154,7 +154,7 @@ bootstrap/flang io flang/examples/web/shortener/plan.flang
 дереве нет, значит нечему устареть. Руками то же делается так:
 
 ```
-node flang/bin/flang.mjs emit web/shortener/klient.flang \
+bootstrap/flang emit web/shortener/klient.flang \
   --target js --no-cli --out <каталог>
 ```
 

@@ -386,11 +386,11 @@ FLANG_ISO_NOT_INVERSE | кругооборот через «Заказ» не д
 export LC_ALL=C.UTF-8
 
 # замер 2: девять законов проверены на сетке
-node flang/bin/flang.mjs check docs/zamer-teorkat/class-string-to-string.flang --proof --json
-node flang/bin/flang.mjs test  docs/zamer-teorkat/class-string-to-string.flang   # 74/74
+bootstrap/flang check docs/zamer-teorkat/class-string-to-string.flang --proof --json
+bootstrap/flang test  docs/zamer-teorkat/class-string-to-string.flang   # 74/74
 
 # замер 3: ход владельца дословно — файл НЕ собирается, и это ответ
-node flang/bin/flang.mjs check docs/zamer-teorkat/iso-object-to-category.flang
+bootstrap/flang check docs/zamer-teorkat/iso-object-to-category.flang
 ```
 
 Замер 1 и потолки считались скриптами обхода AST (`flang ast` → разбиение по

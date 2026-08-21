@@ -278,19 +278,13 @@ static const char REPL_GREETING_NO_EVAL[] =
  */
 #define EMIT_TARGETS_WORDS "c|go|rust|java|js|elixir|python|csharp"
 #define EMIT_TARGETS_MISSING \
-  "ЗАКОНЫ КАТЕГОРИИ бинарник СЧИТАЕТ САМ — на сетке, с названным числом\n"\
-  "значений: что объявленное равенство есть эквивалентность, что композиция\n"\
-  "его уважает, что она ассоциативна и что квадрат естественного\n"\
-  "преобразования коммутирует. Это счёт, а не доказательство, и отчёт говорит\n"\
-  "об этом словами.\n"\
-  "\n"\
-  "ЧЕГО НЕТ — УСТРОЙСТВО тех же объявлений: что категория замкнута под\n"\
-  "композицией, что у каждого объекта есть единица, что концы у композиции\n"\
-  "сходятся, что морфизм и преобразование объявлены как надо. Целиком нет\n"\
-  "связи модулей, бифунктора, изоморфизма, моноида, монады, множеств,\n"\
-  "объявленных свойств, требований, процесса, надзора, прогона.\n"\
-  "Программу с такими объявлениями «flang check» НЕ пропускает молча: он\n"\
-  "называет, чего не проверил, и отвечает кодом 2."
+  "СУД НАД КАТЕГОРНОЙ ПОВЕРХНОСТЬЮ И ПРОЦЕССАМИ: морфизм, категория, связь\n"\
+  "модулей, бифунктор, преобразование, изоморфизм, моноид, монада, множества,\n"\
+  "объявленные свойства, требования, процесс, надзор, прогон. Часть их правил\n"\
+  "доказывается сличением объявлений, часть считается вычислением на сетке; ни\n"\
+  "те ни другие в бинарник не втащены, и им нужен Node. Программу с такими\n"\
+  "объявлениями «flang check» НЕ пропускает молча: он называет, чего не\n"\
+  "проверил, и отвечает кодом 2."
 #define EMIT_TARGETS_SAY \
   "целей здесь ВОСЕМЬ — «c», «go», «rust», «java», «js», «elixir», «python», «csharp»"
 #define EMIT_TARGETS_REST \
@@ -346,7 +340,8 @@ static const char HELP_CHECK[] =
     "получает отказ с названным пробелом и код 2 — и у check, и у --proof:\n"
     "«замечаний нет» и пустой раздел ведомости читались бы как «проверено», а это\n"
     "неправда. Поиск нарушений по примерам тоже не переехал: ведомость говорит «не\n"
-    "искали», а не «не найдено».\n"
+    "искали», а не «не найдено». Печать такую программу ПЕЧАТАЕТ, но называет тот же\n"
+    "пробел и уходит кодом 3: файлы есть, ручаться за них целиком нельзя.\n"
     "\n"
     "ДВА ЗАЗОРА, которые бинарник не умеет даже НАЗВАТЬ, и потому названы здесь.\n"
     "Уточнённые числовые типы («сотых», «вес») стоят типом в подписи, а не\n"
@@ -429,6 +424,11 @@ static const char HELP_EMIT_2[] =
     "ПЕЧАТАЕТСЯ ТОЛЬКО ПРОВЕРЕННОЕ. Перед печатью программа судится той же дорогой,\n"
     "что и «flang check»: разбор, связывание, типы, завершаемость и ядро\n"
     "доказательств. Замечание — печать отменена и код 1, ни файла не записано.\n"
+    "ЧЕГО ЭТА СБОРКА НЕ СУДИТ, она называет. Категорную поверхность и процессы с\n"
+    "надзором она не судит вовсе. Такая программа ПЕЧАТАЕТСЯ — иначе эту часть языка\n"
+    "нечем было бы собрать без Node, — но несуждённое зовётся поимённо, а код 3.\n"
+    "Коды: 0 напечатано и пробелов нет, 1 не прошло проверку, 2 неверен вызов,\n"
+    "3 напечатано, но проверено не всё.\n"
     "ПРИМЕРЫ не прогоняются, и это названо, а не умолчано: их считает вычислитель на\n"
     "самом языке, и на самых больших программах дерева он в предел шагов этой сборки\n"
     "не укладывается — свяжи с ними печать, и компилятор перестал бы печатать сам\n"
@@ -1963,40 +1963,6 @@ static void repl_print_bads(const repl_bads *bads, const repl_map *map, const ch
 /* ───────────────────── исходники сессии и её импортов ──────────────────── */
 
 /** Один «Исходник»: путь и текст. */
-/**
- * Текст ВХОДНОГО файла из списка исходников — того, чей «путь» равен `entry`.
- *
- * Список приезжает сюда уже собранным (`repl_closure`), и читать файл с диска
- * второй раз было бы не только лишним чтением: у сессии оболочки и у груза из
- * замка на диске может не быть файла вовсе.
- */
-static bool repl_source_text(fl_value sources, const char *entry, const char **text, size_t *bytes) {
-  size_t index = 0;
-  if (sources.tag != FL_LIST || entry == NULL) {
-    return false;
-  }
-  for (index = 0; index < sources.as.list.count; index += 1) {
-    fl_value path = fl_nothing();
-    fl_value body = fl_nothing();
-    const char *utf8 = NULL;
-    size_t utf8_bytes = 0;
-    if (!val_field(sources.as.list.items[index], "путь", &path)) {
-      continue;
-    }
-    if (!val_text(path, &utf8, &utf8_bytes)) {
-      continue;
-    }
-    if (utf8_bytes != strlen(entry) || memcmp(utf8, entry, utf8_bytes) != 0) {
-      continue;
-    }
-    if (!val_field(sources.as.list.items[index], "текст", &body)) {
-      return false;
-    }
-    return val_text(body, text, bytes);
-  }
-  return false;
-}
-
 static fl_value repl_source_value(const char *path, const char *text, size_t bytes) {
   static const char *const names[2] = {"путь", "текст"};
   fl_value values[2];
@@ -3018,17 +2984,11 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  * разделён он затем, что у ПЕЧАТИ подмножество своё: ядро ей обязательно, а
  * примеры она не тянет. Кто и почему просит что:
  *
- *   вход          связывание  типы  завершаемость  ядро  категории  примеры
- *   flang check        да      да        да         да       да        да
- *   flang package      да      да        да         да       да        да
- *   flang emit         да      да        да         да       да        НЕТ
- *   оболочка           да      да        да        НЕТ      НЕТ       НЕТ
- *
- * `categories` — считать ли законы категории на сетке (пятый шаг). Печати он
- * обязателен по тому же доводу, по которому обязательно ядро: программа с
- * нарушенным законом не должна печататься молча. Оболочке не зовётся —
- * категория дописывается стрелка за стрелкой и до последней строки замкнутой
- * не бывает.
+ *   вход          связывание  типы  завершаемость  ядро  примеры
+ *   flang check        да      да        да         да      да
+ *   flang package      да      да        да         да      да
+ *   flang emit         да      да        да         да      НЕТ
+ *   оболочка           да      да        да        НЕТ     НЕТ
  *
  * Оболочке не зовётся ни то ни другое, и причина не в скорости: сессия
  * проверяется ПОСЛЕ КАЖДОГО объявления, а обязательство закрывается теоремой,
@@ -3050,7 +3010,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  * отвечать на непросмотренное тем же молчанием, что на просмотренное.
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
-                               bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
+                               bool *has_program, repl_strings *proven, bool kernel, bool examples,
                                fl_value *linked_out, fl_value *dropped_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
@@ -3153,83 +3113,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     }
   }
   /*
-   * ЗАКОНЫ КАТЕГОРИИ — ПЯТЫМ ШАГОМ, И ЭТО ТА ЖЕ ДЫРА, ЧТО БЫЛА С ЯДРОМ.
-   *
-   * Судья был НАПИСАН И НЕ ГОНЯЛСЯ: `flang/self/setoid.flang` (1727 строк) и
-   * `flang/self/setoid-oracle.flang` (855 строк) проходили `flang check` кодом
-   * 0, и ни один файл дерева их не ввозил. Сторож, который написан и не
-   * гоняется, от своего отсутствия неотличим — на программах с `категория` и
-   * `морфизм` бинарник отвечал «не сужу вовсе», а `emit` печатал их молча.
-   *
-   * СЧИТАЕТСЯ НА СЕТКЕ, А НЕ ДОКАЗЫВАЕТСЯ. «Две стрелки равны на всех значениях
-   * объекта» — утверждение неразрешимое, поэтому сетка конечна (предел 12
-   * значений НА ОБЪЕКТ), а её размер уезжает в отчёт числом. Слова «доказано»
-   * в этом отчёте нет ни в одной строке нарочно.
-   *
-   * ПОСЛЕ ЯДРА И ТОЛЬКО НА ЧИСТОЙ ПРОГРАММЕ, по тому же доводу, что у примеров:
-   * закон считается ВЫПОЛНЕНИЕМ стрелок, и «сетка сошлась» на программе с
-   * ошибкой типов не значит ничего.
-   *
-   * Оболочке не зовётся (`categories` равно false): сессия проверяется после
-   * каждого объявления, а категория дописывается стрелка за стрелкой и до
-   * последней строки замкнутой не бывает.
-   *
-   * Отчёт печатает СЛОЙ НА FLANG («Суд над категориями» в
-   * `flang/self/bootstrap/compiler.flang`), а не этот файл: назови числа сетки
-   * C сам — и два набора чисел разошлись бы молча.
-   */
-  if (categories && bads->count == 0) {
-    fl_value verdict = fl_nothing();
-    fl_value part = fl_nothing();
-    fl_value judged[2];
-    const char *utf8 = NULL;
-    size_t report_bytes = 0;
-    /*
-     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
-     *
-     * Связывание ТЕРЯЕТ преобразования: у `examples/cat/natural-square.flang`
-     * разбор даёт ключ `transformations`, связанная программа — нет. Спроси
-     * здесь одну связанную, и закон естественности не считался бы никогда, а
-     * молчал бы так же, как считанный без нарушений. Замерено прогоном: до
-     * этой правки файл печатал две строки о категориях и ни одной о
-     * преобразовании.
-     *
-     * Довод тот же и то же место, что у «Что бинарник не судил» ниже, — там
-     * второй разбор уже стоит по этой же причине.
-     */
-    judged[0] = *program;
-    judged[1] = *program;
-    {
-      fl_value parse_args[2];
-      fl_value parsed = fl_nothing();
-      fl_value own = fl_nothing();
-      const char *text = NULL;
-      size_t text_bytes = 0;
-      if (repl_source_text(sources, entry, &text, &text_bytes)) {
-        parse_args[0] = repl_value_text(text, text_bytes);
-        parse_args[1] = repl_value_list(NULL, 0);
-        if (repl_call("Разбор исходника", parse_args, 2, &parsed) == FL_OK
-            && val_field(parsed, "программа", &own)) {
-          judged[1] = own;
-        }
-      }
-    }
-    if (repl_call("Суд над категориями", judged, 2, &verdict) != FL_OK) {
-      bads_say(bads, "суд над категорными объявлениями прекращён");
-      return false;
-    }
-    if (val_field(verdict, "отчёт", &part) && val_text(part, &utf8, &report_bytes) && report_bytes > 0) {
-      printf("%.*s", (int)report_bytes, utf8);
-      fflush(stdout);
-    }
-    if (val_field(verdict, "диагностики", &part) && part.tag == FL_LIST) {
-      for (index = 0; index < part.as.list.count; index += 1) {
-        bads_take_analysis(bads, part.as.list.items[index]);
-      }
-    }
-  }
-  /*
-   * ПРИМЕРЫ — ШЕСТЫМ ШАГОМ, И ЭТО ТА ЖЕ ДЫРА, ЧТО БЫЛА С ЯДРОМ.
+   * ПРИМЕРЫ — ПЯТЫМ ШАГОМ, И ЭТО ТА ЖЕ ДЫРА, ЧТО БЫЛА С ЯДРОМ.
    *
    * Пока их тут не было, бинарник ПЕЧАТАЛ программу с заведомо ложным примером:
    * на файле с `пример «два на два — ПЯТЬ»` (`ожидается 5` при результате 4)
@@ -3294,7 +3178,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, false, NULL, NULL);
+                            false, false, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -5642,8 +5526,8 @@ static int check_file(const char *path) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -5770,24 +5654,6 @@ static int check_file(const char *path) {
       obstacle_args[1] = program;
     }
     if (repl_call("Что бинарник не судил", obstacle_args, 2, &obstacle) == FL_OK
-        && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
-      fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
-      unjudged = true;
-    }
-    /*
-     * ВТОРОЕ ПРЕПЯТСТВИЕ, И ОНО НЕ ТО ЖЕ САМОЕ.
-     *
-     * Законы категории пятым шагом ПОСЧИТАНЫ — на сетке, с названным числом
-     * значений. Устройство категорных объявлений (замкнутость под композицией,
-     * единицы, сходимость концов у композиций, вид объявленного равенства) не
-     * сверяется: правил `FLANG_CATEGORY_NOT_CLOSED`, `FLANG_COMPOSE_MISMATCH`,
-     * `FLANG_MORPHISM_SHAPE` и их соседей в дереве нет ни одной строкой.
-     *
-     * Молчать об этом нельзя ровно по тому доводу, по которому написана вся эта
-     * часть: посчитанный закон не заменяет несверенного устройства, а «замечаний
-     * нет» после посчитанного закона читалось бы как «сверено всё».
-     */
-    if (repl_call("Устройство категорий не сверялось", obstacle_args, 2, &obstacle) == FL_OK
         && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
       fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
       unjudged = true;
@@ -7380,6 +7246,11 @@ static int emit_file(int argc, char **argv, const char *self) {
   char *text = NULL;
   char *self_dir = NULL;
   char *runtime = NULL;
+  /* Слова о непосуждённой поверхности считаются РЯДОМ С ПРОВЕРКОЙ (там жива
+     связанная запись), а говорятся в самом конце — вместе с остальными
+     строками о том, что проверено перед печатью. Между этими двумя точками
+     лежит сама печать, поэтому строку приходится нести с собой. */
+  char *unjudged = NULL;
   size_t bytes = 0;
   size_t index = 0;
   size_t written = 0;
@@ -7551,7 +7422,7 @@ static int emit_file(int argc, char **argv, const char *self) {
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, true, &linked, &dropped)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, &linked, &dropped)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -7585,6 +7456,54 @@ static int emit_file(int argc, char **argv, const char *self) {
          */
         size_t drop_count = dropped.tag == FL_LIST ? dropped.as.list.count : 0;
         bads_free(&list);
+        /*
+         * ЧЕГО ПЕЧАТЬ НЕ СУДИЛА — СПРАШИВАЕТСЯ ЗДЕСЬ, ОТВЕЧАЕТСЯ В КОНЦЕ.
+         *
+         * Проверка научилась говорить о непосуждённом кодом 2 («я не судила»),
+         * печать научилась не выпускать не прошедшее проверку кодом 1. Вместе
+         * эти две правки дыру не закрывали: код 2 печать не останавливал, и
+         * программа с категорной поверхностью выходила из печати кодом 0 со
+         * словами «проверено перед печатью — разбор, типы, завершаемость и
+         * ядро», то есть с прямой неправдой.
+         *
+         * Улика ДО, снятая прогоном на дереве 20 августа 2026: 41 программа из
+         * 951 получает у `flang check` код 2, и ВСЕ 41 печатались кодом 0 —
+         * шестью файлами C на каждую. В корпусе ведомости — 26 из 294.
+         *
+         * Список имён считает СЛОЙ НА FLANG («Чего печать не судила» в
+         * `flang/self/bootstrap/compiler.flang`), а не этот файл, и по тому же
+         * доводу, что у `check`: назови его C сам — и две копии разошлись бы
+         * молча. Фраза у печати СВОЯ, третья: ведомость не печатается вовсе,
+         * проверка не заканчивается словами «замечаний нет», а печать печатает
+         * — и сказать ей надо не «я не берусь», а «вот файлы, и вот чего за
+         * ними не проверено».
+         *
+         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ по той же причине, что у `check`:
+         * связывание теряет свойства и преобразования, и по одной связанной
+         * записи бинарник промолчал бы ровно о двух поверхностях из
+         * четырнадцати. Цена — один разбор входного файла.
+         */
+        {
+          fl_value parsed = fl_nothing();
+          fl_value parse_args[2];
+          fl_value obstacle = fl_nothing();
+          fl_value obstacle_args[2];
+          const char *utf8 = NULL;
+          size_t obstacle_bytes = 0;
+          parse_args[0] = repl_value_text(text, bytes);
+          parse_args[1] = repl_value_list(NULL, 0);
+          if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
+            parsed = fl_nothing();
+          }
+          obstacle_args[0] = linked;
+          if (!val_field(parsed, "программа", &obstacle_args[1])) {
+            obstacle_args[1] = program;
+          }
+          if (repl_call("Чего печать не судила", obstacle_args, 2, &obstacle) == FL_OK
+              && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+            unjudged = val_copy(obstacle);
+          }
+        }
         if (drop_count > 0) {
           fl_value drop_args[2];
           fl_value thinner = fl_nothing();
@@ -7667,6 +7586,47 @@ static int emit_file(int argc, char **argv, const char *self) {
             "печать, и компилятор перестал бы печатать сам себя. Прогоните их отдельно:\n"
             "flang test <файл>\n",
             stderr);
+      /*
+       * КОД 3: НАПЕЧАТАНО, НО ПРОВЕРЕНО НЕ ВСЁ.
+       *
+       * Строкой выше печать говорит, ЧТО она проверила. Если в программе
+       * объявлено то, чего этот бинарник не судит вовсе, — та строка одна была
+       * бы полуправдой: перечисленное действительно проверено, а про остальное
+       * не сказано ничего. Здесь названо остальное, поимённо.
+       *
+       * ── ПОЧЕМУ КОД МЕНЯЕТСЯ, ХОТЯ РЯДОМ НАПИСАНО «НЕ МЕНЯЕТ КОДА» ─────────
+       * Довод выше («ответ emit — это ФАЙЛЫ, и код говорит, напечатались ли
+       * они») остаётся верным для строк о том, что печать УМЕЕТ, но не проверяет
+       * — про типы аргументов прогонщика и про непрогнанные примеры. Там нечего
+       * различать: так печать ведёт себя на КАЖДОЙ программе, и код, меняющийся
+       * всегда, не несёт новости.
+       *
+       * Здесь новость есть, и она про конкретную программу: у 41 файла дерева
+       * из 951 она приходит, у остальных 910 — нет. Молчание кодом означало бы,
+       * что сценарий сборки, ждущий нуля, узнаёт о пробеле ровно никогда.
+       *
+       * ── ПОЧЕМУ 3, А НЕ 2 ─────────────────────────────────────────────────
+       * Код 2 у печати занят ошибкой ВЫЗОВА (FLANG_CLI: непонятный ключ, не
+       * назван файл, нет «--target», не завёлся каталог вывода) — восемь мест
+       * выше, и все означают «файлов нет вовсе». Отдай его же при напечатанных
+       * файлах — и по коду стало бы не отличить «ты неправильно позвал,
+       * собирать нечего» от «файлы есть, но за них не ручаются». Это два
+       * противоположных исхода, и одно число на оба — та же молчаливая подмена,
+       * ради устранения которой правка и написана.
+       *
+       * ── ЧТО ЭТО СТОИТ РАСКРУТКЕ ──────────────────────────────────────────
+       * `scripts/raskrutka.sh` стоит под `set -e`, и любой ненулевой код печати
+       * её останавливает. Замерено на этом дереве: ни один модуль замыкания
+       * `flang/self/bootstrap/compiler.flang` не объявляет ни одной из
+       * четырнадцати поверхностей, поэтому компилятор получает здесь 0 и
+       * печатает себя как прежде. Появится поверхность в его замыкании —
+       * раскрутка встанет, и это правильно: собирать компилятор из
+       * непроверенного нельзя молча.
+       */
+      if (unjudged != NULL) {
+        fprintf(stderr, "%s\n", unjudged);
+        code = 3;
+      }
       if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
         fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
       }
@@ -7679,6 +7639,7 @@ static int emit_file(int argc, char **argv, const char *self) {
     strings_free(&queue);
   }
   free(runtime);
+  free(unjudged);
   free(text);
   free(full);
   return code;
@@ -11905,8 +11866,8 @@ static int package_file(int argc, char **argv) {
   strings_say(&paths, full);
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
-  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+  ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, NULL,
+                          NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);

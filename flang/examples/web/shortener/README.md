@@ -34,9 +34,9 @@ handler-without-budget.flang    53   УЛИКА: не собирается, и �
 
 ```sh
 export LC_ALL=C.UTF-8
-node flang/bin/flang.mjs check flang/examples/web/shortener/service.flang --proof
-node flang/bin/flang.mjs test  flang/examples/web/shortener/server.flang
-node flang/bin/flang.mjs io    flang/examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check flang/examples/web/shortener/service.flang --proof
+bootstrap/flang test  flang/examples/web/shortener/server.flang
+bootstrap/flang io    flang/examples/web/shortener/plan.flang --in-dir
 ```
 
 ## Что доказано, а что проверено

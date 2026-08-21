@@ -95,7 +95,7 @@ them, in the hardware — but not in a separate list of exemptions.
 
 This half of the page matters more than the first.
 
-### Substantive claims: 9 out of 20
+### Substantively proved: 10 functions out of 20
 
 Empty statements can be proved, and the figure is easy to inflate. The
 postcondition `результат равен (0 минус х)` over the body `0 минус х` closes in
@@ -119,12 +119,12 @@ taken by name, so the ruler does not move with the thing it measures.
 
 | | Claims |
 |---|---:|
-| Substantive — fall away against the stub | **9** |
-| Weakened — proved against the stub as well | 5 |
+| Substantive — fall away against the stub | **11** |
+| Weakened — proved against the stub as well | 6 |
 | Free — body copied into the postcondition | 1 |
 | Not checked — no stub exists for that result type | 2 |
 
-Something is proved for 13 of the 20 functions. Something substantive, for 9.
+Something is proved for 14 of the 20 functions. Something substantive, for 10.
 
 ```
 ./ярлык proof:20
@@ -151,6 +151,81 @@ wrong ones. Hence a rule worth more than any number on this page: **before fixin
 the kernel to satisfy an unproved claim, run the claim itself against a hostile
 sample** — `±0`, `±∞`, "not a number", the empty string. Unprovability often turns
 out to be a property of the claim rather than of the kernel.
+
+### A bound claim silently means "for finite numbers"
+
+This is a trap the tree has already been caught by, and it is worth its own
+section.
+
+The language's numbers are machine IEEE-754, and "not a number" (`NaN`) is
+produced from inside the language without breaking a rule. `0 делить на 0` passes
+the check with no diagnostic at all:
+
+```
+$ flang run граница.flang --function '«Ноль на ноль»'
+NaN
+$ echo $?
+0
+```
+
+`NaN` sits **outside the ordering**: both `NaN не меньше 0` and `NaN меньше 0`
+are false. So the "obvious" postcondition "the absolute value of the result is
+non-negative" is not a cautious wording but a **false claim**. The kernel does
+not take it, and it is right not to:
+
+```flang
+тотальная функция «Модуль»
+  принимает х: число
+  возвращает число
+  обеспечивает «модуль неотрицателен» результат не меньше 0
+  если х не меньше 0
+    то х
+    иначе 0 минус х
+```
+
+```
+$ flang check граница.flang --proof
+постусловие «модуль неотрицателен» функции «Модуль» — объявлено, не доказано:
+ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех
+входах, которые придут
+$ echo $?
+0
+```
+
+The runtime check catches it on the first "not a number":
+
+```
+$ flang run граница.flang --function '«Модуль не числа»'
+FLANG_PROPERTY: нарушено свойство «модуль неотрицателен» функции «Модуль»
+$ echo $?
+1
+```
+
+The working rule: **before asking the kernel for a rule, run the claim itself
+over a hostile sample** — `0`, `−0`, `±∞`, "not a number", `2⁵³`. Every bound
+claim written without a finiteness proviso means "for finite numbers" — and is
+false on the rest.
+
+### An unproved postcondition costs run time, and the cost is measured
+
+If the kernel accepted a claim, nothing of it remains in the emitted program. If
+the kernel did not, the claim is **computed on every return of the function**,
+and whoever runs the program pays for it.
+
+The cost was measured over the whole library. `flang test flang/stdlib/` over 20
+files and 1216 examples: 360 150 ms at 454 claims before, 469 284 ms at 620
+after — **a factor of 1.30**. Measured by interleaving (the variants run one
+after another inside a single repetition), minimum of three pairs; a single run
+cannot measure this at all — the corpus spread of ±20% is larger than the effect.
+
+What is paid for is not the claims but the **actions inside them**: every
+comparison, every field read, every call, about 14 µs per action. So the
+expensive claim is not the most complex one but the one attached to a function a
+fold calls on every element: in `json.flang`, 19 claims on seven step functions
+accounted for 78% of the increase on 40% of the claims.
+
+By module: `json` ×2.90, `base64` ×1.94, `sha256` ×1.76, `http` ×1.73,
+`postgres` ×1.20.
 
 ### "On a grid" is not a proof
 
@@ -179,8 +254,8 @@ The library function `«Чётное»` — "even". Its report line:
 The same function on the same tree:
 
 ```
-$ flang run flang/stdlib/numbers.flang --function «Чётное» --args '{"число": -4}'
-{"result":false}
+$ flang run flang/stdlib/numbers.flang --function "Чётное" --args '{"число": -4}'
+false
 ```
 
 Minus four is an even number. There is no contradiction between those two
@@ -238,9 +313,21 @@ three-line program refutes it:
 `«Само»` hands back its argument whole, so `«Вечно»` spins forever. Under that
 rule every turn of it looks like a strict descent, and the analysis would declare
 a non-terminating program terminating. A rule closing five hundred functions at a
-stroke would be proving a falsehood — so it was rejected. That program sits in the
-repository and is required to be refused; a check watches that it has not turned
-green.
+stroke would be proving a falsehood — so it was rejected.
+
+Today's compiler does refuse that program, and names what was missing:
+
+```
+$ flang check вечность.flang
+FLANG_NOT_TOTAL, строка 11: тотальная функция «Вечно»: рекурсивный вызов «Вечно»
+не убывает — аргумент 1 («Само» от «значение») не выведен ни из одного параметра
+$ echo $?
+1
+```
+
+There is no check today that keeps that program in the tree and watches it has
+not turned green: the fixture directory `flang/test/fixtures/binary-rules/` does
+not hold it.
 
 Its honest replacement closes **exactly zero**, and the reason is substantive
 rather than a matter of effort: in a tree walker the base branch returns a
@@ -256,6 +343,13 @@ What is actually reachable:
 | The same, but bounded by a numeric literal | 0 |
 | Total | **75** |
 
+These figures were taken from a run over the corpus, but there is no command in
+the tree to reproduce them today, and no note recording that run either. The
+neighbouring note [[dva-pravila-zavershaemosti-vmeste-dayut-574]] gives **54**
+for size-change graphs, not 47 — the number was taken twice and disagreed. Trust
+the order of magnitude and the conclusion "not 574 but a few dozen", not the
+digits themselves.
+
 Not 574 but 75. The first rule is already written in the language itself and
 checked by five programs: two legitimate ones it is meant to cover turned green,
 and three forgeries — including the one above — stayed refused. The zero in the
@@ -268,12 +362,19 @@ work the language does not yet have.
 
 ### The compiler does not check its own sources
 
-`flang check` on the compiler's own sources answers `FLANG_RECURSION_LIMIT` and
-stops. The cause has been measured in the code: the step budget is handed out
-once per command rather than per evaluation, and `check` has no flag that raises
-the limit.
+`flang check` on the compiler's own sources runs into the step limit and stops:
+`FLANG_RECURSION_LIMIT`. Parsing and linking do go all the way through — 29 files
+including imports, zero import errors — and it is the example run that exhausts
+the budget.
 
-Of the {{корпус.файлов}} files, the report came out for 244. The remaining 35 are
+**`check` has no flag that raises the limit, and that is by design, not an
+omission.** The number is baked into the binary itself and is changed by
+reprinting the bootstrap point, not by a command-line option: it takes part in the
+byte-for-byte match during self-assembly, and a binary built with a different
+limit would stop emitting itself. The procedure is written at the top of
+`scripts/raskrutka.sh`.
+
+Of the {{корпус.файлов}} files, the report came out for 244. The rest are
 named one by one, and they are three different things:
 
 | Why there is no report | Files |
@@ -287,7 +388,7 @@ language itself. Printing itself is something the compiler does, and does withou
 a single divergence; checking what it prints is something it cannot do.
 
 ```
-node flang/scripts/proof-ledger.mjs
+./ярлык proof:ledger
 ```
 
 ---
@@ -300,7 +401,7 @@ None of the numbers above have to be taken on trust — commands print all of th
 |---|---|
 | Report for one file | `flang check <file> --proof` |
 | The same for a machine | `flang check <file> --proof --json` |
-| Summary over every program in the repository | `node flang/scripts/proof-ledger.mjs` |
+| Summary over every program in the repository | `./ярлык proof:ledger` |
 | Substantive claims out of the twenty | `./ярлык proof:20` |
 
 ## Further

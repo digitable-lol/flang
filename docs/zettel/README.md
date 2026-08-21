@@ -72,6 +72,12 @@
 - [Постусловие вызванной функции годится ядру в факты только ПОСЛЕ того, как оно доказано, — и этим же закрыт круг](callee-postcondition-is-a-fact-only-after-it-is-proved.md)
 - [Постусловие вычисляется и при вложенных вызовах, поэтому граф «кто кого называет» обязан быть без циклов — и часть функций сказать о себе не может вовсе](postcondition-runs-on-nested-calls-so-some-functions-cannot-be-stated-about.md) — требование «без циклов» отменено 20 августа: контракт не проверяется внутри контракта
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
+- [Три из пяти названных стен постусловия на нынешнем двоичном уже сняты: сумма сравнивается, `разбор` разбирается, поле варианта читается точкой](stena-ravenstva-i-razbora-v-postuslovii-snyata.md)
+- [У постоянной функции, чьё значение и есть заглушка, проверка на даровость не различает ничего](darovost-vyrozhdaetsya-na-postoyannoy-funkcii.md)
+- [Девять мест библиотеки обваливаются на «не числе» и пустой строке: встроенные формы `символ`, `элемент` и `код символа` частичны](chastichnye-vstroennye-formy-obvalivayut-stdlib-na-nan-i-pustoy-stroke.md)
+- [Цена утверждений линейна по числу элементарных действий внутри них, а не по числу утверждений](cena-utverzhdeniy-lineyna-po-chislu-deystviy.md)
+- [Утверждение, которое ядро берёт индукцией, стоит 2,5 с на модуль — и одно стоит столько же, сколько семь](cena-indukcii-eto-postoyannyy-vyklyuchatel.md)
+- [Основание, взятое по имени ветки, а не по точке ветвления, даёт замер, ошибающийся в одиннадцать раз](osnovanie-vzyatoe-po-imeni-vetki-eto-ne-osnovanie.md)
 - [Файл, записанный на четырёх поверхностях, доказательство нести не может](proof-words-live-on-two-surfaces-of-four.md)
 - [Свёртка в flang левая, и индукцию по списку к ней прицепить нельзя](left-fold-gives-no-list-induction.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
@@ -137,6 +143,8 @@
 - [Зеркало оценки размера на flang уже написано, и смета в отчёте о памяти устарела](the-size-estimate-mirror-in-flang-already-exists.md)
 
 ## Скорость и цена доказуемости
+
+- [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а по одному файлу проходит за 19 минут](progon-primerov-katalogom-kopit-pamyat-a-po-faylam-net.md)
 
 - [Цена доказуемости — 2,5 % функций, а всё остальное медленно по другим причинам](provability-costs-2-5-percent.md)
 - [Доля протухает молча, а счёт — нет: цена доказуемости за два дня уехала с 2,4 % на 1,1 %](a-share-goes-stale-a-count-does-not.md)
@@ -215,6 +223,9 @@
 - [Закоммиченная точка раскрутки отстала от исходников на одну форму языка, и двоичный не проверяет три своих модуля](bootstrap-seed-lags-the-sources-by-one-language-form.md)
 - [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](otkaz-ot-otstavshego-dvoichnogo-nelzya-pripisyvat-proveryaemomu-faylu.md)
 - [Цена подключения категорной поверхности к компилятору — не рост замыкания, а сорок ненаписанных правил](cena-vtaskivaniya-kategornoy-poverhnosti-eto-ne-zamykanie-a-nenapisannye-pravila.md)
+- [Судья категорий был написан и не запускался ничем: вшить его стоило семь файлов замыкания](sudya-kategoriy-byl-napisan-i-ne-gonyalsya.md)
+- [`только` у ввоза не сужает видимость, а выбрасывает объявления](tolko-u-vvoza-vybrasyvaet-obyavleniya.md)
+- [Сторож столкновений имён не знал о вариантах суммы](storozh-stolknoveniy-ne-znal-o-variantah-summy.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)
@@ -365,6 +376,8 @@
 
 ## Найденные ошибки
 
+- [Ветка влита в ствол, а её работы в стволе нет: ловится счётом имён, заведённых веткой от её предка](vetka-vlita-a-eyo-raboty-v-stvole-net.md)
+
 - [Печать в C ломается на параметре, чьё имя транслитерируется в ключевое слово C — но только у рекурсивной функции](c-backend-emits-a-c-keyword-as-a-parameter-name.md)
 - [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](strochnoe-imya-varianta-v-golom-sluchae-eto-svyazyvanie-imeni.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](nulyarnuyu-funkciyu-nelzya-pozvat-cherez-vvoz.md)
@@ -376,6 +389,8 @@
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)
 - [Поле записи отмывало значение из-за симметричного сравнения типов](a-record-field-laundered-a-value.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
+- [Печать плана обещана наизнанку: семь целей молча забывают план, восьмая отказывает не про него](pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md)
+- [Веер оснастки считается по ядрам, а кончается память](veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.md)
 - [Ядро принимает ложь дважды за сутки — это класс дефектов](the-core-accepts-falsehood-a-class.md)
 - [Проверка замкнутости цели стояла только на ветви индукции, и прямой шаг «по примеру» шёл мимо неё](closedness-check-guarded-only-the-induction-branch.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
@@ -425,6 +440,9 @@
 - [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](dovod-protiv-formy-veren-lish-dlya-perechislennyh-zadach.md)
 
 ## Модульность и пакеты
+
+- [Одинаковые имена в двух модулях библиотеки спят, пока оба модуля не встретятся в одном замыкании](odinakovye-imena-spyat-poka-oba-modulya-ne-vstretyatsya-v-odnom-zamykanii.md)
+- [Два разных списка `только` для одного модуля не объединяются, и имя из одного лишь списка становится неизвестным](dva-spiska-tolko-dlya-odnogo-modulya-ne-obedinyayutsya.md)
 
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка](biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu.md)
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)

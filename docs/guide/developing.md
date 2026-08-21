@@ -6,10 +6,6 @@ There is one compiler, written in flang itself and built into a binary. Working 
 clone and nothing else: the package has no dependencies, so the commands run straight after
 `git clone`.
 
-```bash
-node scripts/build-release-c.mjs     # prints the release C and builds it
-```
-
 A change to the compiler in `flang/self/` must reprint the bootstrap point in the same commit, or
 `bootstrap/` starts building the previous compiler silently:
 
@@ -19,12 +15,12 @@ sh scripts/raskrutka.sh --check   # compare against the sources byte for byte, e
 sh scripts/raskrutka.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
 ```
 
-The binary itself does the printing (`bootstrap/flang emit … --target c`), so no Node is
-involved; if the binary is missing, the script builds it from `bootstrap/` first.
+The binary compiler itself does the printing (`bootstrap/flang emit … --target c`); if the binary
+is missing, the script builds it from `bootstrap/` first.
 
-The check now costs what the print costs — about eleven minutes, plus a `make` if the binary
-is not built. It used to be seconds, because a JavaScript implementation printed the same
-bytes; that implementation is gone (commit `fe8e8a37`), and with it the cheap second opinion.
+The check costs what the print costs — about eleven minutes, plus a `make` if the binary is not
+built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
+every save.
 
 The commands the language answers to:
 
@@ -42,10 +38,10 @@ flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
 flang test flang/stdlib/
 flang test 'flang/examples/**/*.flang' --json
 
-# call a function
+# call a function: --args takes a FLAT object of scalars, a list cannot go there
 flang run flang/examples/leetcode/035-search-insert-position.flang \
-  --function "Место вставки" --args '{"элементы":[1,3,5,6],"цель":2}'
-# {"function":"Место вставки","args":{...},"result":1}
+  --function "Место вставки" --args '{"цель":2}'
+# functions with a list argument are called by their own examples: flang test <file>
 
 # print it — targets: c | csharp | elixir | go | java | js | python | rust
 flang emit flang/examples/leetcode/035-search-insert-position.flang \
@@ -58,12 +54,12 @@ Checks:
 sh flang/проверки/обход.sh          # the walker's checks, run by the binary
 sh flang/проверки/обход-примеров.sh # every example in the tree
 sh scripts/raskrutka.sh --check     # the seed against what the sources emit
-./ярлык тесты                       # the JavaScript suite — does not start today
+./ярлык                             # every check in the tree, each with one line of explanation
+./ярлык тесты                       # the whole set at once
 ```
 
-The former all-in-one `npm test` does not start today: its preparation step imports a module of
-the removed second implementation and fails before the first check. Moving the checks onto the
-binary is separate work, and until it is done only the commands above count as green.
+A single check is called by its name from that list: `./ярлык spec:check`, `./ярлык links:check`,
+`./ярлык site:check`. Each has its own exit code: 0 — clean, non-zero — the culprit is named.
 
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
 the same contract everywhere, which is what makes it usable from CI, editors and agents. The one

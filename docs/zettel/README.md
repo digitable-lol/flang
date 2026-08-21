@@ -209,6 +209,8 @@
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-ostayotsya-tolko-celyu-pechati.md)
 - [Node ушёл с пути сборки: точку раскрутки печатает сам двоичный, и обе печати совпали байт в байт](node-ushyol-s-puti-sborki.md)
 - [Закоммиченная точка раскрутки отстала от исходников на одну форму языка, и двоичный не проверяет три своих модуля](bootstrap-seed-lags-the-sources-by-one-language-form.md)
+- [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](otkaz-ot-otstavshego-dvoichnogo-nelzya-pripisyvat-proveryaemomu-faylu.md)
+- [Цена подключения категорной поверхности к компилятору — не рост замыкания, а сорок ненаписанных правил](cena-vtaskivaniya-kategornoy-poverhnosti-eto-ne-zamykanie-a-nenapisannye-pravila.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)

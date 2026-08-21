@@ -112,9 +112,10 @@
 - [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postusloviya-schitayutsya-pri-rabote-poetomu-ih-graf-bez-petel.md)
 - [Рефлексивность и цель-выбор вместе закрыли ноль из двадцати, и не хватило им двух названных шагов](refleksivnost-i-cel-vybor-vmeste-dayut-nol.md)
 - [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](soderzhatelnoe-i-dokazuemoe-pochti-ne-peresekayutsya.md)
-- [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](svortka-ne-chitaet-postuslovie-vyzvannoy.md)
 - [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ — а сузить их до правильных деревьев нечем](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
+- [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ: 28 утверждений в шести файлах библиотеки](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
+- [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
 
 ## Теория категорий
 

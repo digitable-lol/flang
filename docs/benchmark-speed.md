@@ -556,7 +556,7 @@ node benchmarks/zamer-skorosti/pamyat.mjs /tmp/zamer
 
 # 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
 mkdir -p /tmp/zamer/qs
-node flang/bin/flang.mjs emit flang/examples/rosetta/quicksort.flang \
+bootstrap/flang emit flang/examples/rosetta/quicksort.flang \
   --target c --out /tmp/zamer/qs --max-steps 2000000000
 make -C /tmp/zamer/qs -j4
 benchmarks/zamer-skorosti/arena.sh /tmp/zamer/qs

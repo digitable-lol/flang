@@ -59707,6 +59707,49 @@ fl_status compiler_flang_pusto_spiska(fl_ctx *ctx, fl_value *result, fl_error *e
 fl_status compiler_flang_zveno_spiska(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Имя строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_stroki(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_obyavlenie_stroki(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_varianty_stroki(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип знака».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_tip_znaka(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Звено строки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_zveno_stroki(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Рекурсивные поля».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -62079,6 +62122,15 @@ fl_status compiler_flang_primer_funkcii(fl_ctx *ctx, fl_value funkciya, fl_value
 fl_status compiler_flang_variant_obrazca(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Вариант образца не списка».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_variant_obrazca_ne_spiska(fl_ctx *ctx, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Прогон примера».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -63372,6 +63424,15 @@ fl_status compiler_flang_vtoraya_posylka(fl_ctx *ctx, fl_value posylki, fl_value
  * @return значение: «Значение»
  */
 fl_status compiler_flang_nachalo_principa(fl_ctx *ctx, fl_value programma, fl_value tip, fl_value imya_tipa, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начало принципа по встроенному».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_nachalo_principa_po_vstroennomu(fl_ctx *ctx, fl_value tip, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить индукцию».
@@ -73829,6 +73890,16 @@ fl_status compiler_flang_neposchitannoe_v_binarnike(fl_ctx *ctx, fl_value svyaza
  * @return значение: строка
  */
 fl_status compiler_flang_chto_binarnik_ne_sudil(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Чего печать не судила».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazannaya — «связанная»: «Значение»
+ * @param razobrannaya — «разобранная»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_chego_pechat_ne_sudila(fl_ctx *ctx, fl_value svyazannaya, fl_value razobrannaya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Названия двух».

@@ -19,7 +19,7 @@
 // такого поручения в словаре нет, и заводить его ради проверки не стоит.
 //
 // Прогон:
-//   node flang/bin/flang.mjs io flang/examples/io/oktety-po-provodu.flang
+//   bootstrap/flang io flang/examples/io/oktety-po-provodu.flang
 
 тип «Ход»
   вариант «Открываем»

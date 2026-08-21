@@ -451,8 +451,8 @@ LC_ALL=C.UTF-8 node benchmarks/zamer-tseny/tela.mjs
 → тел вида «`разбор` по параметру» в `flang/stdlib` — **58 из 208**.
 
 ```
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/benchmark2/04-razmer-slovarya.flang --proof
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check docs/benchmark2/13-chyotnoe.flang --proof
+LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/04-razmer-slovarya.flang --proof
+LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/13-chyotnoe.flang --proof
 ```
 → два «доказано … теоремы при нём нет и не нужно». Это и есть **2 из 20**.
 

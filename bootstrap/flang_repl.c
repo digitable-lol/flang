@@ -327,14 +327,18 @@ static const char FLANG_HELP[] =
     "Подробности: man flang";
 
 static const char HELP_CHECK[] =
-    "flang check <файл.flang> [--proof [--json]]\n"
+    "flang check <файл.flang> [--proof [--json] [--записать <файл>]]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
     "код возврата 1, если программа не прошла.\n"
     "\n"
-    "  --proof   ведомость: чем несётся обещание «тотальная» у каждой функции и чем\n"
-    "            — каждое высказанное утверждение\n"
-    "  --json    вместе с --proof: ведомость машинным видом\n"
+    "  --proof            ведомость: чем несётся обещание «тотальная» у каждой\n"
+    "                     функции и чем — каждое высказанное утверждение\n"
+    "  --json             вместе с --proof: ведомость машинным видом\n"
+    "  --записать <файл>  вместе с --proof: положить САМО доказательство в файл\n"
+    "                     строками, которые читает и человек, и сверщик\n"
+    "                     (flang/proof/сверщик.flang). Ключ пишется и латиницей:\n"
+    "                     --record\n"
     "\n"
     "Категорной поверхности и процессов бинарник НЕ СУДИТ ВОВСЕ — ни доказуемых\n"
     "правил (концы стрелок, замкнутость категории, полнота связи), ни законов на\n"
@@ -5840,7 +5844,7 @@ static int check_file(const char *path) {
  * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
  * искали», а не «не найдено»).
  */
-static int proof_file(const char *path, bool json) {
+static int proof_file(const char *path, bool json, const char *record) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
@@ -5896,6 +5900,28 @@ static int proof_file(const char *path, bool json) {
       }
     }
     fflush(stdout);
+    /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
+       ведомость читает человек, а запись читает сверщик, и смешать их в одной
+       трубе значило бы заставить сверщика отделять одно от другого. Считает её
+       слой на flang («Запись доказательства»), здесь — ровно запись байтов. */
+    if (record != NULL) {
+      if (val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
+        FILE *out = fopen(record, "wb");
+        if (out == NULL) {
+          fprintf(stderr, "FLANG_CLI: не открыт для записи файл %s\n", record);
+          code = 2;
+        } else {
+          if (fwrite(utf8, 1, bytes, out) != bytes) {
+            fprintf(stderr, "FLANG_CLI: не записан файл %s\n", record);
+            code = 2;
+          }
+          fclose(out);
+        }
+      } else {
+        fputs("FLANG_CLI: слой ведомости не отдал записи доказательства\n", stderr);
+        code = 2;
+      }
+    }
   } else if (val_field(result, "препятствие", &field) && val_text(field, &utf8, &bytes) && bytes > 0) {
     fprintf(stderr, "%.*s\n", (int)bytes, utf8);
     code = 2;
@@ -7931,6 +7957,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
  */
 static int check_command(int argc, char **argv) {
   const char *path = NULL;
+  const char *record = NULL;
   bool proof = false;
   bool json = false;
   int index = 0;
@@ -7939,6 +7966,13 @@ static int check_command(int argc, char **argv) {
       proof = true;
     } else if (strcmp(argv[index], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[index], "--записать") == 0 || strcmp(argv[index], "--record") == 0) {
+      index += 1;
+      if (index >= argc) {
+        fputs("flang check --записать: не назван файл, куда класть доказательство\n", stderr);
+        return 2;
+      }
+      record = argv[index];
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {
@@ -7954,7 +7988,11 @@ static int check_command(int argc, char **argv) {
     fputs("flang check --json осмыслен только рядом с «--proof»: без ведомости печатать в JSON нечего\n", stderr);
     return 2;
   }
-  return proof ? proof_file(path, json) : check_file(path);
+  if (record != NULL && !proof) {
+    fputs("flang check --записать осмыслен только рядом с «--proof»: без ведомости доказательства нет\n", stderr);
+    return 2;
+  }
+  return proof ? proof_file(path, json, record) : check_file(path);
 }
 
 /* ═══════════════════════════════ flang ast ═══════════════════════════════ */

@@ -3,7 +3,7 @@
 Из пяти подделок с `badssl.com` четыре отвергаются, пятая проходит. Замер 22
 августа 2026, обоими путями сразу.
 
-| подделка | поручение наружу (curl) | свой клиент на OpenSSL (102 строки) |
+| подделка | поручение наружу (curl) | свой клиент на OpenSSL (91 строка) |
 |---|---|---|
 | `expired.badssl.com` | отвергнут, «certificate has expired» | отвергнут, «certificate has expired» |
 | `wrong.host.badssl.com` | отвергнут, «no alternative certificate subject name matches target hostname» | отвергнут, «hostname mismatch» |

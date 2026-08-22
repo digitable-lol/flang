@@ -64,8 +64,11 @@ Before the run, the preflight prints what is actually going to be checked:
   Скрыто тестов:             33 — elixir 33
 ```
 
-Run it on its own with `./ярлык preflight`. This report is why the suite can be
-believed at all. A backend test proves code generation exactly one way: a real
+There is no such report in the tree any more: `scripts/preflight.mjs` imported
+`flang/src/targets.mjs`, which went away with the JavaScript implementation, and
+the script was deleted on 20 August together with the list of targets that lived
+only there. The shortcut `./ярлык preflight` does not exist either. The argument
+below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
 compiler accepted the emitted code, and the result agreed with the interpreter.
 Eight toolchains rarely live on one machine, the tests of the missing ones skip,
 and the suite goes green while half the backends were never checked. That is how
@@ -156,11 +159,9 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык сборка` | build the binary compiler from the C99 in `bootstrap/`; the one shortcut the shell script knows by itself |
 | `./ярлык ярлыки` | every shortcut names a file that exists in the tree |
 | `./ярлык тесты` | the whole suite, `flang/test/*.test.mjs`, preflight first |
-| `./ярлык test:backends` | the emit tests alone, when you do not want the full suite |
 | `./ярлык test:remote` | the same suite on a host of your choosing, over ssh |
-| `./ярлык preflight` | the toolchain report on its own |
 | `./ярлык bootstrap` · `./ярлык bootstrap:check` · `./ярлык stroki:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
-| `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык emit:check` · `./ярлык names:check` | the five prose guards below |
+| `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык pechat:check` · `./ярлык names:check` | the five prose guards below |
 | `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-licenzii.flang`), not through the shortcut |
 | `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-ssylok.flang`) |
 | `./ярлык site` · `./ярлык site:check` | build the documentation site and check its links; **Pages runs the file directly** |
@@ -216,7 +217,7 @@ run on its own and a test that also proves the guard itself can go red:
 ./ярлык claims:check   # "the language has no such form" — asked of the real lexer
 ./ярлык counts:check   # every "N lines of `path`" and every ledger count, remeasured
 ./ярлык codes:check    # every FLANG_* named in any .md must exist in the sources
-./ярлык emit:check     # "seven backends emit …, JavaScript emits one file", and the cost table
+./ярлык pechat:check   # "seven backends emit …", the ten prose promises and the eight cost claims
 ./ярлык names:check    # naming rules, against the parse tree of the whole corpus
 ```
 

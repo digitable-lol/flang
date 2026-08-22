@@ -13,7 +13,7 @@
 # пропусков нет по построению, и там же прогон банально быстрее — ядер больше.
 #
 #   scripts/test-remote.sh                  весь набор (ярлык «тесты»)
-#   scripts/test-remote.sh test:backends    любой ярлык из ярлыки.flang
+#   scripts/test-remote.sh spec:check       любой ярлык из ярлыки.flang
 #   scripts/test-remote.sh --shell "cmd"    произвольная команда в копии
 #   scripts/test-remote.sh --sync           только синхронизировать
 #   scripts/test-remote.sh --info           что за хост и что на нём стоит

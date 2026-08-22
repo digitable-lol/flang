@@ -125,9 +125,9 @@ fl_status compiler_flang_sozdat_obyavlenie_razbora(fl_ctx *ctx, fl_value klyuch,
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_sbor_pri_razbore(fl_ctx *ctx, fl_value modul, fl_value tipy, fl_value funkcii, fl_value nasledie, fl_value prochie, fl_value *out, fl_error *error);
 
-/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход», «ввод-вывод», «монада», «поверхность». */
+/* Запись FTS «Разборщик»: «поток», «сбор», «области», «беда», «исход», «ввод-вывод», «седьмое действие», «монада», «поверхность». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value vvod_vyvod, fl_value monada, fl_value poverhnost, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_razborschik(fl_ctx *ctx, fl_value potok, fl_value sbor, fl_value oblasti, fl_value beda, fl_value ishod, fl_value vvod_vyvod, fl_value sedmoe_deystvie, fl_value monada, fl_value poverhnost, fl_value *out, fl_error *error);
 
 /* Запись FTS «Шаг»: «р», «узел». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -5828,6 +5828,15 @@ fl_status compiler_flang_s_ishodom(fl_ctx *ctx, fl_value r, fl_value *result, fl
 fl_status compiler_flang_s_vvodom_vyvodom(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «С седьмым действием».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разборщик»
+ * @return значение: «Разборщик»
+ */
+fl_status compiler_flang_s_sedmym_deystviem(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «С блоком монады».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -5861,6 +5870,14 @@ fl_status compiler_flang_imena_variantov_vvoda_vyvoda(fl_ctx *ctx, fl_value *res
  * @return значение: «Разборщик»
  */
 fl_status compiler_flang_otmetit_tip_vvoda_vyvoda(fl_ctx *ctx, fl_value r, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя седьмого действия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_sedmogo_deystviya(fl_ctx *ctx, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отметить вариант ввода-вывода».
@@ -10137,12 +10154,38 @@ fl_status compiler_flang_pole_esli_est(fl_ctx *ctx, fl_value polya, fl_value kly
 fl_status compiler_flang_polya_obyavleniy(fl_ctx *ctx, fl_value polya, fl_value prochie, fl_value klyuchi, fl_value imena, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Узел типа действия».
+ * Функция flang «Варианты действия без поручения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_varianty_deystviya_bez_porucheniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вариант поручить».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @return значение: «Значение»
  */
-fl_status compiler_flang_uzel_tipa_deystviya(fl_ctx *ctx, fl_value *result, fl_error *error);
+fl_status compiler_flang_variant_poruchit(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Варианты действия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_sedmoe — «есть седьмое»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_varianty_deystviya(fl_ctx *ctx, fl_value est_sedmoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел типа действия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param est_sedmoe — «есть седьмое»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_tipa_deystviya(fl_ctx *ctx, fl_value est_sedmoe, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сколько по ключу».
@@ -10170,9 +10213,10 @@ fl_status compiler_flang_est_tip_s_imenem(fl_ctx *ctx, fl_value tipy, fl_value i
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param tipy — «типы»: список: «Значение»
  * @param nuzhen — «нужен»
+ * @param est_sedmoe — «есть седьмое»
  * @return значение: список: «Значение»
  */
-fl_status compiler_flang_tipy_s_deystviem(fl_ctx *ctx, fl_value tipy, fl_value nuzhen, fl_value *result, fl_error *error);
+fl_status compiler_flang_tipy_s_deystviem(fl_ctx *ctx, fl_value tipy, fl_value nuzhen, fl_value est_sedmoe, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Узел типа поручения».
@@ -78951,6 +78995,52 @@ fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, f
 fl_status compiler_flang_nastroyki_s_granicey_vhoda(fl_ctx *ctx, fl_value nastroyki, fl_value granica, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Отказ по плану».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: строка
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_po_planu(fl_ctx *ctx, fl_value cel, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_sborka_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка Java отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог сборки Java»
+ */
+fl_status compiler_flang_sborka_java_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Elixir отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог печати Elixir»
+ */
+fl_status compiler_flang_pechat_elixir_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Python отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог печати Python»
+ */
+fl_status compiler_flang_pechat_python_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Напечатать связанное».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -78980,6 +79070,16 @@ fl_status compiler_flang_nastroyki_go_iz_nastroek(fl_ctx *ctx, fl_value nastroyk
 fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Напечатать Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Напечатать связанное в Rust».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -78988,6 +79088,16 @@ fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyaza
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать в Java от исходников».
@@ -79159,6 +79269,16 @@ fl_status compiler_flang_pechat_v_csharp_ot_ishodnikov(fl_ctx *ctx, fl_value fay
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_csharp(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать CSharp».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки CSharp»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_csharp(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

@@ -323,7 +323,20 @@ defmodule Flang.Rt do
   def chain_cons?(_), do: false
 
   @doc "Голова цепочки: первый элемент списка или первый символ строки."
-  def chain_head({:str, text}), do: {:str, String.first(text)}
+  # String.first/1 и String.slice/2 ходят по ГРАФЕМАМ, а весь остальной модуль —
+  # по кодовым точкам (`длина`, `символ`, `подстрока`, `разложить`). На «е» с
+  # комбинирующим ударением (U+0435 U+0301) это расходилось прогоном: `длина`
+  # давала 2, а `голова` — обе точки разом, и обход строки по «голова и хвост»
+  # видел один знак там, где семь остальных целей видят два. String.next_codepoint/1
+  # режет ровно по кодовой точке — той же мере, что у всех прочих форм.
+  def chain_head({:str, text}) do
+    case String.next_codepoint(text) do
+      {point, _rest} -> {:str, point}
+      # На пустой строке образец «голова и хвост» не выбирается вовсе; ветка
+      # стоит ради тотальности разбора.
+      nil -> {:str, ""}
+    end
+  end
 
   def chain_head({:list, _, _} = value) do
     {first, _} = pop(value)
@@ -331,7 +344,12 @@ defmodule Flang.Rt do
   end
 
   @doc "Хвост цепочки: остаток списка или остаток строки."
-  def chain_tail({:str, text}), do: {:str, String.slice(text, 1..-1//1)}
+  def chain_tail({:str, text}) do
+    case String.next_codepoint(text) do
+      {_point, rest} -> {:str, rest}
+      nil -> {:str, ""}
+    end
+  end
 
   def chain_tail({:list, _, _} = value) do
     {_, rest} = pop(value)
@@ -1178,13 +1196,22 @@ defmodule Flang.Rt do
   def b_join(left, right) do
     first = expect_string("соединить", left, "первая строка")
     second = expect_string("соединить", right, "вторая строка")
+    storozh_styka(first, second)
     {:str, first <> second}
   end
 
   defp join_parts([], _separator, _index, acc), do: acc
 
   defp join_parts([{:str, value} | rest], separator, index, acc) do
-    joined = if index == 1, do: value, else: acc <> separator <> value
+    joined =
+      if index == 1 do
+        value
+      else
+        storozh_styka(acc, separator)
+        storozh_styka(acc <> separator, value)
+        acc <> separator <> value
+      end
+
     join_parts(rest, separator, index + 1, joined)
   end
 
@@ -1196,6 +1223,68 @@ defmodule Flang.Rt do
           )
   end
 
+  # ── Одна мера: где начинается знак ────────────────────────────────────────
+  #
+  # `длина`, `подстрока`, `символ` и `разложить … на символы` ходят по кодовым
+  # точкам, а String.contains?/2, String.starts_with?/2 и String.split/2 — по
+  # октетам двоичного. На правильном UTF-8 это одно и то же, на неправильном —
+  # нет, а неправильный сюда приезжает: строка на BEAM это произвольное
+  # двоичное. Поэтому вхождение засчитывается, только если оба его края стоят на
+  # начале кодовой точки — на том самом делении, по которому режет
+  # String.next_codepoint/1.
+  defp nachala_znakov(text), do: MapSet.new(nachala_znakov(text, 0, [byte_size(text)]))
+
+  defp nachala_znakov(text, offset, acc) do
+    case String.next_codepoint(text) do
+      nil -> acc
+      {point, rest} -> nachala_znakov(rest, offset + byte_size(point), [offset | acc])
+    end
+  end
+
+  defp na_granice?(nachala, at), do: MapSet.member?(nachala, at)
+
+  # Все вхождения, не разрезающие знак ни началом, ни концом.
+  defp vhozhdeniya(text, part) do
+    nachala = nachala_znakov(text)
+
+    :binary.matches(text, part)
+    |> Enum.filter(fn {at, len} -> na_granice?(nachala, at) and na_granice?(nachala, at + len) end)
+  end
+
+  # Пустой разделитель до сюда доходит только доказанным путём, где типизатор
+  # уже исключил пустоту; ответ на него оставлен прежним, а не заменён падением
+  # :binary.matches/2 на пустом образце.
+  defp razdelit_po_znakam(text, ""), do: String.split(text, "")
+
+  defp razdelit_po_znakam(text, mark) do
+    {kuski, ostatok} =
+      Enum.reduce(vhozhdeniya(text, mark), {[], 0}, fn {at, len}, {kuski, from} ->
+        if at < from do
+          {kuski, from}
+        else
+          {[binary_part(text, from, at - from) | kuski], at + len}
+        end
+      end)
+
+    Enum.reverse([binary_part(text, ostatok, byte_size(text) - ostatok) | kuski])
+  end
+
+  # Слипнутся ли на стыке два знака в один: мера склейки против суммы мер.
+  # Склейка и так копирует обе строки, поэтому лишний проход её порядка не меняет.
+  defp styk_sliyaet?(left, right) do
+    length(code_points(left <> right)) != length(code_points(left)) + length(code_points(right))
+  end
+
+  defp storozh_styka(left, right) do
+    if styk_sliyaet?(left, right) do
+      raise fail(
+              @code_builtin_args,
+              "«соединить»: на стыке октет продолжения прирос бы к последнему знаку левой " <>
+                "строки — два знака слились бы в один"
+            )
+    end
+  end
+
   @doc "«разделить … по …»."
   def b_split(source, separator) do
     value = expect_string("разделить", source, "строка")
@@ -1205,7 +1294,7 @@ defmodule Flang.Rt do
       raise fail(@code_builtin_args, "«разделить»: разделитель не может быть пустым")
     end
 
-    list(Enum.map(String.split(value, mark), fn part -> {:str, part} end))
+    list(Enum.map(razdelit_po_znakam(value, mark), fn part -> {:str, part} end))
   end
 
   @doc "«содержит»: подстрока в строке либо значение в списке."
@@ -1216,14 +1305,15 @@ defmodule Flang.Rt do
   def b_contains(left, right) do
     value = expect_string("содержит", left, "строка или список")
     part = expect_string("содержит", right, "искомая подстрока")
-    {:flag, String.contains?(value, part)}
+    {:flag, part == "" or vhozhdeniya(value, part) != []}
   end
 
   @doc "«начинается с»."
   def b_starts_with(source, prefix) do
     value = expect_string("начинается с", source, "строка")
     start = expect_string("начинается с", prefix, "префикс")
-    {:flag, String.starts_with?(value, start)}
+    {:flag,
+     String.starts_with?(value, start) and na_granice?(nachala_znakov(value), byte_size(start))}
   end
 
   # Пробел по правилам ECMAScript String.prototype.trim.
@@ -1420,7 +1510,10 @@ defmodule Flang.Rt do
     # «отфильтровать работает только со списком, получено неизвестное значение».
     # Не ловилось это потому, что корпусная сверка шести целей печатала
     # программы БЕЗ отметок анализа, то есть по этой ветви не ходила вовсе.
-    list(Enum.map(String.split(value, mark), fn part -> {:str, part} end))
+    #
+    # Режет по границам знаков, как и `b_split`: доказанный путь отличается от
+    # обычного только снятым сторожем пустого разделителя, а не мерой.
+    list(Enum.map(razdelit_po_znakam(value, mark), fn part -> {:str, part} end))
   end
 
   @doc "«код символа» доказанно непустой строки."

@@ -396,6 +396,7 @@
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
 - [Рукописная копия обнаруживает себя столкновением имён в день, когда библиотека дорастает до неё](rukopisnaya-kopiya-obnaruzhivaet-sebya-stolknoveniem-imyon.md)
 - [`http.flang` считает Content-Length знаками в обе стороны, и потому чинить одну сторону нельзя](content-length-schitaetsya-znakami-v-obe-storony.md)
+- [Байтовый поиск и знаковый счёт — это две меры на всякой строке, которая не является правильным UTF-8](byte-search-and-character-count-are-two-measures-on-every-ill-formed-string.md)
 
 - [Вариант суммы, названный как вариант встроенного «Отклик», отключает все встроенные типы ввода-вывода, а диагностика жалуется на другое](variant-nazvannyy-kak-vstroennyy-vyrubaet-vstroennye-tipy.md)
 - [Ядро печатало «доказано индукцией» об утверждении, которое рантайм отвергал](the-core-proved-a-falsehood.md)

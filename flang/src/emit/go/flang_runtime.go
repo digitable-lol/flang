@@ -886,6 +886,64 @@ func BSubstring(ctx *Ctx, text, from, to Value) (Value, error) {
 	return Text(string(runes[int(begin):int(end)])), nil
 }
 
+// ── Одна мера: где начинается знак ──────────────────────────────────────────
+//
+// «длина», «подстрока», «символ» и «разложить … на символы» ходят по []rune, а
+// strings.Contains, strings.HasPrefix и strings.Split — по октетам. На
+// правильном UTF-8 это одно и то же, а на неправильном — нет, и неправильный
+// сюда приезжает: строка Go это произвольные октеты. Замер библиотечным входом
+// 22 августа 2026: «мама» содержит октет D0 — true, начинается с него — true,
+// разделить по нему — пять кусков, хотя знаков в «маме» четыре и ни один из них
+// этому октету не равен.
+//
+// Поэтому вхождение засчитывается, только если оба его края стоят на начале
+// руны — на том самом делении, по которому строку режет []rune.
+func runeStarts(source string) []bool {
+	starts := make([]bool, len(source)+1)
+	for index := range source {
+		starts[index] = true
+	}
+	starts[len(source)] = true
+	return starts
+}
+
+// findAligned — первое вхождение, не разрезающее знак ни началом, ни концом.
+func findAligned(source, part string, from int) int {
+	if part == "" {
+		return from
+	}
+	starts := runeStarts(source)
+	for index := from; index+len(part) <= len(source); index++ {
+		if starts[index] && starts[index+len(part)] && source[index:index+len(part)] == part {
+			return index
+		}
+	}
+	return -1
+}
+
+// splitAligned — разделение по тем же границам, что у поиска.
+func splitAligned(source, mark string) []string {
+	parts := []string{}
+	from := 0
+	for {
+		at := findAligned(source, mark, from)
+		if at < 0 {
+			break
+		}
+		parts = append(parts, source[from:at])
+		from = at + len(mark)
+	}
+	return append(parts, source[from:])
+}
+
+// glueFuses — слипнутся ли на стыке два знака в один. Считается прямо: мера
+// склейки против суммы мер. Склейка и так копирует обе строки, поэтому лишний
+// проход её порядка не меняет.
+func glueFuses(left, right string) bool {
+	return utf8.RuneCountInString(left+right) !=
+		utf8.RuneCountInString(left)+utf8.RuneCountInString(right)
+}
+
 // BJoin — «соединить». Две формы: строка со строкой и список с разделителем;
 // различаются по типу первого аргумента, как в builtins.mjs.
 func BJoin(ctx *Ctx, left, right Value) (Value, error) {
@@ -903,6 +961,27 @@ func BJoin(ctx *Ctx, left, right Value) (Value, error) {
 			}
 			parts[index] = item.Str
 		}
+		tail := ""
+		for index, part := range parts {
+			if index != 0 {
+				if glueFuses(tail, separator) {
+					return Nothing(), Fail(CodeBuiltinArgs,
+						"«соединить»: на стыке октет продолжения прирос бы к последнему знаку "+
+							"левой строки — два знака слились бы в один")
+				}
+				if separator != "" {
+					tail = separator
+				}
+			}
+			if glueFuses(tail, part) {
+				return Nothing(), Fail(CodeBuiltinArgs,
+					"«соединить»: на стыке октет продолжения прирос бы к последнему знаку "+
+						"левой строки — два знака слились бы в один")
+			}
+			if part != "" {
+				tail = part
+			}
+		}
 		return Text(strings.Join(parts, separator)), nil
 	}
 	first, err := expectString("соединить", left, "первая строка")
@@ -912,6 +991,11 @@ func BJoin(ctx *Ctx, left, right Value) (Value, error) {
 	second, err := expectString("соединить", right, "вторая строка")
 	if err != nil {
 		return Nothing(), err
+	}
+	if glueFuses(first, second) {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«соединить»: на стыке октет продолжения прирос бы к последнему знаку левой "+
+				"строки — два знака слились бы в один")
 	}
 	return Text(first + second), nil
 }
@@ -929,7 +1013,7 @@ func BSplit(ctx *Ctx, text, separator Value) (Value, error) {
 	if mark == "" {
 		return Nothing(), Fail(CodeBuiltinArgs, "«разделить»: разделитель не может быть пустым")
 	}
-	parts := strings.Split(source, mark)
+	parts := splitAligned(source, mark)
 	items := make([]Value, len(parts))
 	for index, part := range parts {
 		items[index] = Text(part)
@@ -952,7 +1036,7 @@ func BSplitProven(ctx *Ctx, text, separator Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	parts := strings.Split(source, mark)
+	parts := splitAligned(source, mark)
 	items := make([]Value, len(parts))
 	for index, part := range parts {
 		items[index] = Text(part)
@@ -1058,7 +1142,7 @@ func BContains(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Flag(strings.Contains(source, part)), nil
+	return Flag(findAligned(source, part, 0) >= 0), nil
 }
 
 // BStartsWith — «начинается с».
@@ -1071,7 +1155,11 @@ func BStartsWith(ctx *Ctx, text, prefix Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Flag(strings.HasPrefix(source, start)), nil
+	if !strings.HasPrefix(source, start) {
+		return Flag(false), nil
+	}
+	// Левый край у префикса и у строки один, сторожится правый.
+	return Flag(runeStarts(source)[len(start)]), nil
 }
 
 // isJSSpace — пробел по правилам ECMAScript String.prototype.trim.

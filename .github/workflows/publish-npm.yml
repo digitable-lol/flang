@@ -120,7 +120,7 @@ jobs:
           files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
           echo "в архив идут файлы:"; echo "$files" | sed 's/^/  /'
           tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-              --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - $files \
+              --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files \
             | gzip -9n > "output/flang-$version-c.tar.gz"
           ls -l "output/flang-$version-c.tar.gz"
           sha256sum "output/flang-$version-c.tar.gz"

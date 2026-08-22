@@ -38,16 +38,22 @@
 # релизного архива и обеих сторон сверки держится на том, что число ровно одно.
 # Записаны они ЗДЕСЬ, а не в скрипте на JavaScript, ровно потому, что этот файл
 # переживёт удаление реализации на JavaScript, а тот — нет.
-# `scripts/bootstrap-c.mjs` читает их отсюда, пока жив (`ПРЕДЕЛЫ`).
+# Второй путь печати — `scripts/raskrutka.sh`; числа там обязаны совпадать.
 set -eu
 
 FLANG_ENTRY='flang/self/bootstrap/compiler.flang'
 FLANG_OUT='bootstrap'
 FLANG_RUNTIME_SRC='flang/src/emit/c'
-FLANG_MAX_STEPS='40000000'
+# Предел шагов поднят с 40 млн до миллиарда 22 августа 2026, и не по вкусу:
+# после двух новых правил вывода проверка компилятора самим собой съедала
+# 40 000 001 шаг из 40 000 000 и обрывалась — печать отменялась совсем.
+# То же число уже стояло в scripts/raskrutka.sh (MAX_STEPS), а здесь отстало;
+# два пути печати с разными пределами дают разный flang_runtime.h и ломают
+# побайтовое совпадение. Теперь число одно на оба пути.
+FLANG_MAX_STEPS='1000000000'
 FLANG_MAX_DEPTH='20000'
 # Что в `bootstrap/` НЕ относится к печати: проза и продукты сборки. Тот же
-# список, что `НЕ_ТОЧКА` в `scripts/bootstrap-c.mjs`.
+# Файл на JavaScript, где этот список дублировался, снят 21 августа 2026.
 FLANG_NOT_EMITTED='README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a'
 
 koren=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)

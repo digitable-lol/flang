@@ -78851,6 +78851,52 @@ fl_status compiler_flang_napechatat_k_pechati(fl_ctx *ctx, fl_value programma, f
 fl_status compiler_flang_nastroyki_s_granicey_vhoda(fl_ctx *ctx, fl_value nastroyki, fl_value granica, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Отказ по плану».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: строка
+ * @param programma — «программа»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_po_planu(fl_ctx *ctx, fl_value cel, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_sborka_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сборка Java отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог сборки Java»
+ */
+fl_status compiler_flang_sborka_java_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Elixir отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог печати Elixir»
+ */
+fl_status compiler_flang_pechat_elixir_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Печать Python отказала».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param beda — «беда»: строка
+ * @return значение: «Итог печати Python»
+ */
+fl_status compiler_flang_pechat_python_otkazala(fl_ctx *ctx, fl_value beda, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Напечатать связанное».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -78880,6 +78926,16 @@ fl_status compiler_flang_nastroyki_go_iz_nastroek(fl_ctx *ctx, fl_value nastroyk
 fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Напечатать Go».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_go(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Напечатать связанное в Rust».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -78888,6 +78944,16 @@ fl_status compiler_flang_napechatat_svyazannoe_v_go(fl_ctx *ctx, fl_value svyaza
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать Rust».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки Rust»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_rust(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать в Java от исходников».
@@ -79059,6 +79125,16 @@ fl_status compiler_flang_pechat_v_csharp_ot_ishodnikov(fl_ctx *ctx, fl_value fay
  * @return значение: «Итог сборки»
  */
 fl_status compiler_flang_napechatat_svyazannoe_v_csharp(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Напечатать CSharp».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazano — «связано»: «Программа с бедами»
+ * @param nastroyki — «настройки»: «Настройки CSharp»
+ * @return значение: «Итог сборки»
+ */
+fl_status compiler_flang_napechatat_csharp(fl_ctx *ctx, fl_value svyazano, fl_value nastroyki, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить исходники».

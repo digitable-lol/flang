@@ -5,7 +5,7 @@
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
 52e9d5b338544916e42ac4eaf900fbf5cac06425b9ba1a44d03c250ca2e8973b  flang/core/evaluate.flang
-d12326f8e2894037673b947ce2750e0828847630b869689ad1916345943fb9c9  flang/core/json.flang
+58dace2ce1aa5097969604e8a98a60f96556d17d821a6ce120df60f6b7126f16  flang/core/json.flang
 5e34a0f6f1ee9876e95b4c066541e8c145c2ec882bc2f86e47d74c1f720bff08  flang/self/bootstrap/compiler.flang
 4e716ff972967f56cfab1ec9f621e1ab6bd33ae4a9915c88d4816deb4c8bebd4  flang/self/bootstrap/corpus.flang
 13c51e9dd9e2771e58e3edf231ceff73c7e24e59f06ea2506b19e81a048f6dad  flang/self/carriers.flang

@@ -491,6 +491,7 @@
 - [Сравнения за постоянное время в этом языке не написать, и функции с таким именем заводить нельзя](constant-time-comparison-cannot-be-promised-by-this-language.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы](zavershitel-fazy-perechityvaet-potok-kotoryy-nechem-kadrirovat.md)
 - [Октетная труба превращает счёт рамки из «ширины знака в UTF-8» в счёт элементов, и весь драйвер PostgreSQL стоит на двух строках](an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count.md)
+- [Тихая потеря байтов у файлов была ДВУМЯ бедами в разных местах, и лечатся они разным лекарством](tihaya-poterya-baytov-u-faylov-byla-dvumya-bedami.md)
 - [Про PostgreSQL в драйвере PostgreSQL — меньше половины функций: 39 из 83, остальные 44 годятся любой базе](pro-postgresql-v-drayvere-postgresql-tolko-polovina-funkciy.md)
 - [Слияние, взявшее файл «целиком у них», роняет чужую работу молча — и ADR остаётся стоять с пометкой «реализовано»](a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently.md)
 

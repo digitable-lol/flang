@@ -44,7 +44,7 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.6.0/flang-0.6.0-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.6.1/flang-0.6.1-c.tar.gz"
   # Хеш архива, собранного `node scripts/build-release-c.mjs` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
@@ -82,7 +82,7 @@ class Flang < Formula
   #       --mtime=@0 --mode=u=rw,go=r -C output/release-c -cf - \
   #       LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
   #       flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h runtime-c \
-  #     | gzip -9n > output/flang-0.6.0-c.tar.gz
+  #     | gzip -9n > output/flang-0.6.1-c.tar.gz
   #
   # LICENSE стоит в списке первым и не забывается: пункт 1 BSD-2-Clause требует
   # сохранять уведомление при распространении исходников, а архив — это ровно
@@ -97,14 +97,14 @@ class Flang < Formula
   # верен ровно для того дерева, на котором его считали, и при теге его надо
   # пересчитать ещё раз этой же командой.
   #
-  # Число ниже посчитано 22 августа 2026 на архиве выпуска 0.6.0: 2 935 333 байта,
+  # Число ниже посчитано 22 августа 2026 на архиве выпуска 0.6.1: 2 975 344 байта,
   # собран приведённой выше командой из `output/release-c` и приложен к релизу
-  # v0.6.0 тем же файлом. Внутри десять имён, ни одного `.o` и ни одного
+  # v0.6.1 тем же файлом. Внутри десять имён, ни одного `.o` и ни одного
   # собранного двоичного — проверено распаковкой. Прежде здесь стояло
-  # 7dc75fec… от выпуска 0.5.0.
-  sha256 "f1df121ba5555d11d15001f96ef8988a8d5b9ab4c6eabdab4a20953ed79c37ec"
+  # f1df121b… от выпуска 0.6.0.
+  sha256 "a1e2e5a99ffc76a526a217d48ccfc93c76c0f3cda07c66986d6a9c5a8b8a18d1"
   license "BSD-2-Clause"
-  version "0.6.0"
+  version "0.6.1"
 
   # Node не нужен: в архиве C99 и Makefile. Из внешнего нужен только `make` —
   # он и объявлен; всё остальное даёт компилятор C, который есть в системе

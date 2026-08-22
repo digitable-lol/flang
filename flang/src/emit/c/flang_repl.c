@@ -9334,6 +9334,35 @@ static size_t io_points(const char *utf8, size_t bytes) {
   return points;
 }
 
+/*
+ * ── ГДЕ ФАЙЛ ПЕРЕСТАЁТ БЫТЬ ТЕКСТОМ ────────────────────────────────────────
+ *
+ * «Прочитать файл» и «Записать файл» объявлены со `строка`, а строка в этом
+ * языке — UTF-8 (SPEC, раздел 5). До 22 августа 2026 хозяин этого не проверял,
+ * и двоичный файл проходил сквозь текстовую пару МОЛЧА: чтение отдавало сырые
+ * октеты строкой, `длина` считала их кодовыми точками (13 886 504 октета
+ * назывались 11 776 136 знаками), а запись рвала содержимое `strlen`ом на
+ * первом нулевом октете — 4096 октетов на входе, 7 байт на выходе, и ни одного
+ * замечания. Отказ лучше испорченного файла, поэтому теперь спрашивается прямо.
+ *
+ * Бед было ДВЕ, и лекарства у них разные. `strlen` снят длиной у значения —
+ * молча рвать нечем, и нулевой октет стал законным содержимым (он и был им:
+ * U+0000 — обычная точка, а `flang/self/link.flang` разделяет им имена).
+ * Остаётся ложь о числе знаков на неправильном UTF-8, и на неё — отказ.
+ *
+ * Спрашивает хозяин у рантайма (`fl_utf8_not_text_at`), а не у себя: тот же
+ * вопрос задаёт планировщик конкурентности, и два ответа на один вопрос были бы
+ * вторым способом хозяевам разойтись. Двоичному — октетная пара, она ниже.
+ */
+/* Отказ «это не текст», названный одинаково у чтения и у записи: номер октета,
+   его значение и имя поручения, которым это содержимое возится без потерь. */
+static fl_value io_not_text(const char *what, const char *utf8, size_t bytes, size_t at, const char *instead) {
+  char buffer[512];
+  snprintf(buffer, sizeof(buffer), "%s не текст: октет %lu из %lu (0x%02X) не складывается в UTF-8; октеты возит «%s»",
+           what, (unsigned long)at, (unsigned long)bytes, (unsigned)(unsigned char)utf8[at - 1], instead);
+  return io_fail("FLANG_IO_NOT_TEXT", buffer);
+}
+
 /* ── чтение поручения ────────────────────────────────────────────────────── */
 
 static bool io_order_name(fl_value order, const char **utf8, size_t *bytes) {
@@ -9830,6 +9859,14 @@ static fl_value io_perform(io_host *host, fl_value order) {
         return io_fail_errno("FLANG_IO_READ", "файл не прочитан");
       }
       {
+        const size_t at = fl_utf8_not_text_at(text, bytes);
+        if (at > 0) {
+          fl_value refusal = io_not_text("файл", text, bytes, at, "Прочитать октеты из файла");
+          free(text);
+          return refusal;
+        }
+      }
+      {
         fl_value fields[1];
         fields[0] = io_pair("содержимое", io_text(text, bytes));
         free(text);
@@ -9840,40 +9877,156 @@ static fl_value io_perform(io_host *host, fl_value order) {
 
   if (io_order_is(order, "Записать файл")) {
     char *given = io_order_text(order, "путь");
-    char *content = io_order_text(order, "содержимое");
+    fl_value field = fl_nothing();
     fl_value bad = fl_nothing();
+    const char *text = "";
+    size_t bytes = 0;
     bool ok = true;
     char *full = NULL;
     if (!host->write_files) {
       free(given);
-      free(content);
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    /* Содержимое берётся ЗНАЧЕНИЕМ, а не копией через `io_order_text`: у копии
+       длина считалась `strlen`, и нулевой октет обрывал запись молча — 4096
+       октетов на входе, 7 байт на выходе. У значения длина своя, точная, и
+       нулевой октет теперь доезжает до диска как всякий другой. */
+    if (io_order_field(order, "содержимое", &field)) {
+      (void)zn_text(field, &text, &bytes);
+    }
+    {
+      const size_t at = fl_utf8_not_text_at(text, bytes);
+      if (at > 0) {
+        free(given);
+        return io_not_text("содержимое", text, bytes, at, "Записать октеты в файл");
+      }
     }
     full = io_path(host, given, &bad, &ok);
     free(given);
-    if (!ok) {
-      free(content);
-      return bad;
-    }
+    if (!ok) return bad;
     {
-      const char *text = content == NULL ? "" : content;
-      const size_t bytes = strlen(text);
       FILE *file = fopen(full, "wb");
       free(full);
       if (file == NULL) {
-        free(content);
         return io_fail_errno("FLANG_IO_WRITE", "файл не открыт на запись");
       }
       if (bytes > 0 && fwrite(text, 1, bytes, file) != bytes) {
         fclose(file);
-        free(content);
         return io_fail_errno("FLANG_IO_WRITE", "файл не записан");
       }
       fclose(file);
       {
         fl_value fields[1];
         fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
-        free(content);
+        return io_variant("Записано", fields, 1);
+      }
+    }
+  }
+
+  /*
+   * ── ОКТЕТНАЯ ПАРА У ФАЙЛОВ ────────────────────────────────────────────────
+   *
+   * Ровно та же пара, что ADR-0004 завёл соединению, и заведена она по тому же
+   * доводу: хозяин ничего не решает о смысле байтов. Список чисел из [0, 255]
+   * не переводится ни при чтении, ни при записи — значит терять нечего и
+   * хозяевам разойтись негде. Длина берётся у СПИСКА, поэтому нулевой октет
+   * здесь обычное число 0, а не конец файла.
+   *
+   * Откликов своих не заведено: чтение отвечает «Октеты» — тем же, что у
+   * соединения, — а запись «Записано», и `сколько` там честнее текстового,
+   * потому что меряет октеты, а не кодовые точки.
+   *
+   * Пустой список у файла значит ПУСТОЙ ФАЙЛ, а не конец связи: продолжения у
+   * файла нет, он читается целиком одним поручением.
+   */
+  if (io_order_is(order, "Прочитать октеты из файла")) {
+    char *given = io_order_text(order, "путь");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->read_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено читать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    {
+      size_t bytes = 0;
+      char *text = repl_read_file(full, &bytes);
+      free(full);
+      if (text == NULL) {
+        return io_fail_errno("FLANG_IO_READ", "файл не прочитан");
+      }
+      {
+        fl_value *values = bytes == 0 ? NULL : (fl_value *)repl_alloc(bytes * sizeof(fl_value));
+        fl_value fields[1];
+        fl_value answer = fl_nothing();
+        size_t at = 0;
+        for (at = 0; at < bytes; at += 1) {
+          values[at] = io_number((double)(unsigned char)text[at]);
+        }
+        free(text);
+        fields[0] = io_pair("октеты", io_list(values, bytes));
+        free(values);
+        answer = io_variant("Октеты", fields, 1);
+        return answer;
+      }
+    }
+  }
+
+  if (io_order_is(order, "Записать октеты в файл")) {
+    char *given = io_order_text(order, "путь");
+    fl_value list = fl_nothing();
+    fl_value bad = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    bool ok = true;
+    char *full = NULL;
+    if (!host->write_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
+      free(given);
+      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    {
+      unsigned char *bytes = count == 0 ? NULL : (unsigned char *)repl_alloc(count);
+      FILE *file = NULL;
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        double octet = 0;
+        /* Каждое число проверяется на месте, и отказ называет номер: тихое
+           приведение к байту записало бы в файл не то, что сказала программа. */
+        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
+          char why[128];
+          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
+          free(bytes);
+          free(full);
+          return io_fail("FLANG_IO_OCTETS", why);
+        }
+        bytes[at] = (unsigned char)(long)octet;
+      }
+      file = fopen(full, "wb");
+      free(full);
+      if (file == NULL) {
+        free(bytes);
+        return io_fail_errno("FLANG_IO_WRITE", "файл не открыт на запись");
+      }
+      if (count > 0 && fwrite(bytes, 1, count, file) != count) {
+        fclose(file);
+        free(bytes);
+        return io_fail_errno("FLANG_IO_WRITE", "файл не записан");
+      }
+      fclose(file);
+      free(bytes);
+      {
+        fl_value fields[1];
+        fields[0] = io_pair("сколько", io_number((double)count));
         return io_variant("Записано", fields, 1);
       }
     }
@@ -10108,26 +10261,39 @@ static fl_value io_perform(io_host *host, fl_value order) {
   if (io_order_is(order, "Ответить в соединение")) {
     double number = 0;
     int fd = -1;
-    char *content = NULL;
     if (!host->net) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
     }
     if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
       return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
     }
-    content = io_order_text(order, "содержимое");
+    /* Содержимое берётся ЗНАЧЕНИЕМ, а не копией: у копии длина считалась
+       `strlen`, и пакет, начинающийся с нулевого октета, «записывался» нулём
+       байт — а нулевая длина здесь ещё и значит «положить трубку», то есть
+       двоичный запрос не просто терялся, он рвал соединение. Разбор —
+       `docs/zettel/dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md`.
+       Двоичное возит октетная пара ниже; здесь — текст, и нетекст отвергается. */
     {
-      const char *text = content == NULL ? "" : content;
-      const size_t bytes = strlen(text);
+      fl_value field = fl_nothing();
+      fl_value fields[1];
+      const char *text = "";
+      size_t bytes = 0;
+      size_t at = 0;
       /* ЕДИНСТВЕННОЕ место, где принятое соединение отличается от открытого:
          закрывает тот, кто завёл. Принятое хозяин закрывает ответом — обмен на
          нём кончился; открытое оставляет программе — разговор продолжается.
          Пустое содержимое закрывает и то и другое: это и есть «положить
          трубку», и другого слова для этого в словаре нет. */
-      const bool closing = bytes == 0 || !io_link_outgoing(host, (int)number);
-      fl_value fields[1];
+      bool closing = false;
+      if (io_order_field(order, "содержимое", &field)) {
+        (void)zn_text(field, &text, &bytes);
+      }
+      at = fl_utf8_not_text_at(text, bytes);
+      if (at > 0) {
+        return io_not_text("содержимое", text, bytes, at, "Ответить октетами в соединение");
+      }
+      closing = bytes == 0 || !io_link_outgoing(host, (int)number);
       if (bytes > 0 && write(fd, text, bytes) < 0) {
-        free(content);
         close(fd);
         io_link_drop(host, (int)number);
         return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
@@ -10137,7 +10303,6 @@ static fl_value io_perform(io_host *host, fl_value order) {
         io_link_drop(host, (int)number);
       }
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
-      free(content);
       return io_variant("Записано", fields, 1);
     }
   }

@@ -31,10 +31,14 @@ attaching a solver to the verification conditions is an open task, not a feature
   programs (`stdlib`, `examples`) do not use it.
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and whoever ran the plan executes it (`flang io`).
-  There are sixteen orders and the set is closed: read a file, write a file, list a directory,
+  There are eighteen orders and the set is closed: read and write a file as characters and
+  separately as octets, list a directory,
   make a network request, open and accept a connection, read and write a connection as characters
   and separately as octets, spawn a process and spawn a process with input, draw on the screen,
-  wait for an event, read the clock, draw a random number. There is no I/O monad, though, and the reason is
+  wait for an event, read the clock, draw a random number. The file octet pair landed on
+  22 August 2026: before it a binary file went through the text pair SILENTLY — 4096 octets in,
+  7 bytes out. The text pair now refuses invalid UTF-8 (`FLANG_IO_NOT_TEXT`), and the octet pair
+  carries a binary byte for byte. There is no I/O monad, though, and the reason is
   no longer polymorphism: parametric types are in the language, in self-application and in the
   standard library (`«Возможно» от «А»` in `flang/stdlib/optional.flang`). What is missing is the
   category layer: `checkFunctors` knows a type's name, not its application — phase 3 in

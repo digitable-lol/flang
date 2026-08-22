@@ -1535,6 +1535,67 @@ static size_t fl_utf8_points(const char *utf8, size_t bytes) {
   return points;
 }
 
+/*
+ * ГДЕ СОДЕРЖИМОЕ ПЕРЕСТАЁТ БЫТЬ ТЕКСТОМ. Счёт точек выше не проверяет НИЧЕГО:
+ * он делит байты на ведущие и продолжающие и на любом мусоре отвечает числом.
+ * Этого хватает строкам самого языка — они собраны из литералов и из чтения
+ * текста, — но не хватает хозяину, которому дали двоичный файл: 13 886 504
+ * октета он назовёт 11 776 136 знаками и не скажет ни слова. Здесь спрашивается
+ * прямо, и живут обе стороны вопроса в ОДНОМ месте, чтобы два хозяина на C
+ * (`flang io` и планировщик конкурентности) не разошлись ответами.
+ *
+ * Возвращает номер (от 1) ПЕРВОГО октета, который не складывается в правильный
+ * UTF-8, и 0 — если складывается весь.
+ *
+ * НУЛЕВОЙ ОКТЕТ ЗДЕСЬ ЗАКОНЕН, и это решение по улике, а не недосмотр. U+0000 —
+ * обычная кодовая точка, и в дереве есть исходник, который её содержит:
+ * `flang/self/link.flang` разделяет нулём имена в ключе (октет 91 689 из
+ * 138 872). Запрет ловил бы ЭТОТ файл и не ловил бы ничего сверх того, что
+ * ловится неправильным UTF-8: в заголовке ELF первый неправильный октет — 26-й,
+ * а первый нулевой — 8-й, отвергаются оба файла одинаково. Опасен ноль был
+ * ровно там, где длину брали `strlen`ом; длину теперь берут у значения.
+ */
+size_t fl_utf8_not_text_at(const char *utf8, size_t bytes) {
+  size_t at = 0;
+  while (at < bytes) {
+    const unsigned char lead = (unsigned char)utf8[at];
+    unsigned long point = 0;
+    size_t more = 0;
+    size_t step = 0;
+    if (lead < 0x80u) {
+      at += 1;
+      continue;
+    }
+    if ((lead & 0xE0u) == 0xC0u) {
+      more = 1;
+      point = (unsigned long)(lead & 0x1Fu);
+    } else if ((lead & 0xF0u) == 0xE0u) {
+      more = 2;
+      point = (unsigned long)(lead & 0x0Fu);
+    } else if ((lead & 0xF8u) == 0xF0u) {
+      more = 3;
+      point = (unsigned long)(lead & 0x07u);
+    } else {
+      return at + 1;
+    }
+    if (at + more >= bytes) return at + 1;
+    for (step = 1; step <= more; step += 1) {
+      const unsigned char next = (unsigned char)utf8[at + step];
+      if ((next & 0xC0u) != 0x80u) return at + 1;
+      point = (point << 6) | (unsigned long)(next & 0x3Fu);
+    }
+    /* Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+       иначе у одного знака было бы два написания, и счёт разошёлся бы. */
+    if (more == 1 && point < 0x80UL) return at + 1;
+    if (more == 2 && point < 0x800UL) return at + 1;
+    if (more == 3 && point < 0x10000UL) return at + 1;
+    if (point > 0x10FFFFUL) return at + 1;
+    if (point >= 0xD800UL && point <= 0xDFFFUL) return at + 1;
+    at += more + 1;
+  }
+  return 0;
+}
+
 /** Байтовое смещение кодовой точки с номером point (от нуля). */
 static size_t fl_utf8_offset(const char *utf8, size_t bytes, size_t point) {
   size_t seen = 0;

@@ -75,3 +75,9 @@ benchmarks/zamer-tseny/.proba-zaglushka
 web/app/*.js
 web/shortener/*.js
 web/*.png
+
+# Копия двоичного, которую пишет пример «Двоичный файл туда и обратно»
+# (flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang). Продукт прогона, а не
+# исходник: убрать её за собой план не может — поручения «Удалить файл» в
+# словаре ввода-вывода нет.
+flang/examples/io/.kopiya-dvoichnogo

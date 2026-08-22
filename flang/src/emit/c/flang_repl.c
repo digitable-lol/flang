@@ -2378,6 +2378,73 @@ static void repl_find_module(const char *importer, const char *name, repl_string
 }
 
 
+/**
+ * Сколько байт от начала занимает ШАПКА модуля — или 0, если резать нельзя.
+ *
+ * ЗАЧЕМ. Разведка ввозов ниже разбирает файл ЦЕЛИКОМ, чтобы прочитать один узел
+ * заголовка. Замер gprof на `flang ast` компилятора: «Разбор исходника» позван
+ * 98 раз на 32–34 файла — 34 отсюда, 32 «Разобрать файл», 32 «Переразобрать
+ * текст», — и разбор занял 424,28 с из 442,47 с всего прогона, то есть 96 %.
+ * Треть этого лишняя, и лишняя она именно здесь: разведке нужна шапка.
+ *
+ * ПРАВИЛО РЕЗА, и оно нарочно трусливое. Режем сразу за последней строкой
+ * `использует`, и только если ВСЁ до неё — это шапка (объявление модуля, ввозы,
+ * пояснения, пустые строки) и если ниже реза ввозов не осталось ни одного.
+ * Не сошлось — отдаём 0, и файл разбирается целиком, как раньше.
+ *
+ * ПОЧЕМУ ИМЕННО ТАК. Пересчитано по дереву на 1017 файлах: шапка сплошная сверху
+ * у 1016, у одного (`benchmarks/model-authoring/out/M4/г/r2/b3-maksimum.flang`)
+ * перед ввозом стоит `категория`. Этот один и уходит на полный разбор. Ошибиться
+ * здесь дороже, чем не ускорить: потерянный ввоз молча укоротил бы замыкание, а
+ * это ровно та беда, из-за которой сторож столкновений обходил один файл из
+ * тридцати шести и отвечал «чисто».
+ *
+ * Вторая страховка — у зовущего: разбор обрезанного не дал заголовка, значит
+ * рез был неверен, и файл разбирается целиком.
+ */
+static size_t repl_header_bytes(const char *text, size_t bytes) {
+  size_t offset = 0;
+  size_t cut = 0;
+  int header = 1;
+  while (offset < bytes) {
+    size_t start = offset;
+    size_t end = offset;
+    size_t first = 0;
+    size_t width = 0;
+    int is_import = 0;
+    int is_header_line = 0;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    first = start;
+    while (first < end && (text[first] == ' ' || text[first] == '\t')) {
+      first += 1;
+    }
+    width = end - first;
+    if (width == 0) {
+      is_header_line = 1;
+    } else if (width >= 2 && text[first] == '/' && text[first + 1] == '/') {
+      is_header_line = 1;
+    } else if (width >= 20 && memcmp(text + first, "использует", 20) == 0) {
+      is_header_line = 1;
+      is_import = 1;
+    } else if (width >= 12 && memcmp(text + first, "модуль", 12) == 0) {
+      is_header_line = 1;
+    }
+    if (is_import) {
+      if (!header) {
+        /* Ввоз ниже шапки — резать нельзя, иначе он потеряется. */
+        return 0;
+      }
+      cut = (end < bytes) ? end + 1 : end;
+    } else if (!is_header_line) {
+      header = 0;
+    }
+    offset = (end < bytes) ? end + 1 : bytes;
+  }
+  return cut;
+}
+
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
@@ -2387,11 +2454,32 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
   size_t count = 0;
   size_t index = 0;
   char *directory = repl_dirname(from);
-  args[0] = repl_value_text(text, bytes);
-  args[1] = repl_value_list(NULL, 0);
-  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK || !val_field(parsed, "программа", &program)) {
-    free(directory);
-    return;
+  {
+    /* Сперва пробуем разобрать ОДНУ ШАПКУ: разведке больше ничего не нужно.
+       Не вышло — разбираем целиком, как раньше. Обе ветки дают один и тот же
+       список ввозов; проверено сверкой замыкания по всему дереву. */
+    size_t head = repl_header_bytes(text, bytes);
+    if (head > 0) {
+      args[0] = repl_value_text(text, head);
+      args[1] = repl_value_list(NULL, 0);
+      if (repl_call("Разбор исходника", args, 2, &parsed) == FL_OK && val_field(parsed, "программа", &program)) {
+        head = 0; /* дальше идём по разобранной шапке */
+      } else {
+        parsed = fl_nothing();
+        program = fl_nothing();
+        head = 1; /* рез не удался — полный разбор ниже */
+      }
+    } else {
+      head = 1;
+    }
+    if (head != 0) {
+      args[0] = repl_value_text(text, bytes);
+      args[1] = repl_value_list(NULL, 0);
+      if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK || !val_field(parsed, "программа", &program)) {
+        free(directory);
+        return;
+      }
+    }
   }
   zn_field_items(program, "legacy", &legacy, &count);
   for (index = 0; index < count; index += 1) {

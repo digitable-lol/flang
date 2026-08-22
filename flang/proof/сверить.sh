@@ -1,0 +1,44 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Позвать сверщика: сверить записанное доказательство с исходником.
+#
+#   sh flang/proof/сверить.sh <исходник.flang> <запись>
+#   код 0 — сошлось; 1 — не сошлось (беда названа); 2 — кривой вызов.
+#
+# ── Зачем оболочка ───────────────────────────────────────────────────────────
+# Решает всё программа на flang (`сверщик.flang`). Оболочка только ВОЗИТ: у
+# `flang io` нет способа принять довод — ни `--args`, ни хвоста строки, —
+# поэтому пути приезжают файлом «наряд», а относительные пути `flang io`
+# разрешает ОТНОСИТЕЛЬНО ВХОДНОГО ФАЙЛА. Отсюда рабочий каталог: туда кладётся
+# наряд и туда же копируется сверщик. Копия побайтово та же — сверщик не ввозит
+# ни одного модуля именно затем, чтобы копироваться одним файлом.
+#
+# Имена переменных латиницей: ни dash, ни bash не принимают кириллицу в именах.
+set -eu
+
+KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+
+if [ "$#" -ne 2 ]; then
+  echo "звать: sh flang/proof/сверить.sh <исходник.flang> <запись>" >&2
+  exit 2
+fi
+
+polnyy() { (CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd)" "$(basename -- "$1")"); }
+
+ISHODNIK=$1
+ZAPIS=$2
+[ -f "$ISHODNIK" ] || { echo "исходника нет: $ISHODNIK" >&2; exit 2; }
+[ -f "$ZAPIS" ] || { echo "записи нет: $ZAPIS" >&2; exit 2; }
+
+FLANG=${FLANG:-$KOREN/bootstrap/flang}
+[ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
+
+RABOTA=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" sverka.XXXXXX)
+trap 'rm -rf "$RABOTA"' EXIT INT TERM
+
+cp "$KOREN/flang/proof/сверщик.flang" "$RABOTA/сверщик.flang"
+printf '%s\n%s\n' "$(polnyy "$ISHODNIK")" "$(polnyy "$ZAPIS")" > "$RABOTA/наряд"
+
+"$FLANG" io "$RABOTA/сверщик.flang" --max-steps 200000000 --max-depth 20000

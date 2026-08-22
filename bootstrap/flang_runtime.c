@@ -1535,6 +1535,62 @@ static size_t fl_utf8_points(const char *utf8, size_t bytes) {
   return points;
 }
 
+/*
+ * ГДЕ СОДЕРЖИМОЕ ПЕРЕСТАЁТ БЫТЬ ТЕКСТОМ. Счёт точек выше не проверяет НИЧЕГО:
+ * он делит байты на ведущие и продолжающие и на любом мусоре отвечает числом.
+ * Этого хватает строкам самого языка — они собраны из литералов и из чтения
+ * текста, — но не хватает хозяину, которому дали двоичный файл: 13 886 504
+ * октета он назовёт 11 776 136 знаками и не скажет ни слова. Здесь спрашивается
+ * прямо, и живут обе стороны вопроса в ОДНОМ месте, чтобы два хозяина на C
+ * (`flang io` и планировщик конкурентности) не разошлись ответами.
+ *
+ * Возвращает номер (от 1) ПЕРВОГО октета, из-за которого содержимое текстом не
+ * является, и 0 — если является. Не текст — это две беды, и обе смертны:
+ * неправильный UTF-8 (счёт знаков на нём врёт) и нулевой октет (законная точка
+ * U+0000, но `strlen` на ней обрывает содержимое молча).
+ */
+size_t fl_utf8_not_text_at(const char *utf8, size_t bytes) {
+  size_t at = 0;
+  while (at < bytes) {
+    const unsigned char lead = (unsigned char)utf8[at];
+    unsigned long point = 0;
+    size_t more = 0;
+    size_t step = 0;
+    if (lead == 0u) return at + 1;
+    if (lead < 0x80u) {
+      at += 1;
+      continue;
+    }
+    if ((lead & 0xE0u) == 0xC0u) {
+      more = 1;
+      point = (unsigned long)(lead & 0x1Fu);
+    } else if ((lead & 0xF0u) == 0xE0u) {
+      more = 2;
+      point = (unsigned long)(lead & 0x0Fu);
+    } else if ((lead & 0xF8u) == 0xF0u) {
+      more = 3;
+      point = (unsigned long)(lead & 0x07u);
+    } else {
+      return at + 1;
+    }
+    if (at + more >= bytes) return at + 1;
+    for (step = 1; step <= more; step += 1) {
+      const unsigned char next = (unsigned char)utf8[at + step];
+      if ((next & 0xC0u) != 0x80u) return at + 1;
+      point = (point << 6) | (unsigned long)(next & 0x3Fu);
+    }
+    /* Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+       иначе у одного знака было бы два написания, и счёт разошёлся бы. */
+    if (more == 1 && point < 0x80UL) return at + 1;
+    if (more == 2 && point < 0x800UL) return at + 1;
+    if (more == 3 && point < 0x10000UL) return at + 1;
+    if (point > 0x10FFFFUL) return at + 1;
+    if (point >= 0xD800UL && point <= 0xDFFFUL) return at + 1;
+    at += more + 1;
+  }
+  return 0;
+}
+
 /** Байтовое смещение кодовой точки с номером point (от нуля). */
 static size_t fl_utf8_offset(const char *utf8, size_t bytes, size_t point) {
   size_t seen = 0;

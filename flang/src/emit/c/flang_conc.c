@@ -1417,7 +1417,7 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
        рантайму — тот же, что задаёт хозяин `flang io`. */
     if (fl_utf8_not_text_at(buffer, filled) > 0) {
       return fl_conc_io_fail(ctx, "FLANG_IO_NOT_TEXT",
-                             "файл не текст: неправильный UTF-8 или нулевой октет; октеты возит «Прочитать октеты из файла»",
+                             "файл не текст: содержимое не складывается в UTF-8; октеты возит «Прочитать октеты из файла»",
                              out, error);
     }
     if (fl_text(ctx, buffer, filled, &value, error) != FL_OK) {
@@ -1440,7 +1440,7 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
     }
     if (fl_utf8_not_text_at(content.as.string.utf8, content.as.string.bytes) > 0) {
       return fl_conc_io_fail(ctx, "FLANG_IO_NOT_TEXT",
-                             "содержимое не текст: неправильный UTF-8 или нулевой октет; октеты возит «Записать октеты в файл»",
+                             "содержимое не текст: не складывается в UTF-8; октеты возит «Записать октеты в файл»",
                              out, error);
     }
     file = fopen(path, "wb");

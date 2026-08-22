@@ -146,7 +146,7 @@ jobs:
   imena:
     name: Столкновения имён и ввозы во всех программах дерева
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - run: node flang/scripts/link-collision-guard.mjs --дерево
@@ -165,9 +165,18 @@ jobs:
       # «Ответ SASL», которых нет ни в одном файле. Это в записанном долге с
       # доводом; всякое НОВОЕ повреждение красит работу.
       #
-      # Место здесь, а не в `sborka`: проверка читает текст, ей не нужен ни
-      # двоичный, ни `npm ci`, и отвечает она за секунды — раньше сборки.
-      - run: node flang/scripts/srashchivanie.mjs
+      # Место здесь, а не в `sborka`: проверка читает текст, ей не нужен `npm ci`.
+      #
+      # ДВОИЧНЫЙ ЕЙ ТЕПЕРЬ НУЖЕН, и это плата за снятие JavaScript. Проверка
+      # переписана на flang (`scripts/storozh-srashchivaniya.flang`), а
+      # `flang/scripts/srashchivanie.mjs` снят. Цена замерена на этом дереве,
+      # обе программы на одном входе, 571 файл: JavaScript — 0,3 с; flang —
+      # 3 мин 44 с, пик памяти 24 ГиБ. Числа сошлись до единицы (объявленных
+      # имён 13 538, двойных объявлений 2, званых которых нет 0), и на
+      # подложенном повреждении обе назвали одни и те же три места.
+      - name: Собрать двоичный (проверке на flang он нужен)
+        run: make -C bootstrap -j"$(nproc)"
+      - run: ./bootstrap/flang io scripts/storozh-srashchivaniya.flang --max-orders 2000
 
       # ── СКОЛЬКИМ СТРОКАМ ЯДРА ПРИХОДИТСЯ ВЕРИТЬ ───────────────────────────
       #

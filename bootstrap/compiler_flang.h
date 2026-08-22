@@ -2281,6 +2281,14 @@ fl_status compiler_flang_sozdat_itog_proverki_servera(fl_ctx *ctx, fl_value sorv
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_priyoma(fl_ctx *ctx, fl_value server, fl_value ishodyaschie, fl_value zhdyot, fl_value adres, fl_value put, fl_value tekst, fl_value ochered, fl_value otvetit, fl_value nomer, fl_value otvet, fl_value vyhod, fl_value kod_vyhoda, fl_value *out, fl_error *error);
 
+/* Запись FTS «Сообщение MCP»: «метод», «есть номер», «номер текстом», «версия клиента», «средство», «исходник», «обещание». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_soobschenie_mcp(fl_ctx *ctx, fl_value metod, fl_value est_nomer, fl_value nomer_tekstom, fl_value versiya_klienta, fl_value sredstvo, fl_value ishodnik, fl_value obeschanie, fl_value *out, fl_error *error);
+
+/* Запись FTS «Шаг MCP»: «есть ответ», «ответ», «ждёт ведомость», «исходник», «выход». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_shag_mcp(fl_ctx *ctx, fl_value est_otvet, fl_value otvet, fl_value zhdyot_vedomost, fl_value ishodnik, fl_value vyhod, fl_value *out, fl_error *error);
+
 /* Запись FTS «Ответ»: «ключ», «ответ». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_otvet(fl_ctx *ctx, fl_value klyuch, fl_value otvet, fl_value *out, fl_error *error);
@@ -74160,6 +74168,262 @@ fl_status compiler_flang_zakryt(fl_ctx *ctx, fl_value s, fl_value m, fl_value *r
  * @return значение: «Итог приёма»
  */
 fl_status compiler_flang_zakryt_dokument(fl_ctx *ctx, fl_value s, fl_value m, fl_value dok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строкой MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_strokoy_mcp(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Полем MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuch — «ключ»: строка
+ * @param znachenie — «значение»: «Значение»
+ * @return значение: «Поле значения»
+ */
+fl_status compiler_flang_polem_mcp(fl_ctx *ctx, fl_value klyuch, fl_value znachenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Записью MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sostav — «состав»: список: «Поле значения»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_zapisyu_mcp(fl_ctx *ctx, fl_value sostav, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Списком MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param elementy — «элементы»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_spiskom_mcp(fl_ctx *ctx, fl_value elementy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Версия протокола MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_versiya_protokola_mcp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя службы MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_sluzhby_mcp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Схема исходника».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_shema_ishodnika(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Схема исходника и обещания».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_shema_ishodnika_i_obeschaniya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Опись средства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param zachem — «зачем»: строка
+ * @param shema — «схема»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_opis_sredstva(fl_ctx *ctx, fl_value imya, fl_value zachem, fl_value shema, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Опись средств MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_opis_sredstv_mcp(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ с содержимым».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: строка
+ * @param soderzhimoe — «содержимое»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_s_soderzhimym(fl_ctx *ctx, fl_value nomer, fl_value soderzhimoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ с бедой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: строка
+ * @param kod — «код»: число
+ * @param soobschenie — «сообщение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_s_bedoy(fl_ctx *ctx, fl_value nomer, fl_value kod, fl_value soobschenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ средства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: строка
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_sredstva(fl_ctx *ctx, fl_value nomer, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ на рукопожатие».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_na_rukopozhatie(fl_ctx *ctx, fl_value nomer, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ на опись».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_na_opis(fl_ctx *ctx, fl_value nomer, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Молча».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_molcha(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сказать в MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param gotovoe — «готовое»: строка
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_skazat_v_mcp(fl_ctx *ctx, fl_value gotovoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Спросить ведомость».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishodnik — «исходник»: строка
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_sprosit_vedomost(fl_ctx *ctx, fl_value ishodnik, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена средств».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_sredstv(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ на зов средства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: «Сообщение MCP»
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_otvet_na_zov_sredstva(fl_ctx *ctx, fl_value soobschenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Принять MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: «Сообщение MCP»
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_prinyat_mcp(fl_ctx *ctx, fl_value soobschenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Словарь вердиктов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovar_verdiktov(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ о ведомости».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: «Сообщение MCP»
+ * @param godno — «годно»
+ * @param slovami — «словами»: строка
+ * @param prepyatstvie — «препятствие»: строка
+ * @param bedy — «беды»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_o_vedomosti(fl_ctx *ctx, fl_value soobschenie, fl_value godno, fl_value slovami, fl_value prepyatstvie, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Начало строки утверждения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nachalo_stroki_utverzhdeniya(fl_ctx *ctx, fl_value vid, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка про обещание».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovami — «словами»: строка
+ * @param imya — «имя»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_pro_obeschanie(fl_ctx *ctx, fl_value slovami, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ответ об обещании».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: «Сообщение MCP»
+ * @param godno — «годно»
+ * @param slovami — «словами»: строка
+ * @param prepyatstvie — «препятствие»: строка
+ * @param bedy — «беды»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otvet_ob_obeschanii(fl_ctx *ctx, fl_value soobschenie, fl_value godno, fl_value slovami, fl_value prepyatstvie, fl_value bedy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Принять ведомость MCP».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: «Сообщение MCP»
+ * @param godno — «годно»
+ * @param slovami — «словами»: строка
+ * @param prepyatstvie — «препятствие»: строка
+ * @param bedy — «беды»: строка
+ * @return значение: «Шаг MCP»
+ */
+fl_status compiler_flang_prinyat_vedomost_mcp(fl_ctx *ctx, fl_value soobschenie, fl_value godno, fl_value slovami, fl_value prepyatstvie, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Скаляры равны».

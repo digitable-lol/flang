@@ -427,6 +427,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Модуль, проходящий `flang check` в одиночку, всё ещё может сломать раскрутку столкновением имён](a-module-that-checks-alone-still-collides-in-the-closure.md)
 - [Пример зеленеет на варианте, которого разбор не производит никогда, — и это класс](an-example-can-green-on-a-variant-the-parser-never-produces.md)
 - [Файл проверок, упавший на загрузке, в отчёте прогона неотличим от отсутствующего](nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.md)
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)

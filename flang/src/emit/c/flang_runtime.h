@@ -564,6 +564,14 @@ fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points);
 /** Строка с копированием в арену; кодовые точки считаются здесь. */
 fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out, fl_error *error);
 
+/**
+ * Номер (от 1) первого октета, из-за которого содержимое НЕ текст: неправильный
+ * UTF-8 или нулевой октет. 0 — содержимое текст. Спрашивает хозяин, которому
+ * дали файл: строка языка обязана быть UTF-8, и молчаливая ложь о числе знаков
+ * хуже отказа.
+ */
+size_t fl_utf8_not_text_at(const char *utf8, size_t bytes);
+
 /** Список из готового массива значений (массив обязан жить в арене). Запаса у
     такого списка нет: первое же «добавить» к нему скопирует и заведёт запас. */
 fl_value fl_list(const fl_value *items, size_t count);

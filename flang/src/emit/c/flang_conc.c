@@ -1410,6 +1410,16 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
       }
     }
     fclose(file);
+    /* Отклик несёт СТРОКУ, а строка языка — UTF-8. Двоичный файл строкой не
+       бывает: счёт знаков на нём соврал бы молча (13 886 504 октета назывались
+       11 776 136 знаками). Отказ лучше испорченного значения, и он называет
+       поручение, которым это содержимое возится без потерь. Вопрос задаётся
+       рантайму — тот же, что задаёт хозяин `flang io`. */
+    if (fl_utf8_not_text_at(buffer, filled) > 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NOT_TEXT",
+                             "файл не текст: неправильный UTF-8 или нулевой октет; октеты возит «Прочитать октеты из файла»",
+                             out, error);
+    }
     if (fl_text(ctx, buffer, filled, &value, error) != FL_OK) {
       return FL_ERROR;
     }
@@ -1428,6 +1438,11 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
     if (!fl_conc_variant_field(order, "содержимое", &content) || content.tag != FL_STRING) {
       return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "поручению нужно содержимое строкой", out, error);
     }
+    if (fl_utf8_not_text_at(content.as.string.utf8, content.as.string.bytes) > 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NOT_TEXT",
+                             "содержимое не текст: неправильный UTF-8 или нулевой октет; октеты возит «Записать октеты в файл»",
+                             out, error);
+    }
     file = fopen(path, "wb");
     if (file == NULL) {
       return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "файл не открылся на запись", out, error);
@@ -1441,6 +1456,106 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
     /* Кодовые точки, а не байты: `длина` в языке считает точки, и «записано»
        обязано совпадать с ней на том же тексте. */
     value = fl_number((double)content.as.string.points);
+    return fl_variant_new(ctx, "Записано", names, &value, 1, out, error);
+  }
+
+  /* ── Октетная пара у файлов ────────────────────────────────────────────────
+     Барьера, которым отговорены шесть поручений соединения, у файла нет: чтение
+     и запись файла синхронны, планировщику ждать нечего. Поэтому здесь пара
+     ИСПОЛНЯЕТСЯ, а не отговаривается, и исполняется тем же кодом, что у хозяина
+     `flang io`: список чисел из [0, 255], длина — у списка, нулевой октет —
+     обычное число. Разойтись двум хозяинам на этих поручениях негде: переводить
+     нечего. */
+  if (strcmp(kind, "Прочитать октеты из файла") == 0) {
+    static const char *const names[1] = {"октеты"};
+    const char *path = fl_conc_io_text(ctx, order, "путь");
+    fl_value value = fl_nothing();
+    fl_value *items = NULL;
+    unsigned char *buffer = NULL;
+    size_t filled = 0;
+    size_t capacity = 4096;
+    size_t at = 0;
+    FILE *file = NULL;
+    if (path == NULL || path[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь", out, error);
+    }
+    file = fopen(path, "rb");
+    if (file == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_READ", "файл не открылся", out, error);
+    }
+    buffer = (unsigned char *)fl_arena_alloc(ctx->arena, capacity);
+    for (;;) {
+      size_t got = 0;
+      if (buffer == NULL) {
+        fclose(file);
+        return fl_conc_io_fail(ctx, "FLANG_IO_READ", "не хватило памяти под содержимое файла", out, error);
+      }
+      got = fread(buffer + filled, 1, capacity - filled, file);
+      filled += got;
+      if (filled < capacity) {
+        break;
+      }
+      {
+        unsigned char *bigger = (unsigned char *)fl_arena_alloc(ctx->arena, capacity * 2);
+        if (bigger != NULL) {
+          memcpy(bigger, buffer, filled);
+        }
+        buffer = bigger;
+        capacity *= 2;
+      }
+    }
+    fclose(file);
+    if (fl_list_alloc(ctx, filled, &items, error) != FL_OK) {
+      return FL_ERROR;
+    }
+    for (at = 0; at < filled; at += 1) {
+      items[at] = fl_number((double)buffer[at]);
+    }
+    value = fl_list(items, filled);
+    return fl_variant_new(ctx, "Октеты", names, &value, 1, out, error);
+  }
+
+  if (strcmp(kind, "Записать октеты в файл") == 0) {
+    static const char *const names[1] = {"сколько"};
+    const char *path = fl_conc_io_text(ctx, order, "путь");
+    fl_value octets = fl_nothing();
+    fl_value value = fl_nothing();
+    unsigned char *bytes = NULL;
+    size_t count = 0;
+    size_t at = 0;
+    FILE *file = NULL;
+    if (path == NULL || path[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь", out, error);
+    }
+    if (!fl_conc_variant_field(order, "октеты", &octets) || octets.tag != FL_LIST) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список", out,
+                             error);
+    }
+    count = octets.as.list.count;
+    if (count > 0) {
+      bytes = (unsigned char *)fl_arena_alloc(ctx->arena, count);
+      if (bytes == NULL) {
+        return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "не хватило памяти под октеты", out, error);
+      }
+    }
+    for (at = 0; at < count; at += 1) {
+      const fl_value item = octets.as.list.items[at];
+      if (item.tag != FL_NUMBER || item.as.number < 0 || item.as.number > 255 ||
+          item.as.number != (double)(long)item.as.number) {
+        return fl_conc_io_fail(ctx, "FLANG_IO_OCTETS", "октет не годится: нужно целое от 0 до 255", out, error);
+      }
+      bytes[at] = (unsigned char)(long)item.as.number;
+    }
+    file = fopen(path, "wb");
+    if (file == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "файл не открылся на запись", out, error);
+    }
+    if (count > 0 && fwrite(bytes, 1, count, file) != count) {
+      fclose(file);
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "запись не удалась", out, error);
+    }
+    fclose(file);
+    value = fl_number((double)count);
     return fl_variant_new(ctx, "Записано", names, &value, 1, out, error);
   }
 

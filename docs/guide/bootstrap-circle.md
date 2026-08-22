@@ -94,6 +94,42 @@ answered this, today it answers that" — and nothing beyond. There is one
 implementation of the language, and no independent reading of the same rules to
 compare its answers against.
 
+## The seed falls behind the sources silently
+
+The circle closing does not mean the committed seed matches today's sources. A
+change to the compiler is merged, `bootstrap/` is not re-emitted, and the rule
+sits in `flang/self/*.flang` while the built program DOES NOT RUN IT. Everything
+is green meanwhile: the source parses, the seed builds, and the circle closes on
+whatever the seed contains.
+
+Three changes to the proof kernel were lost this way in a single day, 21–22
+August 2026: the finiteness proviso, the induction principle over strings, and
+the conjunction rule. The guard that used to catch it
+(`flang/test/self-bootstrap.test.mjs`) was deleted along with the JavaScript
+implementation, and from that day nobody checked the seed at all.
+
+Two checks do it now, and they answer different questions.
+
+| Command | Question | Cost (measured 22 August, 256 cores) |
+|---|---|---|
+| `sh scripts/raskrutka.sh --check` | does the seed match the emission byte for byte | 19 min 58 s, 25.1 GiB |
+| `sh scripts/raskrutka.sh --bystro` | are the emission's inputs the same ones | 0.52 s |
+
+The expensive one re-emits — that is exactly why nobody called it. The cheap one
+does not emit at all: it compares the contents of the 36 files in the compiler's
+closure, the 4 runtime files that go into the output verbatim, and the emission
+limits that end up in the emitted byte. The fingerprint lives in
+`scripts/otpechatok-semeni` and is taken by the emission itself, not by a
+separate command someone has to remember.
+
+The cheap one runs on every push as job `semya` in
+`.github/workflows/dvoichnyy.yml`; a mismatch is a refusal, not a warning. The
+byte-for-byte one is called before a release and after merges.
+
+**What the cheap one does not prove:** byte-for-byte agreement. It answers the
+narrower question — "are these the same inputs" — and that is precisely the
+question that had no answer.
+
 ## What the circle does not check
 
 **The compiler does not check its own sources.** `flang check` on

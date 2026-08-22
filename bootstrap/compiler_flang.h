@@ -60379,6 +60379,24 @@ fl_status compiler_flang_zapis_kak_uzel(fl_ctx *ctx, fl_value polya, fl_value *r
 fl_status compiler_flang_stroki_kak_uzly(fl_ctx *ctx, fl_value stroki, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Узел пустого списка».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_pustogo_spiska(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел прибавления».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param element — «элемент»: «Значение»
+ * @param kuda — «куда»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_pribavleniya(fl_ctx *ctx, fl_value element, fl_value kuda, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Найти замену терма».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -61603,6 +61621,59 @@ fl_status compiler_flang_svyortka_po_peremennoy(fl_ctx *ctx, fl_value funkciya, 
 fl_status compiler_flang_svyortka_po_tomu_imeni(fl_ctx *ctx, fl_value telo, fl_value parametr, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Имена вместе».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: список: строка
+ * @param pravye — «правые»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_vmeste(fl_ctx *ctx, fl_value levye, fl_value pravye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Занятые пройденным».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param svyortka — «свёртка»: «Значение»
+ * @param nakopitel — «накопитель»: строка
+ * @param element — «элемент»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_zanyatye_proydennym(fl_ctx *ctx, fl_value obyazatelstvo, fl_value funkciya, fl_value svyortka, fl_value nakopitel, fl_value element, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя пройденного».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zanyatye — «занятые»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_proydennogo(fl_ctx *ctx, fl_value zanyatye, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип параметра функции».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_tip_parametra_funkcii(fl_ctx *ctx, fl_value funkciya, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Объявление пройденного».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @param proydeno — «пройдено»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_obyavlenie_proydennogo(fl_ctx *ctx, fl_value funkciya, fl_value parametr, fl_value proydeno, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Объявления вне витка».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -61620,9 +61691,10 @@ fl_status compiler_flang_obyavleniya_vne_vitka(fl_ctx *ctx, fl_value funkciya, f
  * @param obyazatelstvo — «обязательство»: «Значение»
  * @param parametr — «параметр»: строка
  * @param nakopitel — «накопитель»: строка
+ * @param proydeno — «пройдено»: строка
  * @return значение: «Значение»
  */
-fl_status compiler_flang_dopuschenie_vitka(fl_ctx *ctx, fl_value obyazatelstvo, fl_value parametr, fl_value nakopitel, fl_value *result, fl_error *error);
+fl_status compiler_flang_dopuschenie_vitka(fl_ctx *ctx, fl_value obyazatelstvo, fl_value parametr, fl_value nakopitel, fl_value proydeno, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Заключение свёртки».
@@ -61630,9 +61702,11 @@ fl_status compiler_flang_dopuschenie_vitka(fl_ctx *ctx, fl_value obyazatelstvo, 
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param obyazatelstvo — «обязательство»: «Значение»
  * @param chem — «чем»: «Значение»
+ * @param spisok — «список»: строка
+ * @param proydeno — «пройдено»: «Значение»
  * @return значение: «Значение»
  */
-fl_status compiler_flang_zaklyuchenie_svyortki(fl_ctx *ctx, fl_value obyazatelstvo, fl_value chem, fl_value *result, fl_error *error);
+fl_status compiler_flang_zaklyuchenie_svyortki(fl_ctx *ctx, fl_value obyazatelstvo, fl_value chem, fl_value spisok, fl_value proydeno, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Посылка свёртки».
@@ -65039,6 +65113,32 @@ fl_status compiler_flang_razborom_po_sluchayam(fl_ctx *ctx, fl_value obyazatelst
  * @return значение: «Значение»
  */
 fl_status compiler_flang_sluchayami_po_telu(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value telo, fl_value oplachennoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свёрткой по телу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param oplachennoe — «оплаченное»: «Оплаченное»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_svyortkoy_po_telu(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value telo, fl_value oplachennoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свёрткой по имени».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @param oplachennoe — «оплаченное»: «Оплаченное»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_svyortkoy_po_imeni(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value parametr, fl_value oplachennoe, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Случаями по имени».

@@ -1,6 +1,52 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.6.0": {
+      "ru": {
+        "заголовок": "Долгие вычисления перестали упираться в память: 15,98 ГиБ ушли в 0,0135",
+        "появилось": [
+          "Вход в PostgreSQL по `scram-sha-256`: SHA-1, HMAC, PBKDF2 и клиент SCRAM написаны на самом языке, а вход проверен прогоном против настоящей PostgreSQL 17.10, а не заглушки.",
+          "Три новых правила вывода у проверяльщика доказательств. Оговорка о конечности: «не число» стоит вне порядка, всякая граница на нём ложна, и оговорка «пока это число» теперь читается фактом. Разбор случаев по дизъюнкции в допущении: «А или Б» не расщепляется, а разбирается надвое, и цель принимается только когда сошлись оба случая. Цель «А и притом Б».",
+          "Надзор за упавшими процессами поверх сети: узел переживает смерть соседа, а работу пропавшего забирает выживший. Пропажу надзору отдаёт доклад слоя связи, а не уборка сокета.",
+          "Модуль «Провод» — общая половина двоичных протоколов поверх TCP, вынутая из драйвера PostgreSQL. Из 83 функций драйвера про сам PostgreSQL оказались 39; остальное годится любому двоичному протоколу.",
+          "Браузерные страницы написаны на самом языке: восемь целей печати из восьми, ни одной строки JavaScript в самих страницах.",
+          "Проверка пустых доказательств. 93 доказанных утверждения библиотеки разложены на четыре кучи, и «доказано» о том, что верно про любую функцию с такой же подписью, названо своим именем, а не сосчитано наравне с содержательным."
+        ],
+        "изменилось": [
+          "Память при долгом вычислении перестала расти. Интерпретатор — это цикл, и область памяти освобождалась только в самом конце: хвостовая рекурсия стоила 84 килобайта на виток. Теперь она освобождается на каждом витке. На 200 000 витков пик был 15,98 ГиБ, стал 0,0135 ГиБ, время упало с 25,3 до 13,5 секунды, а от числа витков пик не зависит вовсе.",
+          "Равенство в теле функции разрешено: прежний запрет оказался устаревшим ограничением, а не границей языка. Разрешение считать по-прежнему не означает разрешения выводить — подделка на это заведена.",
+          "Потолок шагов при печати компилятора поднят с 40 миллионов до миллиарда. После новых правил вывода проверка компилятора самим собой перестала помещаться в прежний, и печать отменялась целиком.",
+          "Реализация проверок на JavaScript снята: слой доказательств (4958 строк), проверки печати и занятых целью имён (682 строки) и четыре файла, которых не звал никто (836 строк). Печать компилятора в C не требует Node ни на одном шаге.",
+          "Поиск по кодам отказа в документации находит 13 кодов из 13 — было 0 из 13."
+        ],
+        "сломалось": [
+          "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/storozh-zanyatogo.flang` вместо снятого скрипта на JavaScript.",
+          "Общая половина драйвера PostgreSQL уехала в модуль «Провод». Программы, звавшие `«Знак байта»`, `«Четыре октета»`, `«Два октета»` и соседей прямо у «Разговора с базой», должны ввозить «Провод»."
+        ]
+      },
+      "en": {
+        "заголовок": "Long computations no longer hit a memory wall: 15.98 GiB became 0.0135",
+        "появилось": [
+          "PostgreSQL login over `scram-sha-256`: SHA-1, HMAC, PBKDF2 and the SCRAM client are written in the language itself, and the login is verified by a run against a real PostgreSQL 17.10, not a stub.",
+          "Three new inference rules in the proof checker. A finiteness caveat: NaN sits outside the order, every bound over it is false, and the caveat \"while this is a number\" is now read as a fact. Case analysis over a disjunction in an assumption: \"A or B\" is not split, it is taken apart into two cases, and the goal is accepted only when both close. And the goal \"A and also B\".",
+          "Supervision of failed processes across the network: a node survives the death of its neighbour, and the lost work is taken over by the survivor. The loss is reported to the supervisor by the link layer, not by socket cleanup.",
+          "A \"Wire\" module — the shared half of binary protocols over TCP, lifted out of the PostgreSQL driver. Of the driver's 83 functions only 39 were about PostgreSQL; the rest fit any binary protocol.",
+          "Browser pages are written in the language itself: eight emit targets out of eight, and not a single line of JavaScript in the pages.",
+          "A check for vacuous proofs. The library's 93 proved claims are sorted into four piles, and \"proved\" about something that holds for any function with the same signature is named for what it is instead of being counted alongside substantive claims."
+        ],
+        "изменилось": [
+          "Memory no longer grows during a long computation. The interpreter is a loop, and its arena was released only at the very end: tail recursion cost 84 kilobytes per iteration. It is now released on every iteration. Over 200,000 iterations the peak went from 15.98 GiB to 0.0135 GiB, time from 25.3 to 13.5 seconds, and the peak no longer depends on the iteration count at all.",
+          "Equality in a function body is allowed: the old ban turned out to be a stale restriction rather than a boundary of the language. Permission to compute is still not permission to infer — there is a forgery fixture for exactly that.",
+          "The step ceiling for printing the compiler was raised from 40 million to a billion. After the new inference rules the compiler's check of itself no longer fit under the old one, and printing was cancelled outright.",
+          "The JavaScript implementations of the checks are gone: the proof layer (4,958 lines), the emit and occupied-name checks (682 lines) and four files nobody called (836 lines). Printing the compiler to C needs Node at no step.",
+          "Searching the documentation by refusal code finds 13 codes out of 13 — it used to find 0 of 13."
+        ],
+        "сломалось": [
+          "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/storozh-zanyatogo.flang` instead of the removed JavaScript script.",
+          "The shared half of the PostgreSQL driver moved into the \"Wire\" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import \"Wire\"."
+        ]
+      }
+    },
     "0.5.1": {
       "ru": {
         "заголовок": "Установка на macOS починена: 0.5.0 не собирался там ни у кого",

@@ -53,14 +53,14 @@ point, packaging, measurements, documentation and one full-size example project.
      JavaScript. Пока проба не переписана, карта держится рукой — правьте её вместе с деревом. -->
 
 ```
-bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap», no Node
+bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap»
 flang/self/       the compiler: lexer, parser, types, totality, proof core, eight printers
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/src/        the target runtimes, copied verbatim into printed code — C, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
 flang/examples/   flang programs: leetcode, rosetta, cat, monad, io, web, errors
 flang/proof/      what the proof core may and may not conclude, and why
-flang/проверки/   checks written in flang, walked by the binary — no Node on the path
+flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
@@ -95,8 +95,8 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 66 lines of code inside 143 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык spec:check`, and because `ярлык` resolves its own paths from its own directory |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
-**The binary builds without Node.** `make -C bootstrap` builds the compiler with a single `cc`
-— no Node, no npm, not one line of JavaScript. `package.json` does not describe how the
+**The binary builds with a single `cc`.** `make -C bootstrap` — that is all; no package
+manager and no second language sit on the build path. `package.json` does not describe how the
 language is built; it describes how the language is installed from npm, and it declares zero
 dependencies (`npm ls --all` prints `(empty)`). `npm install` does two things: it puts `flang`
 into `node_modules/.bin` and it runs `make` over that same `bootstrap/`, so the `flang` command

@@ -524,8 +524,19 @@ static const char HELP_IO[] =
     "принял решение.\n"
     "\n"
     "Чего у двоичного хозяина нет: экрана («Показать», «Ждать событие» отвечают\n"
-    "FLANG_IO_NO_SCREEN) и шифрования («https» отвечает FLANG_IO_NO_TLS). Обе\n"
-    "нехватки названы отказом, а не молчанием.";
+    "FLANG_IO_NO_SCREEN) и СВОЕГО шифрования. Нехватка названа отказом, а не\n"
+    "молчанием.\n"
+    "\n"
+    "«https» У ПОРУЧЕНИЯ «Запросить» РАБОТАЕТ, но исполняет его не двоичный, а\n"
+    "внешняя программа «curl»: своей криптографии здесь нет ни байта. Отсюда три\n"
+    "следствия, и все три видны программе.\n"
+    "  • curl обязан быть на машине; нет его — отказ FLANG_IO_NO_TLS;\n"
+    "  • это ЗАПУСК ПРОЦЕССА, поэтому --no-spawn запрещает и «https» тоже —\n"
+    "    громко, отказом FLANG_IO_DENIED, а не тайным дитятей;\n"
+    "  • сертификат проверяет curl: срок, цепочка и имя узла. Не сошлось —\n"
+    "    FLANG_IO_TLS_CERT его же словами; прочая беда TLS — FLANG_IO_TLS.\n"
+    "ОТЗЫВ СЕРТИФИКАТА НЕ ПРОВЕРЯЕТСЯ (ни OCSP, ни CRL) — названо, а не умолчано.\n"
+    "Сырого TLS-сокета нет вовсе: «Открыть соединение» — голый TCP.";
 
 static const char HELP_FACTS[] =
     "flang facts <файл.flang> --claims '[\"…\"]' [--facts факты.json] [--steps N] [--pretty]\n"
@@ -9779,15 +9790,424 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
   }
 }
 
+/* ── сеть: разбор ответа HTTP, общий для обоих путей ─────────────────────── */
+
+/*
+ * Код ответа — три цифры после «HTTP/1.x »; тело — после пустой строки. Разбор
+ * заголовков дальше этого не идёт: отклик «Ответ сети» несёт ровно код и тело,
+ * и городить их читателя незачем.
+ *
+ * Вынесено отдельно затем, что путей теперь ДВА — свой сокет и внешний хозяин
+ * для «https», — а отклик у поручения «Запросить» обязан быть один и тот же.
+ * Две копии этого разбора разошлись бы молча.
+ */
+static fl_value io_http_answer(const repl_buf *answer) {
+  int code = 0;
+  const char *split = NULL;
+  if (answer->used < 12 || strncmp(answer->data, "HTTP/1.", 7) != 0) {
+    return io_fail("FLANG_IO_NET", "ответ не похож на HTTP");
+  }
+  code = atoi(answer->data + 9);
+  split = strstr(answer->data, "\r\n\r\n");
+  {
+    fl_value fields[2];
+    const char *start = split == NULL ? answer->data + answer->used : split + 4;
+    fields[0] = io_pair("код", io_number((double)code));
+    fields[1] = io_pair("тело", io_text(start, (size_t)(answer->data + answer->used - start)));
+    return io_variant("Ответ сети", fields, 2);
+  }
+}
+
+/* ── сеть: «https» исполняется НЕ ЗДЕСЬ ──────────────────────────────────── */
+
+/*
+ * ОТКУДА БЕРЁТСЯ ШИФРОВАНИЕ. Не отсюда. Криптографии в этом файле не прибавилось
+ * ни байта, и `bootstrap/Makefile` по-прежнему линкует `-lm -lpthread` и ничего
+ * сверх: точка раскрутки как собиралась одним `cc`, так и собирается. Три пути
+ * взвешены числом в `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`,
+ * и выбран третий — ТОТ ЖЕ, каким в словаре живут процессы: поручение уходит
+ * НАРУЖУ, чужая проверенная программа его исполняет, мы разбираем ответ.
+ *
+ * ЧЕМ ИСПОЛНЯЕТСЯ: `curl`, найденный по PATH. Имя зашито и ключи зашиты, и
+ * переменной среды, которая бы их подменила, здесь нет НАМЕРЕННО: «чем ходить в
+ * сеть», названное снаружи, есть тихий способ снять проверку сертификата.
+ *
+ * КЛЮЧИ, И ПОЧЕМУ КАЖДЫЙ:
+ *   -q                    НЕ читать ~/.curlrc. Стоит первым, до всего: строка
+ *                         `insecure` в чужом файле настроек сняла бы проверку
+ *                         сертификата, и НИ ОДИН прогон этого бы не показал.
+ *                         Главный ключ здесь — этот, а не те, что про TLS.
+ *   -sS                   без счётчика, но с текстом ошибки на stderr.
+ *   -i                    заголовки в поток: ответ разбирает тот же
+ *                         `io_http_answer`, что и незашифрованный путь.
+ *   -g                    НЕ считать «[», «]», «{», «}» в адресе перечислением:
+ *                         адрес приходит из программы, а не из руки человека, и
+ *                         `?ids[]=1` не должен превращаться в другой запрос.
+ *   --http1.1             разбор ждёт «HTTP/1.», а поверх TLS curl по умолчанию
+ *                         договаривается на HTTP/2 и печатает «HTTP/2 200».
+ *   -H "Content-Type:"    СНЯТЬ заголовок, который curl дописывает к телу сам
+ *                         («application/x-www-form-urlencoded»). Поручение
+ *                         «Запросить» заголовков не возит вовсе, и наш сокет по
+ *                         «http» не шлёт ни одного: чужая служба обязана видеть
+ *                         одно и то же тело обоими путями. Замерено на
+ *                         postman-echo: без этого ключа тело приезжало полем
+ *                         формы, а не телом.
+ *   --proto =https        только https: ни file, ни gopher, ни подмены схемы.
+ *   --proto-redir =https  перенаправления и так не исполняются, но если завтра
+ *                         их включат — вниз по схеме уйти будет нельзя.
+ *   --tlsv1.2             нижняя граница версии.
+ *   --max-time            из `--timeout` хозяина, секундами.
+ *   --                    конец ключей: адрес не станет ключом, начнись он с «-».
+ *
+ * ЧЕГО ЗДЕСЬ НЕТ И НЕ БУДЕТ: ключа `-k` (`--insecure`), ключа
+ * `--proxy-insecure`, `--cacert` из среды — ни одного способа сказать
+ * «сертификат не проверять». Тихо принять чужой сертификат ХУЖЕ, чем не уметь
+ * вовсе, и потому проверка не выключается ничем, что скажет программа на flang.
+ *
+ * КТО ПРОВЕРЯЕТ СЕРТИФИКАТ: curl своим хранилищем корней. Срок, цепочка и имя
+ * узла — его работа, не наша, и отказ приезжает ЕГО словами (первая строка
+ * stderr) под нашим кодом. Проверено подделкой: expired, wrong.host,
+ * self-signed и untrusted-root с badssl.com отвергнуты все четыре.
+ *
+ * ★ ЧЕГО ПРОВЕРКА НЕ ДЕЛАЕТ, И ЭТО НАЗВАНО, А НЕ УМОЛЧАНО: ОТЗЫВ СЕРТИФИКАТА НЕ
+ * ПРОВЕРЯЕТСЯ. Пятая подделка, `revoked.badssl.com`, прошла с кодом 200 —
+ * отозванный лист принят. Ни OCSP, ни CRL curl с OpenSSL по умолчанию не
+ * спрашивает. Ключ `--cert-status` (OCSP-скрепка) ЗАМЕРЕН и НЕ ВЗЯТ: с ним
+ * отказ «No OCSP response received» приезжает не только от revoked.badssl.com,
+ * но и от rosettacode.org, и от api.github.com — скрепку не отдаёт почти никто,
+ * то есть ключ закрывает не дыру, а весь выход в сеть. Отзыв остаётся ДОЛГОМ, и
+ * долг записан здесь, в `--help` команды `io` и в ADR-0007.
+ *
+ * ЧТО ЧЕСТНО НАЗВАТЬ ДОЛГОМ ЭТОГО ПУТИ:
+ *   • «https» требует ЗАПУСКА ПРОЦЕССА, значит `--no-spawn` его запрещает — и
+ *     запрещает громко: молча завести дитя у хозяина, которому это запрещено,
+ *     значит соврать в ключе;
+ *   • тело не совпадает побайтово с незашифрованным путём: curl снимает кусочную
+ *     упаковку (`Transfer-Encoding: chunked`), а наш сокет отдаёт её как есть;
+ *   • сырого TLS-сокета по-прежнему нет: «Открыть соединение» — голый TCP, и
+ *     клиент к базе, требующей шифрования, этим не пишется;
+ *   • curl обязан быть на машине. Нет его — прежний отказ FLANG_IO_NO_TLS, но с
+ *     названной причиной.
+ */
+#define IO_TLS_PROGRAM "curl"
+
+/* Первая строка чужого вывода: ровно она и есть «внятные слова» отказа, всё
+   остальное у curl — присказка про то, куда сходить почитать.
+   Обрез по длине мог прийтись на середину знака: имя узла приезжает из
+   программы на flang и бывает не в латинице, а половина знака сломала бы UTF-8
+   в отклике. Снимается ТОЛЬКО НЕПОЛНАЯ последовательность — ищется последний
+   ведущий байт, и обещанная им длина сверяется с тем, сколько байт дошло.
+   Первая редакция снимала хвост БЕЗУСЛОВНО и тем съедала последний знак у
+   всякой строки, кончавшейся не латиницей. */
+static void io_first_line(const char *text, size_t bytes, char *out, size_t out_size) {
+  size_t index = 0;
+  size_t taken = 0;
+  if (out_size == 0) return;
+  if (text != NULL) {
+    while (index < bytes && text[index] != '\n' && text[index] != '\r' && taken + 1 < out_size) {
+      out[taken] = text[index];
+      taken += 1;
+      index += 1;
+    }
+    {
+      size_t lead = taken;
+      while (lead > 0 && ((unsigned char)out[lead - 1] & 0xC0) == 0x80) {
+        lead -= 1;
+      }
+      if (lead > 0) {
+        const unsigned char first = (unsigned char)out[lead - 1];
+        size_t need = 1;
+        if ((first & 0xF8) == 0xF0) {
+          need = 4;
+        } else if ((first & 0xF0) == 0xE0) {
+          need = 3;
+        } else if ((first & 0xE0) == 0xC0) {
+          need = 2;
+        }
+        if (need > 1 && (taken - lead + 1) < need) {
+          taken = lead - 1;
+        }
+      }
+    }
+  }
+  out[taken] = '\0';
+}
+
+/* Код возврата curl → код отказа языка. Различать обязательно: «сертификат не
+   принят» и «не дозвонился» — разные беды, и программа вправе поступить с ними
+   по-разному. Числа — из curl(1), раздел «EXIT CODES». */
+static const char *io_tls_code(int code) {
+  switch (code) {
+    case 60: /* сертификат узла не проверился */
+    case 90: /* открытый ключ не совпал с приколотым */
+    case 91: /* ответ OCSP негоден */
+      return "FLANG_IO_TLS_CERT";
+    case 3:  /* адрес разобрать не вышло */
+    case 6:  /* имя не разрешилось */
+    case 7:  /* не соединилось */
+    case 28: /* время вышло */
+      return "FLANG_IO_NET";
+    default:
+      return "FLANG_IO_TLS";
+  }
+}
+
+static fl_value io_https(io_host *host, const char *method, const char *address, const char *body) {
+  /* Больше всего ключей у запроса с телом: 21 слово и замыкающий NULL. Запас
+     здесь не «на всякий случай», а на следующий ключ — переполнение массива
+     аргументов не заметит ни один прогон. */
+  char *args[32];
+  size_t count = 0;
+  char timeout[32];
+  int out_pipe[2];
+  int err_pipe[2];
+  int in_pipe[2];
+  pid_t child = 0;
+  repl_buf out;
+  repl_buf err;
+  int status = 0;
+  bool too_much = false;
+  bool no_time = false;
+  size_t sent = 0;
+  size_t to_send = 0;
+  void (*was_pipe)(int) = NULL;
+  const bool with_body =
+      body != NULL && body[0] != '\0' && strcmp(method, "GET") != 0 && strcmp(method, "HEAD") != 0;
+
+  if (!host->spawn) {
+    return io_fail("FLANG_IO_DENIED",
+                   "«https» здесь исполняет ВНЕШНЯЯ программа, а хозяину запрещено их запускать "
+                   "(--no-spawn): своего шифрования у двоичного нет, и завести дитя молча значило бы "
+                   "соврать в ключе");
+  }
+
+  snprintf(timeout, sizeof(timeout), "%ld", host->timeout_ms > 0 ? (host->timeout_ms + 999) / 1000 : 30L);
+  args[count] = IO_TLS_PROGRAM;         count += 1;
+  args[count] = "-q";                   count += 1;
+  args[count] = "-sS";                  count += 1;
+  args[count] = "-i";                   count += 1;
+  args[count] = "-g";                   count += 1;
+  args[count] = "--http1.1";            count += 1;
+  args[count] = "-H";                   count += 1;
+  args[count] = "Content-Type:";        count += 1;
+  args[count] = "--proto";              count += 1;
+  args[count] = "=https";               count += 1;
+  args[count] = "--proto-redir";        count += 1;
+  args[count] = "=https";               count += 1;
+  args[count] = "--tlsv1.2";            count += 1;
+  args[count] = "--max-time";           count += 1;
+  args[count] = timeout;                count += 1;
+  if (strcmp(method, "HEAD") == 0) {
+    args[count] = "--head";             count += 1;
+  } else {
+    args[count] = "-X";                 count += 1;
+    args[count] = (char *)method;       count += 1;
+  }
+  if (with_body) {
+    args[count] = "--data-binary";      count += 1;
+    args[count] = "@-";                 count += 1;
+    to_send = strlen(body);
+  }
+  args[count] = "--";                   count += 1;
+  args[count] = (char *)address;        count += 1;
+  args[count] = NULL;
+
+  if (pipe(out_pipe) != 0) {
+    return io_fail_errno("FLANG_IO_TLS", "труба вывода не заведена");
+  }
+  if (pipe(err_pipe) != 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    return io_fail_errno("FLANG_IO_TLS", "труба ошибок не заведена");
+  }
+  if (pipe(in_pipe) != 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    return io_fail_errno("FLANG_IO_TLS", "труба ввода не заведена");
+  }
+  child = fork();
+  if (child < 0) {
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    close(in_pipe[0]);
+    close(in_pipe[1]);
+    return io_fail_errno("FLANG_IO_TLS", "внешний хозяин не порождён");
+  }
+  if (child == 0) {
+    dup2(in_pipe[0], 0);
+    dup2(out_pipe[1], 1);
+    dup2(err_pipe[1], 2);
+    close(in_pipe[0]);
+    close(in_pipe[1]);
+    close(out_pipe[0]);
+    close(out_pipe[1]);
+    close(err_pipe[0]);
+    close(err_pipe[1]);
+    /* 126 — «каталог не сменился», 127 — «программы нет». Слить их нельзя:
+       вторая означает «шифрования здесь нет», а первая — нашу же беду. */
+    if (chdir(host->root) != 0) {
+      _exit(126);
+    }
+    execvp(IO_TLS_PROGRAM, args);
+    _exit(127);
+  }
+  close(in_pipe[0]);
+  close(out_pipe[1]);
+  close(err_pipe[1]);
+  if (!with_body) {
+    close(in_pipe[1]);
+    in_pipe[1] = -1;
+  }
+  /* Дитя вправе закрыть свой конец раньше, чем мы дописали тело; без этого
+     SIGPIPE снял бы НАС, а не его. Прежний обработчик возвращается на место. */
+  was_pipe = signal(SIGPIPE, SIG_IGN);
+
+  buf_init(&out);
+  buf_init(&err);
+  {
+    int fds[2];
+    bool alive[2];
+    char chunk[4096];
+    fds[0] = out_pipe[0];
+    fds[1] = err_pipe[0];
+    alive[0] = true;
+    alive[1] = true;
+    while (alive[0] || alive[1] || in_pipe[1] >= 0) {
+      fd_set reading;
+      fd_set writing;
+      int top = -1;
+      int index = 0;
+      struct timeval wait;
+      FD_ZERO(&reading);
+      FD_ZERO(&writing);
+      for (index = 0; index < 2; index += 1) {
+        if (alive[index]) {
+          FD_SET(fds[index], &reading);
+          if (fds[index] > top) top = fds[index];
+        }
+      }
+      if (in_pipe[1] >= 0) {
+        FD_SET(in_pipe[1], &writing);
+        if (in_pipe[1] > top) top = in_pipe[1];
+      }
+      wait.tv_sec = host->timeout_ms / 1000;
+      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
+      if (select(top + 1, &reading, &writing, NULL, &wait) <= 0) {
+        no_time = true;
+        kill(child, SIGKILL);
+        break;
+      }
+      if (in_pipe[1] >= 0 && FD_ISSET(in_pipe[1], &writing)) {
+        const ssize_t put = write(in_pipe[1], body + sent, to_send - sent);
+        if (put <= 0) {
+          close(in_pipe[1]);
+          in_pipe[1] = -1;
+        } else {
+          sent += (size_t)put;
+          if (sent >= to_send) {
+            close(in_pipe[1]);
+            in_pipe[1] = -1;
+          }
+        }
+      }
+      for (index = 0; index < 2; index += 1) {
+        if (alive[index] && FD_ISSET(fds[index], &reading)) {
+          const ssize_t got = read(fds[index], chunk, sizeof(chunk));
+          if (got <= 0) {
+            alive[index] = false;
+          } else {
+            buf_add(index == 0 ? &out : &err, chunk, (size_t)got);
+            if (out.used + err.used > IO_OUT_LIMIT) {
+              too_much = true;
+              kill(child, SIGKILL);
+              alive[0] = false;
+              alive[1] = false;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (in_pipe[1] >= 0) close(in_pipe[1]);
+  close(out_pipe[0]);
+  close(err_pipe[0]);
+  signal(SIGPIPE, was_pipe);
+  while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
+    /* повтор */
+  }
+
+  if (no_time) {
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_NET", "внешний хозяин «" IO_TLS_PROGRAM "» не уложился в срок");
+  }
+  if (too_much) {
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "ответ по «https» больше %d байт", IO_OUT_LIMIT);
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_TLS", buffer);
+  }
+  if (WIFSIGNALED(status)) {
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "внешний хозяин «%s» снят сигналом %d", IO_TLS_PROGRAM, WTERMSIG(status));
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_TLS", buffer);
+  }
+  {
+    const int code = WEXITSTATUS(status);
+    if (code == 127) {
+      buf_free(&out);
+      buf_free(&err);
+      return io_fail("FLANG_IO_NO_TLS",
+                     "своего шифрования у двоичного хозяина нет, а внешней программы «" IO_TLS_PROGRAM
+                     "» на машине не нашлось: адрес по «https» исполнить нечем, "
+                     "а притворяться, что сходил, — хуже отказа");
+    }
+    if (code == 126) {
+      buf_free(&out);
+      buf_free(&err);
+      return io_fail("FLANG_IO_TLS", "внешнему хозяину не сменился рабочий каталог");
+    }
+    if (code != 0) {
+      char line[512];
+      char buffer[768];
+      io_first_line(err.data, err.used, line, sizeof(line));
+      if (line[0] == '\0') {
+        snprintf(buffer, sizeof(buffer), "внешний хозяин «%s» вернул код %d и ничего не сказал", IO_TLS_PROGRAM,
+                 code);
+      } else {
+        snprintf(buffer, sizeof(buffer), "%s", line);
+      }
+      buf_free(&out);
+      buf_free(&err);
+      return io_fail(io_tls_code(code), buffer);
+    }
+  }
+  {
+    fl_value result = io_http_answer(&out);
+    buf_free(&out);
+    buf_free(&err);
+    return result;
+  }
+}
+
 /* ── сеть: запрос по HTTP ────────────────────────────────────────────────── */
 
 /*
- * Клиент HTTP/1.1 без шифрования — ровно столько, сколько нужно поручению
- * «Запросить». `https` НЕ ПОДДЕРЖИВАЕТСЯ, и сказано об этом ИМЕНОВАННЫМ
- * отказом, а не молчанием: разница между «не знаю такого поручения» и «знаю,
- * но здесь этого нет» — та же, по которой у хозяина Node есть
- * FLANG_IO_NO_SCREEN. Втащить TLS в это основание значило бы положить в него
- * чужую криптографию — путь отвергнутый, а не забытый.
+ * Клиент HTTP/1.1 БЕЗ ШИФРОВАНИЯ, своим сокетом, — ровно столько, сколько нужно
+ * поручению «Запросить» по «http://».
+ *
+ * `https` разбирается ЗДЕСЬ ЖЕ, но исполняется не здесь: он уходит в
+ * `io_https` внешней программе. Втащить TLS в это основание значило бы положить
+ * в него чужую криптографию — путь отвергнутый, а не забытый; отдать поручение
+ * наружу — тот же путь, каким в словаре живут процессы. Довод целиком —
+ * `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`.
  */
 static fl_value io_request(io_host *host, const char *method, const char *address, const char *body) {
   char host_name[512];
@@ -9804,9 +10224,7 @@ static fl_value io_request(io_host *host, const char *method, const char *addres
   fl_value result = fl_nothing();
 
   if (strncmp(address, "https://", 8) == 0) {
-    return io_fail("FLANG_IO_NO_TLS",
-                   "у двоичного хозяина нет шифрования: адрес по «https» исполнить нечем, "
-                   "а притворяться, что сходил, — хуже отказа");
+    return io_https(host, method, address, body);
   }
   if (strncmp(address, "http://", 7) != 0) {
     return io_fail("FLANG_IO_NET", "адрес обязан начинаться с «http://»");
@@ -9879,28 +10297,8 @@ static fl_value io_request(io_host *host, const char *method, const char *addres
   }
   close(fd);
 
-  {
-    /* Код ответа — три цифры после «HTTP/1.x »; тело — после пустой строки.
-       Разбор заголовков дальше этого не идёт: отклик «Ответ сети» несёт ровно
-       код и тело, и городить их читателя незачем. */
-    int code = 0;
-    const char *split = NULL;
-    if (answer.used < 12 || strncmp(answer.data, "HTTP/1.", 7) != 0) {
-      buf_free(&answer);
-      return io_fail("FLANG_IO_NET", "ответ не похож на HTTP");
-    }
-    code = atoi(answer.data + 9);
-    split = strstr(answer.data, "\r\n\r\n");
-    {
-      fl_value fields[2];
-      const char *start = split == NULL ? answer.data + answer.used : split + 4;
-      fields[0] = io_pair("код", io_number((double)code));
-      fields[1] = io_pair("тело", io_text(start, (size_t)(answer.data + answer.used - start)));
-      result = io_variant("Ответ сети", fields, 2);
-    }
-    buf_free(&answer);
-  }
-  (void)host;
+  result = io_http_answer(&answer);
+  buf_free(&answer);
   return result;
 }
 

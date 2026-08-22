@@ -1773,6 +1773,10 @@ fl_status compiler_flang_sozdat_dno(fl_ctx *ctx, fl_value est, fl_value chislo, 
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_vetvlenie(fl_ctx *ctx, fl_value est, fl_value prinyato, fl_value prichina, fl_value *out, fl_error *error);
 
+/* Запись FTS «Сравнение»: «есть», «вид», «левое», «правое». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sravnenie(fl_ctx *ctx, fl_value est, fl_value vid, fl_value levoe, fl_value pravoe, fl_value *out, fl_error *error);
+
 /* Запись FTS «Замена терма»: «имя», «узел», «переименовать». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_zamena_terma(fl_ctx *ctx, fl_value imya, fl_value uzel, fl_value pereimenovat, fl_value *out, fl_error *error);
@@ -59808,6 +59812,104 @@ fl_status compiler_flang_svod_sluchaev(fl_ctx *ctx, fl_value itog, fl_value prav
 fl_status compiler_flang_sluchay_ne_svedyon(fl_ctx *ctx, fl_value itog, fl_value imya, fl_value svedenie, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Внутренним условием».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_vnutrennim_usloviem(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Атомарное условие».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Атомарное или само»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_atomarnoe_uslovie(fl_ctx *ctx, fl_value uslovie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Атомарное или само».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Атомарное условие»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uslovie — «условие»: «Значение»
+ * @param vnutri — «внутри»: «Может быть узел»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_atomarnoe_ili_samo(fl_ctx *ctx, fl_value uslovie, fl_value vnutri, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести внутренним условием».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param zaklyuchenie — «заключение»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_vnutrennim_usloviem(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ход внутренним».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param cel — «цель»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_hod_vnutrennim(fl_ctx *ctx, fl_value itog, fl_value cel, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ход при внутреннем».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param itog — «итог»: «Сведение»
+ * @param cel — «цель»: «Значение»
+ * @param vneshnee — «внешнее»: «Значение»
+ * @param vnutrennee — «внутреннее»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_hod_pri_vnutrennem(fl_ctx *ctx, fl_value itog, fl_value cel, fl_value vneshnee, fl_value vnutrennee, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свод внутреннего».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param itog — «итог»: «Сведение»
+ * @param vetvlenie — «ветвление»: «Ветвление»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svod_vnutrennego(fl_ctx *ctx, fl_value itog, fl_value vetvlenie, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Свести ветвлением».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -59876,6 +59978,80 @@ fl_status compiler_flang_konyunkty_dopuscheniya(fl_ctx *ctx, fl_value fakt, fl_v
 fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Правило противоречия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pravilo_protivorechiya(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Не сравнение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Сравнение»
+ */
+fl_status compiler_flang_ne_sravnenie(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сравнение узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Сравнение»
+ */
+fl_status compiler_flang_sravnenie_uzla(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сравнение по операции».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param op — «оп»: строка
+ * @return значение: «Сравнение»
+ */
+fl_status compiler_flang_sravnenie_po_operacii(fl_ctx *ctx, fl_value uzel, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Несовместимы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param strogoe — «строгое»: «Сравнение»
+ * @param vtoroe — «второе»: «Сравнение»
+ * @return значение
+ */
+fl_status compiler_flang_nesovmestimy(fl_ctx *ctx, fl_value strogoe, fl_value vtoroe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строгое против».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param s — «с»: «Сравнение»
+ * @param d — «д»: «Сравнение»
+ * @return значение
+ */
+fl_status compiler_flang_strogoe_protiv(fl_ctx *ctx, fl_value s, fl_value d, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Противоречит списку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param strogoe — «строгое»: «Сравнение»
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_protivorechit_spisku(fl_ctx *ctx, fl_value strogoe, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть противоречие».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_protivorechie(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Свести правилами».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -59888,6 +60064,25 @@ fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl
  * @return значение: «Сведение»
  */
 fl_status compiler_flang_svesti_pravilami(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести правилами при фактах».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param obyavlennye — «объявленные»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_svesti_pravilami_pri_faktah(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value obyavleniya, fl_value obyavlennye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести соседними или отказать».

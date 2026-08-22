@@ -1,0 +1,54 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Позвать МАЛОГО сводителя на один исходник.
+#
+#   sh flang/proof/сличить.sh <исходник.flang>
+#
+# Печатает по строке на утверждение: функция, имя, ответ, довод — через
+# табуляцию. Ответов три: «доказано», «не доказано», «не берусь».
+#
+# Оболочка только возит: у `flang io` нет способа принять довод, поэтому путь
+# приезжает файлом «наряд», а сам сводитель копируется рядом с ним — он не
+# ввозит ни одного модуля именно затем, чтобы ездить одним файлом.
+set -eu
+
+KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+[ "$#" -eq 1 ] || { echo "звать: sh flang/proof/сличить.sh <исходник.flang>" >&2; exit 2; }
+[ -f "$1" ] || { echo "исходника нет: $1" >&2; exit 2; }
+
+polnyy() { (CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd)" "$(basename -- "$1")"); }
+
+FLANG=${FLANG:-$KOREN/bootstrap/flang}
+[ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
+
+RABOTA=${SVOD_RABOTA:-}
+UBRAT=0
+if [ -z "$RABOTA" ]; then
+  RABOTA=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" svod.XXXXXX)
+  UBRAT=1
+  trap 'rm -rf "$RABOTA"' EXIT INT TERM
+fi
+
+cp "$KOREN/flang/proof/малый-сводитель.flang" "$RABOTA/малый-сводитель.flang"
+polnyy "$1" > "$RABOTA/наряд"
+
+VYVOD=$(LC_ALL=C.UTF-8 "$FLANG" io "$RABOTA/малый-сводитель.flang" --max-steps 2000000000 --max-depth 40000 2>&1) && KOD=0 || KOD=$?
+
+# Разбирать JSON руками через sed нельзя: в ответе стоят экранированные
+# кавычки и переводы строк. Разбор отдан python — оснастка вправе быть на нём,
+# решение всё равно принимает программа на flang.
+printf '%s' "$VYVOD" | python3 -c '
+import json, sys
+t = sys.stdin.read()
+try:
+    d = json.loads(t)
+except Exception:
+    sys.stderr.write(t + "\n"); sys.exit(3)
+if "result" in d:
+    print(d["result"])
+else:
+    sys.stderr.write(t + "\n"); sys.exit(4)
+'
+exit "$KOD"

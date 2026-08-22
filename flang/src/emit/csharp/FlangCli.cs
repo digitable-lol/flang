@@ -559,23 +559,167 @@ public static class FlangCli
         return output.Append('}').ToString();
     }
 
-    /// <summary>Цикл «строка запроса — строка ответа». Ответ ровно один на запрос.</summary>
-    private static void Serve(Program program, TextReader source, TextWriter sink)
+    /* ── СТРОКА, КОТОРАЯ НЕ ТЕКСТ ─────────────────────────────────────────────
+     *
+     * Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5).
+     * До 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков
+     * ПЯТЬЮ разными способами, и отказом не был ни один. C# был среди тех
+     * пяти, кто МОЛЧА подменял октет знаком замены U+FFFD (так делает
+     * UTF8Encoding по умолчанию) и отвечал FLANG_UNKNOWN_NAME — то есть врал о
+     * содержимом запроса. Замер и таблица —
+     * scripts/storozh-negodnogo-okteta.sh.
+     *
+     * Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
+     * ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и
+     * остаются отвеченными. Восьмая, js, названа долгом вслух: её прогонщик —
+     * рукописный JavaScript, править который в этом дереве запрещено.
+     */
+
+    /// <summary>
+    /// Первый октет, не складывающийся в UTF-8, — номером с единицы; 0 значит
+    /// «текст». Свой разбор, а не UTF8Encoding: ответ нужен НОМЕРОМ, и правила
+    /// обязаны совпасть с <c>fl_utf8_not_text_at</c> рантайма C до
+    /// пересокращённой записи и суррогатов включительно.
+    /// </summary>
+    private static int NotTextAt(byte[] raw, int size)
     {
-        string? line;
-        while ((line = source.ReadLine()) is not null)
+        int at = 0;
+        while (at < size)
         {
-            string request = line.Trim();
-            if (request.Length == 0)
+            int lead = raw[at];
+            int more;
+            int point;
+            if (lead < 0x80)
             {
+                at += 1;
                 continue;
             }
-            /* Явный «\n», а не WriteLine: разделитель строк в протоколе задан
-               протоколом, а не платформой. */
-            sink.Write(RunRequest(program, request));
-            sink.Write('\n');
-            sink.Flush();
+            else if ((lead & 0xE0) == 0xC0)
+            {
+                more = 1;
+                point = lead & 0x1F;
+            }
+            else if ((lead & 0xF0) == 0xE0)
+            {
+                more = 2;
+                point = lead & 0x0F;
+            }
+            else if ((lead & 0xF8) == 0xF0)
+            {
+                more = 3;
+                point = lead & 0x07;
+            }
+            else
+            {
+                return at + 1;
+            }
+            if (at + more >= size)
+            {
+                return at + 1;
+            }
+            for (int step = 1; step <= more; step += 1)
+            {
+                int following = raw[at + step];
+                if ((following & 0xC0) != 0x80)
+                {
+                    return at + 1;
+                }
+                point = (point << 6) | (following & 0x3F);
+            }
+            /* Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не
+               текст: иначе у одного знака было бы два написания, и счёт
+               разошёлся бы. */
+            if ((more == 1 && point < 0x80)
+                || (more == 2 && point < 0x800)
+                || (more == 3 && point < 0x10000)
+                || point > 0x10FFFF
+                || (point >= 0xD800 && point <= 0xDFFF))
+            {
+                return at + 1;
+            }
+            at += more + 1;
         }
+        return 0;
+    }
+
+    /// <summary>
+    /// Отказ «строка не текст»: номер строки, номер октета в ней (с единицы),
+    /// длина строки в октетах и значение негодного октета. Текст один на семь
+    /// целей — сторож сверяет его байт в байт.
+    /// </summary>
+    private static void RefuseNotText(int number, byte[] raw, int size, int at)
+    {
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        using var errors = new StreamWriter(Console.OpenStandardError(), encoding);
+        errors.Write(string.Format(
+            CultureInfo.InvariantCulture,
+            "FLANG_IO_NOT_TEXT: строка {0} не текст: октет {1} из {2} (0x{3:X2})"
+                + " не складывается в UTF-8; запрос обязан ехать в UTF-8\n",
+            number, at, size, raw[at - 1]));
+        errors.Flush();
+    }
+
+    /// <summary>
+    /// Цикл «строка запроса — строка ответа». Ответ ровно один на запрос.
+    /// Возвращает код возврата процесса: 0 — вход кончился, 1 — вход не текст.
+    /// </summary>
+    private static int Serve(Program program, Stream source, TextWriter sink)
+    {
+        byte[] line = new byte[65536];
+        int filled = 0;
+        int number = 0;
+        /* «Строка начата» отличает конец входа ПОСЛЕ перевода строки (лишней
+           строки нет) от конца входа посреди строки (строка есть, перевода у
+           неё нет). Без этого различия последняя строка без «\n» либо
+           терялась бы, либо считалась дважды. */
+        bool started = false;
+        for (; ; )
+        {
+            int octet = source.ReadByte();
+            if (octet < 0 && !started)
+            {
+                break;
+            }
+            started = true;
+            if (octet >= 0 && octet != '\n')
+            {
+                if (filled == line.Length)
+                {
+                    Array.Resize(ref line, line.Length * 2);
+                }
+                line[filled] = (byte)octet;
+                filled += 1;
+                continue;
+            }
+            number += 1;
+            /* Хвостовой «\r» снимается ТОЛЬКО для счёта: он ASCII и текстом
+               быть не мешает, а число «из скольких» обязано совпасть с теми
+               целями, чей построчный читатель снимает его сам (Go, Java). */
+            int size = filled > 0 && line[filled - 1] == (byte)'\r' ? filled - 1 : filled;
+            int bad = NotTextAt(line, size);
+            if (bad > 0)
+            {
+                sink.Flush();
+                RefuseNotText(number, line, size, bad);
+                return 1;
+            }
+            string request = Encoding.UTF8.GetString(line, 0, size).Trim();
+            filled = 0;
+            if (request.Length != 0)
+            {
+                /* Явный «\n», а не WriteLine: разделитель строк в протоколе
+                   задан протоколом, а не платформой. */
+                sink.Write(RunRequest(program, request));
+                sink.Write('\n');
+                sink.Flush();
+            }
+            if (octet < 0)
+            {
+                break;
+            }
+            started = false;
+        }
+        return 0;
     }
 
     public static int Main(string[] argv)
@@ -586,16 +730,13 @@ public static class FlangCli
            кириллические, а метка испортила бы первую строку протокола. */
         var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         Console.OutputEncoding = encoding;
-        Console.InputEncoding = encoding;
+        /* Console.InputEncoding больше не ставится: вход читается ОКТЕТАМИ, а
+           не через Console.In. Декодировщик подменял бы негодный октет знаком
+           замены, и спрашивать было бы не о чем. */
         var sink = new StreamWriter(Console.OpenStandardOutput(), encoding);
-        var source = new StreamReader(Console.OpenStandardInput(), encoding);
-        Flang.WithDeepStack<object?>(
-            () =>
-            {
-                Serve(program, source, sink);
-                return null;
-            });
+        var source = new BufferedStream(Console.OpenStandardInput());
+        int status = Flang.WithDeepStack(() => Serve(program, source, sink));
         sink.Flush();
-        return 0;
+        return status;
     }
 }

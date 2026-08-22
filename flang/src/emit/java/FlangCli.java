@@ -510,41 +510,169 @@ public final class FlangCli {
     return (java.util.List<Object>) value;
   }
 
-  /** Цикл «строка запроса → строка ответа». Ответ ровно один на запрос. */
-  private static void serve(Program program, java.io.BufferedReader source, java.io.PrintWriter sink)
+  /* ── СТРОКА, КОТОРАЯ НЕ ТЕКСТ ──────────────────────────────────────────────
+   *
+   * Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5). До
+   * 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
+   * разными способами, и отказом не был ни один. Java была среди тех пяти, кто
+   * МОЛЧА подменял октет знаком замены U+FFFD (так делает CharsetDecoder по
+   * умолчанию) и отвечал FLANG_UNKNOWN_NAME — то есть врал о содержимом
+   * запроса. Замер и таблица —
+   * scripts/storozh-negodnogo-okteta.sh.
+   *
+   * Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
+   * ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и
+   * остаются отвеченными. Восьмая, js, названа долгом вслух: её прогонщик —
+   * рукописный JavaScript, править который в этом дереве запрещено.
+   */
+
+  /**
+   * Первый октет, не складывающийся в UTF-8, — номером с единицы; 0 значит
+   * «текст». Свой разбор, а не CharsetDecoder: ответ нужен НОМЕРОМ, и правила
+   * обязаны совпасть с {@code fl_utf8_not_text_at} рантайма C до
+   * пересокращённой записи и суррогатов включительно.
+   */
+  private static int notTextAt(byte[] raw, int size) {
+    int at = 0;
+    while (at < size) {
+      int lead = raw[at] & 0xFF;
+      int more;
+      int point;
+      if (lead < 0x80) {
+        at += 1;
+        continue;
+      } else if ((lead & 0xE0) == 0xC0) {
+        more = 1;
+        point = lead & 0x1F;
+      } else if ((lead & 0xF0) == 0xE0) {
+        more = 2;
+        point = lead & 0x0F;
+      } else if ((lead & 0xF8) == 0xF0) {
+        more = 3;
+        point = lead & 0x07;
+      } else {
+        return at + 1;
+      }
+      if (at + more >= size) {
+        return at + 1;
+      }
+      for (int step = 1; step <= more; step += 1) {
+        int following = raw[at + step] & 0xFF;
+        if ((following & 0xC0) != 0x80) {
+          return at + 1;
+        }
+        point = (point << 6) | (following & 0x3F);
+      }
+      /* Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+         иначе у одного знака было бы два написания, и счёт разошёлся бы. */
+      if ((more == 1 && point < 0x80)
+          || (more == 2 && point < 0x800)
+          || (more == 3 && point < 0x10000)
+          || point > 0x10FFFF
+          || (point >= 0xD800 && point <= 0xDFFF)) {
+        return at + 1;
+      }
+      at += more + 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Отказ «строка не текст»: номер строки, номер октета в ней (с единицы),
+   * длина строки в октетах и значение негодного октета. Текст один на семь
+   * целей — сторож сверяет его байт в байт.
+   */
+  private static void refuseNotText(int number, byte[] raw, int size, int at) {
+    java.io.PrintStream errors =
+        new java.io.PrintStream(
+            new java.io.FileOutputStream(java.io.FileDescriptor.err),
+            true,
+            java.nio.charset.StandardCharsets.UTF_8);
+    /* Явный «\n», а не %n: разделитель строк у диагностики задан протоколом
+       сторожа, который сверяет её байт в байт, а не платформой. */
+    errors.print(
+        String.format(
+            "FLANG_IO_NOT_TEXT: строка %d не текст: октет %d из %d (0x%02X)"
+                + " не складывается в UTF-8; запрос обязан ехать в UTF-8\n",
+            number, at, size, raw[at - 1] & 0xFF));
+    errors.flush();
+  }
+
+  /**
+   * Цикл «строка запроса → строка ответа». Ответ ровно один на запрос.
+   *
+   * <p>Возвращает код возврата процесса: 0 — вход кончился, 1 — вход не текст.
+   */
+  private static int serve(Program program, java.io.InputStream source, java.io.PrintWriter sink)
       throws java.io.IOException {
-    String line;
-    while ((line = source.readLine()) != null) {
-      String request = line.trim();
-      if (request.isEmpty()) {
+    byte[] line = new byte[65536];
+    int filled = 0;
+    int number = 0;
+    boolean started = false;
+    for (; ; ) {
+      int octet = source.read();
+      if (octet < 0 && !started) {
+        break;
+      }
+      started = true;
+      if (octet >= 0 && octet != '\n') {
+        if (filled == line.length) {
+          line = java.util.Arrays.copyOf(line, line.length * 2);
+        }
+        line[filled] = (byte) octet;
+        filled += 1;
         continue;
       }
-      /* Явный «\n», а не println: разделитель строк в протоколе задан
-         протоколом, а не платформой, на которой запустили JVM. */
-      sink.print(runRequest(program, request));
-      sink.print('\n');
-      sink.flush();
+      number += 1;
+      /* Хвостовой «\r» снимается ТОЛЬКО для счёта: он ASCII и текстом быть не
+         мешает, а число «из скольких» обязано совпасть с теми целями, чей
+         построчный читатель снимает его сам (Go, C#). */
+      int size = filled > 0 && line[filled - 1] == '\r' ? filled - 1 : filled;
+      int bad = notTextAt(line, size);
+      if (bad > 0) {
+        sink.flush();
+        refuseNotText(number, line, size, bad);
+        return 1;
+      }
+      String request =
+          new String(line, 0, size, java.nio.charset.StandardCharsets.UTF_8).trim();
+      filled = 0;
+      if (!request.isEmpty()) {
+        /* Явный «\n», а не println: разделитель строк в протоколе задан
+           протоколом, а не платформой, на которой запустили JVM. */
+        sink.print(runRequest(program, request));
+        sink.print('\n');
+        sink.flush();
+      }
+      if (octet < 0) {
+        break;
+      }
+      started = false;
     }
+    return 0;
   }
 
   public static void main(String[] argv) throws Exception {
     String name = argv.length > 0 ? argv[0] : DEFAULT_PROGRAM_CLASS;
     Program program = new Program(name);
-    java.io.BufferedReader source =
-        new java.io.BufferedReader(
-            new java.io.InputStreamReader(System.in, java.nio.charset.StandardCharsets.UTF_8));
+    /* Октеты, а не Reader: Reader уже подменил бы негодный октет знаком замены,
+       и спрашивать было бы не о чем. */
+    java.io.InputStream source = new java.io.BufferedInputStream(System.in);
     java.io.PrintWriter sink =
         new java.io.PrintWriter(
             new java.io.OutputStreamWriter(System.out, java.nio.charset.StandardCharsets.UTF_8));
-    Flang.withDeepStack(
-        () -> {
-          try {
-            serve(program, source, sink);
-          } catch (java.io.IOException error) {
-            throw new java.io.UncheckedIOException(error);
-          }
-          return null;
-        });
+    Integer status =
+        Flang.withDeepStack(
+            () -> {
+              try {
+                return serve(program, source, sink);
+              } catch (java.io.IOException error) {
+                throw new java.io.UncheckedIOException(error);
+              }
+            });
     sink.flush();
+    if (status != null && status != 0) {
+      System.exit(status);
+    }
   }
 }

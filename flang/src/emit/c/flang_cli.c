@@ -154,6 +154,48 @@ extern const fl_conc_plan *FL_PROGRAM_CONC_PLAN(void);
 
 /* ───────────────────────────── чтение входа ───────────────────────────── */
 
+/*
+ * ── СТРОКА, КОТОРАЯ НЕ ТЕКСТ ───────────────────────────────────────────────
+ *
+ * Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5).
+ * До 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
+ * разными способами, и отказом не был ни один (замер снят прогоном, таблица —
+ * в scripts/storozh-negodnogo-okteta.sh):
+ *
+ *   C           возил октеты как есть и отвечал FLANG_UNKNOWN_NAME на мусор;
+ *   Go, Java,
+ *   C#, JS      подменяли октет знаком замены U+FFFD и отвечали тем же
+ *               FLANG_UNKNOWN_NAME — то есть врали о содержимом запроса;
+ *   Elixir      звал это «неразборчивым запросом», сваливая не-текст на JSON;
+ *   Rust        МОЛЧА обрывал цикл и выходил кодом 0 — худший из восьми:
+ *               зелёный код при несделанной работе;
+ *   Python      падал трассировкой UnicodeDecodeError, а при локали C и
+ *               C.UTF-8 протаскивал октет суррогатом и отвечал кодом 0.
+ *
+ * Образец поведения у языка уже был — `FLANG_IO_NOT_TEXT` у текстовой пары
+ * ввода-вывода: номер октета, его значение и чем возить октеты. Прогонщик
+ * отвечает ТАК ЖЕ, и у семи целей из восьми — байт в байт одинаково:
+ * диагностика в поток ошибок, код возврата 1, разбора нет. Строки ДО негодной
+ * уже отвечены и остаются отвеченными — отменять сделанное отказ не обязан.
+ * Восьмая, JS, названа долгом вслух: её прогонщик — рукописный JavaScript,
+ * править который в этом дереве запрещено.
+ *
+ * Почему в поток ошибок, а не ответом протокола. Ответ протокола обещан один
+ * на запрос, а строка, которая не текст, запросом не является: ответить на неё
+ * `{"ok":false}` значило бы разобрать неразобранное. Ровно этим и был прежний
+ * FLANG_UNKNOWN_NAME на мусоре.
+ */
+
+/* Отказ «строка не текст»: номер строки, номер октета в ней (с единицы), длина
+   строки в октетах и значение негодного октета. Текст один на семь целей —
+   сторож сверяет его байт в байт. */
+static void cli_not_text(size_t line, const char *bytes, size_t length, size_t at) {
+  fprintf(stderr,
+          "FLANG_IO_NOT_TEXT: строка %lu не текст: октет %lu из %lu (0x%02X) не складывается в UTF-8; запрос обязан ехать в UTF-8\n",
+          (unsigned long)line, (unsigned long)at, (unsigned long)length,
+          (unsigned)(unsigned char)bytes[at - 1]);
+}
+
 static char *read_all(FILE *stream, size_t *length) {
   size_t capacity = 65536;
   size_t used = 0;
@@ -993,6 +1035,7 @@ static int run_main(int argc, char **argv) {
   size_t length = 0;
   size_t start = 0;
   size_t index = 0;
+  size_t line = 0;
   char *input = NULL;
 #ifdef FL_WITH_REPL
   /*
@@ -1021,6 +1064,29 @@ static int run_main(int argc, char **argv) {
   fl_arena_init(&arena);
   for (index = 0; index <= length; index += 1) {
     if (index == length || input[index] == '\n') {
+      /* Хвостовой «\r» снимается ТОЛЬКО для счёта: он ASCII и текстом быть не
+         мешает, а вот число «из скольких» обязано совпасть с теми целями, чей
+         построчный читатель снимает его сам (Go, Java, C#). */
+      size_t stop = index;
+      size_t bad = 0;
+      if (index == length && start == length) {
+        break;
+      }
+      line += 1;
+      if (stop > start && input[stop - 1] == '\r') {
+        stop -= 1;
+      }
+      /* Вопрос задаётся рантайму (`fl_utf8_not_text_at`), а не решается здесь:
+         тот же вопрос задают хозяин `flang io` и планировщик конкурентности,
+         и третий ответ на один вопрос был бы третьим способом разойтись. */
+      bad = fl_utf8_not_text_at(input + start, stop - start);
+      if (bad > 0) {
+        fflush(stdout);
+        cli_not_text(line, input + start, stop - start, bad);
+        fl_arena_release(&arena);
+        free(input);
+        return 1;
+      }
       if (index > start) {
         run_request(&arena, input + start, index - start);
         fflush(stdout);

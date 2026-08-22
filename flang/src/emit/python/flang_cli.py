@@ -178,23 +178,114 @@ def run_request(program, line):
     return {"ok": True, "value": encode_value(result)}
 
 
+# ───────────────────────── строка, которая не текст ─────────────────────────
+#
+# Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5). До
+# 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
+# разными способами, и отказом не был ни один. Python падал трассировкой
+# UnicodeDecodeError: чужой рантайм рассказывал о своём устройстве вместо того,
+# чтобы язык назвал октет. Замер и таблица —
+# scripts/storozh-negodnogo-okteta.sh.
+#
+# Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
+# ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и
+# остаются отвеченными. Восьмая, js, названа долгом вслух: её прогонщик —
+# рукописный JavaScript, править который в этом дереве запрещено.
+#
+# Строки с негодным октетом в Python не бывает вовсе — str хранит кодовые точки,
+# а не октеты. Поэтому вход читается ОКТЕТАМИ (sys.stdin.buffer), и отказ стоит
+# на входе, до всякого декодирования: иначе судить было бы уже нечего.
+
+
+def not_text_at(raw):
+    """Первый октет, не складывающийся в UTF-8, — номером с единицы; 0 — текст.
+
+    Свой разбор, а не bytes.decode: ответ нужен НОМЕРОМ, и правила обязаны
+    совпасть с `fl_utf8_not_text_at` рантайма C до пересокращённой записи и
+    суррогатов включительно.
+    """
+    at = 0
+    size = len(raw)
+    while at < size:
+        lead = raw[at]
+        if lead < 0x80:
+            at += 1
+            continue
+        if lead & 0xE0 == 0xC0:
+            more, point = 1, lead & 0x1F
+        elif lead & 0xF0 == 0xE0:
+            more, point = 2, lead & 0x0F
+        elif lead & 0xF8 == 0xF0:
+            more, point = 3, lead & 0x07
+        else:
+            return at + 1
+        if at + more >= size:
+            return at + 1
+        for step in range(1, more + 1):
+            following = raw[at + step]
+            if following & 0xC0 != 0x80:
+                return at + 1
+            point = (point << 6) | (following & 0x3F)
+        # Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+        # иначе у одного знака было бы два написания, и счёт разошёлся бы.
+        if (
+            (more == 1 and point < 0x80)
+            or (more == 2 and point < 0x800)
+            or (more == 3 and point < 0x10000)
+            or point > 0x10FFFF
+            or 0xD800 <= point <= 0xDFFF
+        ):
+            return at + 1
+        at += more + 1
+    return 0
+
+
+def refuse_not_text(number, raw, at):
+    """Отказ «строка не текст»: номер строки, номер октета в ней (с единицы),
+    длина строки в октетах и значение негодного октета. Текст один на семь
+    целей — сторож сверяет его байт в байт."""
+    sys.stderr.write(
+        f"FLANG_IO_NOT_TEXT: строка {number} не текст: октет {at} из {len(raw)} "
+        f"(0x{raw[at - 1]:02X}) не складывается в UTF-8; запрос обязан ехать в UTF-8\n"
+    )
+    sys.stderr.flush()
+
+
 def serve(program, source, sink):
-    """Цикл «строка запроса → строка ответа». Ответ ровно один на запрос."""
-    for line in source:
-        line = line.strip()
+    """Цикл «строка запроса → строка ответа». Ответ ровно один на запрос.
+
+    Возвращает код возврата процесса: 0 — вход кончился, 1 — вход не текст.
+    """
+    number = 0
+    for raw in source:
+        number += 1
+        # Хвостовой «\r» снимается ТОЛЬКО для счёта: он ASCII и текстом быть не
+        # мешает, а число «из скольких» обязано совпасть с теми целями, чей
+        # построчный читатель снимает его сам (Go, Java, C#).
+        raw = raw.rstrip(b"\r\n")
+        at = not_text_at(raw)
+        if at > 0:
+            sink.flush()
+            refuse_not_text(number, raw, at)
+            return 1
+        line = raw.decode("utf-8").strip()
         if not line:
             continue
         answer = run_request(program, line)
         sink.write(json.dumps(answer, ensure_ascii=False, separators=(",", ":")))
         sink.write("\n")
         sink.flush()
+    return 0
 
 
 def main(argv):
     name = argv[1] if len(argv) > 1 else DEFAULT_PROGRAM_MODULE
     program = importlib.import_module(name)
-    rt.call_with_deep_stack(lambda: serve(program, sys.stdin, sys.stdout))
-    return 0
+    # Вход — октетами, вывод — знаками: судить о UTF-8 можно только там, где
+    # октеты ещё есть.
+    return rt.call_with_deep_stack(
+        lambda: serve(program, sys.stdin.buffer, sys.stdout)
+    )
 
 
 if __name__ == "__main__":

@@ -177,9 +177,11 @@ defmodule Flang.Cli do
   те байты, что пришли и уходят. А байты эти и есть UTF-8 — строка Elixir по
   определению двоичная и уже в UTF-8, так что переводить между ними нечего.
 
-  Побочно чинится и надёжность: неверная последовательность UTF-8 во входе
-  теперь не роняет чтение, а доезжает до разбора JSON и получает честный ответ
-  «неразборчивый запрос».
+  Побочно снимается и падение чтения: неверная последовательность UTF-8 во входе
+  до устройства больше не доходит вовсе. Но и «доехать до разбора JSON» ей
+  нельзя — так было до 22 августа 2026, и ответ получался «неразборчивый
+  запрос», то есть не-текст выдавался за кривой JSON. Строка, которая не текст,
+  запросом не является: см. «Строка, которая не текст» ниже.
 
   ## Почему здесь нет потока с большим стеком
 
@@ -449,26 +451,125 @@ defmodule Flang.Cli do
   """
   def serve(module, device) do
     pin_bytes(device)
-    loop(module, device)
+    loop(module, device, 0)
   end
 
-  defp loop(module, device) do
+  defp loop(module, device, number) do
     case IO.binread(device, :line) do
       :eof ->
-        :ok
+        0
 
       {:error, reason} ->
-        raise Flang.Rt.fail("CLI", "ввод прогонщика не читается: " <> inspect(reason))
+        # Молчать нельзя, но и падать трассировкой чужого рантайма тоже: отказ
+        # называется кодом языка и уезжает в поток ошибок, как всякий другой.
+        IO.binwrite(:standard_error, "FLANG_IO_READ: вход прогонщика не читается: #{inspect(reason)}\n")
+        1
 
       line ->
-        unless blank?(line) do
-          # Явный «\n» через IO.binwrite, а не IO.puts: и разделитель строк, и
-          # кодировка в протоколе заданы протоколом, а не платформой.
-          IO.binwrite(device, run_request(module, line) <> "\n")
-        end
+        # Хвостовые «\n» и «\r» снимаются ТОЛЬКО для счёта: оба ASCII и текстом
+        # быть не мешают, а число «из скольких» обязано совпасть с теми целями,
+        # чей построчный читатель снимает их сам (Go, Java, C#).
+        raw = String.trim_trailing(line, "\n") |> String.trim_trailing("\r")
+        number = number + 1
 
-        loop(module, device)
+        case not_text_at(raw) do
+          0 ->
+            unless blank?(line) do
+              # Явный «\n» через IO.binwrite, а не IO.puts: и разделитель строк, и
+              # кодировка в протоколе заданы протоколом, а не платформой.
+              IO.binwrite(device, run_request(module, line) <> "\n")
+            end
+
+            loop(module, device, number)
+
+          at ->
+            refuse_not_text(number, raw, at)
+            1
+        end
     end
+  end
+
+  # ───────────────────── строка, которая не текст ─────────────────────
+  #
+  # Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5). До
+  # 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
+  # разными способами, и отказом не был ни один. Elixir звал не-текст
+  # «неразборчивым запросом» — то есть сваливал негодный октет на JSON — и
+  # выходил кодом 0. Замер и таблица —
+  # scripts/storozh-negodnogo-okteta.sh.
+  #
+  # Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
+  # ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и
+  # остаются отвеченными. Восьмая, js, названа долгом вслух: её прогонщик —
+  # рукописный JavaScript, править который в этом дереве запрещено.
+
+  # Первый октет, не складывающийся в UTF-8, — номером с единицы; 0 значит
+  # «текст». Свой разбор, а не String.valid?/1: ответ нужен НОМЕРОМ, и правила
+  # обязаны совпасть с `fl_utf8_not_text_at` рантайма C до пересокращённой
+  # записи и суррогатов включительно.
+  defp not_text_at(raw), do: not_text_at(raw, byte_size(raw), 0)
+
+  defp not_text_at(_raw, size, at) when at >= size, do: 0
+
+  defp not_text_at(raw, size, at) do
+    lead = :binary.at(raw, at)
+
+    cond do
+      lead < 0x80 -> not_text_at(raw, size, at + 1)
+      :erlang.band(lead, 0xE0) == 0xC0 -> hvost(raw, size, at, 1, :erlang.band(lead, 0x1F))
+      :erlang.band(lead, 0xF0) == 0xE0 -> hvost(raw, size, at, 2, :erlang.band(lead, 0x0F))
+      :erlang.band(lead, 0xF8) == 0xF0 -> hvost(raw, size, at, 3, :erlang.band(lead, 0x07))
+      true -> at + 1
+    end
+  end
+
+  defp hvost(_raw, size, at, more, _point) when at + more >= size, do: at + 1
+
+  defp hvost(raw, size, at, more, point) do
+    case sobrat(raw, at, 1, more, point) do
+      :ne_tekst ->
+        at + 1
+
+      polnoe ->
+        # Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+        # иначе у одного знака было бы два написания, и счёт разошёлся бы.
+        if peresokrashcheno?(more, polnoe) or polnoe > 0x10FFFF or
+             (polnoe >= 0xD800 and polnoe <= 0xDFFF) do
+          at + 1
+        else
+          not_text_at(raw, size, at + more + 1)
+        end
+    end
+  end
+
+  defp sobrat(_raw, _at, step, more, point) when step > more, do: point
+
+  defp sobrat(raw, at, step, more, point) do
+    following = :binary.at(raw, at + step)
+
+    if :erlang.band(following, 0xC0) != 0x80 do
+      :ne_tekst
+    else
+      sobrat(raw, at, step + 1, more, :erlang.bor(:erlang.bsl(point, 6), :erlang.band(following, 0x3F)))
+    end
+  end
+
+  defp peresokrashcheno?(1, point), do: point < 0x80
+  defp peresokrashcheno?(2, point), do: point < 0x800
+  defp peresokrashcheno?(3, point), do: point < 0x10000
+
+  # Отказ «строка не текст»: номер строки, номер октета в ней (с единицы), длина
+  # строки в октетах и значение негодного октета. Текст один на семь целей —
+  # сторож сверяет его байт в байт.
+  defp refuse_not_text(number, raw, at) do
+    oktet = :binary.at(raw, at - 1)
+
+    IO.binwrite(
+      :standard_error,
+      "FLANG_IO_NOT_TEXT: строка #{number} не текст: октет #{at} из #{byte_size(raw)} " <>
+        "(0x#{String.pad_leading(Integer.to_string(oktet, 16), 2, "0")}) не складывается в UTF-8; " <>
+        "запрос обязан ехать в UTF-8\n"
+    )
   end
 
   # Пустая ли строка. Обрезать её незачем: `Flang.Json.parse/1` сам пропускает
@@ -484,7 +585,12 @@ defmodule Flang.Cli do
     name = List.first(argv) || @default_program
     module = Module.concat([name])
     {:module, ^module} = Code.ensure_loaded(module)
-    serve(module, Process.group_leader())
-    :ok
+
+    case serve(module, Process.group_leader()) do
+      0 -> :ok
+      # Код возврата, а не молчание: отказ обязан быть виден тому, кто запустил.
+      # `IO.binwrite` синхронен, поэтому диагностика уже записана.
+      status -> System.halt(status)
+    end
   end
 end

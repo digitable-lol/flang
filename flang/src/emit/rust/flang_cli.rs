@@ -470,13 +470,120 @@ fn run_request(line: &str) -> String {
     }
 }
 
+// ───────────────────────── строка, которая не текст ─────────────────────────
+//
+// Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5). До
+// 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
+// разными способами, и отказом не был ни один. Rust был ХУДШИМ: `lines()`
+// отдавал ошибку, цикл делал `break`, процесс выходил кодом 0 — ни ответа, ни
+// отказа. Зелёный код при несделанной работе читается как «всё хорошо».
+// Замер и таблица — scripts/storozh-negodnogo-okteta.sh.
+//
+// Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
+// ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и
+// остаются отвеченными. Восьмая, js, названа долгом вслух: её прогонщик —
+// рукописный JavaScript, править который в этом дереве запрещено.
+
+/// Первый октет, не складывающийся в UTF-8, — номером с единицы; 0 значит
+/// «текст». Свой разбор, а не `str::from_utf8`: ответ нужен НОМЕРОМ, и правила
+/// обязаны совпасть с `fl_utf8_not_text_at` рантайма C до пересокращённой
+/// записи и суррогатов включительно.
+fn not_text_at(raw: &[u8]) -> usize {
+    let mut at = 0usize;
+    while at < raw.len() {
+        let lead = raw[at];
+        let (more, mut point): (usize, u32) = if lead < 0x80 {
+            at += 1;
+            continue;
+        } else if lead & 0xE0 == 0xC0 {
+            (1, u32::from(lead & 0x1F))
+        } else if lead & 0xF0 == 0xE0 {
+            (2, u32::from(lead & 0x0F))
+        } else if lead & 0xF8 == 0xF0 {
+            (3, u32::from(lead & 0x07))
+        } else {
+            return at + 1;
+        };
+        if at + more >= raw.len() {
+            return at + 1;
+        }
+        for step in 1..=more {
+            let next = raw[at + step];
+            if next & 0xC0 != 0x80 {
+                return at + 1;
+            }
+            point = (point << 6) | u32::from(next & 0x3F);
+        }
+        /* Пересокращённая запись, суррогат и всё выше U+10FFFF — тоже не текст:
+        иначе у одного знака было бы два написания, и счёт разошёлся бы. */
+        if (more == 1 && point < 0x80)
+            || (more == 2 && point < 0x800)
+            || (more == 3 && point < 0x10000)
+            || point > 0x10FFFF
+            || (0xD800..=0xDFFF).contains(&point)
+        {
+            return at + 1;
+        }
+        at += more + 1;
+    }
+    0
+}
+
+/// Отказ «строка не текст»: номер строки, номер октета в ней (с единицы), длина
+/// строки в октетах и значение негодного октета. Текст один на семь целей —
+/// сторож сверяет его байт в байт.
+fn refuse_not_text(line: usize, raw: &[u8], at: usize) -> ! {
+    eprintln!(
+        "FLANG_IO_NOT_TEXT: строка {} не текст: октет {} из {} (0x{:02X}) не складывается в UTF-8; запрос обязан ехать в UTF-8",
+        line,
+        at,
+        raw.len(),
+        raw[at - 1]
+    );
+    std::process::exit(1)
+}
+
 fn serve() {
     let input = std::io::stdin();
+    let mut source = input.lock();
     let mut out = std::io::BufWriter::new(std::io::stdout());
-    for line in input.lock().lines() {
-        let line = match line {
+    let mut raw: Vec<u8> = Vec::new();
+    let mut number = 0usize;
+    loop {
+        raw.clear();
+        /* Октеты, а не `lines()`: `lines()` требует UTF-8 и на негодном октете
+        отдаёт ошибку вместо строки — то есть отбирает возможность НАЗВАТЬ
+        октет, ради которой всё и делается. */
+        match source.read_until(b'\n', &mut raw) {
+            Ok(0) => break,
+            Ok(_) => {}
+            Err(error) => {
+                let _ = out.flush();
+                eprintln!("FLANG_IO_READ: вход прогонщика не читается: {error}");
+                std::process::exit(1);
+            }
+        }
+        number += 1;
+        /* Хвостовой «\r» снимается ТОЛЬКО для счёта: он ASCII и текстом быть не
+        мешает, а число «из скольких» обязано совпасть с теми целями, чей
+        построчный читатель снимает его сам (Go, Java, C#). */
+        while matches!(raw.last(), Some(b'\n') | Some(b'\r')) {
+            raw.pop();
+        }
+        let at = not_text_at(&raw);
+        if at > 0 {
+            let _ = out.flush();
+            refuse_not_text(number, &raw, at);
+        }
+        let line = match std::str::from_utf8(&raw) {
             Ok(value) => value,
-            Err(_) => break,
+            /* Недостижимо: выше судили по тем же правилам. Отказ, а не
+            `unwrap`: паника прогонщика — это то же молчание, от которого
+            лечим. */
+            Err(_) => {
+                let _ = out.flush();
+                refuse_not_text(number, &raw, 1);
+            }
         };
         let trimmed = line.trim();
         if trimmed.is_empty() {

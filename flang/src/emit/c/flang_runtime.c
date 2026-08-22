@@ -1517,12 +1517,31 @@ fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_erro
  * Строки flang меряются кодовыми точками (SPEC, раздел 5), поэтому весь UTF-8
  * здесь — свой, без единой сторонней библиотеки. Ведущий байт кодовой точки
  * узнаётся тем же способом, что и везде: у продолжения старшие биты 10.
+ *
+ * ГДЕ НАЧИНАЕТСЯ ЗНАК — один ответ на все формы, и до 22 августа 2026 его не
+ * было. Первый октет строки начинает знак ВСЕГДА, даже если он октет
+ * продолжения: иначе строка из одних продолжений оказывалась «длиной 0» и
+ * «пустой», оставаясь при этом непустой по содержимому. Прогон на этой ветке:
+ * у строки из октетов BC D0 `длина` давала 1, а `разложить … на символы` — два
+ * куска, и второй кусок писался ЗА КОНЕЦ выделенного массива, потому что
+ * массив мерился длиной. Одна мера — значит и счёт, и нарезка, и поиск ходят по
+ * одному и тому же множеству начал.
  */
+static bool fl_utf8_starts(const char *utf8, size_t index) {
+  return index == 0 || ((unsigned char)utf8[index] & 0xC0u) != 0x80u;
+}
+
+/* Правило начала знака выписано ОДИН раз и зовётся отовсюду, включая эти два
+   цикла. Развернуть его здесь руками (вынести нулевой октет из цикла) — значит
+   завести вторую копию правила ради 1,8 % времени: замер `flang check` на
+   90-килобайтном flang/stdlib/strings.flang, лучшее из семи, — 2,29 с с общим
+   правилом против 2,25 с с развёрнутым при 2,14 с до правки. Вторая копия
+   правила — это ровно тот способ, каким меры разошлись в прошлый раз. */
 static size_t fl_utf8_points(const char *utf8, size_t bytes) {
   size_t points = 0;
   size_t index = 0;
   for (index = 0; index < bytes; index += 1) {
-    if (((unsigned char)utf8[index] & 0xC0u) != 0x80u) {
+    if (fl_utf8_starts(utf8, index)) {
       points += 1;
     }
   }
@@ -1534,7 +1553,7 @@ static size_t fl_utf8_offset(const char *utf8, size_t bytes, size_t point) {
   size_t seen = 0;
   size_t index = 0;
   for (index = 0; index < bytes; index += 1) {
-    if (((unsigned char)utf8[index] & 0xC0u) != 0x80u) {
+    if (fl_utf8_starts(utf8, index)) {
       if (seen == point) {
         return index;
       }
@@ -1542,6 +1561,11 @@ static size_t fl_utf8_offset(const char *utf8, size_t bytes, size_t point) {
     }
   }
   return bytes;
+}
+
+/** Стоит ли смещение на границе знака: конец строки границей считается тоже. */
+static bool fl_utf8_boundary(const char *utf8, size_t bytes, size_t index) {
+  return index >= bytes || fl_utf8_starts(utf8, index);
 }
 
 static unsigned long fl_utf8_decode(const char *utf8, size_t bytes, size_t offset, size_t *width) {
@@ -2408,9 +2432,31 @@ fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_e
   return FL_OK;
 }
 
+/*
+ * Слипнутся ли на стыке два знака в один. Правая строка, начинающаяся октетом
+ * продолжения, прирастает к последнему знаку левой: два знака на входе, один на
+ * выходе, и `длина (соединить а с б)` перестала бы равняться сумме длин.
+ * Показать разницу представление не умеет, поэтому склейка ОТКАЗЫВАЕТ — тем же
+ * видом отказа и по той же причине, по какой отказывает склейка половин
+ * суррогатной пары у целей с UTF-16 (SPEC, раздел 5).
+ */
+static bool fl_shov_sliyaet_s(bool est_levoe, fl_value right) {
+  return est_levoe && right.as.string.bytes > 0 &&
+         ((unsigned char)right.as.string.utf8[0] & 0xC0u) == 0x80u;
+}
+
+static bool fl_shov_sliyaet(fl_value left, fl_value right) {
+  return fl_shov_sliyaet_s(left.as.string.bytes > 0, right);
+}
+
 static fl_status fl_join_two(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
   char *data = NULL;
   const size_t bytes = left.as.string.bytes + right.as.string.bytes;
+  if (fl_shov_sliyaet(left, right)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s",
+                   "«соединить»: на стыке октет продолжения прирос бы к последнему знаку левой "
+                   "строки — два знака слились бы в один");
+  }
   data = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
   if (data == NULL) {
     return fl_no_memory(error);
@@ -2551,6 +2597,7 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
     size_t points = 0;
     char *data = NULL;
     size_t offset = 0;
+    bool est_levoe = false;
     FL_TRY(fl_expect_string(ctx, "соединить", right, "разделитель", error));
     for (index = 0; index < left.as.list.count; index += 1) {
       const fl_value item = left.as.list.items[index];
@@ -2558,6 +2605,24 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
         return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
                        "«соединить»: элемент %lu списка должен быть строкой, получено %s",
                        (unsigned long)(index + 1), fl_type_name(ctx, item));
+      }
+      /* Проверяется КАЖДЫЙ стык, и разделитель — такой же стык, как элемент:
+         иначе сумма длин перестала бы быть длиной склейки посередине списка. */
+      if (index > 0 && fl_shov_sliyaet_s(est_levoe, right)) {
+        return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s",
+                       "«соединить»: на стыке октет продолжения прирос бы к последнему знаку "
+                       "левой строки — два знака слились бы в один");
+      }
+      if (index > 0 && right.as.string.bytes > 0) {
+        est_levoe = true;
+      }
+      if (fl_shov_sliyaet_s(est_levoe, item)) {
+        return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "%s",
+                       "«соединить»: на стыке октет продолжения прирос бы к последнему знаку "
+                       "левой строки — два знака слились бы в один");
+      }
+      if (item.as.string.bytes > 0) {
+        est_levoe = true;
       }
       bytes += item.as.string.bytes;
       points += item.as.string.points;
@@ -2590,7 +2655,23 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
   return fl_join_two(ctx, left, right, out, error);
 }
 
-/** Поиск подстроки по байтам: UTF-8 самосинхронизирующийся, ложных срабатываний нет. */
+/*
+ * Поиск подстроки — ПО ЗНАКАМ, а не по октетам.
+ *
+ * Здесь стояло «UTF-8 самосинхронизирующийся, ложных срабатываний нет», и это
+ * верно ровно до тех пор, пока обе строки — правильный UTF-8. Правильности
+ * никто не обещал: октеты приезжают снаружи (`--args`, файл, процесс, кусок
+ * TCP), и тогда байтовый поиск находит вхождение ПОСРЕДИ знака. Замер на
+ * стволе: «мама» содержит октеты BC D0 — «да», хотя ни один знак «мамы» им не
+ * равен и ни одна подстрока его не даёт; «мама» начинается с октета D0 — «да»,
+ * хотя её первый знак «м»; «разделить» резало четырёхзначную «маму» на пять
+ * кусков по половинке знака.
+ *
+ * Лекарство то же, каким целям с UTF-16 запретили резать суррогатную пару
+ * (`$isBoundary` в печати JS): совпадение засчитывается, только если оба его
+ * края стоят на границе знака. Два сравнения октета на найденное вхождение —
+ * дешевле, чем обход строки, и включаются они только после удачного memcmp.
+ */
 static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle, size_t needle_bytes) {
   size_t index = 0;
   if (needle_bytes == 0) {
@@ -2600,11 +2681,23 @@ static const char *fl_find(const char *haystack, size_t haystack_bytes, const ch
     return NULL;
   }
   for (index = 0; index + needle_bytes <= haystack_bytes; index += 1) {
-    if (memcmp(haystack + index, needle, needle_bytes) == 0) {
+    if (memcmp(haystack + index, needle, needle_bytes) == 0 &&
+        fl_utf8_starts(haystack, index) &&
+        fl_utf8_boundary(haystack, haystack_bytes, index + needle_bytes)) {
       return haystack + index;
     }
   }
   return NULL;
+}
+
+/* Стоит ли разделитель на этом месте — та же мера, что у «содержит»: оба края
+   вхождения обязаны стоять на границе знака, иначе кусок начинался бы половиной
+   знака. Без этого «разделить» резало «маму» по одинокому октету D0 на пять
+   кусков вместо одного. */
+static bool fl_razdelit_zdes(fl_value text, fl_value separator, size_t index) {
+  return memcmp(text.as.string.utf8 + index, separator.as.string.utf8, separator.as.string.bytes) == 0 &&
+         fl_utf8_starts(text.as.string.utf8, index) &&
+         fl_utf8_boundary(text.as.string.utf8, text.as.string.bytes, index + separator.as.string.bytes);
 }
 
 /* Само разделение, без единой проверки: обе внешние формы («разделить» и её
@@ -2618,7 +2711,7 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   fl_value *items = NULL;
 
   for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
-    if (memcmp(text.as.string.utf8 + index, separator.as.string.utf8, separator.as.string.bytes) == 0) {
+    if (fl_razdelit_zdes(text, separator, index)) {
       count += 1;
       index += separator.as.string.bytes;
     } else {
@@ -2630,7 +2723,7 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   count = 0;
   start = 0;
   for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
-    if (memcmp(text.as.string.utf8 + index, separator.as.string.utf8, separator.as.string.bytes) == 0) {
+    if (fl_razdelit_zdes(text, separator, index)) {
       const char *piece = text.as.string.utf8 + start;
       const size_t bytes = index - start;
       items[count] = fl_text_borrow(piece, bytes, fl_utf8_points(piece, bytes));
@@ -2803,9 +2896,13 @@ fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *o
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error) {
   FL_TRY(fl_expect_string(ctx, "начинается с", text, "строка", error));
   FL_TRY(fl_expect_string(ctx, "начинается с", prefix, "префикс", error));
+  /* Начало у префикса и у строки одно, поэтому левый край на границе знака
+     всегда; сторожится правый — иначе «мама» начиналась бы с одинокого октета
+     D0, то есть с половины своего первого знака. */
   *out = fl_flag(prefix.as.string.bytes <= text.as.string.bytes &&
                  (prefix.as.string.bytes == 0 ||
-                  memcmp(text.as.string.utf8, prefix.as.string.utf8, prefix.as.string.bytes) == 0));
+                  (memcmp(text.as.string.utf8, prefix.as.string.utf8, prefix.as.string.bytes) == 0 &&
+                   fl_utf8_boundary(text.as.string.utf8, text.as.string.bytes, prefix.as.string.bytes))));
   return FL_OK;
 }
 

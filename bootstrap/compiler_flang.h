@@ -59249,6 +59249,15 @@ fl_status compiler_flang_predel_vetvleniya(fl_ctx *ctx, fl_value *result, fl_err
 fl_status compiler_flang_eto_svyazyvatel(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Это ложный литерал».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_lozhnyy_literal(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Литерал признака».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -59503,6 +59512,23 @@ fl_status compiler_flang_obe_poloviny(fl_ctx *ctx, fl_value cel, fl_value uslovi
  * @return значение: «Ветвление»
  */
 fl_status compiler_flang_vtoraya_polovina(fl_ctx *ctx, fl_value pervaya, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вторая по форме».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param lozhnaya — «ложная»: «Значение»
+ * @param uslovie — «условие»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Ветвление»
+ */
+fl_status compiler_flang_vtoraya_po_forme(fl_ctx *ctx, fl_value lozhnaya, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить половину».
@@ -62829,6 +62855,189 @@ fl_status compiler_flang_svesti_teoremu(fl_ctx *ctx, fl_value teorema, fl_value 
  * @return значение: «Свод обязательств»
  */
 fl_status compiler_flang_svesti_teoremy(fl_ctx *ctx, fl_value teoremy, fl_value svod, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Арифметика переносит не число».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение
+ */
+fl_status compiler_flang_arifmetika_perenosit_ne_chislo(fl_ctx *ctx, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это сравнение границы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_sravnenie_granicy(fl_ctx *ctx, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Лист арифметики».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_list_arifmetiki(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это арифметический узел».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_arifmeticheskiy_uzel(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Чисто арифметическое».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_chisto_arifmeticheskoe(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Чисто арифметические стороны».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение
+ */
+fl_status compiler_flang_chisto_arifmeticheskie_storony(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это одно из имён».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_odno_iz_imyon(fl_ctx *ctx, fl_value uzel, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя в выражении».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_v_vyrazhenii(fl_ctx *ctx, fl_value uzel, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя в элементах».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_v_elementah(fl_ctx *ctx, fl_value elementy, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть имя в полях».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_imya_v_polyah(fl_ctx *ctx, fl_value polya, fl_value imena, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметры типа число».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_parametry_tipa_chislo(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тело переносит не число».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_telo_perenosit_ne_chislo(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сторона несёт результат».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param storona — «сторона»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_storona_nesyot_rezultat(fl_ctx *ctx, fl_value storona, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цель ложна на не числе».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_cel_lozhna_na_ne_chisle(fl_ctx *ctx, fl_value cel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Постусловие ложно на не числе».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param postuslovie — «постусловие»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_postuslovie_lozhno_na_ne_chisle(fl_ctx *ctx, fl_value postuslovie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беда границы над не числом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @param postuslovie — «постусловие»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_beda_granicy_nad_ne_chislom(fl_ctx *ctx, fl_value funkciya, fl_value postuslovie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беды границ функции».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_bedy_granic_funkcii(fl_ctx *ctx, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беды границ».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkcii — «функции»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_bedy_granic(fl_ctx *ctx, fl_value funkcii, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Обязательства».

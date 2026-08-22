@@ -325,6 +325,8 @@
 - [Вычтенный в сверке блок «границы входа» был дырой: напечатанная Java без него не запускается](printed-java-without-entry-table-does-not-start.md)
 - [Двоичный не печатает сам себя в Java: список занятых имён пересобирается на каждую функцию](java-printer-rebuilds-the-taken-name-list-per-function.md)
 - [Цикл поручений принадлежит хозяину, а не языку: чего стоил `flang io` в двоичном](cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.md)
+- [TLS на flang закрыт не ценой счёта, а отсутствием ключа: «Случайное число» даёт одно и то же в трёх прогонах подряд](tls-na-flang-zakryt-ne-cenoy-a-otsutstviem-klyucha.md)
+- [Отзыв сертификата не проверяет ни один из двух рабочих путей, и включить проверку нельзя](otzyv-sertifikata-ne-proveryaet-nikto-iz-dvuh-putey.md)
 - [`flang io` не может быть точкой входа для ярлыков: доводов он не принимает, вывод потомка копит до конца, а код возврата теряет](flang-io-cannot-be-the-entry-point-for-shortcuts.md)
 - [Имя файла теряется между разбором и «Бедой», и языковой сервер в двоичном упирается именно в этот разрыв](imya-fayla-teryaetsya-mezhdu-razborom-i-bedoy.md)
 - [Круг раскрутки разорван — двоичный пересобирает себя без Node побайтово, но свои исходники проверить не может и считает медленнее Node](bootstrap-circle-is-broken-but-the-binary-cannot-check-itself.md)

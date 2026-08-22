@@ -10256,26 +10256,39 @@ static fl_value io_perform(io_host *host, fl_value order) {
   if (io_order_is(order, "Ответить в соединение")) {
     double number = 0;
     int fd = -1;
-    char *content = NULL;
     if (!host->net) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
     }
     if (!io_order_number(order, "соединение", &number) || (fd = io_link_fd(host, (int)number)) < 0) {
       return io_fail("FLANG_IO_WRITE", "соединения у хозяина нет: оно закрыто, не принималось и не открывалось");
     }
-    content = io_order_text(order, "содержимое");
+    /* Содержимое берётся ЗНАЧЕНИЕМ, а не копией: у копии длина считалась
+       `strlen`, и пакет, начинающийся с нулевого октета, «записывался» нулём
+       байт — а нулевая длина здесь ещё и значит «положить трубку», то есть
+       двоичный запрос не просто терялся, он рвал соединение. Разбор —
+       `docs/zettel/dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md`.
+       Двоичное возит октетная пара ниже; здесь — текст, и нетекст отвергается. */
     {
-      const char *text = content == NULL ? "" : content;
-      const size_t bytes = strlen(text);
+      fl_value field = fl_nothing();
+      fl_value fields[1];
+      const char *text = "";
+      size_t bytes = 0;
+      size_t at = 0;
       /* ЕДИНСТВЕННОЕ место, где принятое соединение отличается от открытого:
          закрывает тот, кто завёл. Принятое хозяин закрывает ответом — обмен на
          нём кончился; открытое оставляет программе — разговор продолжается.
          Пустое содержимое закрывает и то и другое: это и есть «положить
          трубку», и другого слова для этого в словаре нет. */
-      const bool closing = bytes == 0 || !io_link_outgoing(host, (int)number);
-      fl_value fields[1];
+      bool closing = false;
+      if (io_order_field(order, "содержимое", &field)) {
+        (void)zn_text(field, &text, &bytes);
+      }
+      at = fl_utf8_not_text_at(text, bytes);
+      if (at > 0) {
+        return io_not_text("содержимое", text, bytes, at, "Ответить октетами в соединение");
+      }
+      closing = bytes == 0 || !io_link_outgoing(host, (int)number);
       if (bytes > 0 && write(fd, text, bytes) < 0) {
-        free(content);
         close(fd);
         io_link_drop(host, (int)number);
         return io_fail_errno("FLANG_IO_WRITE", "ответ не записан");
@@ -10285,7 +10298,6 @@ static fl_value io_perform(io_host *host, fl_value order) {
         io_link_drop(host, (int)number);
       }
       fields[0] = io_pair("сколько", io_number((double)io_points(text, bytes)));
-      free(content);
       return io_variant("Записано", fields, 1);
     }
   }

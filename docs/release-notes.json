@@ -1,6 +1,40 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.6.1": {
+      "ru": {
+        "заголовок": "Правка компилятора, не доехавшая до собранного, теперь краснеет за полсекунды",
+        "появилось": [
+          "Дешёвая сверка исходников компилятора с его переводом на C: `sh scripts/raskrutka.sh --bystro`. Прежде расхождение ловилось только часовой перепечаткой, и за двое суток работа четырежды уезжала в ствол правилом, которого в собранном компиляторе не было. Теперь это видно сразу и на каждом пуше.",
+          "Два новых правила у проверяльщика доказательств: разбор случаев по внутреннему условию цели и правило несовместимых условий. Прибавка измерена и записана числом в самом ядре: +2 и +2 доказанных обещания на шести файлах библиотеки.",
+          "Октетная пара поручений у файлов: читать и писать файл байтами, а не текстом. Текстовая пара на нетексте теперь честно отказывает вместо тихой порчи, а нулевой октет вернулся в законный текст — отказ только на неправильном UTF-8."
+        ],
+        "изменилось": [
+          "Проверка столкновений имён видит всё замыкание: ввоз по имени без пути разрешается реестром, и вместо одного файла из тридцати шести она смотрит все. На этом дереве — 736 файлов и 56 345 объявлений.",
+          "Проверка подделок смотрит весь каталог, а не список: названных подделок было 15, стало 24, и обрыв на первой несложившейся больше не прячет остальные.",
+          "`«Ответить в соединение»` перестало рвать содержимое по первому нулевому байту: длина берётся у самого значения. Замерено на собственном исходнике компилятора — ствол терял 47 184 байта на `flang/self/link.flang`."
+        ],
+        "сломалось": [
+          "Текстовые поручения чтения и записи файла на двоичном содержимом теперь отказывают, а не возвращают обрезанное. Для двоичного есть октетная пара."
+        ]
+      },
+      "en": {
+        "заголовок": "A compiler change that never reached the built compiler now goes red in half a second",
+        "появилось": [
+          "A cheap check that the compiler sources match their C translation: `sh scripts/raskrutka.sh --bystro`. Previously a mismatch was caught only by the hour-long reprint, and over two days work reached the trunk four times carrying a rule the built compiler did not have. It is now visible immediately, on every push.",
+          "Two new rules in the proof checker: case analysis over a goal's inner condition, and a rule for incompatible conditions. The gain is measured and written as a number in the kernel itself: +2 and +2 proved obligations across six library files.",
+          "An octet pair of file orders: read and write a file as bytes rather than text. The text pair now refuses honestly on non-text instead of corrupting it silently, and a zero octet is legal text again — the refusal is only for malformed UTF-8."
+        ],
+        "изменилось": [
+          "The name-collision check sees the whole closure: an import by name without a path is resolved through the registry, and instead of one file out of thirty-six it now looks at all of them. On this tree: 736 files, 56,345 declarations.",
+          "The forgery check reads the whole directory rather than a list: 15 named forgeries became 24, and stopping at the first failure no longer hides the rest.",
+          "`«Ответить в соединение»` no longer truncates content at the first zero byte: the length is taken from the value itself. Measured on the compiler's own source — the trunk was losing 47,184 bytes on `flang/self/link.flang`."
+        ],
+        "сломалось": [
+          "The text file-read and file-write orders now refuse on binary content instead of returning a truncated result. Use the octet pair for binary."
+        ]
+      }
+    },
     "0.6.0": {
       "ru": {
         "заголовок": "Долгие вычисления перестали упираться в память: 15,98 ГиБ ушли в 0,0135",

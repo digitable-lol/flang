@@ -59122,6 +59122,15 @@ fl_status compiler_flang_predel_vetvleniya(fl_ctx *ctx, fl_value *result, fl_err
 fl_status compiler_flang_eto_svyazyvatel(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Это ложный литерал».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_lozhnyy_literal(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Литерал признака».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -59376,6 +59385,23 @@ fl_status compiler_flang_obe_poloviny(fl_ctx *ctx, fl_value cel, fl_value uslovi
  * @return значение: «Ветвление»
  */
 fl_status compiler_flang_vtoraya_polovina(fl_ctx *ctx, fl_value pervaya, fl_value cel, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вторая по форме».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param lozhnaya — «ложная»: «Значение»
+ * @param uslovie — «условие»: «Значение»
+ * @param dopuscheniya — «допущения»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param vitkov — «витков»: число
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Ветвление»
+ */
+fl_status compiler_flang_vtoraya_po_forme(fl_ctx *ctx, fl_value lozhnaya, fl_value uslovie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value vitkov, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить половину».

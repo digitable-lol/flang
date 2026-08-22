@@ -60,6 +60,7 @@
 - [Посылка, закрытая шагом автора, несёт правило сведения ровно так же, как закрытая ядром](a-record-that-names-only-the-rule-proves-nothing-about-the-rule.md)
 - [Терм в сверщике можно держать строкой, потому что flang скобит каждую двуместную форму](terms-as-strings-work-because-flang-parenthesises-every-binary-form.md)
 - [Ноль аксиом — проверяемое свойство, а не лозунг](zero-axioms.md)
+- [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](otkazy-yadra-eto-142-stroki-a-podpisi-polovina.md)
 - [Цена доказательства измерена: 0 из 20, и тесты нашли четыре ошибки против нуля](proof-cost-0-of-20.md)
 - [Принципа индукции нет ни у одного встроенного типа](no-induction-for-builtin-types.md)
 - [Узкое место переехало: принцип индукции появился, а цепляться ему не за что](bottleneck-moved-to-body-shape.md)

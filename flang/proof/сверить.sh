@@ -41,4 +41,16 @@ trap 'rm -rf "$RABOTA"' EXIT INT TERM
 cp "$KOREN/flang/proof/сверщик.flang" "$RABOTA/сверщик.flang"
 printf '%s\n%s\n' "$(polnyy "$ISHODNIK")" "$(polnyy "$ZAPIS")" > "$RABOTA/наряд"
 
-"$FLANG" io "$RABOTA/сверщик.flang" --max-steps 200000000 --max-depth 20000
+# Хозяин планов отдаёт итог строкой JSON и кладёт туда же весь журнал поручений
+# — вместе с текстом прочитанных файлов. Человеку нужен ответ, а не журнал,
+# поэтому здесь из ответа берётся ровно вердикт. Код возврата — тот же, что у
+# хозяина: 0 — сошлось, 1 — программа сдалась сама и назвала беду.
+VYVOD=$("$FLANG" io "$RABOTA/сверщик.flang" --max-steps 200000000 --max-depth 20000 2>&1) && KOD=0 || KOD=$?
+
+case "$VYVOD" in
+  '{"error":'*) printf '%s\n' "$VYVOD" | sed 's/^{"error":"\([^"]*\)".*/НЕ СОШЛОСЬ: \1/' ;;
+  '{"plan":'*)  printf '%s\n' "$VYVOD" | sed 's/^{"plan":"[^"]*","result":"\([^"]*\)".*/\1/' ;;
+  *)            printf '%s\n' "$VYVOD" ;;
+esac
+
+exit "$KOD"

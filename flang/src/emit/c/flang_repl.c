@@ -304,6 +304,7 @@ static const char FLANG_HELP[] =
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
+    "  flang --mcp-mode                   служба для ИИ-помощника (MCP по стандартным потокам)\n"
     "\n"
     "  flang --help                       эта справка\n"
     "  flang --version                    версия\n"
@@ -313,6 +314,9 @@ static const char FLANG_HELP[] =
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
     "Здесь все 10 команд, языковой сервер живёт отдельной командой «flang-lsp».\n"
+    "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
+    "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
+    "прописать помощнику.\n"
     "Чего бинарник не судит — " EMIT_TARGETS_MISSING "\n"
     "\n"
     "Подробности: man flang";
@@ -587,6 +591,37 @@ static const char HELP_PACKAGE[] =
     "Пакет собирается ТОЛЬКО ИЗ ПРОВЕРЕННОГО: пакет — это обещание, а обещать за\n"
     "непроверенное нельзя.";
 
+static const char HELP_MCP[] =
+    "flang --mcp-mode\n"
+    "\n"
+    "Служба для ИИ-помощника: JSON-RPC по стандартным потокам, по сообщению на\n"
+    "строку. Запускается помощником, а не человеком — вручную она будет молча\n"
+    "ждать сообщений.\n"
+    "\n"
+    "Как прописать (файл настройки помощника):\n"
+    "\n"
+    "  {\"mcpServers\": {\"flang-validator\": {\"command\": \"flang\",\n"
+    "                                       \"args\": [\"--mcp-mode\"], \"env\": {}}}}\n"
+    "\n"
+    "Средства, которые она отдаёт:\n"
+    "  flang_check  проверить программу: разбор, типы, доказанное завершение и\n"
+    "               ведомость доказательства целиком;\n"
+    "  flang_prove  чем доказано ОДНО названное обещание — или та же причина\n"
+    "               отказа, какую видит человек.\n"
+    "\n"
+    "ГЛАВНОЕ: поля «ок» в ответах нет и не будет. Три вердикта уходят ПОРОЗНЬ —\n"
+    "«доказано» (обо всех входах), «сетка N» (посчитано на N значениях автора,\n"
+    "это НЕ доказательство) и «объявлено, не доказано», — и словарь этих слов\n"
+    "едет в каждом ответе. Помощник, получающий зелёную галочку, врёт человеку\n"
+    "ровно так же, как врут сегодняшние средства.\n"
+    "\n"
+    "Чего служба НЕ делает: «ИИ перестанет выдумывать» — неправда, и обещать так\n"
+    "нельзя. Модель продолжит писать неверное. Изменится другое: выдумка\n"
+    "перестанет проходить незамеченной.\n"
+    "\n"
+    "Чем является сообщение и что на него ответить, решает flang/self/mcp.flang —\n"
+    "здесь только транспорт.";
+
 static const char HELP_LSP[] =
     "flang lsp [--stdio]\n"
     "\n"
@@ -642,6 +677,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "lsp") == 0) {
     printf("%s\n", HELP_LSP);
+  } else if (strcmp(topic, "--mcp-mode") == 0 || strcmp(topic, "mcp") == 0) {
+    printf("%s\n", HELP_MCP);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "tokens") == 0) {
@@ -13049,6 +13086,339 @@ static int lsp_serve(int argc, char **argv) {
   return code;
 }
 
+/* ═══════════════════ служба MCP: `flang --mcp-mode` ══════════════════════ */
+
+/*
+ * Здесь ТОЛЬКО хозяин: чтение строк, разбор входящего JSON, чтение ввозимых
+ * файлов и сама проверка. ЧЕМ является сообщение, что на него ответить и какими
+ * словами — всё это решает `flang/self/mcp.flang`. Граница ровно та же, что у
+ * языкового сервера, и довод тот же: разойдись она — и то, что помощник узнаёт
+ * о программе, зависело бы от языка, на котором написан транспорт, а не от
+ * языка, о котором вопрос.
+ *
+ * РАМОК Content-Length ЗДЕСЬ НЕТ, и это не упрощение: транспорт MCP по
+ * стандартным потокам — это JSON-RPC ПОСТРОЧНО, по сообщению на строку. Взять
+ * рамки от LSP значило бы говорить на другом протоколе и молча не работать.
+ *
+ * ПОЧЕМУ НЕ ГОДИТСЯ ПРОГОНЩИК, который в этом бинарнике уже есть. Он читает
+ * стандартный ввод ЦЕЛИКОМ (`read_all` в flang_cli.c) и только потом отвечает
+ * по строке. Клиент MCP держит трубу открытой и ждёт ответа на первый же
+ * запрос — то есть на прогонщике рукопожатие никогда бы не состоялось. Разница
+ * не в форме сообщений, а в том, кто кого ждёт.
+ */
+
+/** Строка до перевода строки; `\r` в конце снимается — его шлют клиенты Windows. */
+static char *mcp_read_line(repl_buf *tail, size_t *bytes) {
+  for (;;) {
+    size_t index = 0;
+    for (index = 0; index < tail->used; index += 1) {
+      if (tail->data[index] == '\n') {
+        size_t length = index;
+        char *line = NULL;
+        if (length > 0 && tail->data[length - 1] == '\r') {
+          length -= 1;
+        }
+        line = repl_dup(tail->data, length);
+        memmove(tail->data, tail->data + index + 1, tail->used - index - 1);
+        tail->used -= index + 1;
+        tail->data[tail->used] = '\0';
+        *bytes = length;
+        return line;
+      }
+    }
+    {
+      char chunk[8192];
+      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
+      if (got == 0) {
+        return NULL;
+      }
+      buf_add(tail, chunk, got);
+    }
+  }
+}
+
+/*
+ * Опознаватель запроса — ТЕКСТОМ, каким он поедет обратно. По JSON-RPC он
+ * бывает числом и строкой, и ответ обязан нести тот же: разобрать его в число
+ * значило бы потерять строковые опознаватели молча. Целое печатается без точки —
+ * `1`, а не `1.0`: клиент сверяет опознаватель побайтово.
+ */
+static char *mcp_id_text(fl_value json, bool *present) {
+  fl_value id = fl_nothing();
+  fl_value scalar = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  double number = 0.0;
+  char buffer[64];
+  *present = false;
+  if (!zn_field(json, "id", &id) || val_is(id, "Значение списка") || val_is(id, "Значение записи")) {
+    return repl_say("");
+  }
+  if (!val_field(id, "скаляр", &scalar)) {
+    return repl_say("");
+  }
+  if (val_is(scalar, "Скаляр ничто")) {
+    return repl_say("");
+  }
+  *present = true;
+  if (zn_text(id, &utf8, &bytes)) {
+    repl_buf out;
+    char *result = NULL;
+    size_t index = 0;
+    buf_init(&out);
+    buf_char(&out, '"');
+    for (index = 0; index < bytes; index += 1) {
+      const unsigned char symbol = (unsigned char)utf8[index];
+      if (symbol == '"' || symbol == '\\') {
+        buf_char(&out, '\\');
+        buf_char(&out, (char)symbol);
+      } else if (symbol < 0x20) {
+        char escape[8];
+        snprintf(escape, sizeof(escape), "\\u%04x", symbol);
+        buf_add(&out, escape, strlen(escape));
+      } else {
+        buf_char(&out, (char)symbol);
+      }
+    }
+    buf_char(&out, '"');
+    result = repl_dup(out.data, out.used);
+    buf_free(&out);
+    return result;
+  }
+  if (zn_number(id, &number)) {
+    if (number == (double)(long long)number) {
+      snprintf(buffer, sizeof(buffer), "%lld", (long long)number);
+    } else {
+      snprintf(buffer, sizeof(buffer), "%.17g", number);
+    }
+    return repl_say(buffer);
+  }
+  *present = false;
+  return repl_say("");
+}
+
+/** Текст поля JSON или пустая строка. */
+static char *mcp_text_of(fl_value node, const char *key) {
+  fl_value field = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  if (zn_field(node, key, &field) && zn_text(field, &utf8, &bytes)) {
+    return repl_dup(utf8, bytes);
+  }
+  return repl_say("");
+}
+
+/** Входящее сообщение → запись «Сообщение MCP», как её ждёт `self/mcp.flang`. */
+static fl_value mcp_message(fl_value json) {
+  static const char *const names[7] = {"метод",   "есть номер", "номер текстом", "версия клиента",
+                                       "средство", "исходник",   "обещание"};
+  fl_value values[7];
+  fl_value params = fl_nothing();
+  fl_value arguments = fl_nothing();
+  bool has_id = false;
+  char *method = mcp_text_of(json, "method");
+  char *id = mcp_id_text(json, &has_id);
+  char *version = repl_say("");
+  char *tool = repl_say("");
+  char *source = repl_say("");
+  char *claim = repl_say("");
+
+  if (zn_field(json, "params", &params)) {
+    free(version);
+    free(tool);
+    version = mcp_text_of(params, "protocolVersion");
+    tool = mcp_text_of(params, "name");
+    if (zn_field(params, "arguments", &arguments)) {
+      free(source);
+      free(claim);
+      source = mcp_text_of(arguments, "source");
+      claim = mcp_text_of(arguments, "claim");
+    }
+  }
+
+  values[0] = repl_value_say(method);
+  values[1] = fl_flag(has_id);
+  values[2] = repl_value_say(id);
+  values[3] = repl_value_say(version);
+  values[4] = repl_value_say(tool);
+  values[5] = repl_value_say(source);
+  values[6] = repl_value_say(claim);
+  free(method);
+  free(id);
+  free(version);
+  free(tool);
+  free(source);
+  free(claim);
+  return repl_value_record(names, values, 7);
+}
+
+/*
+ * Замечания программы — одной строкой на замечание, с кодом и местом. Собираются
+ * здесь, а не на flang, ровно потому же, почему на flang не собирается чтение
+ * файлов: «Беда» приезжает значением от компилятора, и превращать её в текст для
+ * помощника — работа транспорта. Слова при этом те же, что видит человек.
+ */
+static char *mcp_bads_text(fl_value ledger) {
+  fl_value list = fl_nothing();
+  repl_buf out;
+  char *result = NULL;
+  size_t index = 0;
+  buf_init(&out);
+  if (val_field(ledger, "диагностики", &list) && list.tag == FL_LIST) {
+    for (index = 0; index < list.as.list.count; index += 1) {
+      fl_value code = fl_nothing();
+      fl_value message = fl_nothing();
+      fl_value at = fl_nothing();
+      fl_value has = fl_nothing();
+      fl_value line = fl_nothing();
+      fl_value column = fl_nothing();
+      const char *code_utf8 = NULL;
+      const char *message_utf8 = NULL;
+      size_t code_bytes = 0;
+      size_t message_bytes = 0;
+      char place[64];
+      if (!val_field(list.as.list.items[index], "код", &code) ||
+          !val_field(list.as.list.items[index], "сообщение", &message) ||
+          !val_text(code, &code_utf8, &code_bytes) || !val_text(message, &message_utf8, &message_bytes)) {
+        continue;
+      }
+      place[0] = '\0';
+      if (val_field(list.as.list.items[index], "место", &at) && val_field(at, "есть", &has) &&
+          has.tag == FL_FLAG && has.as.flag) {
+        val_field(at, "строка", &line);
+        val_field(at, "столбец", &column);
+        snprintf(place, sizeof(place), ", строка %lu, столбец %lu",
+                 (unsigned long)(line.tag == FL_NUMBER ? (size_t)line.as.number : 0),
+                 (unsigned long)(column.tag == FL_NUMBER ? (size_t)column.as.number : 0));
+      }
+      if (out.used > 0) {
+        buf_char(&out, '\n');
+      }
+      buf_add(&out, code_utf8, code_bytes);
+      buf_add(&out, place, strlen(place));
+      buf_add(&out, ": ", 2);
+      buf_add(&out, message_utf8, message_bytes);
+    }
+  }
+  result = repl_dup(out.data, out.used);
+  buf_free(&out);
+  return result;
+}
+
+/*
+ * Ведомость по тексту, пришедшему от помощника. Текст не лежит на диске и не
+ * обязан: он приезжает полем запроса. Имя ему всё же нужно — по нему считается
+ * замыкание `использует`, и ввозимые файлы читаются с диска относительно
+ * текущего каталога, ровно как у `flang check`.
+ */
+static fl_value mcp_ledger(const char *source, size_t bytes) {
+  repl_strings paths;
+  repl_strings texts;
+  repl_strings queue;
+  fl_value args[2];
+  fl_value result = fl_nothing();
+  char buffer[4096];
+  char *base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  char *full = repl_resolve(base, "mcp-запрос.flang");
+  free(base);
+  strings_init(&paths);
+  strings_init(&texts);
+  strings_init(&queue);
+  strings_say(&paths, full);
+  strings_add(&texts, source, bytes);
+  repl_imports_of(source, bytes, full, &queue);
+  args[0] = repl_closure(&paths, &texts, &queue);
+  args[1] = repl_value_say(full);
+  if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
+    result = fl_nothing();
+  }
+  strings_free(&paths);
+  strings_free(&texts);
+  strings_free(&queue);
+  free(full);
+  return result;
+}
+
+static void mcp_write(fl_value step) {
+  fl_value field = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  if (val_field(step, "есть ответ", &field) && field.tag == FL_FLAG && field.as.flag &&
+      val_field(step, "ответ", &field) && val_text(field, &utf8, &bytes)) {
+    fwrite(utf8, 1, bytes, stdout);
+    fputc('\n', stdout);
+    fflush(stdout);
+  }
+}
+
+static int mcp_serve(int argc, char **argv) {
+  repl_buf tail;
+  int index = 0;
+  for (index = 2; index < argc; index += 1) {
+    fprintf(stderr, "flang --mcp-mode: непонятный ключ «%s»\n", argv[index]);
+    return 2;
+  }
+  buf_init(&tail);
+  for (;;) {
+    size_t bytes = 0;
+    char *line = mcp_read_line(&tail, &bytes);
+    fl_value json = fl_nothing();
+    fl_value message = fl_nothing();
+    fl_value step = fl_nothing();
+    fl_value field = fl_nothing();
+    size_t at = 0;
+    if (line == NULL) {
+      break;
+    }
+    if (bytes == 0) {
+      free(line);
+      continue;
+    }
+    repl_cycle();
+    if (!facts_json(line, &at, &json)) {
+      /* Опознавателя у неразобранной строки нет, а ответ без опознавателя
+         клиенту адресовать некому. Поэтому — в журнал, а не в ответ. */
+      fputs("flang --mcp-mode: строка не разобрана как JSON, пропущена\n", stderr);
+      free(line);
+      continue;
+    }
+    free(line);
+    message = mcp_message(json);
+    if (repl_call("Принять MCP", &message, 1, &step) != FL_OK) {
+      fputs("flang --mcp-mode: сообщение не обработалось\n", stderr);
+      continue;
+    }
+    if (val_field(step, "ждёт ведомость", &field) && field.tag == FL_FLAG && field.as.flag) {
+      fl_value ledger = fl_nothing();
+      fl_value args[5];
+      const char *utf8 = NULL;
+      size_t got = 0;
+      char *bads = NULL;
+      if (!val_field(step, "исходник", &field) || !val_text(field, &utf8, &got)) {
+        continue;
+      }
+      ledger = mcp_ledger(utf8, got);
+      bads = mcp_bads_text(ledger);
+      args[0] = message;
+      args[1] = fl_flag(val_field(ledger, "годно", &field) && field.tag == FL_FLAG && field.as.flag);
+      args[2] = val_field(ledger, "словами", &field) ? field : repl_value_say("");
+      args[3] = val_field(ledger, "препятствие", &field) ? field : repl_value_say("");
+      args[4] = repl_value_say(bads);
+      free(bads);
+      if (repl_call("Принять ведомость MCP", args, 5, &step) != FL_OK) {
+        fputs("flang --mcp-mode: ведомость не улеглась в ответ\n", stderr);
+        continue;
+      }
+    }
+    mcp_write(step);
+    if (val_field(step, "выход", &field) && field.tag == FL_FLAG && field.as.flag) {
+      break;
+    }
+  }
+  buf_free(&tail);
+  return 0;
+}
+
 /* ═════════════════════════ разбор аргументов ═════════════════════════════ */
 
 /*
@@ -13203,6 +13573,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = package_file(argc, argv);
   } else if (strcmp(command, "lsp") == 0) {
     code = lsp_serve(argc, argv);
+  } else if (strcmp(command, "--mcp-mode") == 0) {
+    code = mcp_serve(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

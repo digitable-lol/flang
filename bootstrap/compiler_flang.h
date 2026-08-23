@@ -55803,15 +55803,6 @@ fl_status compiler_flang_polozhit_svyaz(fl_ctx *ctx, fl_value okruzhenie, fl_val
 fl_status compiler_flang_ubrat_po_uzlu(fl_ctx *ctx, fl_value okruzhenie, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Это пусть».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_pust(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Это литерал да».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -58323,16 +58314,6 @@ fl_status compiler_flang_nachalo_est_nol(fl_ctx *ctx, fl_value nachalo, fl_value
 fl_status compiler_flang_nachalo_i_shag(fl_ctx *ctx, fl_value svyortka, fl_value mera, fl_value nakopitel, fl_value element, fl_value poryadki, fl_value snizu, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Длиной левой стороны».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param levoe — «левое»: «Значение»
- * @param chto — «что»: «Значение»
- * @return значение: «Значение»
- */
-fl_status compiler_flang_dlinoy_levoy_storony(fl_ctx *ctx, fl_value levoe, fl_value chto, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Мерой в нормальной форме».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -59305,15 +59286,6 @@ fl_status compiler_flang_predel_vetvleniya(fl_ctx *ctx, fl_value *result, fl_err
 fl_status compiler_flang_eto_svyazyvatel(fl_ctx *ctx, fl_value vid, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Это ложный литерал».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_lozhnyy_literal(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Литерал признака».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -60028,6 +60000,54 @@ fl_status compiler_flang_konyunkty_dopuscheniya(fl_ctx *ctx, fl_value fakt, fl_v
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркальный знак».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zerkalnyy_znak(fl_ctx *ctx, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел сравнения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_sravneniya(fl_ctx *ctx, fl_value op, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало по знаку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_po_znaku(fl_ctx *ctx, fl_value fakt, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало факта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_fakta(fl_ctx *ctx, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Привести допущения к одному виду».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_privesti_dopuscheniya_k_odnomu_vidu(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Правило противоречия».

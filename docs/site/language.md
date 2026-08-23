@@ -21,11 +21,16 @@ Most examples below are whole programs, and every such one was checked with:
 flang check file.flang
 ```
 
-Where that is not so it is said. Four snippets are given without a `модуль` line
-because they show one form of writing, not a program. And the examples of the
-categorical surface, of monads and of processes answer with **exit code 2**, not
-0: parsing, types, termination and their own examples pass, while the rules of
-those declarations are not judged by the binary compiler, which says so in words.
+Where that is not so it is said. Three snippets are given without a `module`
+line because they show one form of writing, not a program. And the examples of
+the categorical surface, of monads and of processes answer with **exit code 2**,
+not 0: parsing, types, termination and their own examples pass, while the rules
+of those declarations are not judged by the binary compiler, which says so in
+words.
+
+The blocks without highlighting are what the compiler **prints**: refusals and
+reports. They come out in Russian on every surface. The word at the start of the
+line (`FLANG_TYPE`, `FLANG_PROOF_STEP`) is the refusal code.
 
 Everything is written on two surfaces out of four: English and Russian. These
 are the same word of the language, not a translation, and both parse to one
@@ -60,13 +65,14 @@ comma-separated. Signs are not in the glossary: it holds words only.
 | --- | --- |
 | `module «Name»` | first line of the file, required |
 | `exports «A», «B»` | what is visible outside; without the line, everything is |
-| `uses «Module» from "path"` | import every name of the module |
-| `uses … only «A», «B»` | import the named ones |
+| `uses «Module»` | import every name of the module |
+| `uses … only «A», «B»` | import the named ones — with the caveat below |
+| `uses «Module» from "path"` | the same, but the file is named directly |
 
-```
+```flang
 module «Report»
   exports «Total»
-  uses «Списки» from "../../flang/stdlib/lists.flang" only «Сумма», «Уникальные»
+  uses «Списки»
 
 total function «Total»
   accepts items: list number
@@ -77,9 +83,44 @@ total function «Total»
   «Сумма» of («Уникальные» of items)
 ```
 
-The path is read **relative to the file**, not to the repository root. The name
-in quotes must match the module name in that file; if they differ, the compiler
-refuses and prints both names.
+**Take `only` with care, and here is why.** The word decides not what the
+importer sees but **what reaches the assembled program at all**: whatever is not
+on the list is not in the program. An imported function may have claims of its
+own that call its neighbours. Replace the third line above with `uses «Списки»
+only «Сумма», «Уникальные»` and the check refuses:
+
+```
+FLANG_UNKNOWN_NAME, строка 635, столбец 74: неизвестная функция «Все не меньше»
+FLANG_UNKNOWN_NAME, строка 635, столбец 130: неизвестная функция «Максимум»
+```
+
+(Compiler diagnostics are printed in Russian whatever surface the file is
+written on. `неизвестная функция` — unknown function.)
+
+Line 635 is the postcondition of `«Сумма»` itself in `lists.flang`: "the sum of
+non-negative numbers is at least the largest of them". It calls `«Все не меньше»`
+and `«Максимум»`, and `only` did not let them in. The same file with a plain
+`uses «Списки»` passes with exit code 0.
+
+There is no path in the line: **a module is found by name**. The name is what
+stands on the first line of the file in `module «Списки»`; the file name and its
+directory play no part, and a module moved to another directory keeps being
+found.
+
+The search covers three places, in this order:
+
+1. the directory of the file that writes `uses`;
+2. every directory above it — as long as the directory holds at least one
+   `.flang` file;
+3. the library shipped with the compiler.
+
+The search does not descend: a module lying off that road is found only if you
+name the place in `FLANG_MODULE_DIR` (directories separated by colons) — or name
+the file directly, with `uses «Module» from "path"`. The path is read from the
+file, not from the root, and works for a package too: `from "name.flang-package"`.
+
+One name on two found modules is a refusal listing both paths, not a silent pick
+of the first.
 
 Edge: module names are not translated. The Russian `«Списки»` is imported under
 that name from a file written in English words.
@@ -99,7 +140,7 @@ The order of the parts is fixed. The body comes last, in one form.
 | `for all p ensures «name» condition` | no | postcondition about `result` |
 | `example «name»` / `given` / `expected` | no | an executable example |
 
-```
+```flang
 module «Signature»
 
 total function «Share»
@@ -145,7 +186,7 @@ on [Why and how](proofs.html).
 written where the decrease lives in the arithmetic rather than in the shape of
 the call:
 
-```
+```flang
 module «Measure»
 
 total function «GCD»
@@ -172,7 +213,7 @@ Branching, matching a sum, folding, binding. There are no loops.
 
 ### `match` — over a sum type
 
-```
+```flang
 module «Tree»
 
 type «Tree»
@@ -202,7 +243,7 @@ by construction. Induction in a theorem attaches **only** to this form.
 
 ### `fold` — one pass over a list
 
-```
+```flang
 module «Fold»
 
 total function «Product»
@@ -221,7 +262,7 @@ Edge: the accumulator type is not refined. A `nat` in the accumulator stays
 
 ### `if` — branching
 
-```
+```flang
 module «Branching»
 
 total function «Sum up to»
@@ -244,7 +285,7 @@ fact for the proof kernel.
 
 ### `let` — binding a name
 
-```
+```flang
 module «Binding»
 
 object «Line»
@@ -291,6 +332,51 @@ Edge: `divided by` leaves the exact type — the result becomes `number`. There 
 no rounding in the language, neither explicit nor silent. Each type in full:
 [Language specification](../spec.html), section "Types" (in Russian).
 
+### Which numeric type to take
+
+| What the number is | Type | What you get for it |
+| --- | --- | --- |
+| a counter, an index, a count, a length | `nat` | zero and up, integral; a descent by a constant makes totality free |
+| a difference, a balance, an offset, a temperature | `integer` | minus allowed, fractions not |
+| money: units and cents | `hundredths` | an integer count of minor units; `19.99` is written `1999` |
+| rates, shares, exchange rates | `thousandths` | the same with three decimal places |
+| weight, distance, path cost | `weight` | non-negative, where `+∞` is a value rather than an edge |
+| everything else, and any division | `number` | IEEE-754 double, no promises |
+
+```flang
+module «Exact types»
+
+total function «Order in cents»
+  accepts price: hundredths, count: nat
+  returns number
+  example «three at 19.99»
+    given price equals 1999
+    given count equals 3
+    expected 5997
+  price times count
+
+total function «Share»
+  accepts part: nat, whole: nat
+  returns number
+  requires «the divisor is positive» whole is greater than 0
+  example «a half»
+    given part equals 1
+    given whole equals 2
+    expected 0.5
+  part divided by whole
+```
+
+Edge: **arithmetic does not inherit exactness.** Add two `nat` values, declare
+the return as `nat`, and you get a refusal:
+
+```
+FLANG_TYPE, строка 6, столбец 5: функция «Sum of nats» объявлена как нат, а тело даёт число
+```
+
+An exact type belongs on **inputs and record fields** — where the proof kernel
+takes bounds and integrality from it, and the termination analysis takes a floor.
+Declare the return as `number` when the body computes with arithmetic.
+
 ### List
 
 `list Type` — homogeneous. The literal is `[1, 2, 3]`, the empty one is
@@ -301,7 +387,7 @@ and `list of 1 and 2 and 3` in value position.
 
 ### Record
 
-```
+```flang
 object «Line»
   title is string
   price is number
@@ -317,7 +403,7 @@ immutable, so a new record is built.
 
 ### Sum type
 
-```
+```flang
 type «Answer»
   variant Ok contains value: number
   variant Failed contains reason: string
@@ -330,7 +416,7 @@ variants, and matching over them is mandatory. `null` is not used for this.
 
 All of it in one program:
 
-```
+```flang
 module «Types»
 
 object «Line»
@@ -362,7 +448,7 @@ A field declared with `may be` does not have to be written in the examples.
 
 ### Alias and parametric types
 
-```
+```flang
 тип «Invoice» это list «Line»
 
 type «Maybe» of «A»
@@ -426,7 +512,7 @@ from the [glossary](../glossary.html).
 | `character code X`, `decompose X into characters` | character by character |
 | `character by code N` | code point as a number → a one-character string; refuses on fractions, outside [0, 1114111], and on a lone surrogate |
 
-```
+```flang
 module «Built-in forms»
 
 total function «Long words»
@@ -448,7 +534,7 @@ total function «Word lengths»
 
 The prepositions are fixed, and they differ from form to form:
 
-```
+```flang
 module «Strings»
 
 total function «Second word»
@@ -490,7 +576,7 @@ function; which task is solved by which one is on [Operations](operations.html).
 
 ## Functions as values
 
-```
+```flang
 module «Function as a value»
 
 total function «Double»
@@ -540,11 +626,75 @@ form `function «Name»`. A function value arriving from outside and taken nowhe
 in the program is rejected with `FLANG_APPLY`. There is no separate compilation:
 function values are lowered across the whole program at once.
 
-## Theorem
+## Claims about behaviour
 
-Written when a postcondition is not enough.
+Four words promise more about a function than its type does. They are checked in
+different ways, and the difference shows at once.
 
+| Word | Where it stands | Who answers for it | What checks it |
+| --- | --- | --- | --- |
+| `requires «name» condition` | after `returns`, before the body | **the caller** | a run-time check on the boundary of the program |
+| `for all p ensures «name» condition` | the same place, after `requires` | the function itself | the kernel at check time; if it fails, a check on every return |
+| `total` | before the word `function` | the compiler | at check time; see [Totality and measures](#totality-and-measures) |
+| `theorem «name»` | top level, next to the function | the author of the proof | the kernel at check time, step by step |
+
+### `requires` — a precondition
+
+`requires «name» condition` — the condition under which calling the function is
+lawful.
+
+```flang
+module «Precondition»
+
+total function «Share»
+  accepts part: nat, whole: nat
+  returns number
+  requires «the divisor is positive» whole is greater than 0
+  example «a half»
+    given part equals 1
+    given whole equals 2
+    expected 0.5
+  part divided by whole
 ```
+
+What it gives: inside the function the condition becomes an **assumption** — the
+one `by hypothesis` refers to in a theorem, even where there is no induction.
+
+Edge: the run-time check is emitted only on the boundary of the program — where
+a value arrives from outside. Internal calls do not pay for it.
+
+### `ensures` — a postcondition
+
+`for all p ensures «name» condition` — what holds of `result` on every input.
+The word `result` in the condition means the returned value.
+
+```flang
+module «Postcondition»
+
+total function «Double all»
+  accepts items: list number
+  returns list number
+  for all items ensures «length is preserved» (length result) equals (length items)
+  example «three items»
+    given items equals [1, 2, 3]
+    expected [2, 4, 6]
+  map items as x → x times 2
+```
+
+What it gives: the kernel first tries to **prove** the condition. Proved — there
+is no check in the emitted code. Not proved — the condition is checked on every
+return, and a violation stops the computation. What closed and what did not is
+shown by `flang check --proof`.
+
+Edge: the name is not optional — `ensures` without a name does not parse. A
+theorem refers to the claim by that name, and so does `by property` from someone
+else's proof.
+
+### `theorem`
+
+Written when a postcondition is not enough: the kernel did not close it by itself.
+
+```flang
 module «Theorem»
 
 total function «Sum up to»
@@ -574,23 +724,117 @@ theorem «sum up to is non-negative»
 | `theorem «name»` | the name matches the postcondition's name |
 | `given name: type` | the variables of the claim |
 | `claim condition` | what is being proved |
-| `induction on name decreases measure` | the induction principle and its measure |
+| `induction on name decreases measure` | the induction principle and its measure; `decreases` is needed only where a number goes down, not a part of a value |
 | `case …` / `then justification` | a step |
+| `next claim by justification` | an intermediate fact: prove it and later steps may lean on it |
 | `therefore proved` | the end |
 
-Justifications: `by hypothesis`, `by example «…»`, `under law «…»`, `by property
-«…»`. A step without a justification is rejected by the parser.
+There may be no induction at all — a short theorem fits into a single line of
+justification:
+
+```flang
+module «Property»
+
+total function «Double all»
+  accepts items: list number
+  returns list number
+  for all items ensures «doubling keeps the length» (length result) equals (length items)
+  map items as x → x times 2
+
+total function «Through doubling»
+  accepts items: list number
+  returns list number
+  for all items ensures «through doubling the length is the same» (length result) equals (length items)
+  «Double all» of items
+
+theorem «through doubling the length is the same»
+  given items: list number
+  claim (length result) equals (length items)
+  by property «doubling keeps the length»
+  therefore proved
+```
 
 Edge: a theorem is not always needed — write the postcondition first and see
-whether the kernel closes it on its own. How much closes without a theorem, and
-by which rules: [Why and how](proofs.html) and [Kernel
-specification](../spec-proof.html) (in Russian).
+whether the kernel closes it on its own. Induction attaches **only** to `match`
+over a declared sum and to a descent along a number.
+
+### Justifications for a step
+
+A step without a justification is rejected by the parser. There are four, and
+each works in its own place.
+
+| Justification | Works when |
+| --- | --- |
+| `by property «name»` | the conclusion of the step holds a **call** to a function that has a postcondition of that name |
+| `by hypothesis` | there is an assumption: an induction hypothesis (`induction on`) or a precondition of the function (`requires`) |
+| `by example «name»` | the case holds **one** value, that is, a pattern with no bound names, and the function has an example of that name |
+| `under law «name»` | the law is declared: by a monoid, a monad or an isomorphism of this module |
+
+### `by property`
+
+A reference to **someone else's** postcondition. The kernel looks for calls to
+the named function in the conclusion and substitutes its postcondition:
+parameters for the arguments of that call, `result` for the call itself. There is
+nothing to search: the call itself names the substitution.
+
+The example is the theorem "through doubling the length is the same" above. A
+reference to **your own** postcondition is a circle, and the kernel says so:
+
+```
+FLANG_PROOF_STEP, строка 12, столбец 3: шаг 1, теорема «длина сохраняется»: «по свойству «длина сохраняется»» ссылается на то самое постусловие, которое сейчас доказывается — это круг. Часть значения обосновывает «по предположению», а не ссылка на саму цель
+```
+
+Edge: a postcondition of that name must exist **on some function of the module**.
+If there is none, the refusal says there is nothing to refer to.
+
+### `by hypothesis`
+
+Takes an assumption. There are two kinds and the word covers both: an induction
+hypothesis — the same claim about a smaller part of the value; and a precondition
+of the function — the `requires` line. Inside induction it is the `by hypothesis`
+of the "Sum up to" example.
+
+With neither one, the refusal names exactly what was missing:
+
+```
+FLANG_PROOF_INDUCTION_STEP, строка 12, столбец 3: шаг 1, теорема «половина неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем
+```
+
+Edge: a hypothesis has no name. There is one per case, and there is no way to
+refer to the hypothesis of another case.
+
+### `by example`
+
+Closes a case by running an example. An example is **one** value, so it can close
+exactly the case that holds one value: `case 0`, `case Leaf`, `case empty` — a
+pattern **with no bound names**.
+
+`case variant Node with left as l` is not closed by one example: it holds
+infinitely many values, and the example speaks of one. Such cases are closed by
+`by hypothesis`.
+
+Edge: the example is looked up on the function whose postcondition is being
+proved, and by name. No example of that name — the refusal names both strings in
+guillemets.
+
+### `under law`
+
+A reference to a law declared in the module: a law of a monoid, a monad or an
+isomorphism. An undeclared law is not accepted — otherwise the line
+`under law «what never happens»` would close anything:
+
+```
+закона «чего не бывает» в модуле нет: ни моноида, ни монады, ни изоморфизма с таким именем не объявлено — сослаться не на что
+```
+
+How much closes without a theorem, and by which rules: [Why and
+how](proofs.html) and [Kernel specification](../spec-proof.html) (in Russian).
 
 ## The categorical surface
 
 Declaring a pipeline as data: objects, arrows between them, composition.
 
-```
+```flang
 module «Order pipeline»
 
 object «Order»
@@ -700,7 +944,7 @@ not](what-is-proved.html).
 
 ## Monads and `in monad`
 
-```
+```flang
 module «Discount»
 
 type «Maybe» of «A»
@@ -777,7 +1021,7 @@ declarations.
 State belongs to a process. The handler is an ordinary total function returning
 a new state and a list of actions. Sending is described, not performed.
 
-```
+```flang
 module «Counter»
 
 object «Count»
@@ -859,7 +1103,17 @@ the table are named here so that nobody has to hunt for them.
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
 | `plan` | input and output: declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
 | `date`, `money` | heritage of the earlier surface: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
+| `has` — the line `given «Object» has «field» equal to value` | heritage of the earlier theorem form; next to the words of a proof it is rejected | below |
 | `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
+
+The earlier theorem form does not blend with the present one: the line
+`given «Object» has «field»` next to `claim` is a refusal, not a mixture.
+
+```
+FLANG_PARSE, строка 12, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
+```
+
+`in data`, `by morphism` and `therefore «conclusion»` behave the same way.
 
 ## What the language does not have
 
@@ -871,6 +1125,10 @@ the table are named here so that nobody has to hunt for them.
 | `null` for "not found" | a sum type and a mandatory `match` |
 | a variable | `let`, which binds once |
 | a function body in place (a lambda) | `function «Name»` with named capture |
+| a closure carrying a local name outwards | capture of declared parameters only: `function «Name» with a equal to 10` |
+| bitwise operations: `and`, `or`, `xor`, shifts | arithmetic: `times`, `divided by`, `modulo` |
+| writing into a list by index (`x[i] = v`) | `map` builds a new list |
+| a dependent type (`list of length n`) | `ensures` about the length, and a theorem about it |
 
 ## Next
 

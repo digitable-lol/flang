@@ -1,80 +1,84 @@
 # For contributors
 
-This half of the site is the project's working papers: measurements, the record
-of paths that were rejected, the journals. Someone writing in flang does not need
-them, which is why they no longer sit in the menu next to the tutorial. They
-cannot be thrown away either: every number the language states about itself rests
-on them.
+This page is for changing flang itself rather than writing in it. If you came to
+write in it: [Install](install.html) → [Your first program](getting-started.html)
+→ [Tutorial](tutorial.html).
 
-Most of these documents are in Russian. If you came to look at the language
-rather than to build it, go [home](index.html) and follow the path
-[Install](install.html) → [Your first program](getting-started.html) →
-[Tutorial](tutorial.html).
+The tree is written in Russian: identifiers, commit messages and most of the
+prose. An English surface of the language exists and lexes to the same
+identifiers; a patch written in English is accepted — nobody will ask you to
+write Russian.
 
-## Measurements
+## Build it
 
-Every one of them is a run, not an estimate. A negative result stays published
-next to a favourable one: a measurement retracted for giving an inconvenient
-answer is worth nothing.
+There is one compiler here, written in flang itself, and it builds without Node.
+The tree carries a bootstrap point — that same compiler printed to C99. The whole
+dependency list is a C compiler and `make`:
 
-- [Speed against Python and Node](../benchmark-speed.html) — where we stand
-  against three languages at once, and how much of the difference is the price
-  of provability rather than unfinished work.
-- [The price of a proof against tests](../benchmark-proof-cost.html) — twenty
-  ordinary library functions, both jobs done on each. The first answer: 0 out
-  of 20.
-- [The price of a proof, second run](../benchmark-proof-cost-2.html) — the same
-  twenty functions two days later, after kernel fixes: 2 out of 20, or 6 out of
-  20 counting weakened claims.
-- [How many processes the scheduler holds](../benchmark-processes.html) — a
-  million live processes, the time to start them and the price of a switch.
-- [Memory and regions](../memory.html) — what the arena holds, what the fix
-  bought and where the cost still shows.
-- [Modularity and packages](../modules.html) — the hypothesis "a function's name
-  is the hash of its text", with Unison installed, run and measured rather than
-  retold.
-- [WebAssembly via C](../wasm.html) — whether a separate emit target is needed.
-  The answer is no, and here is what that rests on.
-- [What backs the install](install-evidence.html) — hashes, sizes, build times
-  and what could not be checked.
+```bash
+git clone https://github.com/digitable-lol/flang && cd flang
+make -C bootstrap
+bootstrap/flang --version
+```
 
-## Surface contracts
+```
+flang 0.6.2
+```
 
-The full contracts are working documents: next to a rule of the language stands
-an analysis of what the decision cost, and the mark "declared, not done" appears
-as often as "done". A reader who came to write in the language is answered by
-[Reference of constructs](language.html), [Databases](database.html),
-[Processes, supervision, distribution](processes.html) and
-[The categorical surface](categories.html); what those rest on lives here.
+The built binary is what you run from then on:
 
-- [Language specification — the contract](../spec.html) — forms, values, types,
-  diagnostic codes, implementation layers.
-- [Categories and functors — the contract](../spec-cat.html) — category,
-  functor, monoid, monad, isomorphism and natural transformation: the written
-  form, the diagnostic codes, and a by-name list of what the binary does not
-  judge.
-- [Processes and fault tolerance — the contract](../spec-conc.html) — the whole
-  process model, including the honesty border.
+```bash
+bootstrap/flang check flang/examples/rosetta/towers-of-hanoi.flang
+```
+
+The package declares zero dependencies: `npm install` has nothing to fetch. Only
+the language server runs on Node — `node flang/bin/flang-lsp.mjs`.
+
+## Run the checks
+
+Three checks run on the built binary and need no Node:
+
+```bash
+sh flang/проверки/обход.sh
+sh flang/проверки/обход-примеров.sh
+sh scripts/raskrutka.sh --check
+```
+
+The first walks the tree with the compiler, the second runs the examples of
+every program in the tree, the third compares the printed C against what sits in
+`bootstrap/`: a change in `flang/self/` must produce the byte-identical
+bootstrap file.
+
+If you touched the site pages, add:
+
+```bash
+node docs/site/build.mjs --check
+```
+
+It turns red on a link to nowhere, a page without its English pair, and a
+substitution with no value.
+
+## Send a change
+
+1. Branch off the trunk: `git switch -c my-change`.
+2. Write it. Put examples inside the function — they run with the same
+   `flang test` command as everything else.
+3. Run the checks above. A red check is not something to explain away: the
+   change is not ready.
+4. Commit message: one line saying what changed and why.
+5. Open a pull request at
+   [github.com/digitable-lol/flang](https://github.com/digitable-lol/flang).
+
+For a bug without a fix, open an issue in the same repository. Attach the
+program text and the verbatim command output with its exit code: that is enough
+to reproduce it.
+
+## Read this before changing the language
+
+- [Language specification](../spec.html) — forms, values, types, diagnostic codes.
+- [Categories and functors](../spec-cat.html) — what the binary judges and what it does not.
+- [Processes and fault tolerance](../spec-conc.html) — the whole process model.
 - [Kernel specification](../spec-proof.html) — what the proof kernel accepts.
-
-## Knowledge base
-
-[The index of notes](../knowledge.html). One note is one established fact: a
-measured number, a bug found, a path rejected and the reason it was rejected.
-It is worth reading before starting work: half the notes exist precisely so that
-settled questions are not reopened.
-
-## How the project is built
-
-- [How these docs are made](about-docs.html) — where the numbers on the pages
-  come from, why they cannot be typed by hand, and what the build checks.
 - [Repository layout](../project-layout.html) — what lives where.
 - [Developing the language](../developing.html) — how something new gets added.
 - [Known limitations](../limits.html) — what the language cannot do and knows it.
-
-## Journals
-
-- [Releases](releases.html) — versions and what arrived in them. This is the one
-  journal aimed at a reader of the language, and it stays in the main menu.
-- [Merge journal](../changelog.html) — what was merged into the trunk.
-- [Commit journal](../journal.html) — the same thing in more detail.

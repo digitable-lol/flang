@@ -35,10 +35,16 @@ ZAPIS=$2
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
 [ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
 
+# Сам сверщик — тоже перекрываемый путь, и не для красоты: `сверка-правил.sh`
+# снимает с него правку и смотрит, покраснеет ли. Сторож, которого не пробовали
+# сломать, ничего не сторожит.
+SVERSHCHIK=${SVERSHCHIK:-$KOREN/flang/proof/сверщик.flang}
+[ -f "$SVERSHCHIK" ] || { echo "сверщика нет: $SVERSHCHIK" >&2; exit 2; }
+
 RABOTA=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" sverka.XXXXXX)
 trap 'rm -rf "$RABOTA"' EXIT INT TERM
 
-cp "$KOREN/flang/proof/сверщик.flang" "$RABOTA/сверщик.flang"
+cp "$SVERSHCHIK" "$RABOTA/сверщик.flang"
 printf '%s\n%s\n' "$(polnyy "$ISHODNIK")" "$(polnyy "$ZAPIS")" > "$RABOTA/наряд"
 
 # Хозяин планов отдаёт итог строкой JSON и кладёт туда же весь журнал поручений

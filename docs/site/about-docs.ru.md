@@ -127,5 +127,5 @@ github.com/digitable-lol/flang · об ошибке — issues того же р�
 печатнике: [журнал вливаний](changelog.html) —
 `scripts/build-changelog-page.mjs`, [журнал коммитов](journal.html) —
 `scripts/build-changelog.mjs`, [выпуски](releases.html) —
-`scripts/build-releases-page.mjs` вместе с заметками в
+`scripts/stranitsa-vypuskov.flang` вместе с заметками в
 `docs/release-notes.json`.

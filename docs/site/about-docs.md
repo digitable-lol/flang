@@ -130,5 +130,5 @@ Texts live in `docs/`, the page map in `docs/site/sitemap.mjs`, the build is
 `.md`: the [merge journal](../changelog.html) —
 `scripts/build-changelog-page.mjs`, the [commit journal](../journal.html) —
 `scripts/build-changelog.mjs`, the [releases](releases.html) —
-`scripts/build-releases-page.mjs` together with the notes in
+`scripts/stranitsa-vypuskov.flang` together with the notes in
 `docs/release-notes.json`.

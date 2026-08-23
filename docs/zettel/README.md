@@ -543,6 +543,7 @@
 - [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
+- [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
 
 ## Как добавлять
 

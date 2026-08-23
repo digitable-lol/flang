@@ -28,12 +28,28 @@
  * рабочего режима нет вовсе, а просьба о нём получает НАЗВАННЫЙ отказ, а не
  * молчаливое исполнение одним потоком.
  */
-#if !defined(FL_CONC_NO_THREADS) && (defined(__unix__) || defined(__unix) || \
-                                     (defined(__APPLE__) && defined(__MACH__)))
-#if !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 200809L
+#if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
+#define FL_CONC_POSIX 1
 #endif
+
+#if defined(FL_CONC_POSIX) && !defined(FL_CONC_NO_THREADS)
 #define FL_CONC_THREADS 1
+#endif
+
+/*
+ * Сеть — ОТДЕЛЬНЫЙ выключатель, а не довесок к потокам, и это не аккуратность:
+ * ждать соединения и считать в несколько потоков — разные обещания среды.
+ * `-DFL_CONC_NO_NET` возвращает шести поручениям соединения тот НАЗВАННЫЙ отказ,
+ * которым они отвечали до этой правки; там он правда — у чистого C99 сокетов
+ * нет. Где сокеты есть, отказ был бы ложью: ждать умеет `poll`, и ждёт он не
+ * останавливая планировщик.
+ */
+#if defined(FL_CONC_POSIX) && !defined(FL_CONC_NO_NET)
+#define FL_CONC_NET 1
+#endif
+
+#if (defined(FL_CONC_THREADS) || defined(FL_CONC_NET)) && !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
 #endif
 
 #include "flang_conc.h"
@@ -51,6 +67,17 @@
 #ifdef FL_CONC_THREADS
 #include <pthread.h>
 #include <sched.h>
+#include <unistd.h>
+#endif
+
+#ifdef FL_CONC_NET
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
@@ -474,6 +501,86 @@ typedef struct fl_conc_par {
 } fl_conc_par;
 #endif
 
+/* ───────────────────────────── сеть: ждать, не останавливаясь ─────────────
+   Шесть поручений соединения упирались в одно: `connect` и `accept` ждут ответа
+   с той стороны, а планировщик синхронен весь. Отказ был назван честно, но
+   отказом он был из-за ОДНОГО слова — «ждать». Слова этого здесь больше нет:
+   сокет переводится в неблокирующий, поручение, которому нечего ответить
+   СЕЙЧАС, кладётся в список ожиданий, а `poll` спрашивает у ядра «кто готов» и
+   возвращает управление. Пробег при этом не стоит ни мгновения: процесс,
+   выдавший поручение, просто ещё не получил письма — ровно то, чем «ждёт»
+   называется в этой модели с самого начала.
+
+   Отклик приходит ОБЫЧНЫМ СООБЩЕНИЕМ и тем же `fl_conc_deliver`, каким приходит
+   всё остальное: словарь поручений и словарь откликов не тронуты ни на слово.
+
+   Где хозяин может ответить НЕ ЖДАВ (данные уже пришли, соединение уже стоит в
+   очереди, ответ уместился в буфер сокета) — он отвечает на месте, как отвечал
+   всегда. Ожидание заводится только там, где раньше стоял отказ. */
+#ifdef FL_CONC_NET
+
+/* Портов и соединений столько же, сколько у хозяина планов (`flang_repl.c`,
+   IO_MAX_PORTS/IO_MAX_LINKS): два хозяина одного языка не имеют права упираться
+   в разные потолки — программа тогда работала бы под одним и не работала под
+   другим по причине, которой нет в её тексте. */
+#define FL_CONC_NET_PORTS 8
+#define FL_CONC_NET_LINKS 64
+/* Кусок чтения — тот же, что у хозяина планов, и по той же причине: «Прочитано»
+   обязано отдавать столько же байтов за один отклик у обоих. */
+#define FL_CONC_NET_CHUNK 8192
+/* Через сколько пробегов спрашивать сеть, когда планировщику есть чем заняться.
+   Опрос на КАЖДОМ пробеге был бы системным вызовом там, где пробег стоит
+   наносекунды, и оба числа замерены: `poll` на одном сокете с нулевым
+   тайм-аутом — 402 нс (миллион вызовов, эта машина), потолок планировщика —
+   десять миллионов пробегов в секунду, то есть 100 нс на пробег (замер в шапке
+   `flang_conc.h`). Опрос на каждом пробеге стоил бы вчетверо дороже самой
+   работы; раз в 1024 пробега он стоит 402 нс на 102 мкс, то есть 0,4 %, а
+   письмо из сети опаздывает не больше чем на 1024 пробега.
+
+   Когда ожиданий нет вовсе — а их нет ни у одной программы без сети — не стоит
+   и этого: проверяется одно поле, и до системного вызова дело не доходит. */
+#define FL_CONC_NET_EVERY 1024
+
+typedef struct {
+  int port;
+  int fd;
+} fl_conc_port;
+
+typedef struct {
+  int number;
+  int fd;
+  /* Соединение открыла ПРОГРАММА, а не приняли мы. Поле читает запись: закрывает
+     соединение тот, кто его завёл, — ровно как у хозяина планов. */
+  bool outgoing;
+} fl_conc_wire;
+
+/** Чего ждёт отложенное поручение. Шесть поручений — пять видов ожидания:
+    октетная пара ждёт того же, что текстовая, и отличается только тем, чем
+    отвечает. */
+typedef enum {
+  FL_CONC_WAIT_ACCEPT = 0,
+  FL_CONC_WAIT_CONNECT,
+  FL_CONC_WAIT_READ,
+  FL_CONC_WAIT_OCTETS,
+  FL_CONC_WAIT_WRITE
+} fl_conc_wait_kind;
+
+typedef struct {
+  fl_conc_wait_kind kind;
+  int fd;
+  int number;      /* номер соединения; -1 у приёма и у исходящего до успеха */
+  size_t target;   /* кому нести отклик */
+  bool reserved;   /* место в ящике адресата занято при выдаче поручения */
+  bool octets;     /* отвечать «Октеты», а не «Прочитано» (у записи не читается) */
+  bool closing;    /* положить трубку, когда допишем */
+  unsigned char *body; /* недописанный хвост ответа; malloc, не арена */
+  size_t bytes;
+  size_t sent;
+  double points;   /* «сколько» для отклика «Записано» */
+  char where[128]; /* «адрес:порт» — только ради текста отказа исходящего */
+} fl_conc_wait;
+#endif
+
 typedef struct fl_conc_sched {
   fl_ctx *ctx;
   /* Арена вызывающего — «дом». Держится отдельным полем, потому что на время
@@ -596,6 +703,23 @@ typedef struct fl_conc_sched {
      сколько раз программа бросила кости: побайтовая сверка сломалась бы на
      программе, которая ничего конкурентного не меняла. */
   uint32_t dice;
+
+#ifdef FL_CONC_NET
+  /* Слушающие сокеты, соединения и список ожиданий — всё хозяйство сети. Оно
+     ОБЩЕЕ, как журнал и таймеры, и ходит под тем же общим замком. */
+  fl_conc_port ports[FL_CONC_NET_PORTS];
+  size_t port_count;
+  fl_conc_wire wires[FL_CONC_NET_LINKS];
+  size_t wire_count;
+  int next_wire;
+  fl_conc_wait waits[FL_CONC_NET_LINKS];
+  size_t wait_count;
+  /* Своя арена под отклики сети: строит их не пробег, а опрос, и черновик
+     пробега к тому времени уже сброшен. Сбрасывается после каждого опроса —
+     отклик к этому мгновению уже скопирован в кучу адресата доставкой. */
+  fl_arena netpad;
+  size_t polls; /* сколько раз спрошено у ядра: число для замера, не настройка */
+#endif
 
   /* Рабочий режим. NULL — проверочный, и тогда ни одного замка не берётся. */
 #ifdef FL_CONC_THREADS
@@ -1271,10 +1395,13 @@ static bool fl_conc_known_action(const char *name) {
                           «Прочитать из соединения», «Ответить в соединение»,
                           «Прочитать октеты из соединения», «Ответить октетами
                           в соединение») —
-                          тот же НАЗВАННЫЙ ОТКАЗ и по другому доводу: сокеты в
-                          C99 есть, а вот ЖДАТЬ этот планировщик не умеет —
-                          он синхронен весь. Долг тот же, что у синхронного
-                          хозяина Node, и снимет его асинхронный планировщик.
+                          ИСПОЛНЯЮТСЯ, и это единственное поручение среди
+                          восемнадцати, чей отклик может прийти НЕ В ТОМ ЖЕ
+                          пробеге. Здесь стоял названный отказ «нет способа
+                          ждать сеть»; ждать и правда никто не стал — сокет
+                          неблокирующий, а поручение, которому ответить нечем,
+                          ждёт своей готовности в `poll` (см. «сеть: опрос»).
+                          Долг остался у `«Запросить»` и только у него.
 
    Отказ хозяина — ОТКЛИК, а не ошибка прогона. Это решение приезжает готовым с
    той стороны шва (`flang/src/io.mjs`): программа обязана уметь встретить
@@ -1356,13 +1483,244 @@ static const char *fl_conc_io_text(fl_ctx *ctx, fl_value order, const char *fiel
   return text;
 }
 
+/* ───────────────────────────── сеть: хозяйство ────────────────────────────
+   Ниже — ровно то, что уже есть у хозяина планов (`flang_repl.c`), с одной
+   разницей: каждый сокет здесь неблокирующий. Разница эта и есть вся работа. */
+#ifdef FL_CONC_NET
+
+/** Неблокирующий режим сокета. Отсюда и дальше ни один вызов не ждёт. */
+static bool fl_conc_net_relax(int fd) {
+  const int flags = fcntl(fd, F_GETFL, 0);
+  return flags >= 0 && fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0;
+}
+
+/**
+ * Слушающий сокет порта: заводится при первом же «Принять соединение» и живёт до
+ * конца прогона. Порт называется в поручении, отдельного «Слушать» в словаре
+ * нет — и не понадобилось, ровно как у хозяина планов.
+ */
+static int fl_conc_net_listen(fl_conc_sched *sched, int port, char *why, size_t why_size) {
+  size_t index = 0;
+  int fd = -1;
+  int yes = 1;
+  struct sockaddr_in address;
+  for (index = 0; index < sched->port_count; index += 1) {
+    if (sched->ports[index].port == port) {
+      return sched->ports[index].fd;
+    }
+  }
+  if (sched->port_count == FL_CONC_NET_PORTS) {
+    snprintf(why, why_size, "хозяин слушает уже %d портов — больше некуда", FL_CONC_NET_PORTS);
+    return -1;
+  }
+  fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (fd < 0) {
+    snprintf(why, why_size, "сокет не заведён: %s", strerror(errno));
+    return -1;
+  }
+  (void)setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+  memset(&address, 0, sizeof(address));
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_port = htons((unsigned short)port);
+  if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0 || listen(fd, 16) != 0) {
+    snprintf(why, why_size, "порт %d не занят хозяином: %s", port, strerror(errno));
+    close(fd);
+    return -1;
+  }
+  if (!fl_conc_net_relax(fd)) {
+    snprintf(why, why_size, "слушающий сокет не стал неблокирующим: %s", strerror(errno));
+    close(fd);
+    return -1;
+  }
+  sched->ports[sched->port_count].port = port;
+  sched->ports[sched->port_count].fd = fd;
+  sched->port_count += 1;
+  return fd;
+}
+
+static int fl_conc_wire_fd(const fl_conc_sched *sched, int number) {
+  size_t index = 0;
+  for (index = 0; index < sched->wire_count; index += 1) {
+    if (sched->wires[index].number == number) {
+      return sched->wires[index].fd;
+    }
+  }
+  return -1;
+}
+
+/* Открыла ли соединение сама программа. Неизвестное — «нет»: до этого вопроса
+   дело доходит только после того, как соединение нашлось. */
+static bool fl_conc_wire_outgoing(const fl_conc_sched *sched, int number) {
+  size_t index = 0;
+  for (index = 0; index < sched->wire_count; index += 1) {
+    if (sched->wires[index].number == number) {
+      return sched->wires[index].outgoing;
+    }
+  }
+  return false;
+}
+
+static void fl_conc_wire_drop(fl_conc_sched *sched, int number) {
+  size_t index = 0;
+  for (index = 0; index < sched->wire_count; index += 1) {
+    if (sched->wires[index].number == number) {
+      sched->wires[index] = sched->wires[sched->wire_count - 1];
+      sched->wire_count -= 1;
+      return;
+    }
+  }
+}
+
+/** Записать соединение и выдать ему номер; −1 — мест больше нет. */
+static int fl_conc_wire_add(fl_conc_sched *sched, int fd, bool outgoing) {
+  int number = 0;
+  if (sched->wire_count == FL_CONC_NET_LINKS) {
+    return -1;
+  }
+  number = sched->next_wire;
+  sched->wires[sched->wire_count].number = number;
+  sched->wires[sched->wire_count].fd = fd;
+  sched->wires[sched->wire_count].outgoing = outgoing;
+  sched->wire_count += 1;
+  sched->next_wire += 1;
+  return number;
+}
+
+/**
+ * Завести ожидание. Место в ящике адресата занимается ВЫЗЫВАЮЩИМ и до сюда, а
+ * не здесь: полный ящик — отказ ТОГО, КТО ПОРУЧИЛ, и узнать о нём он обязан на
+ * своём пробеге, а не через полсекунды устами опроса.
+ */
+static fl_conc_wait *fl_conc_wait_push(fl_conc_sched *sched, fl_conc_wait_kind kind, int fd, int number,
+                                       size_t target, bool reserved) {
+  fl_conc_wait *wait = NULL;
+  if (sched->wait_count == FL_CONC_NET_LINKS) {
+    return NULL;
+  }
+  wait = &sched->waits[sched->wait_count];
+  memset(wait, 0, sizeof(*wait));
+  wait->kind = kind;
+  wait->fd = fd;
+  wait->number = number;
+  wait->target = target;
+  wait->reserved = reserved;
+  sched->wait_count += 1;
+  return wait;
+}
+
+static void fl_conc_wait_drop(fl_conc_sched *sched, size_t index) {
+  free(sched->waits[index].body);
+  memmove(sched->waits + index, sched->waits + index + 1,
+          (sched->wait_count - index - 1) * sizeof(fl_conc_wait));
+  sched->wait_count -= 1;
+}
+
+/* EAGAIN и EWOULDBLOCK на большинстве систем одно и то же число. Спрашивать их
+   двумя сравнениями подряд значило бы писать `x != 1 && x != 1`; препроцессор
+   умеет это различить, компилятор — уже нет. */
+static bool fl_conc_net_again(int problem) {
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
+  if (problem == EWOULDBLOCK) {
+    return true;
+  }
+#endif
+  return problem == EAGAIN;
+}
+
+/**
+ * Занять место в ящике адресата ПОД БУДУЩИЙ отклик — тем же движением, каким его
+ * занимает `через`. Без этого полный ящик обнаружился бы через полсекунды, в
+ * опросе, и отвечать за него было бы некому: пробег того, кто поручил, к тому
+ * времени давно кончился. `false` — ящик полон.
+ */
+static bool fl_conc_net_reserve(fl_conc_sched *sched, size_t target, bool *reserved) {
+  bool full = false;
+  *reserved = false;
+  if (target == SIZE_MAX || fl_conc_node(sched, target)->mailbox == 0) {
+    return true;
+  }
+  fl_conc_hold(sched, target);
+  full = fl_conc_box_full(sched, target);
+  if (!full) {
+    sched->slots[target].pending += 1;
+    *reserved = true;
+  }
+  fl_conc_drop(sched, target);
+  return !full;
+}
+
+static void fl_conc_net_release(fl_conc_sched *sched, size_t target, bool reserved) {
+  if (!reserved) {
+    return;
+  }
+  fl_conc_hold(sched, target);
+  sched->slots[target].pending -= 1;
+  fl_conc_drop(sched, target);
+}
+
+/**
+ * Отклик на чтение — один на оба поручения чтения и на оба места, где чтение
+ * случается (поручение и опрос). Пустой отклик — КОНЕЦ: сюда попадают только
+ * после того, как связь кончилась, а «байтов ещё нет» до сюда не доходит вовсе.
+ */
+static fl_status fl_conc_net_read_answer(fl_ctx *ctx, const unsigned char *chunk, long got, bool octets,
+                                         fl_value *out, fl_error *error) {
+  const size_t count = got > 0 ? (size_t)got : 0;
+  if (octets) {
+    static const char *const names[1] = {"октеты"};
+    fl_value *items = NULL;
+    fl_value value = fl_nothing();
+    size_t at = 0;
+    if (fl_list_alloc(ctx, count, &items, error) != FL_OK) {
+      return FL_ERROR;
+    }
+    for (at = 0; at < count; at += 1) {
+      items[at] = fl_number((double)chunk[at]);
+    }
+    value = fl_list(items, count);
+    return fl_variant_new(ctx, "Октеты", names, &value, 1, out, error);
+  }
+  {
+    static const char *const names[1] = {"содержимое"};
+    fl_value value = fl_nothing();
+    if (fl_text(ctx, (const char *)chunk, count, &value, error) != FL_OK) {
+      return FL_ERROR;
+    }
+    return fl_variant_new(ctx, "Прочитано", names, &value, 1, out, error);
+  }
+}
+
+/** Число из поля поручения; false — поля нет или оно не число. */
+static bool fl_conc_io_number(fl_value order, const char *field, double *out) {
+  fl_value value = fl_nothing();
+  if (!fl_conc_variant_field(order, field, &value) || value.tag != FL_NUMBER) {
+    return false;
+  }
+  *out = value.as.number;
+  return true;
+}
+#endif /* FL_CONC_NET */
+
 /**
  * Исполнить поручение. Всегда отдаёт ОТКЛИК — значение суммы «Отклик»; FL_ERROR
  * только на нехватке памяти.
+ *
+ * ТРИ ИСХОДА, а не два, и третий появился вместе с сетью:
+ *   • отклик готов — он в `out`, `*deferred` не тронут;
+ *   • отклик придёт ПОТОМ — `*deferred` в «да», `out` не тронут, поручение
+ *     лежит в списке ожиданий и отвечать за него будет опрос;
+ *   • отклик нести некуда — `*posted` в `FL_CONC_FULL`: ящик адресата полон, и
+ *     это отказ того, кто поручил, ровно как у `отправить`.
+ * Первый исход — единственный, который был до сети, и на всяком поручении, кроме
+ * шести соединения, он единственный и остался.
  */
-static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value order, fl_value *out,
-                                 fl_error *error) {
+static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value order, size_t target,
+                                 fl_value *out, bool *deferred, fl_conc_post *posted, fl_error *error) {
   const char *kind = NULL;
+  *deferred = false;
+  *posted = FL_CONC_POSTED;
+  (void)target;
   if (order.tag != FL_VARIANT) {
     return fl_conc_io_fail(ctx, "FLANG_IO", "поручение обязано быть вариантом суммы «Поручение»", out, error);
   }
@@ -1622,29 +1980,552 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
                            error);
   }
 
-  /* Четыре поручения соединения — НАЗВАННЫЙ отказ, и стоят они одной веткой,
-     потому что барьер у них один и тот же: планировщик синхронен весь, а
-     `connect` и `accept` ждут ответа с той стороны. Тот же барьер и у
-     свидетеля (`nodeHostSync`, `src/host/node.mjs`), и назван он там теми же
-     словами. Молчать здесь нельзя: `FLANG_IO_UNKNOWN` означал бы «хозяин отстал
-     от словаря языка», а он не отстал — он не умеет ждать. */
+#ifdef FL_CONC_NET
+  /* ── ШЕСТЬ ПОРУЧЕНИЙ СОЕДИНЕНИЯ ─────────────────────────────────────────
+     Здесь стоял названный отказ: «у хозяина на C нет способа ждать сеть:
+     планировщик процессов не ждёт». Отказ был честен ровно в одном слове —
+     ЖДАТЬ. Ждать этот планировщик и правда не умеет и уметь не должен: пробег
+     атомарен, и остановить его на `accept` значило бы остановить все процессы
+     разом, вместе с таймерами и надзором.
+
+     Поэтому ждать никто и не стал. Сокет неблокирующий; поручение, на которое
+     ядру есть что ответить СЕЙЧАС, отвечается на месте — как отвечалось всегда;
+     поручение, которому ответить нечем, кладётся в список ожиданий, и пробег
+     кончается ТОГДА ЖЕ, когда кончился бы без сети. Отклик принесёт опрос
+     (`fl_conc_net_pump`) обычным сообщением и тем же `fl_conc_deliver`.
+
+     Что при этом НЕ изменилось: словарь поручений, словарь откликов, вид
+     отклика на каждое из шести. Изменилось одно — КОГДА отклик приходит. */
+  if (strcmp(kind, "Открыть соединение") == 0) {
+    static const char *const names[1] = {"соединение"};
+    const char *address = fl_conc_io_text(ctx, order, "адрес");
+    double port = 0;
+    char why[256];
+    struct addrinfo hints;
+    struct addrinfo *found = NULL;
+    struct addrinfo *step = NULL;
+    char service[8];
+    int failed = 0;
+    if (address == NULL || address[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", "поручению «Открыть соединение» нужен непустой адрес", out,
+                             error);
+    }
+    /* Ноль здесь НЕ годится, в отличие от приёма: «порт 0» на слушающем сокете
+       значит «дай любой свободный», а на исходящем не значит ничего. */
+    if (!fl_conc_io_number(order, "порт", &port) || port < 1 || port > 65535 ||
+        port != (double)(long)port) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", "порт не годится: нужно целое от 1 до 65535", out, error);
+    }
+    if (sched->wire_count == FL_CONC_NET_LINKS) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", out, error);
+    }
+    snprintf(service, sizeof(service), "%d", (int)port);
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    /* `getaddrinfo`, а не `inet_addr`: имя узла разрешать всё равно надо, а
+       второй способ не умеет ни имён, ни IPv6. Разрешение имени — единственное
+       место всей сети, которое здесь ждёт по-настоящему, и это цена, названная
+       вслух: асинхронного `getaddrinfo` в POSIX нет. */
+    failed = getaddrinfo(address, service, &hints, &found);
+    if (failed != 0) {
+      snprintf(why, sizeof(why), "адрес «%s» не разрешён: %s", address, gai_strerror(failed));
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", why, out, error);
+    }
+    for (step = found; step != NULL; step = step->ai_next) {
+      const int fd = socket(step->ai_family, step->ai_socktype, step->ai_protocol);
+      if (fd < 0) {
+        continue;
+      }
+      if (!fl_conc_net_relax(fd)) {
+        close(fd);
+        continue;
+      }
+      if (connect(fd, step->ai_addr, step->ai_addrlen) == 0) {
+        const int number = fl_conc_wire_add(sched, fd, true);
+        fl_value value = fl_nothing();
+        freeaddrinfo(found);
+        if (number < 0) {
+          close(fd);
+          return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", out, error);
+        }
+        value = fl_number((double)number);
+        return fl_variant_new(ctx, "Соединение открыто", names, &value, 1, out, error);
+      }
+      if (errno == EINPROGRESS || errno == EINTR) {
+        bool reserved = false;
+        fl_conc_wait *wait = NULL;
+        if (!fl_conc_net_reserve(sched, target, &reserved)) {
+          close(fd);
+          freeaddrinfo(found);
+          *posted = FL_CONC_FULL;
+          return FL_OK;
+        }
+        wait = fl_conc_wait_push(sched, FL_CONC_WAIT_CONNECT, fd, -1, target, reserved);
+        if (wait == NULL) {
+          fl_conc_net_release(sched, target, reserved);
+          close(fd);
+          freeaddrinfo(found);
+          return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под ожидание", out, error);
+        }
+        snprintf(wait->where, sizeof(wait->where), "%s:%d", address, (int)port);
+        freeaddrinfo(found);
+        *deferred = true;
+        return FL_OK;
+      }
+      close(fd);
+    }
+    snprintf(why, sizeof(why), "соединение с %s:%d не установлено: %s", address, (int)port, strerror(errno));
+    freeaddrinfo(found);
+    return fl_conc_io_fail(ctx, "FLANG_IO_NET", why, out, error);
+  }
+
+  if (strcmp(kind, "Принять соединение") == 0) {
+    static const char *const names[1] = {"соединение"};
+    double port = 0;
+    char why[256];
+    int listener = -1;
+    int taken = -1;
+    if (!fl_conc_io_number(order, "порт", &port) || port < 0 || port > 65535 ||
+        port != (double)(long)port) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", "порт не годится: нужно целое от 0 до 65535", out, error);
+    }
+    listener = fl_conc_net_listen(sched, (int)port, why, sizeof(why));
+    if (listener < 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", why, out, error);
+    }
+    if (sched->wire_count == FL_CONC_NET_LINKS) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", out, error);
+    }
+    taken = accept(listener, NULL, NULL);
+    if (taken >= 0) {
+      fl_value value = fl_nothing();
+      const int number = (fl_conc_net_relax(taken), fl_conc_wire_add(sched, taken, false));
+      if (number < 0) {
+        close(taken);
+        return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", out, error);
+      }
+      value = fl_number((double)number);
+      return fl_variant_new(ctx, "Соединение открыто", names, &value, 1, out, error);
+    }
+    if (!fl_conc_net_again(errno) && errno != EINTR) {
+      snprintf(why, sizeof(why), "соединение не принято: %s", strerror(errno));
+      return fl_conc_io_fail(ctx, "FLANG_IO_NET", why, out, error);
+    }
+    /* Никто ещё не постучался. ВОТ ЗДЕСЬ и стоял отказ. */
+    {
+      bool reserved = false;
+      if (!fl_conc_net_reserve(sched, target, &reserved)) {
+        *posted = FL_CONC_FULL;
+        return FL_OK;
+      }
+      if (fl_conc_wait_push(sched, FL_CONC_WAIT_ACCEPT, listener, -1, target, reserved) == NULL) {
+        fl_conc_net_release(sched, target, reserved);
+        return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под ожидание", out, error);
+      }
+    }
+    *deferred = true;
+    return FL_OK;
+  }
+
+  if (strcmp(kind, "Прочитать из соединения") == 0 ||
+      strcmp(kind, "Прочитать октеты из соединения") == 0) {
+    const bool octets = strcmp(kind, "Прочитать октеты из соединения") == 0;
+    unsigned char chunk[FL_CONC_NET_CHUNK];
+    double number = 0;
+    int fd = -1;
+    long got = 0;
+    if (!fl_conc_io_number(order, "соединение", &number) ||
+        (fd = fl_conc_wire_fd(sched, (int)number)) < 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_READ",
+                             "соединения у хозяина нет: оно закрыто, не принималось и не открывалось", out,
+                             error);
+    }
+    got = (long)read(fd, chunk, sizeof(chunk));
+    if (got < 0 && (fl_conc_net_again(errno) || errno == EINTR)) {
+      /* Байтов ЕЩЁ нет — и это не конец связи. Ответить пустым «Прочитано»
+         значило бы соврать: пустое здесь означает «связь кончилась», и служба
+         по нему решает, что запрос оборван. Поэтому отклика нет вовсе, пока
+         байты не придут. */
+      bool reserved = false;
+      if (!fl_conc_net_reserve(sched, target, &reserved)) {
+        *posted = FL_CONC_FULL;
+        return FL_OK;
+      }
+      if (fl_conc_wait_push(sched, octets ? FL_CONC_WAIT_OCTETS : FL_CONC_WAIT_READ, fd, (int)number, target,
+                            reserved) == NULL) {
+        fl_conc_net_release(sched, target, reserved);
+        return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под ожидание", out, error);
+      }
+      *deferred = true;
+      return FL_OK;
+    }
+    return fl_conc_net_read_answer(ctx, chunk, got, octets, out, error);
+  }
+
+  if (strcmp(kind, "Ответить в соединение") == 0 ||
+      strcmp(kind, "Ответить октетами в соединение") == 0) {
+    static const char *const names[1] = {"сколько"};
+    const bool octets = strcmp(kind, "Ответить октетами в соединение") == 0;
+    fl_value field = fl_nothing();
+    fl_value value = fl_nothing();
+    const unsigned char *body = NULL;
+    unsigned char *made = NULL;
+    double number = 0;
+    double points = 0;
+    size_t bytes = 0;
+    size_t sent = 0;
+    int fd = -1;
+    bool closing = false;
+    if (!fl_conc_io_number(order, "соединение", &number) ||
+        (fd = fl_conc_wire_fd(sched, (int)number)) < 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE",
+                             "соединения у хозяина нет: оно закрыто, не принималось и не открывалось", out,
+                             error);
+    }
+    if (octets) {
+      size_t at = 0;
+      if (!fl_conc_variant_field(order, "октеты", &field) || field.tag != FL_LIST) {
+        return fl_conc_io_fail(ctx, "FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список",
+                               out, error);
+      }
+      bytes = field.as.list.count;
+      if (bytes > 0) {
+        made = (unsigned char *)fl_arena_alloc(ctx->arena, bytes);
+        if (made == NULL) {
+          return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "не хватило памяти под октеты", out, error);
+        }
+      }
+      for (at = 0; at < bytes; at += 1) {
+        const fl_value item = field.as.list.items[at];
+        if (item.tag != FL_NUMBER || item.as.number < 0 || item.as.number > 255 ||
+            item.as.number != (double)(long)item.as.number) {
+          return fl_conc_io_fail(ctx, "FLANG_IO_OCTETS", "октет не годится: нужно целое от 0 до 255", out,
+                                 error);
+        }
+        made[at] = (unsigned char)(long)item.as.number;
+      }
+      body = made;
+      /* У октетов «сколько» — ЧИСЛО ОКТЕТОВ, а не кодовых точек: переводить
+         нечего, и второе число об одном и том же было бы ложью. */
+      points = (double)bytes;
+    } else {
+      if (!fl_conc_variant_field(order, "содержимое", &field) || field.tag != FL_STRING) {
+        return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "поручению нужно содержимое строкой", out, error);
+      }
+      if (fl_utf8_not_text_at(field.as.string.utf8, field.as.string.bytes) > 0) {
+        return fl_conc_io_fail(
+          ctx, "FLANG_IO_NOT_TEXT",
+          "содержимое не текст: не складывается в UTF-8; октеты возит «Ответить октетами в соединение»", out,
+          error);
+      }
+      body = (const unsigned char *)field.as.string.utf8;
+      bytes = field.as.string.bytes;
+      /* Кодовые точки, а не байты: `длина` в языке считает точки. */
+      points = (double)field.as.string.points;
+    }
+    /* ЕДИНСТВЕННОЕ место, где принятое соединение отличается от открытого:
+       закрывает тот, кто завёл. Принятое хозяин закрывает ответом — обмен на нём
+       кончился; открытое оставляет программе. Пустое содержимое закрывает и то и
+       другое: это и есть «положить трубку». */
+    closing = bytes == 0 || !fl_conc_wire_outgoing(sched, (int)number);
+    while (sent < bytes) {
+      const long put = (long)write(fd, body + sent, bytes - sent);
+      if (put > 0) {
+        sent += (size_t)put;
+        continue;
+      }
+      if (put < 0 && (fl_conc_net_again(errno) || errno == EINTR)) {
+        break;
+      }
+      close(fd);
+      fl_conc_wire_drop(sched, (int)number);
+      return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "ответ не записан", out, error);
+    }
+    if (sent < bytes) {
+      /* Буфер сокета полон — дописывать будет опрос. Хвост уезжает в `malloc`, а
+         не в арену: арена пробега умрёт через мгновение, а хвост нужен дольше. */
+      bool reserved = false;
+      fl_conc_wait *wait = NULL;
+      unsigned char *tail = (unsigned char *)malloc(bytes - sent);
+      if (tail == NULL) {
+        return fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "не хватило памяти под недописанный ответ", out, error);
+      }
+      memcpy(tail, body + sent, bytes - sent);
+      if (!fl_conc_net_reserve(sched, target, &reserved)) {
+        free(tail);
+        *posted = FL_CONC_FULL;
+        return FL_OK;
+      }
+      wait = fl_conc_wait_push(sched, FL_CONC_WAIT_WRITE, fd, (int)number, target, reserved);
+      if (wait == NULL) {
+        fl_conc_net_release(sched, target, reserved);
+        free(tail);
+        return fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под ожидание", out, error);
+      }
+      wait->body = tail;
+      wait->bytes = bytes - sent;
+      wait->closing = closing;
+      wait->points = points;
+      *deferred = true;
+      return FL_OK;
+    }
+    if (closing) {
+      close(fd);
+      fl_conc_wire_drop(sched, (int)number);
+    }
+    value = fl_number(points);
+    return fl_variant_new(ctx, "Записано", names, &value, 1, out, error);
+  }
+#else
+  /* Сборка без сети (`-DFL_CONC_NO_NET`) или не POSIX. Здесь отказ — правда: у
+     чистого C99 сокетов нет вовсе. Молчать нельзя: `FLANG_IO_UNKNOWN` означал бы
+     «хозяин отстал от словаря языка», а он не отстал — ему нечем. */
   if (strcmp(kind, "Открыть соединение") == 0 || strcmp(kind, "Принять соединение") == 0 ||
       strcmp(kind, "Прочитать из соединения") == 0 || strcmp(kind, "Ответить в соединение") == 0 ||
-      /* Октетная пара платит тот же барьер и по той же причине: от кодировки
-         зависит, ЧТО придёт, а не то, можно ли этого дождаться. Тот же текст,
-         что у свидетеля (`nodeHostSync`), — журналы сверяются побайтово. */
       strcmp(kind, "Прочитать октеты из соединения") == 0 ||
       strcmp(kind, "Ответить октетами в соединение") == 0) {
     return fl_conc_io_fail(ctx, "FLANG_IO_NET",
-                           "у хозяина на C нет способа ждать сеть: планировщик процессов не ждёт", out,
-                           error);
+                           "у хозяина на C нет сокетов: собрано без сети (FL_CONC_NO_NET)", out, error);
   }
+#endif
 
   /* Набор поручений закрыт, поэтому «неизвестное поручение» — это не «мы такого
      ещё не умеем», а расхождение хозяина со словарём языка. Отклик, а не
      ошибка: программа увидит «Сбой» и решит сама. */
   return fl_conc_io_fail(ctx, "FLANG_IO_UNKNOWN", "хозяин не знает такого поручения", out, error);
 }
+
+/* ───────────────────────────── сеть: опрос ────────────────────────────────
+   Здесь «ждать» и превращается в «спросить и вернуть управление».
+
+   ПОЧЕМУ НЕ НУЛЕВОЙ ТАЙМ-АУТ ВСЕГДА. Нулевой тайм-аут в цикле планировщика —
+   первое, что приходит в голову, и он правда снимает барьер; но когда делать
+   больше нечего, он превращает ожидание письма из сети в холостой круг на
+   полное ядро. Замер снят двумя сборками одной и той же службы, простаивавшими
+   по пять секунд: с `poll(0)` всегда — 500 тиков ЦП из 500 возможных (сто
+   процентов ядра), с тайм-аутом по делу — 0 тиков из 500. Отвечают обе
+   одинаково: `curl` получает 200 от той и от другой. Поэтому тайм-аут ЗАВИСИТ
+   от того, есть ли планировщику чем заняться: ноль, когда есть (вернуть
+   управление немедленно), и «сколько угодно», когда нет (спать до первого
+   байта). Виртуальное время таймеров при
+   этом не трогается — таймеры и сеть меряются разными часами, и смешивать их
+   значило бы поставить срок письма в зависимость от того, пришёл ли пакет.
+
+   ЧТО ЭТО НЕ МЕНЯЕТ. Программа без сети не платит ничего: `wait_count` у неё
+   ноль, и опрос кончается на первой строке, не дойдя до системного вызова. */
+#ifdef FL_CONC_NET
+static bool fl_conc_net_pump(fl_conc_sched *sched, fl_ctx *ctx, int patience, fl_error *error) {
+  struct pollfd fds[FL_CONC_NET_LINKS];
+  short heard[FL_CONC_NET_LINKS];
+  size_t index = 0;
+  size_t count = 0;
+  int ready = 0;
+  fl_arena *saved = NULL;
+  bool ok = true;
+
+  /* Список ожиданий, соединения и порты — общее хозяйство, и ходят они под тем
+     же общим замком, что журнал и таймеры. Порядок взятия прежний: общий →
+     процесс (его возьмёт доставка), и вверх по нему здесь никто не идёт. */
+  fl_conc_big_lock(sched);
+  count = sched->wait_count;
+  if (count == 0) {
+    fl_conc_big_unlock(sched);
+    return true;
+  }
+  for (index = 0; index < count; index += 1) {
+    const fl_conc_wait_kind kind = sched->waits[index].kind;
+    fds[index].fd = sched->waits[index].fd;
+    fds[index].events =
+      (short)((kind == FL_CONC_WAIT_CONNECT || kind == FL_CONC_WAIT_WRITE) ? POLLOUT : POLLIN);
+    fds[index].revents = 0;
+  }
+  sched->polls += 1;
+  ready = poll(fds, (nfds_t)count, patience);
+  /* Ноль — никто не готов; −1 — прерван сигналом. Оба — «сейчас нечего», и оба
+     ведут в одно место: вернуть управление планировщику. */
+  if (ready <= 0) {
+    fl_conc_big_unlock(sched);
+    return true;
+  }
+  for (index = 0; index < count; index += 1) {
+    heard[index] = fds[index].revents;
+  }
+  /* Отклики строятся в своей арене: пробег, выдавший поручение, кончился давно,
+     и его черновик сброшен. Доставка копирует значение в кучу адресата, поэтому
+     арена сбрасывается сразу после обхода. */
+  saved = ctx->arena;
+  ctx->arena = &sched->netpad;
+  /* Обход СВЕРХУ ВНИЗ: снятие ожидания сдвигает только те, что ниже него, а к
+     ним мы уже не вернёмся. Поэтому номер в `heard` и номер ожидания не
+     разъезжаются, и никакого второго указателя для этого не нужно. */
+  index = count;
+  while (index > 0) {
+    fl_value answer = fl_nothing();
+    bool done = false;
+    fl_conc_wait *wait = NULL;
+    index -= 1;
+    if (!ok || heard[index] == 0) {
+      continue;
+    }
+    wait = &sched->waits[index];
+    switch (wait->kind) {
+      case FL_CONC_WAIT_ACCEPT: {
+        static const char *const names[1] = {"соединение"};
+        const int taken = accept(wait->fd, NULL, NULL);
+        if (taken < 0) {
+          char why[256];
+          if (fl_conc_net_again(errno) || errno == EINTR) {
+            break;
+          }
+          snprintf(why, sizeof(why), "соединение не принято: %s", strerror(errno));
+          ok = fl_conc_io_fail(ctx, "FLANG_IO_NET", why, &answer, error) == FL_OK;
+          done = true;
+          break;
+        }
+        (void)fl_conc_net_relax(taken);
+        {
+          const int number = fl_conc_wire_add(sched, taken, false);
+          if (number < 0) {
+            close(taken);
+            ok = fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", &answer,
+                                 error) == FL_OK;
+          } else {
+            fl_value value = fl_number((double)number);
+            ok = fl_variant_new(ctx, "Соединение открыто", names, &value, 1, &answer, error) == FL_OK;
+          }
+        }
+        done = true;
+        break;
+      }
+      case FL_CONC_WAIT_CONNECT: {
+        static const char *const names[1] = {"соединение"};
+        int problem = 0;
+        socklen_t size = (socklen_t)sizeof(problem);
+        if (getsockopt(wait->fd, SOL_SOCKET, SO_ERROR, &problem, &size) != 0) {
+          problem = errno;
+        }
+        if (problem != 0) {
+          char why[256];
+          close(wait->fd);
+          snprintf(why, sizeof(why), "соединение с %s не установлено: %s", wait->where, strerror(problem));
+          ok = fl_conc_io_fail(ctx, "FLANG_IO_NET", why, &answer, error) == FL_OK;
+        } else {
+          const int number = fl_conc_wire_add(sched, wait->fd, true);
+          if (number < 0) {
+            close(wait->fd);
+            ok = fl_conc_io_fail(ctx, "FLANG_IO_NET", "у хозяина кончились места под соединения", &answer,
+                                 error) == FL_OK;
+          } else {
+            fl_value value = fl_number((double)number);
+            ok = fl_variant_new(ctx, "Соединение открыто", names, &value, 1, &answer, error) == FL_OK;
+          }
+        }
+        done = true;
+        break;
+      }
+      case FL_CONC_WAIT_READ:
+      case FL_CONC_WAIT_OCTETS: {
+        unsigned char chunk[FL_CONC_NET_CHUNK];
+        const long got = (long)read(wait->fd, chunk, sizeof(chunk));
+        if (got < 0 && (fl_conc_net_again(errno) || errno == EINTR)) {
+          break;
+        }
+        ok = fl_conc_net_read_answer(ctx, chunk, got, wait->kind == FL_CONC_WAIT_OCTETS, &answer, error) ==
+             FL_OK;
+        done = true;
+        break;
+      }
+      case FL_CONC_WAIT_WRITE: {
+        static const char *const names[1] = {"сколько"};
+        bool broken = false;
+        while (wait->sent < wait->bytes) {
+          const long put = (long)write(wait->fd, wait->body + wait->sent, wait->bytes - wait->sent);
+          if (put > 0) {
+            wait->sent += (size_t)put;
+            continue;
+          }
+          if (put < 0 && (fl_conc_net_again(errno) || errno == EINTR)) {
+            break;
+          }
+          close(wait->fd);
+          fl_conc_wire_drop(sched, wait->number);
+          ok = fl_conc_io_fail(ctx, "FLANG_IO_WRITE", "ответ не записан", &answer, error) == FL_OK;
+          broken = true;
+          break;
+        }
+        if (broken) {
+          done = true;
+          break;
+        }
+        if (wait->sent < wait->bytes) {
+          break;
+        }
+        if (wait->closing) {
+          close(wait->fd);
+          fl_conc_wire_drop(sched, wait->number);
+        }
+        {
+          fl_value value = fl_number(wait->points);
+          ok = fl_variant_new(ctx, "Записано", names, &value, 1, &answer, error) == FL_OK;
+        }
+        done = true;
+        break;
+      }
+      default:
+        break;
+    }
+    if (!done || !ok) {
+      continue;
+    }
+    {
+      const size_t target = wait->target;
+      const bool reserved = wait->reserved;
+      /* Место было занято при выдаче поручения — здесь оно освобождается и тут
+         же заполняется, ровно как у сработавшего таймера. Переполниться этот
+         путь не может по построению. */
+      if (reserved) {
+        fl_conc_hold(sched, target);
+        sched->slots[target].pending -= 1;
+        fl_conc_drop(sched, target);
+      }
+      fl_conc_wait_drop(sched, index);
+      if (fl_conc_deliver(sched, ctx, SIZE_MAX, target, answer, false, reserved) == FL_CONC_NOMEM) {
+        ok = false;
+      }
+    }
+  }
+  ctx->arena = saved;
+  fl_arena_reset(&sched->netpad);
+  fl_conc_big_unlock(sched);
+  if (!ok) {
+    return fl_conc_memory(ctx, error) == FL_OK;
+  }
+  return true;
+}
+
+/** Есть ли кому ждать. Спрашивается на каждом витке, поэтому одно поле. */
+static bool fl_conc_net_pending(fl_conc_sched *sched) { return sched->wait_count > 0; }
+
+/** Закрыть всё, что сеть завела. Зовётся ровно один раз — на выходе прогона. */
+static void fl_conc_net_close(fl_conc_sched *sched) {
+  size_t index = 0;
+  for (index = 0; index < sched->wait_count; index += 1) {
+    free(sched->waits[index].body);
+    sched->waits[index].body = NULL;
+  }
+  sched->wait_count = 0;
+  for (index = 0; index < sched->wire_count; index += 1) {
+    close(sched->wires[index].fd);
+  }
+  sched->wire_count = 0;
+  for (index = 0; index < sched->port_count; index += 1) {
+    close(sched->ports[index].fd);
+  }
+  sched->port_count = 0;
+}
+#endif /* FL_CONC_NET */
+
 
 /**
  * Разобрать отклик; FL_ERROR — отклик не той формы, и тогда `broken` заполнен
@@ -2551,16 +3432,30 @@ static fl_status fl_conc_turn(fl_conc_sched *sched, fl_conc_hand *hand, size_t p
                пропадает так же, как пропадает отправка мёртвому;
              • пробег на время исполнения поручения СТОИТ: хозяин синхронен, и
                медленное поручение держит планировщик. Цена та же, что у
-               длинного обработчика, и названа по той же причине. */
+               длинного обработчика, и названа по той же причине. Из этого
+               правила ОДНО исключение, и оно названо там же, где сделано: шесть
+               поручений соединения не держат пробег ни мгновения — им отвечать
+               нечем СЕЙЧАС, и они уходят в список ожиданий, а отклик приносит
+               опрос сети (`fl_conc_net_pump`) обычным сообщением. */
         fl_value order = fl_nothing();
         fl_value answer = fl_nothing();
         fl_conc_post posted = FL_CONC_POSTED;
+        bool deferred = false;
+        size_t whom = SIZE_MAX;
         fl_conc_variant_field(item, "кому", &to);
         fl_conc_variant_field(item, "поручение", &order);
-        if (fl_conc_perform(sched, ctx, order, &answer, error) != FL_OK) {
+        whom = fl_conc_address(sched, to);
+        if (fl_conc_perform(sched, ctx, order, whom, &answer, &deferred, &posted, error) != FL_OK) {
           return FL_ERROR;
         }
-        posted = fl_conc_deliver(sched, ctx, hand->worker, fl_conc_address(sched, to), answer, false, false);
+        /* Отклик придёт ПОТОМ. Место в ящике адресата уже занято, поэтому
+           переполнение здесь уже названо, а не отложено вместе с откликом. */
+        if (deferred) {
+          continue;
+        }
+        if (posted == FL_CONC_POSTED) {
+          posted = fl_conc_deliver(sched, ctx, hand->worker, whom, answer, false, false);
+        }
         if (posted == FL_CONC_NOMEM) {
           fl_conc_own_failure(sched, process, entry, &failed, &reason, FL_CODE_MEMORY,
                               "кончилась память в куче адресата");
@@ -2892,6 +3787,14 @@ static bool fl_conc_quiet(fl_conc_sched *sched) {
   double due = 0.0;
   bool found = false;
   bool empty = true;
+#ifdef FL_CONC_NET
+  /* Прогон, у которого кто-то ждёт сеть, НЕ в покое, сколько бы пусты ни были
+     склады: письмо придёт снаружи, а не изнутри. Без этой строки служба,
+     дождавшаяся тишины между запросами, объявляла бы работу законченной. */
+  if (sched->wait_count > 0) {
+    return false;
+  }
+#endif
   for (index = 0; index < par->workers; index += 1) {
     pthread_mutex_lock(&par->shards[index].lock);
     if (par->shards[index].head != SIZE_MAX) {
@@ -3092,6 +3995,27 @@ static void *fl_conc_worker(void *raw) {
         fl_conc_halt(par);
         break;
       }
+#ifdef FL_CONC_NET
+      /* Сеть спрашивается и здесь, и ТОЛЬКО с нулевым тайм-аутом: общий замок
+         опрос берёт сам, а спать под общим замком значило бы остановить всех
+         соседей заодно. Ждать в рабочем режиме есть чем и без этого — холостой
+         поток и так засыпает на сотню микросекунд ниже по кругу. Цена: письмо
+         из сети опаздывает на эту сотню, и это названо числом, а не словом
+         «быстро». */
+      if (fl_conc_net_pending(sched)) {
+        fl_error trouble;
+        trouble.code = NULL;
+        trouble.message = NULL;
+        if (!fl_conc_net_pump(sched, &ctx, 0, &trouble)) {
+          pthread_mutex_lock(&par->big);
+          par->status = FL_ERROR;
+          par->error = trouble;
+          pthread_mutex_unlock(&par->big);
+          fl_conc_halt(par);
+          break;
+        }
+      }
+#endif
       idled = true;
     } else {
       /* Процесс снят со склада — значит он мой, и до конца пачки только мой. */
@@ -3346,6 +4270,13 @@ fl_status fl_conc_run_host(fl_ctx *ctx, const fl_conc_plan *plan, const char *ru
   fl_arena_init(&sched.post[0]);
   fl_arena_init(&sched.post[1]);
   sched.post_live = 0;
+#ifdef FL_CONC_NET
+  fl_arena_init(&sched.netpad);
+  /* Номера соединений начинаются с ЕДИНИЦЫ, как у хозяина планов: ноль в этом
+     языке — обычное число, и соединение с номером ноль отличалось бы от
+     «соединения нет» только вниманием читателя. */
+  sched.next_wire = 1;
+#endif
   heaps = true;
 
   /* Надзоров может не быть вовсе, а `fl_arena_alloc(…, 0)` — не то, о чём стоит
@@ -3525,6 +4456,20 @@ fl_status fl_conc_run_host(fl_ctx *ctx, const fl_conc_plan *plan, const char *ru
         status = fl_conc_memory(ctx, error);
         goto finish;
       }
+#ifdef FL_CONC_NET
+      /* Сеть спрашивается и на ходу — иначе письмо из неё ждало бы, пока
+         планировщику станет нечего делать, а «нечего делать» у службы с двумя
+         процессами может не наступить никогда. Тайм-аут НОЛЬ: есть чем
+         заняться. Каждый 1024-й виток, а не каждый, — цена системного вызова
+         названа у `FL_CONC_NET_EVERY`. У программы без сети это одно сравнение
+         поля с нулём. */
+      if (fl_conc_net_pending(&sched) && sched.turns % FL_CONC_NET_EVERY == 0) {
+        if (!fl_conc_net_pump(&sched, ctx, 0, error)) {
+          status = FL_ERROR;
+          goto finish;
+        }
+      }
+#endif
       if (sched.ready_count == 0) {
         double due = 0.0;
         bool found = false;
@@ -3534,6 +4479,26 @@ fl_status fl_conc_run_host(fl_ctx *ctx, const fl_conc_plan *plan, const char *ru
             found = true;
           }
         }
+#ifdef FL_CONC_NET
+        /* Заняться нечем — вот здесь и ждут сеть. Ждут по-настоящему: `poll`
+           спит, пока не придёт байт, и ядро на это время свободно. Есть ещё и
+           таймеры — ждать нельзя, у них свои часы: тайм-аут ноль, и дальше
+           виток идёт как шёл, скачком виртуального времени к ближайшему сроку. */
+        if (fl_conc_net_pending(&sched)) {
+          if (!fl_conc_net_pump(&sched, ctx, found ? 0 : -1, error)) {
+            status = FL_ERROR;
+            goto finish;
+          }
+          if (sched.ready_count > 0) {
+            continue;
+          }
+          if (!found) {
+            /* Опрос вернулся ни с чем (сигнал, ложная готовность) — круг
+               замыкается на том же `poll`, а не объявляет прогон конченым. */
+            continue;
+          }
+        }
+#endif
         if (!found) {
           break;
         }
@@ -3646,6 +4611,13 @@ finish:
     fl_arena_release(&sched.draft);
     fl_arena_release(&sched.post[0]);
     fl_arena_release(&sched.post[1]);
+#ifdef FL_CONC_NET
+    /* Сокеты возвращаются системе тем же движением, что кучи: незакрытый
+       слушающий сокет держит порт до конца процесса, и второй прогон на том же
+       порту получил бы отказ там, где отказа нет. */
+    fl_conc_net_close(&sched);
+    fl_arena_release(&sched.netpad);
+#endif
   }
 #ifdef FL_CONC_THREADS
   /* Замки возвращаются системе так же, как кучи: под valgrind'ом незакрытый

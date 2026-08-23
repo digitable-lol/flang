@@ -93,29 +93,23 @@ lands.
 range `48..57`, copied from the body, was proved: the kernel has no bridge
 between «содержит» and a character's code.
 
-**The ban on a call-as-guard applies only to the TOP level.** At the top,
-`если («Серийный номер отозван» от номер и список) то …` stays a grid: the kernel
-knows nothing about someone else's predicate. One level down the same guard
-works — measured on `datetime.flang`:
+**A call-as-guard: four measurements, and they disagree — read them, not a rule.**
+This line of the page had to be corrected three times in one evening, because
+each time it was generalised from a single file. Here are all the measurements as
+they came:
 
-```flang
-если месяц равен 2
-  то (если («Високосный год» от год) то (результат равен 29) иначе (результат равен 28))
-  иначе да
-```
+| where | how it was written | outcome |
+|---|---|---|
+| `emit-python.flang`, `emit-csharp.flang` | `если («Это строка Python» от узел) то …` — a bare call copied from the body | **proved**, and so were a dozen more edits |
+| the same files | the same call wrapped: `если («Это строка») равен да то …` | not taken |
+| `datetime.flang` | `если («Високосный год» от год) то …` at the **second level**, under `если месяц равен 2` | **proved** |
+| `crl.flang` | `если («Серийный номер отозван» от номер и список) то …` at the top level | grid, and in the mirrored form too |
+| `rsa.flang` | `если («Бит разрядов» от у и номер) равен 0 то …` — a comparison with a call inside | **proved** |
 
-proved in full. The difference is that the top level already handed the kernel an
-assumption, and inside it someone else's predicate is read as an ordinary branch
-of the body. A **comparison with a call
-inside it**, however, does work: `если («Бит разрядов» от у и номер) равен 0 то …
-иначе да` is proved, and so is a conjunction of two such comparisons.
-
-**An exception for sum types.** In `result.flang` and `optional.flang` this form
-works: the guard is a predicate call on the argument, and under it the claim
-states equality of the argument to a constructor together with the result. The
-kernel takes it by induction over the sum type. So the ban on a call-as-guard is
-not absolute — it is about someone else's predicate over numbers, not about a
-variant predicate over your own type.
+What follows reliably: **the `равен да` wrapper breaks what works without it**,
+and **the guard must be copied from the body verbatim**. Why `crl` diverged from
+`emit-python` on an outwardly identical wording is not established. Measure; do
+not go by the rule.
 
 **A guard must not be invented — it is copied from the body.** Measured on
 `rsa.flang`: out of five claims exactly one was proved, the one whose guard

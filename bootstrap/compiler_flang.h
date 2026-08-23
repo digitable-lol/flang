@@ -60030,6 +60030,54 @@ fl_status compiler_flang_konyunkty_dopuscheniya(fl_ctx *ctx, fl_value fakt, fl_v
 fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Зеркальный знак».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zerkalnyy_znak(fl_ctx *ctx, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел сравнения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_sravneniya(fl_ctx *ctx, fl_value op, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало по знаку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_po_znaku(fl_ctx *ctx, fl_value fakt, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало факта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_fakta(fl_ctx *ctx, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Привести допущения к одному виду».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_privesti_dopuscheniya_k_odnomu_vidu(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Правило противоречия».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -65373,6 +65421,41 @@ fl_status compiler_flang_sluchayami_po_telu(fl_ctx *ctx, fl_value obyazatelstvo,
  * @return значение: «Значение»
  */
 fl_status compiler_flang_svyortkoy_po_telu(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value telo, fl_value oplachennoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отрезком по телу».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param oplachennoe — «оплаченное»: «Оплаченное»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_otrezkom_po_telu(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value telo, fl_value oplachennoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Отрезком по имени».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @param oplachennoe — «оплаченное»: «Оплаченное»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_otrezkom_po_imeni(fl_ctx *ctx, fl_value obyazatelstvo, fl_value programma, fl_value funkciya, fl_value parametr, fl_value oplachennoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Индукция по отрезку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametr — «параметр»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_indukciya_po_otrezku(fl_ctx *ctx, fl_value parametr, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свёрткой по имени».

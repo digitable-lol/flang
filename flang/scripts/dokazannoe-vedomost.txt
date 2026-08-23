@@ -3,8 +3,8 @@
 // Строка: «имя файла|сколько утверждений доказано».
 // Файл, которого здесь нет, сторож не судит вовсе.
 base64.flang|10
-dictionary.flang|11
-higher-order.flang|19
+dictionary.flang|12
+higher-order.flang|22
 logic.flang|4
 numbers.flang|5
 numtree.flang|2

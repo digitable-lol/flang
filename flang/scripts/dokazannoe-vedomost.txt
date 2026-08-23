@@ -1,0 +1,13 @@
+// ПОЛ ДОКАЗАННОГО. Снят 23 августа 2026 на стволе e98eadb9 прогонами
+// `flang check <файл> --proof --json` через ворота, по одному файлу за раз.
+// Строка: «имя файла|сколько утверждений доказано».
+// Файл, которого здесь нет, сторож не судит вовсе.
+base64.flang|10
+dictionary.flang|11
+higher-order.flang|19
+logic.flang|4
+numbers.flang|5
+numtree.flang|2
+optional.flang|2
+result.flang|7
+sets.flang|4

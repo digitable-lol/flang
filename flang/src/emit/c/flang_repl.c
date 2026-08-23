@@ -2452,6 +2452,93 @@ static size_t repl_header_bytes(const char *text, size_t bytes) {
   return cut;
 }
 
+/*
+ * ── «ТОЛЬКО» СУЖАЕТ НЕ ВИДИМОСТЬ, А РАБОТУ ────────────────────────────────
+ *
+ * `использует «Печать в C» только «Поле узла», …` уже говорило компилятору,
+ * какие имена видны; замыкание же клало в программу ВЕСЬ ввезённый файл.
+ * Замер 23 августа: `flang/self/tags.flang` — 28 своих функций, 212 в
+ * замыкании, 22,1 с и 5,9 ГиБ; вшестеро меньший `lexer.flang` со 103
+ * функциями — 5,3 с и 0,65 ГиБ. Рост по размеру замыкания сверхлинейный,
+ * и платился он за функции, которые названы не были и сослаться на них
+ * никто не имел права.
+ *
+ * Поэтому здесь запоминается РЕБРО ввоза: кто, кого и с каким списком имён.
+ * По рёбрам ниже (`repl_closure`) считается, что из каждого файла нужно, и
+ * ненужные объявления вычёркиваются из его текста ДО того, как он поедет
+ * компилятору. Список `только` действует и вглубь: имена, которые ввозящий
+ * видит через свой ввоз, тем же списком ограничены и в файлах, ввезённых уже
+ * ИМ, — потому набор имён едет по рёбрам дальше без ослабления.
+ *
+ * ЧТО ЗДЕСЬ НЕЛЬЗЯ: молча взять лишнее. Вычёркивание не смягчает ни одной
+ * проверки — оно убирает объявления, сослаться на которые связывание и так
+ * не давало. Ошибись оно в другую сторону — и на неназванное имя придёт
+ * честный отказ связывания, а не тихо подобранное объявление.
+ */
+typedef struct repl_edge {
+  char *from;
+  char *to;
+  repl_strings only;
+  bool has_only;
+} repl_edge;
+
+static repl_edge *repl_edge_items = NULL;
+static size_t repl_edge_count = 0;
+static size_t repl_edge_capacity = 0;
+
+static void repl_edge_push(const char *from, const char *to, const repl_strings *only, bool has_only) {
+  repl_edge edge;
+  size_t index = 0;
+  if (from == NULL || to == NULL) {
+    return;
+  }
+  if (repl_edge_count == repl_edge_capacity) {
+    repl_edge_capacity = repl_edge_capacity == 0 ? 8 : repl_edge_capacity * 2;
+    repl_edge_items = (repl_edge *)repl_grow(repl_edge_items, repl_edge_capacity * sizeof(repl_edge));
+  }
+  edge.from = repl_say(from);
+  edge.to = repl_say(to);
+  edge.has_only = has_only;
+  strings_init(&edge.only);
+  for (index = 0; index < only->count; index += 1) {
+    strings_add(&edge.only, only->items[index], only->sizes[index]);
+  }
+  repl_edge_items[repl_edge_count] = edge;
+  repl_edge_count += 1;
+}
+
+static void repl_edges_forget(void) {
+  size_t index = 0;
+  for (index = 0; index < repl_edge_count; index += 1) {
+    free(repl_edge_items[index].from);
+    free(repl_edge_items[index].to);
+    strings_free(&repl_edge_items[index].only);
+  }
+  free(repl_edge_items);
+  repl_edge_items = NULL;
+  repl_edge_count = 0;
+  repl_edge_capacity = 0;
+}
+
+/** Список `только` у одного ввоза; `нет` — списка не было вовсе. */
+static bool repl_only_of(fl_value node, repl_strings *out) {
+  fl_value only = fl_nothing();
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  if (!zn_field(node, "only", &only) || !zn_items(only, &items, &count)) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    const char *word = NULL;
+    size_t word_bytes = 0;
+    if (zn_text(items[index], &word, &word_bytes)) {
+      strings_add(out, word, word_bytes);
+    }
+  }
+  return true;
+}
+
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
@@ -2509,36 +2596,40 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
     for (inner = 0; inner < imports; inner += 1) {
       const char *path = NULL;
       size_t path_bytes = 0;
+      repl_strings only;
+      bool has_only = false;
+      strings_init(&only);
+      has_only = repl_only_of(items[inner], &only);
       if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
         char *relative = repl_dup(path, path_bytes);
         char *full = repl_resolve(directory, relative);
         strings_say(queue, full);
+        repl_edge_push(from, full, &only, has_only);
         free(relative);
         free(full);
-        continue;
-      }
-      /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
-         тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
-         «путь есть, он пустой». */
-      {
+      } else {
+        /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
+           тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
+           «путь есть, он пустой». */
         const char *name = NULL;
         size_t name_bytes = 0;
         repl_strings found;
         size_t at = 0;
-        if (!zn_field_text(items[inner], "category", &name, &name_bytes) || name_bytes == 0) {
-          continue;
+        if (zn_field_text(items[inner], "category", &name, &name_bytes) && name_bytes != 0) {
+          strings_init(&found);
+          {
+            char *wanted = repl_dup(name, name_bytes);
+            repl_find_module(from, wanted, &found);
+            free(wanted);
+          }
+          for (at = 0; at < found.count; at += 1) {
+            strings_say(queue, found.items[at]);
+            repl_edge_push(from, found.items[at], &only, has_only);
+          }
+          strings_free(&found);
         }
-        strings_init(&found);
-        {
-          char *wanted = repl_dup(name, name_bytes);
-          repl_find_module(from, wanted, &found);
-          free(wanted);
-        }
-        for (at = 0; at < found.count; at += 1) {
-          strings_say(queue, found.items[at]);
-        }
-        strings_free(&found);
       }
+      strings_free(&only);
     }
   }
   free(directory);
@@ -3046,6 +3137,172 @@ static bool lock_beside(const char *entry) {
   return ok && pkg_beside(entry);
 }
 
+/** Где в списке лежит эта строка; `(size_t)-1` — её там нет. */
+static size_t repl_strings_index(const repl_strings *list, const char *text) {
+  size_t index = 0;
+  size_t bytes = strlen(text);
+  for (index = 0; index < list->count; index += 1) {
+    if (list->sizes[index] == bytes && memcmp(list->items[index], text, bytes) == 0) {
+      return index;
+    }
+  }
+  return (size_t)-1;
+}
+
+/**
+ * Текст модуля без объявлений, которых никто не называл: шапка целиком, а из
+ * остального — куски, чьё имя стоит в `names`.
+ *
+ * РЕЗ ИДЁТ ПО ПЕРВОЙ КОЛОНКЕ. Объявление начинается со строки, у которой нет
+ * отступа и которая не комментарий; имя его — первое «…» в этой строке. Всё до
+ * следующей такой строки — тело, и уходит вместе с ней. Проверено по дереву:
+ * строк первой колонки без «…» в нём нет ни одной.
+ *
+ * ВЫЧЕРКНУТАЯ СТРОКА ОСТАЁТСЯ ПУСТОЙ, а не исчезает. Места в диагностике и в
+ * ведомости доказательства считаются по строкам: сдвинь их — и ответ поменялся
+ * бы, ничего не ускорив. Байты уходят, номера строк остаются на месте.
+ *
+ * `NULL` — сузить нельзя (шапка не отделяется от тела), и файл едет целиком.
+ */
+static char *repl_narrow_text(const char *text, size_t bytes, const repl_strings *names, size_t *out_bytes) {
+  size_t head = repl_header_bytes(text, bytes);
+  size_t offset = 0;
+  bool keeping = false;
+  repl_buf out;
+  if (head == 0) {
+    return NULL;
+  }
+  buf_init(&out);
+  buf_add(&out, text, head);
+  offset = head;
+  while (offset < bytes) {
+    size_t start = offset;
+    size_t end = offset;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    if (end == start) {
+      keeping = false;
+    } else if (text[start] != ' ' && text[start] != '\t') {
+      keeping = false;
+      if (!(end - start >= 2 && text[start] == '/' && text[start + 1] == '/')) {
+        size_t at = start;
+        while (at + 1 < end && !(text[at] == (char)0xc2 && text[at + 1] == (char)0xab)) {
+          at += 1;
+        }
+        if (at + 1 < end) {
+          size_t name = at + 2;
+          size_t stop = name;
+          while (stop + 1 < end && !(text[stop] == (char)0xc2 && text[stop + 1] == (char)0xbb)) {
+            stop += 1;
+          }
+          if (stop + 1 < end && stop > name) {
+            keeping = strings_has(names, text + name, stop - name);
+          }
+        }
+      }
+    }
+    if (keeping) {
+      buf_add(&out, text + start, end - start);
+    }
+    buf_char(&out, '\n');
+    offset = (end < bytes) ? end + 1 : bytes;
+  }
+  *out_bytes = out.used;
+  return out.data;
+}
+
+/**
+ * Что из каждого ввезённого файла названо — по рёбрам ввоза, до неподвижной
+ * точки. Корни (то, что уже лежало в `paths` до замыкания) берутся целиком:
+ * это сам проверяемый файл, его никто не сужал.
+ *
+ * ПРАВИЛО ОДНО, И ОНО ПРО ФАЙЛ, А НЕ ПРО ПУТЬ К НЕМУ: файл сужается тогда и
+ * только тогда, когда КАЖДОЕ ведущее в него ребро несёт `только`; оставленное
+ * — объединение всех этих списков. Одно ребро без списка — и файл едет целиком.
+ *
+ * ВГЛУБЬ СПИСОК НЕ ИДЁТ, и это не осторожность, а замер. Пробой на
+ * `flang/self/setoid.flang`: он ввозит «Законы моноида» списком из 49 имён, в
+ * котором есть «Строка узла» и нет «Строка скаляра»; сама же «Строка узла»
+ * живёт в «Печать в C», который моноид ввозит БЕЗ списка, и зовёт оттуда
+ * «Строка скаляра». Связывание это принимает: список прячет имена того, кого
+ * ввезли им, а не тех, кого ввёз он. Продли список вглубь — и проверка,
+ * проходившая раньше, отказала бы пятнадцатью замечаниями. Проверено: с этим
+ * правилом вердикт `setoid.flang` тот же, что и был.
+ */
+static void repl_narrow_closure(repl_strings *paths, repl_strings *texts, size_t roots) {
+  repl_strings *need = NULL;
+  char *whole = NULL;
+  char *reach = NULL;
+  bool changed = true;
+  size_t index = 0;
+  size_t at = 0;
+  if (repl_edge_count == 0 || paths->count <= roots) {
+    return;
+  }
+  need = (repl_strings *)repl_alloc(paths->count * sizeof(repl_strings));
+  whole = (char *)repl_alloc(paths->count);
+  reach = (char *)repl_alloc(paths->count);
+  for (index = 0; index < paths->count; index += 1) {
+    strings_init(&need[index]);
+    whole[index] = index < roots ? 1 : 0;
+    reach[index] = index < roots ? 1 : 0;
+  }
+  while (changed) {
+    changed = false;
+    for (at = 0; at < repl_edge_count; at += 1) {
+      const repl_edge *edge = &repl_edge_items[at];
+      size_t from_index = repl_strings_index(paths, edge->from);
+      size_t to_index = repl_strings_index(paths, edge->to);
+      const repl_strings *source = NULL;
+      size_t scan = 0;
+      if (from_index == (size_t)-1 || to_index == (size_t)-1 || !reach[from_index]) {
+        continue;
+      }
+      if (!reach[to_index]) {
+        reach[to_index] = 1;
+        changed = true;
+      }
+      if (!edge->has_only) {
+        /* Ввезён без списка — файл едет целиком, и неважно, сужен ли сам
+           ввозящий: имена ввезённого прячет ТОЛЬКО его собственное ребро. */
+        if (!whole[to_index]) {
+          whole[to_index] = 1;
+          changed = true;
+        }
+        continue;
+      }
+      if (whole[to_index] || to_index == from_index) {
+        continue;
+      }
+      source = &edge->only;
+      for (scan = 0; scan < source->count; scan += 1) {
+        if (!strings_has(&need[to_index], source->items[scan], source->sizes[scan])) {
+          strings_add(&need[to_index], source->items[scan], source->sizes[scan]);
+          changed = true;
+        }
+      }
+    }
+  }
+  for (index = roots; index < paths->count; index += 1) {
+    if (reach[index] && !whole[index]) {
+      size_t narrowed = 0;
+      char *text = repl_narrow_text(texts->items[index], texts->sizes[index], &need[index], &narrowed);
+      if (text != NULL) {
+        free(texts->items[index]);
+        texts->items[index] = text;
+        texts->sizes[index] = narrowed;
+      }
+    }
+  }
+  for (index = 0; index < paths->count; index += 1) {
+    strings_free(&need[index]);
+  }
+  free(need);
+  free(whole);
+  free(reach);
+}
+
 /**
  * Замыкание по «использует»: к уже собранным (`paths`, `texts`) добавляется всё,
  * до чего дотягивается очередь, и всё вместе едет компилятору списком. Чтения
@@ -3063,6 +3320,7 @@ static bool lock_beside(const char *entry) {
 static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_strings *queue) {
   fl_value *items = NULL;
   fl_value list = fl_nothing();
+  const size_t roots = paths->count;
   size_t index = 0;
   for (index = 0; index < queue->count; index += 1) {
     const char *path = queue->items[index];
@@ -3082,6 +3340,11 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     repl_imports_of(text, bytes, path, queue);
     free(text);
   }
+  /* Файлы прочитаны и граф ввозов известен — теперь из них вычёркивается всё,
+     что не названо. Считать это раньше нельзя: пока обход не кончился, ещё не
+     видно, не ввозит ли кто-то тот же файл ЦЕЛИКОМ. */
+  repl_narrow_closure(paths, texts, roots);
+  repl_edges_forget();
   {
     fl_error error;
     error.code = NULL;
@@ -12533,6 +12796,7 @@ static bool pkg_beside(const char *entry) {
   if (queue.count == 0) {
     strings_free(&queue);
     strings_free(&seen);
+    repl_edges_forget();
     return true;
   }
 
@@ -12655,6 +12919,9 @@ static bool pkg_beside(const char *entry) {
 
   strings_free(&queue);
   strings_free(&seen);
+  /* Рёбра ввоза здесь собирались попутно и никому не нужны: считает по ним
+     только замыкание, а склад пакетов ходит своим обходом. */
+  repl_edges_forget();
   return ok;
 }
 
@@ -13543,6 +13810,9 @@ static fl_value lsp_check(fl_value server, const char *path, const char *text, s
     repl_imports_of(found, bytes, needed, &queue);
     free(found);
   }
+  /* У сервера правки свой обход, не `repl_closure`; рёбра ввоза он не считает,
+     и копиться им между запросами незачем. */
+  repl_edges_forget();
 
   if (fl_list_alloc(&repl_ctx, paths.count, &items, &error) != FL_OK) {
     repl_oom();

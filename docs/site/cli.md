@@ -47,6 +47,7 @@ is the command you will call more often than all the rest together.
 
 ```bash
 flang check <файл.flang> [--proof [--json] [--записать <файл>]]
+                          [--предел-шагов N]
 ```
 
 | Key | What it does |
@@ -54,6 +55,7 @@ flang check <файл.flang> [--proof [--json] [--записать <файл>]]
 | `--proof` | A report: what carries the promise "total" for each function, and what carries each claim |
 | `--json` | Only together with `--proof`: the same report in machine form |
 | `--записать <файл>` | Only together with `--proof`: write the proof itself into a file. The key is also spelled in Latin — `--record` |
+| `--предел-шагов N` | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` ledger for a module with a thousand claims does not fit the default. In Latin — `--step-limit` |
 
 Codes: `0` — nothing to report; `1` — the program did not pass; `2` — the program
 contains declarations that the `flang` binary does not judge at all (the category

@@ -343,9 +343,10 @@ What is actually reachable:
 | The same, but bounded by a numeric literal | 0 |
 | Total | **75** |
 
-These figures were taken from a run over the corpus, but there is no command in
-the tree to reproduce them today, and no note recording that run either. The
-neighbouring note [[dva-pravila-zavershaemosti-vmeste-dayut-574]] gives **54**
+These figures were taken from a run over the programs in the repository, but
+there is no command in the tree to reproduce them today, and no note recording
+that run either. The neighbouring note
+[[dva-pravila-zavershaemosti-vmeste-dayut-574]] gives **54**
 for size-change graphs, not 47 — the number was taken twice and disagreed. Trust
 the order of magnitude and the conclusion "not 574 but a few dozen", not the
 digits themselves.
@@ -370,9 +371,9 @@ the budget.
 **`check` has no flag that raises the limit, and that is by design, not an
 omission.** The number is baked into the binary itself and is changed by
 reprinting the bootstrap point, not by a command-line option: it takes part in the
-byte-for-byte match during self-assembly, and a binary built with a different
-limit would stop emitting itself. The procedure is written at the top of
-`scripts/raskrutka.sh`.
+self-assembly match, where the binary must come out identical to the one that
+printed it, and a binary built with a different limit would stop emitting
+itself. The procedure is written at the top of `scripts/raskrutka.sh`.
 
 Of the {{корпус.файлов}} files, the report came out for 244. The rest are
 named one by one, and they are three different things:

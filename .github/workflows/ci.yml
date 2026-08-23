@@ -180,3 +180,16 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/oblast-v-celi-c.flang
+
+  # Закрытый список правил сведения сверщика против набора имён, которые ядро
+  # способно поставить в поле правила. Разошлись они однажды молча — и честная
+  # запись честной программы была отвергнута как подделка. Отдельной работой:
+  # нужен только компилятор, две минуты.
+  pravila:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C bootstrap -j"$(nproc)"
+      - run: sh flang/proof/сверка-правил.sh
+        env:
+          FLANG_TMP: ${{ runner.temp }}

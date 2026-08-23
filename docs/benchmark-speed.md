@@ -551,8 +551,12 @@ benchmarks/zamer-skorosti/sobrat.sh /tmp/zamer
 # 2. Время работы: пять задач, восемь сборок, чередование, 11 кругов
 node benchmarks/zamer-skorosti/rabota.mjs /tmp/zamer --кругов 11
 
-# 3. Пиковая память тех же задач
-node benchmarks/zamer-skorosti/pamyat.mjs /tmp/zamer
+# 3. Пиковая память тех же задач.
+#    Замер написан планом на flang, и каталог сборки назван в нём числом —
+#    «.sborka» рядом с планом, — потому что доводов у плана нет. Готовится он
+#    тем же sobrat.sh, запущенным без довода.
+benchmarks/zamer-skorosti/sobrat.sh
+bootstrap/flang io benchmarks/zamer-skorosti/pamyat.flang
 
 # 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
 mkdir -p /tmp/zamer/qs

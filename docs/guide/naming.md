@@ -220,7 +220,7 @@ the change.
 
   | Name | What it is |
   |---|---|
-  | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.mjs` | hand-written sources |
+  | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
   | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
 

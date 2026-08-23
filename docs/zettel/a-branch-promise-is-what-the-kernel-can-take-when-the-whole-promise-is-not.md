@@ -46,5 +46,5 @@
 любой записи. Ветвь `разбор`, где в теле есть `случай любое`, тоже не берётся.
 
 Связано: [[goal-condition-must-match-body-condition-sign-for-sign]],
-[[vetka-esli-razvorachivaetsya-v-obe-storony-a-razbor-spiska-net]],
+[[if-branches-unfold-both-ways-but-list-match-does-not]],
 [[a-shape-only-postcondition-survives-a-stub-and-says-nothing]]

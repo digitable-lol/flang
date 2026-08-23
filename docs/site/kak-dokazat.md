@@ -368,6 +368,83 @@ And remember: **a failed theorem takes the whole file's check down with it** —
 the proof report is not printed and you are left with no numbers at all. Edit one at a
 time.
 
+## 9. A variant's field is read in a claim with a dot — if there is one variant
+
+If a sum type has exactly one variant with fields, the field is read in the
+postcondition with a dot and no guillemets: `ход.найдено`. This opens up
+functions about which there was otherwise nothing to say at all — their whole
+meaning sits in the fields of the record they return.
+
+Measured on `образцы.flang`: the trick opened **four functions** that had not a
+single claim before it, and made up part of the 15 → 36 gain in proven claims.
+
+⛔ **With more than one variant the field is not read this way** — the access
+does not type-check. There something else works: equality to a variant, trick 10.
+
+## 10. Equality to a variant splits a goal across `разбор` branches
+
+The kernel does not split a `разбор` body across branches by itself. But a guard
+comparing the scrutinee to a variant does split it:
+
+```
+обеспечивает «пока ничего не пришло, отклик пуст»
+  если отклик равен (вариант «Пока ничего») то (результат равен "") иначе да
+```
+
+Found independently by **four** agents in one day — on `optional.flang`
+(2 of 12 → 7 of 14), on `provod.flang` and `redis.flang` (+27 together), on
+`образцы.flang`, and on `result.flang` (10 of 13 → **15 of 15**, no grid left).
+
+It works even where the branch is folded into `случай любое`. For `разбор` over
+a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
+section below.
+
+## 11. Split the goal by comparison outcomes instead of hiding them under a guard
+
+A compound claim under the guard "both arguments are positive" does not land:
+the kernel splits a goal by the condition of the BODY, and the guard's condition
+is a different one. The same thought, written as three disjunctions over the
+outcomes of the comparison, lands whole and **without a theorem**:
+
+```
+(не (первое меньше второе)) или <the point>
+(не (первое больше второе)) или <the point>
+(не (первое равен второе))  или <the point>
+```
+
+The three together are **stronger** than the single claim they replace: it now
+holds for any comparable arguments, not only positive ones. Measured on
+`higher-order.flang`: this landed what no wording of the guard could.
+
+## 12. The wording of a guard is not a rule — it is two different runs
+
+There is advice going around: "write the guard as a disjunction `(не A) или B`
+instead of `если A то B иначе да`". **It is not a rule**, and here are the
+numbers from both sides:
+
+| share | what the rewrite gave |
+|---|---|
+| `result.flang` | 10 → 15 proven, the entire jump |
+| `higher-order.flang` + `hashmap.flang` | **zero** (22 of 45 and 15 of 40 unchanged), 8 places |
+| `sha256` + `hmac` + `sha1` | **zero**, 9 places |
+| `x25519` | **zero**, 4 places |
+| `образцы.flang` | on some goals only the conditional lands, on others both |
+
+Both wordings have the same `goal.kind` — `if` — so for the kernel they are one
+tree. What decides is not the form but the **completeness of the path**: the
+conditions of every enclosing `если` must appear in the guard. Measured on
+`base64.flang`, four wordings of ONE claim:
+
+```
+если (код 97…122) то (результат равен (код минус 71)) иначе да        grid
+не (код 97…122) или (результат равен (код минус 71))                  grid
+если не (код 65…90) то (если (код 97…122) то … иначе да) иначе да  PROVEN
+(код 65…90) или ((не (код 97…122)) или (… равен (код минус 71)))   PROVEN
+```
+
+Both upper wordings are path-incomplete, both lower ones are complete. Run both
+forms — they are two different runs, not one and the same.
+
 ## What the kernel takes in no wording at all
 
 Measured, not assumed — do not spend time on these forms until new rules appear:

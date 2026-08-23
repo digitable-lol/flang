@@ -54,8 +54,8 @@
 тотальная функция «Файлы»
   возвращает список строки
   пример «Пять свидетелей, и порядок значащий: по нему их потом достают»
-    ожидается ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/build-release-c.mjs"]
-  ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/build-release-c.mjs"]
+    ожидается ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/vypusk-v-c.flang"]
+  ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/vypusk-v-c.flang"]
 
 тотальная функция «Взять»
   принимает тексты: список строки, номер: число
@@ -365,7 +365,7 @@
 тотальная функция «Беды доставки»
   принимает тексты: список строки
   возвращает список строки
-  «Слить» от («Беда если нет» от («Взять» от тексты и 5) и "join(каталог, \"flang.1\")" и "скрипт выпуска перестал класть flang.1 в архив") и («Слить» от («Беда если нет» от («Взять» от тексты и 5) и "join(корень, \"packaging/flang.1\")" и "скрипт выпуска берёт страницу не из packaging/") и («Беда если нет» от («Взять» от тексты и 3) и "man1.install \"flang.1\"" и "формула Homebrew перестала ставить страницу"))
+  «Слить» от («Беда если нет» от («Взять» от тексты и 5) и "\"/flang.1\"" и "сборщик выпуска перестал класть flang.1 в архив") и («Слить» от («Беда если нет» от («Взять» от тексты и 5) и "\"packaging/flang.1\"" и "сборщик выпуска берёт страницу не из packaging/") и («Беда если нет» от («Взять» от тексты и 3) и "man1.install \"flang.1\"" и "формула Homebrew перестала ставить страницу"))
 
 тотальная функция «Все беды»
   принимает тексты: список строки, источники: строка, набрано: строка
@@ -383,7 +383,7 @@
 тотальная функция «Начать»
   возвращает «Ход»
   пример «Первым делом читаются пять свидетелей»
-    ожидается вариант «Ждём файлы» с осталось равным ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/build-release-c.mjs"] и тексты равным пустой список
+    ожидается вариант «Ждём файлы» с осталось равным ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/vypusk-v-c.flang"] и тексты равным пустой список
   вариант «Ждём файлы» с осталось равным («Файлы») и тексты равным пустой список
 
 тотальная функция «Доводы grep»

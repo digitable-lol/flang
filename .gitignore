@@ -7,7 +7,7 @@ generated/
 coverage/
 tmp/
 # Каталог сборки релиза: там напечатанный C и архивы, всё это создаётся
-# scripts/build-release-c.mjs и в истории не нужно.
+# scripts/vypusk-v-c.flang и в истории не нужно.
 output/
 
 # Продукты сборки точки раскрутки. Сам каталог bootstrap/ — часть дерева: это

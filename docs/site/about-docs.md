@@ -56,9 +56,9 @@ precisely.
 ## Numbers
 
 A number is not typed into a page. The text carries a substitution,
-`{{корпус.функций}}`, and the value arrives at build time from
+`{{!корпус.функций}}`, and the value arrives at build time from
 `docs/site/numbers.json` — one number, one place. A large number can be asked
-for in groups: `{{корпус.строк|разрядами}}` gives {{корпус.строк|разрядами}}.
+for in groups: `{{!корпус.строк|разрядами}}` gives {{корпус.строк|разрядами}}.
 
 The measurement is taken by one command:
 

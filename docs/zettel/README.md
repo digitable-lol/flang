@@ -136,6 +136,8 @@
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 - [Тип не держит инвариант, поэтому очевидные утверждения о дереве поиска ЛОЖНЫ: 28 утверждений в шести файлах библиотеки](tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny.md)
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
+- [Тело-«если» получило посылку индукции, и это дало по библиотеке ноль](if-bodies-get-induction-but-assertions-still-block.md)
+- [Закрытый список правил сверщика разошёлся с ядром: было восемь, стало тринадцать](spisok-pravil-sverchika-razoshelsya-s-yadrom.md)
 
 ## Теория категорий
 
@@ -173,6 +175,7 @@
 - [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок](sha256-bez-bitovyh-operaciy-stoit-925-tysyach-shagov.md)
 - [Предел шагов интерпретатора решает, что вообще может быть примером](predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom.md)
 - [Перенос проверки на flang стоит от одного до полутора порядков времени, и упирается он в предел шагов, а не в выразительность](what-a-check-costs-when-it-moves-from-javascript-to-flang.md)
+- [Список, наращиваемый в свёртке, стоит квадрат: набор строкой — линейно](spisok-rastyot-kvadratom-nabor-strokoy-liniyno.md)
 
 ## Службы и долговечность
 

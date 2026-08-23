@@ -58882,10 +58882,11 @@ fl_status compiler_flang_svesti_ogranichennost(fl_ctx *ctx, fl_value cel, fl_val
  * @param cel — «цель»: «Значение»
  * @param fakty — «факты»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
+ * @param programma — «программа»: «Значение»
  * @param otchyot — «отчёт»: «Состояние ядра»
  * @return значение: «Сведение»
  */
-fl_status compiler_flang_svesti_ravenstvo(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
+fl_status compiler_flang_svesti_ravenstvo(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value opredeleniya, fl_value programma, fl_value otchyot, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести вхождением».
@@ -60177,9 +60178,10 @@ fl_status compiler_flang_est_protivorechie(fl_ctx *ctx, fl_value fakty, fl_value
  * @param dopuscheniya — «допущения»: список: «Значение»
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
+ * @param programma — «программа»: «Значение»
  * @return значение: «Сведение»
  */
-fl_status compiler_flang_svesti_pravilami(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value *result, fl_error *error);
+fl_status compiler_flang_svesti_pravilami(fl_ctx *ctx, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value obyavleniya, fl_value opredeleniya, fl_value programma, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести правилами при фактах».
@@ -60195,10 +60197,11 @@ fl_status compiler_flang_svesti_pravilami(fl_ctx *ctx, fl_value zaklyuchenie, fl
  * @param polozhitelnye — «положительные»: список: «Значение»
  * @param celye — «целые»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
+ * @param programma — «программа»: «Значение»
  * @param otchyot — «отчёт»: «Состояние ядра»
  * @return значение: «Сведение»
  */
-fl_status compiler_flang_svesti_pravilami_pri_faktah(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value obyavleniya, fl_value obyavlennye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
+fl_status compiler_flang_svesti_pravilami_pri_faktah(fl_ctx *ctx, fl_value cel, fl_value fakty, fl_value obyavleniya, fl_value obyavlennye, fl_value konechnye, fl_value polozhitelnye, fl_value celye, fl_value opredeleniya, fl_value programma, fl_value otchyot, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Свести соседними или отказать».
@@ -60846,89 +60849,6 @@ fl_status compiler_flang_shag_chasti_polya(fl_ctx *ctx, fl_value akk, fl_value p
 fl_status compiler_flang_pole_kak_chast(fl_ctx *ctx, fl_value akk, fl_value pole, fl_value naryad, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Отвергнуто с припиской».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param itog — «итог»: «Сведение»
- * @param pripiska — «приписка»: строка
- * @return значение: «Сведение»
- */
-fl_status compiler_flang_otvergnuto_s_pripiskoy(fl_ctx *ctx, fl_value itog, fl_value pripiska, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Есть равенство внутри».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_est_ravenstvo_vnutri(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Есть равенство в списке».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Хвостовой самовызов развёрнут в цикл: стек не растёт.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param elementy — «элементы»: список: «Значение»
- * @return значение
- */
-fl_status compiler_flang_est_ravenstvo_v_spiske(fl_ctx *ctx, fl_value elementy, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Есть равенство в полях».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Хвостовой самовызов развёрнут в цикл: стек не растёт.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param polya — «поля»: список: «Поле значения»
- * @return значение
- */
-fl_status compiler_flang_est_ravenstvo_v_polyah(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Досчитать равенство».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param itog — «итог»: «Сведение»
- * @param zaklyuchenie — «заключение»: «Значение»
- * @param dopuscheniya — «допущения»: список: «Значение»
- * @param opredeleniya — «определения»: список: «Значение»
- * @param programma — «программа»: «Значение»
- * @return значение: «Сведение»
- */
-fl_status compiler_flang_doschitat_ravenstvo(fl_ctx *ctx, fl_value itog, fl_value zaklyuchenie, fl_value dopuscheniya, fl_value opredeleniya, fl_value programma, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Равенство по частям».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param itog — «итог»: «Сведение»
- * @param cel — «цель»: «Значение»
- * @param dopuscheniya — «допущения»: список: «Значение»
- * @param opredeleniya — «определения»: список: «Значение»
- * @param programma — «программа»: «Значение»
- * @return значение: «Сведение»
- */
-fl_status compiler_flang_ravenstvo_po_chastyam(fl_ctx *ctx, fl_value itog, fl_value cel, fl_value dopuscheniya, fl_value opredeleniya, fl_value programma, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Равенства допущений».
- *
- * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param dopuscheniya — «допущения»: список: «Значение»
- * @param opredeleniya — «определения»: список: «Значение»
- * @return значение: список: «Значение»
- */
-fl_status compiler_flang_ravenstva_dopuscheniy(fl_ctx *ctx, fl_value dopuscheniya, fl_value opredeleniya, fl_value *result, fl_error *error);
-
-/*
  * Функция flang «Это литерал минус нуля».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -60985,29 +60905,50 @@ fl_status compiler_flang_est_minus_nol_v_polyah(fl_ctx *ctx, fl_value polya, fl_
 fl_status compiler_flang_storony_soshlis_bez_minus_nulya(fl_ctx *ctx, fl_value sleva, fl_value sprava, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Стороны по частям».
+ * Функция flang «Тождество счётом частей».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
- * @param itog — «итог»: «Сведение»
- * @param cel — «цель»: «Значение»
- * @param ravenstva — «равенства»: список: «Значение»
+ * @param sleva — «слева»: «Значение»
+ * @param sprava — «справа»: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
- * @param naryad — «наряд»: «Наряд части»
+ * @param programma — «программа»: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
  * @return значение: «Сведение»
  */
-fl_status compiler_flang_storony_po_chastyam(fl_ctx *ctx, fl_value itog, fl_value cel, fl_value ravenstva, fl_value opredeleniya, fl_value naryad, fl_value *result, fl_error *error);
+fl_status compiler_flang_tozhdestvo_schyotom_chastey(fl_ctx *ctx, fl_value sleva, fl_value sprava, fl_value opredeleniya, fl_value programma, fl_value otchyot, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Наряд по программе».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Наряд части»
+ */
+fl_status compiler_flang_naryad_po_programme(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тождество посчитанным».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param naryad — «наряд»: «Наряд части»
+ * @param sleva — «слева»: «Значение»
+ * @param sprava — «справа»: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_tozhdestvo_poschitannym(fl_ctx *ctx, fl_value naryad, fl_value sleva, fl_value sprava, fl_value opredeleniya, fl_value otchyot, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Сторона по частям».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param storona — «сторона»: «Значение»
- * @param ravenstva — «равенства»: список: «Значение»
  * @param opredeleniya — «определения»: список: «Значение»
  * @param naryad — «наряд»: «Наряд части»
  * @return значение: «Значение»
  */
-fl_status compiler_flang_storona_po_chastyam(fl_ctx *ctx, fl_value storona, fl_value ravenstva, fl_value opredeleniya, fl_value naryad, fl_value *result, fl_error *error);
+fl_status compiler_flang_storona_po_chastyam(fl_ctx *ctx, fl_value storona, fl_value opredeleniya, fl_value naryad, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Имя именованного».

@@ -60030,6 +60030,54 @@ fl_status compiler_flang_konyunkty_dopuscheniya(fl_ctx *ctx, fl_value fakt, fl_v
 fl_status compiler_flang_rasschepit_dopuscheniya(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Зеркальный знак».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zerkalnyy_znak(fl_ctx *ctx, fl_value op, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Узел сравнения».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @param levoe — «левое»: «Значение»
+ * @param pravoe — «правое»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_sravneniya(fl_ctx *ctx, fl_value op, fl_value levoe, fl_value pravoe, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало по знаку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_po_znaku(fl_ctx *ctx, fl_value fakt, fl_value znak, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Зеркало факта».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakt — «факт»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_zerkalo_fakta(fl_ctx *ctx, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Привести допущения к одному виду».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_privesti_dopuscheniya_k_odnomu_vidu(fl_ctx *ctx, fl_value fakty, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Правило противоречия».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

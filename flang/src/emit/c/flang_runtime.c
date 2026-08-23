@@ -1138,6 +1138,83 @@ static bool fl_region_take(size_t *total, size_t budget, size_t need) {
 }
 
 /*
+ * ── Что откат ЗАБЕРЁТ, а что оставит на месте ──────────────────────────────
+ *
+ * Откат возвращает арене всё, что выдано ПОСЛЕ отметки, и не трогает ничего
+ * ниже неё. Значит подграф, целиком лежащий ниже отметки, переживёт откат сам —
+ * и копировать его незачем: ни обмеру считать его байты, ни перекладке их
+ * возить. Тот же довод уже записан у имён полей («ни одно имя не рождается во
+ * время расчёта»), только там он верен по построению, а здесь его надо спросить
+ * у арены.
+ *
+ * Спрашивается он ОБОЛОЧКОЙ: наименьший и наибольший адрес памяти, выданной
+ * после отметки. Оболочка, а не точный список кусков, потому что куски — это
+ * отдельные покупки у malloc, в адресах они не подряд, и «внутри оболочки» ещё
+ * не значит «выше отметки». Ошибка в эту сторону безобидна: узел просто
+ * скопируется, как копировался всегда. Обратной ошибки быть не может — ни один
+ * адрес выше отметки вне оболочки не лежит, потому что оболочка построена по
+ * всем таким кускам разом.
+ *
+ * Цена — два сравнения на узел вместо нуля, и обход цепочки кусков от отметки
+ * до текущего ОДИН раз на закрытие. Второе почти ничего не стоит: порог
+ * FL_REGION_MIN проходит меньше четырёх процентов закрытий (замер 23 августа:
+ * `check flang/examples/wal/write-ahead-log.flang` — 5 415 из 613 703,
+ * `check flang/self/tags.flang` — 744 273 из 19 924 228).
+ */
+typedef struct fl_live {
+  const char *lo;
+  const char *hi;
+} fl_live;
+
+static bool fl_live_in(fl_live zone, const void *p) {
+  const char *q = (const char *)p;
+  return q >= zone.lo && q < zone.hi;
+}
+
+static fl_live fl_region_live(const fl_arena *arena, fl_mark mark) {
+  fl_live zone;
+  fl_chunk *chunk = NULL;
+  zone.lo = NULL;
+  zone.hi = NULL;
+  if (arena == NULL) {
+    return zone;
+  }
+  for (chunk = mark.chunk == NULL ? arena->chunks : mark.chunk; chunk != NULL;
+       chunk = chunk->next) {
+    const char *base = fl_chunk_data(chunk);
+    const char *lo = base + (chunk == mark.chunk ? mark.used : (size_t)0);
+    const char *hi = base + chunk->used;
+    if (lo < hi) {
+      if (zone.lo == NULL || lo < zone.lo) {
+        zone.lo = lo;
+      }
+      if (zone.hi == NULL || hi > zone.hi) {
+        zone.hi = hi;
+      }
+    }
+    if (chunk == arena->current) {
+      break;
+    }
+  }
+  return zone;
+}
+
+/*
+ * ── Чего отсекать НЕЛЬЗЯ: списки ───────────────────────────────────────────
+ *
+ * Записи, варианты и строки заполняет ровно одно место — выдача, — и больше их
+ * не правит ничто; значит у узла, лежащего ниже отметки, ниже отметки лежит и
+ * всё, на что он указывает: оно выдано РАНЬШЕ него.
+ *
+ * У списка это неверно. Быстрый путь `fl_b_dobavit` пишет
+ * `grow->items[grow->filled] = item` в уже выданный массив: массив может лежать
+ * ниже отметки, а положенное в него значение — выше. Признак «массив с запасом»
+ * отличить не помогает: `fl_list_slice` его роняет, и тот же массив приезжает
+ * уже без признака. Проверено прогоном на прошлой попытке: отсечение списков
+ * ответило «FLANG_UNKNOWN_NAME: запись не содержит поле «вид»» кодом 1.
+ */
+
+/*
  * ── Отказная памятка: обмер, который можно НЕ делать ───────────────────────
  *
  * Обмер кончается отказом в 98,7 % случаев (замер на `flang check
@@ -1238,11 +1315,11 @@ static void fl_region_note(fl_arena *arena, int tag, const void *id, size_t coun
   slot->count = count;
   slot->need = need;
 }
-static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_t count,
-                                  size_t budget, size_t depth, size_t *total);
+static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field *fields,
+                                  size_t count, size_t budget, size_t depth, size_t *total);
 
-static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_t depth,
-                           size_t *total) {
+static bool fl_region_size(fl_arena *arena, fl_live zone, fl_value value, size_t budget,
+                           size_t depth, size_t *total) {
   if (depth > FL_REGION_DEPTH) {
     return false;
   }
@@ -1255,6 +1332,9 @@ static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_
       /* Ноль на конце копия ставит всегда, хотя исходник мог быть срезом. */
       if (value.as.string.bytes == (size_t)-1) {
         return false;
+      }
+      if (value.as.string.utf8 != NULL && !fl_live_in(zone, value.as.string.utf8)) {
+        return true; /* откат этих октетов не тронет */
       }
       return fl_region_take(total, budget, value.as.string.bytes + 1);
     case FL_LIST: {
@@ -1273,7 +1353,7 @@ static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_
         return false;
       }
       for (index = 0; index < value.as.list.count; index += 1) {
-        if (!fl_region_size(arena, value.as.list.items[index], budget, depth + 1, total)) {
+        if (!fl_region_size(arena, zone, value.as.list.items[index], budget, depth + 1, total)) {
           fl_region_note(arena, (int)FL_LIST, id, value.as.list.count, budget - entry);
           return false;
         }
@@ -1286,12 +1366,15 @@ static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_
       if (id == NULL) {
         return false;
       }
+      if (!fl_live_in(zone, id)) {
+        return true; /* откат эту запись не тронет */
+      }
       if (fl_region_denied(arena, (int)FL_RECORD, id, value.as.record->count, budget, entry)) {
         return false;
       }
       if (!fl_region_take(total, budget, sizeof(fl_record)) ||
-          !fl_region_fields_size(arena, value.as.record->fields, value.as.record->count, budget, depth,
-                                 total)) {
+          !fl_region_fields_size(arena, zone, value.as.record->fields, value.as.record->count, budget,
+                                 depth, total)) {
         fl_region_note(arena, (int)FL_RECORD, id, value.as.record->count, budget - entry);
         return false;
       }
@@ -1303,12 +1386,15 @@ static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_
       if (id == NULL) {
         return false;
       }
+      if (!fl_live_in(zone, id)) {
+        return true; /* откат этот вариант не тронет */
+      }
       if (fl_region_denied(arena, (int)FL_VARIANT, id, value.as.variant->count, budget, entry)) {
         return false;
       }
       if (!fl_region_take(total, budget, sizeof(fl_variant)) ||
-          !fl_region_fields_size(arena, value.as.variant->fields, value.as.variant->count, budget, depth,
-                                 total)) {
+          !fl_region_fields_size(arena, zone, value.as.variant->fields, value.as.variant->count, budget,
+                                 depth, total)) {
         fl_region_note(arena, (int)FL_VARIANT, id, value.as.variant->count, budget - entry);
         return false;
       }
@@ -1319,8 +1405,8 @@ static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_
   }
 }
 
-static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_t count,
-                                  size_t budget, size_t depth, size_t *total) {
+static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field *fields,
+                                  size_t count, size_t budget, size_t depth, size_t *total) {
   size_t index = 0;
   if (count == 0) {
     return true;
@@ -1332,7 +1418,7 @@ static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_
     return false;
   }
   for (index = 0; index < count; index += 1) {
-    if (!fl_region_size(arena, fields[index].value, budget, depth + 1, total)) {
+    if (!fl_region_size(arena, zone, fields[index].value, budget, depth + 1, total)) {
       return false;
     }
   }
@@ -1352,11 +1438,24 @@ static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_
  * который построен ДО вызова, то есть ниже любой отметки. Ни одно имя не
  * рождается во время расчёта — единственный, кто их выделяет, это разбор
  * запроса в прогонщике. Тот же довод записан в `fl_conc_clone`.
+ *
+ * ── `zone`: что копировать, а что взять ссылкой ────────────────────────────
+ * Ровно та же граница, по которой считал обмер, — иначе буфер разошёлся бы с
+ * посчитанным размером. Узел ВНЕ зоны копируется не глубже самого значения:
+ * оно уже лежит там, где переживёт откат.
+ *
+ * Зона разная у двух перекладок одного закрытия, и это не небрежность:
+ *   • вниз, в буфер: зона — память, выданная после отметки (её откат заберёт);
+ *   • обратно, в арену: зона — сам буфер (всё, что не в нём, уже пережило
+ *     откат и лежит на месте).
+ * Множество копируемых узлов у обеих одно и то же, потому вторая и умещается
+ * в тот же посчитанный размер.
  */
 typedef struct fl_pack {
   char *base;
   size_t size;
   size_t used;
+  fl_live zone;
 } fl_pack;
 
 static void *fl_pack_alloc(fl_pack *pack, size_t size) {
@@ -1384,7 +1483,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       *out = value;
       return true;
     case FL_STRING: {
-      char *text = (char *)fl_pack_alloc(pack, value.as.string.bytes + 1);
+      char *text = NULL;
+      if (value.as.string.utf8 != NULL && !fl_live_in(pack->zone, value.as.string.utf8)) {
+        *out = value;
+        return true;
+      }
+      text = (char *)fl_pack_alloc(pack, value.as.string.bytes + 1);
       if (text == NULL) {
         return false;
       }
@@ -1418,7 +1522,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       return true;
     }
     case FL_RECORD: {
-      fl_record *record = (fl_record *)fl_pack_alloc(pack, sizeof(fl_record));
+      fl_record *record = NULL;
+      if (!fl_live_in(pack->zone, (const void *)value.as.record)) {
+        *out = value;
+        return true;
+      }
+      record = (fl_record *)fl_pack_alloc(pack, sizeof(fl_record));
       if (record == NULL) {
         return false;
       }
@@ -1432,7 +1541,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       return true;
     }
     case FL_VARIANT: {
-      fl_variant *variant = (fl_variant *)fl_pack_alloc(pack, sizeof(fl_variant));
+      fl_variant *variant = NULL;
+      if (!fl_live_in(pack->zone, (const void *)value.as.variant)) {
+        *out = value;
+        return true;
+      }
+      variant = (fl_variant *)fl_pack_alloc(pack, sizeof(fl_variant));
       if (variant == NULL) {
         return false;
       }
@@ -1590,6 +1704,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   size_t grown = 0;
   size_t live = 0;
   fl_pack pack;
+  fl_live zone;
   fl_value staged = fl_nothing();
   fl_value moved = fl_nothing();
   char *block = NULL;
@@ -1607,11 +1722,13 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(arena, *result, grown / FL_REGION_GAIN, 0, &live)) {
+  zone = fl_region_live(arena, mark);
+  if (!fl_region_size(arena, zone, *result, grown / FL_REGION_GAIN, 0, &live)) {
     return FL_OK;
   }
   if (live == 0) {
-    /* Результат — скаляр либо пустой список: перекладывать нечего. */
+    /* Копировать нечего: результат — скаляр, пустой список либо целиком лежит
+       ниже отметки. Во всех трёх случаях он переживёт откат как есть. */
     fl_arena_rollback(arena, mark);
     return FL_OK;
   }
@@ -1621,6 +1738,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   pack.base = arena->staging;
   pack.size = live;
   pack.used = 0;
+  pack.zone = zone;
   if (!fl_pack_value(&pack, *result, 0, &staged)) {
     return FL_OK;
   }
@@ -1634,6 +1752,10 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   pack.base = block;
   pack.size = live;
   pack.used = 0;
+  /* Обратно копируется ровно то, что легло в буфер; всё прочее уже пережило
+     откат и лежит на месте. */
+  pack.zone.lo = arena->staging;
+  pack.zone.hi = arena->staging + live;
   if (!fl_pack_value(&pack, staged, 0, &moved)) {
     return fl_no_memory(error);
   }
@@ -1724,7 +1846,8 @@ fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_erro
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(arena, *result, grown / FL_REGION_LOOP_GAIN, 0, &live)) {
+  if (!fl_region_size(arena, fl_region_live(arena, mark), *result, grown / FL_REGION_LOOP_GAIN, 0,
+                      &live)) {
     /* Накопление: живого столько же, сколько наросло. Откат не окупится. */
     return FL_OK;
   }

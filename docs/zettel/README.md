@@ -40,7 +40,11 @@
 
 ## Доказательства
 
+- [Строгое «больше» в цели ядро берёт, если написать его целочисленно: «Е плюс 1 не больше Г»](strict-greater-is-taken-as-plus-one-not-greater.md)
+- [Отказ «инстанцировано на 2 вызовах» держит не `пусть`-имя, а тело вызванной: с телом-`разбор` он остаётся](two-calls-refusal-is-about-the-callee-body-not-the-let-name.md)
+- [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
+- [Условие цели ядро сличает с условием тела знак в знак: равносильная запись не считается](goal-condition-must-match-body-condition-sign-for-sign.md)
 - [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
 - [Список стен, переписанный руками из отчёта в отчёт, устарел на две трети: из 24 записанных «ядро не берёт» держатся 9](a-hand-copied-wall-list-goes-stale-in-silence.md)

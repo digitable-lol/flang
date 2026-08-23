@@ -6,9 +6,9 @@ base64.flang|10
 dictionary.flang|12
 higher-order.flang|22
 hashmap.flang|15
-logic.flang|4
+logic.flang|13
 numbers.flang|5
-numtree.flang|2
+numtree.flang|7
 lists.flang|12
 optional.flang|7
 result.flang|15

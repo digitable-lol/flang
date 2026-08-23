@@ -209,6 +209,10 @@ and `sha256.flang`: the denominator grew, not one verdict changed, all reverted.
 The same thing in meaning; the kernel sometimes takes the second where it will
 not take the first. A run costs a minute, so trying both is a rule, not a trick.
 
+And it is not a replacement but a **second claim**: where both wordings land, the
+numerator and the denominator both grow. Measured on `aes.flang`: for «Байт по
+номеру» and «Привести сдвиг» both forms were proved in one run.
+
 But changing the form on its own solves nothing, and that was measured twice:
 across thirteen grid claims in `der.flang` and `x509.flang` — zero; across
 fifteen in `base64.flang` — the proof report came back digit for digit the same. In
@@ -238,7 +242,20 @@ link**. One such edit fixes a column of three or four grid claims at once. How
 to find them: take a grid claim, look at what its body calls, and check whether
 the called function claims what the goal needs.
 
-**But adding is not enough — the lower claim must itself be proved.** This is
+**A workaround that removes half the dead ends: a theorem takes even a GRID
+postcondition of the callee.** These are two different mechanisms and they are
+easy to confuse. The automatic passing of a fact (described just below) requires
+the lower claim to be proved. A hand-written "по свойству" theorem instantiates
+the callee's postcondition regardless of its verdict.
+
+Measured on `aes.flang`: both bounds of «Байт по номеру» are grids, so
+«Подстановка» could not land automatically — and landed anyway, through a theorem
+copied from a neighbouring one already in the file. Two more proved, two fewer
+grids. **If a chain is broken and the lower link cannot be fixed, or lives in
+someone else's file — write a theorem.**
+
+**But for the AUTOMATIC passing of a fact, adding is not enough — the lower claim
+must itself be proved.** This is
 not a guess, it is visible in the kernel's source: in
 `flang/self/proofterm.flang`, «Дописать факт вызванного» takes a fact only when
 the claim's key is among the proved ones. A grid claim on the lower link gives
@@ -303,10 +320,16 @@ Measured, not assumed — do not spend time on these forms until new rules appea
 - **Folds.** Anything standing on a list fold stays a grid: «Хеш строки», «В
   верхний регистр», «Обратить строку», «Ключи дерева». The kernel does not
   unroll a fold, and the wording of the claim has nothing to do with it.
-- **Recursion over your own type.** «Положить в дерево», «Найти в дереве»,
-  «Уравновесить». The branches of such a body are not boolean but a `разбор`
-  over variants; you need a `разбор` inside the claim itself plus a theorem by
-  induction.
+- **Recursion over your own type — but not all of it.** This used to say that a
+  `разбор` body is hopeless. That holds when the branching is BY VARIANT; but if
+  an ordinary `если` sits inside a case, form 1 works there too. Measured on
+  `aes.flang`: nine claims on `разбор` bodies were proved **by induction over the
+  step type**, and all nine used a guard over a FIELD of the step rather than a
+  variable bound by the pattern: `если (ход.набрано не меньше 15) то
+  (результат.буфер равен пустой список) иначе да`. That is how «Шаг счёта», «Шаг
+  GHASH», «Шаг CBC вперёд» and «Шаг CBC назад» landed. Hopeless are only
+  «Положить в дерево», «Найти в дереве», «Уравновесить» — there the branching is
+  by variant.
 - **The reverse direction of an equivalence.** Where `результат → А` landed,
   `А → результат` almost never does: to derive a positive answer the kernel has
   to unroll the whole body, not pick a conjunct off it.

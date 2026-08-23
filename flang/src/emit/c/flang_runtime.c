@@ -108,6 +108,7 @@ void fl_arena_init_small(fl_arena *arena, size_t least) {
   arena->guard_used = 0;
   arena->staging = NULL;
   arena->staging_size = 0;
+  arena->deny = NULL;
   /* Нулевой кусок не бывает, а кусок больше общего минимума и есть общий
      минимум: мельчить умеем, крупнить незачем. */
   arena->least = least == 0 || least > FL_CHUNK_MIN ? FL_CHUNK_MIN : fl_round_up(least);
@@ -251,6 +252,8 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t ext
   return true;
 }
 
+static void fl_region_forget(fl_arena *arena);
+
 void fl_arena_reset(fl_arena *arena) {
   fl_chunk *chunk = NULL;
   if (arena == NULL) {
@@ -265,6 +268,7 @@ void fl_arena_reset(fl_arena *arena) {
      посреди вызова. Граница снимается, иначе она сторожила бы пустоту. */
   arena->guard_chunk = NULL;
   arena->guard_used = 0;
+  fl_region_forget(arena);
 }
 
 void fl_arena_release(fl_arena *arena) {
@@ -287,6 +291,8 @@ void fl_arena_release(fl_arena *arena) {
   arena->guard_used = 0;
   arena->staging = NULL;
   arena->staging_size = 0;
+  free(arena->deny);
+  arena->deny = NULL;
 }
 
 /* ═════════════════════════════ стек ═════════════════════════════ */
@@ -1131,10 +1137,112 @@ static bool fl_region_take(size_t *total, size_t budget, size_t need) {
   return true;
 }
 
-static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
-                                  size_t *total);
+/*
+ * ── Отказная памятка: обмер, который можно НЕ делать ───────────────────────
+ *
+ * Обмер кончается отказом в 98,7 % случаев (замер на `flang check
+ * flang/self/tags.flang`), и стоит он треть всего расчёта, тогда как перекладка,
+ * ради которой обмер и делается, — полпроцента. Мерят в шестьдесят пять раз
+ * больше, чем перекладывают.
+ *
+ * Причина не в длине одного обхода, а в их ЧИСЛЕ и во вложенности. Области
+ * вложены как вызовы: внутренняя закрывается, её результат становится частью
+ * результата внешней, тот — частью результата следующей. И каждая мерит заново
+ * ВЕСЬ свой результат, то есть один и тот же подграф обходится столько раз,
+ * какова глубина рекурсии. Отсюда и сверхлинейность.
+ *
+ * Памятка обрывает этот повтор одним доказанным фактом. Обмер МОНОТОНЕН по
+ * бюджету: `fl_region_take` отказывает тем охотнее, чем бюджет меньше, а порядок
+ * обхода от бюджета не зависит вовсе. Значит из «значение v не уложилось в
+ * бюджет B» следует «v не уложится ни в какой бюджет ≤ B» — то есть отказ даёт
+ * НИЖНЮЮ ОЦЕНКУ: копии v нужно БОЛЬШЕ B байт.
+ *
+ * Эту оценку и запоминает арена — ровно одну, про последний отказавший
+ * результат. Когда обход внешней области доходит до того же узла, у него в
+ * запасе остаётся `budget - *total` байт; если запас не больше запомненного B,
+ * узел заведомо не влезет, и обход обрывается сразу, не спускаясь внутрь.
+ *
+ * Чего памятка НЕ делает: она не отбирает ни одного отката, который состоялся бы
+ * без неё. Обрыв происходит только там, где полный обход всё равно кончился бы
+ * отказом, — это следствие монотонности, а не догадка. Поэтому память остаётся
+ * прежней, а ведомости — прежними до знака.
+ *
+ * Узнаётся значение по тройке (метка, адрес, число элементов). Адреса живут в
+ * арене, и после отката тот же адрес достаётся другому значению, — поэтому
+ * `fl_arena_rollback` памятку снимает. Даже проспи он её, беды бы не случилось:
+ * ошибочное срабатывание означает лишний ОТКАЗ области, а отказать область
+ * вправе в любой момент, и снаружи отказ не виден ничем, кроме памяти.
+ */
+struct fl_deny {
+  const void *id;
+  size_t count;
+  size_t need; /* доказано: копии этого узла нужно БОЛЬШЕ стольких байт */
+  int tag;
+};
 
-static bool fl_region_size(fl_value value, size_t budget, size_t depth, size_t *total) {
+/*
+ * Памяток столько, какова обычная глубина вложенности областей на одном пути:
+ * каждая записывает свою, и вытеснять друг друга им незачем. Таблица заводится
+ * ЛЕНИВО и только у той арены, где обмер хоть раз отказал: арен в прогоне
+ * бывает по две на процесс, а процессов — миллион, и восемь килобайт с рождения
+ * стоили бы больше всей выгоды (см. `fl_arena_init_small`).
+ */
+#define FL_DENY_SLOTS (size_t)256
+
+static void fl_region_forget(fl_arena *arena) {
+  if (arena != NULL && arena->deny != NULL) {
+    memset(arena->deny, 0, FL_DENY_SLOTS * sizeof(struct fl_deny));
+  }
+}
+
+static struct fl_deny *fl_region_slot(struct fl_deny *table, const void *id) {
+  /* Адреса в арене выровнены по FL_ALIGNMENT, поэтому младшие биты пусты. */
+  return table + (((size_t)(const char *)id / FL_ALIGNMENT) & (FL_DENY_SLOTS - 1));
+}
+
+static bool fl_region_denied(const fl_arena *arena, int tag, const void *id, size_t count,
+                             size_t budget, size_t total) {
+  const struct fl_deny *slot = NULL;
+  if (arena == NULL || arena->deny == NULL) {
+    return false;
+  }
+  slot = fl_region_slot(arena->deny, id);
+  return slot->id == id && slot->tag == tag && slot->count == count && budget - total <= slot->need;
+}
+
+/*
+ * Запомнить отказ. `need` — сколько байт узлу заведомо мало: обход начался,
+ * когда в запасе было ровно столько, и не уложился. Оценка только РАСТЁТ:
+ * тот же узел, отказавший при большем запасе, знает о себе больше.
+ */
+static void fl_region_note(fl_arena *arena, int tag, const void *id, size_t count, size_t need) {
+  struct fl_deny *slot = NULL;
+  if (arena == NULL || id == NULL) {
+    return;
+  }
+  if (arena->deny == NULL) {
+    arena->deny = (struct fl_deny *)calloc(FL_DENY_SLOTS, sizeof(struct fl_deny));
+    if (arena->deny == NULL) {
+      return; /* без памятки обмер просто работает как раньше */
+    }
+  }
+  slot = fl_region_slot(arena->deny, id);
+  if (slot->id == id && slot->tag == tag && slot->count == count) {
+    if (slot->need < need) {
+      slot->need = need;
+    }
+    return;
+  }
+  slot->id = id;
+  slot->tag = tag;
+  slot->count = count;
+  slot->need = need;
+}
+static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_t count,
+                                  size_t budget, size_t depth, size_t *total);
+
+static bool fl_region_size(fl_arena *arena, fl_value value, size_t budget, size_t depth,
+                           size_t *total) {
   if (depth > FL_REGION_DEPTH) {
     return false;
   }
@@ -1151,45 +1259,68 @@ static bool fl_region_size(fl_value value, size_t budget, size_t depth, size_t *
       return fl_region_take(total, budget, value.as.string.bytes + 1);
     case FL_LIST: {
       size_t index = 0;
+      const void *id = (const void *)value.as.list.items;
+      const size_t entry = *total;
       if (value.as.list.count == 0) {
         return true;
       }
-      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+      if (fl_region_denied(arena, (int)FL_LIST, id, value.as.list.count, budget, entry)) {
         return false;
       }
-      if (!fl_region_take(total, budget, value.as.list.count * sizeof(fl_value))) {
+      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value) ||
+          !fl_region_take(total, budget, value.as.list.count * sizeof(fl_value))) {
+        fl_region_note(arena, (int)FL_LIST, id, value.as.list.count, budget - entry);
         return false;
       }
       for (index = 0; index < value.as.list.count; index += 1) {
-        if (!fl_region_size(value.as.list.items[index], budget, depth + 1, total)) {
+        if (!fl_region_size(arena, value.as.list.items[index], budget, depth + 1, total)) {
+          fl_region_note(arena, (int)FL_LIST, id, value.as.list.count, budget - entry);
           return false;
         }
       }
       return true;
     }
-    case FL_RECORD:
-      if (value.as.record == NULL) {
+    case FL_RECORD: {
+      const void *id = (const void *)value.as.record;
+      const size_t entry = *total;
+      if (id == NULL) {
         return false;
       }
-      if (!fl_region_take(total, budget, sizeof(fl_record))) {
+      if (fl_region_denied(arena, (int)FL_RECORD, id, value.as.record->count, budget, entry)) {
         return false;
       }
-      return fl_region_fields_size(value.as.record->fields, value.as.record->count, budget, depth, total);
-    case FL_VARIANT:
-      if (value.as.variant == NULL) {
+      if (!fl_region_take(total, budget, sizeof(fl_record)) ||
+          !fl_region_fields_size(arena, value.as.record->fields, value.as.record->count, budget, depth,
+                                 total)) {
+        fl_region_note(arena, (int)FL_RECORD, id, value.as.record->count, budget - entry);
         return false;
       }
-      if (!fl_region_take(total, budget, sizeof(fl_variant))) {
+      return true;
+    }
+    case FL_VARIANT: {
+      const void *id = (const void *)value.as.variant;
+      const size_t entry = *total;
+      if (id == NULL) {
         return false;
       }
-      return fl_region_fields_size(value.as.variant->fields, value.as.variant->count, budget, depth, total);
+      if (fl_region_denied(arena, (int)FL_VARIANT, id, value.as.variant->count, budget, entry)) {
+        return false;
+      }
+      if (!fl_region_take(total, budget, sizeof(fl_variant)) ||
+          !fl_region_fields_size(arena, value.as.variant->fields, value.as.variant->count, budget, depth,
+                                 total)) {
+        fl_region_note(arena, (int)FL_VARIANT, id, value.as.variant->count, budget - entry);
+        return false;
+      }
+      return true;
+    }
     default:
       return false;
   }
 }
 
-static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
-                                  size_t *total) {
+static bool fl_region_fields_size(fl_arena *arena, const fl_field *fields, size_t count,
+                                  size_t budget, size_t depth, size_t *total) {
   size_t index = 0;
   if (count == 0) {
     return true;
@@ -1201,7 +1332,7 @@ static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t b
     return false;
   }
   for (index = 0; index < count; index += 1) {
-    if (!fl_region_size(fields[index].value, budget, depth + 1, total)) {
+    if (!fl_region_size(arena, fields[index].value, budget, depth + 1, total)) {
       return false;
     }
   }
@@ -1365,6 +1496,9 @@ static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
     arena->current = mark.chunk;
   }
   arena->handed = mark.handed;
+  /* Память выше отметки сейчас достанется кому-то другому, и запомненные адреса
+     могли бы совпасть с чужими значениями. Памятка снимается вместе с памятью. */
+  fl_region_forget(arena);
 }
 
 /** Буфер под перекладку: живёт между вызовами, отдаётся в `fl_arena_release`. */
@@ -1456,7 +1590,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(*result, grown / FL_REGION_GAIN, 0, &live)) {
+  if (!fl_region_size(arena, *result, grown / FL_REGION_GAIN, 0, &live)) {
     return FL_OK;
   }
   if (live == 0) {
@@ -1573,7 +1707,7 @@ fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_erro
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(*result, grown / FL_REGION_LOOP_GAIN, 0, &live)) {
+  if (!fl_region_size(arena, *result, grown / FL_REGION_LOOP_GAIN, 0, &live)) {
     /* Накопление: живого столько же, сколько наросло. Откат не окупится. */
     return FL_OK;
   }

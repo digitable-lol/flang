@@ -399,12 +399,22 @@ export function долгиЯдра(проза, долги) {
 export function незарегистрированныеПодделки(корень, свои, долг) {
   const каталог = join(корень, "flang/test/fixtures")
   const лежит = readdirSync(каталог).filter((и) => и.startsWith("poddelka-") && и.endsWith(".flang")).sort()
-  /* Каталогов подделок в дереве ДВА, и читать надо оба: `poddelki-yadra.mjs`
-     зовётся напрямую (`node …`), `poddelki-yadra.flang` — ярлыком
-     `poddelki:check`. Прочитай один — и подделка, стоящая во втором, назвалась
-     бы забытой. */
-  const каталоги = ["flang/scripts/poddelki-yadra.mjs", "flang/scripts/poddelki-yadra.flang"]
-    .map((путь) => readFileSync(join(корень, путь), "utf8"))
+  /* Каталог подделок в дереве ОДИН: `poddelki-yadra.flang`, он зовётся ярлыком
+     `poddelki:check`. Двойник на JavaScript снят 23 августа 2026 (`fe870a05`),
+     и этот сторож восемь часов падал на его чтении: файла нет — падает весь
+     прогон, а не одно правило. Отсюда чтение через try: пропавший каталог
+     называется бедой и роняет сторожа НАЗВАННО, а не стек-трейсом node. */
+  const путиКаталогов = ["flang/scripts/poddelki-yadra.flang"]
+  const пропали = []
+  const каталоги = путиКаталогов
+    .map((путь) => {
+      try {
+        return readFileSync(join(корень, путь), "utf8")
+      } catch {
+        пропали.push(путь)
+        return ""
+      }
+    })
     .join("\n")
   const забытые = []
   const безСторожа = []
@@ -421,6 +431,7 @@ export function незарегистрированныеПодделки(кор�
   for (const путь of Object.keys(долг)) {
     if (!лежит.includes(путь.split("/").pop())) забытые.push(`${путь}: записан в долг, а файла в дереве нет — долг смотрит в пустоту`)
   }
+  for (const путь of пропали) забытые.push(`${путь}: каталог подделок пропал из дерева — сторож не видит, что в нём было записано`)
   return { забытые, безСторожа }
 }
 

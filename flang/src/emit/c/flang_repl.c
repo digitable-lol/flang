@@ -6928,7 +6928,7 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_COUNT 8
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
-#define EMIT_FIELD_MAX 16
+#define EMIT_FIELD_MAX 17
 #define EMIT_RUNTIME_MAX 6
 
 /**
@@ -6959,18 +6959,38 @@ typedef struct {
   const char *build_say;
 } emit_target;
 
-/* Поля записи «Настройки» из `emit-c.flang` — общие у целей «c» и «go». */
-#define EMIT_FIELDS_C                                                                                 \
+/* Поля записи «Настройки», какими их просит цель «go». Запись та же самая, что
+   у цели «c» (объявлена в `emit-c.flang`, а «Настройки Go из настроек» в
+   `flang/self/bootstrap/compiler.flang` уже на flang перекладывает её в то, что
+   читает `emit-go.flang`), — но НАБОР ПОЛЕЙ разошёлся. Общим он быть перестал
+   ровно тогда, когда «c» научилась печатать процессы: у неё прибавились ДВА
+   поля с текстом движка процессов (`flang_conc.h`, `flang_conc.c`), а у Go
+   процессов нет. Одно имя на два разошедшихся набора значило бы, что Go поедет
+   с чужими полями и разберёт тексты рантайма не по своим местам. */
+#define EMIT_FIELDS_GO                                                                                \
   {"путь",           "есть путь",         "база",            "предел глубины", "предел шагов",        \
    "прогонщик",      "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "оболочка",      \
    "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа"}
 
+/* Поля записи «Настройки» из `emit-c.flang`.
+   ПОРЯДОК БЕЗЫМЯННЫХ ПОЛЕЙ ЗНАЧИМ: поля, которых `emit_call` не знает по имени,
+   разбирают `runtime_files` подряд. Их шесть и идут они в том же порядке, что и
+   файлы: заголовок рантайма, исходник рантайма, прогонщик, оболочка, заголовок
+   движка процессов, исходник движка процессов. */
+#define EMIT_FIELDS_C                                                                                 \
+  {"путь",           "есть путь",         "база",            "предел глубины", "предел шагов",        \
+   "прогонщик",      "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "оболочка",      \
+   "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа",     \
+   "планировщик заголовок", "планировщик исходник"}
+
 static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
-    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 15,
-     EMIT_FIELDS_C, 4, {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c"}, NULL},
+    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 17,
+     EMIT_FIELDS_C, 6,
+     {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
+     NULL},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
-     15, EMIT_FIELDS_C, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
+     15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./..."},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,

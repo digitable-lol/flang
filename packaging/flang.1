@@ -291,11 +291,16 @@ $ echo '«Сумма» от [3, 1, 2]' | flang repl проба.flang
 файлов у
 .IR go ", " rust ", " js " и " python
 до шести у
-.IR java " и " csharp ;
+.IR c ", " java " и " csharp ;
 у
 .I c
 это
-.IR flang_runtime.h ", " flang_runtime.c ", " flang_cli.c " и " flang_repl.c .
+.IR flang_runtime.h ", " flang_runtime.c ", " flang_cli.c ", " flang_repl.c ", "
+.IR flang_conc.h " и " flang_conc.c .
+Последние два — движок процессов; в вывод они едут только у программы, где
+объявлен хотя бы один
+.BR процесс ,
+но читаются всегда.
 Ищутся они по очереди в
 .BI \-\-runtime " каталог" \fR,
 в

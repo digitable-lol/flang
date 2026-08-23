@@ -130,6 +130,7 @@
 - [Невысказываемое утверждение дороже недоказуемого](unstatable-costs-more-than-unprovable.md)
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](uporyadochennost-nastoyashchey-sortirovki-lozhna-na-ne-chisle.md)
 - [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
+- [Ветвь `разбор` по варианту без полей берётся равенством варианту, а `не результат` на такой ветви — нет](variant-equality-opens-a-case-branch.md)
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](verdikt-izmenilsya-ne-znachit-dokazana-lozh.md)
 - [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](vetka-esli-razvorachivaetsya-v-obe-storony-a-razbor-spiska-net.md)
 - [Вывод, снятый на одной ветке, — не вывод о дереве](vyvod-na-vetke-ne-vyvod-o-dereve.md)

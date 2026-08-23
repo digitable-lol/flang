@@ -65,13 +65,9 @@ Three habits to put aside here, and that is the main content of the step:
 
 **After this step:** you have written a program you did not copy.
 
-The tree carries worked tasks — `flang/examples/rosetta/` — each written twice,
-in Russian words and in English ones. Take one, close it, write it again, then
-compare.
-
-```bash
-flang test flang/examples/rosetta/factorial.flang
-```
+Take a task you have already solved in another language — a factorial,
+Fibonacci, a palindrome check — and write it again in flang words, with an
+example inside every function.
 
 If the check refuses with `FLANG_NOT_TOTAL`, that is not a breakage but a
 conversation: the compiler did not see why the recursion ends. What it accepts
@@ -106,13 +102,8 @@ This is the middle of the language, and it is worth the longest stop.
 - [Case studies](case-studies.html) — what this bought on live code.
 
 The short truth the step stands here for: **termination is proved in bulk,
-behaviour rarely.** Of the claims about behaviour, {{утверждения.высказано}} are
-stated and {{утверждения.доказано}} are proved by the kernel; the rest are
-checked by running a grid of values. On a sample of twenty library functions the
-kernel proves something for 14 and something substantive for 10: the rest is
-proved against a stub body too, so it says nothing about that function — only
-about any function with that signature. The figure comes from a run:
-`./ярлык proof:20`.
+behaviour rarely.** The rest is checked by running a grid of values, and the
+report calls that "сетка" (grid), not "доказано" (proved).
 
 ## 7. Talking to the world
 
@@ -136,16 +127,6 @@ whoever ran the program carries them out. Everything else grows from that:
 - [Writing packages](packages.html) — how to hand what you wrote to others;
 - [Known limitations](limits.html) — read before you hit them.
 
-## What else is in the tree
-
-- `docs/kurs/` — a fourteen-chapter course, separate from the tutorial: it moves
-  slower and works through the price of every decision. It is not on this site.
-- `flang/stdlib/` — {{библиотека.файлов}} library modules,
-  {{библиотека.функций}} functions. They read as examples: nearly every function
-  carries its own examples next to it.
-- `flang/examples/` — tasks, the database conversation, input and output, money,
-  paths, categories.
-
 ## If you get stuck
 
 The compiler answers not with "error" but with the name of the trouble and an
@@ -155,7 +136,6 @@ explanation:
 flang check file.flang         # what did not add up
 flang check file.flang --proof # what exactly is proved and what is not
 flang --help                   # ten commands and what each one does
-man flang                      # the same in detail, if installed from a release
 ```
 
 A refusal starts with a name: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,

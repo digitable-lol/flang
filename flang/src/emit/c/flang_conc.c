@@ -41,6 +41,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 /* Часы — ради поручения «Текущее время» (седьмое действие). Ввоз безусловный:
    хозяин ввода-вывода живёт в этом файле и в проверочном режиме тоже, а
@@ -1457,6 +1458,48 @@ static fl_status fl_conc_perform(fl_conc_sched *sched, fl_ctx *ctx, fl_value ord
        обязано совпадать с ней на том же тексте. */
     value = fl_number((double)content.as.string.points);
     return fl_variant_new(ctx, "Записано", names, &value, 1, out, error);
+  }
+
+  /* ── Убрать и завести ─────────────────────────────────────────────────────
+     Оба поручения исполняются тем же кодом, что у хозяина `flang io`, и по той
+     же причине, что октетная пара: они синхронны, планировщику ждать нечего.
+     Пути здесь берутся как даны — правила «внутри каталога» у этого хозяина нет
+     вовсе (его нет и у чтения с записью выше), и заводить его на одном
+     поручении значило бы отвечать двумя разными правилами на один словарь. */
+  if (strcmp(kind, "Удалить файл") == 0) {
+    const char *path = fl_conc_io_text(ctx, order, "путь");
+    if (path == NULL || path[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь", out, error);
+    }
+    if (remove(path) != 0) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_REMOVE", "имя не убрано", out, error);
+    }
+    return fl_variant_new(ctx, "Убрано", NULL, NULL, 0, out, error);
+  }
+
+  if (strcmp(kind, "Завести временный каталог") == 0) {
+    static const char *const names[1] = {"путь"};
+    const char *given = fl_conc_io_text(ctx, order, "образец");
+    fl_value value = fl_nothing();
+    char *pattern = NULL;
+    size_t bytes = 0;
+    if (given == NULL || given[0] == '\0') {
+      return fl_conc_io_fail(ctx, "FLANG_IO_PATH", "поручению нужен непустой образец", out, error);
+    }
+    bytes = strlen(given);
+    pattern = (char *)fl_arena_alloc(ctx->arena, bytes + 7);
+    if (pattern == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_TEMPDIR", "не хватило памяти под имя каталога", out, error);
+    }
+    memcpy(pattern, given, bytes);
+    memcpy(pattern + bytes, "XXXXXX", 7);
+    if (mkdtemp(pattern) == NULL) {
+      return fl_conc_io_fail(ctx, "FLANG_IO_TEMPDIR", "временный каталог не заведён", out, error);
+    }
+    if (fl_text(ctx, pattern, bytes + 6, &value, error) != FL_OK) {
+      return FL_ERROR;
+    }
+    return fl_variant_new(ctx, "Заведено", names, &value, 1, out, error);
   }
 
   /* ── Октетная пара у файлов ────────────────────────────────────────────────

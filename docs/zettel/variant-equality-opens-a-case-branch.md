@@ -1,6 +1,6 @@
 # Ветвь `разбор` по варианту без полей берётся равенством варианту, а `не результат` на такой ветви — нет
 
-[[vetka-esli-razvorachivaetsya-v-obe-storony-a-razbor-spiska-net]] назвала приём:
+[[if-branches-unfold-both-ways-but-list-match-does-not]] назвала приём:
 ветвь `разбор`а по варианту БЕЗ ПОЛЕЙ закрывается, если условие обещания писать
 не образцом `случай вариант «X»`, а РАВЕНСТВОМ варианту. Замер на `provod.flang`
 и `redis.flang` — двух модулях, которые целиком состоят из откликов-вариантов, —
@@ -65,6 +65,6 @@
 `redis.flang` — одно («отсутствие значения отказом не считается»: заглушка `нет`
 и есть та цель).
 
-Связано: [[vetka-esli-razvorachivaetsya-v-obe-storony-a-razbor-spiska-net]],
+Связано: [[if-branches-unfold-both-ways-but-list-match-does-not]],
 [[stena-ravenstva-i-razbora-v-postuslovii-snyata]],
 [[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]

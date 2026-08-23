@@ -352,7 +352,7 @@ $ ./ярлык vkladka:check; echo $?
 из этого сегодня работает:
 
 ```
-$ bootstrap/flang check flang/examples/io/vremennyy-katalog.flang; echo $?
+$ bootstrap/flang check flang/examples/io/temp-directory.flang; echo $?
 модуль «Временный каталог»: функций 10, из них с доказанным завершением 10; типов 4
 FLANG_UNKNOWN_NAME … строка 89: неизвестный конструктор варианта «Завести временный каталог»
 … замечаний 14

@@ -1,0 +1,11 @@
+139	flang/self/emit-java.flang
+134	flang/proof/малый-сводитель.flang
+101	flang/scripts/storozh-pustoty.flang
+51	flang/self/conc.flang
+46	flang/self/lsp.flang
+35	ярлыки.flang
+31	scripts/storozh-vypuska.flang
+24	scripts/put-bez-node.flang
+20	flang/core/evaluate.flang
+15	web/stend.flang
+13	flang/examples/rosetta/palindrome.flang

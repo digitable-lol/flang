@@ -6,6 +6,71 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.6.2 — 22 August 2026
+
+**The Homebrew install is fixed: the archive shipped a directory nobody could enter**
+
+### What appeared
+
+- TLS connections work for real: twelve runs with genuine response codes.
+- The fold principle is strengthened with the already-traversed part of the list: +2 proved obligations, with a forgery and its honest half added alongside the rule.
+
+### What changed
+
+- The two measures of string length are reduced to one. A memory corruption was found and closed along the way.
+- Import discovery parses the file header rather than the whole file: 24% less memory, 5% less time.
+- Two hand-written copies of list comparison were removed and three stale references to a long-lifted ban were fixed.
+
+### What broke
+
+- Nothing. This release fixes the install broken in 0.6.0 and 0.6.1: the archive was packed with `--mode=u=rw,go=r`, which strips the traverse bit from DIRECTORIES too, so `runtime-c` arrived as `drw-r--r--` and `brew install` failed with `Errno::ENOENT: runtime-c/flang_cli.c`. The cure is the letter `X` — `--mode=u=rw,go=r,a+X`. The command is corrected both in the formula and in the publish workflow.
+
+## 0.6.1 — 22 August 2026
+
+**A compiler change that never reached the built compiler now goes red in half a second**
+
+### What appeared
+
+- A cheap check that the compiler sources match their C translation: `sh scripts/raskrutka.sh --bystro`. Previously a mismatch was caught only by the hour-long reprint, and over two days work reached the trunk four times carrying a rule the built compiler did not have. It is now visible immediately, on every push.
+- Two new rules in the proof checker: case analysis over a goal's inner condition, and a rule for incompatible conditions. The gain is measured and written as a number in the kernel itself: +2 and +2 proved obligations across six library files.
+- An octet pair of file orders: read and write a file as bytes rather than text. The text pair now refuses honestly on non-text instead of corrupting it silently, and a zero octet is legal text again — the refusal is only for malformed UTF-8.
+
+### What changed
+
+- The name-collision check sees the whole closure: an import by name without a path is resolved through the registry, and instead of one file out of thirty-six it now looks at all of them. On this tree: 736 files, 56,345 declarations.
+- The forgery check reads the whole directory rather than a list: 15 named forgeries became 24, and stopping at the first failure no longer hides the rest.
+- `«Ответить в соединение»` no longer truncates content at the first zero byte: the length is taken from the value itself. Measured on the compiler's own source — the trunk was losing 47,184 bytes on `flang/self/link.flang`.
+
+### What broke
+
+- The text file-read and file-write orders now refuse on binary content instead of returning a truncated result. Use the octet pair for binary.
+
+## 0.6.0 — 22 August 2026
+
+**Long computations no longer hit a memory wall: 15.98 GiB became 0.0135**
+
+### What appeared
+
+- PostgreSQL login over `scram-sha-256`: SHA-1, HMAC, PBKDF2 and the SCRAM client are written in the language itself, and the login is verified by a run against a real PostgreSQL 17.10, not a stub.
+- Three new inference rules in the proof checker. A finiteness caveat: NaN sits outside the order, every bound over it is false, and the caveat "while this is a number" is now read as a fact. Case analysis over a disjunction in an assumption: "A or B" is not split, it is taken apart into two cases, and the goal is accepted only when both close. And the goal "A and also B".
+- Supervision of failed processes across the network: a node survives the death of its neighbour, and the lost work is taken over by the survivor. The loss is reported to the supervisor by the link layer, not by socket cleanup.
+- A "Wire" module — the shared half of binary protocols over TCP, lifted out of the PostgreSQL driver. Of the driver's 83 functions only 39 were about PostgreSQL; the rest fit any binary protocol.
+- Browser pages are written in the language itself: eight emit targets out of eight, and not a single line of JavaScript in the pages.
+- A check for vacuous proofs. The library's 93 proved claims are sorted into four piles, and "proved" about something that holds for any function with the same signature is named for what it is instead of being counted alongside substantive claims.
+
+### What changed
+
+- Memory no longer grows during a long computation. The interpreter is a loop, and its arena was released only at the very end: tail recursion cost 84 kilobytes per iteration. It is now released on every iteration. Over 200,000 iterations the peak went from 15.98 GiB to 0.0135 GiB, time from 25.3 to 13.5 seconds, and the peak no longer depends on the iteration count at all.
+- Equality in a function body is allowed: the old ban turned out to be a stale restriction rather than a boundary of the language. Permission to compute is still not permission to infer — there is a forgery fixture for exactly that.
+- The step ceiling for printing the compiler was raised from 40 million to a billion. After the new inference rules the compiler's check of itself no longer fit under the old one, and printing was cancelled outright.
+- The JavaScript implementations of the checks are gone: the proof layer (4,958 lines), the emit and occupied-name checks (682 lines) and four files nobody called (836 lines). Printing the compiler to C needs Node at no step.
+- Searching the documentation by refusal code finds 13 codes out of 13 — it used to find 0 of 13.
+
+### What broke
+
+- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/storozh-zanyatogo.flang` instead of the removed JavaScript script.
+- The shared half of the PostgreSQL driver moved into the "Wire" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import "Wire".
+
 ## 0.5.1 — 19 August 2026
 
 **The macOS install is fixed: 0.5.0 did not build there for anyone**

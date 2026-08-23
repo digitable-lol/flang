@@ -1,11 +1,11 @@
 # Installing
 
-Latest release — **0.5.1**, commit `6d845f9`
-([release on GitHub](https://github.com/digitable-lol/flang/releases/tag/v0.5.1)).
+Latest release — **{{выпуск.версия}}**
+([release on GitHub](https://github.com/digitable-lol/flang/releases/latest)).
 
 | Path | What it installs | Needed on the machine |
 | --- | --- | --- |
-| [Homebrew](#homebrew) | `flang 0.5.1` and `man flang` | `brew`, `cc`, `make` |
+| [Homebrew](#homebrew) | `flang {{выпуск.версия}}` and `man flang` | `brew`, `cc`, `make` |
 | [asdf](#asdf) | `flang` alongside other versions | `asdf`, `cc`, `make` |
 | [From source](#from-source) | the `flang` command from a clone | `git`, `cc`, `make` |
 | [With npm](#with-npm) | `flang` and `flang-lsp` for a Node project | Node ≥ 20 |
@@ -23,7 +23,7 @@ its own language server: `flang lsp --stdio`.
 brew install digitable-lol/tap/flang
 ```
 
-Installs `flang 0.5.1`, `libcompiler_flang.a`, the headers and the
+Installs `flang {{выпуск.версия}}`, `libcompiler_flang.a`, the headers and the
 `man flang` page. Node is not needed: the release archive ships ready C99.
 
 ## asdf
@@ -35,7 +35,7 @@ asdf set -u flang 0.5.0
 ```
 
 0.5.0 rather than the latest release, and that is not a typo: with the published
-plugin, installing 0.5.1 fails — its script looks for a file under the old name.
+plugin, installing 0.5.1 failed — its script looks for a file under the old name.
 The fix is in the tree but not yet in the plugin repository, so until it ships,
 asdf installs 0.5.0 and Homebrew gives you the latest release.
 

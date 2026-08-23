@@ -8,6 +8,14 @@ be thrown away either, or the word "verified" has nothing under it.
 Everything below was run on one machine: `cc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`,
 `GNU Make 4.4.1`, `node v26.7.0`.
 
+**This report was taken on release 0.5.1 and has not been re-run since.** The
+numbers below are about that archive and that formula, not about the current
+release: this is a record of a run, and swapping the version inside it would
+pass the unchecked off as checked. What installs today is on
+[Install](install.html). Of what is named here, since fixed: `make install` in
+the archive, and the `runtime-c` directory that shipped without the traverse
+bit.
+
 ## Release 0.5.1: archive, hash, formula, build
 
 The release archive was downloaded: `flang-0.5.1-c.tar.gz`, **1,515,080 bytes**,

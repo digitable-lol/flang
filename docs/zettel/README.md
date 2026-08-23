@@ -144,6 +144,7 @@
 ## Память
 
 - [Область памяти не отдаёт ничего до конца вызова: 1655 МиБ на сортировку 4000 чисел](arena-never-releases.md)
+- [`FLANG_MEMORY` на `parser.flang` был не у проверки, а у ведомости: с теми же 170 обещаниями проверка проходит под теми же 24 ГиБ](memory-peak-scales-with-obligations-not-file-size.md)
 - [Игры и обработка видео — не наш случай, и причин ровно три](games-and-video-are-not-our-case.md)
 - [Память «на категорию» — это регионы, техника с именем и историей](memory-per-category-is-regions.md)
 - [Уйти от libc мешает одно место рантайма — перевод числа в текст](number-to-text-is-the-only-hard-part-of-dropping-libc.md)

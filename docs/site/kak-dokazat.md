@@ -285,7 +285,55 @@ negative number is greater than minus the modulus", and there is no such rule at
 all. Before repairing a base, read the upper claim's refusal and make sure it
 names the lower link rather than the shape of the goal.
 
-## 7. A "по свойству" theorem lands only on a bare call
+## 7. Lift the fold's step out of the lambda and form 1 works on it
+
+The cheapest technique of the evening, and it carries a number: **18 claims
+added, 18 proved, not one new grid.** `strings.flang` 30 → 41, `lists.flang`
+16 → 23.
+
+A fold is usually written with a lambda in place:
+
+```flang
+свёртка знаки начиная с начало как ход и знак → если ход равен нет то … иначе …
+```
+
+**There is nothing to attach a claim to on a lambda** — which is why the wall
+"the kernel does not unroll a fold" read as impassable, and why an earlier pass
+with theorems over these files returned zero. The cure is a move: lift the
+lambda's body into an ordinary function character for character, make the
+accumulator a parameter — and the claim's guard can be copied from the body
+again.
+
+```flang
+тотальная функция «Шаг обрезки слева»
+  принимает ход: «Ход обрезки», знак: строка
+  возвращает «Ход обрезки»
+  обеспечивает «не начатое ведущий пробел отбрасывает»
+    если не ход.«началось» то … иначе да
+```
+
+The kernel takes this by «разбор цели по условию» and «разбор случаев по
+внутреннему условию цели», **without a single theorem**.
+
+The accumulator need not be a record with fields: it landed on `ход.«началось»`
+and equally on a plain value — `если ход равен нет`, `если эл меньше ход`, `если
+ход содержит эл`. What works is not the field but the accumulator becoming an
+**ordinary parameter of a real function**, about which something can be said.
+
+The pattern was copied from something already in the tree: `crl.flang`, its
+object «Ход обрезки» and the lifted function «Шаг обрезки».
+
+**The limit of the technique is named by a third independent measurement.** The
+folding function's own postcondition is not lifted: «Шаг обрезки слева» is now
+proved four times over, and «Обрезать слева» did not move by a single claim. The
+wall runs exactly along the fold boundary — the step side is open, the fold side
+is closed.
+
+**Careful with anything already proved by induction.** Lifting the step can knock
+down a proof that stood. Measure, and if the file holds induction proofs on that
+fold, probe once first.
+
+## 8. A "по свойству" theorem lands only on a bare call
 
 If the body is a single call and the callee's postcondition matches the goal
 character for character, a one-step theorem goes through. If a `пусть х равно …`
@@ -317,9 +365,10 @@ time.
 
 Measured, not assumed — do not spend time on these forms until new rules appear:
 
-- **Folds.** Anything standing on a list fold stays a grid: «Хеш строки», «В
-  верхний регистр», «Обратить строку», «Ключи дерева». The kernel does not
-  unroll a fold, and the wording of the claim has nothing to do with it.
+- **Folds — but only at their own boundary.** The postcondition of the folding
+  function itself stays a grid: the kernel does not lift the step's claim up to
+  it. The **step level, however, is fully open** — see the separate technique
+  below.
 - **Recursion over your own type — but not all of it.** This used to say that a
   `разбор` body is hopeless. That holds when the branching is BY VARIANT; but if
   an ordinary `если` sits inside a case, form 1 works there too. Measured on

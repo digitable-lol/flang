@@ -217,7 +217,7 @@
 
   | Имя | Что это |
   |---|---|
-  | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.mjs` | рукописные исходники |
+  | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.flang` | рукописные исходники |
   | `flang/test/zakon-*.test.mjs` (шесть) | рукописные тесты |
   | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | проза |
 

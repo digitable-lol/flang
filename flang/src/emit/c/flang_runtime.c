@@ -1482,16 +1482,33 @@ static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, 
  */
 static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
   fl_chunk *chunk = NULL;
+  /*
+   * Обход обрывается на текущем куске, а не идёт до конца цепочки. За текущим
+   * лежат куски прежних откатов — пустые, но из цепочки не вынутые, и число их
+   * равно всему, что арена купила за жизнь; занулять их значило бы платить за
+   * историю на каждом откате. Пусты они не по случаю: `fl_arena_alloc`
+   * продвигает `current` только на кусок с `used == 0`, а новый вставляет сразу
+   * за ним, — значит «после текущего всё пусто» держится с рождения арены и
+   * восстанавливается этим же откатом.
+   */
   if (mark.chunk == NULL) {
     /* На отметке арена была пуста: пусто всё, что после неё. */
     for (chunk = arena->chunks; chunk != NULL; chunk = chunk->next) {
       chunk->used = 0;
+      if (chunk == arena->current) {
+        break;
+      }
     }
     arena->current = arena->chunks;
   } else {
     mark.chunk->used = mark.used;
-    for (chunk = mark.chunk->next; chunk != NULL; chunk = chunk->next) {
-      chunk->used = 0;
+    if (mark.chunk != arena->current) {
+      for (chunk = mark.chunk->next; chunk != NULL; chunk = chunk->next) {
+        chunk->used = 0;
+        if (chunk == arena->current) {
+          break;
+        }
+      }
     }
     arena->current = mark.chunk;
   }

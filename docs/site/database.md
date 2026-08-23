@@ -1,22 +1,14 @@
 # Databases
 
-This page shows how a flang program talks to PostgreSQL: what builds a query,
-who carries the bytes, what the library already contains, and how far it is
-actually taken. By the end you can read the five-step conversation that ships
-with the language, add a query of your own, and know in advance where it will
-trip.
+Two drivers ship with the language: PostgreSQL over the wire, and reading an
+SQLite file. Both are written in flang itself; both are checked by examples with
+no database present.
 
-## Who talks to whom
+## Who carries the bytes
 
-A flang program opens no sockets. It has arguments and a result, and nothing
-else: it sees neither files nor network, by construction of the language. That
-is exactly why its functions stay total and are checked by examples with no
-database present.
-
-The conversation is carried by a **plan**. A plan is a function that returns not
-an action but its *description*: "open a connection there", "send these bytes",
-"read the answer". The description is carried out by whoever ran the plan. The
-program decides, the runner acts.
+A flang program opens no sockets and no files. It returns a **plan** — a
+description of an action: "open a connection there", "send these bytes", "read
+the answer". The description is carried out by whoever ran the plan.
 
 ```mermaid Who carries the bytes between the program and the database
 flowchart LR
@@ -28,135 +20,112 @@ flowchart LR
   class C glavnoe
 ```
 
-Two consequences are worth holding on to from the start. First: the whole
-protocol — building messages and parsing answers — is ordinary total functions,
-checked by examples that need no database. Second: everything that depends on a
-real wire is only ever established by running it, and the line between the two
-halves is drawn explicitly below.
+That is why building messages and parsing answers stay ordinary total
+functions, and why `flang check` needs no server.
 
-## What is already written
-
-The PostgreSQL conversation lives in two files.
+## PostgreSQL: connect and query
 
 | file | what is in it | lines | functions | examples |
 | --- | --- | ---: | ---: | ---: |
-| `flang/stdlib/provod.flang` | the shared half: octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
-| `flang/stdlib/postgres.flang` | protocol version 3.0: client messages built, server messages parsed | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
+| `flang/stdlib/provod.flang` | octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
+| `flang/stdlib/postgres.flang` | protocol version 3.0: client messages built, server answers parsed | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
 | `flang/examples/db/postgres-plan.flang` | the whole five-step conversation | {{план.строк}} | | {{план.примеров}} |
 
-All {{база.тотальных}} functions of the module are total: termination of each is
-proved by the compiler, not promised.
-
-There are two library files rather than one, and that is the answer to "what
-about other databases". `provod.flang` holds {{провод.функций}} functions that
-know nothing about PostgreSQL — nor about databases at all: an octet, a
-network-order integer, a NUL-terminated string, cutting a stream into pieces. A
-second driver takes them as they stand.
-
-`postgres.flang` keeps {{база.функций}}. Of those, 39 are about the PostgreSQL
-protocol itself — message tags, the protocol version, column type numbers — and
-the remaining 13 are about the shape of an ANSWER (rows, a refusal, a completion
-tag) and would suit any database. They stay where they are until a second driver
-stands next to them: generalising from one example costs more than waiting for
-the second.
-
-The five steps are what one writes a driver for: startup and login, creating a
-table, an insert with parameters (`$1`, `$2`), a select, and a refusal on a
-deliberately wrong query. Every step ends with a "ready" message, and that is
-how the plan knows the answer has been read to the end.
-
-Here is how a simple query is assembled — taken from the tree verbatim:
+A simple query is built like this — taken from the tree verbatim:
 
 @@пример:simple-query@@
 
-## How to run it
-
-Checking and examples need no database at all:
+Checking and examples need no database:
 
 ```bash
-flang check flang/stdlib/postgres.flang
-flang test flang/stdlib/postgres.flang
+$ flang check flang/stdlib/postgres.flang
+$ flang test flang/stdlib/postgres.flang
 ```
 
-The conversation itself is a separate command, and it does need a live server:
+The conversation itself does need a live server:
 
 ```bash
-flang io flang/examples/db/postgres-plan.flang
-```
-
-The plan connects to `127.0.0.1:55434` as user `flang`, database `postgres`.
-Address, port, user and password stand in the plan as literals: a plan takes no
-arguments, and a program does not see the environment.
-
-## The borders, named one by one
-
-None of them is a guess: each follows from the construction and shows up in a
-run.
-
-**Login is `trust` and cleartext password only.** `md5` and `scram-sha-256`
-require HMAC, and the library has none: it has `sha256`, and `scram` wants
-PBKDF2 on top of that. The four raw octets of an `md5` salt do now arrive
-intact — over the old text pipe they did not, in five requests out of five —
-but there is still nothing to compute the digest with. A request the plan does
-not understand is not refused today: the plan keeps reading and waits.
-
-**There is no encryption.** The conversation runs in the clear; there is nothing
-to build or parse TLS with. That is fine for a database on the same machine, and
-for nothing beyond it.
-
-**The program has no column types.** `RowDescription` now arrives intact, but
-parsing takes only the number of columns out of it. The consequence: the type
-number of a column is named by whoever knows the schema and is passed as an
-argument. There is no "Column" type in the module: declaring a type nobody can
-construct would promise an ability that does not exist. Selects still go through
-the extended query protocol, for a different reason — it is the one that sends
-values as parameters.
-
-**A null value is not parsed.** Its length is minus one, that is 4 294 967 295
-octets, and parsing asks for that many and runs out.
-
-**Message length is bounded.** A message the program sends must have a length
-whose four octets are all below 128; a query is padded with spaces when needed,
-with 200 in reserve. A parameter value is at most 127 bytes. One parsing pass
-takes at most 1000 messages.
-
-**Corruption is recognised, not swallowed.** An element of the stream that is
-not an octet stops the parse with a distinct answer instead of being counted
-modulo something.
-
-## The conversation runs over a real wire
-
-The bytes travel as a list of numbers, not as text: the orders are
-`Прочитать октеты из соединения` and `Ответить октетами в соединение`. That is
-what makes a binary protocol possible at all. With text it was not: an order's
-content was measured with `strlen`, and the very first PostgreSQL message begins
-with a zero octet — the high byte of the four-byte length — so nothing was
-written and the connection closed.
-
-One command shows the state today. Against a live PostgreSQL 17.10:
-
-```
-$ flang io flang/examples/db/postgres-plan.flang
-1 пуск: | | | … server_encoding=UTF8
+$ flang io flang/examples/db/postgres-plan.flang | python3 -c \
+    "import sys,json; print(json.load(sys.stdin)['result'])"
+1 пуск: | | | in_hot_standby=off … server_version=17.10 server_encoding=UTF8
 2 создание: INSERT 0 1| | |
 3 вставка с параметрами: INSERT 0 1| | |
 4 выборка: SELECT 2| | 1	Мир ; 2	dva|
 5 отказ: | ERROR 42703 column "netakoykolonki" does not exist| |
 ```
 
-Five steps: start-up with a cleartext password, create, insert with parameters,
-select, and a deliberate failure answered with the server's own code. Cyrillic
-travels in both directions.
+Five steps: start-up with a cleartext password, create, insert with parameters
+(`$1`, `$2`), select, and a deliberately wrong query answered with the server's
+own code. Cyrillic travels in both directions. Without the pipe the command
+prints one JSON object: `result` is the report above, `log` is every order and
+every answer in full.
 
-Independently of any database, this is what a check establishes: every message
-built and every answer parsed — {{база.примеров}} module examples and
-{{план.примеров}} plan examples, run on every check of the file.
+The plan connects to `127.0.0.1:55434` as user `flang`, database `postgres`.
+Address, port, user and password stand in the plan as literals: a plan takes no
+arguments, and a program does not see the environment. Change them by editing
+the functions at the top of the plan.
+
+### PostgreSQL: what works and what does not
+
+| | |
+| --- | --- |
+| `trust` and cleartext password | works |
+| `md5`, `scram-sha-256` | no: HMAC and PBKDF2 are not in the library. The plan keeps reading and waits |
+| TLS | no. The conversation runs in the clear — for a database on the same machine |
+| column types in `RowDescription` | only the number of columns is taken out. Pass the type number of a column yourself |
+| a null value | not parsed: its length is minus one, and parsing asks for 4 294 967 295 octets |
+| length of a message you send | the four octets of the length must all be below 128; a query is padded with spaces, 200 in reserve. A parameter value is at most 127 bytes |
+| one parsing pass | at most 1000 messages |
+| a corrupt stream | stops the parse with a distinct answer, not silently |
+
+## SQLite: read a file
+
+`flang/stdlib/sqlite.flang` reads an SQLite 3 database as a list of octets: the
+file image comes in through one order, `Прочитать октеты из файла`. No server,
+nothing on the wire.
+
+Make a sample database with someone else's `sqlite3` and read it back:
+
+```bash
+$ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exist_ok=True); \
+  c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
+  c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
+
+$ flang io flang/examples/db/sqlite-chtenie.flang | python3 -c \
+    "import sys,json; print(json.load(sys.stdin)['result'])"
+магия SQLite: да
+размер страницы: 4096
+страниц: 2
+октетов в файле: 8192
+таблицы: люди
+корень таблицы люди: 2
+SQL: CREATE TABLE люди(имя text, лет integer)
+строк: 3
+1 | Аня | 31
+2 | Боря | 44
+3 | Вера | 7
+```
+
+The plan is `flang/examples/db/sqlite-chtenie.flang`; the path to the file and
+the name of the table stand in it as two one-line functions — `«Откуда»` and
+`«Какая таблица»`.
+
+### SQLite: what works and what does not
+
+| | |
+| --- | --- |
+| the header | magic, page size, number of pages |
+| the schema page `sqlite_master` | table names, their root pages, their SQL |
+| a table b-tree leaf | cell pointers, payload length, row number, the payload |
+| a record | null, integers of all six widths, the 0 and 1 of serial types 8 and 9, text through UTF-8, binary |
+| real numbers (serial type 7) | the eight octets are handed over as they are, in variant «Дробное» |
+| writing | no. A reading driver is the half that can be checked without breaking someone's file |
+| internal b-tree pages and overflow | no. They begin on a table larger than one page; empty is returned rather than a forgery. `«Вид страницы»` answers 13 for a table leaf and 5 for an internal page |
+| indexes (page kinds 2 and 10) | no: they are not table rows |
 
 ## Where to go next
 
-- [Processes, supervision, distribution](processes.html) — the other half of
-  talking to the world: who holds the connection while work is going on.
-- [What is proved and what is not](what-is-proved.html) — which part here is a
-  proof and which part is a run.
-- [How to keep learning the language](learning.html) — where this page sits on
-  the road.
+- [Processes, supervision, distribution](processes.html) — who holds the
+  connection while work is going on.
+- [Embedding flang](embedding.html) — how the driver gets into a program in
+  your language.

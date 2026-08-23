@@ -8,25 +8,11 @@ virtual machine is anywhere near it while it runs.
 
 There are {{цели.поАнглийски}} emit targets: {{цели.список}}.
 
-Not one command here is from memory: all of them were run against this tree with
-the `flang` binary — the same one a release archive installs — under `cc` 15.2.0,
-Python 3.14.4, Linux 7.0.0. The numbers beside the commands come from those same
-runs; where a number is missing, the reason is stated.
-
 ## One command
 
 ```bash
 flang emit <file> --target <target> --out <directory>
 ```
-
-Without `--target` the command names the whole list itself and refuses:
-
-```bash
-$ flang emit
-flang emit: не назван файл. Пример: flang emit м.flang --target c --out каталог
-```
-
-The flags that matter to someone embedding:
 
 | flag | what it does |
 |---|---|
@@ -34,16 +20,15 @@ The flags that matter to someone embedding:
 | `--no-cli` | do not emit the runner — module and runtime only |
 | `--max-steps N`, `--max-depth N` | limits baked into the emitted code as defaults |
 | `--index-base 0` or `--index-base 1` | the program's index base; lands in `FL_INDEX_BASE` |
+| `--runtime path` | where to take the target's runtime sources from |
 
-Verified by running it: `--max-steps 500 --max-depth 200` produce exactly
-`const $DEFAULT_MAX_DEPTH = 200` and `const $DEFAULT_MAX_STEPS = 500` in the
-emitted JavaScript module, and `--index-base 0` produces the line
-`#define FL_INDEX_BASE 0` in the C runtime header.
+`--max-steps 500 --max-depth 200` produce exactly `const $DEFAULT_MAX_STEPS =
+500` and `const $DEFAULT_MAX_DEPTH = 200` in the emitted JavaScript module;
+`--index-base 0` produces the line `#define FL_INDEX_BASE 0` in the C runtime
+header.
 
 **What does not check does not get emitted.** `emit` first runs the same checks
-as `check`, and on the first trouble it refuses without writing a single file.
-Run against a deliberately broken copy of the example (`returns number` replaced
-by `returns string`):
+as `check`, and on the first trouble it refuses without writing a single file:
 
 ```bash
 $ flang emit broken.flang --target js --out ./out
@@ -55,28 +40,16 @@ $ ls ./out
 ls: cannot access './out': No such file or directory
 ```
 
-### Where the compiler takes the runtime sources from
-
-Beside the emitted module, emission places the target's runtime — values,
-arithmetic, diagnostics. Its sources live in the tree
-(`flang/src/emit/<target>/`) and emission reads them from disk: it does not
-invent them. It looks in `$FLANG_RUNTIME_DIR`, then in
-`../flang/src/emit/<target>` and `../share/flang/<target>`; a binary built in a
-directory of its own is told the path with `--runtime`.
-
-The `--out` directory is not created by emission: not finding it, it refuses by
-name.
-
-Emission warns separately about the entry boundary, and that is not a detail:
+Emission also warns about the entry boundary:
 
 ```
 аргументы напечатанной программы по типам не проверяются: это ограничение
 двоичного flang
 ```
 
-The emitted code will build and run; the runner's arguments will simply not be
-checked against the declared types. The full account is below, in the section on
-the runner over a pipe.
+The emitted code builds and runs; the runner's arguments are simply not checked
+against the declared types. The way around it is below, in the section on the
+runner over a pipe.
 
 ## What arrives in the directory
 
@@ -99,17 +72,10 @@ diagnostics), the **program module** (one function per flang function), a
 **runner**, and a build file. With `--no-cli` the runner is gone: `js` is left
 with a single `factorial.js`, `c` with five files out of six.
 
-One more thing arrives in the `emit` answer and is worth reading before you
-choose a target — the `возможности` (capabilities) field. Concurrency is not
-everywhere, and a target that did not get it refuses to emit a concurrent
-program rather than quietly doing something else:
-
-| target | concurrency | parallelism | delegated tasks | reason as given |
-|---|---|---|---|---|
-| `c` | yes | no | yes | cooperative scheduler in the runtime, one thread |
-| `elixir` | yes | yes | no | one BEAM process per process, supervision by OTP trees |
-| `js` | yes | no | no | one thread |
-| `csharp`, `go`, `java`, `python`, `rust` | no | no | no | no scheduler: emitting a concurrent program refuses with `FLANG_CONC_UNSUPPORTED` |
+A program with `процесс` and `надзор` declarations is emitted with a scheduler
+on `c` and `elixir` only; on the other targets the handlers arrive as ordinary
+functions and the calling is yours. Concurrency per target is also named in the
+`возможности` field of the `emit` answer.
 
 ## C: build it and link it into your program
 
@@ -119,12 +85,6 @@ $ flang emit flang/examples/rosetta/factorial-english.flang --target c --out ./o
 $ ls ./out-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
-
-The sizes are left out on purpose, and not out of laziness. The bytes of emitted
-code are not promised (see "Boundaries" below), and the price of that promise was
-measured while this very page was being written: between two runs on the same day
-`factorial.h` grew from 4 324 bytes to 4 968, because the generator in the tree
-was being edited. The list of files did not move at all — lean on that.
 
 `make` in that directory builds a **static library** and the runner:
 
@@ -158,9 +118,9 @@ fl_status factorial_product(fl_ctx *ctx, fl_value items, fl_value *result, fl_er
 
 The C name is `<module>_<function>`, both slugs. «Factorial» →
 `factorial_factorial`; «Приписать в начало» in module «Факториал» →
-`faktorial_pripisat_v_nachalo`. Beside the functions the header also declares the
-plumbing: `factorial_call`, which calls by the original flang name («Factorial»,
-not the slug) for anyone binding dynamically, and `factorial_entry`, the table of
+`faktorial_pripisat_v_nachalo`. Beside the functions the header declares
+`factorial_call`, which calls by the original flang name («Factorial», not the
+slug) for anyone binding dynamically, and `factorial_entry`, the table of
 declared parameter types as data.
 
 A C host is an ordinary file that includes the header and links against the
@@ -220,15 +180,12 @@ Three rules are visible right there, and you will have to keep them:
    stack. One context can be reused across calls, as above.
 
 WebAssembly comes from the same place: the emitted C moves there without edits —
-the [measurement](../wasm.html) was made over every program in the repository.
+see [WebAssembly through C](../wasm.html).
 
 ## The value at the boundary
 
-Inside the evaluator a value has its own representation
-(a record is a plain object, a list is an array, a
-variant is a class of its own, plus a hidden "list with spare room" that never
-leaves at all). **Each emit target has its own representation**, and that is not
-a detail: it is precisely the boundary across which you talk to the program.
+Each emit target has its own representation of a value, and that is precisely
+the boundary across which you talk to the program.
 
 ### C
 
@@ -244,34 +201,18 @@ a detail: it is precisely the boundary across which you talk to the program.
 | variant | `FL_VARIANT` | `fl_variant_is(v, "Name")`, `fl_variant_field(ctx, v, "field", …)` |
 | nothing | `FL_NOTHING` | no payload |
 
-**A string is not required to be NUL-terminated.** That is written in the field's
-own header: a substring and a tail are slices of shared memory. Print it by
-length, not with `%s`. And there are two lengths: `bytes` — UTF-8 octets,
-`points` — code points; `длина` in the language counts the latter. Run over
-«привет» through «Reverse string»:
-
-```
-вход: tag=3 bytes=12 points=6
-выход: tag=3 bytes=12 points=6 текст=тевирп
-```
+**A string is not required to be NUL-terminated**: a substring and a tail are
+slices of shared memory. Print it by length, not with `%s`. And there are two
+lengths: `bytes` — UTF-8 octets, `points` — code points; `длина` in the language
+counts the latter.
 
 Two constructors make a string in C: `fl_text_borrow(utf8, bytes, points)` — no
 copy, the caller counts the code points; `fl_text(ctx, utf8, bytes, &out, &err)`
-— copies into the arena, the runtime counts the points. The second is safer and
-is the one used in the examples here.
+— copies into the arena, the runtime counts the points. The second is safer.
 
 **Field and variant names are not translated.** Only function and module names
 are transliterated; a field declared as «адрес» is taken in C by exactly that
-name — `fl_field_get(&ctx, v, "адрес", …)`. Run over
-`flang/examples/web/shortener/store.flang`:
-
-```
-пустое: tag=5 полей=2
-после «Положить»: ссылок = 1
-поле «выдано» = 1
-поле «записи»: tag=4 длина=1
-первая запись, «адрес» = https://пример.рф
-```
+name — `fl_field_get(&ctx, v, "адрес", …)`.
 
 **A refusal declared as a value arrives as a value.** In
 `flang/examples/errors/number-parsing.flang` the function «Разобрать число»
@@ -280,9 +221,7 @@ variant, not `FL_ERROR`:
 
 ```
 42 → Вышло, значение = 42
-12.5 → Вышло, значение = 12.5
 abc → Не вышло, сообщение = «к числу»: строка "abc" не является числом
-1e999 → Не вышло, сообщение = «к числу»: строка "1e999" не является конечным числом
 ```
 
 The difference matters: `FL_ERROR` is a refusal of the computation (wrong type,
@@ -291,20 +230,18 @@ which you take apart with `fl_variant_is`.
 
 ### JavaScript
 
-Here the representation matches the interpreter word for word, and there is
-nothing to translate: a number is a `number`, a string is a `string`, a flag is a
-`boolean`, "nothing" is `null`, a list is an `Array` (an ordinary one —
-`Array.isArray` answers `true`), a record is a plain object with the original
+The representation is the plain one: a number is a `number`, a string is a
+`string`, a flag is a `boolean`, "nothing" is `null`, a list is an `Array`
+(`Array.isArray` answers `true`), a record is a plain object with the original
 field names, a variant is an instance of an internal class with fields `variant`
 and `fields`. A refusal **is thrown**: a `FlangError` with `code`, `message` and
 `diagnostics`.
 
-### Python, and the rest
+### Python
 
 The Python representation is **different**, and you need to know that before the
-first call: values there are boxed (`Value` with fields `tag` and `data`),
-functions take the context as their first argument, and a bare number is not
-accepted by the runtime. Run:
+first call: values are boxed (`Value` with fields `tag` and `data`), functions
+take the context as their first argument, and a bare number is not accepted:
 
 ```python
 import factorial, flang_runtime as rt
@@ -322,24 +259,18 @@ except rt.FlangError as e:
 
 The rule that holds for every target: **read the emitted header or module.** It
 carries the parameter types, the calling contract, and the `тотальная` (total)
-mark on every function — emission carries them over from the source instead of
-retelling them.
+mark on every function.
 
-### What is not translated on any target
-
-Refusal codes (`FLANG_TYPE`, `FLANG_RECURSION_LIMIT`, …) and the diagnostic
-**texts** arrive the same on every target — and those texts are Russian, even
-when the program is written on the English keyword surface. The run above shows
-it: `«Factorial»` is an English name, while the message is «сравнения порядка
-допустимы только для чисел». Depend on the code in your program, not on the text:
-texts are [not promised](../what-blocks-1-0.md).
+Refusal codes (`FLANG_TYPE`, `FLANG_RECURSION_LIMIT`, …) arrive the same on
+every target; the diagnostic **texts** are Russian on every target, even when
+the program is written on the English keyword surface. Depend on the code in
+your program, not on the text.
 
 ## JavaScript: embedding into your own project
 
-This is the case the `js` target was kept in the language for. The module is
-self-contained: not a single `import` and not a single `require` at the top level
-(checked by searching the emitted file) — the one import it has sits inside
-`$callDeep` and is taken dynamically.
+The module is self-contained: not a single `import` and not a single `require`
+at the top level — the one import it has sits inside `$callDeep` and is taken
+dynamically.
 
 ```bash
 $ flang emit flang/examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
@@ -347,12 +278,6 @@ $ flang emit flang/examples/rosetta/factorial-english.flang --target js --no-cli
 $ ls ./out-js
 factorial.js
 ```
-
-One file, no neighbours. With the runner the module is larger: alongside the
-runner the link to it is emitted too — `$PROGRAM`, carrying the table of declared
-types — and without a runner there is nobody to emit it for. Checked by search:
-the module built with a runner has `$PROGRAM`, the one built with `--no-cli` does
-not have it at all.
 
 ```js
 import { factorial, product, $newContext } from "./factorial.js"
@@ -369,7 +294,7 @@ function `razobratChislo`, while **fields and variant names stay as they were**:
 ```js
 import { razobratChislo, Vyshlo } from "./razbor_chisla.js"
 
-for (const текст of ["42", "abc", "1e999"]) {
+for (const текст of ["42", "abc"]) {
   const итог = razobratChislo(текст)
   console.log(JSON.stringify(текст), "→", итог.variant, JSON.stringify(итог.fields))
 }
@@ -379,7 +304,6 @@ console.log("built by the host:", JSON.stringify(Vyshlo({ значение: 7 })
 ```
 "42" → Вышло {"значение":42}
 "abc" → Не вышло {"сообщение":"«к числу»: строка \"abc\" не является числом"}
-"1e999" → Не вышло {"сообщение":"«к числу»: строка \"1e999\" не является конечным числом"}
 built by the host: {"variant":"Вышло","fields":{"значение":7}}
 ```
 
@@ -394,8 +318,8 @@ SyntaxError: Named export 'factorial' not found. The requested module './factori
 is a CommonJS module, which may not support all module.exports as named exports.
 ```
 
-Two cures were run and both work: rename the file to `.mjs`, or declare
-`"type": "module"` in the directory it landed in.
+Two cures, both work: rename the file to `.mjs`, or declare `"type": "module"`
+in the directory it landed in.
 
 ### Limits and depth
 
@@ -418,7 +342,6 @@ of falling over with someone else's error:
 $callDeep 9000: длина 9000
 ```
 
-The depth in that message is THIS machine's and this host's; yours will differ.
 The lever is `await $callDeep(fn, [args], limits)`: the computation moves into a
 thread with an explicitly sized stack, and the declared limit becomes reachable.
 In a browser, and anywhere the thread did not start, the computation runs as
@@ -452,14 +375,13 @@ for (const [имя, текст] of СЦЕНАРИЙ) {
 хранилище: {"записи":[{"код":"к1","адрес":"https://пример.рф/док","переходов":1}],"выдано":1}
 ```
 
-Non-termination lives in the host's loop, while the handler always terminates —
-that is not a hope but an output of `check`.
+Non-termination lives in the host's loop, while the handler always terminates.
 
 ## Any language: the runner over a pipe
 
 If there is no target for your language, or you would rather not bind by source,
-there is a third road — the very runner emitted next to the module: **JSON in,
-JSON out, one process per stream of requests.** The protocol is the same on every
+there is a third road — the runner emitted next to the module: **JSON in, JSON
+out, one process per stream of requests.** The protocol is the same on every
 target.
 
 ```bash
@@ -472,47 +394,38 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
 ```
 
 The same input fed to the `./flang_cli` binary built from the `c` target gives
-the same lines — that was run. A function is called by its **original flang
-name**, not by the slug. Values are tagged, because JSON is poorer than the
-language: `{"n":"1.5"}` is a number as a string (otherwise `NaN`, `Infinity` and
-−0 would be lost), `{"s":…}` a string, `{"l":[…]}` a list, `{"r":[["field",…]]}`
-a record, `{"v":"Name","f":[…]}` a variant, `null` is "nothing", `true`/`false` a
-flag.
+the same lines. A function is called by its **original flang name**, not by the
+slug. Values are tagged, because JSON is poorer than the language:
+
+| tag | value |
+|---|---|
+| `{"n":"1.5"}` | a number as a string — otherwise `NaN`, `Infinity` and −0 would be lost |
+| `{"s":"…"}` | a string |
+| `{"l":[…]}` | a list |
+| `{"r":[["field", …]]}` | a record |
+| `{"v":"Name","f":[…]}` | a variant |
+| `null`, `true`/`false` | "nothing", a flag |
 
 This road has something the direct call does not: **the runner checks arguments
 against the declared types before the call** — using the table emission placed
 beside the module (`factorial_entry` in C, `$PROGRAM.entry` in JS). Hence the
 difference in the messages above: the direct call `factorial("x")` gets as far as
 the comparison and answers «сравнения порядка допустимы только для чисел», while
-the runner answers earlier and more precisely — «аргумент «n» не соответствует
-типу нат».
+the runner answers earlier and more precisely.
 
-## Boundaries: what this page does not promise
+## What is not promised
 
-Written not for completeness but because a promise read wider than it was made is
-a future breakage in your code.
-
-- **The bytes of the emitted code are not promised.** The promise is behavioural:
-  the same program yields the same values and the same refusal codes, not the
-  same bytes. The generator is being optimised, and the files will differ.
-- **Diagnostic texts are not promised — only codes.** And those texts are Russian
-  on every target and on every keyword surface.
-- **Emission produces no TypeScript declarations.** There is no `.d.ts` and no
-  types file beside the module; types arrive as JSDoc comments inside the module
-  itself, which is enough for editor hints but not for a strict build.
-- **Concurrency exists on three targets out of {{цели.поАнглийски}}** (`c`,
-  `elixir`, `js`), parallelism on one (`elixir`). The rest refuse to emit a
-  concurrent program.
-- **The table of declared types on the entry boundary is left empty.** Emission
-  says so itself and does not refuse: the emitted code builds and runs, but the
-  runner's arguments are not checked against the declared types.
-- **About `--index-base`, `--max-steps` and `--max-depth` only one thing was
-  checked** — that they reach the emitted code as the lines named above; their
-  effect on a running program was not measured here.
+- **the bytes of the emitted code.** The promise is behavioural: the same
+  program yields the same values and the same refusal codes, not the same bytes;
+- **diagnostic texts** — only codes. The texts are Russian on every target;
+- **TypeScript declarations.** There is no `.d.ts`; types arrive as JSDoc
+  comments inside the module, enough for editor hints, not for a strict build;
+- **concurrency everywhere.** Processes run on `c` and `elixir`, parallelism on
+  `elixir`;
+- **type-checked arguments on a direct call.** The table on the entry boundary
+  is left empty; the runner over a pipe checks them, a direct call does not.
 
 ## Next
 
 - [First program](getting-started.html) — where to start if you have not installed flang yet
 - [Packages](packages.html) — how to assemble a flang library before emitting it
-- [WebAssembly through C](../wasm.html) — the measurement: emitted C moves to wasm without edits
-- [Known limitations](limits.html) — what the language cannot do

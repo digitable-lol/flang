@@ -13912,7 +13912,7 @@ static int mcp_serve(int argc, char **argv) {
       args[4] = repl_value_say(bads);
       free(bads);
       if (repl_call("Принять ведомость MCP", args, 5, &step) != FL_OK) {
-        fputs("flang --mcp-mode: ведомость не улеглась в ответ\n", stderr);
+        fputs("flang --mcp-mode: отчёт о доказательствах не улёгся в ответ\n", stderr);
         continue;
       }
     }

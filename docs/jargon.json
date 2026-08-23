@@ -419,6 +419,24 @@
       "слово": "ведомость",
       "внутри": "buf_put(&out, \"],\\\"ведомость\\\":\")",
       "почему": "имя поля машинного вывода flang package. Это договор с тем, кто пакет читает, а не проза"
+    },
+    {
+      "файл": "flang/src/emit/c/flang_repl.c",
+      "слово": "ведомость",
+      "внутри": "val_field(result, \"ведомостью\", &field)",
+      "почему": "имя поля записи «Свод корпуса» на flang (flang/self/bootstrap/corpus.flang): по нему рантайм достаёт значение, переименовать текстовым запретом нельзя"
+    },
+    {
+      "файл": "flang/src/emit/c/flang_repl.c",
+      "слово": "ведомость",
+      "внутри": "val_field(step, \"ждёт ведомость\", &field)",
+      "почему": "имя поля записи «Шаг MCP» на flang (flang/self/mcp.flang), а не текст для читателя"
+    },
+    {
+      "файл": "flang/src/emit/c/flang_repl.c",
+      "слово": "ведомость",
+      "внутри": "repl_call(\"Принять ведомость MCP\"",
+      "почему": "имя функции на flang (flang/self/mcp.flang), а не текст для читателя"
     }
   ],
   "долг": {
@@ -426,8 +444,8 @@
     "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,
-    "docs/guide/limits.md": 7,
-    "docs/guide/limits.ru.md": 13,
+    "docs/guide/limits.md": 6,
+    "docs/guide/limits.ru.md": 12,
     "docs/guide/naming.md": 11,
     "docs/guide/naming.ru.md": 25,
     "docs/guide/project-layout.ru.md": 1,

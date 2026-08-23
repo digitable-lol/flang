@@ -112,7 +112,7 @@ Two checks do it now, and they answer different questions.
 
 | Command | Question | Cost (measured 22 August, 256 cores) |
 |---|---|---|
-| `sh scripts/raskrutka.sh --check` | does the seed match the emission, compared byte for byte | 19 min 58 s, 25.1 GiB |
+| `sh scripts/raskrutka.sh --check` | does the seed match the emission exactly, down to the last byte | 19 min 58 s, 25.1 GiB |
 | `sh scripts/raskrutka.sh --bystro` | are the emission's inputs the same ones | 0.52 s |
 
 The expensive one re-emits — that is exactly why nobody called it. The cheap one
@@ -126,9 +126,9 @@ The cheap one runs on every push as job `semya` in
 `.github/workflows/dvoichnyy.yml`; a mismatch is a refusal, not a warning. The
 the full comparison is called before a release and after merges.
 
-**What the cheap one does not prove:** that the files agree byte for byte. It answers the
-narrower question — "are these the same inputs" — and that is precisely the
-question that had no answer.
+**What the cheap one does not prove:** that the files are identical down to the
+last byte. It answers the narrower question — "are these the same inputs" — and
+that is precisely the question that had no answer.
 
 ## What the circle does not check
 

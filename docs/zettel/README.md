@@ -40,11 +40,8 @@
 
 ## Доказательства
 
-- [Строгое «больше» в цели ядро берёт, если написать его целочисленно: «Е плюс 1 не больше Г»](strict-greater-is-taken-as-plus-one-not-greater.md)
-- [Отказ «инстанцировано на 2 вызовах» держит не `пусть`-имя, а тело вызванной: с телом-`разбор` он остаётся](two-calls-refusal-is-about-the-callee-body-not-the-let-name.md)
 - [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
-- [Условие цели ядро сличает с условием тела знак в знак: равносильная запись не считается](goal-condition-must-match-body-condition-sign-for-sign.md)
 - [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
 - [Список стен, переписанный руками из отчёта в отчёт, устарел на две трети: из 24 записанных «ядро не берёт» держатся 9](a-hand-copied-wall-list-goes-stale-in-silence.md)
@@ -77,6 +74,7 @@
 - [Зазор между двумя печатями в C ловится только пятиминутной сборкой, и на файлах `self/` не ловится вовсе](emitter-twin-gap-is-only-caught-by-a-five-minute-build.md)
 - [Запрет равенства в теле оказался засидевшимся, а не границей: довод «запрет держит цену видимой» падает от двух прогонов, а спека языка требовала обратного](equality-in-a-body-was-a-stale-restriction-not-a-boundary.md)
 - [Равенство над параметром типа запрещено только в ТЕЛЕ: в утверждении оно разрешено, и упирается в него девять мест, а не вся библиотека](equality-on-a-type-parameter-is-banned-only-in-bodies.md)
+- [Условие цели ядро сличает с условием тела ЗНАК В ЗНАК — равносильная запись не считается](goal-condition-must-match-body-condition-sign-for-sign.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](granica-perezhivaet-vychitanie.md)
 - [Тело-«если» получило посылку индукции, и это дало по библиотеке ноль](if-bodies-get-induction-but-assertions-still-block.md)
 - [Индукция по строке закрыла ОДНО утверждение на весь корпус, а не сотню: за стеной стоит вторая](indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.md)
@@ -205,7 +203,6 @@
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika.md)
 - [Асинхронный `connect` рвёт связь, не дав ей завестись, если сокет назначен каналу раньше события «Сокет завёлся»](an-async-connect-tears-the-link-before-it-is-made.md)
 - [BEAM не обходит операционную систему, и C зависит от неё ровно так же](beam-does-not-bypass-the-os.md)
-- [Синхронный планировщик умеет ждать сеть, не останавливаясь: «ждать» — это «спросить и не получить письма»](the-scheduler-waits-for-the-network-without-stopping.md)
 - [Оценку витков нельзя ввезти ни в один слой компилятора: имена совпадают, а переименования при ввозе в языке нет](boundedness-cannot-be-imported.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка: NaN и бесконечности внутрь не проходят](chislo-na-vhodnoy-granice-uzhe-chem-v-yazyke.md)
 - [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](etalon-sverennyy-s-tretim-artefaktom.md)
@@ -234,6 +231,7 @@
 - [Надзор не удалось ввезти из `flang/self/conc.flang`: тот модуль не проходит проверку, и виноват один встроенный](supervision-could-not-be-imported-because-its-module-does-not-compile.md)
 - [Тексты рантайма двоичный читает ИЗ ДЕРЕВА при печати, а не несёт в себе](the-binary-reads-its-runtime-texts-from-the-tree.md)
 - [Цена хозяина узла считается по ТРЁМ осям, а не по одной](the-host-price-has-three-axes-not-one.md)
+- [Синхронный планировщик умеет ждать сеть, не останавливаясь: «ждать» — это «спросить и не получить письма»](the-scheduler-waits-for-the-network-without-stopping.md)
 - [Пару живых узлов на проводе словарь поручений не поднимет: «Запустить процесс» ждёт конца, и всё же одна оболочка это делает](two-live-nodes-on-a-wire-need-a-shell-because-orders-run-one-process-at-a-time.md)
 - [Типизированная ссылка на процесс выражается сегодняшним языком без единой правки компилятора, и подделка с чужим грузом отвергается](typed-process-reference-is-already-expressible.md)
 - [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов, а не «нет доступа к миру»](uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata.md)
@@ -558,10 +556,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Синхронный планировщик умеет ждать сеть, не останавливаясь: «ждать» — это «спросить и не получить письма»](the-scheduler-waits-for-the-network-without-stopping.md)
 
 ## Как добавлять
 

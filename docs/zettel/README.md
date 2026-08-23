@@ -133,6 +133,7 @@
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
 - [Тело-«если» получило посылку индукции, и это дало по библиотеке ноль](if-bodies-get-induction-but-assertions-still-block.md)
 - [Закрытый список правил сверщика разошёлся с ядром: было восемь, стало тринадцать](spisok-pravil-sverchika-razoshelsya-s-yadrom.md)
+- [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](vetka-esli-razvorachivaetsya-v-obe-storony-a-razbor-spiska-net.md)
 
 ## Теория категорий
 

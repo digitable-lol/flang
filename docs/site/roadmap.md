@@ -5,8 +5,10 @@ what is queued, and what has been ruled out. There are no dates here — no
 quarters, no months.
 
 What the language already has is not read here:
-[Language reference](language.html), [Language operations](operations.html),
-[Releases](releases.html).
+[Language reference](language.html), [Standard library reference](stdlib.html),
+[Command reference](cli.html), [Diagnostics reference](diagnostics.html),
+[Language operations](operations.html), [Setting up your editor](editor.html),
+[Troubleshooting](troubleshooting.html), [Releases](releases.html).
 
 ## Where the language is now
 
@@ -19,6 +21,8 @@ What the language already has is not read here:
 
 The main limit of the language shows up right there, and it is also the main
 item of the plan: **termination is proved in bulk, behaviour is proved rarely**.
+The gap is widening rather than closing: claims are written faster than the
+kernel can prove them.
 
 ## In progress
 
@@ -27,34 +31,70 @@ but the strength of the rules themselves: there are three deciding rules, and
 they run out on the body shape of an ordinary function. How the kernel works —
 [Why and how](proofs.html).
 
-**An emitted program has no input boundary.** The installed `flang` does check
-arguments against declared types: `Факториал` is declared over `нат`, and given
-−3 it answers `FLANG_TYPE: аргумент «н»: -3 вне нат` with exit code 1. A program
-emitted by `flang emit` does not: the caller answers for its input, and
-`flang emit` says so as it emits.
+**The compiler says a great deal about itself, and little about it is proved.**
+The compiler's own sources (`flang/self`, 56 files) carry 5548 behaviour claims
+over 8536 function declarations: 5226 functions out of 8536 carry at least one.
+Writing a claim is not the same as proving it — only a minority of them is
+proved, and it runs into the same wall as the library.
 
-**The installed language emits into C only.** The other targets come with the
-compiler installed through npm — [how to embed flang](embedding.html).
+**An emitted program has no input boundary.** The installed `flang` does check
+arguments against declared types:
+
+```
+flang run flang/examples/measure/natural.flang --function «Факториал» --args '{"н":-3}'
+→ FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне нат      (exit 1)
+```
+
+A program emitted by `flang emit` does not: the caller answers for its input,
+and `flang emit` says so as it emits. It emits into all eight targets from the
+same binary — [how to embed flang](embedding.html).
 
 **The English half of the site is incomplete.** The site's own pages are
 translated; the guide and the specifications are still Russian only.
 
 ## Next, and each holds the one after it
 
-**1. There is no package manager.** Packages themselves exist: `flang package`
-puts a library and everything it pulls into one file — [how it is
-done](packages.html). What is missing is everything above a package: a registry,
-search by name, version ranges, dependency resolution. Updating today means
-taking the new file and putting it where the old one was.
+**1. There is no package manager.** The package and the lockfile themselves
+exist: `flang package` puts a library and everything it pulls into one file,
+`flang lock` records the dependencies themselves rather than references to them
+— [how it is done](packages.html). What is missing is everything above a
+package: a registry, search by name, version ranges, dependency resolution.
+Updating today means taking the new file and putting it where the old one was.
 
-**2. The standard library is small.** No database, no full networking. This
-comes after the package manager, not before it: while a library cannot be handed
-out by name and version, there is little point in growing it.
+**2. The library grew ahead of the package manager.** This page used to promise
+the opposite order — "while a library cannot be handed out by name and version,
+there is little point in growing it" — and the order came out otherwise. Today
+`flang/stdlib` holds 33 modules, and none of the gaps from the old list is left:
 
-**3. There is almost no application code.** The backend is one example of seven
-files (`flang/examples/library-api`); the frontend is a browser demo, not an
-application. Application code waits on the library, the library waits on
-packages.
+- databases — **two** drivers: PostgreSQL over the wire (protocol 3.0, login
+  through `scram-sha-256`) and reading a SQLite file by walking its b-tree;
+- networking — HTTP (parsing and printing request and response), a binary
+  protocol over TCP (`provod`), Redis over RESP2;
+- own cryptography — AES with CTR, GCM and CBC modes, X25519 key exchange,
+  SHA-1, SHA-256, HMAC, PBKDF2, DER parsing, X.509 certificate parsing and CRL
+  revocation-list parsing.
+
+What is **not** done in that list: the secure connection itself is not run by
+our own cipher — `https` still goes out to the external `curl`, and revocation
+checking is not wired into it, even though there is now something to read a CRL
+with. A registry is needed more for this library, not less: there is now
+something worth handing out by name and version.
+
+**3. Application code is thin, but no longer a single item.** A link-shortener
+service (`flang/examples/web/shortener`) — storage, routing, processes and
+supervision, with not one line between the incoming and outgoing bytes written
+in anything but flang; a backend example of seven files (`examples/library-api`);
+plans that talk to the databases (`flang/examples/db`). These are examples, not
+applications in service: no program among them is one somebody runs in
+production.
+
+**4. The auxiliary code is still JavaScript.** The tree holds 53 such files
+(`git ls-files | grep -E '\.(mjs|js)$'`) — the site build, the guards, the
+benchmarks. Some of them are not held up by a shortage of hands: four
+capabilities are absent from the language itself, and what exactly holds each
+file is worked out in `docs/pochemu-ostayotsya-javascript.md`. Twelve files are
+not a debt at all — the runtime of the `js` emit target, output of the compiler
+itself, and launchers that run before flang is on the machine.
 
 ## Ruled out
 

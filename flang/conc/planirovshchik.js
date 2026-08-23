@@ -170,6 +170,13 @@ function $keep(value) {
   return value
 }
 
+function $post(value, property, name) {
+  if (typeof value !== "boolean") {
+    $fail("FLANG_TYPE", `постусловие «${property}» функции «${name}» должно давать признак, получено ${$typeName(value)}`)
+  }
+  return value
+}
+
 function $nums(op, left, right) {
   if (typeof left !== "number" || typeof right !== "number") {
     $fail("FLANG_TYPE", `операция «${op}» допустима только для чисел, получено ${$typeName(left)} и ${$typeName(right)}`)
@@ -212,11 +219,35 @@ function $lte(left, right) {
   return left <= right
 }
 
+function $pairSplits(left, right) {
+  /* Сойдутся ли на стыке двух строк высокая и низкая половины суррогатной пары.
+     В UTF-16 они слились бы в ОДИН знак: два знака на входе, один на выходе. */
+  if (left.length === 0 || right.length === 0) return false
+  const last = left.charCodeAt(left.length - 1)
+  const first = right.charCodeAt(0)
+  return last >= 0xd800 && last <= 0xdbff && first >= 0xdc00 && first <= 0xdfff
+}
+
+function $glueCheck(left, right) {
+  /* Отказ, а не тихая порча: слияние на стыке сделало бы ложным всякое
+     утверждение о длине склейки, а показать разницу это представление не может.
+     У целей, где строка — UTF-8 или последовательность кодовых точек, такого
+     стыка не бывает вовсе, и проверка там не нужна. */
+  if ($pairSplits(left, right)) {
+    $fail("FLANG_BUILTIN_ARGS", "«соединить»: на стыке сошлись половины суррогатной пары — два знака слились бы в один")
+  }
+}
+
+function $glue(left, right) {
+  $glueCheck(left, right)
+  return left + right
+}
+
 function $concat(left, right) {
   if (typeof left !== "string" || typeof right !== "string") {
     $fail("FLANG_TYPE", `«соединить» допустимо только для строк, получено ${$typeName(left)} и ${$typeName(right)}`)
   }
-  return left + right
+  return $glue(left, right)
 }
 
 function $expectNumber(name, value, role) {
@@ -432,7 +463,7 @@ export function sozdatHodUzla(fields = {}) {
   }
 }
 
-/** Сумма типов FTS «Что случилось с узлом»: «Письмо снаружи» | «Обработчик вернул» | «Обработчик отказал» | «Таймер сработал» | «Связь готова» | «Связь потеряна» | «Пора бежать». */
+/** Сумма типов FTS «Что случилось с узлом»: «Письмо снаружи» | «Обработчик вернул» | «Обработчик отказал» | «Таймер сработал» | «Связь готова» | «Связь потеряна» | «Узел пропал» | «Пора бежать». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} ChtoSluchilosSUzlom */
 
@@ -512,6 +543,19 @@ export function SvyazGotova(fields = {}) {
  */
 export function SvyazPoteryana(fields = {}) {
   return new $FlangVariant("Связь потеряна", fields)
+}
+
+/**
+ * Конструктор варианта «Узел пропал» суммы «Что случилось с узлом».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "узел": string, "почему": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function UzelPropal(fields = {}) {
+  return new $FlangVariant("Узел пропал", fields)
 }
 
 /**
@@ -1350,6 +1394,222 @@ export function neBolshe(chto, predel) {
 }
 
 /**
+ * Функция flang «Жил на узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Process} p — «п»
+ * @param {string} sosed — «сосед»
+ * @returns {*}
+ */
+export function zhilNaUzle(p, sosed) {
+  let $t1
+  if ($cond($field(p, "свой"))) {
+    $t1 = false
+  } else {
+    $t1 = true
+  }
+  let $t2
+  if ($cond($t1)) {
+    $t2 = $equal($field(p, "на каком"), sosed)
+  } else {
+    $t2 = false
+  }
+  if ($cond($t2)) {
+    return $field(p, "жив")
+  } else {
+    return false
+  }
+}
+
+/**
+ * Функция flang «Почему узел пропал».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {string} sosed — «сосед»
+ * @param {string} pochemu — «почему»
+ * @returns {string}
+ */
+export function pochemuUzelPropal(sosed, pochemu) {
+  return $concat($concat($concat("узел «", sosed), "» пропал: "), pochemu)
+}
+
+/**
+ * Функция flang «Похоронить жильцов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Array<Process>} processy — «процессы»
+ * @param {string} sosed — «сосед»
+ * @param {string} prichina — «причина»
+ * @returns {Array<Process>}
+ */
+export function pohoronitZhilcov(processy, sosed, prichina) {
+  const $t1 = $requireList(processy, "отобразить")
+  const $t2 = []
+  for (const p of $t1) {
+    let $t3
+    if ($cond(zhilNaUzle(p, sosed))) {
+      $t3 = umertvit(p, prichina)
+    } else {
+      $t3 = p
+    }
+    $t2.push($t3)
+  }
+  return $t2
+}
+
+/**
+ * Функция flang «Веления пропажи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Array<Process>} processy — «процессы»
+ * @param {string} sosed — «сосед»
+ * @param {string} prichina — «причина»
+ * @returns {Array<VelenieUzlu>}
+ */
+export function veleniyaPropazhi(processy, sosed, prichina) {
+  const $t1 = $requireList(processy, "отфильтровать")
+  const $t2 = []
+  for (const p of $t1) {
+    if ($keep(zhilNaUzle(p, sosed))) $t2.push(p)
+  }
+  const $t3 = $requireList($t2, "свёртка")
+  let akk = [ZapisatVZhurnal({ "вид": "узел", "кто": sosed, "почему": prichina })]
+  for (const p$2 of $t3) {
+    akk = $b_dobavit(UronitProcess({ "кто": $field(p$2, "имя"), "код": "FLANG_NODE_DOWN", "текст": prichina }), akk)
+  }
+  return akk
+}
+
+/**
+ * Функция flang «Узел с процессами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {Array<Process>} processy — «процессы»
+ * @returns {Uzel}
+ */
+export function uzelSProcessami(uzel, processy) {
+  return { "имя": $field(uzel, "имя"), "процессы": processy, "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+}
+
+/**
+ * Функция flang «Пропажа узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} sosed — «сосед»
+ * @param {string} pochemu — «почему»
+ * @returns {HodUzla}
+ */
+export function propazhaUzla(uzel, sosed, pochemu) {
+  const prichina = pochemuUzelPropal(sosed, pochemu)
+  const $t1 = { "узел": uzelSProcessami(uzel, pohoronitZhilcov($field(uzel, "процессы"), sosed, prichina)), "веления": veleniyaPropazhi($field(uzel, "процессы"), sosed, prichina) }
+  const $t2 = $requireList($field($t1, "веления"), "отфильтровать")
+  const $t3 = []
+  for (const v of $t2) {
+    if ($keep(etoPadenie(v))) $t3.push(v)
+  }
+  const $t6 = $b_dlina($t3)
+  const $t4 = $requireList($field(uzel, "процессы"), "отфильтровать")
+  const $t5 = []
+  for (const p of $t4) {
+    if ($keep(zhilNaUzle(p, sosed))) $t5.push(p)
+  }
+  // постусловие «пропажа роняет ровно жильцов пропавшего узла»
+  if (!$post($equal($t6, $b_dlina($t5)), "пропажа роняет ровно жильцов пропавшего узла", "Пропажа узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «пропажа роняет ровно жильцов пропавшего узла» функции «Пропажа узла»", { "line": 499, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Это падение».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {VelenieUzlu} velenie — «веление»
+ * @returns {*}
+ */
+export function etoPadenie(velenie) {
+  if ($isVariant(velenie) && velenie.variant === "Позвать обработчик") {
+    const kto = $variantField(velenie, "кто")
+    const bilet = $variantField(velenie, "билет")
+    return false
+  } else if ($isVariant(velenie) && velenie.variant === "Послать по проводу") {
+    const uzel = $variantField(velenie, "узел")
+    const komu = $variantField(velenie, "кому")
+    const bilet$2 = $variantField(velenie, "билет")
+    return false
+  } else if ($isVariant(velenie) && velenie.variant === "Поставить таймер") {
+    const komu$2 = $variantField(velenie, "кому")
+    const bilet$3 = $variantField(velenie, "билет")
+    const zaderzhka = $variantField(velenie, "задержка")
+    return false
+  } else if ($isVariant(velenie) && velenie.variant === "Записать в журнал") {
+    const vid = $variantField(velenie, "вид")
+    const kto$2 = $variantField(velenie, "кто")
+    const pochemu = $variantField(velenie, "почему")
+    return false
+  } else if ($isVariant(velenie) && velenie.variant === "Уронить процесс") {
+    const kto$3 = $variantField(velenie, "кто")
+    const kod = $variantField(velenie, "код")
+    const tekst = $variantField(velenie, "текст")
+    return true
+  } else if ($isVariant(velenie) && velenie.variant === "Письмо пропало") {
+    const komu$3 = $variantField(velenie, "кому")
+    const pochemu$2 = $variantField(velenie, "почему")
+    return false
+  } else {
+    $matchFail(velenie)
+  }
+}
+
+/**
+ * Функция flang «Подхватить».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Process} process — «процесс»
+ * @returns {Process}
+ */
+export function podhvatit(process) {
+  return processZanovo($field(process, "имя"), true, "", true, "", $field(process, "потолок"), 0, $field(process, "ящик"))
+}
+
+/**
+ * Функция flang «Поднять процесс».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} imya — «имя»
+ * @returns {Uzel}
+ */
+export function podnyatProcess(uzel, imya) {
+  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
+    return uzel
+  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
+    const p = $variantField($t1, "процесс")
+    let $t2
+    if ($cond($field(p, "свой"))) {
+      $t2 = ozhivit(p)
+    } else {
+      $t2 = podhvatit(p)
+    }
+    return sProcessom(uzel, $t2)
+  } else {
+    $matchFail($t1)
+  }
+}
+
+/**
  * Функция flang «Шаг узла».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -1391,6 +1651,10 @@ export function shagUzla(uzel, chto) {
       if ($keep($t4)) $t3.push(s)
     }
     return { "узел": uzelSoSvyazyami(uzel, $t3), "веления": [ZapisatVZhurnal({ "вид": "связь", "кто": sosed$2, "почему": pochemu })] }
+  } else if ($isVariant(chto) && chto.variant === "Узел пропал") {
+    const sosed$3 = $variantField(chto, "узел")
+    const pochemu$2 = $variantField(chto, "почему")
+    return propazhaUzla(uzel, sosed$3, pochemu$2)
   } else if ($isVariant(chto) && chto.variant === "Пора бежать") {
     const zhrebiy = $variantField(chto, "жребий")
     return probezhat(uzel, zhrebiy)
@@ -1658,6 +1922,15 @@ export const $PROGRAM = {
     ["Номер по жребию", nomerPoZhrebiyu],
     ["Целая часть", celayaChast],
     ["Не больше", neBolshe],
+    ["Жил на узле", zhilNaUzle],
+    ["Почему узел пропал", pochemuUzelPropal],
+    ["Похоронить жильцов", pohoronitZhilcov],
+    ["Веления пропажи", veleniyaPropazhi],
+    ["Узел с процессами", uzelSProcessami],
+    ["Пропажа узла", propazhaUzla],
+    ["Это падение", etoPadenie],
+    ["Подхватить", podhvatit],
+    ["Поднять процесс", podnyatProcess],
     ["Шаг узла", shagUzla],
     ["Письмо с провода", pismoSProvoda],
     ["Пробежать", probezhat],

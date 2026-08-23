@@ -186,11 +186,35 @@ function $lte(left, right) {
   return left <= right
 }
 
+function $pairSplits(left, right) {
+  /* Сойдутся ли на стыке двух строк высокая и низкая половины суррогатной пары.
+     В UTF-16 они слились бы в ОДИН знак: два знака на входе, один на выходе. */
+  if (left.length === 0 || right.length === 0) return false
+  const last = left.charCodeAt(left.length - 1)
+  const first = right.charCodeAt(0)
+  return last >= 0xd800 && last <= 0xdbff && first >= 0xdc00 && first <= 0xdfff
+}
+
+function $glueCheck(left, right) {
+  /* Отказ, а не тихая порча: слияние на стыке сделало бы ложным всякое
+     утверждение о длине склейки, а показать разницу это представление не может.
+     У целей, где строка — UTF-8 или последовательность кодовых точек, такого
+     стыка не бывает вовсе, и проверка там не нужна. */
+  if ($pairSplits(left, right)) {
+    $fail("FLANG_BUILTIN_ARGS", "«соединить»: на стыке сошлись половины суррогатной пары — два знака слились бы в один")
+  }
+}
+
+function $glue(left, right) {
+  $glueCheck(left, right)
+  return left + right
+}
+
 function $concat(left, right) {
   if (typeof left !== "string" || typeof right !== "string") {
     $fail("FLANG_TYPE", `«соединить» допустимо только для строк, получено ${$typeName(left)} и ${$typeName(right)}`)
   }
-  return left + right
+  return $glue(left, right)
 }
 
 function $expectString(name, value, role) {

@@ -216,7 +216,7 @@ The cost was measured over the whole library. `flang test flang/stdlib/` over 20
 files and 1216 examples: 360 150 ms at 454 claims before, 469 284 ms at 620
 after — **a factor of 1.30**. Measured by interleaving (the variants run one
 after another inside a single repetition), minimum of three pairs; a single run
-cannot measure this at all — the corpus spread of ±20% is larger than the effect.
+cannot measure this at all — the spread across the repository’s programs of ±20% is larger than the effect.
 
 What is paid for is not the claims but the **actions inside them**: every
 comparison, every field read, every call, about 14 µs per action. So the

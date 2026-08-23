@@ -8,21 +8,8 @@ You need `flang` installed ([how](install.html)) and the five minutes of the
 
 The code below is written in the Russian surface of the language — the same
 program can be written in English words, see [Four writing
-surfaces](../surfaces.html). All the tutorial's programs live in one file, in
-the language repository. If you installed `flang` from Homebrew or asdf you do
-not have that file, and it does not matter: every program below is shown in
-full and can simply be retyped. To run the whole tutorial at once, clone the
-tree:
-
-```bash
-git clone https://github.com/digitable-lol/flang.git
-flang test flang/docs/examples/tutorial.flang
-```
-
-```
-flang/docs/examples/tutorial.flang: примеров 10, прошло 10, не прошло 0
-```
-
+surfaces](../surfaces.html). Every program below is shown in full: copy it into a file, put `модуль
+«Учебник»` on the first line and run `flang check` and `flang test`.
 ## Chapter 1. A function, its types, an example
 
 ```
@@ -42,6 +29,21 @@ A function name is written in guillemets: `«Удвоить»`. A call reads
 `flang test` and `flang check` run it. An example must be named — and that is
 not pedantry: a proof refers to it by name (chapter 6).
 
+Both commands on this chapter's file answer like this:
+
+```bash
+flang check ch1.flang
+flang test ch1.flang
+flang run ch1.flang --function Удвоить --args '{"н": 21}'
+```
+
+```
+модуль «Учебник»: функций 2, из них с доказанным завершением 2; типов 0
+ch1.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+ch1.flang: примеров 2, прошло 2, не прошло 0
+42
+```
+
 **Exercise 1.** Write `«Утроить»` (triple) with an example.
 
 ```
@@ -53,6 +55,9 @@ not pedantry: a proof refers to it by name (chapter 6).
     ожидается 6
   н умножить на 3
 ```
+
+**You can now:** declare a function with types and an example, check it and call
+it from the command line.
 
 ## Chapter 2. There are no loops — there is a fold
 
@@ -85,8 +90,14 @@ A condition may live inside the fold; no separate "maximum" form is needed:
 
 **A naming trap.** `эл` is an ordinary name, but `элемент` is a word of the
 language ("list item by index") and cannot be taken. On that attempt the
-compiler answers `FLANG_PARSE: не разобрана конструкция` pointing at the end of
-the line — the message does not name the cause. The taken names are listed in
+compiler answers like this:
+
+```
+FLANG_PARSE в файле ch2.flang, строка 9, столбец 68: не разобрана конструкция: неожиданное '
+'
+```
+
+The message does not name the cause; it points at the end of the line. The taken names are listed in
 the [glossary](../glossary.html): {{словарь.понятий}} concepts.
 
 **Exercise 2.** The sum of squares of `[1, 2, 3]` is 14.
@@ -94,6 +105,17 @@ the [glossary](../glossary.html): {{словарь.понятий}} concepts.
 ```
   свёртка элементы начиная с 0 как акк и эл → акк плюс (эл умножить на эл)
 ```
+
+The three folds of this chapter in one file give:
+
+```
+модуль «Свёртки»: функций 3, из них с доказанным завершением 3; типов 0
+ch2.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+ch2.flang: примеров 3, прошло 3, не прошло 0
+```
+
+**You can now:** walk a list with a fold — a sum, a maximum, any accumulation —
+without a single loop.
 
 ## Chapter 3. Four body forms, and the choice matters
 
@@ -119,8 +141,7 @@ flowchart TD
 
 The three upper outcomes cost nothing at run time. The lower one costs: a check
 stays in the emitted program, and with it the function runs **three times
-slower** than the same function without it. How many such functions the tree has
-is on the [front page](index.html).
+slower** than the same function without it.
 
 | form | when | what it gives the compiler |
 | --- | --- | --- |
@@ -128,6 +149,9 @@ is on the [front page](index.html).
 | `свёртка` (fold) | walking a list | termination by construction |
 | `если` (if) | branching | nothing by itself: termination is computed from the calls |
 | `пусть` (let) | bind a name once | nothing; it is not a variable and cannot be reassigned |
+
+**You can now:** pick the body form that lets termination be proved, and know
+what the choice costs.
 
 ## Chapter 4. `тотальная` — a promise that gets checked
 
@@ -149,7 +173,8 @@ is on the [front page](index.html).
 FLANG_NOT_TOTAL в файле krutit.flang, строка 8, столбец 11: тотальная функция
 «Крутить»: рекурсивный вызов «Крутить» не убывает — аргумент 1 («н» sub 1)
 уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида
-«если н не больше 0»
+«если н не больше 0». Передавайте часть аргумента: хвост списка из образца
+«голова и хвост», поле варианта из образца, поле записи или элемент коллекции
 ```
 
 And it is right: on −1 this function never terminates — negative numbers walk
@@ -173,9 +198,22 @@ report of `flang check --proof` names what the promise rests on:
 here are machine numbers, and at very large values subtracting one no longer
 changes the number. The compiler does not keep quiet about it.
 
-**Exercise 3.** Why does `принимает н: нат` not save you? `нат` is the segment
-[0, 2⁵³−1], and `н минус 1` leaves it. The compiler answers: `FLANG_TYPE:
-аргумент «н» функции «Крутить»: ожидался нат, получен целое`.
+**Exercise 3.** Declare the input `нат` instead of `число` — the check passes
+even without fixing the condition, because that type holds no negative inputs at
+all. The boundary is then guarded by the call:
+
+```bash
+flang run ch4.flang --function 'Сумма до' --args '{"н": -3}'
+```
+
+```
+FLANG_TYPE: вызов функции «Сумма до»: аргумент «н»: -3 вне нат
+```
+
+Exit code 1.
+
+**You can now:** read a `FLANG_NOT_TOTAL` refusal and fix the recursion exactly
+the way it asks.
 
 ## Chapter 5. Sum types and `разбор`
 
@@ -214,7 +252,15 @@ A variant can carry a value: `вариант «балл» содержит «с�
 case pattern takes it out: `случай вариант «балл» с «сколько» как сколько`.
 
 **Exercise 4.** Add `вариант «неявка»` (a no-show) and extend the case analysis
-so that it is worth 0. The check must go green again.
+so that it is worth 0. The check must go green again:
+
+```
+модуль «Оценки»: функций 1, из них с доказанным завершением 1; типов 1
+ch5.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+```
+
+**You can now:** declare your own type of variants and take it apart so that a
+forgotten case never reaches the run.
 
 ## Chapter 6. From "grid" to "proved"
 
@@ -286,10 +332,11 @@ must guarantee; to the kernel it is the fact the result is derived from:
 becomes false (on −1 the result is −2) — and the kernel refuses:
 
 ```
-FLANG_PROOF_INDUCTION_STEP: шаг 1, теорема «двойная норма неотрицательна»:
-«по предположению» стоит вне индукции, а допущений у этой цели нет ни одного:
-ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт
-`требует`). Предполагать не о чем
+FLANG_PROOF_INDUCTION_STEP в файле ch6.flang, строка 15, столбец 3: шаг 1,
+теорема «двойная норма неотрицательна»: «по предположению» стоит вне индукции,
+а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция
+по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем.
+к этому месту не известно ничего, кроме гипотез «дано»
 ```
 
 A theorem with nothing under it is not accepted. That is the difference between
@@ -298,6 +345,9 @@ A theorem with nothing under it is not accepted. That is the difference between
 **Exercise 5.** Prove the same about `«Тройная норма»` with the body `норма
 умножить на 3`. Answer: the same `требует` line and the same four lines of
 theorem; the report answers "доказано: терм принят ядром, 1 шаг".
+
+**You can now:** carry a claim from "grid" to "proved" — by induction over a
+declared type, or by a precondition used as a fact.
 
 ## What the compiler says when you got it wrong
 
@@ -324,7 +374,5 @@ section ДИАГНОСТИКА.
 ## Next
 
 - [Operations](operations.html) — lists, strings, sets, numbers
-- [Proofs: why and how](proofs.html) — the kernel's three answers and zero axioms
-- [Case studies](case-studies.html) — 82 tasks and a live service
 - [Glossary](../glossary.html) (in Russian) — {{словарь.понятий}} concepts, of
   which {{словарь.наЧетырёх}} are open on all four writing surfaces

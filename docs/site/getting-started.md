@@ -1,18 +1,20 @@
 # Your first program
 
-Five minutes: write a function, check it, run it, read the proof report, and emit
-the program into C. You need `flang` installed — [how to install
-it](install.html).
+Five steps: write a file, check it, run the examples, run a function, emit the
+program into C. You need `flang` installed — [how to install it](install.html).
+
+Every output block below is the answer of a real run. The commands can be copied
+one after another.
 
 ## Write
 
 Put this in `hello.flang`:
 
-```
+```flang
 module «Hello»
 
 total function «Twice»
-  accepts n: number
+  accepts n: nat
   returns number
   ensures «the doubled value is at least the original» result is at least n
   example «twice two»
@@ -23,61 +25,35 @@ total function «Twice»
 
 Five parts, each doing its own job:
 
-- `total` — a promise that the function terminates on every input. The compiler
-  **checks** it and refuses the file if it cannot prove it;
-- `accepts` / `returns` — types, checked before the run;
-- `ensures` — a postcondition about the result. The name in guillemets is
-  required: that is how the claim is found in the proof report;
-- `example` — an executable example. It is part of the program, not a test on
-  the side, and it runs on EVERY check: if it does not hold, `check` answers
-  `FLANG_EXAMPLE` with a non-zero exit code, and the compiler refuses to emit
-  the program;
-- the last line is the body.
+| part | what it does |
+| --- | --- |
+| `total` | a promise that the function terminates on every input; the compiler checks it and refuses the file without a proof |
+| `accepts` / `returns` | types, checked before the run |
+| `ensures` | a postcondition about the result. The name in guillemets is required — that is how the claim is found in the report |
+| `example` | an executable example: part of the program, not a test on the side. It runs on every check |
+| the last line | the body |
 
-### One language, four sets of words
-
-The words above are not the only ones. flang keywords come on **four surfaces —
-Russian, English, Esperanto and Chinese** — and that is not four languages and
-not a translation: `если`, `if`, `se` and `如果` are the **same word of the
-language**, written four ways, and all four parse to **one tree**.
-
-The same line of the Rosetta factorial, taken from four files of the tree:
-
-```
-если н не больше 1       то 1    иначе н умножить на («Факториал» от (н минус 1))
-if n is at most 1        then 1  else n times («Factorial» of (n minus 1))
-se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
-如果 n 不大于 1           那么 1   否则 n 乘以 （«阶乘» 的 （n 减 1））
-```
-
-Write your file on whichever surface you like — the compiler decides which one
-it is by a majority of the keywords in it, not by the first word. There is one
-table of words, and every English word on this page is taken from its English
-column; a surface is a column of that table, never a dialect with its own
-grammar. The whole table is on the [Language dictionary](../glossary.html) page, and
-`./ярлык slovar:check` verifies that the page covers it completely.
-
-The table is honest about where it is thin: of {{словарь.понятий}} concepts,
-{{словарь.наЧетырёх}} are open on all four surfaces and {{словарь.дырявых}} are
-not, because a made-up word is worse than a missing one. The gap worth knowing
-before you start is the **proof vocabulary** — `requires`, `ensures`, `for all`,
-`claim`, `induction on`, `by hypothesis`, `by example`, `by property`,
-`therefore proved`, `decreases` — which exists only on the Russian and English
-surfaces. A program can be written on all four; a proof, on two — and English is
-one of them.
-
-Where else the table is thin, and why each hole is a decision: [Four writing
-surfaces](../surfaces.html) (in Russian).
-
-### `«…»` is part of the language, not Russian typography
-
-Names — of modules, functions, examples, claims — are written in guillemets on
-**every** surface. They are not quotation marks you may swap for `"` or `'`: the
+Names — of the module, the function, the example — are written in guillemets
+`«…»` on every writing surface. You may not swap them for `"` or `'`: the
 guillemets are how the parser tells a name you invented from a word of the
-language. `«Twice»` stays `«Twice»` in English exactly as `«阶乘»` stays in
-guillemets in Chinese.
+language.
 
-The one place they come off is the command line, below.
+The input is declared `nat`, not `number`, and that is not a detail. Declare
+`accepts n: number` and the check refuses, because the type `number` holds "not
+a number" (you get it from `0 divided by 0`, for one), and that value compares
+to nothing at all:
+
+```
+FLANG_BOUND_ON_NAN в файле hello.flang, строка 6, столбец 3: постусловие
+«the doubled value is at least the original» функции «Twice» ЛОЖНО, и
+контрпример назван: «n» объявлен типом «число», а «не число» живёт в этом типе
+и стоит ВНЕ ПОРЯДКА — оно не больше и не меньше ничего, включая самоё себя.
+…
+```
+
+The refusal names three cures; the one taken here is the first — declare the
+input over the segment `nat`. The second is a precondition, `requires «n is at
+least zero» n is at least 0`, which the caller pays for.
 
 ## Check
 
@@ -90,38 +66,12 @@ flang check hello.flang
 hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-Exit code 0. Had termination not been provable, it would be exit code 1 and a
-diagnostic with a code, a line and a column.
+Exit code 0. Behind the single word `check` stand five jobs in a row: parsing,
+types, termination, the proof kernel, the examples. Stopping at any of them
+means there will be no emission: what is not checked is not emitted.
 
-Behind the single word `check` stand six jobs in a row, and stopping at any of
-them means there will be no emission: what is not checked is not emitted.
-
-```mermaid The path of a program: from source to the emit targets
-flowchart LR
-  A[source .flang] --> B[parsing]
-  B --> C[types]
-  C --> D[termination]
-  D --> E[proof kernel]
-  E --> F[examples]
-  F --> G([emitted into every target])
-  B -.->|trouble| X([refusal with a code,<br>a line and a column])
-  C -.->|trouble| X
-  D -.->|trouble| X
-  E -.->|trouble| X
-  F -.->|trouble| X
-  class G vyvod
-  class X otkaz
-```
-
-**The answer comes in Russian, and that is not a fault of your file.** The
-surfaces are about the words of the language, not about the compiler's own
-prose: the prose of a diagnostic is Russian whichever surface you write on, and
-choosing otherwise is the owner's decision, not something a fourth column in the
-table would settle. What does follow your file is the **quoted word**: an
-English file that opens `if` and never gets to `then` gets `FLANG_PARSE` with
-the message `у 'if' нет ветки 'then'` — quoting `'if'` and `'then'`, not
-`'если'` and `'то'`. A message naming a word that cannot appear in your file
-would not merely be untranslated; it would point at the wrong place.
+The answer comes in Russian whichever surface you write on. The word quoted back
+at you is yours: an English file gets `'if'` in the message, not `'если'`.
 
 ## Run the examples
 
@@ -147,60 +97,26 @@ The function name here carries **no guillemets**: in a declaration they are part
 of the spelling, on the command line they are not.
 
 `--args` takes a JSON object: the key is the parameter name exactly as written
-in `accepts`. The binary reads **a flat object of scalars only** in it — a
-number, a string, `true`, `false`, `null`. It does not parse a list or a record;
-how to pass those is on [Operations](operations.html), the `--args` section.
-
-## The shell
-
-The bare command opens the shell — like `iex` for Elixir, like `python`:
+in `accepts`. It reads **a flat object of scalars** — a number, a string,
+`true`, `false`, `null`. A list does not go through it:
 
 ```bash
-flang
+flang run sum.flang --function Sum --args '{"items": [1,2,3]}'
 ```
 
 ```
-flang {{выпуск.версия}} — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
-Объявление заканчивается пустой строкой, выражение вычисляется сразу.
-» 2 plus 2
-4
+flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
 ```
 
-The greeting is Russian; the expression is yours. `2 plus 2` is the English
-surface, and the shell reads it exactly as readily as `2 плюс 2`.
+Exit code 2. How to pass a list and a record is on
+[Operations](operations.html), the `--args` section.
 
-The same thing by name is `flang repl`, and that is also how a file is loaded
-into the session:
-
-```bash
-flang repl hello.flang
-```
+Argument types `flang run` does check. `«Factorial»` is declared over `nat`, and
+on −3 it answers:
 
 ```
-объявлено: тотальная функция «Twice» — завершение доказано
-загружено из hello.flang
+FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне нат
 ```
-
-From there you type expressions of the language and get the answer at once:
-
-```
-«Twice» of 21
-42
-```
-
-Guillemets are needed here: this is language text now, not a command-line
-argument. `.quit` or Ctrl-D leaves. The shell commands are spelled on two
-surfaces as well, and `.help` prints the list, ending it with the line
-
-```
-По-английски: .help .list .source .save .load .reset .quit
-```
-
-A script is fed to the same shell called by name: `flang repl < script.flang`.
-Then there are no prompts, diagnostics go to the error stream, and a non-zero
-exit code means there was diagnostics. The bare `flang` behaves differently over
-a pipe — it expects a JSON request and answers
-`{"ok":false,"code":"CLI","message":"ожидался объект запроса"}`.
 
 ## What the proof report says
 
@@ -208,14 +124,17 @@ a pipe — it expects a JSON request and answers
 flang check hello.flang --proof
 ```
 
-The kernel tries to **prove** the postcondition — to show it holds on every
-input, not only on the 2 from the example. About this program it answers:
+The kernel tries to prove the postcondition — to show it holds on every input,
+not only on the 2 from the example. About this program it answers:
 
 ```
-постусловие «the doubled value is at least the original» функции «Twice» —
-сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров
-не было, посчитано только их число. Это не доказательство — теоремы при
-утверждении нет
+чем несётся обещание «тотальная»:
+  «Twice»  доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
+
+что высказано и чем это несётся:
+  постусловие «the doubled value is at least the original» функции «Twice» — сетка
+  1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было,
+  посчитано только их число. Это не доказательство — теоремы при утверждении нет
 ```
 
 Three words of that report, and they are not interchangeable:
@@ -227,88 +146,72 @@ Three words of that report, and they are not interchangeable:
 | объявлено, не доказано (stated, not proved) | the kernel ran out of rules; the claim is checked at run time |
 
 How to get a claim all the way to "proved" is in the
-[tutorial](tutorial.html), the chapter on theorems.
+[tutorial](tutorial.html), chapter 6.
 
 ## Emit into C
 
 ```bash
 flang emit hello.flang --target c --out ./output
+```
+
+```
+напечатано файлов 6, байт 297283, в ./output
+аргументы напечатанной программы по типам не проверяются: это ограничение двоичного flang, полная проверка есть в версии для Node
+проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.
+ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших
+программах он в предел шагов этого бинарника не укладывается — свяжи с ними
+печать, и компилятор перестал бы печатать сам себя. Прогоните их отдельно:
+flang test <файл>
+```
+
+The output directory is created for you. What is emitted builds with an ordinary
+`make`:
+
+```bash
 make -C ./output
 ```
 
-Emitting gives **6 files**; `make` builds them in 0.6 s with the same `cc`, with
-no warning at all under `-Wall -Wextra -Werror -pedantic`. The output directory
-is created for you if it does not exist.
+```
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_runtime.o flang_runtime.c
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o hello.o hello.c
+ar rcs libhello.a flang_runtime.o hello.o
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_cli.o flang_cli.c
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o hello.o -lm -lpthread
+```
 
-One trap that bites on the English surface and never on the Russian one: a name
-becomes an identifier of the target language, and a collision is refused **by
-name** rather than silently renamed. Calling this function `«Double»` does not
-emit into C at all —
+Not one warning under `-Wall -Wextra -Werror -pedantic`.
+
+One trap: a name becomes an identifier of the target language, and a collision
+is a refusal rather than a silent rename. Call the function `«Double»` and there
+is no emission into C at all:
 
 ```
 flang emit: печать отказала — имена «Double» и «зарезервировано в целевом языке: double» дают один идентификатор «double» — переименуйте одно из них в модели
 ```
 
-— and the shell refuses to evaluate a call to it for the same reason. That is
-why the function above is `«Twice»`. The refusal names both sides of the
-collision, so the fix is one word in the model.
+The refusal names both sides of the collision, so the fix is one word in the
+model.
 
-While emitting, the binary states its own boundary: it has no table of declared
-types, so the emitted program does not check arguments against declared types.
-`flang run` itself does check — in `flang/examples/rosetta/factorial-english.flang`
-the function `«Factorial»` is declared over `nat`, and on −3 it answers
-`FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне нат` with exit
-code 1.
+## Emitting into the other targets
 
-## Boundaries of the binary
-
-The binary has ten commands — `check`, `test`, `run`, `emit`, `ast`, `facts`,
-`io`, `lock`, `package`, `repl` — and it does have boundaries. The good part is
-that it names them itself instead of staying quiet:
-
-- **the report does not search for violations over examples** — it writes
-  "нарушений НЕ ИСКАЛИ" (did not look) where the compiler from the repository writes
-  "нарушений не найдено (искали прогоном)" (looked and found none);
-- **the binary does not check laws on a grid** — monoid, monad, isomorphism,
-  category, sets and the five declared properties are checked by computation, and
-  that layer is not in it. A program declaring one of those gets a refusal
-  naming the obstacle, not a green report with an empty section;
-- **`--args` takes a flat object of scalars only** — the binary does not parse
-  `[…]` or `{…}` at all and answers `flang run: «--args» разобрать не удалось —
-  ждался плоский объект скаляров, вроде '{"н":10}'` with exit code 2. The
-  compiler from the repository takes a list and a record as ordinary JSON; the binary
-  is given a composite value through the shell (`flang repl`). Both ways, with
-  runs, are on [Operations](operations.html).
-
-On permitted inputs the installed binary and the compiler from the repository
-answer the same — measured on
-the English-surface Rosetta files in the tree: `Factorial(12) = 479001600`,
-`Fibonacci(20) = 6765`, `Palindrome("racecar") = true`.
-
-## Next
-
-- [Tutorial](tutorial.html) — from the first function to a claim proved by the kernel
-- [Operations](operations.html) — what does what: lists, strings, numbers
-- [Proofs: why and how](proofs.html) — the kernel's three answers and zero axioms
-- [Four writing surfaces](../surfaces.html) (in Russian) — the same program in
-  Russian, English, Esperanto and Chinese, and one tree under all four
-
-### Emitting into the other targets
-
-A program is emitted into all {{цели.поАнглийски}} targets by one and the same
-command — into Rust, for example:
+There are {{цели.поАнглийски}} emit targets: {{цели.список}}. The command is the
+same one:
 
 ```bash
 flang emit hello.flang --target rust --out ./output-rust
 ```
 
-The answer: "напечатано файлов 7, байт 128 859". Next to the emitted sources lie
-a `Makefile` and a `Cargo.toml`: `cargo build` builds it, and the resulting
-`flang_cli` calls the same function.
+```
+напечатано файлов 7, байт 134379, в ./output-rust
+…
+собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>
+```
 
-Emitting also states what it did not do — nothing is passed over in silence:
-examples are **not** run during emission (they are computed by the evaluator
-written in the language itself, and on the largest programs it does not fit in
-the step limit), and the binary compiler does not typecheck the arguments of the
-emitted program. The first is cured by `flang test`, the second is a border
-named in [Known limitations](limits.html).
+Next to the emitted sources lie a `Makefile` and a `Cargo.toml`: `cargo build`
+builds it, and the resulting `flang_cli` calls the same function.
+
+## Next
+
+- [Tutorial](tutorial.html) — six chapters from your first function to a claim
+  proved by the kernel
+- [Operations](operations.html) — what does what: lists, strings, numbers

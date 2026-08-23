@@ -86,3 +86,7 @@ flang/examples/io/.kopiya-dvoichnogo
 # на C, всё создаётся benchmarks/zamer-skorosti/sobrat.sh. Имя с точки, потому
 # что оно названо числом в pamyat.flang — у плана доводов нет.
 benchmarks/zamer-skorosti/.sborka
+
+# Личные списки долей агентов: у каждого свой, в стволе бессмысленны и
+# конфликтуют при каждом своде.
+МОЯ-ДОЛЯ.txt

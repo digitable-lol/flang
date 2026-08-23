@@ -77,7 +77,7 @@ while IFS='	' read -r NOMER PRAVILO UMENIE YAKOR ULIKA; do
     BEDY=$((BEDY + 1))
   fi
 
-  if ! grep -qF -- "$NOMER " "$OPISANIE"; then
+  if ! grep -qF -- "$NOMER." "$OPISANIE"; then
     echo "$NOMER: ОПИСАНИЕ отстало — умения «$UMENIE» в flang/proof/SPEC.md нет"
     BEDY=$((BEDY + 1))
   fi

@@ -545,6 +545,7 @@
 - [Динамический ввоз прячет мёртвый файл от обхода по «import»](dynamic-import-hides-a-dead-file.md)
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
+- [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
 - [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
 - [Слияние двух редакций одного файла роняет общий кусок, и разбор этого не видит](merging-two-editions-drops-the-shared-part.md)
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
@@ -556,7 +557,7 @@
 
 ## Ещё не разобранное
 
-- [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
+- [Синхронный планировщик умеет ждать сеть, не останавливаясь: «ждать» — это «спросить и не получить письма»](the-scheduler-waits-for-the-network-without-stopping.md)
 
 ## Как добавлять
 

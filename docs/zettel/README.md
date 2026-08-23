@@ -119,6 +119,7 @@
 - [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](cel-konyunkciya-yadru-ne-po-zubam-no-stoit-shesti.md)
 - [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](u-yadra-net-pravila-ne-menshe.md)
 - [Зеркало допущений закрыло пробу и не закрыло ни одного обещания библиотеки](mirroring-assumptions-costs-nothing-and-gave-nothing.md)
+- [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](dno-proizvedeniya-rabotaet-tolko-v-pare-s-zerkalom.md)
 - [Условие цели ядро подставляет значением, но фактом его не делает](uslovie-celi-podstavlyaetsya-znacheniem-a-faktom-ne-stanovitsya.md)
 - [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](oslablennoe-utverzhdenie-byvaet-nesushchim.md)
 - [Даровое утверждение узнаётся подменой тела заглушкой, и в двух модулях библиотеки таких оказалось 17 из 32](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)

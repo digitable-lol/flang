@@ -157,6 +157,7 @@
 - [Чистому вычислению нужно 5 имён libc и 16 % рантайма, а не 150 КБ](pure-computation-needs-five-libc-names.md)
 - [Чистота означает «без изменения на месте», а не «без выделения памяти»](purity-is-not-zero-allocation.md)
 - [Для критичных систем стандарты запрещают динамическую память вообще](safety-standards-ban-dynamic-memory.md)
+- [Подграф ниже отметки отката копировать не надо: `check types.flang` — 14,15 → 6,66 ГиБ и 148 → 118 с](subgraphs-below-the-rollback-mark-need-no-copy.md)
 - [Зеркало оценки размера на flang уже написано, и смета в отчёте о памяти устарела](the-size-estimate-mirror-in-flang-already-exists.md)
 
 ## Скорость и цена доказуемости

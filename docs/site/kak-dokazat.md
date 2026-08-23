@@ -54,12 +54,14 @@ reduces to a literal. No theorem needed.
 
 In one pass this lifted `tls.flang` from 15 to 21 and `crl.flang` from 56 to 59.
 
-**The kernel takes four levels; the fifth it does not.** Measured separately and
-identically on four functions in `sqlite.flang`: «Ширина по типу» (the seventh
-type), «Значение по типу» (the ninth), «Целое октетами» (width six), «Серийный
-тип целого» (the fourth level, with a conjunction in the guard). All five edits
-stayed grids and were reverted. When planning, count the first four branches of
-an `иначе` chain as provable and the rest as not.
+**How many levels will land is not a constant, and only a run tells you.** Four
+independent measurements in one evening gave four different numbers:
+`sqlite.flang` — four levels, the fifth no; `http.flang` with guards `код равен
+N` — four, and with conjunction guards `код не меньше A и притом код не больше
+B` — two; `образцы.flang` — three where the guards are not numeric and two where
+they are; `datetime.flang` — two. What they share: **the more arithmetic the
+guard, the sooner the kernel loses the goal split.** Do not plan by a number —
+break off a probe.
 
 **Within those four, what blocks it is not the depth but a numeric guard.** The measurements
 disagreed and reconciled only this way: in `образцы.flang` all three nesting
@@ -91,9 +93,20 @@ lands.
 range `48..57`, copied from the body, was proved: the kernel has no bridge
 between «содержит» and a character's code.
 
-**It works only when the guard is itself a comparison.** A guard that is a call —
-`если («Серийный номер отозван» от номер и список) то …` — stays a grid: the
-kernel knows nothing about someone else's predicate. A **comparison with a call
+**The ban on a call-as-guard applies only to the TOP level.** At the top,
+`если («Серийный номер отозван» от номер и список) то …` stays a grid: the kernel
+knows nothing about someone else's predicate. One level down the same guard
+works — measured on `datetime.flang`:
+
+```flang
+если месяц равен 2
+  то (если («Високосный год» от год) то (результат равен 29) иначе (результат равен 28))
+  иначе да
+```
+
+proved in full. The difference is that the top level already handed the kernel an
+assumption, and inside it someone else's predicate is read as an ordinary branch
+of the body. A **comparison with a call
 inside it**, however, does work: `если («Бит разрядов» от у и номер) равен 0 то …
 иначе да` is proved, and so is a conjunction of two such comparisons.
 

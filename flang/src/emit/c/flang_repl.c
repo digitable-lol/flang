@@ -10613,6 +10613,81 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
+  /* «Удалить файл» убирает ОДНО имя: файл или ПУСТОЙ каталог. Зовётся `remove`,
+     а не `unlink`+`rmdir` вручную, потому что в POSIX он и есть «убрать имя, чем
+     бы оно ни было», и различать эти два случая хозяину незачем — план назвал
+     путь, а не вид узла. Рекурсии здесь нет и не будет: «Перечислить каталог»
+     отдаёт имена без признака каталога, и обход дерева стоял бы на догадке.
+     Разрешение спрашивается ТО ЖЕ, что у записи: удаление — это запись в дерево,
+     и хозяин, которому писать запрещено, удалять тем более не вправе. */
+  if (io_order_is(order, "Удалить файл")) {
+    char *given = io_order_text(order, "путь");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->write_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    if (remove(full) != 0) {
+      free(full);
+      return io_fail_errno("FLANG_IO_REMOVE", "имя не убрано");
+    }
+    free(full);
+    return io_variant("Убрано", NULL, 0);
+  }
+
+  /* «Завести временный каталог»: имя досочиняет ХОЗЯИН (`mkdtemp`), и потому два
+     прогона одного плана за один каталог не дерутся. План даёт ОБРАЗЕЦ — начало
+     имени, — и обратно получает путь В ТЕХ ЖЕ КООРДИНАТАХ, в каких давал: он
+     относителен каталогу работы, и остальные поручения примут его как есть.
+     Отдавать полный путь нельзя: под правилом «внутри каталога» он и сам по себе
+     годится, но план, сложивший из него имя файла, получил бы путь, который
+     `io_path` уже не примет на чужом хозяине. Шесть `X` добавляет хозяин: они
+     часть договора `mkdtemp`, а не имени, которое выбирал план. */
+  if (io_order_is(order, "Завести временный каталог")) {
+    char *given = io_order_text(order, "образец");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    char *pattern = NULL;
+    size_t bytes = 0;
+    if (!host->write_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    if (!ok) {
+      free(given);
+      return bad;
+    }
+    bytes = strlen(full);
+    pattern = (char *)repl_alloc(bytes + 7);
+    memcpy(pattern, full, bytes);
+    memcpy(pattern + bytes, "XXXXXX", 7);
+    free(full);
+    if (mkdtemp(pattern) == NULL) {
+      free(pattern);
+      free(given);
+      return io_fail_errno("FLANG_IO_TEMPDIR", "временный каталог не заведён");
+    }
+    {
+      const size_t head = strlen(given);
+      char *answer = (char *)repl_alloc(head + 7);
+      fl_value fields[1];
+      memcpy(answer, given, head);
+      memcpy(answer + head, pattern + bytes, 7);
+      free(pattern);
+      free(given);
+      fields[0] = io_pair("путь", io_say(answer));
+      free(answer);
+      return io_variant("Заведено", fields, 1);
+    }
+  }
+
   if (io_order_is(order, "Перечислить каталог")) {
     char *given = io_order_text(order, "путь");
     fl_value bad = fl_nothing();

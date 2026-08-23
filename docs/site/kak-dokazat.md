@@ -54,7 +54,14 @@ reduces to a literal. No theorem needed.
 
 In one pass this lifted `tls.flang` from 15 to 21 and `crl.flang` from 56 to 59.
 
-**What blocks it is not the nesting depth but a numeric guard.** The measurements
+**The kernel takes four levels; the fifth it does not.** Measured separately and
+identically on four functions in `sqlite.flang`: «Ширина по типу» (the seventh
+type), «Значение по типу» (the ninth), «Целое октетами» (width six), «Серийный
+тип целого» (the fourth level, with a conjunction in the guard). All five edits
+stayed grids and were reverted. When planning, count the first four branches of
+an `иначе` chain as provable and the rest as not.
+
+**Within those four, what blocks it is not the depth but a numeric guard.** The measurements
 disagreed and reconciled only this way: in `образцы.flang` all three nesting
 levels of «Совпало с места» landed, because its guards are not numeric; in the
 same file the third level of «Точка вниз» (`точка равен 1025`) stayed a grid. In
@@ -353,6 +360,20 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   remainder only of something known to be a non-negative integer, and `число`
   does not promise that. The fix is not in the claim but in the signature — type
   `нат` or a `требует` condition.
+
+## An example will not close a "declared" claim
+
+A claim with the status `объявлено, не доказано` is one that has neither a
+theorem nor examples, and only the runtime checks it, on real inputs. You can add
+an example to it, but **that moves it into `сетка` and does not move `доказано`
+by a single unit**. Measured on `sqlite.flang`: of forty-two "declared" claims,
+three were closed by proof across three runs — and not by examples, but by
+restating the claim in the quantities for which the callee already has a proved
+claim.
+
+What is more, `объявлено` is more honest than `сетка`: the runtime checks it
+against everything that passes through the function, while a grid checks a finite
+set the author picked. Do not spend runs converting one into the other.
 
 ## An empty claim is not a proof
 

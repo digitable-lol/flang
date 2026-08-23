@@ -402,6 +402,7 @@
 - [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](strochnoe-imya-varianta-v-golom-sluchae-eto-svyazyvanie-imeni.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](nulyarnuyu-funkciyu-nelzya-pozvat-cherez-vvoz.md)
 - [Свёртка, отмечающая находку пустотой накопленного, теряет пустой ответ — это класс](svyortka-otmechayushchaya-nahodku-pustotoy-teryaet-pustoy-otvet.md)
+- [Принцип свёртки усилен пройденным куском списка: +2 доказанных, и это весь потолок формы](prefiks-spiska-v-principe-svyortki.md)
 - [Рукописная копия обнаруживает себя столкновением имён в день, когда библиотека дорастает до неё](rukopisnaya-kopiya-obnaruzhivaet-sebya-stolknoveniem-imyon.md)
 - [`http.flang` считает Content-Length знаками в обе стороны, и потому чинить одну сторону нельзя](content-length-schitaetsya-znakami-v-obe-storony.md)
 - [Байтовый поиск и знаковый счёт — это две меры на всякой строке, которая не является правильным UTF-8](byte-search-and-character-count-are-two-measures-on-every-ill-formed-string.md)

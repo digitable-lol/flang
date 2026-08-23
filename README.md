@@ -13,6 +13,30 @@ The authoring surface is Russian; an English surface exists and lexes to the sam
 (`функция` / `function`, `свёртка` / `fold`). The prose below is English, the code is not
 translated — names in a specification belong to the domain that wrote them.
 
+## The language in one paragraph
+
+flang is a **pure functional language with strong static typing**, where checking is
+mandatory and happens before anything runs. Values are **immutable**; there is no
+assignment. Functions are values, but there are **no closures**: a function value is a
+tag naming a declared function (defunctionalisation, Reynolds 1972), which is why it
+can be printed even into target languages that have no closures at all. A program has
+**no side effects whatsoever** — it does not reach the network, read files or know the
+time; it has arguments and a result. Effects are described as **orders**, and a host
+carries them out: the program builds a value that says "do this", the host does it and
+returns a response.
+
+What sets it apart from other pure languages is that **the compiler proves rather than
+trusts**. The word `total` in front of a function is a promise that it terminates on
+every input, and the compiler **proves** it, refusing the file when it cannot. A
+promise about the result (`ensures`) is not a comment either: some of those the proof
+kernel proves for ALL inputs rather than checking on a few. A function's examples live
+next to its body and run on every check of the file.
+
+The rest of the shape: sum types, pattern matching, lists, strings as data, a module
+system that links by name, indentation instead of brackets, and two keyword surfaces —
+Russian and English — that lex into the very same identifiers. One source is printed
+into eight target languages. The compiler is written in flang itself.
+
 ## What kind of language this is
 
 **[`flang`](flang/SPEC.md)** (`.flang`) is an indentation-based language where a function

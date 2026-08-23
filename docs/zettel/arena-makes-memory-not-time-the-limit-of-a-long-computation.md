@@ -36,4 +36,4 @@ C, где то же самое стоит 154 с и умещается в пам
 
 Связано: [[reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c]],
 [[predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom]],
-[[memory-and-regions]]
+[[memory-per-category-is-regions]]

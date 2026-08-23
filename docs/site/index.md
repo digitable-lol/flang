@@ -14,6 +14,27 @@ compiler saw that the step is constant (`minus 1`) and that the guard
 than `n` calls. The examples live inside the function rather than in a separate
 test file, and they run on every check of the file.
 
+
+## The language in one paragraph
+
+flang is a **pure functional language with strong static typing**, where checking is
+mandatory and happens before anything runs. Values are **immutable**; there is no
+assignment. Functions are values, but there are **no closures**: a function value is a
+tag naming a declared function, which is why it can be printed even into target
+languages that have none. A program has **no side effects whatsoever** — it does not
+reach the network, read files or know the time; it has arguments and a result. Effects
+are described as **orders**, and a host carries them out.
+
+What sets it apart from other pure languages is that **the compiler proves rather than
+trusts**: `total` is a promise of termination that it proves itself, and some promises
+about the result are proved by the proof kernel for ALL inputs rather than checked on a
+few.
+
+The rest of the shape: sum types, pattern matching, lists, strings as data, a module
+system, indentation instead of brackets, and two keyword surfaces — Russian and English.
+One source is printed into eight target languages, and the compiler is written in flang
+itself.
+
 ## Try it in five minutes
 
 **1. Install.** One command, no building from source:

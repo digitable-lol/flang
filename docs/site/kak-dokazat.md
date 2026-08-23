@@ -150,6 +150,14 @@ Measured: in `sha256.flang` the sixteen-member claim on «Сдвинуть ра�
 became sixteen claims, and **all sixteen were proved by induction**; the file
 went 26 → 40. `json.flang` 19 → 31 and `http.flang` 15 → 26 by the same move.
 
+**A DISJUNCTION in the guard, however, may be split, and equivalently.** `если
+(А или Б) то В` divides into two claims with nothing lost and nothing
+strengthened — unlike a conjunction. The kernel takes the half whose guard
+matches the body's condition; the other half stays a grid. Measured on
+`numbers.flang`: that is how "the absolute value is at least the number itself
+when the number is non-negative" and both companion claims on minimum and
+maximum landed.
+
 **A conjunction in the GUARD must not be split.** `если А и притом Б то В` and
 `если А то В` are different claims, and the second is stronger: you did not
 rewrite the claim, you strengthened it. In `lists.flang` all nine compound
@@ -231,12 +239,18 @@ Measured on `der.flang`, link by link: 15 → 16 → 17 → 19 (at the third lin
 «Кусок» landed by itself) → 20 → 22 → 27 → 28 → **31**. The file where changing
 the form gave zero doubled through chain repair.
 
-Hence a consequence worth knowing in advance: one unproved claim at the bottom
-holds up a whole column above it, sometimes in someone else's file. Measured:
-while both claims of «Целая часть» in `numbers.flang` stand as grids, eight
-claims in `hashmap.flang` stand as grids too — «В кольцо» → «Хеш числа» → «Хеш
-ключа» → «Путь хеша». The price of one proof at the bottom reaches eight at the
-top.
+**But not every column rests on its lower link — check before repairing the
+base.** This page used to say that proving «Целая часть» in `numbers.flang`
+would clear eight grid claims in `hashmap.flang`. That turned out to be wrong
+and was refuted by a run: «Целая часть» is proved, and `hashmap.flang` did not
+move by a single claim — `сетка 25` before and `сетка 25` after; the only gain
+in its report was the imported claim itself.
+
+The reason is that the upper claim was blocked not by the lower link but by a
+missing rule: "the ring value is non-negative" rests on "the remainder of a
+negative number is greater than minus the modulus", and there is no such rule at
+all. Before repairing a base, read the upper claim's refusal and make sure it
+names the lower link rather than the shape of the goal.
 
 ## 7. A "по свойству" theorem lands only on a bare call
 
@@ -296,6 +310,15 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   `dictionary.flang` and `strlists.flang`: eighteen added claims about empty
   input, each in both forms — **all grids**. In those three files the gain came
   from exactly one place where the body starts with `если`.
+- **Strict inequalities, full stop.** The kernel has exactly seven kinds of
+  goal, and all seven are named in its own refusal
+  (`flang/self/proof-kernel.flang`, «Отказ без правила»): «не меньше 0», «не
+  больше конечного литерала», «не больше терма», «равно», «содержит», «не
+  убывает», «начинается с». **A strict inequality is not among them.** Anything
+  written with `меньше` or `больше` is unprovable by construction, not by
+  oversight: both claims of «Целая часть» rested on "the difference is less than
+  one" and stayed grids in every wording. If you can weaken it to a non-strict
+  form, do; if you cannot, the claim waits for a new kernel rule.
 - **Inequality bounds in the general case.** Measured on `numtree.flang` and
   `kdf.flang`: "the height of a fork is at least 1", "a fork's traversal holds
   at least one number", "there is at least one chunk", "the output is at least

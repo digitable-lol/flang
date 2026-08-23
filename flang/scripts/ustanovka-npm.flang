@@ -65,6 +65,11 @@
     ожидается "CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -O2"
   "CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -O2"
 
+// `command -v` спрашивается ПО ОДНОМУ имени: с несколькими доводами он отвечает
+// только про первое, и тощий каталог получил бы одну ссылку на node без npm —
+// установка отвечала бы кодом 127 «нет такой команды», а читалось бы это как
+// «пакет не ставится без компилятора C». Замерено 23 августа 2026.
+//
 // Тощий PATH: в нём есть node, npm и оболочка — без них npm не запустит ни
 // одного скрипта, — и НЕТ ни cc, ни gcc, ни clang, ни make. Так воспроизводится
 // машина, на которой пакет ставят в контейнер без build-essential; это самый
@@ -72,8 +77,8 @@
 тотальная функция «Сложить тощий путь»
   возвращает строка
   пример «ссылки кладутся по одной, и только на названные программы»
-    ожидается "for p in $(command -v node npm sh bash env rm mkdir cp ln tar gzip); do ln -s \"$p\" РАБОТА/path/; done"
-  "for p in $(command -v node npm sh bash env rm mkdir cp ln tar gzip); do ln -s \"$p\" РАБОТА/path/; done"
+    ожидается "for n in node npm sh bash env rm mkdir cp ln tar gzip; do p=$(command -v \"$n\") && ln -s \"$p\" РАБОТА/path/; done"
+  "for n in node npm sh bash env rm mkdir cp ln tar gzip; do p=$(command -v \"$n\") && ln -s \"$p\" РАБОТА/path/; done"
 
 // ── список шагов ─────────────────────────────────────────────────────────────
 //

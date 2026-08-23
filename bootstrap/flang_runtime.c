@@ -671,11 +671,60 @@ static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type, fl_value
   return FL_OK;
 }
 
+/*
+ * ── Сравнение имён и строк без похода в libc ───────────────────────────────
+ *
+ * Имена полей сверяются линейным перебором на КАЖДОМ взятии поля, а взятие поля
+ * — самое частое, что делает напечатанный код. Профиль `flang check
+ * flang/self/tags.flang` (perf, 14 тысяч проб): `__strcmp_avx2` 12,3 %,
+ * `__memcmp_avx2_movbe` 10,9 % — почти четверть всей работы уходит в libc на
+ * сравнения, которые в подавляющем большинстве кончаются НЕсовпадением.
+ *
+ * Имена в flang русские, и это меняет отсечку: первый байт кириллической буквы
+ * — D0 либо D1, то есть по нему не различается почти ничто. Различает ВТОРОЙ.
+ * Поэтому отсев идёт по двум байтам сразу, и только сойдись они оба — зовётся
+ * strcmp на остаток. Ответ тот же до буквы: это та же посимвольная сверка,
+ * просто первые два символа сверены на месте.
+ *
+ * Указатели сверяются первыми не ради скорости на совпадении, а потому что имя
+ * поля в напечатанном коде — литерал, и одинаковые литералы единицы трансляции
+ * компилятор сливает: у совпавшего имени указатели чаще всего РАВНЫ.
+ */
+static bool fl_name_same(const char *left, const char *right) {
+  if (left == right) {
+    return true;
+  }
+  if (left[0] != right[0]) {
+    return false;
+  }
+  if (left[0] == '\0') {
+    return true;
+  }
+  if (left[1] != right[1]) {
+    return false;
+  }
+  if (left[1] == '\0') {
+    return true;
+  }
+  return strcmp(left + 2, right + 2) == 0;
+}
+
+/* То же для строк flang: длина уже сошлась, сверяются края, потом середина. */
+static bool fl_bytes_same(const char *left, const char *right, size_t bytes) {
+  if (left == right || bytes == 0) {
+    return true;
+  }
+  if (left[0] != right[0] || left[bytes - 1] != right[bytes - 1]) {
+    return false;
+  }
+  return memcmp(left, right, bytes) == 0;
+}
+
 /* Поле по имени среди полей записи или варианта; NULL — поля нет. */
 static const fl_field *fl_find_field(const fl_field *fields, size_t count, const char *name) {
   size_t index = 0;
   for (index = 0; index < count; index += 1) {
-    if (strcmp(fields[index].name, name) == 0) {
+    if (fl_name_same(fields[index].name, name)) {
       return &fields[index];
     }
   }
@@ -771,7 +820,7 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
         size_t at = 0;
         bool declared = false;
         for (at = 0; at < type->field_count; at += 1) {
-          if (strcmp(table->fields[type->field_from + at].name, value.as.record->fields[item].name) == 0) {
+          if (fl_name_same(table->fields[type->field_from + at].name, value.as.record->fields[item].name)) {
             declared = true;
             break;
           }
@@ -790,7 +839,7 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
       }
       if (value.tag == FL_VARIANT) {
         for (item = 0; item < type->variant_count; item += 1) {
-          if (strcmp(table->variants[type->variant_from + item].name, value.as.variant->name) == 0) {
+          if (fl_name_same(table->variants[type->variant_from + item].name, value.as.variant->name)) {
             variant = &table->variants[type->variant_from + item];
             break;
           }
@@ -817,7 +866,7 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
     return FL_OK;
   }
   for (index = 0; index < table->param_count; index += 1) {
-    if (strcmp(table->params[index].function, name) == 0) {
+    if (fl_name_same(table->params[index].function, name)) {
       declared += 1;
     }
   }
@@ -831,7 +880,7 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
   for (index = 0; index < table->param_count; index += 1) {
     const fl_entry_param *param = &table->params[index];
     const char *label = NULL;
-    if (strcmp(param->function, name) != 0) {
+    if (!fl_name_same(param->function, name)) {
       continue;
     }
     label = fl_label(ctx, "вызов функции «%s»: аргумент «%s»", name, param->name);
@@ -1929,7 +1978,7 @@ bool fl_is_scalar(fl_value value) {
 }
 
 bool fl_variant_is(fl_value value, const char *name) {
-  return value.tag == FL_VARIANT && strcmp(value.as.variant->name, name) == 0;
+  return value.tag == FL_VARIANT && fl_name_same(value.as.variant->name, name);
 }
 
 /* ═════════════════════════ число → текст ═════════════════════════ */
@@ -2248,7 +2297,7 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count, const fl_fi
   for (index = 0; index < left_count; index += 1) {
     bool found = false;
     for (other = 0; other < right_count; other += 1) {
-      if (strcmp(left[index].name, right[other].name) == 0) {
+      if (fl_name_same(left[index].name, right[other].name)) {
         found = fl_equal(left[index].value, right[other].value);
         break;
       }
@@ -2274,8 +2323,7 @@ bool fl_equal(fl_value left, fl_value right) {
         return fl_same_number(left.as.number, right.as.number);
       case FL_STRING:
         return left.as.string.bytes == right.as.string.bytes &&
-               (left.as.string.bytes == 0 ||
-                memcmp(left.as.string.utf8, right.as.string.utf8, left.as.string.bytes) == 0);
+               fl_bytes_same(left.as.string.utf8, right.as.string.utf8, left.as.string.bytes);
       default:
         return false;
     }
@@ -2293,7 +2341,7 @@ bool fl_equal(fl_value left, fl_value right) {
     return true;
   }
   if (left.tag == FL_VARIANT && right.tag == FL_VARIANT) {
-    if (strcmp(left.as.variant->name, right.as.variant->name) != 0) {
+    if (!fl_name_same(left.as.variant->name, right.as.variant->name)) {
       return false;
     }
     return fl_fields_equal(left.as.variant->fields, left.as.variant->count, right.as.variant->fields,
@@ -2313,7 +2361,7 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
   if (target.tag == FL_VARIANT) {
     /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более. */
     for (index = 0; index < target.as.variant->count; index += 1) {
-      if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+      if (fl_name_same(target.as.variant->fields[index].name, name)) {
         *out = target.as.variant->fields[index].value;
         return FL_OK;
       }
@@ -2326,7 +2374,7 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
                    fl_type_name(ctx, target));
   }
   for (index = 0; index < target.as.record->count; index += 1) {
-    if (strcmp(target.as.record->fields[index].name, name) == 0) {
+    if (fl_name_same(target.as.record->fields[index].name, name)) {
       *out = target.as.record->fields[index].value;
       return FL_OK;
     }
@@ -2337,7 +2385,7 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
 fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error) {
   size_t index = 0;
   for (index = 0; index < target.as.variant->count; index += 1) {
-    if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+    if (fl_name_same(target.as.variant->fields[index].name, name)) {
       *out = target.as.variant->fields[index].value;
       return FL_OK;
     }

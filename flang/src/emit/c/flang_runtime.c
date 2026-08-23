@@ -516,6 +516,32 @@ bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state) {
 
 /* ═════════════════════════════ контекст ═════════════════════════════ */
 
+/*
+ * ПРЕДЕЛ ШАГОВ — ОДНО ЧИСЛО НА ПРОГРАММУ, И ЖИВЁТ ОНО ЗДЕСЬ.
+ *
+ * `FL_MAX_STEPS` печатается бэкендом перед этим файлом и потому неизменен: он
+ * УМОЛЧАНИЕ, а не потолок. Кто знает про свой счёт больше компоновщика —
+ * человек, сказавший `flang check --предел-шагов N`, — говорит об этом вслух, и
+ * сказанное ложится сюда, в одно место. Иначе поднимать предел пришлось бы
+ * пересборкой (scripts/raskrutka.sh), то есть переписывать число в двух местах:
+ * в семени и в скрипте.
+ *
+ * Почему не поле контекста, а общее умолчание: контекст заводится заново на
+ * КАЖДЫЙ вызов компилятора (`repl_cycle`), и назначенное одному контексту
+ * следующий уже не помнил бы. Умолчание помнит.
+ *
+ * Ноль здесь значит «не сказано», а не «счёт выключен»: выключение счёта —
+ * `ctx->max_steps = 0` на самом контексте, и путать эти два смысла в одном
+ * числе нельзя.
+ */
+static size_t fl_max_steps_told = 0;
+
+size_t fl_max_steps_default(void) {
+  return fl_max_steps_told == 0 ? (size_t)FL_MAX_STEPS : fl_max_steps_told;
+}
+
+void fl_max_steps_default_set(size_t steps) { fl_max_steps_told = steps; }
+
 void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   /* Отметка стека: адрес локальной этой самой функции. Всё, что расчёт займёт
      под ней, сторож и меряет. Брать её здесь правильно потому, что `fl_ctx_init`
@@ -529,7 +555,7 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   ctx->depth = 0;
   ctx->max_depth = FL_MAX_DEPTH;
   ctx->steps = 0;
-  ctx->max_steps = FL_MAX_STEPS;
+  ctx->max_steps = fl_max_steps_default();
   ctx->stack_base = &here;
   ctx->stack_room = fl_stack_room();
 #ifdef FL_WASM_STACK

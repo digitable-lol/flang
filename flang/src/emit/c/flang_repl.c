@@ -323,6 +323,7 @@ static const char FLANG_HELP[] =
 
 static const char HELP_CHECK[] =
     "flang check <файл.flang> [--proof [--json] [--записать <файл>]]\n"
+    "                          [--предел-шагов N]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
     "код возврата 1, если программа не прошла.\n"
@@ -334,6 +335,11 @@ static const char HELP_CHECK[] =
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/сверщик.flang). Ключ пишется и латиницей:\n"
     "                     --record\n"
+    "  --предел-шагов N   поднять предел шагов ПРОВЕРЯЮЩЕГО на этот прогон.\n"
+    "                     Умолчание вшито при сборке (scripts/raskrutka.sh) и\n"
+    "                     ловит зацикливание; ключ поднимает его осознанно и\n"
+    "                     только там, где сказано. Исчерпание остаётся внятным:\n"
+    "                     FLANG_RECURSION_LIMIT с числом. Латиницей: --step-limit\n"
     "\n"
     "Категорной поверхности и процессов бинарник НЕ СУДИТ ВОВСЕ — ни доказуемых\n"
     "правил (концы стрелок, замкнутость категории, полнота связи), ни законов на\n"
@@ -1280,7 +1286,8 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
     fprintf(stderr,
             "ЗАПАС ШАГОВ НА ИСХОДЕ: «%s» съел %lu витков из %lu (%lu %%). Рост дерева\n"
             "в полтора раза стоит вдвое с лишним — то, что перевалило за половину, в\n"
-            "следующий раз не поместится. Предел задаётся в scripts/raskrutka.sh.\n",
+            "следующий раз не поместится. Умолчание задаётся в scripts/raskrutka.sh,\n"
+            "а поднять его на один прогон: flang check <файл> --предел-шагов N.\n",
             name, (unsigned long)repl_ctx.steps, (unsigned long)repl_ctx.max_steps,
             (unsigned long)(repl_ctx.steps * 100 / repl_ctx.max_steps));
   }
@@ -8102,6 +8109,39 @@ static int repl_loop(int argc, char **argv, const char *self) {
  * `check` и так печатает человеку, и молча принять ключ, который ничего не
  * меняет, значило бы пообещать работу и её не сделать.
  */
+/*
+ * `--предел-шагов N` — ЕДИНСТВЕННЫЙ разбор числа предела, и он строгий.
+ *
+ * Строгий потому, что эталон на flang (`flang/self/cli.flang`) числа ключей
+ * читает своим разбором, а он «1e3» не принимает вовсе. `strtod` здесь дал бы
+ * 1000 там, где эталон отказывает, — и свидетель разошёлся бы с эталоном молча,
+ * на ключе, который поднимает защиту от зависания. Поэтому только цифры.
+ *
+ * Ноль не принимается: `ctx->max_steps == 0` в рантайме выключает счёт совсем,
+ * а этот ключ — про «поднять предел осознанно», а не про «снять его».
+ */
+static bool human_steps(const char *text, size_t *out) {
+  size_t value = 0;
+  size_t at = 0;
+  if (text == NULL || text[0] == 0) {
+    return false;
+  }
+  for (at = 0; text[at] != 0; at += 1) {
+    if (text[at] < '0' || text[at] > '9') {
+      return false;
+    }
+    if (value > ((size_t)-1 - (size_t)(text[at] - '0')) / 10) {
+      return false;
+    }
+    value = value * 10 + (size_t)(text[at] - '0');
+  }
+  if (value == 0) {
+    return false;
+  }
+  *out = value;
+  return true;
+}
+
 static int check_command(int argc, char **argv) {
   const char *path = NULL;
   const char *record = NULL;
@@ -8113,6 +8153,23 @@ static int check_command(int argc, char **argv) {
       proof = true;
     } else if (strcmp(argv[index], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[index], "--предел-шагов") == 0 || strcmp(argv[index], "--step-limit") == 0) {
+      size_t steps = 0;
+      index += 1;
+      if (index >= argc) {
+        fputs("flang check --предел-шагов: не названо число шагов\n", stderr);
+        return 2;
+      }
+      if (!human_steps(argv[index], &steps)) {
+        fprintf(stderr,
+                "flang check --предел-шагов: «%s» — не целое число шагов больше нуля\n",
+                argv[index]);
+        return 2;
+      }
+      /* Ложится в умолчание рантайма, а не в текущий контекст: контекст
+         заводится заново на каждый вызов компилятора (`repl_cycle`). */
+      fl_max_steps_default_set(steps);
+      repl_ctx.max_steps = steps;
     } else if (strcmp(argv[index], "--записать") == 0 || strcmp(argv[index], "--record") == 0) {
       index += 1;
       if (index >= argc) {

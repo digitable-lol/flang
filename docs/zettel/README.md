@@ -272,6 +272,7 @@
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Проверка, переставшая сравнивать, продолжает зеленеть](checks-that-stopped-comparing.md)
 - [Подделка, не вписанная в сторожа, оставляет своё правило без надзора — таких оказалось пять из тринадцати](an-unregistered-forgery-leaves-its-rule-unwatched.md)
+- [Утверждения под одним именем сторож видит как одно — вписать подделку в список мало, надо развести имена](duplicate-claim-names-hide-halves-from-the-guard.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](proverka-perevedyonnaya-na-dvoichnyy-vypadaet-iz-ci-molcha.md)
 - [После удаления реализации на JavaScript набор проб отдаёт ноль, а не «почти всё»](posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](avtopochinka-chisel-pravit-list-i-ostavlyaet-itog.md)

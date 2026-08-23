@@ -455,6 +455,15 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
 #define FL_STACK_ROOM_FALLBACK ((size_t)1024u * 1024u)
 #endif
 
+/**
+ * Предел шагов, с которым заводится КАЖДЫЙ новый контекст.
+ * По умолчанию — `FL_MAX_STEPS`, напечатанный бэкендом; `fl_max_steps_default_set`
+ * поднимает его на весь процесс (ключ `--предел-шагов` у `flang check`).
+ * Ноль в `_set` возвращает умолчание бэкенда, а не выключает счёт.
+ */
+size_t fl_max_steps_default(void);
+void fl_max_steps_default_set(size_t steps);
+
 /** Сколько стека просить под предел глубины `max_depth` (с учётом границ). */
 size_t fl_stack_wanted(size_t max_depth);
 

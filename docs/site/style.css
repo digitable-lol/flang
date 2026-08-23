@@ -221,6 +221,12 @@ body {
 .brand .znak { width: 24px; height: 24px; flex: none; }
 
 .tagline { color: var(--faint); font-size: .85rem; flex: 1; }
+.version, .github {
+  font-size: .8rem; text-decoration: none; white-space: nowrap;
+  padding: .15rem .5rem; border: 1px solid var(--line); border-radius: 999px;
+  color: var(--faint);
+}
+.version:hover, .github:hover { color: var(--accent); border-color: var(--accent); }
 
 /* Переключатель языка. Стоит рядом с переключателем темы и выглядит как он же:
    это две кнопки одного рода — «показать то же самое иначе». */
@@ -545,6 +551,7 @@ body {
   }
   .content { padding: 1.8rem 1.2rem 4rem; }
   .tagline { display: none; }
+  .version, .github { display: none; }
   /* Подзаголовок ушёл — поле поиска забирает освободившуюся ширину и остаётся
      тем, ради чего в шапку смотрят с телефона. */
   .poisk { flex: 1; }

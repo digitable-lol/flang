@@ -718,6 +718,8 @@ const СЛОВА = {
     оДокументации: 'Как устроена документация',
     дверь: 'Тем, кто делает язык →',
     наГлавную: 'flang, на главную',
+    исходники: 'Исходники на GitHub',
+    выпуск: 'выпуск',
     делает: (кто) => `Язык делает ${кто}`,
     лицензия: (имя, год) => `лицензия ${имя}, © ${год}, дословный текст — <code>LICENSE</code> в корне дерева`,
     исходники: 'исходники',
@@ -740,6 +742,8 @@ const СЛОВА = {
     оДокументации: 'How these docs are made',
     дверь: 'For contributors →',
     наГлавную: 'flang, home',
+    исходники: 'Sources on GitHub',
+    выпуск: 'release',
     делает: (кто) => `The language is made by ${кто}`,
     лицензия: (имя, год) => `${имя}, © ${год}, the verbatim text is <code>LICENSE</code> at the root of the tree`,
     исходники: 'source',
@@ -822,6 +826,8 @@ function страницаЦеликом(с) {
 <header class="top">
   <a class="brand" href="${относительно(с.адрес, язык === 'en' ? 'en/index.html' : 'index.html')}" aria-label="${сл.наГлавную}">${ЗНАК}<span>flang</span></a>
   <span class="tagline">${сл.подзаголовок}</span>
+  <a class="version" href="${относительно(с.адрес, язык === 'en' ? 'en/releases.html' : 'releases.html')}" title="${экранировать(сл.выпуск)} ${ВЕРСИЯ}">${ВЕРСИЯ}</a>
+  <a class="github" href="https://github.com/digitable-lol/flang" rel="noopener" aria-label="${экранировать(сл.исходники)}" title="${экранировать(сл.исходники)}">GitHub</a>
   ${поиск}
   ${переключатель}
   <button class="theme" type="button" aria-label="${сл.тема}">◐</button>

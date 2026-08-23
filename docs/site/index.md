@@ -35,6 +35,37 @@ system, indentation instead of brackets, and two keyword surfaces — Russian an
 One source is printed into eight target languages, and the compiler is written in flang
 itself.
 
+
+## Why this exists
+
+Three things break in every project, and they break silently.
+
+**The document drifts from the code.** A rule is written down in prose, a month
+later the code has moved on, and the document still reads well — it simply is no
+longer about this program. Here there is nothing to drift: the rule sits next to
+the function and is checked along with it.
+
+**A test answers only for the inputs written into it.** A proved promise answers
+for all of them. The difference shows at the first requirement that arrives
+second: when a new rule appears beside an old one, the question is not whether
+the new one works but whether the old one still holds. With tests you answer that
+by having two people read the code; here it is one command.
+
+**Nobody checks the word "correct".** Not in code review, not in an assistant's
+report. Here the compiler checks it: `total` is a promise of termination it
+proves itself, and `ensures` is a promise about the result that the proof kernel
+proves for ALL inputs — or it refuses the file.
+
+**Who needs this first.** People for whom a wrong answer is expensive: money
+rules, parsing someone else's protocol, data handling where silent corruption is
+worse than a crash. And people whose requirements change often and who need to
+know each time what still holds.
+
+**Who does not need it yet.** Anyone who needs a large ecosystem today: the
+library is small, there is no package manager, there is not much application
+code. None of that is hidden — it is on [What comes next](roadmap.html), together
+with what has been ruled out for good.
+
 ## Try it in five minutes
 
 **1. Install.** One command, no building from source:

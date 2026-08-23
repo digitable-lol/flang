@@ -121,6 +121,5 @@ we do not, and the reason is spelled out in the same place.
 
 **Dates.** Order of work yes, dependencies yes, dates no.
 
-**A report on work done.** How many bytes the built binary weighs, how many
-seconds the build takes and how the install was verified belong on [How the
-install was verified](install-evidence.html), not on a plan.
+**A report on work done.** How many bytes the built binary weighs and how many
+seconds the build takes is a measurement, not a plan.

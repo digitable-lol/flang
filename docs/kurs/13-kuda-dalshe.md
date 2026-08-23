@@ -35,7 +35,6 @@ draft: false
 | [Что доказано, а что проверено](https://digitable-lol.github.io/flang/proofs.html) | граница между двумя словами |
 | [Пакеты](https://digitable-lol.github.io/flang/packages.html) | как раздать библиотеку одним файлом |
 | [Роадмап](https://digitable-lol.github.io/flang/roadmap.html) | что сделано, что делается, чего не будет |
-| [Чем проверена установка](https://digitable-lol.github.io/flang/install-evidence.html) | прогоны, хеши, размеры и чего проверить не удалось |
 
 Словарь языка ведёт **149 понятий** на четырёх поверхностях записи: русской
 (149 из 149), английской (148), китайской (137), эсперанто (133). Перемерить:

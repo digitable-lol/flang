@@ -35,8 +35,6 @@ answer is worth nothing.
   retold.
 - [WebAssembly via C](../wasm.html) — whether a separate emit target is needed.
   The answer is no, and here is what that rests on.
-- [What backs the install](install-evidence.html) — hashes, sizes, build times
-  and what could not be checked.
 
 ## Surface contracts
 

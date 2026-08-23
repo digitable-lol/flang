@@ -54,6 +54,15 @@ reduces to a literal. No theorem needed.
 
 In one pass this lifted `tls.flang` from 15 to 21 and `crl.flang` from 56 to 59.
 
+**What blocks it is not the nesting depth but a numeric guard.** The measurements
+disagreed and reconciled only this way: in `образцы.flang` all three nesting
+levels of «Совпало с места» landed, because its guards are not numeric; in the
+same file the third level of «Точка вниз» (`точка равен 1025`) stayed a grid. In
+`http.flang` the same: the second level was proved, the ninth and twenty-first
+were not — and all of those are about numeric codes. The level itself is not the
+obstacle; a chain of numeric comparisons is, and there the kernel loses the goal
+split.
+
 **Mirroring nested `если` is worth trying but does not always work — measure.**
 Two runs on the same day disagreed, and both are honest. In `provod.flang` the
 entire +8 came from the nested levels: the previous author had mirrored only the
@@ -261,6 +270,14 @@ stands before the call, the kernel does not look past the binding:
 ```
 FLANG_PROOF_STEP: к этому месту не известно ничего, кроме гипотез «дано»
 ```
+
+**Careful: the ban on `пусть` applies ONLY to the "по свойству" theorem.** A
+binding does not block splitting the goal by condition. Measured on
+`reestr.flang`: the body of «Разобрать диапазон» starts with `пусть чистый равно
+(«Обрезать» от текст)`, and the claim's guard was written with the expression
+substituted in — `если («Обрезать» от текст) равен "любая"` — and it **landed**.
+So when the body binds a name, write the guard through the argument itself rather
+than the bound name, and form 1 works.
 
 **Which gives a move in the opposite direction: remove the `пусть` from the
 body.** In `der.flang` the claim on «Содержимое» was proved not by adding

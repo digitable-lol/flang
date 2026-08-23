@@ -59,6 +59,8 @@
 - [Поиск сведения стоит три тысячи строк, проверка найденного — пятьсот восемьдесят](search-is-expensive-checking-is-cheap.md)
 - [Посылка, закрытая шагом автора, несёт правило сведения ровно так же, как закрытая ядром](a-record-that-names-only-the-rule-proves-nothing-about-the-rule.md)
 - [Терм в сверщике можно держать строкой, потому что flang скобит каждую двуместную форму](terms-as-strings-work-because-flang-parenthesises-every-binary-form.md)
+- [Заключение посылки — это уже развёрнутое тело ветви, поэтому первый ход записи ядру ничего не стоит](the-premise-goal-is-already-the-unfolded-body-so-the-first-move-is-free.md)
+- [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)
 - [Ноль аксиом — проверяемое свойство, а не лозунг](zero-axioms.md)
 - [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](otkazy-yadra-eto-142-stroki-a-podpisi-polovina.md)
 - [Цена доказательства измерена: 0 из 20, и тесты нашли четыре ошибки против нуля](proof-cost-0-of-20.md)

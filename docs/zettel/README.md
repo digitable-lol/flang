@@ -594,3 +594,4 @@
 - [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
+- [Пару живых узлов на проводе словарь поручений не поднимет: «Запустить процесс» ждёт конца, и всё же одна оболочка это делает](two-live-nodes-on-a-wire-need-a-shell-because-orders-run-one-process-at-a-time.md)

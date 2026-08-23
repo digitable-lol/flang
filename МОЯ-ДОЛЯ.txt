@@ -1,0 +1,10 @@
+249	flang/self/emit-elixir.flang
+103	flang/self/proof-initial.flang
+55	scripts/pechat-i-primery.flang
+47	scripts/storozh-srashchivaniya.flang
+39	scripts/storozh-zanyatogo.flang
+33	scripts/granica-vhoda.flang
+26	scripts/plagin-asdf-opublikovan.flang
+21	flang/conc/uzel-zamer.flang
+16	flang/core/json.flang
+14	flang/examples/db/redis-plan.flang

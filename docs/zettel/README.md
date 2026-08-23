@@ -229,6 +229,8 @@
 - [Вычислитель уже держит стек кадров явно — значит пауза стоит не сопрограммы, а двух правок](interpreter-already-has-an-explicit-frame-stack.md)
 - [Счётчик витков в напечатанном коде уже стоит и не стоит ничего: миллиард витков, разница нулевая](printed-reduction-counter-is-free.md)
 - [Пару живых узлов на проводе словарь поручений не поднимет: «Запустить процесс» ждёт конца, и всё же одна оболочка это делает](two-live-nodes-on-a-wire-need-a-shell-because-orders-run-one-process-at-a-time.md)
+- [Веер запусков двоичного помещается в ОДНО поручение плана — через `sh -c`](a-fan-out-of-binary-runs-fits-one-io-order-through-sh.md)
+- [Пара живых узлов поднимается одним `sh -c`, а судит их flang по журналам](para-zhivyh-uzlov-podnimaetsya-odnoy-obolochkoy-a-sudit-ih-flang-po-zhurnalam.md)
 
 ## Самораскрутка и метод проверки
 
@@ -402,6 +404,7 @@
 - [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](udalit-fayl-v-slovare-vvoda-vyvoda-net.md)
 - [Итоговая строка проверки врёт рядом с верным списком бед — порча смотрит на список и этого не видит](itogovaya-stroka-vryot-ryadom-s-vernym-spiskom-bed.md)
 - [Ссылка на «полный список кодов» вела туда, где нет ни одного отказа ядра: 0 из 13](the-full-list-of-codes-named-none-of-the-kernel-refusals.md)
+- [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](potomok-zapuskaetsya-v-kataloge-plana-a-ne-v-rabochem.md)
 
 ## Найденные ошибки
 

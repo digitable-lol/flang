@@ -68,6 +68,36 @@ one library at different versions, that is settled by raising a version, not by
 letting both live in the program side by side. The argument is worked out in
 [Modularity and packages](../modules.html).
 
+<<<<<<< HEAD
 **Not the full Unison model.** Storing code in a database instead of files means
 owning an editor, owning a host, and losing git. Half of it — content addressing
 — we take; the other half we do not.
+=======
+Capturing an environment breaks the termination proof and direct emission into C,
+Go and Rust.
+
+First-class functions do **exist**: the compiler replaces a function-value with a
+tag and dispatches on tags — a technique known since 1972 (Reynolds), and that is
+how `flang/stdlib/higher-order.flang` is written. A closure and a first-class
+function are different things, and only the first is refused.
+
+### No two versions of one library in one program
+
+When two dependencies pull one library at different versions, that is settled by
+raising a version, not by letting both live in the program side by side. The
+argument is worked out in [Modularity and packages](../modules.html) (in
+Russian).
+
+### Not the full Unison model
+
+Storing code in a database instead of files means owning an editor, owning a
+host, and losing git. Half of it — content addressing — we take; the other half
+we do not, and the reason is spelled out in the same place.
+
+## What this page does not carry
+
+**Dates.** Order of work yes, dependencies yes, dates no.
+
+**A report on work done.** How many bytes the built binary weighs and how many
+seconds the build takes is a measurement, not a plan.
+>>>>>>> u/dok-install

@@ -15,11 +15,32 @@ There is one compiler here, written in flang itself, and it builds without Node.
 The tree carries a bootstrap point — that same compiler printed to C99. The whole
 dependency list is a C compiler and `make`:
 
+<<<<<<< HEAD
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
 make -C bootstrap
 bootstrap/flang --version
 ```
+=======
+- [Speed against Python and Node](../benchmark-speed.html) — where we stand
+  against three languages at once, and how much of the difference is the price
+  of provability rather than unfinished work.
+- [The price of a proof against tests](../benchmark-proof-cost.html) — twenty
+  ordinary library functions, both jobs done on each. The first answer: 0 out
+  of 20.
+- [The price of a proof, second run](../benchmark-proof-cost-2.html) — the same
+  twenty functions two days later, after kernel fixes: 2 out of 20, or 6 out of
+  20 counting weakened claims.
+- [How many processes the scheduler holds](../benchmark-processes.html) — a
+  million live processes, the time to start them and the price of a switch.
+- [Memory and regions](../memory.html) — what the arena holds, what the fix
+  bought and where the cost still shows.
+- [Modularity and packages](../modules.html) — the hypothesis "a function's name
+  is the hash of its text", with Unison installed, run and measured rather than
+  retold.
+- [WebAssembly via C](../wasm.html) — whether a separate emit target is needed.
+  The answer is no, and here is what that rests on.
+>>>>>>> u/dok-install
 
 ```
 flang 0.6.2

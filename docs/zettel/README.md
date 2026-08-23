@@ -594,6 +594,3 @@
 - [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
-- [Веер запусков двоичного помещается в ОДНО поручение плана — через `sh -c`](a-fan-out-of-binary-runs-fits-one-io-order-through-sh.md)
-- [Пара живых узлов поднимается одним `sh -c`, а судит их flang по журналам](para-zhivyh-uzlov-podnimaetsya-odnoy-obolochkoy-a-sudit-ih-flang-po-zhurnalam.md)
-- [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](potomok-zapuskaetsya-v-kataloge-plana-a-ne-v-rabochem.md)

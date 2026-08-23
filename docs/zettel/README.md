@@ -404,6 +404,7 @@
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь: доказанным надо проверить, ложь ли это](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
 - [Поправка, написанная под деление с усечением, применённая к делению вниз, срабатывает дважды — и календарь до нашей эры уезжает на год](a-correction-written-for-truncation-fires-twice-under-floor-division.md)
+- [Ведущий нулевой октет DER делал отозванный сертификат неотозванным: 1 серийный номер из 7 разошёлся с openssl](a-der-leading-zero-turns-a-revoked-certificate-into-an-unrevoked-one.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Поле встроенного словаря, названное ключевым словом, ставится и не читается — и проверять это надо ДО того, как имя выбрано](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)

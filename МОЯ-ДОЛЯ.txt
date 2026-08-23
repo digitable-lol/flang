@@ -1,0 +1,11 @@
+208	flang/core/parser.flang
+118	flang/self/emit-rust.flang
+67	flang/scripts/skolku-verit.flang
+48	scripts/storozh-pechati.flang
+41	flang/core/lexer.flang
+34	scripts/spisok-versiy-asdf.flang
+30	flang/scripts/code-guard.flang
+23	packaging/sverka-ustanovok.flang
+19	scripts/stranitsa-poverhnostey.flang
+14	flang/stdlib/x25519.flang
+12	flang/examples/cat/monoid-and-monad.flang

@@ -91,3 +91,7 @@ benchmarks/zamer-skorosti/.sborka
 # конфликтуют при каждом своде.
 МОЯ-ДОЛЯ.txt
 bootstrap-vysokiy/
+
+# рабочие каталоги замеров — заводятся прогонами, в дереве им не место
+schet/
+schet2/

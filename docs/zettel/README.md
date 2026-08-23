@@ -241,6 +241,7 @@
 - [Судья категорий был написан и не запускался ничем: вшить его стоило семь файлов замыкания](sudya-kategoriy-byl-napisan-i-ne-gonyalsya.md)
 - [`только` у ввоза не сужает видимость, а выбрасывает объявления](tolko-u-vvoza-vybrasyvaet-obyavleniya.md)
 - [Сторож столкновений имён не знал о вариантах суммы](storozh-stolknoveniy-ne-znal-o-variantah-summy.md)
+- [flang-близнец сторожа столкновений зеленел на трёх настоящих столкновениях: 38 файлов против 762](flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](pechat-v-js-derzhit-granica-vhoda-a-ne-runtime-v-literalah.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](perenos-oracula-yarusa-tri-razlozhen-na-pyat-raznyh-zadach.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](zapis-otvetov-snimaetsya-do-udaleniya.md)

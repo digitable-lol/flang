@@ -38,7 +38,6 @@ on:
       - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
-      - "flang/test/install-path.test.mjs"
       - ".github/workflows/put-ustanovki.yml"
     tags: ["v*"]
   pull_request:
@@ -48,7 +47,6 @@ on:
       - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
-      - "flang/test/install-path.test.mjs"
       - ".github/workflows/put-ustanovki.yml"
   # Раз в сутки — потому что ломает путь установки не только своя правка.
   # `asdf global` удалили в ЧУЖОМ инструменте, и наше дерево в тот день не
@@ -86,8 +84,16 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gnu-tar
 
-      - name: Путь установки целиком — четыре способа
-        run: node --test --test-timeout=1800000 flang/test/install-path.test.mjs
+      # Прежде здесь стоял прогон на JavaScript (flang/test/install-path.test.mjs,
+      # 894 строки). Он был снят: к тому дню он звал flang/bin/flang.mjs, которого
+      # в дереве уже нет, и потому НЕ ПРОХОДИЛ ни одного из четырёх путей —
+      # красным был не путь установки, а сам прогон. Статическую его половину
+      # держат сторожа на flang; настоящую установку держит работа brew ниже.
+      - name: Сборка на Darwin не сломана молча
+        run: ./ярлык darwin:check
+
+      - name: Формула Homebrew сходится сама с собой
+        run: ./ярлык formula:check
 
   # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────
   #

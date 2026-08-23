@@ -22,7 +22,8 @@ on:
       - 'flang/conc/SPEC.md'
       - 'scripts/build-changelog-page.mjs'
       - 'scripts/build-changelog.mjs'
-      - 'scripts/build-releases-page.mjs'
+      - 'scripts/vypuski.flang'
+      - 'scripts/stranitsa-vypuskov.flang'
       - '.github/workflows/pages.yml'
       # Подсветка блоков кода красит НАСТОЯЩИМ лексером языка, а он живёт в
       # двоичном компиляторе: правка точки раскрутки или двери к двоичному
@@ -77,7 +78,7 @@ jobs:
       # и между новым тегом и перепечаткой она отстаёт. Опубликованное всегда
       # свежее; дерево при этом не правится — сборка не коммитит.
       - name: Перепечатать страницу выпусков
-        run: node scripts/build-releases-page.mjs
+        run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/stranitsa-vypuskov.flang
 
       # ДВОИЧНЫЙ САЙТУ ОБЯЗАТЕЛЕН, и с 20 августа 2026 это уже не «желательно».
       # Он делает две вещи: красит блоки кода настоящим лексером языка

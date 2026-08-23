@@ -378,7 +378,7 @@
     },
     {
       "маска": "docs/site/releases.ru.md",
-      "почему": "печатается из тегов выпусков и docs/release-notes.json командой build-releases-page; правка руками пропадёт при первой перепечатке"
+      "почему": "печатается из тегов выпусков и docs/release-notes.json командой stranitsa-vypuskov; правка руками пропадёт при первой перепечатке"
     },
     {
       "маска": "AGENTS.md",

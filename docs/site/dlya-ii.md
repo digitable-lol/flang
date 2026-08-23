@@ -1,91 +1,118 @@
-# flang and AI: a language where an assistant has nothing to bluff with
+# The flang service for an AI assistant
 
-A model writes code quickly and confidently. The problem is not the speed but
-that the confidence rests on nothing: "this function is correct" is a sentence,
-not a fact, and there is usually nothing to check it against except tests written
-by the same model for the same inputs.
+The `flang` binary speaks MCP to an assistant: JSON-RPC over the standard
+streams, one message per line. The assistant starts the service, not a human:
+started by hand it waits for messages in silence — that is not a hang.
 
-flang is shaped so that confidence is checked by a machine rather than conveyed
-by tone.
+## How to connect it
 
-## Three things that are usually missing
+Add this to the assistant's configuration file:
 
-**A promise is checked, not read.** Next to a function stands `ensures` — a claim
-about the result. The compiler **proves it for all inputs** or refuses the file.
-An assistant cannot declare a function correct; it can only write a promise that
-either proves or does not. The answer is binary and comes from the compiler.
-
-**Termination is proved.** The word `total` is a promise that the function
-terminates on every input, and the compiler checks it itself. An infinite loop
-the model failed to notice does not pass here.
-
-**Examples live inside the function** and run on every check of the file. They
-cannot be forgotten and cannot drift away from the code.
-
-## A service for the assistant
-
-The binary speaks the model conversation protocol:
-
-```sh
-flang --mcp-mode
+```json
+{"mcpServers": {"flang": {"command": "flang", "args": ["--mcp-mode"], "env": {}}}}
 ```
 
-It is JSON-RPC over standard streams, one message per line, started by the
-assistant rather than a human. What the assistant gets back is not prose to read
-but answers backed by a compiler run: proved or not, and if not, why.
+Check that the binary answers:
 
-An unknown tool is reported as an error naming the real ones rather than passed
-over in silence; a promise that does not exist is named. In other words, it makes
-mistakes visible.
+```bash
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | flang --mcp-mode
+```
 
-## A question instead of a guess
+```json
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"flang","version":"0.6.0"}}}
+```
 
-The expensive part of working from requirements is not writing the code, it is
-seeing what the requirement does not say. This is normally where an assistant
-**guesses** and moves on.
+## Which tools are available
 
-Here the question is **computed**. The clarification tool
-(`fspec/utochneniya.flang`) takes the proof kernel's verdict and the shape of the
-goal and derives from them a question for whoever wrote the requirement. A census
-across the whole library:
+There are two, and `tools/list` names exactly them.
 
-| | |
+| Tool | Takes | What it answers |
+|---|---|---|
+| `flang_check` | `source` — the whole program text | parsing, types, proved termination and the proof report — all of it, uncut |
+| `flang_prove` | `source` and `claim` — the name from `обеспечивает «name» …` | what carries the proof of that one promise — or the same refusal a human sees |
+
+## What comes back
+
+There is no "ok" field in the answer. There are five verdicts, and none reduces
+to another:
+
+| Word in the answer | What it means |
 |---|---|
-| promises | 491 |
-| unproved | 386 |
-| of those, turned into a question | 112 |
-| of the rest, the tool says it has nothing to ask | 285 |
+| `доказано` (proved) | the claim holds for all inputs |
+| `доказано индукцией по «Т»` (proved by induction) | the same for all values of type «Т» |
+| `сетка N` (grid of N) | computed on N of the author's values. This is not a proof |
+| `объявлено, не доказано` (stated, not proved) | the claim is written, nothing proves it |
+| `НАРУШЕНО` (violated) | already false, and the author's own example found it |
 
-Twenty-nine percent of the unproved turns mechanically into a meaningful
-question. The more important half is the other one: for the rest the tool does
-**not invent** a question, it says honestly that it does not know. Eight files
-were not measured at all — and there too it answers with a refusal rather than a
-zero in the table.
+The service ships this glossary in every answer — the assistant does not have to
+remember it between calls.
 
-The loop was checked by three runs: a coarse requirement yields one question; the
-right answer yields "2 of 2 proved, exit 0"; a wrong one yields "violated, exit
-1". The right answer also found an error in the requirement itself: with the old
-body the promise was false.
+## An exchange
 
-## A rule in the team's own language
+The request is `tools/call` with the tool, the program and the promise name:
 
-A promise can be written in the language the customer speaks:
+```json
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"flang_prove",
+ "arguments":{"source":"…","claim":"скидка не больше 30"}}}
+```
+
+The program in `source`:
 
 ```flang
-ensures «zh: 折扣不超过 30» result is at most 30
+модуль «Скидка»
+
+тотальная функция «Скидка»
+  принимает разряд: строка
+  возвращает число
+  обеспечивает «скидка не больше 30» результат не больше 30
+  пример «постоянный покупатель»
+    дано разряд равно "постоянный"
+    ожидается 30
+  если разряд равен "постоянный"
+    то 30
+    иначе 0
 ```
 
-This is not a note but a full claim: it is proved along with the rest, and the
-translated goal is compared with the original character for character. For an
-assistant that means carrying a requirement in the customer's language without
-losing checkability.
+The answer (the `content` text, after the verdict glossary):
 
-More in [Specs: a business rule that is proved](fspec.html).
+```
+постусловие «скидка не больше 30» функции «Скидка» — доказано сведением цели с
+телом функции: правило «ограниченность точным потолком по построению»,
+объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не
+о написанных; теоремы при нём нет и не нужно
+```
 
-## What the service cannot do yet
+## When the program does not parse
 
-It answers two of four questions. "What breaks if I change this" and "do these
-requirements agree with each other" both need starting a process from the
-service loop, and today's loop handles one effect. This is written into the
-service's own tool listing: a listing without the gaps reads as "we can do
-everything", which is untrue.
+There is no proof report, and the service says why — "did not parse" is not "not
+proved":
+
+```
+Программа НЕ ПРОШЛА проверку языка, и ведомость доказательства поэтому не
+печатается. Это не «не доказано» — это «не разобрано или не сошлось по типам».
+
+FLANG_PARSE, строка 7, столбец 3: пример «два» требует строку 'ожидается'
+```
+
+## When the tool name is wrong
+
+The service neither stays silent nor pretends it understood:
+
+```json
+{"jsonrpc":"2.0","id":3,"error":{"code":-32602,"message":"служба flang не знает средства «flang_nonexistent». Их два: flang_check и flang_prove"}}
+```
+
+## What the service does not do
+
+It does not stop an assistant from writing something wrong. It takes away the
+option of calling the wrong thing right: "this function is correct" is a
+sentence, while `доказано` in the answer is the result of a run.
+
+Two questions it cannot answer: "what breaks if I change this" and "do these
+requirements agree with each other". Both need a process started from the
+service loop, and today's loop carries one effect.
+
+## Next
+
+- [Requirements that are proved](fspec.html) — a rule in the customer's language.
+- [What is proved and what is not](what-is-proved.html) — where the line runs.

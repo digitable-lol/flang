@@ -163,8 +163,7 @@ quietly. There are three decision rules, and each one fits in a single reading:
 ## Where the language actually is
 
 The numbers below are substituted from a measurement of the tree, not typed: one
-number lives in one place, and two pages have nothing to drift apart on. Nor can
-it go stale quietly — [how that works](about-docs.html).
+number lives in one place, and two pages have nothing to drift apart on.
 
 | | |
 |---|---:|

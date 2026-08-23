@@ -1,155 +1,63 @@
-# Real case studies
+# A case taken apart: 82 leetcode tasks
 
-Three cases taken from the tree, not invented for this page: eighty-two leetcode
-tasks, a URL-shortener service, and the supervision over its processes. For each
-one: **what exactly is proven**, and what the proof costs.
+`flang/examples/leetcode/` — 82 files, 7 609 lines. Not an example written for
+this page but code in the tree: one command runs it.
 
-## Case 1. Eighty-two leetcode tasks
+## Run it yourself
 
-`flang/examples/leetcode/` — 82 files, 7 607 lines. Counted by declaration:
+```bash
+flang test flang/examples/leetcode
+```
+
+```
+корпус «flang/examples/leetcode»: файлов 82, взято 82, отказано 0, примеров 804
+(своих 804), на чужих примерах 0, потеряно своих 0, прошло 804, не прошло 0,
+за 11956 мс
+```
+
+Exit code 0. Twelve seconds for 82 tasks.
+
+## What is counted here
 
 | | |
 | --- | --- |
 | functions | 300 |
-| of those total | **298** |
+| of those total | 298 |
 | ordinary | 2 |
 | executable examples | 804 |
-| postconditions (`обеспечивает`) | **2** |
+| postconditions (`обеспечивает`) | 2 |
 
-This table has to be read both ways, and the second way matters more.
+## What is proved
 
-**What is proven.** 298 of 300 functions carry proven termination. This is not
-"the tests passed": the compiler would refuse to build the file if it could not
-show that the recursion bottoms out. For tasks like "search in a rotated sorted
-array" or "trapping rain water" that is exactly where infinite loops live, and it
-is closed before the program runs.
+298 functions out of 300 carry proved termination. This is not "the examples
+passed": the compiler would refuse to build the file if it could not show that
+the recursion bottoms out. For tasks like "search in a rotated sorted array" or
+"trapping rain water" the infinite loop is closed before the program runs.
 
-**What is not proven, visible in the same table.** All eighty-two problems hold **two**
-postconditions, both in task 13, roman numerals to integer:
+The two ordinary functions are named: `«Шаг счастья»` and `«Счастливое»` from
+task 202. They do terminate — the sequence of digit-square sums falls into a
+cycle — but structural descent cannot show it, so the file honestly writes
+`функция` rather than `тотальная функция`.
 
-```
+## What is not proved
+
+Across all 82 tasks there are two postconditions, both in task 13, roman
+numerals to integer:
+
+```flang
   обеспечивает «значение цифры неотрицательно» результат не меньше 0
   обеспечивает «значение цифры не больше тысячи» результат не больше 1000
 ```
 
-So for 298 functions it is proven that they **stop**, and for almost none of them
-that they **compute the right thing**. Correctness here is carried by 804
-examples, and an example is a claim about one input. The gap between "proven" and
-"correct" is the specification, and eighty-two leetcode problems put a number on its size.
+So for 298 functions it is proved that they **stop**, and for almost none of
+them that they compute **the right thing**. Correctness here is carried by 804
+examples, and an example is a claim about one input.
 
-**The two ordinary functions are named.** `«Шаг счастья»` and `«Счастливое»` from
-task 202. They do terminate — the sequence of digit-square sums falls into a
-cycle — but that cannot be shown by structural descent, so the file honestly
-writes `функция` rather than `тотальная функция`. Two out of three hundred: the
-price of the `тотальная` marker on real tasks is measurable, and it is small.
-
-## Case 2. The URL-shortener service
-
-`flang/examples/web/shortener/` — **1 732 lines of flang across seven files**.
-Between parsing the request and printing the response there is not one line that
-is not flang: the bytes are carried by the plan's executor.
-
-| File | Lines | What is in it |
-| --- | --- | --- |
-| `service.flang` | 580 | outcome, theorems, routing, HTTP parsing and printing |
-| `plan-durable.flang` | 381 | the same service on top of a write-ahead log |
-| `server.flang` | 229 | processes, supervision, three runs |
-| `plan-network.flang` | 201 | the same service through a real socket |
-| `store.flang` | 155 | codes, addresses, redirect counter |
-| `plan.flang` | 133 | the same handler through file I/O |
-| `handler-without-budget.flang` | 53 | the exhibit: it does not compile, and that is the point |
-
-The proof report:
-
-```bash
-flang check flang/examples/web/shortener/service.flang --proof
-```
-
-```
-функций 88: тотальных 88, обычных 0
-обещание несёт: композиция 83, структура 4, точный шаг 0, постоянный шаг 1, объявленная мера 0
-утверждений 25: доказано 8 (из них индукцией 3) (из них без теоремы 5), сетка 17, объявлено, не доказано 0 (шагов в термах 30)
-```
-
-**This report does not print today, and here is why.** On a run of 21 August 2026
-the command answers with exit code 1: three examples of the function `«Решить»`
-disagree — the ones about a path the browser sent percent-encoded (`%D0%BB…`).
-Percent decoding returns "no such path" where a route was expected. A program with
-diagnostics prints no ledger at all, so the numbers above are from the run when
-those examples were green, not from today's.
-
-**Why this is valuable.** A web service whose **all 88 functions are total** is a
-service where no request can drive a handler into an infinite loop. Not "we found
-no such request" but "no such request exists". For an HTTP parser fed bytes off
-the network that is the most expensive property available.
-
-**Three proofs by induction** run over the type «Исход», an enumeration of ten
-cases. It is proven that the response code always comes from the declared set,
-that the code's explanation is non-empty, and that "the outcome succeeded" and
-"the code succeeded" are the same thing. A bug of the form "returned 200 with an
-error body" fails type checking here rather than being caught by a test.
-
-**Seventeen claims out of twenty-five landed on a grid, not on a proof,** and the
-report says so verbatim: "сетка 1 значение (примеры функции) … Это не
-доказательство — теоремы при утверждении нет". About "the response body is no
-longer than the declared limit" exactly this much is known: no violation was
-found on the written examples — and that is the line the report draws between
-"proved" and "grid".
-
-Running the service's examples: `flang test …/server.flang` — **255 examples, 252
-passed, 3 failed**, exit code 1. The three that fail are the same percent-encoded
-path ones. That is a real red in the tree, not a caveat on this page: until it is
-fixed, the service does not parse every path a browser sends.
-
-## Case 3. Supervision: what happens when the loop budget runs out
-
-This is where provability and operations meet. A handler whose termination is
-proven needs no budget. A handler whose termination is not proven must name one —
-`обрабатывает «шаг пересчёта» с запасом 2000 витков` — or **type checking rejects
-the file**. And a process that can fail with no supervisor over it is rejected as
-well: `FLANG_UNCOVERED_FAILURE`.
-
-```mermaid flowchart TD What happens when the 2000-iteration budget runs out
-flowchart TD
-  A[a message arrives<br>for process «Пересчёт»] --> B{termination<br>proven?}
-  B -->|yes| C([handler with no budget<br>finished])
-  B -->|no| D[count iterations<br>budget 2000]
-  D --> E{budget<br>exhausted?}
-  E -->|no| C
-  E -->|yes| F[message rejected<br>process crashed]
-  F --> G[state stays as it was<br>BEFORE the run: the handler<br>is pure, half a change<br>never happens]
-  G --> H[supervisor «Приём»<br>strategy «перезапустить»]
-  H --> I{third failure<br>within 5000 ms?}
-  I -->|no| J([process restarted<br>with its initial value])
-  I -->|yes| K[fallback strategy<br>«остановить»]
-  J --> L([the service is ALIVE<br>and keeps answering])
-  C --> L
-  class F,K otkaz
-  class C,J,L vyvod
-  class D,G,H glavnoe
-```
-
-The diagram does not restate the text above; it answers the question prose asks
-badly: **what survives of the state, and who brings the crashed process back**.
-Three runs in `server.flang` check exactly these arrows:
-
-- `запас кончился у одного — служба жива и досчитала переход`: «Пересчёт» was
-  restarted **exactly once**, its state went back to zero, and the store of
-  «Служба» is intact — the link created before the crash is still there and its
-  redirect is counted;
-- `злонамеренный вход не роняет службу и не будит надзор`: a truncated request,
-  two content lengths, an oversized header — **0 supervisor decisions**. A total
-  handler crashes on nothing;
-- `третье исчерпание запаса в окне уходит на запасную стратегию`: **seeds 1
-  through 200** — two "restart" decisions and one "stop" across all two hundred
-  interleavings.
-
-The seed grid is not decoration: the threshold window is measured in handler
-runs, and how many of those fit between failures is a matter of interleaving, not
-arithmetic.
+The gap between "proved" and "correct" is the specification. You can write one:
+`обеспечивает` is accepted on any function, and the kernel will try to prove it.
+How that is done — [Requirements that are proved](fspec.html).
 
 ## Next
 
-- [What is proved and what is not](what-is-proved.html) — the line drawn in numbers
-- [Why and how](proofs.html) — how the proof kernel works
-- [Processes and fault tolerance](../spec-conc.html) — in Russian; the supervision spec
+- [What is proved and what is not](what-is-proved.html) — where the line runs.
+- [Why and how](proofs.html) — how the proof kernel works.

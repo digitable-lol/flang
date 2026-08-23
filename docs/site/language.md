@@ -879,3 +879,4 @@ the table are named here so that nobody has to hunt for them.
 - [Tutorial](tutorial.html) — the same from zero, step by step
 - [Language specification](../spec.html) — the whole contract (in Russian)
 - [Known limits](limits.html) — what the language does not do and will not
+- [Standard library reference](stdlib.html) — the standard library modules and what to take from each

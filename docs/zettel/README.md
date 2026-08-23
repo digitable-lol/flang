@@ -39,6 +39,8 @@
 
 ## Доказательства
 
+- [Строгое «больше» в цели ядро берёт, если написать его целочисленно: «Е плюс 1 не больше Г»](strict-greater-is-taken-as-plus-one-not-greater.md)
+- [Отказ «инстанцировано на 2 вызовах» держит не `пусть`-имя, а тело вызванной: с телом-`разбор` он остаётся](two-calls-refusal-is-about-the-callee-body-not-the-let-name.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
 - [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)

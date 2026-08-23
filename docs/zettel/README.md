@@ -440,6 +440,7 @@
 - [Одна ссылка на ненаписанную заметку останавливает публикацию сайта целиком](one-dangling-note-link-stops-the-whole-site.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Чему учить ядро следующим: свод семи каталогов отказов, а не догадка](kernel-gaps-ranked-across-shares.md)
 - [Пять шестых работы обмера области уходит на выяснение «не окупится», а не на саму перекладку](obmer-oblasti-platit-za-vyyasnenie-chto-ne-okupitsya.md)
 - [Модуль, проходящий `flang check` в одиночку, всё ещё может сломать раскрутку столкновением имён](a-module-that-checks-alone-still-collides-in-the-closure.md)
 - [Пример зеленеет на варианте, которого разбор не производит никогда, — и это класс](an-example-can-green-on-a-variant-the-parser-never-produces.md)

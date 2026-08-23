@@ -266,11 +266,42 @@ Do not add product-specific structures, filesystem access, or network access to
 the language. Build integrations as separate packages over the JSON that
 `flang ast` prints.
 
+## The commit subject
+
+```
+type(scope): a statement of what is now true
+```
+
+The statement is not decoration: `scripts/build-changelog.mjs` copies the subject
+into the changelog verbatim, so the subject *is* the journal entry. Write what the
+tree now does, not what you did — "strings: 17 claims proved by the kernel", not
+"added claims to strings". Numbers in a subject are numbers you measured by
+running something.
+
+The type is for the machine: the next version of the language is computed from it.
+
+| type | when | version |
+|---|---|---|
+| `feat` | the language does something it could not | minor |
+| `fix` | something broken now works | patch |
+| `perf` | same behaviour, cheaper | patch |
+| `proof` | claims, theorems, forgeries | patch |
+| `docs` `test` `refactor` `chore` `build` `ci` | none of the above | no bump |
+
+A breaking change carries `!` after the type or scope and explains itself in the
+body under `СЛОМАНО:` / `BREAKING:`.
+
+```
+feat(kernel)!: the "starts with" rule replaced the old record form
+
+BREAKING: proof records taken before this commit are rejected by the checker
+and have to be retaken.
+```
+
 ## Sending the change
 
 Fork the repository, branch off `main`, and open a pull request. Small first: one
-change, one reason, and a commit message that says what the tree now does that it
-did not do before.
+change, one reason, and a commit subject in the form above.
 
 CI runs on tags and on demand, not on every push, so a pull request does not turn
 green by itself. Say in the description what you ran. If you could not run

@@ -34,8 +34,7 @@ make -C bootstrap -j8    # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2, no w
 It also prints itself. `sh scripts/raskrutka.sh` runs the binary over the compiler's own
 sources and produces the seven C files the binary was built from; `--check` compares them with
 what is committed and finds no difference: 7 files, 24,074,977 bytes, every one of them
-identical. Node is needed neither to run the compiler nor to build it, and that is checked the
-only way it can be — by running the whole thing where `node` cannot be found.
+identical.
 
 The specification is [`flang/SPEC.md`](flang/SPEC.md); what the compiler's five layers owe each
 other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past those.
@@ -113,8 +112,8 @@ cause instead.
 driven by the binary: `sh flang/проверки/обход.sh` — 98 checks written in flang itself, three
 seconds — and `flang test <directory>`, which runs the examples declared inside functions
 (1,216 in the standard library, 229 in the core, 804 in the LeetCode set). On every push CI
-builds the binary and runs the 98 checks and the 1,445 library-and-core examples with it,
-without installing Node at all; the LeetCode set and the rest of the tree are walked on a tag,
+builds the binary and runs the 98 checks and the 1,445 library-and-core examples with it;
+the LeetCode set and the rest of the tree are walked on a tag,
 because that walk takes over an hour.
 
 **`npm test` does not start.** It fails in `pretest` with `ERR_MODULE_NOT_FOUND`, before the
@@ -454,8 +453,8 @@ runner, so it is not in CI; it is called by hand before a change to `flang/self/
 And the binary cannot check its own sources. `flang check flang/self/bootstrap/compiler.flang`
 runs out of its step budget and answers `FLANG_RECURSION_LIMIT`; the step budget is one per
 command rather than one per evaluation, and `check` has no flag to raise it. `flang emit` does
-not check the program at all, which is why printing still works. So the compiler can be rebuilt
-without Node, but confirming that the thing you rebuilt is sound needs something this tree does
+not check the program at all, which is why printing still works. So the compiler can be
+rebuilt, but confirming that the thing you rebuilt is sound needs something this tree does
 not have.
 
 ---
@@ -497,8 +496,7 @@ layout, module-splitting and CI conventions derived from that project are collec
 
 Work happens in a clone, and the only thing to build is the compiler itself:
 `make -C bootstrap -j8` takes about a minute and gives you `bootstrap/flang`, which answers
-`./bootstrap/flang check flang/stdlib/lists.flang` straight away. Node is not on that path at
-any step, and neither is npm.
+`./bootstrap/flang check flang/stdlib/lists.flang` straight away.
 
 What to run after a change:
 
@@ -511,7 +509,7 @@ sh scripts/raskrutka.sh --check       # …and confirm the reprint matches the t
 ```
 
 The bootstrap point is reprinted in the same commit as the change that moved it. CI runs the
-first three on every push and never installs Node.
+first three on every push.
 
 `flang/test/` is not part of that list, and will not be until it is rewritten: see the note
 above about `npm test`.

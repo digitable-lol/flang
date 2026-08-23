@@ -5,7 +5,7 @@
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
 52e9d5b338544916e42ac4eaf900fbf5cac06425b9ba1a44d03c250ca2e8973b  flang/core/evaluate.flang
-d12326f8e2894037673b947ce2750e0828847630b869689ad1916345943fb9c9  flang/core/json.flang
+58dace2ce1aa5097969604e8a98a60f96556d17d821a6ce120df60f6b7126f16  flang/core/json.flang
 0c16298996a3845bc6b7479cc56a1b1efaae40f682c35d5ea0233838a2967f06  flang/self/bootstrap/compiler.flang
 4e716ff972967f56cfab1ec9f621e1ab6bd33ae4a9915c88d4816deb4c8bebd4  flang/self/bootstrap/corpus.flang
 13c51e9dd9e2771e58e3edf231ceff73c7e24e59f06ea2506b19e81a048f6dad  flang/self/carriers.flang
@@ -44,5 +44,5 @@ fc3b444c730afb1f90559dde279ef017c82c8ac80aae17276701276a4155910d  flang/self/typ
 7b4e25c3e7b411fe03e610a26a1c52f9542bc0dee02da0fafca11641db920f1e  flang/src/emit/c/flang_repl.c
 2b6d32ee3054f4506fa9d57224036f2c3c231b04fabfe447b947f8aa593e664d  flang/src/emit/c/flang_runtime.c
 0fe6460786ba57e3d9f253fa69611af1e46b49b1122831bd6af4593d368ae1a7  flang/src/emit/c/flang_runtime.h
-45b79825fb22abe665bb7d47e38dedc85936f30fc767a314bee39b6b4ed96fb7  flang/stdlib/strings.flang
+3d118475ac8b3a1b903fa54089264617bb48129c4b8052274f6eee3a5c083710  flang/stdlib/strings.flang
 cd4303296d1b0ee03ecf340530c0d5b46c687df26781e9b358fde24dba112852  flang/stdlib/tree.flang

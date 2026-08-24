@@ -360,7 +360,7 @@ flang check flang/stdlib/json.flang --proof --предел-шагов 3000000000
 «да/нет»):
 
 ```
-./ярлык verit:skolku
+./ярлык сколько-верим
 → всего строк 11 279, кода 6367, ядро решений 3517 (функций 496)
   потолок пробит: было 3372, стало 3517 (+145)
 ```
@@ -537,7 +537,7 @@ make -C bootstrap -j4                                    собрать комп
 ./bootstrap/flang test flang/stdlib/lists.flang          прогнать примеры
 ./bootstrap/flang io benchmarks/proof-cost/count-20.flang               цена доказательства
 ./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000  доказатель не берёт ложь
-./ярлык verit:skolku                                     скольким строкам приходится верить
+./ярлык сколько-верим                                    скольким строкам приходится верить
 sh scripts/raskrutka.sh --bystro                         не отстал ли напечатанный компилятор
 ```
 

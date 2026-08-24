@@ -65,7 +65,7 @@
  *         node flang/scripts/target-words.mjs --tolko-poddelka   (без п. 2)
  *         node flang/scripts/target-words.mjs --cel=rust      (одна цель)
  *
- * Ярлык: ./ярлык slova:check
+ * Ярлык: ./ярлык слова:проверка
  */
 import { spawnSync } from "node:child_process"
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs"

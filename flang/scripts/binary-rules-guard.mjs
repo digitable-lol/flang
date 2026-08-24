@@ -117,7 +117,7 @@
  *   `check` код 2 и печаталась кодом 0. Теперь такая программа печатается
  *   кодом 3 и с названным пробелом, а сторож это меряет прогоном.
  *
- * Запуск: `node flang/scripts/binary-rules-guard.mjs` (или `./ярлык rules:check`).
+ * Запуск: `node flang/scripts/binary-rules-guard.mjs` (или `./ярлык правила:проверка`).
  * Проверяется он сам — `flang/test/binary-rules-guard.test.mjs`.
  */
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs"

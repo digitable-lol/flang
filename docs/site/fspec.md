@@ -52,7 +52,7 @@ whether **the first rule is still true**. With tests you answer that by having
 two people read the code. Here it is one command:
 
 ```sh
-./ярлык spec:check
+./ярлык спеки:проверка
 ```
 
 ```
@@ -69,7 +69,7 @@ by running it. Next to the specs lives a **forgery set**: cases where a spec is
 deliberately spoiled, and the check must go red on every one.
 
 ```sh
-./ярлык spec:podlog
+./ярлык спеки:подлог
 ```
 
 Among the things it catches: a rule weakened under the same name; a spec with no

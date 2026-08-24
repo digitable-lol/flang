@@ -75,7 +75,7 @@
 незакрытым хвостом:
 
 1. `bootstrap/flang io docs/zettel/ukazatel.flang --max-orders 4000 --timeout 900000`
-   (цель `ukazatel:pechat`; в `b/targets-cyrillic` её переименовывают в
+   (цель `указатель:печать`; в `b/targets-cyrillic` её переименовывают в
    кириллицу) — до неё в `docs/zettel/README.md` ровно 191 битая ссылка.
 2. `bootstrap/flang io scripts/link-guard.flang` — красный до пункта 1, зелёный
    после; других битых ссылок работа не добавила.

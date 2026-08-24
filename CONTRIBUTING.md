@@ -92,12 +92,12 @@ That second check is dormant today and says so (`зависимостей у п�
 ставить нечего`); it stays because the day a dependency returns is exactly the
 day nobody remembers to add it back.
 
-If you do have a machine with all eight toolchains on it, `./ярлык test:remote`
+If you do have a machine with all eight toolchains on it, `./ярлык тесты:по-ssh`
 will copy the tree there and run the suite over ssh with
 `FTS_REQUIRE_TOOLCHAINS=all`. You name the host yourself:
 
 ```bash
-FLANG_REMOTE=<your ssh alias> ./ярлык test:remote
+FLANG_REMOTE=<your ssh alias> ./ярлык тесты:по-ssh
 ```
 
 It is a convenience and nothing more — CI does not use it, and no change is
@@ -126,7 +126,7 @@ that touches `flang/self/` or `flang/src/emit/c/`, not on every save.
 ## Every shortcut, and who runs it
 
 A shortcut is a name with a command line behind it. They used to live in
-`package.json`, which meant typing `npm run spec:check` to run a command that is
+`package.json`, which meant typing `npm run спеки:проверка` to run a command that is
 `bootstrap/flang io fspec/guard.flang` — npm substituted a string and did
 nothing else, yet everyone who read the page concluded the language needs
 Node.js. It does not: one compiler, written in flang, built by one `make`.
@@ -139,10 +139,10 @@ when a shortcut names a file that is not there. The entry point is `./ярлык
 the binary for the command line and runs it. It holds no list of its own.
 
 ```bash
-./ярлык                     print every shortcut
-./ярлык spec:check          run one
-./ярлык word:occupancy это  anything after the name goes to the command
-./ярлык сборка              build the binary compiler (see below)
+./ярлык                        print every shortcut
+./ярлык спеки:проверка         run one
+./ярлык слово:занятость это    anything after the name goes to the command
+./ярлык сборка                 build the binary compiler (see below)
 ```
 
 **The first shortcut cannot be written in flang, and that is stated rather than
@@ -159,29 +159,29 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык сборка` | build the binary compiler from the C99 in `bootstrap/`; the one shortcut the shell script knows by itself |
 | `./ярлык ярлыки` | every shortcut names a file that exists in the tree |
 | `./ярлык тесты` | the whole suite, `flang/test/*.test.mjs`, preflight first |
-| `./ярлык test:remote` | the same suite on a host of your choosing, over ssh |
-| `./ярлык bootstrap` · `./ярлык bootstrap:check` · `./ярлык stroki:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
-| `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык pechat:check` · `./ярлык names:check` | the five prose guards below |
-| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
-| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/link-guard.flang`) |
-| `./ярлык site` · `./ярлык site:check` | build the documentation site and check its links; **Pages runs the file directly** |
-| `./ярлык numbers` · `./ярлык numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
-| `./ярлык glossary` · `./ярлык glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
-| `./ярлык surfaces:run` · `./ярлык surfaces:check` | measure the four writing surfaces, and check the page against the run |
-| `./ярлык changelog` · `./ярлык changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
-| `./ярлык changelog:page` · `./ярлык changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
-| `./ярлык releases:page` · `./ярлык releases:page:check` | print the releases page, both halves of it, and check it against the tags |
-| `./ярлык spec:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
-| `./ярлык rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
-| `./ярлык memory:check` | every peak-memory number stated in prose, remeasured by a run |
-| `./ярлык tmp:check` | a run that leaves temporary directories behind is required to say so, with a number |
-| `./ярлык occupied:check` | how many modules of the corpus would collide with names each target reserves |
-| `./ярлык poddelki:check` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
-| `./ярлык collisions:check` | name collisions inside the closure of imports |
-| `./ярлык proof:ledger` | the proof ledger over the corpus |
-| `./ярлык storozha:check` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
-| `./ярлык codes:podlog` | the code guard turns red on a planted code and goes silent once it is removed |
-| `./ярлык word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
+| `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
+| `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
+| `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
+| `./ярлык лицензии:проверка` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
+| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/link-guard.flang`) |
+| `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
+| `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
+| `./ярлык словарь` · `./ярлык словарь:проверка` | print `docs/glossary.md` from the surface table, and check it is fresh |
+| `./ярлык поверхности:прогон` · `./ярлык поверхности:проверка` | measure the four writing surfaces, and check the page against the run |
+| `./ярлык журнал` · `./ярлык журнал:проверка` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
+| `./ярлык журнал:страница` · `./ярлык журнал:страница:проверка` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
+| `./ярлык выпуски:страница` · `./ярлык выпуски:страница:проверка` | print the releases page, both halves of it, and check it against the tags |
+| `./ярлык спеки:проверка` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
+| `./ярлык правила:проверка` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
+| `./ярлык память:проверка` | every peak-memory number stated in prose, remeasured by a run |
+| `./ярлык времянки:проверка` | a run that leaves temporary directories behind is required to say so, with a number |
+| `./ярлык занятые:проверка` | how many modules of the corpus would collide with names each target reserves |
+| `./ярлык подделки:проверка` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
+| `./ярлык столкновения:проверка` | name collisions inside the closure of imports |
+| `./ярлык доказательства:ведомость` | the proof ledger over the corpus |
+| `./ярлык сторожа:проверка` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
+| `./ярлык коды:подлог` | the code guard turns red on a planted code and goes silent once it is removed |
+| `./ярлык слово:занятость` | how many written programs would break if a given word became a keyword; takes arguments |
 
 Some of these still start with `node`, because the program they run is written
 in JavaScript and lives in the tree (`flang/scripts/*.mjs`, `docs/site/*.mjs`).
@@ -214,11 +214,11 @@ runs goes stale silently. Five guards run them instead. Each is a script you can
 run on its own and a test that also proves the guard itself can go red:
 
 ```bash
-./ярлык claims:check   # "the language has no such form" — asked of the real lexer
-./ярлык counts:check   # every "N lines of `path`" and every ledger count, remeasured
-./ярлык codes:check    # every FLANG_* named in any .md must exist in the sources
-./ярлык pechat:check   # "seven backends emit …", the ten prose promises and the eight cost claims
-./ярлык names:check    # naming rules, against the parse tree of the whole corpus
+./ярлык утверждения:проверка  # "the language has no such form" — asked of the real lexer
+./ярлык подсчёты:проверка     # every "N lines of `path`" and every ledger count, remeasured
+./ярлык коды:проверка         # every FLANG_* named in any .md must exist in the sources
+./ярлык печать:проверка       # "seven backends emit …", the ten prose promises and the eight cost claims
+./ярлык имена:проверка        # naming rules, against the parse tree of the whole corpus
 ```
 
 What this means when you write:

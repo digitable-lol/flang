@@ -58,8 +58,8 @@ sh scripts/raskrutka.sh --check     # the seed against what the sources emit
 ./ярлык тесты                       # the whole set at once
 ```
 
-A single check is called by its name from that list: `./ярлык spec:check`, `./ярлык links:check`,
-`./ярлык site:check`. Each has its own exit code: 0 — clean, non-zero — the culprit is named.
+A single check is called by its name from that list: `./ярлык спеки:проверка`, `./ярлык ссылки:проверка`,
+`./ярлык сайт:проверка`. Each has its own exit code: 0 — clean, non-zero — the culprit is named.
 
 Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
 the same contract everywhere, which is what makes it usable from CI, editors and agents. The one

@@ -70,7 +70,7 @@ TypeScript не сделана. Ближайшее, что есть, — цел�
   (`VSE="c go rust python java csharp elixir js"`), `scripts/target-collisions.sh`,
   `scripts/plan-across-targets.flang`, `scripts/emit-and-examples.flang`;
 * `packaging/flang.1:43`, `docs/site/numbers.json` (8 числовых и словесных форм,
-  сверяются `./ярлык numbers:check`), глава курса `docs/course/09-eight-targets.md`;
+  сверяются `./ярлык числа:проверка`), глава курса `docs/course/09-eight-targets.md`;
 * обещания: 114…402 `обеспечивает` на цель — и это **отдельная работа поверх
   готового печатника**: все 149 обещаний `emit-js` пришли одним коммитом
   `c5d5a967`, ровно +149 строк, через шесть дней после того, как печать

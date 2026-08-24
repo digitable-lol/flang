@@ -572,7 +572,7 @@ node benchmarks/speed/kompilyaciya.mjs --кругов 5
 node benchmarks/speed/faz.mjs flang/self/types.flang --повторов 7
 
 # 7. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
-./ярлык proof:ledger
+./ярлык доказательства:ведомость
 ```
 
 Разовая проба одной задачи на трёх языках, с временем и памятью:

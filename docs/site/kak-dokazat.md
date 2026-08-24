@@ -395,6 +395,24 @@ Found independently by **four** agents in one day — on `optional.flang`
 (2 of 12 → 7 of 14), on `provod.flang` and `redis.flang` (+27 together), on
 `образцы.flang`, and on `result.flang` (10 of 13 → **15 of 15**, no grid left).
 
+**A variant WITH FIELDS lands too — 26 out of 26.** The tree used to record fields
+as insurmountable: "there is nothing to bind the field names to in the claim".
+There is no need to bind them — the field is recovered by an accessor on the
+scrutinee itself:
+
+```flang
+обеспечивает «у узла-списка полей нет»
+  если «узел» равен (вариант «Значение списка» с «элементы» равным («Элементы узла в монаде» от «узел»))
+    то результат равен пустой список иначе да        → PROVEN
+```
+
+A nullary function returning a variant works as well — `если «узел» равен
+(«Узел ничто в монаде»)`: the kernel unfolds the flat definition right inside the
+guard. Measured: 17 of 17 in `monad-expand.flang`, 9 of 9 in `bounded.flang`, and
+that was half of the whole gain on that share. It fails only where the variant
+cannot be **recovered by a term** — e.g. when the field is a bare scalar with no
+accessor.
+
 **The scrutinee may be an EXPRESSION, not only a variable** — the guide did not
 say so; measured on `totality.flang` across six functions:
 
@@ -439,6 +457,24 @@ outcomes of the comparison, lands whole and **without a theorem**:
 The three together are **stronger** than the single claim they replace: it now
 holds for any comparable arguments, not only positive ones. Measured on
 `higher-order.flang`: this landed what no wording of the guard could.
+
+## 3-bis. Mirroring an inequality helps in the CONCLUSION and hurts in the GUARD
+
+The rule "turn inequalities to the `не больше` side" holds for the conclusion.
+**For a guard copied from the body it takes the proof away.** Measured on
+`bounded.flang`, three consecutive runs: 61 → 60 → 62 proven.
+
+```
+если (длина «собрано») не меньше («Предел сетки») то … иначе да   PROVEN
+если («Предел сетки») не больше (длина «собрано») то … иначе да   declared
+```
+
+The statement is the same on every input, `не число` included. What differs is
+the trees: a guard must match the body's condition **sign for sign**, not by
+meaning.
+
+Hence the order: first copy the guard from the body verbatim, and only if that
+fails try the mirror — on the conclusion, not on the guard.
 
 ## 12. The wording of a guard is not a rule — it is two different runs
 
@@ -630,6 +666,18 @@ non-zero fields (`1`, `"я"`, `да`, `["я"]`) — and **they cut both ways**:
   and fell only on the non-zero one — because the examples of those very
   functions start from zeros, so a `0` stub is indistinguishable from the real
   body there.
+
+**In a pair of trick-10 claims EACH half is empty on its own — only the pair
+pins the function down.** Measured on `«Это список в монаде»`, body `разбор «узел»`:
+
+| stub | "a list node is called a list" | "a record node is not called a list" |
+|---|---|---|
+| `нет` | meaningful | **empty** |
+| `да` | **empty** | meaningful |
+
+Each half holds under a suitable stub; the function is held by both together.
+Hence the gap in the counts: on one share 16 were empty by the canonical stub and
+**another 15** are caught only by the mirrored one.
 
 **Stub one function at a time, or one group of unrelated ones — never all at
 once.** Having stubbed every body at once, an agent got a false "empty": the

@@ -33,8 +33,8 @@
 параллельность видна и изнутри хозяина.
 
 **Оболочка здесь не обход языка.** Так уже написано в дереве:
-`scripts/storozh-zanyatogo.flang` зовёт `sh -c` с `xargs` внутри (около четырёх
-тысяч вопросов пачкой), `scripts/srok-potomka.flang` зовёт двоичный тем же
+`scripts/occupied-names-guard.flang` зовёт `sh -c` с `xargs` внутри (около четырёх
+тысяч вопросов пачкой), `scripts/child-timeout.flang` зовёт двоичный тем же
 `sh -c`. Тот же приём и в самом `.mjs`: он тоже не имеет потоков, он тоже
 разводит работу по процессам.
 
@@ -54,6 +54,6 @@
 целиком, а 8 610 прогонов `check --proof --json` дают её очень большой. В пробе
 хвост резался `tail -c 200`. Веер, чей ответ не влезает, придётся сажать на файл
 (`«Записать файл»` + `«Прочитать файл»`) — так и сделано в
-`scripts/storozh-zanyatogo.flang`.
+`scripts/occupied-names-guard.flang`.
 
 Связанное: `docs/zettel/checks-move-to-flang-as-io-plans.md`.

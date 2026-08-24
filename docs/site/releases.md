@@ -68,7 +68,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
-- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/storozh-zanyatogo.flang` instead of the removed JavaScript script.
+- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.
 - The shared half of the PostgreSQL driver moved into the "Wire" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import "Wire".
 
 ## 0.5.1 — 19 August 2026

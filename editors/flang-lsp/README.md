@@ -155,7 +155,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 ```bash
 node flang/bin/flang-lsp.mjs --help          # сервер на месте
-flang io scripts/proverka-lsp.flang          # настоящий сеанс в Neovim
+flang io scripts/lsp-check.flang          # настоящий сеанс в Neovim
 ```
 
 Проверка запускает сервер не рядом с редактором, а внутри него: настоящий

@@ -32,7 +32,7 @@ real 0m30,083s
   разборе зависимостей по `использует`, а не в размере файла.
 
 Замечено при переносе `flang/test/cli-test-corpus.test.mjs` в
-`scripts/progonshchik-korpusa.flang`.
+`scripts/corpus-runner.flang`.
 
 ## Что просить у двоичного
 

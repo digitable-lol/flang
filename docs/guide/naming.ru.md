@@ -219,7 +219,7 @@
   |---|---|
   | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.flang` | рукописные исходники |
   | `flang/test/zakon-*.test.mjs` (шесть) | рукописные тесты |
-  | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | проза |
+  | `docs/HANDOVER.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | проза |
 
   Каталог `docs/rukovodstvo/` был четырнадцатым и переименован в `docs/guide/` 18 августа — вместе с
   70 ссылками в 17 файлах. Цена оставшихся одиннадцати того же порядка: имя файла стоит в прозе, в

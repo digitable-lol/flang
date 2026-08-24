@@ -201,7 +201,7 @@ jobs:
       # Место здесь, а не в `sborka`: проверка читает текст, ей не нужен `npm ci`.
       #
       # ДВОИЧНЫЙ ЕЙ ТЕПЕРЬ НУЖЕН, и это плата за снятие JavaScript. Проверка
-      # переписана на flang (`scripts/storozh-srashchivaniya.flang`), а
+      # переписана на flang (`scripts/name-splicing-guard.flang`), а
       # `flang/scripts/srashchivanie.mjs` снят. Цена замерена на этом дереве,
       # обе программы на одном входе, 571 файл: JavaScript — 0,3 с; flang —
       # 3 мин 44 с, пик памяти 24 ГиБ. Числа сошлись до единицы (объявленных
@@ -209,7 +209,7 @@ jobs:
       # подложенном повреждении обе назвали одни и те же три места.
       - name: Собрать двоичный (проверке на flang он нужен)
         run: make -C bootstrap -j"$(nproc)"
-      - run: ./bootstrap/flang io scripts/storozh-srashchivaniya.flang --max-orders 2000
+      - run: ./bootstrap/flang io scripts/name-splicing-guard.flang --max-orders 2000
 
       # ── СКОЛЬКИМ СТРОКАМ ЯДРА ПРИХОДИТСЯ ВЕРИТЬ ───────────────────────────
       #
@@ -238,7 +238,7 @@ jobs:
       # Само-проверка сторожа никуда не делась и лежит там, где сторож: подлог
       # (`тотальная функция «Куски таблицы»` из `flang/self/lexer.flang`,
       # подложенная в `flang/self/monad-expand.flang`) описан прогоном в шапке
-      # `scripts/storozh-stolknoveniy.flang`. Шаг выше — `node
+      # `scripts/name-collision-guard.flang`. Шаг выше — `node
       # flang/scripts/link-collision-guard.mjs --дерево` — считает то же самое
       # второй реализацией и остаётся.
 
@@ -265,7 +265,7 @@ jobs:
   # (`scripts/storozh-*.flang`, `flang/scripts/*.flang`, `fspec/guard.flang`)
   # сюда не попадают: «заводится ли» спрашивается прогоном `node --test`, а
   # программу на flang заводит `flang io`. Подлогом проверено 22 августа: к
-  # `scripts/storozh-formuly.flang` дописана строка, после которой файл не
+  # `scripts/homebrew-formula-guard.flang` дописана строка, после которой файл не
   # разбирается, — работа осталась зелёной. Само число теперь называет свой род
   # («файлов проверок «*.test.mjs» в дереве 15»), чтобы 15 не читалось как «все».
   storozha:

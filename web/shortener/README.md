@@ -200,7 +200,7 @@ bootstrap/flang emit web/shortener/klient.flang \
   записано в `flang/cat/SPEC.md`, и 22 августа 2026 двоичный его держит:
   `emit --target js` печатает объявление и отвечает 0, остальные семь целей
   отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав ни файла. Сверяет это
-  `scripts/plan-v-celyah.flang`.
+  `scripts/plan-across-targets.flang`.
 
 Хозяин переехал в `flang/src/emit/js/flang_host_browser.js` с нулём ввозов;
 `flang/src/host/browser.mjs` стал переходной строкой, подставляющей

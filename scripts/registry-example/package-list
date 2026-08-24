@@ -1,0 +1,8 @@
+# что кладём в реестр: путь к пакету | нужды пакета
+registry-example/logic-1.0.0.flang-package
+registry-example/logic-1.2.0.flang-package
+registry-example/logic-2.0.0.flang-package
+registry-example/lists-1.4.2.flang-package | Логика: не ниже 1.0
+registry-example/sets-1.0.0.flang-package | Логика: не ниже 1.0
+registry-example/sets-1.1.0.flang-package | Списки: в пределах 1.x; Логика: в пределах 1.x
+registry-example/optional-0.9.0.flang-package | Логика: ровно 2.0.0

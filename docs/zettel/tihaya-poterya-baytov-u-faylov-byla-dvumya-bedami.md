@@ -45,7 +45,7 @@
 7,3 ГиБ пика, около 560 байт памяти на октет; половина платы — журнал прогона,
 который держит список дважды, а ключа «не вести журнал» у `flang io` нет.
 Хозяин вкладки на JavaScript от словаря отстал на два поручения, и сторож
-`scripts/storozh-hozyaina-vkladki.flang` говорит об этом кодом 1.
+`scripts/tab-host-guard.flang` говорит об этом кодом 1.
 
 Связано: [[dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule]],
 [[oktety-v-yazyke-vyrazimy-spiskom-chisel-a-ne-strokoy]],

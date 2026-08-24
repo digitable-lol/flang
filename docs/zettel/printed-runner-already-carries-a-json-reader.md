@@ -7,7 +7,7 @@
 протокол прогонщика — JSON.
 
 Что именно напечатано, по целям (проверено на `flang emit
-flang/conc/uzel-zamer.flang --target <цель>`):
+flang/conc/node-benchmark.flang --target <цель>`):
 
 | цель | где разбор | видно ли снаружи | во что разбирает |
 |---|---|---|---|
@@ -54,7 +54,7 @@ flang/conc/uzel-zamer.flang --target <цель>`):
 одной цели.
 
 **Чем подтверждено.** Печать всех восьми целей из
-`flang/conc/uzel-zamer.flang` двоичным `bootstrap/flang` 0.5.1, ветка `u/uzel`;
+`flang/conc/node-benchmark.flang` двоичным `bootstrap/flang` 0.5.1, ветка `u/uzel`;
 у `elixir` использование `Flang.Json` — в `flang/conc/bin/node.ex`, коммит
 `b0905aad`, и хозяин собирается тем же `elixirc --warnings-as-errors`, что и
 напечатанное. Числа повторённого разбора — по границам блоков в

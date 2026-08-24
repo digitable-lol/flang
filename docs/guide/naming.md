@@ -222,7 +222,7 @@ the change.
   |---|---|
   | `flang/src/svoystva.mjs`, `benchmarks/zamer-skorosti/pamyat.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
-  | `docs/PEREDACHA.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
+  | `docs/HANDOVER.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
 
   `docs/rukovodstvo/` was the fourteenth and became `docs/guide/` on 18 August, together with 70
   links across 17 files. The remaining eleven cost the same order: a file name lives in prose, in

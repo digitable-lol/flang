@@ -18,7 +18,7 @@
     "flang/conc/examples/race.flang",
     "flang/conc/examples/server.flang",
     "flang/conc/examples/supervision.flang",
-    "flang/conc/sluzhby/chtenie.flang",
+    "flang/conc/services/file-read.flang",
     "flang/core/evaluate.flang",
     "flang/core/json.flang",
     "flang/core/lexer.flang",

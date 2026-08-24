@@ -518,7 +518,7 @@ public final class FlangCli {
    * МОЛЧА подменял октет знаком замены U+FFFD (так делает CharsetDecoder по
    * умолчанию) и отвечал FLANG_UNKNOWN_NAME — то есть врал о содержимом
    * запроса. Замер и таблица —
-   * scripts/storozh-negodnogo-okteta.sh.
+   * scripts/bad-octet-guard.sh.
    *
    * Теперь у семи целей из восьми одно: диагностика FLANG_IO_NOT_TEXT в поток
    * ошибок, код возврата 1, разбора нет. Строки ДО негодной уже отвечены и

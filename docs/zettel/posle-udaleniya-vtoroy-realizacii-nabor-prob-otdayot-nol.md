@@ -60,9 +60,9 @@
 Переносится это не механически. Разбор и печать двоичный отдаёт (`flang ast`
 даёт связанное дерево с `processes` и `supervisors`, `flang emit` — модуль), а
 вот планировщик и надзор из `flang/src/conc.mjs` переписывать на JavaScript
-заново нельзя: они уже выражены на flang (`flang/conc/planirovshchik.flang`) и
+заново нельзя: они уже выражены на flang (`flang/conc/scheduler.flang`) и
 печатаются. Правильный ход — чтобы узел на JavaScript ЗВАЛ напечатанное, как он
-уже зовёт `flang/conc/svyaz.js`. Замер, ветка `vypusk/uzel-csharp`, коммит
+уже зовёт `flang/conc/link.js`. Замер, ветка `vypusk/uzel-csharp`, коммит
 `ac623fee`.
 
 Связано: [[proverka-perevedyonnaya-na-dvoichnyy-vypadaet-iz-ci-molcha]],

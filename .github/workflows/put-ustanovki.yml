@@ -34,8 +34,8 @@ on:
   push:
     paths:
       - "packaging/**"
-      - "scripts/vypusk-v-c.flang"
-      - "scripts/put-bez-node.flang"
+      - "scripts/release-in-c.flang"
+      - "scripts/path-without-node.flang"
       - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
@@ -44,8 +44,8 @@ on:
   pull_request:
     paths:
       - "packaging/**"
-      - "scripts/vypusk-v-c.flang"
-      - "scripts/put-bez-node.flang"
+      - "scripts/release-in-c.flang"
+      - "scripts/path-without-node.flang"
       - "scripts/raskrutka.sh"
       - "bootstrap/**"
       - "flang/src/emit/**"
@@ -124,7 +124,7 @@ jobs:
       - name: Собрать архив и упаковать той же командой, что в формуле
         run: |
           set -eu
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/vypusk-v-c.flang --timeout 1800000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
           gtar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
                --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - \
                LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \

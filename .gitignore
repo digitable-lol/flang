@@ -7,7 +7,7 @@ generated/
 coverage/
 tmp/
 # Каталог сборки релиза: там напечатанный C и архивы, всё это создаётся
-# scripts/vypusk-v-c.flang и в истории не нужно.
+# scripts/release-in-c.flang и в истории не нужно.
 output/
 
 # Продукты сборки точки раскрутки. Сам каталог bootstrap/ — часть дерева: это
@@ -77,7 +77,7 @@ web/shortener/*.js
 web/*.png
 
 # Копия двоичного, которую пишет пример «Двоичный файл туда и обратно»
-# (examples/io/dvoichnyy-fayl-tuda-i-obratno.flang). Продукт прогона, а не
+# (examples/io/binary-file-round-trip.flang). Продукт прогона, а не
 # исходник: убрать её за собой план не может — поручения «Удалить файл» в
 # словаре ввода-вывода нет.
 examples/io/.kopiya-dvoichnogo

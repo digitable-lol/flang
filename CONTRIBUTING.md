@@ -162,8 +162,8 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык test:remote` | the same suite on a host of your choosing, over ssh |
 | `./ярлык bootstrap` · `./ярлык bootstrap:check` · `./ярлык stroki:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык claims:check` · `./ярлык counts:check` · `./ярлык codes:check` · `./ярлык pechat:check` · `./ярлык names:check` | the five prose guards below |
-| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-licenzii.flang`), not through the shortcut |
-| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/storozh-ssylok.flang`) |
+| `./ярлык license:check` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
+| `./ярлык links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/link-guard.flang`) |
 | `./ярлык site` · `./ярлык site:check` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык numbers` · `./ярлык numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `./ярлык glossary` · `./ярлык glossary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
@@ -244,7 +244,7 @@ What this means when you write:
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
-  an exact snippet of the target's runtime in `scripts/storozh-pechati.flang`;
+  an exact snippet of the target's runtime in `scripts/emit-promises-guard.flang`;
   change the runtime and the guard demands the table be revisited.
 - **Licence headers.** Every file the package ships carries an SPDX header. The
   file list is derived from the tree, not written down, so a new file without a

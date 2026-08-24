@@ -32,7 +32,7 @@ A=$1; B=$2; N=$3; shift 3
 
 KOREN=$(cd "$(dirname "$0")/../.." && pwd)
 FLANG=$KOREN/bootstrap/flang
-SCHET=$KOREN/scripts/predel-pamyati.sh
+SCHET=$KOREN/scripts/memory-limit.sh
 [ -x "$FLANG" ] || { echo "нет двоичного $FLANG — собери: make -C bootstrap -j4" >&2; exit 2; }
 
 kontekst() {

@@ -77,7 +77,7 @@
 
 Семь — это `stdlib/lists.flang`, `stdlib/utf8.flang`, `examples/rosetta/palindrome`,
 `examples/rosetta/hundred-doors`, `examples/leetcode/100-same-tree`,
-`scripts/progonshchik-korpusa.flang` и сама подделка. Показателен
+`scripts/corpus-runner.flang` и сама подделка. Показателен
 `progonshchik-korpusa`: он сличает два списка строк через скалярную проекцию —
 `(соединить левый по "\n") равен (соединить правый по "\n")`. Ровно тот обход,
 который шапка `stdlib/strlists.flang` описывает как единственный доступный.

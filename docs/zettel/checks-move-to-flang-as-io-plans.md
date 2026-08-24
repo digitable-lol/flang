@@ -7,9 +7,9 @@
 переехали так за один заход и отвечают то же, что отвечали на JavaScript.
 
 **Чем подтверждено.** Ветка `u/osnastka`, коммиты `ef6764d5`, `69b26db7`,
-`55214e34`. `scripts/storozh-ssylok.flang` — 880 ссылок в 467 файлах Markdown,
+`55214e34`. `scripts/link-guard.flang` — 880 ссылок в 467 файлах Markdown,
 битых 2, ровно те же две, что называл `scripts/link-guard.mjs`, 4,3 с.
-`scripts/storozh-licenzii.flang` — 81 публикуемый исходник, 0 отказов, 2,8 с.
+`scripts/license-guard.flang` — 81 публикуемый исходник, 0 отказов, 2,8 с.
 `flang/scripts/poddelki-yadra.flang` — 3 подделки, аксиом ноль, 2,0 с.
 
 **Что мешает следующим, числом.** `flang io` печатает журнал ВСЕХ поручений и

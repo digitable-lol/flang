@@ -27,7 +27,7 @@ functions, and why `flang check` needs no server.
 
 | file | what is in it | lines | functions | examples |
 | --- | --- | ---: | ---: | ---: |
-| `flang/stdlib/provod.flang` | octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
+| `flang/stdlib/wire.flang` | octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
 | `flang/stdlib/postgres.flang` | protocol version 3.0: client messages built, server answers parsed | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
 | `examples/db/postgres-plan.flang` | the whole five-step conversation | {{план.строк}} | | {{план.примеров}} |
 
@@ -91,7 +91,7 @@ $ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exis
   c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
   c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 
-$ flang io examples/db/sqlite-chtenie.flang | python3 -c \
+$ flang io examples/db/sqlite-read.flang | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 магия SQLite: да
 размер страницы: 4096
@@ -106,7 +106,7 @@ SQL: CREATE TABLE люди(имя text, лет integer)
 3 | Вера | 7
 ```
 
-The plan is `examples/db/sqlite-chtenie.flang`; the path to the file and
+The plan is `examples/db/sqlite-read.flang`; the path to the file and
 the name of the table stand in it as two one-line functions — `«Откуда»` and
 `«Какая таблица»`.
 

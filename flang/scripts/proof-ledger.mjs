@@ -60,7 +60,7 @@
  *    7 — `FLANG_RECURSION_LIMIT`: проверка упёрлась в 40 000 000 шагов на
  *        файлах `flang/self/`. У команды `check` НЕТ ключа `--max-steps`
  *        (он есть у `test`, `run` и `emit`), поэтому поднять предел нечем;
- *    2 — настоящие замечания к программам (`flang/conc/sluzhby/chtenie.flang`,
+ *    2 — настоящие замечания к программам (`flang/conc/services/file-read.flang`,
  *        `examples/monad/order-total.flang`).
  *
  * ── Сторожей в рантайме ДВА, и до 16 августа свод считал один ───────────────

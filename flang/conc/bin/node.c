@@ -7,11 +7,11 @@
  *
  * Ни одного решения в этом файле нет. Все три части решают напечатанные модули:
  *
- *   1. связь        flang/conc/svyaz.flang          — 11 событий, 8 велений
- *   2. процессы     flang/conc/planirovshchik.flang — 7 событий, 6 велений
+ *   1. связь        flang/conc/link.flang          — 11 событий, 8 велений
+ *   2. процессы     flang/conc/scheduler.flang — 7 событий, 6 велений
  *   3. программа    flang/conc/examples/distributed.flang — обработчики
  *
- * Собраны они в один модуль flang/conc/uzel-zamer.flang и напечатаны
+ * Собраны они в один модуль flang/conc/node-benchmark.flang и напечатаны
  * компилятором в цель c. Хозяин собирается ТЕМИ ЖЕ ключами: `node.mk` включает
  * напечатанный Makefile и берёт из него CC, CFLAGS, LDLIBS и объектные файлы.
  *
@@ -52,7 +52,7 @@
  * ── Надзор ──────────────────────────────────────────────────────────────────
  *
  * Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
- * НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/nadzor.flang. Кого
+ * НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/supervisor.flang. Кого
  * поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
  * исполняет. Дерево надзора приезжает данными в плане, как и размещение.
  *
@@ -1087,7 +1087,7 @@ static void ispolnit_svyaz(size_t nomer, fl_value velenie) {
   }
   /* Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
      терять было нечего, и по второму разу на одном разрыве, а доклад слой связи
-     выдаёт ровно один раз на разрыв — доказано в svyaz.flang. */
+     выдаёт ровно один раз на разрыв — доказано в link.flang. */
   if (strcmp(imya, "Доложить о потере") == 0) {
     skazat("в", "связь", "узел", moyo_imya, "цель", CEL, "сосед", k->kto, "что", "потеряна",
            "почему", pochemu, NULL);
@@ -1273,7 +1273,7 @@ static void ispolnit_uzel(fl_value velenie) {
     v_tekst(pole(velenie, "код"), kod, sizeof kod);
     v_tekst(pole(velenie, "текст"), chto, sizeof chto);
     skazat("в", "отказ", "узел", moyo_imya, "цель", CEL, "процесс", kto, "код", kod, "текст", chto, NULL);
-    // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный nadzor.flang,
+    // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный supervisor.flang,
     // здесь только дорога к нему.
     nadzor_sluchilsya(kto, kod);
     return;
@@ -1640,7 +1640,7 @@ int main(int argc, char **argv) {
   }
 
   // Дерево надзора — данные, ровно как размещение. Решает по нему напечатанный
-  // nadzor.flang, а не этот файл.
+  // supervisor.flang, а не этот файл.
   const json *spisok_nadzorov = j_pole(plan_json, "надзоры");
   size_t nadzorov = spisok_nadzorov != NULL && spisok_nadzorov->vid == J_SPISOK ? spisok_nadzorov->chlenov : 0;
   fl_value *nadzirateli = NULL;

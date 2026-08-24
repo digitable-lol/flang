@@ -14,7 +14,7 @@
 # интерактивная оболочка; `flang --help`, `flang --version`, `man flang`. Без
 # аргументов бинарник по-прежнему прогонщик: JSON на входе, JSON на выходе.
 #
-# Релиз готовит `bootstrap/flang io scripts/vypusk-v-c.flang`; он же проверяет сборку в
+# Релиз готовит `bootstrap/flang io scripts/release-in-c.flang`; он же проверяет сборку в
 # окружении без Node, запускает собранный бинарник и прогоняет человеческие
 # команды, чтобы битый архив не уехал.
 #
@@ -45,7 +45,7 @@ class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
   url "https://github.com/digitable-lol/flang/releases/download/v0.6.2/flang-0.6.2-c.tar.gz"
-  # Хеш архива, собранного `bootstrap/flang io scripts/vypusk-v-c.flang` и упакованного
+  # Хеш архива, собранного `bootstrap/flang io scripts/release-in-c.flang` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
   #
@@ -77,7 +77,7 @@ class Flang < Formula
   # звёздочкой: `tar` берёт его со всем содержимым, а звёздочка развернулась бы
   # оболочкой и снова унесла бы в архив всё, что рядом.
   #
-  #   bootstrap/flang io scripts/vypusk-v-c.flang
+  #   bootstrap/flang io scripts/release-in-c.flang
   #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
   #       --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - \
   #       LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
@@ -87,7 +87,7 @@ class Flang < Formula
   # LICENSE стоит в списке первым и не забывается: пункт 1 BSD-2-Clause требует
   # сохранять уведомление при распространении исходников, а архив — это ровно
   # распространение исходников. Прежде этой строки в списке не было, хотя
-  # scripts/vypusk-v-c.flang файл кладёт: список и скрипт разошлись молча.
+  # scripts/release-in-c.flang файл кладёт: список и скрипт разошлись молча.
   #
   # БУКВА `X` В РЕЖИМЕ ОБЯЗАТЕЛЬНА, и стоила она сломанной установки. `u=rw,go=r`
   # снимает право входа и с КАТАЛОГОВ: `runtime-c` приезжал как `drw-r--r--`,
@@ -151,7 +151,7 @@ class Flang < Formula
     # напечатанные копии — с шапкой «Сгенерировано flang» в первой строке, — и
     # печать их отвергает по делу, чтобы не приписывать шапку второй раз.
     # Рукописные оригиналы едут отдельным каталогом `runtime-c/`; имя названо в
-    # scripts/vypusk-v-c.flang, и совпадение с ним стережёт проверка пути
+    # scripts/release-in-c.flang, и совпадение с ним стережёт проверка пути
     # установки в flang/test/self-bootstrap.test.mjs.
     #
     # Условие — не осторожность, а совместимость: формула ставит и выпущенные
@@ -160,7 +160,7 @@ class Flang < Formula
     # Страница руководства — не украшение. Человек, поставивший язык из brew,
     # ищет `man flang` раньше, чем README в интернете, и не найдя — решает, что
     # инструмента нет. Лежит она в корне архива, туда её кладёт
-    # scripts/vypusk-v-c.flang из packaging/flang.1.
+    # scripts/release-in-c.flang из packaging/flang.1.
     man1.install "flang.1"
   end
 

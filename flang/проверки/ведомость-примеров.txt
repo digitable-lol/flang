@@ -17,7 +17,7 @@ benchmarks/model-authoring/out/M3/а/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/а/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/а/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/а/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/а/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/а/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/a2-faktorial.flang	отказ
@@ -38,7 +38,7 @@ benchmarks/model-authoring/out/M3/а/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/а/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/а/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/а/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/а/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/а/r2/a2-faktorial.flang	отказ
@@ -64,7 +64,7 @@ benchmarks/model-authoring/out/M3/б/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/б/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/б/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/б/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/б/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/б/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/a2-faktorial.flang	отказ
@@ -85,7 +85,7 @@ benchmarks/model-authoring/out/M3/б/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/б/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/б/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/б/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/б/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/б/r2/a2-faktorial.flang	отказ
@@ -111,7 +111,7 @@ benchmarks/model-authoring/out/M3/в/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/в/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/в/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/в/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/в/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/в/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/a2-faktorial.flang	отказ
@@ -132,7 +132,7 @@ benchmarks/model-authoring/out/M3/в/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/в/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/в/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/в/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/в/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/в/r2/a2-faktorial.flang	отказ
@@ -158,7 +158,7 @@ benchmarks/model-authoring/out/M3/г/r0/c3-ves-tokena.flang	3 3 0
 benchmarks/model-authoring/out/M3/г/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/г/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/г/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/г/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/г/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/a2-faktorial.flang	отказ
@@ -179,7 +179,7 @@ benchmarks/model-authoring/out/M3/г/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M3/г/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M3/г/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M3/г/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M3/г/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M3/г/r2/a2-faktorial.flang	отказ
@@ -205,7 +205,7 @@ benchmarks/model-authoring/out/M4/а/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/а/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/а/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/а/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/а/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/а/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/a2-faktorial.flang	отказ
@@ -226,7 +226,7 @@ benchmarks/model-authoring/out/M4/а/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/а/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/а/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/а/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/а/r2/a2-faktorial.flang	отказ
@@ -247,7 +247,7 @@ benchmarks/model-authoring/out/M4/а/r2/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/а/r2/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/а/r2/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/а/r2/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/а/r2/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/а/r2/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/a2-faktorial.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/a3-nod.flang	отказ
@@ -267,7 +267,7 @@ benchmarks/model-authoring/out/M4/б/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/б/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/a2-faktorial.flang	отказ
@@ -288,7 +288,7 @@ benchmarks/model-authoring/out/M4/б/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/б/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/б/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/б/r2/a2-faktorial.flang	отказ
@@ -309,7 +309,7 @@ benchmarks/model-authoring/out/M4/б/r2/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/б/r2/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/б/r2/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/б/r2/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/б/r2/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/б/r2/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/a2-faktorial.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/a3-nod.flang	отказ
@@ -329,7 +329,7 @@ benchmarks/model-authoring/out/M4/в/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/в/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/в/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/a2-faktorial.flang	отказ
@@ -350,7 +350,7 @@ benchmarks/model-authoring/out/M4/в/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/в/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/в/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/в/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/в/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/в/r2/a2-faktorial.flang	отказ
@@ -390,7 +390,7 @@ benchmarks/model-authoring/out/M4/г/r0/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/г/r0/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/г/r0/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/г/r0/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/г/r0/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r0/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/г/r0/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/a2-faktorial.flang	отказ
@@ -411,7 +411,7 @@ benchmarks/model-authoring/out/M4/г/r1/c3-ves-tokena.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/c4-svetofor.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/c5-cepochka.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/e1-schetchik.flang	отказ
-benchmarks/model-authoring/out/M4/г/r1/e2-nadzor.flang	отказ
+benchmarks/model-authoring/out/M4/г/r1/e2-supervisor.flang	отказ
 benchmarks/model-authoring/out/M4/г/r1/e3-norma.flang	отказ
 benchmarks/model-authoring/out/M4/г/r2/a1-summa-do.flang	отказ
 benchmarks/model-authoring/out/M4/г/r2/a2-faktorial.flang	отказ
@@ -453,7 +453,7 @@ benchmarks/model-authoring/reference/c3-ves-tokena.flang	3 3 0
 benchmarks/model-authoring/reference/c4-svetofor.flang	3 3 0
 benchmarks/model-authoring/reference/c5-cepochka.flang	2 2 0
 benchmarks/model-authoring/reference/e1-schetchik.flang	1 1 0
-benchmarks/model-authoring/reference/e2-nadzor.flang	1 1 0
+benchmarks/model-authoring/reference/e2-supervisor.flang	1 1 0
 benchmarks/model-authoring/reference/e3-norma.flang	1 1 0
 benchmarks/zamer-skorosti/programs/zadachi.flang	28 28 0
 benchmarks/zamer-tseny/proba-poddelka.flang	1 1 0

@@ -29,7 +29,7 @@
 // процесса, чтения потока живого процесса, сигналов и заведения каталога.
 // Поэтому ПОДЪЁМ пары отдан одному `sh -c` — ровно тем же приёмом, каким мерку
 // памяти ставит `flang/scripts/memory-guard.flang` и каким PATH без Node
-// собирает `scripts/put-bez-node.flang`. Оболочка НЕ СУДИТ: она поднимает два
+// собирает `scripts/path-without-node.flang`. Оболочка НЕ СУДИТ: она поднимает два
 // узла, ждёт обоих и выкладывает их журналы одним потоком. Все до одного
 // решения — здесь, тотальными функциями, и снимаются они с журналов.
 //
@@ -37,7 +37,7 @@
 //
 // Прогон печатает её сам: «полный узел на N целях из 8». N — число целей, у
 // которых есть ХОЗЯИН и чья пара сошлась; решения печатаются во все восемь и
-// сверены отдельно (`scripts/svyaz-pechat.flang`). Путать эти два числа
+// сверены отдельно (`scripts/conc-link-emit.flang`). Путать эти два числа
 // нельзя: первое про работу, второе про переносимость.
 
 // ── данные ──────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@
   «почему»: строка
 
 // ОПОРА — второй конец каждой пары: такой же узел, хозяин `node.py` плюс
-// напечатанный `uzel-zamer.flang`. Особого положения у неё нет, кроме того,
+// напечатанный `node-benchmark.flang`. Особого положения у неё нет, кроме того,
 // что она стоит в паре всегда, — и потому считается работающей ровно тогда,
 // когда сошлась хоть одна пара.
 тотальная функция «Опора»
@@ -105,8 +105,8 @@
     " && rm -rf \"$d\" && mkdir -p \"$d/cel/", (цель.«куда»), "\" \"$d/opora\"",
     " && bootstrap/flang emit flang/conc/examples/distributed.flang --target js --out \"$d/prog\" >/dev/null 2>&1;",
     " h=$(cat $(ls \"$d\"/prog/*.js | grep -v flang_cli) | sha256sum | cut -c1-64);",
-    " bootstrap/flang emit flang/conc/uzel-zamer.flang --target ", (цель.«имя»), " --out \"$d/cel\" >&2;",
-    " bootstrap/flang emit flang/conc/uzel-zamer.flang --target ", («Опора»), " --out \"$d/opora\" >&2;",
+    " bootstrap/flang emit flang/conc/node-benchmark.flang --target ", (цель.«имя»), " --out \"$d/cel\" >&2;",
+    " bootstrap/flang emit flang/conc/node-benchmark.flang --target ", («Опора»), " --out \"$d/opora\" >&2;",
     " cp flang/conc/bin/", (цель.«хозяин»), " \"$d/cel/", (цель.«куда»), "/\";",
     " cp flang/conc/bin/node.py \"$d/opora/\";",
     " ", (цель.«рядом»), ";",
@@ -211,16 +211,16 @@
 // ── начальные состояния ─────────────────────────────────────────────────────
 
 // Функцию без аргументов позвать через ввоз нельзя, поэтому два начальных
-// состояния выписаны в `uzel-zamer.flang` ЗАНОВО. Два источника правды об одном
+// состояния выписаны в `node-benchmark.flang` ЗАНОВО. Два источника правды об одном
 // расходятся молча — вот проверка, которая молчать не даёт. Считает их сам
 // двоичный: `flang run --function` отдаёт значение JSON-ом, и сверяется его текст.
 тотальная функция «Команда состояний»
   возвращает строка
   соединить [
     "cd ../..;",
-    " bootstrap/flang run flang/conc/uzel-zamer.flang --function 'Начальный счёт' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/conc/node-benchmark.flang --function 'Начальный счёт' 2>/dev/null; echo '@@';",
     " bootstrap/flang run flang/conc/examples/distributed.flang --function 'пустой счёт' 2>/dev/null; echo '@@';",
-    " bootstrap/flang run flang/conc/uzel-zamer.flang --function 'Начальные записи' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/conc/node-benchmark.flang --function 'Начальные записи' 2>/dev/null; echo '@@';",
     " bootstrap/flang run flang/conc/examples/distributed.flang --function 'пустые записи' 2>/dev/null; echo '@@'"
   ] по ""
 

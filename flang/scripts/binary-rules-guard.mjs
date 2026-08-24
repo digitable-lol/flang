@@ -468,7 +468,8 @@ export function подделки(корень = КОРЕНЬ) {
   const где = join(корень, ПОДДЕЛКИ)
   let свои = []
   try {
-    свои = readdirSync(где).filter((и) => и.endsWith(".flang")).sort().map((и) => join(где, и))
+    /* Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008). */
+    свои = readdirSync(где).filter((и) => /\.(flang|fp|фп)$/u.test(и)).sort().map((и) => join(где, и))
   } catch {
     свои = []
   }

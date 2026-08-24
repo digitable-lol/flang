@@ -47,7 +47,10 @@ function M.setup(opts)
   -- Расширение → тип файла. То же самое делает ftdetect/flang.vim; здесь оно
   -- повторено для Neovim, потому что vim.filetype.add срабатывает раньше и
   -- дешевле, чем автокоманда.
-  vim.filetype.add({ extension = { flang = "flang" } })
+  --
+  -- Расширений три и они равноправны (ADR-0008). `["фп"]`, а не `фп = …`:
+  -- имена в Lua берут только ASCII, и запись через точку тут не собирается.
+  vim.filetype.add({ extension = { flang = "flang", fp = "flang", ["фп"] = "flang" } })
 
   if opts.lsp == false then
     return

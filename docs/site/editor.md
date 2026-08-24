@@ -6,7 +6,15 @@ The language server ships inside the compiler — there is nothing else to insta
 flang lsp --stdio
 ```
 
-Highlighting for `.flang` exists for Vim 8/9 and Neovim; other editors have none.
+A program has three extensions, and all three are equal: `.flang` is the main one,
+the one used in every command and in CI; `.fp` is the short one; `.фп` stands for
+«функциональная программа» — a functional program — so that a Russian file name
+need not be transliterated
+(the decision is recorded in `docs/adr/0008-three-file-extensions.md`).
+All three are picked up by the Vim 8/9 `ftdetect` file and by `vim.filetype.add`
+for Neovim.
+
+Highlighting exists for Vim 8/9 and Neovim; other editors have none.
 
 ## What works today
 
@@ -89,7 +97,7 @@ files in `~/.vscode/extensions/flang-lsp/`.
   "main": "./extension.js",
   "contributes": {
     "languages": [
-      { "id": "flang", "extensions": [".flang", ".fl"] }
+      { "id": "flang", "extensions": [".flang", ".fp", ".фп"] }
     ]
   },
   "dependencies": { "vscode-languageclient": "^9.0.0" }

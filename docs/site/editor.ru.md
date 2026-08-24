@@ -6,7 +6,13 @@
 flang lsp --stdio
 ```
 
-Подсветка `.flang` есть для Vim 8/9 и Neovim; для остальных редакторов её нет.
+Расширений у программы три, и все три равноправны: `.flang` — основное и то,
+что стоит во всех командах и в CI; `.fp` — короткое; `.фп` — «функциональная
+программа», чтобы имя файла по-русски не приходилось писать транслитом
+(решение записано в `docs/adr/0008-three-file-extensions.md`).
+Подхватывают все три и `ftdetect` для Vim 8/9, и `vim.filetype.add` для Neovim.
+
+Подсветка есть для Vim 8/9 и Neovim; для остальных редакторов её нет.
 
 ## Что работает сегодня
 
@@ -87,7 +93,7 @@ Content-Length: 311
   "main": "./extension.js",
   "contributes": {
     "languages": [
-      { "id": "flang", "extensions": [".flang", ".fl"] }
+      { "id": "flang", "extensions": [".flang", ".fp", ".фп"] }
     ]
   },
   "dependencies": { "vscode-languageclient": "^9.0.0" }

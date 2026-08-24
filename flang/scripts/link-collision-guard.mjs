@@ -345,7 +345,8 @@ export function замыкание(вход, настройки = {}) {
     const полный = resolve(корень, дир === "" ? "." : дир)
     if (!existsSync(полный)) return []
     return readdirSync(полный)
-      .filter((имя) => имя.endsWith(".flang"))
+      /* Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008). */
+      .filter((имя) => /\.(flang|fp|фп)$/u.test(имя))
       .sort()
       .map((имя) => (дир === "" ? имя : `${дир}/${имя}`))
   })
@@ -533,7 +534,7 @@ export function файлыДерева(корень = КОРЕНЬ, мимо = [
         continue
       }
       if (это.isDirectory()) обход(путь)
-      else if (имя.endsWith(".flang")) итог.push(путь)
+      else if (/\.(flang|fp|фп)$/u.test(имя)) итог.push(путь)
     }
   }
   обход("")
@@ -585,7 +586,7 @@ export function библиотекаЦеликом(корень = КОРЕНЬ) 
   const путь = "flang/stdlib/(вся библиотека сразу).flang"
   const строки = ["модуль «Вся библиотека сразу»"]
   for (const файл of readdirSync(resolve(корень, "flang/stdlib")).sort()) {
-    if (!файл.endsWith(".flang")) continue
+    if (!/\.(flang|fp|фп)$/u.test(файл)) continue
     const имя = имяМодуля(readFileSync(resolve(корень, "flang/stdlib", файл), "utf8"))
     if (имя !== null) строки.push(`  использует «${имя}»`)
   }

@@ -52,8 +52,11 @@ rab=$(mktemp -d -p /srv/tmp perepis.XXXXXX)
 trap 'rm -rf "$rab"' EXIT
 
 cd "$koren" || exit 1
-for fajl in "$katalog"/*.flang; do
-  imya=$(basename "$fajl" .flang)
+# Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008).
+# Несовпавший образец оболочка оставляет собой — потому проверка на файл.
+for fajl in "$katalog"/*.flang "$katalog"/*.fp "$katalog"/*.фп; do
+  [ -e "$fajl" ] || continue
+  imya=$(basename "$fajl"); imya=${imya%.flang}; imya=${imya%.fp}; imya=${imya%.фп}
   ./scripts/memory-limit.sh -- ./bootstrap/flang ast "$fajl" > "$rab/ast-$imya.json" 2>"$rab/ast-$imya.err"
   ./scripts/memory-limit.sh -- ./bootstrap/flang check "$fajl" --proof > "$rab/led-$imya.txt" 2>&1
 done

@@ -84,7 +84,10 @@ sverit "подделка 4: шаг обосновывает сам себя" "$K
 say ""
 say "── весь каталог flang/proof/examples ──"
 VSEGO=0; ZAPISEY=0; PRINYATO=0
-for f in "$KOREN"/flang/proof/examples/*.flang; do
+# Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008).
+# Несовпавший образец оболочка оставляет собой — потому проверка на файл.
+for f in "$KOREN"/flang/proof/examples/*.flang "$KOREN"/flang/proof/examples/*.fp "$KOREN"/flang/proof/examples/*.фп; do
+  [ -e "$f" ] || continue
   VSEGO=$((VSEGO + 1))
   if "$FLANG" check "$f" --proof --записать "$RABOTA/подряд" > /dev/null 2>&1; then
     ZAPISEY=$((ZAPISEY + 1))

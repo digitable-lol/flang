@@ -607,7 +607,36 @@ export function Smolchat(fields = {}) {
  * @returns {Svyaz}
  */
 export function svyazZanovo(kto, gotova, zvonim, videlis, zhdyomResheniya, srokVyshel, posledniyBayt) {
-  return { "кто": kto, "готова": gotova, "звоним": zvonim, "виделись": videlis, "ждём решения": zhdyomResheniya, "срок вышел": srokVyshel, "последний байт": posledniyBayt }
+  const $t1 = { "кто": kto, "готова": gotova, "звоним": zvonim, "виделись": videlis, "ждём решения": zhdyomResheniya, "срок вышел": srokVyshel, "последний байт": posledniyBayt }
+  // постусловие «имя соседа едет из аргумента»
+  if (!$post($equal($field($t1, "кто"), kto), "имя соседа едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «имя соседа едет из аргумента» функции «Связь заново»", { "line": 103, "column": 3 })
+  }
+  // постусловие «готовность едет из аргумента»
+  if (!$post($equal($field($t1, "готова"), gotova), "готовность едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовность едет из аргумента» функции «Связь заново»", { "line": 104, "column": 3 })
+  }
+  // постусловие «звонок едет из аргумента»
+  if (!$post($equal($field($t1, "звоним"), zvonim), "звонок едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «звонок едет из аргумента» функции «Связь заново»", { "line": 105, "column": 3 })
+  }
+  // постусловие «память о знакомстве едет из аргумента»
+  if (!$post($equal($field($t1, "виделись"), videlis), "память о знакомстве едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «память о знакомстве едет из аргумента» функции «Связь заново»", { "line": 106, "column": 3 })
+  }
+  // постусловие «ожидание решения едет из аргумента»
+  if (!$post($equal($field($t1, "ждём решения"), zhdyomResheniya), "ожидание решения едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «ожидание решения едет из аргумента» функции «Связь заново»", { "line": 107, "column": 3 })
+  }
+  // постусловие «вышедший срок едет из аргумента»
+  if (!$post($equal($field($t1, "срок вышел"), srokVyshel), "вышедший срок едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «вышедший срок едет из аргумента» функции «Связь заново»", { "line": 108, "column": 3 })
+  }
+  // постусловие «отметка часов едет из аргумента»
+  if (!$post($equal($field($t1, "последний байт"), posledniyBayt), "отметка часов едет из аргумента", "Связь заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отметка часов едет из аргумента» функции «Связь заново»", { "line": 109, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -620,7 +649,24 @@ export function svyazZanovo(kto, gotova, zvonim, videlis, zhdyomResheniya, srokV
  * @returns {Svyaz}
  */
 export function svyazSOtmetkoy(svyaz, kogda) {
-  return svyazZanovo($field(svyaz, "кто"), $field(svyaz, "готова"), $field(svyaz, "звоним"), $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), kogda)
+  const $t1 = svyazZanovo($field(svyaz, "кто"), $field(svyaz, "готова"), $field(svyaz, "звоним"), $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), kogda)
+  // постусловие «отметка становится новой»
+  if (!$post($equal($field($t1, "последний байт"), kogda), "отметка становится новой", "Связь с отметкой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отметка становится новой» функции «Связь с отметкой»", { "line": 117, "column": 3 })
+  }
+  // постусловие «отметка не трогает имя соседа»
+  if (!$post($equal($field($t1, "кто"), $field(svyaz, "кто")), "отметка не трогает имя соседа", "Связь с отметкой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отметка не трогает имя соседа» функции «Связь с отметкой»", { "line": 118, "column": 3 })
+  }
+  // постусловие «отметка не трогает готовность»
+  if (!$post($equal($field($t1, "готова"), $field(svyaz, "готова")), "отметка не трогает готовность", "Связь с отметкой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отметка не трогает готовность» функции «Связь с отметкой»", { "line": 119, "column": 3 })
+  }
+  // постусловие «отметка не трогает память о знакомстве»
+  if (!$post($equal($field($t1, "виделись"), $field(svyaz, "виделись")), "отметка не трогает память о знакомстве", "Связь с отметкой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отметка не трогает память о знакомстве» функции «Связь с отметкой»", { "line": 120, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -632,7 +678,32 @@ export function svyazSOtmetkoy(svyaz, kogda) {
  * @returns {Svyaz}
  */
 export function svyazSnyata(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
+  const $t1 = svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), $field(svyaz, "ждём решения"), $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
+  let $t2
+  if ($cond($equal($field($t1, "готова"), false))) {
+    $t2 = $equal($field($t1, "кто"), $field(svyaz, "кто"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «снятая связь не готова и помнит соседа»
+  if (!$post($t2, "снятая связь не готова и помнит соседа", "Связь снята")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «снятая связь не готова и помнит соседа» функции «Связь снята»", { "line": 129, "column": 3 })
+  }
+  let $t3
+  if ($cond($equal($field($t1, "звоним"), false))) {
+    $t3 = $equal($field($t1, "последний байт"), $field(svyaz, "последний байт"))
+  } else {
+    $t3 = false
+  }
+  // постусловие «снятая связь не звонит и хранит отметку»
+  if (!$post($t3, "снятая связь не звонит и хранит отметку", "Связь снята")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «снятая связь не звонит и хранит отметку» функции «Связь снята»", { "line": 130, "column": 3 })
+  }
+  // постусловие «снятие не стирает память о знакомстве»
+  if (!$post($equal($field($t1, "виделись"), $field(svyaz, "виделись")), "снятие не стирает память о знакомстве", "Связь снята")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «снятие не стирает память о знакомстве» функции «Связь снята»", { "line": 131, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -644,7 +715,32 @@ export function svyazSnyata(svyaz) {
  * @returns {Svyaz}
  */
 export function svyazZhdyotResheniya(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
+  const $t1 = svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, $field(svyaz, "срок вышел"), $field(svyaz, "последний байт"))
+  let $t2
+  if ($cond($equal($field($t1, "ждём решения"), true))) {
+    $t2 = $equal($field($t1, "кто"), $field(svyaz, "кто"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «ожидание решения поднято и сосед помнится»
+  if (!$post($t2, "ожидание решения поднято и сосед помнится", "Связь ждёт решения")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «ожидание решения поднято и сосед помнится» функции «Связь ждёт решения»", { "line": 137, "column": 3 })
+  }
+  let $t3
+  if ($cond($equal($field($t1, "готова"), false))) {
+    $t3 = $equal($field($t1, "последний байт"), $field(svyaz, "последний байт"))
+  } else {
+    $t3 = false
+  }
+  // постусловие «ожидающая связь не готова и хранит отметку»
+  if (!$post($t3, "ожидающая связь не готова и хранит отметку", "Связь ждёт решения")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «ожидающая связь не готова и хранит отметку» функции «Связь ждёт решения»", { "line": 138, "column": 3 })
+  }
+  // постусловие «ожидание не стирает память о знакомстве»
+  if (!$post($equal($field($t1, "виделись"), $field(svyaz, "виделись")), "ожидание не стирает память о знакомстве", "Связь ждёт решения")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «ожидание не стирает память о знакомстве» функции «Связь ждёт решения»", { "line": 139, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -656,7 +752,38 @@ export function svyazZhdyotResheniya(svyaz) {
  * @returns {Svyaz}
  */
 export function svyazGotova(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), true, false, true, false, false, $field(svyaz, "последний байт"))
+  const $t1 = svyazZanovo($field(svyaz, "кто"), true, false, true, false, false, $field(svyaz, "последний байт"))
+  let $t2
+  if ($cond($equal($field($t1, "готова"), true))) {
+    $t2 = $equal($field($t1, "кто"), $field(svyaz, "кто"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «готовая связь готова и помнит соседа»
+  if (!$post($t2, "готовая связь готова и помнит соседа", "Связь готова")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовая связь готова и помнит соседа» функции «Связь готова»", { "line": 147, "column": 3 })
+  }
+  let $t3
+  if ($cond($equal($field($t1, "виделись"), true))) {
+    $t3 = $equal($field($t1, "последний байт"), $field(svyaz, "последний байт"))
+  } else {
+    $t3 = false
+  }
+  // постусловие «готовая связь виделась и хранит отметку»
+  if (!$post($t3, "готовая связь виделась и хранит отметку", "Связь готова")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовая связь виделась и хранит отметку» функции «Связь готова»", { "line": 148, "column": 3 })
+  }
+  let $t4
+  if ($cond($equal($field($t1, "ждём решения"), false))) {
+    $t4 = $equal($field($t1, "звоним"), false)
+  } else {
+    $t4 = false
+  }
+  // постусловие «готовая связь решения не ждёт и не звонит»
+  if (!$post($t4, "готовая связь решения не ждёт и не звонит", "Связь готова")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовая связь решения не ждёт и не звонит» функции «Связь готова»", { "line": 149, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -762,7 +889,7 @@ export function poteryaSvyazi(svyaz, pochemu, doklad) {
   }
   // постусловие «один разрыв роняет связь не больше одного раза»
   if (!$post($lte($b_dlina($t3), 1), "один разрыв роняет связь не больше одного раза", "Потеря связи")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «один разрыв роняет связь не больше одного раза» функции «Потеря связи»", { "line": 204, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «один разрыв роняет связь не больше одного раза» функции «Потеря связи»", { "line": 225, "column": 3 })
   }
   return $t1
 }
@@ -784,7 +911,7 @@ export function nachaloHesha(hesh) {
   }
   // постусловие «в сообщение едет не больше двенадцати знаков хэша»
   if (!$post($lte($b_dlina($t1), 12), "в сообщение едет не больше двенадцати знаков хэша", "Начало хэша")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «в сообщение едет не больше двенадцати знаков хэша» функции «Начало хэша»", { "line": 231, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «в сообщение едет не больше двенадцати знаков хэша» функции «Начало хэша»", { "line": 252, "column": 3 })
   }
   return $t1
 }
@@ -868,7 +995,32 @@ export function pochemuZnakomstvoNeSostoyalos(srok) {
  * @returns {Svyaz}
  */
 export function svyazProsrochena(svyaz) {
-  return svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, true, $field(svyaz, "последний байт"))
+  const $t1 = svyazZanovo($field(svyaz, "кто"), false, false, $field(svyaz, "виделись"), true, true, $field(svyaz, "последний байт"))
+  let $t2
+  if ($cond($equal($field($t1, "срок вышел"), true))) {
+    $t2 = $equal($field($t1, "кто"), $field(svyaz, "кто"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «просроченная связь помечена сроком и помнит соседа»
+  if (!$post($t2, "просроченная связь помечена сроком и помнит соседа", "Связь просрочена")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь помечена сроком и помнит соседа» функции «Связь просрочена»", { "line": 359, "column": 3 })
+  }
+  let $t3
+  if ($cond($equal($field($t1, "готова"), false))) {
+    $t3 = $equal($field($t1, "последний байт"), $field(svyaz, "последний байт"))
+  } else {
+    $t3 = false
+  }
+  // постусловие «просроченная связь не готова и хранит отметку»
+  if (!$post($t3, "просроченная связь не готова и хранит отметку", "Связь просрочена")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь не готова и хранит отметку» функции «Связь просрочена»", { "line": 360, "column": 3 })
+  }
+  // постусловие «вышедший срок не стирает память о знакомстве»
+  if (!$post($equal($field($t1, "виделись"), $field(svyaz, "виделись")), "вышедший срок не стирает память о знакомстве", "Связь просрочена")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «вышедший срок не стирает память о знакомстве» функции «Связь просрочена»", { "line": 361, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -919,7 +1071,7 @@ export function znakomstvoProsrocheno(svyaz, srok, rabotaet) {
   }
   // постусловие «просроченный срок роняет связь не больше одного раза»
   if (!$post($lte($b_dlina($t7), 1), "просроченный срок роняет связь не больше одного раза", "Знакомство просрочено")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «просроченный срок роняет связь не больше одного раза» функции «Знакомство просрочено»", { "line": 347, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченный срок роняет связь не больше одного раза» функции «Знакомство просрочено»", { "line": 374, "column": 3 })
   }
   return $t2
 }

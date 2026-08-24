@@ -827,15 +827,27 @@ export function NetPisma(fields = {}) {
  * @returns {MozhetBytProcess}
  */
 export function pervyyProcess(processy) {
+  let $t1
   if ($chainEmpty(processy)) {
-    return NetProcessa({})
+    $t1 = NetProcessa({})
   } else if ($chainCons(processy)) {
     const golova = $chainHead(processy)
     const hvost = $chainTail(processy)
-    return EstProcess({ "процесс": golova })
+    $t1 = EstProcess({ "процесс": golova })
   } else {
     $matchFail(processy)
   }
+  let $t2
+  if ($cond($b_pusto(processy))) {
+    $t2 = $equal($t1, NetProcessa({}))
+  } else {
+    $t2 = true
+  }
+  // постусловие «у пустой таблицы процесса нет»
+  if (!$post($t2, "у пустой таблицы процесса нет", "Первый процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «у пустой таблицы процесса нет» функции «Первый процесс»", { "line": 165, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -853,7 +865,17 @@ export function naytiProcess(processy, imya) {
   for (const p of $t1) {
     if ($keep($equal($field(p, "имя"), imya))) $t2.push(p)
   }
-  return pervyyProcess($t2)
+  const $t3 = pervyyProcess($t2)
+  const $t4 = $requireList(processy, "отфильтровать")
+  const $t5 = []
+  for (const p$2 of $t4) {
+    if ($keep($equal($field(p$2, "имя"), imya))) $t5.push(p$2)
+  }
+  // постусловие «найденное есть первое из подходящих по имени»
+  if (!$post($equal($t3, pervyyProcess($t5)), "найденное есть первое из подходящих по имени", "Найти процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «найденное есть первое из подходящих по имени» функции «Найти процесс»", { "line": 175, "column": 3 })
+  }
+  return $t3
 }
 
 /**
@@ -877,6 +899,10 @@ export function zamenitProcess(processy, novyy) {
     }
     $t2.push($t3)
   }
+  // постусловие «замена сохраняет длину таблицы»
+  if (!$post($equal($b_dlina($t2), $b_dlina(processy)), "замена сохраняет длину таблицы", "Заменить процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «замена сохраняет длину таблицы» функции «Заменить процесс»", { "line": 184, "column": 3 })
+  }
   return $t2
 }
 
@@ -890,7 +916,12 @@ export function zamenitProcess(processy, novyy) {
  * @returns {Uzel}
  */
 export function sProcessom(uzel, novyy) {
-  return { "имя": $field(uzel, "имя"), "процессы": zamenitProcess($field(uzel, "процессы"), novyy), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  const $t1 = { "имя": $field(uzel, "имя"), "процессы": zamenitProcess($field(uzel, "процессы"), novyy), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  // постусловие «с процессом ставит пересобранную таблицу»
+  if (!$post($equal($field($t1, "процессы"), zamenitProcess($field(uzel, "процессы"), novyy)), "с процессом ставит пересобранную таблицу", "С процессом")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «с процессом ставит пересобранную таблицу» функции «С процессом»", { "line": 190, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -904,7 +935,18 @@ export function sProcessom(uzel, novyy) {
  * @returns {Uzel}
  */
 export function uzelSHodom(uzel, ktoBezhit, chtoBezhit) {
-  return { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": $field(uzel, "связи"), "кто бежит": ktoBezhit, "что бежит": chtoBezhit, "работает": $field(uzel, "работает") }
+  const $t1 = { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": $field(uzel, "связи"), "кто бежит": ktoBezhit, "что бежит": chtoBezhit, "работает": $field(uzel, "работает") }
+  let $t2
+  if ($cond($equal($field($t1, "кто бежит"), ktoBezhit))) {
+    $t2 = $equal($field($t1, "что бежит"), chtoBezhit)
+  } else {
+    $t2 = false
+  }
+  // постусловие «узел с ходом помнит кто и что бежит»
+  if (!$post($t2, "узел с ходом помнит кто и что бежит", "Узел с ходом")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел с ходом помнит кто и что бежит» функции «Узел с ходом»", { "line": 196, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -917,7 +959,12 @@ export function uzelSHodom(uzel, ktoBezhit, chtoBezhit) {
  * @returns {Uzel}
  */
 export function uzelSoSvyazyami(uzel, svyazi) {
-  return { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": svyazi, "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  const $t1 = { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": svyazi, "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  // постусловие «узел со связями ставит поданные связи»
+  if (!$post($equal($field($t1, "связи"), svyazi), "узел со связями ставит поданные связи", "Узел со связями")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел со связями ставит поданные связи» функции «Узел со связями»", { "line": 202, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -936,7 +983,24 @@ export function uzelSoSvyazyami(uzel, svyazi) {
  * @returns {Process}
  */
 export function processZanovo(imya, svoy, naKakom, zhiv, prichina, potolok, vLyote, yaschik) {
-  return { "имя": imya, "свой": svoy, "на каком": naKakom, "жив": zhiv, "причина": prichina, "потолок": potolok, "в лёте": vLyote, "ящик": yaschik }
+  const $t1 = { "имя": imya, "свой": svoy, "на каком": naKakom, "жив": zhiv, "причина": prichina, "потолок": potolok, "в лёте": vLyote, "ящик": yaschik }
+  let $t2
+  if ($cond($equal($field($t1, "имя"), imya))) {
+    $t2 = $equal($field($t1, "ящик"), yaschik)
+  } else {
+    $t2 = false
+  }
+  let $t3
+  if ($cond($t2)) {
+    $t3 = $equal($field($t1, "потолок"), potolok)
+  } else {
+    $t3 = false
+  }
+  // постусловие «процесс заново берёт имя ящик и потолок»
+  if (!$post($t3, "процесс заново берёт имя ящик и потолок", "Процесс заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «процесс заново берёт имя ящик и потолок» функции «Процесс заново»", { "line": 210, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -949,7 +1013,12 @@ export function processZanovo(imya, svoy, naKakom, zhiv, prichina, potolok, vLyo
  * @returns {Process}
  */
 export function sYaschikom(process, yaschik) {
-  return processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), $field(process, "жив"), $field(process, "причина"), $field(process, "потолок"), $field(process, "в лёте"), yaschik)
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), $field(process, "жив"), $field(process, "причина"), $field(process, "потолок"), $field(process, "в лёте"), yaschik)
+  // постусловие «с ящиком ставит поданный ящик»
+  if (!$post($equal($field($t1, "ящик"), yaschik), "с ящиком ставит поданный ящик", "С ящиком")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «с ящиком ставит поданный ящик» функции «С ящиком»", { "line": 216, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -962,7 +1031,18 @@ export function sYaschikom(process, yaschik) {
  * @returns {Process}
  */
 export function umertvit(process, prichina) {
-  return processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), false, prichina, $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), false, prichina, $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  let $t2
+  if ($cond($equal($field($t1, "жив"), false))) {
+    $t2 = $equal($field($t1, "причина"), prichina)
+  } else {
+    $t2 = false
+  }
+  // постусловие «умерщвлённый не жив и помнит причину»
+  if (!$post($t2, "умерщвлённый не жив и помнит причину", "Умертвить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «умерщвлённый не жив и помнит причину» функции «Умертвить»", { "line": 224, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -974,7 +1054,24 @@ export function umertvit(process, prichina) {
  * @returns {Process}
  */
 export function ozhivit(process) {
-  return processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), true, "", $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), true, "", $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  let $t2
+  if ($cond($equal($field($t1, "жив"), true))) {
+    $t2 = $equal($field($t1, "причина"), "")
+  } else {
+    $t2 = false
+  }
+  let $t3
+  if ($cond($t2)) {
+    $t3 = $equal($field($t1, "ящик"), $field(process, "ящик"))
+  } else {
+    $t3 = false
+  }
+  // постусловие «оживший жив без причины и с прежним ящиком»
+  if (!$post($t3, "оживший жив без причины и с прежним ящиком", "Оживить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «оживший жив без причины и с прежним ящиком» функции «Оживить»", { "line": 233, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -987,15 +1084,27 @@ export function ozhivit(process) {
  * @returns {Uzel}
  */
 export function ozhivitProcess(uzel, imya) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return uzel
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    return sProcessom(uzel, ozhivit(p))
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = uzel
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = sProcessom(uzel, ozhivit(p))
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), imya), NetProcessa({})))) {
+    $t3 = $equal($t1, uzel)
+  } else {
+    $t3 = true
+  }
+  // постусловие «без такого процесса узел не меняется»
+  if (!$post($t3, "без такого процесса узел не меняется", "Оживить процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса узел не меняется» функции «Оживить процесс»", { "line": 241, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1009,15 +1118,27 @@ export function ozhivitProcess(uzel, imya) {
  * @returns {Uzel}
  */
 export function ulozhitProcess(uzel, imya, prichina) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return uzel
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    return sProcessom(uzel, umertvit(p, prichina))
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = uzel
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = sProcessom(uzel, umertvit(p, prichina))
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), imya), NetProcessa({})))) {
+    $t3 = $equal($t1, uzel)
+  } else {
+    $t3 = true
+  }
+  // постусловие «без такого процесса укладывать некого»
+  if (!$post($t3, "без такого процесса укладывать некого", "Уложить процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса укладывать некого» функции «Уложить процесс»", { "line": 251, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1029,7 +1150,18 @@ export function ulozhitProcess(uzel, imya, prichina) {
  * @returns {Uzel}
  */
 export function ostanovitUzel(uzel) {
-  return { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": false }
+  const $t1 = { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": false }
+  let $t2
+  if ($cond($equal($field($t1, "работает"), false))) {
+    $t2 = $equal($field($t1, "процессы"), $field(uzel, "процессы"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «остановленный узел не работает и хранит таблицу»
+  if (!$post($t2, "остановленный узел не работает и хранит таблицу", "Остановить узел")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «остановленный узел не работает и хранит таблицу» функции «Остановить узел»", { "line": 263, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1059,11 +1191,23 @@ export function yaschikPolon(process) {
  * @returns {Array<Pismo>}
  */
 export function vYaschik(yaschik, pismo, vperyod) {
+  let $t1
   if ($cond(vperyod)) {
-    return $b_pripisat(pismo, yaschik)
+    $t1 = $b_pripisat(pismo, yaschik)
   } else {
-    return $b_dobavit(pismo, yaschik)
+    $t1 = $b_dobavit(pismo, yaschik)
   }
+  let $t2
+  if ($cond(vperyod)) {
+    $t2 = $equal($t1, $b_pripisat(pismo, yaschik))
+  } else {
+    $t2 = true
+  }
+  // постусловие «вперёд кладёт в голову ящика»
+  if (!$post($t2, "вперёд кладёт в голову ящика", "В ящик")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «вперёд кладёт в голову ящика» функции «В ящик»", { "line": 294, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1077,53 +1221,69 @@ export function vYaschik(yaschik, pismo, vperyod) {
  * @returns {IshodDostavki}
  */
 export function ishodPolozhit(uzel, komu, mestoZanyato) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), komu)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return Nekomu({})
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    let $t2
-    if ($cond($field(p, "свой"))) {
-      $t2 = false
-    } else {
-      $t2 = true
-    }
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), komu)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = Nekomu({})
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
     let $t3
-    if ($cond($t2)) {
-      $t3 = true
+    if ($cond($field(p, "свой"))) {
+      $t3 = false
     } else {
-      let $t4
-      if ($cond($field(p, "жив"))) {
-        $t4 = false
-      } else {
-        $t4 = true
-      }
-      $t3 = $t4
+      $t3 = true
     }
+    let $t4
     if ($cond($t3)) {
-      return Nekomu({})
+      $t4 = true
     } else {
       let $t5
-      if ($cond(mestoZanyato)) {
+      if ($cond($field(p, "жив"))) {
         $t5 = false
       } else {
         $t5 = true
       }
-      let $t6
-      if ($cond($t5)) {
-        $t6 = yaschikPolon(p)
-      } else {
-        $t6 = false
-      }
-      if ($cond($t6)) {
-        return Polon({})
-      } else {
-        return Leglo({})
-      }
+      $t4 = $t5
     }
+    let $t6
+    if ($cond($t4)) {
+      $t6 = Nekomu({})
+    } else {
+      let $t7
+      if ($cond(mestoZanyato)) {
+        $t7 = false
+      } else {
+        $t7 = true
+      }
+      let $t8
+      if ($cond($t7)) {
+        $t8 = yaschikPolon(p)
+      } else {
+        $t8 = false
+      }
+      let $t9
+      if ($cond($t8)) {
+        $t9 = Polon({})
+      } else {
+        $t9 = Leglo({})
+      }
+      $t6 = $t9
+    }
+    $t1 = $t6
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t10
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), komu), NetProcessa({})))) {
+    $t10 = $equal($t1, Nekomu({}))
+  } else {
+    $t10 = true
+  }
+  // постусловие «без адресата класть некому»
+  if (!$post($t10, "без адресата класть некому", "Исход положить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата класть некому» функции «Исход положить»", { "line": 306, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1135,15 +1295,27 @@ export function ishodPolozhit(uzel, komu, mestoZanyato) {
  * @returns {*}
  */
 export function legloLi(ishod) {
+  let $t1
   if ($isVariant(ishod) && ishod.variant === "Легло") {
-    return true
+    $t1 = true
   } else if ($isVariant(ishod) && ishod.variant === "Некому") {
-    return false
+    $t1 = false
   } else if ($isVariant(ishod) && ishod.variant === "Полон") {
-    return false
+    $t1 = false
   } else {
     $matchFail(ishod)
   }
+  let $t2
+  if ($cond($equal(ishod, Leglo({})))) {
+    $t2 = $equal($t1, true)
+  } else {
+    $t2 = true
+  }
+  // постусловие «легло только у исхода Легло»
+  if (!$post($t2, "легло только у исхода Легло", "Легло ли")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «легло только у исхода Легло» функции «Легло ли»", { "line": 318, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1160,19 +1332,33 @@ export function legloLi(ishod) {
  * @returns {Uzel}
  */
 export function polozhit(uzel, komu, bilet, vperyod, mestoZanyato, nachatoe) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), komu)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return uzel
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), komu)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = uzel
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    let $t3
     if ($cond(legloLi(ishodPolozhit(uzel, komu, mestoZanyato)))) {
-      return sProcessom(uzel, sYaschikom(p, vYaschik($field(p, "ящик"), { "билет": bilet, "начатое": nachatoe }, vperyod)))
+      $t3 = sProcessom(uzel, sYaschikom(p, vYaschik($field(p, "ящик"), { "билет": bilet, "начатое": nachatoe }, vperyod)))
     } else {
-      return uzel
+      $t3 = uzel
     }
+    $t1 = $t3
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t4
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), komu), NetProcessa({})))) {
+    $t4 = $equal($t1, uzel)
+  } else {
+    $t4 = true
+  }
+  // постусловие «без адресата узел не меняется»
+  if (!$post($t4, "без адресата узел не меняется", "Положить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата узел не меняется» функции «Положить»", { "line": 330, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1190,11 +1376,28 @@ export function svyazEst(uzel, sKem) {
   for (const s of $t1) {
     if ($keep($equal(s, sKem))) $t2.push(s)
   }
+  let $t3
   if ($cond($b_pusto($t2))) {
-    return false
+    $t3 = false
   } else {
-    return true
+    $t3 = true
   }
+  const $t4 = $requireList($field(uzel, "связи"), "отфильтровать")
+  const $t5 = []
+  for (const s$2 of $t4) {
+    if ($keep($equal(s$2, sKem))) $t5.push(s$2)
+  }
+  let $t6
+  if ($cond($b_pusto($t5))) {
+    $t6 = false
+  } else {
+    $t6 = true
+  }
+  // постусловие «связь есть ровно когда сосед стоит в списке связей»
+  if (!$post($equal($t3, $t6), "связь есть ровно когда сосед стоит в списке связей", "Связь есть")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «связь есть ровно когда сосед стоит в списке связей» функции «Связь есть»", { "line": 341, "column": 3 })
+  }
+  return $t3
 }
 
 /**
@@ -1208,15 +1411,27 @@ export function svyazEst(uzel, sKem) {
  * @returns {HodUzla}
  */
 export function otpravit(uzel, komu, bilet) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), komu)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "такого процесса нет" })] }
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    return otpravitNaydennomu(uzel, p, bilet)
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), komu)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "такого процесса нет" })] }
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = otpravitNaydennomu(uzel, p, bilet)
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), komu), NetProcessa({})))) {
+    $t3 = $equal($t1, { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "такого процесса нет" })] })
+  } else {
+    $t3 = true
+  }
+  // постусловие «письмо несуществующему процессу пропадает»
+  if (!$post($t3, "письмо несуществующему процессу пропадает", "Отправить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «письмо несуществующему процессу пропадает» функции «Отправить»", { "line": 355, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1230,11 +1445,23 @@ export function otpravit(uzel, komu, bilet) {
  * @returns {HodUzla}
  */
 export function otpravitNaydennomu(uzel, p, bilet) {
+  let $t1
   if ($cond($field(p, "свой"))) {
-    return otpravitSvoemu(uzel, p, bilet)
+    $t1 = otpravitSvoemu(uzel, p, bilet)
   } else {
-    return otpravitChuzhomu(uzel, p, bilet)
+    $t1 = otpravitChuzhomu(uzel, p, bilet)
   }
+  let $t2
+  if ($cond($field(p, "свой"))) {
+    $t2 = $equal($t1, otpravitSvoemu(uzel, p, bilet))
+  } else {
+    $t2 = true
+  }
+  // постусловие «своему шлём своим путём»
+  if (!$post($t2, "своему шлём своим путём", "Отправить найденному")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «своему шлём своим путём» функции «Отправить найденному»", { "line": 365, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1248,16 +1475,28 @@ export function otpravitNaydennomu(uzel, p, bilet) {
  * @returns {HodUzla}
  */
 export function otpravitSvoemu(uzel, p, bilet) {
-  const $t1 = ishodPolozhit(uzel, $field(p, "имя"), false)
-  if ($isVariant($t1) && $t1.variant === "Легло") {
-    return { "узел": polozhit(uzel, $field(p, "имя"), bilet, false, false, false), "веления": [] }
-  } else if ($isVariant($t1) && $t1.variant === "Некому") {
-    return { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "процесс не жив" })] }
-  } else if ($isVariant($t1) && $t1.variant === "Полон") {
-    return { "узел": uzel, "веления": [UronitProcess({ "кто": $field(uzel, "кто бежит"), "код": "FLANG_MAILBOX_FULL", "текст": pochemuYaschikPolon($field(p, "имя")) })] }
+  let $t1
+  const $t2 = ishodPolozhit(uzel, $field(p, "имя"), false)
+  if ($isVariant($t2) && $t2.variant === "Легло") {
+    $t1 = { "узел": polozhit(uzel, $field(p, "имя"), bilet, false, false, false), "веления": [] }
+  } else if ($isVariant($t2) && $t2.variant === "Некому") {
+    $t1 = { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "процесс не жив" })] }
+  } else if ($isVariant($t2) && $t2.variant === "Полон") {
+    $t1 = { "узел": uzel, "веления": [UronitProcess({ "кто": $field(uzel, "кто бежит"), "код": "FLANG_MAILBOX_FULL", "текст": pochemuYaschikPolon($field(p, "имя")) })] }
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(ishodPolozhit(uzel, $field(p, "имя"), false), Nekomu({})))) {
+    $t3 = $equal($t1, { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "процесс не жив" })] })
+  } else {
+    $t3 = true
+  }
+  // постусловие «некому — письмо пропало и узел не тронут»
+  if (!$post($t3, "некому — письмо пропало и узел не тронут", "Отправить своему")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «некому — письмо пропало и узел не тронут» функции «Отправить своему»", { "line": 373, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1301,11 +1540,41 @@ export function otpravitChuzhomu(uzel, p, bilet) {
     }
     $t2 = $t3
   }
+  let $t4
   if ($cond($t2)) {
-    return { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "связи нет" })] }
+    $t4 = { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "связи нет" })] }
   } else {
-    return { "узел": uzel, "веления": [PoslatPoProvodu({ "узел": $field(p, "на каком"), "кому": $field(p, "имя"), "билет": bilet })] }
+    $t4 = { "узел": uzel, "веления": [PoslatPoProvodu({ "узел": $field(p, "на каком"), "кому": $field(p, "имя"), "билет": bilet })] }
   }
+  let $t5
+  if ($cond($field(p, "жив"))) {
+    $t5 = false
+  } else {
+    $t5 = true
+  }
+  let $t6
+  if ($cond($t5)) {
+    $t6 = true
+  } else {
+    let $t7
+    if ($cond(svyazEst(uzel, $field(p, "на каком")))) {
+      $t7 = false
+    } else {
+      $t7 = true
+    }
+    $t6 = $t7
+  }
+  let $t8
+  if ($cond($t6)) {
+    $t8 = $equal($t4, { "узел": uzel, "веления": [PismoPropalo({ "кому": $field(p, "имя"), "почему": "связи нет" })] })
+  } else {
+    $t8 = true
+  }
+  // постусловие «мёртвому или без связи письмо пропадает»
+  if (!$post($t8, "мёртвому или без связи письмо пропадает", "Отправить чужому")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «мёртвому или без связи письмо пропадает» функции «Отправить чужому»", { "line": 394, "column": 3 })
+  }
+  return $t4
 }
 
 /**
@@ -1339,6 +1608,10 @@ export function gotovye(uzel) {
       $t4 = false
     }
     if ($keep($t4)) $t2.push(p)
+  }
+  // постусловие «готовых не больше чем процессов»
+  if (!$post($lte($b_dlina($t2), $b_dlina($field(uzel, "процессы"))), "готовых не больше чем процессов", "Готовые")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовых не больше чем процессов» функции «Готовые»", { "line": 406, "column": 3 })
   }
   return $t2
 }
@@ -1382,15 +1655,29 @@ export function celayaChast(h) {
  * @returns {number}
  */
 export function neBolshe(chto, predel) {
+  let $t1
   if ($cond($gte(chto, predel))) {
-    return predel
+    $t1 = predel
   } else {
+    let $t2
     if ($cond($lte(chto, 0))) {
-      return 0
+      $t2 = 0
     } else {
-      return chto
+      $t2 = chto
     }
+    $t1 = $t2
   }
+  let $t3
+  if ($cond($gte(chto, predel))) {
+    $t3 = $equal($t1, predel)
+  } else {
+    $t3 = true
+  }
+  // постусловие «выше предела не поднимается»
+  if (!$post($t3, "выше предела не поднимается", "Не больше")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «выше предела не поднимается» функции «Не больше»", { "line": 449, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1457,6 +1744,10 @@ export function pohoronitZhilcov(processy, sosed, prichina) {
     }
     $t2.push($t3)
   }
+  // постусловие «похороны не меняют длину таблицы»
+  if (!$post($equal($b_dlina($t2), $b_dlina(processy)), "похороны не меняют длину таблицы", "Похоронить жильцов")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «похороны не меняют длину таблицы» функции «Похоронить жильцов»", { "line": 509, "column": 3 })
+  }
   return $t2
 }
 
@@ -1481,6 +1772,10 @@ export function veleniyaPropazhi(processy, sosed, prichina) {
   for (const p$2 of $t3) {
     akk = $b_dobavit(UronitProcess({ "кто": $field(p$2, "имя"), "код": "FLANG_NODE_DOWN", "текст": prichina }), akk)
   }
+  // постусловие «запись в журнал стоит первой всегда»
+  if (!$post($gte($b_dlina(akk), 1), "запись в журнал стоит первой всегда", "Веления пропажи")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «запись в журнал стоит первой всегда» функции «Веления пропажи»", { "line": 517, "column": 3 })
+  }
   return akk
 }
 
@@ -1494,7 +1789,12 @@ export function veleniyaPropazhi(processy, sosed, prichina) {
  * @returns {Uzel}
  */
 export function uzelSProcessami(uzel, processy) {
-  return { "имя": $field(uzel, "имя"), "процессы": processy, "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  const $t1 = { "имя": $field(uzel, "имя"), "процессы": processy, "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
+  // постусловие «узел с процессами ставит поданную таблицу»
+  if (!$post($equal($field($t1, "процессы"), processy), "узел с процессами ставит поданную таблицу", "Узел с процессами")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел с процессами ставит поданную таблицу» функции «Узел с процессами»", { "line": 523, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1523,7 +1823,7 @@ export function propazhaUzla(uzel, sosed, pochemu) {
   }
   // постусловие «пропажа роняет ровно жильцов пропавшего узла»
   if (!$post($equal($t6, $b_dlina($t5)), "пропажа роняет ровно жильцов пропавшего узла", "Пропажа узла")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «пропажа роняет ровно жильцов пропавшего узла» функции «Пропажа узла»", { "line": 499, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «пропажа роняет ровно жильцов пропавшего узла» функции «Пропажа узла»", { "line": 532, "column": 3 })
   }
   return $t1
 }
@@ -1537,37 +1837,49 @@ export function propazhaUzla(uzel, sosed, pochemu) {
  * @returns {*}
  */
 export function etoPadenie(velenie) {
+  let $t1
   if ($isVariant(velenie) && velenie.variant === "Позвать обработчик") {
     const kto = $variantField(velenie, "кто")
     const bilet = $variantField(velenie, "билет")
-    return false
+    $t1 = false
   } else if ($isVariant(velenie) && velenie.variant === "Послать по проводу") {
     const uzel = $variantField(velenie, "узел")
     const komu = $variantField(velenie, "кому")
     const bilet$2 = $variantField(velenie, "билет")
-    return false
+    $t1 = false
   } else if ($isVariant(velenie) && velenie.variant === "Поставить таймер") {
     const komu$2 = $variantField(velenie, "кому")
     const bilet$3 = $variantField(velenie, "билет")
     const zaderzhka = $variantField(velenie, "задержка")
-    return false
+    $t1 = false
   } else if ($isVariant(velenie) && velenie.variant === "Записать в журнал") {
     const vid = $variantField(velenie, "вид")
     const kto$2 = $variantField(velenie, "кто")
     const pochemu = $variantField(velenie, "почему")
-    return false
+    $t1 = false
   } else if ($isVariant(velenie) && velenie.variant === "Уронить процесс") {
     const kto$3 = $variantField(velenie, "кто")
     const kod = $variantField(velenie, "код")
     const tekst = $variantField(velenie, "текст")
-    return true
+    $t1 = true
   } else if ($isVariant(velenie) && velenie.variant === "Письмо пропало") {
     const komu$3 = $variantField(velenie, "кому")
     const pochemu$2 = $variantField(velenie, "почему")
-    return false
+    $t1 = false
   } else {
     $matchFail(velenie)
   }
+  let $t2
+  if ($cond($equal(velenie, UronitProcess({ "кто": "А", "код": "К", "текст": "Т" })))) {
+    $t2 = $equal($t1, true)
+  } else {
+    $t2 = true
+  }
+  // постусловие «падением зовётся ровно веление уронить процесс»
+  if (!$post($t2, "падением зовётся ровно веление уронить процесс", "Это падение")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «падением зовётся ровно веление уронить процесс» функции «Это падение»", { "line": 551, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1579,7 +1891,18 @@ export function etoPadenie(velenie) {
  * @returns {Process}
  */
 export function podhvatit(process) {
-  return processZanovo($field(process, "имя"), true, "", true, "", $field(process, "потолок"), 0, $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), true, "", true, "", $field(process, "потолок"), 0, $field(process, "ящик"))
+  let $t2
+  if ($cond($equal($field($t1, "свой"), true))) {
+    $t2 = $equal($field($t1, "в лёте"), 0)
+  } else {
+    $t2 = false
+  }
+  // постусловие «подхваченный стал своим и без писем в лёте»
+  if (!$post($t2, "подхваченный стал своим и без писем в лёте", "Подхватить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «подхваченный стал своим и без писем в лёте» функции «Подхватить»", { "line": 579, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1592,21 +1915,33 @@ export function podhvatit(process) {
  * @returns {Uzel}
  */
 export function podnyatProcess(uzel, imya) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), imya)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return uzel
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    let $t2
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = uzel
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    let $t3
     if ($cond($field(p, "свой"))) {
-      $t2 = ozhivit(p)
+      $t3 = ozhivit(p)
     } else {
-      $t2 = podhvatit(p)
+      $t3 = podhvatit(p)
     }
-    return sProcessom(uzel, $t2)
+    $t1 = sProcessom(uzel, $t3)
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t4
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), imya), NetProcessa({})))) {
+    $t4 = $equal($t1, uzel)
+  } else {
+    $t4 = true
+  }
+  // постусловие «без такого процесса поднимать некого»
+  if (!$post($t4, "без такого процесса поднимать некого", "Поднять процесс")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса поднимать некого» функции «Поднять процесс»", { "line": 585, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1619,55 +1954,67 @@ export function podnyatProcess(uzel, imya) {
  * @returns {HodUzla}
  */
 export function shagUzla(uzel, chto) {
+  let $t1
   if ($isVariant(chto) && chto.variant === "Письмо снаружи") {
     const komu = $variantField(chto, "кому")
     const bilet = $variantField(chto, "билет")
-    return pismoSProvoda(uzel, komu, bilet)
+    $t1 = pismoSProvoda(uzel, komu, bilet)
   } else if ($isVariant(chto) && chto.variant === "Таймер сработал") {
     const komu$2 = $variantField(chto, "кому")
     const bilet$2 = $variantField(chto, "билет")
-    return otpravit(uzel, komu$2, bilet$2)
+    $t1 = otpravit(uzel, komu$2, bilet$2)
   } else if ($isVariant(chto) && chto.variant === "Связь готова") {
     const sosed = $variantField(chto, "узел")
-    let $t1
+    let $t2
     if ($cond(svyazEst(uzel, sosed))) {
-      $t1 = $field(uzel, "связи")
+      $t2 = $field(uzel, "связи")
     } else {
-      $t1 = $b_dobavit(sosed, $field(uzel, "связи"))
+      $t2 = $b_dobavit(sosed, $field(uzel, "связи"))
     }
-    return { "узел": uzelSoSvyazyami(uzel, $t1), "веления": [] }
+    $t1 = { "узел": uzelSoSvyazyami(uzel, $t2), "веления": [] }
   } else if ($isVariant(chto) && chto.variant === "Связь потеряна") {
     const sosed$2 = $variantField(chto, "узел")
     const pochemu = $variantField(chto, "почему")
-    const $t2 = $requireList($field(uzel, "связи"), "отфильтровать")
-    const $t3 = []
-    for (const s of $t2) {
-      let $t4
+    const $t3 = $requireList($field(uzel, "связи"), "отфильтровать")
+    const $t4 = []
+    for (const s of $t3) {
+      let $t5
       if ($cond($equal(s, sosed$2))) {
-        $t4 = false
+        $t5 = false
       } else {
-        $t4 = true
+        $t5 = true
       }
-      if ($keep($t4)) $t3.push(s)
+      if ($keep($t5)) $t4.push(s)
     }
-    return { "узел": uzelSoSvyazyami(uzel, $t3), "веления": [ZapisatVZhurnal({ "вид": "связь", "кто": sosed$2, "почему": pochemu })] }
+    $t1 = { "узел": uzelSoSvyazyami(uzel, $t4), "веления": [ZapisatVZhurnal({ "вид": "связь", "кто": sosed$2, "почему": pochemu })] }
   } else if ($isVariant(chto) && chto.variant === "Узел пропал") {
     const sosed$3 = $variantField(chto, "узел")
     const pochemu$2 = $variantField(chto, "почему")
-    return propazhaUzla(uzel, sosed$3, pochemu$2)
+    $t1 = propazhaUzla(uzel, sosed$3, pochemu$2)
   } else if ($isVariant(chto) && chto.variant === "Пора бежать") {
     const zhrebiy = $variantField(chto, "жребий")
-    return probezhat(uzel, zhrebiy)
+    $t1 = probezhat(uzel, zhrebiy)
   } else if ($isVariant(chto) && chto.variant === "Обработчик вернул") {
     const deystviya = $variantField(chto, "действия")
-    return otklikRazobran(uzel, deystviya)
+    $t1 = otklikRazobran(uzel, deystviya)
   } else if ($isVariant(chto) && chto.variant === "Обработчик отказал") {
     const kod = $variantField(chto, "код")
     const tekst = $variantField(chto, "текст")
-    return probegSorvalsya(uzel, kod, tekst)
+    $t1 = probegSorvalsya(uzel, kod, tekst)
   } else {
     $matchFail(chto)
   }
+  let $t6
+  if ($cond($equal(chto, PoraBezhat({ "жребий": 0 })))) {
+    $t6 = $equal($t1, probezhat(uzel, 0))
+  } else {
+    $t6 = true
+  }
+  // постусловие «пора бежать ведёт в пробег»
+  if (!$post($t6, "пора бежать ведёт в пробег", "Шаг узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «пора бежать ведёт в пробег» функции «Шаг узла»", { "line": 600, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1681,16 +2028,28 @@ export function shagUzla(uzel, chto) {
  * @returns {HodUzla}
  */
 export function pismoSProvoda(uzel, komu, bilet) {
-  const $t1 = ishodPolozhit(uzel, komu, false)
-  if ($isVariant($t1) && $t1.variant === "Легло") {
-    return { "узел": polozhit(uzel, komu, bilet, false, false, false), "веления": [] }
-  } else if ($isVariant($t1) && $t1.variant === "Некому") {
-    return { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "адресата на этом узле нет" })] }
-  } else if ($isVariant($t1) && $t1.variant === "Полон") {
-    return { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": pochemuYaschikPolon(komu) })] }
+  let $t1
+  const $t2 = ishodPolozhit(uzel, komu, false)
+  if ($isVariant($t2) && $t2.variant === "Легло") {
+    $t1 = { "узел": polozhit(uzel, komu, bilet, false, false, false), "веления": [] }
+  } else if ($isVariant($t2) && $t2.variant === "Некому") {
+    $t1 = { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "адресата на этом узле нет" })] }
+  } else if ($isVariant($t2) && $t2.variant === "Полон") {
+    $t1 = { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": pochemuYaschikPolon(komu) })] }
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(ishodPolozhit(uzel, komu, false), Nekomu({})))) {
+    $t3 = $equal($t1, { "узел": uzel, "веления": [PismoPropalo({ "кому": komu, "почему": "адресата на этом узле нет" })] })
+  } else {
+    $t3 = true
+  }
+  // постусловие «адресата нет — письмо пропало, узел не тронут»
+  if (!$post($t3, "адресата нет — письмо пропало, узел не тронут", "Письмо с провода")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «адресата нет — письмо пропало, узел не тронут» функции «Письмо с провода»", { "line": 627, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1715,11 +2074,35 @@ export function probezhat(uzel, zhrebiy) {
   } else {
     $t2 = $b_pusto(gotovye(uzel))
   }
+  let $t3
   if ($cond($t2)) {
-    return { "узел": uzel, "веления": [] }
+    $t3 = { "узел": uzel, "веления": [] }
   } else {
-    return probezhatVybrannogo(uzel, $b_element($add(1, nomerPoZhrebiyu($b_dlina(gotovye(uzel)), zhrebiy)), gotovye(uzel)))
+    $t3 = probezhatVybrannogo(uzel, $b_element($add(1, nomerPoZhrebiyu($b_dlina(gotovye(uzel)), zhrebiy)), gotovye(uzel)))
   }
+  let $t4
+  if ($cond($field(uzel, "работает"))) {
+    $t4 = false
+  } else {
+    $t4 = true
+  }
+  let $t5
+  if ($cond($t4)) {
+    $t5 = true
+  } else {
+    $t5 = $b_pusto(gotovye(uzel))
+  }
+  let $t6
+  if ($cond($t5)) {
+    $t6 = $equal($t3, { "узел": uzel, "веления": [] })
+  } else {
+    $t6 = true
+  }
+  // постусловие «стоящий узел и пустая очередь не рождают велений»
+  if (!$post($t6, "стоящий узел и пустая очередь не рождают велений", "Пробежать")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «стоящий узел и пустая очередь не рождают велений» функции «Пробежать»", { "line": 642, "column": 3 })
+  }
+  return $t3
 }
 
 /**
@@ -1732,15 +2115,27 @@ export function probezhat(uzel, zhrebiy) {
  * @returns {HodUzla}
  */
 export function probezhatVybrannogo(uzel, p) {
-  const $t1 = pervoePismo($field(p, "ящик"))
-  if ($isVariant($t1) && $t1.variant === "Нет письма") {
-    return { "узел": uzel, "веления": [] }
-  } else if ($isVariant($t1) && $t1.variant === "Есть письмо") {
-    const pismo = $variantField($t1, "письмо")
-    return { "узел": uzelSHodom(sProcessom(uzel, sYaschikom(p, $b_hvost($field(p, "ящик")))), $field(p, "имя"), $field(pismo, "билет")), "веления": [PozvatObrabotchik({ "кто": $field(p, "имя"), "билет": $field(pismo, "билет") })] }
+  let $t1
+  const $t2 = pervoePismo($field(p, "ящик"))
+  if ($isVariant($t2) && $t2.variant === "Нет письма") {
+    $t1 = { "узел": uzel, "веления": [] }
+  } else if ($isVariant($t2) && $t2.variant === "Есть письмо") {
+    const pismo = $variantField($t2, "письмо")
+    $t1 = { "узел": uzelSHodom(sProcessom(uzel, sYaschikom(p, $b_hvost($field(p, "ящик")))), $field(p, "имя"), $field(pismo, "билет")), "веления": [PozvatObrabotchik({ "кто": $field(p, "имя"), "билет": $field(pismo, "билет") })] }
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(pervoePismo($field(p, "ящик")), NetPisma({})))) {
+    $t3 = $equal($t1, { "узел": uzel, "веления": [] })
+  } else {
+    $t3 = true
+  }
+  // постусловие «без письма обработчик не зовётся»
+  if (!$post($t3, "без письма обработчик не зовётся", "Пробежать выбранного")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без письма обработчик не зовётся» функции «Пробежать выбранного»", { "line": 650, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1752,15 +2147,27 @@ export function probezhatVybrannogo(uzel, p) {
  * @returns {MozhetBytPismo}
  */
 export function pervoePismo(yaschik) {
+  let $t1
   if ($chainEmpty(yaschik)) {
-    return NetPisma({})
+    $t1 = NetPisma({})
   } else if ($chainCons(yaschik)) {
     const golova = $chainHead(yaschik)
     const hvost = $chainTail(yaschik)
-    return EstPismo({ "письмо": golova })
+    $t1 = EstPismo({ "письмо": golova })
   } else {
     $matchFail(yaschik)
   }
+  let $t2
+  if ($cond($b_pusto(yaschik))) {
+    $t2 = $equal($t1, NetPisma({}))
+  } else {
+    $t2 = true
+  }
+  // постусловие «у пустого ящика письма нет»
+  if (!$post($t2, "у пустого ящика письма нет", "Первое письмо")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «у пустого ящика письма нет» функции «Первое письмо»", { "line": 664, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1777,6 +2184,15 @@ export function otklikRazobran(uzel, deystviya) {
   let hod = { "узел": uzelSHodom(uzel, "", 0), "веления": [ZapisatVZhurnal({ "вид": "пробег", "кто": $field(uzel, "кто бежит"), "почему": "обработано" })] }
   for (const d of $t1) {
     hod = odnoDeystvie(hod, d, $field(uzel, "кто бежит"), $field(uzel, "что бежит"))
+  }
+  const $t2 = $requireList(deystviya, "свёртка")
+  let hod$2 = { "узел": uzelSHodom(uzel, "", 0), "веления": [ZapisatVZhurnal({ "вид": "пробег", "кто": $field(uzel, "кто бежит"), "почему": "обработано" })] }
+  for (const d$2 of $t2) {
+    hod$2 = odnoDeystvie(hod$2, d$2, $field(uzel, "кто бежит"), $field(uzel, "что бежит"))
+  }
+  // постусловие «отклик есть проход по действиям от записи о пробеге»
+  if (!$post($equal(hod, hod$2), "отклик есть проход по действиям от записи о пробеге", "Отклик разобран")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отклик есть проход по действиям от записи о пробеге» функции «Отклик разобран»", { "line": 678, "column": 3 })
   }
   return hod
 }
@@ -1797,7 +2213,12 @@ export function slitHod(hod, novyy) {
   for (const v of $t1) {
     akk = $b_dobavit(v, akk)
   }
-  return { "узел": $t2, "веления": akk }
+  const $t3 = { "узел": $t2, "веления": akk }
+  // постусловие «слитый ход берёт узел нового»
+  if (!$post($equal($field($t3, "узел"), $field(novyy, "узел")), "слитый ход берёт узел нового", "Слить ход")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «слитый ход берёт узел нового» функции «Слить ход»", { "line": 684, "column": 3 })
+  }
+  return $t3
 }
 
 /**
@@ -1812,25 +2233,37 @@ export function slitHod(hod, novyy) {
  * @returns {HodUzla}
  */
 export function odnoDeystvie(hod, d, kto, chto) {
+  let $t1
   if ($isVariant(d) && d.variant === "Велено слать") {
     const komu = $variantField(d, "кому")
     const bilet = $variantField(d, "билет")
-    return slitHod(hod, otpravit($field(hod, "узел"), komu, bilet))
+    $t1 = slitHod(hod, otpravit($field(hod, "узел"), komu, bilet))
   } else if ($isVariant(d) && d.variant === "Велено слать позже") {
     const komu$2 = $variantField(d, "кому")
     const bilet$2 = $variantField(d, "билет")
     const zaderzhka = $variantField(d, "задержка")
-    return { "узел": $field(hod, "узел"), "веления": $b_dobavit(PostavitTaymer({ "кому": komu$2, "билет": bilet$2, "задержка": zaderzhka }), $field(hod, "веления")) }
+    $t1 = { "узел": $field(hod, "узел"), "веления": $b_dobavit(PostavitTaymer({ "кому": komu$2, "билет": bilet$2, "задержка": zaderzhka }), $field(hod, "веления")) }
   } else if ($isVariant(d) && d.variant === "Велено отложить") {
-    return { "узел": polozhit($field(hod, "узел"), kto, chto, false, true, true), "веления": $field(hod, "веления") }
+    $t1 = { "узел": polozhit($field(hod, "узел"), kto, chto, false, true, true), "веления": $field(hod, "веления") }
   } else if ($isVariant(d) && d.variant === "Велено продолжить") {
-    return { "узел": polozhit($field(hod, "узел"), kto, chto, true, true, true), "веления": $field(hod, "веления") }
+    $t1 = { "узел": polozhit($field(hod, "узел"), kto, chto, true, true, true), "веления": $field(hod, "веления") }
   } else if ($isVariant(d) && d.variant === "Велено остановить") {
     const pochemu = $variantField(d, "почему")
-    return ostanovit(hod, kto, pochemu)
+    $t1 = ostanovit(hod, kto, pochemu)
   } else {
     $matchFail(d)
   }
+  let $t2
+  if ($cond($equal(d, VelenoOtlozhit({})))) {
+    $t2 = $equal($t1, { "узел": polozhit($field(hod, "узел"), kto, chto, false, true, true), "веления": $field(hod, "веления") })
+  } else {
+    $t2 = true
+  }
+  // постусловие «велено отложить кладёт письмо в хвост ящика»
+  if (!$post($t2, "велено отложить кладёт письмо в хвост ящика", "Одно действие")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «велено отложить кладёт письмо в хвост ящика» функции «Одно действие»", { "line": 690, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1844,22 +2277,34 @@ export function odnoDeystvie(hod, d, kto, chto) {
  * @returns {HodUzla}
  */
 export function ostanovit(hod, kto, pochemu) {
-  const $t1 = naytiProcess($field($field(hod, "узел"), "процессы"), kto)
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return hod
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    const $t3 = sProcessom($field(hod, "узел"), umertvit(p, pochemu))
-    let $t2
+  let $t1
+  const $t2 = naytiProcess($field($field(hod, "узел"), "процессы"), kto)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = hod
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    const $t4 = sProcessom($field(hod, "узел"), umertvit(p, pochemu))
+    let $t3
     if ($cond($equal(pochemu, "остановлен"))) {
-      $t2 = ZapisatVZhurnal({ "вид": "пробег", "кто": kto, "почему": "остановлено" })
+      $t3 = ZapisatVZhurnal({ "вид": "пробег", "кто": kto, "почему": "остановлено" })
     } else {
-      $t2 = UronitProcess({ "кто": kto, "код": "FLANG_PROCESS_STOPPED", "текст": pochemu })
+      $t3 = UronitProcess({ "кто": kto, "код": "FLANG_PROCESS_STOPPED", "текст": pochemu })
     }
-    return { "узел": $t3, "веления": $b_dobavit($t2, $field(hod, "веления")) }
+    $t1 = { "узел": $t4, "веления": $b_dobavit($t3, $field(hod, "веления")) }
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t5
+  if ($cond($equal(naytiProcess($field($field(hod, "узел"), "процессы"), kto), NetProcessa({})))) {
+    $t5 = $equal($t1, hod)
+  } else {
+    $t5 = true
+  }
+  // постусловие «без такого процесса ход не меняется»
+  if (!$post($t5, "без такого процесса ход не меняется", "Остановить")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса ход не меняется» функции «Остановить»", { "line": 709, "column": 3 })
+  }
+  return $t1
 }
 
 /**
@@ -1873,15 +2318,27 @@ export function ostanovit(hod, kto, pochemu) {
  * @returns {HodUzla}
  */
 export function probegSorvalsya(uzel, kod, tekst) {
-  const $t1 = naytiProcess($field(uzel, "процессы"), $field(uzel, "кто бежит"))
-  if ($isVariant($t1) && $t1.variant === "Нет процесса") {
-    return { "узел": uzelSHodom(uzel, "", 0), "веления": [] }
-  } else if ($isVariant($t1) && $t1.variant === "Есть процесс") {
-    const p = $variantField($t1, "процесс")
-    return { "узел": uzelSHodom(sProcessom(uzel, umertvit(p, kod)), "", 0), "веления": [ZapisatVZhurnal({ "вид": "отказ", "кто": $field(uzel, "кто бежит"), "почему": tekst }), UronitProcess({ "кто": $field(uzel, "кто бежит"), "код": kod, "текст": tekst })] }
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), $field(uzel, "кто бежит"))
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = { "узел": uzelSHodom(uzel, "", 0), "веления": [] }
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = { "узел": uzelSHodom(sProcessom(uzel, umertvit(p, kod)), "", 0), "веления": [ZapisatVZhurnal({ "вид": "отказ", "кто": $field(uzel, "кто бежит"), "почему": tekst }), UronitProcess({ "кто": $field(uzel, "кто бежит"), "код": kod, "текст": tekst })] }
   } else {
-    $matchFail($t1)
+    $matchFail($t2)
   }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), $field(uzel, "кто бежит")), NetProcessa({})))) {
+    $t3 = $equal($t1, { "узел": uzelSHodom(uzel, "", 0), "веления": [] })
+  } else {
+    $t3 = true
+  }
+  // постусловие «сорвался без бегущего — только сброс хода»
+  if (!$post($t3, "сорвался без бегущего — только сброс хода", "Пробег сорвался")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «сорвался без бегущего — только сброс хода» функции «Пробег сорвался»", { "line": 723, "column": 3 })
+  }
+  return $t1
 }
 
 /**

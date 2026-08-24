@@ -11,17 +11,17 @@ the one used in every command and in CI; `.fp` is the short one; `.фп` stands 
 «функциональная программа» — a functional program — so that a Russian file name
 need not be transliterated
 (the decision is recorded in `docs/adr/0008-three-file-extensions.md`).
-All three are picked up by the Vim 8/9 `ftdetect` file and by `vim.filetype.add`
-for Neovim.
+All three are picked up by Vim, by Neovim and by VS Code.
 
-Highlighting exists for Vim 8/9 and Neovim; other editors have none.
+Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
 
 ## What works today
 
 | What | State |
 | --- | --- |
-| Highlighting in Vim 8/9 and Neovim | works, one line to install |
-| Highlighting in VS Code, Emacs | none |
+| Highlighting in Vim 8/9 and Neovim | works, one symlink to install |
+| Highlighting in VS Code | works, the extension builds from the language tree |
+| Highlighting in Emacs | none |
 | The server on closed input (one-command check) | answers |
 | The server inside a live editor | stays silent |
 
@@ -83,54 +83,104 @@ reply comes at all — that is the limitation named above.
 
 ## VS Code
 
-There is no extension in the Marketplace. A client for a ready server is two
-files in `~/.vscode/extensions/flang-lsp/`.
+The extension lives in the language tree — `editors/vscode/`. It is not in the
+Marketplace: you build and install it locally.
 
-`package.json`:
-
-```json
-{
-  "name": "flang-lsp",
-  "version": "0.1.0",
-  "engines": { "vscode": "^1.75.0" },
-  "activationEvents": ["onLanguage:flang"],
-  "main": "./extension.js",
-  "contributes": {
-    "languages": [
-      { "id": "flang", "extensions": [".flang", ".fp", ".фп"] }
-    ]
-  },
-  "dependencies": { "vscode-languageclient": "^9.0.0" }
-}
+```bash
+cd editors/vscode
+npm install
+npx vsce package
+code --install-extension flang-0.1.0.vsix
 ```
 
-`extension.js`:
+It highlights all three file extensions and starts the language server. There
+are three settings:
 
-```js
-const { LanguageClient, TransportKind } = require("vscode-languageclient/node")
+| Key | Default | What it does |
+| --- | --- | --- |
+| `flang.server.command` | `flang-lsp` | what to run the server with |
+| `flang.server.args` | `["--stdio"]` | arguments to run it with |
+| `flang.server.enabled` | `true` | turn off if you only want highlighting |
 
-let client
+If the language is not on `PATH`, put the full path to `flang-lsp` into
+`flang.server.command`.
 
-exports.activate = () => {
-  client = new LanguageClient(
-    "flang",
-    "flang",
-    { command: "flang", args: ["lsp", "--stdio"], transport: TransportKind.stdio },
-    { documentSelector: [{ scheme: "file", language: "flang" }] },
-  )
-  client.start()
-}
+More in `editors/vscode/README.md`: how to install straight from the tree with
+no build, how to reprint the highlighting, and what it takes to publish the
+extension to the Marketplace.
 
-exports.deactivate = () => client?.stop()
+The extension is not required. VS Code can start a third-party language server
+without it — a few lines of settings, collected in
+`editors/flang-lsp/README.md`.
+
+## Vim 8/9
+
+Highlighting and buffer settings install through the built-in package
+mechanism. The plugin lives in the `editors/vim` subdirectory of the language
+tree, and that mechanism does not take subdirectories — so you point a symlink
+at it:
+
+```bash
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+mkdir -p ~/.vim/pack/flang/start
+ln -s ~/.local/share/flang/editors/vim ~/.vim/pack/flang/start/flang
 ```
 
-Run `npm i` in that folder and restart VS Code. If `flang` is not on `PATH`,
-put its full path into `command`.
+Two lines are needed in `~/.vimrc`. Without them Vim reads neither the
+highlighting nor the file type settings, and the file opens grey:
+
+```vim
+filetype plugin indent on
+syntax on
+```
+
+vim-plug takes the subdirectory as a key:
+`Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`.
+
+To check that it took: open any `.flang`, `.fp` or `.фп` file and ask the
+editor.
+
+```vim
+:set filetype?
+```
+
+The answer `filetype=flang` means the extension was picked up. The text is then
+coloured by five kinds — keyword, name in guillemets, string, number, comment —
+and coloured the same way on all four writing surfaces. Indentation expands to
+two spaces: indentation is significant in this language, so mixing tabs with
+spaces would change what a program means, not just how it looks. The editor
+walks `«` and `»` as a pair and inserts the closing one.
+
+The server: Vim 8/9 has no protocol client of its own, so install the
+third-party [vim-lsp](https://github.com/prabirshrestha/vim-lsp). You do not
+need to register the server in it by hand — the language plugin does that:
+
+```vim
+Plug 'prabirshrestha/async.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
+```
+
+One client was chosen, for one reason: it is written in pure VimScript, works
+with Vim 8.0.1453, and has no external dependencies at all. `coc.nvim` requires
+Node — and the whole point is that the editor should not need Node;
+`yegappan/lsp` requires Vim 9.0 and so cuts off all of Vim 8.
+
+No vim-lsp is no disaster: highlighting works without a server, and the plugin
+stays quiet rather than pretending hints are coming. If the server itself is
+not found, Vim says so once per session and lists where it looked.
 
 ## Neovim
 
-Highlighting comes from the plugin inside the language tree — it lives in the
-`editors/vim` subdirectory:
+The same plugin and the same subdirectory, only the package directory differs:
+
+```bash
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+mkdir -p ~/.config/nvim/pack/flang/start
+ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
+```
+
+A plugin manager takes the subdirectory as a key:
 
 ```lua
 {
@@ -143,49 +193,26 @@ Highlighting comes from the plugin inside the language tree — it lives in the
 }
 ```
 
-vim-plug and packer take the subdirectory as a key: `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`
-and `use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
+vim-plug and packer: `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }` and
+`use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
 
-The server (Neovim 0.11 and newer):
+The server needs no separate setup, and should not get one: the plugin assigns
+the file type to all three extensions itself and starts the server through the
+built-in `vim.lsp`. A second client on the same buffer would give two identical
+diagnostics on every line.
 
-```lua
-vim.filetype.add({ extension = { flang = "flang", fl = "flang" } })
-
-vim.lsp.config.flang = {
-  cmd = { "flang", "lsp", "--stdio" },
-  filetypes = { "flang" },
-  root_markers = { "package.json", ".git" },
-}
-vim.lsp.enable("flang")
-```
-
-On Neovim 0.10 and older — the same server through `vim.lsp.start`:
+To turn the server off — either of two ways, in `init.lua` before the plugin
+loads:
 
 ```lua
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "flang",
-  callback = function(event)
-    vim.lsp.start({
-      name = "flang",
-      cmd = { "flang", "lsp", "--stdio" },
-      root_dir = vim.fs.dirname(vim.fs.find({ "package.json", ".git" }, { upward = true })[1])
-        or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(event.buf), ":h"),
-    })
-  end,
-})
+vim.g.flang_ne_nastraivat = 1            -- do not start the server at all
+require("flang").setup({ lsp = false })  -- the same, but assign the file type
 ```
+
+Both touch the server only: highlighting and buffer settings stay, because they
+come from the file type rather than from the plugin.
 
 Completion is `<C-x><C-o>`, hover is `K`, go to definition is `gd`.
-
-Vim 8/9 has no protocol client of its own; install
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp), and the language plugin
-registers the server in it for you:
-
-```vim
-Plug 'prabirshrestha/async.vim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
-```
 
 ## Emacs
 
@@ -217,7 +244,8 @@ Diagnostics come by the same road as the server's, only as a command:
 flang check path/to/file.flang
 ```
 
-In Vim and Neovim: `:setlocal makeprg=flang\ check\ %` and then `:make`. In VS
+In Vim and Neovim: `:setlocal makeprg=flang\ check\ %` and then `:make` — the
+remarks land in the quickfix list, and `:cnext` and `:cprevious` walk it. In VS
 Code — a task in `.vscode/tasks.json` with `"command": "flang check ${file}"`.
 Messages carry the trouble code and the place — the same text the editor would
 have shown.

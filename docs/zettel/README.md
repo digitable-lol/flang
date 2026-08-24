@@ -556,6 +556,7 @@
 - [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
 - [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
 - [Целость терма не проходит через сумму и произведение, и столбик хеша заперт не списком целых](integrality-does-not-pass-through-a-sum-or-a-product.md)
+- [Линейный поиск функции по имени съедает 88 % витков проверки, и упирается в предел именно он](linejnyj-poisk-opisaniya-syedaet-88-procentov-vitkov-proverki.md)
 - [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
 - [Слияние двух редакций одного файла роняет общий кусок, и разбор этого не видит](merging-two-editions-drops-the-shared-part.md)
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
@@ -564,10 +565,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Линейный поиск функции по имени съедает 88 % витков проверки, и упирается в предел именно он](linejnyj-poisk-opisaniya-syedaet-88-procentov-vitkov-proverki.md)
 
 ## Как добавлять
 

@@ -540,7 +540,10 @@
 
 ## Ещё не разобранное
 
+- [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
+- [Отбор по выписанному списку считается только у замкнутой цели](a-filter-over-a-written-out-list-is-computed-only-in-a-closed-goal.md)
 - [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
+- [Значение `пусть`, в котором стоит свёртка, останавливает цель, от него не зависящую](a-let-holding-a-fold-stops-a-goal-that-does-not-depend-on-it.md)
 - [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
 - [Охрана-равенство варианту, поле которого заполнено проекцией того же довода, может увести нормализацию в бесконечность](a-variant-guard-filled-by-a-projection-of-its-own-argument-can-diverge.md)
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
@@ -558,12 +561,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
-- [Отбор по выписанному списку считается только у замкнутой цели](a-filter-over-a-written-out-list-is-computed-only-in-a-closed-goal.md)
-- [Значение `пусть`, в котором стоит свёртка, останавливает цель, от него не зависящую](a-let-holding-a-fold-stops-a-goal-that-does-not-depend-on-it.md)
 
 ## Как добавлять
 

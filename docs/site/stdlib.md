@@ -2,22 +2,29 @@
 
 The library sits next to the compiler and is written in flang itself. Every function in it goes through the same path your program does: parsing, types, termination, examples. Below is a section per module and a table of all its functions.
 
-A module is imported by name — no path needed:
+`использует` is the import. A module is attached by name — no path needed:
 
 ```flang
 модуль «Моя программа»
   использует «Списки»
 ```
 
-The WHOLE module is imported, and the printed code carries all of it. Need a single function — name it:
+The WHOLE module comes in, and the printed code carries all of it. Need a single function — name it:
 
 ```flang
   использует «Списки» только «Сумма»
 ```
 
-`только` does not pull in what the named function calls. Ask for `«Двоичный поиск»` without `«Поиск в диапазоне»` and the compiler answers `FLANG_UNKNOWN_NAME`; add the missing name after a comma.
+`только` does not pull in what the named function calls. Ask for `«Двоичный поиск»` without `«Поиск в диапазоне»` and the compiler answers:
 
-In the tables below, “takes” and “returns” are the signature from the source, word for word. “What it does” is the promise written inside the function; it is in Russian, like the code.
+```
+FLANG_UNKNOWN_NAME, строка 569, столбец 3: неизвестная функция «Поиск в диапазоне»
+FLANG_NOT_TOTAL, строка 569, столбец 3: тотальная функция «Двоичный поиск» вызывает неизвестную функцию «Поиск в диапазоне»: завершение доказать нельзя
+```
+
+Add the missing name after a comma — or take the module whole.
+
+In the tables below, “takes” and “returns” are the signature from the source, word for word. “What it does” is the function’s postcondition — the `обеспечивает` line of its declaration — also word for word, and in Russian like the code. Hence the author’s turns of phrase inside it: «довод» means argument, «октеты» means bytes.
 
 ## Where to start
 
@@ -707,6 +714,84 @@ Types: `«Варинт»`, `«Сбор варинтов»`, `«Сбор указ
 | `«Строки таблицы»` | `октеты: список числа, имя: строка` | `список «Ряд»` | у ненайденной таблицы строк нет |
 | `«Значение строкой»` | `значение: «Значение»` | `строка` | целое печатается числом |
 | `«Строка текстом»` | `ряд: «Ряд»` | `строка` | печать непуста, пока в строке есть хоть одно значение |
+
+The module reads **октеты** — the list of bytes of the file. It cannot open a file
+and is not meant to: the bytes are brought in by a plan. A plan is a program that
+hands one piece of work with the world at a time to the host (`flang io`) and gets
+a reply back; here there is one order — «Прочитать октеты из файла».
+
+Make a sample file with a third-party `sqlite3`, so there is something to check
+against. The page size is set explicitly so that the numbers below match yours:
+
+```bash
+python3 -c "import sqlite3; c=sqlite3.connect('база.db'); \
+  c.execute('pragma page_size=1024'); c.execute('vacuum'); \
+  c.execute('create table люди(имя text, лет integer)'); \
+  c.executemany('insert into люди values (?,?)', [('Аня',31),('Боря',44),('Вера',7)]); \
+  c.commit()"
+```
+
+```flang
+модуль «Заголовок базы»
+  использует «База SQLite»
+
+тип «Ход»
+  вариант «Начало»
+  вариант «Ждём октеты»
+
+тотальная функция «Начало хода»
+  возвращает «Ход»
+  вариант «Начало»
+
+тотальная функция «Отчёт»
+  принимает октеты: список числа
+  возвращает строка
+  соединить [
+      "это база SQLite: ", (если («Это база SQLite» от октеты) то "да" иначе "нет"),
+      "\nразмер страницы: ", (к строке («Размер страницы» от октеты)),
+      "\nстраниц: ", (к строке («Страниц в базе» от октеты)),
+      "\nтаблицы: ", (соединить («Имена таблиц» от октеты) по ", ")
+    ] по ""
+
+тотальная функция «Дальше»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор ход
+    случай вариант «Начало»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать октеты из файла» с путь равным "база.db") и потом равным (вариант «Ждём октеты»)
+    случай вариант «Ждём октеты»
+      то разбор отклик
+        случай вариант «Октеты» с октеты как октеты
+          то вариант «Конец работы» с значение равным («Отчёт» от октеты)
+        случай любое
+          то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали октетов"
+
+план «Заголовок»
+  состояние «Ход»
+  начинает с «Начало хода»
+  обрабатывает «Дальше»
+```
+
+```bash
+flang io заголовок.flang
+```
+
+```json
+{"plan":"Заголовок","result":"это база SQLite: да\nразмер страницы: 1024\nстраниц: 2\nтаблицы: люди","orders":1}
+```
+
+**What this module will not give you today.** The header, the schema and the table
+names read fine; on row values the evaluation runs into the step limit. The plan
+[`examples/db/sqlite-read.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-read.flang),
+which also prints the rows of a table, answers this on a 2 KiB database:
+
+```
+FLANG_RECURSION_LIMIT: функция «Кодовые точки из байтов» исчерпала лимит шагов (10000000) на глубине вызовов 19
+```
+
+UTF-8 decoding walks one byte at a time by recursion, and starts over on every
+cell. While that is so, read the header and the schema through this module, not
+the contents.
 
 ## The rest of the modules
 

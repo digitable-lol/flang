@@ -77,10 +77,19 @@ iso-object-to-category.flang` ссылается на несуществующи
 Каталог без единого `.flang` останавливает подъём — значит проект, у которого
 между слоями лежит пустой каталог, потеряет верхнюю часть дороги. Одноимённые
 модули в разных местах дают разный ответ разным файлам (обычное затенение, как у
-`#include "…"` в C); в одной программе это ловится `FLANG_DUPLICATE_NAME` на
-первом же объявлении.
+`#include "…"` в C).
 
-Связано: [[names-not-hashes]], [[content-addressing]],
+**Поправка 24 августа 2026.** Здесь стояло, что затенение «ловится
+`FLANG_DUPLICATE_NAME` на первом же объявлении». Не ловится: `FLANG_DUPLICATE_NAME`
+про два объявления в ОДНОЙ программе, а при затенении второго в программе нет —
+поиск оборван на первом месте, и своего файла компилятор не открывает вовсе.
+Цена этой строки — час чужой работы и записка, разошедшаяся с правдой:
+[[a-stray-draft-above-the-tree-shadows-the-library-silently]]. Теперь
+затенение говорится вслух — строкой в stderr, с именем взятого файла и именами
+перекрытых.
+
+Связано: [[a-stray-draft-above-the-tree-shadows-the-library-silently]],
+[[names-not-hashes]], [[content-addressing]],
 [[adres-modulya-eto-sha256-ishodnika]],
 [[stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy]],
 [[dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu]]

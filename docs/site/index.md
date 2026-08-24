@@ -69,11 +69,26 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 
 ## How this differs from Coq and Lean
 
-In Coq, Agda and Lean a human writes the proof, and writes it slowly; a program
-is more often *extracted* out of them into another language than used to run a
-service. Here it is the other way round: termination and most claims about the
-result are proved by the compiler itself, and you write ordinary code — parsing
-a protocol, talking to a database, processes under supervision. You pay for that
-in strength: the kernel does not take every claim, and where Lean will prove
-anything with your help, flang either proves it alone or refuses —
+**Not in who writes the proof.** You can write one by hand here too: the word
+`теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
+`индукция по …` and `следовательно доказано` — a structured proof in the spirit
+of Isabelle's Isar, not a script of tactics. There are **160** such theorems in
+the language tree, **53** of them in the standard library
+(`grep -rc '^\s*теорема ' flang --include=*.flang`).
+
+The difference is **what is left for the hand to write**. The kernel closes a
+claim on its own, by eleven rules, and a written theorem is needed only for the
+remainder. The verdict line reports that as a separate number. Measured on
+`flang/stdlib/sha1.flang` together with its imports (`flang check --proof`):
+`утверждений 177: доказано 114 … из них без теоремы 54` — nearly half of what is
+proved is closed without a single written line. Coq and Lean have no such number:
+there every claim gets either a term or a tactic written for it. Which promises
+the kernel takes on its own is worked through form by form on
+[which promises the kernel takes](kak-dokazat.html).
+
+The second difference is real and not in our favour: a program is more often
+*extracted* out of Coq and Lean into another language than used to run a
+service — but thirty years there have accumulated tens of thousands of ready
+lemmas, while the library of proved statements here is only being built up. The
+kernel does not take every claim, and what it does not take is named explicitly:
 [why proofs, and how they work](proofs.html).

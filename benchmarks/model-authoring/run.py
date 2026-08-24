@@ -37,9 +37,9 @@ PORTS = {"M3": 8127, "M4": 8128}
 # Комментарии из них срезаны (в файлах они длиннее самих программ, а контекст
 # 12288 токенов), сам код — байт в байт из рабочего дерева.
 CORPUS = [
-    "flang/examples/leetcode/509-fibonacci-number.flang",
+    "examples/leetcode/509-fibonacci-number.flang",
     "flang/stdlib/lists.flang",
-    "flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang",
+    "examples/leetcode/104-maximum-depth-of-binary-tree.flang",
     "examples/utilities/discount.fts",
     "flang/conc/examples/budget.flang",
 ]

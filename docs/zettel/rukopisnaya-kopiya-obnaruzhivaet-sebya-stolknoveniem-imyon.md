@@ -6,13 +6,13 @@
 ПЕРЕСТАЁТ СОБИРАТЬСЯ: имя объявлено дважды, и загрузка отказывает.
 
 **Чем подтверждено.** Ветка `vypusk/biblioteka`. В `stdlib/http.flang` добавлены
-«Глубина пути» и «Адрес годен» — те самые, что `flang/examples/web/shortener/service.flang`
+«Глубина пути» и «Адрес годен» — те самые, что `examples/web/shortener/service.flang`
 писал руками. Служба импортирует `http.flang`, поэтому проверка ведомости
 (`flang/test/proof.test.mjs`) сразу дала отказ:
 
 ```
 загрузка: функция «Глубина пути» объявлена в двух модулях:
-  flang/stdlib/http.flang и flang/examples/web/shortener/service.flang
+  flang/stdlib/http.flang и examples/web/shortener/service.flang
 ```
 
 Сняты четыре функции («Раздел пути», «Хвост пути», «Глубина пути», «Адрес

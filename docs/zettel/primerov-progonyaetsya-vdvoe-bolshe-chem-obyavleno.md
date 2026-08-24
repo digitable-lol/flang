@@ -20,7 +20,7 @@
 
 **2. Поверхности языка, кроме русской.** `example`, `ekzemplo`, `示例` — то же
 слово языка, и поиск по `пример` их не видит. 16 файлов дерева
-(`flang/examples/rosetta/*-english.flang`, `flang/examples/surfaces/*.eo.flang`
+(`examples/rosetta/*-english.flang`, `examples/surfaces/*.eo.flang`
 и `*.zh.flang`) объявляют по этому счёту ноль примеров, а прогоняют 233.
 
 **3. Прогоны модели процессов.** `прогон «имя»` в файлах `flang/conc/**` —

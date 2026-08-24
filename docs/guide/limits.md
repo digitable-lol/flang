@@ -64,10 +64,10 @@ attaching a solver to the verification conditions is an open task, not a feature
   positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there
   is nothing to infer it from, so the author NAMES the measure — a `убывает <expression>` line.
   That is how binary search (`убывает верх минус низ плюс 1`) and Euclid (`убывает б`) are
-  written; they no longer need a "fuel" list — see `flang/examples/measure/`. **Counting UP is not
+  written; they no longer need a "fuel" list — see `examples/measure/`. **Counting UP is not
   written with a measure**: it has no upper bound and nothing to prove with. It is turned into
   counting down over a `нат` parameter, and then the type itself proves it
-  (`flang/examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
+  (`examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
   forever, so the guard on a declared measure checks three things at once — strict decrease,
   non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
@@ -82,7 +82,7 @@ attaching a solver to the verification conditions is an open task, not a feature
   (`docs/site/numbers.json`) names 11 such functions and 113 guard sites: the corpus has grown
   since. The move to `нат` added ZERO sites — overflow is caught by widening the type
   (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
-  example: `flang/examples/measure/natural.flang`.
+  example: `examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

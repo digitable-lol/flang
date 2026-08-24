@@ -130,7 +130,7 @@ flang run chisla.flang --function Справа --args '{"х": 0.6}'
 
 ## Что с этим делать: точные десятичные, и они бесплатны
 
-`flang/examples/money/exact-decimal.flang` — деньги на типе `сотых`, целом числе
+`examples/money/exact-decimal.flang` — деньги на типе `сотых`, целом числе
 сотых долей. Рубль пятьдесят — это `150`.
 
 ```

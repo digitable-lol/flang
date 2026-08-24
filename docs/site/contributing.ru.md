@@ -27,7 +27,7 @@ flang 0.6.2
 Собранный двоичный — это то, что вы дальше запускаете:
 
 ```bash
-bootstrap/flang check flang/examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
 Пакет объявляет ноль зависимостей: `npm install` нечего скачивать. На Node

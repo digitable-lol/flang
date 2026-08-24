@@ -68,7 +68,7 @@ make -C bootstrap -j8    # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2, ни
 
 У корня 12 каталогов, и раскладка простая: почти всё, что относится к языку, лежит внутри
 `flang/`, а снаружи — только то, что языком не является: точка раскрутки, упаковка, замеры,
-документация и один полноразмерный пример проекта.
+документация и сами примеры.
 
 <!-- КАРТА-НАЧАЛО. Каталоги ниже сверяла с деревом проба flang/test/readme-layout.test.mjs.
      Сегодня она не запускается: как и почти весь набор проб, она ввозит модули удалённой
@@ -81,14 +81,13 @@ flang/self/       сам компилятор: лексер, разбор, ти�
 flang/core/       лексер, разборщик, вычислитель и печать JSON, написанные на flang
 flang/src/        рантаймы целей, уезжающие в напечатанный код дословно — C, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     стандартная библиотека языка; её указатель печатается из самих модулей
-flang/examples/   165 программ на flang: leetcode, rosetta, cat, crypto, io, web, db, wal и ещё шесть наборов
 flang/proof/      что ядру доказательства позволено заключать, а что нет, и почему
 flang/проверки/   проверки, написанные на flang; обходит их сам двоичный
 flang/test/       прежний набор проб: написан против удалённой реализации и сегодня не запускается
 flang/bin/        flang-lsp: переходник, отдающий вызов двоичному, а не место для смысла
 flang/cat/        контракт категорной поверхности
 flang/conc/       контракт конкурентности и её примеры
-examples/         указатель на каталог выше и library-api — предметная половина REST-сервиса
+examples/         172 программы на flang: leetcode, rosetta, cat, crypto, io, web, db, wal, library-api и ещё шесть наборов
 editors/          языковой сервер .flang, подсветка для vim и заготовка заявки в github-linguist
 packaging/        Homebrew, asdf, запускатель для npm и страница flang.1
 scripts/          перепечатка точки раскрутки, указателя библиотеки, журнала изменений и релизного C
@@ -224,7 +223,7 @@ flang --version
 
 ## Одна функция, восемь целей
 
-Это `flang/examples/leetcode/035-search-insert-position.flang` — LeetCode 35: номер, под которым
+Это `examples/leetcode/035-search-insert-position.flang` — LeetCode 35: номер, под которым
 значение стоит в отсортированном списке, а если его там нет — номер, куда его следовало бы
 вставить. Одна свёртка, завершение доказано:
 
@@ -242,7 +241,7 @@ flang --version
 Всё, что ниже, получено запуском
 
 ```bash
-flang emit flang/examples/leetcode/035-search-insert-position.flang --target c --out ./out-c
+flang emit examples/leetcode/035-search-insert-position.flang --target c --out ./out-c
 #              …и то же самое с go, rust, python, java, csharp, elixir, js
 ```
 
@@ -379,7 +378,7 @@ export function mestoVstavki(elementy, cel) {
 ## Настоящая задача, а не «hello world»
 
 LeetCode 121 — наибольшая прибыль от одной покупки и одной продажи, один проход, состояние в
-записи из двух полей. Это `flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang`
+записи из двух полей. Это `examples/leetcode/121-best-time-to-buy-and-sell-stock.flang`
 целиком, без заголовочного комментария:
 
 ```flang
@@ -418,17 +417,17 @@ LeetCode 121 — наибольшая прибыль от одной покуп�
 запускаются оттуда же:
 
 ```bash
-flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
-flang test flang/examples/leetcode/     # все 82 файла и 804 примера одним прогоном
+flang test examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
+flang test examples/leetcode/     # все 82 файла и 804 примера одним прогоном
 ```
 
-Наборов примеров два. В [`flang/examples/leetcode/`](flang/examples/leetcode) лежат 82 решения,
+Наборов примеров два. В [`examples/leetcode/`](examples/leetcode) лежат 82 решения,
 в них 300 функций, из которых 298 доказаны тотальными; два исключения оставлены нарочно и
 объяснены в файле (`202-happy-number.flang`: цикл «пока число не повторилось» завершается, а
 доказать это языком нечем). У каждого решения комментарий объясняет не только алгоритм, но и то,
 где язык упёрся: почему проверка «символ уже в окне» линейна — множества в языке нет; почему
 таблица динамики стоит квадрата — приписывание в конец копирует список; почему Single Number
-выходит на O(n²) — побитовых операций нет. В [`flang/examples/rosetta/`](flang/examples/rosetta)
+выходит на O(n²) — побитовых операций нет. В [`examples/rosetta/`](examples/rosetta)
 лежат 14 канонических задач Rosetta Code, каждая записана дважды — 28 файлов: на русской
 поверхности и на английской. Стандартная библиотека ([`flang/stdlib/`](flang/stdlib): `base64`,
 `datetime`, `dictionary`, `hashmap`, `higher-order`, `http`, `json`, `lists`, `logic`, `numbers`,
@@ -485,7 +484,7 @@ flang test flang/examples/leetcode/     # все 82 файла и 804 приме
 
 ## Модули, стандартная библиотека и целый проект
 
-[`flang/examples/import-check.flang`](flang/examples/import-check.flang):
+[`examples/import-check.flang`](examples/import-check.flang):
 
 ```flang
 модуль «Проба импорта»
@@ -545,7 +544,7 @@ CI гоняет их на каждый пуш.
 - **Полноразмерный пример** — [`examples/library-api`](examples/library-api/README.md): предметная
   половина REST-сервиса библиотеки, семь модулей на flang. Он отвечает на один вопрос — что где
   лежит и почему именно там.
-- **Остальные примеры** — 165 программ в [`flang/examples/`](flang/examples); что где лежит,
+- **Остальные примеры** — ещё 165 программ в [`examples/`](examples); что где лежит,
   перечислено в [`examples/README.md`](examples/README.md).
 - **Редакторы** — языковой сервер `.flang` (`flang lsp`, обёрнутый для npm как
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) и подсветка для vim в

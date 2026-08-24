@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
 #
-# Рост памяти арены на «Сортировке вставками» из flang/examples/rosetta/quicksort.flang.
+# Рост памяти арены на «Сортировке вставками» из examples/rosetta/quicksort.flang.
 #
 # Задача выбрана нарочно самая невыгодная: она тотальна и написана прямо, без
 # единой хитрости, — то есть это НЕ надуманный случай, а обычная программа на

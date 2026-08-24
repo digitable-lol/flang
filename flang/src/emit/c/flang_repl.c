@@ -374,7 +374,7 @@ static const char HELP_TEST[] =
     "это КОРПУС, а не файл:\n"
     "\n"
     "  flang test flang/stdlib/                весь каталог, вглубь\n"
-    "  flang test \'flang/examples/**/*.flang\'  по маске (кавычки — от оболочки)\n"
+    "  flang test \'examples/**/*.flang\'  по маске (кавычки — от оболочки)\n"
     "\n"
     "У корпуса печатается каждый не прошедший пример и каждый не взятый файл, а\n"
     "прошедшие — числом. Код возврата 0 — взяты все файлы и сошлись все примеры;\n"
@@ -2082,7 +2082,7 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
  * ВГЛУБЬ ПОИСК НЕ ИДЁТ, и это решено замером, а не вкусом. На 210 ввозах этого
  * репозитория обход ВСЕГО дерева от корня переставляет три ввоза на ЧУЖОЙ
  * модуль (`docs/zamer-teorkat/iso-object-to-category.flang` вместо
- * несуществующего `flang/examples/cat/moduli/zakazy.flang` находит
+ * несуществующего `examples/cat/moduli/zakazy.flang` находит
  * `…/cat/modules/orders.flang`) и заводит один спор имён на сгенерированных
  * прогонах `benchmarks/`. Правило выше на тех же 210 ввозах даёт 200 попаданий
  * ровно в тот файл, который назван путём сегодня, и НОЛЬ споров.

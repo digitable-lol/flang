@@ -13,7 +13,7 @@
 | законы при стрелке `морфизм … даёт` (4 файла) | 256 примеров | 267 примеров | −11 |
 | `flang/self/bootstrap/compiler.flang` | отказ `FLANG_RECURSION_LIMIT` (40 000 000 витков, 220 с) | взят, 405 примеров | −405 |
 | `flang/self/repl/repl.flang` | отказ `FLANG_RECURSION_LIMIT` (172 с) | взят, 324 примера | −324 |
-| `flang/examples/monad/order-total.flang` | отказ `FLANG_TYPE_PARAM` | взят, 27 примеров | −27 |
+| `examples/monad/order-total.flang` | отказ `FLANG_TYPE_PARAM` | взят, 27 примеров | −27 |
 | `flang/conc/sluzhby/chtenie.flang` | отказ `FLANG_UNKNOWN_NAME` | взят, 9 примеров | −9 |
 
 Вторая строка — ДОЛГ, записанный заранее: шапка «Прогон примеров исходников»
@@ -41,7 +41,7 @@ flang/conc/examples/race.flang: примеров 0, прошло 0, не про�
 | что | двоичный | свидетель на Node |
 |---|---|---|
 | `flang/test/fixtures/plany/*.flang` (12 файлов) | ВЗЯТЫ, 0 примеров, код 0 | отказ `FLANG_PLAN` |
-| `flang/examples/web/shortener/handler-without-budget.flang` | ВЗЯТ, код 0 | отказ `FLANG_HANDLER_NOT_TOTAL` |
+| `examples/web/shortener/handler-without-budget.flang` | ВЗЯТ, код 0 | отказ `FLANG_HANDLER_NOT_TOTAL` |
 
 Это тринадцать фикстур, заведённых как ЗАВЕДОМО НЕГОДНЫЕ программы: у каждой
 своя поломка плана или необработанный отказ. Свидетель их отвергает — на то они

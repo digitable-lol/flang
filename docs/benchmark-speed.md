@@ -332,7 +332,7 @@ Python **18,7**, Node **40,5** мс.
 
 ### Арена: пик «Сортировки вставками» перестал расти
 
-Взята **«Сортировка вставками»** из `flang/examples/rosetta/quicksort.flang` —
+Взята **«Сортировка вставками»** из `examples/rosetta/quicksort.flang` —
 тотальная, доказанная структурно, написанная прямо, без единой хитрости, то есть
 не надуманный случай, а обычная программа на этом языке. Она же была самым
 тяжёлым числом этого замера: на 4 000 элементах она набирала **178 ГиБ** и не
@@ -560,7 +560,7 @@ bootstrap/flang io benchmarks/zamer-skorosti/pamyat.flang
 
 # 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
 mkdir -p /tmp/zamer/qs
-bootstrap/flang emit flang/examples/rosetta/quicksort.flang \
+bootstrap/flang emit examples/rosetta/quicksort.flang \
   --target c --out /tmp/zamer/qs --max-steps 2000000000
 make -C /tmp/zamer/qs -j4
 benchmarks/zamer-skorosti/arena.sh /tmp/zamer/qs

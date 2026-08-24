@@ -79,11 +79,11 @@
 // Та же программа, на которой построены примеры в обоих README.
 тотальная функция «Программа улика»
   возвращает строка
-  обеспечивает «программа улика: в постоянной стоит слово» результат содержит "../flang/examples/leetcode/035-search-insert-position.flang"
+  обеспечивает «программа улика: в постоянной стоит слово» результат содержит "../examples/leetcode/035-search-insert-position.flang"
   обеспечивает «программа улика: длина постоянной» (длина результат) равен 59
   пример «Программа, которой меряется печать»
-    ожидается "../flang/examples/leetcode/035-search-insert-position.flang"
-  "../flang/examples/leetcode/035-search-insert-position.flang"
+    ожидается "../examples/leetcode/035-search-insert-position.flang"
+  "../examples/leetcode/035-search-insert-position.flang"
 
 // ── разбор путей ────────────────────────────────────────────────────────────
 
@@ -483,7 +483,7 @@
   возвращает список строки
   пример «Печать одной цели в свой каталог»
     дано цель равно "go"
-    ожидается ["emit", "../flang/examples/leetcode/035-search-insert-position.flang", "--target", "go", "--out", "../output/storozh-pechati/go"]
+    ожидается ["emit", "../examples/leetcode/035-search-insert-position.flang", "--target", "go", "--out", "../output/storozh-pechati/go"]
   ["emit", («Программа улика»), "--target", цель, "--out", (соединить [(«Куда печатать»), "/", цель] по "")]
 
 тотальная функция «Печатать дальше»

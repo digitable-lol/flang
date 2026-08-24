@@ -16,7 +16,7 @@ grep -c FUNCTOR bootstrap/compiler_flang.c
 0
 ```
 
-**Замер на трёх порчах примера `flang/examples/cat/modules/`**, тех самых, про
+**Замер на трёх порчах примера `examples/cat/modules/`**, тех самых, про
 которые в шапке файла написано «каждая ломает сборку»:
 
 | порча | свидетель на Node | двоичный |
@@ -77,7 +77,7 @@ grep -c FUNCTOR bootstrap/compiler_flang.c
 пробел вслух:
 
 ```
-$ bootstrap/flang check flang/examples/cat/modules/payments.flang; echo $?
+$ bootstrap/flang check examples/cat/modules/payments.flang; echo $?
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
 categories, morphisms. … Ответ «замечаний нет» здесь читался бы как
 «проверено», а это неправда.

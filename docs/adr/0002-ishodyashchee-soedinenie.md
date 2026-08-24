@@ -4,7 +4,7 @@
 **Дата:** 19 августа 2026
 **Основание:** словарь эффектов [`flang/self/io.flang`](../../flang/self/io.flang), хозяева
 `flang/src/host/*.mjs`, хозяин двоичного `flang/src/emit/c/flang_repl.c`,
-служба-сокращатель `flang/examples/web/shortener/`.
+служба-сокращатель `examples/web/shortener/`.
 
 ---
 
@@ -33,7 +33,7 @@
 библиотек.
 
 Улика, которая это показывает без спора: в дереве уже лежит служба с журналом
-упреждающей записи (`flang/examples/web/shortener/plan-durable.flang`) — она
+упреждающей записи (`examples/web/shortener/plan-durable.flang`) — она
 держит состояние в **файле**, и файл выбран не ради скорости, а потому что
 выбирать было не из чего.
 

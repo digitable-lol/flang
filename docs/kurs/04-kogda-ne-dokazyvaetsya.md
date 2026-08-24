@@ -14,12 +14,12 @@ draft: false
 
 ## Как выглядит отказ
 
-Возьмём быструю сортировку из дерева — `flang/examples/rosetta/quicksort.flang`.
+Возьмём быструю сортировку из дерева — `examples/rosetta/quicksort.flang`.
 Её функция объявлена **обычной**, без пометки. Попробуем пометить её тотальной:
 
 ```bash
 sed 's/^функция «Быстрая сортировка»/тотальная функция «Быстрая сортировка»/' \
-    flang/examples/rosetta/quicksort.flang > /tmp/quicksort-total.flang
+    examples/rosetta/quicksort.flang > /tmp/quicksort-total.flang
 flang check /tmp/quicksort-total.flang
 ```
 
@@ -84,7 +84,7 @@ FLANG_NOT_TOTAL в файле /tmp/quicksort-total.flang, строка 111, ст
 Появилось ради алгоритма Евклида, где убывание есть, но его не видно в форме
 вызова: `а остаток от б` — не часть `б`, и шаг на каждом витке свой.
 
-`flang/examples/measure/euclid.flang`:
+`examples/measure/euclid.flang`:
 
 ```flang
 тотальная функция «НОД»
@@ -122,7 +122,7 @@ FLANG_NOT_TOTAL … рекурсивный вызов «НОД» не убыва
 и на входе, где она не убывает, функция **откажет**:
 
 ```bash
-flang run flang/examples/measure/euclid.flang --function НОД \
+flang run examples/measure/euclid.flang --function НОД \
   --args '{"а": 1.6180339887, "б": 1}'
 ```
 
@@ -140,7 +140,7 @@ FLANG_MEASURE: тотальная функция «НОД»: мера на вы�
 настоящими аргументами едет список, у которого на каждом шаге берётся хвост.
 Топливо убывает структурно, значит цикл доказуемо конечен.
 
-`flang/examples/leetcode/704-binary-search.flang` написан так: двоичный поиск
+`examples/leetcode/704-binary-search.flang` написан так: двоичный поиск
 сужает пару чисел, убывание по числам не признаётся, и топливом служит сам
 список — шагов заведомо хватает, их нужно log₂n, а есть n.
 
@@ -149,7 +149,7 @@ FLANG_MEASURE: тотальная функция «НОД»: мера на вы�
 **Оговорка, которую стоит проверить самому.** В шапке `704-binary-search.flang`
 написано «в языке не хватает убывания по мере». Это было верно, когда файл
 писали, и **больше не верно**: убывание по мере в языке есть, и тот же двоичный
-поиск написан через него в `flang/examples/measure/binary-search.flang` строкой
+поиск написан через него в `examples/measure/binary-search.flang` строкой
 `убывает верх минус низ плюс 1`. Два файла в одном дереве решают одну задачу
 двумя приёмами — сравните их, это лучшее упражнение по этой главе.
 
@@ -167,9 +167,9 @@ FLANG_MEASURE: тотальная функция «НОД»: мера на вы�
 
 ## Задача
 
-В `flang/examples/rosetta/` лежат файлы, где тотальность не доказывается, и
+В `examples/rosetta/` лежат файлы, где тотальность не доказывается, и
 причина названа в шапке каждого. Возьмите
-`flang/examples/rosetta/primes-by-trial-division.flang` — там пять функций и
+`examples/rosetta/primes-by-trial-division.flang` — там пять функций и
 доказана одна.
 
 1. Найдите, какая доказана и почему (подсказка: в её имени есть слово
@@ -180,7 +180,7 @@ FLANG_MEASURE: тотальная функция «НОД»: мера на вы�
 **Проверка:**
 
 ```bash
-flang check flang/examples/rosetta/primes-by-trial-division.flang --proof | grep "функций"
+flang check examples/rosetta/primes-by-trial-division.flang --proof | grep "функций"
 ```
 
 **Дальше:** [Обещание о результате](05-obeshchanie.md).

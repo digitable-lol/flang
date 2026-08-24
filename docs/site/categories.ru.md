@@ -49,7 +49,7 @@
 проверять нечего: пока не сказано, когда два значения равны, слова
 «ассоциативность композиции» не значат ничего.
 
-Вот работающий кусок из `flang/examples/cat/order-shipment.flang` — заказ,
+Вот работающий кусок из `examples/cat/order-shipment.flang` — заказ,
 отгрузка, накладная:
 
 ```flang
@@ -116,7 +116,7 @@ flowchart TD
 Отчёт обязан назвать размер сетки, и называет:
 
 ```
-$ flang check flang/examples/cat/order-shipment.flang
+$ flang check examples/cat/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
@@ -187,7 +187,7 @@ $ echo $?
 называет их поимённо и отвечает кодом 2:
 
 ```
-$ flang check flang/examples/cat/monoid-and-monad.flang
+$ flang check examples/cat/monoid-and-monad.flang
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
 monoids, monads.
 $ echo $?
@@ -197,8 +197,8 @@ $ echo $?
 Примеры при этом прогоняются, как у любой программы:
 
 ```
-$ flang test flang/examples/cat/monoid-and-monad.flang
-flang/examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
+$ flang test examples/cat/monoid-and-monad.flang
+examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
 $ echo $?
 0
 ```
@@ -223,7 +223,7 @@ $ echo $?
 
 Цепочка вычислений, каждое из которых может не удаться, пишется без ручного
 связывания. Компилятор эту форму разбирает и разворачивает; в дереве она стоит в
-`flang/examples/monad/order-total.flang`. Замечания на этом файле сегодня есть,
+`examples/monad/order-total.flang`. Замечания на этом файле сегодня есть,
 и они не про монаду: `FLANG_TYPE_PARAM` внутри развёрнутого кода — параметр типа
 `«Беда»` не определяется ни по аргументам, ни по ожидаемому типу.
 

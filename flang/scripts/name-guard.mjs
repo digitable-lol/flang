@@ -158,7 +158,7 @@ import { fileURLToPath } from "node:url"
 import { деревоИсходника, отсеятьЧужое, прогреть, своё } from "./dvoichnyy.mjs"
 
 const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
-const КАТАЛОГИ = ["flang/stdlib", "flang/core", "flang/self", "flang/examples"]
+const КАТАЛОГИ = ["flang/stdlib", "flang/core", "flang/self", "examples"]
 const ФАЙЛ_ДОЛГА = join(КОРЕНЬ, "flang/scripts/name-debt.json")
 
 /* Места связывания, где имя выбирает автор и где заводятся сокращения. Имена
@@ -210,14 +210,14 @@ export const ПОТОЛОК_ПРИМЕРА = 96
    математической записью, — а этого прогоном не проверить, поэтому список
    ведётся руками и поимённо. */
 export const ИСКЛЮЧЕНИЯ = new Map([
-  ["flang/examples/rosetta/ackermann-function-english.flang", new Set(["m", "n"])],
-  ["flang/examples/rosetta/factorial-english.flang", new Set(["n"])],
-  ["flang/examples/rosetta/fibonacci-english.flang", new Set(["n"])],
-  ["flang/examples/rosetta/fizzbuzz-english.flang", new Set(["n"])],
-  ["flang/examples/rosetta/hundred-doors-english.flang", new Set(["n"])],
-  ["flang/examples/rosetta/primes-by-trial-division-english.flang", new Set(["n"])],
-  ["flang/examples/surfaces/factorial.eo.flang", new Set(["n"])],
-  ["flang/examples/surfaces/factorial.zh.flang", new Set(["n"])],
+  ["examples/rosetta/ackermann-function-english.flang", new Set(["m", "n"])],
+  ["examples/rosetta/factorial-english.flang", new Set(["n"])],
+  ["examples/rosetta/fibonacci-english.flang", new Set(["n"])],
+  ["examples/rosetta/fizzbuzz-english.flang", new Set(["n"])],
+  ["examples/rosetta/hundred-doors-english.flang", new Set(["n"])],
+  ["examples/rosetta/primes-by-trial-division-english.flang", new Set(["n"])],
+  ["examples/surfaces/factorial.eo.flang", new Set(["n"])],
+  ["examples/surfaces/factorial.zh.flang", new Set(["n"])],
   /* Второй род исключения, и он тоже про смысл, заданный СНАРУЖИ. Имя `пусть`
      в этих двух файлах повторяет ключ канонического JSON, и ключ стоит в
      кавычках соседним словом той же строки:

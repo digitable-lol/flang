@@ -61,7 +61,7 @@
  *        файлах `flang/self/`. У команды `check` НЕТ ключа `--max-steps`
  *        (он есть у `test`, `run` и `emit`), поэтому поднять предел нечем;
  *    2 — настоящие замечания к программам (`flang/conc/sluzhby/chtenie.flang`,
- *        `flang/examples/monad/order-total.flang`).
+ *        `examples/monad/order-total.flang`).
  *
  * ── Сторожей в рантайме ДВА, и до 16 августа свод считал один ───────────────
  * Строка «сторожей в рантайме: 100 мест» была неполной, и разница у неё не в

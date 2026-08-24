@@ -10,7 +10,7 @@
 компилятор собран `make -C bootstrap -j4` из этого же дерева.
 
 ```
-$ bootstrap/flang check flang/examples/io/temp-directory.flang; echo $?
+$ bootstrap/flang check examples/io/temp-directory.flang; echo $?
 модуль «Временный каталог»: функций 10, из них с доказанным завершением 10; типов 4
 FLANG_UNKNOWN_NAME … строка 89: неизвестный конструктор варианта «Завести временный каталог»
 … замечаний 14

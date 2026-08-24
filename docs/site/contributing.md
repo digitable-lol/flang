@@ -28,7 +28,7 @@ flang 0.6.2
 The built binary is what you run from then on:
 
 ```bash
-bootstrap/flang check flang/examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
 The package declares zero dependencies: `npm install` has nothing to fetch. Only

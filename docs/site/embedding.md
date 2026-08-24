@@ -54,7 +54,7 @@ runner over a pipe.
 ## What arrives in the directory
 
 One run per target, the same program every time —
-`flang/examples/rosetta/factorial-english.flang`:
+`examples/rosetta/factorial-english.flang`:
 
 | target | files |
 |---|---|
@@ -80,7 +80,7 @@ functions and the calling is yours. Concurrency per target is also named in the
 ## C: build it and link it into your program
 
 ```bash
-$ flang emit flang/examples/rosetta/factorial-english.flang --target c --out ./out-c
+$ flang emit examples/rosetta/factorial-english.flang --target c --out ./out-c
 напечатано файлов 6, байт 280565, в ./out-c
 $ ls ./out-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
@@ -215,7 +215,7 @@ are transliterated; a field declared as «адрес» is taken in C by exactly 
 name — `fl_field_get(&ctx, v, "адрес", …)`.
 
 **A refusal declared as a value arrives as a value.** In
-`flang/examples/errors/number-parsing.flang` the function «Разобрать число»
+`examples/errors/number-parsing.flang` the function «Разобрать число»
 returns the sum type «Вышло» | «Не вышло» — and at the boundary that is a
 variant, not `FL_ERROR`:
 
@@ -273,7 +273,7 @@ at the top level — the one import it has sits inside `$callDeep` and is taken
 dynamically.
 
 ```bash
-$ flang emit flang/examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
+$ flang emit examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
 напечатано файлов 1, байт 18621, в ./out-js
 $ ls ./out-js
 factorial.js
@@ -349,7 +349,7 @@ before and the guard tells the truth about it.
 
 ### A real host: an HTTP service in flang, called from Node
 
-The tree holds a link shortener (`flang/examples/web/shortener/`) — an HTTP
+The tree holds a link shortener (`examples/web/shortener/`) — an HTTP
 handler written entirely in flang, whose state is passed by value. Emit it to
 `js`, and the Node host wraps the emitted module:
 

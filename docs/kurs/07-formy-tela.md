@@ -154,7 +154,7 @@ draft: false
 ## Задача
 
 Возьмите `«Место вставки»` из
-`flang/examples/leetcode/035-search-insert-position.flang` — функцию, написанную
+`examples/leetcode/035-search-insert-position.flang` — функцию, написанную
 свёрткой:
 
 ```flang

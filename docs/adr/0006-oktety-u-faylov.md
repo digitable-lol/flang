@@ -5,7 +5,7 @@
 **Основание:** словарь эффектов [`flang/self/parser.flang`](../../flang/self/parser.flang),
 хозяин двоичного `flang/src/emit/c/flang_repl.c`, хозяин конкурентности
 `flang/src/emit/c/flang_conc.c`, рантайм `flang/src/emit/c/flang_runtime.c`, программа
-[`flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang`](../../flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang).
+[`examples/io/dvoichnyy-fayl-tuda-i-obratno.flang`](../../examples/io/dvoichnyy-fayl-tuda-i-obratno.flang).
 **Продолжает** [ADR-0004](0004-oktety-v-slovare-effektov.md), который завёл октетную пару
 СОЕДИНЕНИЮ и честно записал в «цену»: «Октетной пары **нет у файлов**… Это та же дыра, тем же
 лекарством, но другой работой». Вот эта работа.

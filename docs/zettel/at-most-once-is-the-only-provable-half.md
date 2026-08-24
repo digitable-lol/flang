@@ -37,8 +37,8 @@
 **Что доказывается даром рядом.** «Если сообщение доставлено, обработчик
 завершится» — следствие тотальности, и оно посчитано: в корпусе 25 обработчиков,
 у **22** завершение доказано компилятором. У оставшихся трёх
-(`flang/conc/examples/budget.flang`, `flang/examples/web/shortener/handler-without-budget.flang`,
-`flang/examples/web/shortener/server.flang`) тотальности нет, и завершение несёт
+(`flang/conc/examples/budget.flang`, `examples/web/shortener/handler-without-budget.flang`,
+`examples/web/shortener/server.flang`) тотальности нет, и завершение несёт
 проверка запаса витков при работе: обработчик кончится, но отказом
 `FLANG_BUDGET_EXHAUSTED`, а не результатом. Это разные обещания, и путать их
 нельзя.

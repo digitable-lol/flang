@@ -34,7 +34,7 @@ JavaScript: `diff -r` вывода двоичного и вывода Node по 
 утверждением на случай, если долг снимут (`flang/test/entry-debt.mjs`).
 
 **Замер сырого расхождения.** По корпусу проверки (107 программ:
-`flang/stdlib/*`, `flang/examples/*`, `flang/examples/leetcode/*`,
+`flang/stdlib/*`, `examples/*`, `examples/leetcode/*`,
 `flang/core/*` и сам `emit-csharp.flang`) блок границы входа есть у свидетеля
 **у 107 из 107**, суммарно **395 606 байт**. То есть без вычитания долга
 `diff -r` расходится на каждой программе корпуса.
@@ -68,7 +68,7 @@ emit` на Node отбрасывает недостижимое (`src/reachable.
 (и так же ведёт себя с целью C). Замер по тому же корпусу: у 104 программ из 107
 разница только блок границы, у 3 — плюс неотброшенное; все три с импортами
 (`flang/core/evaluate.flang`, `flang/core/parser.flang`,
-`flang/examples/import-check.flang`). На `import-check.flang` это 69 035 байт
+`examples/import-check.flang`). На `import-check.flang` это 69 035 байт
 против 6 846.
 
 **Кого это касается.** Слово «Граница входа» встречается только в

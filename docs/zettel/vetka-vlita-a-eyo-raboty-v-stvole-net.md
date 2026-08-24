@@ -29,7 +29,7 @@ comm -23 /tmp/novye /tmp/stvol
 
 | Ветка | В стволе нет | Что это | Кто это зовёт |
 |---|---:|---|---|
-| `u/hmac` | 2 имени | «Начало SASL», «Ответ SASL» плюс три варианта отклика | `flang/examples/db/postgres-scram-plan.flang`, 11 мест |
+| `u/hmac` | 2 имени | «Начало SASL», «Ответ SASL» плюс три варианта отклика | `examples/db/postgres-scram-plan.flang`, 11 мест |
 | `u/kvantor` | 32 имени | правило доказательства о соседних парах и всё, на чём оно стоит | улики-подделки `poddelka-porjadok-sosednih.flang`, `poddelka-sortirovka-ne-ubyvaet.flang` |
 
 Обе недостачи подтверждены вторым, независимым числом:

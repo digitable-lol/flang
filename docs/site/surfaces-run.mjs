@@ -49,10 +49,10 @@ const прочесть = (путь) => readFileSync(КОРЕНЬ + путь, "ut
 
 /** Четыре записи одной программы. Русская — образец сверки. */
 export const ФАЙЛЫ = [
-  { поверхность: "русская", код: "ru", путь: "flang/examples/rosetta/factorial.flang" },
-  { поверхность: "английская", код: "en", путь: "flang/examples/rosetta/factorial-english.flang" },
-  { поверхность: "эсперанто", код: "eo", путь: "flang/examples/surfaces/factorial.eo.flang" },
-  { поверхность: "китайская", код: "zh", путь: "flang/examples/surfaces/factorial.zh.flang" },
+  { поверхность: "русская", код: "ru", путь: "examples/rosetta/factorial.flang" },
+  { поверхность: "английская", код: "en", путь: "examples/rosetta/factorial-english.flang" },
+  { поверхность: "эсперанто", код: "eo", путь: "examples/surfaces/factorial.eo.flang" },
+  { поверхность: "китайская", код: "zh", путь: "examples/surfaces/factorial.zh.flang" },
 ]
 
 /** Позиции снимаются: файлы разной длины, совпасть они не могут и не должны. */

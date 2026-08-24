@@ -17,7 +17,7 @@
 Тридцать одна «про провод» вынесена в `flang/stdlib/provod.flang` и оттуда
 ввозится обратно. Проверено прогонами до и после переезда: `flang test
 flang/stdlib/postgres.flang` — 173 примера, прошло 173 в обоих случаях;
-`flang io flang/examples/db/postgres-plan.flang` против настоящего PostgreSQL
+`flang io examples/db/postgres-plan.flang` против настоящего PostgreSQL
 17.10 — 14 поручений, код 0, тот же ответ до знака.
 
 **Что оказалось общим на самом деле, а что только казалось.** Задание называло

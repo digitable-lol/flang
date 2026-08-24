@@ -11,7 +11,7 @@
 
 | программа | функций | JavaScript | сторона на flang | во сколько раз |
 |---|---:|---:|---:|---:|
-| `flang/examples/import-check.flang` | 29 | 1 мс | 106 мс | 165 |
+| `examples/import-check.flang` | 29 | 1 мс | 106 мс | 165 |
 | `flang/self/emit-c.flang` | 547 | 24 мс | 1 947 мс | 80 |
 | `flang/self/bootstrap/compiler.flang` | 3 616 | 143 мс | 25 905 мс | 181 |
 

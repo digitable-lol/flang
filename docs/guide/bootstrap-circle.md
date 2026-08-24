@@ -65,21 +65,26 @@ The second command re-emits seven files and compares them with the committed
 ones. A divergence is reported by file, byte and line, not by the word
 "mismatch".
 
-The emission limits matter and are not decoration: `--max-steps 200000000
---max-depth 20000`. Those numbers are stamped into the emitted byte
+The emission limits matter and are not decoration: `--max-steps 4000000000
+--max-depth 20000` (they are typed in `scripts/raskrutka.sh`, not on this page —
+check against it). Those numbers are stamped into the emitted byte
 (`#define FL_MAX_STEPS`), which means they take part in the equality. Rebuilt
 from memory with different limits, it diverges silently — that is exactly how one
 of the earlier releases drifted.
 
-Why the limit is that large is stated as a number, not as "just in case".
-Emission runs the same checks as `check`, and on today's tree linking the sources
-consumes 23 726 585 steps, typechecking 3 919 602, the termination analysis
-222 863, and the proof kernel 56 355 645. The previous limit of 40 000 000 would
-have collapsed even without the kernel: linking alone takes more than half.
+Why the limit is that large is stated as a measurement, not as "just in case".
+Emission runs the same checks as `check`, and what runs out of room is not
+emission itself but the library ledger: `flang check flang/stdlib/json.flang
+--proof` (60 promises, 35 functions) did not fit into the previous billion and
+broke off with `FLANG_RECURSION_LIMIT` at call depth 78 out of 20 000 — that is,
+it was not looping, it was not finishing. How much it actually needs was measured
+with a binary built with a raised ceiling: 1 370 430 254 steps, 11 min 31 s,
+823 MiB, exit code 0. Today's four billion is that peak with headroom. The price
+of the headroom is named in the same place: a program that does NOT terminate now
+runs about thirty-four minutes before it is stopped, instead of eight. The whole
+breakdown is in the header of `scripts/raskrutka.sh`.
 
 ## What this circle does NOT mean
-
-This is the main caveat on the page, and it must not be skipped.
 
 Two binaries agreeing says: the compiler reads the language the same way the
 compiler that emitted these sources read it. **It does not say the language is
@@ -88,9 +93,12 @@ seed survives the circle unnoticed: the circle compares an implementation with
 itself.
 
 What catches that kind of mistake in the tree are the frozen answer tables
-(`flang/test/fixtures/`): today's compiler is run against them, and disagreeing
-with a recorded answer is red. That catches a **regression** — "yesterday it
-answered this, today it answers that" — and nothing beyond. There is one
+(`flang/test/fixtures/`, 52 entries): today's binary is run against them, and
+disagreeing with a recorded answer is red. The run stands in CI as the job
+"Подделки ядра отвергнуты" (`bootstrap/flang io
+flang/scripts/kernel-forgeries.flang`, `.github/workflows/binary.yml`). That
+catches a **regression** — "yesterday it answered this, today it answers that" —
+and nothing beyond. There is one
 implementation of the language, and no independent reading of the same rules to
 compare its answers against.
 
@@ -116,15 +124,16 @@ Two checks do it now, and they answer different questions.
 | `sh scripts/raskrutka.sh --bystro` | are the emission's inputs the same ones | 0.52 s |
 
 The expensive one re-emits — that is exactly why nobody called it. The cheap one
-does not emit at all: it compares the contents of the 36 files in the compiler's
-closure, the 4 runtime files that go into the output verbatim, and the emission
-limits that end up in the emitted byte. The fingerprint lives in
+does not emit at all: it compares the contents of the files in the compiler's
+closure (38 of them today), the 4 runtime files that go into the output verbatim,
+and the emission limits that end up in the emitted byte. You can recount them on
+the spot: `scripts/otpechatok-semeni` has one line per file. The fingerprint lives in
 `scripts/otpechatok-semeni` and is taken by the emission itself, not by a
 separate command someone has to remember.
 
 The cheap one runs on every push as job `semya` in
-`.github/workflows/binary.yml`; a mismatch is a refusal, not a warning. The
-the full comparison is called before a release and after merges.
+`.github/workflows/binary.yml`; a mismatch is a refusal, not a warning. The full
+byte-for-byte comparison is called before a release and after merges.
 
 **What the cheap one does not prove:** that the files are identical down to the
 last byte. It answers the narrower question — "are these the same inputs" — and

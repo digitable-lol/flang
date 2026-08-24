@@ -48,7 +48,7 @@ matching, module linking, a category surface and a concurrency surface, and one 
 printed into eight target languages.
 
 **There is one compiler, and it is written in flang.** It lives in
-[`flang/self/`](flang/self) — 57 files, 95,880 lines — and it builds into a single binary that
+[`flang/self/`](flang/self) — 56 files, 105,677 lines — and it builds into a single binary that
 needs nothing but a C compiler:
 
 ```bash
@@ -57,9 +57,22 @@ make -C bootstrap -j8    # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2, no w
 ```
 
 It also prints itself. `sh scripts/raskrutka.sh` runs the binary over the compiler's own
-sources and produces the seven C files the binary was built from; `--check` compares them with
-what is committed and finds no difference: 7 files, 24,074,977 bytes, every one of them
-identical.
+sources and reproduces the seven C files the binary was built from — 7 files, 26,598,071 bytes;
+`--check` compares them with what is committed, and `--bystro` asks the cheap question first,
+whether the inputs still match the ones the seed was printed from.
+
+**Right now that cheap check is red, and this is the tree's largest open item:**
+
+```
+sh scripts/raskrutka.sh --bystro
+→ 41 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
+```
+
+Everything below still builds and runs — the seed is a working compiler. What it is not is
+*today's* compiler: edits made to `flang/self/**` since the last reprint are not in the binary
+you get from `make`. Emitting a process plan into C, for instance, is written in the sources and
+absent from the seed (`grep -c 'flang_conc.c' bootstrap/compiler_flang.c` → `0`). The reprint
+costs hours and hundreds of gigabytes, so it is done deliberately, not on every merge.
 
 The specification is [`flang/SPEC.md`](flang/SPEC.md); what the compiler's five layers owe each
 other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past those.
@@ -68,7 +81,7 @@ other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past 
 
 ## Where things live
 
-There are 12 directories at the root, and the layout is plain: nearly everything about the
+There are 10 directories at the root, and the layout is plain: nearly everything about the
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
 point, packaging, measurements, documentation and the example programs.
 
@@ -88,7 +101,7 @@ flang/test/       the old test run: written against the deleted implementation, 
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         172 flang programs: leetcode, rosetta, cat, crypto, io, web, db, wal, library-api and six more sets
+examples/         175 flang programs in 17 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and nine more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -115,7 +128,7 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
 | `package.json` · `package-lock.json` | the manifest of the npm install path. It declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
-| `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 66 lines of code inside 143 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык spec:check`, and because `ярлык` resolves its own paths from its own directory |
+| `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 69 lines of code inside 160 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык spec:check`, and because `ярлык` resolves its own paths from its own directory |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
 **The binary builds with a single `cc`.** `make -C bootstrap` — that is all; no package
@@ -133,18 +146,20 @@ cause instead.
 <!-- КОРЕНЬ-КОНЕЦ -->
 
 **What checks a file today, and what does not.** Two runs cover the language, and both are
-driven by the binary: `sh flang/проверки/обход.sh` — 98 checks written in flang itself, three
+driven by the binary: `sh flang/проверки/обход.sh` — 162 checks written in flang itself, three
 seconds — and `flang test <directory>`, which runs the examples declared inside functions
-(1,216 in the standard library, 229 in the core, 804 in the LeetCode set). On every push CI
-builds the binary and runs the 98 checks and the 1,445 library-and-core examples with it;
-the LeetCode set and the rest of the tree are walked on a tag,
-because that walk takes over an hour.
+(804 of them in the LeetCode set). The recorded ledger the walk is diffed against is
+`flang/проверки/ведомость.txt`, one line per check — `wc -l` on it is where the 162 comes from.
+On every push CI builds the binary and runs those checks and the library-and-core examples with
+it; the LeetCode set and the rest of the tree are walked on a tag, because that walk takes over
+an hour.
 
-**`npm test` does not start.** It fails in `pretest` with `ERR_MODULE_NOT_FOUND`, before the
-first check runs: 162 of the 199 files in `flang/test/` import modules of the deleted
-JavaScript implementation. Deciding which of them to rewrite against the binary and which to
-drop has not been done, and until it is, that directory checks nothing. Said here rather than
-left to be discovered from a red log.
+**`flang/test/` is a remnant, and small.** It holds 156 files (`git ls-files flang/test | wc -l`),
+of which 144 are fixtures and only four are still runnable test files. `npm test` is
+`./ярлык тесты`, which runs those four; there is no `pretest` step. The old JavaScript
+implementation these tests were written against is gone, and what remains was pruned to what
+still resolves — every import in those four files points at a file that exists. Said here rather
+than left to be discovered from a red log.
 
 Laying out **your own** project is a separate document:
 [Раскладка проекта](docs/guide/project-layout.ru.md).
@@ -347,10 +362,15 @@ Honestly, and the answer is uneven.
 
 **C is checked hardest, and by the strongest program there is — the compiler itself.**
 `sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
-the 29 files it pulls in — and `make -C bootstrap` compiles those 24 megabytes under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one
-warning. Then the binary built from that C prints the same sources again and the result matches
-what is committed, all 24,074,977 bytes of it. A backend that miscompiled anything at that scale
-would not survive being run through itself.
+the 37 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
+`scripts/otpechatok-semeni`, one hashed line each. `make -C bootstrap` compiles the resulting
+25 MiB under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one warning. Then the binary
+built from that C prints the same sources again and the result is compared with what is
+committed, all 26,598,071 bytes of it. A backend that miscompiled anything at that scale would
+not survive being run through itself.
+
+The caveat from the top of this page applies here too: that comparison is red today, because the
+sources moved and the seed has not been reprinted since.
 
 **The other seven have no automated check running today.** Each of them was checked
 differentially against the deleted implementation — the same program printed into an empty
@@ -430,12 +450,23 @@ table costs a square (appending copies the list), why Single Number is O(n²) be
 bitwise operations.
 [`examples/rosetta/`](examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one. The standard
-library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`, `hashmap`,
-`higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `postgres`,
-`result`, `sets`, `sha256`, `strings`, `strlists`, `tree`, `utf8`) is written the same way —
-20 modules, 482 functions, of which 478 are proven total, and 1,216 examples that run on every
-check. `higher-order` is the one built on first-class functions: fold, map, filter, search, sort
-and composition take a function as an argument.
+library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **38 modules, 1275
+functions, of which 1271 are proven total, and 2287 examples** that run on every check:
+
+```bash
+ls flang/stdlib/*.flang | wc -l
+cat flang/stdlib/*.flang | awk '/^(тотальная )?функция «/{f++} /^тотальная функция «/{t++} \
+  /^[[:space:]]+пример «/{e++} END{print f, t, e}'
+```
+
+Beyond the everyday modules (`lists`, `strings`, `numbers`, `sets`, `hashmap`, `dictionary`,
+`tree`, `json`, `utf8`, `datetime`, `higher-order`, `optional`, `result`) it now carries two
+database drivers (`postgres` over the wire, `sqlite` reading and building a file), networking
+(`http`, `wire`, `redis`, `tls`), a cryptography set written in flang itself (`aes`, `x25519`,
+`sha1`, `sha256`, `hmac`, `kdf`, `der`, `x509`, `crl`, `rsa`, `ecdsa`, `scram`) and a
+backtracking-free regular-expression engine (`automaton`, 63 functions, every one proven total).
+`higher-order` is the one built on first-class functions: fold, map, filter, search, sort and
+composition take a function as an argument.
 
 ---
 
@@ -460,17 +491,19 @@ Nothing in the tree is a second implementation of any of it.
 
 That leaves the classic question of where the first binary comes from, and the answer is
 committed rather than promised: `bootstrap/` holds this compiler already printed to C99 — seven
-files, 24,074,977 bytes — so `make` alone turns it into a working `flang`. That binary then
-prints the compiler's sources again and the result is identical to what is in `bootstrap/`;
-`sh scripts/raskrutka.sh --check` is that comparison, and a compiler whose printing had drifted
-from the tree would fail it.
+files, 26,598,071 bytes — so `make` alone turns it into a working `flang`. That binary then
+prints the compiler's sources again and the result should be identical to what is in
+`bootstrap/`; `sh scripts/raskrutka.sh --check` is that comparison, and a compiler whose
+printing had drifted from the tree fails it. It fails right now: the sources have moved ahead of
+the seed by 41 inputs, and reprinting is the tree's first open item.
 
 **Two things about that circle are worth knowing before you rely on it.**
 
-The check is expensive now. On this machine it takes 10 minutes 52 seconds, needs `cc` and
-`make`, and peaks at about 20 GB of memory. While a second implementation was there to do the
-comparing, the same check took 3.4 seconds and no C compiler at all — so the strongest check in
-the repository grew roughly two hundred times dearer. It does not fit on an ordinary GitHub
+The check is expensive now. The recorded measurement is 19 minutes 58 seconds and 25.1 GiB of
+peak memory on 256 cores (`scripts/raskrutka.sh`, 22 August 2026), and it needs `cc` and `make`.
+That figure is a floor, not a promise: the closure has grown since it was taken. While a second
+implementation was there to do the comparing, the same check took 3.4 seconds and no C compiler
+at all — so the strongest check in the repository grew roughly three hundred times dearer. It does not fit on an ordinary GitHub
 runner, so it is not in CI; it is called by hand before a change to `flang/self/` or
 `flang/src/emit/c/` goes in.
 
@@ -506,13 +539,23 @@ named directly — `использует «Списки» из "path"`.
 A selective form takes only what you name — `использует «Списки» только «Сумма», «Длина»` —
 which is also how a name conflict between two modules is resolved.
 
-How that scales to a full-size project is shown by
-[`examples/library-api`](examples/library-api/README.md), a REST service for a library: the
-domain rules, the parsing and the data handling are seven flang modules, and HTTP and storage
-stayed with the host on Node (removed on 20 August 2026 along with the rest of the JavaScript).
-The rule the split follows is one sentence — *if a piece of logic can
-have an example, it moves into a module, where the example is executable* — and the naming,
-layout, module-splitting and CI conventions derived from that project are collected in
+How that scales to a full-size project is shown by two examples that are worth telling apart.
+
+[`examples/library-api`](examples/library-api/README.md) is the **domain half** of a library
+service — the rules, the parsing and the data handling, seven flang modules. Its HTTP and
+storage once lived in a host on Node; that host was deleted on 20 August 2026 along with the
+rest of the JavaScript, and nothing replaced it. So this example shows how to lay a project out,
+not how to serve a request.
+
+[`examples/web/shortener`](examples/web/shortener/README.md) is the one that serves: a
+link shortener where **between the incoming and the outgoing bytes there is not one line written
+in anything but flang** — storage, routing, processes and supervision included. It answers `GET
+/здоровье` with 200, `POST /ссылки` with 201, `GET /с/{код}` with 301 and a counted redirect,
+and `DELETE` with 204.
+
+The rule the split follows is one sentence — *if a piece of logic can have an example, it moves
+into a module, where the example is executable* — and the naming, layout, module-splitting and
+CI conventions derived from these are collected in
 [Раскладка проекта](docs/guide/project-layout.ru.md).
 
 ---
@@ -526,9 +569,9 @@ Work happens in a clone, and the only thing to build is the compiler itself:
 What to run after a change:
 
 ```bash
-sh flang/проверки/обход.sh            # 98 checks written in flang, three seconds
-./bootstrap/flang test flang/stdlib/  # 1,216 examples, 40 seconds
-./bootstrap/flang test flang/core/    # 229 examples, 12 seconds
+sh flang/проверки/обход.sh            # 162 checks written in flang, three seconds
+./bootstrap/flang test flang/stdlib/  # the library's examples — 2287 are written in the modules
+./bootstrap/flang test flang/core/    # the core's examples
 sh scripts/raskrutka.sh               # only after flang/self/ or the C runtime changed
 sh scripts/raskrutka.sh --check       # …and confirm the reprint matches the tree
 ```
@@ -543,11 +586,13 @@ above about `npm test`.
 
 ## The rest of the repository
 
-- **A full-size example** — [`examples/library-api`](examples/library-api/README.md): the domain
+- **A working service** — [`examples/web/shortener`](examples/web/shortener/README.md): a link
+  shortener with nothing but flang between the request bytes and the response bytes.
+- **A full-size layout** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 165 more programs in [`examples/`](examples); what sits where is
-  listed in [`examples/README.md`](examples/README.md).
+- **The other examples** — 168 more programs in [`examples/`](examples), in 17 sets; what sits
+  where is listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting
   in [`editors/vim`](editors/vim/README.md).
@@ -577,10 +622,10 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
 - **Proving an ordinary library function is still mostly out of reach.** The repeatable measure
   is twenty functions of the standard library taken in file-and-declaration order, every ninth
   one, so that convenient ones cannot be picked: on that sample the proof core closes claims for
-  thirteen files out of twenty, and **nine** of those say something about the function: the
-  rest are either weakened (the claim survives replacing the body with a stub of the same
+  **fourteen** functions out of twenty, and **eleven** of those say something about the function:
+  the rest are either weakened (the claim survives replacing the body with a stub of the same
   signature, so it holds of any such function) or restate the body. A run tells them apart,
-  not a reading: `./ярлык proof:20`. Day by day: 0, 2, 4, 5, 9.
+  not a reading: `./ярлык proof:20`. Day by day: 0 → 2 → 4 → 5 → 9 → 11.
   And two of the twenty are unprovable because they are **false**: one fails at infinity,
   the other writes "or" where an implication was meant.
 - **There is no second opinion about the language any more.** The comparison that used to matter

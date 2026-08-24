@@ -488,6 +488,7 @@
 ## Модульность и пакеты
 
 - [Модуль находится по имени из своей первой строки, а места поиска — свой каталог, каждый каталог выше и библиотека компилятора](a-module-is-found-by-the-name-on-its-first-line.md)
+- [Чужой черновик каталогом выше перекрывает библиотеку дерева молча, и ловушка стоит ровно в корне репозитория](a-stray-draft-above-the-tree-shadows-the-library-silently.md)
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка — и довод, на котором она держалась, уже мёртв](biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu.md)
 - [Чужие пакеты надо хранить: из трёх укладов два — это один в два слоя, а третий не про наше десятилетие](chuzhie-pakety-nado-hranit.md)
 - [Адресация по содержимому: версий нет, есть хеши](content-addressing.md)
@@ -562,7 +563,7 @@
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](otkaz-plana-pechataetsya-v-stderr-a-uspeh-v-stdout.md)
 - [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](pechat-ne-progonyaet-primerov-i-eto-nazvano-a-ne-dyra.md)
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](pechat-v-c-i-python-vyvodit-dvunapravlennye-syrymi.md)
-- [Словарь хешем стал параметрическим по значению, но параметр не переживает ввоза](slovar-hesha-stal-parametricheskim-a-parametr-ne-perezhivaet-vvoza.md)
+- [Словарь хешем стал параметрическим по значению, и параметр ввоз переживает — ломала ввоз ЧУЖАЯ КОПИЯ МОДУЛЯ](slovar-hesha-stal-parametricheskim-a-parametr-ne-perezhivaet-vvoza.md)
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)

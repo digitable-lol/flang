@@ -49,6 +49,16 @@ purpose: exhausting a finite set proves nothing.
 **Stated, not proved** — the kernel ran out of rules. The claim is then checked
 at run time, on the inputs that arrive.
 
+When the kernel does not close a goal by itself, the author has the same way out
+as in Coq and Isabelle: **write the proof by hand**. The word `теорема` with
+structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
+`индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
+and the kernel checks such a derivation step by step, searching for nothing.
+There are 160 such theorems in the language tree, 53 of them in the standard
+library. The difference from Coq and Lean is not that this option exists, but how
+rarely it is reached for: the verdict prints, as a separate number, how many
+claims were closed **without a single written line of proof**.
+
 There is a fourth answer, and it is the most valuable: **VIOLATED** — a
 counterexample was found, and it is shown. Not "could not prove it" but "here is
 an input on which your claim is false".
@@ -82,9 +92,20 @@ checked on every claim in the repository, not on the ones somebody remembered.
 
 ## How the kernel is built
 
-Three decision rules, each readable in one sitting. Plus a fourth move in
-reduction: **a closed expression is a value, so compute it** rather than derive
-it.
+Eleven decision rules, each readable in one sitting; the kernel names them in the
+text of its refusals, and the count is taken from the kernel itself
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 11). Most
+of them ask about the SHAPE of the goal ("not less than 0", "not greater than a
+literal", "equals", "not greater than a term", "contains", "starts with",
+"non-decreasing"); the rest do not: "goal is an assumption" matches the goal
+against an assumption character for character, "contradictory assumptions" closes
+an unreachable case, "unfold by constructor" unfolds a definition. Plus two moves
+beyond the rules: **a closed expression is a value, so compute it** rather than
+derive it, and splitting a goal on an `если` condition.
+
+There used to be three rules, then eight, and older sections of the specification
+still name the count as it stood on the day they were written. Today there are
+eleven, and that number can only be argued with the kernel in hand.
 
 Proof **search** stands apart, and how it is built matters: it **believes
 nothing**. It only proposes, and the kernel re-checks everything. That is why

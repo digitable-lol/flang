@@ -81,14 +81,14 @@ flang/self/       the compiler: lexer, parser, types, totality, proof core, eigh
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/src/        the target runtimes, copied verbatim into printed code — C, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
-flang/examples/   flang programs: leetcode, rosetta, cat, monad, io, web, errors
+flang/examples/   165 flang programs: leetcode, rosetta, cat, crypto, io, web, db, wal and six more sets
 flang/proof/      what the proof core may and may not conclude, and why
 flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         library-api — a whole REST service on flang and Node
+examples/         a pointer to the catalogue above, and library-api — the domain half of a REST service
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -509,7 +509,8 @@ which is also how a name conflict between two modules is resolved.
 How that scales to a full-size project is shown by
 [`examples/library-api`](examples/library-api/README.md), a REST service for a library: the
 domain rules, the parsing and the data handling are seven flang modules, and HTTP and storage
-stay with the host on Node. The rule the split follows is one sentence — *if a piece of logic can
+stayed with the host on Node (removed on 20 August 2026 along with the rest of the JavaScript).
+The rule the split follows is one sentence — *if a piece of logic can
 have an example, it moves into a module, where the example is executable* — and the naming,
 layout, module-splitting and CI conventions derived from that project are collected in
 [Раскладка проекта](docs/guide/project-layout.ru.md).
@@ -542,9 +543,11 @@ above about `npm test`.
 
 ## The rest of the repository
 
-- **A full-size example** — [`examples/library-api`](examples/library-api/README.md): a REST
-  service on flang and Node, six routes, storage, response codes. It answers one question: what
-  goes where, and why there.
+- **A full-size example** — [`examples/library-api`](examples/library-api/README.md): the domain
+  half of a library REST service, seven flang modules. It answers one question: what goes where,
+  and why there.
+- **The other examples** — 165 programs in [`flang/examples/`](flang/examples); what sits where is
+  listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting
   in [`editors/vim`](editors/vim/README.md).

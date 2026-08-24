@@ -28,7 +28,7 @@
  * Разбор ЗДЕСЬ НЕ СВОЙ, и это важно. До 20 августа сторож звал `parse` из
  * `flang/src/parser.mjs`; реализации на JavaScript больше нет, и заводить
  * второй разбор ради сторожа значило бы вернуть ровно то, что удалено. Дерево
- * спрашивается у единственного компилятора (`flang/scripts/dvoichnyy.mjs`), и
+ * спрашивается у единственного компилятора (`flang/scripts/binary.mjs`), и
  * потому имена, которые видит сторож, — те же самые, что видит компилятор.
  *
  * `flang ast` отдаёт дерево СВЯЗАННЫМ: у файла с «использует» в нём лежат и
@@ -155,7 +155,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { деревоИсходника, отсеятьЧужое, прогреть, своё } from "./dvoichnyy.mjs"
+import { деревоИсходника, отсеятьЧужое, прогреть, своё } from "./binary.mjs"
 
 const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 const КАТАЛОГИ = ["flang/stdlib", "flang/core", "flang/self", "examples"]
@@ -368,7 +368,7 @@ function связыванияВыражения(добавить, узел) {
 /** Все связывания корпуса: `{file, line, role, name}`. */
 export function связывания(корень = КОРЕНЬ, каталоги = КАТАЛОГИ) {
   const файлы = каталоги.flatMap((к) => обход(join(корень, к)))
-  прогреть(файлы) /* 226 разборов в один заход, а не по одному: см. dvoichnyy.mjs */
+  прогреть(файлы) /* 226 разборов в один заход, а не по одному: см. binary.mjs */
   const собрано = []
   const потери = []
   for (const путь of файлы) {

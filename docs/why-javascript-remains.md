@@ -21,10 +21,10 @@ flang io: непонятный ключ «--n=5»
 Единственный отбор — `--plan «Имя»`.
 
 Держит: `word-occupancy.mjs`, `link-collision-guard.mjs` (зовётся `--дерево`),
-`proof-ledger.mjs` (`--pustota`), `storozh-slov.mjs` (`--porcha vse`),
+`proof-ledger.mjs` (`--pustota`), `word-guard.mjs` (`--porcha vse`),
 `build-changelog.mjs` (`--check`/`--self-test`), `build-changelog-page.mjs`,
-`razlichitelnyy-poisk.mjs`, `gen.mjs` (пять ключей), `rabota.mjs`, `wasm-run.mjs`,
-`flang-zapusk.mjs`.
+`discriminating-search.mjs`, `gen.mjs` (пять ключей), `work.mjs`, `wasm-run.mjs`,
+`flang-launch.mjs`.
 
 ## Дыра 2. «Удалить файл» и «завести каталог»: в словаре есть, в двоичном нет — держит 7 файлов
 
@@ -54,7 +54,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 `diagram.mjs`, `podsvetka.mjs`, `numbers.mjs`, `poisk.mjs` — потому что **JavaScript
 не умеет ввозить flang**: двойник на flang зовётся только отдельным процессом,
 значит модуль снимается лишь вместе со стволом, который его ввозит.
-Плюс `slova-celey.mjs` и `schyot-biblioteki.mjs`.
+Плюс `target-words.mjs` и `count-library.mjs`.
 
 ## Дыра 3. Нет регулярных выражений — делает перенос дорогим, но возможным
 
@@ -95,13 +95,13 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
   через `node:vm` и проверяет ТОТ ЖЕ файл, который читает браузер. Исполнителя
   JavaScript у flang нет; переписать значит проверять другой файл — это подмена
   сторожа, а не перенос.
-- `packaging/flang-zapusk.mjs` — запускатель `bin` из npm: до его работы flang в
+- `packaging/flang-launch.mjs` — запускатель `bin` из npm: до его работы flang в
   системе ещё нет, круг.
 - `packaging/postinstall.mjs` — крючок жизненного цикла npm, его запускает `node`.
 - `web/wasm/probe.mjs` — ведёт настоящий браузер через Playwright.
 - `scripts/wasm-run.mjs` — средой WASI служит сам Node.
-- `benchmarks/…/programs/zadachi.mjs` — это и есть замеряемая реализация на
-  JavaScript, соседка `zadachi.flang` и `zadachi.py`. Снять — сломать замер.
+- `benchmarks/…/programs/tasks.mjs` — это и есть замеряемая реализация на
+  JavaScript, соседка `tasks.flang` и `tasks.py`. Снять — сломать замер.
 
 ---
 

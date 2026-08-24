@@ -49,7 +49,7 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "../scripts/dvoichnyy.mjs"
+import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
 import { findExecutable, missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"

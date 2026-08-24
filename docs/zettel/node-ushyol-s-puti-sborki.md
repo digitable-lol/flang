@@ -118,7 +118,7 @@ PATH там, где он не нужен:
 3. `node scripts/build-release-c.mjs` → «релиз готов»: архив собрался на PATH без
    Node, собранный компилятор ответил, установка проверена;
 4. `node packaging/postinstall.mjs` → двоичный собран за 34,2 с;
-   `node packaging/flang-zapusk.mjs --version` → `flang 0.5.1`.
+   `node packaging/flang-launch.mjs --version` → `flang 0.5.1`.
 
 ## Ловушка: `flang/src/emit/c/` — это C, а не JavaScript
 

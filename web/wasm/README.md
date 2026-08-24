@@ -8,14 +8,14 @@ wasm» и починка дыры, которую эта разведка наш
 
 ```sh
 apt install wasi-libc libclang-rt-21-dev-wasm32     # или wasi-sdk + WASI_SYSROOT
-./web/wasm/build.sh web/wasm/spusk.flang web/wasm/demo
+./web/wasm/build.sh web/wasm/descent.flang web/wasm/demo
 python3 -m http.server 8907 --directory web/wasm/demo &
 PLAYWRIGHT=<путь>/node_modules/playwright/index.mjs node web/wasm/probe.mjs
 ```
 
 ## Что собрано
 
-`web/wasm/spusk.flang` — две функции: тотальный «Обратный отсчёт» с
+`web/wasm/descent.flang` — две функции: тотальный «Обратный отсчёт» с
 **объявленной мерой** `убывает верх минус низ плюс 1` и «Разобрать» на
 **частичной встроенной форме** `к числу`. Взяты не для красоты: мера и закрытый
 набор отказов — ровно те свойства, которые исполнение обязано сохранить, иначе

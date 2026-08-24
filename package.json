@@ -13,7 +13,7 @@
     "url": "https://github.com/digitable-lol/flang/issues"
   },
   "bin": {
-    "flang": "./packaging/flang-zapusk.mjs",
+    "flang": "./packaging/flang-launch.mjs",
     "flang-lsp": "./flang/bin/flang-lsp.mjs"
   },
   "files": [
@@ -30,8 +30,8 @@
     "bootstrap",
     "packaging/flang.1",
     "packaging/postinstall.mjs",
-    "packaging/flang-zapusk.mjs",
-    "packaging/sverka-ustanovok.flang",
+    "packaging/flang-launch.mjs",
+    "packaging/install-parity.flang",
     "README.md",
     "README.ru.md",
     "CONTRIBUTING.md",

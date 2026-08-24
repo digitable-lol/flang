@@ -79,7 +79,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { extname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { ключевоеСлово } from "./dvoichnyy.mjs"
+import { ключевоеСлово } from "./binary.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
 

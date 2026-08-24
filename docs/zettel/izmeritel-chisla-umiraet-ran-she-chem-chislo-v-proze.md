@@ -14,7 +14,7 @@
 | измеритель | что считал | состояние |
 |---|---|---|
 | `docs/benchmark2/tools/measure20.mjs` | сколько из 20 функций замера ядро закрывает | ввозит `flang/src/parser.mjs` — `ERR_MODULE_NOT_FOUND` |
-| `benchmarks/zamer-tseny/schyot-20.mjs` | сколько из закрытого не тавтология | ввозит то же самое, то же самое |
+| `benchmarks/proof-cost/schyot-20.mjs` | сколько из закрытого не тавтология | ввозит то же самое, то же самое |
 | `flang/scripts/proof-ledger.mjs` | свод утверждений по всему дереву | ввозит то же самое |
 
 Двоичным по тем же двадцати файлам (`flang check <файл> --proof`, каждый по
@@ -48,7 +48,7 @@
 
 **Чем подтверждено.** Прогон 20 августа 2026 на `vypusk/proza-odin`
 (`5ec0cb03`): `node docs/benchmark2/tools/measure20.mjs` и
-`node benchmarks/zamer-tseny/schyot-20.mjs` — оба `ERR_MODULE_NOT_FOUND`;
+`node benchmarks/proof-cost/schyot-20.mjs` — оба `ERR_MODULE_NOT_FOUND`;
 `node --test flang/test/readme-layout.test.mjs` — то же;
 `node --test flang/test/manpage.test.mjs` — 4 из 5; двадцать файлов
 `docs/benchmark2/*.flang` прогнаны `bootstrap/flang check … --proof` по одному,

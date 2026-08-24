@@ -18,7 +18,7 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "../scripts/dvoichnyy.mjs"
+import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
 import { средаСборки } from "./tempdir.mjs"
 

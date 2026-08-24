@@ -52,7 +52,7 @@ ESTNOE=${ESTNOE:-разбор цели по условию}
 # исходнике нет ни строки, а посылка с названным правилом есть. Эта дорога у
 # сверщика закрытый список не спрашивала вовсе, и запись без теоремы могла
 # назвать правило какое угодно.
-BEZ_TEOREMY=${BEZ_TEOREMY:-$KOREN/flang/proof/karta/soderzhatelnoe.flang}
+BEZ_TEOREMY=${BEZ_TEOREMY:-$KOREN/flang/proof/map/substantive.flang}
 
 [ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
 for f in "$YADRO" "$TERM_" "$SVERSHCHIK" "$ISHODNIK" "$BEZ_TEOREMY" "$SVERIT"; do

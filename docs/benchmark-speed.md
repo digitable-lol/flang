@@ -177,7 +177,7 @@ Python **18,7**, Node **40,5** мс.
 |---|---:|---:|---:|---:|---:|---:|---:|
 | `leetcode/509-fibonacci-number.flang` | 43 | 2 | 2 | 123 | 162 | 971 | **1 133** |
 | `rosetta/quicksort.flang` | 112 | 5 | 4 | 125 | 189 | 981 | **1 170** |
-| `zamer-skorosti/programs/zadachi.flang` | 432 | 27 | 10 | 144 | 223 | 1 074 | **1 297** |
+| `speed/programs/tasks.flang` | 432 | 27 | 10 | 144 | 223 | 1 074 | **1 297** |
 | `stdlib/lists.flang` | 698 | 28 | 28 | 163 | 226 | 993 | **1 219** |
 | `self/lexer.flang` | 1 645 | 91 | 91 | 375 | 415 | 2 188 | **2 603** |
 | `self/parser.flang` | 4 336 | 506 | 300 | 675 | 888 | 15 143 | **16 031** |
@@ -189,7 +189,7 @@ Python **18,7**, Node **40,5** мс.
 |---|---:|
 | пустой запуск Python (не компилирует ничего) | 25,3 |
 | пустой запуск Node (не компилирует ничего) | 49,6 |
-| `cc -O2` на `etalon.c` (242 строки C, написанные руками) | 308 |
+| `cc -O2` на `reference.c` (242 строки C, написанные руками) | 308 |
 | `cc -O2 -c` на рантайме `flang_runtime.c` (2 109 строк) | 882 |
 | `tsc` | **нет в системе, не измерен** |
 
@@ -219,7 +219,7 @@ Python **18,7**, Node **40,5** мс.
 [10,4 … 26,1]: поштучный замер сделан отдельно и лёг к нижнему краю разброса.
 
 Наш C при этом **дешевле обычного** в пересчёте на строку: порождённый модуль —
-0,39 мс/строку, рантайм — 0,38, а написанный руками `etalon.c` — 1,32
+0,39 мс/строку, рантайм — 0,38, а написанный руками `reference.c` — 1,32
 (компиляция без линковки; сам запуск `cc` стоит 0,03 с). Порождённый код
 многословный, но простой: оптимизировать в нём почти нечего. Семнадцать секунд
 берутся из объёма, а не из сложности.
@@ -541,35 +541,35 @@ n промежуточных накопителей длины 1…n перек�
 языка: они зовут харнессы замера прямо из дерева исходников. Тому, кто языком
 пользуется, ничего из этого не нужно.
 
-Все скрипты лежат в `benchmarks/zamer-skorosti/`. Ни один не трогает репозиторий:
+Все скрипты лежат в `benchmarks/speed/`. Ни один не трогает репозиторий:
 всё собирается в указанный каталог.
 
 ```bash
 # 1. Собрать восемь вариантов одной программы плюс эталон на C
-benchmarks/zamer-skorosti/sobrat.sh /tmp/zamer
+benchmarks/speed/assemble.sh /tmp/zamer
 
 # 2. Время работы: пять задач, восемь сборок, чередование, 11 кругов
-node benchmarks/zamer-skorosti/rabota.mjs /tmp/zamer --кругов 11
+node benchmarks/speed/work.mjs /tmp/zamer --кругов 11
 
 # 3. Пиковая память тех же задач.
 #    Замер написан планом на flang, и каталог сборки назван в нём числом —
 #    «.sborka» рядом с планом, — потому что доводов у плана нет. Готовится он
-#    тем же sobrat.sh, запущенным без довода.
-benchmarks/zamer-skorosti/sobrat.sh
-bootstrap/flang io benchmarks/zamer-skorosti/pamyat.flang
+#    тем же assemble.sh, запущенным без довода.
+benchmarks/speed/assemble.sh
+bootstrap/flang io benchmarks/speed/memory.flang
 
 # 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
 mkdir -p /tmp/zamer/qs
 bootstrap/flang emit examples/rosetta/quicksort.flang \
   --target c --out /tmp/zamer/qs --max-steps 2000000000
 make -C /tmp/zamer/qs -j4
-benchmarks/zamer-skorosti/arena.sh /tmp/zamer/qs
+benchmarks/speed/arena.sh /tmp/zamer/qs
 
 # 5. Время компиляции: итоги процессами, вместе с точками сравнения
-node benchmarks/zamer-skorosti/kompilyaciya.mjs --кругов 5
+node benchmarks/speed/kompilyaciya.mjs --кругов 5
 
 # 6. Время компиляции: слагаемые внутри одного процесса
-node benchmarks/zamer-skorosti/faz.mjs flang/self/types.flang --повторов 7
+node benchmarks/speed/faz.mjs flang/self/types.flang --повторов 7
 
 # 7. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
 ./ярлык proof:ledger
@@ -578,7 +578,7 @@ node benchmarks/zamer-skorosti/faz.mjs flang/self/types.flang --повторов
 Разовая проба одной задачи на трёх языках, с временем и памятью:
 
 ```bash
-benchmarks/zamer-skorosti/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" дерево 100000
+benchmarks/speed/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" дерево 100000
 ```
 
 **Перед `node` в ручных прогонах ставьте `LC_ALL=C.UTF-8`** — имена задач
@@ -588,15 +588,15 @@ benchmarks/zamer-skorosti/probe.sh /tmp/zamer/base/flang_cli "Обход дер�
 ## Приложение: тексты на Python и JavaScript
 
 Приложены целиком, чтобы сравнение можно было проверить, а не принять на веру.
-Текст на flang — `benchmarks/zamer-skorosti/programs/zadachi.flang` (432 строки),
-эталон на C — `benchmarks/zamer-skorosti/programs/etalon.c` (242 строки).
+Текст на flang — `benchmarks/speed/programs/tasks.flang` (432 строки),
+эталон на C — `benchmarks/speed/programs/reference.c` (242 строки).
 
-### `zadachi.py`
+### `tasks.py`
 
 ```python
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
-"""Те же четыре задачи, что в zadachi.flang, на Python 3.
+"""Те же четыре задачи, что в tasks.flang, на Python 3.
 
 Правило перевода — шаг в шаг:
   • где flang печатается в цикл (хвостовой самовызов) — здесь цикл;
@@ -606,8 +606,8 @@ benchmarks/zamer-skorosti/probe.sh /tmp/zamer/base/flang_cli "Обход дер�
     строки (str.split ↔ «разделить … по …») и перевод строки в число
     (int ↔ «к числу»).
 
-Запуск:  python3 zadachi.py ЗАДАЧА РАЗМЕР
-         python3 zadachi.py коллатц 20000
+Запуск:  python3 tasks.py ЗАДАЧА РАЗМЕР
+         python3 tasks.py коллатц 20000
 Печатает одно число — ту же контрольную сумму, что и остальные два языка.
 """
 import sys
@@ -803,7 +803,7 @@ ZADACHI = {
 
 def main(argv):
     if len(argv) != 3 or argv[1] not in ZADACHI:
-        sys.stderr.write("использование: zadachi.py {%s} РАЗМЕР\n" % "|".join(ZADACHI))
+        sys.stderr.write("использование: tasks.py {%s} РАЗМЕР\n" % "|".join(ZADACHI))
         return 2
     sys.setrecursionlimit(200000)
     sys.stdout.write("%d\n" % ZADACHI[argv[1]](int(argv[2])))
@@ -814,22 +814,22 @@ if __name__ == "__main__":
     sys.exit(main(sys.argv))
 ```
 
-### `zadachi.mjs`
+### `tasks.mjs`
 
 ```javascript
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */
 /**
- * Те же четыре задачи, что в zadachi.flang, на JavaScript (Node.js).
+ * Те же четыре задачи, что в tasks.flang, на JavaScript (Node.js).
  *
- * Правило перевода — шаг в шаг, как и у zadachi.py:
+ * Правило перевода — шаг в шаг, как и у tasks.py:
  *   • где flang печатается в цикл (хвостовой самовызов) — здесь цикл;
  *   • где flang рекурсирует по-настоящему — здесь рекурсия;
  *   • никаких библиотечных сокращений: ни Array.prototype.sort, ни filter по
  *     индексу. Разрешены ровно те встроенные формы, которые есть и у flang:
  *     String.prototype.split (↔ «разделить … по …») и Number (↔ «к числу»).
  *
- * Запуск:  LC_ALL=C.UTF-8 node zadachi.mjs ЗАДАЧА РАЗМЕР
+ * Запуск:  LC_ALL=C.UTF-8 node tasks.mjs ЗАДАЧА РАЗМЕР
  * Печатает одно число — ту же контрольную сумму, что и остальные два языка.
  */
 const A = 25173
@@ -994,7 +994,7 @@ const ZADACHI = {
 
 const [, , zadacha, razmer] = process.argv
 if (zadacha === undefined || ZADACHI[zadacha] === undefined) {
-  process.stderr.write(`использование: node zadachi.mjs {${Object.keys(ZADACHI).join("|")}} РАЗМЕР\n`)
+  process.stderr.write(`использование: node tasks.mjs {${Object.keys(ZADACHI).join("|")}} РАЗМЕР\n`)
   process.exit(2)
 }
 process.stdout.write(`${ZADACHI[zadacha](Number(razmer))}\n`)

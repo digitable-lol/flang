@@ -462,7 +462,7 @@ export LC_ALL=C.UTF-8
 
 # правило отбора: сколько функций в библиотеке и какие двадцать даёт шаг
 # (на основании замера — 185 годных из 185, шаг 9)
-node benchmarks/zamer-tseny/otbor.mjs
+node benchmarks/proof-cost/otbor.mjs
 
 # тестовая сторона одной функции замера: 7 примеров, все зелёные
 bootstrap/flang test docs/benchmark/17-est-v-mnozhestve.flang

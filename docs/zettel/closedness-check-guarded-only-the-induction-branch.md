@@ -15,7 +15,7 @@
 семени дерева. `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang`:
 `check --proof` → «доказано … обо ВСЕХ входах», `run --function «Пятёрка»` →
 `FLANG_PROPERTY: нарушено свойство «всегда четыре»`. Те же два ответа на
-`benchmarks/zamer-tseny/proba-poddelka.flang` (там утверждение ложно —
+`benchmarks/proof-cost/probe-forgery.flang` (там утверждение ложно —
 `Противоположное(−5) = 5 > 0`, проверено вычислением) и на
 `docs/benchmark/05-protivopolozhnoe.flang` (там утверждение ИСТИННО, но одним
 примером не доказано; проверено вычислением на семи значениях).

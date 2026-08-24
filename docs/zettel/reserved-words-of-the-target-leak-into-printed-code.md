@@ -71,7 +71,7 @@
 строятся ИЗ СПИСКОВ САМОЙ ПЕЧАТИ (`«Зарезервировано в C»`, `«Занято в теле»`,
 … спрошены у двоичного), печатаются восемью целями и собираются восемью
 настоящими компиляторами (cc 15.2, go, rustc 1.97, javac 26, node 26, elixirc
-OTP-29, python 3.14, dotnet 10). Сторож — `node flang/scripts/slova-celey.mjs`,
+OTP-29, python 3.14, dotnet 10). Сторож — `node flang/scripts/target-words.mjs`,
 подделка — `flang/test/fixtures/poddelka-slova-celey.flang`.
 
 **Чем ограничено.** Сторож не ЗАПУСКАЕТ собранное: вопрос здесь один —

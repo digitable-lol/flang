@@ -6,7 +6,7 @@
 отстал от словаря языка, и вот этого быть не должно ни у кого». Быть — есть.
 
 **Чем подтверждено.** Ветка `u/port5`, прогон
-`bootstrap/flang io flang/scripts/poddelki-yadra.flang` версии 0.5.1:
+`bootstrap/flang io flang/scripts/kernel-forgeries.flang` версии 0.5.1:
 
 ```
 • flang/test/fixtures/poddelka-krug-pri-rabote.flang:
@@ -25,7 +25,7 @@
 ```
 
 Работает, но втаскивает в проверку кавычки оболочки: запрос обязан не содержать
-одинарной кавычки и обратной косой. В двух переносах (`poddelki-yadra.flang`,
+одинарной кавычки и обратной косой. В двух переносах (`kernel-forgeries.flang`,
 `memory-guard.flang`) это верно и проверено, но правило это негласное — язык
 его не держит.
 

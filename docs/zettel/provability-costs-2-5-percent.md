@@ -25,7 +25,7 @@
 [[slower-than-python-by-1-4]] и [[biggest-win-for-least-work]].
 
 Ветка `work/zamer-skorosti`, отчёт `docs/benchmark-speed.md`, 997 строк, стенды
-в `benchmarks/zamer-skorosti/`.
+в `benchmarks/speed/`.
 
 Связано: [[slower-than-python-by-1-4]], [[condition-for-the-revolution]],
 [[checksum-inside-the-benchmark]], [[biggest-win-for-least-work]]

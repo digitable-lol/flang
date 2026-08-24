@@ -21,10 +21,10 @@
 // ЧЕГО ЖДЁМ ОТ ЯДРА: вердикт «объявлено, не доказано» и отказ шага, называющий
 // свободное имя «ч».
 //
-// СТОРОЖ ПРИ ЭТОЙ УЛИКЕ: `flang/scripts/poddelki-yadra.flang`, ярлык
+// СТОРОЖ ПРИ ЭТОЙ УЛИКЕ: `flang/scripts/kernel-forgeries.flang`, ярлык
 // `poddelki:check`. Файл вписан в список «Подделки лжи»; вернись дыра — сторож
 // краснеет и называет этот файл поимённо. Улики того же вида, лежащие в дереве
-// с прошлого замера, — benchmarks/zamer-tseny/proba-poddelka.flang и
+// с прошлого замера, — benchmarks/proof-cost/probe-forgery.flang и
 // docs/benchmark/05-protivopolozhnoe.flang.
 
 тотальная функция «Проба»

@@ -125,7 +125,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "./dvoichnyy.mjs"
+import { позвать } from "./binary.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
 

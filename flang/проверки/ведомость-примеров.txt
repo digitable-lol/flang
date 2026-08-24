@@ -455,9 +455,9 @@ benchmarks/model-authoring/reference/c5-cepochka.flang	2 2 0
 benchmarks/model-authoring/reference/e1-schetchik.flang	1 1 0
 benchmarks/model-authoring/reference/e2-supervisor.flang	1 1 0
 benchmarks/model-authoring/reference/e3-norma.flang	1 1 0
-benchmarks/zamer-skorosti/programs/zadachi.flang	28 28 0
-benchmarks/zamer-tseny/proba-poddelka.flang	1 1 0
-benchmarks/zamer-tseny/proba-zamknutaya.flang	0 0 0
+benchmarks/speed/programs/tasks.flang	28 28 0
+benchmarks/proof-cost/probe-forgery.flang	1 1 0
+benchmarks/proof-cost/probe-closed-goal.flang	0 0 0
 docs/benchmark/01-klyuch-svyazi.flang	отказ
 docs/benchmark/02-klyuch-zvena.flang	отказ
 docs/benchmark/03-vpisat.flang	отказ
@@ -771,4 +771,4 @@ fspec/experiments/theorem-on-false.flang	отказ
 fspec/policy.flang	22 22 0
 fspec/spec/01-discount-cap.flang	1 1 0
 fspec/spec/02-promo.flang	3 3 0
-web/wasm/spusk.flang	3 3 0
+web/wasm/descent.flang	3 3 0

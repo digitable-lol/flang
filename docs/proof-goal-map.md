@@ -5,7 +5,7 @@
 виды целей, у каждого — вердикт и дословная причина отказа.
 
 **Всё в этой карте добыто прогоном.** У каждой клетки есть маленькая программа
-в `flang/proof/karta/` и настоящий вывод `flang check --proof`. Клетка без
+в `flang/proof/map/` и настоящий вывод `flang check --proof`. Клетка без
 прогона в карту не вошла. Причина простая: проза о границах ядра устаревает за
 сутки, а прогон — нет.
 
@@ -50,7 +50,7 @@
 ```
 
 Перечень внутри каждого правила длиннее любой таблицы в этом файле на 28 умений:
-`flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/karta/umeniya.flang`, сторож —
+`flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/map/abilities.flang`, сторож —
 `sh scripts/kernel-abilities-guard.sh`.
 
 Сверх правил есть четыре хода, вида цели не меняющих: разбор цели по условию
@@ -80,13 +80,13 @@
 считает и каталог улик, и даёт те же числа:
 
 ```
-sh scripts/target-census.sh flang/proof/karta
+sh scripts/target-census.sh flang/proof/map
   → модулей измерено: 8, не измерено: 3
     утверждений в разборе: 80; с вердиктом: 79; охран «иначе да» снято: 4
     ИТОГО 79  дказ 55  инд 5  сетка 18  объявл 1
 ```
 
-Восьмой модуль — `umeniya.flang`, и он в карту клеток не входит: он меряет не
+Восьмой модуль — `abilities.flang`, и он в карту клеток не входит: он меряет не
 вид цели, а 28 УМЕНИЙ ядра, которых не было в описании (см. `flang/proof/SPEC.md`,
 раздел «Восемь правил ядра и 28 умений, которых в описании не было»). 79 − 28 = 51,
 и это ровно карта ниже. До его появления перепись давала
@@ -100,7 +100,7 @@ sh scripts/target-census.sh flang/proof/karta
 Прогон:
 
 ```
-bootstrap/flang check flang/proof/karta/granicy.flang --proof
+bootstrap/flang check flang/proof/map/boundaries.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -134,7 +134,7 @@ bootstrap/flang check flang/proof/karta/granicy.flang --proof
 ## 2. Равенство, круг, сохранение, вхождение
 
 ```
-bootstrap/flang check flang/proof/karta/ravenstvo.flang --proof
+bootstrap/flang check flang/proof/map/equality.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -164,7 +164,7 @@ bootstrap/flang check flang/proof/karta/ravenstvo.flang --proof
 ## 3. Связки, условное, замкнутая цель
 
 ```
-bootstrap/flang check flang/proof/karta/formy.flang --proof
+bootstrap/flang check flang/proof/map/forms.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -198,7 +198,7 @@ bootstrap/flang check flang/proof/karta/formy.flang --proof
 ## 4. Порядок
 
 ```
-bootstrap/flang check flang/proof/karta/poryadok.flang --proof
+bootstrap/flang check flang/proof/map/order.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -223,7 +223,7 @@ bootstrap/flang check flang/proof/karta/poryadok.flang --proof
 ## 5. Типы, строки, сумма, допущение
 
 ```
-bootstrap/flang check flang/proof/karta/tipy.flang --proof
+bootstrap/flang check flang/proof/map/types.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -250,7 +250,7 @@ bootstrap/flang check flang/proof/karta/tipy.flang --proof
 ## 6. Содержательное: квантор, порядок, сохранение — на настоящих телах
 
 ```
-bootstrap/flang check flang/proof/karta/soderzhatelnoe.flang --proof
+bootstrap/flang check flang/proof/map/substantive.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина границы |
@@ -277,7 +277,7 @@ bootstrap/flang check flang/proof/karta/soderzhatelnoe.flang --proof
 ## 7. Откуда берётся вердикт: заглушка, отсутствие примеров, индукция по строке
 
 ```
-bootstrap/flang check flang/proof/karta/istochniki.flang --proof
+bootstrap/flang check flang/proof/map/sources.flang --proof
 ```
 
 | # | цель | вердикт | правило / причина |
@@ -588,11 +588,11 @@ bootstrap/flang run проба.flang --function "Не число не больш
 
 # Улики
 
-Все программы — в `flang/proof/karta/`, README там же. Файлы `otkaz-*.flang`
+Все программы — в `flang/proof/map/`, README там же. Файлы `otkaz-*.flang`
 обязаны уходить кодом возврата **1**: измеряемая величина у них — дословный
 текст отказа ядра.
 
 ```
-bootstrap/flang check flang/proof/karta/granicy.flang --proof            # код 0
-bootstrap/flang check flang/proof/karta/otkaz-granicy.flang --proof      # код 1
+bootstrap/flang check flang/proof/map/boundaries.flang --proof            # код 0
+bootstrap/flang check flang/proof/map/refusal-boundaries.flang --proof      # код 1
 ```

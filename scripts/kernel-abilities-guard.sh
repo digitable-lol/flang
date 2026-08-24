@@ -26,7 +26,7 @@
 #                из ядра ушло либо переписано, и список отстал ОТ ЯДРА.
 #   2. ОПИСАНИЕ. Номер умения (`У7`) стоит в `flang/proof/SPEC.md`. Убери
 #                способность из описания — сторож краснеет здесь.
-#   3. УЛИКА.    Функция-улика стоит в `flang/proof/karta/umeniya.flang`.
+#   3. УЛИКА.    Функция-улика стоит в `flang/proof/map/abilities.flang`.
 #                Умение без прогона в список не идёт: числа в описании обязаны
 #                быть проверяемыми.
 #   4. СЧЁТ.     Строк списка ровно столько же, сколько утверждений в файле
@@ -35,7 +35,7 @@
 # Чего сторож НЕ делает: он не доказывает, что умение работает. Это делает
 # прогон файла улик, и звать его надо отдельно —
 #
-#   bootstrap/flang check --proof flang/proof/karta/umeniya.flang
+#   bootstrap/flang check --proof flang/proof/map/abilities.flang
 #
 # (замер 23 августа 2026: утверждений 28, доказано 28, сетка 0, код 0).
 #
@@ -50,7 +50,7 @@ KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 SPISOK=$KOREN/flang/proof/УМЕНИЯ.tsv
 YADRO=$KOREN/flang/self/proof-kernel.flang
 OPISANIE=$KOREN/flang/proof/SPEC.md
-ULIKI=$KOREN/flang/proof/karta/umeniya.flang
+ULIKI=$KOREN/flang/proof/map/abilities.flang
 
 BEDY=0
 STROK=0
@@ -83,7 +83,7 @@ while IFS='	' read -r NOMER PRAVILO UMENIE YAKOR ULIKA; do
   fi
 
   if ! grep -qF -- "«$ULIKA»" "$ULIKI"; then
-    echo "$NOMER: УЛИКИ нет — функции «$ULIKA» в karta/umeniya.flang нет"
+    echo "$NOMER: УЛИКИ нет — функции «$ULIKA» в karta/abilities.flang нет"
     BEDY=$((BEDY + 1))
   fi
 

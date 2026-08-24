@@ -39,7 +39,7 @@
 
 ## Побочно: работа `imena` в CI красная и без нас
 
-Тот же прогон показал, что `dvoichnyy.yml` в работе `imena` держал строку
+Тот же прогон показал, что `binary.yml` в работе `imena` держал строку
 `- run: node --test flang/test/link-collision-guard.test.mjs`, а файла нет — он
 снят предыдущей работой по снятию JavaScript. Node отвечает
 `Cannot find module`, работа краснеет на любом входе. Строка убрана; предмет

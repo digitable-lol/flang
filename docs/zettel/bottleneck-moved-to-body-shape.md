@@ -16,7 +16,7 @@
 ```
 
 **Чем подтверждено, со знаменателем.** Тел вида «`разбор` по параметру» в
-`flang/stdlib` — **58 из 208** (`benchmarks/zamer-tseny/tela.mjs` на ветке `work/zamer-tseny-2`).
+`flang/stdlib` — **58 из 208** (`benchmarks/proof-cost/tela.mjs` на ветке `work/zamer-tseny-2`).
 Остальные 150: свёртка 45, условие 37, арифметика 21, вызов 18, встроенная форма 9,
 `пусть` 8, отображение и отбор 8, построение 3, применение 1. То есть **72 %
 библиотеки написано формами, к которым индукция ядра не цепляется**, и на выборке
@@ -49,7 +49,7 @@
 функциях библиотеки.
 
 Улики: `docs/benchmark2/` (20 файлов с настоящими текстами отказов), отчёт
-`docs/benchmark-proof-cost-2.md`, журнал с секундомером `benchmarks/zamer-tseny/zhurnal.md`.
+`docs/benchmark-proof-cost-2.md`, журнал с секундомером `benchmarks/proof-cost/journal.md`.
 
 Связано: [[proof-cost-0-of-20]], [[no-induction-for-builtin-types]],
 [[tautologies-close-for-free]], [[proven-is-not-correct]],

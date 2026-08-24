@@ -34,7 +34,7 @@
 
 ## Команды
 
-Прибор в дереве уже есть — `benchmarks/zamer-tseny/schyot-biblioteki.mjs`; он
+Прибор в дереве уже есть — `benchmarks/proof-cost/count-library.mjs`; он
 зовёт `flang check --proof` по разу на каждое доказанное утверждение. Его копия
 запускалась из СВОЕГО каталога (`mktemp -d -p /srv/tmp`) над КОПИЕЙ
 `flang/stdlib` — оригинал прибора кладёт времянку `~zamer-<имя>` рядом с
@@ -47,7 +47,7 @@ sed -e 's|^const корень = .*|const корень = "/srv/flang-rabota/u-pus
     -e "s|^const каталог = .*|const каталог = \"$W/stdlib\"|" \
     -e 's|^const двоичный = .*|const двоичный = "/srv/flang-rabota/vorota/flang-vorota"|' \
     -e 's|execFileSync(двоичный, доводы, {|execFileSync(двоичный, ["--", join(корень, "bootstrap", "flang"), ...доводы], {|' \
-    benchmarks/zamer-tseny/schyot-biblioteki.mjs > $W/schyot.mjs
+    benchmarks/proof-cost/count-library.mjs > $W/schyot.mjs
 LC_ALL=C.UTF-8 node $W/schyot.mjs <модуль>.flang     # по одному модулю за раз
 ```
 

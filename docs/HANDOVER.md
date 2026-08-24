@@ -70,5 +70,5 @@ JavaScript в его рабочем пути ноль строк не по пр�
 проверок» — и он теперь считается числом:
 
 ```
-bootstrap/flang io flang/scripts/storozha-zavodyatsya.flang
+bootstrap/flang io flang/scripts/guards-start.flang
 ```

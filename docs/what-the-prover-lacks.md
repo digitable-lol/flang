@@ -10,7 +10,7 @@
 ```
 grep -ac модус bootstrap/compiler_flang.c   →  0
 flang/self/proof-kernel.flang:5679          →  «Модус поненс по охране» есть
-flang/proof/examples/chestnaya-modus-ponens-po-ohrane.flang
+flang/proof/examples/honest-modus-ponens-by-guard.flang
   ждёт «доказано» от всех трёх и падает ровно тем отказом,
   который в ней же назван как «замер ДО правки»
 ```

@@ -542,6 +542,7 @@
 
 - [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
 - [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
+- [Охрана-равенство варианту, поле которого заполнено проекцией того же довода, может увести нормализацию в бесконечность](a-variant-guard-filled-by-a-projection-of-its-own-argument-can-diverge.md)
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
 - [Динамический ввоз прячет мёртвый файл от обхода по «import»](dynamic-import-hides-a-dead-file.md)
@@ -560,7 +561,9 @@
 
 ## Ещё не разобранное
 
-- [Охрана-равенство варианту, поле которого заполнено проекцией того же довода, может увести нормализацию в бесконечность](a-variant-guard-filled-by-a-projection-of-its-own-argument-can-diverge.md)
+- [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
+- [Отбор по выписанному списку считается только у замкнутой цели](a-filter-over-a-written-out-list-is-computed-only-in-a-closed-goal.md)
+- [Значение `пусть`, в котором стоит свёртка, останавливает цель, от него не зависящую](a-let-holding-a-fold-stops-a-goal-that-does-not-depend-on-it.md)
 
 ## Как добавлять
 

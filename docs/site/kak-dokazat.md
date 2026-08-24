@@ -462,6 +462,22 @@ conditions of every enclosing `если` must appear in the guard. Measured on
 Both upper wordings are path-incomplete, both lower ones are complete. Run both
 forms — they are two different runs, not one and the same.
 
+## 13. A bare predicate goal is not a goal kind — append `равен да`
+
+A claim whose goal is just a call to a predicate function is never taken by the
+kernel:
+
+```
+обеспечивает «результат — запись» («Это запись» от результат)          declared
+обеспечивает «результат — запись» («Это запись» от результат) равен да  PROVEN
+```
+
+Measured on `hotswap.flang`: a single such rewrite closed three claims.
+
+⛔ **The converse also happens**, measured on `provod.flang`: where the bare form
+does land, appending `равен да` can break it. The forms are **not**
+interchangeable — run both, same as with guard wording (trick 12).
+
 ## What the kernel takes in no wording at all
 
 Measured, not assumed — do not spend time on these forms until new rules appear:

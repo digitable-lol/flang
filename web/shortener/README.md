@@ -6,11 +6,11 @@
 доказанным завершением.
 
 **Страница открывается, служба к ней пока не подключена.** Стенд теперь есть и
-написан на flang (`web/stend.flang`) — он отдаёт страницу и напечатанный модуль:
+написан на flang (`web/stand.flang`) — он отдаёт страницу и напечатанный модуль:
 
 ```
 sh web/sobrat.sh
-bootstrap/flang io web/stend.flang --max-orders 1000000
+bootstrap/flang io web/stand.flang --max-orders 1000000
 # открыть http://127.0.0.1:8908/web/shortener/index.html
 ```
 
@@ -40,7 +40,7 @@ bootstrap/flang io examples/web/shortener/plan.flang
 
 | строк | что | на чём |
 |---:|---|---|
-| **488** | `klient.flang` — всё приложение | flang |
+| **488** | `client.flang` — всё приложение | flang |
 | 106 | `index.html` — разметка и 4 строки запуска | HTML |
 | 342 | `flang/test/app-shortener.test.mjs` — прогон без браузера | JavaScript |
 
@@ -173,7 +173,7 @@ bootstrap/flang io examples/web/shortener/plan.flang
 дереве нет, значит нечему устареть. Руками то же делается так:
 
 ```
-bootstrap/flang emit web/shortener/klient.flang \
+bootstrap/flang emit web/shortener/client.flang \
   --target js --no-cli --out <каталог>
 ```
 
@@ -200,7 +200,7 @@ bootstrap/flang emit web/shortener/klient.flang \
   записано в `flang/cat/SPEC.md`, и 22 августа 2026 двоичный его держит:
   `emit --target js` печатает объявление и отвечает 0, остальные семь целей
   отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав ни файла. Сверяет это
-  `scripts/plan-v-celyah.flang`.
+  `scripts/plan-across-targets.flang`.
 
 Хозяин переехал в `flang/src/emit/js/flang_host_browser.js` с нулём ввозов;
 `flang/src/host/browser.mjs` стал переходной строкой, подставляющей

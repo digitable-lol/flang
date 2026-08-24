@@ -4,7 +4,7 @@
 # Ничего специально «вебового» здесь нет и не понадобилось: бэкенд печатает
 # переносимый C99, а wasm32-wasi — обычная тройка clang. Весь путь — две команды.
 #
-#   ./web/wasm/build.sh web/wasm/spusk.flang web/wasm/demo
+#   ./web/wasm/build.sh web/wasm/descent.flang web/wasm/demo
 #
 # Нужен clang с целью wasm32 (в нём она есть всегда) и wasi-libc:
 #   Ubuntu/Debian: apt install wasi-libc libclang-rt-21-dev-wasm32
@@ -48,7 +48,7 @@ SYSROOT=${WASI_SYSROOT:-/usr}
 # FL_STACK_MIN у обычной сборки, и последняя степень двойки, на которой сторож
 # модуля ещё успевает первым.
 #
-# Модулю это не стоит почти ничего: этим же скриптом web/wasm/spusk.flang весит
+# Модулю это не стоит почти ничего: этим же скриптом web/wasm/descent.flang весит
 # 221 969 байт при 64 КиБ и 221 971 при 8 МиБ — два байта, длина числа в разделе
 # памяти. Теневой стек это диапазон адресов, а не данные в файле.
 #

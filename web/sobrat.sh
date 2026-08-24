@@ -36,7 +36,7 @@ if [ ! -x "$FLANG" ]; then
   make -C bootstrap >&2
 fi
 
-PROGRAMS="web/app/hailstone.flang web/shortener/klient.flang"
+PROGRAMS="web/app/hailstone.flang web/shortener/client.flang"
 
 status=0
 for source in $PROGRAMS; do
@@ -56,7 +56,7 @@ if [ "$status" -eq 0 ]; then
   echo "размеры напечатанного:"
   ls -l web/app/*.js web/shortener/*.js 2>/dev/null | awk '{ printf "  %9d  %s\n", $5, $9 }'
   echo
-  echo "стенд:  $FLANG io web/stend.flang --max-orders 100000"
+  echo "стенд:  $FLANG io web/stand.flang --max-orders 100000"
   echo "адрес:  http://127.0.0.1:8908/"
 fi
 exit "$status"

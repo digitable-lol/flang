@@ -31,7 +31,7 @@ $ bootstrap/flang emit проба.flang --target c --out out
 2. исключение про примеры НАЗВАНО в справке самой команды.
 
 Пропадёт фраза из справки — граница снова станет молчащей дырой. Это и стережёт
-`scripts/pechat-i-primery.flang`.
+`scripts/emit-and-examples.flang`.
 
 ## Ещё одно: ключа «--no-check» у emit нет
 

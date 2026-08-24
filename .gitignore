@@ -7,7 +7,7 @@ generated/
 coverage/
 tmp/
 # Каталог сборки релиза: там напечатанный C и архивы, всё это создаётся
-# scripts/vypusk-v-c.flang и в истории не нужно.
+# scripts/release-in-c.flang и в истории не нужно.
 output/
 
 # Продукты сборки точки раскрутки. Сам каталог bootstrap/ — часть дерева: это
@@ -49,7 +49,7 @@ erl_crash.dump
 docs/site/out/
 
 # Производная сборки web/wasm/build.sh, а не исходник: четверть мегабайта
-# двоичного файла, который печатается из web/wasm/spusk.flang за секунду.
+# двоичного файла, который печатается из web/wasm/descent.flang за секунду.
 web/wasm/demo/*.wasm
 
 # Копии дерева, которые заводит себе оснастка агента под параллельную работу.
@@ -61,31 +61,31 @@ web/wasm/demo/*.wasm
 # позвал сборку руками. Продукт, а не исходник: исходник — bootstrap/*.c.
 dvoichnyy/
 
-# Временные файлы счёта двадцати (benchmarks/zamer-tseny/schyot-20.flang): тот
+# Временные файлы счёта двадцати (benchmarks/proof-cost/count-20.flang): тот
 # же файл замера без примеров и он же с телом-заглушкой. Пишутся при каждом
 # прогоне и переписываются поверх; убрать их за собой план не может — поручения
 # «Удалить файл» в словаре ввода-вывода нет. Имена с точки и без «.flang»
 # намеренно: так их не подберёт ни один обход корпуса.
-benchmarks/zamer-tseny/.proba-golyy
-benchmarks/zamer-tseny/.proba-zaglushka
+benchmarks/proof-cost/.proba-golyy
+benchmarks/proof-cost/.proba-zaglushka
 
 # Напечатанные браузерные модули: производная от .flang рядом со страницей.
 # Печатает их `sh web/sobrat.sh`; в истории им делать нечего — исходник это
-# `web/app/hailstone.flang` и `web/shortener/klient.flang`.
+# `web/app/hailstone.flang` и `web/shortener/client.flang`.
 web/app/*.js
 web/shortener/*.js
 web/*.png
 
 # Копия двоичного, которую пишет пример «Двоичный файл туда и обратно»
-# (examples/io/dvoichnyy-fayl-tuda-i-obratno.flang). Продукт прогона, а не
+# (examples/io/binary-file-round-trip.flang). Продукт прогона, а не
 # исходник: убрать её за собой план не может — поручения «Удалить файл» в
 # словаре ввода-вывода нет.
 examples/io/.kopiya-dvoichnogo
 
 # Каталог замера скорости и памяти: восемь сборок одной программы плюс эталон
-# на C, всё создаётся benchmarks/zamer-skorosti/sobrat.sh. Имя с точки, потому
-# что оно названо числом в pamyat.flang — у плана доводов нет.
-benchmarks/zamer-skorosti/.sborka
+# на C, всё создаётся benchmarks/speed/assemble.sh. Имя с точки, потому
+# что оно названо числом в memory.flang — у плана доводов нет.
+benchmarks/speed/.sborka
 
 # Личные списки долей агентов: у каждого свой, в стволе бессмысленны и
 # конфликтуют при каждом своде.

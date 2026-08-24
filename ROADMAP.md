@@ -245,7 +245,7 @@ flang check flang/stdlib/json.flang --proof --предел-шагов 3000000000
 содержательное» — то есть пережило ли утверждение подмену тела заглушкой.
 
 ```
-./bootstrap/flang io benchmarks/zamer-tseny/schyot-20.flang
+./bootstrap/flang io benchmarks/proof-cost/count-20.flang
 → содержательных 11, ослабленных 6, даровых 1, не проверено 2
   хоть что-нибудь доказано у 14 функций из 20
 ```
@@ -354,7 +354,7 @@ node flang/scripts/skolku-verit.mjs
 отдельная программа:
 
 ```
-./bootstrap/flang io flang/scripts/poddelki-yadra.flang --timeout 900000
+./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000
 → нарушений 3, код возврата 1
   • в ядре завелась аксиома вне названного довода
   • две ложные программы лежат в каталоге и не названы ни в одном списке
@@ -421,7 +421,7 @@ SQLite; второй только читает, писать в файл баз�
 41 предстоит переписать, и восемнадцать из них переписать нельзя, пока в языке
 нет четырёх возможностей: довода плану `flang io`, удаления файла и заведения
 каталога, регулярных выражений и мелочей вроде переменной среды. Разбор по
-файлам — `docs/pochemu-ostayotsya-javascript.md`.
+файлам — `docs/why-javascript-remains.md`.
 
 ---
 
@@ -472,8 +472,8 @@ make -C bootstrap -j4                                    собрать комп
 ./bootstrap/flang check --proof flang/stdlib/lists.flang отчёт о доказательствах файла
 ./bootstrap/flang check --proof --json ФАЙЛ              то же машинным видом
 ./bootstrap/flang test flang/stdlib/lists.flang          прогнать примеры
-./bootstrap/flang io benchmarks/zamer-tseny/schyot-20.flang               цена доказательства
-./bootstrap/flang io flang/scripts/poddelki-yadra.flang --timeout 900000  доказатель не берёт ложь
+./bootstrap/flang io benchmarks/proof-cost/count-20.flang               цена доказательства
+./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000  доказатель не берёт ложь
 node flang/scripts/skolku-verit.mjs                      скольким строкам приходится верить
 sh scripts/raskrutka.sh --bystro                         не отстал ли напечатанный компилятор
 ```

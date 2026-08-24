@@ -18,14 +18,14 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "../scripts/dvoichnyy.mjs"
+import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
 import { средаСборки } from "./tempdir.mjs"
 
 export const корень = fileURLToPath(new URL("../../", import.meta.url))
 
 /** ОПОРА — второй конец каждой пары. Такой же узел, как проверяемые: хозяин
- *  плюс напечатанный `uzel-zamer.flang`. Особого положения у неё нет, кроме
+ *  плюс напечатанный `node-benchmark.flang`. Особого положения у неё нет, кроме
  *  того, что она стоит в паре всегда, — и потому считается работающей ровно
  *  тогда, когда сошлась хоть одна пара. */
 export const ОПОРА = {
@@ -188,7 +188,7 @@ export function напечатаннаяПрограмма(каталог) {
 /** Напечатать узел в цель, положить рядом хозяина и собрать. */
 export function собратьУзел(каталог, цель, планы = { "plan.json": ПЛАН }) {
   const среда = средаСборки(каталог, { LC_ALL: "C.UTF-8", ...цель.среда })
-  const печать = позвать(["emit", "flang/conc/uzel-zamer.flang", "--target", цель.имя, "--out", каталог])
+  const печать = позвать(["emit", "flang/conc/node-benchmark.flang", "--target", цель.имя, "--out", каталог])
   assert.equal(печать.код, 0, `печать узла в ${цель.имя} отказала:\n${печать.вывод}\n${печать.ошибки}`)
 
   const собрать = цель.собрать === null ? null : цель.собрать(каталог)

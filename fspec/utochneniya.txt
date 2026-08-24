@@ -1,2 +1,0 @@
-../bootstrap/flang
-opyt/01-skidka-grubo.flang

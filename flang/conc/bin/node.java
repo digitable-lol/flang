@@ -7,11 +7,11 @@
 //
 // Ни одного решения в этом файле нет. Все три части решают напечатанные модули:
 //
-//   1. связь        flang/conc/svyaz.flang          — 11 событий, 8 велений
-//   2. процессы     flang/conc/planirovshchik.flang — 7 событий, 6 велений
+//   1. связь        flang/conc/link.flang          — 11 событий, 8 велений
+//   2. процессы     flang/conc/scheduler.flang — 7 событий, 6 велений
 //   3. программа    flang/conc/examples/distributed.flang — обработчики
 //
-// Собраны они в один модуль flang/conc/uzel-zamer.flang и напечатаны
+// Собраны они в один модуль flang/conc/node-benchmark.flang и напечатаны
 // компилятором в цель java. Хозяин собирается вместе с напечатанным одним
 // javac под теми же ключами (-encoding UTF-8 -Xlint:all -Werror), а второй
 // точки входа в Java не бывает: класс называют при запуске.
@@ -50,7 +50,7 @@
 // ── Надзор ──────────────────────────────────────────────────────────────────
 //
 // Отказ процесса доезжает до веления «Уронить процесс», и хозяин передаёт его
-// НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/nadzor.flang. Кого
+// НАДЗОРУ — четвёртому напечатанному модулю, flang/conc/supervisor.flang. Кого
 // поднимать, кого укладывать и когда передавать выше, решает он; хозяин только
 // исполняет. Дерево надзора приезжает данными в плане, как и размещение.
 //
@@ -538,7 +538,7 @@ final class HozyainUzla {
       }
 
       /* Дерево надзора — данные, ровно как размещение. Решает по нему
-         напечатанный nadzor.flang, а не этот файл. */
+         напечатанный supervisor.flang, а не этот файл. */
       List<Value> nadzirateli = new ArrayList<>();
       List<Value> nadProcessom = new ArrayList<>();
       List<Value> nadNadzorom = new ArrayList<>();
@@ -843,7 +843,7 @@ final class HozyainUzla {
 
     /* Пропажа соседа — на ДОКЛАД, а не на «Прибрать»: сокет прибирают и когда
        терять было нечего, и по второму разу на одном разрыве, а доклад слой
-       связи выдаёт ровно один раз на разрыв — доказано в `svyaz.flang». */
+       связи выдаёт ровно один раз на разрыв — доказано в `link.flang». */
     private void dokladOSvyazi(Kanal kanal, String chto, String pochemu) {
       skazat("в", tekst("связь"), "узел", tekst(imya), "цель", tekst(CEL),
           "сосед", tekst(kanal.kto), "что", tekst(chto), "почему", tekst(pochemu));
@@ -888,7 +888,7 @@ final class HozyainUzla {
               "процесс", tekst(vzyatTekst(velenie, "кто")), "код", tekst(vzyatTekst(velenie, "код")),
               "текст", tekst(vzyatTekst(velenie, "текст")));
           // Отказ уходит НАДЗОРУ, а не в журнал: решает напечатанный
-          // nadzor.flang, здесь только дорога к нему.
+          // supervisor.flang, здесь только дорога к нему.
           nadzorSluchilsya(vzyatTekst(velenie, "кто"), vzyatTekst(velenie, "код"));
         }
         case "Письмо пропало" -> skazat("в", tekst("потеря"), "узел", tekst(imya), "цель", tekst(CEL),

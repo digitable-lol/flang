@@ -22,14 +22,14 @@
  * мир, второе — граница языка: передать функцию туда, где она приезжает
  * данными, flang не умеет) — и останутся решения, которые печатаются.
  *
- * Здесь это считается, а не утверждается: `flang/conc/planirovshchik.flang`
+ * Здесь это считается, а не утверждается: `flang/conc/scheduler.flang`
  * печатается в каждую из восьми целей, собирается настоящим тулчейном,
  * запускается — и обязан на каждое событие ответить тем же новым состоянием
  * узла и тем же списком велений.
  *
  * ── Кто здесь свидетель ─────────────────────────────────────────────────────
  *
- * `flang/conc/planirovshchik.js` — напечатанный модуль цели JavaScript, тот
+ * `flang/conc/scheduler.js` — напечатанный модуль цели JavaScript, тот
  * самый, который зовёт настоящий узел. Оговорка та же, что у соседа: сверка
  * «напечатанное с напечатанным» доказывает ПЕРЕНОСИМОСТЬ, а не правильность.
  * Правильность держат прогоны по настоящим сокетам.
@@ -49,15 +49,15 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "../scripts/dvoichnyy.mjs"
+import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
 import { findExecutable, missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
-const эталон = "flang/conc/planirovshchik.flang"
+const эталон = "flang/conc/scheduler.flang"
 const рабочий = рабочийКаталог("planirovshchik-celi")
-const свидетель = await import("../conc/planirovshchik.js")
+const свидетель = await import("../conc/scheduler.js")
 
 /* ─────────────────── значения прогонщика ───────────────────
    Протокол ровно тот же, что у соседа (`svyaz-celi.test.mjs`), и это не

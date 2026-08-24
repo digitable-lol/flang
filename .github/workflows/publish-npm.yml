@@ -15,7 +15,7 @@
 # `flang-<версия>-c.tar.gz`. На новом теге такого релиза, разумеется, ещё нет —
 # и ни один шаг этого прогона архив не собирал и никуда не клал. Проверка
 # краснела, публикация не наступала, а собрать архив было нечем: скрипт
-# `scripts/vypusk-v-c.flang` звали руками с чьей-то машины.
+# `scripts/release-in-c.flang` звали руками с чьей-то машины.
 #
 # Отсюда починка, и она не косметическая: архив СОБИРАЕТСЯ И ПРИКЛАДЫВАЕТСЯ К
 # РЕЛИЗУ ЗДЕСЬ ЖЕ, до `npm test`. После этого набор проверяет то, что уже
@@ -79,7 +79,7 @@ jobs:
       - name: Установить зависимости
         # `npm ci` здесь заодно собирает двоичный компилятор: у пакета появился
         # postinstall. Это около 35 секунд и это НУЖНО — набор тестов проверяет
-        # путь установки целиком (flang/scripts/ustanovka-npm.flang, ярлык `ustanovka:npm`).
+        # путь установки целиком (flang/scripts/npm-install.flang, ярлык `ustanovka:npm`).
         run: npm ci
 
       - name: Проверить, что тег совпадает с версией пакета
@@ -115,7 +115,7 @@ jobs:
         # Хеш, который нельзя повторить, нельзя и проверить.
         run: |
           set -eu
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/vypusk-v-c.flang --timeout 1800000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
           version="$(node -p 'require("./package.json").version')"
           files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
           echo "в архив идут файлы:"; echo "$files" | sed 's/^/  /'

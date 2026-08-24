@@ -4,8 +4,8 @@
 двенадцати закрываются мелочью. Вся цена сидит в паре `snprintf("%.*e")` +
 `strtod`, и просит их **одна функция** — `fl_number_text`.
 
-**Чем подтверждено.** Ветка `u/sloy`, повтор: `sh benchmarks/sistemnoe/zamer.sh`.
-Настоящая программа — разбор `fstab(5)`, `benchmarks/sistemnoe/fstab.flang`.
+**Чем подтверждено.** Ветка `u/sloy`, повтор: `sh benchmarks/systems/measure.sh`.
+Настоящая программа — разбор `fstab(5)`, `benchmarks/systems/fstab.flang`.
 
 Двенадцать имён в 38 местах: `memcpy` `snprintf` `strlen` `strcmp` `memcmp`
 `malloc` `free` `vsnprintf` `strtod` `strtol` `memset` `__errno_location`.
@@ -27,7 +27,7 @@
 Стила—Уайта (dtoa / Grisu / Ryu) — отдельная работа на тысячи строк с таблицами
 степеней десяти.
 
-**Измеренная граница дешёвого пути.** `benchmarks/bez-libc/sloy-teksta.c` —
+**Измеренная граница дешёвого пути.** `benchmarks/without-libc/text-layer.c` —
 118 строк — делает эту пару **только для целых |v| ≤ 2^53**, где десятичная
 запись точна и считается целочисленной арифметикой. Сверка с glibc: **24 пробы
 от 0 до ±(2^53−1) совпали знак в знак**, первая расходящаяся — `0.5`. Разбору

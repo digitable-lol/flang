@@ -3657,7 +3657,7 @@
           "commit": "cb7054b"
         },
         {
-          "text": "Стенды замера умеют оба режима: поле «workers» в mera.sh и новый poyadram.sh",
+          "text": "Стенды замера умеют оба режима: поле «workers» в measure.sh и новый by-cores.sh",
           "commit": "d9d6f2f"
         },
         {

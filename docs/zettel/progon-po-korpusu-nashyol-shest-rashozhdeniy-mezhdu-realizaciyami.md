@@ -14,7 +14,7 @@
 | `flang/self/bootstrap/compiler.flang` | отказ `FLANG_RECURSION_LIMIT` (40 000 000 витков, 220 с) | взят, 405 примеров | −405 |
 | `flang/self/repl/repl.flang` | отказ `FLANG_RECURSION_LIMIT` (172 с) | взят, 324 примера | −324 |
 | `examples/monad/order-total.flang` | отказ `FLANG_TYPE_PARAM` | взят, 27 примеров | −27 |
-| `flang/conc/sluzhby/chtenie.flang` | отказ `FLANG_UNKNOWN_NAME` | взят, 9 примеров | −9 |
+| `flang/conc/services/file-read.flang` | отказ `FLANG_UNKNOWN_NAME` | взят, 9 примеров | −9 |
 
 Вторая строка — ДОЛГ, записанный заранее: шапка «Прогон примеров исходников»
 (`flang/self/bootstrap/compiler.flang`) прямо говорит, что примеры закона живут

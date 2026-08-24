@@ -5,10 +5,10 @@
 **Основание:** словарь поручений [`flang/self/parser.flang`](../../flang/self/parser.flang);
 хозяева `flang/src/emit/c/flang_repl.c`, `flang/src/emit/c/flang_conc.c`,
 `flang/src/emit/js/flang_host_browser.js`, `flang/src/emit/js/flang_io.js`;
-планировщик [`flang/conc/planirovshchik.flang`](../../flang/conc/planirovshchik.flang);
+планировщик [`flang/conc/scheduler.flang`](../../flang/conc/scheduler.flang);
 пример стыка [`examples/io/фильтр-пакетов.flang`](../../examples/io/фильтр-пакетов.flang).
-**Связано:** [ADR-0002](0002-ishodyashchee-soedinenie.md) — исходящее соединение;
-[ADR-0004](0004-oktety-v-slovare-effektov.md) и [ADR-0006](0006-oktety-u-faylov.md) — октеты в словаре.
+**Связано:** [ADR-0002](0002-outbound-connection.md) — исходящее соединение;
+[ADR-0004](0004-octets-in-the-effects-dictionary.md) и [ADR-0006](0006-octets-for-files.md) — октеты в словаре.
 Все прогоны сделаны компилятором 0.6.2, собранным из точки раскрутки этого дерева.
 
 ---
@@ -82,9 +82,9 @@ FLANG_RECURSION_LIMIT: функция «Крутить» исчерпала ли
 есть:
 
 ```
-$ bootstrap/flang check flang/conc/planirovshchik.flang; echo $?
+$ bootstrap/flang check flang/conc/scheduler.flang; echo $?
 модуль «Планировщик узла»: функций 47, из них с доказанным завершением 47; типов 10
-flang/conc/planirovshchik.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+flang/conc/scheduler.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 0
 ```
 
@@ -148,7 +148,7 @@ examples/web/shortener/handler-without-budget.flang: проверено НЕ Д�
 | рукопожатие SCRAM | `flang/stdlib/scram.flang` | 20 | **20** |
 | перевод base64 | `flang/stdlib/base64.flang` | 19 | **19** |
 | кодировка UTF-8 | `flang/stdlib/utf8.flang` | 16 | **16** |
-| **решения планировщика** | `flang/conc/planirovshchik.flang` | 47 | **47** |
+| **решения планировщика** | `flang/conc/scheduler.flang` | 47 | **47** |
 
 Разбор пакетов, кодеки, состояния протоколов, проверка прав — и решения
 планировщика в том же ряду. Ни одной функции без доказанного завершения ни в
@@ -298,7 +298,7 @@ $ ./ярлык vkladka:check; echo $?
 
 Соблазн «Позвать чужое» выглядит как «дайте возможности». Посмотрим, чего в
 дереве действительно не хватает, — поимённо, по разбору
-[`docs/pochemu-ostayotsya-javascript.md`](../pochemu-ostayotsya-javascript.md) и
+[`docs/why-javascript-remains.md`](../why-javascript-remains.md) и
 по шапке `ярлык`, где перечислено, почему запуск проверок остался оболочкой:
 
 | настоящая нехватка | это нехватка чего | лечит ли способ 1 | лечило бы «Позвать чужое» |

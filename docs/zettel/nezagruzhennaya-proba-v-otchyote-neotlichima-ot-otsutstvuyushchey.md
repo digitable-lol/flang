@@ -61,8 +61,8 @@ Node **ввозит файл целиком** — а ввоз и есть то �
 спрашивает «а этот файл вообще цел».
 
 **Чем подтверждено.** Ветка `u/storozha` от `github/main` `4c1b6aef`.
-Считает `flang/scripts/storozha-zavodyatsya.flang` (ярлык `storozha:check`,
-работа `storozha` в `.github/workflows/dvoichnyy.yml`). Первый прогон на стволе:
+Считает `flang/scripts/guards-start.flang` (ярлык `storozha:check`,
+работа `storozha` в `.github/workflows/binary.yml`). Первый прогон на стволе:
 `сторожей в дереве 18; заводятся 15; НЕ ЗАВОДЯТСЯ 2; досмотреть не удалось 1`,
 код возврата 1. После разбора всех трёх: 16 из 16, код возврата 0, 4 секунды.
 

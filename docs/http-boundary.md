@@ -207,4 +207,4 @@
 одно слово» (`docs/guide/naming.ru.md`): «связью» в этом дереве названы ещё три
 разных понятия. Текст выше **намеренно оставлен как был** — это запись замера на
 свою дату, а не описание языка; действующий словарь смотреть в `flang/cat/SPEC.md`,
-решение — в [`docs/adr/0002-ishodyashchee-soedinenie.md`](adr/0002-ishodyashchee-soedinenie.md).
+решение — в [`docs/adr/0002-outbound-connection.md`](adr/0002-outbound-connection.md).

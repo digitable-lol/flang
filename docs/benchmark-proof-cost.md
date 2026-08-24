@@ -307,7 +307,7 @@ $ flang run flang/stdlib/strings.flang --function 'Строчная буква' 
 
 ### Как выглядит каждый исход — по одному примеру
 
-**«Ядро не берёт»: «Следует» (`docs/benchmark/12-sleduet.flang`).** Тип обоих
+**«Ядро не берёт»: «Следует» (`docs/benchmark/12-implies.flang`).** Тип обоих
 параметров — `признак`, значений у него ДВА, всё утверждение проверяется
 перебором четырёх строк таблицы:
 
@@ -335,7 +335,7 @@ $ flang run flang/stdlib/strings.flang --function 'Строчная буква' 
 введённые `дано`, поэтому каждый параметр функции надо перечислить заново — без
 строки `дано новое: «Звено»` ядро отвечает «имя «новое» не связано».
 
-**«На языке не выразить»: «Ключ связи» (`docs/benchmark/01-klyuch-svyazi.flang`).**
+**«На языке не выразить»: «Ключ связи» (`docs/benchmark/01-link-key.flang`).**
 Функция достаёт поле из записи-суммы. Правда о ней ровно одна: «результат равен
 полю `ключ`».
 
@@ -462,13 +462,13 @@ export LC_ALL=C.UTF-8
 
 # правило отбора: сколько функций в библиотеке и какие двадцать даёт шаг
 # (на основании замера — 185 годных из 185, шаг 9)
-node benchmarks/zamer-tseny/otbor.mjs
+node benchmarks/proof-cost/otbor.mjs
 
 # тестовая сторона одной функции замера: 7 примеров, все зелёные
-bootstrap/flang test docs/benchmark/17-est-v-mnozhestve.flang
+bootstrap/flang test docs/benchmark/17-member-of-set.flang
 
 # сторона доказательства той же функции: отказ ядра
-bootstrap/flang check docs/benchmark/17-est-v-mnozhestve.flang --proof
+bootstrap/flang check docs/benchmark/17-member-of-set.flang --proof
 
 # ведомость по всему дереву: высказано, доказано, функций
 node flang/scripts/proof-ledger.mjs

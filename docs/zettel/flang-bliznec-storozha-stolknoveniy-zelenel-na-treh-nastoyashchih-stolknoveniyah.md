@@ -5,7 +5,7 @@
 | | вход, файлов | видимых объявлений | нашёл столкновений | время | пик памяти | код возврата |
 |---|---:|---:|---:|---:|---:|---:|
 | `node flang/scripts/link-collision-guard.mjs --дерево` | 762 | 57 516 | **3** | 2,4 с | — | **1** |
-| `bootstrap/flang io scripts/storozh-stolknoveniy.flang` | 38 | 7 873 | **0** | 152,6 с | 16,7 ГиБ | **0** |
+| `bootstrap/flang io scripts/name-collision-guard.flang` | 38 | 7 873 | **0** | 152,6 с | 16,7 ГиБ | **0** |
 
 Столкновения настоящие и названы поимённо:
 
@@ -39,7 +39,7 @@
 
 ## Побочно: работа `imena` в CI красная и без нас
 
-Тот же прогон показал, что `dvoichnyy.yml` в работе `imena` держал строку
+Тот же прогон показал, что `binary.yml` в работе `imena` держал строку
 `- run: node --test flang/test/link-collision-guard.test.mjs`, а файла нет — он
 снят предыдущей работой по снятию JavaScript. Node отвечает
 `Cannot find module`, работа краснеет на любом входе. Строка убрана; предмет

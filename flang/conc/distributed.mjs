@@ -67,8 +67,8 @@
 
 import { createConnection, createServer } from "node:net"
 
-/* Решения о связи — НАПЕЧАТАННЫЕ. Модуль `flang/conc/svyaz.js` печатает
-   компилятор из `flang/conc/svyaz.flang`, и правится он только там: сверку
+/* Решения о связи — НАПЕЧАТАННЫЕ. Модуль `flang/conc/link.js` печатает
+   компилятор из `flang/conc/link.flang`, и правится он только там: сверку
    печати заново держит `flang/test/svyaz-pechat.test.mjs`. Ввозится он без
    единой зависимости, потому что и напечатан без единой. */
 import {
@@ -85,7 +85,7 @@ import {
   ZvonokNeUdalsya,
   shagSvyazi,
   svyazZanovo,
-} from "./svyaz.js"
+} from "./link.js"
 
 import {
   LINK_DOWN_CODE,

@@ -123,7 +123,7 @@ limits that end up in the emitted byte. The fingerprint lives in
 separate command someone has to remember.
 
 The cheap one runs on every push as job `semya` in
-`.github/workflows/dvoichnyy.yml`; a mismatch is a refusal, not a warning. The
+`.github/workflows/binary.yml`; a mismatch is a refusal, not a warning. The
 the full comparison is called before a release and after merges.
 
 **What the cheap one does not prove:** that the files are identical down to the

@@ -73,7 +73,7 @@ obstacle; a chain of numeric comparisons is, and there the kernel loses the goal
 split.
 
 **Mirroring nested `если` is worth trying but does not always work — measure.**
-Two runs on the same day disagreed, and both are honest. In `provod.flang` the
+Two runs on the same day disagreed, and both are honest. In `wire.flang` the
 entire +8 came from the nested levels: the previous author had mirrored only the
 top `если` and left the nested ones alone. In `utf8.flang` it went the other way:
 the top branch of «Значения знака 64» was proved, while four claims about the
@@ -195,7 +195,7 @@ Before cutting a claim into ten parts, break off **one** and run it.
   spending time here.
 
 **First check whether the compound is already proved as a whole.** If it is,
-splitting can take a proof away rather than add one: in `provod.flang` the claim
+splitting can take a proof away rather than add one: in `wire.flang` the claim
 «Байтов в знаке» was proved whole, and after the split one half was proved and
 the other stayed a grid. A net loss — and one probe does not catch it, because
 the probe shows the proved half and looks like success.
@@ -352,7 +352,7 @@ FLANG_PROOF_STEP: к этому месту не известно ничего, �
 
 **Careful: the ban on `пусть` applies ONLY to the "по свойству" theorem.** A
 binding does not block splitting the goal by condition. Measured on
-`reestr.flang`: the body of «Разобрать диапазон» starts with `пусть чистый равно
+`registry.flang`: the body of «Разобрать диапазон» starts with `пусть чистый равно
 («Обрезать» от текст)`, and the claim's guard was written with the expression
 substituted in — `если («Обрезать» от текст) равен "любая"` — and it **landed**.
 So when the body binds a name, write the guard through the argument itself rather
@@ -392,7 +392,7 @@ comparing the scrutinee to a variant does split it:
 ```
 
 Found independently by **four** agents in one day — on `optional.flang`
-(2 of 12 → 7 of 14), on `provod.flang` and `redis.flang` (+27 together), on
+(2 of 12 → 7 of 14), on `wire.flang` and `redis.flang` (+27 together), on
 `образцы.flang`, and on `result.flang` (10 of 13 → **15 of 15**, no grid left).
 
 **A variant WITH FIELDS lands too — 26 out of 26.** The tree used to record fields
@@ -517,7 +517,7 @@ kernel:
 
 Measured on `hotswap.flang`: a single such rewrite closed three claims.
 
-⛔ **The converse also happens**, measured on `provod.flang`: where the bare form
+⛔ **The converse also happens**, measured on `wire.flang`: where the bare form
 does land, appending `равен да` can break it. The forms are **not**
 interchangeable — run both, same as with guard wording (trick 12).
 

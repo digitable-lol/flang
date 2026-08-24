@@ -1,7 +1,7 @@
 # Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки
 
 Найдено прогоном 20 августа 2026 при переносе `flang/test/emit-bidi.test.mjs` в
-`scripts/storozh-dvunapravlennyh.flang`.
+`scripts/bidi-control-guard.flang`.
 
 Проба: модуль и функция, в имени которых стоят все двенадцать двунаправленных
 управляющих (U+061C, U+200E, U+200F, U+202A…U+202E, U+2066…U+2069), и строковый
@@ -37,7 +37,7 @@ CVE-2021-42574. Файл читается не так, как исполняет
 ## Как увидеть
 
 ```
-bootstrap/flang io scripts/storozh-dvunapravlennyh.flang
+bootstrap/flang io scripts/bidi-control-guard.flang
 ```
 
 Тот же сторож на шести чистых целях отвечает «целей 6, файлов 35, сырых

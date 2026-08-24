@@ -29,7 +29,7 @@ compiler_flang_variant_est_uzel`.
 
 **Чем подтверждено.** Чтение `scripts/bootstrap-c.mjs` (функция `напечатать`,
 строки 108—114: `loadProgram` и `emitC`, `checkProgram` не упоминается) и
-прогон `scripts/proba-variantov.flang` на дереве `061b09c9`: `flang check`
+прогон `scripts/variant-probe.flang` на дереве `061b09c9`: `flang check`
 отвечает `FLANG_TYPE` и кодом 1, `flang emit --target c` отказывается печатать
 непроверенное, а путь точки раскрутки прошёл бы.
 

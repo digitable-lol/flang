@@ -1,8 +1,0 @@
-# реестр flang, схема 1: имя | версия | отпечаток sha256 | адрес | нужды
-Логика | 1.0.0 | 2ea2d0b70b7544b7384fbfafe5ba216e8911b672634996747ed15d507c302350 | reestr-primer/logika-1.0.0.flang-package | 
-Логика | 1.2.0 | 6707a8be727a223ea0cde049193f8d4ac62bae8e0ac1f0556438e0f2c4a52b98 | reestr-primer/logika-1.2.0.flang-package | 
-Логика | 2.0.0 | 6fcb5fee384b623d77430c973aedd5ad1c9e567da7a2430eb9084824fbf988b6 | reestr-primer/logika-2.0.0.flang-package | 
-Списки | 1.4.2 | cb87ffcd4fb3d6dee44117ca1ce404367bf42667341b0a1ac0cdd7cf0e2b8204 | reestr-primer/spiski-1.4.2.flang-package | Логика: не ниже 1.0.0
-Множество строк | 1.0.0 | cf3a1697ccc1e7c2fa4fd72b3210ad5372590c0844f13e07119fa290a1f69931 | reestr-primer/mnozhestva-1.0.0.flang-package | Логика: не ниже 1.0.0
-Множество строк | 1.1.0 | a9a776e153d9789c7e29f8c66ad92df36a834f21630c6388b41ebd4f8d2effc2 | reestr-primer/mnozhestva-1.1.0.flang-package | Списки: в пределах 1.x; Логика: в пределах 1.x
-Опциональное значение | 0.9.0 | 17eac86ce77be366094d22be0f537d4bab5bb00958fb41df3bd7353060957c7d | reestr-primer/vozmozhno-0.9.0.flang-package | Логика: ровно 2.0.0

@@ -11,7 +11,7 @@
   "flang/conc/examples/race.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
   "flang/conc/examples/server.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
   "flang/conc/examples/supervision.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
-  "flang/conc/sluzhby/chtenie.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
+  "flang/conc/services/file-read.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
   "flang/core/evaluate.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
   "flang/core/json.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",
   "flang/core/lexer.flang": "{\"version\":2,\"checked\":[],\"diagnostics\":[],\"preconditions\":{\"sites\":0,\"discharged\":0,\"diagnostics\":[]}}",

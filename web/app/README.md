@@ -8,12 +8,12 @@
 
 ```
 sh web/sobrat.sh                                    # напечатать модуль в JavaScript
-bootstrap/flang io web/stend.flang --max-orders 1000000   # поднять стенд
+bootstrap/flang io web/stand.flang --max-orders 1000000   # поднять стенд
 # открыть http://127.0.0.1:8908/
 ```
 
 Ни Node, ни npm, ни `python3 -m http.server`: печатает модуль двоичный
-компилятор, отдаёт страницу стенд, написанный на flang (`web/stend.flang`).
+компилятор, отдаёт страницу стенд, написанный на flang (`web/stand.flang`).
 
 Раньше сборки не было вовсе — страница ввозила `flang/src/parser.mjs` и
 разбирала `hailstone.flang` прямо во вкладке. Второй реализации языка в дереве
@@ -26,9 +26,9 @@ bootstrap/flang io web/stend.flang --max-orders 1000000   # поднять ст�
 | строк | что | на чём |
 |---:|---|---|
 | **301** | `hailstone.flang` — всё приложение | flang |
-| **499** | `../stend.flang` — стенд, отдающий страницу | flang |
+| **499** | `../stand.flang` — стенд, отдающий страницу | flang |
 | 397 | `flang/src/emit/js/flang_host_browser.js` — хозяин вкладки | JavaScript |
-| 241 | `../proba-v-brauzere.sh` — прогон в настоящем браузере | оболочка |
+| 241 | `../browser-probe.sh` — прогон в настоящем браузере | оболочка |
 | 88 | `index.html` — разметка; строк JavaScript в ней **ноль** | HTML |
 
 Строк JavaScript, написанных руками ради этой страницы, — **ноль**. Тег запуска
@@ -130,7 +130,7 @@ bootstrap/flang io web/stend.flang --max-orders 1000000   # поднять ст�
 «часы будят план сами» (6 → 1 за 8 шагов без единого нажатия) и «нажатия,
 случившиеся пока план считал, не теряются».
 
-**`web/proba-v-brauzere.sh` — в настоящем браузере, без Node и без npm.**
+**`web/browser-probe.sh` — в настоящем браузере, без Node и без npm.**
 Playwright берётся из окружения, в зависимости flang не входит. Шесть сверок
 экрана, все побайтовые.
 

@@ -59,7 +59,7 @@ import { readFileSync, realpathSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 import { globSync } from "../test/glob.mjs"
-import { ключевоеСлово, токеныМногих } from "./dvoichnyy.mjs"
+import { ключевоеСлово, токеныМногих } from "./binary.mjs"
 
 const корень = fileURLToPath(new URL("../..", import.meta.url))
 

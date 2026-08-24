@@ -12,7 +12,7 @@
 `constraint=CONSTRAINT_NONE` — то есть кончилась вся память машины, а не лимит.
 Убило пользовательские менеджеры двух учётных записей и снесло сессии.
 
-Источник — `flang/scripts/dvoichnyy.mjs`, и не в одном месте, а в трёх:
+Источник — `flang/scripts/binary.mjs`, и не в одном месте, а в трёх:
 `прогреть`, `прогретьВедомости`, `токеныМногих`. У всех трёх одна строка:
 
 ```js
@@ -23,7 +23,7 @@ const сколько = потоков || Math.max(1, Math.min(64, cpus().length)
 не человек и не агент, а оснастка, стоящая через две ступени:
 
 ```
-docs/site/site-numbers.mjs  →  flang/scripts/proof-ledger.mjs  →  dvoichnyy.mjs
+docs/site/site-numbers.mjs  →  flang/scripts/proof-ledger.mjs  →  binary.mjs
 ```
 
 То есть `./ярлык numbers`, `./ярлык numbers:check` и `./ярлык proof:ledger` —

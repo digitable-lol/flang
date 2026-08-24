@@ -160,7 +160,7 @@ extern const fl_conc_plan *FL_PROGRAM_CONC_PLAN(void);
  * Запрос протокола — строка, а строка в этом языке UTF-8 (SPEC, раздел 5).
  * До 22 августа 2026 негодный октет проходил сквозь восемь прогонщиков ПЯТЬЮ
  * разными способами, и отказом не был ни один (замер снят прогоном, таблица —
- * в scripts/storozh-negodnogo-okteta.sh):
+ * в scripts/bad-octet-guard.sh):
  *
  *   C           возил октеты как есть и отвечал FLANG_UNKNOWN_NAME на мусор;
  *   Go, Java,

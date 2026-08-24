@@ -86,7 +86,7 @@
           "Поиск по кодам отказа в документации находит 13 кодов из 13 — было 0 из 13."
         ],
         "сломалось": [
-          "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/storozh-zanyatogo.flang` вместо снятого скрипта на JavaScript.",
+          "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/occupied-names-guard.flang` вместо снятого скрипта на JavaScript.",
           "Общая половина драйвера PostgreSQL уехала в модуль «Провод». Программы, звавшие `«Знак байта»`, `«Четыре октета»`, `«Два октета»` и соседей прямо у «Разговора с базой», должны ввозить «Провод»."
         ]
       },
@@ -108,7 +108,7 @@
           "Searching the documentation by refusal code finds 13 codes out of 13 — it used to find 0 of 13."
         ],
         "сломалось": [
-          "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/storozh-zanyatogo.flang` instead of the removed JavaScript script.",
+          "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.",
           "The shared half of the PostgreSQL driver moved into the \"Wire\" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import \"Wire\"."
         ]
       }

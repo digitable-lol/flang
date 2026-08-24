@@ -92,7 +92,7 @@ production.
 (`git ls-files | grep -E '\.(mjs|js)$'`) — the site build, the guards, the
 benchmarks. Some of them are not held up by a shortage of hands: four
 capabilities are absent from the language itself, and what exactly holds each
-file is worked out in `docs/pochemu-ostayotsya-javascript.md`. Twelve files are
+file is worked out in `docs/why-javascript-remains.md`. Twelve files are
 not a debt at all — the runtime of the `js` emit target, output of the compiler
 itself, and launchers that run before flang is on the machine.
 

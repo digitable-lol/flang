@@ -10252,7 +10252,7 @@ static fl_value io_http_answer(const repl_buf *answer) {
  * ОТКУДА БЕРЁТСЯ ШИФРОВАНИЕ. Не отсюда. Криптографии в этом файле не прибавилось
  * ни байта, и `bootstrap/Makefile` по-прежнему линкует `-lm -lpthread` и ничего
  * сверх: точка раскрутки как собиралась одним `cc`, так и собирается. Три пути
- * взвешены числом в `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`,
+ * взвешены числом в `docs/adr/0007-encryption-by-request-to-an-external-host.md`,
  * и выбран третий — ТОТ ЖЕ, каким в словаре живут процессы: поручение уходит
  * НАРУЖУ, чужая проверенная программа его исполняет, мы разбираем ответ.
  *
@@ -10635,7 +10635,7 @@ static fl_value io_https(io_host *host, const char *method, const char *address,
  * `io_https` внешней программе. Втащить TLS в это основание значило бы положить
  * в него чужую криптографию — путь отвергнутый, а не забытый; отдать поручение
  * наружу — тот же путь, каким в словаре живут процессы. Довод целиком —
- * `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`.
+ * `docs/adr/0007-encryption-by-request-to-an-external-host.md`.
  */
 static fl_value io_request(io_host *host, const char *method, const char *address, const char *body) {
   char host_name[512];

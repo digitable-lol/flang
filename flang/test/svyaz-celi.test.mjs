@@ -13,13 +13,13 @@
  * О часах.
  *
  * Решение переносимо, и здесь это считается, а не утверждается. Машина
- * состояний связи (`flang/conc/svyaz.flang`) печатается в каждую из восьми
+ * состояний связи (`flang/conc/link.flang`) печатается в каждую из восьми
  * целей, собирается настоящим тулчейном, запускается — и обязана на каждое
  * событие ответить тем же новым состоянием связи и тем же списком велений.
  *
  * ── Кто здесь свидетель и почему именно он ──────────────────────────────────
  *
- * Свидетель — `flang/conc/svyaz.js`, напечатанный модуль цели JavaScript. Он
+ * Свидетель — `flang/conc/link.js`, напечатанный модуль цели JavaScript. Он
  * выбран не потому, что удобен, а потому, что он РАБОТАЕТ: настоящий узел
  * (`flang/conc/distributed.mjs`) зовёт именно его, и по нему зелены 13 прогонов
  * `flang/conc/distributed.test.mjs`, где два узла говорят по настоящим сокетам,
@@ -45,15 +45,15 @@ import { join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
 
-import { позвать } from "../scripts/dvoichnyy.mjs"
+import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
 import { findExecutable, missingToolchain } from "./toolchain-guard.mjs"
 import { рабочийКаталог, средаСборки } from "./tempdir.mjs"
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
-const эталон = "flang/conc/svyaz.flang"
+const эталон = "flang/conc/link.flang"
 const рабочий = рабочийКаталог("svyaz-celi")
-const свидетель = await import("../conc/svyaz.js")
+const свидетель = await import("../conc/link.js")
 
 /* ─────────────────── значения прогонщика ─────────────────── */
 

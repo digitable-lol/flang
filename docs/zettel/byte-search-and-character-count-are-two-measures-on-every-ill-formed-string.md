@@ -81,5 +81,5 @@ AddressSanitizer этой записи не показывает: она вну�
 входе в язык — а он отнял бы у `«Прочитать файл»` двоичное чтение и заставил бы
 `«Прочитать из соединения»` отказывать на куске TCP, законно разрезавшем знак.
 
-Связанное: `docs/adr/0007-odna-mera-u-stroki.md`,
-`scripts/storozh-odna-mera-stroki.sh`, `scripts/mera-stroki.flang`.
+Связанное: `docs/adr/0007-one-measure-for-strings.md`,
+`scripts/one-string-measure-guard.sh`, `scripts/string-measure.flang`.

@@ -197,10 +197,10 @@ export async function измерить() {
   const к = корпусФайлами()
   const с = покрытие()
   const база = модуль("flang/stdlib/postgres.flang")
-  const провод = модуль("flang/stdlib/provod.flang")
+  const провод = модуль("flang/stdlib/wire.flang")
   const план = модуль("examples/db/postgres-plan.flang")
-  const планировщик = модуль("flang/conc/planirovshchik.flang")
-  const связь = модуль("flang/conc/svyaz.flang")
+  const планировщик = модуль("flang/conc/scheduler.flang")
+  const связь = модуль("flang/conc/link.flang")
   const отказы = отказыЯдра()
 
   return {
@@ -266,10 +266,10 @@ export async function измерить() {
       "связь.строк": связь.строк,
       "связь.функций": связь.функций,
       "связь.примеров": связь.примеров,
-      "связь.событий": вариантов("flang/conc/svyaz.flang", "Что случилось со связью"),
-      "связь.событийСловом": словом(вариантов("flang/conc/svyaz.flang", "Что случилось со связью")),
-      "связь.велений": вариантов("flang/conc/svyaz.flang", "Веление"),
-      "связь.веленийСловом": словом(вариантов("flang/conc/svyaz.flang", "Веление")),
+      "связь.событий": вариантов("flang/conc/link.flang", "Что случилось со связью"),
+      "связь.событийСловом": словом(вариантов("flang/conc/link.flang", "Что случилось со связью")),
+      "связь.велений": вариантов("flang/conc/link.flang", "Веление"),
+      "связь.веленийСловом": словом(вариантов("flang/conc/link.flang", "Веление")),
 
       // Отказы ядра доказательств: страница называет их поимённо и обещает, что
       // других нет. Число обязано держаться за компилятор, а не за память.

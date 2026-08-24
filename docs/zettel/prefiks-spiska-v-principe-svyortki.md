@@ -80,7 +80,7 @@ P(И, пусто) ∧ (для любых а, п и э: P(а, п) ⟹ P(Т, п ++
 `flang/test/fixtures/svyortka-prefiks-chestnaya.flang` — три утверждения, которые
 правило обязано взять: старым двоичным код 1 и шесть отказов
 FLANG_PROOF_INDUCTION_STEP, новым код 0 и все три «доказано индукцией по СВЁРТКЕ
-тела». Обе половины названы в `flang/scripts/poddelki-yadra.flang`; прогон
+тела». Обе половины названы в `flang/scripts/kernel-forgeries.flang`; прогон
 сторожа — «подделки отвергнуты: 14 файлов, аксиом ноль, нарушений 0», код 0.
 
 Связано: [[left-fold-gives-no-list-induction]],

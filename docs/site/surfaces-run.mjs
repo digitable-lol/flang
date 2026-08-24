@@ -41,7 +41,7 @@ import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
-import { деревоРазбора, таблицаСлов } from "../../flang/scripts/dvoichnyy.mjs"
+import { деревоРазбора, таблицаСлов } from "../../flang/scripts/binary.mjs"
 import { связаноИмён, сверитьПоверхности } from "../../flang/test/surface-pair.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))

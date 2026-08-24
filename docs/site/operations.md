@@ -4,24 +4,59 @@ The [glossary](../glossary.html) (in Russian) answers "what does this word mean"
 answers a different question: **"I have a list and I need the sum without
 duplicates — what do I write?"**
 
-Everything below lives in one file, `docs/examples/operations.flang`, in the
-language repository — the page reads fine without it, and running the whole
-thing is easiest from a clone of the tree:
+All the code on this page lives in one file, `docs/examples/operations.flang`,
+and runs as a whole:
 
 ```bash
-git clone https://github.com/digitable-lol/flang.git
-flang test flang/docs/examples/operations.flang
+flang test docs/examples/operations.flang
 ```
 
-The answer: **237 examples, 237 passed, 0 failed**. Two hundred thirty-one of
-those are the library's own examples, pulled in by the imports — counting someone
-else's examples as yours would be dishonest, so the number is given whole rather
-than as a share.
+```
+docs/examples/operations.flang: примеров 254, прошло 254, не прошло 0
+```
 
-Tasks with scalar arguments are also called on their own, by the `flang run`
-command printed next to them, and the answer under the command was taken off a
-run. Tasks whose argument is a list have no command line: `--args` takes only a
-flat object of scalars, and the example inside the function answers for them.
+Six of those examples are written here; the other 248 arrive with the library: an
+imported module carries its own examples, and they run alongside yours.
+
+## Importing a module
+
+`использует` is the import. A module is attached by name, with no path:
+
+```flang
+модуль «Операции»
+  использует «Списки»
+  использует «Строки»
+  использует «Множество строк»
+  использует «Списки строк»
+  использует «Числа»
+```
+
+The quoted name must match the module name inside the file. If nothing matches,
+the compiler says where it looked:
+
+```
+FLANG_IMPORT_NOT_FOUND в файле imp1.flang, строка 1, столбец 1: не найден модуль «Множества»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора
+```
+
+Attach it by path and get the name wrong, and the refusal names both:
+
+```
+FLANG_IMPORT_NAME, строка 1, столбец 1: модуль в /путь/sets.flang называется «Множество строк», а импортируется как «Множества»
+```
+
+A module comes in whole. If you want one function, name it with `только` — but
+`только` does not follow the dependencies of the function you named:
+
+```flang
+  использует «Списки» только «Двоичный поиск»
+```
+
+```
+FLANG_UNKNOWN_NAME, строка 569, столбец 3: неизвестная функция «Поиск в диапазоне»
+FLANG_NOT_TOTAL, строка 569, столбец 3: тотальная функция «Двоичный поиск» вызывает неизвестную функцию «Поиск в диапазоне»: завершение доказать нельзя
+```
+
+Add the missing name after a comma — or take the module whole.
 
 ## Where operations come from
 
@@ -30,109 +65,27 @@ The language has few words, on purpose: `плюс`, `минус`, `умножи�
 `разбор … случай`. Everything else is a **library function**, written in flang
 itself and living in `flang/stdlib/`:
 
-| Module | File | Functions | Lines |
-| --- | --- | --- | --- |
-| «Списки» (lists) | `flang/stdlib/lists.flang` | 29 | 819 |
-| «Строки» (strings) | `flang/stdlib/strings.flang` | 31 | 979 |
-| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 12 | 438 |
-| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 9 | 202 |
-| «Числа» (numbers) | `flang/stdlib/numbers.flang` | 15 | 304 |
-| «Высший порядок» (higher-order) | `flang/stdlib/higher-order.flang` | 34 | 547 |
-| «Словарь» (dictionary) | `flang/stdlib/dictionary.flang` | 9 | 229 |
-| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 23 | 883 |
-
-The names and the counts were taken off the tree by counting the files, not
-written from memory.
-
-A module is imported by name, in the header, with no path:
-
-```
-модуль «Операции»
-  использует «Списки»
-```
-
-The quoted name must match the module name inside the file. A mismatch is the
-refusal `FLANG_IMPORT_NOT_FOUND: не найден модуль «Множества»`. If the module is
-attached by path rather than by name (`использует «Множества» из "…/sets.flang"`),
-the refusal says more: `модуль в …/sets.flang называется «Множество строк», а
-импортируется как «Множества»`. That is not pedantry: it is how a forgotten file
-move gets caught.
-
-## Passing arguments: `--args`
-
-Arguments travel in one option, and it takes a **JSON object**: the key is the
-parameter name exactly as written in `принимает`; the value is the value.
-
-| Parameter type | What to write | Example |
+| Module | File | Functions |
 | --- | --- | --- |
-| `число`, `неотрицательное`, `целое` (number, natural, integer) | a number | `21`, `-3`, `2.5` |
-| `строка` (string) | a double-quoted string | `"раз два три"` |
-| `признак` (boolean) | `true` or `false` | `true` |
-| `список чего-то` (list of something) | an array | `[3, 1, 3, 2, 1]` |
-| a record | an object with field names | `{"начало": 1, "конец": 2}` |
-
-The function name goes in ordinary quotes on the command line — guillemets are
-not quotes to the shell, and it would split the name at the space.
-
-**Scalars** — two numbers. One value is printed, with no envelope:
-
-```bash
-flang run docs/examples/operations.flang \
-  --function "Страниц под записи" --args '{"записей": 23, "размер": 10}'
-```
-
-```
-3
-```
-
-**A list and a record do not travel through `--args`, and that is a border, not
-a typo.** The flag takes a FLAT object of scalars — a number, a string, `true`,
-`false`, `null` — and refuses on an array or a nested object:
-
-```bash
-flang run docs/examples/operations.flang \
-  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
-```
-
-```
-flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
-```
-
-The refusal goes to the error stream; the exit code is 2. The table of types
-above is about the language itself: a function does accept such values, they
-just cannot be handed to it through `--args` today.
-
-A composite value reaches the compiler through the shell: there it is written
-in words of the language rather than in JSON, and the compiler itself reads it.
-
-```bash
-echo '«Сумма без повторов» от [3, 1, 3, 2, 1]' | flang repl docs/examples/operations.flang
-```
-
-```
-объявлено: тотальная функция «Сумма без повторов» — завершение доказано
-объявлено: тотальная функция «Третий по порядку» — завершение доказано
-объявлено: тотальная функция «Слов в строке» — завершение доказано
-объявлено: тотальная функция «Код из адреса» — завершение доказано
-объявлено: тотальная функция «Общих меток» — завершение доказано
-объявлено: тотальная функция «Страниц под записи» — завершение доказано
-загружено из docs/examples/operations.flang
-6
-```
-
-The shell computes the expression with the system `cc`; without `cc` it does not
-switch off — it checks parsing, types and termination and answers `проверено`.
+| «Списки» (lists) | `flang/stdlib/lists.flang` | 35 |
+| «Строки» (strings) | `flang/stdlib/strings.flang` | 37 |
+| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 12 |
+| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 9 |
+| «Числа» (numbers) | `flang/stdlib/numbers.flang` | 16 |
+| «Высший порядок» (higher-order) | `flang/stdlib/higher-order.flang` | 35 |
+| «Словарь» (dictionary) | `flang/stdlib/dictionary.flang` | 14 |
+| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 23 |
 
 ## Lists
 
-| You need | Use |
+| You need | Write |
 | --- | --- |
 | length | `«Длина» от элементы` |
 | prepend | `«Приписать в начало» от элементы и новое` |
 | concatenate | `«Соединить списки» от первый и второй` |
 | reverse | `«Обратить» от элементы` |
-| take / drop N | `«Взять первые»`, `«Отбросить первые»`, `«Срез»` |
-| Nth element | `«Элемент» от элементы и номер` — **numbering starts at one** |
+| take/drop N | `«Взять первые»`, `«Отбросить первые»`, `«Срез»` |
+| Nth item | `«Элемент» от элементы и номер` — **numbering starts at one** |
 | membership | `«Содержит число» от элементы и искомое` |
 | sum, product | `«Сумма»`, `«Произведение»` |
 | min, max | `«Минимум»`, `«Максимум»` |
@@ -141,9 +94,9 @@ switch off — it checks parsing, types and termination and answers `прове�
 | count occurrences | `«Считать вхождения» от элементы и значение` |
 | range | `«Числа до» от н`, `«Числа от и до» от начало и конец` |
 
-**Task: sum without duplicates.** Two functions in a row, both total:
+**Task: sum without duplicates.**
 
-```
+```flang
 тотальная функция «Сумма без повторов»
   принимает элементы: список числа
   возвращает число
@@ -153,18 +106,14 @@ switch off — it checks parsing, types and termination and answers `прове�
   «Сумма» от («Уникальные» от элементы)
 ```
 
-This one cannot be called from the command line: `--args` takes only a flat
-object of scalars (see above). It is checked by its own example —
-`flang test docs/examples/operations.flang` — and the example says **6, not 10**:
-duplicates are dropped before the addition.
+The answer is **6, not 10**: duplicates are dropped before the addition. What
+checks it is the `пример` inside the function itself — an executable test that
+travels with the declaration.
 
-A function name on the command line goes in ordinary quotes — guillemets are not
-quotes to the shell, and it would split the name at the space.
-
-**Task: third largest.** One-based numbering is the one place that is easy to get
+**Task: third largest.** Numbering from one is the one place that is easy to get
 wrong here, so the example is named to make the mistake obvious:
 
-```
+```flang
 тотальная функция «Третий по порядку»
   принимает элементы: список числа
   возвращает число
@@ -175,12 +124,13 @@ wrong here, so the example is named to make the mistake obvious:
   «Элемент» от («Сортировать» от элементы) и 3
 ```
 
-There is nothing to call this one with either — its argument is a list; the
-answer **5** comes from its own example under `flang test`.
+The `обеспечивает` line is a postcondition: a claim that must hold about the
+result on any input. What the compiler does with it is in the proof-report
+section below.
 
 ## Strings
 
-| You need | Use |
+| You need | Write |
 | --- | --- |
 | concatenate | `«Соединить строки» от первая и вторая` |
 | split on a character | `«Разбить по символу» от текст и " "` → list of strings |
@@ -197,7 +147,7 @@ answer **5** comes from its own example under `flang test`.
 
 **Task: how many words in a string.**
 
-```
+```flang
 тотальная функция «Слов в строке»
   принимает текст: строка
   возвращает число
@@ -216,11 +166,14 @@ flang run docs/examples/operations.flang \
 3
 ```
 
-**Task: take one segment of a path.** A string is not a list: it has its own
-module. `«Разбить по символу»` yields a **list of strings**, and from there the
-«Списки строк» module applies, not «Списки»:
+The function name on the command line goes in plain double quotes: the shell does
+not treat `«»` as quotes and would split the name on the space.
 
-```
+**Task: take a piece of a path.** A string is not a list: it has its own module.
+`«Разбить по символу»` yields a **list of strings**, and from there the functions
+of «Списки строк» apply, not those of «Списки»:
+
+```flang
 тотальная функция «Код из адреса»
   принимает адрес: строка
   возвращает строка
@@ -239,15 +192,15 @@ flang run docs/examples/operations.flang \
 "абв"
 ```
 
-The third argument is the **fallback**: what to return when that index is
-missing. It cannot be omitted, and that is the point.
+The third argument is the **fallback**: what to return when there is no such
+position. You cannot leave it out, and that is the point.
 
 ## Sets
 
-A set is a list of strings without duplicates; there is no separate type, there
-is a module that keeps the invariant.
+A set is a list of strings with no duplicates; there is no separate type, there
+is a module that holds the invariant.
 
-| You need | Use |
+| You need | Write |
 | --- | --- |
 | from a list | `«Из списка» от элементы` — duplicates dropped, first-occurrence order kept |
 | membership | `«Есть в множестве» от множество и искомое` |
@@ -258,7 +211,7 @@ is a module that keeps the invariant.
 
 **Task: how many labels two sets share.**
 
-```
+```flang
 тотальная функция «Общих меток»
   принимает первые: список строки, вторые: список строки
   возвращает число
@@ -270,12 +223,9 @@ is a module that keeps the invariant.
   «Размер множества» от («Пересечение» от («Из списка» от первые) и («Из списка» от вторые))
 ```
 
-Both arguments are lists, so here too the answer comes from the function's own
-example, not from the command line: **2** labels in common.
-
 ## Numbers
 
-| You need | Use |
+| You need | Write |
 | --- | --- |
 | absolute value, sign | `«Абсолютное значение»`, `«Знак»` |
 | min/max of two | `«Минимум двух»`, `«Максимум двух»` |
@@ -283,18 +233,19 @@ example, not from the command line: **2** labels in common.
 | integer division | `«Целочисленное деление» от делимое и делитель` |
 | parity, divisibility | `«Чётное»`, `«Делится на»` |
 | power, factorial | `«Степень»`, `«Факториал»` |
-| gcd, lcm | `«НОД»`, `«НОК»` — **ordinary, not total** |
-| digits | `«Цифры»`, `«Сумма цифр»` — ordinary as well |
+| gcd, lcm | `«НОД»`, `«НОК»` — **plain, not total** |
+| digits | `«Цифры»`, `«Сумма цифр»` — plain as well |
 
-Four of the fifteen functions in «Числа» are **not total**, and the `--proof`
-report names
-them one by one. That is not an omission: Euclid's algorithm does not terminate
-by structural descent, and its measure does not decrease along the declared type.
+Four of the sixteen functions in «Числа» carry no `тотальная` marker — `«НОД»`,
+`«НОК»`, `«Цифры»`, `«Сумма цифр»`. That is not an omission but an honest
+signature: both Euclid and splitting a number into digits descend by the SIZE of
+the number (`«Целочисленное деление» от число и 10`), not by its structure, and
+descent by a part of the value cannot prove that.
 
 **Task: how many pages for N records.** Rounding up is written with integer
-division and a check against zero — otherwise the function would not be total:
+division and a zero check — otherwise the function would not be total:
 
-```
+```flang
 тотальная функция «Страниц под записи»
   принимает записей: число, размер: число
   возвращает число
@@ -316,8 +267,53 @@ flang run docs/examples/operations.flang \
 3
 ```
 
-The `если размер не больше 0` branch is not tidiness: without it division by zero
-would give infinity, while the function promises a number.
+The `если размер не больше 0` branch is not there for tidiness: without it,
+division by zero would yield infinity, and the function promises a number.
+
+## Passing arguments: `--args`
+
+Arguments travel in one key, and it takes a **JSON object**: the key is the
+parameter name exactly as written in `принимает`, the value is the value.
+
+| Parameter type | Write | Example |
+| --- | --- | --- |
+| `число`, `неотрицательное`, `целое` | a number | `21`, `-3`, `2.5` |
+| `строка` | a string in double quotes | `"раз два три"` |
+| `признак` | `true` or `false` | `true` |
+
+**Lists and records do not go through `--args`, and that is a boundary, not a
+typo.** The key takes a FLAT object of scalars — number, string, `true`, `false`,
+`null`:
+
+```bash
+flang run docs/examples/operations.flang \
+  --function "Сумма без повторов" --args '{"элементы": [3, 1, 3, 2, 1]}'
+```
+
+```
+flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
+```
+
+The refusal goes to the error stream, exit code 2. The language itself accepts
+such values — they just cannot be passed through `--args` today.
+
+A compound value goes in through the shell, written in the words of the language
+rather than JSON, and read by the compiler itself:
+
+```bash
+echo '«Сумма без повторов» от [3, 1, 3, 2, 1]' | flang repl docs/examples/operations.flang
+```
+
+```
+объявлено: тотальная функция «Сумма без повторов» — завершение доказано
+объявлено: тотальная функция «Третий по порядку» — завершение доказано
+объявлено: тотальная функция «Слов в строке» — завершение доказано
+объявлено: тотальная функция «Код из адреса» — завершение доказано
+объявлено: тотальная функция «Общих меток» — завершение доказано
+объявлено: тотальная функция «Страниц под записи» — завершение доказано
+загружено из docs/examples/operations.flang
+6
+```
 
 ## What the proof report says about this file
 
@@ -325,35 +321,38 @@ would give infinity, while the function promises a number.
 flang check docs/examples/operations.flang --proof
 ```
 
-The report's summary in full; above it, it names every function and every claim
-one by one:
+The summary; above it the report names every function and every claim
+individually:
 
 ```
 итог:
-  функций 102: тотальных 98, обычных 4
-  обещание несёт: композиция 81, структура 12, точный шаг 3, постоянный шаг 2, объявленная мера 0
+  функций 115: тотальных 111, обычных 4
+  обещание несёт: композиция 95, структура 11, точный шаг 3, постоянный шаг 2, объявленная мера 0
   сторожей в рантайме: 2 места
   законов на сетке: 0 (значений в сетках 0); на веру: 0
-  утверждений 139: доказано 25 (из них индукцией 4) (из них без теоремы 21, объявленным типом 1), сетка 114, объявлено, не доказано 0
+  утверждений 238: доказано 101 (из них индукцией 7) (из них без теоремы 93), сетка 137, объявлено, не доказано 0 (шагов в термах 2)
 ```
 
-**Both postconditions written in this file landed on a grid, not on a proof.**
-The report says so plainly:
+The word «сетка» — "grid" — the report defines in its own header: **"counted on N
+of the author's values, no violations found; this is NOT a proof"**. The claim was
+checked on the inputs the author wrote into the examples, and on those only.
+
+**Both postconditions written on this page landed on the grid, not on a proof.**
+The report says so outright:
 
 ```
-постусловие «результат не меньше минимума» функции «Третий по порядку» — сетка 1
-значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было,
-посчитано только их число. Это не доказательство — теоремы при утверждении нет
+постусловие «результат не меньше минимума» функции «Третий по порядку» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
+постусловие «общих не больше, чем в первом наборе» функции «Общих меток» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
 ```
 
-All twenty-five proven claims come **from the library** this file imports, not
-from here: `«Длина»`, `«Соединить списки»`, `«Обратить»`, `«Считать вхождения»`,
-`«Позиция подстроки»` and others. Writing a postcondition is easy; getting a
-proof under it is separate work, and the kernel does not pretend that work is
-done. What it costs and when it succeeds: see [Why and how](proofs.html).
+All 101 proven claims came **from the library** imported by this file, not from
+anything written here. Writing a postcondition is easy; getting a proof under it
+is separate work, and the compiler does not pretend that work is done. What it
+costs and when it succeeds is on [Why and how](proofs.html).
 
 ## Next
 
-- [Glossary](../glossary.html) — in Russian; {{словарь.понятий}} concepts, printed from the surface table
+- [Glossary](glossary.html) — {{словарь.понятий}} concepts, printed from the surface table
+- [Library reference](stdlib.html) — every module with its function signatures
 - [Writing packages](packages.html) — when operations stop being enough
-- [Real case studies](case-studies.html) — the same operations on 82 tasks and a service
+- [Real-world case studies](case-studies.html) — the same operations on 82 tasks and a service

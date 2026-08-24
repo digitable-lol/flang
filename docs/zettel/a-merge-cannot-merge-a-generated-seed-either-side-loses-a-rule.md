@@ -46,7 +46,7 @@ FLANG_PROOF_INDUCTION_STEP … шаг «голова и хвост» не све
 дерева (страницы сайта, `CHANGELOG`) той же болезнью болеют, но правил ядра не
 несут, и потеря там видна глазом.
 
-Связано: [[tochka-raskrutki-otstala-ot-ishodnikov-i-kompilyator-sebya-ne-sobiraet]],
-[[otkaz-ot-otstavshego-dvoichnogo-nelzya-pripisyvat-proveryaemomu-faylu]],
+Связано: [[the-bootstrap-point-lags-the-sources-so-the-compiler-cannot-build-itself]],
+[[a-refusal-from-a-stale-binary-must-not-be-blamed-on-the-checked-file]],
 [[bootstrap-seed-lags-the-sources-by-one-language-form]],
 [[an-unregistered-forgery-leaves-its-rule-unwatched]]

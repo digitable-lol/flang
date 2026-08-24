@@ -128,10 +128,10 @@
 **Чем ограничено.** Мерено на пяти модулях библиотеки из двадцати четырёх и
 только вычислителем (`flang test`). В напечатанном коде доказанное постусловие
 стоит по-настоящему — там оно и снято, и это отдельный факт
-([[dokazannoe-postuslovie-ne-pechataetsya]]). Ступенька «первое доказанное»
+([[a-proved-postcondition-no-longer-reaches-printed-code]]). Ступенька «первое доказанное»
 измерена на json подробно, на прочих модулях — только по разнице «всё против
 нуля доказанных», отдельные точки 0→1 там не снимались.
 
-Связано: [[dokazannoe-postuslovie-ne-pechataetsya]], [[proven-is-not-correct]],
-[[postuslovie-schitaetsya-pri-kazhdom-vyzove]],
+Связано: [[a-proved-postcondition-no-longer-reaches-printed-code]], [[proven-is-not-correct]],
+[[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]],
 [[keshirovat-dokazatelstvo-dorozhe-chem-dokazat]]

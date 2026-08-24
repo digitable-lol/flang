@@ -63,6 +63,6 @@
 однажды закроет цель, которую ядро на Node не закрывает, покраснеет именно эта
 проверка — и это будет находка, а не поломка.
 
-Связано: [[cena-komandy-schitaetsya-po-rabote-a-ne-po-snyatomu-prepyatstviyu]],
+Связано: [[a-removed-obstacle-is-not-the-price-of-a-command]],
 [[byte-for-byte-comparison]], [[what-blocks-the-kernel-now-is-induction-without-a-theorem]],
-[[otmetka-sloya-tipov-ne-vyezzhaet-v-derevo-poetomu-schitat-mozhno-tolko-vnutri]]
+[[the-type-layer-mark-never-leaves-the-compiler-so-checks-are-counted-only-inside]]

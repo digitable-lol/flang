@@ -153,5 +153,5 @@ FLANG_TYPE: сравнивать на равенство значения-фун
 остаются работой, и работа эта не сделана.
 
 Связано: [[equality-on-a-type-parameter-is-banned-only-in-bodies]],
-[[stena-ravenstva-i-razbora-v-postuslovii-snyata]],
+[[three-of-five-named-postcondition-walls-are-already-gone]],
 [[chto-nelzya-napisat-v-obespechivaet]]

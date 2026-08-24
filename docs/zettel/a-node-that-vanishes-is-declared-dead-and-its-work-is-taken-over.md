@@ -88,5 +88,5 @@ SIGKILL соседу, восемь целей печати: **8 из 8**, код
 
 Связано: [[node-loss-must-hang-on-the-report-not-on-the-cleanup]],
 [[at-most-once-is-the-only-provable-half]],
-[[pravilo-eto-ne-otkaz-obyazano-imet-srok]],
+[[a-this-is-not-a-refusal-rule-without-a-deadline-is-a-breakage]],
 [[debt-closed-on-an-unmerged-branch]]

@@ -12,7 +12,7 @@ name: Двоичный
 # «пропущено» в отчёте читается как «всё хорошо». Предохранитель на этот случай
 # заведён (`FTS_REQUIRE_BINARY=1`), но не был выставлен нигде: `grep` по дереву
 # находил имя ровно в двух местах, и оба — внутри самого файла пробы. Разбор —
-# `docs/zettel/proverka-perevedyonnaya-na-dvoichnyy-vypadaet-iz-ci-molcha.md`.
+# `docs/zettel/a-check-moved-to-the-binary-drops-out-of-ci-silently.md`.
 #
 # Два обходчика, целиком написанных на двоичном, не звались из CI вовсе:
 # `flang/проверки/обход.sh` (98 проверок) и `flang/проверки/обход-примеров.sh`

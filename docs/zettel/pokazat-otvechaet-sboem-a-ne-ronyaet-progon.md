@@ -26,4 +26,4 @@
 сдаётся.
 
 Связано: [[checks-move-to-flang-as-io-plans]],
-[[srok-potomka-u-hozyaina-glavnoe-prepyatstvie-dlya-dolgih-proverok]]
+[[the-child-deadline-is-the-main-obstacle-for-long-checks]]

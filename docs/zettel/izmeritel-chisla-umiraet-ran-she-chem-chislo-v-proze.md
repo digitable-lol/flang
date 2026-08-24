@@ -60,6 +60,6 @@
 сделать счётчиком.
 
 Связано: [[posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol]],
-[[proverki-v-testah-zhivut-progonom-dvoichnogo-a-ne-vtorym-razborom]],
+[[a-test-check-revives-by-running-the-binary-not-by-a-second-parser]],
 [[a-number-without-a-named-measure]], [[typed-numbers-drift-substituted-ones-cannot]],
 [[bottleneck-moved-to-claim-shape]], [[a-hand-written-list-outlives-the-tree]]

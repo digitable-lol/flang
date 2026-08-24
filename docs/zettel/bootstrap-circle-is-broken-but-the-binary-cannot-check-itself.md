@@ -72,7 +72,7 @@ JavaScript бюджет свой на каждый `evaluate` (умолчани�
 ## Двоичный медленнее Node на больших программах, а не быстрее
 
 Это опровергает допущение, стоявшее в
-[[otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz]]: «собранный двоичный
+[[dropping-unreachable-code-in-flang-costs-180-times-more]]: «собранный двоичный
 компилятор считает то же самое машинным кодом, и к нему этот замер не относится
 вовсе». Относится. Машинный код здесь исполняет **вычислитель, написанный на
 flang**, и на больших входах он проигрывает прямой реализации на JavaScript под
@@ -146,7 +146,7 @@ JSON, двоичный — человеческую прозу; у `run` дво�
 
 **Помеха 2 уточнилась и оказалась хуже, чем записано.** Печать ищет рантайм не
 просто «в дереве», а рядом с самим исполняемым файлом; подробности и замер —
-[[pechat-v-c-ishchet-runtime-ryadom-s-dvoichnym]]. Лечится тем, что рецепт
+[[printing-to-c-looks-for-runtime-sources-next-to-the-binary]]. Лечится тем, что рецепт
 называет `--runtime` явно.
 
 **Помеха 3 осталась целиком.** `flang check` на собственных исходниках
@@ -180,9 +180,9 @@ JSON, двоичный — человеческую прозу; у `run` дво�
 не поместится** — не хватает примерно четырёх гигабайт. Поэтому в CI она не поставлена — названа как то, что зовут
 руками перед слиянием правки в `flang/self/` или `flang/src/emit/c/`.
 
-Связано: [[otbrasyvanie-nedostizhimogo-na-flang-stoit-180-raz]],
+Связано: [[dropping-unreachable-code-in-flang-costs-180-times-more]],
 [[the-installed-binary-is-a-named-subset]],
 [[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
-[[javascript-ostayotsya-tolko-celyu-pechati]],
+[[javascript-stays-only-as-a-print-target]],
 [[four-pieces-of-javascript]], [[byte-for-byte-comparison]],
-[[pechat-v-c-ishchet-runtime-ryadom-s-dvoichnym]]
+[[printing-to-c-looks-for-runtime-sources-next-to-the-binary]]

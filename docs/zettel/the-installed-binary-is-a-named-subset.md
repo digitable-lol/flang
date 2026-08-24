@@ -83,6 +83,6 @@ flang package proba.flang → FLANG_PACKAGE: «нет объявления flang
 `emit`, текст отказа на неизвестной цели и `man flang`. Числа в заметке про
 интерфейс живут недели — это второй раз, когда они устарели.
 
-Связано: [[cena-celi-pechati-eto-dolg-etalona-a-ne-stolknoveniya]],
+Связано: [[the-price-of-a-print-target-is-reference-debt-not-name-collisions]],
 [[measuring-a-stale-artifact]],
 [[cli-help-diverges-between-the-two-implementations]], [[what-is-deferred]]

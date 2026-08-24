@@ -34,5 +34,5 @@ SHA-256 стоит толкователю 2,3 с.
 прогнан и здесь: по измеренным 30 с на 4096 витков он стоит около 34 часов.
 Сказано числом, а не умолчанием.
 
-Связано: [[predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom]],
-[[sha256-bez-bitovyh-operaciy-stoit-925-tysyach-shagov]]
+Связано: [[the-interpreter-step-limit-decides-what-can-be-an-example]],
+[[sha256-without-bit-operations-costs-925-thousand-steps-per-block]]

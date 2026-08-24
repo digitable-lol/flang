@@ -38,6 +38,6 @@ FLANG_UNKNOWN_NAME, строка 183, столбец 66: неизвестная 
 **Чем ограничено.** Проверено только на функциях. Как ведёт себя `только` с
 типами, у которых поля ссылаются на другие типы, здесь не мерилось.
 
-Связано: [[biblioteka-ne-svyazyvaetsya-sama-s-soboy-po-dogovorennosti-a-ne-po-zapretu]],
+Связано: [[library-modules-avoid-each-other-by-convention-not-by-a-language-ban]],
 [[a-module-is-found-by-the-name-on-its-first-line]],
-[[dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu]]
+[[an-unlinked-module-collects-names-that-are-already-taken]]

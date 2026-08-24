@@ -75,6 +75,6 @@
 `sh scripts/raskrutka.sh --check` — совпадает с печатью, 7 файлов,
 24 489 999 байт.
 
-Связано: [[tip-ne-derzhit-invariant-poetomu-ochevidnye-utverzhdeniya-o-dereve-lozhny]],
+Связано: [[the-type-holds-no-invariant-so-obvious-claims-about-a-search-tree-are-false]],
 [[reading-if-conditions-closed-zero-goals]], [[a-measured-zero-is-valuable]],
 [[unstatable-costs-more-than-unprovable]]

@@ -47,5 +47,5 @@ const сокет = createConnection({ host, port })
 целей на них не краснеет и краснеть не может: эталон в обоих случаях отвечал
 верно на то, что ему сказали.
 
-Связано: [[progon-raboty-i-sverka-celey-lovyat-raznoe]],
+Связано: [[a-work-run-and-a-target-check-catch-different-things]],
 [[the-host-price-has-three-axes-not-one]]

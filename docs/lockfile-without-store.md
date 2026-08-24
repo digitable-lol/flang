@@ -156,7 +156,7 @@ $ flang check /пусто/orders-api.flang
 неверен, и это измерено: генератор кода печатает место нарушенного постусловия
 в саму напечатанную программу, то есть место наблюдаемо. На 93 постусловиях
 библиотеки печать из замка разошлась с печатью из исходников на **337 байт из
-76 819** (`docs/zettel/zamok-snimaet-mesta-a-generator-ih-pechataet.md`).
+76 819** (`docs/zettel/the-lock-strips-locations-and-the-code-generator-prints-them-back.md`).
 
 Схема 2 снимает это не заплаткой, а устройством: в замке лежит исходник, при
 чтении он разбирается той же функцией разбора, `span` — это `{line, column}` и
@@ -223,4 +223,4 @@ $ flang check /пусто/orders-api.flang
   может.
 
 Связано: [[content-addressing]], [[hash-inside-names-outside]],
-[[chuzhie-pakety-nado-hranit]], [[iz-hesha-kod-ne-vyvoditsya]].
+[[other-peoples-packages-must-be-stored]], [[code-cannot-be-derived-from-its-hash]].

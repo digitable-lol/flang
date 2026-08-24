@@ -76,4 +76,4 @@ compiler.flang` «Командную строку flang» не ввозит, —
 пустой список случай пусто то основа …` при том же обещании — сетка.
 
 Связано: [[if-branches-unfold-both-ways-but-list-match-does-not]],
-[[semya-bootstrap-otstayot-ot-yadra]]
+[[the-bootstrap-seed-lags-the-kernel-by-one-goal-kind]]

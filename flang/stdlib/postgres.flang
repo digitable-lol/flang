@@ -121,7 +121,7 @@
 // про PostgreSQL ничего не знает; до 21 августа 2026 она стояла здесь же, и
 // драйвер в библиотеке был один. Ввоз БЕЗ `только` не по небрежности: список
 // `только` не провозит типы, а модуль несёт свои пять — замер и отказ выписаны
-// в `docs/zettel/tolko-ne-provozit-tipy-poetomu-obshchiy-modul-beryotsya-celikom.md`.
+// в `docs/zettel/only-does-not-carry-types-so-a-shared-module-is-taken-whole.md`.
 //
 // Через «Провод» приезжает и `«Целая часть»` из `«Числа»`. Своя копия стояла
 // здесь и была ПОСЛЕДНЕЙ из трёх (две другие, в `hashmap.flang` и `utf8.flang`,

@@ -19,7 +19,7 @@
   ],
   "подделки без сторожа": {
     "flang/test/fixtures/poddelka-primer-pod-kvantorom.flang": "названа в flang/scripts/kernel-forgeries.flang, но НЕ в .mjs, и это сделано намеренно: дыра ядра (прямой шаг «по примеру» под квантором) не закрыта, и вписанная подделка красила бы прогон. Разбор — docs/zettel/the-core-accepts-falsehood-a-class.md",
-    "flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang": "СТОРОЖА НЕТ, хотя docs/zettel/uporyadochennost-nastoyashchey-sortirovki-lozhna-na-ne-chisle.md называет им node flang/scripts/poddelki-yadra.mjs. В каталоге .mjs файла нет: заметка обещает надзор, которого нет",
+    "flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang": "СТОРОЖА НЕТ, хотя docs/zettel/sort-result-is-non-decreasing-is-false-on-not-a-number.md называет им node flang/scripts/poddelki-yadra.mjs. В каталоге .mjs файла нет: заметка обещает надзор, которого нет",
     "flang/test/fixtures/poddelka-porjadok-sosednih.flang": "СТОРОЖА НЕТ, та же заметка и та же неправда: подделка бьёт в ветвь «иначе» напрямую, а прогоняет её никто",
     "flang/test/fixtures/poddelka-vhozhdenie.flang": "СТОРОЖА НЕТ и не обещано нигде: файл не назван вообще ни в одном месте дерева, кроме себя самого"
   },

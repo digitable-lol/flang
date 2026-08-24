@@ -1,7 +1,7 @@
 # Словарь вместо перебора: дорог не словарь, дороги его недоказанные постусловия
 
 Продолжение замера
-`linejnyj-poisk-opisaniya-syedaet-88-procentov-vitkov-proverki.md`. Там названо,
+`linear-lookup-of-a-declaration-eats-88-percent-of-check-loops.md`. Там названо,
 во что обходится линейный перебор в `«Найти описание»`
 (`flang/self/interpret.flang`): 88 % витков проверки `self/proof-kernel.flang`.
 Здесь перебор заменён словарём (`flang/stdlib/hashmap.flang`) и замерено, что из

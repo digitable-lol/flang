@@ -298,7 +298,7 @@ $ flang check examples/rosetta/towers-of-hanoi.flang --proof --pretty
 `docs/zettel/coq-strength-is-in-its-lemmas.md` взяты **по памяти** — там так и
 написано. На HN такое проверят за минуту. Либо проставить ссылки, либо снять
 числа. Лучшая по источникам заметка дерева —
-`docs/zettel/sintez-upiraetsya-v-75-uzlov.md` (CoqHammer закрывает 40,8 % из
+`docs/zettel/synthesis-from-a-spec-hits-75-tree-nodes.md` (CoqHammer закрывает 40,8 % из
 9 276 целей стандартной библиотеки, все числа со ссылками на PDF), и она
 **только по-русски**.
 
@@ -347,7 +347,7 @@ $ flang check examples/rosetta/towers-of-hanoi.flang --proof --pretty
 | 5 | опубликовать 0.5.x в npm под именем языка, а не `fts` | сегодня установка даёт версию 11-дневной давности и пять чужих команд |
 | 6 | переписать первые строки `CONTRIBUTING.md` | они ведут на приватную машину |
 | 7 | написать страницу «зачем ещё один язык» | такой страницы нет вовсе |
-| 8 | перевести на английский три заметки: `proof-cost-0-of-20`, `what-the-popular-stories-get-wrong`, `sintez-upiraetsya-v-75-uzlov` | это лучший материал проекта, и он нечитаем для аудитории |
+| 8 | перевести на английский три заметки: `proof-cost-0-of-20`, `what-the-popular-stories-get-wrong`, `synthesis-from-a-spec-hits-75-tree-nodes` | это лучший материал проекта, и он нечитаем для аудитории |
 | 9 | `SECURITY.md`, `CODE_OF_CONDUCT.md`, шаблоны задач | спросят в первых пяти комментариях |
 | 10 | проставить ссылки под числа о Coq/Lean или снять числа | «по памяти» проверят за минуту |
 | 10а | не говорить «у них пишет человек, у нас машина» — теорем в дереве 160 | опровергается одним грепом |

@@ -169,5 +169,5 @@ PATH там, где он не нужен:
 больше нет.
 
 Связано: [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]],
-[[four-pieces-of-javascript]], [[javascript-ostayotsya-tolko-celyu-pechati]],
+[[four-pieces-of-javascript]], [[javascript-stays-only-as-a-print-target]],
 [[byte-for-byte-comparison]]

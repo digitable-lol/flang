@@ -65,7 +65,7 @@
 это дёшево: порог `FL_REGION_MIN` проходит меньше четырёх процентов закрытий.
 
 **Что этим опровергнуто.** Заметка
-[[obmer-oblasti-platit-za-vyyasnenie-chto-ne-okupitsya]] закрыла этот резерв как
+[[five-sixths-of-a-region-survey-pays-to-learn-it-will-not-pay-off]] закрыла этот резерв как
 неокупаемый по четырём редакциям. Все четыре были ПРИБЛИЖЕНИЯМИ отсечения —
 «только верхушка результата», «верхушка и первый ярус», «отсечение статических
 литералов», — и ни одна не переводила отказ обмера в откат: память менялась на
@@ -77,5 +77,5 @@
 тем больше, чем крупнее доля чужого (построенного вызывающим) в результате: у
 функции, которая строит ответ целиком сама, отсекать нечего и пик не сдвинется.
 
-Связано: [[obmer-oblasti-platit-za-vyyasnenie-chto-ne-okupitsya]],
+Связано: [[five-sixths-of-a-region-survey-pays-to-learn-it-will-not-pay-off]],
 [[arena-never-releases]], [[memory-peak-scales-with-obligations-not-file-size]]

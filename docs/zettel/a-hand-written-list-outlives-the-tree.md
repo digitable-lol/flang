@@ -71,7 +71,7 @@ N каталогов» и «9 инструментов» с деревом. Пе
 
 Источник у таких перечней есть всегда, и брать их неоткуда не приходится:
 компилятор отвечает про любую свою функцию, см.
-[[dvoichnyy-otvechaet-pro-lyubuyu-svoyu-funkciyu-cherez-progonshchik]].
+[[the-binary-already-answers-about-any-of-its-functions-through-the-runner]].
 
 Границу класса стоит провести точно: отношение строк («имя кончается на
 подчёркивание плюс запись таблицы») копией языка НЕ является — оно про то, как
@@ -79,7 +79,7 @@ N каталогов» и «9 инструментов» с деревом. Пе
 
 Связано: [[checks-that-stopped-comparing]], [[a-removal-must-turn-a-test-red]],
 [[a-frozen-reference-changes-the-check]],
-[[dvoichnyy-otvechaet-pro-lyubuyu-svoyu-funkciyu-cherez-progonshchik]]
+[[the-binary-already-answers-about-any-of-its-functions-through-the-runner]]
 [[a-frozen-reference-changes-the-check]]
 
 ## Поправка формы, а не сути: список бывает годным, если он про ПОДДЕЛКИ

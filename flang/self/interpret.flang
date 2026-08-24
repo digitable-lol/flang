@@ -875,7 +875,7 @@
 //
 // Чинится словарём имя → описание, построенным один раз в «Подготовить».
 // `stdlib/hashmap.flang` как есть не подходит: его «Звено» — строка → строка.
-// Разбор целиком: docs/zettel/linejnyj-poisk-opisaniya-syedaet-88-procentov-vitkov-proverki.md
+// Разбор целиком: docs/zettel/linear-lookup-of-a-declaration-eats-88-percent-of-check-loops.md
 тотальная функция «Найти описание»
   принимает «описания»: список «Описание вычислителя», «имя»: строка
   возвращает «Может быть описание»

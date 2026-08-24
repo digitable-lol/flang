@@ -91,5 +91,5 @@
 и есть та цель).
 
 Связано: [[if-branches-unfold-both-ways-but-list-match-does-not]],
-[[stena-ravenstva-i-razbora-v-postuslovii-snyata]],
+[[three-of-five-named-postcondition-walls-are-already-gone]],
 [[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]

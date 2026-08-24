@@ -1,6 +1,6 @@
 # Октетная пара поручений объявлена в словаре, но ни один хозяин её не исполняет
 
-Заметка [[truba-soedineniya-vozit-tekst-a-ne-oktety]] кончалась надеждой: труба
+Заметка [[a-connection-pipe-carries-text-not-octets]] кончалась надеждой: труба
 возит текст, значит нужна октетная пара. Пара заведена — `«Прочитать октеты из
 соединения»` и `«Ответить октетами в соединение»` стоят и в `flang/cat/SPEC.md`,
 и в словаре разборщика (`flang/self/parser.flang`). **Исполнителя у них нет.**
@@ -68,7 +68,7 @@ SCRAM. Проверено прогоном: `flang io examples/db/postgres-plan.
 о ПРИЧИНЕ поломки и о замерах соли `md5`, остаётся верным: это улики того дня.
 Неверен вывод «исполнителя нет» — он был верен до слияния `u/oktety`.
 
-Связано: [[truba-soedineniya-vozit-tekst-a-ne-oktety]],
+Связано: [[a-connection-pipe-carries-text-not-octets]],
 [[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
 [[an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count]]
 

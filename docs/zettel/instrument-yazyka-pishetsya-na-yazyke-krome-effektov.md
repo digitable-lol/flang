@@ -61,4 +61,4 @@
 
 Связано: [[arena-never-releases]],
 [[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
-[[primerov-progonyaetsya-vdvoe-bolshe-chem-obyavleno]]
+[[twice-as-many-examples-run-as-are-declared]]

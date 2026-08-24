@@ -95,6 +95,6 @@ FLANG_PARSE, строка 2801, столбец 98: … неожиданное '�
 отбрасывание недостижимого при печати `bootstrap/` — и неиспользуемая функция
 перестанет её двигать; тогда замер надо переснять.
 
-Связано: [[byte-for-byte-comparison]], [[pereklyuchenie-sloya-ne-vsegda-opuskaet-potolok]],
+Связано: [[byte-for-byte-comparison]], [[switching-a-layer-does-not-always-lower-the-ceiling]],
 [[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
 [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]]

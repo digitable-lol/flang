@@ -84,7 +84,7 @@
 `ActorRef[T]` статичен, а поиск по `ServiceKey[T]` проверяется при работе.
 
 Связано: [[a-computed-addressee-costs-one-named-failure]],
-[[adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika]],
-[[uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata]],
+[[an-addressee-must-be-a-literal-for-the-payload-type-not-for-the-scheduler]],
+[[a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee]],
 [[equality-on-a-type-parameter-is-banned-only-in-bodies]],
-[[gruz-pisma-edet-biletom-a-ne-znacheniem]]
+[[a-message-payload-travels-as-a-ticket-not-as-a-value]]

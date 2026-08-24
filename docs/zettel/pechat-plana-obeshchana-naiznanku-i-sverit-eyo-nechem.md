@@ -91,5 +91,5 @@
 выводу, а не на попытку запустить напечатанное.
 
 Связано: [[typed-numbers-drift-substituted-ones-cannot]],
-[[truba-soedineniya-vozit-tekst-a-ne-oktety]],
+[[a-connection-pipe-carries-text-not-octets]],
 [[a-check-that-skips-a-check-is-a-class]]

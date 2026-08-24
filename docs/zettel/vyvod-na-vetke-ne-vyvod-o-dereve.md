@@ -73,5 +73,5 @@
 На большом проекте искать придётся по указателю веток и по общим предкам, а не
 перебором.
 
-Связано: [[granica-perezhivaet-vychitanie]], [[debt-closed-on-an-unmerged-branch]],
+Связано: [[a-named-length-boundary-survives-subtraction-but-not-addition]], [[debt-closed-on-an-unmerged-branch]],
 [[a-number-without-a-named-measure]], [[silent-merge-conflicts]]

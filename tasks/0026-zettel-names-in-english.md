@@ -1,9 +1,9 @@
 ---
 номер: 0026
 заголовок: Имена заметок базы знаний — английские слова, а не транслит
-статус: свободна
-исполнитель: —
-ветка: —
+статус: в работе
+исполнитель: b
+ветка: b/zettel-english-names
 команда: вторая
 карта: —
 рядом: —
@@ -34,3 +34,53 @@
 ## Откуда
 
 `/srv/work/zadachi-dlya-vtoroy-komandy.md`, общий раздел.
+
+## Что сделано (ветка `b/zettel-english-names`)
+
+Заметок в `docs/zettel/` на 24 августа 2026 — 507 файлов: указатель, 2 заметки
+с русскими именами кириллицей (выбор владельца, не трогаются) и 504 с именами
+латиницей. Из них транслитных — **218**, а не 231, как сказано выше.
+
+Переименована **191**. Правлены все ссылающиеся: **443 ссылки в 234 файлах** —
+вики-ссылки `[[слаг]]`, markdown-ссылки и пути `docs/zettel/<слаг>.md` в
+комментариях `.flang`, `.c`, `.json`, `.yml`. Битых вики-ссылок было 12, стало
+12 — те же самые, все из образцов кода.
+
+## Не тронуто: 27 имён под чужими долями
+
+7 заметок держит `b/targets-cyrillic` напрямую:
+`chisla-sayta-tuhnut…`, `dizyunkciya-v-dopushchenii…`, `flang-bliznec-storozha…`,
+`nezagruzhennaya-proba…`, `proverka-zovushchaya-kompilyator…`,
+`tri-fakta-o-dline…`, `veer-osnastki…`.
+
+20 упомянуты из файлов чужих долей — переименовать нельзя, не сломав ссылку в
+файле, который держит сосед:
+
+| заметка | держит файл | ветка |
+|---|---|---|
+| `pechat-plana-obeshchana-naiznanku…` | `docs/guide/limits.md`, `.ru.md` | `b/guide-proofread` |
+| `darovoe-utverzhdenie-uznayotsya…` | `docs/emptiness-of-what-is-proved.md` | `b/targets-cyrillic` |
+| `vedomost-dvoichnogo-byvaet-slabee…` | `docs/course/13-where-next.md` | `b/targets-cyrillic` |
+| `zakony-kak-ukazatel` | `docs/guide/naming.md`, `.ru.md` | `b/targets-cyrillic` |
+| `dva-pravila-zavershaemosti-vmeste-dayut-574` | `docs/site/what-is-proved.md`, `.ru.md` | `b/targets-cyrillic` |
+| `vyvod-na-vetke-ne-vyvod-o-dereve` | `flang/proof/SPEC.md` | `b/targets-cyrillic` |
+| `keshirovat-dokazatelstvo-dorozhe-chem-dokazat`, `node-ushyol-s-puti-sborki`, `vypusk-ne-mog-sostoyatsya…` | `flang/scripts/code-guard.flang` | `b/targets-cyrillic` |
+| 11 остальных | 6 заметок из доли `b/targets-cyrillic` | `b/targets-cyrillic` |
+
+Их берёт следующая работа — после свода этих веток.
+
+## Ждёт прогона
+
+Перепечатка семени идёт на машине, прогоны запрещены. Ветка отдаётся с
+незакрытым хвостом:
+
+1. `bootstrap/flang io docs/zettel/ukazatel.flang --max-orders 4000 --timeout 900000`
+   (цель `ukazatel:pechat`; в `b/targets-cyrillic` её переименовывают в
+   кириллицу) — до неё в `docs/zettel/README.md` ровно 191 битая ссылка.
+2. `bootstrap/flang io scripts/link-guard.flang` — красный до пункта 1, зелёный
+   после; других битых ссылок работа не добавила.
+3. `node docs/site/build.mjs --check` — сверка адресов `knowledge-<слаг>.html`.
+
+`bootstrap/flang_repl.c` называет `docs/zettel/dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md`
+в комментарии. Семя руками не правится; исходник
+`flang/src/emit/c/flang_repl.c` поправлен, семя догонит перепечаткой.

@@ -36,13 +36,13 @@
 круговые ходы через переворот у «Начинается с» и «Заканчивается на», точные
 равенства длин у «Соединить строки», «Заменить», «Повторить», плюс уже стоявшее
 в дереве ложное «обращение не меняет длины строки»
-([[obrashchenie-stroki-lozhno-na-odinokom-surrogate]]).
+([[string-reversal-keeps-length-is-false-on-a-lone-surrogate]]).
 
 **Где контрпример достижим, а где нет — померено.** Через `flang run --args`
 одинокая половина НЕ проходит: разбор доводов двоичного отвечает «`--args`
 разобрать не удалось» на `{"текст":"\ud83d"}`, а на `{"текст":"😀"}`
 проходит. Литералом её тоже не написать
-([[literal-s-odinokim-surrogatom-lomaet-samoprimenenie]]). Значит прогоном через
+([[a-lone-surrogate-literal-breaks-self-application]]). Значит прогоном через
 двоичный этот класс НЕ ловится вовсе — ни один прогон не покраснеет. Достижим он
 через ВТОРОЙ вход напечатанной программы: библиотечный (`program::call`,
 `Flang.call`), у которого по SPEC («Граница входа напечатанной программы») сверки
@@ -140,11 +140,11 @@ UTF-16 не умеет, а молча склеить значило бы, что
 напечатанной программы нашёл, что у C# `длина` и `разложить … на символы`
 расходились на ОДИНОКОЙ половине пары ещё сутки после этой правки — четыре входа
 из двенадцати. Разбор и починка:
-[[odinokaya-nizkaya-polovina-schitalas-nulem-v-csharp]]. Отсюда поправка к
+[[a-lone-low-half-counted-as-zero-in-csharp]]. Отсюда поправка к
 способу проверки: «форма считает знаки» проверяется не поодиночке, а сверкой
 РАЗНЫХ форм о том же тексте.
 
-Связано: [[odinokaya-nizkaya-polovina-schitalas-nulem-v-csharp]],
+Связано: [[a-lone-low-half-counted-as-zero-in-csharp]],
 [[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
-[[obrashchenie-stroki-lozhno-na-odinokom-surrogate]],
-[[literal-s-odinokim-surrogatom-lomaet-samoprimenenie]], [[minus-zero-is-a-class]]
+[[string-reversal-keeps-length-is-false-on-a-lone-surrogate]],
+[[a-lone-surrogate-literal-breaks-self-application]], [[minus-zero-is-a-class]]

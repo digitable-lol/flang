@@ -74,5 +74,5 @@ flang остались ровно три точки: найти план, взя
 отдельная работа. Клиент HTTP — минимальный `HTTP/1.1` без разбора заголовков
 дальше кода ответа и тела.
 
-Связано: [[pyat-komand-dvoichnogo-cena-kazhdoy]],
-[[vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer]]
+Связано: [[five-binary-commands-and-the-price-of-each]],
+[[pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size]]

@@ -50,7 +50,7 @@ scripts/identical-declarations.sh         # что можно ввезти вм�
 
 ## Поправка к базе знаний: варианты ловит не `cc`, а проверка типов
 
-Заметка [`pyat-komand-dvoichnogo-cena-kazhdoy`](zettel/pyat-komand-dvoichnogo-cena-kazhdoy.md)
+Заметка [`five-binary-commands-and-the-price-of-each`](zettel/five-binary-commands-and-the-price-of-each.md)
 говорит: «два столкновения нашлись НЕ связыванием, а компилятором C», и что
 связывание имена вариантов не судит. Первое верно, второе — верно наполовину.
 

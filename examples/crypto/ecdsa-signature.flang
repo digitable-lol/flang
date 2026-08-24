@@ -3,7 +3,7 @@
 
 // НАСТОЯЩАЯ ПОДПИСЬ, ПРОВЕРЕННАЯ СВОИМИ РУКАМИ. Ключ, подпись и сообщение здесь
 // не выдуманы: они сделаны openssl 23 августа 2026 года ровно этими командами
-// (каталог /srv/work/ecdsa-proba на этой машине):
+// (в пустом каталоге, повторяются как есть):
 //
 //   openssl ecparam -name prime256v1 -genkey -noout -out kluch.pem
 //   openssl ec -in kluch.pem -pubout -out otkrytyy.pem

@@ -436,7 +436,7 @@ FLANG_RECURSION_LIMIT: функция «Шаг нормализации» пре
 FLANG_CLI: ядро доказательства прекращено
 ```
 
-**No ledger is printed then for ANY claim in the file, and the culprit is not
+**No proof report is printed then for ANY claim in the file, and the culprit is not
 named in the refusal** — on `factcheck.flang` all 160 vanished silently. Catch
 it with a cheap `check` without `--proof` (seconds against a minute) and by
 halving the list of edits.
@@ -548,7 +548,7 @@ default value — it lands.
 ## The kernel's refusal does NOT name what it lacked
 
 Another correction from the same measurement. For an unproven claim **without a
-theorem**, the ledger carries one and the same text regardless of the cause:
+theorem**, the proof report carries one and the same text regardless of the cause:
 
 ```
 объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после
@@ -649,7 +649,7 @@ set the author picked. Do not spend runs converting one into the other.
 ## An empty claim is not a proof
 
 A claim that holds for any body of the function checks nothing. The test is
-simple: replace the body with a stub of the same signature and take the ledger
+simple: replace the body with a stub of the same signature and take the proof report
 again. If the claim is still proven, it is decoration — and its proved status
 inflates the proof report.
 

@@ -55,7 +55,7 @@ flang check <файл.flang> [--proof [--json] [--записать <файл>]]
 | `--proof` | A report: what carries the promise "total" for each function, and what carries each claim |
 | `--json` | Only together with `--proof`: the same report in machine form |
 | `--записать <файл>` | Only together with `--proof`: write the proof itself into a file. The key is also spelled in Latin — `--record` |
-| `--предел-шагов N` | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` ledger for a module with a thousand claims does not fit the default. In Latin — `--step-limit` |
+| `--предел-шагов N` | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. In Latin — `--step-limit` |
 
 Codes: `0` — nothing to report; `1` — the program did not pass; `2` — the program
 contains declarations that the `flang` binary does not judge at all (the category
@@ -97,7 +97,7 @@ same checks as `check`: "the example matched" means nothing on a program with a
 type error.
 
 ```bash
-flang test <файл.flang | каталог | маска> [--no-check] [--json] [--ledger]
+flang test <файл.flang | каталог | маска> [--no-check] [--json] [--proof report]
                                           [--max-steps N] [--max-depth N]
 ```
 
@@ -105,7 +105,7 @@ flang test <файл.flang | каталог | маска> [--no-check] [--json] 
 | --- | --- |
 | `--no-check` | Do not check the program — look at how the examples behave while it is still being edited |
 | `--json` | A machine-readable summary on one line |
-| `--ledger` | One line per file, so results can be compared with a diff |
+| `--proof report` | One line per file, so results can be compared with a diff |
 | `--max-steps N` | The evaluator step limit |
 | `--max-depth N` | The depth limit |
 

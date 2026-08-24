@@ -1,6 +1,6 @@
 # Опись JavaScript в дереве: три кучи, 53 файла
 
-Продолжение долговой записки [`pochemu-ostayotsya-javascript.md`](pochemu-ostayotsya-javascript.md)
+Продолжение долговой записки [`why-javascript-remains.md`](why-javascript-remains.md)
 от 23 августа. Здесь сделаны две вещи, которых там не было:
 
 1. **Четыре дыры перепроверены прогоном** — какая закрылась, какие живы.

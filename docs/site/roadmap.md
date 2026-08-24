@@ -26,16 +26,36 @@ kernel can prove them.
 
 ## In progress
 
+**There will be no release until the seed is reprinted.** Of the whole list this
+item comes first, because it holds the others up. `bootstrap/` holds the compiler
+already printed to C99 and committed: one `make` turns it into a working binary,
+and nothing else is needed to build. The seed is required to match what today's
+sources print — and it does not:
+
+```
+sh scripts/raskrutka.sh --bystro
+→ 41 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
+```
+
+While that holds, an edit to the compiler's sources does not reach the built
+program. A live example: emitting a process plan into C is written
+(`flang/self/emit-c.flang`), and the seed has not one line of it — `grep -c
+'flang_conc.c' bootstrap/compiler_flang.c` answers `0`, while the Elixir target
+is there. The reprint itself costs hours and hundreds of gigabytes of memory, and
+does not pass on the first try.
+
 **The kernel proves few ordinary functions.** The obstacle is not search speed
 but the strength of the rules themselves: there are three deciding rules, and
 they run out on the body shape of an ordinary function. How the kernel works —
 [Why and how](proofs.html).
 
 **The compiler says a great deal about itself, and little about it is proved.**
-The compiler's own sources (`flang/self`, 56 files) carry 5548 behaviour claims
-over 8536 function declarations: 5226 functions out of 8536 carry at least one.
-Writing a claim is not the same as proving it — only a minority of them is
-proved, and it runs into the same wall as the library.
+The compiler's own sources (`flang/self`, 56 files, 105,677 lines) carry 6404
+`обеспечивает` lines over 8603 function declarations. Writing a claim is not the
+same as proving it — only a minority of them is proved, and it runs into the same
+wall as the library. These files must be counted with `awk`, not `grep`: lines in
+`link.flang` are long enough that `grep` calls the file binary and skips it
+silently.
 
 **An emitted program has no input boundary.** The installed `flang` does check
 arguments against declared types:
@@ -64,37 +84,65 @@ Updating today means taking the new file and putting it where the old one was.
 **2. The library grew ahead of the package manager.** This page used to promise
 the opposite order — "while a library cannot be handed out by name and version,
 there is little point in growing it" — and the order came out otherwise. Today
-`flang/stdlib` holds 33 modules, and none of the gaps from the old list is left:
+`flang/stdlib` holds **38 modules** and 1275 functions, 1271 of them with
+termination proved, and none of the gaps from the old list is left:
 
 - databases — **two** drivers: PostgreSQL over the wire (protocol 3.0, login
-  through `scram-sha-256`) and reading a SQLite file by walking its b-tree;
+  through `scram-sha-256`) and SQLite, which now not only reads a file by walking
+  its b-tree but **builds one from nothing**: `«Собрать базу»` hands back the
+  whole file image, ready to be written by a single order. So far it checks
+  ITSELF — the postconditions read the image back through the same tree walk;
+  that a foreign `sqlite3` accepts the file has not yet been confirmed by a
+  separate run;
 - networking — HTTP (parsing and printing request and response), a binary
-  protocol over TCP (`provod`), Redis over RESP2;
+  protocol over TCP (`provod`), Redis over RESP2, TLS handshake parsing;
 - own cryptography — AES with CTR, GCM and CBC modes, X25519 key exchange,
   SHA-1, SHA-256, HMAC, PBKDF2, DER parsing, X.509 certificate parsing and CRL
-  revocation-list parsing.
+  revocation-list parsing;
+- regular expressions — `automaton.flang`, 63 functions, every one with
+  termination proved. The engine never backtracks: a pattern is parsed into a
+  tree, and the automaton's state is the pattern itself, shortened by the
+  character just read (Brzozowski derivatives). The number of steps equals the
+  length of the input by construction.
 
 What is **not** done in that list: the secure connection itself is not run by
 our own cipher — `https` still goes out to the external `curl`, and revocation
 checking is not wired into it, even though there is now something to read a CRL
-with. A registry is needed more for this library, not less: there is now
+with. SQLite is written whole and only from nothing: there is nothing here to
+append a row to somebody else's existing file — that needs a journal, and there
+is none. A registry is needed more for this library, not less: there is now
 something worth handing out by name and version.
 
 **3. Application code is thin, but no longer a single item.** A link-shortener
 service (`examples/web/shortener`) — storage, routing, processes and
 supervision, with not one line between the incoming and outgoing bytes written
 in anything but flang; a backend example of seven files (`examples/library-api`);
-plans that talk to the databases (`examples/db`). These are examples, not
-applications in service: no program among them is one somebody runs in
-production.
+plans that talk to the databases (`examples/db`). The service also comes up on a
+real socket: the C process scheduler learned to wait on the network without
+stopping, and `curl` gets 200 on `/здоровье`, 201 on `POST`, 301 with `Location`
+and 204 on `DELETE`. That run carries a caveat, and naming it without the caveat
+would be dishonest: the C process-plan table was written by hand outside the
+tree, because there is nothing to emit it with — the committed seed holds not one
+line of that emission. The same run cannot be repeated from a clean tree today.
+And these are examples, not applications in service: no program among them is one
+somebody runs in production.
 
-**4. The auxiliary code is still JavaScript.** The tree holds 53 such files
-(`git ls-files | grep -E '\.(mjs|js)$'`) — the site build, the guards, the
-benchmarks. Some of them are not held up by a shortage of hands: four
+**4. The auxiliary code is still JavaScript.** The tree holds 53 such files and
+24,360 lines (`git ls-files | grep -E '\.(mjs|js)$'`) — the site build, the
+guards, the benchmarks. Some of them are not held up by a shortage of hands:
 capabilities are absent from the language itself, and what exactly holds each
-file is worked out in `docs/why-javascript-remains.md`. Twelve files are
-not a debt at all — the runtime of the `js` emit target, output of the compiler
+file is worked out in `docs/why-javascript-remains.md`. Twelve files are not a
+debt at all — the runtime of the `js` emit target, output of the compiler
 itself, and launchers that run before flang is on the machine.
+
+One of the holes in that analysis has closed halfway, and the other half will
+never close. Regular expressions arrived in the language, but there are no
+lookaheads or lookbehinds in them and there never will be (see below) — and the
+guards are written with them: `claim-guard.mjs` has three, `count-guard.mjs`
+three, `binary-rules-guard.mjs` two. Free of them are `name-guard.mjs` and
+`jargon-guard.mjs`: those two are portable with the new engine today, the other
+three are not, and what has to be rewritten in them is not the pattern but the
+approach.
 
 ## Ruled out
 
@@ -102,6 +150,14 @@ itself, and launchers that run before flang is on the machine.
 direct emission into C, Go and Rust. First-class functions do **exist**: the
 compiler replaces a function-value with a tag and dispatches on tags. A closure
 and a first-class function are different things, and only the first is refused.
+
+**No lookaheads or lookbehinds in regular expressions.** `(?=…)`, `(?<=…)` and
+backreferences `\1` all require going back and re-reading what has been read —
+exactly the backtracking the engine was written to refuse. A pattern using them
+does not fail silently: it is refused by name, the reason goes into the `беда`
+field, and a match against such a pattern answers "no". The price is named above:
+three tree guards stay in JavaScript until somebody rewrites them without
+lookarounds.
 
 **No two versions of one library in one program.** When two dependencies pull
 one library at different versions, that is settled by raising a version, not by

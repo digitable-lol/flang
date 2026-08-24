@@ -66,22 +66,22 @@ attaching a solver to the verification conditions is an open task, not a feature
   That is how binary search (`убывает верх минус низ плюс 1`) and Euclid (`убывает б`) are
   written; they no longer need a "fuel" list — see `examples/measure/`. **Counting UP is not
   written with a measure**: it has no upper bound and nothing to prove with. It is turned into
-  counting down over a `нат` parameter, and then the type itself proves it
+  counting down over a `неотрицательное` parameter, and then the type itself proves it
   (`examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
   forever, so the guard on a declared measure checks three things at once — strict decrease,
   non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
   decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets
   — not a hang.
-- The constant-step guard is DROPPED when the parameter is declared an exact natural (`нат` — a
+- The constant-step guard is DROPPED when the parameter is declared an exact natural (`неотрицательное` — a
   whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
   0 and a ceiling below which `н минус c` for whole c ≥ 1 is EXACTLY smaller than н. The proof
   becomes complete, and the ledger names a fifth carrier of the promise — «точным шагом», the
   only one without a guard. Measured on the corpus at the time: 16 functions carried the promise
   by constant step with a guard, and 2 remained. Today's site measurement
   (`docs/site/numbers.json`) names 11 such functions and 113 guard sites: the corpus has grown
-  since. The move to `нат` added ZERO sites — overflow is caught by widening the type
-  (`нат плюс нат` is `число`), not by a check in the emitted code. Worked
+  since. The move to `неотрицательное` added ZERO sites — overflow is caught by widening the type
+  (`неотрицательное плюс неотрицательное` is `число`), not by a check in the emitted code. Worked
   example: `examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use

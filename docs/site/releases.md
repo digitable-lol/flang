@@ -79,7 +79,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - `«Открыть соединение»` — an order with which a program itself reaches a foreign service over a socket. Before it, no client to a database or to any binary-protocol service could be written in flang: a service could answer but not ask.
 - All four network orders now use one word for the concept.
-- A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `нат` argument and never knew.
+- A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `неотрицательное` argument and never knew.
 
 ### What changed
 

@@ -198,7 +198,7 @@ report of `flang check --proof` names what the promise rests on:
 here are machine numbers, and at very large values subtracting one no longer
 changes the number. The compiler does not keep quiet about it.
 
-**Exercise 3.** Declare the input `нат` instead of `число` — the check passes
+**Exercise 3.** Declare the input `неотрицательное` instead of `число` — the check passes
 even without fixing the condition, because that type holds no negative inputs at
 all. The boundary is then guarded by the call:
 
@@ -207,7 +207,7 @@ flang run ch4.flang --function 'Сумма до' --args '{"н": -3}'
 ```
 
 ```
-FLANG_TYPE: вызов функции «Сумма до»: аргумент «н»: -3 вне нат
+FLANG_TYPE: вызов функции «Сумма до»: аргумент «н»: -3 вне неотрицательное
 ```
 
 Exit code 1.

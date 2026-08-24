@@ -115,7 +115,7 @@ Argument types `flang run` does check. `«Factorial»` is declared over `nat`, a
 on −3 it answers:
 
 ```
-FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне нат
+FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне неотрицательное
 ```
 
 ## What the proof report says

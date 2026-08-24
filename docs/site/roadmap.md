@@ -42,7 +42,7 @@ arguments against declared types:
 
 ```
 flang run examples/measure/natural.flang --function «Факториал» --args '{"н":-3}'
-→ FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне нат      (exit 1)
+→ FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне неотрицательное      (exit 1)
 ```
 
 A program emitted by `flang emit` does not: the caller answers for its input,

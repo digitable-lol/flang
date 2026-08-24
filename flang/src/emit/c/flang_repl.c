@@ -2366,21 +2366,78 @@ static void repl_places_of(const char *importer, repl_strings *places) {
   repl_library_places(places);
 }
 
+/** Имена модулей, о затенении которых уже сказано: строка на модуль, не на ввоз. */
+static repl_strings repl_shadow_said;
+static bool repl_shadow_started = false;
+
 /**
  * Модуль по имени: первое место, где он нашёлся, отдаёт ВСЕ свои совпадения.
  * Ничего не нашлось — молчим: скажет об этом связывание, и скажет кодом.
+ *
+ * ЗАТЕНЕНИЕ ГОВОРИТСЯ ВСЛУХ, и вот чего стоило молчание. Порядок мест —
+ * каталог ввозящего, потом ВВЕРХ по предкам, пока в предке есть хоть один
+ * `.flang`, и только потом библиотека рядом с двоичным. В общей рабочей зоне
+ * (`/srv/flang-rabota`) россыпью лежат черновики, среди них устаревшие копии
+ * модулей библиотеки, — и они перекрывают `flang/stdlib` проверяемого дерева
+ * МОЛЧА, потому что каталог-предок просматривается раньше библиотеки.
+ *
+ * Замер 24 августа 2026. `тип «Звено» от «З»` в `flang/stdlib/hashmap.flang`
+ * сделали параметрическим; внутри файла параметр работал, а любой ввоз отвечал
+ * «тип «Звено» объявлен от нуля параметров, а применён к 1 аргументу». Модуль
+ * «Словарь хешем» брался из `/srv/flang-rabota/u-teoremy-hashmap-hm-BAZA.flang`
+ * — копии ДО правки, — а `flang/stdlib/hashmap.flang` дерева не открывался
+ * вовсе. Час ушёл на поиск изъяна языка, которого нет, и записка о нём
+ * разошлась с правдой. Ровно так же в той же зоне лежит второй такой файл:
+ * `u-dok-hash-z1.flang` — модуль «SHA-256», 534 строки против 992 в
+ * библиотеке.
+ *
+ * Поэтому: взятый файл называется, перекрытые перечисляются. Строка идёт в
+ * stderr, печатается один раз на имя модуля и на код возврата НЕ ВЛИЯЕТ —
+ * это не отказ, а имя файла, которого не хватало.
  */
 static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
   repl_strings places;
+  repl_strings shadowed;
   size_t index = 0;
+  bool have = false;
   strings_init(&places);
+  strings_init(&shadowed);
   repl_places_of(importer, &places);
   for (index = 0; index < places.count; index += 1) {
-    repl_place_scan(places.items[index], name, found);
-    if (found->count > 0) {
-      break;
+    if (have) {
+      /* Место может повториться: подъём вверх бережётся от повтора, а библиотека
+         рядом с двоичным — нет, и каталог ввозящего вполне бывает ею же. Тот же
+         ПУТЬ не затеняет сам себя, поэтому сверяемся по пути, а не по месту. */
+      repl_strings here;
+      size_t at = 0;
+      strings_init(&here);
+      repl_place_scan(places.items[index], name, &here);
+      for (at = 0; at < here.count; at += 1) {
+        const char *path = here.items[at];
+        const size_t bytes = strlen(path);
+        if (!strings_has(found, path, bytes) && !strings_has(&shadowed, path, bytes)) {
+          strings_say(&shadowed, path);
+        }
+      }
+      strings_free(&here);
+    } else {
+      repl_place_scan(places.items[index], name, found);
+      have = found->count > 0;
     }
   }
+  if (!repl_shadow_started) {
+    strings_init(&repl_shadow_said);
+    repl_shadow_started = true;
+  }
+  if (have && shadowed.count > 0 && !strings_has(&repl_shadow_said, name, strlen(name))) {
+    strings_say(&repl_shadow_said, name);
+    fprintf(stderr, "flang: модуль «%s» взят из %s", name, found->items[0]);
+    for (index = 0; index < shadowed.count; index += 1) {
+      fprintf(stderr, "%s%s", index == 0 ? "; тот же модуль объявляют также: " : ", ", shadowed.items[index]);
+    }
+    fprintf(stderr, "\n");
+  }
+  strings_free(&shadowed);
   strings_free(&places);
 }
 

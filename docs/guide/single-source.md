@@ -34,18 +34,23 @@ readable names may use guillemets.
 Three things sit next to the body of the function and travel with it. The **examples** are not
 tests in a neighbouring file but part of the declaration — `flang test` finds them itself.
 **`обеспечивает`** is a promise about the result on every input, not on the listed ones.
-**`тотальная`** is a marker the compiler answers for: a function whose termination it cannot
-prove is not accepted with that marker.
+**`тотальная`** is a marker the compiler answers for — but in two ways, and the difference
+matters. Either it proves termination itself (by composition, by structure, or by exact step over a
+natural), or it makes the author name the measure (`убывает`) and puts a guard in at RUN TIME. The
+second is not a proof: `flang check` exits 0, and a measure that fails to decrease kills the
+program with `FLANG_MEASURE` during the run. Which of the two carries the promise for each function
+is what `flang check --proof` says; the breakdown is in
+["What the `тотальная` marker gives you"](totality.md).
 
 From that single source you get the implementation, the examples and the checks — in eight
 languages at once. The `обеспечивает` above is not a comment: it becomes a postcondition in the
 emitted code.
 
 ```bash
-flang emit examples/library-api/lib/fine.flang --target python --out /tmp/shtrafy
+flang emit examples/library-api/lib/fine.flang --target python --out вывод
 ```
 
-produces in `/tmp/shtrafy/shtrafy.py`, verbatim:
+produces in `вывод/shtrafy.py`, verbatim:
 
 ```python
     # постусловие «Штраф ограничен»

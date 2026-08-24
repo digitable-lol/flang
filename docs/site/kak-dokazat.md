@@ -399,6 +399,23 @@ It works even where the branch is folded into `случай любое`. For `р
 a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
 section below.
 
+⛔ **Careful: this guard can drive the whole check into divergence.** If the
+variant in the guard is filled by a PROJECTION OF ITS OWN argument — `если узел
+равен (вариант «Значение скаляра» с «скаляр» равным («Скаляр значения» от
+узел))` — and the branch calls a function reading the same argument through the
+same projection, the run goes into
+
+```
+FLANG_RECURSION_LIMIT: функция «Шаг нормализации» превысила предел глубины
+вызовов (20000) на глубине 20001
+FLANG_CLI: ядро доказательства прекращено
+```
+
+**No ledger is printed then for ANY claim in the file, and the culprit is not
+named in the refusal** — on `factcheck.flang` all 160 vanished silently. Catch
+it with a cheap `check` without `--proof` (seconds against a minute) and by
+halving the list of edits.
+
 ## 11. Split the goal by comparison outcomes instead of hiding them under a guard
 
 A compound claim under the guard "both arguments are positive" does not land:
@@ -534,8 +551,35 @@ set the author picked. Do not spend runs converting one into the other.
 ## An empty claim is not a proof
 
 A claim that holds for any body of the function checks nothing. The test is
-simple: mentally replace the body with a stub. If the claim still holds, it is
-decoration — and its proved status inflates the proof report.
+simple: replace the body with a stub of the same signature and take the ledger
+again. If the claim is still proven, it is decoration — and its proved status
+inflates the proof report.
+
+**One stub is NOT ENOUGH, and this has been measured twice.** You need two — a
+zero one (`0`, `""`, `нет`, empty list, the bottom of a sum) and one with
+non-zero fields (`1`, `"я"`, `да`, `["я"]`) — and **they cut both ways**:
+
+- on `factcheck.flang`, 13 of 39 newly proven claims **survived one stub and
+  fell only on the other**. Eleven of them survived `да` and fell on `нет` —
+  a whole family of claims shaped `… то результат равен да иначе да`; two the
+  other way round. With a single stub of either flavour, a third of the gain
+  would have been declared empty;
+- on `base64.flang` and `utf8.flang`, 13 claims survived the canonical zero stub
+  and fell only on the non-zero one — because the examples of those very
+  functions start from zeros, so a `0` stub is indistinguishable from the real
+  body there.
+
+**Stub one function at a time, or one group of unrelated ones — never all at
+once.** Having stubbed every body at once, an agent got a false "empty": the
+goal contained a call to a neighbouring function, and the stubbed call matched
+the stubbed result. Groups are computed as the transitive closure of mentions.
+
+**The price, stated out loud.** If a proof rests on a theorem that refers `по
+свойству` to a call, the stub removes that call, the theorem stops closing, and
+the stubbed file is rejected ENTIRELY — there is nothing left to judge, the
+verdict becomes "не судили". Then the substitution is done together with
+removing that theorem, and the departure from the usual order goes into the
+report rather than being hidden.
 
 The same goes for gains: **a gain is growth in `доказано`, not growth in
 `утверждений`.** Splitting always grows the denominator. If `доказано` did not

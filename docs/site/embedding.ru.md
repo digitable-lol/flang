@@ -381,7 +381,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
                 '{"fn":"Factorial","args":[{"s":"x"}]}' | node flang_cli.js ./factorial.js
 {"ok":true,"value":{"n":"3628800"}}
 {"ok":true,"value":{"n":"24"}}
-{"ok":false,"code":"FLANG_TYPE","message":"вызов функции «Factorial»: аргумент «n» не соответствует типу нат"}
+{"ok":false,"code":"FLANG_TYPE","message":"вызов функции «Factorial»: аргумент «n» не соответствует типу неотрицательное"}
 ```
 
 Тот же ввод, поданный собранному из цели `c` двоичному `./flang_cli`, даёт те

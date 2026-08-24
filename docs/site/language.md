@@ -370,7 +370,7 @@ Edge: **arithmetic does not inherit exactness.** Add two `nat` values, declare
 the return as `nat`, and you get a refusal:
 
 ```
-FLANG_TYPE, строка 6, столбец 5: функция «Sum of nats» объявлена как нат, а тело даёт число
+FLANG_TYPE, строка 6, столбец 5: функция «Sum of nats» объявлена как неотрицательное, а тело даёт число
 ```
 
 An exact type belongs on **inputs and record fields** — where the proof kernel

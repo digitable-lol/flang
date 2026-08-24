@@ -52,8 +52,8 @@
  * `код` было занято 226 раз.
  *
  * Запуск:
- *   node flang/scripts/word-occupancy.mjs нат натуральное «целое число»
- *   node flang/scripts/word-occupancy.mjs --json нат целое
+ *   node flang/scripts/word-occupancy.mjs неотрицательное натуральное «целое число»
+ *   node flang/scripts/word-occupancy.mjs --json неотрицательное целое
  */
 import { readFileSync, realpathSync } from "node:fs"
 import { fileURLToPath } from "node:url"
@@ -93,7 +93,7 @@ const ПАЧКА = 64
 export function занятость(фраза, файлы = ФАЙЛЫ, корневой = корень) {
   const слова = фраза.trim().toLowerCase().split(/\s+/u)
   /* Внутри строки и комментария слово ищется ЦЕЛИКОМ, а не подстрокой. Без
-     границы «нат» нашлось бы в «координат» и «начать» тридцать четыре раза, и
+     границы «неотрицательное» нашлось бы в «координат» и «начать» тридцать четыре раза, и
      число, стоящее рядом с настоящим счётом голых имён, читалось бы как счёт
      того же рода. Граница — «не буква и не цифра»: язык пишется кириллицей,
      латиницей и иероглифами сразу, поэтому \b здесь не годится. */
@@ -292,7 +292,7 @@ if (process.argv[1] !== undefined) {
 if (запущен) {
   const слова = process.argv.slice(2).filter((арг) => арг !== "--json")
   if (слова.length === 0) {
-    process.stderr.write("нужно хотя бы одно слово: node flang/scripts/word-occupancy.mjs нат целое\n")
+    process.stderr.write("нужно хотя бы одно слово: node flang/scripts/word-occupancy.mjs неотрицательное целое\n")
     process.exitCode = 2
   } else {
     const записи = слова.map((слово) => занятость(слово))

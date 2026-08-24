@@ -132,7 +132,7 @@ claim about order over raw arithmetic is therefore not true.
 
 | fix | what to write | who pays |
 |---|---|---|
-| narrow the input type | `принимает н: нат` or `целое` | nobody, «not a number» cannot get in |
+| narrow the input type | `принимает н: неотрицательное` or `целое` | nobody, «not a number» cannot get in |
 | add a precondition | `требует «вход есть число» (н минус н) равен 0` | the caller |
 | state the bound in the claim itself | `обеспечивает «…» не ((н минус н) равен 0) или (результат больше н)` | nobody |
 
@@ -278,7 +278,7 @@ Requirements, promises and theorems.
 | `FLANG_PROOF_UNFINISHED` | the proof is not closed | add `следовательно доказано` |
 | `FLANG_PROOF_UNKNOWN_VAR` | the claim mentions an unbound name | introduce it with `дано` |
 | `FLANG_PROOF_VAR_TYPE` | the theorem's variable type differs from the parameter's | match `дано` to the function signature |
-| `FLANG_PROOF_INDUCTION_TYPE` | there is no induction over that type | induction runs over a declared sum or over the range `нат` |
+| `FLANG_PROOF_INDUCTION_TYPE` | there is no induction over that type | induction runs over a declared sum or over the range `неотрицательное` |
 | `FLANG_PROOF_INDUCTION_CASES` | not every case of the principle is covered | add the missing `случай` |
 | `FLANG_PROOF_INDUCTION_BRANCH` | a case branch is not reduced to the goal | justify the branch |
 | `FLANG_PROOF_INDUCTION_STEP` | the step is not reduced to the hypothesis | add `по предположению` and make the sides match sign for sign |

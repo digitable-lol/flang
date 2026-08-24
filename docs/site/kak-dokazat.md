@@ -630,7 +630,7 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   with a body of `… остаток от 65536` is not taken: the kernel's rule bounds a
   remainder only of something known to be a non-negative integer, and `число`
   does not promise that. The fix is not in the claim but in the signature — type
-  `нат` or a `требует` condition.
+  `неотрицательное` or a `требует` condition.
 
 ## An example will not close a "declared" claim
 

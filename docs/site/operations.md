@@ -65,7 +65,7 @@ parameter name exactly as written in `принимает`; the value is the valu
 
 | Parameter type | What to write | Example |
 | --- | --- | --- |
-| `число`, `нат`, `целое` (number, natural, integer) | a number | `21`, `-3`, `2.5` |
+| `число`, `неотрицательное`, `целое` (number, natural, integer) | a number | `21`, `-3`, `2.5` |
 | `строка` (string) | a double-quoted string | `"раз два три"` |
 | `признак` (boolean) | `true` or `false` | `true` |
 | `список чего-то` (list of something) | an array | `[3, 1, 3, 2, 1]` |

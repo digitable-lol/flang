@@ -174,13 +174,13 @@ the message: it can be either.
 | `FLANG_PROOF_STEP` | the goal was not reduced by any rule | depends on the tail: a missing fact is yours, a wrong goal shape is the boundary |
 | `FLANG_PROOF_INDUCTION_TYPE` | induction runs over a type that carries no principle | boundary: `число` and `целое` do not carry one, and will not |
 | `FLANG_PROOF_INDUCTION_BRANCH` | the body is written in a form the conclusion cannot be read from | boundary: only `разбор` and `свёртка` yield it |
-| `FLANG_PROOF_INDUCTION_DESCENT` | the descent over `нат` is not strict | boundary: exactly `н минус 1` is read, and nothing else |
+| `FLANG_PROOF_INDUCTION_DESCENT` | the descent over `неотрицательное` is not strict | boundary: exactly `н минус 1` is read, and nothing else |
 
 ### `FLANG_PROOF_INDUCTION_TYPE`: there is no induction over numbers
 
 A type has to carry an induction principle, and only three things carry one: a
 declared sum (from its variants), the built-in list (from the two patterns that
-exhaust it), and the `нат` segment (from the two ends of the range). The kernel
+exhaust it), and the `неотрицательное` segment (from the two ends of the range). The kernel
 prints the reason together with the refusal:
 
 ```
@@ -192,7 +192,7 @@ FLANG_PROOF_INDUCTION_TYPE … индукция теоремы «двойная 
 к ближайшему возвращает то же х)
 ```
 
-The way around it is to declare the parameter as `нат` rather than `число`.
+The way around it is to declare the parameter as `неотрицательное` rather than `число`.
 
 ### `FLANG_PROOF_INDUCTION_BRANCH`: the body has to be one of two forms
 
@@ -212,7 +212,7 @@ induction runs on.
 
 ### `FLANG_PROOF_INDUCTION_DESCENT`: the descent is read as exactly one
 
-For the `нат` segment the principle holds because the chain `н, н−1, …` cannot
+For the `неотрицательное` segment the principle holds because the chain `н, н−1, …` cannot
 step over the floor, and the kernel verifies that in the body:
 
 ```

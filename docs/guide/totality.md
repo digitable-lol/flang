@@ -234,7 +234,9 @@ is total throughout, emoji and Cyrillic included.
 ## Why it is worth it: the fact checker refuses non-total functions
 
 `flang facts` answers "does this claim hold about this data", and it is not
-allowed to hang. A non-total function it does not evaluate at all:
+allowed to hang. A non-total function it does not evaluate at all — here recursion
+goes through the function's OWN result rather than a part of the value, so there
+is nothing to prove termination with:
 
 ```flang
 функция «Цифр в числе»
@@ -250,7 +252,7 @@ flang facts fc1.flang --claims '["«Цифр в числе» от 5 равно 1
 ```
 
 ```json
-{"ok":false,"results":[{"claim":"«Цифр в числе» от 5 равно 1","holds":false,"why":"функция «Цифр в числе» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить","status":"refused"}]}
+{"ok":false,"results":[{"claim":"«Цифр в числе» от 5 равно 1","holds":false,"why":"функция «Цифр в числе» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить","steps":[…],"status":"refused"}]}
 ```
 
 Exit code 1. The mode has no file, network or clock access, and a hard step

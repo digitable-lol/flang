@@ -790,9 +790,8 @@ FLANG_RECURSION_LIMIT: функция «Кодовые точки из байт�
 ```
 
 UTF-8 decoding walks one byte at a time by recursion, and starts over on every
-cell.
-While that is so, read the header and the schema through this module, not the
-contents.
+cell. While that is so, read the header and the schema through this module, not
+the contents.
 
 ## The rest of the modules
 

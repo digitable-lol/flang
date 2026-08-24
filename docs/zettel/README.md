@@ -549,6 +549,7 @@
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
 - [Динамический ввоз прячет мёртвый файл от обхода по «import»](dynamic-import-hides-a-dead-file.md)
+- [Охрана пустоты в библиотеке пишется словом `пусто`, а ядро читает только меру — 114 обещаний против 18](emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md)
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
 - [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
@@ -561,10 +562,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Охрана пустоты в библиотеке пишется словом `пусто`, а ядро читает только меру — 114 обещаний против 18](emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md)
 
 ## Как добавлять
 

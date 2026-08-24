@@ -395,6 +395,13 @@ Found independently by **four** agents in one day — on `optional.flang`
 (2 of 12 → 7 of 14), on `provod.flang` and `redis.flang` (+27 together), on
 `образцы.flang`, and on `result.flang` (10 of 13 → **15 of 15**, no grid left).
 
+**The scrutinee may be an EXPRESSION, not only a variable** — the guide did not
+say so; measured on `totality.flang` across six functions:
+
+```
+если («Число литерала» от («Взять поле» от «узел» и "right")) равен (вариант «Нет числа») то …
+```
+
 It works even where the branch is folded into `случай любое`. For `разбор` over
 a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
 section below.
@@ -477,6 +484,45 @@ Measured on `hotswap.flang`: a single such rewrite closed three claims.
 ⛔ **The converse also happens**, measured on `provod.flang`: where the bare form
 does land, appending `равен да` can break it. The forms are **not**
 interchangeable — run both, same as with guard wording (trick 12).
+
+## A closed goal is computed whole, with any comparison sign
+
+Before hunting for a goal kind: **if no free name is left in the goal, the kernel
+simply computes it** — and the comparison sign does not matter. The rule is named
+`«Вычислить замкнутую»` in the kernel, with the reasoning: "a closed goal has ONE
+value, and computing it is cheaper than splitting in two and reducing both
+halves".
+
+Hence an important correction, measured on `totality.flang`: the common claim
+that "the kernel does not take strict inequalities (`меньше`, `больше`) at all"
+is **wrong**.
+
+```
+обеспечивает «пульс по умолчанию положителен» результат больше 0     PROVEN
+```
+
+The kernel answers verbatim: "доказано вычислением замкнутой цели: свободных имён
+в ней не осталось, значит значение у неё одно, и вычисление отвечает про него
+целиком".
+
+**The correct wording: a strict inequality is unprovable only where free names
+remain in the goal.** For a function without arguments, for a constant, for a
+default value — it lands.
+
+## The kernel's refusal does NOT name what it lacked
+
+Another correction from the same measurement. For an unproven claim **without a
+theorem**, the ledger carries one and the same text regardless of the cause:
+
+```
+объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после
+каждого возврата — на тех входах, которые придут
+```
+
+All 44 unproven claims of `totality.flang` carry exactly this line. **A named
+refusal listing the goal kinds arrives only for a theorem you WROTE.** So to find
+out what is missing you have to write a theorem on purpose, as a probe, knowing
+in advance it will most likely not close.
 
 ## What the kernel takes in no wording at all
 

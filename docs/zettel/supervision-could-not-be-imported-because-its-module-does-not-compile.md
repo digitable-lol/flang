@@ -56,4 +56,4 @@
 работает у другого» здесь больше не проверить.
 
 Связано: [[the-work-run-measured-nothing-because-its-reference-end-died]],
-[[progon-raboty-i-sverka-celey-lovyat-raznoe]]
+[[a-work-run-and-a-target-check-catch-different-things]]

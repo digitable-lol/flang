@@ -91,8 +91,8 @@
 доказательство, а не его отсутствие.
 
 Связано: [[chto-nelzya-napisat-v-obespechivaet]],
-[[kontrakt-ne-proveryaetsya-vnutri-kontrakta]],
-[[dokazannoe-postuslovie-ne-pechataetsya]],
+[[the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag]],
+[[a-proved-postcondition-no-longer-reaches-printed-code]],
 [[equality-on-a-type-parameter-is-banned-only-in-bodies]],
 [[left-fold-gives-no-list-induction]],
 [[builtin-prepend-in-a-recursive-branch-blocks-the-induction-hypothesis]]

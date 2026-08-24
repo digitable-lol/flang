@@ -36,5 +36,5 @@ csharp, elixir, js». Цель `js` вернулась в счёт вторым 
 говорит о том, верны ли решения: их держит сверка восьми целей (67 744 и 17 472
 сверки, расхождений 0), и она всё это время была зелёной.
 
-Связано: [[progon-raboty-i-sverka-celey-lovyat-raznoe]],
+Связано: [[a-work-run-and-a-target-check-catch-different-things]],
 [[an-async-connect-tears-the-link-before-it-is-made]]

@@ -31,5 +31,5 @@
 его довод («их версия несёт разбор восьми целей») был верным. Неверна была только
 арифметика возврата.
 
-Связано: [[dva-hozyaina-portili-dvoichnyy-potok-po-raznomu]],
+Связано: [[two-hosts-corrupted-the-binary-stream-in-different-places]],
 [[an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count]]

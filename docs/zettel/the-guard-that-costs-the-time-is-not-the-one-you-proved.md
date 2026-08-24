@@ -39,6 +39,6 @@
 одна машина. Утверждение «цена равна цене проверки на число вызовов» здесь не
 измерено отдельно, а прочитано из разложения выше.
 
-Связано: [[dokazannoe-postuslovie-ne-pechataetsya]],
-[[postuslovie-schitaetsya-pri-kazhdom-vyzove]],
-[[svortka-ne-chitaet-postuslovie-vyzvannoy]]
+Связано: [[a-proved-postcondition-no-longer-reaches-printed-code]],
+[[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]],
+[[left-fold-is-blocked-because-the-fold-rule-does-not-read-the-callee-postcondition]]

@@ -61,4 +61,4 @@
 числа она не дала, и следующая мишень по тому же каталогу другая: дно
 произведения и дно терма из названного допущения.
 
-Связано: [[u-yadra-net-pravila-ne-menshe]], [[nan-is-reachable]]
+Связано: [[the-kernel-has-no-not-less-rule-but-not-greater-proves]], [[nan-is-reachable]]

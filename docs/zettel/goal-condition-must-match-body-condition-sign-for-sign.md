@@ -55,9 +55,9 @@
 в том, что связь длины с рекурсией по `байтов` выводить нечем. Зеркало —
 необходимое условие, а не достаточное.
 
-Связано: [[dizyunkciya-samyy-chastyy-vid-celi-no-upiraetsya-ne-v-neyo]],
+Связано: [[disjunction-is-the-most-common-goal-kind-but-not-the-bottleneck]],
 [[a-shape-only-postcondition-survives-a-stub-and-says-nothing]],
-[[pripisannaya-teorema-zaslonyaet-svedenie-yadra]]
+[[an-attached-theorem-shadows-the-reduction-the-kernel-does-itself]]
 
 ## Зеркало стороны неравенства В ОХРАНЕ отнимает доказательство
 

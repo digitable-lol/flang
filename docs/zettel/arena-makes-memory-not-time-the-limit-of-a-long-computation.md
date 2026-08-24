@@ -35,7 +35,7 @@ C, где то же самое стоит 154 с и умещается в пам
 верно то, что она НЕ УБЫВАЕТ по ходу счёта.
 
 Связано: [[reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c]],
-[[predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom]],
+[[the-interpreter-step-limit-decides-what-can-be-an-example]],
 [[memory-per-category-is-regions]]
 
 ## Поправка 24 августа 2026: арена возвращает — на откате области

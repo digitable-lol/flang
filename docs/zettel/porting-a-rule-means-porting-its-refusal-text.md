@@ -41,6 +41,6 @@ flang, переносить надо не две вещи, а три. Треть
 не нужна — но тогда и сверка слабее: два ядра могут отвергнуть одно и то же по
 разным причинам, и автор чинил бы не то, что сломано.
 
-Связано: [[ravenstvo-uperlos-v-poryadok-slagaemyh-a-ne-v-indukciyu]],
+Связано: [[equality-goals-hit-summand-order-not-missing-induction]],
 [[byte-for-byte-comparison]], [[a-removal-must-turn-a-test-red]],
 [[line-numbers-in-a-task-verify-the-branch-it-was-written-against]]

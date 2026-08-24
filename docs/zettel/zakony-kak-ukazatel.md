@@ -5,7 +5,7 @@
 нельзя: законы не порождают код, они его **отсеивают** — это уже записано в
 [[category-theory-transports-truth]] («теоркат не пишет код»). Зато отсев — ровно то, чего
 не хватает поиску: подпись называет класс из двенадцати
-([[spetsifikatsiya-ne-opredelyaet-funktsiyu]]), и сузить его нечем.
+([[a-signature-does-not-determine-a-function]]), и сузить его нечем.
 
 **Машинка для отсева в дереве уже есть, и она дешёвая.** `flang/src/monoid.mjs` —
 **245 строк**: ассоциативность, нейтральность, обратимость проверяются на конечной
@@ -130,8 +130,8 @@ Hoogle+ и посадили за задачи, из **115 запросов по 
   (900 против 1732 секунд на самой тяжёлой задаче), поэтому здесь она названа
   вилкой, а не числом.
 
-Связано: [[spetsifikatsiya-ne-opredelyaet-funktsiyu]],
+Связано: [[a-signature-does-not-determine-a-function]],
 [[category-theory-transports-truth]], [[module-links-need-a-named-data-translation]],
 [[the-dictionary-between-specs-was-mute]], [[the-bottleneck-is-rule-strength]],
-[[iz-hesha-kod-ne-vyvoditsya]], [[vyvod-rabotaet-na-uzkoy-oblasti]],
-[[sintez-upiraetsya-v-75-uzlov]]
+[[code-cannot-be-derived-from-its-hash]], [[derivation-works-where-the-domain-was-narrowed-on-purpose]],
+[[synthesis-from-a-spec-hits-75-tree-nodes]]

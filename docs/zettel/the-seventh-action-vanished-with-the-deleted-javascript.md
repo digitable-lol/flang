@@ -81,7 +81,7 @@ FLANG_TYPE, строка 101, столбец 3: пример «просьба п
 двух признаках; проверить «работает у одного, не работает у другого» больше
 нечем — второй реализации нет.
 
-Связано: [[dva-pravila-yazyka-zhivut-tolko-v-javascript]],
+Связано: [[two-language-rules-live-only-in-the-javascript-implementation]],
 [[a-corruption-lands-only-where-the-corpus-reaches]],
 [[supervision-could-not-be-imported-because-its-module-does-not-compile]],
-[[uzel-ne-pishetsya-obychnoy-programmoy-iz-za-literalnogo-adresata]]
+[[a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee]]

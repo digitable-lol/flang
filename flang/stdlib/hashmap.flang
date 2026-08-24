@@ -12,7 +12,7 @@
 // открывался вовсе. В каталоге, где модуль берётся отсюда, ввоз чист:
 // `принимает «з»: «Звено» от строки` — функций 25, все с доказанным
 // завершением, замечаний нет. Разбор — в записках
-// docs/zettel/slovar-hesha-stal-parametricheskim-a-parametr-ne-perezhivaet-vvoza.md
+// docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md
 // и docs/zettel/a-stray-draft-above-the-tree-shadows-the-library-silently.md.
 //
 // ЗАЧЕМ ПАРАМЕТР. Ради «Найти описание» в flang/self/interpret.flang: линейный

@@ -46,4 +46,4 @@ JIT). Взяты все файлы дерева, у которых есть хо
 трогает ни того, ни другого.
 
 Связано: [[content-addressing]], [[hash-inside-names-outside]],
-[[proof-cost-0-of-20]], [[paket-eto-zamok-s-imenem-i-versiey]]
+[[proof-cost-0-of-20]], [[a-package-is-a-lock-given-a-name-and-a-version]]

@@ -33,5 +33,5 @@ FLANG_TYPE: вариант «Концы есть» объявлен и в «Мо
 **видеть то же пространство имён**, что и она. Пространство, о котором он не
 знает, он не сторожит — и молчание его читается как «чисто».
 
-Связано: [[tolko-u-vvoza-vybrasyvaet-obyavleniya]],
+Связано: [[only-on-an-import-discards-declarations-instead-of-narrowing-visibility]],
 [[checked-without-checking]]

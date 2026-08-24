@@ -89,4 +89,4 @@ flang (`flang/self/parser.flang` 7010 → 7012) плюс ветка у кажд�
 связано». Но само чтение `список` в выражении как не работало, так и не работает:
 это отдельная работа, и она про снятие падежа, а не про `дано`.
 
-Связано: [[merging-two-branches-into-one-closed-sum]], [[pyat-komand-dvoichnogo-cena-kazhdoy]]
+Связано: [[merging-two-branches-into-one-closed-sum]], [[five-binary-commands-and-the-price-of-each]]

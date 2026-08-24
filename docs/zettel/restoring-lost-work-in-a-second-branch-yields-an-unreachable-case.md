@@ -37,7 +37,7 @@
 утверждений 95, из них 35 приезжают из `wire.flang` и `numbers.flang`.
 
 **Тем же слиянием чинится и записанный долг.** Заметка
-[[vetka-vlita-a-eyo-raboty-v-stvole-net]] называет «Начало SASL» и «Ответ SASL»
+[[a-branch-merged-with-its-work-missing-from-the-trunk]] называет «Начало SASL» и «Ответ SASL»
 пропавшими из ствола. На `422f42a3` они **на месте** (строки 272 и 297 драйвера),
 и `bootstrap/flang io scripts/name-splicing-guard.flang` отвечает «званых
 которых нет 0», код 0. Долг закрыт тем самым коммитом `c1ff756d`, который и
@@ -57,6 +57,6 @@
 ПОСТУСЛОВИИ, где компилятор судит полноту разбора. Тот же дубль в теле функции
 дал бы просто мёртвую ветку, и её никто бы не назвал.
 
-Связано: [[vetka-vlita-a-eyo-raboty-v-stvole-net]],
+Связано: [[a-branch-merged-with-its-work-missing-from-the-trunk]],
 [[a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently]],
 [[silent-merge-conflicts]]

@@ -35,5 +35,5 @@
 снял — второго доклада не будет уже никогда, и это отдельная дыра, здесь не
 закрытая.
 
-Связано: [[pravilo-eto-ne-otkaz-obyazano-imet-srok]],
+Связано: [[a-this-is-not-a-refusal-rule-without-a-deadline-is-a-breakage]],
 [[a-node-that-vanishes-is-declared-dead-and-its-work-is-taken-over]]

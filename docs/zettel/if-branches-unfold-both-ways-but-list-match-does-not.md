@@ -55,7 +55,7 @@
 и `fspec/forgery.flang` (18 обещаний, доказано 18); четыре снятых обещания —
 ровно те, что упёрлись в `разбор` списка и в постоянный список записей.
 
-Связано: [[stena-ravenstva-i-razbora-v-postuslovii-snyata]]
+Связано: [[three-of-five-named-postcondition-walls-are-already-gone]]
 
 ## Равенство КОНСТРУКТОРУ списка ветвь `пусто` не открывает — 0 из 13
 

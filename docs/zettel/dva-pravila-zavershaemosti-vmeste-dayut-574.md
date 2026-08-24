@@ -34,7 +34,7 @@
 
 **Чем подтверждено.** Ветка `vypusk/zavershaemost`. Копии
 `flang/src/totality.mjs` правились ВНЕ дерева, в рабочем каталоге, и прогонялись
-тем же приёмом, что в [[pometki-ne-hvatalo-293-iz-2242]] (все функции помечены
+тем же приёмом, что в [[only-293-of-2242-functions-lacked-a-mark-the-rest-lack-rules]] (все функции помечены
 тотальными). Прогон каждого опыта — 25–57 с по 284 файлам. Опорное число до
 опытов: 1951 обычная функция (счётом опыта), из них 1019 корней.
 
@@ -61,6 +61,6 @@ AST» и обратный ему дают на первом шаге 54 и 74 ф
 недёшево, а окупаются только вместе — поэтому браться за один из них ради числа
 в ведомости смысла нет, и это главный вывод замера.
 
-Связано: [[pometki-ne-hvatalo-293-iz-2242]],
+Связано: [[only-293-of-2242-functions-lacked-a-mark-the-rest-lack-rules]],
 [[structural-size-becomes-total-when-you-descend-into-the-pattern-field]],
 [[the-bottleneck-is-rule-strength]]

@@ -86,5 +86,5 @@ JavaScript, а та удалена; в компилятор на самом яз
   22 места в 12 файлах дерева шлют письмо сырым `отправить`.
 
 Связано: [[typed-process-reference-is-already-expressible]],
-[[adresat-obyazan-byt-literalom-radi-tipa-gruza-a-ne-radi-planirovshchika]],
+[[an-addressee-must-be-a-literal-for-the-payload-type-not-for-the-scheduler]],
 [[equality-on-a-type-parameter-is-banned-only-in-bodies]]

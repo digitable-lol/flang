@@ -53,6 +53,6 @@
 него отвергается», и он на JavaScript.
 
 Это оказался не единичный случай, а класс:
-[[pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki]].
+[[a-rule-no-corpus-program-touches-is-invisible-to-the-reference-check]].
 
-Связано: [[pravilo-bez-nositelya-v-korpuse-nevidimo-dlya-svercki]], [[a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk]], [[handler-postcondition-escapes-the-closed-set]], [[four-pieces-of-javascript]]
+Связано: [[a-rule-no-corpus-program-touches-is-invisible-to-the-reference-check]], [[a-red-inherited-from-the-trunk-must-be-measured-on-the-trunk]], [[handler-postcondition-escapes-the-closed-set]], [[four-pieces-of-javascript]]

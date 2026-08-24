@@ -39,9 +39,9 @@ due to different definitions "competing" for the same names».
 случай — тип переписали нарочно. Оказалось, что **подъём версии сам по себе тип
 не форкает**: за семь минорных версий `@unison/base` не изменился ни один тип, а
 у `systemfw_concurrent` они совпали даже через мажор. Разбор —
-[[romb-lomaetsya-ot-pravki-tipa]]. Где именно лежит код и что едет по сети —
-[[pull-privozit-ves-kod]].
+[[the-unison-diamond-breaks-on-a-type-edit-not-a-version-bump]]. Где именно лежит код и что едет по сети —
+[[unison-pull-brings-all-the-code-not-references]].
 
 Связано: [[content-addressing]], [[names-not-hashes]],
-[[hash-inside-names-outside]], [[romb-lomaetsya-ot-pravki-tipa]],
-[[pull-privozit-ves-kod]]
+[[hash-inside-names-outside]], [[the-unison-diamond-breaks-on-a-type-edit-not-a-version-bump]],
+[[unison-pull-brings-all-the-code-not-references]]

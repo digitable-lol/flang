@@ -58,5 +58,5 @@
 **Чем ограничено.** Про elixir, js, python и csharp здесь только то, что долг у
 них того же рода; запуск их вывода без блока не проверялся.
 
-Связано: [[vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer]],
-[[pyat-komand-dvoichnogo-cena-kazhdoy]]
+Связано: [[pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size]],
+[[five-binary-commands-and-the-price-of-each]]

@@ -47,7 +47,7 @@ grep -rhoE '"FLANG_PROOF_[A-Z_]+"' flang/self --include=*.flang \
 поэтому он вынесен подстановкой в `docs/site/site-numbers.mjs`, а не набран на
 странице рукой.
 
-Связано: [[dvoichnyy-molchit-o-proverkah-kotoryh-v-nyom-net]],
-[[urezannaya-sborka-obyazana-skazat-chego-ne-proverila]],
+Связано: [[the-binary-is-silent-about-checks-it-does-not-have]],
+[[a-trimmed-build-must-say-what-it-did-not-check]],
 [[a-tool-that-explains-itself-instead-of-the-persons-work]],
 [[an-exit-code-cannot-come-from-a-named-failure]]

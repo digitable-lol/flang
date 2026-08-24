@@ -90,6 +90,6 @@ iso-object-to-category.flang` ссылается на несуществующи
 
 Связано: [[a-stray-draft-above-the-tree-shadows-the-library-silently]],
 [[names-not-hashes]], [[content-addressing]],
-[[adres-modulya-eto-sha256-ishodnika]],
-[[stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy]],
-[[dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu]]
+[[a-module-address-is-the-sha256-of-its-source]],
+[[name-collisions-are-counted-by-a-text-walk-in-tenths-of-a-second]],
+[[an-unlinked-module-collects-names-that-are-already-taken]]

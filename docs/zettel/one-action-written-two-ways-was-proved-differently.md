@@ -57,7 +57,7 @@
 индукцию — дешёвая правка, снимающая часть левой свёртки». Первая половина
 верна, вторая нет: это соседний дефект, а не частный случай, и левой свёртки он
 не касается вовсе. Стену левой свёртки снимает другая правка, при другом правиле
-(см. [[svortka-ne-chitaet-postuslovie-vyzvannoy]]).
+(см. [[left-fold-is-blocked-because-the-fold-rule-does-not-read-the-callee-postcondition]]).
 
 **Чем подтверждено.** Ветка `u/svyortka`, основание `ff8ad5d0`. Пробы «А», «В» и
 «Г» в одном файле: «В» (обёртка) доказана, «А» и «Г» (встроенная форма, с `если`
@@ -67,6 +67,6 @@
 **Чем ограничено.** Речь только про меру «длина» и про равенства. Сколько эта
 правка стоит на дереве целиком, меряет `node flang/scripts/proof-ledger.mjs`.
 
-Связано: [[svortka-ne-chitaet-postuslovie-vyzvannoy]],
-[[ravenstvo-uperlos-v-poryadok-slagaemyh-a-ne-v-indukciyu]],
+Связано: [[left-fold-is-blocked-because-the-fold-rule-does-not-read-the-callee-postcondition]],
+[[equality-goals-hit-summand-order-not-missing-induction]],
 [[callee-postcondition-is-a-fact-only-after-it-is-proved]]

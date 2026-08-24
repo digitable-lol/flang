@@ -61,4 +61,4 @@
 занятых имён кончаются 40 000 000 шагов, не мерено.
 
 Связано: [[printed-java-without-entry-table-does-not-start]],
-[[vtaskivanie-modulya-platit-za-vstrechu-a-ne-za-razmer]]
+[[pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size]]

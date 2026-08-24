@@ -40,4 +40,4 @@
   нуля пересиливает» в том же файле.
 
 Связано: [[an-unreducible-if-condition-cancels-every-goal-split-rule]],
-[[cel-konyunkciya-yadru-ne-po-zubam-no-stoit-shesti]]
+[[a-conjunction-goal-is-beyond-the-kernel-but-costs-only-six-claims]]

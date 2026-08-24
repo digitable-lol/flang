@@ -34,5 +34,5 @@
 прогон `flang/test/uzel-celi.test.mjs`, пара «c ↔ python».
 
 Связано: [[the-host-price-has-three-axes-not-one]],
-[[progon-raboty-i-sverka-celey-lovyat-raznoe]],
+[[a-work-run-and-a-target-check-catch-different-things]],
 [[an-async-connect-tears-the-link-before-it-is-made]]

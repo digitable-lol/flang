@@ -11304,7 +11304,7 @@ static fl_value io_perform(io_host *host, fl_value order) {
        `strlen`, и пакет, начинающийся с нулевого октета, «записывался» нулём
        байт — а нулевая длина здесь ещё и значит «положить трубку», то есть
        двоичный запрос не просто терялся, он рвал соединение. Разбор —
-       `docs/zettel/dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md`.
+       `docs/zettel/the-binary-host-cuts-content-at-the-first-zero-octet.md`.
        Двоичное возит октетная пара ниже; здесь — текст, и нетекст отвергается. */
     {
       fl_value field = fl_nothing();

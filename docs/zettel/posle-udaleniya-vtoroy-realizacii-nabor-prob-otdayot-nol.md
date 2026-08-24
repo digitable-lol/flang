@@ -65,6 +65,6 @@
 уже зовёт `flang/conc/link.js`. Замер, ветка `vypusk/uzel-csharp`, коммит
 `ac623fee`.
 
-Связано: [[proverka-perevedyonnaya-na-dvoichnyy-vypadaet-iz-ci-molcha]],
+Связано: [[a-check-moved-to-the-binary-drops-out-of-ci-silently]],
 [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]],
-[[javascript-ostayotsya-tolko-celyu-pechati]]
+[[javascript-stays-only-as-a-print-target]]

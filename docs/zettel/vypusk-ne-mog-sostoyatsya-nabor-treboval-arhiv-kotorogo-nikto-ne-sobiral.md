@@ -41,7 +41,7 @@ install`, `flang …`), она проверяет что-то другое.
 все команды оболочки по отдельности на этой машине. Шаг `gh release create`
 остаётся единственным местом, которое здесь выполнить нельзя.
 
-Связано: [[dve-ustanovki-otvechali-po-raznomu-na-54-vyzova-iz-59]],
+Связано: [[two-installs-answered-differently-on-54-calls-of-59]],
 [[a-hard-coded-binary-name-outlives-its-rename]],
 [[a-packaging-copy-in-another-repository-drifts-both-ways]],
 [[checks-that-stopped-comparing]]

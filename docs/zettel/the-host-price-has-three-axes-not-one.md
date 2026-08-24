@@ -89,7 +89,7 @@
 языковые привычки, и часть разницы — привычка. Мира это не касается: счёт по
 пометке, а не по вкусу.
 
-Связано: [[json-v-stdlib-snizhaet-mir-a-ne-razmer]],
+Связано: [[json-in-the-stdlib-lowers-the-hosts-world-not-its-size]],
 [[printed-runner-already-carries-a-json-reader]],
-[[gruz-pisma-edet-biletom-a-ne-znacheniem]],
-[[reshenie-o-mire-perenosimo-a-mir-net]]
+[[a-message-payload-travels-as-a-ticket-not-as-a-value]],
+[[a-decision-about-the-world-is-portable-even-when-the-world-is-not]]

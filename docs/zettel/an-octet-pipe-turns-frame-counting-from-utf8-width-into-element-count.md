@@ -44,6 +44,6 @@ PostgreSQL 17.10, ветка `u/oktety`.
 половина разбора; кодировщик написан в плане заново, потому что `«Байты текста»`
 тянет за собой ту самую «Целую часть».
 
-Связано: [[oktety-v-yazyke-vyrazimy-spiskom-chisel-a-ne-strokoy]],
-[[truba-soedineniya-vozit-tekst-a-ne-oktety]],
+Связано: [[octets-are-expressible-as-a-list-of-numbers-not-as-a-string]],
+[[a-connection-pipe-carries-text-not-octets]],
 [[a-merge-that-takes-one-file-whole-drops-the-other-sides-work-silently]]

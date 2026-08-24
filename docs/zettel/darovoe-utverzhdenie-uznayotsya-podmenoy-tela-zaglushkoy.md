@@ -42,7 +42,7 @@
   месте оно и стоит, иначе ответ ноль»;
 - **место, а не наличие**: «первый элемент остаётся первым» вместо «первый
   элемент есть в результате» — сильнее и дешевле
-  ([[postuslovie-schitaetsya-pri-kazhdom-vyzove]]).
+  ([[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]]).
 
 **Чем подтверждено.** Ветка `vypusk/utv-lists` на основании `df055a6b`, восемь
 коммитов. Ведомость `flang check --proof` до и после; каждое новое утверждение
@@ -56,4 +56,4 @@
 
 Связано: [[tautologies-close-for-free]],
 [[claims-about-length-are-two-thirds-of-what-the-kernel-refuses]],
-[[postuslovie-schitaetsya-pri-kazhdom-vyzove]]
+[[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]]

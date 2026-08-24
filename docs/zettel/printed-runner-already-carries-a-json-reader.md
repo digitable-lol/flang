@@ -65,4 +65,4 @@ flang/conc/node-benchmark.flang --target <цель>`):
 это правка генератора кода, и её никто не заказывал.
 
 Связано: [[the-host-price-has-three-axes-not-one]],
-[[json-v-stdlib-snizhaet-mir-a-ne-razmer]]
+[[json-in-the-stdlib-lowers-the-hosts-world-not-its-size]]

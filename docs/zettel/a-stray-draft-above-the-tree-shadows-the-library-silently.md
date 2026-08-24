@@ -49,7 +49,7 @@ FLANG_TYPE_ARGS, строка 4: тип «Звено» объявлен от н�
 Час ушёл на поиск изъяна языка. Изъяна нет: «Звено» приезжало из
 `u-teoremy-hashmap-hm-BAZA.flang`, а `flang/stdlib/hashmap.flang` не открывался
 ни разу (проверено `strace`). Разбор целиком —
-[[slovar-hesha-stal-parametricheskim-a-parametr-ne-perezhivaet-vvoza]].
+[[a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import]].
 
 ## Почему затенение НЕ ловится `FLANG_DUPLICATE_NAME`
 
@@ -103,6 +103,6 @@ flang: модуль «Словарь хешем» взят из /srv/flang-rabot
 ради чего он и делался.
 
 Связано: [[a-module-is-found-by-the-name-on-its-first-line]],
-[[slovar-hesha-stal-parametricheskim-a-parametr-ne-perezhivaet-vvoza]],
-[[dva-imeni-v-raznyh-modulyah-nelzya-svesti-v-odnu-programmu]],
-[[stolknoveniya-imyon-schitayutsya-obhodom-teksta-za-desyatye-doli-sekundy]]
+[[a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import]],
+[[an-unlinked-module-collects-names-that-are-already-taken]],
+[[name-collisions-are-counted-by-a-text-walk-in-tenths-of-a-second]]

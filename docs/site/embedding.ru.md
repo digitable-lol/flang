@@ -53,7 +53,7 @@ ls: cannot access './вывод': No such file or directory
 ## Что приезжает в каталоге
 
 Один прогон на цель, программа одна и та же —
-`flang/examples/rosetta/factorial-english.flang`:
+`examples/rosetta/factorial-english.flang`:
 
 | цель | файлы |
 |---|---|
@@ -79,7 +79,7 @@ ls: cannot access './вывод': No such file or directory
 ## C: собрать и слинковать со своей программой
 
 ```bash
-$ flang emit flang/examples/rosetta/factorial-english.flang --target c --out ./вывод-c
+$ flang emit examples/rosetta/factorial-english.flang --target c --out ./вывод-c
 напечатано файлов 6, байт 280565, в ./вывод-c
 $ ls ./вывод-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
@@ -209,7 +209,7 @@ product([1,2,3,4]) = 24
 `fl_field_get(&ctx, v, "адрес", …)`.
 
 **Отказ, объявленный значением, значением и приходит.** В
-`flang/examples/errors/number-parsing.flang` «Разобрать число» возвращает сумму
+`examples/errors/number-parsing.flang` «Разобрать число» возвращает сумму
 типов «Вышло» | «Не вышло» — и на границе это вариант, а не `FL_ERROR`:
 
 ```
@@ -264,7 +264,7 @@ except rt.FlangError as e:
 уровне — единственный ввоз стоит внутри `$callDeep` и берётся динамически.
 
 ```bash
-$ flang emit flang/examples/rosetta/factorial-english.flang --target js --no-cli --out ./вывод-js
+$ flang emit examples/rosetta/factorial-english.flang --target js --no-cli --out ./вывод-js
 напечатано файлов 1, байт 18621, в ./вывод-js
 $ ls ./вывод-js
 factorial.js
@@ -340,7 +340,7 @@ $callDeep 9000: длина 9000
 
 ### Настоящий хозяин: служба HTTP на flang, вызванная из Node
 
-В дереве лежит служба сокращения ссылок (`flang/examples/web/shortener/`) —
+В дереве лежит служба сокращения ссылок (`examples/web/shortener/`) —
 обработчик HTTP целиком на flang, у которого состояние передаётся значением.
 Напечатайте её в `js`, и хозяин на Node обернёт напечатанный модуль:
 

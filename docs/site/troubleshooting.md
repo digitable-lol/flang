@@ -55,7 +55,7 @@ flang check neighbour.flang
 To see that the message is exactly this one, force it with a tiny limit:
 
 ```bash
-flang run flang/examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
+flang run examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
 ```
 
 It prints `FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3)

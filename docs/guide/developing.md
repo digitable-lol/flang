@@ -26,25 +26,25 @@ The commands the language answers to:
 
 ```bash
 # parse, type-check, prove totality
-flang check flang/examples/leetcode/035-search-insert-position.flang --pretty
+flang check examples/leetcode/035-search-insert-position.flang --pretty
 
 # run the examples declared inside the functions
-flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
+flang test examples/leetcode/035-search-insert-position.flang --pretty
 
 # the same over a CORPUS: a directory or a glob instead of a file (binary only).
 # Every failing example and every file not taken is named; the passing ones are
 # a count. Exit code 0 — clean, 1 — something failed or a file was not taken,
 # 2 — bad invocation.
 flang test flang/stdlib/
-flang test 'flang/examples/**/*.flang' --json
+flang test 'examples/**/*.flang' --json
 
 # call a function: --args takes a FLAT object of scalars, a list cannot go there
-flang run flang/examples/leetcode/035-search-insert-position.flang \
+flang run examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"цель":2}'
 # functions with a list argument are called by their own examples: flang test <file>
 
 # print it — targets: c | csharp | elixir | go | java | js | python | rust
-flang emit flang/examples/leetcode/035-search-insert-position.flang \
+flang emit examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 

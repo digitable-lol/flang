@@ -57,7 +57,7 @@
  * Собранный бинарник — тот, что человек ставит через Homebrew, — МОЛЧА
  * ПРИНИМАЛ сломанные программы. Улика, снятая прогоном на свежем `github/main`:
  * 13 подделок, по одной на объявление (`flang/test/fixtures/binary-rules/` и
- * `flang/examples/web/shortener/handler-without-budget.flang`). Свидетель на
+ * `examples/web/shortener/handler-without-budget.flang`). Свидетель на
  * Node отверг ВСЕ 13 с названным кодом; бинарник ответил
  * «проверено — замечаний нет» и кодом 0 на ВСЕХ 13.
  *
@@ -166,7 +166,7 @@ export const ПОДДЕЛКИ = "flang/test/fixtures/binary-rules"
    процессы, и её пришлось написать целой программой — обработчик без бюджета.
    Названа отдельной строкой, потому что каталогом её не найти. */
 export const ПОДДЕЛКИ_ВРОЗЬ = Object.freeze([
-  "flang/examples/web/shortener/handler-without-budget.flang",
+  "examples/web/shortener/handler-without-budget.flang",
 ])
 
 

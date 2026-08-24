@@ -1,16 +1,16 @@
 # A case taken apart: 82 leetcode tasks
 
-`flang/examples/leetcode/` — 82 files, 7 609 lines. Not an example written for
+`examples/leetcode/` — 82 files, 7 609 lines. Not an example written for
 this page but code in the tree: one command runs it.
 
 ## Run it yourself
 
 ```bash
-flang test flang/examples/leetcode
+flang test examples/leetcode
 ```
 
 ```
-корпус «flang/examples/leetcode»: файлов 82, взято 82, отказано 0, примеров 804
+корпус «examples/leetcode»: файлов 82, взято 82, отказано 0, примеров 804
 (своих 804), на чужих примерах 0, потеряно своих 0, прошло 804, не прошло 0,
 за 11956 мс
 ```

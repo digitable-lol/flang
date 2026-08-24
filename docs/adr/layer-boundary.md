@@ -6,7 +6,7 @@
 хозяева `flang/src/emit/c/flang_repl.c`, `flang/src/emit/c/flang_conc.c`,
 `flang/src/emit/js/flang_host_browser.js`, `flang/src/emit/js/flang_io.js`;
 планировщик [`flang/conc/planirovshchik.flang`](../../flang/conc/planirovshchik.flang);
-пример стыка [`flang/examples/io/фильтр-пакетов.flang`](../../flang/examples/io/фильтр-пакетов.flang).
+пример стыка [`examples/io/фильтр-пакетов.flang`](../../examples/io/фильтр-пакетов.flang).
 **Связано:** [ADR-0002](0002-ishodyashchee-soedinenie.md) — исходящее соединение;
 [ADR-0004](0004-oktety-v-slovare-effektov.md) и [ADR-0006](0006-oktety-u-faylov.md) — октеты в словаре.
 Все прогоны сделаны компилятором 0.6.2, собранным из точки раскрутки этого дерева.
@@ -105,12 +105,12 @@ flang/conc/planirovshchik.flang: проверено — разбор, типы, 
 запаса витков, который «не должен собираться». Сегодня он собирается:
 
 ```
-$ bootstrap/flang check flang/examples/web/shortener/handler-without-budget.flang; echo $?
+$ bootstrap/flang check examples/web/shortener/handler-without-budget.flang; echo $?
 модуль «Обработчик без запаса»: функций 3, из них с доказанным завершением 1; типов 4
 без доказанного завершения: «крутить» «шаг разбора»
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе — processes.
 …Пока это так, названное выше не судит НИКТО
-flang/examples/web/shortener/handler-without-budget.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
+examples/web/shortener/handler-without-budget.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
 2
 ```
 
@@ -217,7 +217,7 @@ flang/examples/web/shortener/handler-without-budget.flang: проверено Н
 ## Стык: один настоящий пример и прогон
 
 Чтобы граница не осталась словами, к ней написан пример:
-[`flang/examples/io/фильтр-пакетов.flang`](../../flang/examples/io/фильтр-пакетов.flang).
+[`examples/io/фильтр-пакетов.flang`](../../examples/io/фильтр-пакетов.flang).
 Работа системного рода: разобрать заголовок дейтаграммы IPv4 вместе с портом
 назначения TCP и решить по правилам, пропускать её или отбросить.
 
@@ -228,12 +228,12 @@ flang/examples/web/shortener/handler-without-budget.flang: проверено Н
 `read`, то есть разбору достаётся не список из тела функции.
 
 ```
-$ bootstrap/flang check flang/examples/io/фильтр-пакетов.flang; echo $?
+$ bootstrap/flang check examples/io/фильтр-пакетов.flang; echo $?
 модуль «Фильтр пакетов»: функций 18, из них с доказанным завершением 18; типов 6; файлов вместе с импортами 2
-flang/examples/io/фильтр-пакетов.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+examples/io/фильтр-пакетов.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 0
 
-$ bootstrap/flang io flang/examples/io/фильтр-пакетов.flang --plan "Пропуск пакета"; echo $?
+$ bootstrap/flang io examples/io/фильтр-пакетов.flang --plan "Пропуск пакета"; echo $?
 {"plan":"Пропуск пакета","result":"октетов 40, пропустить: порт 22","orders":2,"log":[…]}
 0
 ```
@@ -246,7 +246,7 @@ $ bootstrap/flang io flang/examples/io/фильтр-пакетов.flang --plan 
 Полномочия проверяются тем же прогоном с одним снятым правом:
 
 ```
-$ bootstrap/flang io flang/examples/io/фильтр-пакетов.flang --plan "Пропуск пакета" --no-write; echo $?
+$ bootstrap/flang io examples/io/фильтр-пакетов.flang --plan "Пропуск пакета" --no-write; echo $?
 {"error":"хозяину запрещено писать файлы","diagnostics":[{"code":"FLANG_IO_DENIED","message":"хозяину запрещено писать файлы","severity":"error","span":{"line":291,"column":1}}]}
 1
 ```
@@ -352,7 +352,7 @@ $ ./ярлык vkladka:check; echo $?
 из этого сегодня работает:
 
 ```
-$ bootstrap/flang check flang/examples/io/temp-directory.flang; echo $?
+$ bootstrap/flang check examples/io/temp-directory.flang; echo $?
 модуль «Временный каталог»: функций 10, из них с доказанным завершением 10; типов 4
 FLANG_UNKNOWN_NAME … строка 89: неизвестный конструктор варианта «Завести временный каталог»
 … замечаний 14
@@ -393,9 +393,9 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 
 ## Как это решение проверять
 
-1. `bootstrap/flang check flang/examples/io/фильтр-пакетов.flang` — слой решения
+1. `bootstrap/flang check examples/io/фильтр-пакетов.flang` — слой решения
    цел: восемнадцать функций, у всех завершение доказано.
-2. `bootstrap/flang io flang/examples/io/фильтр-пакетов.flang --plan "Пропуск пакета"` —
+2. `bootstrap/flang io examples/io/фильтр-пакетов.flang --plan "Пропуск пакета"` —
    стык работает: два поручения, вердикт, код 0.
 3. Тот же прогон с `--no-write` — полномочия принуждаются: `FLANG_IO_DENIED`, код 1.
 4. `./ярлык vkladka:check` — расхождение хозяев со словарём видно числом.

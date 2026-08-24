@@ -41,7 +41,7 @@ proved, and it runs into the same wall as the library.
 arguments against declared types:
 
 ```
-flang run flang/examples/measure/natural.flang --function «Факториал» --args '{"н":-3}'
+flang run examples/measure/natural.flang --function «Факториал» --args '{"н":-3}'
 → FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне нат      (exit 1)
 ```
 
@@ -81,10 +81,10 @@ with. A registry is needed more for this library, not less: there is now
 something worth handing out by name and version.
 
 **3. Application code is thin, but no longer a single item.** A link-shortener
-service (`flang/examples/web/shortener`) — storage, routing, processes and
+service (`examples/web/shortener`) — storage, routing, processes and
 supervision, with not one line between the incoming and outgoing bytes written
 in anything but flang; a backend example of seven files (`examples/library-api`);
-plans that talk to the databases (`flang/examples/db`). These are examples, not
+plans that talk to the databases (`examples/db`). These are examples, not
 applications in service: no program among them is one somebody runs in
 production.
 

@@ -1158,7 +1158,7 @@ static bool fl_region_take(size_t *total, size_t budget, size_t need) {
  * Цена — два сравнения на узел вместо нуля, и обход цепочки кусков от отметки
  * до текущего ОДИН раз на закрытие. Второе почти ничего не стоит: порог
  * FL_REGION_MIN проходит меньше четырёх процентов закрытий (замер 23 августа:
- * `check flang/examples/wal/write-ahead-log.flang` — 5 415 из 613 703,
+ * `check examples/wal/write-ahead-log.flang` — 5 415 из 613 703,
  * `check flang/self/tags.flang` — 744 273 из 19 924 228).
  */
 typedef struct fl_live {
@@ -1770,7 +1770,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
  * функция, внутри которой она стоит, вправе не быть рекурсивной — тогда области
  * у неё нет вовсе. А накопителей за цикл получается столько же, сколько витков,
  * и каждый из них живёт до конца объемлющего вызова. «Сортировка вставками» из
- * `flang/examples/rosetta/quicksort.flang` — ровно этот случай: на четырёх
+ * `examples/rosetta/quicksort.flang` — ровно этот случай: на четырёх
  * тысячах элементов живых значений четыре тысячи, а мёртвых почти восемь
  * миллионов, то есть 99,95 % пика.
  *

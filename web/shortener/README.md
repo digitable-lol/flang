@@ -2,7 +2,7 @@
 
 Не стенд и не второе «приложение-счётчик». Форма, отправка, список ссылок,
 счётчик переходов — и отвечает на всё это **настоящая служба**,
-`flang/examples/web/shortener/service.flang`, у которой все 83 функции с
+`examples/web/shortener/service.flang`, у которой все 83 функции с
 доказанным завершением.
 
 **Страница открывается, служба к ней пока не подключена.** Стенд теперь есть и
@@ -23,7 +23,7 @@ bootstrap/flang io web/stend.flang --max-orders 1000000
 «нет такого пути». Три примера самой службы этого уже не переживают:
 
 ```
-bootstrap/flang check flang/examples/web/shortener/service.flang   # код 1, три примера
+bootstrap/flang check examples/web/shortener/service.flang   # код 1, три примера
 ```
 
 Довод, записанный в шапке `http.flang` («мост из кодовой точки в символ язык не
@@ -33,7 +33,7 @@ bootstrap/flang check flang/examples/web/shortener/service.flang   # код 1, �
 Сама служба по сети работает и без стенда:
 
 ```
-bootstrap/flang io flang/examples/web/shortener/plan.flang
+bootstrap/flang io examples/web/shortener/plan.flang
 ```
 
 ## Сколько чего написано

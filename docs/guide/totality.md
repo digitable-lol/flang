@@ -27,7 +27,7 @@ Counting UP is not a measure and stays out of the total class: `«Числа о�
 the start, and the end is a parameter rather than a number, so it cannot serve as a floor. String
 code crossed the border earlier and differently: the built-in form `разложить … на символы` turns
 a string into a list of one-character strings by code points, and the walk becomes recursion over
-a tail. `flang/examples/rosetta/reverse-string.flang` is total throughout because of it, emoji and
+a tail. `examples/rosetta/reverse-string.flang` is total throughout because of it, emoji and
 Cyrillic included.
 
 This is not pedantry, and the reason is concrete. The embedded fact-checking mode

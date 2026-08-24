@@ -36,6 +36,6 @@ pokazat() {
 
 echo 'поверхность | файл | что раскрасилось (вид Vim и сколько кусков)'
 pokazat 'русская'    'flang/stdlib/lists.flang'
-pokazat 'английская' 'flang/examples/rosetta/factorial-english.flang'
-pokazat 'китайская'  'flang/examples/surfaces/factorial.zh.flang'
-pokazat 'эсперанто'  'flang/examples/surfaces/factorial.eo.flang'
+pokazat 'английская' 'examples/rosetta/factorial-english.flang'
+pokazat 'китайская'  'examples/surfaces/factorial.zh.flang'
+pokazat 'эсперанто'  'examples/surfaces/factorial.eo.flang'

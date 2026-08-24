@@ -22,19 +22,19 @@ se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
 
 | Поверхность | Файл | Байт |
 | --- | --- | --- |
-| русская | `flang/examples/rosetta/factorial.flang` | 5639 |
-| английская | `flang/examples/rosetta/factorial-english.flang` | 3857 |
-| эсперанто | `flang/examples/surfaces/factorial.eo.flang` | 3134 |
-| китайская | `flang/examples/surfaces/factorial.zh.flang` | 3089 |
+| русская | `examples/rosetta/factorial.flang` | 5639 |
+| английская | `examples/rosetta/factorial-english.flang` | 3857 |
+| эсперанто | `examples/surfaces/factorial.eo.flang` | 3134 |
+| китайская | `examples/surfaces/factorial.zh.flang` | 3089 |
 
 Каждый проходит проверку сам по себе — одной и той же командой, меняется только
 имя файла:
 
 ```
-$ flang check flang/examples/rosetta/factorial.flang
+$ flang check examples/rosetta/factorial.flang
 {"valid":true,"module":"Факториал","functions":[…5 функций, у трёх "total":true…],"types":[],"diagnostics":[]}
 
-$ flang check flang/examples/surfaces/factorial.zh.flang
+$ flang check examples/surfaces/factorial.zh.flang
 {"valid":true,"module":"阶乘","functions":[…те же 5, те же три…],"types":[],"diagnostics":[]}
 ```
 
@@ -167,10 +167,10 @@ Dafny. Придуманное слово хуже отсутствующего: 
 другая программа:
 
 ```
-flang check flang/examples/rosetta/factorial.flang
-flang check flang/examples/rosetta/factorial-english.flang
-flang check flang/examples/surfaces/factorial.eo.flang
-flang check flang/examples/surfaces/factorial.zh.flang
+flang check examples/rosetta/factorial.flang
+flang check examples/rosetta/factorial-english.flang
+flang check examples/surfaces/factorial.eo.flang
+flang check examples/surfaces/factorial.zh.flang
 ```
 
 Все четыре отвечают одинаково: «функций 5, из них с доказанным завершением 3;

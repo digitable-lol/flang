@@ -81,7 +81,7 @@ make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 
 Корпус взят не выдуманный, а тот, которым уже сверяются шесть целей печати
 (`flang/test/corpus-grid.mjs`): `flang/stdlib/*.flang` и
-`flang/examples/leetcode/*.flang`, сетка — аргументы примеров плюс их порча
+`examples/leetcode/*.flang`, сетка — аргументы примеров плюс их порча
 заведомо чужими значениями.
 
 Эталон здесь — **обычная сборка**, а не интерпретатор. С интерпретатором
@@ -492,7 +492,7 @@ clang --version && node --version && ~/.local/bin/wasmtime --version
 dpkg -l wasi-libc lld libclang-rt-21-dev-wasm32 | tail -3
 
 # 2. Одна программа руками
-bootstrap/flang emit flang/examples/rosetta/merge-sort.flang --target c --out /tmp/ms
+bootstrap/flang emit examples/rosetta/merge-sort.flang --target c --out /tmp/ms
 make -C /tmp/ms CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 echo '{"fn":"Сортировка слиянием","args":[{"l":[{"n":"3"},{"n":"1"},{"n":"2"}]}]}' \
   | ~/.local/bin/wasmtime run -W max-wasm-stack=8388608 /tmp/ms/flang_cli

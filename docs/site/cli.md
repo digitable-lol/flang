@@ -114,7 +114,7 @@ question mark, is a set of files rather than a file:
 
 ```bash
 flang test flang/stdlib/                the whole directory, recursively
-flang test 'flang/examples/**/*.flang'  by mask (quotes keep the shell out)
+flang test 'examples/**/*.flang'  by mask (quotes keep the shell out)
 ```
 
 Codes: `0` — every file was taken and every example matched; `1` — something did

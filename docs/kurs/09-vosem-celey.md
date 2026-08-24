@@ -20,7 +20,7 @@ draft: false
 
 ## Берём одну функцию из дерева
 
-`flang/examples/leetcode/035-search-insert-position.flang`, LeetCode 35:
+`examples/leetcode/035-search-insert-position.flang`, LeetCode 35:
 
 ```flang
 тотальная функция «Место вставки»
@@ -37,7 +37,7 @@ draft: false
 
 ```bash
 for t in c csharp elixir go java js python rust; do
-  flang emit flang/examples/leetcode/035-search-insert-position.flang \
+  flang emit examples/leetcode/035-search-insert-position.flang \
         --target $t --out ./out-$t
 done
 ```
@@ -139,7 +139,7 @@ rust    {"ok":true,"value":{"n":"2"}}
 и девятая — от интерпретатора самого flang:
 
 ```bash
-flang run flang/examples/leetcode/035-search-insert-position.flang \
+flang run examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"элементы": [1,3,5,6], "цель": 5}'
 ```
 
@@ -227,7 +227,7 @@ flang сверяются знак в знак, включая счёт шаго�
 
 ## Задача
 
-Возьмите **другой** файл из `flang/examples/leetcode/` — например
+Возьмите **другой** файл из `examples/leetcode/` — например
 `217-contains-duplicate.flang` — и напечатайте его в три цели: `c`, `go`, `js`.
 Соберите и прогоните каждую с одним и тем же запросом.
 

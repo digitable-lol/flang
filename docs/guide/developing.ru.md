@@ -26,24 +26,24 @@ sh scripts/raskrutka.sh --stroki  # 0,4 с: все строковые литер
 
 ```bash
 # разобрать, проверить типы, доказать тотальность
-flang check flang/examples/leetcode/035-search-insert-position.flang --pretty
+flang check examples/leetcode/035-search-insert-position.flang --pretty
 
 # прогнать примеры, объявленные внутри функций
-flang test flang/examples/leetcode/035-search-insert-position.flang --pretty
+flang test examples/leetcode/035-search-insert-position.flang --pretty
 
 # то же по КОРПУСУ: каталог или маска вместо файла (только у двоичного).
 # Печатается каждый не прошедший пример и каждый не взятый файл, прошедшие —
 # числом; код возврата 0 — чисто, 1 — упало или файл не взят, 2 — кривой вызов.
 flang test flang/stdlib/
-flang test 'flang/examples/**/*.flang' --json
+flang test 'examples/**/*.flang' --json
 
 # вызвать функцию: --args берёт ПЛОСКИЙ объект скаляров, список туда не подать
-flang run flang/examples/leetcode/035-search-insert-position.flang \
+flang run examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"цель":2}'
 # функции со списочным доводом зовутся своими примерами: flang test <файл>
 
 # напечатать — цели: c | csharp | elixir | go | java | js | python | rust
-flang emit flang/examples/leetcode/035-search-insert-position.flang \
+flang emit examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 

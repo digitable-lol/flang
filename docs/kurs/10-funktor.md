@@ -24,7 +24,7 @@ flang такое ловит. Глава про то, как это устрое�
 
 ## Три модуля об одном заказе
 
-`flang/examples/cat/modules/` — четыре файла. Модуль заказов объявляет свой
+`examples/cat/modules/` — четыре файла. Модуль заказов объявляет свой
 интерфейс списком того, что он умеет:
 
 ```flang
@@ -99,7 +99,7 @@ flang такое ловит. Глава про то, как это устрое�
 тело:
 
 ```bash
-cp -r flang/examples/cat/modules /tmp/modules
+cp -r examples/cat/modules /tmp/modules
 # правим /tmp/modules/reconciliation.flang
 flang check /tmp/modules/reconciliation.flang
 ```
@@ -220,7 +220,7 @@ FLANG_FUNCTOR_SQUARE: … код возврата: 1
 ## Задача
 
 ```bash
-cp -r flang/examples/cat/modules /tmp/modules
+cp -r examples/cat/modules /tmp/modules
 ```
 
 1. Внесите первую порчу: в `/tmp/modules/reconciliation.flang` замените

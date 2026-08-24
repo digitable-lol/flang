@@ -28,7 +28,7 @@ what guards it: [`bootstrap/README.md`](bootstrap/README.md).
 The built binary is what you then run:
 
 ```bash
-bootstrap/flang check flang/examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
 The package declares zero dependencies — `npm ls --all` prints `(empty)` — so

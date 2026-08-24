@@ -52,7 +52,7 @@
 //   2. ПЕЧАТЬ НЕ СТРОЖЕ СОБСТВЕННОГО СУДА: отказала ПРОВЕРКОЙ там, где свой же
 //      check доволен. Отказы у печати двух родов, и путать их нельзя: «не
 //      проходит проверку» — это вердикт, а «напечатать нечем» — это про цель.
-//      Живой случай в дереве: flang/examples/surfaces/factorial.zh.flang —
+//      Живой случай в дереве: examples/surfaces/factorial.zh.flang —
 //      check доволен, а печать отвергает, потому что два китайских имени дают
 //      один идентификатор C. Различаются они СЛОВАМИ самой команды.
 //
@@ -97,9 +97,9 @@
 тотальная функция «Дерево»
   возвращает список строки
   обеспечивает «списки дерева на месте» результат содержит "../flang/stdlib/lists.flang"
-  обеспечивает «слияние CRDT на месте» результат содержит "../flang/examples/cat/crdt-merge.flang"
+  обеспечивает «слияние CRDT на месте» результат содержит "../examples/cat/crdt-merge.flang"
   обеспечивает «программ дерева пятнадцать» (длина результат) равен 15
-  обеспечивает «китайская в списке» результат содержит "../flang/examples/surfaces/factorial.zh.flang"
+  обеспечивает «китайская в списке» результат содержит "../examples/surfaces/factorial.zh.flang"
   ["../flang/stdlib/base64.flang",
    "../flang/stdlib/datetime.flang",
    "../flang/stdlib/dictionary.flang",
@@ -108,13 +108,13 @@
    "../flang/stdlib/http.flang",
    "../flang/stdlib/json.flang",
    "../flang/stdlib/lists.flang",
-   "../flang/examples/cat/crdt-merge.flang",
-   "../flang/examples/cat/euler-orders.flang",
-   "../flang/examples/cat/fold-by-cores.flang",
-   "../flang/examples/cat/monoid-and-monad.flang",
-   "../flang/examples/cat/natural-square.flang",
-   "../flang/examples/cat/order-shipment.flang",
-   "../flang/examples/surfaces/factorial.zh.flang"]
+   "../examples/cat/crdt-merge.flang",
+   "../examples/cat/euler-orders.flang",
+   "../examples/cat/fold-by-cores.flang",
+   "../examples/cat/monoid-and-monad.flang",
+   "../examples/cat/natural-square.flang",
+   "../examples/cat/order-shipment.flang",
+   "../examples/surfaces/factorial.zh.flang"]
 
 тотальная функция «Каталог работы»
   возвращает строка

@@ -270,9 +270,9 @@ FTS. Восемь целей — отдельный порядок, и оцен�
   те, где список ещё и заведомо длинный:
 
 ```
-flang/examples/leetcode/017-letter-combinations-of-a-phone-number.flang:37
+examples/leetcode/017-letter-combinations-of-a-phone-number.flang:37
     «Буквы цифры» номер=нат[1,1] длинаНиз=4
-flang/examples/leetcode/207-course-schedule.flang:70
+examples/leetcode/207-course-schedule.flang:70
     «Нет входящих» номер=нат[1,1] длинаНиз=2   (дважды)
 ```
 

@@ -346,13 +346,13 @@ export const ПЕРЕЕЗДЫ = {
 export const ПРИМЕРЫ_НА_ГЛАВНОЙ = [
   {
     ключ: 'факториал',
-    файл: 'flang/examples/rosetta/factorial.flang',
+    файл: 'examples/rosetta/factorial.flang',
     объявление: 'Факториал',
     подпись: 'Взято из дерева целиком, знак в знак —',
   },
   {
     ключ: 'factorial',
-    файл: 'flang/examples/rosetta/factorial-english.flang',
+    файл: 'examples/rosetta/factorial-english.flang',
     объявление: 'Factorial',
     подпись: 'Taken from the tree verbatim —',
   },

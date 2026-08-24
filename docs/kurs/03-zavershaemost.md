@@ -23,7 +23,7 @@ draft: false
 
 ## Самый короткий пример в дереве
 
-`flang/examples/leetcode/217-contains-duplicate.flang` — двадцать шесть строк
+`examples/leetcode/217-contains-duplicate.flang` — двадцать шесть строк
 вместе с комментарием:
 
 ```flang
@@ -49,12 +49,12 @@ draft: false
 ```
 
 ```bash
-flang check flang/examples/leetcode/217-contains-duplicate.flang
+flang check examples/leetcode/217-contains-duplicate.flang
 ```
 
 ```
 модуль «Есть повторы»: функций 1, из них с доказанным завершением 1; типов 0
-flang/examples/leetcode/217-contains-duplicate.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+examples/leetcode/217-contains-duplicate.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 Почему компилятор согласился: рекурсивный вызов получает **`хвост`** — часть того
@@ -174,15 +174,15 @@ FLANG_NOT_TOTAL … тотальная функция «Тотальная» в�
 
 ## Как это выглядит на смешанном файле
 
-`flang/examples/rosetta/quicksort.flang` держит оба класса в одном файле:
+`examples/rosetta/quicksort.flang` держит оба класса в одном файле:
 
 ```bash
-flang check flang/examples/rosetta/quicksort.flang
+flang check examples/rosetta/quicksort.flang
 ```
 
 ```
 модуль «Быстрая сортировка»: функций 5, из них с доказанным завершением 4; типов 0
-flang/examples/rosetta/quicksort.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+examples/rosetta/quicksort.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 Четыре из пяти доказаны, пятая — быстрая сортировка — нет, и файл всё равно
@@ -204,7 +204,7 @@ flang/examples/rosetta/quicksort.flang: проверено — разбор, т�
 
 ## Задача
 
-Возьмите любой из 82 файлов в `flang/examples/leetcode/` и ответьте на три
+Возьмите любой из 82 файлов в `examples/leetcode/` и ответьте на три
 вопроса **командой**, а не чтением:
 
 1. сколько в нём функций и сколько из них тотальных;
@@ -212,7 +212,7 @@ flang/examples/rosetta/quicksort.flang: проверено — разбор, т�
 3. сколько проверок останется в напечатанном коде.
 
 ```bash
-flang check flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang --proof
+flang check examples/leetcode/104-maximum-depth-of-binary-tree.flang --proof
 ```
 
 На этом файле ответ такой:
@@ -223,7 +223,7 @@ flang check flang/examples/leetcode/104-maximum-depth-of-binary-tree.flang --pro
   сторожей в рантайме: 0 мест
 ```
 
-**Проверка:** найдите в `flang/examples/` файл, у которого «сторожей в рантайме»
+**Проверка:** найдите в `examples/` файл, у которого «сторожей в рантайме»
 больше нуля. Их немного — большинство примеров написано так, что при работе не
 проверяется ничего. Ответ (не подглядывайте сразу): `measure/euclid.flang` — одно
 место, `measure/binary-search.flang` — два. Оба из каталога `measure/`, и это не

@@ -16,7 +16,7 @@
 // Имя модуля flang доезжает до цели именем файла, класса или псевдонима. Часть
 // этого пространства у цели ЗАНЯТА: `stdio` в C, `Enum` в Java, `ast` в Python,
 // хвост `_linux` в Go. Берутся ВСЕ модули корпуса — `flang/stdlib`,
-// `flang/core`, `flang/examples` — и по каждой из восьми целей считается,
+// `flang/core`, `examples` — и по каждой из восьми целей считается,
 // сколько имён попало бы в занятое.
 //
 // Печатается не «ноль», а СПИСОК: разъедься список с числом — виновата строка,
@@ -379,8 +379,8 @@
   обеспечивает «команда корпуса — два довода» (длина результат) равен 2
   обеспечивает «команда корпуса идёт через ключ -c» результат содержит "-c"
   пример «И файлы, и шапки спрашиваются у git одним заходом, а не переписаны руками»
-    ожидается ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
-  ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
+    ожидается ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
+  ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
 
 тотальная функция «Имя модуля»
   принимает строчка: строка

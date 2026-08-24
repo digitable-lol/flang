@@ -26,8 +26,8 @@
 Решающая строка — последняя, и решает в ней не «206», а «3». Обход всего дерева
 **молча переставляет три ввоза на чужой модуль**: `docs/zamer-teorkat/
 iso-object-to-category.flang` ссылается на несуществующий
-`flang/examples/cat/moduli/zakazy.flang`, а глобальный указатель находит по
-имени «Заказы» совсем другой файл — `flang/examples/cat/modules/orders.flang`.
+`examples/cat/moduli/zakazy.flang`, а глобальный указатель находит по
+имени «Заказы» совсем другой файл — `examples/cat/modules/orders.flang`.
 Сломанный ввоз перестаёт быть сломанным и начинает работать не с тем модулем.
 Плюс один спор имён на сгенерированных прогонах `benchmarks/model-authoring/out/`.
 

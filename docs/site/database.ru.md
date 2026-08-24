@@ -28,7 +28,7 @@ flowchart LR
 | --- | --- | ---: | ---: | ---: |
 | `flang/stdlib/provod.flang` | октеты, числа в сетевом порядке, строки с нулём на конце, нарезка потока | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
 | `flang/stdlib/postgres.flang` | протокол версии 3.0: сообщения клиента собираются, ответы сервера разбираются | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
-| `flang/examples/db/postgres-plan.flang` | весь разговор из пяти шагов | {{план.строк}} | | {{план.примеров}} |
+| `examples/db/postgres-plan.flang` | весь разговор из пяти шагов | {{план.строк}} | | {{план.примеров}} |
 
 Простой запрос собирается так — взято из дерева знак в знак:
 
@@ -44,7 +44,7 @@ $ flang test flang/stdlib/postgres.flang
 Самому разговору живой сервер нужен:
 
 ```bash
-$ flang io flang/examples/db/postgres-plan.flang | python3 -c \
+$ flang io examples/db/postgres-plan.flang | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 1 пуск: | | | in_hot_standby=off … server_version=17.10 server_encoding=UTF8
 2 создание: INSERT 0 1| | |
@@ -89,7 +89,7 @@ $ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exis
   c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
   c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 
-$ flang io flang/examples/db/sqlite-chtenie.flang | python3 -c \
+$ flang io examples/db/sqlite-chtenie.flang | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 магия SQLite: да
 размер страницы: 4096
@@ -104,7 +104,7 @@ SQL: CREATE TABLE люди(имя text, лет integer)
 3 | Вера | 7
 ```
 
-План — `flang/examples/db/sqlite-chtenie.flang`; путь к файлу и имя таблицы
+План — `examples/db/sqlite-chtenie.flang`; путь к файлу и имя таблицы
 стоят в нём двумя однострочными функциями: `«Откуда»` и `«Какая таблица»`.
 
 ### SQLite: что читается, а что нет

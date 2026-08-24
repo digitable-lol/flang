@@ -8,7 +8,7 @@
 Замер, 20 августа 2026, ветка `vypusk/dyra-dvoichnogo` от `github/main`
 d3e27dad, двоичный собран из `bootstrap/` командой `make`. Тринадцать программ,
 по одной на объявление языка (`flang/test/fixtures/binary-rules/` плюс
-`flang/examples/web/shortener/handler-without-budget.flang`): инструментарий на
+`examples/web/shortener/handler-without-budget.flang`): инструментарий на
 Node отверг **13 из 13** с названным кодом, двоичный принял **13 из 13** кодом 0.
 
 **Состав правил, а не отдельный пропущенный слой.** Дыра оказалась не в одном

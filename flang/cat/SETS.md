@@ -266,7 +266,7 @@ check` из всего этого берёт только `diagnostics`: у яз
 | слияние модулей | `flang/src/link.mjs`, таблица `КАТЕГОРНЫЕ` |
 | таблица слов и алфавит копии на flang | `flang/self/lexer.flang` |
 | тесты | `flang/test/cat-sets.test.mjs` |
-| программа, которая принимается | `flang/examples/cat/euler-orders.flang` |
+| программа, которая принимается | `examples/cat/euler-orders.flang` |
 | программа, которая отвергается | `flang/test/cat-sets.test.mjs`, «ЦЕЛАЯ ПРОГРАММА, КОТОРАЯ ОБЯЗАНА БЫТЬ ОТВЕРГНУТА» |
 
 Отвергаемая программа живёт тестом, а не файлом в `examples/`: каждый пример

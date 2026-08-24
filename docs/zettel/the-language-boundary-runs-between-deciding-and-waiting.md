@@ -37,13 +37,13 @@
 
 **Чем ограничено.** Правило «обработчик процесса обязан быть тотальным или
 назвать запас витков» сегодня не принуждается вовсе: `flang check` на улике
-`flang/examples/web/shortener/handler-without-budget.flang` отвечает кодом 2 и
+`examples/web/shortener/handler-without-budget.flang` отвечает кодом 2 и
 словами «объявлено то, чего бинарник не судит вовсе — processes… названное выше
 не судит НИКТО». Проверявшая его вторая реализация снята вместе с JavaScript.
 Пока это так, граница держится соглашением, а не проверкой — в этом одном месте.
 
 Решение и опись слоёв: [ADR-0008](../adr/layer-boundary.md), пример стыка —
-`flang/examples/io/фильтр-пакетов.flang`.
+`examples/io/фильтр-пакетов.flang`.
 
 Связано: [[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
 [[the-bootstrap-point-lags-the-order-dictionary]]

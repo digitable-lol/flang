@@ -9,7 +9,7 @@ ZDES=$(cd "$(dirname "$0")" && pwd)
 KOREN=$(cd "$ZDES/../.." && pwd)
 echo "рабочий каталог: $KORAB"
 
-LC_ALL=C.UTF-8 "$KOREN/bootstrap/flang" emit "$KOREN/flang/examples/rosetta/factorial.flang" \
+LC_ALL=C.UTF-8 "$KOREN/bootstrap/flang" emit "$KOREN/examples/rosetta/factorial.flang" \
   --target c --out "$KORAB" >/dev/null
 cp "$ZDES/sloy.c" "$ZDES/chistoe.c" "$ZDES/spisok.c" "$KORAB/"
 cd "$KORAB"

@@ -157,7 +157,7 @@ docs/kurs/proverka.flang: проверено — разбор, типы, зав�
 | 149 понятий, покрытие поверхностей | `node docs/site/surfaces-run.mjs` |
 | 8 целей печати, размеры напечатанного | `flang emit … --target …`, восемь прогонов |
 | ответы восьми целей | сборка и запуск восьми напечатанных программ |
-| 82 задачи LeetCode | `ls flang/examples/leetcode/*.flang \| wc -l` |
+| 82 задачи LeetCode | `ls examples/leetcode/*.flang \| wc -l` |
 | 19 файлов, 390 функций библиотеки | `docs/site/numbers.json` (эти ключи с деревом сходятся) |
 
 **Важно при обновлении курса.** `docs/site/numbers.json` на день выпуска

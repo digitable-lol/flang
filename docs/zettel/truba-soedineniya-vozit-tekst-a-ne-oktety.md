@@ -58,7 +58,7 @@ UTF-8 (`сокет.setEncoding("utf8")` в `flang/src/host/node.mjs`). Окте�
 соединения завелась пара поручений, возящих список чисел, а не строку:
 `«Ответить октетами в соединение»` и `«Прочитать октеты из соединения»`. Проверено
 прогоном на живом PostgreSQL 17.10 двоичным хозяином:
-`bootstrap/flang io flang/examples/db/postgres-plan.flang` — код возврата 0,
+`bootstrap/flang io examples/db/postgres-plan.flang` — код возврата 0,
 четырнадцать поручений, все пять шагов прошли:
 
 ```

@@ -22,7 +22,7 @@ set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK="${1:-${TMPDIR:-/tmp}/flang-mera}"
 FAST="${2:-0}"
-SRC="flang/examples/measure/euclid.flang"
+SRC="examples/measure/euclid.flang"
 WHOLE='{"fn":"НОД","args":[{"n":"1071"},{"n":"462"}]}'
 PHI='{"fn":"НОД","args":[{"n":"1.618033988749895"},{"n":"1"}]}'
 

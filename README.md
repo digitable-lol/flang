@@ -69,7 +69,7 @@ other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past 
 
 There are 12 directories at the root, and the layout is plain: nearly everything about the
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
-point, packaging, measurements, documentation and one full-size example project.
+point, packaging, measurements, documentation and the example programs.
 
 <!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs. Сегодня
      он не запускается: как и почти весь набор проб, он ввозит модули удалённой реализации на
@@ -81,14 +81,13 @@ flang/self/       the compiler: lexer, parser, types, totality, proof core, eigh
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/src/        the target runtimes, copied verbatim into printed code — C, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
-flang/examples/   165 flang programs: leetcode, rosetta, cat, crypto, io, web, db, wal and six more sets
 flang/proof/      what the proof core may and may not conclude, and why
 flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         a pointer to the catalogue above, and library-api — the domain half of a REST service
+examples/         172 flang programs: leetcode, rosetta, cat, crypto, io, web, db, wal, library-api and six more sets
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -229,7 +228,7 @@ What the bootstrap point is, what guards it and how it is updated:
 
 ## One function, eight targets
 
-This is `flang/examples/leetcode/035-search-insert-position.flang` — LeetCode 35, the position
+This is `examples/leetcode/035-search-insert-position.flang` — LeetCode 35, the position
 where a value belongs in a sorted list. One fold, proven terminating:
 
 ```flang
@@ -246,7 +245,7 @@ where a value belongs in a sorted list. One fold, proven terminating:
 Everything below was produced by running
 
 ```bash
-flang emit flang/examples/leetcode/035-search-insert-position.flang --target c --out ./out-c
+flang emit examples/leetcode/035-search-insert-position.flang --target c --out ./out-c
 #              …and again with go, rust, python, java, csharp, elixir, js
 ```
 
@@ -379,7 +378,7 @@ exists](docs/guide/single-source.md).
 ## A real problem, not a hello world
 
 LeetCode 121 — best profit from one buy and one sell, one pass, state in a two-field record.
-This is `flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang` in full:
+This is `examples/leetcode/121-best-time-to-buy-and-sell-stock.flang` in full:
 
 ```flang
 объект «Сделка»
@@ -416,11 +415,11 @@ the first line is a claim the compiler had to prove before accepting the file. T
 part of the function, not a separate test file:
 
 ```bash
-flang test flang/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
-flang test flang/examples/leetcode/     # all 82 files, 804 examples, one run
+flang test examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
+flang test examples/leetcode/     # all 82 files, 804 examples, one run
 ```
 
-Two example sets are kept. [`flang/examples/leetcode/`](flang/examples/leetcode) holds
+Two example sets are kept. [`examples/leetcode/`](examples/leetcode) holds
 82 solutions with 300 functions between them, 298 of them proven total; the two exceptions are
 deliberate and explained in the file (`202-happy-number.flang`: the "until the number repeats"
 loop does terminate, but the language has nothing to prove it with). Each carries a comment
@@ -428,7 +427,7 @@ explaining not only the algorithm but where the language pushed back — why "is
 already in the window" is linear (there is no set in the language), why a dynamic-programming
 table costs a square (appending copies the list), why Single Number is O(n²) because there are no
 bitwise operations.
-[`flang/examples/rosetta/`](flang/examples/rosetta) holds 14 canonical Rosetta Code tasks, each
+[`examples/rosetta/`](examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one. The standard
 library ([`flang/stdlib/`](flang/stdlib): `base64`, `datetime`, `dictionary`, `hashmap`,
 `higher-order`, `http`, `json`, `lists`, `logic`, `numbers`, `numtree`, `optional`, `postgres`,
@@ -485,7 +484,7 @@ not have.
 
 ## Modules, the standard library, and a whole project
 
-[`flang/examples/import-check.flang`](flang/examples/import-check.flang):
+[`examples/import-check.flang`](examples/import-check.flang):
 
 ```flang
 модуль «Проба импорта»
@@ -546,7 +545,7 @@ above about `npm test`.
 - **A full-size example** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 165 programs in [`flang/examples/`](flang/examples); what sits where is
+- **The other examples** — 165 more programs in [`examples/`](examples); what sits where is
   listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting

@@ -222,7 +222,7 @@ interpret.test.mjs	непокрытое значение — FLANG_MATCH_NOT_EXH
 interpret.test.mjs	привязка к отсутствующему полю варианта — ошибка имени	A2	flang/test/self-interpret.test.mjs:647 сломанная «вариант не содержит поля образца» (FLANG_UNKNOWN_NAME)
 interpret.test.mjs	рекурсия: длина списка	A1	flang/stdlib/lists.flang:93-100 «Длина»/«…» примеры; flang/core/evaluate.flang:211
 interpret.test.mjs	рекурсия: обход дерева (сумма типов с рекурсивным полем)	A1	flang/stdlib/tree.flang (41 пример на рекурсивной сумме типов)
-interpret.test.mjs	рекурсия: факториал	A1	flang/examples/rosetta/factorial.flang:69-90 примеры «Пять факториал», «Десять факториал», «Ноль факториал»; flang/examples/measure/natural.flang:65
+interpret.test.mjs	рекурсия: факториал	A1	examples/rosetta/factorial.flang:69-90 примеры «Пять факториал», «Десять факториал», «Ноль факториал»; examples/measure/natural.flang:65
 interpret.test.mjs	рекурсия: взаимная	A2	flang/test/self-interpret.test.mjs:1198 «глубина вызовов возвращается на место: сто вызовов подряд при пределе 5» + сверка витков :508
 interpret.test.mjs	хвостовая рекурсия идёт в постоянной глубине	A2	flang/test/self-interpret.test.mjs:1198 (та же проба); flang/self/interpret.flang:915-918 — тот же довод записан в эталоне
 interpret.test.mjs	глубокая нехвостовая рекурсия не съедает стек JS	B	утверждение — равенство значений («Счёт» от 9000 = 9000, «Длина» от 1500 элементов = 1500): выражается функцией с примером; предмет «стек движка» исчезает, охрана явного стека остаётся нужной
@@ -334,9 +334,9 @@ repl.test.mjs	«использует» подключает модуль стр�
 repl.test.mjs	конфликт имён с подключаемым модулем виден сразу и не ломает сессию	C	FLANG_DUPLICATE_NAME; flang/test/self-repl.test.mjs:679 ОБЕЩАНИЯ.внеСреза — тот же довод
 repl.test.mjs	`flang repl` под конвейером считает, объявляет и разделяет потоки	C	FLANG_TYPE в stderr, код возврата 1, приглашения не в stdout; flang/test/self-repl.test.mjs:683 ОБЕЩАНИЯ.терминал — «их не покрывает и ЯДРО свидетеля». Нужен сквозной прогон двоичного
 repl.test.mjs	`flang repl <файл>` загружает файл в сессию при запуске	C	flang/test/self-repl.test.mjs:684 ОБЕЩАНИЯ.терминал; сквозной прогон процесса с cwd и путём
-flang/test/link.test.mjs	функция из импортированного модуля становится вызываемой	A1	flang/examples/import-check.flang:1-10 — модуль с «использует» и примером на функции, зовущей импортированное имя; flang/проверки/ведомость-примеров.txt:537 «70 70 0»
+flang/test/link.test.mjs	функция из импортированного модуля становится вызываемой	A1	examples/import-check.flang:1-10 — модуль с «использует» и примером на функции, зовущей импортированное имя; flang/проверки/ведомость-примеров.txt:537 «70 70 0»
 flang/test/link.test.mjs	импорт транзитивен: модуль через модуль	A2	flang/test/self-link.test.mjs:274 (дурной набор «ромб») + :600 (побайтово, корпус с замыканием импортов); цепочка в дереве: flang/self/io.flang:4 → self/types.flang:3 → self/emit-c.flang
-flang/test/link.test.mjs	настоящий stdlib подключается из чужого каталога	A1	flang/examples/import-check.flang:2 (использует ../stdlib/lists.flang) + :8-10 (тот же список [1,2,3,40] → 46)
+flang/test/link.test.mjs	настоящий stdlib подключается из чужого каталога	A1	examples/import-check.flang:2 (использует ../stdlib/lists.flang) + :8-10 (тот же список [1,2,3,40] → 46)
 flang/test/link.test.mjs	типы импортируются вместе с функциями	A2	flang/test/self-link.test.mjs:248 (дурной набор «одно имя типа в двух модулях») + :600 (ключ types сверяется побайтово)
 flang/test/link.test.mjs	пропавший файл — FLANG_IMPORT_NOT_FOUND, а не несвязанное имя	A2	flang/test/self-link.test.mjs:218 + :609 (все коды отказа сработали)
 flang/test/link.test.mjs	циклический импорт — диагностика, а не бесконечная загрузка	A2	flang/test/self-link.test.mjs:221 + :609
@@ -351,8 +351,8 @@ flang/test/link.test.mjs	«только» берёт названные имен
 flang/test/link.test.mjs	«только» снимает конфликт: одноимённую функцию можно не брать	A2	flang/test/self-link.test.mjs:264 («только сужает видимое»)
 flang/test/link.test.mjs	«только» не расширяет видимое сверх «экспортирует»	A2	flang/test/self-link.test.mjs:269 («экспортирует сильнее, чем только»)
 flang/test/link.test.mjs	без «использует» разбор остаётся прежним: связывание ничего не подменяет	A2	flang/test/self-link.test.mjs:600 (побайтово; программ без импортов в корпусе большинство). Сверка `flang ast` с прямым разбором — оснастка
-flang/test/link.test.mjs	морфизмы импортированного модуля попадают в связанную программу	A2	flang/test/self-link.test.mjs:635 (раскладка родов: morphisms 10) + flang/examples/cat/modules/reconciliation.flang:2-4
-flang/test/link.test.mjs	несостыкованная композиция из импортированного модуля не теряется и указывает на него	B	FLANG_COMPOSE_MISMATCH есть ТОЛЬКО в flang/src/types.mjs; в .flang дерева он лишь помянут комментарием (flang/examples/cat/order-shipment.flang:15)
+flang/test/link.test.mjs	морфизмы импортированного модуля попадают в связанную программу	A2	flang/test/self-link.test.mjs:635 (раскладка родов: morphisms 10) + examples/cat/modules/reconciliation.flang:2-4
+flang/test/link.test.mjs	несостыкованная композиция из импортированного модуля не теряется и указывает на него	B	FLANG_COMPOSE_MISMATCH есть ТОЛЬКО в flang/src/types.mjs; в .flang дерева он лишь помянут комментарием (examples/cat/order-shipment.flang:15)
 flang/test/link.test.mjs	композиция собирается из морфизмов двух файлов	B	та же дыра: проверки устройства теорката (checkMorphisms) на стороне flang нет — flang/self/iso.flang:5-7 прямо пишет «доказано раньше и в другом месте (src/types.mjs)»
 flang/test/link.test.mjs	несостыковка через модули называет обе стрелки, а не только код	B	текст FLANG_COMPOSE_MISMATCH живёт только в flang/src/types.mjs
 flang/test/link.test.mjs	теоркат входного файла не пропадает из-за постороннего импорта	B	связывающая половина — self-link.test.mjs:600; сам вердикт FLANG_COMPOSE_MISMATCH эталона не имеет
@@ -374,12 +374,12 @@ flang/test/link.test.mjs	теорема доносится через импор
 flang/test/link.test.mjs	теорема НЕ доносится по совпадению имени: у файла без импортов её быть не может	B	сам тест это и пишет (link.test.mjs:1286): «Байт-в-байт сверка эталона этого НЕ ловит». Пишется примером на двери «Связать разобранное» self/link.flang: ожидается пустой список theorems
 flang/test/link.test.mjs	своя теорема не перекрывается донесённой	B	в дурных наборах self-link.test.mjs:333-362 такого случая нет; выражается примером на той же двери — длина theorems равна 1
 flang/test/link.test.mjs	файлы цепочки доказательства: у каждого есть эталон, кроме НАЗВАННЫХ	D	предмет — существование файлов flang/src/*.mjs и их пар с self/*.flang; после выброса JavaScript пар не остаётся вовсе
-flang/test/io.test.mjs	словарь ввода-вывода — три суммы, и все поручения объявлены полями	A2	flang/self/parser.flang:5141-5165 («Узел типа поручения», «Варианты поручения/отклика/продолжения») + flang/test/self-parser.test.mjs:223 (побайтово на flang/examples/io). Три имени суммы — примером: flang/self/io.flang:94-97
+flang/test/io.test.mjs	словарь ввода-вывода — три суммы, и все поручения объявлены полями	A2	flang/self/parser.flang:5141-5165 («Узел типа поручения», «Варианты поручения/отклика/продолжения») + flang/test/self-parser.test.mjs:223 (побайтово на examples/io). Три имени суммы — примером: flang/self/io.flang:94-97
 flang/test/io.test.mjs	программа без ввода-вывода остаётся побайтово прежней	A2	flang/self/parser.flang:5184-5195 («Типы ввода-вывода» при «нужен» нет отдаёт типы как есть) + self-parser.test.mjs:223 на всём дереве
 flang/test/io.test.mjs	словарь приписывается по употреблению имени, а не только по объявлению плана	A2	flang/self/parser.flang:5184-5195 + self-parser.test.mjs:1036 (фаззинг обрезанных исходников дерева). В дереве без плана словарь употребляет flang/conc/sluzhby/chtenie.flang, но этот каталог в корпус self-parser не входит
 flang/test/io.test.mjs	чужое объявление с тем же именем словарь не переопределяет	A2	flang/self/parser.flang:5172-5182 («Свободен для словаря») + flang/conc/examples/backpressure.flang (свой тип «Отклик») в корпусе self-parser.test.mjs:214
 flang/test/io.test.mjs	слово «шаг» ключевым не стало: файл с переменной «шаг» разбирается	A2	flang/self/lexer.flang + self-parser.test.mjs:223 (flang/core/lexer.flang в корпусе, «шаг» там голым)
-flang/test/io.test.mjs	слово «план» именем не было и осталось словом: объявление разбирается	A2	self-parser.test.mjs:216-217 (каталог flang/examples/io в корпусе) + :223 — узел plan со span сверяется побайтово
+flang/test/io.test.mjs	слово «план» именем не было и осталось словом: объявление разбирается	A2	self-parser.test.mjs:216-217 (каталог examples/io в корпусе) + :223 — узел plan со span сверяется побайтово
 flang/test/io.test.mjs	план без строки — ошибка разбора, называющая пропущенное слово	A2	self-parser.test.mjs:1036 (фаззинг обрезанных исходников репозитория) + :1066 («не разобранная конструкция: код, сообщение и место как у образца»)
 flang/test/io.test.mjs	шаг не той формы — FLANG_PLAN, а не общий FLANG_TYPE	A2	flang/self/io.flang (весь слой) + flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang, 05-nachalo-s-argumentom.flang, 09/10-shag-*-argument.flang + self-io.test.mjs:165
 flang/test/io.test.mjs	«потом» чужого типа — отказ проверки, а не падение у хозяина	B	сверка поля «потом» с типом состояния живёт только в flang/src/types.mjs:897; в flang/self/io.flang слова «потом» нет ни разу. Пишется как self/otkazy-tipov.flang: исходник строкой — код отказа строкой
@@ -387,8 +387,8 @@ flang/test/io.test.mjs	верное «потом» проходит: сверк�
 flang/test/io.test.mjs	«Конец работы» разного типа в одном плане — отказ проверки	B	flang/src/types.mjs:7167-7181 («у плана один результат»); эталона на flang нет
 flang/test/io.test.mjs	один тип результата во всех ветках — проходит	B	обратная сила той же проверки
 flang/test/io.test.mjs	плана нет — джокер остаётся джокером, и это НАЗВАННАЯ дыра	B	названная дыра выражается тем же примером: ожидается пустая строка
-flang/test/io.test.mjs	примеры функций с поручениями сходятся как обычные примеры	A1	flang/examples/io/link-report.flang — 10 примеров; flang/проверки/ведомость-примеров.txt:538 «10 10 0» (гоняет двоичный flang test, без Node)
-flang/test/io.test.mjs	программа с вводом-выводом остаётся ТОТАЛЬНОЙ	B	flang/self/totality.flang есть, но каталог flang/examples/io в корпус self-totality.test.mjs:346 не входит; пишется примером «Код отказа тотальности» с ожиданием пустой строки
+flang/test/io.test.mjs	примеры функций с поручениями сходятся как обычные примеры	A1	examples/io/link-report.flang — 10 примеров; flang/проверки/ведомость-примеров.txt:538 «10 10 0» (гоняет двоичный flang test, без Node)
+flang/test/io.test.mjs	программа с вводом-выводом остаётся ТОТАЛЬНОЙ	B	flang/self/totality.flang есть, но каталог examples/io в корпус self-totality.test.mjs:346 не входит; пишется примером «Код отказа тотальности» с ожиданием пустой строки
 flang/test/io.test.mjs	поддельный хозяин: журнал поручений сверяется, эффектов ноль	B	прогон плана на списке заготовленных откликов ЧИСТ; машины runPlan на стороне flang нет (flang/self/cli.flang:10 — «исполняет хозяин»)
 flang/test/io.test.mjs	отклик хозяина «Сбой» доходит до программы, а не роняет прогон	B	то же: чистый прогон на поддельном хозяине
 flang/test/io.test.mjs	хозяин, вернувший не отклик, — FLANG_IO с именем плана	B	то же
@@ -491,11 +491,11 @@ hotswap.test.mjs	замена, назначенная за концом прог
 hotswap.test.mjs	замена проверяется и без состояния — тогда перенос обязан быть постоянным	A2	flang/test/self-hotswap.test.mjs:324 (исход «оценка переноса растёт»), сетка без состояния :247
 poly.test.mjs	параметры типа попадают в AST только когда написаны	A2	flang/test/self-parser.test.mjs:223 (побайтовая сверка AST по всем .flang дерева), корпус :160; параметрический тип — flang/stdlib/optional.flang:50
 poly.test.mjs	аргументы типа попадают в AST только когда написаны	A2	flang/test/self-parser.test.mjs:223; аргументы типа в дереве — flang/stdlib/optional.flang:6165, непараметрические имена типов повсеместно
-poly.test.mjs	применение правоассоциативно и совпадает со скобочной записью	B	бесскобочного «Возможно» от «Возможно» от числа в дереве нет ни одного (есть только скобочное flang/examples/monad/order-total.flang:58)
+poly.test.mjs	применение правоассоциативно и совпадает со скобочной записью	B	бесскобочного «Возможно» от «Возможно» от числа в дереве нет ни одного (есть только скобочное examples/monad/order-total.flang:58)
 poly.test.mjs	«и» в поле варианта не съедается списком аргументов типа	B	формы «содержит п: «Пара» от числа и строки и метка: строка» в дереве нет
 poly.test.mjs	параметры типа функции читаются тем же словом «от»	A2	flang/test/self-parser.test.mjs:223; flang/stdlib/lists.flang:89 («Длина» от «А»)
 poly.test.mjs	одно объявление обслуживает две подстановки сразу	A1	flang/stdlib/optional.flang:58-63 (два примера «Обернуть» — на числе и на строке), :92-95
-poly.test.mjs	монада выразима: «Возможно» от «Возможно» — тот же тип, а не второй	B	вложенное применение есть только в flang/examples/monad/order-total.flang:58, а этого каталога нет в корпусе flang/test/self-types.test.mjs:188
+poly.test.mjs	монада выразима: «Возможно» от «Возможно» — тот же тип, а не второй	B	вложенное применение есть только в examples/monad/order-total.flang:58, а этого каталога нет в корпусе flang/test/self-types.test.mjs:188
 poly.test.mjs	подстановка идёт вглубь: поле параметрической записи знает свой тип	B	отрицательная половина (FLANG_TYPE на параметрическом поле) в сломанном корпусе flang/test/self-types.test.mjs:1266-1277 отсутствует
 poly.test.mjs	аргументы типа выводятся из значений, а не пишутся при вызове	A1	flang/stdlib/optional.flang:58-63 (примеры решают подстановку по входу), flang/stdlib/optional.flang:6165
 poly.test.mjs	вывод ловит несовпадение подстановки, а не молчит	B	перенос в пример по образцу flang/self/otkazy-tipov.flang:18-21: исходник → код FLANG_TYPE

@@ -48,7 +48,7 @@ arrows count as the same one. That last part is what makes anything checkable:
 until it is said when two values are equal, "associativity of composition" means
 nothing.
 
-Here is a working excerpt from `flang/examples/cat/order-shipment.flang` — an
+Here is a working excerpt from `examples/cat/order-shipment.flang` — an
 order, a shipment, an invoice:
 
 ```flang
@@ -115,7 +115,7 @@ computed. The values come from the examples attached to the arrows.
 The report must state the size of the grid, and it does:
 
 ```
-$ flang check flang/examples/cat/order-shipment.flang
+$ flang check examples/cat/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
@@ -187,7 +187,7 @@ Their rules are neither computed over a grid nor checked by comparing
 declarations. The compiler names them one by one and answers with exit code 2:
 
 ```
-$ flang check flang/examples/cat/monoid-and-monad.flang
+$ flang check examples/cat/monoid-and-monad.flang
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
 monoids, monads.
 $ echo $?
@@ -197,8 +197,8 @@ $ echo $?
 The examples still run, as in any program:
 
 ```
-$ flang test flang/examples/cat/monoid-and-monad.flang
-flang/examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
+$ flang test examples/cat/monoid-and-monad.flang
+examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
 $ echo $?
 0
 ```
@@ -224,7 +224,7 @@ a category and of a transformation, and they are computed over a finite grid.**
 
 A chain of computations, any of which may fail, is written without binding each
 step by hand. The compiler parses and expands the form; in the tree it stands in
-`flang/examples/monad/order-total.flang`. That file does carry diagnostics
+`examples/monad/order-total.flang`. That file does carry diagnostics
 today, and they are not about the monad: `FLANG_TYPE_PARAM` inside the expanded
 code — the type parameter `«Беда»` is determined neither by the arguments nor by
 the expected type.

@@ -111,7 +111,7 @@ flang test <файл.flang | каталог | маска> [--no-check] [--json] 
 
 ```bash
 flang test flang/stdlib/                весь каталог, вглубь
-flang test 'flang/examples/**/*.flang'  по маске (кавычки — от оболочки)
+flang test 'examples/**/*.flang'  по маске (кавычки — от оболочки)
 ```
 
 Коды: `0` — взяты все файлы и сошлись все примеры; `1` — что-то не сошлось или

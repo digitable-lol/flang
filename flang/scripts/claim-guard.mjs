@@ -109,8 +109,9 @@ const ПРОПУСК = new Set(["node_modules", ".git", ".claude", "dist", "outp
  */
 const ПЕЧАТАЕТСЯ_ИЗ_ИСТОРИИ = new Set(["CHANGELOG.md", "changelog.md"])
 
-/** Расширения, в которых ищем прозу. */
-const РАСШИРЕНИЯ = new Set([".md", ".flang", ".fts", ".mjs", ".js", ".json"])
+/** Расширения, в которых ищем прозу. Программа на flang — три равноправных
+    расширения: `.flang`, `.fp`, `.фп` (ADR-0008). */
+const РАСШИРЕНИЯ = new Set([".md", ".flang", ".fp", ".фп", ".fts", ".mjs", ".js", ".json"])
 
 /**
  * Утверждение о том, что формы НЕТ, с названной формой.

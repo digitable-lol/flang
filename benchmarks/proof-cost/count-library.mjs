@@ -144,7 +144,10 @@ function безПримеров(исходник) {
 }
 
 const отбор = new Set(process.argv.slice(2).map((и) => и.replace(/^.*\//, "")))
-const всеФайлы = readdirSync(каталог).filter((и) => и.endsWith(".flang")).sort()
+// Расширений у программы три и они равноправны: `.flang`, `.fp`, `.фп`
+// (ADR-0008). Отбор по одному из них молча терял бы файлы, написанные двумя
+// другими, — и замер выходил бы меньше дерева, ничего об этом не сказав.
+const всеФайлы = readdirSync(каталог).filter((и) => /\.(flang|fp|фп)$/u.test(и)).sort()
 for (const имя of отбор) {
   if (всеФайлы.includes(имя)) continue
   console.error(`нет такого файла библиотеки: ${имя}`)

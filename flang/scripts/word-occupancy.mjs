@@ -72,7 +72,10 @@ const корень = fileURLToPath(new URL("../..", import.meta.url))
  * компилятор исключён по той же причине, что в своде ведомости: это сборка
  * остальных файлов, и его слова посчитались бы дважды.
  */
-export const ФАЙЛЫ = globSync("**/*.flang", { cwd: корень })
+/* Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008);
+   образец у `globSync` этого дерева один, потому их три. */
+export const ФАЙЛЫ = ["**/*.flang", "**/*.fp", "**/*.фп"]
+  .flatMap((образец) => globSync(образец, { cwd: корень }))
   .filter((путь) => путь !== "flang/self/bootstrap/compiler.flang")
   .filter((путь) => !путь.startsWith("node_modules/"))
   .sort()

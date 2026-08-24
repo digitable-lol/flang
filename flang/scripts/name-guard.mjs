@@ -287,7 +287,8 @@ function обход(каталог, найдено = []) {
   for (const запись of readdirSync(каталог).sort()) {
     const путь = join(каталог, запись)
     if (statSync(путь).isDirectory()) обход(путь, найдено)
-    else if (путь.endsWith(".flang")) найдено.push(путь)
+    /* Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008). */
+    else if (/\.(flang|fp|фп)$/u.test(путь)) найдено.push(путь)
   }
   return найдено
 }
@@ -417,7 +418,7 @@ export function охват(корень = КОРЕНЬ, каталоги = КА�
       if (запись === "node_modules" || запись === ".git" || запись === ".claude") continue
       const путь = join(каталог, запись)
       if (statSync(путь).isDirectory()) обходДерева(путь)
-      else if (путь.endsWith(".flang")) все.push(relative(корень, путь))
+      else if (/\.(flang|fp|фп)$/u.test(путь)) все.push(relative(корень, путь))
     }
   }
   обходДерева(корень)

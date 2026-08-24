@@ -25,6 +25,28 @@ The source of this page is the program itself: `flang --help` and
 
 Common to all of them: `flang --help`, `flang --version`, `flang <command> --help`.
 
+## The input file: three extensions
+
+A program has three extensions, and all three are equal:
+
+| Extension | Where the name comes from | Where it gets typed |
+| --- | --- | --- |
+| `.flang` | the name of the language | the main one: commands, docs, CI jobs |
+| `.fp` | *functional program* | the short one, no keyboard switching |
+| `.фп` | «функциональная программа» | so a Russian file name needs no transliteration |
+
+A file is taken by its path, not by its extension: `flang check`, `run`, `emit`,
+`ast`, `tokens`, `lock`, `package` and `facts` accept any of the three — and any
+other path as well. The decision is recorded in
+`docs/adr/0008-three-file-extensions.md`.
+
+One exception, and it is worth knowing: **`flang test`, given ONE file,
+recognises it by `.flang`** — an argument with another extension is treated as a
+directory, and the answer is "не нашлось ни одного .flang", exit code `2`. This
+is the only place in the compiler that decides a file's fate by its extension,
+and it waits for the bootstrap point to be reprinted; until then the examples in
+a `.фп` file are run by `flang check`, which runs them too.
+
 ## Exit codes
 
 The codes are the same across commands, and so is their meaning.

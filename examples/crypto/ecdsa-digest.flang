@@ -10,7 +10,7 @@
 // Прогон из корня дерева:
 //   bootstrap/flang run examples/crypto/ecdsa-digest.flang --function «Свод сообщения» --max-steps 100000000
 //   bootstrap/flang run examples/crypto/ecdsa-digest.flang --function «Свод байтами» --max-steps 100000000
-//   sha256sum /srv/work/ecdsa-proba/soobshchenie.txt
+//   printf 'проба подписи' | sha256sum
 // Первая строка обязана совпасть с выводом sha256sum знак в знак.
 
 // «проба подписи» в UTF-8 — двадцать пять байтов.

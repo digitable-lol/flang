@@ -6,15 +6,18 @@
 // таблиц из `sqlite_master` и все строки таблицы «люди».
 //
 // Файл-образец делается сторонней `sqlite3` (питоновским модулем), чтобы
-// сверять было с чем:
+// сверять было с чем. Путь в поручении разбирается ОТНОСИТЕЛЬНО каталога этого
+// исходника, поэтому образец кладётся рядом с ним:
 //
-//   python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exist_ok=True); c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
+//   cd examples/db
+//   python3 -c "import sqlite3; c=sqlite3.connect('obrazec.db'); c.execute('create table люди(имя text, лет integer)'); c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 //
-// Прогон:
-//   bootstrap/flang io examples/db/sqlite-read.flang
+// Прогон из корня дерева. Ключ «--max-steps» ОБЯЗАТЕЛЕН: умолчание — 10 000 000
+// шагов, а разбор восьми килобайт базы стоит больше. Замер: 16 секунд.
+//   bootstrap/flang io examples/db/sqlite-read.flang --max-steps 2000000000
 //
 // Сверка — тем же select у sqlite3:
-//   python3 -c "import sqlite3; [print(r) for r in sqlite3.connect('/srv/tmp/sqlite-obrazec/proba.db').execute('select rowid,имя,лет from люди')]"
+//   python3 -c "import sqlite3; [print(r) for r in sqlite3.connect('examples/db/obrazec.db').execute('select rowid,имя,лет from люди')]"
 
 тип «Ход»
   вариант «Начало»
@@ -23,8 +26,8 @@
 тотальная функция «Откуда»
   возвращает строка
   пример «читается образец, сделанный сторонней sqlite3»
-    ожидается "/srv/tmp/sqlite-obrazec/proba.db"
-  "/srv/tmp/sqlite-obrazec/proba.db"
+    ожидается "obrazec.db"
+  "obrazec.db"
 
 тотальная функция «Какая таблица»
   возвращает строка
@@ -95,7 +98,7 @@
   пример «первым делом файл базы читается октетами»
     дано ход равно вариант «Начало»
     дано отклик равно вариант «Пока ничего»
-    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать октеты из файла» с путь равным "/srv/tmp/sqlite-obrazec/proba.db") и потом равным (вариант «Ждём октеты»)
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать октеты из файла» с путь равным "obrazec.db") и потом равным (вариант «Ждём октеты»)
   разбор ход
     случай вариант «Начало»
       то вариант «Сделать» с поручение равным (вариант «Прочитать октеты из файла» с путь равным («Откуда»)) и потом равным (вариант «Ждём октеты»)

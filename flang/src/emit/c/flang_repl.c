@@ -13600,12 +13600,12 @@ static char *lsp_read_frame(repl_buf *tail, size_t *bytes) {
       }
     }
     {
-      char chunk[8192];
-      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
-      if (got == 0) {
+      const int symbol = getc(stdin);
+      const char one = (char)symbol;
+      if (symbol == EOF) {
         return NULL;
       }
-      buf_add(tail, chunk, got);
+      buf_add(tail, &one, 1);
     }
   }
 }
@@ -14035,12 +14035,12 @@ static char *mcp_read_line(repl_buf *tail, size_t *bytes) {
       }
     }
     {
-      char chunk[8192];
-      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
-      if (got == 0) {
+      const int symbol = getc(stdin);
+      const char one = (char)symbol;
+      if (symbol == EOF) {
         return NULL;
       }
-      buf_add(tail, chunk, got);
+      buf_add(tail, &one, 1);
     }
   }
 }

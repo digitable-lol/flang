@@ -37,3 +37,15 @@ C, где то же самое стоит 154 с и умещается в пам
 Связано: [[reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c]],
 [[predel-shagov-interpretatora-opredelyaet-chto-mozhet-byt-primerom]],
 [[memory-per-category-is-regions]]
+
+## Поправка 24 августа 2026: арена возвращает — на откате области
+
+Заголовок сказан слишком широко. Верно то, что `fl_arena_reset` и
+`fl_arena_release` за прогон почти не зовутся, и потому в `flang io` и в других
+командах без областей память по-прежнему растёт монотонно. Но у ОТКАТА ОБЛАСТИ
+(`fl_arena_rollback`) до 24 августа тоже не отдавалось ничего — и вот это
+оказалось поправимым почти даром: `check types.flang --proof` 6 236 536 →
+3 974 552 КБ пика при том же времени.
+
+Замер и разбор — [[arena-gives-chunks-back-on-rollback]]. Числа PBKDF2 выше
+сняты до этой правки и относятся к прогонам, где области нет.

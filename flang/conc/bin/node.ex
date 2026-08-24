@@ -103,7 +103,7 @@ defmodule HozyainUzla do
 
   # ── провод: те же метки, что у узла на JavaScript ─────────────────────────
   # Перевод, а не решение: правило «у каждого значения метка одной буквой» живёт
-  # в `flang/conc/distributed.mjs`, и разойтись с ним нельзя — иначе письмо с
+  # в `flang/conc/wire.flang` («Метки значений», «Имена чисел»), и разойтись с ним нельзя — иначе письмо с
   # одной цели другая не прочтёт.
   defp zakodirovat(:nothing), do: ["н"]
   defp zakodirovat({:flag, priznak}), do: ["п", priznak]

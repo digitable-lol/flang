@@ -109,7 +109,7 @@ public static class HozyainUzla
 
     /* ── провод: те же метки, что у узла на JavaScript ─────────────────────── */
     /* Перевод, а не решение: правило «у каждого значения метка одной буквой»
-       живёт в `flang/conc/distributed.mjs`, и разойтись с ним нельзя. */
+       живёт в `flang/conc/wire.flang` («Метки значений», «Имена чисел»), и разойтись с ним нельзя. */
 
     private static object?[] Zakodirovat(Value znachenie)
     {

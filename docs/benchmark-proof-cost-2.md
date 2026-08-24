@@ -36,7 +36,7 @@
 | **вычисление замкнутой цели** | **НЕТ** | `benchmarks/proof-cost/probe-closed-goal.flang`: `результат начинается с "\|"` при теле-строке — «объявлено, не доказано» |
 | предусловие **`требует`** | **ЕСТЬ** | замер 10: отказ говорит «известно: предусловие функции «Двоичный поиск»» |
 | дыра «один пример доказывает обо ВСЕХ входах» | **ЗАКРЫТА** | `benchmarks/proof-cost/probe-forgery.flang` — подделка прошлого замера теперь отвергается поимённо |
-| `дано <имя>: <тип>`, где имя совпадает с именем типа | **дыра открыта** | проба в `docs/benchmark2/13-chyotnoe.flang`: «имя «число» не связано» |
+| `дано <имя>: <тип>`, где имя совпадает с именем типа | **дыра открыта** | проба в `docs/benchmark2/13-even.flang`: «имя «число» не связано» |
 
 Ведомость всего дерева на этом основании (`node flang/scripts/proof-ledger.mjs`):
 высказано {{утверждения.высказано}} утверждений, доказано ядром
@@ -280,7 +280,7 @@
 
 ### Исход «ядро закрыло само» — цена одна строка
 
-`docs/benchmark2/04-razmer-slovarya.flang`:
+`docs/benchmark2/04-dictionary-size.flang`:
 
 ```flang
 тотальная функция «Размер словаря»
@@ -306,7 +306,7 @@
 
 ### Исход «ядро не берёт» — правда высказана, правил не хватает
 
-`docs/benchmark2/17-est-v-mnozhestve.flang`, утверждение ПОЛНОЕ — оно исчерпывает
+`docs/benchmark2/17-member-of-set.flang`, утверждение ПОЛНОЕ — оно исчерпывает
 смысл функции:
 
 ```flang
@@ -341,7 +341,7 @@
 
 ### Исход «на языке не выразить» — правду нечем записать
 
-`docs/benchmark2/16-uspeshno.flang`. Смысл функции: «да ровно тогда, когда итог —
+`docs/benchmark2/16-success.flang`. Смысл функции: «да ровно тогда, когда итог —
 вариант «Успех»». Попытка записать это выражением:
 
 ```
@@ -451,8 +451,8 @@ LC_ALL=C.UTF-8 node benchmarks/proof-cost/tela.mjs
 → тел вида «`разбор` по параметру» в `flang/stdlib` — **58 из 208**.
 
 ```
-LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/04-razmer-slovarya.flang --proof
-LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/13-chyotnoe.flang --proof
+LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/04-dictionary-size.flang --proof
+LC_ALL=C.UTF-8 bootstrap/flang check docs/benchmark2/13-even.flang --proof
 ```
 → два «доказано … теоремы при нём нет и не нужно». Это и есть **2 из 20**.
 

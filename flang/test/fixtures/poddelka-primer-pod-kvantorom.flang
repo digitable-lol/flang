@@ -25,7 +25,7 @@
 // `poddelki:check`. Файл вписан в список «Подделки лжи»; вернись дыра — сторож
 // краснеет и называет этот файл поимённо. Улики того же вида, лежащие в дереве
 // с прошлого замера, — benchmarks/proof-cost/probe-forgery.flang и
-// docs/benchmark/05-protivopolozhnoe.flang.
+// docs/benchmark/05-opposite.flang.
 
 тотальная функция «Проба»
   принимает ч: число

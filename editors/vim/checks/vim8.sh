@@ -30,7 +30,7 @@ vim -Nu NONE -es \
   --cmd 'runtime! plugin/*.vim' \
   -c 'call lsp#enable()' \
   -c 'edit' \
-  -c "source $koren/editors/vim/proverka/vimlsp.vim" \
+  -c "source $koren/editors/vim/checks/vimlsp.vim" \
   -c 'call FlangVimLsp()' \
   -c 'qa!' \
-  "$koren/editors/vim/proverka/proba-beda.flang" 2>&1
+  "$koren/editors/vim/checks/probe-error.flang" 2>&1

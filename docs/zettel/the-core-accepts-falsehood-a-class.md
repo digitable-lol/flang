@@ -54,7 +54,7 @@ JavaScript удалил коммит `fe8e8a37`, и вместе с ней пе�
 
 **Сторожа при дыре по-прежнему нет ни одного.** Две улики того же вида лежат в
 дереве с прошлого замера (`benchmarks/proof-cost/probe-forgery.flang`,
-`docs/benchmark/05-protivopolozhnoe.flang`), и обе никем не прогоняются.
+`docs/benchmark/05-opposite.flang`), и обе никем не прогоняются.
 Заведена третья, годная для сторожа:
 `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang`. В
 `flang/scripts/poddelki-yadra.mjs` она НЕ вписана намеренно: сторож стал бы

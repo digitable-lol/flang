@@ -458,46 +458,46 @@ benchmarks/model-authoring/reference/e3-norma.flang	1 1 0
 benchmarks/speed/programs/tasks.flang	28 28 0
 benchmarks/proof-cost/probe-forgery.flang	1 1 0
 benchmarks/proof-cost/probe-closed-goal.flang	0 0 0
-docs/benchmark/01-klyuch-svyazi.flang	отказ
-docs/benchmark/02-klyuch-zvena.flang	отказ
-docs/benchmark/03-vpisat.flang	отказ
-docs/benchmark/04-razmer-slovarya.flang	отказ
-docs/benchmark/05-protivopolozhnoe.flang	5 5 0
-docs/benchmark/06-pripisat-v-nachalo.flang	отказ
-docs/benchmark/07-vstavit-po.flang	отказ
-docs/benchmark/08-maksimum.flang	отказ
-docs/benchmark/09-vzyat-pervye.flang	отказ
-docs/benchmark/10-dvoichnyj-poisk.flang	отказ
-docs/benchmark/11-unikalnye.flang	отказ
-docs/benchmark/12-sleduet.flang	отказ
-docs/benchmark/13-chyotnoe.flang	отказ
-docs/benchmark/14-derevo-iz-chisel.flang	отказ
-docs/benchmark/15-pervyj-ili-zapasnoe.flang	отказ
-docs/benchmark/16-uspeshno.flang	отказ
-docs/benchmark/17-est-v-mnozhestve.flang	отказ
-docs/benchmark/18-pripisat-stroku.flang	отказ
-docs/benchmark/19-strochnaya-bukva.flang	отказ
-docs/benchmark/20-obrezat-probely.flang	отказ
-docs/benchmark2/01-klyuch-svyazi.flang	4 4 0
-docs/benchmark2/02-klyuch-zvena.flang	3 3 0
-docs/benchmark2/03-vpisat.flang	отказ
-docs/benchmark2/04-razmer-slovarya.flang	6 6 0
-docs/benchmark2/05-protivopolozhnoe.flang	5 5 0
-docs/benchmark2/06-pripisat-v-nachalo.flang	отказ
-docs/benchmark2/07-vstavit-po.flang	6 6 0
-docs/benchmark2/08-maksimum.flang	отказ
-docs/benchmark2/09-vzyat-pervye.flang	отказ
-docs/benchmark2/10-dvoichnyj-poisk.flang	отказ
-docs/benchmark2/11-unikalnye.flang	отказ
-docs/benchmark2/12-sleduet.flang	4 4 0
-docs/benchmark2/13-chyotnoe.flang	6 5 1
-docs/benchmark2/14-derevo-iz-chisel.flang	5 5 0
-docs/benchmark2/15-pervyj-ili-zapasnoe.flang	6 6 0
-docs/benchmark2/16-uspeshno.flang	4 4 0
-docs/benchmark2/17-est-v-mnozhestve.flang	отказ
-docs/benchmark2/18-pripisat-stroku.flang	отказ
-docs/benchmark2/19-strochnaya-bukva.flang	отказ
-docs/benchmark2/20-obrezat-probely.flang	отказ
+docs/benchmark/01-link-key.flang	отказ
+docs/benchmark/02-node-key.flang	отказ
+docs/benchmark/03-insert.flang	отказ
+docs/benchmark/04-dictionary-size.flang	отказ
+docs/benchmark/05-opposite.flang	5 5 0
+docs/benchmark/06-prepend.flang	отказ
+docs/benchmark/07-insert-at.flang	отказ
+docs/benchmark/08-maximum.flang	отказ
+docs/benchmark/09-take-first.flang	отказ
+docs/benchmark/10-binary-search.flang	отказ
+docs/benchmark/11-unique.flang	отказ
+docs/benchmark/12-implies.flang	отказ
+docs/benchmark/13-even.flang	отказ
+docs/benchmark/14-tree-of-numbers.flang	отказ
+docs/benchmark/15-first-or-default.flang	отказ
+docs/benchmark/16-success.flang	отказ
+docs/benchmark/17-member-of-set.flang	отказ
+docs/benchmark/18-prepend-string.flang	отказ
+docs/benchmark/19-lowercase-letter.flang	отказ
+docs/benchmark/20-trim-spaces.flang	отказ
+docs/benchmark2/01-link-key.flang	4 4 0
+docs/benchmark2/02-node-key.flang	3 3 0
+docs/benchmark2/03-insert.flang	отказ
+docs/benchmark2/04-dictionary-size.flang	6 6 0
+docs/benchmark2/05-opposite.flang	5 5 0
+docs/benchmark2/06-prepend.flang	отказ
+docs/benchmark2/07-insert-at.flang	6 6 0
+docs/benchmark2/08-maximum.flang	отказ
+docs/benchmark2/09-take-first.flang	отказ
+docs/benchmark2/10-binary-search.flang	отказ
+docs/benchmark2/11-unique.flang	отказ
+docs/benchmark2/12-implies.flang	4 4 0
+docs/benchmark2/13-even.flang	6 5 1
+docs/benchmark2/14-tree-of-numbers.flang	5 5 0
+docs/benchmark2/15-first-or-default.flang	6 6 0
+docs/benchmark2/16-success.flang	4 4 0
+docs/benchmark2/17-member-of-set.flang	отказ
+docs/benchmark2/18-prepend-string.flang	отказ
+docs/benchmark2/19-lowercase-letter.flang	отказ
+docs/benchmark2/20-trim-spaces.flang	отказ
 docs/спецификации/слой-отказов.flang	4 4 0
 examples/cat/crdt-merge.flang	9 9 0
 examples/cat/euler-orders.flang	4 4 0

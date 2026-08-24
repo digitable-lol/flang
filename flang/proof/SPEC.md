@@ -525,7 +525,7 @@
 | причина | мест | где |
 |---|---|---|
 | номер объявлен `число`, а не `нат`/`целое` | 7 | `core/parser.flang` («Слово», «Имя по номеру»), `self/bounded.flang`, `self/interpret.flang` (две формы), `self/monoid.flang`, `self/parser.flang`, `self/setoid.flang` |
-| номер связан `пусть`, а не параметр | 2 | `stdlib/lists.flang` «Поиск в диапазоне», `docs/zamer2/10-dvoichnyj-poisk.flang` |
+| номер связан `пусть`, а не параметр | 2 | `stdlib/lists.flang` «Поиск в диапазоне», `docs/zamer2/10-binary-search.flang` |
 
 Первая причина — не изъян правила, а более слабое объявление, чем нужно самому
 коду: рантайм требует ЦЕЛОГО (`expectInteger`), а `число` целым не является, и

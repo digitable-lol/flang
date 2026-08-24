@@ -8,7 +8,7 @@
 
 **Чем подтверждено.** Одно и то же сообщение `initialize` подано двум серверам,
 ввод в обоих случаях держится открытым четыре секунды
-(`editors/vim/proverka/potok.sh`, ветка `vypusk/vim`, двоичный собран из этого
+(`editors/vim/checks/stream.sh`, ветка `vypusk/vim`, двоичный собран из этого
 же дерева `make -C bootstrap`):
 
 ```

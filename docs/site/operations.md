@@ -352,7 +352,7 @@ costs and when it succeeds is on [Why and how](proofs.html).
 
 ## Next
 
-- [Glossary](glossary.html) — {{словарь.понятий}} concepts, printed from the surface table
+- [Glossary](../glossary.html) — {{словарь.понятий}} concepts, printed from the surface table
 - [Library reference](stdlib.html) — every module with its function signatures
 - [Writing packages](packages.html) — when operations stop being enough
 - [Real-world case studies](case-studies.html) — the same operations on 82 tasks and a service

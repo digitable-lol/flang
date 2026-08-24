@@ -159,6 +159,13 @@ function $post(value, property, name) {
   return value
 }
 
+function $pre(value, property, name) {
+  if (typeof value !== "boolean") {
+    $fail("FLANG_TYPE", `предусловие «${property}» функции «${name}» должно давать признак, получено ${$typeName(value)}`)
+  }
+  return value
+}
+
 function $nums(op, left, right) {
   if (typeof left !== "number" || typeof right !== "number") {
     $fail("FLANG_TYPE", `операция «${op}» допустима только для чисел, получено ${$typeName(left)} и ${$typeName(right)}`)
@@ -169,6 +176,11 @@ function $ord(left, right) {
   if (typeof left !== "number" || typeof right !== "number") {
     $fail("FLANG_TYPE", "сравнения порядка допустимы только для чисел")
   }
+}
+
+function $add(left, right) {
+  $nums("add", left, right)
+  return left + right
 }
 
 function $sub(left, right) {
@@ -961,6 +973,34 @@ export function svyazZamolchala(svyaz, seychas, srok) {
 }
 
 /**
+ * Функция flang «Сколько ждать объявления молчания».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {number} srok — «срок»
+ * @param {number} periodStorozha — «период сторожа»
+ * @returns {number}
+ */
+export function skolkoZhdatObyavleniyaMolchaniya(srok, periodStorozha) {
+  return $add(srok, periodStorozha)
+}
+
+/**
+ * Предусловия функции flang «Сколько ждать объявления молчания»: их проверяет прогонщик ДО вызова —
+ * значения пришли снаружи, и вызывающего, который снял бы требование на
+ * проверке, у них нет. В теле функции на это не потрачено ни одной строки.
+ *
+ * @returns {null | {code: string, message: string, span: object|null}}
+ */
+export function granicaSkolkoZhdatObyavleniyaMolchaniya(srok, periodStorozha) {
+  // требует «сторож просыпается не реже своего периода»
+  if (!$pre($gt(periodStorozha, 0), "сторож просыпается не реже своего периода", "Сколько ждать объявления молчания")) {
+    return { code: "FLANG_PRECONDITION", message: "не выполнено требование «сторож просыпается не реже своего периода» функции «Сколько ждать объявления молчания»", span: { "line": 347, "column": 3 } }
+  }
+  return null
+}
+
+/**
  * Функция flang «Почему замолчала».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -1004,7 +1044,7 @@ export function svyazProsrochena(svyaz) {
   }
   // постусловие «просроченная связь помечена сроком и помнит соседа»
   if (!$post($t2, "просроченная связь помечена сроком и помнит соседа", "Связь просрочена")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь помечена сроком и помнит соседа» функции «Связь просрочена»", { "line": 359, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь помечена сроком и помнит соседа» функции «Связь просрочена»", { "line": 396, "column": 3 })
   }
   let $t3
   if ($cond($equal($field($t1, "готова"), false))) {
@@ -1014,11 +1054,11 @@ export function svyazProsrochena(svyaz) {
   }
   // постусловие «просроченная связь не готова и хранит отметку»
   if (!$post($t3, "просроченная связь не готова и хранит отметку", "Связь просрочена")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь не готова и хранит отметку» функции «Связь просрочена»", { "line": 360, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченная связь не готова и хранит отметку» функции «Связь просрочена»", { "line": 397, "column": 3 })
   }
   // постусловие «вышедший срок не стирает память о знакомстве»
   if (!$post($equal($field($t1, "виделись"), $field(svyaz, "виделись")), "вышедший срок не стирает память о знакомстве", "Связь просрочена")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «вышедший срок не стирает память о знакомстве» функции «Связь просрочена»", { "line": 361, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «вышедший срок не стирает память о знакомстве» функции «Связь просрочена»", { "line": 398, "column": 3 })
   }
   return $t1
 }
@@ -1071,7 +1111,7 @@ export function znakomstvoProsrocheno(svyaz, srok, rabotaet) {
   }
   // постусловие «просроченный срок роняет связь не больше одного раза»
   if (!$post($lte($b_dlina($t7), 1), "просроченный срок роняет связь не больше одного раза", "Знакомство просрочено")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «просроченный срок роняет связь не больше одного раза» функции «Знакомство просрочено»", { "line": 374, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «просроченный срок роняет связь не больше одного раза» функции «Знакомство просрочено»", { "line": 411, "column": 3 })
   }
   return $t2
 }
@@ -1177,11 +1217,19 @@ export const $PROGRAM = {
     ["Почему хэш не сошёлся", pochemuHeshNeSoshyolsya],
     ["Кем назвался", kemNazvalsya],
     ["Связь замолчала", svyazZamolchala],
+    ["Сколько ждать объявления молчания", skolkoZhdatObyavleniyaMolchaniya],
     ["Почему замолчала", pochemuZamolchala],
     ["Почему знакомство не состоялось", pochemuZnakomstvoNeSostoyalos],
     ["Связь просрочена", svyazProsrochena],
     ["Знакомство просрочено", znakomstvoProsrocheno],
     ["Шаг связи", shagSvyazi],
+  ]),
+  /* Предусловия (`требует`) — той же дверью, что и типы: прогонщик зовёт
+     гейт ДО вызова, потому что значение приехало снаружи и вызывающего,
+     который снял бы требование на проверке, у него нет. В тело функции
+     предусловие не печатается: внутри программы оно доказано. */
+  pre: new Map([
+    ["Сколько ждать объявления молчания", granicaSkolkoZhdatObyavleniyaMolchaniya],
   ]),
   variant: (name, fields) => new $FlangVariant(name, fields),
   isVariant: $isVariant,

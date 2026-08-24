@@ -755,9 +755,67 @@ static bool fl_bytes_same(const char *left, const char *right, size_t bytes) {
   return memcmp(left, right, bytes) == 0;
 }
 
+/*
+ * ── ДВА ПРОХОДА: сперва одни указатели, потом имена ────────────────────────
+ *
+ * Замер 24 августа, счётчики врезаны прямо в `fl_field_get` семени, прогон
+ * `check flang/stdlib/strings.flang --proof`:
+ *
+ *     вызовов        53 614 560      шагов цикла     78 527 481
+ *     СОВПАЛО ПО УКАЗАТЕЛЮ  53 614 560      совпало по strcmp   0
+ *
+ * и на `check flang/self/builtins.flang --proof` — 243 879 126 вызовов,
+ * 416 544 557 шагов, и снова ВСЕ до единого совпадения по указателю, ни одного
+ * по strcmp. Имя поля в напечатанном коде — литерал и на постройке записи, и на
+ * её чтении; одинаковые литералы единицы трансляции компилятор сливает, и
+ * указатели у них равны.
+ *
+ * ОТСЮДА ПРОВЕРЕННЫЙ ОТКАЗ ОТ ИНТЕРНИРОВАНИЯ. Общая таблица имён, где все копии
+ * одного имени получают один указатель, чинила бы совпадение по strcmp — а его
+ * НОЛЬ из 297 миллионов. Интернирование стоило бы таблицы, хеша и лишнего шага
+ * на каждой постройке записи и не убрало бы ни одного strcmp. Не сделано, и
+ * дальше пробовать незачем: числа выше это закрывают.
+ *
+ * Работа сидит не в совпадении, а В ПРОМАХАХ: 24,9 млн промахов на strings, 172,7
+ * млн на builtins — это те поля, мимо которых цикл прошёл до нужного. У промаха
+ * указатели разные ВСЕГДА, и `fl_name_same` идёт дальше — читать имя. А имя
+ * лежит в другой строке кэша, чем массив полей, и этот поход и есть цена.
+ *
+ * Поэтому цикл разделён надвое: первый проход сверяет ТОЛЬКО указатели и в
+ * память имён не заглядывает вовсе, второй (полный, посимвольный) заводится,
+ * лишь если первый ничего не нашёл. Ответ тот же: второй проход — прежний цикл
+ * целиком.
+ *
+ * Цена, снятая прогоном (эталон `check ... --proof`, машина свободна, прогоны
+ * по одному):
+ *
+ *     flang/self/builtins.flang   78,31 с → 76,53 с   (−2,3 %)
+ *     flang/stdlib/strings.flang   4,70 с →  4,68 с   (−0,4 %, на грани шума)
+ *
+ * Отсчёт вёлся от семени, в которое уже внесён `fl_name_same` выше, — то есть
+ * это цена ИМЕННО двух проходов, а не сравнения имён вообще. Сам `fl_name_same`
+ * против голого strcmp дал на том же эталоне 83,30 с → 78,31 с (−6,0 %).
+ *
+ * Вывод `--proof` сверен полностью и совпал знак в знак на обоих файлах
+ * (md5 006b9622a844a6acb429277c92d1b103 у всех четырёх сборок).
+ *
+ * Что осталось и чего здесь НЕТ. В профиле после правки первое место занимает
+ * не взятие поля (4,7 %), а обмер области — `fl_region_size` с
+ * `fl_region_fields_size` и `fl_region_close` вместе около 40 %. Пробная правка
+ * обмера (не звать себя рекурсивно на число, признак и «ничто», подняв проверку
+ * глубины перед цикл) на семени дала 76,53 с → 75,08 с на builtins и
+ * 4,68 с → 4,53 с на strings при том же выводе знак в знак, но сюда не
+ * внесена: обмер в этом файле уже переписан на пропуск подграфа ниже отметки
+ * (`fl_live`), и старое число к новому коду не относится. Мерить надо заново.
+ */
 /* Поле по имени среди полей записи или варианта; NULL — поля нет. */
 static const fl_field *fl_find_field(const fl_field *fields, size_t count, const char *name) {
   size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    if (fields[index].name == name) {
+      return &fields[index];
+    }
+  }
   for (index = 0; index < count; index += 1) {
     if (fl_name_same(fields[index].name, name)) {
       return &fields[index];
@@ -2680,10 +2738,14 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count, const fl_fi
   /* Порядок ключей неважен — важен состав, как в recordsEqual интерпретатора. */
   for (index = 0; index < left_count; index += 1) {
     bool found = false;
-    for (other = 0; other < right_count; other += 1) {
-      if (fl_name_same(left[index].name, right[other].name)) {
-        found = fl_equal(left[index].value, right[other].value);
-        break;
+    if (left[index].name == right[index].name) {
+      found = fl_equal(left[index].value, right[index].value);
+    } else {
+      for (other = 0; other < right_count; other += 1) {
+        if (fl_name_same(left[index].name, right[other].name)) {
+          found = fl_equal(left[index].value, right[other].value);
+          break;
+        }
       }
     }
     if (!found) {
@@ -2745,6 +2807,12 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
   if (target.tag == FL_VARIANT) {
     /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более. */
     for (index = 0; index < target.as.variant->count; index += 1) {
+      if (target.as.variant->fields[index].name == name) {
+        *out = target.as.variant->fields[index].value;
+        return FL_OK;
+      }
+    }
+    for (index = 0; index < target.as.variant->count; index += 1) {
       if (fl_name_same(target.as.variant->fields[index].name, name)) {
         *out = target.as.variant->fields[index].value;
         return FL_OK;
@@ -2757,10 +2825,20 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
     return fl_fail(ctx, error, FL_CODE_TYPE, "поле «%s» можно взять только у записи, получено %s", name,
                    fl_type_name(ctx, target));
   }
-  for (index = 0; index < target.as.record->count; index += 1) {
-    if (fl_name_same(target.as.record->fields[index].name, name)) {
-      *out = target.as.record->fields[index].value;
-      return FL_OK;
+  {
+    const fl_field *fields = target.as.record->fields;
+    size_t count = target.as.record->count;
+    for (index = 0; index < count; index += 1) {
+      if (fields[index].name == name) {
+        *out = fields[index].value;
+        return FL_OK;
+      }
+    }
+    for (index = 0; index < count; index += 1) {
+      if (fl_name_same(fields[index].name, name)) {
+        *out = fields[index].value;
+        return FL_OK;
+      }
     }
   }
   return fl_fail(ctx, error, FL_CODE_UNKNOWN_NAME, "запись не содержит поле «%s»", name);
@@ -2768,6 +2846,12 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
 
 fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error) {
   size_t index = 0;
+  for (index = 0; index < target.as.variant->count; index += 1) {
+    if (target.as.variant->fields[index].name == name) {
+      *out = target.as.variant->fields[index].value;
+      return FL_OK;
+    }
+  }
   for (index = 0; index < target.as.variant->count; index += 1) {
     if (fl_name_same(target.as.variant->fields[index].name, name)) {
       *out = target.as.variant->fields[index].value;

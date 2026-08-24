@@ -543,11 +543,13 @@
 ## Ещё не разобранное
 
 - [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
+- [Условие тела, записанное ОДНИМ голым вызовом-признаком, отменяет разбор цели по условию, а «равен да» его возвращает](a-bare-call-guard-blocks-the-goal-split-but-equals-yes-restores-it.md)
 - [Факт без сторон место имеет у читателя, а не у переписки допущениями](a-fact-with-no-sides-belongs-to-the-reader-not-to-the-rewriter.md)
 - [Отбор по выписанному списку считается только у замкнутой цели](a-filter-over-a-written-out-list-is-computed-only-in-a-closed-goal.md)
 - [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
 - [Значение `пусть`, в котором стоит свёртка, останавливает цель, от него не зависящую](a-let-holding-a-fold-stops-a-goal-that-does-not-depend-on-it.md)
 - [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
+- [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
 - [Охрана-равенство варианту, поле которого заполнено проекцией того же довода, может увести нормализацию в бесконечность](a-variant-guard-filled-by-a-projection-of-its-own-argument-can-diverge.md)
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](drobnaya-stepen-vyrazhaetsya-tochno-cherez-koren-i-nyutona.md)
@@ -556,6 +558,7 @@
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](hozyain-io-obryvaet-process-na-tridcatoy-sekunde.md)
 - [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
+- [Индукция по телу-`разбор` цепляется, только когда разбирают ДОВОД-сумму и названы ВСЕ варианты](induction-on-match-needs-a-parameter-scrutinee-and-all-variants-named.md)
 - [Целость терма не проходит через сумму и произведение, и столбик хеша заперт не списком целых](integrality-does-not-pass-through-a-sum-or-a-product.md)
 - [Линейный поиск функции по имени съедает 88 % витков проверки, и упирается в предел именно он](linejnyj-poisk-opisaniya-syedaet-88-procentov-vitkov-proverki.md)
 - [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
@@ -567,12 +570,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Условие тела, записанное ОДНИМ голым вызовом-признаком, отменяет разбор цели по условию, а «равен да» его возвращает](a-bare-call-guard-blocks-the-goal-split-but-equals-yes-restores-it.md)
-- [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
-- [Индукция по телу-`разбор` цепляется, только когда разбирают ДОВОД-сумму и названы ВСЕ варианты](induction-on-match-needs-a-parameter-scrutinee-and-all-variants-named.md)
 
 ## Как добавлять
 

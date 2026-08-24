@@ -32,6 +32,43 @@ needed once the server answers on the fly; until then an editor gives you
 highlighting, and diagnostics come from `flang check` — the key binding is at
 the end of this page.
 
+## What lies in the language tree
+
+```
+editors/
+  vim/         highlighting and the language server for Vim 8/9 and Neovim
+  vscode/      the VS Code extension: highlighting and the language server
+  flang-lsp/   how to point an editor at the .flang language server by hand
+  linguist/    the submission to github-linguist for the .flang language
+```
+
+**Highlighting is hand-written in no editor at all, and that is a measurement
+rather than an intention.** `editors/vim/syntax/flang.vim` is 46 lines,
+`editors/vscode/syntaxes/flang.tmLanguage.json` is 60 lines, and both are printed
+from the language's keyword table by programs written in flang itself
+(`scripts/vim-highlighting.flang`, `scripts/vscode-highlighting.flang`). A list of
+words typed out separately is a second description of the language, and it
+diverges from the first on the very first day. Both are checked by a real editor
+started without a window and without a person: `flang io
+scripts/vim-highlight-check.flang`, `flang io scripts/lsp-check.flang`.
+
+Vim and Neovim share one directory but are configured differently: Neovim's
+protocol client is built in, Vim 8/9 takes the third-party `vim-lsp`. Both look
+for the server the same way — through one VimScript function that Lua calls via
+`vim.fn`.
+
+The VS Code extension holds **19 lines of JavaScript code**
+(`editors/vscode/extension.js` is 46 lines including the explanation), and not one
+of them knows anything about the language: the entry point of a VS Code extension
+is a module the editor loads into its own Node process, and it has no other way to
+connect. Everything else is done by the language server written in flang itself.
+
+**What is not here.** Other editors, and tree-sitter and Chroma too (they colour
+code on web pages and on GitHub), still have no highlighting, and that is an
+unpaid debt. The work looks large — several grammars for one language — but the
+estimate is deceptive: by printing it costs one program per rule set, and that has
+already been measured twice in the numbers above.
+
 ## What the server can do
 
 | Can | Protocol method |

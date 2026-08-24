@@ -547,6 +547,7 @@
 - [Факт без сторон место имеет у читателя, а не у переписки допущениями](a-fact-with-no-sides-belongs-to-the-reader-not-to-the-rewriter.md)
 - [Отбор по выписанному списку считается только у замкнутой цели](a-filter-over-a-written-out-list-is-computed-only-in-a-closed-goal.md)
 - [Свёртка, забирающая каждое совпадение, оставляет ПОСЛЕДНЕЕ — и это ловушка на разборе по меткам](a-fold-that-overwrites-keeps-the-last-match.md)
+- [Словарь вместо перебора: дорог не словарь, дороги его недоказанные постусловия](a-hash-dictionary-cheapens-the-lookup-and-the-building-costs.md)
 - [Значение `пусть`, в котором стоит свёртка, останавливает цель, от него не зависящую](a-let-holding-a-fold-stops-a-goal-that-does-not-depend-on-it.md)
 - [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
 - [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
@@ -570,10 +571,6 @@
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
 - [Точка раскрутки отстала от словаря на два поручения, и пример, положенный вместе с ними, не проходит проверку](the-bootstrap-point-lags-the-order-dictionary.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](toplivo-obhoda-nesut-spiskom-a-ne-chislom.md)
-
-## Ещё не разобранное
-
-- [Словарь вместо перебора: дорог не словарь, дороги его недоказанные постусловия](a-hash-dictionary-cheapens-the-lookup-and-the-building-costs.md)
 
 ## Как добавлять
 

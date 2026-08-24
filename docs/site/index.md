@@ -1,8 +1,19 @@
 # flang — a language whose compiler proves your program cannot hang
 
-flang is a language for services and ordinary programs: values are immutable, a
-program has no side effects, and the word `total` in front of a function is a
-promise that it terminates on every input — a promise **the compiler proves**.
+**flang is a pure functional language with strict static typing, where proof is
+mandatory and happens before the program runs.** Values are immutable; a program
+has no side effects — input and output come back as data, and the host performs
+them. The word `total` in front of a function is a promise that it terminates on
+every input, and **the compiler** proves it, not a person. The word `ensures` is
+a promise about the result, and the kernel closes it over **every input**, not
+over the written examples. The kernel has zero axioms.
+
+The language is self-hosted: the flang compiler is written in flang, prints
+itself, and prints to {{цели.словом}} more target languages. The standard
+library, the scheduler, supervision, and the link between nodes are written in
+flang too — its own process layer in place of OTP/BEAM. It is written in words
+rather than symbols, and every keyword exists in both a Russian and an English
+spelling.
 
 Put this in `hello.flang`:
 

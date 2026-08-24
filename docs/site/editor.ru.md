@@ -10,16 +10,17 @@ flang lsp --stdio
 что стоит во всех командах и в CI; `.fp` — короткое; `.фп` — «функциональная
 программа», чтобы имя файла по-русски не приходилось писать транслитом
 (решение записано в `docs/adr/0008-three-file-extensions.md`).
-Подхватывают все три и `ftdetect` для Vim 8/9, и `vim.filetype.add` для Neovim.
+Подхватывают все три и Vim, и Neovim, и VS Code.
 
-Подсветка есть для Vim 8/9 и Neovim; для остальных редакторов её нет.
+Подсветка есть для Vim 8/9, Neovim и VS Code; для остальных редакторов её нет.
 
 ## Что работает сегодня
 
 | Что | Состояние |
 | --- | --- |
-| Подсветка в Vim 8/9 и Neovim | работает, ставится одной строкой |
-| Подсветка в VS Code, Emacs | нет |
+| Подсветка в Vim 8/9 и Neovim | работает, ставится одной ссылкой |
+| Подсветка в VS Code | работает, расширение собирается из дерева языка |
+| Подсветка в Emacs | нет |
 | Сервер на закрытом вводе (проверка одной командой) | отвечает |
 | Сервер в живом редакторе | молчит |
 
@@ -79,54 +80,103 @@ Content-Length: 311
 
 ## VS Code
 
-Расширения в Marketplace нет. Клиент к готовому серверу — два файла в папке
-`~/.vscode/extensions/flang-lsp/`.
+Расширение лежит в дереве языка — `editors/vscode/`. В Marketplace его нет:
+собирается и ставится оно локально.
 
-`package.json`:
-
-```json
-{
-  "name": "flang-lsp",
-  "version": "0.1.0",
-  "engines": { "vscode": "^1.75.0" },
-  "activationEvents": ["onLanguage:flang"],
-  "main": "./extension.js",
-  "contributes": {
-    "languages": [
-      { "id": "flang", "extensions": [".flang", ".fp", ".фп"] }
-    ]
-  },
-  "dependencies": { "vscode-languageclient": "^9.0.0" }
-}
+```bash
+cd editors/vscode
+npm install
+npx vsce package
+code --install-extension flang-0.1.0.vsix
 ```
 
-`extension.js`:
+Оно даёт подсветку всех трёх расширений имени файла и запускает языковой
+сервер. Настроек три:
 
-```js
-const { LanguageClient, TransportKind } = require("vscode-languageclient/node")
+| Ключ | По умолчанию | Что делает |
+| --- | --- | --- |
+| `flang.server.command` | `flang-lsp` | чем запускать сервер |
+| `flang.server.args` | `["--stdio"]` | доводы запуска |
+| `flang.server.enabled` | `true` | выключите, если нужна только подсветка |
 
-let клиент
+Если языка нет в `PATH`, поставьте в `flang.server.command` полный путь до
+`flang-lsp`.
 
-exports.activate = () => {
-  клиент = new LanguageClient(
-    "flang",
-    "flang",
-    { command: "flang", args: ["lsp", "--stdio"], transport: TransportKind.stdio },
-    { documentSelector: [{ scheme: "file", language: "flang" }] },
-  )
-  клиент.start()
-}
+Подробнее — `editors/vscode/README.md`: как поставить прямо из дерева без
+сборки, как перепечатать подсветку и что понадобится, чтобы выложить
+расширение в Marketplace.
 
-exports.deactivate = () => клиент?.stop()
+Расширение при этом не обязательно. VS Code умеет запускать сторонний языковой
+сервер и без него — несколько строк настройки, они собраны в
+`editors/flang-lsp/README.md`.
+
+## Vim 8/9
+
+Подсветка и настройки буфера ставятся штатным механизмом пакетов. Плагин живёт
+в подкаталоге `editors/vim` дерева языка, а подкаталог этот механизм не умеет —
+поэтому на него кладётся ссылка:
+
+```bash
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+mkdir -p ~/.vim/pack/flang/start
+ln -s ~/.local/share/flang/editors/vim ~/.vim/pack/flang/start/flang
 ```
 
-Выполните `npm i` в этой папке и перезапустите VS Code. Если `flang` не в
-`PATH`, поставьте в `command` полный путь до него.
+В `~/.vimrc` нужны две строки. Без них Vim не прочитает ни подсветку, ни
+настройки типа файла, и файл откроется серым:
+
+```vim
+filetype plugin indent on
+syntax on
+```
+
+У vim-plug подкаталог задаётся ключом:
+`Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`.
+
+Проверить, что встало: откройте любой `.flang`, `.fp` или `.фп` и спросите
+редактор.
+
+```vim
+:set filetype?
+```
+
+Ответ `filetype=flang` значит, что расширение подхвачено. Текст при этом
+раскрашен по пяти видам — ключевое слово, имя в ёлочках, строка, число,
+комментарий, — и раскрашен одинаково на всех четырёх поверхностях записи.
+Отступ развёрнут в пробелы по два: в языке отступ значим, и смешение табуляций
+с пробелами меняло бы смысл программы, а не только вид. По `«` и `»` редактор
+ходит парой и подставляет закрывающую.
+
+Сервер: своего клиента протокола у Vim 8/9 нет, ставится сторонний
+[vim-lsp](https://github.com/prabirshrestha/vim-lsp). Регистрировать сервер в
+нём руками не нужно — плагин языка делает это сам:
+
+```vim
+Plug 'prabirshrestha/async.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
+```
+
+Клиент выбран один и по одному доводу: он написан на чистом VimScript, работает
+с Vim 8.0.1453 и внешних зависимостей у него нет вовсе. `coc.nvim` требует
+Node — а вся затея в том, чтобы редактору Node не понадобился; `yegappan/lsp`
+требует Vim 9.0 и тем отрезает весь Vim 8.
+
+Нет vim-lsp — не беда: подсветка работает и без сервера, а плагин молчит вместо
+того, чтобы делать вид, что подсказки будут. Не нашёлся сам сервер — Vim скажет
+об этом один раз за сеанс и перечислит, где искал.
 
 ## Neovim
 
-Подсветка ставится плагином из дерева языка — плагин живёт в подкаталоге
-`editors/vim`:
+Тот же плагин и тот же подкаталог, только каталог пакетов свой:
+
+```bash
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+mkdir -p ~/.config/nvim/pack/flang/start
+ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
+```
+
+Менеджером плагинов подкаталог задаётся ключом:
 
 ```lua
 {
@@ -139,49 +189,25 @@ exports.deactivate = () => клиент?.stop()
 }
 ```
 
-У vim-plug и packer подкаталог задаётся ключом: `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`
+У vim-plug и packer — `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`
 и `use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
 
-Сервер (Neovim 0.11 и новее):
+Настраивать сервер отдельно не нужно и не следует: плагин сам назначает тип
+файла всем трём расширениям и сам поднимает сервер через встроенный `vim.lsp`.
+Второй клиент на тот же буфер дал бы две одинаковые диагностики на каждую
+строку.
+
+Выключить сервер — одним из двух способов, в `init.lua` до загрузки плагина:
 
 ```lua
-vim.filetype.add({ extension = { flang = "flang", fl = "flang" } })
-
-vim.lsp.config.flang = {
-  cmd = { "flang", "lsp", "--stdio" },
-  filetypes = { "flang" },
-  root_markers = { "package.json", ".git" },
-}
-vim.lsp.enable("flang")
+vim.g.flang_ne_nastraivat = 1        -- не поднимать сервер вовсе
+require("flang").setup({ lsp = false })  -- то же, но тип файла назначить
 ```
 
-На Neovim 0.10 и старше — тот же сервер через `vim.lsp.start`:
-
-```lua
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "flang",
-  callback = function(событие)
-    vim.lsp.start({
-      name = "flang",
-      cmd = { "flang", "lsp", "--stdio" },
-      root_dir = vim.fs.dirname(vim.fs.find({ "package.json", ".git" }, { upward = true })[1])
-        or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(событие.buf), ":h"),
-    })
-  end,
-})
-```
+Оба касаются только сервера: подсветка и настройки буфера остаются, потому что
+их даёт не плагин, а тип файла.
 
 Дополнение — `<C-x><C-o>`, наведение — `K`, переход к объявлению — `gd`.
-
-Для Vim 8/9 своего клиента протокола нет, ставится сторонний
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp); плагин языка сам
-регистрирует в нём сервер:
-
-```vim
-Plug 'prabirshrestha/async.vim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
-```
 
 ## Emacs
 
@@ -212,7 +238,8 @@ Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
 flang check путь/к/файлу.flang
 ```
 
-В Vim и Neovim: `:setlocal makeprg=flang\ check\ %` и дальше `:make`. В VS Code —
+В Vim и Neovim: `:setlocal makeprg=flang\ check\ %` и дальше `:make` — замечания
+лягут в список ошибок, и по нему ходят `:cnext` и `:cprevious`. В VS Code —
 задача в `.vscode/tasks.json` с `"command": "flang check ${file}"`. Сообщения
 идут с кодом беды и местом — тем же текстом, что показал бы редактор.
 

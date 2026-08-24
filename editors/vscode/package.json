@@ -1,0 +1,95 @@
+{
+  "name": "flang",
+  "displayName": "flang",
+  "description": "Подсветка .flang, .fp и .фп и языковой сервер flang: диагностика, дополнение, подпись при наведении, переход к объявлению.",
+  "version": "0.1.0",
+  "publisher": "digitable-lol",
+  "license": "BSD-2-Clause",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "flang",
+    "lsp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitable-lol/flang.git",
+    "directory": "editors/vscode"
+  },
+  "homepage": "https://github.com/digitable-lol/flang/tree/main/editors/vscode",
+  "bugs": {
+    "url": "https://github.com/digitable-lol/flang/issues"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:flang"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "flang",
+        "aliases": [
+          "flang"
+        ],
+        "extensions": [
+          ".flang",
+          ".fp",
+          ".фп"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "flang",
+        "scopeName": "source.flang",
+        "path": "./syntaxes/flang.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "flang",
+      "properties": {
+        "flang.server.command": {
+          "type": "string",
+          "default": "flang-lsp",
+          "description": "Чем запускать языковой сервер. По умолчанию — «flang-lsp» из PATH: он ставится вместе с пакетом языка. Если языка в PATH нет, поставьте сюда полный путь."
+        },
+        "flang.server.args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "--stdio"
+          ],
+          "description": "Доводы запуска сервера. Протокол идёт по стандартному вводу и выводу, поэтому «--stdio» нужен всегда."
+        },
+        "flang.server.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Запускать ли языковой сервер. Выключите, если нужна только подсветка: она работает и без сервера."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[flang]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.detectIndentation": false
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.9.2"
+  },
+  "scripts": {
+    "package": "vsce package --allow-missing-repository"
+  }
+}

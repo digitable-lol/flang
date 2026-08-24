@@ -1,26 +1,161 @@
-# Agent guidance
+# Как здесь работать
 
-This repository holds one language: **flang** (`.flang`, implementation in
-`flang/src/`). Read the "What kind of language this is" section of `README.md`
-before changing it.
+Этот файл читают исполнители — люди и программы. Он не пересказывает README, а
+говорит то, чего из кода не видно: порядок работы, цену ошибок и правила, за
+нарушение которых дерево ломается молча.
 
-The parser also reads an older surface — `категория`/`объект`/`утилита` — into
-legacy nodes, and a corpus of fifty-three `.fts` models lives as fixtures under
-`flang/test/fixtures/fts/`. Those fixtures are the only workload that exercises
-`flang/core/*.flang`, the largest programs in the tree. The language does not
-accept `.fts` as input: it refuses with `FLANG_FTS_REMOVED`.
+Переписан 24 августа 2026 по факту. Прежняя редакция называла восемь путей, и
+**четырёх из них не существует**: `flang/bin/flang.mjs`, `flang/src/compat.mjs`,
+`flang/test/fts-oracle.mjs`, `flang/test/changelog.test.mjs`. Она описывала
+реализацию на JavaScript, снятую коммитом `fe8e8a37`. Если вы читали её —
+забудьте: в `flang/src/` остался один каталог `emit/`.
 
-**Do not write the older project's name into prose meant for a reader.** README,
-the man page, the guide, the site and the course are about the language, not
-about where it came from. Keeping a path or a file name that really exists is
-fine; telling the history is not.
+## Что это за дерево
 
-- Treat canonical JSON and diagnostic codes as compatibility surfaces.
-- Keep flang semantics in `flang/src/`; `flang/bin/flang.mjs` is an adapter. Interpreter, emitters and `compat.mjs` must agree — the tests compare them, so a divergence is a failure, not a note.
-- `flang/core/*.flang` is checked against a frozen table of answers (`flang/test/fts-oracle.mjs`). That check is a golden comparison, not a differential one; a missing entry is a failure, never a skip. How to re-record the table is written in that file's header.
-- Keep the language deterministic and free of runtime dependencies, filesystem access, and network access.
-- Add parser, validation, and pipeline tests for language changes.
-- Author only `.flang` source; JSON is the sole interchange form.
-- Never hand-edit `CHANGELOG.md` or `changelog.json`: both are printed from tags and commit subjects by `./ярлык changelog`, and `flang/test/changelog.test.mjs` compares the files with the history. Write the commit subject as a statement of what is now true — that subject *is* the changelog entry. Reprint the journal in the same commit that tags a release.
-- Keep project jargon out of reader-facing text. Inside the project — `docs/zettel/`, code comments, agent briefs — words like *эталон*, *сторож*, *корпус*, *witness*, *ledger* are fine and must be left alone. On the site pages, README, `man flang`, the course and the compiler's own help and diagnostics they are not: if a word needs the reader to know our internals, either explain it in one sentence at first use or drop it. Checked by `node scripts/jargon-guard.mjs`; the word list and the list of guarded files live in `docs/jargon.json`, not in the script.
-- Run `npm test` before completing changes — zero failures. A test skipped for a missing native toolchain is not a passing test.
+Компилятор flang **написан на flang** — 110 849 строк в `flang/self/**`. Он
+печатает сам себя и ещё в восемь целевых языков. Второй реализации языка нет.
+
+```
+bootstrap/          семя: компилятор, напечатанный в C99 и закоммиченный
+flang/self/         сам компилятор, на flang
+flang/stdlib/       библиотека, на flang
+flang/conc/         процессы, надзор, планировщик, провод между узлами
+flang/src/emit/     рантаймы целей — уезжают в вывод ДОСЛОВНО
+tasks/              задачник: одна задача — один файл
+docs/zettel/        база знаний: что выяснено и чем подтверждено
+```
+
+## Сборка — минута, перепечатка — часы. Это разные вещи
+
+```sh
+make -C bootstrap -j8       # 91 секунда, 1.7 ГиБ — собрать компилятор из семени
+```
+
+Собирается на слабом ноутбуке. Нужны только `sh`, `make`, `cc`.
+
+**Перепечатка семени** (`sh scripts/raskrutka.sh`) — другая операция: нынешний
+двоичный печатает нынешние исходники заново. Замер 24 августа: **5 ч 30 мин, пик
+259 ГБ**. Так и только так правки в `flang/self/**` доезжают до двоичного.
+
+**Правка в `flang/self/**` без перепечатки в собранном компиляторе не появится.**
+Говорите об этом в теле коммита прямым текстом.
+
+## Три правила, за которые платят дороже всего
+
+### 1. Машинный вывод руками не правят
+
+`bootstrap/**` и `scripts/otpechatok-semeni` печатаются перепечаткой. Приёмная
+отвергает коммит, который их трогает, и это не придирка: git сливает их без
+единого знака конфликта и разъезжает ствол молча.
+
+### 2. Ввести слово и применить его — РАЗНЫЕ изменения
+
+Порядок трёхшаговый:
+
+1. **ввести** имя в компилятор, НЕ применяя его в позициях типа;
+2. **перепечатать** семя — теперь оно знает слово;
+3. **применить**.
+
+Шаги 1 и 3 в одном изменении ломают дерево. 24 августа так ввели
+`неотрицательное`, и ствол перестал читаться **любым** существующим двоичным:
+семя о слове не знает, а узнать может только перепечаткой, которая читает эти же
+исходники. Полдня ушло на откат в 52 файлах. Разбор — задача 0034.
+
+### 3. Число в отчёте — только снятое прогоном
+
+Не «стало быстрее», а «83.30 с → 76.53 с, вывод совпал знак в знак». Не «почти
+всё доказано», а «утверждений 41: доказано 26, сетка 15».
+
+**Отрицательный результат полноценный и его надо писать.** За сутки трижды
+выяснялось, что верная на вид догадка неверна, и каждый раз это ловил замер, а
+не рассуждение.
+
+## Ложное обещание опаснее отсутствующего
+
+Недоказанное `обеспечивает` **едет в напечатанный код проверкой при работе**.
+
+24 августа обещание `«беды не убывают»` у `«Только диагностики»` было ложным:
+функция выбрасывает отметки, значит результат бывает короче входа. Ядро
+отказалось его доказывать — и было право. Проверка уехала в код и уронила
+свежесобранный компилятор **на первом же файле**.
+
+Отсюда два следствия:
+
+* писать обещание, не проверив его на бумаге, — заводить мину;
+* доказанное обещание **дешевле** необъявленного: последняя перепечатка сняла
+  **181 проверку при работе**.
+
+## Память машины: пары ставятся вместе
+
+Машина общая. Прогоны — через ворота:
+
+```sh
+PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- <команда>
+```
+
+```
+модуль библиотеки     PAMYAT=45G
+файл компилятора      PAMYAT=60…80G
+ядро proof-kernel     PAMYAT=150G   — один прогон на всю машину
+```
+
+**От себя не больше двух прогонов разом.** В ночь на 24 августа машина встала на
+шесть часов: двенадцать прогонов по 150 ГиБ загнали друг друга в подкачку.
+Вешает не размер одного, а сумма.
+
+Ворота считают места сами, от доступной памяти. Смотреть `--schet`.
+
+## Как сдавать
+
+Ветку — в приёмную, и на этом всё. Сливает свод сам.
+
+```sh
+git config user.name the-homeless-god && git config user.email zimtir@mail.ru
+git push /srv/flang-priyom.git HEAD:refs/heads/<ваша-ветка>
+```
+
+Заголовок — **утверждение о том, что теперь правда**, с типом впереди:
+`тип(область): что теперь правда`. Типы: `feat fix perf proof docs test refactor
+chore build ci`. Заголовок уезжает в журнал изменений дословно.
+
+`Co-Authored-By` не добавлять. Устройство приёмной — `/srv/PRIYOM.md`, порядок
+сдачи — навык `flang-sdat-rabotu`.
+
+**Заводить своё дерево.** Трое исполнителей за ночь свалились в один каталог:
+один прервал чужое перебазирование, коммит второго попал под push третьего.
+
+**Объявлять доли** до начала работы: `/srv/priyom/claim взять <ветка> <файл>...`.
+
+## Задачник
+
+Одна задача — один файл в `tasks/`, статус меняется коммитом. Взять задачу —
+вписать себя в шапку ОТДЕЛЬНЫМ коммитом до начала. Правила — `tasks/README.md`.
+
+```sh
+bootstrap/flang io flang/scripts/tasks.flang --plan 'Доска'
+bootstrap/flang io flang/scripts/tasks.flang --plan 'Задачник цел'
+```
+
+## Слова
+
+**Жаргон — внутрь, не наружу.** В `docs/zettel/`, комментариях и заданиях слова
+вроде `эталон`, `сторож`, `корпус` уместны. На страницах сайта, в README, в
+`man flang`, в справке и отказах компилятора — нет. Сторожит
+`node scripts/jargon-guard.mjs`; список слов — в `docs/jargon.json`.
+
+**Имена новых файлов — английские**, не транслит: репозиторий публичный, а
+транслит не читается ни русским, ни иностранцем. Накопленный транслит по своей
+воле не переименовывать — ломает указатель заметок и сборку сайта.
+
+**Цели ярлыка** называются кириллицей — решение владельца, задача 0030.
+
+## Что проверять перед сдачей
+
+```sh
+./ярлык                      список целей
+./ярлык тесты                прогон примеров
+flang check <файл> --proof   ведомость: чем несётся каждое обещание
+```
+
+Проверка — **запуск настоящего пути на настоящих данных**: команда, её вывод,
+код возврата. Не «в целом зелено», а поимённо, с числами.

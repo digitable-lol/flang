@@ -513,7 +513,8 @@ final class HozyainUzla {
         Process process = plan.get(nomer);
         String gde = tekstPolya(razmeschenie, process.imya, "");
         boolean svoy = gde.equals(imya);
-        processy[nomer] = UzelZamera.fn_process_uzla(ctx, Value.text(process.imya), Value.flag(svoy),
+        processy[nomer] = UzelZamera.fn_process_uzla(ctx, Value.text(process.imya),
+            Value.text(process.obrabotchik), Value.flag(svoy),
             Value.text(svoy ? "" : gde), Value.flag(true), Value.text(""),
             Value.number(process.yaschik), Value.number(0), Value.emptyList());
         if (svoy) {

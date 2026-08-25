@@ -382,6 +382,7 @@ public static class HozyainUzla
                 u,
                 "Процесс узла",
                 Value.Text(p.Imya),
+                Value.Text(p.Obrabotchik),
                 Value.Flag(svoy),
                 Value.Text(svoy ? "" : gde),
                 Value.Flag(true),

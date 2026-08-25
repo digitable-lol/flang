@@ -1,10 +1,7 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 // Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs). Не редактировать руками.
 // Модуль flang: «Планировщик узла».
 // Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
 // Модуль самодостаточен — ни одной зависимости, работает и в Node, и в браузере.
-// Рядом напечатан прогонщик: node flang_cli.js ./<этот файл> — JSON на входе, JSON на выходе.
 
 /* ── рантайм: то и только то, что нужно этому модулю ──
    Представление значений повторяет интерпретатор flang дословно: список —
@@ -373,6 +370,116 @@ function $b_pripisat(item, value) {
   return [item, ...cells]
 }
 
+/** Запись FTS «Просьба о замене». */
+/** @typedef {{ "кого": string, "вид": string, "предел витков": number }} ProsbaOZamene */
+
+/**
+ * Фабрика записи «Просьба о замене».
+ *
+ * Запись flang тотальна: у неё есть все объявленные поля. Отсутствующее
+ * поле — это «ничто» (null), а не дырка в объекте, иначе доступ к полю дал
+ * бы FLANG_UNKNOWN_NAME там, где интерпретатор возвращает значение.
+ *
+ * @param {Partial<ProsbaOZamene>} [fields]
+ * @returns {ProsbaOZamene}
+ */
+export function sozdatProsbaOZamene(fields = {}) {
+  return {
+    "кого": fields["кого"] ?? null,
+    "вид": fields["вид"] ?? null,
+    "предел витков": fields["предел витков"] ?? null,
+  }
+}
+
+/** Запись FTS «Место замены». */
+/** @typedef {{ "есть процесс": *, "свой": *, "жив": *, "бежит": *, "на середине": *, "вид сейчас": string }} MestoZameny */
+
+/**
+ * Фабрика записи «Место замены».
+ *
+ * Запись flang тотальна: у неё есть все объявленные поля. Отсутствующее
+ * поле — это «ничто» (null), а не дырка в объекте, иначе доступ к полю дал
+ * бы FLANG_UNKNOWN_NAME там, где интерпретатор возвращает значение.
+ *
+ * @param {Partial<MestoZameny>} [fields]
+ * @returns {MestoZameny}
+ */
+export function sozdatMestoZameny(fields = {}) {
+  return {
+    "есть процесс": fields["есть процесс"] ?? null,
+    "свой": fields["свой"] ?? null,
+    "жив": fields["жив"] ?? null,
+    "бежит": fields["бежит"] ?? null,
+    "на середине": fields["на середине"] ?? null,
+    "вид сейчас": fields["вид сейчас"] ?? null,
+  }
+}
+
+/** Запись FTS «Ответы о кандидате». */
+/** @typedef {{ "разобран": *, "типы сошлись": *, "тотален": *, "оценка постоянна": *, "оценка": number, "перенос объявлен": *, "перенос тотален": * }} OtvetyOKandidate */
+
+/**
+ * Фабрика записи «Ответы о кандидате».
+ *
+ * Запись flang тотальна: у неё есть все объявленные поля. Отсутствующее
+ * поле — это «ничто» (null), а не дырка в объекте, иначе доступ к полю дал
+ * бы FLANG_UNKNOWN_NAME там, где интерпретатор возвращает значение.
+ *
+ * @param {Partial<OtvetyOKandidate>} [fields]
+ * @returns {OtvetyOKandidate}
+ */
+export function sozdatOtvetyOKandidate(fields = {}) {
+  return {
+    "разобран": fields["разобран"] ?? null,
+    "типы сошлись": fields["типы сошлись"] ?? null,
+    "тотален": fields["тотален"] ?? null,
+    "оценка постоянна": fields["оценка постоянна"] ?? null,
+    "оценка": fields["оценка"] ?? null,
+    "перенос объявлен": fields["перенос объявлен"] ?? null,
+    "перенос тотален": fields["перенос тотален"] ?? null,
+  }
+}
+
+/** Запись FTS «Приговор узла». */
+/** @typedef {{ "сообщение": string }} PrigovorUzla */
+
+/**
+ * Фабрика записи «Приговор узла».
+ *
+ * Запись flang тотальна: у неё есть все объявленные поля. Отсутствующее
+ * поле — это «ничто» (null), а не дырка в объекте, иначе доступ к полю дал
+ * бы FLANG_UNKNOWN_NAME там, где интерпретатор возвращает значение.
+ *
+ * @param {Partial<PrigovorUzla>} [fields]
+ * @returns {PrigovorUzla}
+ */
+export function sozdatPrigovorUzla(fields = {}) {
+  return {
+    "сообщение": fields["сообщение"] ?? null,
+  }
+}
+
+/** Запись FTS «Ход замены». */
+/** @typedef {{ "исход": IshodZamenyNaUzle, "приговор": PrigovorUzla, "веления": Array<VelenieOZamene> }} HodZameny */
+
+/**
+ * Фабрика записи «Ход замены».
+ *
+ * Запись flang тотальна: у неё есть все объявленные поля. Отсутствующее
+ * поле — это «ничто» (null), а не дырка в объекте, иначе доступ к полю дал
+ * бы FLANG_UNKNOWN_NAME там, где интерпретатор возвращает значение.
+ *
+ * @param {Partial<HodZameny>} [fields]
+ * @returns {HodZameny}
+ */
+export function sozdatHodZameny(fields = {}) {
+  return {
+    "исход": fields["исход"] ?? null,
+    "приговор": fields["приговор"] ?? null,
+    "веления": fields["веления"] ?? null,
+  }
+}
+
 /** Запись FTS «Письмо». */
 /** @typedef {{ "билет": number, "начатое": * }} Pismo */
 
@@ -394,7 +501,7 @@ export function sozdatPismo(fields = {}) {
 }
 
 /** Запись FTS «Процесс». */
-/** @typedef {{ "имя": string, "свой": *, "на каком": string, "жив": *, "причина": string, "потолок": number, "в лёте": number, "ящик": Array<Pismo> }} Process */
+/** @typedef {{ "имя": string, "вид": string, "свой": *, "на каком": string, "жив": *, "причина": string, "потолок": number, "в лёте": number, "ящик": Array<Pismo> }} Process */
 
 /**
  * Фабрика записи «Процесс».
@@ -409,6 +516,7 @@ export function sozdatPismo(fields = {}) {
 export function sozdatProcess(fields = {}) {
   return {
     "имя": fields["имя"] ?? null,
+    "вид": fields["вид"] ?? null,
     "свой": fields["свой"] ?? null,
     "на каком": fields["на каком"] ?? null,
     "жив": fields["жив"] ?? null,
@@ -463,7 +571,91 @@ export function sozdatHodUzla(fields = {}) {
   }
 }
 
-/** Сумма типов FTS «Что случилось с узлом»: «Письмо снаружи» | «Обработчик вернул» | «Обработчик отказал» | «Таймер сработал» | «Связь готова» | «Связь потеряна» | «Узел пропал» | «Пора бежать». */
+/** Сумма типов FTS «Исход замены на узле»: «Замена узла принята» | «Замена узла отвергнута». */
+/** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
+/** @typedef {$FlangVariant} IshodZamenyNaUzle */
+
+/**
+ * Конструктор варианта «Замена узла принята» суммы «Исход замены на узле».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @returns {$FlangVariant}
+ */
+export function ZamenaUzlaPrinyata(fields = {}) {
+  return new $FlangVariant("Замена узла принята", fields)
+}
+
+/**
+ * Конструктор варианта «Замена узла отвергнута» суммы «Исход замены на узле».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @returns {$FlangVariant}
+ */
+export function ZamenaUzlaOtvergnuta(fields = {}) {
+  return new $FlangVariant("Замена узла отвергнута", fields)
+}
+
+/** Сумма типов FTS «Веление о замене»: «Перезагрузить обработчик» | «Перенести состояние» | «Записать замену» | «Отказать в замене». */
+/** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
+/** @typedef {$FlangVariant} VelenieOZamene */
+
+/**
+ * Конструктор варианта «Перезагрузить обработчик» суммы «Веление о замене».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "вид": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function PerezagruzitObrabotchik(fields = {}) {
+  return new $FlangVariant("Перезагрузить обработчик", fields)
+}
+
+/**
+ * Конструктор варианта «Перенести состояние» суммы «Веление о замене».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "из вида": string, "в вид": string, "предел витков": number }} fields
+ * @returns {$FlangVariant}
+ */
+export function PerenestiSostoyanie(fields = {}) {
+  return new $FlangVariant("Перенести состояние", fields)
+}
+
+/**
+ * Конструктор варианта «Записать замену» суммы «Веление о замене».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "вид": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function ZapisatZamenu(fields = {}) {
+  return new $FlangVariant("Записать замену", fields)
+}
+
+/**
+ * Конструктор варианта «Отказать в замене» суммы «Веление о замене».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "почему": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function OtkazatVZamene(fields = {}) {
+  return new $FlangVariant("Отказать в замене", fields)
+}
+
+/** Сумма типов FTS «Что случилось с узлом»: «Письмо снаружи» | «Обработчик вернул» | «Обработчик отказал» | «Таймер сработал» | «Связь готова» | «Связь потеряна» | «Узел пропал» | «Пора бежать» | «Просят заменить». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} ChtoSluchilosSUzlom */
 
@@ -571,6 +763,19 @@ export function PoraBezhat(fields = {}) {
   return new $FlangVariant("Пора бежать", fields)
 }
 
+/**
+ * Конструктор варианта «Просят заменить» суммы «Что случилось с узлом».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "просьба": ProsbaOZamene, "ответы": OtvetyOKandidate }} fields
+ * @returns {$FlangVariant}
+ */
+export function ProsyatZamenit(fields = {}) {
+  return new $FlangVariant("Просят заменить", fields)
+}
+
 /** Сумма типов FTS «Действие узла»: «Велено слать» | «Велено слать позже» | «Велено отложить» | «Велено продолжить» | «Велено остановить». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} DeystvieUzla */
@@ -638,7 +843,7 @@ export function VelenoOstanovit(fields = {}) {
   return new $FlangVariant("Велено остановить", fields)
 }
 
-/** Сумма типов FTS «Веление узлу»: «Позвать обработчик» | «Послать по проводу» | «Поставить таймер» | «Записать в журнал» | «Уронить процесс» | «Письмо пропало». */
+/** Сумма типов FTS «Веление узлу»: «Позвать обработчик» | «Послать по проводу» | «Поставить таймер» | «Записать в журнал» | «Уронить процесс» | «Письмо пропало» | «Сменить обработчик» | «Перенести состояние процесса». */
 /** Дискриминант — поле «variant»; поля варианта лежат в «fields». */
 /** @typedef {$FlangVariant} VelenieUzlu */
 
@@ -718,6 +923,32 @@ export function UronitProcess(fields = {}) {
  */
 export function PismoPropalo(fields = {}) {
   return new $FlangVariant("Письмо пропало", fields)
+}
+
+/**
+ * Конструктор варианта «Сменить обработчик» суммы «Веление узлу».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "вид": string }} fields
+ * @returns {$FlangVariant}
+ */
+export function SmenitObrabotchik(fields = {}) {
+  return new $FlangVariant("Сменить обработчик", fields)
+}
+
+/**
+ * Конструктор варианта «Перенести состояние процесса» суммы «Веление узлу».
+ *
+ * Поля не копируются, а берутся как есть: интерпретатор строит объект полей
+ * в порядке узла AST, и порядок ключей виден в диагностиках разбора.
+ *
+ * @param {{ "кто": string, "из вида": string, "в вид": string, "предел витков": number }} fields
+ * @returns {$FlangVariant}
+ */
+export function PerenestiSostoyanieProcessa(fields = {}) {
+  return new $FlangVariant("Перенести состояние процесса", fields)
 }
 
 /** Сумма типов FTS «Может быть процесс»: «Есть процесс» | «Нет процесса». */
@@ -819,6 +1050,503 @@ export function NetPisma(fields = {}) {
 }
 
 /**
+ * Функция flang «Место заново».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {*} estProcess — «есть процесс»
+ * @param {*} svoy — «свой»
+ * @param {*} zhiv — «жив»
+ * @param {*} bezhit — «бежит»
+ * @param {*} naSeredine — «на середине»
+ * @param {string} vidSeychas — «вид сейчас»
+ * @returns {MestoZameny}
+ */
+export function mestoZanovo(estProcess, svoy, zhiv, bezhit, naSeredine, vidSeychas) {
+  const $t1 = { "есть процесс": estProcess, "свой": svoy, "жив": zhiv, "бежит": bezhit, "на середине": naSeredine, "вид сейчас": vidSeychas }
+  let $t2
+  if ($cond($equal($field($t1, "жив"), zhiv))) {
+    $t2 = $equal($field($t1, "вид сейчас"), vidSeychas)
+  } else {
+    $t2 = false
+  }
+  // постусловие «место заново берёт живость и вид»
+  if (!$post($t2, "место заново берёт живость и вид", "Место заново")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «место заново берёт живость и вид» функции «Место заново»", { "line": 135, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Принято на узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @returns {PrigovorUzla}
+ */
+export function prinyatoNaUzle() {
+  const $t1 = { "сообщение": "" }
+  // постусловие «у принятого сообщения нет»
+  if (!$post($equal($field($t1, "сообщение"), ""), "у принятого сообщения нет", "Принято на узле")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «у принятого сообщения нет» функции «Принято на узле»", { "line": 148, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Отказ узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {string} soobschenie — «сообщение»
+ * @returns {PrigovorUzla}
+ */
+export function otkazUzla(soobschenie) {
+  const $t1 = { "сообщение": soobschenie }
+  // постусловие «отказ несёт своё сообщение»
+  if (!$post($equal($field($t1, "сообщение"), soobschenie), "отказ несёт своё сообщение", "Отказ узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отказ несёт своё сообщение» функции «Отказ узла»", { "line": 154, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Отказать если не».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {*} uslovie — «условие»
+ * @param {string} soobschenie — «сообщение»
+ * @returns {PrigovorUzla}
+ */
+export function otkazatEsliNe(uslovie, soobschenie) {
+  let $t1
+  if ($cond(uslovie)) {
+    $t1 = prinyatoNaUzle()
+  } else {
+    $t1 = otkazUzla(soobschenie)
+  }
+  let $t2
+  if ($cond(uslovie)) {
+    $t2 = $equal($t1, prinyatoNaUzle())
+  } else {
+    $t2 = true
+  }
+  // постусловие «выполненное условие отказа не даёт»
+  if (!$post($t2, "выполненное условие отказа не даёт", "Отказать если не")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «выполненное условие отказа не даёт» функции «Отказать если не»", { "line": 163, "column": 3 })
+  }
+  let $t3
+  if ($cond(uslovie)) {
+    $t3 = false
+  } else {
+    $t3 = true
+  }
+  let $t4
+  if ($cond($t3)) {
+    $t4 = $equal($t1, otkazUzla(soobschenie))
+  } else {
+    $t4 = true
+  }
+  // постусловие «невыполненное условие даёт названный отказ»
+  if (!$post($t4, "невыполненное условие даёт названный отказ", "Отказать если не")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «невыполненное условие даёт названный отказ» функции «Отказать если не»", { "line": 164, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Первый отказ узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Array<PrigovorUzla>} prigovory — «приговоры»
+ * @returns {PrigovorUzla}
+ */
+export function pervyyOtkazUzla(prigovory) {
+  const $t1 = $requireList(prigovory, "свёртка")
+  let itog = prinyatoNaUzle()
+  for (const eto of $t1) {
+    let $t2
+    if ($cond($equal($field(itog, "сообщение"), ""))) {
+      $t2 = false
+    } else {
+      $t2 = true
+    }
+    let $t3
+    if ($cond($t2)) {
+      $t3 = itog
+    } else {
+      $t3 = eto
+    }
+    itog = $t3
+  }
+  let $t4
+  if ($cond($b_pusto(prigovory))) {
+    $t4 = $equal(itog, prinyatoNaUzle())
+  } else {
+    $t4 = true
+  }
+  // постусловие «без приговоров всё принято»
+  if (!$post($t4, "без приговоров всё принято", "Первый отказ узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без приговоров всё принято» функции «Первый отказ узла»", { "line": 174, "column": 3 })
+  }
+  return itog
+}
+
+/**
+ * Функция flang «Вид меняется».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @returns {*}
+ */
+export function vidMenyaetsya(mesto, prosba) {
+  let $t1
+  if ($cond($equal($field(mesto, "вид сейчас"), $field(prosba, "вид")))) {
+    $t1 = false
+  } else {
+    $t1 = true
+  }
+  let $t2
+  if ($cond($equal($field(mesto, "вид сейчас"), $field(prosba, "вид")))) {
+    $t2 = $equal($t1, false)
+  } else {
+    $t2 = true
+  }
+  // постусловие «тот же вид видом не меняется»
+  if (!$post($t2, "тот же вид видом не меняется", "Вид меняется")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «тот же вид видом не меняется» функции «Вид меняется»", { "line": 185, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Приговор о месте».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @returns {PrigovorUzla}
+ */
+export function prigovorOMeste(mesto, prosba) {
+  const $t4 = otkazatEsliNe($field(mesto, "есть процесс"), "такого процесса на узле нет")
+  const $t5 = otkazatEsliNe($field(mesto, "свой"), "процесс живёт на другом узле — заменять его обработчик не здесь")
+  const $t6 = otkazatEsliNe($field(mesto, "жив"), "процесс не жив — заменять нечего")
+  let $t1
+  if ($cond($field(mesto, "бежит"))) {
+    $t1 = false
+  } else {
+    $t1 = true
+  }
+  const $t7 = otkazatEsliNe($t1, "замена посреди пробега: обработчик сейчас зван")
+  let $t2
+  if ($cond($field(mesto, "на середине"))) {
+    $t2 = false
+  } else {
+    $t2 = true
+  }
+  const $t8 = otkazatEsliNe($t2, "замена посреди сообщения: в ящике лежит начатое письмо")
+  let $t3
+  if ($cond($equal($field(prosba, "вид"), ""))) {
+    $t3 = false
+  } else {
+    $t3 = true
+  }
+  return pervyyOtkazUzla([$t4, $t5, $t6, $t7, $t8, otkazatEsliNe($t3, "вид нового обработчика не назван")])
+}
+
+/**
+ * Функция flang «Приговор о кандидате».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {OtvetyOKandidate} otvety — «ответы»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {MestoZameny} mesto — «место»
+ * @returns {PrigovorUzla}
+ */
+export function prigovorOKandidate(otvety, prosba, mesto) {
+  const $t6 = otkazatEsliNe($field(otvety, "разобран"), "новый обработчик не разобрался")
+  const $t7 = otkazatEsliNe($field(otvety, "типы сошлись"), "типы нового обработчика не сошлись")
+  const $t8 = otkazatEsliNe($field(otvety, "тотален"), "у нового обработчика нет доказанного завершения")
+  let $t1
+  if ($cond($equal($field(prosba, "предел витков"), 0))) {
+    $t1 = false
+  } else {
+    $t1 = true
+  }
+  const $t9 = otkazatEsliNe($t1, "граница витков не названа")
+  const $t10 = otkazatEsliNe($field(otvety, "оценка постоянна"), "оценка витков растёт с размером сообщения — границей это не считается")
+  const $t11 = otkazatEsliNe($lte($field(otvety, "оценка"), $field(prosba, "предел витков")), "оценка витков нового обработчика больше названной границы")
+  let $t2
+  if ($cond(vidMenyaetsya(mesto, prosba))) {
+    $t2 = false
+  } else {
+    $t2 = true
+  }
+  let $t3
+  if ($cond($t2)) {
+    $t3 = true
+  } else {
+    $t3 = $field(otvety, "перенос объявлен")
+  }
+  const $t12 = otkazatEsliNe($t3, "вид меняется, а функции переноса состояния нет")
+  let $t4
+  if ($cond(vidMenyaetsya(mesto, prosba))) {
+    $t4 = false
+  } else {
+    $t4 = true
+  }
+  let $t5
+  if ($cond($t4)) {
+    $t5 = true
+  } else {
+    $t5 = $field(otvety, "перенос тотален")
+  }
+  return pervyyOtkazUzla([$t6, $t7, $t8, $t9, $t10, $t11, $t12, otkazatEsliNe($t5, "у функции переноса состояния нет доказанного завершения")])
+}
+
+/**
+ * Функция flang «Приговор замены узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {OtvetyOKandidate} otvety — «ответы»
+ * @returns {PrigovorUzla}
+ */
+export function prigovorZamenyUzla(mesto, prosba, otvety) {
+  return pervyyOtkazUzla([prigovorOMeste(mesto, prosba), prigovorOKandidate(otvety, prosba, mesto)])
+}
+
+/**
+ * Функция flang «Исход приговора узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {PrigovorUzla} prigovor — «приговор»
+ * @returns {IshodZamenyNaUzle}
+ */
+export function ishodPrigovoraUzla(prigovor) {
+  let $t1
+  if ($cond($equal($field(prigovor, "сообщение"), ""))) {
+    $t1 = ZamenaUzlaPrinyata({})
+  } else {
+    $t1 = ZamenaUzlaOtvergnuta({})
+  }
+  let $t2
+  if ($cond($equal($field(prigovor, "сообщение"), ""))) {
+    $t2 = $equal($t1, ZamenaUzlaPrinyata({}))
+  } else {
+    $t2 = true
+  }
+  // постусловие «пустое сообщение — замена принята»
+  if (!$post($t2, "пустое сообщение — замена принята", "Исход приговора узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «пустое сообщение — замена принята» функции «Исход приговора узла»", { "line": 233, "column": 3 })
+  }
+  let $t3
+  if ($cond($equal($field(prigovor, "сообщение"), ""))) {
+    $t3 = false
+  } else {
+    $t3 = true
+  }
+  let $t4
+  if ($cond($t3)) {
+    $t4 = $equal($t1, ZamenaUzlaOtvergnuta({}))
+  } else {
+    $t4 = true
+  }
+  // постусловие «сказано вслух — замена отвергнута»
+  if (!$post($t4, "сказано вслух — замена отвергнута", "Исход приговора узла")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «сказано вслух — замена отвергнута» функции «Исход приговора узла»", { "line": 234, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Принята ли на узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {IshodZamenyNaUzle} ishod — «исход»
+ * @returns {*}
+ */
+export function prinyataLiNaUzle(ishod) {
+  let $t1
+  if ($isVariant(ishod) && ishod.variant === "Замена узла принята") {
+    $t1 = true
+  } else if ($isVariant(ishod) && ishod.variant === "Замена узла отвергнута") {
+    $t1 = false
+  } else {
+    $matchFail(ishod)
+  }
+  let $t2
+  if ($cond($equal(ishod, ZamenaUzlaPrinyata({})))) {
+    $t2 = false
+  } else {
+    $t2 = true
+  }
+  let $t3
+  if ($cond($t2)) {
+    $t3 = true
+  } else {
+    $t3 = $t1
+  }
+  // постусловие «принятая замена отвечает да»
+  if (!$post($t3, "принятая замена отвечает да", "Принята ли на узле")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «принятая замена отвечает да» функции «Принята ли на узле»", { "line": 242, "column": 3 })
+  }
+  let $t4
+  if ($cond($t1)) {
+    $t4 = false
+  } else {
+    $t4 = true
+  }
+  let $t5
+  if ($cond($t4)) {
+    $t5 = true
+  } else {
+    $t5 = $equal(ishod, ZamenaUzlaPrinyata({}))
+  }
+  // постусловие «да только про принятую замену»
+  if (!$post($t5, "да только про принятую замену", "Принята ли на узле")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «да только про принятую замену» функции «Принята ли на узле»", { "line": 243, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Веления принятой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @returns {Array<VelenieOZamene>}
+ */
+export function veleniyaPrinyatoy(mesto, prosba) {
+  let $t1
+  if ($cond(vidMenyaetsya(mesto, prosba))) {
+    $t1 = [PerezagruzitObrabotchik({ "кто": $field(prosba, "кого"), "вид": $field(prosba, "вид") }), PerenestiSostoyanie({ "кто": $field(prosba, "кого"), "из вида": $field(mesto, "вид сейчас"), "в вид": $field(prosba, "вид"), "предел витков": $field(prosba, "предел витков") }), ZapisatZamenu({ "кто": $field(prosba, "кого"), "вид": $field(prosba, "вид") })]
+  } else {
+    $t1 = [PerezagruzitObrabotchik({ "кто": $field(prosba, "кого"), "вид": $field(prosba, "вид") }), ZapisatZamenu({ "кто": $field(prosba, "кого"), "вид": $field(prosba, "вид") })]
+  }
+  let $t2
+  if ($cond(vidMenyaetsya(mesto, prosba))) {
+    $t2 = $equal($b_dlina($t1), 3)
+  } else {
+    $t2 = true
+  }
+  // постусловие «при смене вида велений три»
+  if (!$post($t2, "при смене вида велений три", "Веления принятой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «при смене вида велений три» функции «Веления принятой»", { "line": 295, "column": 3 })
+  }
+  let $t3
+  if ($cond(vidMenyaetsya(mesto, prosba))) {
+    $t3 = false
+  } else {
+    $t3 = true
+  }
+  let $t4
+  if ($cond($t3)) {
+    $t4 = $equal($b_dlina($t1), 2)
+  } else {
+    $t4 = true
+  }
+  // постусловие «без смены вида велений два»
+  if (!$post($t4, "без смены вида велений два", "Веления принятой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без смены вида велений два» функции «Веления принятой»", { "line": 296, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Веления отвергнутой».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {PrigovorUzla} prigovor — «приговор»
+ * @returns {Array<VelenieOZamene>}
+ */
+export function veleniyaOtvergnutoy(prosba, prigovor) {
+  const $t1 = [OtkazatVZamene({ "кто": $field(prosba, "кого"), "почему": $field(prigovor, "сообщение") })]
+  // постусловие «отказ уходит одним велением»
+  if (!$post($equal($b_dlina($t1), 1), "отказ уходит одним велением", "Веления отвергнутой")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отказ уходит одним велением» функции «Веления отвергнутой»", { "line": 304, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Веления хода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {IshodZamenyNaUzle} ishod — «исход»
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {PrigovorUzla} prigovor — «приговор»
+ * @returns {Array<VelenieOZamene>}
+ */
+export function veleniyaHoda(ishod, mesto, prosba, prigovor) {
+  let $t1
+  if ($isVariant(ishod) && ishod.variant === "Замена узла принята") {
+    $t1 = veleniyaPrinyatoy(mesto, prosba)
+  } else if ($isVariant(ishod) && ishod.variant === "Замена узла отвергнута") {
+    $t1 = veleniyaOtvergnutoy(prosba, prigovor)
+  } else {
+    $matchFail(ishod)
+  }
+  let $t2
+  if ($cond(prinyataLiNaUzle(ishod))) {
+    $t2 = false
+  } else {
+    $t2 = true
+  }
+  let $t3
+  if ($cond($t2)) {
+    $t3 = $equal($b_dlina($t1), 1)
+  } else {
+    $t3 = true
+  }
+  // постусловие «у отвергнутой веление одно»
+  if (!$post($t3, "у отвергнутой веление одно", "Веления хода")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «у отвергнутой веление одно» функции «Веления хода»", { "line": 313, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Шаг замены».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {MestoZameny} mesto — «место»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {OtvetyOKandidate} otvety — «ответы»
+ * @returns {HodZameny}
+ */
+export function shagZameny(mesto, prosba, otvety) {
+  const prigovor = prigovorZamenyUzla(mesto, prosba, otvety)
+  const $t1 = { "исход": ishodPrigovoraUzla(prigovor), "приговор": prigovor, "веления": veleniyaHoda(ishodPrigovoraUzla(prigovor), mesto, prosba, prigovor) }
+  // постусловие «исход хода — исход приговора»
+  if (!$post($equal($field($t1, "исход"), ishodPrigovoraUzla(prigovorZamenyUzla(mesto, prosba, otvety))), "исход хода — исход приговора", "Шаг замены")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «исход хода — исход приговора» функции «Шаг замены»", { "line": 323, "column": 3 })
+  }
+  // постусловие «приговор хода — приговор замены»
+  if (!$post($equal($field($t1, "приговор"), prigovorZamenyUzla(mesto, prosba, otvety)), "приговор хода — приговор замены", "Шаг замены")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «приговор хода — приговор замены» функции «Шаг замены»", { "line": 324, "column": 3 })
+  }
+  return $t1
+}
+
+/**
  * Функция flang «Первый процесс».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -845,7 +1573,7 @@ export function pervyyProcess(processy) {
   }
   // постусловие «у пустой таблицы процесса нет»
   if (!$post($t2, "у пустой таблицы процесса нет", "Первый процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «у пустой таблицы процесса нет» функции «Первый процесс»", { "line": 165, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «у пустой таблицы процесса нет» функции «Первый процесс»", { "line": 187, "column": 3 })
   }
   return $t1
 }
@@ -873,7 +1601,7 @@ export function naytiProcess(processy, imya) {
   }
   // постусловие «найденное есть первое из подходящих по имени»
   if (!$post($equal($t3, pervyyProcess($t5)), "найденное есть первое из подходящих по имени", "Найти процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «найденное есть первое из подходящих по имени» функции «Найти процесс»", { "line": 175, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «найденное есть первое из подходящих по имени» функции «Найти процесс»", { "line": 197, "column": 3 })
   }
   return $t3
 }
@@ -901,7 +1629,7 @@ export function zamenitProcess(processy, novyy) {
   }
   // постусловие «замена сохраняет длину таблицы»
   if (!$post($equal($b_dlina($t2), $b_dlina(processy)), "замена сохраняет длину таблицы", "Заменить процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «замена сохраняет длину таблицы» функции «Заменить процесс»", { "line": 184, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «замена сохраняет длину таблицы» функции «Заменить процесс»", { "line": 206, "column": 3 })
   }
   return $t2
 }
@@ -919,7 +1647,7 @@ export function sProcessom(uzel, novyy) {
   const $t1 = { "имя": $field(uzel, "имя"), "процессы": zamenitProcess($field(uzel, "процессы"), novyy), "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
   // постусловие «с процессом ставит пересобранную таблицу»
   if (!$post($equal($field($t1, "процессы"), zamenitProcess($field(uzel, "процессы"), novyy)), "с процессом ставит пересобранную таблицу", "С процессом")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «с процессом ставит пересобранную таблицу» функции «С процессом»", { "line": 190, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «с процессом ставит пересобранную таблицу» функции «С процессом»", { "line": 212, "column": 3 })
   }
   return $t1
 }
@@ -944,7 +1672,7 @@ export function uzelSHodom(uzel, ktoBezhit, chtoBezhit) {
   }
   // постусловие «узел с ходом помнит кто и что бежит»
   if (!$post($t2, "узел с ходом помнит кто и что бежит", "Узел с ходом")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «узел с ходом помнит кто и что бежит» функции «Узел с ходом»", { "line": 196, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел с ходом помнит кто и что бежит» функции «Узел с ходом»", { "line": 218, "column": 3 })
   }
   return $t1
 }
@@ -962,7 +1690,7 @@ export function uzelSoSvyazyami(uzel, svyazi) {
   const $t1 = { "имя": $field(uzel, "имя"), "процессы": $field(uzel, "процессы"), "связи": svyazi, "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
   // постусловие «узел со связями ставит поданные связи»
   if (!$post($equal($field($t1, "связи"), svyazi), "узел со связями ставит поданные связи", "Узел со связями")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «узел со связями ставит поданные связи» функции «Узел со связями»", { "line": 202, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел со связями ставит поданные связи» функции «Узел со связями»", { "line": 224, "column": 3 })
   }
   return $t1
 }
@@ -973,6 +1701,7 @@ export function uzelSoSvyazyami(uzel, svyazi) {
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  *
  * @param {string} imya — «имя»
+ * @param {string} vid — «вид»
  * @param {*} svoy — «свой»
  * @param {string} naKakom — «на каком»
  * @param {*} zhiv — «жив»
@@ -982,8 +1711,8 @@ export function uzelSoSvyazyami(uzel, svyazi) {
  * @param {Array<Pismo>} yaschik — «ящик»
  * @returns {Process}
  */
-export function processZanovo(imya, svoy, naKakom, zhiv, prichina, potolok, vLyote, yaschik) {
-  const $t1 = { "имя": imya, "свой": svoy, "на каком": naKakom, "жив": zhiv, "причина": prichina, "потолок": potolok, "в лёте": vLyote, "ящик": yaschik }
+export function processZanovo(imya, vid, svoy, naKakom, zhiv, prichina, potolok, vLyote, yaschik) {
+  const $t1 = { "имя": imya, "вид": vid, "свой": svoy, "на каком": naKakom, "жив": zhiv, "причина": prichina, "потолок": potolok, "в лёте": vLyote, "ящик": yaschik }
   let $t2
   if ($cond($equal($field($t1, "имя"), imya))) {
     $t2 = $equal($field($t1, "ящик"), yaschik)
@@ -998,7 +1727,7 @@ export function processZanovo(imya, svoy, naKakom, zhiv, prichina, potolok, vLyo
   }
   // постусловие «процесс заново берёт имя ящик и потолок»
   if (!$post($t3, "процесс заново берёт имя ящик и потолок", "Процесс заново")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «процесс заново берёт имя ящик и потолок» функции «Процесс заново»", { "line": 210, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «процесс заново берёт имя ящик и потолок» функции «Процесс заново»", { "line": 232, "column": 3 })
   }
   return $t1
 }
@@ -1013,10 +1742,10 @@ export function processZanovo(imya, svoy, naKakom, zhiv, prichina, potolok, vLyo
  * @returns {Process}
  */
 export function sYaschikom(process, yaschik) {
-  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), $field(process, "жив"), $field(process, "причина"), $field(process, "потолок"), $field(process, "в лёте"), yaschik)
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "вид"), $field(process, "свой"), $field(process, "на каком"), $field(process, "жив"), $field(process, "причина"), $field(process, "потолок"), $field(process, "в лёте"), yaschik)
   // постусловие «с ящиком ставит поданный ящик»
   if (!$post($equal($field($t1, "ящик"), yaschik), "с ящиком ставит поданный ящик", "С ящиком")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «с ящиком ставит поданный ящик» функции «С ящиком»", { "line": 216, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «с ящиком ставит поданный ящик» функции «С ящиком»", { "line": 238, "column": 3 })
   }
   return $t1
 }
@@ -1031,7 +1760,7 @@ export function sYaschikom(process, yaschik) {
  * @returns {Process}
  */
 export function umertvit(process, prichina) {
-  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), false, prichina, $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "вид"), $field(process, "свой"), $field(process, "на каком"), false, prichina, $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
   let $t2
   if ($cond($equal($field($t1, "жив"), false))) {
     $t2 = $equal($field($t1, "причина"), prichina)
@@ -1040,7 +1769,7 @@ export function umertvit(process, prichina) {
   }
   // постусловие «умерщвлённый не жив и помнит причину»
   if (!$post($t2, "умерщвлённый не жив и помнит причину", "Умертвить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «умерщвлённый не жив и помнит причину» функции «Умертвить»", { "line": 224, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «умерщвлённый не жив и помнит причину» функции «Умертвить»", { "line": 246, "column": 3 })
   }
   return $t1
 }
@@ -1054,7 +1783,7 @@ export function umertvit(process, prichina) {
  * @returns {Process}
  */
 export function ozhivit(process) {
-  const $t1 = processZanovo($field(process, "имя"), $field(process, "свой"), $field(process, "на каком"), true, "", $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "вид"), $field(process, "свой"), $field(process, "на каком"), true, "", $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
   let $t2
   if ($cond($equal($field($t1, "жив"), true))) {
     $t2 = $equal($field($t1, "причина"), "")
@@ -1069,7 +1798,7 @@ export function ozhivit(process) {
   }
   // постусловие «оживший жив без причины и с прежним ящиком»
   if (!$post($t3, "оживший жив без причины и с прежним ящиком", "Оживить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «оживший жив без причины и с прежним ящиком» функции «Оживить»", { "line": 233, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «оживший жив без причины и с прежним ящиком» функции «Оживить»", { "line": 255, "column": 3 })
   }
   return $t1
 }
@@ -1102,7 +1831,7 @@ export function ozhivitProcess(uzel, imya) {
   }
   // постусловие «без такого процесса узел не меняется»
   if (!$post($t3, "без такого процесса узел не меняется", "Оживить процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса узел не меняется» функции «Оживить процесс»", { "line": 241, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса узел не меняется» функции «Оживить процесс»", { "line": 263, "column": 3 })
   }
   return $t1
 }
@@ -1136,7 +1865,7 @@ export function ulozhitProcess(uzel, imya, prichina) {
   }
   // постусловие «без такого процесса укладывать некого»
   if (!$post($t3, "без такого процесса укладывать некого", "Уложить процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса укладывать некого» функции «Уложить процесс»", { "line": 251, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса укладывать некого» функции «Уложить процесс»", { "line": 273, "column": 3 })
   }
   return $t1
 }
@@ -1159,7 +1888,7 @@ export function ostanovitUzel(uzel) {
   }
   // постусловие «остановленный узел не работает и хранит таблицу»
   if (!$post($t2, "остановленный узел не работает и хранит таблицу", "Остановить узел")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «остановленный узел не работает и хранит таблицу» функции «Остановить узел»", { "line": 263, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «остановленный узел не работает и хранит таблицу» функции «Остановить узел»", { "line": 285, "column": 3 })
   }
   return $t1
 }
@@ -1205,11 +1934,11 @@ export function vYaschik(yaschik, pismo, vperyod) {
   }
   // постусловие «вперёд кладёт в голову ящика»
   if (!$post($t2, "вперёд кладёт в голову ящика", "В ящик")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «вперёд кладёт в голову ящика» функции «В ящик»", { "line": 294, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «вперёд кладёт в голову ящика» функции «В ящик»", { "line": 316, "column": 3 })
   }
   // постусловие «письмо в ящик прибавляется ровно одно, куда бы ни легло»
   if (!$post($equal($b_dlina($t1), $add($b_dlina(yaschik), 1)), "письмо в ящик прибавляется ровно одно, куда бы ни легло", "В ящик")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «письмо в ящик прибавляется ровно одно, куда бы ни легло» функции «В ящик»", { "line": 295, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «письмо в ящик прибавляется ровно одно, куда бы ни легло» функции «В ящик»", { "line": 317, "column": 3 })
   }
   return $t1
 }
@@ -1285,7 +2014,7 @@ export function ishodPolozhit(uzel, komu, mestoZanyato) {
   }
   // постусловие «без адресата класть некому»
   if (!$post($t10, "без адресата класть некому", "Исход положить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата класть некому» функции «Исход положить»", { "line": 307, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата класть некому» функции «Исход положить»", { "line": 329, "column": 3 })
   }
   return $t1
 }
@@ -1317,7 +2046,7 @@ export function legloLi(ishod) {
   }
   // постусловие «легло только у исхода Легло»
   if (!$post($t2, "легло только у исхода Легло", "Легло ли")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «легло только у исхода Легло» функции «Легло ли»", { "line": 319, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «легло только у исхода Легло» функции «Легло ли»", { "line": 341, "column": 3 })
   }
   return $t1
 }
@@ -1360,7 +2089,7 @@ export function polozhit(uzel, komu, bilet, vperyod, mestoZanyato, nachatoe) {
   }
   // постусловие «без адресата узел не меняется»
   if (!$post($t4, "без адресата узел не меняется", "Положить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата узел не меняется» функции «Положить»", { "line": 331, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без адресата узел не меняется» функции «Положить»", { "line": 353, "column": 3 })
   }
   return $t1
 }
@@ -1399,7 +2128,7 @@ export function svyazEst(uzel, sKem) {
   }
   // постусловие «связь есть ровно когда сосед стоит в списке связей»
   if (!$post($equal($t3, $t6), "связь есть ровно когда сосед стоит в списке связей", "Связь есть")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «связь есть ровно когда сосед стоит в списке связей» функции «Связь есть»", { "line": 342, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «связь есть ровно когда сосед стоит в списке связей» функции «Связь есть»", { "line": 364, "column": 3 })
   }
   return $t3
 }
@@ -1433,7 +2162,7 @@ export function otpravit(uzel, komu, bilet) {
   }
   // постусловие «письмо несуществующему процессу пропадает»
   if (!$post($t3, "письмо несуществующему процессу пропадает", "Отправить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «письмо несуществующему процессу пропадает» функции «Отправить»", { "line": 356, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «письмо несуществующему процессу пропадает» функции «Отправить»", { "line": 378, "column": 3 })
   }
   return $t1
 }
@@ -1463,7 +2192,7 @@ export function otpravitNaydennomu(uzel, p, bilet) {
   }
   // постусловие «своему шлём своим путём»
   if (!$post($t2, "своему шлём своим путём", "Отправить найденному")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «своему шлём своим путём» функции «Отправить найденному»", { "line": 366, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «своему шлём своим путём» функции «Отправить найденному»", { "line": 388, "column": 3 })
   }
   return $t1
 }
@@ -1498,7 +2227,7 @@ export function otpravitSvoemu(uzel, p, bilet) {
   }
   // постусловие «некому — письмо пропало и узел не тронут»
   if (!$post($t3, "некому — письмо пропало и узел не тронут", "Отправить своему")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «некому — письмо пропало и узел не тронут» функции «Отправить своему»", { "line": 374, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «некому — письмо пропало и узел не тронут» функции «Отправить своему»", { "line": 396, "column": 3 })
   }
   return $t1
 }
@@ -1576,7 +2305,7 @@ export function otpravitChuzhomu(uzel, p, bilet) {
   }
   // постусловие «мёртвому или без связи письмо пропадает»
   if (!$post($t8, "мёртвому или без связи письмо пропадает", "Отправить чужому")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «мёртвому или без связи письмо пропадает» функции «Отправить чужому»", { "line": 395, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «мёртвому или без связи письмо пропадает» функции «Отправить чужому»", { "line": 417, "column": 3 })
   }
   return $t4
 }
@@ -1615,7 +2344,7 @@ export function gotovye(uzel) {
   }
   // постусловие «готовых не больше чем процессов»
   if (!$post($lte($b_dlina($t2), $b_dlina($field(uzel, "процессы"))), "готовых не больше чем процессов", "Готовые")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «готовых не больше чем процессов» функции «Готовые»", { "line": 407, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовых не больше чем процессов» функции «Готовые»", { "line": 429, "column": 3 })
   }
   const $t6 = $requireList($field(uzel, "процессы"), "отфильтровать")
   const $t7 = []
@@ -1642,7 +2371,7 @@ export function gotovye(uzel) {
   }
   // постусловие «готовность — это письмо в ящике, а не место в очереди»
   if (!$post($equal($t2, $t7), "готовность — это письмо в ящике, а не место в очереди", "Готовые")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «готовность — это письмо в ящике, а не место в очереди» функции «Готовые»", { "line": 408, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «готовность — это письмо в ящике, а не место в очереди» функции «Готовые»", { "line": 430, "column": 3 })
   }
   return $t2
 }
@@ -1706,7 +2435,7 @@ export function neBolshe(chto, predel) {
   }
   // постусловие «выше предела не поднимается»
   if (!$post($t3, "выше предела не поднимается", "Не больше")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «выше предела не поднимается» функции «Не больше»", { "line": 451, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «выше предела не поднимается» функции «Не больше»", { "line": 473, "column": 3 })
   }
   return $t1
 }
@@ -1777,7 +2506,7 @@ export function pohoronitZhilcov(processy, sosed, prichina) {
   }
   // постусловие «похороны не меняют длину таблицы»
   if (!$post($equal($b_dlina($t2), $b_dlina(processy)), "похороны не меняют длину таблицы", "Похоронить жильцов")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «похороны не меняют длину таблицы» функции «Похоронить жильцов»", { "line": 511, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «похороны не меняют длину таблицы» функции «Похоронить жильцов»", { "line": 533, "column": 3 })
   }
   return $t2
 }
@@ -1805,7 +2534,7 @@ export function veleniyaPropazhi(processy, sosed, prichina) {
   }
   // постусловие «запись в журнал стоит первой всегда»
   if (!$post($gte($b_dlina(akk), 1), "запись в журнал стоит первой всегда", "Веления пропажи")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «запись в журнал стоит первой всегда» функции «Веления пропажи»", { "line": 519, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «запись в журнал стоит первой всегда» функции «Веления пропажи»", { "line": 541, "column": 3 })
   }
   return akk
 }
@@ -1823,7 +2552,7 @@ export function uzelSProcessami(uzel, processy) {
   const $t1 = { "имя": $field(uzel, "имя"), "процессы": processy, "связи": $field(uzel, "связи"), "кто бежит": $field(uzel, "кто бежит"), "что бежит": $field(uzel, "что бежит"), "работает": $field(uzel, "работает") }
   // постусловие «узел с процессами ставит поданную таблицу»
   if (!$post($equal($field($t1, "процессы"), processy), "узел с процессами ставит поданную таблицу", "Узел с процессами")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «узел с процессами ставит поданную таблицу» функции «Узел с процессами»", { "line": 525, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «узел с процессами ставит поданную таблицу» функции «Узел с процессами»", { "line": 547, "column": 3 })
   }
   return $t1
 }
@@ -1854,7 +2583,7 @@ export function propazhaUzla(uzel, sosed, pochemu) {
   }
   // постусловие «пропажа роняет ровно жильцов пропавшего узла»
   if (!$post($equal($t6, $b_dlina($t5)), "пропажа роняет ровно жильцов пропавшего узла", "Пропажа узла")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «пропажа роняет ровно жильцов пропавшего узла» функции «Пропажа узла»", { "line": 534, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «пропажа роняет ровно жильцов пропавшего узла» функции «Пропажа узла»", { "line": 556, "column": 3 })
   }
   return $t1
 }
@@ -1897,6 +2626,16 @@ export function etoPadenie(velenie) {
     const komu$3 = $variantField(velenie, "кому")
     const pochemu$2 = $variantField(velenie, "почему")
     $t1 = false
+  } else if ($isVariant(velenie) && velenie.variant === "Сменить обработчик") {
+    const kto$4 = $variantField(velenie, "кто")
+    const vid$2 = $variantField(velenie, "вид")
+    $t1 = false
+  } else if ($isVariant(velenie) && velenie.variant === "Перенести состояние процесса") {
+    const kto$5 = $variantField(velenie, "кто")
+    const izVida = $variantField(velenie, "из вида")
+    const vVid = $variantField(velenie, "в вид")
+    const predelVitkov = $variantField(velenie, "предел витков")
+    $t1 = false
   } else {
     $matchFail(velenie)
   }
@@ -1908,7 +2647,7 @@ export function etoPadenie(velenie) {
   }
   // постусловие «падением зовётся ровно веление уронить процесс»
   if (!$post($t2, "падением зовётся ровно веление уронить процесс", "Это падение")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «падением зовётся ровно веление уронить процесс» функции «Это падение»", { "line": 553, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «падением зовётся ровно веление уронить процесс» функции «Это падение»", { "line": 575, "column": 3 })
   }
   return $t1
 }
@@ -1922,7 +2661,7 @@ export function etoPadenie(velenie) {
  * @returns {Process}
  */
 export function podhvatit(process) {
-  const $t1 = processZanovo($field(process, "имя"), true, "", true, "", $field(process, "потолок"), 0, $field(process, "ящик"))
+  const $t1 = processZanovo($field(process, "имя"), $field(process, "вид"), true, "", true, "", $field(process, "потолок"), 0, $field(process, "ящик"))
   let $t2
   if ($cond($equal($field($t1, "свой"), true))) {
     $t2 = $equal($field($t1, "в лёте"), 0)
@@ -1931,7 +2670,7 @@ export function podhvatit(process) {
   }
   // постусловие «подхваченный стал своим и без писем в лёте»
   if (!$post($t2, "подхваченный стал своим и без писем в лёте", "Подхватить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «подхваченный стал своим и без писем в лёте» функции «Подхватить»", { "line": 581, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «подхваченный стал своим и без писем в лёте» функции «Подхватить»", { "line": 607, "column": 3 })
   }
   return $t1
 }
@@ -1970,9 +2709,243 @@ export function podnyatProcess(uzel, imya) {
   }
   // постусловие «без такого процесса поднимать некого»
   if (!$post($t4, "без такого процесса поднимать некого", "Поднять процесс")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса поднимать некого» функции «Поднять процесс»", { "line": 587, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса поднимать некого» функции «Поднять процесс»", { "line": 613, "column": 3 })
   }
   return $t1
+}
+
+/**
+ * Функция flang «Начатое сверху».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Array<Pismo>} yaschik — «ящик»
+ * @returns {*}
+ */
+export function nachatoeSverhu(yaschik) {
+  let $t1
+  const $t2 = pervoePismo(yaschik)
+  if ($isVariant($t2) && $t2.variant === "Нет письма") {
+    $t1 = false
+  } else if ($isVariant($t2) && $t2.variant === "Есть письмо") {
+    const pismo = $variantField($t2, "письмо")
+    $t1 = $field(pismo, "начатое")
+  } else {
+    $matchFail($t2)
+  }
+  let $t3
+  if ($cond($b_pusto(yaschik))) {
+    $t3 = $equal($t1, false)
+  } else {
+    $t3 = true
+  }
+  // постусловие «у пустого ящика начатого нет»
+  if (!$post($t3, "у пустого ящика начатого нет", "Начатое сверху")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «у пустого ящика начатого нет» функции «Начатое сверху»", { "line": 634, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Место замены на узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} kogo — «кого»
+ * @returns {MestoZameny}
+ */
+export function mestoZamenyNaUzle(uzel, kogo) {
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), kogo)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = mestoZanovo(false, false, false, false, false, "")
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = mestoZanovo(true, $field(p, "свой"), $field(p, "жив"), $equal($field(uzel, "кто бежит"), kogo), nachatoeSverhu($field(p, "ящик")), $field(p, "вид"))
+  } else {
+    $matchFail($t2)
+  }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), kogo), NetProcessa({})))) {
+    $t3 = $equal($field($t1, "есть процесс"), false)
+  } else {
+    $t3 = true
+  }
+  // постусловие «без такого процесса места нет»
+  if (!$post($t3, "без такого процесса места нет", "Место замены на узле")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса места нет» функции «Место замены на узле»", { "line": 645, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Процесс с видом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Process} process — «процесс»
+ * @param {string} vid — «вид»
+ * @returns {Process}
+ */
+export function processSVidom(process, vid) {
+  const $t1 = processZanovo($field(process, "имя"), vid, $field(process, "свой"), $field(process, "на каком"), $field(process, "жив"), $field(process, "причина"), $field(process, "потолок"), $field(process, "в лёте"), $field(process, "ящик"))
+  let $t2
+  if ($cond($equal($field($t1, "вид"), vid))) {
+    $t2 = $equal($field($t1, "ящик"), $field(process, "ящик"))
+  } else {
+    $t2 = false
+  }
+  // постусловие «смена вида ставит вид и не трогает ящика»
+  if (!$post($t2, "смена вида ставит вид и не трогает ящика", "Процесс с видом")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «смена вида ставит вид и не трогает ящика» функции «Процесс с видом»", { "line": 655, "column": 3 })
+  }
+  // постусловие «смена вида не воскрешает и не хоронит»
+  if (!$post($equal($field($t1, "жив"), $field(process, "жив")), "смена вида не воскрешает и не хоронит", "Процесс с видом")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «смена вида не воскрешает и не хоронит» функции «Процесс с видом»", { "line": 656, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Сменить вид».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {string} imya — «имя»
+ * @param {string} vid — «вид»
+ * @returns {Uzel}
+ */
+export function smenitVid(uzel, imya, vid) {
+  let $t1
+  const $t2 = naytiProcess($field(uzel, "процессы"), imya)
+  if ($isVariant($t2) && $t2.variant === "Нет процесса") {
+    $t1 = uzel
+  } else if ($isVariant($t2) && $t2.variant === "Есть процесс") {
+    const p = $variantField($t2, "процесс")
+    $t1 = sProcessom(uzel, processSVidom(p, vid))
+  } else {
+    $matchFail($t2)
+  }
+  let $t3
+  if ($cond($equal(naytiProcess($field(uzel, "процессы"), imya), NetProcessa({})))) {
+    $t3 = $equal($t1, uzel)
+  } else {
+    $t3 = true
+  }
+  // постусловие «без такого процесса менять нечего»
+  if (!$post($t3, "без такого процесса менять нечего", "Сменить вид")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса менять нечего» функции «Сменить вид»", { "line": 662, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Веление замены наружу».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {VelenieOZamene} velenie — «веление»
+ * @returns {VelenieUzlu}
+ */
+export function velenieZamenyNaruzhu(velenie) {
+  if ($isVariant(velenie) && velenie.variant === "Перезагрузить обработчик") {
+    const kto = $variantField(velenie, "кто")
+    const vid = $variantField(velenie, "вид")
+    return SmenitObrabotchik({ "кто": kto, "вид": vid })
+  } else if ($isVariant(velenie) && velenie.variant === "Перенести состояние") {
+    const kto$2 = $variantField(velenie, "кто")
+    const izVida = $variantField(velenie, "из вида")
+    const vVid = $variantField(velenie, "в вид")
+    const predelVitkov = $variantField(velenie, "предел витков")
+    return PerenestiSostoyanieProcessa({ "кто": kto$2, "из вида": izVida, "в вид": vVid, "предел витков": predelVitkov })
+  } else if ($isVariant(velenie) && velenie.variant === "Записать замену") {
+    const kto$3 = $variantField(velenie, "кто")
+    const vid$2 = $variantField(velenie, "вид")
+    return ZapisatVZhurnal({ "вид": "замена принята", "кто": kto$3, "почему": vid$2 })
+  } else if ($isVariant(velenie) && velenie.variant === "Отказать в замене") {
+    const kto$4 = $variantField(velenie, "кто")
+    const pochemu = $variantField(velenie, "почему")
+    return ZapisatVZhurnal({ "вид": "замена отвергнута", "кто": kto$4, "почему": pochemu })
+  } else {
+    $matchFail(velenie)
+  }
+}
+
+/**
+ * Функция flang «Ход замены на узле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {OtvetyOKandidate} otvety — «ответы»
+ * @returns {HodZameny}
+ */
+export function hodZamenyNaUzle(uzel, prosba, otvety) {
+  const $t1 = shagZameny(mestoZamenyNaUzle(uzel, $field(prosba, "кого")), prosba, otvety)
+  // постусловие «ход замены считает решатель, а не планировщик»
+  if (!$post($equal($t1, shagZameny(mestoZamenyNaUzle(uzel, $field(prosba, "кого")), prosba, otvety)), "ход замены считает решатель, а не планировщик", "Ход замены на узле")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «ход замены считает решатель, а не планировщик» функции «Ход замены на узле»", { "line": 688, "column": 3 })
+  }
+  return $t1
+}
+
+/**
+ * Функция flang «Заменить обработчик».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * @param {Uzel} uzel — «узел»
+ * @param {ProsbaOZamene} prosba — «просьба»
+ * @param {OtvetyOKandidate} otvety — «ответы»
+ * @returns {HodUzla}
+ */
+export function zamenitObrabotchik(uzel, prosba, otvety) {
+  let $t1
+  if ($cond(prinyataLiNaUzle($field(hodZamenyNaUzle(uzel, prosba, otvety), "исход")))) {
+    $t1 = smenitVid(uzel, $field(prosba, "кого"), $field(prosba, "вид"))
+  } else {
+    $t1 = uzel
+  }
+  const $t2 = $requireList($field(hodZamenyNaUzle(uzel, prosba, otvety), "веления"), "отобразить")
+  const $t3 = []
+  for (const v of $t2) {
+    $t3.push(velenieZamenyNaruzhu(v))
+  }
+  const $t4 = { "узел": $t1, "веления": $t3 }
+  let $t5
+  if ($cond(prinyataLiNaUzle($field(hodZamenyNaUzle(uzel, prosba, otvety), "исход")))) {
+    $t5 = false
+  } else {
+    $t5 = true
+  }
+  let $t6
+  if ($cond($t5)) {
+    $t6 = $equal($field($t4, "узел"), uzel)
+  } else {
+    $t6 = true
+  }
+  // постусловие «отвергнутая замена таблицу не трогает»
+  if (!$post($t6, "отвергнутая замена таблицу не трогает", "Заменить обработчик")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «отвергнутая замена таблицу не трогает» функции «Заменить обработчик»", { "line": 698, "column": 3 })
+  }
+  let $t7
+  if ($cond(prinyataLiNaUzle($field(hodZamenyNaUzle(uzel, prosba, otvety), "исход")))) {
+    $t7 = $equal($field($t4, "узел"), smenitVid(uzel, $field(prosba, "кого"), $field(prosba, "вид")))
+  } else {
+    $t7 = true
+  }
+  // постусловие «принятая замена ставит просимый вид»
+  if (!$post($t7, "принятая замена ставит просимый вид", "Заменить обработчик")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «принятая замена ставит просимый вид» функции «Заменить обработчик»", { "line": 699, "column": 3 })
+  }
+  // постусловие «велений столько же, сколько у решателя»
+  if (!$post($equal($b_dlina($field($t4, "веления")), $b_dlina($field(hodZamenyNaUzle(uzel, prosba, otvety), "веления"))), "велений столько же, сколько у решателя", "Заменить обработчик")) {
+    $fail("FLANG_PROPERTY", "нарушено свойство «велений столько же, сколько у решателя» функции «Заменить обработчик»", { "line": 700, "column": 3 })
+  }
+  return $t4
 }
 
 /**
@@ -2032,6 +3005,10 @@ export function shagUzla(uzel, chto) {
     const kod = $variantField(chto, "код")
     const tekst = $variantField(chto, "текст")
     $t1 = probegSorvalsya(uzel, kod, tekst)
+  } else if ($isVariant(chto) && chto.variant === "Просят заменить") {
+    const prosba = $variantField(chto, "просьба")
+    const otvety = $variantField(chto, "ответы")
+    $t1 = zamenitObrabotchik(uzel, prosba, otvety)
   } else {
     $matchFail(chto)
   }
@@ -2043,7 +3020,7 @@ export function shagUzla(uzel, chto) {
   }
   // постусловие «пора бежать ведёт в пробег»
   if (!$post($t6, "пора бежать ведёт в пробег", "Шаг узла")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «пора бежать ведёт в пробег» функции «Шаг узла»", { "line": 602, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «пора бежать ведёт в пробег» функции «Шаг узла»", { "line": 711, "column": 3 })
   }
   return $t1
 }
@@ -2078,7 +3055,7 @@ export function pismoSProvoda(uzel, komu, bilet) {
   }
   // постусловие «адресата нет — письмо пропало, узел не тронут»
   if (!$post($t3, "адресата нет — письмо пропало, узел не тронут", "Письмо с провода")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «адресата нет — письмо пропало, узел не тронут» функции «Письмо с провода»", { "line": 629, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «адресата нет — письмо пропало, узел не тронут» функции «Письмо с провода»", { "line": 740, "column": 3 })
   }
   return $t1
 }
@@ -2131,7 +3108,7 @@ export function probezhat(uzel, zhrebiy) {
   }
   // постусловие «стоящий узел и пустая очередь не рождают велений»
   if (!$post($t6, "стоящий узел и пустая очередь не рождают велений", "Пробежать")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «стоящий узел и пустая очередь не рождают велений» функции «Пробежать»", { "line": 644, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «стоящий узел и пустая очередь не рождают велений» функции «Пробежать»", { "line": 755, "column": 3 })
   }
   let $t7
   if ($cond($field(uzel, "работает"))) {
@@ -2153,7 +3130,7 @@ export function probezhat(uzel, zhrebiy) {
   }
   // постусловие «есть у кого письмо — пробег идёт к нему, а не мимо»
   if (!$post($t9, "есть у кого письмо — пробег идёт к нему, а не мимо", "Пробежать")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «есть у кого письмо — пробег идёт к нему, а не мимо» функции «Пробежать»", { "line": 645, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «есть у кого письмо — пробег идёт к нему, а не мимо» функции «Пробежать»", { "line": 756, "column": 3 })
   }
   return $t3
 }
@@ -2186,7 +3163,7 @@ export function probezhatVybrannogo(uzel, p) {
   }
   // постусловие «без письма обработчик не зовётся»
   if (!$post($t3, "без письма обработчик не зовётся", "Пробежать выбранного")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без письма обработчик не зовётся» функции «Пробежать выбранного»", { "line": 653, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без письма обработчик не зовётся» функции «Пробежать выбранного»", { "line": 764, "column": 3 })
   }
   return $t1
 }
@@ -2218,7 +3195,7 @@ export function pervoePismo(yaschik) {
   }
   // постусловие «у пустого ящика письма нет»
   if (!$post($t2, "у пустого ящика письма нет", "Первое письмо")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «у пустого ящика письма нет» функции «Первое письмо»", { "line": 667, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «у пустого ящика письма нет» функции «Первое письмо»", { "line": 778, "column": 3 })
   }
   return $t1
 }
@@ -2245,7 +3222,7 @@ export function otklikRazobran(uzel, deystviya) {
   }
   // постусловие «отклик есть проход по действиям от записи о пробеге»
   if (!$post($equal(hod, hod$2), "отклик есть проход по действиям от записи о пробеге", "Отклик разобран")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «отклик есть проход по действиям от записи о пробеге» функции «Отклик разобран»", { "line": 681, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «отклик есть проход по действиям от записи о пробеге» функции «Отклик разобран»", { "line": 792, "column": 3 })
   }
   return hod
 }
@@ -2269,7 +3246,7 @@ export function slitHod(hod, novyy) {
   const $t3 = { "узел": $t2, "веления": akk }
   // постусловие «слитый ход берёт узел нового»
   if (!$post($equal($field($t3, "узел"), $field(novyy, "узел")), "слитый ход берёт узел нового", "Слить ход")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «слитый ход берёт узел нового» функции «Слить ход»", { "line": 687, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «слитый ход берёт узел нового» функции «Слить ход»", { "line": 798, "column": 3 })
   }
   return $t3
 }
@@ -2314,7 +3291,7 @@ export function odnoDeystvie(hod, d, kto, chto) {
   }
   // постусловие «велено отложить кладёт письмо в хвост ящика»
   if (!$post($t2, "велено отложить кладёт письмо в хвост ящика", "Одно действие")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «велено отложить кладёт письмо в хвост ящика» функции «Одно действие»", { "line": 693, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «велено отложить кладёт письмо в хвост ящика» функции «Одно действие»", { "line": 804, "column": 3 })
   }
   return $t1
 }
@@ -2355,7 +3332,7 @@ export function ostanovit(hod, kto, pochemu) {
   }
   // постусловие «без такого процесса ход не меняется»
   if (!$post($t5, "без такого процесса ход не меняется", "Остановить")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса ход не меняется» функции «Остановить»", { "line": 712, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «без такого процесса ход не меняется» функции «Остановить»", { "line": 823, "column": 3 })
   }
   return $t1
 }
@@ -2389,79 +3366,7 @@ export function probegSorvalsya(uzel, kod, tekst) {
   }
   // постусловие «сорвался без бегущего — только сброс хода»
   if (!$post($t3, "сорвался без бегущего — только сброс хода", "Пробег сорвался")) {
-    $fail("FLANG_PROPERTY", "нарушено свойство «сорвался без бегущего — только сброс хода» функции «Пробег сорвался»", { "line": 726, "column": 3 })
+    $fail("FLANG_PROPERTY", "нарушено свойство «сорвался без бегущего — только сброс хода» функции «Пробег сорвался»", { "line": 837, "column": 3 })
   }
   return $t1
-}
-
-/**
- * Связь этого модуля с прогонщиком (`flang_cli.js`): имена flang → функции,
- * фабрика и узнавание варианта, стек под объявленный предел глубины (МиБ) и
- * объявленные типы параметров — граница входа.
- * Прогонщик — соседний файл, а не часть модуля: в браузер он не едет.
- *
- * @type {{functions: Map<string, Function>, variant: Function, isVariant: Function, stackMb: number, entry: object}}
- */
-export const $PROGRAM = {
-  functions: new Map([
-    ["Первый процесс", pervyyProcess],
-    ["Найти процесс", naytiProcess],
-    ["Заменить процесс", zamenitProcess],
-    ["С процессом", sProcessom],
-    ["Узел с ходом", uzelSHodom],
-    ["Узел со связями", uzelSoSvyazyami],
-    ["Процесс заново", processZanovo],
-    ["С ящиком", sYaschikom],
-    ["Умертвить", umertvit],
-    ["Оживить", ozhivit],
-    ["Оживить процесс", ozhivitProcess],
-    ["Уложить процесс", ulozhitProcess],
-    ["Остановить узел", ostanovitUzel],
-    ["Ящик полон", yaschikPolon],
-    ["В ящик", vYaschik],
-    ["Исход положить", ishodPolozhit],
-    ["Легло ли", legloLi],
-    ["Положить", polozhit],
-    ["Связь есть", svyazEst],
-    ["Отправить", otpravit],
-    ["Отправить найденному", otpravitNaydennomu],
-    ["Отправить своему", otpravitSvoemu],
-    ["Почему ящик полон", pochemuYaschikPolon],
-    ["Отправить чужому", otpravitChuzhomu],
-    ["Готовые", gotovye],
-    ["Номер по жребию", nomerPoZhrebiyu],
-    ["Целая часть", celayaChast],
-    ["Не больше", neBolshe],
-    ["Жил на узле", zhilNaUzle],
-    ["Почему узел пропал", pochemuUzelPropal],
-    ["Похоронить жильцов", pohoronitZhilcov],
-    ["Веления пропажи", veleniyaPropazhi],
-    ["Узел с процессами", uzelSProcessami],
-    ["Пропажа узла", propazhaUzla],
-    ["Это падение", etoPadenie],
-    ["Подхватить", podhvatit],
-    ["Поднять процесс", podnyatProcess],
-    ["Шаг узла", shagUzla],
-    ["Письмо с провода", pismoSProvoda],
-    ["Пробежать", probezhat],
-    ["Пробежать выбранного", probezhatVybrannogo],
-    ["Первое письмо", pervoePismo],
-    ["Отклик разобран", otklikRazobran],
-    ["Слить ход", slitHod],
-    ["Одно действие", odnoDeystvie],
-    ["Остановить", ostanovit],
-    ["Пробег сорвался", probegSorvalsya],
-  ]),
-  variant: (name, fields) => new $FlangVariant(name, fields),
-  isVariant: $isVariant,
-  stackMb: 79,
-  /* Граница входа: объявленные типы параметров данными. Прогонщик сверяет
-     по ним значения, пришедшие снаружи, ДО вызова (`checkEntry` в
-     flang_cli.js); вид «неизвестно» не сверяется — одной таблицы ему мало. */
-  entry: {
-    types: [],
-    fields: [],
-    variants: [],
-    params: [],
-  },
 }

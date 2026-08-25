@@ -1593,7 +1593,8 @@ int main(int argc, char **argv) {
     const char *gde = j_tekst_polya(razmeschenie, plan[nomer].imya, "");
     bool svoy = strcmp(gde, moyo_imya) == 0;
     fl_value chto = fl_nothing();
-    NADO(uzel_zamera_process_uzla(&ctx, tekst(plan[nomer].imya), fl_flag(svoy),
+    NADO(uzel_zamera_process_uzla(&ctx, tekst(plan[nomer].imya),
+                                  tekst(plan[nomer].obrabotchik), fl_flag(svoy),
                                   tekst(svoy ? "" : gde), fl_flag(true), tekst(""),
                                   fl_number(plan[nomer].yaschik), fl_number(0), fl_list(NULL, 0),
                                   &chto, &beda));

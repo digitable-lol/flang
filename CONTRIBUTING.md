@@ -67,8 +67,8 @@ Before the run, the preflight prints what is actually going to be checked:
 There is no such report in the tree any more: `scripts/preflight.mjs` imported
 `flang/src/targets.mjs`, which went away with the JavaScript implementation, and
 the script was deleted on 20 August together with the list of targets that lived
-only there. The shortcut `./ярлык preflight` does not exist either. The argument
-below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
+only there. There is no `preflight` shortcut either — the list in
+`ярлыки.flang` never had one. The argument below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
 compiler accepted the emitted code, and the result agreed with the interpreter.
 Eight toolchains rarely live on one machine, the tests of the missing ones skip,
 and the suite goes green while half the backends were never checked. That is how

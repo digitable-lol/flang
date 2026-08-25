@@ -184,7 +184,8 @@ class Узел:
             где = размещение[узел["имя"]]
             свой = где == имя
             процессы.append(реш.fn_process_uzla(
-                self.ctx, rt.text(узел["имя"]), rt.flag(свой), rt.text("" if свой else где),
+                self.ctx, rt.text(узел["имя"]), rt.text(узел["обработчик"]),
+                rt.flag(свой), rt.text("" if свой else где),
                 rt.flag(True), rt.text(""), rt.number(узел.get("ящик") or 0), rt.number(0),
                 rt.list_of([]),
             ))

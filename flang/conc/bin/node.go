@@ -289,7 +289,7 @@ func завести(имя string, план планУзла, размещени
 			потолок = float64(*п.Ящик)
 		}
 		процессы = append(процессы, позвать(у, "Процесс узла",
-			rt.Text(п.Имя), rt.Flag(свой), rt.Text(накаком), rt.Flag(true), rt.Text(""),
+			rt.Text(п.Имя), rt.Text(п.Обработчик), rt.Flag(свой), rt.Text(накаком), rt.Flag(true), rt.Text(""),
 			rt.Number(потолок), rt.Number(0), rt.List(nil)))
 		if свой {
 			у.состояния[п.Имя] = позвать(у, п.Начальное)

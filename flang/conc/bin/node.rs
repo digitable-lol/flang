@@ -467,6 +467,7 @@ impl Uzel {
             processy.push(dolzhno(resh::funkciya_process_uzla(
                 &ctx,
                 rt::text(&p.imya),
+                rt::text(&p.obrabotchik),
                 rt::flag(svoy),
                 rt::text(if svoy { "" } else { &gde }),
                 rt::flag(true),

@@ -793,6 +793,7 @@ defmodule HozyainUzla do
 
         UzelZamera.fn_process_uzla(
           Flang.Rt.text(p.imya),
+          Flang.Rt.text(p.obrabotchik),
           Flang.Rt.flag(svoy),
           Flang.Rt.text(if svoy, do: "", else: gde),
           Flang.Rt.flag(true),

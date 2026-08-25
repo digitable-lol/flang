@@ -4,10 +4,10 @@
 //
 //   flang io flang/scripts/ledger-summary.flang --plan «Свод» --timeout 900000
 //
-// Заменяет `flang/scripts/proof-ledger.mjs` (ярлык `proof:ledger`). Второй
-// ярлык того же .mjs — `proof:pustota` — НЕ переносится: он дублирует уже
-// готовый `flang/scripts/emptiness-guard.flang` (ярлыки `pustota:check` и
-// `pustota:perepis`), который судит тот же корпус `flang/stdlib/*.flang` по тем
+// Заменяет `flang/scripts/proof-ledger.mjs` (ярлык `доказательства:ведомость`). Второй
+// ярлык того же .mjs — `доказательства:пустота` — НЕ переносится: он дублирует уже
+// готовый `flang/scripts/emptiness-guard.flang` (ярлыки `пустота:проверка` и
+// `пустота:перепись`), который судит тот же корпус `flang/stdlib/*.flang` по тем
 // же четырём кучам (содержательное / про подпись / даровое / не судили), да
 // ещё держит снимок в `emptiness-ledger.txt` и проверяется порчей.
 //

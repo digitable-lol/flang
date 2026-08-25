@@ -149,7 +149,7 @@ separate run, and counted mechanically — by replacing the body with a stub, no
 by keeping a list of names:
 
 ```
-./ярлык proof:20
+./ярлык доказательства:20
 ```
 
 On today's tree it answers: something is proved for **14 functions of 20**,

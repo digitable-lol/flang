@@ -118,11 +118,11 @@ $ echo $?
 
 | файл | строк | зовут | цена |
 |---|---|---|---|
-| `flang/scripts/name-guard.mjs` | 529 | `ярлык names:check` | механическая |
+| `flang/scripts/name-guard.mjs` | 529 | `ярлык имена:проверка` | механическая |
 | `scripts/jargon-guard.mjs` | 475 | `flang/test/jargon-guard.test.mjs`; вручную по `AGENTS.md:25` | механическая |
-| `flang/scripts/claim-guard.mjs` | 442 | `ярлык claims:check` | 3 просмотра руками |
-| `flang/scripts/count-guard.mjs` | 611 | `ярлык counts:check` | 3 просмотра руками |
-| `flang/scripts/binary-rules-guard.mjs` | 778 | `ярлык rules:check`, CI | 2 просмотра руками |
+| `flang/scripts/claim-guard.mjs` | 442 | `ярлык утверждения:проверка` | 3 просмотра руками |
+| `flang/scripts/count-guard.mjs` | 611 | `ярлык подсчёты:проверка` | 3 просмотра руками |
+| `flang/scripts/binary-rules-guard.mjs` | 778 | `ярлык правила:проверка`, CI | 2 просмотра руками |
 
 Порядок брать не по строкам, а по столбцу «цена»: `name-guard` и `jargon-guard`
 первыми — они переводятся заменой записей, без переделки логики.
@@ -221,7 +221,7 @@ $ echo $?
 | файл | строк | кто ввозит |
 |---|---|---|
 | `uzel-osnastka.mjs` | 237 | `nadzor-uzla.test.mjs`, `smert-uzla-celi.mjs` |
-| `surface-pair.mjs` | 267 | `docs/site/surfaces-run.mjs` — то есть `ярлык surfaces:run`, `surfaces:check`, `numbers`, **вне прогона тестов вообще** |
+| `surface-pair.mjs` | 267 | `docs/site/surfaces-run.mjs` — то есть `ярлык поверхности:прогон`, `поверхности:проверка`, `числа`, **вне прогона тестов вообще** |
 | `tempdir.mjs` | 169 | четыре теста и `smert-uzla-celi.mjs` |
 | `glob.mjs` | 99 | четыре теста и сторожа `word-occupancy`, `proof-ledger`, `count-guard` |
 | `toolchain-guard.mjs` | 90 | три теста и `smert-uzla-celi.mjs`; назван в `ci.yml:89` |
@@ -231,7 +231,7 @@ $ echo $?
 придётся или переносить вместе с ними, или оставлять ради тестов — то есть это
 не «файл тестов», а неправильно положенный файл.
 
-Второй, независимый от `node --test` вызов тех же четырёх: `ярлык storozha:check`
+Второй, независимый от `node --test` вызов тех же четырёх: `ярлык сторожа:проверка`
 → `bootstrap/flang io flang/scripts/storozha-zavodyatsya.flang` (CI
 `dvoichnyy.yml:279`) — он спрашивает `git ls-files` и на каждый файл проверок
 запускает `node --test --test-name-pattern "НЕТ ТАКОГО ИМЕНИ У СТОРОЖА"`, то
@@ -248,7 +248,7 @@ $ echo $?
 2. **`flang/conc/distributed.mjs` (1062) — не грузится вовсе.** Строка 99:
    `} from "../src/conc.mjs"`, а `flang/src/` после удаления второй реализации
    содержит только `emit/`. Файл жив лишь как ТЕКСТ: его читает
-   `ярлык svyaz:pechat` (`scripts/svyaz-pechat.flang:316`).
+   `ярлык связь:печать` (`scripts/svyaz-pechat.flang:316`).
 3. **`flang/conc/zamer/sobrat.sh` сломан:** строка 22 зовёт `gen.mjs` (живой),
    строка 25 — `flang/conc/zamer/build.mjs`, которого в дереве нет.
 4. **Число 15 в комментариях `ci.yml`** про файлы `*.test.mjs` — на диске их 4.

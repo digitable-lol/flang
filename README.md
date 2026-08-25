@@ -128,7 +128,7 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
 | `package.json` · `package-lock.json` | the manifest of the npm install path. It declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
-| `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 69 lines of code inside 160 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык spec:check`, and because `ярлык` resolves its own paths from its own directory |
+| `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 69 lines of code inside 160 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык спеки:проверка`, and because `ярлык` resolves its own paths from its own directory |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
 **The binary builds with a single `cc`.** `make -C bootstrap` — that is all; no package
@@ -625,7 +625,7 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
   **fourteen** functions out of twenty, and **eleven** of those say something about the function:
   the rest are either weakened (the claim survives replacing the body with a stub of the same
   signature, so it holds of any such function) or restate the body. A run tells them apart,
-  not a reading: `./ярлык proof:20`. Day by day: 0 → 2 → 4 → 5 → 9 → 11.
+  not a reading: `./ярлык доказательства:20`. Day by day: 0 → 2 → 4 → 5 → 9 → 11.
   And two of the twenty are unprovable because they are **false**: one fails at infinity,
   the other writes "or" where an implication was meant.
 - **There is no second opinion about the language any more.** The comparison that used to matter

@@ -450,7 +450,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (беды.length) {
       console.error("Числа сайта ОТКАЗЫВАЮТ — записанное разошлось с деревом:")
       for (const б of беды) console.error("  · " + б)
-      console.error(`\nвсего бед: ${беды.length}. Лечится одной командой: ./ярлык numbers`)
+      console.error(`\nвсего бед: ${беды.length}. Лечится одной командой: ./ярлык числа`)
       process.exit(1)
     }
     const числа = прочитатьЧисла()

@@ -1,7 +1,7 @@
 ---
 номер: 0016
 заголовок: Проверки дерева на JavaScript переписаны на flang
-статус: сделана
+статус: в работе
 исполнитель: u
 ветка: u/storozha-na-flang
 команда: вторая
@@ -125,15 +125,24 @@ FLANG_UNKNOWN_NAME … строка 174: неизвестный тип «нео�
 
 ### Файл на JavaScript НЕ удалён, и это отдельное решение
 
-`scripts/jargon-guard.mjs` (475 строк) остаётся. Его зовут восемь мест:
-`AGENTS.md:144`, `ROADMAP.md:595`, `docs/javascript-inventory.md` (две строки),
-`docs/why-javascript-remains.md:63`, `docs/lessons-2026-08-23.md:49`,
-`.claude/skills/flang-code/SKILL.md` (три строки),
-`.claude/skills/flang-zettel/SKILL.md:86` и `flang/test/jargon-guard.test.mjs`,
-который ввозит его прямо. Две из этих правок — `ROADMAP.md` и
-`docs/javascript-inventory.md` — держит чужая ветка (`b/targets-cyrillic`),
-поэтому снос делается отдельным заходом, а не молча поверх соседа. **Строк
-JavaScript из дерева пока ушло НОЛЬ.**
+`scripts/jargon-guard.mjs` (475 строк) остаётся. Сверка, после которой его
+можно сносить, сделана — но снос это восемь мест, а не один файл:
+
+| место | что там |
+|---|---|
+| `flang/test/jargon-guard.test.mjs` | ввозит его прямо; без правки валится `ярлык тесты` |
+| `AGENTS.md:144` | зовёт руками |
+| `ROADMAP.md:595` | называет его переносимым |
+| `docs/javascript-inventory.md` | две строки описи |
+| `docs/why-javascript-remains.md:63` | долговая записка |
+| `docs/lessons-2026-08-23.md:49` | разбор смены |
+| `.claude/skills/flang-code/SKILL.md` | три строки с командами |
+| `.claude/skills/flang-zettel/SKILL.md:86` | про `docs/zettel/` |
+
+Все восемь свободны от долей. Снос — отдельный заход одним коммитом, вместе с
+правкой этих восьми; делать его на хвосте смены, не прогнав после этого
+`ярлык тесты` и `ярлык сторожа:проверка`, значит отдать сырое. **Строк
+JavaScript из дерева пока ушло НОЛЬ, и говорить это надо именно так.**
 
 ### Сторож имён — не переписан, но замерен
 

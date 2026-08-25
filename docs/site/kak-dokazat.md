@@ -640,15 +640,32 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   `dictionary.flang` and `strlists.flang`: eighteen added claims about empty
   input, each in both forms — **all grids**. In those three files the gain came
   from exactly one place where the body starts with `если`.
-- **Strict inequalities, full stop.** The kernel has exactly seven kinds of
-  goal, and all seven are named in its own refusal
+- **Strict inequalities — as of 25 August they are a goal kind.** Rule 11,
+  "strict order by construction", was added to the kernel: there are now **nine**
+  kinds of goal, and all nine are named in its own refusal
   (`flang/self/proof-kernel.flang`, «Отказ без правила»): «не меньше 0», «не
-  больше конечного литерала», «не больше терма», «равно», «содержит», «не
-  убывает», «начинается с». **A strict inequality is not among them.** Anything
-  written with `меньше` or `больше` is unprovable by construction, not by
-  oversight: both claims of «Целая часть» rested on "the difference is less than
-  one" and stayed grids in every wording. If you can weaken it to a non-strict
-  form, do; if you cannot, the claim waits for a new kernel rule.
+  больше конечного литерала», «не больше терма», **«меньше терма»**,
+  **«больше терма»**, «равно», «содержит», «не убывает», «начинается с».
+
+  **The printed seed does not carry the rule yet** — it arrives with the next
+  reprint. Until then a strict inequality over a term is only provable as a
+  closed goal.
+
+  Two wordings that suggest themselves and are FALSE — measured by a run, not
+  guessed:
+
+  ```
+  (минус ноль) не больше 0  → yes       9007199254740992 не больше (…плюс 1) → yes
+  (минус ноль) равен 0      → no        9007199254740992 меньше   (…плюс 1) → no
+  (минус ноль) меньше 0     → no
+  ```
+
+  The first kills the decomposition "`a меньше b` = `a не больше b` AND
+  `не (a равен b)`": at minus zero the left side holds and "меньше" does not.
+  The second kills "add one": rounding to nearest eats it.
+
+  Both claims of «Целая часть» still stay grids, but for a different reason: the
+  upper side there is a finite literal, which is a goal kind of its own.
 - **Inequality bounds in the general case.** Measured on `numtree.flang` and
   `kdf.flang`: "the height of a fork is at least 1", "a fork's traversal holds
   at least one number", "there is at least one chunk", "the output is at least

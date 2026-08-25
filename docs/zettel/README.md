@@ -287,6 +287,7 @@
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [Отказ ворот приходит тем же кодом, что вердикт проверки](a-gate-refusal-looks-like-a-verdict.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
+- [Сетка спрятала ложное утверждение: «результат не больше довода» неверно на не-числе](a-grid-hid-a-claim-false-on-not-a-number.md)
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)
 - [Модуль, проходящий `flang check` в одиночку, всё ещё может сломать раскрутку столкновением имён](a-module-that-checks-alone-still-collides-in-the-closure.md)
 - [Строка плана, прочитанная как результат, — вот как страницы начинают обещать несуществующее](a-plan-row-read-as-a-result-is-how-pages-start-promising.md)

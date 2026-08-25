@@ -376,6 +376,7 @@
 - [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](a-conjunction-goal-is-beyond-the-kernel-but-costs-only-six-claims.md)
 - [Труба соединения возит текст, а не октеты, и это закрывает все двоичные протоколы, а не только PostgreSQL](a-connection-pipe-carries-text-not-octets.md)
 - [Решение о мире переносимо, даже когда сам мир — нет: у слоя связи узла это 554 строки против 42](a-decision-about-the-world-is-portable-even-when-the-world-is-not.md)
+- [Словарь обыгрывает перебор ровно после того, как его обещания доказаны: построение подешевело в 185 раз](a-dictionary-beats-the-scan-only-after-its-promises-are-proved.md)
 - [Блок кода в документации, который обязан отказать, помечается внутри самого блока — иначе проверка страниц запрещает показывать настоящие отказы](a-doc-block-that-must-refuse-is-marked-inside-itself.md)
 - [Факт без сторон место имеет у читателя, а не у переписки допущениями](a-fact-with-no-sides-belongs-to-the-reader-not-to-the-rewriter.md)
 - [Поле чужого ответа берётся ПО МЕСТУ, а не поиском ключа: поиск находит ближайший ключ, а не ваш](a-field-of-a-foreign-reply-is-taken-by-position-not-by-key-search.md)
@@ -579,10 +580,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Словарь обыгрывает перебор ровно после того, как его обещания доказаны: построение подешевело в 185 раз](a-dictionary-beats-the-scan-only-after-its-promises-are-proved.md)
 
 ## Как добавлять
 

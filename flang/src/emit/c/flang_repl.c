@@ -117,6 +117,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1249,6 +1250,224 @@ static void repl_call_keep(const char *code, const char *message) {
   repl_call_message[say_fit] = 0;
 }
 
+/*
+ * ХОД ДЛИННОГО ШАГА: строка раз в полминуты о том, где счёт и сколько съел.
+ *
+ * ЗАЧЕМ ОНА. Перепечатка семени (`scripts/raskrutka.sh`) идёт от пяти с
+ * половиной до девяти с половиной часов и между «начал» и «кончил» не говорит
+ * НИ СЛОВА. Жива она или зациклилась — узнавалось только ковырянием в /proc:
+ *
+ *     процессорного времени   554 минуты      растёт 1:1 с часами
+ *     прошло по часам         563 минуты
+ *     write_bytes             4096            вывод ещё не начат
+ *
+ * Ночью на 25 августа 2026 перепечатку сняли на 563-й минуте, и девять с
+ * половиной часов пропали: смотреть было не на что, и никто не заметил вовремя.
+ *
+ * ЧЕГО НЕ ХВАТАЛО. Сведений хватало и раньше: `repl_ctx.steps` считает витки,
+ * `repl_ctx.max_steps` — предел, имя шага приходит в `repl_call` первым же
+ * доводом. Ровно этими числами печатается «ЗАПАС ШАГОВ НА ИСХОДЕ» ниже. Не
+ * хватало СРОКА: та строка стоит на пороге в половину предела и потому
+ * появляется один раз и уже ПОСЛЕ конца шага. Здесь то же самое, но по часам.
+ *
+ * ПОЧЕМУ БУДИЛЬНИК, А НЕ ПРОВЕРКА НА ВИТКЕ. Счёт витков (`fl_tick`) — самый
+ * горячий путь рантайма: он зовётся на каждом шаге вычислителя, и всякое лишнее
+ * действие там оплачивается миллиардами раз. Будильник не стоит на этом пути
+ * НИЧЕГО: SIGALRM приносит ядро, счёт витков о нём не знает. Вся цена — два
+ * присваивания на вызов `repl_call`, то есть на ШАГ ПРОВЕРКИ, а не на виток.
+ *
+ * ПОЧЕМУ ВСЁ РУКАМИ, А НЕ `fprintf`. Обработчик сигнала вправе звать только то,
+ * что POSIX объявил безопасным; stdio в этот список не входит и, прерванный
+ * посреди собственного буфера, кладёт процесс. Отсюда `write` в дескриптор 2 и
+ * сборка строки в свой буфер без единого вызова stdio.
+ *
+ * ПОЧЕМУ В stderr, А НЕ В stdout. Машинный вывод — `flang check --proof
+ * --json`, `flang emit`, сверка семени байт в байт — идёт в stdout и обязан
+ * остаться прежним до байта. Строка хода в stdout сдвинула бы его весь.
+ *
+ * SA_RESTART обязателен: без него будильник рвал бы `read` оболочки и `waitpid`
+ * внутри `system` кодом EINTR, и раз в полминуты сессия теряла бы набранное.
+ *
+ * ПОЛМИНУТЫ, А НЕ МИНУТА: «не реже раза в минуту» — это верхняя граница, а
+ * `alarm` отмеряет секунды с округлением вверх, и ровно шестьдесят иногда
+ * оказались бы шестьюдесятью с лишним. Тридцать в неё влезают с запасом, а
+ * стоят за девять часов около тысячи строк — против 23 МБ печати это ничто.
+ */
+#define REPL_HOD_SECONDS 30
+
+static volatile sig_atomic_t repl_hod_going = 0;
+static volatile sig_atomic_t repl_hod_ticking = 0;
+static char repl_hod_step[128];
+static unsigned long repl_hod_page = 0;
+static int repl_hod_set = 0;
+
+/* Дописать текст в буфер строки хода: ни выделения памяти, ни stdio — всё, что
+   здесь есть, законно внутри обработчика сигнала. */
+static size_t repl_hod_text(char *out, size_t room, size_t at, const char *text) {
+  size_t index = 0;
+  if (text == NULL) {
+    return at;
+  }
+  while (text[index] != 0 && at + 1 < room) {
+    out[at] = text[index];
+    at += 1;
+    index += 1;
+  }
+  return at;
+}
+
+/* Число пробелами по три разряда: «4 800 000 000» читается глазом, а
+   «4800000000» приходится считать пальцем по экрану. */
+static size_t repl_hod_number(char *out, size_t room, size_t at, unsigned long value) {
+  char digits[24];
+  size_t count = 0;
+  do {
+    digits[count] = (char)('0' + (int)(value % 10));
+    value /= 10;
+    count += 1;
+  } while (value != 0 && count < sizeof(digits));
+  while (count > 0) {
+    count -= 1;
+    if (at + 1 < room) {
+      out[at] = digits[count];
+      at += 1;
+    }
+    if (count > 0 && count % 3 == 0) {
+      at = repl_hod_text(out, room, at, " ");
+    }
+  }
+  return at;
+}
+
+/*
+ * Сколько памяти держит счёт — то самое число, за которым лазили в /proc.
+ * Второе поле `/proc/self/statm` — резидентные страницы. Размер страницы снят
+ * заранее, вне обработчика: `sysconf` в списке безопасных не значится. Там, где
+ * /proc нет (macOS, BSD), возвращается 0, и строка хода просто обходится без
+ * памяти, а не пропадает целиком.
+ */
+static unsigned long repl_hod_resident(void) {
+  char raw[128];
+  ssize_t got = 0;
+  int file = -1;
+  size_t at = 0;
+  unsigned long pages = 0;
+  if (repl_hod_page == 0) {
+    return 0;
+  }
+  file = open("/proc/self/statm", O_RDONLY);
+  if (file < 0) {
+    return 0;
+  }
+  got = read(file, raw, sizeof(raw) - 1);
+  close(file);
+  if (got <= 0) {
+    return 0;
+  }
+  raw[got] = 0;
+  while (raw[at] != 0 && raw[at] != ' ') {
+    at += 1;
+  }
+  while (raw[at] == ' ') {
+    at += 1;
+  }
+  while (raw[at] >= '0' && raw[at] <= '9') {
+    pages = pages * 10 + (unsigned long)(raw[at] - '0');
+    at += 1;
+  }
+  return pages * repl_hod_page;
+}
+
+/* Память теми же словами, какими её называет остальное дерево: ГиБ с одним
+   знаком после запятой, ниже гигабайта — целые МиБ. */
+static size_t repl_hod_size(char *out, size_t room, size_t at, unsigned long bytes) {
+  const unsigned long gib = 1024UL * 1024UL * 1024UL;
+  if (bytes >= gib) {
+    at = repl_hod_number(out, room, at, bytes / gib);
+    at = repl_hod_text(out, room, at, ",");
+    at = repl_hod_number(out, room, at, (bytes % gib) / (gib / 10));
+    return repl_hod_text(out, room, at, " ГиБ");
+  }
+  at = repl_hod_number(out, room, at, bytes / (1024UL * 1024UL));
+  return repl_hod_text(out, room, at, " МиБ");
+}
+
+static void repl_hod_say(int signal_number) {
+  char line[512];
+  size_t at = 0;
+  unsigned long steps = (unsigned long)repl_ctx.steps;
+  unsigned long limit = (unsigned long)repl_ctx.max_steps;
+  unsigned long bytes = 0;
+  ssize_t wrote = 0;
+  (void)signal_number;
+  /* Между шагами говорить не о чем: счётчик стоит, имя шага уже неверно. */
+  if (!repl_hod_going) {
+    repl_hod_ticking = 0;
+    return;
+  }
+  if (limit == 0) {
+    at = repl_hod_text(line, sizeof(line), at, "шагов не считают (предел снят)");
+  } else {
+    /* Доля считается делением предела, а не умножением витков: витков к концу
+       перепечатки миллиарды, и «витки × 100» переполнило бы 32-разрядное
+       `unsigned long` там, где оно 32-разрядное. */
+    const unsigned long part = limit >= 100 ? steps / (limit / 100) : steps * 100 / limit;
+    at = repl_hod_text(line, sizeof(line), at, "шагов ");
+    at = repl_hod_number(line, sizeof(line), at, steps);
+    at = repl_hod_text(line, sizeof(line), at, " из ");
+    at = repl_hod_number(line, sizeof(line), at, limit);
+    at = repl_hod_text(line, sizeof(line), at, " (");
+    at = repl_hod_number(line, sizeof(line), at, part);
+    at = repl_hod_text(line, sizeof(line), at, " %)");
+  }
+  at = repl_hod_text(line, sizeof(line), at, ", идёт «");
+  at = repl_hod_text(line, sizeof(line), at, repl_hod_step);
+  at = repl_hod_text(line, sizeof(line), at, "»");
+  bytes = repl_hod_resident();
+  if (bytes != 0) {
+    at = repl_hod_text(line, sizeof(line), at, ", ");
+    at = repl_hod_size(line, sizeof(line), at, bytes);
+  }
+  at = repl_hod_text(line, sizeof(line), at, "\n");
+  wrote = write(2, line, at);
+  (void)wrote;
+  alarm(REPL_HOD_SECONDS);
+}
+
+static void repl_hod_start(const char *name) {
+  size_t fit = 0;
+  if (!repl_hod_set) {
+    struct sigaction action;
+    const long page = sysconf(_SC_PAGESIZE);
+    repl_hod_page = page > 0 ? (unsigned long)page : 0;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = repl_hod_say;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = SA_RESTART;
+    if (sigaction(SIGALRM, &action, NULL) != 0) {
+      return;
+    }
+    repl_hod_set = 1;
+  }
+  fit = name == NULL ? 0 : strlen(name);
+  if (fit > sizeof(repl_hod_step) - 1) {
+    fit = sizeof(repl_hod_step) - 1;
+  }
+  memcpy(repl_hod_step, name == NULL ? "" : name, fit);
+  repl_hod_step[fit] = 0;
+  repl_hod_going = 1;
+  /* Будильник заводится один раз и дальше подводит себя сам. Заводить его на
+     каждом вызове значило бы сбрасывать отсчёт: тысяча коротких шагов подряд
+     идёт часами и не сказала бы ни слова, потому что ни один из них полминуты
+     не длится. */
+  if (!repl_hod_ticking) {
+    repl_hod_ticking = 1;
+    alarm(REPL_HOD_SECONDS);
+  }
+}
+
+static void repl_hod_stop(void) { repl_hod_going = 0; }
+
 static fl_status repl_call(const char *name, const fl_value *args, size_t count, fl_value *result) {
   fl_error error;
   fl_status status = FL_OK;
@@ -1258,7 +1477,9 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
      бы предел, отпущенный проверке. */
   repl_ctx.steps = 0;
   repl_ctx.depth = 0;
+  repl_hod_start(name);
   status = FL_PROGRAM_CALL(&repl_ctx, name, args, count, result, &error);
+  repl_hod_stop();
   /*
    * ЗАПАС ПРЕДЕЛА ШАГОВ ОБЯЗАН БЫТЬ ВИДЕН ЗАРАНЕЕ, А НЕ В ДЕНЬ ОБВАЛА.
    *

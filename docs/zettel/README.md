@@ -406,6 +406,7 @@
 - [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов, а не «нет доступа к миру»](a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee.md)
 - [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](a-not-minus-zero-field-closed-two-places-not-eleven.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](a-nullary-function-cannot-be-called-through-an-import.md)
+- [Охрана равенством варианту открывает ветвь `разбор`, только если вариант НУЛЬМЕСТНЫЙ, а разбираемое — вызов](a-nullary-variant-guard-opens-one-branch-of-a-match-over-a-call.md)
 - [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](a-package-is-a-lock-given-a-name-and-a-version.md)
 - [Пара живых узлов поднимается одним `sh -c`, а судит их flang по журналам](a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md)
 - [Путь, названный в прозе обратными кавычками, не сверяется с деревом ничем — так контракт категорной поверхности пережил свои файлы на 28 упоминаний](a-path-in-backticks-is-checked-against-nothing.md)
@@ -418,6 +419,7 @@
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти — потому что разбор собрал его из уже существующих узлов](a-quantifier-over-adjacent-pairs-cost-two-files-not-twenty-nine.md)
 - [Квантор по соседним парам выразим СЕГОДНЯ и работает сторожем — стена не в записи, а в доказуемости](a-quantifier-over-adjacent-pairs-is-expressible-today-but-not-provable.md)
 - [Библиотеку сегодня не выводят из спеки — её пишут агентом, а теорема работает храповиком: 85 680 строк, 1212 теорем, ноль `sorry`](a-ratchet-instead-of-derivation.md)
+- [Обещание «печатается записью» было ЛОЖНЫМ на ветви, отдающей «ничто», и никто этого не заметил](a-record-promise-can-be-false-on-the-nothing-branch.md)
 - [Когда свидетеля не отдают наружу, эталон сверяют с третьим тем, что в дереве уже есть](a-reference-is-checked-against-a-third-artifact-in-the-tree.md)
 - [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](a-refusal-from-a-stale-binary-must-not-be-blamed-on-the-checked-file.md)
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](a-removed-obstacle-is-not-the-price-of-a-command.md)
@@ -576,11 +578,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Охрана равенством варианту открывает ветвь `разбор`, только если вариант НУЛЬМЕСТНЫЙ, а разбираемое — вызов](a-nullary-variant-guard-opens-one-branch-of-a-match-over-a-call.md)
-- [Обещание «печатается записью» было ЛОЖНЫМ на ветви, отдающей «ничто», и никто этого не заметил](a-record-promise-can-be-false-on-the-nothing-branch.md)
 
 ## Как добавлять
 

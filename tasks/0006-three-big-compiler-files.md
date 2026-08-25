@@ -1,15 +1,18 @@
 ---
 номер: 0006
 заголовок: Обещания «conc.flang», «interpret.flang» и «proof.flang» доказаны
-статус: свободна
-исполнитель: —
-ветка: —
+статус: в работе
+исполнитель: b
+ветка: b/conc-proof
 команда: вторая
 карта: Сколько доказано на самом деле
 рядом: 0003, 0005, 0007, 0028
 ---
 
 # 0006. Обещания «conc.flang», «interpret.flang» и «proof.flang» доказаны
+
+Взята ТОЛЬКО доля `flang/self/conc.flang`. `interpret.flang` и `proof.flang`
+остаются свободными: их берут отдельно, доля объявлена только на `conc.flang`.
 
 `flang/self/conc.flang` — 339 недоказанных, `flang/self/interpret.flang` — 211,
 `flang/self/proof.flang` — 204. Прибавка тут двойная: доказанное обещание в

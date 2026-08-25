@@ -424,6 +424,41 @@ It works even where the branch is folded into `случай любое`. For `р
 a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
 section below.
 
+**⚠ But when the scrutinee is a CALL, only the NULLARY half lands.** Measured
+24 August 2026 on the process scheduler (`flang/self/conc.flang`) and on a small
+probe module next to it, for bodies shaped
+`разбор («Найти процесс» от («прогон».«процессы») и «имя»)`:
+
+| guard | verdict |
+|---|---|
+| `если (…«Найти процесс»…) равен (вариант «Нет процесса») то Ц иначе да` | **proven** |
+| `если не ((…) равен (вариант «Нет процесса»)) то Ц иначе да` | not taken |
+| `если (…) равен (вариант «Есть процесс» с «процесс» равным («Процесс найденного» от (…))) то Ц иначе да` | not taken |
+
+An accessor for the payload was written, so the variant **can** be recovered by
+a term — and it still is not taken. The difference from the "26 out of 26"
+measurements above is that there the scrutinee was the ARGUMENT ITSELF, here it
+is the result of a call; which of the two differences decides is not known.
+
+**And the branch lands only if its body is a TERM, not a call with arguments.**
+Measured on the same bodies: a branch returning the argument itself (`«прогон»`,
+`«ход»`, `«сбор»`), a literal (`""`, `нет`) or a flat nullary function
+(`«Узел ничто»`) is proven; a branch calling another function with arguments is
+not — **even when the callee's own postcondition is proven**. Four failed this
+way: the branches call `«Нет такого вида»`, `«Переполнил»`, `«Поставить таймер»`,
+`«Запись как узел»`, all four with proven postconditions.
+
+**And only for an equality goal.** The same guards over a `не больше` goal gave
+zero in four places: reflexivity `(длина Т) не больше (длина Т)` is not taken by
+this binary.
+
+**What to do.** Write the pair: the nullary half is proven, the complementary
+half stays a runtime check. Together they are equivalent to the unguarded claim,
+so replacing one claim with the pair weakens nothing. On `conc.flang` this landed
+18 claims of the "does not change the number of processes" and "does not change
+the name of the step" families whose body is a `разбор` over a call: the file's
+own share went 101 → 123 proven across 186 → 200 claims.
+
 ⛔ **Careful: this guard can drive the whole check into divergence.** If the
 variant in the guard is filled by a PROJECTION OF ITS OWN argument — `если узел
 равен (вариант «Значение скаляра» с «скаляр» равным («Скаляр значения» от

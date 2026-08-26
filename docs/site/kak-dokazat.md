@@ -496,7 +496,8 @@ It works even where the branch is folded into `случай любое`. For `р
 a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
 section below.
 
-**⚠ But when the scrutinee is a CALL, only the NULLARY half lands.** Measured
+**⚠ On the process scheduler only the NULLARY half landed — but that turned out
+not to be a rule; see the run below.** Measured
 24 August 2026 on the process scheduler (`flang/self/conc.flang`) and on a small
 probe module next to it, for bodies shaped
 `разбор («Найти процесс» от («прогон».«процессы») и «имя»)`:

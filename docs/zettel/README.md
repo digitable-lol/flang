@@ -502,6 +502,7 @@
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
+- [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
 - [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
 - [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](kernel-refusals-are-142-lines-and-half-of-that-is-signatures.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](key-order-in-results-is-a-surface.md)
@@ -621,7 +622,7 @@
 
 ## Ещё не разобранное
 
-- [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
+- [Сравнение на равенство обходило всё дерево потому, что указатель не сверялся ни разу](equality-walked-the-whole-tree-because-the-pointer-was-never-compared.md)
 
 ## Как добавлять
 

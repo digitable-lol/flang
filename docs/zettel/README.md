@@ -473,6 +473,7 @@
 - [Генератор печатает все функции приложения и молча роняет объявление `план` — напечатанный модуль умеет считать, но не умеет работать](emit-prints-plan-functions-but-drops-the-plan-declaration.md)
 - [Охрана пустоты в библиотеке пишется словом `пусто`, а ядро читает только меру — 114 обещаний против 18](emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md)
 - [Цели «равно» упёрлись в ПОРЯДОК СЛАГАЕМЫХ, а не в отсутствие индукции](equality-goals-hit-summand-order-not-missing-induction.md)
+- [Пример к УЖЕ доказанной функции снимает сторожа целой пачкой, и стоит минуты](examples-close-proved-postconditions-cheaper-than-proofs.md)
 - [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`; `lock` с `package` держал brotli, а после его снятия стоил в 7 раз дороже пересчёта](five-binary-commands-and-the-price-of-each.md)
 - [Пять шестых работы обмера области уходит на выяснение «не окупится», а не на саму перекладку](five-sixths-of-a-region-survey-pays-to-learn-it-will-not-pay-off.md)
 - [Без блока «Граница входа» напечатанный C# собирается, но падает при первом запросе — и это чинится 136 строками на flang, а не вычитанием в проверке](five-targets-have-no-entry-boundary-and-only-a-raw-diff-shows-it.md)
@@ -533,6 +534,8 @@
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](removed-from-the-decision-and-removed-from-the-load-are-two-events.md)
 - [Переименовать заметку стоит не переименования, а правки ссылающихся: 191 имя потянуло 443 ссылки в 234 файлах](renaming-a-note-costs-the-referrers-not-the-rename.md)
 - [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а тот же корпус по одному файлу проходит за 19 минут малой памятью](running-examples-by-directory-accumulates-memory-by-file-does-not.md)
+- [Откат применения прошёл по компилятору и остановился на его границе — в дереве осталось вчетверо больше](seed-discipline-revert-covered-the-compiler-and-left-the-tree.md)
+- [Словарь семени лежит в самом напечатанном C, и он отвечает за секунду там, где компилятор просит четверть часа](seed-word-tables-tell-in-a-second-what-the-seed-can-parse.md)
 - [Ёлочки внутри имени примера роняют разбор всего файла, и отказ не называет ни файла, ни примера](service-files-nested-guillemets-in-an-example-name-break-the-lexer.md)
 - [Прибавка снятых проверок равна числу ДОКАЗАННЫХ постусловий у функций, получивших первый пример — считается по ведомости, без второго прогона печати](service-files-removed-checks-equal-proven-postconditions-of-newly-exampled-functions.md)
 - [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок, и это уложилось в предел только после трёх названных правок](sha256-without-bit-operations-costs-925-thousand-steps-per-block.md)
@@ -604,12 +607,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Пример к УЖЕ доказанной функции снимает сторожа целой пачкой, и стоит минуты](examples-close-proved-postconditions-cheaper-than-proofs.md)
-- [Откат применения прошёл по компилятору и остановился на его границе — в дереве осталось вчетверо больше](seed-discipline-revert-covered-the-compiler-and-left-the-tree.md)
-- [Словарь семени лежит в самом напечатанном C, и он отвечает за секунду там, где компилятор просит четверть часа](seed-word-tables-tell-in-a-second-what-the-seed-can-parse.md)
 
 ## Как добавлять
 

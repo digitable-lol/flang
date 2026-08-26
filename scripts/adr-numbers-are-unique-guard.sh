@@ -44,9 +44,24 @@ fi
 
 spisok=$(for f in "$rabota"/*.md; do
   [ -f "$f" ] || continue
-  n=$(head -5 "$f" | grep -oE 'ADR-[0-9]{4}' | head -1 | sed 's/ADR-//')
-  [ -n "$n" ] && printf '%s\t%s\n' "$n" "$(basename "$f")"
+  # Оба написания: «ADR-0008» и «ADR 0008». Через пробел писало одно решение из
+  # пятнадцати, и прежняя редакция этой проверки его молча пропускала — а оно
+  # как раз и занимало чужой номер. Проверка, которая пропускает, от
+  # отсутствующей неотличима.
+  n=$(head -5 "$f" | grep -oE 'ADR[- ][0-9]{4}' | head -1 | sed 's/ADR[- ]//')
+  if [ -z "$n" ]; then
+    printf 'БЕЗНОМЕРА\t%s\n' "$(basename "$f")"
+  else
+    printf '%s\t%s\n' "$n" "$(basename "$f")"
+  fi
 done | sort)
+
+bez=$(printf '%s\n' "$spisok" | awk -F'\t' '$1=="БЕЗНОМЕРА" {print "      " $2}')
+if [ -n "$bez" ]; then
+  printf 'номера решений: решение без номера в заголовке:\n%s\n' "$bez"
+  [ "$podlog" = "да" ] && rm -rf "$rabota"
+  exit 1
+fi
 
 # ── имя файла сходится с заголовком ─────────────────────────────────────────
 mismatch=$(printf '%s\n' "$spisok" | awk -F'\t' '$2 !~ "^" $1 "-" {print "      " $2 " — заголовок называет ADR-" $1}')

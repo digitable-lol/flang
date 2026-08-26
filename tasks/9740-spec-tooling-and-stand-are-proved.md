@@ -74,6 +74,16 @@ flang check web/stand.flang --proof                  утверждений 130:
 flang test  web/stand.flang                          примеров 258, код 0
 ```
 
+Стенд поднят и опрошен вживую (`./ярлык браузер:стенд`, `curl` по
+127.0.0.1:8908) — четыре ответа, и каждый отвечает доказанному обещанию:
+
+```
+/                      HTTP/1.1 302 Found, Location: /web/app/index.html
+/web/app/index.html    HTTP/1.1 200 OK, Content-Type: text/html; charset=utf-8
+/../etc/passwd         HTTP/1.1 403 Forbidden
+/favicon.ico           HTTP/1.1 404 Not Found
+```
+
 ## Что осталось незакрытым
 
 `./ярлык спеки:проверка` красна и чинится только перепечаткой семени

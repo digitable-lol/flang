@@ -100,6 +100,8 @@
   обеспечивает «слияние CRDT на месте» результат содержит "../examples/cat/crdt-merge.flang"
   обеспечивает «программ дерева пятнадцать» (длина результат) равен 15
   обеспечивает «китайская в списке» результат содержит "../examples/surfaces/factorial.zh.flang"
+  пример «Постоянная Дерево списана из тела знак в знак»
+    ожидается ["../flang/stdlib/base64.flang", "../flang/stdlib/datetime.flang", "../flang/stdlib/dictionary.flang", "../flang/stdlib/hashmap.flang", "../flang/stdlib/higher-order.flang", "../flang/stdlib/http.flang", "../flang/stdlib/json.flang", "../flang/stdlib/lists.flang", "../examples/cat/crdt-merge.flang", "../examples/cat/euler-orders.flang", "../examples/cat/fold-by-cores.flang", "../examples/cat/monoid-and-monad.flang", "../examples/cat/natural-square.flang", "../examples/cat/order-shipment.flang", "../examples/surfaces/factorial.zh.flang"]
   ["../flang/stdlib/base64.flang",
    "../flang/stdlib/datetime.flang",
    "../flang/stdlib/dictionary.flang",

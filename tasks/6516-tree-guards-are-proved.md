@@ -1,7 +1,7 @@
 ---
 номер: 6516
 заголовок: Сторожа дерева доказаны — сорок шесть файлов, которых не считал никто
-статус: в работе
+статус: сделана
 исполнитель: u
 ветка: u/guards-proved
 команда: любая
@@ -46,6 +46,10 @@
 /srv/flang-rabota/w-predely/bootstrap/flang check <файл> --proof`, без ключа
 `--предел-шагов`. Все прогоны шли по одному за раз, внутри одной заявки у ворот.
 
+Таблица ниже — БАЗА: состояние до всякой правки. Строка «базы нет» стоит там,
+где у файла не было ни одного `обеспечивает`, и снимать с него отчёт было
+незачем — его собственная доля равна нулю по построению.
+
 **Числа в таблице — по ЗАМЫКАНИЮ, а не по файлу.** `check` судит файл вместе со
 всем, что тот ввозит, поэтому обещания `flang/stdlib` попадают в отчёт каждого
 сторожа, который их зовёт, и складывать столбец по строкам НЕЛЬЗЯ: одни и те же
@@ -60,25 +64,25 @@
 
 | файл | утв. | доказано | сетка | объявлено | запас шагов | код |
 |---|---:|---:|---:|---:|---|---:|
-| `scripts/variant-probe.flang` | — | — | — | — | не мерено | — |
-| `scripts/vscode-highlighting.flang` | 31 | 25 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/vim-highlighting.flang` | 35 | 29 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/vim-rules.flang` | 26 | 20 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/string-measure.flang` | 8 | 5 | 3 | 0 | ниже 50 % | 0 |
+| `scripts/variant-probe.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/vscode-highlighting.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/vim-highlighting.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/vim-rules.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/string-measure.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
 | `scripts/vscode-highlight-check.flang` | 14 | 8 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/vscode-rules.flang` | 22 | 16 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/releases-page.flang` | — | — | — | — | не проверено (FLANG_RECURSION_LIMIT) | 1 |
+| `scripts/vscode-rules.flang` | 11 | 5 | 6 | 0 | ниже 50 % | 0 |
+| `scripts/releases-page.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
 | `scripts/language-words.flang` | 10 | 4 | 6 | 0 | ниже 50 % | 0 |
-| `scripts/releases-page-verify.flang` | — | — | — | — | не проверено (FLANG_RECURSION_LIMIT) | 1 |
-| `scripts/сторож-дарвина.flang` | 10 | 8 | 2 | 0 | ниже 50 % | 0 |
-| `scripts/child-timeout.flang` | 4 | 3 | 1 | 0 | ниже 50 % | 0 |
+| `scripts/releases-page-verify.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/сторож-дарвина.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/child-timeout.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
 | `scripts/tab-host-guard.flang` | — | — | — | — | не проверено (FLANG_EXAMPLE) | 1 |
 | `scripts/lsp-check.flang` | 18 | 18 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/vim-highlight-check.flang` | 37 | 30 | 6 | 1 | ниже 50 % | 0 |
 | `scripts/bootstrap-point-by-binary.flang` | 4 | 4 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/dictionary-guard.flang` | 15 | 9 | 6 | 0 | ниже 50 % | 0 |
 | `scripts/surfaces-page.flang` | 12 | 12 | 0 | 0 | ниже 50 % | 0 |
-| `scripts/releases.flang` | — | — | — | — | не проверено (FLANG_RECURSION_LIMIT) | 1 |
+| `scripts/releases.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
 | `scripts/path-without-node.flang` | 11 | 11 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/occupancy-check.flang` | 5 | 5 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/asdf-plugin-published.flang` | 13 | 12 | 1 | 0 | ниже 50 % | 0 |
@@ -86,7 +90,7 @@
 | `scripts/bidi-control-guard.flang` | 15 | 15 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/license-guard.flang` | — | — | — | — | не проверено (FLANG_UNKNOWN_NAME) | 1 |
 | `scripts/conc-link-emit.flang` | 25 | 16 | 9 | 0 | ниже 50 % | 0 |
-| `scripts/registry-tool.flang` | 40 | 40 | 0 | 0 | ниже 50 % | 0 |
+| `scripts/registry-tool.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
 | `scripts/release-guard.flang` | 8 | 8 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/check-before-run.flang` | 14 | 14 | 0 | 0 | ниже 50 % | 0 |
 | `packaging/install-parity.flang` | 6 | 6 | 0 | 0 | ниже 50 % | 0 |
@@ -106,9 +110,9 @@
 | `scripts/homebrew-formula-guard.flang` | 45 | 28 | 9 | 8 | ниже 50 % | 0 |
 | `scripts/emit-and-examples.flang` | 16 | 16 | 0 | 0 | ниже 50 % | 0 |
 | `scripts/error-code-guard.flang` | 68 | 68 | 0 | 0 | ниже 50 % | 0 |
-| `scripts/release-in-c.flang` | 33 | 31 | 2 | 0 | ниже 50 % | 0 |
-| `scripts/name-collision-guard.flang` | 36 | 29 | 6 | 1 | ниже 50 % | 0 |
-| **итого по отвечавшим** | **830** | **698** | **116** | **16** | | |
+| `scripts/release-in-c.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| `scripts/name-collision-guard.flang` | — | — | — | — | базы нет: у файла не было ни одного обещания | — |
+| **итого по отвечавшим** | **596** | **497** | **84** | **15** | | |
 
 ## Своя доля каждого файла
 
@@ -116,61 +120,104 @@
 отчёт называет каждое постусловие вместе с функцией, и по имени функции его
 можно вернуть в свой файл. Эти числа складывать можно.
 
-| файл | своих утв. | доказано | сетка | объявлено |
-|---|---:|---:|---:|---:|
-| `scripts/variant-probe.flang` | не мерено | | | |
-| `scripts/vscode-highlighting.flang` | 9 | 9 | 0 | 0 |
-| `scripts/vim-highlighting.flang` | 9 | 9 | 0 | 0 |
-| `scripts/vim-rules.flang` | 16 | 16 | 0 | 0 |
-| `scripts/string-measure.flang` | 8 | 5 | 3 | 0 |
-| `scripts/vscode-highlight-check.flang` | 3 | 3 | 0 | 0 |
-| `scripts/vscode-rules.flang` | 12 | 12 | 0 | 0 |
-| `scripts/releases-page.flang` | 0 | 0 | 0 | 0 |
-| `scripts/language-words.flang` | 1 | 1 | 0 | 0 |
-| `scripts/releases-page-verify.flang` | 0 | 0 | 0 | 0 |
-| `scripts/сторож-дарвина.flang` | 10 | 8 | 2 | 0 |
-| `scripts/child-timeout.flang` | 4 | 3 | 1 | 0 |
-| `scripts/tab-host-guard.flang` | 0 | 0 | 0 | 0 |
-| `scripts/lsp-check.flang` | 18 | 18 | 0 | 0 |
-| `scripts/vim-highlight-check.flang` | 11 | 10 | 0 | 1 |
-| `scripts/bootstrap-point-by-binary.flang` | 4 | 4 | 0 | 0 |
-| `scripts/dictionary-guard.flang` | 6 | 6 | 0 | 0 |
-| `scripts/surfaces-page.flang` | 12 | 12 | 0 | 0 |
-| `scripts/releases.flang` | 0 | 0 | 0 | 0 |
-| `scripts/path-without-node.flang` | 11 | 11 | 0 | 0 |
-| `scripts/occupancy-check.flang` | 5 | 5 | 0 | 0 |
-| `scripts/asdf-plugin-published.flang` | 13 | 12 | 1 | 0 |
-| `scripts/asdf-version-list.flang` | 10 | 10 | 0 | 0 |
-| `scripts/bidi-control-guard.flang` | 15 | 15 | 0 | 0 |
-| `scripts/license-guard.flang` | 0 | 0 | 0 | 0 |
-| `scripts/conc-link-emit.flang` | 25 | 16 | 9 | 0 |
-| `scripts/registry-tool.flang` | 20 | 20 | 0 | 0 |
-| `scripts/release-guard.flang` | 8 | 8 | 0 | 0 |
-| `scripts/check-before-run.flang` | 14 | 14 | 0 | 0 |
-| `packaging/install-parity.flang` | 6 | 6 | 0 | 0 |
-| `scripts/link-guard.flang` | 31 | 13 | 16 | 2 |
-| `scripts/manpage-guard.flang` | 11 | 11 | 0 | 0 |
-| `scripts/input-boundary.flang` | 0 | 0 | 0 | 0 |
-| `scripts/commands-via-symlink.flang` | 33 | 22 | 10 | 1 |
-| `scripts/emit-dictionary.flang` | 1 | 1 | 0 | 0 |
-| `packaging/install-check.flang` | 0 | 0 | 0 | 0 |
-| `scripts/emit-promises-guard.flang` | 0 | 0 | 0 | 0 |
-| `scripts/name-splicing-guard.flang` | 0 | 0 | 0 | 0 |
-| `scripts/corpus-runner.flang` | 67 | 67 | 0 | 0 |
-| `scripts/region-in-c-target.flang` | 14 | 14 | 0 | 0 |
-| `scripts/plan-across-targets.flang` | 0 | 0 | 0 | 0 |
-| `scripts/occupied-names-guard.flang` | 22 | 22 | 0 | 0 |
-| `scripts/emit-law.flang` | 48 | 42 | 3 | 3 |
-| `scripts/homebrew-formula-guard.flang` | 45 | 28 | 9 | 8 |
-| `scripts/emit-and-examples.flang` | 16 | 16 | 0 | 0 |
-| `scripts/error-code-guard.flang` | 68 | 68 | 0 | 0 |
-| `scripts/release-in-c.flang` | 24 | 22 | 2 | 0 |
-| `scripts/name-collision-guard.flang` | 27 | 26 | 0 | 1 |
-| **итого своей доли** | **657** | **585** | **56** | **16** |
+⚠ **ПОПРАВКА К ПЕРВОЙ РЕДАКЦИИ ЭТОЙ ВЕДОМОСТИ, И ОНА ПРО МЕНЯ.** В коммите,
+которым ведомость сюда попала, стояло «утверждений 830, доказано 698» по
+замыканию и «657 своих, доказано 585». **Оба числа неверны.** Скрипт, собиравший
+таблицы, брал по каждому файлу САМЫЙ СВЕЖИЙ отчёт из трёх каталогов — а у
+тринадцати файлов свежим был уже отчёт ПОСЛЕ правок. В «базу» подмешались числа
+после работы, и она не описывала ни одного состояния дерева.
 
-## Восемь файлов из сорока восьми не проверяются вовсе
+Настоящая база: **по замыканию 596 утверждений, доказано 497**; **своей доли
+519, доказано 456**. Ошибка ровно того же рода, что шесть неверных длин ниже, —
+число, которое никто не пересчитал, — и поймана она тем же способом: пересчётом
+из исходных отчётов, а не перечитыванием таблицы.
 
-И это не следствие правок — семь из восьми стояли так до начала работы.
+### Своя доля каждого файла: до работы и после
+
+| файл | своих утв. до→после | доказано до→после | сетка | объявлено |
+|---|---|---|---:|---:|
+| `scripts/variant-probe.flang` | не судился → не судился | не судился → не судился | — | — |
+| `scripts/vscode-highlighting.flang` | не судился → 9 | не судился → 9 | 0 | 0 |
+| `scripts/vim-highlighting.flang` | не судился → 9 | не судился → 9 | 0 | 0 |
+| `scripts/vim-rules.flang` | не судился → 16 | не судился → 16 | 0 | 0 |
+| `scripts/string-measure.flang` | не судился → 8 | не судился → 5 | 3 | 0 |
+| `scripts/vscode-highlight-check.flang` | 3 → 3 | 3 → 3 | 0 | 0 |
+| `scripts/vscode-rules.flang` | 1 → 12 | 1 → 12 | 0 | 0 |
+| `scripts/releases-page.flang` | не судился → 0 | не судился → 0 | 0 | 0 |
+| `scripts/language-words.flang` | 1 → 1 | 1 → 1 | 0 | 0 |
+| `scripts/releases-page-verify.flang` | не судился → 0 | не судился → 0 | 0 | 0 |
+| `scripts/сторож-дарвина.flang` | не судился → 10 | не судился → 8 | 2 | 0 |
+| `scripts/child-timeout.flang` | не судился → 4 | не судился → 3 | 1 | 0 |
+| `scripts/tab-host-guard.flang` | 0 → 5 | 0 → 3 | 2 | 0 |
+| `scripts/lsp-check.flang` | 18 → 23 | 18 → 23 | 0 | 0 |
+| `scripts/vim-highlight-check.flang` | 11 → 11 | 10 → 11 | 0 | 0 |
+| `scripts/bootstrap-point-by-binary.flang` | 4 → 7 | 4 → 7 | 0 | 0 |
+| `scripts/dictionary-guard.flang` | 6 → 10 | 6 → 10 | 0 | 0 |
+| `scripts/surfaces-page.flang` | 12 → 21 | 12 → 21 | 0 | 0 |
+| `scripts/releases.flang` | не судился → 0 | не судился → 0 | 0 | 0 |
+| `scripts/path-without-node.flang` | 11 → 14 | 11 → 14 | 0 | 0 |
+| `scripts/occupancy-check.flang` | 5 → 9 | 5 → 9 | 0 | 0 |
+| `scripts/asdf-plugin-published.flang` | 13 → 21 | 12 → 20 | 1 | 0 |
+| `scripts/asdf-version-list.flang` | 10 → 10 | 10 → 10 | 0 | 0 |
+| `scripts/bidi-control-guard.flang` | 15 → 25 | 15 → 25 | 0 | 0 |
+| `scripts/license-guard.flang` | 0 → 0 | 0 → 0 | 0 | 0 |
+| `scripts/conc-link-emit.flang` | 25 → 30 | 16 → 22 | 8 | 0 |
+| `scripts/registry-tool.flang` | не судился → 20 | не судился → 20 | 0 | 0 |
+| `scripts/release-guard.flang` | 8 → 8 | 8 → 8 | 0 | 0 |
+| `scripts/check-before-run.flang` | 14 → 14 | 14 → 14 | 0 | 0 |
+| `packaging/install-parity.flang` | 6 → 13 | 6 → 13 | 0 | 0 |
+| `scripts/link-guard.flang` | 31 → 36 | 13 → 18 | 16 | 2 |
+| `scripts/manpage-guard.flang` | 11 → 11 | 11 → 11 | 0 | 0 |
+| `scripts/input-boundary.flang` | 0 → 19 | 0 → 19 | 0 | 0 |
+| `scripts/commands-via-symlink.flang` | 33 → 37 | 22 → 26 | 10 | 1 |
+| `scripts/emit-dictionary.flang` | 1 → 14 | 1 → 14 | 0 | 0 |
+| `packaging/install-check.flang` | 0 → 0 | 0 → 0 | 0 | 0 |
+| `scripts/emit-promises-guard.flang` | 0 → 12 | 0 → 12 | 0 | 0 |
+| `scripts/name-splicing-guard.flang` | 0 → 22 | 0 → 22 | 0 | 0 |
+| `scripts/corpus-runner.flang` | 67 → 67 | 67 → 67 | 0 | 0 |
+| `scripts/region-in-c-target.flang` | 14 → 30 | 14 → 30 | 0 | 0 |
+| `scripts/plan-across-targets.flang` | 0 → 26 | 0 → 26 | 0 | 0 |
+| `scripts/occupied-names-guard.flang` | 22 → 24 | 22 → 24 | 0 | 0 |
+| `scripts/emit-law.flang` | 48 → 48 | 42 → 42 | 3 | 3 |
+| `scripts/homebrew-formula-guard.flang` | 45 → 57 | 28 → 43 | 8 | 6 |
+| `scripts/emit-and-examples.flang` | 16 → 34 | 16 → 34 | 0 | 0 |
+| `scripts/error-code-guard.flang` | 68 → 81 | 68 → 80 | 0 | 1 |
+| `scripts/release-in-c.flang` | не судился → 24 | не судился → 22 | 2 | 0 |
+| `scripts/name-collision-guard.flang` | не судился → 27 | не судился → 26 | 0 | 1 |
+| **итого своей доли** | **519 → 882** | **456 → 812** | **56** | **14** |
+
+## Десять файлов из сорока восьми не проверяются вовсе
+
+И это не следствие правок — все десять стояли так до начала работы.
+
+**Три — потому что их замыкание не помещается в предел шагов, и обещания тут
+ни при чём.** `scripts/releases.flang` в НЕТРОНУТОМ виде, где не стоит НИ ОДНОГО
+`обеспечивает`, даёт ровно то же, что и с дописанными тридцатью:
+
+```
+ЗАПАС ШАГОВ НА ИСХОДЕ: «Ведомость исходников» съел 1000000001 витков
+из 1000000000 (100 %)
+FLANG_RECURSION_LIMIT: функция «Есть вызов в полях» исчерпала лимит шагов
+```
+
+Обе названные функции — не из сторожа: `«Ведомость исходников»` живёт в
+`flang/self/bootstrap/compiler.flang:1442`, `«Есть вызов в полях»` — в
+`flang/self/proof-kernel.flang:2023`. Предел съедает САМО ЯДРО, обходя записи
+замыкания `«JSON»`, а не что-либо, написанное в стороже.
+
+`scripts/releases-page.flang` и `scripts/releases-page-verify.flang` ввозят
+`«Выпуски»` и `«JSON»`, то есть их замыкания СТРОГО СОДЕРЖАТ замыкание
+`releases.flang`. Раз подзамыкание одно уже съедает предел целиком, надзамыкание
+съедает его тем более — вывод, а не догадка. Их прогоны я снял сам (код 143),
+чтобы не занимать общую машину на предрешённое; в отчёте это записано так, а не
+выдано за измерение.
+
+**Отсюда отрицательный результат по этой тройке, полный и окончательный.**
+Тридцать обещаний, дописанных в них по формам, которые в других файлах дали
+93 % доказанных, судить нечем: до ведомости прогон не доходит. Все тридцать
+сняты, файлы возвращены к исходному виду. Это не «приём не сработал» — это
+«приговорить некому», и лечится оно не записью обещания, а либо поднятием
+предела в `scripts/raskrutka.sh`, либо удешевлением обхода записей в ядре.
 
 **Два — из-за отставания общего двоичного, а не из-за файла.**
 `scripts/license-guard.flang:98` и `packaging/install-check.flang:102,136`
@@ -216,6 +263,57 @@
 вида «длина постоянной равна N» — это не «ядру не хватило правила», а повод
 пересчитать N.** Замкнутую цель ядро просто вычисляет (`«Вычислить замкнутую»`),
 и не доказать её оно может ровно в одном случае — если она ложна.
+
+## Чем закрыта
+
+Ветка `u/guards-proved`. Прогоны — общим двоичным
+`/srv/flang-rabota/w-predely/bootstrap/flang`, командой `check <файл> --proof`
+БЕЗ ключа `--предел-шагов`, по одному за раз внутри одной заявки у ворот.
+
+**Своя доля `scripts/**` и `packaging/**`: 456 → 812 доказанных**
+(519 → 882 высказанных).
+
+| партия | файлов | своих утв. до→после | доказано до→после |
+|---|---:|---|---|
+| сторожа без единого обещания | 10 | 1 → 139 | 1 → 130 |
+| шесть неверных длин | 5 | 11 → 90¹ | 10 → 90 |
+| раскатка форм на остальные | 18 | 345 → 486 | 289 → 433 |
+
+¹ У четырёх из пяти «до» — это не ноль обещаний, а «ведомость не печаталась»:
+ложное число в одном обещании гасило отчёт по всему файлу.
+
+Разбивка прибавки по видам цели (первая партия, поимённо по отчёту):
+
+| вид цели | всего | доказано |
+|---|---:|---:|
+| приём 10: равенство варианту без полей | 36 | 36 |
+| замкнутая цель: содержит / начинается с | 34 | 32 |
+| формы 1+2: охрана из тела, равенство ветви | 34 | 31 |
+| замкнутая цель: длина, вариант, строгое неравенство | 30 | 30 |
+| границы-неравенства (проба) | 5 | 1 |
+
+**Снятые проверки при работе замерены парой `emit` до и после**, на
+`registry-tool.flang`, разница ровно в шести примерах: **снято 24 → снято 30**.
+Число `emit` считает по всему замыканию, поэтому верна только разность.
+
+## Что не взялось, и каким прогоном опровергнуто
+
+1. **Тройка выпусков — предел шагов, а не запись.** `releases.flang`,
+   `releases-page.flang`, `releases-page-verify.flang`: 30 обещаний в формах,
+   давших 93 % в других файлах, судить нечем — до ведомости прогон не доходит.
+   Нетронутый `releases.flang` без единого `обеспечивает` даёт то же самое:
+   `1000000001 витков из 1000000000 (100 %)`. Все 30 сняты, файлы возвращены.
+2. **Приём 13 отнимает доказательство.** `«за решётками пробел»` в
+   `error-code-guard.flang` стояло доказанным голой целью-признаком; дописанное
+   `равен да` уронило его в сетку (80 → 79). Откачено.
+3. **Границы-неравенства** — 1 из 5. Монотонность сложения и длина склейки в
+   напечатанное семя не доехали; граница длины отфильтрованного не берётся;
+   моста от `соединить` к `начинается с` у ядра нет.
+4. **Охрана, называющая вариант с полем без терма для поля**, роняет ФАЙЛ, а не
+   обещание: `FLANG_TYPE … конструктор «Записано» требует поле «сколько»`.
+5. **Наивный счёт элементов списка** дал шесть ложных обещаний о длине в
+   `emit-dictionary.flang` (12 вместо 10, 67 вместо 61, 10 вместо 5). Сбивает
+   не запятая, а скобка внутри строкового литерала. Пересчитано и исправлено.
 
 ## Как понять, что сделано
 

@@ -464,6 +464,8 @@
 - [Из хеша код не выводится: у средней функции flang вдвое больше содержания, чем влезает в адрес](code-cannot-be-derived-from-its-hash.md)
 - [`http.flang` считает Content-Length ЗНАКАМИ в обе стороны, и потому чинить одну сторону нельзя](content-length-is-counted-in-characters-on-both-sides.md)
 - [Порча, попавшая в недостижимую ветвь, лечится КОРПУСОМ, а не другой порчей](corruption-in-an-unreachable-branch-is-cured-by-the-corpus.md)
+- [Свёртка под проекцией «Принципу свёртки» НЕ мешает: стена проходит по границе самой свёртки, а не по тому, как снят её результат](crypto-hashes-a-fold-under-a-projection-is-not-what-blocks-the-fold-principle.md)
+- [Модуль со списком `только` у ввозящих ломается НЕ там, где его правили: заводя функцию, снимай отчёт по каждому ввозящему](crypto-hashes-a-named-import-list-breaks-the-importer-not-the-edited-file.md)
 - [Доказанного мало: сторожа снимает ПАРА «доказано + пример»](crypto-keys-a-proved-postcondition-still-guards-without-an-example.md)
 - [Вывод из спецификации работает там, где область сузили нарочно, — и у flang такая область уже есть: словарь между спеками](derivation-works-where-the-domain-was-narrowed-on-purpose.md)
 - [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](derived-tables-of-one-fact-drift-apart-in-silence.md)
@@ -481,6 +483,8 @@
 - [Без блока «Граница входа» напечатанный C# собирается, но падает при первом запросе — и это чинится 136 строками на flang, а не вычитанием в проверке](five-targets-have-no-entry-boundary-and-only-a-raw-diff-shows-it.md)
 - [Язык доказательств у flang ЕСТЬ; чего в нём нет — шага, несущего промежуточный факт](flang-has-a-proof-language-what-it-lacks-is-a-step-carrying-a-fact.md)
 - [`flang test` на слое, у которого нет своих примеров, зеленеет всегда — а таких слоёв 11 683 строки](flang-test-is-always-green-on-a-layer-with-no-examples-of-its-own.md)
+- [В примере годятся только литералы, и ещё две грабли записи, стоившие прогонов](front-end-example-blocks-take-literals-only.md)
+- [Один пример снимает ВСЕ доказанные постусловия функции, а не одно](front-end-one-example-per-function-lifts-all-its-proven-guards.md)
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Чистота обработчика превращает восстановление из журнала в одну свёртку](handler-purity-turns-journal-recovery-into-one-fold.md)
 - [Предусловие принадлежит функции границы, а не внутренней: ветка «если» его не снимает](host-boundary-a-precondition-belongs-to-the-boundary-function-not-the-inner-one.md)
@@ -496,6 +500,7 @@
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
+- [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
 - [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](kernel-refusals-are-142-lines-and-half-of-that-is-signatures.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](key-order-in-results-is-a-surface.md)
 - [Левая свёртка упирается не в индукцию, а в то, что правило свёртки не читает постусловие вызванной функции](left-fold-is-blocked-because-the-fold-rule-does-not-read-the-callee-postcondition.md)
@@ -614,11 +619,8 @@
 
 ## Ещё не разобранное
 
-- [Свёртка под проекцией «Принципу свёртки» НЕ мешает: стена проходит по границе самой свёртки, а не по тому, как снят её результат](crypto-hashes-a-fold-under-a-projection-is-not-what-blocks-the-fold-principle.md)
-- [Модуль со списком `только` у ввозящих ломается НЕ там, где его правили: заводя функцию, снимай отчёт по каждому ввозящему](crypto-hashes-a-named-import-list-breaks-the-importer-not-the-edited-file.md)
-- [В примере годятся только литералы, и ещё две грабли записи, стоившие прогонов](front-end-example-blocks-take-literals-only.md)
-- [Один пример снимает ВСЕ доказанные постусловия функции, а не одно](front-end-one-example-per-function-lifts-all-its-proven-guards.md)
-- [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
+- [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
+- [Длину склейки ядро считает по одному куску за раз, а тремя слагаемыми — нет](certificates-concat-length-adds-one-piece-at-a-time-not-three.md)
 
 ## Как добавлять
 

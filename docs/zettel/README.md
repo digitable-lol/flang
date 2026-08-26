@@ -483,6 +483,7 @@
 - [Индукция по телу-`разбор` цепляется, только когда разбирают ДОВОД-сумму и названы ВСЕ варианты](induction-on-match-needs-a-parameter-scrutinee-and-all-variants-named.md)
 - [Целочисленное деление не даёт ядру `нат` — границу приходится называть постусловием](integer-division-does-not-give-the-kernel-nat.md)
 - [Целость терма не проходит через сумму и произведение, и столбик хеша заперт не списком целых](integrality-does-not-pass-through-a-sum-or-a-product.md)
+- [Совпадение вывода знак в знак не даёт снести старый прогон — считать надо режимы, а не строки](javascript-out-matching-output-does-not-mean-the-old-guard-can-go.md)
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
@@ -585,7 +586,8 @@
 
 ## Ещё не разобранное
 
-- [Совпадение вывода знак в знак не даёт снести старый прогон — считать надо режимы, а не строки](javascript-out-matching-output-does-not-mean-the-old-guard-can-go.md)
+- [Предусловие принадлежит функции границы, а не внутренней: ветка «если» его не снимает](host-boundary-a-precondition-belongs-to-the-boundary-function-not-the-inner-one.md)
+- [У границы слоёв два стыка, а не один: словарь поручений и рукописный хозяин над напечатанным кодом](host-boundary-the-second-junction-is-the-printed-one-not-the-order-dictionary.md)
 
 ## Как добавлять
 

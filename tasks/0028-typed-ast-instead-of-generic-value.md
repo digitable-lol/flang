@@ -212,7 +212,7 @@ PAMYAT=60G /srv/flang-rabota/vorota/flang-vorota -- \
 
 ## Решение записано ADR-0013, и переход разбит на семь шагов
 
-`docs/adr/0012-a-typed-node-enters-through-a-door-at-the-layer-boundary.md`.
+`docs/adr/0013-a-typed-node-enters-through-a-door-at-the-layer-boundary.md`.
 
 Коротко: **типизированный узел живёт ВНУТРИ одного слоя**, на входе дверь
 внутрь, на выходе дверь наружу, между слоями и на диске форма прежняя —

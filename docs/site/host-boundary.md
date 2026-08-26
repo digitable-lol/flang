@@ -11,7 +11,7 @@ The short answer:
 
 "Host" here means a program in another language that takes events from the world
 and carries out the answer — usually C. The decision that draws this line is
-written down in full in `docs/adr/layer-boundary.md`, together with the runs that
+written down in full in `docs/adr/0008-layer-boundary.md`, together with the runs that
 refuted the earlier explanation.
 
 ## What the line does NOT mean

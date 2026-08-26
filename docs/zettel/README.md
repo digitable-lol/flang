@@ -440,6 +440,8 @@
 - [Ослабленное утверждение бывает несущим: оно даёт соседу ДНО](a-weakened-claim-can-still-be-load-bearing.md)
 - [Прогон работы и сверка целей ловят разное, и ни один из двух не заменяет другого](a-work-run-and-a-target-check-catch-different-things.md)
 - [Неверный довод при верном выводе опаснее неверного вывода](a-wrong-argument-with-a-right-conclusion-is-worse-than-a-wrong-conclusion.md)
+- [Тип «неотрицательное» стоит в 14 файлах задачек, и его не знает НИ ОДИН двоичный в дереве — эти файлы сегодня нельзя ни проверить, ни доказать, ни напечатать](algorithms-a-type-the-seed-does-not-know-closes-fourteen-files-to-every-binary.md)
+- [Задачки и переводы несут 1226 примеров на 15 обещаний — здесь узкое место не примеры, а обещания, и обычный порядок работы надо переставить](algorithms-examples-carry-a-thousand-examples-and-fifteen-promises.md)
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](an-addressee-must-be-a-literal-for-the-payload-type-not-for-the-scheduler.md)
 - [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](an-argument-against-a-form-holds-only-for-the-tasks-it-named.md)
 - [Приписанная теорема ЗАСЛОНЯЕТ сведение, которое ядро делает само: 45 потерь из 55 прогонов, и три из них тихие](an-attached-theorem-shadows-the-reduction-the-kernel-does-itself.md)
@@ -586,6 +588,7 @@
 - [TLS 1.3 доведён в дереве до расшифровки первой закрытой записи сервера: из 29 шагов клиента 5 готовы целиком, 11 сделаны частью, 13 не начаты](tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md)
 - [Проверка модуля, ввозящего `tls.flang` целиком, съедает 97 % предела шагов на примерах ЧУЖИХ модулей — своих там почти нет](tls-checking-a-module-that-imports-tls-flang-whole-spends-97-percent-of-the-step-budget-on-foreign-examples.md)
 - [TLS на flang закрыт не ценой счёта, а отсутствием ключа: «Случайное число» даёт одно и то же в трёх прогонах подряд](tls-in-flang-is-blocked-by-a-missing-random-key-not-by-cost.md)
+- [Одна закрытая запись в 37 октетов стоит 88 секунд — значит настоящий сервер положит трубку раньше, чем клиент на flang её расшифрует](tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md)
 - [Шесть вещей, которых клиенту TLS не хватает, лежат в ЧУЖИХ файлах, и две из них — не нехватка кода, а столкновение имён](tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md)
 - [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
 - [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
@@ -604,9 +607,9 @@
 
 ## Ещё не разобранное
 
-- [Тип «неотрицательное» стоит в 14 файлах задачек, и его не знает НИ ОДИН двоичный в дереве — эти файлы сегодня нельзя ни проверить, ни доказать, ни напечатать](algorithms-a-type-the-seed-does-not-know-closes-fourteen-files-to-every-binary.md)
-- [Задачки и переводы несут 1226 примеров на 15 обещаний — здесь узкое место не примеры, а обещания, и обычный порядок работы надо переставить](algorithms-examples-carry-a-thousand-examples-and-fifteen-promises.md)
-- [Одна закрытая запись в 37 октетов стоит 88 секунд — значит настоящий сервер положит трубку раньше, чем клиент на flang её расшифрует](tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md)
+- [Пример к УЖЕ доказанной функции снимает сторожа целой пачкой, и стоит минуты](examples-close-proved-postconditions-cheaper-than-proofs.md)
+- [Откат применения прошёл по компилятору и остановился на его границе — в дереве осталось вчетверо больше](seed-discipline-revert-covered-the-compiler-and-left-the-tree.md)
+- [Словарь семени лежит в самом напечатанном C, и он отвечает за секунду там, где компилятор просит четверть часа](seed-word-tables-tell-in-a-second-what-the-seed-can-parse.md)
 
 ## Как добавлять
 

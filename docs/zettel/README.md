@@ -458,7 +458,9 @@
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](an-unnameable-host-deadline-alone-kept-the-build-on-javascript.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](auto-repair-of-numbers-fixes-the-leaf-and-leaves-the-total.md)
 - [Сборка двоичного стоит минуту, а не час, — поэтому её место в CI на каждом пуше](building-the-binary-costs-a-minute-not-an-hour.md)
+- [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
 - [Пока сборщик записи молчит о своих полях, наверху не доказывается ничего](certificates-a-record-builder-that-says-nothing-blocks-every-promise-above-it.md)
+- [Длину склейки ядро считает по одному куску за раз, а тремя слагаемыми — нет](certificates-concat-length-adds-one-piece-at-a-time-not-three.md)
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Цена утверждений линейна по числу ЭЛЕМЕНТАРНЫХ ДЕЙСТВИЙ внутри них, а не по числу утверждений, — поэтому одного дорогого виновника не находится, и переписывать надо не «самое дорогое», а самое частое](claim-cost-is-linear-in-elementary-actions-not-in-claims.md)
 - [Из хеша код не выводится: у средней функции flang вдвое больше содержания, чем влезает в адрес](code-cannot-be-derived-from-its-hash.md)
@@ -619,8 +621,7 @@
 
 ## Ещё не разобранное
 
-- [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
-- [Длину склейки ядро считает по одному куску за раз, а тремя слагаемыми — нет](certificates-concat-length-adds-one-piece-at-a-time-not-three.md)
+- [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
 
 ## Как добавлять
 

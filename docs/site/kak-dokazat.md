@@ -330,11 +330,46 @@ and equally on a plain value — `если ход равен нет`, `если 
 The pattern was copied from something already in the tree: `crl.flang`, its
 object «Ход обрезки» and the lifted function «Шаг обрезки».
 
-**The limit of the technique is named by a third independent measurement.** The
-folding function's own postcondition is not lifted: «Шаг обрезки слева» is now
-proved four times over, and «Обрезать слева» did not move by a single claim. The
-wall runs exactly along the fold boundary — the step side is open, the fold side
-is closed.
+**This used to read "the fold side is closed". That is wrong, and it was refuted
+by a run on 26 August 2026.** Lifting a postcondition through a fold **is** in
+the kernel and works in the compiler as printed today — the rule is called
+«Принцип свёртки» (`flang/self/proof-initial.flang`):
+
+```
+P(И, пусто) ∧ (for all а, п, э: P(а, п) ⟹ P(Т, п ++ [э]))  ⟹  P(свёртка Л …, Л)
+```
+
+The evidence sat inside the memory allocator itself: the folding function
+«Пройти вставку» had its postcondition standing **proven by induction** before
+any edit.
+
+**The principle is read under two conditions, and what obstructs is not the
+conditions but two ways of writing the body:**
+
+1. the fold must stand at the TOP level of the body — `(свёртка …).«поле»` does
+   not qualify; a fold under a projection computes something other than what the
+   goal talks about;
+2. the fold must run over the ARGUMENT'S NAME exactly — `свёртка куча.«свободные»`
+   does not qualify; the scrutinee must be a parameter name.
+
+Both shapes are removed by editing the **program**, not the kernel, and both were
+removed. Measured on another binary, without reprinting the seed:
+
+| file | before | after |
+|---|---|---|
+| `examples/driver/msi/msi.flang` | proven 86, declared 5 | proven 90 (2 by induction), declared 4 |
+| `examples/allocator/allocator.flang` | proven 79 (1 by induction), declared 3 | proven 82 (3 by induction), declared 1 |
+
+Across both programs `declared, not proven` went from 8 to 5, and all three that
+moved are about folds. The iteration needs its **own** step claim, without a
+guard: that the accumulator grows by exactly one whichever branch the step takes.
+Guarded halves that suit the step do not suit the iteration — the iteration knows
+nothing of the step's branches.
+
+What stays true from the old wording: **the step level is fully open**, and
+lifting the step out of the lambda remains the cheapest technique. «Шаг обрезки
+слева» is proved four times over and «Обрезать слева» did not move — but it is
+now known that the cause is the shape of the body, not a wall.
 
 **Careful with anything already proved by induction.** Lifting the step can knock
 down a proof that stood. Measure, and if the file holds induction proofs on that
@@ -395,8 +430,8 @@ Found independently by **four** agents in one day — on `optional.flang`
 (2 of 12 → 7 of 14), on `wire.flang` and `redis.flang` (+27 together), on
 `образцы.flang`, and on `result.flang` (10 of 13 → **15 of 15**, no grid left).
 
-**A variant WITH FIELDS lands too — 26 out of 26.** The tree used to record fields
-as insurmountable: "there is nothing to bind the field names to in the claim".
+**A variant WITH FIELDS lands too.** The tree used to record fields as
+insurmountable: "there is nothing to bind the field names to in the claim".
 There is no need to bind them — the field is recovered by an accessor on the
 scrutinee itself:
 
@@ -408,10 +443,47 @@ scrutinee itself:
 
 A nullary function returning a variant works as well — `если «узел» равен
 («Узел ничто в монаде»)`: the kernel unfolds the flat definition right inside the
-guard. Measured: 17 of 17 in `monad-expand.flang`, 9 of 9 in `bounded.flang`, and
-that was half of the whole gain on that share. It fails only where the variant
-cannot be **recovered by a term** — e.g. when the field is a bare scalar with no
-accessor.
+guard.
+
+**This used to read "26 out of 26", and an opposite measurement stood beside it —
+six probes, all declared. Re-measured 26 August 2026 with a single binary**
+(`/srv/flang-rabota/w-predely/bootstrap/flang`), claim by claim, across both
+files:
+
+| file | guard: equality to a variant | proven |
+|---|---|---|
+| `monad-expand.flang` | with fields | **17 of 17** |
+| `monad-expand.flang` | without fields | 5 of 6 |
+| `monad-expand.flang` | to a nullary call | 3 of 3 |
+| `bounded.flang` | with fields | **6 of 6** |
+| `bounded.flang` | without fields | 7 of 10 |
+| `bounded.flang` | to a nullary call | 2 of 2 |
+
+Form 10 across these two files: **40 of 44**. The old "17 of 17 in
+`monad-expand`" matches exactly; the old "9 of 9 in `bounded`" cannot be checked
+today — the file now holds six such claims and all six are proven, but the lines
+the nine were counted from are no longer in the text.
+
+**The point of this measurement is not the numbers but where the four failures
+sit: all four are on a variant WITHOUT fields.** Fields obstruct nothing. What
+obstructs them is described below and in form 13: three have a bare predicate
+goal (`не (результат.«есть»)`, `не ((…«беда») равен "")`), and the fourth has a
+second claim under `иначе` instead of `да`. A pair differing in exactly that
+already sits in the tree — one function, one guard, in `monad-expand.flang`:
+
+```
+если «может» равен (вариант «Отказа нет») то результат равен нет иначе результат равен да  declared
+если «может» равен (вариант «Отказа нет») то результат равен нет иначе да                  PROVEN
+```
+
+**What does not land is what cannot be written.** A guard naming a variant with
+fields and giving the field no term is not "declared" — it is a parse-time
+refusal: the file is not checked at all and has no proof report for any claim.
+
+```
+если «груз» равен (вариант «Есть») то …
+FLANG_TYPE, column 78: constructor «Есть» requires field «вес» (число)
+```
 
 **The scrutinee may be an EXPRESSION, not only a variable** — the guide did not
 say so; measured on `totality.flang` across six functions:
@@ -424,7 +496,8 @@ It works even where the branch is folded into `случай любое`. For `р
 a LIST (`случай пусто` / `случай голова и хвост`) there is no rule — see the
 section below.
 
-**⚠ But when the scrutinee is a CALL, only the NULLARY half lands.** Measured
+**⚠ On the process scheduler only the NULLARY half landed — but that turned out
+not to be a rule; see the run below.** Measured
 24 August 2026 on the process scheduler (`flang/self/conc.flang`) and on a small
 probe module next to it, for bodies shaped
 `разбор («Найти процесс» от («прогон».«процессы») и «имя»)`:
@@ -436,17 +509,45 @@ probe module next to it, for bodies shaped
 | `если (…) равен (вариант «Есть процесс» с «процесс» равным («Процесс найденного» от (…))) то Ц иначе да` | not taken |
 
 An accessor for the payload was written, so the variant **can** be recovered by
-a term — and it still is not taken. The difference from the "26 out of 26"
-measurements above is that there the scrutinee was the ARGUMENT ITSELF, here it
-is the result of a call; which of the two differences decides is not known.
+a term — and it still is not taken. This used to continue: "the difference from
+the measurements above is that there the scrutinee was the ARGUMENT ITSELF, here
+it is the result of a call; which of the two differences decides is not known."
+**The scrutinee has nothing to do with it, and that was settled by a run on
+26 August 2026** with the same binary. The probe is
+`examples/proof-probes/variant-with-fields.flang`: one module, one sum with
+fields, one thought written twenty-three ways, exactly one thing changed per pair.
 
-**And the branch lands only if its body is a TERM, not a call with arguments.**
-Measured on the same bodies: a branch returning the argument itself (`«прогон»`,
-`«ход»`, `«сбор»`), a literal (`""`, `нет`) or a flat nullary function
-(`«Узел ничто»`) is proven; a branch calling another function with arguments is
-not — **even when the callee's own postcondition is proven**. Four failed this
-way: the branches call `«Нет такого вида»`, `«Переполнил»`, `«Поставить таймер»`,
-`«Запись как узел»`, all four with proven postconditions.
+| what changes in the wording | verdict |
+|---|---|
+| scrutinee is the **argument**: `если «груз» равен (вариант «Есть» с «вес» равным («Вес груза» от «груз»)) то Ц иначе да` | **proven** |
+| scrutinee is a **call result**: `если («Первый груз» от «грузы») равен (вариант «Есть» с «вес» равным («Вес груза» от («Первый груз» от «грузы»))) то Ц иначе да` | **proven** |
+| guard **negated**, argument: `если не («груз» равен (вариант «Пусто»)) то Ц иначе да` | **proven** |
+| guard **negated**, call: `если не ((«Первый груз» от «грузы») равен (вариант «Пусто»)) то Ц иначе да` | **proven** |
+| field given a **literal** instead of an accessor: `… (вариант «Есть» с «вес» равным 7) то результат равен 7 иначе да` | **proven** |
+| branch **calls a function with arguments**, goal written as that same call | **proven** |
+| branch calls, goal **expanded** to `(длина результат) равен ((длина «числа») плюс 1)` | **proven** |
+| a **second claim** under `иначе`: `… иначе результат равен 0` | **not taken** |
+| goal is a **bare predicate** under negation: `… то не результат иначе да` | **not taken** |
+
+The full report line: `утверждений 23: доказано 21 (из них индукцией 1) (из них
+без теоремы 20), сетка 0, объявлено, не доказано 2`.
+
+Only the last two rows move the verdict, and neither is about the scrutinee.
+**Neither argument-versus-call, nor a negated guard, nor a literal field, nor a
+calling branch takes a proof away by itself.** Why the same two guards still
+failed on `conc.flang` could not be reproduced in a small probe: the same shape
+in the small is proven whole. So the scheduler's cause is its own and remains
+unnamed — but it is **not** that the scrutinee is a call, and not that the
+variant has fields.
+
+**The rule about calling branches stood here, and it is wider than the
+measurement.** It read: "the branch lands only if its body is a TERM, not a call
+with arguments… even when the callee's own postcondition is proven." On
+`conc.flang` that is what happened — four branches calling `«Нет такого вида»`,
+`«Переполнил»`, `«Поставить таймер»`, `«Запись как узел»` did not land. But it is
+not a rule: in the probe above a calling branch was proven twice, including where
+the goal reduces only through the callee's postcondition. Read it as a
+measurement on `conc.flang`, not as a prohibition.
 
 **And only for an equality goal.** The same guards over a `не больше` goal gave
 zero in four places: reflexivity `(длина Т) не больше (длина Т)` is not taken by
@@ -599,10 +700,12 @@ in advance it will most likely not close.
 
 Measured, not assumed — do not spend time on these forms until new rules appear:
 
-- **Folds — but only at their own boundary.** The postcondition of the folding
-  function itself stays a grid: the kernel does not lift the step's claim up to
-  it. The **step level, however, is fully open** — see the separate technique
-  below.
+- **Folds — but only in two ways of writing the body.** This used to say the
+  folding function's postcondition is never lifted. That is refuted: the lifting
+  is in the kernel («Принцип свёртки») and works in the compiler as printed
+  today. What is closed is a **fold under a projection** (`(свёртка …).«поле»`)
+  and a **fold over a field of the argument** (`свёртка куча.«свободные»`); both
+  are removed by editing the program. Details and numbers are in form 7.
 - **Recursion over your own type — but not all of it.** This used to say that a
   `разбор` body is hopeless. That holds when the branching is BY VARIANT; but if
   an ordinary `если` sits inside a case, form 1 works there too. Measured on
@@ -626,8 +729,56 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   the length of the filtered list" relates a counting fold to the length of
   another fold's result; that needs joint induction over two folds, while the
   kernel's rewriting is single-goal.
-- **A fold over an empty list.** The kernel has no rule "a fold over the empty
-  list is the base" — checked directly: the claim stayed a grid in both forms.
+- **A fold over an empty list — not taken by today's binary, but the kernel
+  already has the rule.** The kernel source carries a rewrite: the term
+  `свёртка Л начиная с О как а и э → тело` under a known emptiness of `Л` is
+  replaced by the term `О`. It reads emptiness from two sources and only those —
+  an empty list written out in the text, and the assumption `(длина Л) равен 0`;
+  neither `не больше 0` nor `пусто Л` triggers it. **The rule did not make it
+  into the printed seed and will arrive with the next reprint**
+  (`sh scripts/raskrutka.sh`); until then the verdict is the old one. A probe of
+  two claims in exactly this shape, run 26 August 2026 on
+  `/srv/flang-rabota/w-predely/bootstrap/flang`:
+  `утверждений 2: доказано 0, сетка 0, объявлено, не доказано 2`.
+
+  ⚠ **What that probe proves and what it does not.** The kernel's refusal does
+  not name what it lacked (see the section below) — the text is the same for
+  every cause. So "0 of 2" yields exactly one thing: **on this binary, in this
+  wording**, it is not taken. What will be taken after the reprint is checked
+  after the reprint, and not before.
+
+- **`элемент N в списке` — taken by the way the list is built, but until recently
+  not on a list written out.** The common "the kernel does not read `элемент N`
+  at all" is wrong: the rewrite exists and reads three equalities —
+  `элемент 1 в (приписать Г к Х)` is `Г`;
+  `элемент К в (приписать Г к Х)` is `элемент (К минус 1) в Х` for a literal `К`
+  of at least two;
+  `элемент ((длина Х) плюс 1) в (добавить Э к Х)` is `Э`.
+  None of the three reads a **written-out** list `[а, б]` — which is exactly what
+  stands in the programs. A fourth equality, `элемент К в [Э₁, …, Эн]` is `Эк`
+  for a literal `К` within bounds, was added on 26 August 2026; measured by
+  calling the rule directly on eight inputs, before and after:
+
+  | input | before | after |
+  |---|---|---|
+  | `элемент 1 в [а, б]` | untouched | **`а`** |
+  | `элемент 2 в [а, б]` | untouched | **`б`** |
+  | `элемент 3 в [а, б]` (past the end) | untouched | untouched |
+  | `элемент 0 в [а, б]` (before the start) | untouched | untouched |
+  | `элемент н в [а, б]` (index by name) | untouched | untouched |
+  | `элемент 2 в (приписать г к [а, б])` | `элемент 1 в [а, б]` | **`а`** |
+  | `элемент 1 в (отбор над [а, б])` | untouched | untouched |
+  | `элемент (1 плюс 1) в [а, б]` | untouched | **`б`** |
+
+  **None of this is in the printed seed** — it arrives with the reprint. And one
+  caveat that saves a day: an index given by name over a written-out list is not
+  taken and will not be — the rewrite does not see assumptions, and its bounds
+  are computed from two known numbers. In `flang/stdlib` there are sixteen places
+  of the form `элемент … в [ … ]`, and **in all sixteen the index is a name**;
+  literal ones: zero.
+
+  ⚠ **A wording trap.** List positions count **from one**: `элемент 0 в х` does
+  not give the head, it stops evaluation with `FLANG_BUILTIN_ARGS`.
 - **`разбор` inside the claim itself.** `обеспечивает «…» разбор довод случай …
   то …` is not taken at all. Measured twice and separately: three probes in
   `hashmap.flang` — three grids; seven probes in `postgres.flang` and

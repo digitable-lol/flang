@@ -94,8 +94,8 @@ export function библиотека() {
   let строк = 0
   let файлов = 0
   for (const ф of readdirSync(КОРЕНЬ + "flang/stdlib")) {
-    // Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008).
-    if (!/\.(flang|fp|фп)$/u.test(ф)) continue
+    // Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016).
+    if (!/\.(flang|fp|фп|фланг)$/u.test(ф)) continue
     файлов += 1
     const текст = readFileSync(`${КОРЕНЬ}flang/stdlib/${ф}`, "utf8")
     функций += (текст.match(/^\s*(?:тотальная функция|функция)\s/gmu) ?? []).length

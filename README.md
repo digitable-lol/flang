@@ -39,8 +39,8 @@ into eight target languages. The compiler is written in flang itself.
 
 ## What kind of language this is
 
-**[`flang`](flang/SPEC.md)** (`.flang`, `.fp` or `.фп` — the three extensions are equal,
-[ADR-0016](docs/adr/0016-three-file-extensions.md)) is an indentation-based language where a function
+**[`flang`](flang/SPEC.md)** (`.flang`, `.fp`, `.фп` or `.фланг` — the four extensions are equal,
+[ADR-0018](docs/adr/0018-file-extensions-are-one-list.md)) is an indentation-based language where a function
 carries its own examples and its own promise about the result right next to its body. The
 `тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
 it cannot prove. The language has sum types, lists, strings as data, recursion, pattern
@@ -129,7 +129,7 @@ docs/             documentation; README and SPEC files stay next to the code the
 | `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms; it looks in the root, in `.github/` and in `docs/` |
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
-| `package.json` · `package-lock.json` | the manifest of the npm install path. It declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
+| `package.json` · `package-lock.json` | the manifest of the npm install path. Both are **printed** from `scripts/emit-package.flang` and never hand-edited: `./ярлык пакет` prints them, `./ярлык пакет:проверка` refuses if a file and the declaration have drifted. The manifest declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
 | `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 69 lines of code inside 160 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык спеки:проверка`, and because `ярлык` resolves its own paths from its own directory |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 

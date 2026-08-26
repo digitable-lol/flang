@@ -40,18 +40,18 @@ printf 'исходники компилятора на flang, строк    %s\n
   "$(cat flang/self/*.flang flang/self/bootstrap/*.flang | wc -l)"
 printf 'исходники компилятора на flang, байт     %s\n' \
   "$(cat flang/self/*.flang flang/self/bootstrap/*.flang | wc -c)"
-# Расширений у программы три и они равноправны: `.flang`, `.fp`, `.фп`
-# (ADR-0008). Число, посчитанное по одному из трёх, было бы меньше дерева.
+# Расширений у программы четыре и они равноправны: `.flang`, `.fp`, `.фп`,
+# `.фланг` (ADR-0016). Число по одному из них было бы меньше дерева.
 printf 'файлов программы в репозитории           %s\n' \
-  "$(find . \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' \) -not -path './node_modules/*' | wc -l)"
+  "$(find . \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \) -not -path './node_modules/*' | wc -l)"
 printf 'объявлений «тотальная функция»           %s\n' \
-  "$(grep -rh '^тотальная функция ' --include='*.flang' --include='*.fp' --include='*.фп' . | wc -l)"
+  "$(grep -rh '^тотальная функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
 printf 'объявлений «функция» (обычных)           %s\n' \
-  "$(grep -rh '^функция ' --include='*.flang' --include='*.fp' --include='*.фп' . | wc -l)"
+  "$(grep -rh '^функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
 printf 'объявлений «убывает» (мера)              %s\n' \
-  "$(grep -rh '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' . | wc -l)"
+  "$(grep -rh '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
 echo 'где именно объявлена мера:'
-grep -rln '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' . | sed 's/^/  /'
+grep -rln '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | sed 's/^/  /'
 
 head_of "2. Связанный компилятор, печать в C, корпус побайтовой сверки"
 echo 'команда: node docs/ifl/facts.mjs'

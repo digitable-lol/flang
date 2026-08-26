@@ -31,6 +31,9 @@ total function «Prepend»
 total function «Word for number»
   accepts n: number
   returns string
+  ensures «a multiple of fifteen is called FizzBuzz» if (n modulo 15) equals 0 then (result equals "FizzBuzz") else true
+  ensures «a multiple of three is called Fizz» if not ((n modulo 15) equals 0) then (if (n modulo 3) equals 0 then (result equals "Fizz") else true) else true
+  ensures «a multiple of five is called Buzz» if not ((n modulo 15) equals 0) then (if not ((n modulo 3) equals 0) then (if (n modulo 5) equals 0 then (result equals "Buzz") else true) else true) else true
   example «Divisible by three»
     given n equals 9
     expected "Fizz"
@@ -69,6 +72,7 @@ total function «FizzBuzz of list»
 function «Numbers from and to»
   accepts start: number, finish: number
   returns list of number
+  ensures «a backwards range is empty» if start is greater than finish then (result equals empty list) else true
   example «One to five»
     given start equals 1
     given finish equals 5

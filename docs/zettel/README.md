@@ -519,6 +519,7 @@
 - [Про PostgreSQL в драйвере PostgreSQL — меньше половины функций: 39 из 83, остальные 44 годятся любой базе](less-than-half-of-the-postgresql-driver-is-about-postgresql.md)
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка — и довод, на котором она держалась, уже мёртв](library-modules-avoid-each-other-by-convention-not-by-a-language-ban.md)
 - [Линейный поиск функции по имени съедает 88 % витков проверки, и упирается в предел именно он](linear-lookup-of-a-declaration-eats-88-percent-of-check-loops.md)
+- [Связывание растёт линейно по виткам и квадратом по времени: счётчик шагов квадрата не видит](linking-costs-steps-linearly-and-time-quadratically.md)
 - [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
 - [Ведущий ноль в сумме ядро свёртывает, замыкающий — нет: отсюда асимметрия `app_nil_l` и `app_nil_r`](math-a-leading-zero-addend-folds-away-but-a-trailing-one-does-not.md)
 - [Одна и та же лемма о неравенстве берётся при втором доводе-ЛИТЕРАЛЕ и не берётся при доводе-ТЕРМЕ — замерено дважды и порознь](math-a-literal-second-argument-is-taken-where-a-term-is-not.md)
@@ -628,10 +629,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Связывание растёт линейно по виткам и квадратом по времени: счётчик шагов квадрата не видит](linking-costs-steps-linearly-and-time-quadratically.md)
 
 ## Как добавлять
 

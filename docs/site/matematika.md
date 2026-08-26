@@ -381,11 +381,21 @@ takes"](kak-dokazat.html).
 `List.map_id`, `List.fold_left_app`, `List.fold_right_app` — **eleven** lemmas,
 the largest group.
 
-The bodies of «Склеить» and «Обратить» are folds. About folds
-`docs/site/kak-dokazat.ru.md` says, from a measurement: **the step level is open,
-the fold level is closed**, and there is no rule "a fold over the empty list is
-the base" at all. Confirmed here too: both claims "over the empty list the fold is
-the base itself" (left and right) stayed grids.
+The bodies of «Склеить» and «Обратить» are folds. **The kernel does have a fold
+principle**, as re-measured by neighbouring work (task 0050, commit `b96826d7`):
+it applies when the fold runs over the argument itself, named, at the top level of
+the body, and when the step carries a guard-free claim that the accumulator grows
+by exactly one. Both of our folds meet those conditions, the step has been lifted
+and does carry such a claim — and **the principle still never fired**: both runs,
+with the lifted step and with the lambda, report `доказано 16 (из них без теоремы
+16)` and `доказано 15 (из них без теоремы 15)`, with no "of them by induction" at
+all.
+
+The length of a fold is computed by a different rule — "identity after rewriting
+with a premise" — and that rule suffices for every claim about the measure and for
+not a single claim about the contents. There is still no rule "a fold over the
+empty list is the base": both claims "over the empty list the fold is the base
+itself" (left and right) stayed grids.
 
 **Technique 8 was tried and cost minus one — that has to be said plainly.** The
 fold step of «Склеить» was lifted into an ordinary function «Шаг склейки», and on

@@ -50,6 +50,8 @@ object «Unpacking»
 total function «Group»
   accepts symbol: string, count: number
   returns string
+  ensures «an empty group prints nothing» if count equals 0 then (result equals "") else true
+  ensures «otherwise the count prints, and the symbol after it» if not (count equals 0) then (result equals (join (to text count) with symbol)) else true
   example «Three W»
     given symbol equals "W"
     given count equals 3
@@ -91,6 +93,8 @@ total function «Encode»
 total function «Repeat symbol»
   accepts symbol: string, count: number
   returns string
+  ensures «no repeats gives the empty string» if count is at most 0 then (result equals "") else true
+  ensures «otherwise the symbol stands before the remaining repeats» if not (count is at most 0) then (result equals (join symbol with («Repeat symbol» of symbol and (count minus 1)))) else true
   example «Three times»
     given symbol equals "W"
     given count equals 3

@@ -90,6 +90,7 @@ function «Sift»
 function «Numbers from and to»
   accepts start: number, finish: number
   returns list of number
+  ensures «a backwards range is empty» if start is greater than finish then (result equals empty list) else true
   example «Two to ten»
     given start equals 2
     given finish equals 10

@@ -508,6 +508,8 @@
 - [Отзыв сертификата не проверяет ни один из двух рабочих путей, и включить проверку нельзя: OCSP-скрепку не отдаёт почти никто](neither-path-checks-certificate-revocation.md)
 - [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка: NaN и бесконечности внутрь не проходят](number-at-the-entry-boundary-is-narrower-than-number-in-the-language.md)
+- [Веер по обязательствам держит не ядро, а печать: движок процессов уезжает только той программе, которая объявила `процесс`, — а компилятор не объявляет ни одного](obligations-fan-out-is-blocked-by-the-printer-not-the-kernel.md)
+- [Список обязательств собирался спуском по хвосту, и это стоило КВАДРАТА — не только времени, но и памяти: 1000 обязательств берут 4,25 ГиБ вместо 226 МиБ](obligations-list-built-by-descent-costs-a-square.md)
 - [Октеты в этом языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](octets-are-expressible-as-a-list-of-numbers-not-as-a-string.md)
 - [Разводить столкновения имён по одному дороже, чем дать всем объявлениям цели один суффикс: у C# столкнулось 322 из 392, и судей у них три, а не один](one-target-suffix-for-every-declaration-beats-separating-collisions-one-by-one.md)
 - [Один нулевой байт внутри исходника прячет весь файл от `grep` — и счётчик по дереву молча теряет 162 примера](one-zero-byte-in-a-source-hides-the-whole-file-from-grep.md)
@@ -599,8 +601,9 @@
 
 ## Ещё не разобранное
 
-- [Веер по обязательствам держит не ядро, а печать: движок процессов уезжает только той программе, которая объявила `процесс`, — а компилятор не объявляет ни одного](obligations-fan-out-is-blocked-by-the-printer-not-the-kernel.md)
-- [Список обязательств собирался спуском по хвосту, и это стоило КВАДРАТА — не только времени, но и памяти: 1000 обязательств берут 4,25 ГиБ вместо 226 МиБ](obligations-list-built-by-descent-costs-a-square.md)
+- [Доказанного мало: сторожа снимает ПАРА «доказано + пример»](crypto-keys-a-proved-postcondition-still-guards-without-an-example.md)
+- [Проверка модуля, ввозящего `tls.flang` целиком, съедает 97 % предела шагов на примерах ЧУЖИХ модулей — своих там почти нет](tls-checking-a-module-that-imports-tls-flang-whole-spends-97-percent-of-the-step-budget-on-foreign-examples.md)
+- [Шесть вещей, которых клиенту TLS не хватает, лежат в ЧУЖИХ файлах, и две из них — не нехватка кода, а столкновение имён](tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md)
 
 ## Как добавлять
 

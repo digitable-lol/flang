@@ -568,6 +568,8 @@
 - [Три точные меры длины у строки дали восемь утверждений — вчетверо больше, чем сам принцип индукции](three-exact-string-length-measures-gave-eight-claims.md)
 - [Три из пяти названных стен постусловия на нынешнем двоичном уже сняты: сумма сравнивается, `разбор` разбирается, поле варианта читается точкой](three-of-five-named-postcondition-walls-are-already-gone.md)
 - [TLS на flang закрыт не ценой счёта, а отсутствием ключа: «Случайное число» даёт одно и то же в трёх прогонах подряд](tls-in-flang-is-blocked-by-a-missing-random-key-not-by-cost.md)
+- [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
+- [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
 - [Примеров по корпусу прогоняется вдвое больше, чем объявлено, а девять файлов на 11 683 строки отчитываются чужими](twice-as-many-examples-run-as-are-declared.md)
 - [Два исполнителя портили двоичный поток по-разному, и расхождение было не в кодировке, а в том, где каждый терял](two-hosts-corrupted-the-binary-stream-in-different-places.md)
 - [Из npm и из brew приезжали разные компиляторы: на одном корпусе они разошлись на 54 вызовах из 59](two-installs-answered-differently-on-54-calls-of-59.md)
@@ -580,11 +582,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
-- [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
 
 ## Как добавлять
 

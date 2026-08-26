@@ -48,7 +48,8 @@ matching, module linking, a category surface and a concurrency surface, and one 
 printed into eight target languages.
 
 **There is one compiler, and it is written in flang.** It lives in
-[`flang/self/`](flang/self) — 56 files, 105,677 lines — and it builds into a single binary that
+[`flang/self/`](flang/self) — 56 files, 107,254 lines (measured 26 August 2026; 59 files and 112,426 lines
+counting the three in subdirectories) — and it builds into a single binary that
 needs nothing but a C compiler:
 
 ```bash
@@ -57,7 +58,8 @@ make -C bootstrap -j8    # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2, no w
 ```
 
 It also prints itself. `sh scripts/raskrutka.sh` runs the binary over the compiler's own
-sources and reproduces the seven C files the binary was built from — 7 files, 26,598,071 bytes;
+sources and reproduces the seven C files the binary was built from — 7 files (six `*.c`/`*.h`
+plus the `Makefile`), 26,598,071 bytes;
 `--check` compares them with what is committed, and `--bystro` asks the cheap question first,
 whether the inputs still match the ones the seed was printed from.
 
@@ -154,7 +156,7 @@ On every push CI builds the binary and runs those checks and the library-and-cor
 it; the LeetCode set and the rest of the tree are walked on a tag, because that walk takes over
 an hour.
 
-**`flang/test/` is a remnant, and small.** It holds 156 files (`git ls-files flang/test | wc -l`),
+**`flang/test/` is a remnant, and small.** It holds 157 files (`git ls-files flang/test | wc -l`),
 of which 144 are fixtures and only four are still runnable test files. `npm test` is
 `./ярлык тесты`, which runs those four; there is no `pretest` step. The old JavaScript
 implementation these tests were written against is gone, and what remains was pruned to what
@@ -450,8 +452,8 @@ table costs a square (appending copies the list), why Single Number is O(n²) be
 bitwise operations.
 [`examples/rosetta/`](examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one. The standard
-library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **38 modules, 1275
-functions, of which 1271 are proven total, and 2287 examples** that run on every check:
+library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **40 modules, 1340
+functions, of which 1335 are proven total, and 2386 examples** that run on every check:
 
 ```bash
 ls flang/stdlib/*.flang | wc -l

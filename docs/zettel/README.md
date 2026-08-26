@@ -476,6 +476,8 @@
 - [`flang test` на слое, у которого нет своих примеров, зеленеет всегда — а таких слоёв 11 683 строки](flang-test-is-always-green-on-a-layer-with-no-examples-of-its-own.md)
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Чистота обработчика превращает восстановление из журнала в одну свёртку](handler-purity-turns-journal-recovery-into-one-fold.md)
+- [Предусловие принадлежит функции границы, а не внутренней: ветка «если» его не снимает](host-boundary-a-precondition-belongs-to-the-boundary-function-not-the-inner-one.md)
+- [У границы слоёв два стыка, а не один: словарь поручений и рукописный хозяин над напечатанным кодом](host-boundary-the-second-junction-is-the-printed-one-not-the-order-dictionary.md)
 - [Одинаковые имена в двух модулях библиотеки спят, пока оба модуля не встретятся в одном замыкании, и ввоза второго уровня для встречи достаточно](identical-names-sleep-until-both-modules-meet-in-one-closure.md)
 - [Ветка `если` разворачивается в обе стороны и на второй ярус, а `разбор` списка — ни в какую](if-branches-unfold-both-ways-but-list-match-does-not.md)
 - [Класс «обращение по номеру» упёрся в целость числа, а не в границы](index-access-claims-hit-integrality-not-bounds.md)
@@ -586,8 +588,9 @@
 
 ## Ещё не разобранное
 
-- [Предусловие принадлежит функции границы, а не внутренней: ветка «если» его не снимает](host-boundary-a-precondition-belongs-to-the-boundary-function-not-the-inner-one.md)
-- [У границы слоёв два стыка, а не один: словарь поручений и рукописный хозяин над напечатанным кодом](host-boundary-the-second-junction-is-the-printed-one-not-the-order-dictionary.md)
+- [Ёлочки внутри имени примера роняют разбор всего файла, и отказ не называет ни файла, ни примера](service-files-nested-guillemets-in-an-example-name-break-the-lexer.md)
+- [Прибавка снятых проверок равна числу ДОКАЗАННЫХ постусловий у функций, получивших первый пример — считается по ведомости, без второго прогона печати](service-files-removed-checks-equal-proven-postconditions-of-newly-exampled-functions.md)
+- [TLS 1.3 доведён в дереве до расшифровки первой закрытой записи сервера: из 29 шагов клиента 5 готовы целиком, 11 сделаны частью, 13 не начаты](tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md)
 
 ## Как добавлять
 

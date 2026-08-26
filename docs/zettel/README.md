@@ -414,6 +414,7 @@
 - [Пара живых узлов поднимается одним `sh -c`, а судит их flang по журналам](a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md)
 - [Путь, названный в прозе обратными кавычками, не сверяется с деревом ничем — так контракт категорной поверхности пережил свои файлы на 28 упоминаний](a-path-in-backticks-is-checked-against-nothing.md)
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](a-plan-refusal-goes-to-stderr-and-success-to-stdout.md)
+- [Постусловие у зовущей функции превращает ХВОСТОВОЙ зов в кадр — и обход списка начинает стоить глубины по кадру на элемент](a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md)
 - [Постусловие считается при КАЖДОМ вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order.md)
 - [У двоичного два входа, и цель печати достаётся человеку и машине разной ценой: прогонщику JSON — даром, ключу `--target` — 90 строк C](a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md)
 - [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](a-product-floor-works-only-paired-with-a-mirror.md)
@@ -559,6 +560,7 @@
 - [У общего двоичного нет воспроизводимой родословной: время сборки известно, дерево — нет, а называемый коммит на два часа его моложе](recount-the-shared-binary-has-no-reproducible-pedigree.md)
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](removed-from-the-decision-and-removed-from-the-load-are-two-events.md)
 - [Переименовать заметку стоит не переименования, а правки ссылающихся: 191 имя потянуло 443 ссылки в 234 файлах](renaming-a-note-costs-the-referrers-not-the-rename.md)
+- [Кэш перепечатки по отпечатку неверен не редко, а по устройству: зависимость идёт ВВЕРХ по ввозам, а ключ смотрит вниз](reprint-cache-key-cannot-name-the-dependency-that-exists.md)
 - [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а тот же корпус по одному файлу проходит за 19 минут малой памятью](running-examples-by-directory-accumulates-memory-by-file-does-not.md)
 - [Откат применения прошёл по компилятору и остановился на его границе — в дереве осталось вчетверо больше](seed-discipline-revert-covered-the-compiler-and-left-the-tree.md)
 - [Словарь семени лежит в самом напечатанном C, и он отвечает за секунду там, где компилятор просит четверть часа](seed-word-tables-tell-in-a-second-what-the-seed-can-parse.md)
@@ -636,11 +638,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Постусловие у зовущей функции превращает ХВОСТОВОЙ зов в кадр — и обход списка начинает стоить глубины по кадру на элемент](a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md)
-- [Кэш перепечатки по отпечатку неверен не редко, а по устройству: зависимость идёт ВВЕРХ по ввозам, а ключ смотрит вниз](reprint-cache-key-cannot-name-the-dependency-that-exists.md)
 
 ## Как добавлять
 

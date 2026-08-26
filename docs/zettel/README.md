@@ -479,6 +479,7 @@
 - [Генератор печатает все функции приложения и молча роняет объявление `план` — напечатанный модуль умеет считать, но не умеет работать](emit-prints-plan-functions-but-drops-the-plan-declaration.md)
 - [Охрана пустоты в библиотеке пишется словом `пусто`, а ядро читает только меру — 114 обещаний против 18](emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md)
 - [Цели «равно» упёрлись в ПОРЯДОК СЛАГАЕМЫХ, а не в отсутствие индукции](equality-goals-hit-summand-order-not-missing-induction.md)
+- [Сравнение на равенство обходило всё дерево потому, что указатель не сверялся ни разу](equality-walked-the-whole-tree-because-the-pointer-was-never-compared.md)
 - [Пример к УЖЕ доказанной функции снимает сторожа целой пачкой, и стоит минуты](examples-close-proved-postconditions-cheaper-than-proofs.md)
 - [Пяти командам двоичного цена разная, и дешевле всех оказался `ast`; `lock` с `package` держал brotli, а после его снятия стоил в 7 раз дороже пересчёта](five-binary-commands-and-the-price-of-each.md)
 - [Пять шестых работы обмера области уходит на выяснение «не окупится», а не на саму перекладку](five-sixths-of-a-region-survey-pays-to-learn-it-will-not-pay-off.md)
@@ -619,10 +620,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Сравнение на равенство обходило всё дерево потому, что указатель не сверялся ни разу](equality-walked-the-whole-tree-because-the-pointer-was-never-compared.md)
 
 ## Как добавлять
 

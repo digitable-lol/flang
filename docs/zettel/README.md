@@ -478,6 +478,10 @@
 - [«flang emit» не прогоняет примеров, и это названная граница, а не та же дыра](emit-does-not-run-examples-and-that-is-a-named-boundary-not-a-hole.md)
 - [Генератор печатает все функции приложения и молча роняет объявление `план` — напечатанный модуль умеет считать, но не умеет работать](emit-prints-plan-functions-but-drops-the-plan-declaration.md)
 - [Охрана пустоты в библиотеке пишется словом `пусто`, а ядро читает только меру — 114 обещаний против 18](emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md)
+- [Дизъюнкция в условии тела открывается ровно ПЕРВОЙ своей половиной, а остальные не открываются ничем](encodings-a-disjunctive-body-condition-opens-only-its-first-half.md)
+- [`если` внутри случая `разбор`а ПО СПИСКУ охраной обещания не отпирается, хотя внутри случая по ВАРИАНТАМ отпирается](encodings-an-if-inside-a-list-match-case-is-not-a-guard-the-kernel-reads.md)
+- [Длина `символ N в строка` под охраной сводится, а длина `элемент N в [список]` — нет](encodings-length-of-a-string-char-reduces-but-length-of-a-list-element-does-not.md)
+- [Ярусов у числовой охраны четыре, если это НЕРАВЕНСТВА, и два, если РАВЕНСТВА](encodings-numeric-inequality-guards-open-four-tiers-numeric-equality-guards-two.md)
 - [Цели «равно» упёрлись в ПОРЯДОК СЛАГАЕМЫХ, а не в отсутствие индукции](equality-goals-hit-summand-order-not-missing-induction.md)
 - [Сравнение на равенство обходило всё дерево потому, что указатель не сверялся ни разу](equality-walked-the-whole-tree-because-the-pointer-was-never-compared.md)
 - [Пример к УЖЕ доказанной функции снимает сторожа целой пачкой, и стоит минуты](examples-close-proved-postconditions-cheaper-than-proofs.md)
@@ -507,6 +511,7 @@
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
 - [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
+- [Плоскость тела ядро пересчитывает на КАЖДОМ месте вызова, хотя это свойство самой функции](kernel-proved-flatness-of-a-body-is-recomputed-at-every-call-site.md)
 - [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
 - [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](kernel-refusals-are-142-lines-and-half-of-that-is-signatures.md)
 - [Порядок ключей в `results` — поверхность: подпись входа замороженной записи считается от него](key-order-in-results-is-a-surface.md)
@@ -626,11 +631,7 @@
 
 ## Ещё не разобранное
 
-- [Дизъюнкция в условии тела открывается ровно ПЕРВОЙ своей половиной, а остальные не открываются ничем](encodings-a-disjunctive-body-condition-opens-only-its-first-half.md)
-- [`если` внутри случая `разбор`а ПО СПИСКУ охраной обещания не отпирается, хотя внутри случая по ВАРИАНТАМ отпирается](encodings-an-if-inside-a-list-match-case-is-not-a-guard-the-kernel-reads.md)
-- [Длина `символ N в строка` под охраной сводится, а длина `элемент N в [список]` — нет](encodings-length-of-a-string-char-reduces-but-length-of-a-list-element-does-not.md)
-- [Ярусов у числовой охраны четыре, если это НЕРАВЕНСТВА, и два, если РАВЕНСТВА](encodings-numeric-inequality-guards-open-four-tiers-numeric-equality-guards-two.md)
-- [Плоскость тела ядро пересчитывает на КАЖДОМ месте вызова, хотя это свойство самой функции](kernel-proved-flatness-of-a-body-is-recomputed-at-every-call-site.md)
+- [Связывание растёт линейно по виткам и квадратом по времени: счётчик шагов квадрата не видит](linking-costs-steps-linearly-and-time-quadratically.md)
 
 ## Как добавлять
 

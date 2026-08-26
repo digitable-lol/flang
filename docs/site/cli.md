@@ -38,7 +38,7 @@ A program has three extensions, and all three are equal:
 A file is taken by its path, not by its extension: `flang check`, `run`, `emit`,
 `ast`, `tokens`, `lock`, `package` and `facts` accept any of the three — and any
 other path as well. The decision is recorded in
-`docs/adr/0008-three-file-extensions.md`.
+`docs/adr/0016-three-file-extensions.md`.
 
 One exception, and it is worth knowing: **`flang test`, given ONE file,
 recognises it by `.flang`** — an argument with another extension is treated as a

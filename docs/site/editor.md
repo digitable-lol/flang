@@ -10,7 +10,7 @@ A program has three extensions, and all three are equal: `.flang` is the main on
 the one used in every command and in CI; `.fp` is the short one; `.фп` stands for
 «функциональная программа» — a functional program — so that a Russian file name
 need not be transliterated
-(the decision is recorded in `docs/adr/0008-three-file-extensions.md`).
+(the decision is recorded in `docs/adr/0016-three-file-extensions.md`).
 All three are picked up by Vim, by Neovim and by VS Code.
 
 Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.

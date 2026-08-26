@@ -140,6 +140,11 @@ flang/stdlib/trust-store.flang: проверено — разбор, типы, �
    подписывается RSA-PSS, которого в дереве нет вовсе.
 3. **Секрета взять неоткуда.** `«Случайное число»` повторимо; тайный ключ в
    примере взят из RFC 8448, то есть напечатан в открытом документе.
+4. **ЦЕНА СЧЁТА, и этот запор работой по TLS не устраняется.** Замер: два
+   действия AES-128-GCM над записью в 37 октетов — **87,93 с**
+   (`/usr/bin/time` на прогоне 3 выше). Записи в 3829 октетов это даёт больше
+   часа, а рукопожатие столько не живёт: трубку кладёт сервер. Разбор —
+   [`docs/zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md`](../docs/zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md).
 
 Поимённый список того, что для этого надо дописать в ЧУЖИХ файлах, —
 [`docs/zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md`](../docs/zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md).

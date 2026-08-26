@@ -58,6 +58,7 @@ total function «Concatenate lists»
 total function «Take first»
   accepts items: list of number, count: number
   returns list of number
+  ensures «taking none gives the empty list» if count is at most 0 then (result equals empty list) else true
   example «Take two»
     given items equals [1, 2, 3, 4]
     given count equals 2

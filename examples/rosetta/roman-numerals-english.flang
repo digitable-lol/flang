@@ -61,6 +61,8 @@ total function «Repeat symbol»
 total function «Roman group»
   accepts digit: number, small: string, middle: string, large: string
   returns string
+  ensures «nine is the small symbol before the large one» if digit equals 9 then (result equals (join small with large)) else true
+  ensures «four is the small symbol before the middle one» if not (digit equals 9) then (if digit equals 4 then (result equals (join small with middle)) else true) else true
   example «Zero is empty»
     given digit equals 0
     given small equals "I"
@@ -185,6 +187,9 @@ total function «Value of a symbol»
   returns number
   ensures «the value of a symbol is non-negative» result is at least 0
   ensures «the value of a symbol is at most a thousand» result is at most 1000
+  ensures «M is a thousand» if symbol equals "M" then (result equals 1000) else true
+  ensures «D is five hundred» if not (symbol equals "M") then (if symbol equals "D" then (result equals 500) else true) else true
+  ensures «C is a hundred» if not (symbol equals "M") then (if not (symbol equals "D") then (if symbol equals "C" then (result equals 100) else true) else true) else true
   example «M»
     given symbol equals "M"
     expected 1000

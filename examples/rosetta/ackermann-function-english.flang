@@ -38,6 +38,8 @@ module «Ackermann function»
 function «Ackermann»
   accepts m: number, n: number
   returns number
+  ensures «at m zero Ackermann just adds one» if m equals 0 then (result equals (n plus 1)) else true
+  ensures «at n zero the step goes with one» if not (m equals 0) then (if n equals 0 then (result equals («Ackermann» of (m minus 1) and 1)) else true) else true
   example «A(0, 0) = 1»
     given m equals 0
     given n equals 0

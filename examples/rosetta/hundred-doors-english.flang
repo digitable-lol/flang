@@ -132,6 +132,7 @@ total function «Lists agree»
 function «Numbers from and to»
   accepts start: number, finish: number
   returns list of number
+  ensures «a backwards range is empty» if start is greater than finish then (result equals empty list) else true
   example «One to five»
     given start equals 1
     given finish equals 5

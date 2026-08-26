@@ -125,6 +125,8 @@ total function «Position of substring»
   accepts text: string, part: string
   returns number
   ensures «a position is non-negative» result is at least 0
+  ensures «no substring means no position» if not (text contains part) then (result equals 0) else true
+  ensures «otherwise the position is the length of the left piece plus one» if text contains part then (result equals ((length (head (split text by part))) plus 1)) else true
   example «In the middle»
     given text equals "abcd"
     given part equals "c"
@@ -140,6 +142,7 @@ total function «Position of substring»
 total function «Lowercase letter»
   accepts letter: string
   returns string
+  ensures «the first branch is a lowercase letter» if («Position of substring» of "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and letter) equals 0 then (result equals letter) else true
   example «A capital becomes small»
     given letter equals "C"
     expected "c"

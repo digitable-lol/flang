@@ -589,6 +589,7 @@
 - [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](the-child-deadline-is-the-main-obstacle-for-long-checks.md)
 - [Сверка эталона командной строки не ловила забытую команду: на ключе свидетель отказывает раньше, чем доходит до команды](the-cli-reference-check-missed-a-forgotten-command.md)
 - [Закрытый список правил сверщика разошёлся с ядром: было восемь, стало тринадцать](the-closed-rule-list-of-the-checker-drifted-from-the-kernel.md)
+- [Ветвь «пусто» у тела-`разбора` закрыта ОБЕИМИ записями охраны, и литерал не помогает](the-empty-branch-of-a-match-is-shut-in-both-spellings.md)
 - [Двоичный расходится с Node на корпусе не печатью, а границей входа: у уже втащенной цели C расходится 161 программа из 163, и всегда одним и тем же блоком](the-entry-boundary-not-printing-splits-the-binary-from-node.md)
 - [Граница входа была долгом ПЕЧАТИ, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается вовсе](the-entry-boundary-was-a-debt-of-printing-not-a-subtraction-in-the-check.md)
 - [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](the-first-corpus-run-found-six-divergences-between-implementations.md)

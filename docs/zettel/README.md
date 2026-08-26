@@ -512,6 +512,7 @@
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
+- [В примере годятся только литералы, и ошибка в нём выходит в конце многочасового прогона](kernel-proved-an-example-may-hold-only-literals.md)
 - [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
 - [Примеры бесплатны там, где в замыкании нет ни одной теоремы — и ядро как раз такое](kernel-proved-examples-are-free-where-there-are-no-theorems.md)
 - [Плоскость тела ядро пересчитывает на КАЖДОМ месте вызова, хотя это свойство самой функции](kernel-proved-flatness-of-a-body-is-recomputed-at-every-call-site.md)
@@ -637,7 +638,8 @@
 
 ## Ещё не разобранное
 
-- [В примере годятся только литералы, и ошибка в нём выходит в конце многочасового прогона](kernel-proved-an-example-may-hold-only-literals.md)
+- [Постусловие у зовущей функции превращает ХВОСТОВОЙ зов в кадр — и обход списка начинает стоить глубины по кадру на элемент](a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md)
+- [Кэш перепечатки по отпечатку неверен не редко, а по устройству: зависимость идёт ВВЕРХ по ввозам, а ключ смотрит вниз](reprint-cache-key-cannot-name-the-dependency-that-exists.md)
 
 ## Как добавлять
 

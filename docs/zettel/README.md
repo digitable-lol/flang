@@ -526,6 +526,8 @@
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](removed-from-the-decision-and-removed-from-the-load-are-two-events.md)
 - [Переименовать заметку стоит не переименования, а правки ссылающихся: 191 имя потянуло 443 ссылки в 234 файлах](renaming-a-note-costs-the-referrers-not-the-rename.md)
 - [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а тот же корпус по одному файлу проходит за 19 минут малой памятью](running-examples-by-directory-accumulates-memory-by-file-does-not.md)
+- [Ёлочки внутри имени примера роняют разбор всего файла, и отказ не называет ни файла, ни примера](service-files-nested-guillemets-in-an-example-name-break-the-lexer.md)
+- [Прибавка снятых проверок равна числу ДОКАЗАННЫХ постусловий у функций, получивших первый пример — считается по ведомости, без второго прогона печати](service-files-removed-checks-equal-proven-postconditions-of-newly-exampled-functions.md)
 - [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок, и это уложилось в предел только после трёх названных правок](sha256-without-bit-operations-costs-925-thousand-steps-per-block.md)
 - [Тихая потеря байтов у файлов была ДВУМЯ бедами в разных местах, и лечатся они разным лекарством](silent-byte-loss-in-files-was-two-failures-with-two-cures.md)
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](sort-result-is-non-decreasing-is-false-on-not-a-number.md)
@@ -574,6 +576,7 @@
 - [Поручения «Удалить файл» в словаре ввода-вывода нет, поэтому план не убирает за собой временные файлы](there-is-no-delete-file-order-in-the-io-dictionary.md)
 - [Три точные меры длины у строки дали восемь утверждений — вчетверо больше, чем сам принцип индукции](three-exact-string-length-measures-gave-eight-claims.md)
 - [Три из пяти названных стен постусловия на нынешнем двоичном уже сняты: сумма сравнивается, `разбор` разбирается, поле варианта читается точкой](three-of-five-named-postcondition-walls-are-already-gone.md)
+- [TLS 1.3 доведён в дереве до расшифровки первой закрытой записи сервера: из 29 шагов клиента 5 готовы целиком, 11 сделаны частью, 13 не начаты](tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md)
 - [TLS на flang закрыт не ценой счёта, а отсутствием ключа: «Случайное число» даёт одно и то же в трёх прогонах подряд](tls-in-flang-is-blocked-by-a-missing-random-key-not-by-cost.md)
 - [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
 - [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
@@ -592,9 +595,10 @@
 
 ## Ещё не разобранное
 
-- [Ёлочки внутри имени примера роняют разбор всего файла, и отказ не называет ни файла, ни примера](service-files-nested-guillemets-in-an-example-name-break-the-lexer.md)
-- [Прибавка снятых проверок равна числу ДОКАЗАННЫХ постусловий у функций, получивших первый пример — считается по ведомости, без второго прогона печати](service-files-removed-checks-equal-proven-postconditions-of-newly-exampled-functions.md)
-- [TLS 1.3 доведён в дереве до расшифровки первой закрытой записи сервера: из 29 шагов клиента 5 готовы целиком, 11 сделаны частью, 13 не начаты](tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md)
+- [Пока сборщик записи молчит о своих полях, наверху не доказывается ничего](certificates-a-record-builder-that-says-nothing-blocks-every-promise-above-it.md)
+- [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
+- [Именованный шаг свёртки открывает разбор цели у ВЫЗЫВАЮЩЕГО, но может отнять меру самой свёртки](structures-a-named-fold-step-unblocks-the-callers-goal-split-but-can-cost-the-fold-measure.md)
+- [У вынесенного шага свёртки открыта каждая ветвь тела, а не только первая](structures-every-branch-of-an-extracted-fold-step-is-a-separate-proved-promise.md)
 
 ## Как добавлять
 

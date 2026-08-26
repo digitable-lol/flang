@@ -38,7 +38,8 @@
         "extensions": [
           ".flang",
           ".fp",
-          ".фп"
+          ".фп",
+          ".фланг"
         ],
         "configuration": "./language-configuration.json"
       }

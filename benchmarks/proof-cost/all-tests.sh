@@ -1,8 +1,8 @@
 #!/bin/bash
 cd /home/a/projects/flang/.claude/worktrees/agent-a4daa59c6b3b8bbfc
 export LC_ALL=C.UTF-8
-# Три равноправных расширения программы: `.flang`, `.fp`, `.фп` (ADR-0008).
-for f in docs/benchmark2/*.flang docs/benchmark2/*.fp docs/benchmark2/*.фп; do
+# Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016).
+for f in docs/benchmark2/*.flang docs/benchmark2/*.fp docs/benchmark2/*.фп docs/benchmark2/*.фланг; do
   [ -e "$f" ] || continue
   printf "%-42s " "$f"
   bootstrap/flang test "$f" --no-check 2>&1 | node -e '

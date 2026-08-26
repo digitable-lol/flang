@@ -39,8 +39,8 @@ into eight target languages. The compiler is written in flang itself.
 
 ## What kind of language this is
 
-**[`flang`](flang/SPEC.md)** (`.flang`, `.fp` or `.фп` — the three extensions are equal,
-[ADR-0016](docs/adr/0016-three-file-extensions.md)) is an indentation-based language where a function
+**[`flang`](flang/SPEC.md)** (`.flang`, `.fp`, `.фп` or `.фланг` — the four extensions are equal,
+[ADR-0018](docs/adr/0018-file-extensions-are-one-list.md)) is an indentation-based language where a function
 carries its own examples and its own promise about the result right next to its body. The
 `тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
 it cannot prove. The language has sum types, lists, strings as data, recursion, pattern

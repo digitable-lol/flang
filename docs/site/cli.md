@@ -25,20 +25,22 @@ The source of this page is the program itself: `flang --help` and
 
 Common to all of them: `flang --help`, `flang --version`, `flang <command> --help`.
 
-## The input file: three extensions
+## The input file: four extensions
 
-A program has three extensions, and all three are equal:
+A program has four extensions, and all four are equal:
 
 | Extension | Where the name comes from | Where it gets typed |
 | --- | --- | --- |
 | `.flang` | the name of the language | the main one: commands, docs, CI jobs |
 | `.fp` | *functional program* | the short one, no keyboard switching |
 | `.фп` | «функциональная программа» | so a Russian file name needs no transliteration |
+| `.фланг` | the name of the language in Cyrillic | the same, spelled out |
 
 A file is taken by its path, not by its extension: `flang check`, `run`, `emit`,
-`ast`, `tokens`, `lock`, `package` and `facts` accept any of the three — and any
-other path as well. The decision is recorded in
-`docs/adr/0016-three-file-extensions.md`.
+`ast`, `tokens`, `lock`, `package` and `facts` accept any of the four — and any
+other path as well. The decisions are recorded in
+`docs/adr/0016-three-file-extensions.md` and
+`docs/adr/0018-file-extensions-are-one-list.md`.
 
 One exception, and it is worth knowing: **`flang test`, given ONE file,
 recognises it by `.flang`** — an argument with another extension is treated as a

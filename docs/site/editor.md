@@ -6,12 +6,14 @@ The language server ships inside the compiler — there is nothing else to insta
 flang lsp --stdio
 ```
 
-A program has three extensions, and all three are equal: `.flang` is the main one,
+A program has four extensions, and all four are equal: `.flang` is the main one,
 the one used in every command and in CI; `.fp` is the short one; `.фп` stands for
 «функциональная программа» — a functional program — so that a Russian file name
-need not be transliterated
-(the decision is recorded in `docs/adr/0016-three-file-extensions.md`).
-All three are picked up by Vim, by Neovim and by VS Code.
+need not be transliterated; `.фланг` spells the name of the language out in
+Cyrillic (the decisions are recorded in
+`docs/adr/0016-three-file-extensions.md` and
+`docs/adr/0018-file-extensions-are-one-list.md`).
+All four are picked up by Vim, by Neovim and by VS Code.
 
 Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
 
@@ -130,7 +132,7 @@ npx vsce package
 code --install-extension flang-0.1.0.vsix
 ```
 
-It highlights all three file extensions and starts the language server. There
+It highlights all four file extensions and starts the language server. There
 are three settings:
 
 | Key | Default | What it does |
@@ -174,7 +176,7 @@ syntax on
 vim-plug takes the subdirectory as a key:
 `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`.
 
-To check that it took: open any `.flang`, `.fp` or `.фп` file and ask the
+To check that it took: open any `.flang`, `.fp`, `.фп` or `.фланг` file and ask the
 editor.
 
 ```vim
@@ -234,7 +236,7 @@ vim-plug and packer: `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }` and
 `use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
 
 The server needs no separate setup, and should not get one: the plugin assigns
-the file type to all three extensions itself and starts the server through the
+the file type to all four extensions itself and starts the server through the
 built-in `vim.lsp`. A second client on the same buffer would give two identical
 diagnostics on every line.
 

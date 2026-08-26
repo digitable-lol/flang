@@ -624,6 +624,14 @@
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
 
+## Ещё не разобранное
+
+- [Дизъюнкция в условии тела открывается ровно ПЕРВОЙ своей половиной, а остальные не открываются ничем](encodings-a-disjunctive-body-condition-opens-only-its-first-half.md)
+- [`если` внутри случая `разбор`а ПО СПИСКУ охраной обещания не отпирается, хотя внутри случая по ВАРИАНТАМ отпирается](encodings-an-if-inside-a-list-match-case-is-not-a-guard-the-kernel-reads.md)
+- [Длина `символ N в строка` под охраной сводится, а длина `элемент N в [список]` — нет](encodings-length-of-a-string-char-reduces-but-length-of-a-list-element-does-not.md)
+- [Ярусов у числовой охраны четыре, если это НЕРАВЕНСТВА, и два, если РАВЕНСТВА](encodings-numeric-inequality-guards-open-four-tiers-numeric-equality-guards-two.md)
+- [Плоскость тела ядро пересчитывает на КАЖДОМ месте вызова, хотя это свойство самой функции](kernel-proved-flatness-of-a-body-is-recomputed-at-every-call-site.md)
+
 ## Как добавлять
 
 Одна заметка — одна мысль. Формат:

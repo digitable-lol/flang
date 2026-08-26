@@ -492,6 +492,8 @@
 - [`flang test` на слое, у которого нет своих примеров, зеленеет всегда — а таких слоёв 11 683 строки](flang-test-is-always-green-on-a-layer-with-no-examples-of-its-own.md)
 - [В примере годятся только литералы, и ещё две грабли записи, стоившие прогонов](front-end-example-blocks-take-literals-only.md)
 - [Один пример снимает ВСЕ доказанные постусловия функции, а не одно](front-end-one-example-per-function-lifts-all-its-proven-guards.md)
+- [Охрана берётся не только из ВЕРХНЕГО `если`: замеры на стенде, приложениях и правиле приёмки спек](fspec-guard-copied-from-a-nested-if-and-from-a-substituted-let.md)
+- [Двадцать шесть спек из сорока двух не читаются НИ ОДНИМ существующим двоичным, и проверка спек красна — применили `неотрицательное`, не перепечатав семени](fspec-spec-catalog-is-unreadable-by-every-binary.md)
 - [Цель flang — доказуемость, доступная обычному программисту](goal-of-the-language.md)
 - [Ложное обещание о длине прячется в отчёте под видом недоказанного](guards-a-false-length-promise-hides-as-undeclared.md)
 - [Запас шагов — общий кошелёк замыкания, а не свойство файла](guards-step-budget-is-a-shared-purse.md)
@@ -633,8 +635,8 @@
 
 ## Ещё не разобранное
 
-- [Охрана берётся не только из ВЕРХНЕГО `если`: замеры на стенде, приложениях и правиле приёмки спек](fspec-guard-copied-from-a-nested-if-and-from-a-substituted-let.md)
-- [Двадцать шесть спек из сорока двух не читаются НИ ОДНИМ существующим двоичным, и проверка спек красна — применили `неотрицательное`, не перепечатав семени](fspec-spec-catalog-is-unreadable-by-every-binary.md)
+- [Настоящее дерево знает 29 видов узла, необязательных ключей семь на пять видов, а `list` и `record` — это по ДВА разных узла под одной строкой](typed-ast-the-real-tree-has-29-kinds-and-list-is-two-different-nodes.md)
+- [Типизация узла сама по себе чинит одно ребро рекурсии из шести, а на двух из пяти узел едет неизменным](typed-ast-typing-alone-fixes-one-recursion-edge-in-six.md)
 
 ## Как добавлять
 

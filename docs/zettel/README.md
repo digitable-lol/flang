@@ -460,6 +460,7 @@
 - [Из хеша код не выводится: у средней функции flang вдвое больше содержания, чем влезает в адрес](code-cannot-be-derived-from-its-hash.md)
 - [`http.flang` считает Content-Length ЗНАКАМИ в обе стороны, и потому чинить одну сторону нельзя](content-length-is-counted-in-characters-on-both-sides.md)
 - [Порча, попавшая в недостижимую ветвь, лечится КОРПУСОМ, а не другой порчей](corruption-in-an-unreachable-branch-is-cured-by-the-corpus.md)
+- [Доказанного мало: сторожа снимает ПАРА «доказано + пример»](crypto-keys-a-proved-postcondition-still-guards-without-an-example.md)
 - [Вывод из спецификации работает там, где область сузили нарочно, — и у flang такая область уже есть: словарь между спеками](derivation-works-where-the-domain-was-narrowed-on-purpose.md)
 - [Таблица, разложенная на несколько строк ради поиска, расходится молча — и ловит это только тот, кто её ПЕРЕЧИСЛЯЕТ](derived-tables-of-one-fact-drift-apart-in-silence.md)
 - [Дизъюнкция — самый частый верхний вид цели в библиотеке (344 из 1011, доказано 4), но упирается она НЕ в дизъюнкцию](disjunction-is-the-most-common-goal-kind-but-not-the-bottleneck.md)
@@ -583,7 +584,9 @@
 - [Три точные меры длины у строки дали восемь утверждений — вчетверо больше, чем сам принцип индукции](three-exact-string-length-measures-gave-eight-claims.md)
 - [Три из пяти названных стен постусловия на нынешнем двоичном уже сняты: сумма сравнивается, `разбор` разбирается, поле варианта читается точкой](three-of-five-named-postcondition-walls-are-already-gone.md)
 - [TLS 1.3 доведён в дереве до расшифровки первой закрытой записи сервера: из 29 шагов клиента 5 готовы целиком, 11 сделаны частью, 13 не начаты](tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md)
+- [Проверка модуля, ввозящего `tls.flang` целиком, съедает 97 % предела шагов на примерах ЧУЖИХ модулей — своих там почти нет](tls-checking-a-module-that-imports-tls-flang-whole-spends-97-percent-of-the-step-budget-on-foreign-examples.md)
 - [TLS на flang закрыт не ценой счёта, а отсутствием ключа: «Случайное число» даёт одно и то же в трёх прогонах подряд](tls-in-flang-is-blocked-by-a-missing-random-key-not-by-cost.md)
+- [Шесть вещей, которых клиенту TLS не хватает, лежат в ЧУЖИХ файлах, и две из них — не нехватка кода, а столкновение имён](tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md)
 - [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
 - [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
 - [Примеров по корпусу прогоняется вдвое больше, чем объявлено, а девять файлов на 11 683 строки отчитываются чужими](twice-as-many-examples-run-as-are-declared.md)
@@ -598,12 +601,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Доказанного мало: сторожа снимает ПАРА «доказано + пример»](crypto-keys-a-proved-postcondition-still-guards-without-an-example.md)
-- [Проверка модуля, ввозящего `tls.flang` целиком, съедает 97 % предела шагов на примерах ЧУЖИХ модулей — своих там почти нет](tls-checking-a-module-that-imports-tls-flang-whole-spends-97-percent-of-the-step-budget-on-foreign-examples.md)
-- [Шесть вещей, которых клиенту TLS не хватает, лежат в ЧУЖИХ файлах, и две из них — не нехватка кода, а столкновение имён](tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md)
 
 ## Как добавлять
 

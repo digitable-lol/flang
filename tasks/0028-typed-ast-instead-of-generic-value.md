@@ -210,7 +210,7 @@ PAMYAT=60G /srv/flang-rabota/vorota/flang-vorota -- \
 Двоичный: `/srv/flang-rabota/w-predely/bootstrap/flang`, 23 августа 2026
 16:00 UTC, дерево не установлено, не новее `883fe9a9`.
 
-## Решение записано ADR-0012, и переход разбит на семь шагов
+## Решение записано ADR-0013, и переход разбит на семь шагов
 
 `docs/adr/0012-a-typed-node-enters-through-a-door-at-the-layer-boundary.md`.
 

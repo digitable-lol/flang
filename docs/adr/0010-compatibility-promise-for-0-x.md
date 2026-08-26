@@ -8,7 +8,7 @@
 вычтено), `flang/self/cli.flang`, `flang/src/emit/c/flang_repl.c`,
 `docs/site/cli.md`, `flang/self/zapis.flang`, `flang/proof/сверщик.flang`,
 `flang/self/parser.flang`, `flang/self/failures.flang`
-**Связано:** [ADR-0008](0008-three-file-extensions.md) — три расширения, чьё
+**Связано:** [ADR-0016](0016-three-file-extensions.md) — три расширения, чьё
 обещание записано здесь пунктом 9; [ADR-0009](0009-tasks-live-in-the-repo.md) —
 задача 0023, которой это решение закрывается
 
@@ -262,7 +262,7 @@ grep -n 'кодов отказа ровно одиннадцать' flang/self/f
 ### 9. Три расширения равноправны, четвёртого не будет
 
 `.flang`, `.fp`, `.фп` — файл с любым из трёх есть программа на flang
-([ADR-0008](0008-three-file-extensions.md)). Обещание на 0.x:
+([ADR-0016](0016-three-file-extensions.md)). Обещание на 0.x:
 
 1. ни одно из трёх не перестанет приниматься;
 2. **основным остаётся `.flang`** — в документации, в ярлыках, в работах CI и в

@@ -12,12 +12,18 @@
 //   Coq  — coq/coq, тег V8.19.2:
 //          theories/Init/Nat.v, theories/Arith/PeanoNat.v,
 //          theories/Numbers/NatInt/{NZAdd,NZMul,NZOrder,NZGcd,NZParity}.v,
-//          theories/Numbers/Natural/Abstract/{NAdd,NOrder,NParity}.v
-//   Lean — leanprover/lean4, src/Init/Data/Nat/{Basic,Lemmas,Gcd}.lean,
-//          src/Init/{Prelude,Core}.lean; Mathlib4,
+//          theories/Numbers/Natural/Abstract/{NAdd,NDiv,NOrder,NParity}.v
+//   Lean — leanprover/lean4, src/Init/{Prelude,Core}.lean,
+//          src/Init/Data/Nat/{Basic,Lemmas,Gcd,MinMax,Mod,Dvd}.lean; Mathlib4,
 //          Mathlib/Data/Nat/Basic.lean, Mathlib/Algebra/Group/Nat/Even.lean.
 // Имя, которое не удалось найти в выкачанном файле, в таблицу не попало —
 // вместо него в docs/site/matematika.ru.md стоит прочерк.
+//
+// ГРАНИЦА, РАДИ КОТОРОЙ ЗАВЕДЕНЫ ПАРЫ ФУНКЦИЙ. Две леммы стоят в файле дважды —
+// один раз со вторым доводом-ТЕРМОМ, другой раз с ЛИТЕРАЛОМ, и вердикты у них
+// разные. «Сумма» против «Прибавить десять» (Nat.le_add_r) и «Остаток» против
+// «Остатка по десяти» (Nat.mod_bound_pos). Это не дублирование: это и есть
+// замер, из которого видно, где проходит правило ядра «порядок по построению».
 //
 // ПОЧЕМУ ВЕЗДЕ `нат`, А НЕ `число`. У Coq и Lean эти леммы
 // сформулированы над `nat` — точным типом без «не числа», без бесконечностей и

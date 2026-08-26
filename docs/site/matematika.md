@@ -496,6 +496,14 @@ The line to look at is the last one of the proof report:
 Count only `доказано`. `сетка` is a finite set of values and says nothing about
 the rest of the inputs.
 
+The measurement was taken with the binary
+`/srv/flang-rabota/w-predely/bootstrap/flang` (built 23 August 2026, with a raised
+step limit). A binary built from this tree's seed may answer differently: some
+kernel rules were written into the sources after the seed and will only arrive
+with the next reprint. If your numbers disagree with this page, first check which
+binary you counted with.
+
+
 ## Where to go next
 
 - ["Which promises the kernel takes"](kak-dokazat.html) — spelling forms, each

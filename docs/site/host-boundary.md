@@ -21,8 +21,26 @@ wrong in a way you can check.
 
 **The language does not forbid an infinite loop.** The mark `тотальная` is a
 promise, and the compiler checks exactly that promise. A function without the
-mark promises nothing, may have no stopping condition at all, and passes the
-check with exit code zero. Non-termination does not turn into a hang either:
+mark promises nothing and may have no stopping condition at all — and it passes
+the check:
+
+```
+$ cat вечный.flang
+модуль «Вечный цикл»
+
+функция «Крутить»
+  принимает н: число
+  возвращает число
+  «Крутить» от (н плюс 1)
+
+$ flang check вечный.flang; echo $?
+модуль «Вечный цикл»: функций 1, из них с доказанным завершением 0; типов 0
+без доказанного завершения: «Крутить»
+вечный.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+0
+```
+
+Non-termination does not turn into a hang either:
 both the evaluator and the printed program count steps and turn exhaustion into
 a named refusal, `FLANG_RECURSION_LIMIT`. So what the language forbids is not
 the infinite loop but **lying about termination**.

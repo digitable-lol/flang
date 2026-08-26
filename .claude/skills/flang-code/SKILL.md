@@ -310,7 +310,16 @@ LC_ALL=C.UTF-8 node flang/scripts/proof-ledger.mjs                  # ведом
 ### Проверяется прогоном, а не на глаз
 
 ```bash
-node scripts/jargon-guard.mjs          # отказ с именем файла и номером строки
+./ярлык жаргон:проверка                # отказ с именем файла и номером строки
+```
+
+Это `flang/scripts/jargon-guard.flang`, на flang. Прогон идёт **255 секунд** и
+берёт место у ворот — не то, что запускают между делом.
+
+Двух других ключей на flang **нет вовсе**: у файла на flang один план и ни
+одного ключа. Пока они живут только в старом прогоне на JavaScript:
+
+```bash
 node scripts/jargon-guard.mjs --list   # каждое место поимённо
 node scripts/jargon-guard.mjs --write  # вписать новый долг после чистки
 ```

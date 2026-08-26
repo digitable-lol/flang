@@ -511,6 +511,7 @@
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
 - [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
+- [Примеры бесплатны там, где в замыкании нет ни одной теоремы — и ядро как раз такое](kernel-proved-examples-are-free-where-there-are-no-theorems.md)
 - [Плоскость тела ядро пересчитывает на КАЖДОМ месте вызова, хотя это свойство самой функции](kernel-proved-flatness-of-a-body-is-recomputed-at-every-call-site.md)
 - [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
 - [Отказы ядра решений — 142 строки из 3168, а половина числа — подписи функций](kernel-refusals-are-142-lines-and-half-of-that-is-signatures.md)
@@ -632,7 +633,8 @@
 
 ## Ещё не разобранное
 
-- [Примеры бесплатны там, где в замыкании нет ни одной теоремы — и ядро как раз такое](kernel-proved-examples-are-free-where-there-are-no-theorems.md)
+- [Охрана берётся не только из ВЕРХНЕГО `если`: замеры на стенде, приложениях и правиле приёмки спек](fspec-guard-copied-from-a-nested-if-and-from-a-substituted-let.md)
+- [Двадцать шесть спек из сорока двух не читаются НИ ОДНИМ существующим двоичным, и проверка спек красна — применили `неотрицательное`, не перепечатав семени](fspec-spec-catalog-is-unreadable-by-every-binary.md)
 
 ## Как добавлять
 

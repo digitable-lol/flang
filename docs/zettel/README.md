@@ -454,6 +454,7 @@
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](an-unnameable-host-deadline-alone-kept-the-build-on-javascript.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](auto-repair-of-numbers-fixes-the-leaf-and-leaves-the-total.md)
 - [Сборка двоичного стоит минуту, а не час, — поэтому её место в CI на каждом пуше](building-the-binary-costs-a-minute-not-an-hour.md)
+- [Пока сборщик записи молчит о своих полях, наверху не доказывается ничего](certificates-a-record-builder-that-says-nothing-blocks-every-promise-above-it.md)
 - [Числа сайта тухнут той же правкой, что и словарь, а лечатся одной командой — которая под нагрузкой не успевает](chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.md)
 - [Цена утверждений линейна по числу ЭЛЕМЕНТАРНЫХ ДЕЙСТВИЙ внутри них, а не по числу утверждений, — поэтому одного дорогого виновника не находится, и переписывать надо не «самое дорогое», а самое частое](claim-cost-is-linear-in-elementary-actions-not-in-claims.md)
 - [Из хеша код не выводится: у средней функции flang вдвое больше содержания, чем влезает в адрес](code-cannot-be-derived-from-its-hash.md)
@@ -505,6 +506,7 @@
 - [`нат` в объявлении снимает отказ по целости, но почти не добавляет доказанных мест](nat-in-a-declaration-removes-integrality-refusals-not-bounds.md)
 - [Объявить `нат` и снять проверку из напечатанного кода удаётся только там, где вызывающий уже даёт натуральное: один случай из шести](nat-removes-a-guard-only-when-the-caller-already-gives-a-natural.md)
 - [Отзыв сертификата не проверяет ни один из двух рабочих путей, и включить проверку нельзя: OCSP-скрепку не отдаёт почти никто](neither-path-checks-certificate-revocation.md)
+- [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка: NaN и бесконечности внутрь не проходят](number-at-the-entry-boundary-is-narrower-than-number-in-the-language.md)
 - [Октеты в этом языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](octets-are-expressible-as-a-list-of-numbers-not-as-a-string.md)
 - [Разводить столкновения имён по одному дороже, чем дать всем объявлениям цели один суффикс: у C# столкнулось 322 из 392, и судей у них три, а не один](one-target-suffix-for-every-declaration-beats-separating-collisions-one-by-one.md)
@@ -533,6 +535,8 @@
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](sort-result-is-non-decreasing-is-false-on-not-a-number.md)
 - [«Меньше» — это не «не больше И не равно»: разложение ложно на минус нуле](strict-less-is-not-not-greater-and-not-equal.md)
 - [Постусловие «обращение не меняет длины строки» ЛОЖНО, и ломает его одинокий суррогат](string-reversal-keeps-length-is-false-on-a-lone-surrogate.md)
+- [Именованный шаг свёртки открывает разбор цели у ВЫЗЫВАЮЩЕГО, но может отнять меру самой свёртки](structures-a-named-fold-step-unblocks-the-callers-goal-split-but-can-cost-the-fold-measure.md)
+- [У вынесенного шага свёртки открыта каждая ветвь тела, а не только первая](structures-every-branch-of-an-extracted-fold-step-is-a-separate-proved-promise.md)
 - [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](substantive-and-provable-claims-barely-overlap.md)
 - [Переключение слоя не всегда опускает потолок: у `sets` он ВЫРОС, и это не провал](switching-a-layer-does-not-always-lower-the-ceiling.md)
 - [Синтез из спецификации упирается в 75 узлов дерева — и медианная функция нашей библиотеки ровно этого размера](synthesis-from-a-spec-hits-75-tree-nodes.md)
@@ -592,13 +596,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Пока сборщик записи молчит о своих полях, наверху не доказывается ничего](certificates-a-record-builder-that-says-nothing-blocks-every-promise-above-it.md)
-- [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
-- [Именованный шаг свёртки открывает разбор цели у ВЫЗЫВАЮЩЕГО, но может отнять меру самой свёртки](structures-a-named-fold-step-unblocks-the-callers-goal-split-but-can-cost-the-fold-measure.md)
-- [У вынесенного шага свёртки открыта каждая ветвь тела, а не только первая](structures-every-branch-of-an-extracted-fold-step-is-a-separate-proved-promise.md)
 
 ## Как добавлять
 

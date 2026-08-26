@@ -63,7 +63,7 @@ TLS 1.3, RFC 8446, и только он — на RFC 5246 во всей `flang/s
 [`docs/zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md`](../docs/zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md):
 готовы целиком 5, сделаны частью 11, не начаты 13.
 
-**Чему доверять — решено и записано.** [`docs/adr/trust-roots.md`](../docs/adr/trust-roots.md)
+**Чему доверять — решено и записано.** [`docs/adr/0012-trust-roots.md`](../docs/adr/0012-trust-roots.md)
 (ADR-0012): корни доверия — довод программы, а не постоянная библиотеки;
 умолчание двоичного хозяина — системный список, названный строкой в программе;
 пустой связке не доверяют никому. Довод — замер: поручения

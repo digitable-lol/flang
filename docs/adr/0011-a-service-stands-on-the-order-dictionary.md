@@ -7,7 +7,7 @@
 [`flang/self/parser.flang`](../../flang/self/parser.flang); хозяева
 [`flang_repl.c`](../../flang/src/emit/c/flang_repl.c) и
 [`flang_conc.c`](../../flang/src/emit/c/flang_conc.c);
-[ADR-0002](0002-outbound-connection.md), [ADR-0008](layer-boundary.md);
+[ADR-0002](0002-outbound-connection.md), [ADR-0008](0008-layer-boundary.md);
 прогон службы `examples/web/shortener/plan-network.flang`.
 
 ---

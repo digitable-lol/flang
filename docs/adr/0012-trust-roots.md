@@ -8,7 +8,7 @@
 `bootstrap/compiler_flang.c`; разбор сертификата
 [`flang/stdlib/x509.flang`](../../flang/stdlib/x509.flang); список отзыва
 [`flang/stdlib/crl.flang`](../../flang/stdlib/crl.flang).
-**Связано:** [ADR-0008 «Граница слоёв»](layer-boundary.md); [ADR-0011](0011-a-service-stands-on-the-order-dictionary.md) — служба стоит на словаре поручений — на flang пишется то,
+**Связано:** [ADR-0008 «Граница слоёв»](0008-layer-boundary.md); [ADR-0011](0011-a-service-stands-on-the-order-dictionary.md) — служба стоит на словаре поручений — на flang пишется то,
 что РЕШАЕТ; [ADR-0007](0007-encryption-by-request-to-an-external-host.md) — там
 хранилище корней названо ценой пути «TLS на flang», но решения не принято;
 [ADR-0002](0002-outbound-connection.md) — исходящее соединение.

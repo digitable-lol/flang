@@ -25,7 +25,7 @@
 
 `8bb4078d proof(conc): живучесть трёх настоящих утверждений выражена имеющимися
 средствами — восемь обещаний доказаны ядром, новых слов языка ноль` (ветка
-`u/zhivuchest`). Решение записано в `docs/adr/0008-liveness-without-temporal-logic.md`.
+`u/zhivuchest`). Решение записано в `docs/adr/0017-liveness-without-temporal-logic.md`.
 
 Замер: `flang/conc/supervisor.flang` 42 → 45 доказанных,
 `flang/conc/scheduler.flang` 43 → 46, `flang/conc/wire.flang` 27 → 29, потеряно

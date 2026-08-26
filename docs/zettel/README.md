@@ -612,6 +612,14 @@
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
 
+## Ещё не разобранное
+
+- [Свёртка под проекцией «Принципу свёртки» НЕ мешает: стена проходит по границе самой свёртки, а не по тому, как снят её результат](crypto-hashes-a-fold-under-a-projection-is-not-what-blocks-the-fold-principle.md)
+- [Модуль со списком `только` у ввозящих ломается НЕ там, где его правили: заводя функцию, снимай отчёт по каждому ввозящему](crypto-hashes-a-named-import-list-breaks-the-importer-not-the-edited-file.md)
+- [В примере годятся только литералы, и ещё две грабли записи, стоившие прогонов](front-end-example-blocks-take-literals-only.md)
+- [Один пример снимает ВСЕ доказанные постусловия функции, а не одно](front-end-one-example-per-function-lifts-all-its-proven-guards.md)
+- [«Принцип свёртки» читает ДВА условия по виду узла, и вынос из-под проекции лечит только первое](kernel-proved-the-fold-principle-reads-two-conditions-not-one.md)
+
 ## Как добавлять
 
 Одна заметка — одна мысль. Формат:

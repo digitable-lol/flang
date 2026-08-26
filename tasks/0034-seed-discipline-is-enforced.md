@@ -1,9 +1,9 @@
 ---
 номер: 0034
 заголовок: Ввести слово и применить его в одном изменении становится невозможно
-статус: свободна
-исполнитель: —
-ветка: —
+статус: в работе
+исполнитель: u
+ветка: u/seed-discipline-enforced
 команда: любая
 карта: Что мешает больше всего
 рядом: 0003, 0031
@@ -77,3 +77,293 @@ FLANG_UNKNOWN_NAME, строка 157: неизвестный тип «неотр
 
 Сломанный нарочно файл даёт код возврата 1 и названный файл со строкой, а целое
 дерево — код 0. Оба прогона показаны дословно, с временем.
+
+## Опись оставшихся мин: 180 применений в 78 файлах
+
+Снято 26 августа 2026 механически, без компилятора: слова, стоящие в ПОЗИЦИЯХ
+ТИПА во всех 1116 `.flang` дерева, сверены со словарями закоммиченного семени
+(`bootstrap/*.c`). Голых слов в позициях типа во всём дереве восемнадцать:
+
+```
+строка 12516  список 12022  число 4853  строки 3532  признак 3016  числа 1860
+нат 255  неотрицательное 173  от 139  функция 36  из 36  в 36  и 33
+вес 27  сотых 19  признака 6  целое 3  тысячных 2
+```
+
+Семнадцать из восемнадцати семя знает. **Не знает ровно одно: `неотрицательное`.**
+Ни `|неотрицательное|`, ни `неотрицательное:` в `bootstrap/*.c` нет — ноль
+вхождений во всех пяти файлах семени. Значит откат `e6795b02` был неполным не
+на два файла, а на семьдесят восемь: он тронул `flang/self`, `flang/stdlib`,
+`flang/conc` и `ярлыки.flang` (41 файл), а `examples/**`, `fspec/**`,
+`flang/proof/**`, `flang/test/fixtures/**`, `docs/**`, `packaging/**`,
+`benchmarks/**` не тронул вовсе.
+
+Подтверждено прогоном чужого двоичного (`w-predely`, сборка 23 августа):
+
+```
+$ PAMYAT=45G .../flang-vorota -- .../flang check examples/measure/natural.flang
+FLANG_UNKNOWN_NAME в файле examples/measure/natural.flang, строка 50: неизвестный тип «неотрицательное»
+   … ещё семь таких же …
+examples/measure/natural.flang: не проверено — замечаний 9
+```
+
+### Мины, которые ГОНЯЮТСЯ сегодня — красные прямо сейчас
+
+| файл | сколько | строки | чем гоняется |
+|---|---|---|---|
+| `ярлыки.flang` | 8 | 226 502 506 510 514 514 514 514 | ярлык «ярлыки», и каждый запуск `./ярлык` |
+| `docs/site/storozh-kontrasta.flang` | 7 | 125 239 303 447 462 770 781 | ярлык «контраст:проверка» |
+| `flang/proof/map/abilities.flang` | 4 | 159 171 186 220 | ярлык «умения:улики» |
+| `fspec/spec/03-urgency-markup.flang` | 1 | 30 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/04-discount-tiers.flang` | 1 | 27 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/08-delivery-lead-time.flang` | 1 | 16 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/12-subscription-grace.flang` | 1 | 16 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/13-subscription-refund.flang` | 2 | 28 28 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/14-tax-rates.flang` | 1 | 19 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/16-tax-registration.flang` | 1 | 43 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/17-stock-reserve.flang` | 3 | 36 36 37 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/19-stock-receipt.flang` | 1 | 30 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/23-money-minor-units.flang` | 2 | 32 32 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/24-money-payment.flang` | 3 | 21 25 40 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/29-return-window.flang` | 1 | 19 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/31-loyalty-tiers.flang` | 1 | 33 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/32-loyalty-accrual.flang` | 1 | 20 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/33-loyalty-redemption.flang` | 3 | 27 51 51 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/34-warranty-term.flang` | 1 | 17 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/37-booking-slots.flang` | 1 | 28 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/39-booking-cancellation.flang` | 2 | 24 24 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/42-data-retention.flang` | 1 | 21 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
+| `scripts/license-guard.flang` | 1 | 99 | ярлык «лицензии:проверка», ci.yml |
+
+### Мины, которые сегодня НЕ гоняет ничто — как было с `uart.flang`
+
+Ни ярлыка, ни ленты на них нет; сводный обход `flang/проверки/обход-примеров.sh`
+их видит, но в ленту он не заведён, и его же ведомость говорит «двоичный не взял
+428 файлов из 771».
+
+| файл | сколько | строки |
+|---|---|---|
+| `benchmarks/model-authoring/reference/a1-summa-do.flang` | 1 | 4 |
+| `benchmarks/model-authoring/reference/a2-faktorial.flang` | 1 | 4 |
+| `benchmarks/model-authoring/reference/a4-stepen.flang` | 1 | 4 |
+| `benchmarks/systems/fstab.flang` | 4 | 42 114 131 148 |
+| `docs/benchmark2/10-binary-search.flang` | 1 | 34 |
+| `docs/examples/package/discount.flang` | 4 | 23 23 44 44 |
+| `docs/examples/package/shop/shop.flang` | 4 | 20 20 29 29 |
+| `docs/zamer-teorkat/class-string-to-string.flang` | 4 | 577 577 602 618 |
+| `examples/leetcode/062-unique-paths.flang` | 2 | 73 73 |
+| `examples/leetcode/070-climbing-stairs.flang` | 2 | 16 28 |
+| `examples/leetcode/072-edit-distance.flang` | 2 | 38 66 |
+| `examples/leetcode/074-search-a-2d-matrix.flang` | 2 | 19 37 |
+| `examples/leetcode/139-word-break.flang` | 1 | 38 |
+| `examples/leetcode/207-course-schedule.flang` | 3 | 118 131 148 |
+| `examples/leetcode/322-coin-change.flang` | 3 | 7 32 48 |
+| `examples/leetcode/509-fibonacci-number.flang` | 2 | 14 26 |
+| `examples/leetcode/547-number-of-provinces.flang` | 1 | 137 |
+| `examples/leetcode/643-maximum-average-subarray-i.flang` | 2 | 38 63 |
+| `examples/leetcode/733-flood-fill.flang` | 2 | 202 202 |
+| `examples/leetcode/739-daily-temperatures.flang` | 1 | 62 |
+| `examples/measure/natural.flang` | 8 | 51 66 95 168 168 195 195 227 |
+| `examples/money/exact-decimal.flang` | 5 | 87 87 161 204 229 |
+| `examples/paths/shortest-path.flang` | 1 | 133 |
+| `examples/rosetta/factorial.flang` | 1 | 79 |
+| `examples/rosetta/fibonacci.flang` | 3 | 96 111 149 |
+| `examples/wal/append-plan.flang` | 2 | 53 130 |
+| `examples/wal/write-ahead-log.flang` | 17 | 62 70 86 87 87 88 109 156 189 342 374 405 495 675 694 695 722 |
+| `flang/проверки/korpus-http.flang` | 1 | 159 |
+| `flang/proof/подделки/счёт-частей-правда.flang` | 1 | 37 |
+| `flang/proof/examples/corpus-factorial.flang` | 2 | 67 91 |
+| `flang/proof/examples/corpus-natural-ceiling.flang` | 2 | 48 48 |
+| `flang/proof/examples/corpus-natural.flang` | 2 | 38 38 |
+| `flang/proof/examples/forgery-if-without-descent.flang` | 5 | 30 41 41 52 63 |
+| `flang/proof/examples/forgery-if-without-descent-theorem.flang` | 2 | 14 22 |
+| `flang/proof/examples/if-over-a-segment.flang` | 3 | 31 53 70 |
+| `flang/proof/examples/segment.flang` | 4 | 66 80 102 116 |
+| `flang/proof/map/boundaries.flang` | 1 | 16 |
+| `flang/proof/map/order.flang` | 1 | 32 |
+| `flang/proof/map/refusal-boundaries.flang` | 1 | 17 |
+| `flang/proof/map/refusal-order.flang` | 2 | 43 55 |
+| `flang/scripts/жаргон-образцы.flang` | 3 | 175 211 237 |
+| `flang/scripts/binary.flang` | 2 | 512 512 |
+| `flang/scripts/conc-link-emitted.flang` | 1 | 125 |
+| `flang/test/fixtures/granica-nad-chislom-chestnaya.flang` | 1 | 17 |
+| `flang/test/fixtures/poddelka-konyunkciya.flang` | 2 | 18 28 |
+| `flang/test/fixtures/poddelka-slova-celey.flang` | 5 | 73 80 89 97 105 |
+| `flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang` | 1 | 43 |
+| `fspec/experiments/contradiction-delivery-window.flang` | 1 | 17 |
+| `fspec/experiments/contradiction-money-rounding.flang` | 1 | 12 |
+| `fspec/experiments/contradiction-tax-theorem.flang` | 1 | 16 |
+| `fspec/experiments/contradiction-weight-requirements.flang` | 2 | 16 23 |
+| `fspec/experiments/false-claim-negative-zero.flang` | 1 | 16 |
+| `fspec/experiments/false-claim-not-a-number.flang` | 1 | 42 |
+| `fspec/experiments/false-claim-strict-discount.flang` | 1 | 20 |
+| `packaging/install-check.flang` | 2 | 103 138 |
+
+Все 180 — одно и то же слово в одной и той же роли (`принимает`, `возвращает`,
+поле записи, поле варианта, `дано` теоремы). Чинятся тем же, чем чинил
+`e6795b02`: `неотрицательное` → `нат`. Это не приближение — обе поверхности
+стоят в ОДНОЙ строке перечня `«Скаляр по имени»`
+(`|неотрицательное|нат|натуральное|nat|naturo|自然数|`) и дают один и тот же
+`«Тип точного неотрицательного»`; `нат` семя знает.
+
+## Сделано 26 августа 2026
+
+### Половина первая: мины
+
+Из 78 файлов починены **62** — по одному файлу за коммит, `неотрицательное` → `нат`
+только в позициях типа, слово в прозе и комментариях оставлено. Ещё три места
+кладут мину заново и файловым обходом не видны:
+
+* `flang/scripts/target-words.mjs` — ПОРОЖДАЕТ программу с `неотрицательное` в
+  трёх подписях. Мина рождается при запуске, поэтому сторож, читающий `.flang`
+  дерева, её не поймает;
+* `.claude/skills/flang-code/SKILL.md` — навык, который читает всякий исполнитель
+  перед тем, как писать на flang: два примера ставили `неотрицательное` в позицию
+  типа, а строка «Объявляй `неотрицательное` там, где значение неотрицательно»
+  прямо велела это делать. Правила 2 из AGENTS.md там не было названо вовсе.
+  **Это и есть причина, по которой мина всходила после каждого отката;**
+* `docs/examples/package/shop/discount.flang-package` — в пакете лежит ДОСЛОВНАЯ
+  копия исходника, и правка `.flang` без пересборки даёт
+  `FLANG_PACKAGE: адрес модуля «Скидка» не сходится с его исходником`. Пакет
+  пересобран самим двоичным; витрина впервые проверяется без замечаний.
+
+Прогон чужого двоичного (`w-predely`) по 62 файлам, до и после:
+
+```
+ДО     ИТОГ: файлов 62, с «неотрицательное» 60      (175 с)
+ПОСЛЕ  ИТОГ: файлов 62, с «неотрицательное» 0       (200 с)
+```
+
+Два файла из 62 не краснели и до починки: `flang/scripts/binary.flang` не
+укладывается в 120 секунд (мина в нём есть, найдена текстом), а
+`docs/examples/package/shop/shop.flang` падал раньше — на несходящемся адресе
+пакета.
+
+Ненулевой код после починки остался у 15 файлов, и ни у одного из них он не про
+это слово: `fspec/experiments/**` — нарочные противоречия и ложные утверждения,
+`flang/proof/**/forgery-*`, `refusal-*` — нарочные отказы,
+`docs/benchmark2/10-binary-search.flang` — `FLANG_PROOF_INDUCTION_BRANCH`,
+`examples/money/exact-decimal.flang`, `examples/paths/shortest-path.flang`,
+`docs/zamer-teorkat/class-string-to-string.flang` — «проверено НЕ ДО КОНЦА:
+monoids/properties двоичный не судит вовсе».
+
+### Что осталось — 46 применений в 16 файлах, и они не тронуты нарочно
+
+Над `examples/leetcode/**`, `examples/rosetta/**` и `examples/wal/**` прямо
+сейчас сидят двое соседей. Правка в одно слово стоила бы им ветки целиком, и
+поэтому здесь она НЕ сделана. Пока эти файлы не починены, работа `semya` в ленте
+красная — и красная по делу.
+
+| файл | сколько | строки |
+|---|---|---|
+| `examples/leetcode/062-unique-paths.flang` | 2 | 73 73 |
+| `examples/leetcode/070-climbing-stairs.flang` | 2 | 16 28 |
+| `examples/leetcode/072-edit-distance.flang` | 2 | 38 66 |
+| `examples/leetcode/074-search-a-2d-matrix.flang` | 2 | 19 37 |
+| `examples/leetcode/139-word-break.flang` | 1 | 38 |
+| `examples/leetcode/207-course-schedule.flang` | 3 | 118 131 148 |
+| `examples/leetcode/322-coin-change.flang` | 3 | 7 32 48 |
+| `examples/leetcode/509-fibonacci-number.flang` | 2 | 14 26 |
+| `examples/leetcode/547-number-of-provinces.flang` | 1 | 137 |
+| `examples/leetcode/643-maximum-average-subarray-i.flang` | 2 | 38 63 |
+| `examples/leetcode/733-flood-fill.flang` | 2 | 202 202 |
+| `examples/leetcode/739-daily-temperatures.flang` | 1 | 62 |
+| `examples/rosetta/factorial.flang` | 1 | 79 |
+| `examples/rosetta/fibonacci.flang` | 3 | 96 111 149 |
+| `examples/wal/append-plan.flang` | 2 | 53 130 |
+| `examples/wal/write-ahead-log.flang` | 17 | 62 70 86 87 87 88 109 156 189 342 374 405 495 675 694 695 722 |
+
+Чинится одной командой, когда держатели отпустят файлы:
+
+```sh
+sh scripts/seed-knows-type-words-guard.sh            # назовёт файл, строку и слово
+# в каждой названной строке: неотрицательное → нат
+```
+
+Отдельно, файловым обходом не видно и не починено:
+`scripts/registry-example/lists-1.4.2.flang-package` — демонстрационный пакет
+поддельного реестра; в его дословной копии исходника одна подпись с
+`неотрицательное`, а `.flang`-исходника у него в дереве нет вовсе, поэтому
+пересобрать пакет нечем.
+
+### Половина вторая: сторож
+
+`scripts/seed-knows-type-words-guard.sh`, ярлык `семя:слова`, работа `semya` в
+`.github/workflows/ci.yml` — ПЕРВАЯ в ленте и единственная, которой не нужно
+ничего: ни Node, ни `make`, ни двоичного.
+
+Словарь снимается из самого семени, а не переписан в сторожа: перечни вида
+`|число:tNumber|…|` лексера и `|неотрицательное|нат|…|` типизатора уезжают в
+`bootstrap/*.c` дословными строками. Перепечатка меняет семя — меняется и
+словарь.
+
+Имена в ёлочках сторож не смотрит нарочно: их разбирает объявление из тех же
+исходников, которые семя читает.
+
+**Прогон на подлоге — красный:**
+
+```
+$ sh scripts/seed-knows-type-words-guard.sh --подлог
+сторож слов: ПОДЛОГ — применён выдуманный тип «невыдуманноеслово»
+сторож слов: файлов 1, слов в позициях типа 2, словарь семени 809, чужих семени 2
+
+  подлог.flang:4: применено «невыдуманноеслово» (принимает) — семя такого слова не знает
+  подлог.flang:5: применено «невыдуманноеслово» (возвращает) — семя такого слова не знает
+
+код возврата: 1
+```
+
+**Прогон на дереве без трёх занятых каталогов — зелёный:**
+
+```
+$ sh scripts/seed-knows-type-words-guard.sh <1005 файлов>
+сторож слов: файлов 1005, слов в позициях типа 37658, словарь семени 809, чужих семени 0
+код возврата: 0
+```
+
+**Прогон на целом дереве — красный, и это верно:**
+
+```
+$ sh scripts/seed-knows-type-words-guard.sh
+сторож слов: файлов 1117, слов в позициях типа 39412, словарь семени 809, чужих семени 46
+код возврата: 1
+```
+
+Все 46 названы выше поимённо.
+
+### Отрицательный результат, который стоил дороже всего
+
+Первая редакция сторожа была ЗЕЛЁНОЙ на gawk и давала **30 ложных находок на
+mawk** («Отклик», «показател») на тех же 200 файлах. Причина: у mawk регулярки
+байтовые, `«` и `»` двухбайтовые, и `[^»]` превращается в «любой байт, кроме
+\xC2 и \xBB», то есть режет посреди буквы. А `awk` на Debian и Ubuntu — это
+mawk, то есть ровно то, что стои́т в ленте.
+
+Ложно краснеющий сторож хуже отсутствующего, поэтому ёлочки заменяются на
+однобайтовые метки `\001` и `\002` сразу при очистке строки, и весь разбор
+идёт по однобайтовым классам. Проверено тремя awk на 1004 файлах — ответ знак в
+знак один: слов 37 644, чужих 0.
+
+```
+gawk           файлов 1004, слов 37644, чужих 0, код 0    подлог: код 1
+mawk           файлов 1004, слов 37644, чужих 0, код 0    подлог: код 1
+busybox awk    файлов 1004, слов 37644, чужих 0, код 0    подлог: код 1
+```
+
+(снято до перебазирования; после него в дереве на файл больше — 1005 и 37 658,
+чужих по-прежнему ноль.)
+
+### Ярлыки, которых мина стоила
+
+`ярлыки.flang` краснел восемью `FLANG_UNKNOWN_NAME`, то есть `./ярлык` не читался
+ни одним двоичным вовсе. После починки:
+
+```
+$ flang check ярлыки.flang
+модуль «Ярлыки»: функций 37, из них с доказанным завершением 37; типов 5
+ярлыки.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+
+$ flang io ярлыки.flang --plan Целость
+"result":"ярлыков 88; посмотрено 87: по имени файла 86, по образцу 1 — всё
+          нашлось в дереве; команд без файла дерева 1 — у них смотреть нечего"
+```

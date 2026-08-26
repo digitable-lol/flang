@@ -289,6 +289,29 @@ static const char REPL_GREETING_NO_EVAL[] =
   "Невтащенных целей больше нет: все восемь живут в замыкании этой сборки, и\n" \
   "печатает их она сама, без Node."
 
+static const char HELP_MACHINE[] =
+    "flang --машина [<файл>]\n"
+    "\n"
+    "Постоянная машины: сколько витков она делает в секунду. Витки — свойство\n"
+    "программы, секунды — свойство машины, и вторые из первых получаются только\n"
+    "умножением на эту постоянную. Обещание пишется в витках, читателю показывают\n"
+    "секунды для НАЗВАННОЙ машины.\n"
+    "\n"
+    "  flang --машина            снять постоянную здесь и сейчас и напечатать\n"
+    "  flang --машина <файл>     взять снятую раньше и напечатать как есть\n"
+    "\n"
+    "ПОСТОЯННАЯ НЕ ОДНА, и вывод говорит об этом двумя строками. Виток разбора\n"
+    "строит узлы и просит память, виток лексера читает байты — цена у них разная,\n"
+    "и разброс между ними печатается числом. Рядом печатаются ядра и загрузка:\n"
+    "тот же файл считался 9 минут при загрузке 30 и 7 часов 23 минуты при 110, а\n"
+    "8 процессов на 8 свободных ядрах дают 7,92×, тогда как 16 потоков при 15\n"
+    "занятых ядрах — 1,15×. Загрузка снимается «/proc/loadavg»; где его нет, там\n"
+    "стоит «не снято», а не ноль: ноль читался бы как «машина свободна».\n"
+    "\n"
+    "Замер — настоящая работа компилятора над эталонным исходником, а не пустой\n"
+    "цикл: разбор и лексер повторяются, пока не набежит четверть секунды, и в\n"
+    "выводе названы витки, секунды и число повторов.";
+
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
     "\n"
@@ -309,8 +332,17 @@ static const char FLANG_HELP[] =
     "\n"
     "  flang --help                       эта справка\n"
     "  flang --version                    версия\n"
+    "  flang --машина [<файл>]            постоянная этой машины: витков в секунду\n"
     "  flang <команда> --help             все ключи команды\n"
-    "\n"
+    "\n";
+
+/*
+ * Вторая половина общей справки — не разделение по смыслу, а требование C99:
+ * строковый литерал в нём не длиннее 4095 байт, а справка на кириллице съедает
+ * по два байта на букву. Печатаются обе подряд, стыка человек не видит. Тем же
+ * приёмом и по той же причине разбита справка `emit` (HELP_EMIT, HELP_EMIT_2).
+ */
+static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
@@ -683,7 +715,7 @@ static const char HELP_REPL[] =
  */
 static void human_help(const char *topic) {
   if (topic == NULL) {
-    printf("%s\n", FLANG_HELP);
+    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   } else if (strcmp(topic, "check") == 0) {
     printf("%s\n", HELP_CHECK);
   } else if (strcmp(topic, "test") == 0) {
@@ -698,6 +730,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LSP);
   } else if (strcmp(topic, "--mcp-mode") == 0 || strcmp(topic, "mcp") == 0) {
     printf("%s\n", HELP_MCP);
+  } else if (strcmp(topic, "--машина") == 0 || strcmp(topic, "--machine") == 0) {
+    printf("%s\n", HELP_MACHINE);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "tokens") == 0) {
@@ -711,7 +745,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
   } else {
-    printf("%s\n", FLANG_HELP);
+    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   }
 }
 
@@ -14657,6 +14691,188 @@ static bool human_flag(int argc, char **argv, const char *full, const char *shor
   return false;
 }
 
+/* ═══════════════════════ постоянная машины ═══════════════════════ */
+
+/*
+ * `flang --машина` — снять постоянную ЭТОЙ машины и напечатать её данными.
+ *
+ * ── Почему данными, а не доказательством ────────────────────────────────────
+ * Витки — свойство программы: их считает рантайм, и на одном входе их всегда
+ * одно и то же число. Секунды — свойство машины, и языку про них знать нечего.
+ * Замер недели, ради которого команда и заводится: один и тот же файл считался
+ * 9 минут при загрузке 30 и 7 часов 23 минуты при загрузке 110. Ничто в
+ * программе этого не предсказывает.
+ *
+ * Так уже устроено всё остальное в языке: программа не спрашивает мир сама,
+ * внешнее приходит данными. Постоянная машины — такие же данные, как содержимое
+ * файла. Отсюда и второй вид вызова: `flang --машина <файл>` берёт снятое
+ * РАНЬШЕ и не мерит ничего, чтобы обещание в витках можно было перевести в
+ * секунды для НАЗВАННОЙ машины, а не для той, где случилось читать.
+ *
+ * ── Почему постоянная НЕ ОДНА, и это видно из вывода ────────────────────────
+ * Виток витку не равен: виток разбора строит узлы и просит память, виток
+ * лексера читает байты. Одним числом это не описывается, и врать одним числом
+ * хуже, чем назвать два. Поэтому мерится ДВЕ работы разом, обе — настоящие шаги
+ * компилятора над одним и тем же эталонным исходником, и печатаются обе с
+ * разбросом между ними.
+ *
+ * Второе, чем машина не описывается одним числом, — сколько её сейчас свободно.
+ * Ядра печатаются рядом с загрузкой: 8 процессов на 8 свободных ядрах дают
+ * 7,92×, а 16 потоков при 15 занятых ядрах — 1,15×. Загрузка снимается
+ * `/proc/loadavg`; где его нет, там стоит «не снято», а не ноль: ноль означал
+ * бы «машина свободна», и это была бы неправда.
+ */
+
+/* Эталонный исходник замера: он и разбирается, и лексится. Меняя его, меняешь
+   постоянную — поэтому он лежит здесь, а не читается с диска. */
+static const char MACHINE_SOURCE[] =
+    "модуль «Мера машины»\n"
+    "\n"
+    "тотальная функция «Сумма до»\n"
+    "  принимает н: число\n"
+    "  возвращает число\n"
+    "  убывает н\n"
+    "  если н не больше 0\n"
+    "    то 0\n"
+    "    иначе н плюс («Сумма до» от (н минус 1))\n"
+    "\n"
+    "тотальная функция «Удвоить всё»\n"
+    "  принимает элементы: список числа\n"
+    "  возвращает список числа\n"
+    "  отобразить элементы как э → э умножить на 2\n"
+    "\n"
+    "тотальная функция «Только большие»\n"
+    "  принимает элементы: список числа, порог: число\n"
+    "  возвращает список числа\n"
+    "  отфильтровать элементы где э → э больше порог\n";
+
+static double machine_now(void) {
+  struct timespec point;
+  if (clock_gettime(CLOCK_MONOTONIC, &point) != 0) {
+    return 0.0;
+  }
+  return (double)point.tv_sec + (double)point.tv_nsec / 1000000000.0;
+}
+
+/* Одна работа замера: повторять, пока не набежит `least` секунд, и вернуть
+   витки и секунды. Повторов не меньше одного — иначе на быстрой машине работа
+   не была бы сделана ни разу и постоянная вышла бы из нуля. */
+static bool machine_weigh(const char *work, double least, unsigned long *ticks, double *seconds,
+                          unsigned long *rounds) {
+  double started = machine_now();
+  double spent = 0.0;
+  unsigned long total = 0;
+  unsigned long times = 0;
+  bool ok = true;
+  repl_call_quiet = true;
+  do {
+    fl_value args[2];
+    fl_value out = fl_nothing();
+    size_t count = 1;
+    args[0] = repl_value_text(MACHINE_SOURCE, sizeof(MACHINE_SOURCE) - 1);
+    if (strcmp(work, "разбор") == 0) {
+      args[1] = repl_value_list(NULL, 0);
+      count = 2;
+      ok = repl_call("Разбор исходника", args, count, &out) == FL_OK;
+    } else {
+      ok = repl_call("Токены", args, count, &out) == FL_OK;
+    }
+    total += (unsigned long)repl_ctx.steps;
+    times += 1;
+    spent = machine_now() - started;
+    /* Арена не отдаёт ничего сама: без сброса повторы съели бы память
+       пропорционально их числу, а на быстрой машине их тысячи. */
+    fl_arena_reset(&repl_arena);
+  } while (ok && spent < least);
+  repl_call_quiet = false;
+  *ticks = total;
+  *seconds = spent;
+  *rounds = times;
+  return ok;
+}
+
+/* Загрузка машины за минуту. Не снята — значит не снята: ноль означал бы
+   «свободна», и на этом числе строили бы обещание. */
+static bool machine_load(double *load) {
+  size_t bytes = 0;
+  char *text = repl_read_file("/proc/loadavg", &bytes);
+  if (text == NULL) {
+    return false;
+  }
+  *load = strtod(text, NULL);
+  free(text);
+  return true;
+}
+
+static void machine_print(FILE *to, double ticks_parse, double ticks_lex, long cores, bool has_load,
+                          double load, unsigned long parse_ticks, double parse_seconds,
+                          unsigned long parse_rounds, unsigned long lex_ticks, double lex_seconds,
+                          unsigned long lex_rounds) {
+  fprintf(to, "машина\n");
+  fprintf(to, "  ядер: %ld\n", cores);
+  if (has_load) {
+    fprintf(to, "  занято ядер: %.2f\n", load);
+    fprintf(to, "  свободно ядер: %.2f\n", (double)cores - load < 0.0 ? 0.0 : (double)cores - load);
+  } else {
+    fprintf(to, "  занято ядер: не снято\n");
+    fprintf(to, "  свободно ядер: не снято\n");
+  }
+  fprintf(to, "  витков в секунду, разбор: %.0f\n", ticks_parse);
+  fprintf(to, "  витков в секунду, лексер: %.0f\n", ticks_lex);
+  fprintf(to, "  разброс: %.2f\n", ticks_lex > 0.0 ? ticks_parse / ticks_lex : 0.0);
+  fprintf(to, "  замер разбора: %lu витков за %.6f с, повторов %lu\n", parse_ticks, parse_seconds,
+          parse_rounds);
+  fprintf(to, "  замер лексера: %lu витков за %.6f с, повторов %lu\n", lex_ticks, lex_seconds, lex_rounds);
+}
+
+/*
+ * Снятое раньше — обратно человеку, и НИЧЕГО не мерено.
+ *
+ * Тот, кто читает обещание «не больше N витков», обязан знать, на ЧЁМ мерено.
+ * Поэтому снятое кладут в файл рядом с обещанием, а не пересчитывают на своей
+ * машине: пересчёт молча заменил бы названную машину на случайную.
+ */
+static int machine_recall(const char *path) {
+  size_t bytes = 0;
+  char *text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    fprintf(stderr, "flang --машина: файл «%s» не читается\n", path);
+    return 1;
+  }
+  fputs(text, stdout);
+  free(text);
+  return 0;
+}
+
+static int machine_command(int argc, char **argv) {
+  unsigned long parse_ticks = 0, lex_ticks = 0, parse_rounds = 0, lex_rounds = 0;
+  double parse_seconds = 0.0, lex_seconds = 0.0, load = 0.0;
+  long cores = 0;
+  bool has_load = false;
+
+  if (argc > 2 && argv[2][0] != '-') {
+    return machine_recall(argv[2]);
+  }
+  if (!repl_is_compiler()) {
+    fputs("flang --машина: постоянную снимает компилятор flang, а эта программа — не он.\n", stderr);
+    return 2;
+  }
+  if (!machine_weigh("разбор", 0.25, &parse_ticks, &parse_seconds, &parse_rounds) ||
+      !machine_weigh("лексер", 0.25, &lex_ticks, &lex_seconds, &lex_rounds) || parse_seconds <= 0.0 ||
+      lex_seconds <= 0.0) {
+    fputs("flang --машина: замер не удался — работа компилятора отказала\n", stderr);
+    return 1;
+  }
+  cores = sysconf(_SC_NPROCESSORS_ONLN);
+  if (cores < 1) {
+    cores = 1;
+  }
+  has_load = machine_load(&load);
+  machine_print(stdout, (double)parse_ticks / parse_seconds, (double)lex_ticks / lex_seconds, cores, has_load,
+                load, parse_ticks, parse_seconds, parse_rounds, lex_ticks, lex_seconds, lex_rounds);
+  return 0;
+}
+
 /*
  * ГОЛАЯ КОМАНДА НА ТЕРМИНАЛЕ ОТКРЫВАЕТ ОБОЛОЧКУ — как `iex`, как `python`.
  *
@@ -14762,6 +14978,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = lsp_serve(argc, argv);
   } else if (strcmp(command, "--mcp-mode") == 0) {
     code = mcp_serve(argc, argv);
+  } else if (strcmp(command, "--машина") == 0 || strcmp(command, "--machine") == 0) {
+    code = machine_command(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

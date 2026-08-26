@@ -56,8 +56,8 @@
 
 ## Чем закрыта
 
-Одиннадцать файлов `flang/self/**`, 387 функций получили примеры, **снято 431
-проверка при работе**. Числа сняты прогоном `flang emit <файл> --target c`
+Двенадцать файлов `flang/self/**`, 408 функций получили примеры, **снято 440
+проверок при работе**. Числа сняты прогоном `flang emit <файл> --target c`
 (строка «проверок при работе снято N») до правки и после; каждая правка проверена
 `flang test <файл>` — все примеры сошлись, ни одного не прошедшего.
 
@@ -69,6 +69,7 @@
 | `monad-expand.flang` | 1 | 58 | **+57** | `a97e44c3` |
 | `zapis.flang` | 124 | 164 | **+40** | `d9ac14c3` |
 | `partialorder.flang` | 8 | 29 | **+21** | `88391971` |
+| `iso.flang` | 125 | 134 | **+9** | `ec4f431d` |
 | `idempotent.flang` | 9 | 18 | **+9** | `4ec29930` |
 | `distributive.flang` | 9 | 17 | **+8** | `62398549` |
 | `monotone.flang` | 31 | 39 | **+8** | `b25fc66a` |
@@ -97,12 +98,30 @@
 `a-proved-postcondition-drops-its-runtime-check-only-with-an-example`
 («число снятых проверок этой работой не мерилось»).
 
+### Отрицательный результат: пять файлов доли этим приёмом не берутся
+
+`law-oracle.flang`, `functor-oracle.flang`, `setoid-oracle.flang`,
+`sets-oracle.flang`, `oracle.flang` везут вычислитель, а
+`flang/self/interpret.flang` в стволе `bf7c1747` не типизируется:
+
+```
+flang emit flang/self/law-oracle.flang --target c
+FLANG_TYPE_ARGS, строка 212, столбец 1: тип «Узел хеша» объявлен от нуля
+                                        параметров, а применён к 1 аргументу
+FLANG_TYPE, строка 909: функция «Найти описание» объявлена как
+                        «Может быть описание», а тело даёт строка
+```
+
+`interpret.flang` пишет `«Узел хеша» от «Может быть описание»`, а
+`flang/stdlib/hashmap.flang` объявляет «Узел хеша» без параметров. Оба файла
+чужие (`interpret.flang` — задача 0006, `hashmap.flang` — библиотека), правку
+здесь не делал. Пока это не починено, ни `emit`, ни `test` на пятёрке не
+доходят до счёта, и примеры туда писать нечем — их не проверить.
+
 ### Что осталось
 
 Доля не пройдена целиком: не тронуты `setoid.flang`, `hotswap.flang`,
-`setoid-oracle.flang`, `law-oracle.flang`, `functor-oracle.flang`,
-`sets-oracle.flang`, `oracle.flang`, `sets.flang`, `monad.flang`,
-`monoid.flang`, `iso.flang`, `svoystva.flang`, `functor.flang`,
+`sets.flang`, `monad.flang`, `monoid.flang`, `svoystva.flang`, `functor.flang`,
 `otkazy-tipov.flang`, `otkazy-totalnosti.flang`, `obyazatelstva-i-yadro.flang`.
 Приём на них тот же и работы там на такой же счёт — задачу можно брать заново
 этими файлами.

@@ -46,6 +46,12 @@
 #ifdef FL_POSIX_STACK
 #include <pthread.h>
 #include <sys/resource.h>
+/* Окно наблюдения: сигнал, `write` в дескриптор 2 и чтение /proc/self/statm.
+   Всё, что здесь нужно, объявлено тем же _POSIX_C_SOURCE, что и стек. */
+#include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
+#define FL_WATCH 1
 #endif
 
 #ifdef FL_WASM_STACK
@@ -597,6 +603,9 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
 #endif
   ctx->stack_seen = 0;
   ctx->stack_step = 0;
+  /* Окно наблюдения показывает ЭТОТ расчёт: `fl_ctx_init` зовут ровно там, где
+     расчёт начинается. Обработчик ставится один раз на процесс. */
+  fl_watch_open(ctx);
 }
 
 const char *fl_status_text(fl_status status) {
@@ -950,6 +959,488 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
   }
 }
 
+/* ═════════════════════════ окно наблюдения ═════════════════════════
+ *
+ * К ИДУЩЕЙ ПРОГРАММЕ ПОДКЛЮЧАЮТСЯ СИГНАЛОМ, И ОТВЕЧАЕТ ХОЗЯИН.
+ *
+ * Зачем — задача 0061. 25–26 августа 2026 перепечатка семени шла девять с
+ * половиной часов и не сказала о себе ни слова; чтобы понять, жива она или
+ * зависла, пришлось читать /proc и сравнивать два профиля `perf` с получасовым
+ * промежутком. Строка хода задачи 0031 говорит раз в полминуты и говорит имя
+ * ШАГА; здесь тот же прибор отвечает, КОГДА СПРОСИЛИ, и называет функцию, на
+ * которой счёт стоит прямо сейчас.
+ *
+ * Форма выбрана и обоснована в
+ * docs/adr/0019-the-host-answers-the-signal-not-the-program.md. Три довода
+ * оттуда, без которых этот код читается неверно:
+ *
+ * 1. ПРОГРАММА В ЭТОМ НЕ УЧАСТВУЕТ. Ни нового слова, ни нового поручения —
+ *    и никакого способа заметить, что к ней подключились. Раз прогон под
+ *    наблюдением неотличим от прогона без него, ни одно обещание программы от
+ *    наблюдения не меняется. Отладка не входит в смысл программы.
+ *
+ * 2. НАБЛЮДАЕМОЕ ТЕЧЁТ ТОЛЬКО НАРУЖУ. Ни одно поле окна не лежит в `fl_ctx`,
+ *    поэтому ни одна ветка расчёта до него не дотянется. Дай программе прочесть
+ *    свои витки — она сможет по ним ветвиться, и два прогона одной программы
+ *    дадут разные ответы.
+ *
+ * 3. ХОЗЯИН И БЕЗ ТОГО ЭТО СЧИТАЕТ. Витки считает `fl_tick`, глубину —
+ *    `fl_enter`, имя функции приходит в `fl_enter` первым доводом. Новый здесь
+ *    не факт, а СРОК: те же числа, но когда спросили, а не когда сломалось.
+ *
+ * УМОЛЧАНИЕ SIGUSR1 В POSIX — ЗАВЕРШИТЬ ПРОЦЕСС. То есть до этого окна
+ * `kill -USR1 <pid>` не «ничего не делал», а УБИВАЛ идущий расчёт.
+ *
+ * ПОЧЕМУ ВСЁ РУКАМИ, А НЕ `fprintf`. Обработчик сигнала вправе звать только то,
+ * что POSIX объявил безопасным; stdio в этот список не входит и, прерванный
+ * посреди собственного буфера, кладёт процесс. Отсюда `write` в дескриптор 2 и
+ * сборка строки в свой буфер. Ровно тем же и по той же причине устроена строка
+ * хода в flang_repl.c — и её помощники переехали сюда, чтобы одно и то же число
+ * не выглядело в двух строках по-разному.
+ *
+ * ПОЧЕМУ В stderr, А НЕ В stdout. Машинный вывод (`flang check --proof --json`,
+ * `flang emit`, сверка семени байт в байт) идёт в stdout и обязан остаться
+ * прежним до байта.
+ */
+
+/* ── печать без stdio ── */
+
+size_t fl_say_text(char *out, size_t room, size_t at, const char *text) {
+  size_t index = 0;
+  if (text == NULL) {
+    return at;
+  }
+  while (text[index] != 0 && at + 1 < room) {
+    out[at] = text[index];
+    at += 1;
+    index += 1;
+  }
+  return at;
+}
+
+/* Число пробелами по три разряда: «4 800 000 000» читается глазом, а
+   «4800000000» приходится считать пальцем по экрану. */
+size_t fl_say_number(char *out, size_t room, size_t at, unsigned long value) {
+  char digits[24];
+  size_t count = 0;
+  do {
+    digits[count] = (char)('0' + (int)(value % 10));
+    value /= 10;
+    count += 1;
+  } while (value != 0 && count < sizeof(digits));
+  while (count > 0) {
+    count -= 1;
+    if (at + 1 < room) {
+      out[at] = digits[count];
+      at += 1;
+    }
+    if (count > 0 && count % 3 == 0) {
+      at = fl_say_text(out, room, at, " ");
+    }
+  }
+  return at;
+}
+
+/* Память теми же словами, какими её называет остальное дерево: ГиБ с одним
+   знаком после запятой, ниже гигабайта — целые МиБ. */
+size_t fl_say_size(char *out, size_t room, size_t at, unsigned long bytes) {
+  const unsigned long gib = 1024UL * 1024UL * 1024UL;
+  if (bytes >= gib) {
+    at = fl_say_number(out, room, at, bytes / gib);
+    at = fl_say_text(out, room, at, ",");
+    at = fl_say_number(out, room, at, (bytes % gib) / (gib / 10));
+    return fl_say_text(out, room, at, " ГиБ");
+  }
+  at = fl_say_number(out, room, at, bytes / (1024UL * 1024UL));
+  return fl_say_text(out, room, at, " МиБ");
+}
+
+/*
+ * Размер страницы снимается ЗАРАНЕЕ, вне обработчика: `sysconf` в списке
+ * безопасных не значится. Там, где /proc нет (macOS, BSD, wasm), ответ 0, и
+ * снимок просто обходится без памяти, а не пропадает целиком.
+ */
+static unsigned long fl_say_page = 0;
+
+void fl_say_page_ready(void) {
+#ifdef FL_WATCH
+  if (fl_say_page == 0) {
+    const long page = sysconf(_SC_PAGESIZE);
+    fl_say_page = page > 0 ? (unsigned long)page : 0;
+  }
+#endif
+}
+
+unsigned long fl_say_resident(void) {
+#ifdef FL_WATCH
+  char raw[128];
+  ssize_t got = 0;
+  int file = -1;
+  size_t at = 0;
+  unsigned long pages = 0;
+  if (fl_say_page == 0) {
+    return 0;
+  }
+  file = open("/proc/self/statm", O_RDONLY);
+  if (file < 0) {
+    return 0;
+  }
+  got = read(file, raw, sizeof(raw) - 1);
+  close(file);
+  if (got <= 0) {
+    return 0;
+  }
+  raw[got] = 0;
+  while (raw[at] != 0 && raw[at] != ' ') {
+    at += 1;
+  }
+  while (raw[at] == ' ') {
+    at += 1;
+  }
+  while (raw[at] >= '0' && raw[at] <= '9') {
+    pages = pages * 10 + (unsigned long)(raw[at] - '0');
+    at += 1;
+  }
+  return pages * fl_say_page;
+#else
+  return 0;
+#endif
+}
+
+/* ── что окно показывает ── */
+
+/*
+ * ИМЕНА ЖИВЫХ КАДРОВ ЛЕЖАТ ЗДЕСЬ, А НЕ В `fl_ctx`, и на то три причины.
+ *
+ * 1. `fl_ctx` заводится на стеке хозяина. Сигнал, пришедший после конца
+ *    расчёта, читал бы мёртвый кадр. Здесь лежат указатели на строковые
+ *    литералы напечатанного кода — они живут всю жизнь процесса, и
+ *    разыменование не падает никогда.
+ * 2. Ширина `fl_ctx` не меняется, значит `flang_conc.h` и всё, что кладёт
+ *    контекст в свои структуры, не трогается вовсе.
+ * 3. Программа до статики рантайма не дотянется, а до поля контекста дотянулась
+ *    бы (см. довод 2 в шапке).
+ *
+ * ПЛАТА НАЗВАНА: планировщик считает на нескольких потоках ОС (задача 0013), а
+ * массив у них один — на многопоточном прогоне снимок может назвать имя из
+ * чужого потока. Это искажение ДИАГНОСТИКИ, а не порча расчёта: любой
+ * записанный сюда указатель остаётся годным литералом.
+ */
+static const char *fl_watch_frames[FL_WATCH_FRAMES];
+
+/*
+ * Контекст, чьи числа показывать. Хранится указателем, а не копией: копировать
+ * пришлось бы на каждом витке, а это ровно та цена, которой здесь быть не
+ * должно. Числа снимаются НА ХОДУ и потому могут отстать на виток — это
+ * диагностика, а не учёт.
+ */
+static fl_ctx *fl_watch_ctx = NULL;
+
+/* Имя шага от хозяина и готовая строка «повторить». Обе собраны ВНЕ
+   обработчика: обработчик их только пишет. */
+static char fl_watch_label[192];
+static char fl_watch_repeat[768];
+
+#ifdef FL_WATCH
+static volatile sig_atomic_t fl_watch_set = 0;
+static volatile sig_atomic_t fl_watch_want = 0;
+#endif
+
+void fl_watch_step(const char *name) {
+  size_t fit = name == NULL ? 0 : strlen(name);
+  if (fit > sizeof(fl_watch_label) - 1) {
+    fit = sizeof(fl_watch_label) - 1;
+  }
+  memcpy(fl_watch_label, name == NULL ? "" : name, fit);
+  fl_watch_label[fit] = 0;
+}
+
+void fl_watch_repeat_set(const char *line) {
+  size_t fit = line == NULL ? 0 : strlen(line);
+  if (fit > sizeof(fl_watch_repeat) - 1) {
+    /* Обрезаем по БУКВЕ буфера и говорим об этом многоточием: обрезанную строку
+       нельзя вставить и повторить, и молчать об этом нельзя. Три точки одним
+       знаком, а не тремя: три знака могли бы рассечь букву UTF-8 пополам. */
+    fit = sizeof(fl_watch_repeat) - 4;
+    /* Отступить до начала буквы: продолжающие байты UTF-8 несут 10xxxxxx, и
+       обрыв на них дал бы в снимке битую букву. */
+    while (fit > 0 && ((unsigned char)line[fit] & 0xC0u) == 0x80u) {
+      fit -= 1;
+    }
+    memcpy(fl_watch_repeat, line, fit);
+    memcpy(fl_watch_repeat + fit, "…", 3);
+    fl_watch_repeat[fit + 3] = 0;
+    return;
+  }
+  memcpy(fl_watch_repeat, line == NULL ? "" : line, fit);
+  fl_watch_repeat[fit] = 0;
+}
+
+bool fl_watch_asked(void) {
+#ifdef FL_WATCH
+  if (fl_watch_want == 0) {
+    return false;
+  }
+  fl_watch_want = 0;
+  return true;
+#else
+  return false;
+#endif
+}
+
+#ifdef FL_WATCH
+/*
+ * Ответ на подключение. Всё, что здесь есть, законно внутри обработчика: ни
+ * stdio, ни выделения памяти, ни `sysconf`.
+ *
+ * Строка первая — где счёт стоит. Строка вторая — кто позвал, от глубокого к
+ * мелкому; она и отвечает на вопрос «как мы сюда попали». Строка третья —
+ * шаг, которым хозяин назвал бы работу целиком. Четвёртая — готовый вызов для
+ * `flang run`: снимок отладки, который можно вставить и повторить.
+ */
+static void fl_watch_say(int signal_number) {
+  char line[2048];
+  size_t at = 0;
+  size_t depth = 0;
+  size_t seen = 0;
+  size_t index = 0;
+  unsigned long steps = 0;
+  unsigned long limit = 0;
+  unsigned long bytes = 0;
+  ssize_t wrote = 0;
+  (void)signal_number;
+  fl_watch_want = 1;
+  if (fl_watch_ctx != NULL) {
+    depth = fl_watch_ctx->depth;
+    steps = (unsigned long)fl_watch_ctx->steps;
+    limit = (unsigned long)fl_watch_ctx->max_steps;
+  }
+  seen = depth < FL_WATCH_FRAMES ? depth : FL_WATCH_FRAMES;
+
+  at = fl_say_text(line, sizeof(line), at, "ПОДКЛЮЧЕНИЕ: идёт ");
+  if (seen > 0 && fl_watch_frames[seen - 1] != NULL) {
+    at = fl_say_text(line, sizeof(line), at, "«");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_frames[seen - 1]);
+    at = fl_say_text(line, sizeof(line), at, "»");
+  } else {
+    /* Ни одного живого кадра: расчёт либо ещё не начался, либо уже кончился, и
+       врать про функцию нельзя. */
+    at = fl_say_text(line, sizeof(line), at, "не функция — расчёт вне вызова");
+  }
+  at = fl_say_text(line, sizeof(line), at, ", глубина ");
+  at = fl_say_number(line, sizeof(line), at, (unsigned long)depth);
+  if (limit == 0) {
+    at = fl_say_text(line, sizeof(line), at, ", витков ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " (предел снят)");
+  } else {
+    /* Доля считается делением предела, а не умножением витков: витков к концу
+       перепечатки миллиарды, и «витки × 100» переполнило бы 32-разрядное
+       `unsigned long` там, где оно 32-разрядное. */
+    const unsigned long part = limit >= 100 ? steps / (limit / 100) : steps * 100 / limit;
+    at = fl_say_text(line, sizeof(line), at, ", витков ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " из ");
+    at = fl_say_number(line, sizeof(line), at, limit);
+    at = fl_say_text(line, sizeof(line), at, " (");
+    at = fl_say_number(line, sizeof(line), at, part);
+    at = fl_say_text(line, sizeof(line), at, " %)");
+  }
+  bytes = fl_say_resident();
+  if (bytes != 0) {
+    at = fl_say_text(line, sizeof(line), at, ", ");
+    at = fl_say_size(line, sizeof(line), at, bytes);
+  }
+  at = fl_say_text(line, sizeof(line), at, "\n");
+
+  if (seen > 1) {
+    at = fl_say_text(line, sizeof(line), at, "  звали:");
+    for (index = seen - 1; index > 0; index -= 1) {
+      const char *name = fl_watch_frames[index - 1];
+      if (at + 256 > sizeof(line)) {
+        at = fl_say_text(line, sizeof(line), at, " …");
+        break;
+      }
+      at = fl_say_text(line, sizeof(line), at, index == seen - 1 ? " «" : " ← «");
+      at = fl_say_text(line, sizeof(line), at, name == NULL ? "?" : name);
+      at = fl_say_text(line, sizeof(line), at, "»");
+    }
+    if (depth > seen) {
+      at = fl_say_text(line, sizeof(line), at, " (и ещё ");
+      at = fl_say_number(line, sizeof(line), at, (unsigned long)(depth - seen));
+      at = fl_say_text(line, sizeof(line), at, " глубже)");
+    }
+    at = fl_say_text(line, sizeof(line), at, "\n");
+  }
+
+  if (fl_watch_label[0] != 0) {
+    at = fl_say_text(line, sizeof(line), at, "  шаг хозяина: «");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_label);
+    at = fl_say_text(line, sizeof(line), at, "»\n");
+  }
+  if (fl_watch_repeat[0] != 0) {
+    at = fl_say_text(line, sizeof(line), at, "  повторить: ");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_repeat);
+    at = fl_say_text(line, sizeof(line), at, "\n");
+  }
+  wrote = write(2, line, at);
+  (void)wrote;
+}
+#endif
+
+void fl_watch_open(fl_ctx *ctx) {
+  fl_watch_ctx = ctx;
+  fl_say_page_ready();
+#ifdef FL_WATCH
+  if (!fl_watch_set) {
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = fl_watch_say;
+    sigemptyset(&action.sa_mask);
+    /* SA_RESTART обязателен: без него подключение рвало бы `read` оболочки и
+       `waitpid` внутри `system` кодом EINTR — то есть наблюдение ломало бы
+       наблюдаемое. */
+    action.sa_flags = SA_RESTART;
+    if (sigaction(SIGUSR1, &action, NULL) != 0) {
+      return;
+    }
+    fl_watch_set = 1;
+  }
+#endif
+}
+
+/*
+ * СТРОКА «ПОВТОРИТЬ»: вызов, которым расчёт начался, — готовым доводом для
+ * `flang run --args`.
+ *
+ * Собирается ЗДЕСЬ, в двери программы, а не в обработчике, и не на витке:
+ * `fl_check_entry` зовётся один раз на внешний вызов, и `snprintf` в нём
+ * законен. Обработчику остаётся написать готовые байты.
+ *
+ * ЧТО СЮДА НЕ ВЛЕЗАЕТ И ПОЧЕМУ ЭТО СКАЗАНО ВСЛУХ. Доводы ТЕКУЩЕГО внутреннего
+ * вызова до рантайма не доезжают вовсе: напечатанный код зовёт
+ * `fl_enter(ctx, "Имя", error)` — имя и ничего больше. Чтобы он понёс доводы,
+ * надо править печать (`flang/self/emit-c.flang`), а печатает её двоичный
+ * компилятор — значит правка доедет только перепечаткой семени. Разбор —
+ * ADR-0019, раздел «Чего это решение НЕ делает».
+ *
+ * `--args` знает только ПЛОСКИЙ объект скаляров (см. шапку `flang run` в
+ * flang_repl.c). Значит вызов с составным доводом повторить этой строкой
+ * нельзя, и снимок говорит об этом прямо, а не печатает то, что не примут.
+ */
+static void fl_watch_note(const fl_entry_table *table, const char *name, const fl_value *args,
+                          size_t count) {
+  size_t at = 0;
+  size_t index = 0;
+  size_t said = 0;
+  int wrote = 0;
+  fl_watch_repeat[0] = 0;
+  if (table == NULL || name == NULL) {
+    return;
+  }
+  /* Имя в одинарных кавычках, а не в «ёлочках»: строку вставляют в оболочку, и
+     пробел в имени функции без кавычек разорвал бы её на два довода. */
+  wrote = snprintf(fl_watch_repeat, sizeof(fl_watch_repeat), "--function '%s'", name);
+  if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat)) {
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  at = (size_t)wrote;
+  if (count == 0) {
+    return; /* функция без параметров зовётся без `--args` */
+  }
+  wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, " --args '{");
+  if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  at += (size_t)wrote;
+  for (index = 0; index < table->param_count && said < count; index += 1) {
+    const fl_entry_param *param = &table->params[index];
+    const fl_value value = args[said];
+    char shown[FL_NUMBER_TEXT_MAX];
+    size_t shown_bytes = 0;
+    if (!fl_name_same(param->function, name)) {
+      continue;
+    }
+    if (said > 0) {
+      if (at + 2 >= sizeof(fl_watch_repeat)) {
+        fl_watch_repeat[0] = 0;
+        return;
+      }
+      fl_watch_repeat[at] = ',';
+      at += 1;
+      fl_watch_repeat[at] = 0;
+    }
+    wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "\"%s\":", param->name);
+    if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+      fl_watch_repeat[0] = 0;
+      return;
+    }
+    at += (size_t)wrote;
+    switch (value.tag) {
+      case FL_NUMBER:
+        shown_bytes = fl_number_text(value.as.number, shown);
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "%.*s", (int)shown_bytes,
+                         shown);
+        break;
+      case FL_FLAG:
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "%s",
+                         value.as.flag ? "true" : "false");
+        break;
+      case FL_NOTHING:
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "null");
+        break;
+      case FL_STRING: {
+        /*
+         * Строка едет как есть или не едет вовсе. Экранирования здесь НЕТ
+         * нарочно: строку вставляют в оболочку внутри одинарных кавычек, и
+         * кавычка, обратная косая или перевод строки разорвали бы команду —
+         * а не «выглядели бы некрасиво». Длинную не режем по той же причине:
+         * обрезанный довод дал бы ДРУГОЙ вызов, а строка обещает тот же.
+         */
+        size_t byte = 0;
+        for (byte = 0; byte < value.as.string.bytes; byte += 1) {
+          const unsigned char symbol = (unsigned char)value.as.string.utf8[byte];
+          if (symbol == '"' || symbol == '\\' || symbol == '\'' || symbol < 0x20u) {
+            break;
+          }
+        }
+        if (byte != value.as.string.bytes || value.as.string.bytes > 200) {
+          fl_watch_repeat[0] = 0;
+          snprintf(fl_watch_repeat, sizeof(fl_watch_repeat),
+                   "--function '%s' — довод «%s» строкой команды не передаётся дословно", name,
+                   param->name);
+          return;
+        }
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "\"%.*s\"",
+                         (int)value.as.string.bytes, value.as.string.utf8);
+        break;
+      }
+      default:
+        /* Список, запись, вариант: `--args` их не знает (см. шапку `flang run`),
+           и врать нечем. */
+        fl_watch_repeat[0] = 0;
+        snprintf(fl_watch_repeat, sizeof(fl_watch_repeat),
+                 "--function '%s' — доводы не скаляры, строкой для «flang run» не повторяется", name);
+        return;
+    }
+    if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+      fl_watch_repeat[0] = 0;
+      return;
+    }
+    at += (size_t)wrote;
+    said += 1;
+  }
+  if (said != count || at + 3 >= sizeof(fl_watch_repeat)) {
+    /* Имени в таблице нет или число доводов не сошлось — об этом скажет
+       диспетчер своим текстом, а строка «повторить» врать не станет. */
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "}'");
+}
+
 fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *name, const fl_value *args,
                          size_t count, fl_error *error) {
   size_t index = 0;
@@ -958,6 +1449,10 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
   if (ctx == NULL || table == NULL || name == NULL) {
     return FL_OK;
   }
+  /* Дверь программы — единственное место, где рантайм видит доводы вызова.
+     Отсюда снимок и берёт строку «повторить»; цена — один `snprintf` на
+     ВНЕШНИЙ вызов, не на виток. */
+  fl_watch_note(table, name, args, count);
   for (index = 0; index < table->param_count; index += 1) {
     if (fl_name_same(table->params[index].function, name)) {
       declared += 1;
@@ -1166,6 +1661,15 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
                    "функция «%s» исчерпала стек хозяина на глубине %lu, не дойдя до предела "
                    "глубины вызовов (%lu)",
                    function, (unsigned long)ctx->depth, (unsigned long)ctx->max_depth);
+  }
+  /*
+   * ОКНО НАБЛЮДЕНИЯ: имя этого кадра — по его глубине. Одно сравнение и одна
+   * запись; ни `fl_tick`, ни `fl_leave`, ни виток цикла хвостового самовызова
+   * не тронуты. `fl_leave` ничего не стирает нарочно: глубина убывает сама, и
+   * снимок читает `frames[depth - 1]`, то есть всегда живой кадр.
+   */
+  if (ctx->depth < FL_WATCH_FRAMES) {
+    fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;
   if (ctx->depth > ctx->max_depth) {

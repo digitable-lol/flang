@@ -1332,99 +1332,18 @@ static void repl_call_keep(const char *code, const char *message) {
 static volatile sig_atomic_t repl_hod_going = 0;
 static volatile sig_atomic_t repl_hod_ticking = 0;
 static char repl_hod_step[128];
-static unsigned long repl_hod_page = 0;
 static int repl_hod_set = 0;
 
-/* Дописать текст в буфер строки хода: ни выделения памяти, ни stdio — всё, что
-   здесь есть, законно внутри обработчика сигнала. */
-static size_t repl_hod_text(char *out, size_t room, size_t at, const char *text) {
-  size_t index = 0;
-  if (text == NULL) {
-    return at;
-  }
-  while (text[index] != 0 && at + 1 < room) {
-    out[at] = text[index];
-    at += 1;
-    index += 1;
-  }
-  return at;
-}
-
-/* Число пробелами по три разряда: «4 800 000 000» читается глазом, а
-   «4800000000» приходится считать пальцем по экрану. */
-static size_t repl_hod_number(char *out, size_t room, size_t at, unsigned long value) {
-  char digits[24];
-  size_t count = 0;
-  do {
-    digits[count] = (char)('0' + (int)(value % 10));
-    value /= 10;
-    count += 1;
-  } while (value != 0 && count < sizeof(digits));
-  while (count > 0) {
-    count -= 1;
-    if (at + 1 < room) {
-      out[at] = digits[count];
-      at += 1;
-    }
-    if (count > 0 && count % 3 == 0) {
-      at = repl_hod_text(out, room, at, " ");
-    }
-  }
-  return at;
-}
-
 /*
- * Сколько памяти держит счёт — то самое число, за которым лазили в /proc.
- * Второе поле `/proc/self/statm` — резидентные страницы. Размер страницы снят
- * заранее, вне обработчика: `sysconf` в списке безопасных не значится. Там, где
- * /proc нет (macOS, BSD), возвращается 0, и строка хода просто обходится без
- * памяти, а не пропадает целиком.
+ * ПЕЧАТЬ БЕЗ stdio ЖИВЁТ В РАНТАЙМЕ, А НЕ ЗДЕСЬ.
+ *
+ * Дописать текст, число пробелами по три разряда, память двоичными
+ * приставками, резидентный размер из /proc — всё это `fl_say_*`
+ * (flang_runtime.c). Раньше те же четыре помощника лежали копией здесь, и это
+ * было второе место правды: подключение задачи 0061 печатает те же числа, и
+ * разойдись две печати — одно и то же число выглядело бы в двух строках
+ * по-разному.
  */
-static unsigned long repl_hod_resident(void) {
-  char raw[128];
-  ssize_t got = 0;
-  int file = -1;
-  size_t at = 0;
-  unsigned long pages = 0;
-  if (repl_hod_page == 0) {
-    return 0;
-  }
-  file = open("/proc/self/statm", O_RDONLY);
-  if (file < 0) {
-    return 0;
-  }
-  got = read(file, raw, sizeof(raw) - 1);
-  close(file);
-  if (got <= 0) {
-    return 0;
-  }
-  raw[got] = 0;
-  while (raw[at] != 0 && raw[at] != ' ') {
-    at += 1;
-  }
-  while (raw[at] == ' ') {
-    at += 1;
-  }
-  while (raw[at] >= '0' && raw[at] <= '9') {
-    pages = pages * 10 + (unsigned long)(raw[at] - '0');
-    at += 1;
-  }
-  return pages * repl_hod_page;
-}
-
-/* Память теми же словами, какими её называет остальное дерево: ГиБ с одним
-   знаком после запятой, ниже гигабайта — целые МиБ. */
-static size_t repl_hod_size(char *out, size_t room, size_t at, unsigned long bytes) {
-  const unsigned long gib = 1024UL * 1024UL * 1024UL;
-  if (bytes >= gib) {
-    at = repl_hod_number(out, room, at, bytes / gib);
-    at = repl_hod_text(out, room, at, ",");
-    at = repl_hod_number(out, room, at, (bytes % gib) / (gib / 10));
-    return repl_hod_text(out, room, at, " ГиБ");
-  }
-  at = repl_hod_number(out, room, at, bytes / (1024UL * 1024UL));
-  return repl_hod_text(out, room, at, " МиБ");
-}
 
 static void repl_hod_say(int signal_number) {
   char line[512];
@@ -1440,29 +1359,29 @@ static void repl_hod_say(int signal_number) {
     return;
   }
   if (limit == 0) {
-    at = repl_hod_text(line, sizeof(line), at, "шагов не считают (предел снят)");
+    at = fl_say_text(line, sizeof(line), at, "шагов не считают (предел снят)");
   } else {
     /* Доля считается делением предела, а не умножением витков: витков к концу
        перепечатки миллиарды, и «витки × 100» переполнило бы 32-разрядное
        `unsigned long` там, где оно 32-разрядное. */
     const unsigned long part = limit >= 100 ? steps / (limit / 100) : steps * 100 / limit;
-    at = repl_hod_text(line, sizeof(line), at, "шагов ");
-    at = repl_hod_number(line, sizeof(line), at, steps);
-    at = repl_hod_text(line, sizeof(line), at, " из ");
-    at = repl_hod_number(line, sizeof(line), at, limit);
-    at = repl_hod_text(line, sizeof(line), at, " (");
-    at = repl_hod_number(line, sizeof(line), at, part);
-    at = repl_hod_text(line, sizeof(line), at, " %)");
+    at = fl_say_text(line, sizeof(line), at, "шагов ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " из ");
+    at = fl_say_number(line, sizeof(line), at, limit);
+    at = fl_say_text(line, sizeof(line), at, " (");
+    at = fl_say_number(line, sizeof(line), at, part);
+    at = fl_say_text(line, sizeof(line), at, " %)");
   }
-  at = repl_hod_text(line, sizeof(line), at, ", идёт «");
-  at = repl_hod_text(line, sizeof(line), at, repl_hod_step);
-  at = repl_hod_text(line, sizeof(line), at, "»");
-  bytes = repl_hod_resident();
+  at = fl_say_text(line, sizeof(line), at, ", идёт «");
+  at = fl_say_text(line, sizeof(line), at, repl_hod_step);
+  at = fl_say_text(line, sizeof(line), at, "»");
+  bytes = fl_say_resident();
   if (bytes != 0) {
-    at = repl_hod_text(line, sizeof(line), at, ", ");
-    at = repl_hod_size(line, sizeof(line), at, bytes);
+    at = fl_say_text(line, sizeof(line), at, ", ");
+    at = fl_say_size(line, sizeof(line), at, bytes);
   }
-  at = repl_hod_text(line, sizeof(line), at, "\n");
+  at = fl_say_text(line, sizeof(line), at, "\n");
   wrote = write(2, line, at);
   (void)wrote;
   alarm(REPL_HOD_SECONDS);
@@ -1470,10 +1389,13 @@ static void repl_hod_say(int signal_number) {
 
 static void repl_hod_start(const char *name) {
   size_t fit = 0;
+  /* Тем же именем зовётся шаг и в снимке подключения (`kill -USR1`): строка
+     хода говорит раз в полминуты, снимок — когда спросили, и называть шаг
+     двумя разными способами было бы ложью в одном из них. */
+  fl_watch_step(name);
   if (!repl_hod_set) {
     struct sigaction action;
-    const long page = sysconf(_SC_PAGESIZE);
-    repl_hod_page = page > 0 ? (unsigned long)page : 0;
+    fl_say_page_ready();
     memset(&action, 0, sizeof(action));
     action.sa_handler = repl_hod_say;
     sigemptyset(&action.sa_mask);
@@ -1500,7 +1422,12 @@ static void repl_hod_start(const char *name) {
   }
 }
 
-static void repl_hod_stop(void) { repl_hod_going = 0; }
+static void repl_hod_stop(void) {
+  repl_hod_going = 0;
+  /* Между шагами имени шага нет: снимок, снятый в этот миг, назвал бы шаг,
+     который уже кончился. */
+  fl_watch_step(NULL);
+}
 
 static fl_status repl_call(const char *name, const fl_value *args, size_t count, fl_value *result) {
   fl_error error;
@@ -7360,6 +7287,31 @@ static int run_file(int argc, char **argv) {
   repl_imports_of(text, bytes, full, &queue);
   sources = repl_closure(&paths, &texts, &queue);
 
+  /*
+   * СНИМОК ПОДКЛЮЧЕНИЯ ПЕЧАТАЕТ ВЫЗОВ, КОТОРЫМ ЭТОТ ПРОГОН НАЧАЛСЯ (задача 0061).
+   *
+   * Строку собирает хозяин, а не рантайм, ровно потому, что имя файла знает
+   * только он: рантайм видит доводы в двери программы (`fl_check_entry`), но
+   * файла у него нет. Собранная здесь строка вставляется в оболочку как есть и
+   * даёт ТОТ ЖЕ вызов — в этом весь смысл ступени 2 задачи: снимок отладки
+   * обязан быть воспроизводимым прогоном, а не картинкой.
+   *
+   * Путь берётся разрешённый (`full`), а не как написано в доводе: снимок могут
+   * читать из другого каталога.
+   */
+  {
+    char repeat[1024];
+    /* Имя в одинарных кавычках, а не в «ёлочках»: строку вставляют в оболочку,
+       и пробел в имени функции без кавычек разорвал бы её на два довода. Оба
+       написания `flang run` принимает — `run_bare_name` снимает «ёлочки» сам. */
+    if (given == NULL) {
+      snprintf(repeat, sizeof(repeat), "flang run %s --function '%s'", full, name);
+    } else {
+      snprintf(repeat, sizeof(repeat), "flang run %s --function '%s' --args '%s'", full, name, given);
+    }
+    fl_watch_repeat_set(repeat);
+  }
+
   if (!run_args(given, &bound)) {
     fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
     code = 2;
@@ -11811,6 +11763,7 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
                    fl_value **log, size_t *count, size_t *room, double limit, bool pretty) {
   fl_value state = fl_nothing();
   fl_value response = fl_nothing();
+  fl_value last = fl_nothing();
   fl_value step = first;
   fl_value field = fl_nothing();
   char *kind = NULL;
@@ -11847,6 +11800,32 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
   *log = (fl_value *)repl_alloc(*room * sizeof(fl_value));
   for (;;) {
     fl_value step_args[4];
+    /*
+     * ПОДКЛЮЧЕНИЕ К ИДУЩЕЙ СЛУЖБЕ — ВТОРАЯ ПОЛОВИНА ОТВЕТА (задача 0061).
+     *
+     * Обработчик сигнала отвечает сразу и сам, но вправе написать только то,
+     * что POSIX объявил безопасным: имя функции, глубину, витки, память. Здесь,
+     * на границе витка плана, безопасно всё — и потому здесь говорится то, чего
+     * обработчик сказать не мог: какой план идёт и сколько поручений он уже
+     * отдал. Заменять друг друга эти два ответа не могут: тесный расчёт до
+     * границы витка не дойдёт вовсе, а служба стоит на ней почти всё время.
+     *
+     * Цена — одно чтение переменной на виток плана, то есть на ПОРУЧЕНИЕ, а не
+     * на виток вычислителя. Копия последнего поручения — присваивание
+     * `fl_value`, четыре слова, и делается она рядом с настоящим поручением
+     * хозяину (файл, сеть, время), против которого не считается.
+     */
+    if (fl_watch_asked()) {
+      const char *what = NULL;
+      size_t what_bytes = 0;
+      if (!io_order_name(last, &what, &what_bytes)) {
+        what = "ещё ни одного";
+        what_bytes = strlen(what);
+      }
+      fprintf(stderr, "ПОДКЛЮЧЕНИЕ: идёт план «%s», поручений отдано %lu, последнее «%.*s»\n", plan_name,
+              (unsigned long)*count, (int)what_bytes, what);
+      fflush(stderr);
+    }
     step_args[0] = ready;
     step_args[1] = plan;
     step_args[2] = state;
@@ -11894,6 +11873,7 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
       fl_value entry[2];
       val_field(step, "поручение", &order);
       val_field(step, "потом", &state);
+      last = order;
       response = io_perform(host, order);
       entry[0] = io_pair("поручение", order);
       entry[1] = io_pair("отклик", response);
@@ -12059,6 +12039,16 @@ static int io_file(int argc, char **argv) {
   args[0] = repl_closure(&paths, &texts, &queue);
   args[1] = repl_value_say(full);
   args[2] = repl_value_say(plan_name);
+
+  /* Снимок подключения (`kill -USR1`) печатает команду, которой служба поднята,
+     — тем же способом и по той же причине, что у `flang run`. Служба идёт
+     часами, и человек, подключившийся к чужому процессу, обязан узнать из
+     снимка, ЧТО именно идёт, а не идти искать это в чужой истории оболочки. */
+  {
+    char repeat[1024];
+    snprintf(repeat, sizeof(repeat), "flang io %s --plan \"%s\"", full, plan_name);
+    fl_watch_repeat_set(repeat);
+  }
 
   if (repl_call("План исходников", args, 3, &found) != FL_OK) {
     fputs("flang io: связывание не отработало\n", stderr);

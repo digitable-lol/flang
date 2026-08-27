@@ -367,7 +367,6 @@
 
 ## Ещё не разобранное
 
-- [Батут возвращает не пример, а доказанная цель: из семи распавшихся групп `types.flang` примера не ждала ни одна](a-trampoline-comes-back-from-a-proved-goal-not-from-an-example.md)
 - [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
 - [Условие тела, записанное ОДНИМ голым вызовом-признаком, отменяет разбор цели по условию, а «равен да» его возвращает](a-bare-call-guard-blocks-the-goal-split-but-equals-yes-restores-it.md)
 - [Основание, взятое по ИМЕНИ ветки, а не по точке ветвления, даёт замер, ошибающийся в одиннадцать раз, — и ошибка выглядит как открытие](a-baseline-taken-by-branch-name-is-not-a-baseline.md)
@@ -443,6 +442,7 @@
 - [Проверка в тесте, читавшая `.flang` своим разбором, оживает прогоном двоичного — но не всякая, и граница проходит по лексике и по обязательствам](a-test-check-revives-by-running-the-binary-not-by-a-second-parser.md)
 - [Правило «это не отказ» без срока — не осторожность, а поломка](a-this-is-not-a-refusal-rule-without-a-deadline-is-a-breakage.md)
 - [Поток токенов наружу стоит вчетверо дешевле дерева, и две проверки прозы оживают именно им, а не `flang ast`](a-token-stream-is-four-times-cheaper-than-a-tree.md)
+- [Батут возвращает не пример, а доказанная цель: из семи распавшихся групп `types.flang` примера не ждала ни одна](a-trampoline-comes-back-from-a-proved-goal-not-from-an-example.md)
 - [Урезанная сборка обязана сказать, чего она не проверила: молчаливое «замечаний нет» хуже отказа](a-trimmed-build-must-say-what-it-did-not-check.md)
 - [Сверка двух реализаций слепнет ровно на том, что вычли из неё до сравнения](a-two-implementation-check-goes-blind-on-what-was-subtracted-before-comparing.md)
 - [Охрана-равенство варианту, поле которого заполнено проекцией того же довода, может увести нормализацию в бесконечность](a-variant-guard-filled-by-a-projection-of-its-own-argument-can-diverge.md)

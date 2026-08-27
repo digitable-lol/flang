@@ -368,7 +368,6 @@
 
 ## Ещё не разобранное
 
-- [Согласовать условие цели с телом не даёт ничего: из 189 «дешёвых» целей приём взял НОЛЬ, решает форма подцели](aligning-the-goal-condition-proves-nothing-the-subgoal-shape-decides.md)
 - [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
 - [Условие тела, записанное ОДНИМ голым вызовом-признаком, отменяет разбор цели по условию, а «равен да» его возвращает](a-bare-call-guard-blocks-the-goal-split-but-equals-yes-restores-it.md)
 - [Основание, взятое по ИМЕНИ ветки, а не по точке ветвления, даёт замер, ошибающийся в одиннадцать раз, — и ошибка выглядит как открытие](a-baseline-taken-by-branch-name-is-not-a-baseline.md)
@@ -454,6 +453,7 @@
 - [Неверный довод при верном выводе опаснее неверного вывода](a-wrong-argument-with-a-right-conclusion-is-worse-than-a-wrong-conclusion.md)
 - [Тип «неотрицательное» стоит в 14 файлах задачек, и его не знает НИ ОДИН двоичный в дереве — эти файлы сегодня нельзя ни проверить, ни доказать, ни напечатать](algorithms-a-type-the-seed-does-not-know-closes-fourteen-files-to-every-binary.md)
 - [Задачки и переводы несут 1226 примеров на 15 обещаний — здесь узкое место не примеры, а обещания, и обычный порядок работы надо переставить](algorithms-examples-carry-a-thousand-examples-and-fifteen-promises.md)
+- [Согласовать условие цели с телом не даёт ничего: из 189 «дешёвых» целей приём взял НОЛЬ, решает форма подцели](aligning-the-goal-condition-proves-nothing-the-subgoal-shape-decides.md)
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](an-addressee-must-be-a-literal-for-the-payload-type-not-for-the-scheduler.md)
 - [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](an-argument-against-a-form-holds-only-for-the-tasks-it-named.md)
 - [Приписанная теорема ЗАСЛОНЯЕТ сведение, которое ядро делает само: 45 потерь из 55 прогонов, и три из них тихие](an-attached-theorem-shadows-the-reduction-the-kernel-does-itself.md)

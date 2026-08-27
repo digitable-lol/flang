@@ -402,6 +402,7 @@
 - [Свести меры к одной мало: у C# «длина» и «разложить на символы» расходились на ОДИНОКОЙ половине пары ещё сутки после сведения](a-lone-low-half-counted-as-zero-in-csharp.md)
 - [Литерал `"\uD83D"` в любом `.flang` этого дерева ломает сверку самоприменения — и это не чинится](a-lone-surrogate-literal-breaks-self-application.md)
 - [Строчное имя варианта в голом «случай «имя»» читается как связывание имени, а не как вариант](a-lowercase-variant-name-in-a-bare-case-reads-as-a-binding.md)
+- [Мерка сама сторожит порог: лёгкое считает на месте, тяжёлое уводит под ворота](a-measurement-that-guards-its-own-threshold-sends-heavy-runs-through-the-gate.md)
 - [Замерщик обязан печатать, сколько точек ПОСМОТРЕЛ, а не только сколько прошло](a-measurer-must-print-how-many-points-it-looked-at.md)
 - [Груз письма едет билетом, а не значением, — и этим отсутствие полиморфизма перестаёт мешать](a-message-payload-travels-as-a-ticket-not-as-a-value.md)
 - [Адрес модуля в замке — sha256 его исходника, а сжатия в формате нет вовсе](a-module-address-is-the-sha256-of-its-source.md)
@@ -643,10 +644,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Мерка сама сторожит порог: лёгкое считает на месте, тяжёлое уводит под ворота](a-measurement-that-guards-its-own-threshold-sends-heavy-runs-through-the-gate.md)
 
 ## Как добавлять
 

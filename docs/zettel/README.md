@@ -654,6 +654,12 @@
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
 
+## Ещё не разобранное
+
+- [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
+- [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)
+- [Разложение конъюнкции в заключении на арифметике даёт ноль: тридцать две части, ни одной доказанной](splitting-a-conjunction-in-the-conclusion-buys-nothing-on-arithmetic.md)
+
 ## Как добавлять
 
 Одна заметка — одна мысль. Формат:

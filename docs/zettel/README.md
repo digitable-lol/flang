@@ -135,6 +135,7 @@
 - [Цена доказуемости — 2,5 % функций, а всё остальное медленно по другим причинам](provability-costs-2-5-percent.md)
 - [Контрольный вектор, не влезающий в предел шагов, проверяется напечатанным C, и это в 1250 раз дешевле толкователя](reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c.md)
 - [Мы медленнее Python в 1,4 раза, и компиляция сегодня не окупается никогда](slower-than-python-by-1-4.md)
+- [Посимвольный автомат стоит не по числу знаков, а по числу знаков, меняющих режим: 2,56 % знаков — и 71 % предела шагов](splitting-by-literals-pays-only-for-the-characters-that-change-mode.md)
 - [Вывод типов отдаёт доказанное отметкой на дереве, а не таблицей наружу](type-inference-answers-with-a-node-mark.md)
 - [Перенос проверки на flang стоит от одного до полутора порядков времени, и упирается он в предел шагов, а не в выразительность](what-a-check-costs-when-it-moves-from-javascript-to-flang.md)
 

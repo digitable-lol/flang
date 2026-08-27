@@ -416,6 +416,7 @@
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](a-plan-refusal-goes-to-stderr-and-success-to-stdout.md)
 - [Постусловие у зовущей функции превращает ХВОСТОВОЙ зов в кадр — и обход списка начинает стоить глубины по кадру на элемент](a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md)
 - [Постусловие считается при КАЖДОМ вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order.md)
+- [Обещание, дописанное звену хвостового круга, стирает батут из напечатанного кода — и главный цикл вычислителя становится рекурсией по стеку](a-promise-added-to-a-tail-cycle-deletes-the-trampoline-from-the-printed-code.md)
 - [У двоичного два входа, и цель печати достаётся человеку и машине разной ценой: прогонщику JSON — даром, ключу `--target` — 90 строк C](a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md)
 - [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](a-product-floor-works-only-paired-with-a-mirror.md)
 - [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)

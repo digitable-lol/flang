@@ -135,7 +135,7 @@
 - [Цена доказуемости — 2,5 % функций, а всё остальное медленно по другим причинам](provability-costs-2-5-percent.md)
 - [Контрольный вектор, не влезающий в предел шагов, проверяется напечатанным C, и это в 1250 раз дешевле толкователя](reference-vectors-beyond-the-step-limit-are-checked-in-emitted-c.md)
 - [Мы медленнее Python в 1,4 раза, и компиляция сегодня не окупается никогда](slower-than-python-by-1-4.md)
-- [Посимвольный автомат стоит не по числу знаков, а по числу знаков, меняющих режим: 2,56 % знаков — и 71 % предела шагов](splitting-by-literals-pays-only-for-the-characters-that-change-mode.md)
+- [Посимвольный автомат стоит не по числу знаков, а по числу знаков, МЕНЯЮЩИХ режим](splitting-by-literals-pays-only-for-the-characters-that-change-mode.md)
 - [Вывод типов отдаёт доказанное отметкой на дереве, а не таблицей наружу](type-inference-answers-with-a-node-mark.md)
 - [Перенос проверки на flang стоит от одного до полутора порядков времени, и упирается он в предел шагов, а не в выразительность](what-a-check-costs-when-it-moves-from-javascript-to-flang.md)
 
@@ -456,6 +456,7 @@
 - [Адресат обязан быть литералом ради ТИПА ГРУЗА, а не ради планировщика: оба планировщика уже умеют вычисленный адрес](an-addressee-must-be-a-literal-for-the-payload-type-not-for-the-scheduler.md)
 - [Довод «форма не нужна ни A, ни B» стареет молча: он верен про A и B и ничего не говорит про C](an-argument-against-a-form-holds-only-for-the-tasks-it-named.md)
 - [Приписанная теорема ЗАСЛОНЯЕТ сведение, которое ядро делает само: 45 потерь из 55 прогонов, и три из них тихие](an-attached-theorem-shadows-the-reduction-the-kernel-does-itself.md)
+- [Правка печати в C проверяется за тридцать секунд, а не перепечаткой](an-emit-c-edit-is-checked-in-thirty-seconds-not-by-a-reprint.md)
 - [Пустая строка у «Прочитано» значит КОНЕЦ, и раскодировщик, вызванный руками, отдаёт её ещё в одном случае](an-empty-string-from-read-means-end-and-that-traps-the-decoder.md)
 - [Через TCP нельзя обещать ровное число доставок — обещать надо разложение](an-exact-delivery-count-cannot-be-promised-over-tcp.md)
 - [Точный шаг по `нат` доказывает только ПРЯМУЮ рекурсию: цикл через три функции ядро отвергает](an-exact-step-proves-only-direct-recursion.md)
@@ -610,6 +611,7 @@
 - [Предел шагов интерпретатора решает, что вообще может быть примером, — и ключа, чтобы его поднять, у `check` нет](the-interpreter-step-limit-decides-what-can-be-an-example.md)
 - [Хозяин «flang io» обрывает запущенный процесс на тридцатой секунде, и говорит об этом не тем откликом](the-io-host-kills-a-process-at-thirty-seconds-and-reports-it-wrong.md)
 - [У ядра нет правила «не меньше»: та же мысль, записанная через «не больше», доказывается](the-kernel-has-no-not-less-rule-but-not-greater-proves.md)
+- [Прогон `emit` держит не печать, а суд ядра и два лишних разбора](the-kernel-step-not-printing-is-what-holds-the-emit-run.md)
 - [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](the-law-oracle-was-blocked-by-totality-not-by-first-class-functions.md)
 - [Замок снимает места, а генератор кода их печатает — отсюда расхождение в 337 байт](the-lock-strips-locations-and-the-code-generator-prints-them-back.md)
 - [Планировщик узла переносим: из 224 строк мира в нём пять, а решений 219 — и они печатаются во все восемь целей](the-node-scheduler-is-portable-219-decisions-of-224-lines.md)
@@ -617,6 +619,7 @@
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе, — и круг «туда и обратно» стал выразим](the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag.md)
 - [Цена втаскивания цели печати в двоичный считается встречей имён, а не строками модуля: у Elixir вышло 262 столкновения на 436 объявлений](the-price-of-a-print-target-in-the-binary-is-counted-in-name-meetings.md)
 - [Цена втаскивания цели печати в двоичный оказалась не в столкновениях имён, а в долге эталона, который прятала побайтовая сверка с вычитанием](the-price-of-a-print-target-is-reference-debt-not-name-collisions.md)
+- [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](the-socket-host-lost-the-reply-when-the-service-thought-before-answering.md)
 - [Цепочка шагов уже копит известное — и тратит его только на текст отказа](the-step-chain-collects-what-is-known-and-spends-it-on-refusal-text.md)
 - [Мера содержательности подменой тела СЛЕПА к утверждениям о порядке: пустой список упорядочен, значит заглушка проходит любое такое утверждение](the-substance-measure-is-blind-to-claims-about-order.md)
@@ -651,9 +654,7 @@
 
 ## Ещё не разобранное
 
-- [Правка печати в C проверяется за тридцать секунд, а не перепечаткой](an-emit-c-edit-is-checked-in-thirty-seconds-not-by-a-reprint.md)
-- [Прогон `emit` держит не печать, а суд ядра и два лишних разбора](the-kernel-step-not-printing-is-what-holds-the-emit-run.md)
-- [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
+- [Пределов шагов ДВА, а ключ подходит только к одному — и жалуется другой](two-step-limits-and-the-key-fits-only-one.md)
 
 ## Как добавлять
 

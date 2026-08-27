@@ -649,6 +649,12 @@
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
 
+## Ещё не разобранное
+
+- [Правка печати в C проверяется за тридцать секунд, а не перепечаткой](an-emit-c-edit-is-checked-in-thirty-seconds-not-by-a-reprint.md)
+- [Прогон `emit` держит не печать, а суд ядра и два лишних разбора](the-kernel-step-not-printing-is-what-holds-the-emit-run.md)
+- [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
+
 ## Как добавлять
 
 Одна заметка — одна мысль. Формат:

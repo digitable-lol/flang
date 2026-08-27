@@ -1015,6 +1015,39 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
  * меньше одного шага»`, flang/self/interpret.flang). Расходились не замеры —
  * расходились бэкенд C и толкователь, и здесь это сходится.
  */
+/*
+ * ── ГДЕ ЕЩЁ СНИМАЕТСЯ ЗАРЯД, и почему список именно такой ──────────────────
+ *
+ * Сперва `fl_charge` звалась из одного места — `fl_require_list`, вход трёх
+ * форм по списку. Замер 27 августа 2026 показал, что этого мало: встроенные
+ * формы, которые тоже проходят вход целиком, шли счётчику бесплатно.
+ * `соединить` списка из 100 000 строк стоил 395,8 мкс и НОЛЬ витков, и время
+ * росло линейно, пока счётчик стоял.
+ *
+ * Заряжается ровно то, что пройдено, и в тех единицах, в каких работа и идёт:
+ *
+ *   соединить (две строки)  октеты склейки
+ *   соединить (список)      элементы плюс октеты склейки
+ *   содержит (список)       элементы ДО найденного, а не весь список
+ *   содержит (строка)       пройденная часть стога, а не весь стог
+ *   начинается с            октеты префикса
+ *   разделить               октеты строки дважды: счёт кусков и нарезка
+ *   символы                 октеты строки дважды: счёт точек и нарезка
+ *   символ, подстрока       знаки от начала до дальнего края среза
+ *   к числу                 октеты строки
+ *   к строке (число)        пробы точности: snprintf и strtod на пробу
+ *   добавить, приписать     длина списка — ТОЛЬКО на медленном пути, с копией
+ *
+ * Чего в списке НЕТ и почему. `длина`, `пусто`, `голова`, `хвост`, `элемент`,
+ * `код символа`, `символ по коду`, `остаток от`, `процентов от` работают за
+ * постоянное время: список в C — указатель и счётчик, `хвост` и срез строки
+ * не копируют ничего. Зарядить их длиной значило бы соврать вверх — ошибка
+ * того же рода, что прежний ноль, только в другую сторону.
+ *
+ * Остаётся ОДНА известная дыра, и она названа числом в задаче 0060: `fl_equal`
+ * сравнивает списки и записи вглубь, а `ctx` у неё нет. Верхний уровень
+ * `содержит` заряжен, глубина сравнения — нет.
+ */
 void fl_charge(fl_ctx *ctx, size_t count) {
   if (ctx == NULL || ctx->max_steps == 0 || count == 0) {
     return;
@@ -2517,7 +2550,13 @@ bool fl_variant_is(fl_value value, const char *name) {
  * точности от 1 до 17 и берём первую, которую strtod возвращает без потерь.
  * Шаг второй — расстановка точки и экспоненты ровно по таблице стандарта.
  */
-size_t fl_number_text(double value, char *buffer) {
+/*
+ * Проб точности — от одной до семнадцати, и каждая стоит snprintf плюс strtod.
+ * Это самая дорогая работа среди встроенных форм на один вызов, и счётчику она
+ * до сих пор ничего не стоила. `probes` считает сделанные пробы; NULL — не
+ * считать (диагностикам счёт не нужен, они не в счёте витков программы).
+ */
+static size_t fl_number_text_cost(double value, char *buffer, size_t *probes) {
   char probe[64];
   char digits[32];
   size_t offset = 0;
@@ -2550,6 +2589,9 @@ size_t fl_number_text(double value, char *buffer) {
 
   for (precision = 1; precision < 17; precision += 1) {
     snprintf(probe, sizeof probe, "%.*e", precision - 1, value);
+    if (probes != NULL) {
+      *probes += 1;
+    }
     if (strtod(probe, NULL) == value) {
       break;
     }
@@ -2611,6 +2653,10 @@ size_t fl_number_text(double value, char *buffer) {
   }
   buffer[offset] = '\0';
   return offset;
+}
+
+size_t fl_number_text(double value, char *buffer) {
+  return fl_number_text_cost(value, buffer, NULL);
 }
 
 /* ═════════════════════════ буфер для текстов ═════════════════════════ */
@@ -3201,6 +3247,8 @@ static fl_status fl_join_two(fl_ctx *ctx, fl_value left, fl_value right, fl_valu
                    "«соединить»: на стыке октет продолжения прирос бы к последнему знаку левой "
                    "строки — два знака слились бы в один");
   }
+  /* Склейка копирует оба слагаемых целиком: столько октетов и стоит. */
+  fl_charge(ctx, bytes);
   data = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
   if (data == NULL) {
     return fl_no_memory(error);
@@ -3295,6 +3343,8 @@ fl_status fl_b_simvol(fl_ctx *ctx, fl_value index, fl_value text, fl_value *out,
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«символ»: индекс %s вне строки длиной %lu", number,
                    (unsigned long)text.as.string.points);
   }
+  /* `fl_utf8_offset` идёт по знакам от начала: до N-го знака ровно N шагов. */
+  fl_charge(ctx, (size_t)at + 1);
   start = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)at);
   stop = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)at + 1);
   *out = fl_text_borrow(text.as.string.utf8 + start, stop - start, 1);
@@ -3326,6 +3376,8 @@ fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to,
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«подстрока»: конец %s вне диапазона [%s, %lu]",
                    last_text, first_text, (unsigned long)text.as.string.points);
   }
+  /* Оба края ищутся обходом от начала строки; дальний и определяет цену. */
+  fl_charge(ctx, (size_t)end);
   first = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)start);
   last = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)end);
   *out = fl_text_borrow(text.as.string.utf8 + first, last - first, (size_t)(end - start));
@@ -3375,6 +3427,9 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
       bytes += right.as.string.bytes * (left.as.list.count - 1);
       points += right.as.string.points * (left.as.list.count - 1);
     }
+    /* Два прохода: по элементам (проверка стыков и сумма длин) и по октетам
+       (копия). Заряд снимается один раз, за оба. */
+    fl_charge(ctx, left.as.list.count + bytes);
     data = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
     if (data == NULL) {
       return fl_no_memory(error);
@@ -3416,8 +3471,12 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
  * края стоят на границе знака. Два сравнения октета на найденное вхождение —
  * дешевле, чем обход строки, и включаются они только после удачного memcmp.
  */
-static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle, size_t needle_bytes) {
+static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle,
+                           size_t needle_bytes, size_t *scanned) {
   size_t index = 0;
+  if (scanned != NULL) {
+    *scanned = 0;
+  }
   if (needle_bytes == 0) {
     return haystack;
   }
@@ -3425,6 +3484,11 @@ static const char *fl_find(const char *haystack, size_t haystack_bytes, const ch
     return NULL;
   }
   for (index = 0; index + needle_bytes <= haystack_bytes; index += 1) {
+    if (scanned != NULL) {
+      /* Цена — не длина стога, а пройденная его часть: на раннем совпадении
+         поиск обрывается, и заряжать за весь стог значило бы врать вверх. */
+      *scanned = index + 1;
+    }
     if (memcmp(haystack + index, needle, needle_bytes) == 0 &&
         fl_utf8_starts(haystack, index) &&
         fl_utf8_boundary(haystack, haystack_bytes, index + needle_bytes)) {
@@ -3454,6 +3518,9 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   size_t start = 0;
   fl_value *items = NULL;
 
+  /* Строка читается ДВАЖДЫ: сперва счёт кусков, потом их нарезка. Заряд снят
+     за оба прохода сразу — числа витков это не меняет, а места экономит. */
+  fl_charge(ctx, text.as.string.bytes * 2);
   for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
     if (fl_razdelit_zdes(text, separator, index)) {
       count += 1;
@@ -3520,6 +3587,8 @@ fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
   fl_value *items = NULL;
   FL_TRY(fl_expect_string(ctx, "символы", text, "строка", error));
 
+  /* Тоже два прохода по октетам: счёт кодовых точек и нарезка по ведущим. */
+  fl_charge(ctx, text.as.string.bytes * 2);
   count = fl_utf8_points(text.as.string.utf8, text.as.string.bytes);
   if (count == 0) {
     *out = fl_list(NULL, 0);
@@ -3623,17 +3692,23 @@ fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *o
     size_t index = 0;
     for (index = 0; index < left.as.list.count; index += 1) {
       if (fl_equal(left.as.list.items[index], right)) {
+        fl_charge(ctx, index + 1);
         *out = fl_flag(true);
         return FL_OK;
       }
     }
+    fl_charge(ctx, left.as.list.count);
     *out = fl_flag(false);
     return FL_OK;
   }
-  FL_TRY(fl_expect_string(ctx, "содержит", left, "строка или список", error));
-  FL_TRY(fl_expect_string(ctx, "содержит", right, "искомая подстрока", error));
-  *out = fl_flag(fl_find(left.as.string.utf8, left.as.string.bytes, right.as.string.utf8,
-                         right.as.string.bytes) != NULL);
+  {
+    size_t scanned = 0;
+    FL_TRY(fl_expect_string(ctx, "содержит", left, "строка или список", error));
+    FL_TRY(fl_expect_string(ctx, "содержит", right, "искомая подстрока", error));
+    *out = fl_flag(fl_find(left.as.string.utf8, left.as.string.bytes, right.as.string.utf8,
+                           right.as.string.bytes, &scanned) != NULL);
+    fl_charge(ctx, scanned);
+  }
   return FL_OK;
 }
 
@@ -3643,6 +3718,8 @@ fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_va
   /* Начало у префикса и у строки одно, поэтому левый край на границе знака
      всегда; сторожится правый — иначе «мама» начиналась бы с одинокого октета
      D0, то есть с половины своего первого знака. */
+  /* Сравнивается ровно префикс, дальше строка не читается. */
+  fl_charge(ctx, prefix.as.string.bytes);
   *out = fl_flag(prefix.as.string.bytes <= text.as.string.bytes &&
                  (prefix.as.string.bytes == 0 ||
                   (memcmp(text.as.string.utf8, prefix.as.string.utf8, prefix.as.string.bytes) == 0 &&
@@ -3711,6 +3788,8 @@ fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *err
   double number = 0.0;
   FL_TRY(fl_expect_string(ctx, "к числу", text, "строка", error));
 
+  /* Пробелы с краёв и сама проверка вида числа читают строку целиком. */
+  fl_charge(ctx, text.as.string.bytes);
   stop = text.as.string.bytes;
   while (start < stop) {
     const unsigned long code = fl_utf8_decode(text.as.string.utf8, stop, start, &width);
@@ -3785,9 +3864,15 @@ fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *er
     case FL_STRING:
       *out = value;
       return FL_OK;
-    case FL_NUMBER:
-      fl_number_text(value.as.number, text);
+    case FL_NUMBER: {
+      /* Кратчайшая запись ищется пробами: snprintf плюс strtod на пробу. Это
+         самая дорогая встроенная работа на один вызов, и до сих пор она шла
+         счётчику бесплатно. */
+      size_t probes = 0;
+      fl_number_text_cost(value.as.number, text, &probes);
+      fl_charge(ctx, probes);
       return fl_text(ctx, text, strlen(text), out, error);
+    }
     case FL_FLAG:
       /* Признак печатается по-русски: поверхность языка знает «да» и «нет». */
       *out = fl_text_static(value.as.flag ? "да" : "нет");
@@ -3989,6 +4074,11 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
   }
   FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
   if (count > 0) {
+    /* Заряд стоит ТОЛЬКО на медленном пути. Быстрый путь пишет одну ячейку за
+       концом и стоит постоянного времени — зарядить его длиной значило бы
+       оболгать «добавить» вверх и вернуть тот самый квадрат, ради снятия
+       которого запас и заведён. */
+    fl_charge(ctx, count);
     memcpy(items, list.as.list.items, count * sizeof(fl_value));
   }
   items[count] = item;
@@ -4066,6 +4156,8 @@ fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out
   }
   FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
   if (count > 0) {
+    /* Как и у «добавить»: платит копия, а не запись в занятый заранее запас. */
+    fl_charge(ctx, count);
     memcpy(items + slack, list.as.list.items, count * sizeof(fl_value));
   }
   items[slack - 1] = item;

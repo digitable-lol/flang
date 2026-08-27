@@ -323,6 +323,7 @@
 - [Слой законов не различает списки по типу элемента: ключ у всякого списка — `list:null`](the-law-layer-cannot-tell-two-list-types-apart.md)
 - [Страница `man` показывала вместо примера `--args` обрывок `'{`, и проверка была зелёной](the-man-page-swallowed-the-args-example.md)
 - [Веер оснастки считается по ядрам, а кончается память — и правило «не больше двух прогонов» тут не помогает](veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.md)
+- [Ворота раздают места по ЗАПРОШЕННОМУ пределу, а не по съеденной памяти — и просьба «с запасом» отнимает места у всех](the-gate-hands-out-slots-by-what-you-ask-not-by-what-you-use.md)
 
 ## Отвергнутые пути
 

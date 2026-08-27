@@ -368,6 +368,7 @@
 
 ## Ещё не разобранное
 
+- [Согласовать условие цели с телом не даёт ничего: из 189 «дешёвых» целей приём взял НОЛЬ, решает форма подцели](aligning-the-goal-condition-proves-nothing-the-subgoal-shape-decides.md)
 - [Голая цель-признак ядру не вид цели, а та же мысль через «равен да» — вид](a-bare-boolean-goal-is-not-a-goal-kind-but-equals-yes-is.md)
 - [Условие тела, записанное ОДНИМ голым вызовом-признаком, отменяет разбор цели по условию, а «равен да» его возвращает](a-bare-call-guard-blocks-the-goal-split-but-equals-yes-restores-it.md)
 - [Основание, взятое по ИМЕНИ ветки, а не по точке ветвления, даёт замер, ошибающийся в одиннадцать раз, — и ошибка выглядит как открытие](a-baseline-taken-by-branch-name-is-not-a-baseline.md)

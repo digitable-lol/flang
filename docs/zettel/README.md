@@ -517,6 +517,7 @@
 - [Печать в JavaScript упирается не в рантайм внутри модуля, а в отсутствие границы входа: 102 программы из 102 разойдутся с Node](javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md)
 - [От JavaScript остаётся только цель печати, второе мнение отменено вместе с ловушкой Томпсона](javascript-stays-only-as-a-print-target.md)
 - [JSON в стандартной библиотеке снижает МИР хозяина, а не его РАЗМЕР](json-in-the-stdlib-lowers-the-hosts-world-not-its-size.md)
+- [Голая цель-признак берётся ИНОГДА, и решает это тело, а не вид цели](kernel-proved-a-bare-boolean-goal-is-sometimes-taken.md)
 - [В примере годятся только литералы, и ошибка в нём выходит в конце многочасового прогона](kernel-proved-an-example-may-hold-only-literals.md)
 - [«Вычислить замкнутую» спрашивает свободные имена ДО нормализации — оттого неравенство над литералом ветви не берётся](kernel-proved-closed-goal-is-tested-before-normalization.md)
 - [Примеры бесплатны там, где в замыкании нет ни одной теоремы — и ядро как раз такое](kernel-proved-examples-are-free-where-there-are-no-theorems.md)
@@ -642,10 +643,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Голая цель-признак берётся ИНОГДА, и решает это тело, а не вид цели](kernel-proved-a-bare-boolean-goal-is-sometimes-taken.md)
 
 ## Как добавлять
 

@@ -377,6 +377,7 @@
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](a-changed-verdict-must-be-carried-to-a-full-run.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](a-check-moved-to-the-binary-drops-out-of-ci-silently.md)
 - [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](a-child-process-starts-in-the-plan-directory-not-the-working-one.md)
+- [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
 - [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей МЕЖДУ СОБОЙ: у go с rust их пять](a-collision-map-taken-per-target-is-blind-to-target-against-target.md)
 - [Отказ компилятора на стороне flang — значение, поэтому «программа отвергнута» проверяется обычным примером](a-compiler-refusal-on-the-flang-side-is-a-value-so-an-example-sees-it.md)
 - [Цель-конъюнкция ядру не по зубам, но стоит это шести утверждений, а не шестидесяти четырёх](a-conjunction-goal-is-beyond-the-kernel-but-costs-only-six-claims.md)
@@ -570,6 +571,7 @@
 - [Втаскивание модуля в самоприменённый компилятор стоит не по размеру модуля, а по числу столкновений имён с уже втащенными](pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size.md)
 - [Заявленных чисел о дереве 1693 строки в 89 файлах, и делятся они на три кучи: перемеряемое за минуту, перемеряемое за часы и не перемеряемое никогда](recount-claimed-numbers-have-three-kinds-and-only-one-can-be-rechecked.md)
 - [У общего двоичного нет воспроизводимой родословной: время сборки известно, дерево — нет, а называемый коммит на два часа его моложе](recount-the-shared-binary-has-no-reproducible-pedigree.md)
+- [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](removed-from-the-decision-and-removed-from-the-load-are-two-events.md)
 - [Переименовать заметку стоит не переименования, а правки ссылающихся: 191 имя потянуло 443 ссылки в 234 файлах](renaming-a-note-costs-the-referrers-not-the-rename.md)
 - [Кэш перепечатки по отпечатку неверен не редко, а по устройству: зависимость идёт ВВЕРХ по ввозам, а ключ смотрит вниз](reprint-cache-key-cannot-name-the-dependency-that-exists.md)
@@ -581,6 +583,7 @@
 - [SHA-256 без единой битовой операции стоит 925 195 шагов интерпретатора на блок, и это уложилось в предел только после трёх названных правок](sha256-without-bit-operations-costs-925-thousand-steps-per-block.md)
 - [Тихая потеря байтов у файлов была ДВУМЯ бедами в разных местах, и лечатся они разным лекарством](silent-byte-loss-in-files-was-two-failures-with-two-cures.md)
 - [«Результат сортировки не убывает» — утверждение ЛОЖНОЕ, и ложно оно ровно на «не числе»](sort-result-is-non-decreasing-is-false-on-not-a-number.md)
+- [Разложение конъюнкции в заключении на арифметике даёт ноль: тридцать две части, ни одной доказанной](splitting-a-conjunction-in-the-conclusion-buys-nothing-on-arithmetic.md)
 - [«Меньше» — это не «не больше И не равно»: разложение ложно на минус нуле](strict-less-is-not-not-greater-and-not-equal.md)
 - [Постусловие «обращение не меняет длины строки» ЛОЖНО, и ломает его одинокий суррогат](string-reversal-keeps-length-is-false-on-a-lone-surrogate.md)
 - [Именованный шаг свёртки открывает разбор цели у ВЫЗЫВАЮЩЕГО, но может отнять меру самой свёртки](structures-a-named-fold-step-unblocks-the-callers-goal-split-but-can-cost-the-fold-measure.md)
@@ -653,12 +656,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
-- [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)
-- [Разложение конъюнкции в заключении на арифметике даёт ноль: тридцать две части, ни одной доказанной](splitting-a-conjunction-in-the-conclusion-buys-nothing-on-arithmetic.md)
 
 ## Как добавлять
 

@@ -648,6 +648,7 @@
 - [Из npm и из brew приезжали разные компиляторы: на одном корпусе они разошлись на 54 вызовах из 59](two-installs-answered-differently-on-54-calls-of-59.md)
 - [Два правила языка живут только в реализации на JavaScript, и сверка двух реализаций их не видит](two-language-rules-live-only-in-the-javascript-implementation.md)
 - [На границах ядру не хватает двух разных вещей, а не одной, и обе ложны на `число`](two-missing-bound-rules-not-one-and-both-are-false-on-ieee-numbers.md)
+- [Всякое «ядро этого не умеет», снятое bootstrap/flang, — утверждение о семени, а не о языке: трёх правил из двенадцати в семени нет](what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md)
 - [Два разных списка `только` для одного модуля в одном замыкании не объединяются, и имя, названное лишь одним из них, становится неизвестным](two-only-lists-for-one-module-do-not-merge.md)
 - [Пределов шагов ДВА, а ключ подходит только к одному — и жалуется другой](two-step-limits-and-the-key-fits-only-one.md)
 - [Проверки типов на пути точки раскрутки нет, поэтому её отказы приезжают отказами компилятора C](type-checking-is-not-on-the-bootstrap-path.md)

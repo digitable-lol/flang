@@ -475,6 +475,7 @@
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](an-unnameable-host-deadline-alone-kept-the-build-on-javascript.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](auto-repair-of-numbers-fixes-the-leaf-and-leaves-the-total.md)
 - [Сборка двоичного стоит минуту, а не час, — поэтому её место в CI на каждом пуше](building-the-binary-costs-a-minute-not-an-hour.md)
+- [Счёт вызовов, счёт шагов и часы — три разных ответа, и путать их дорого](calls-steps-and-the-clock-are-three-different-answers.md)
 - [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
 - [Пока сборщик записи молчит о своих полях, наверху не доказывается ничего](certificates-a-record-builder-that-says-nothing-blocks-every-promise-above-it.md)
 - [Длину склейки ядро считает по одному куску за раз, а тремя слагаемыми — нет](certificates-concat-length-adds-one-piece-at-a-time-not-three.md)
@@ -629,6 +630,7 @@
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе, — и круг «туда и обратно» стал выразим](the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag.md)
 - [Цена втаскивания цели печати в двоичный считается встречей имён, а не строками модуля: у Elixir вышло 262 столкновения на 436 объявлений](the-price-of-a-print-target-in-the-binary-is-counted-in-name-meetings.md)
 - [Цена втаскивания цели печати в двоичный оказалась не в столкновениях имён, а в долге эталона, который прятала побайтовая сверка с вычитанием](the-price-of-a-print-target-is-reference-debt-not-name-collisions.md)
+- [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
 - [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](the-socket-host-lost-the-reply-when-the-service-thought-before-answering.md)
 - [Цепочка шагов уже копит известное — и тратит его только на текст отказа](the-step-chain-collects-what-is-known-and-spends-it-on-refusal-text.md)
@@ -664,11 +666,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Счёт вызовов, счёт шагов и часы — три разных ответа, и путать их дорого](calls-steps-and-the-clock-are-three-different-answers.md)
-- [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
 
 ## Как добавлять
 

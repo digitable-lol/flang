@@ -441,6 +441,7 @@
 - [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего, и до правки его не видно ни одним пересечением множеств](a-rename-that-separates-one-collision-creates-the-next-one.md)
 - [Правило, на которое не наступает ни одна программа корпуса, невидимо для сверки эталона — и живёт только в свидетеле](a-rule-no-corpus-program-touches-is-invisible-to-the-reference-check.md)
 - [Воспроизводимость по семени кончается ровно на границе узла, и обе половины теперь числа, а не слова](a-seed-orders-only-inside-one-node.md)
+- [Семя с рантаймом дерева бьёт стек, если не перенести блок настроек из его шапки](a-seed-with-tree-runtime-smashes-the-stack-without-its-limits-block.md)
 - [Признак «печатать отдельным файлом» — это «во вкладку не едет», а не «одинаково для всех программ»](a-separate-printed-file-means-it-cannot-ride-along.md)
 - [Подпись не определяет функцию: на нашей библиотеке она однозначна в 36,5 % случаев](a-signature-does-not-determine-a-function.md)
 - [Подмена чтения исходников обязана стоять внутри обхода, а не перед ним: иначе порядок связывания меняется молча](a-source-read-override-must-sit-inside-the-walk-not-before-it.md)

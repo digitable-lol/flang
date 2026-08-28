@@ -270,7 +270,6 @@
 
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
 - [Идущая программа сама пишет, где она](a-running-program-writes-its-own-pulse-to-a-file.md)
-- [Функция, названную которой печатает отказ при исчерпании предела, — не та, где уходит время](the-function-named-when-the-limit-runs-out-is-not-where-the-time-goes.md)
 - [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
@@ -282,6 +281,7 @@
 - [Проверку, которая зовёт компилятор, а не разбирает `.flang` сама, переносить на flang почти нечего — мешает только чтение ответа](proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski.md)
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
 - [Ссылка на «полный список кодов» вела туда, где нет ни одного отказа ядра: 0 из 13](the-full-list-of-codes-named-none-of-the-kernel-refusals.md)
+- [Функция, названную которой печатает отказ при исчерпании предела, — не та, где уходит время](the-function-named-when-the-limit-runs-out-is-not-where-the-time-goes.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя, а не отвечать «неизвестная команда»](the-installed-binary-is-a-named-subset.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал НИ У ОДНОГО поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
 

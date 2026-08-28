@@ -51,6 +51,7 @@
    Всё, что здесь нужно, объявлено тем же _POSIX_C_SOURCE, что и стек. */
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/time.h>
 #include <unistd.h>
 #define FL_WATCH 1
 #endif
@@ -1557,10 +1558,294 @@ void fl_charge(fl_ctx *ctx, size_t count) {
   ctx->steps += count;
 }
 
+/*
+ * ВТОРОЙ ПУЛЬС — ПО ВИТКАМ, А НЕ ПО ВХОДАМ.
+ *
+ * Пульс `fl_pulse` висит на `fl_enter`, то есть считает ВХОДЫ В ФУНКЦИЮ. Для
+ * дерева вызовов это почти то же, что работа. Для ХВОСТОВОГО САМОВЫЗОВА — нет:
+ * печатник разворачивает его в `for (;;)`, и вход там ОДИН на всю петлю,
+ * сколько бы витков она ни сделала. Перебор списка — ровно такая петля. Значит
+ * пульс по входам занижает цену перебора ровно во столько раз, какова длина
+ * перебора, и на выборке линейный поиск виден не будет НИКОГДА, как бы дорог
+ * он ни был.
+ *
+ * Виток же начисляется каждой итерации петли и несёт имя функции — той самой,
+ * чья петля крутится. Выборка по виткам — это выборка по работе.
+ *
+ * Цена, когда FLANG_WATCH_TICK не задан: одно сравнение указателя с NULL на
+ * виток. Задан — плюс деление с остатком. Пишем в ОТДЕЛЬНЫЙ файл, чтобы две
+ * выборки — по входам и по виткам — никогда не смешались в одной куче.
+ */
+static void fl_pulse_tick(fl_ctx *ctx, const char *function) {
+  static FILE *pulse = NULL;
+  static time_t started = 0;
+  static unsigned long long ticks = 0;
+  static unsigned long long every = 0;
+  static int tried = 0;
+  if (tried == 0) {
+    const char *path = getenv("FLANG_WATCH_TICK");
+    const char *step = getenv("FLANG_PULSE_TICK");
+    tried = 1;
+    started = time(NULL);
+    every = (step != NULL && step[0] != '\0') ? strtoull(step, NULL, 10) : 5000000ULL;
+    if (every == 0) {
+      every = 5000000ULL;
+    }
+    if (path != NULL && path[0] != '\0') {
+      pulse = fopen(path, "a");
+    }
+  }
+  if (pulse == NULL) {
+    return;
+  }
+  ticks += 1;
+  if (ticks % every == 0) {
+    long spent = (long)(time(NULL) - started);
+    fprintf(pulse, "%4ld:%02ld  витков %llu млн, глубина %lu, сейчас «%s»\n", spent / 60,
+            spent % 60, ticks / 1000000ULL, (unsigned long)(ctx != NULL ? ctx->depth : 0),
+            function != NULL ? function : "?");
+    fflush(pulse);
+  }
+}
+
+/*
+ * ТОЧНЫЙ СЧЁТ ВИТКОВ ПО ИМЕНАМ.
+ *
+ * Выборка отвечает «примерно» и на редких именах ошибается заметно. Здесь счёт
+ * ТОЧНЫЙ: каждый виток и каждый вход кладутся в ячейку по имени своей функции,
+ * а при выходе таблица печатается. Ответ на вопрос «во что ушла работа» —
+ * числом, а не долей на глаз.
+ *
+ * ПОЧЕМУ ЭТО ДЁШЕВО. Имена функций — строковые литералы, напечатанные
+ * бэкендом; их адреса неизменны за весь прогон. Значит ключ — УКАЗАТЕЛЬ, а не
+ * строка: умножение, сдвиг и одно сравнение на виток, без единого `strcmp`.
+ * Таблица на 8192 ячейки (128 КиБ) держится в кэше. Одинаковые строки с разных
+ * адресов складываются при выводе, а не на горячем пути.
+ *
+ * ЧТО ДАЁТ СТОЛБЕЦ «ВИТКОВ НА ВХОД». Хвостовой самовызов печатник разворачивает
+ * в `for (;;)`: вход туда ОДИН, а витков столько, сколько оборотов сделала
+ * петля. Значит частное «витки ÷ входы» — это длина петли, то есть ровно та
+ * величина, которая у перебора растёт с размером входа, а у поиска по хешу не
+ * растёт. Мерить её больше нечем: счёт по входам её не видит вовсе.
+ *
+ * Переполнение таблицы НЕ ЗАМАЛЧИВАЕТСЯ: непоместившиеся витки идут отдельным
+ * счётчиком и печатаются строкой «не поместилось».
+ *
+ * Включается FLANG_TICKS_OUT=<файл>. Без него — одно сравнение с NULL на виток.
+ */
+#define FL_TICKS_SLOTS 8192u
+
+struct fl_ticks_slot {
+  const char *name;
+  unsigned long long count;
+};
+
+static struct fl_ticks_slot fl_ticks_table[FL_TICKS_SLOTS];
+static struct fl_ticks_slot fl_enters_table[FL_TICKS_SLOTS];
+static unsigned long long fl_ticks_total = 0;
+static unsigned long long fl_enters_total = 0;
+static unsigned long long fl_ticks_lost = 0;
+static const char *fl_ticks_path = NULL;
+static int fl_ticks_tried = 0;
+
+static void fl_ticks_dump(void) {
+  FILE *out = NULL;
+  unsigned index = 0;
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  out = fopen(fl_ticks_path, "w");
+  if (out == NULL) {
+    return;
+  }
+  fprintf(out, "витков всего\t%llu\n", fl_ticks_total);
+  fprintf(out, "входов всего\t%llu\n", fl_enters_total);
+  fprintf(out, "не поместилось\t%llu\n", fl_ticks_lost);
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_ticks_table[index].name != NULL) {
+      fprintf(out, "виток\t%llu\t%s\n", fl_ticks_table[index].count, fl_ticks_table[index].name);
+    }
+  }
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_enters_table[index].name != NULL) {
+      fprintf(out, "вход\t%llu\t%s\n", fl_enters_table[index].count, fl_enters_table[index].name);
+    }
+  }
+  fclose(out);
+}
+
+static void fl_ticks_add(struct fl_ticks_slot *table, const char *function) {
+  const unsigned long long key = (unsigned long long)(size_t)function;
+  const unsigned start = (unsigned)((key * 2654435761ULL) >> 19) & (FL_TICKS_SLOTS - 1u);
+  unsigned probe = 0;
+  for (probe = 0; probe < 16u; probe++) {
+    struct fl_ticks_slot *slot = &table[(start + probe) & (FL_TICKS_SLOTS - 1u)];
+    if (slot->name == function) {
+      slot->count += 1;
+      return;
+    }
+    if (slot->name == NULL) {
+      slot->name = function;
+      slot->count = 1;
+      return;
+    }
+  }
+  fl_ticks_lost += 1;
+}
+
+static void fl_ticks_open(void) {
+  if (fl_ticks_tried != 0) {
+    return;
+  }
+  fl_ticks_tried = 1;
+  fl_ticks_path = getenv("FLANG_TICKS_OUT");
+  if (fl_ticks_path != NULL && fl_ticks_path[0] == '\0') {
+    fl_ticks_path = NULL;
+  }
+  if (fl_ticks_path != NULL) {
+    atexit(fl_ticks_dump);
+  }
+}
+
+static void fl_ticks_count(const char *function) {
+  fl_ticks_open();
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  fl_ticks_total += 1;
+  fl_ticks_add(fl_ticks_table, function);
+}
+
+static void fl_enters_count(const char *function) {
+  fl_ticks_open();
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  fl_enters_total += 1;
+  fl_ticks_add(fl_enters_table, function);
+}
+
+/*
+ * ВЫБОРКА ПО ВРЕМЕНИ.
+ *
+ * Ни счёт входов, ни счёт витков ВРЕМЕНЕМ не являются, и это не мелочь: на
+ * `check flang/self/lexer.flang --proof` «Найти описание» берёт 9,94 % ВИТКОВ и
+ * 0,26 % ВРЕМЕНИ. Причина в том, что встроенные формы — «равен» над записью,
+ * «длина», «добавить», обход списка внутри рантайма — делают работу, за которую
+ * НЕ НАЧИСЛЯЕТСЯ НИ ОДНОГО ВИТКА. Петля, крутящая такую форму, стоит минуты при
+ * тысячах витков, и оба счётных прибора покажут, что её почти нет.
+ *
+ * Здесь мерится время. Каждый виток и каждый вход кладут своё имя в `fl_now`
+ * (одна запись в глобальную переменную), часы ITIMER_PROF будят обработчик раз
+ * в 10 мс ПРОЦЕССОРНОГО времени, и он начисляет точку тому имени, которое
+ * стоит в `fl_now`. Доля имени — доля времени, а не доля вызовов.
+ *
+ * Обработчик не зовёт ни malloc, ни stdio: хеш указателя и инкремент в
+ * статической таблице, и ничего больше.
+ *
+ * ТРИ ПРИБОРА ОТВЕЧАЮТ НА ТРИ РАЗНЫХ ВОПРОСА, и подменять один другим нельзя:
+ * входы — «сколько раз позвали», витки — «во что ушёл ПРЕДЕЛ ШАГОВ», время —
+ * «во что ушли ЧАСЫ». Программа умирает от предела шагов по первой причине, а
+ * идёт сутки по третьей.
+ *
+ * Включается FLANG_TIME_OUT=<файл>. Без него — одна запись указателя на виток.
+ */
+#define FL_TIME_SLOTS 8192u
+
+static struct {
+  const char *name;
+  unsigned long long count;
+} fl_time_table[FL_TIME_SLOTS];
+
+static const char *volatile fl_now = NULL;
+static volatile sig_atomic_t fl_time_points = 0;
+static volatile sig_atomic_t fl_time_nameless = 0;
+static const char *fl_time_path = NULL;
+static int fl_time_tried = 0;
+
+static void fl_time_say(int signal_number) {
+  const char *name = fl_now;
+  unsigned long long key = 0;
+  unsigned start = 0;
+  unsigned probe = 0;
+  (void)signal_number;
+  fl_time_points += 1;
+  if (name == NULL) {
+    fl_time_nameless += 1;
+    return;
+  }
+  key = (unsigned long long)(size_t)name;
+  start = (unsigned)((key * 2654435761ULL) >> 19) & (FL_TIME_SLOTS - 1u);
+  for (probe = 0; probe < 16u; probe++) {
+    const unsigned at = (start + probe) & (FL_TIME_SLOTS - 1u);
+    if (fl_time_table[at].name == name) {
+      fl_time_table[at].count += 1;
+      return;
+    }
+    if (fl_time_table[at].name == NULL) {
+      fl_time_table[at].name = name;
+      fl_time_table[at].count = 1;
+      return;
+    }
+  }
+  fl_time_nameless += 1;
+}
+
+static void fl_time_dump(void) {
+  FILE *out = NULL;
+  unsigned index = 0;
+  if (fl_time_path == NULL) {
+    return;
+  }
+  out = fopen(fl_time_path, "w");
+  if (out == NULL) {
+    return;
+  }
+  fprintf(out, "точек всего\t%lu\n", (unsigned long)fl_time_points);
+  fprintf(out, "без имени\t%lu\n", (unsigned long)fl_time_nameless);
+  for (index = 0; index < FL_TIME_SLOTS; index++) {
+    if (fl_time_table[index].name != NULL) {
+      fprintf(out, "%llu\t%s\n", fl_time_table[index].count, fl_time_table[index].name);
+    }
+  }
+  fclose(out);
+}
+
+static void fl_time_open(void) {
+  struct sigaction action;
+  struct itimerval clock_setting;
+  if (fl_time_tried != 0) {
+    return;
+  }
+  fl_time_tried = 1;
+  fl_time_path = getenv("FLANG_TIME_OUT");
+  if (fl_time_path != NULL && fl_time_path[0] == '\0') {
+    fl_time_path = NULL;
+  }
+  if (fl_time_path == NULL) {
+    return;
+  }
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = fl_time_say;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = SA_RESTART;
+  sigaction(SIGPROF, &action, NULL);
+  clock_setting.it_interval.tv_sec = 0;
+  clock_setting.it_interval.tv_usec = 10000;
+  clock_setting.it_value.tv_sec = 0;
+  clock_setting.it_value.tv_usec = 10000;
+  setitimer(ITIMER_PROF, &clock_setting, NULL);
+  atexit(fl_time_dump);
+}
+
 fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
+  fl_pulse_tick(ctx, function);
+  fl_ticks_count(function);
+  fl_time_open();
+  fl_now = function;
   /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
      бы исчерпанной любую программу. */
   if (ctx->max_steps == 0) {
@@ -1708,6 +1993,8 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
     return FL_INVALID_ARGUMENT;
   }
   fl_pulse(ctx, function);
+  fl_enters_count(function);
+  fl_now = function;
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));

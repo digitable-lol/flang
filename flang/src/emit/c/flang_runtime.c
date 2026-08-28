@@ -565,6 +565,34 @@ size_t fl_max_steps_default(void) {
 
 void fl_max_steps_default_set(size_t steps) { fl_max_steps_told = steps; }
 
+/*
+ * ПРЕДЕЛ ГЛУБИНЫ — ТО ЖЕ САМОЕ И ПО ТЕМ ЖЕ ДОВОДАМ, что предел шагов выше.
+ *
+ * Здесь его не было, и это стоило двух суток работы (задача 7444). `FL_MAX_DEPTH`
+ * читался прямо в `fl_ctx_init`, поэтому предел глубины у идущего двоичного не
+ * менялся НИЧЕМ, кроме пересборки: ключ `--max-depth` у `emit` кладёт число в
+ * НАПЕЧАТАННУЮ программу, а своему прогону не говорит ничего. Человек, поднявший
+ * ключом предел, получал тот же отказ с тем же старым числом — и читал его как
+ * беду в своём файле.
+ *
+ * Ноль значит «не сказано», а не «предел снят»: снятие — `ctx->max_depth = 0` на
+ * самом контексте, и путать эти два смысла в одном числе нельзя. Точно так же
+ * устроен предел шагов, и расхождение здесь было бы ловушкой.
+ *
+ * ОДНОГО ЭТОГО ЧИСЛА МАЛО, и об этом надо знать. Глубину несёт стек, а стек
+ * заводится один раз на процесс — до того, как разобран хоть один ключ
+ * (`fl_call_deep` в flang_cli.c). Поэтому тот, кто поднимает предел здесь,
+ * обязан поднять и стек: иначе `fl_enter` упрётся в `fl_stack_spent` и честно
+ * скажет «исчерпала стек хозяина», не дойдя до объявленного предела.
+ */
+static size_t fl_max_depth_told = 0;
+
+size_t fl_max_depth_default(void) {
+  return fl_max_depth_told == 0 ? (size_t)FL_MAX_DEPTH : fl_max_depth_told;
+}
+
+void fl_max_depth_default_set(size_t depth) { fl_max_depth_told = depth; }
+
 void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   /* Отметка стека: адрес локальной этой самой функции. Всё, что расчёт займёт
      под ней, сторож и меряет. Брать её здесь правильно потому, что `fl_ctx_init`
@@ -576,7 +604,7 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   }
   ctx->arena = arena;
   ctx->depth = 0;
-  ctx->max_depth = FL_MAX_DEPTH;
+  ctx->max_depth = fl_max_depth_default();
   ctx->steps = 0;
   ctx->max_steps = fl_max_steps_default();
   ctx->stack_base = &here;

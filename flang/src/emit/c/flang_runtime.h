@@ -475,6 +475,19 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
 size_t fl_max_steps_default(void);
 void fl_max_steps_default_set(size_t steps);
 
+/**
+ * Предел ГЛУБИНЫ, с которым заводится КАЖДЫЙ новый контекст.
+ * По умолчанию — `FL_MAX_DEPTH`, напечатанный бэкендом; `fl_max_depth_default_set`
+ * поднимает его на весь процесс (ключ `--предел-глубины` у самого бинарника).
+ * Ноль в `_set` возвращает умолчание бэкенда, а не снимает предел.
+ *
+ * Поднявший предел обязан поднять и стек: глубину несёт он, а заводится он один
+ * раз на процесс (`fl_call_deep`). Ключ `--предел-глубины` делает оба движения
+ * разом и потому разбирается ДО разбора команды — в `main` (flang_cli.c).
+ */
+size_t fl_max_depth_default(void);
+void fl_max_depth_default_set(size_t depth);
+
 /** Сколько стека просить под предел глубины `max_depth` (с учётом границ). */
 size_t fl_stack_wanted(size_t max_depth);
 

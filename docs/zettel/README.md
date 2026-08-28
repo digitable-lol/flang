@@ -40,6 +40,7 @@
 ## Доказательства
 
 - [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
+- [Обещание помощника доходит до обработчика через семь ветвей разбора и не доходит через пятнадцать](a-callee-promise-reaches-the-handler-through-seven-branches-not-fifteen.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
 - [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)
 - [Охрана меняет истинность и не меняет доказуемость: стена стоит до неё](a-guard-changes-truth-not-provability.md)
@@ -56,7 +57,6 @@
 - [Узкое место доказуемости переехало третий раз за трое суток: теперь мешает форма УТВЕРЖДЕНИЯ, а не форма тела](bottleneck-moved-to-claim-shape.md)
 - [Встроенное `приписать` в рекурсивной ветви `разбор`а рвёт индукцию, а тот же шаг через функцию с доказанным постусловием — не рвёт](builtin-prepend-in-a-recursive-branch-blocks-the-induction-hypothesis.md)
 - [Постусловие вызванной функции годится ядру в факты только ПОСЛЕ того, как оно доказано, — и этим же закрыт круг](callee-postcondition-is-a-fact-only-after-it-is-proved.md)
-- [Обещание помощника доходит до обработчика через семь ветвей разбора и не доходит через пятнадцать](a-callee-promise-reaches-the-handler-through-seven-branches-not-fifteen.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Замкнутую цель надо считать, а не выводить: 50 доказательств без единого нового правила](closed-goals-must-be-computed.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)

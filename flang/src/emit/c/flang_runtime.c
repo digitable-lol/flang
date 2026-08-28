@@ -41,6 +41,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 
 #ifdef FL_POSIX_STACK
@@ -1642,10 +1643,71 @@ static bool fl_stack_spent(fl_ctx *ctx) {
   return used + reserve > ctx->stack_room;
 }
 
+/*
+ * ПУЛЬС — наблюдение за идущей программой без остановки и без правки программы.
+ *
+ * ЗАЧЕМ. Перепечатка компилятора идёт часами и до сих пор не говорила о себе
+ * ничего: понять, работает она или встала, можно было только двумя снимками
+ * `perf` с получасовым промежутком. Замер 28 августа 2026: заход шёл 25 часов и
+ * не напечатал ни строки о том, где он.
+ *
+ * ЧЕМ ОТЛИЧАЕТСЯ ОТ ПОДКЛЮЧЕНИЯ СИГНАЛОМ. Сигнал (`kill -USR1`) отвечает на
+ * вопрос «где ты СЕЙЧАС» и требует, чтобы кто-то спросил. Пульс пишет сам, и
+ * потому годится там, где спрашивать некому: ночной прогон, прогон под сборщиком,
+ * прогон, который упал и унёс ответ с собой. Одно не заменяет другого.
+ *
+ * ПОЧЕМУ ЗДЕСЬ. Через `fl_enter` проходит каждый вызов языка, способный к
+ * рекурсии, — другого места, где видно И имя функции, И глубину, И число шагов,
+ * в рантайме нет.
+ *
+ * ПОЧЕМУ НЕ НА КАЖДЫЙ ВЫЗОВ. Их миллиарды: строка на вызов стоила бы времени
+ * больше, чем сама работа. Пишем раз в FLANG_PULSE вызовов. Умолчание пять
+ * миллионов — замерено: на перепечатке это строка примерно раз в минуту.
+ *
+ * ЦЕНА. Пока FLANG_WATCH не задан, всё стоит одного сравнения указателя с NULL
+ * на вызов. Задан — плюс одно деление с остатком.
+ *
+ * Буфер сбрасывается сразу: при убийстве прогона пропали бы ровно последние
+ * строки, а они самые нужные.
+ */
+static void fl_pulse(fl_ctx *ctx, const char *function) {
+  static FILE *pulse = NULL;
+  static time_t started = 0;
+  static unsigned long calls = 0;
+  static unsigned long every = 0;
+  static int tried = 0;
+  if (tried == 0) {
+    const char *path = getenv("FLANG_WATCH");
+    const char *step = getenv("FLANG_PULSE");
+    tried = 1;
+    started = time(NULL);
+    every = (step != NULL && step[0] != '\0') ? strtoul(step, NULL, 10) : 5000000UL;
+    if (every == 0) {
+      every = 5000000UL;
+    }
+    if (path != NULL && path[0] != '\0') {
+      pulse = fopen(path, "a");
+    }
+  }
+  if (pulse == NULL) {
+    return;
+  }
+  calls += 1;
+  if (calls % every == 0) {
+    long spent = (long)(time(NULL) - started);
+    fprintf(pulse, "%4ld:%02ld  вызовов %lu млн, глубина %lu, сейчас «%s»\n",
+            spent / 60, spent % 60, calls / 1000000UL,
+            (unsigned long)(ctx != NULL ? ctx->depth : 0),
+            function != NULL ? function : "?");
+    fflush(pulse);
+  }
+}
+
 fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
+  fl_pulse(ctx, function);
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));

@@ -598,6 +598,8 @@
 - [Содержательное и доказуемое почти не пересекаются: 83 содержательных утверждения, 19 доказанных, общих девять](substantive-and-provable-claims-barely-overlap.md)
 - [Переключение слоя не всегда опускает потолок: у `sets` он ВЫРОС, и это не провал](switching-a-layer-does-not-always-lower-the-ceiling.md)
 - [Синтез из спецификации упирается в 75 узлов дерева — и медианная функция нашей библиотеки ровно этого размера](synthesis-from-a-spec-hits-75-tree-nodes.md)
+- [Остановки на 807 секунд не было: это четыре стадии подряд, а не одно событие](the-807-second-stall-was-four-stages-not-one-event.md)
+- [Обмер живого в арене делает квадратом ЛЮБУЮ свёртку с растущим накопителем](the-arena-liveness-check-makes-every-accumulating-fold-quadratic.md)
 - [Двоичный уже отвечает про любую свою функцию, и новую команду под это заводить не надо](the-binary-already-answers-about-any-of-its-functions-through-the-runner.md)
 - [Двоичный хозяин обрывает содержимое на первом нулевом октете, и потому драйвер PostgreSQL по проводу не идёт вовсе](the-binary-host-cuts-content-at-the-first-zero-octet.md)
 - [Двоичный хозяин не знает поручения «Запустить процесс с вводом», хотя словарь его объявляет](the-binary-host-does-not-know-run-with-input.md)
@@ -631,6 +633,7 @@
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе, — и круг «туда и обратно» стал выразим](the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag.md)
 - [Цена втаскивания цели печати в двоичный считается встречей имён, а не строками модуля: у Elixir вышло 262 столкновения на 436 объявлений](the-price-of-a-print-target-in-the-binary-is-counted-in-name-meetings.md)
 - [Цена втаскивания цели печати в двоичный оказалась не в столкновениях имён, а в долге эталона, который прятала побайтовая сверка с вычитанием](the-price-of-a-print-target-is-reference-debt-not-name-collisions.md)
+- [Перепечатка сожгла 27 часов и умерла не от предела, а оттого что двоичный стоял ВНЕ дерева и не нашёл библиотеку](the-reprint-burned-27-hours-because-the-binary-stood-outside-the-tree.md)
 - [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
 - [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](the-socket-host-lost-the-reply-when-the-service-thought-before-answering.md)
@@ -664,15 +667,9 @@
 - [`pull` у Unison привозит весь код, а не ссылки: хеш — способ не дублировать, а не способ не хранить](unison-pull-brings-all-the-code-not-references.md)
 - [`нат` в теле производят ровно два места — числовой литерал и `длина`, поэтому счётчик, посчитанный арифметикой, под точный шаг не подставить](walk-fuel-is-carried-as-a-list-not-as-a-number.md)
 - [Всякое «ядро этого не умеет», снятое `bootstrap/flang`, — утверждение о семени, а не о языке: трёх решающих правил из двенадцати в семени нет](what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md)
-- [Перепечатка сожгла 27 часов и умерла не от предела, а оттого что двоичный стоял вне дерева и не нашёл библиотеку](the-reprint-burned-27-hours-because-the-binary-stood-outside-the-tree.md)
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Остановки на 807 секунд не было: это четыре стадии подряд, а не одно событие](the-807-second-stall-was-four-stages-not-one-event.md)
-- [Обмер живого в арене делает квадратом ЛЮБУЮ свёртку с растущим накопителем](the-arena-liveness-check-makes-every-accumulating-fold-quadratic.md)
 
 ## Как добавлять
 

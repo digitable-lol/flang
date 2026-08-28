@@ -614,6 +614,7 @@
 - [Ветвь «пусто» у тела-`разбора` закрыта ОБЕИМИ записями охраны, и литерал не помогает](the-empty-branch-of-a-match-is-shut-in-both-spellings.md)
 - [Двоичный расходится с Node на корпусе не печатью, а границей входа: у уже втащенной цели C расходится 161 программа из 163, и всегда одним и тем же блоком](the-entry-boundary-not-printing-splits-the-binary-from-node.md)
 - [Граница входа была долгом ПЕЧАТИ, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается вовсе](the-entry-boundary-was-a-debt-of-printing-not-a-subtraction-in-the-check.md)
+- [Дорогая развёртка длин и недоказуемые цели про длины — РАЗНЫЕ места: развёртка стоит 17 % вызовов ядра и 8 % времени, а стоит она там, где недоказанного нет вовсе](the-expensive-length-place-and-the-unprovable-length-goals-are-not-the-same-place.md)
 - [Первый же прогон по корпусу нашёл шесть расхождений между двоичным и свидетелем, и два из них — в опасную сторону](the-first-corpus-run-found-six-divergences-between-implementations.md)
 - [Принцип свёртки усилен пройденным куском списка: +2 доказанных, и это весь потолок формы](the-fold-principle-strengthened-by-the-walked-prefix-adds-two-proofs.md)
 - [У функции без доводов, чьё значение и есть заглушка, проверка на даровость не различает ничего — и это не повод не писать утверждение](the-gratis-test-degenerates-on-a-constant-function.md)

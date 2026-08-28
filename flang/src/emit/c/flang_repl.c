@@ -3696,7 +3696,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
-                               fl_value *linked_out, fl_value *dropped_out) {
+                               fl_value *linked_out, fl_value *dropped_out, fl_value *own_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -3704,6 +3704,23 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
   fl_value diagnostics = fl_nothing();
   size_t index = 0;
   *has_program = false;
+  /*
+   * РАЗБОР ОДНОГО ВХОДНОГО ФАЙЛА ОТДАЁТСЯ НАРУЖУ, И ЭТО НЕ УДОБСТВО.
+   *
+   * Он нужен и здесь (законы категории), и у вызывающего («Что бинарник не
+   * судил» у `check`, «Чего печать не судила» у `emit`) — по одному и тому же
+   * доводу: связывание теряет свойства и преобразования. Пока каждый разбирал
+   * сам, один и тот же файл разбирался дважды, и замер 27 августа 2026 назвал
+   * цену второго разбора: 21,66 с из 249,26 с прогона `emit`, при том что шаг,
+   * ради которого разбирали, отработал за 0,00 с.
+   *
+   * `fl_nothing()` здесь значит «разбора нет»: разобранная программа — запись,
+   * ничтом она не бывает. Вызывающий обязан различать эти два случая сам, как
+   * различал их прежде по отказу собственного разбора.
+   */
+  if (own_out != NULL) {
+    *own_out = fl_nothing();
+  }
   args[0] = sources;
   args[1] = repl_value_say(entry);
   if (repl_call("Связать исходники", args, 2, &linked) != FL_OK) {
@@ -3839,8 +3856,10 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
      * этой правки файл печатал две строки о категориях и ни одной о
      * преобразовании.
      *
-     * Довод тот же и то же место, что у «Что бинарник не судил» ниже, — там
-     * второй разбор уже стоит по этой же причине.
+     * РАЗБОР ЗДЕСЬ ОДИН НА ВСЕХ. Тот же довод и тот же файл нужны «Что бинарник
+     * не судил» у `check` и «Чего печать не судила» у `emit`; прежде каждый
+     * разбирал сам, и вход разбирался дважды. Теперь разбор уезжает наружу
+     * через `own_out`, а разбирается по-прежнему в одном месте — здесь.
      */
     judged[0] = *program;
     judged[1] = *program;
@@ -3856,6 +3875,9 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
         if (repl_call("Разбор исходника", parse_args, 2, &parsed) == FL_OK
             && val_field(parsed, "программа", &own)) {
           judged[1] = own;
+          if (own_out != NULL) {
+            *own_out = own;
+          }
         }
       }
     }
@@ -3939,7 +3961,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, false, NULL, NULL);
+                            false, false, false, NULL, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -6244,6 +6266,9 @@ static int check_file(const char *path) {
   repl_strings queue;
   repl_strings proven;
   fl_value program = fl_nothing();
+  /* Разбор одного входного файла: его делает `repl_check_sources` ради законов
+     категории, а спрашивает о нём «Что бинарник не судил» ниже. */
+  fl_value own = fl_nothing();
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -6288,7 +6313,7 @@ static int check_file(const char *path) {
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+                          NULL, NULL, &own);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -6382,13 +6407,11 @@ static int check_file(const char *path) {
    */
   if (has_program) {
     fl_value obstacle = fl_nothing();
-    fl_value parse_args[2];
-    fl_value parsed = fl_nothing();
     fl_value obstacle_args[2];
     const char *utf8 = NULL;
     size_t obstacle_bytes = 0;
     /*
-     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
+     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ОТДЕЛЬНО ОТ СВЯЗАННОГО, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
      *
      * Связывание доносит не все объявления: свойства и преобразования оно
      * теряет — их нет ни среди слитых, ни среди взятых у входного файла
@@ -6402,17 +6425,37 @@ static int check_file(const char *path) {
      * НЕ СВЯЗЫВАЕТ вовсе и судит разобранный; бинарник связывает всегда.
      *
      * Цена — один разбор входного файла (импорты не перебираются: их
-     * объявления доносит связывание). Отказ разбора здесь молчит: если
-     * программа не разобралась, об этом уже сказали пять шагов выше.
+     * объявления доносит связывание), и на ЧИСТОЙ программе она платится ОДИН
+     * РАЗ на команду: тот же разбор с тем же пустым списком ввозов делает
+     * `repl_check_sources` ради законов категории и отдаёт сюда через
+     * `own_out`. Прежде здесь стоял свой разбор, и файл разбирался дважды —
+     * замер 27 августа 2026 назвал цену второго: 21,66 с при 0,00 с у самого
+     * шага, ради которого разбирали.
+     *
+     * РАЗБОР ЗДЕСЬ ОСТАЁТСЯ ЗАПАСНЫМ ХОДОМ, и убирать его нельзя: наверху он
+     * стоит под `bads->count == 0`, то есть на программе С ЗАМЕЧАНИЯМИ его не
+     * было. А этот шаг идёт и на такой программе — «я не судил» говорится тем
+     * же голосом, прошла проверка или нет. Спроси здесь связанную, и бинарник
+     * промолчал бы ровно о двух поверхностях из четырнадцати именно на тех
+     * файлах, где замечания уже есть.
+     *
+     * Отказ разбора здесь молчит: если программа не разобралась, об этом уже
+     * сказали пять шагов выше, — тогда спрашивают связанную, ровно как
+     * спрашивали прежде.
      */
-    parse_args[0] = repl_value_text(text, bytes);
-    parse_args[1] = repl_value_list(NULL, 0);
-    if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
-      parsed = fl_nothing();
-    }
     obstacle_args[0] = program;
-    if (!val_field(parsed, "программа", &obstacle_args[1])) {
-      obstacle_args[1] = program;
+    obstacle_args[1] = program;
+    if (own.tag != FL_NOTHING) {
+      obstacle_args[1] = own;
+    } else {
+      fl_value parse_args[2];
+      fl_value parsed = fl_nothing();
+      parse_args[0] = repl_value_text(text, bytes);
+      parse_args[1] = repl_value_list(NULL, 0);
+      if (repl_call("Разбор исходника", parse_args, 2, &parsed) == FL_OK
+          && val_field(parsed, "программа", &own)) {
+        obstacle_args[1] = own;
+      }
     }
     if (repl_call("Что бинарник не судил", obstacle_args, 2, &obstacle) == FL_OK
         && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
@@ -8280,10 +8323,12 @@ static int emit_file(int argc, char **argv, const char *self) {
       fl_value program = fl_nothing();
       fl_value linked = fl_nothing();
       fl_value dropped = fl_nothing();
+      fl_value own = fl_nothing();
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, true, &linked, &dropped)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, true, &linked, &dropped,
+                              &own)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -8339,27 +8384,29 @@ static int emit_file(int argc, char **argv, const char *self) {
          * — и сказать ей надо не «я не берусь», а «вот файлы, и вот чего за
          * ними не проверено».
          *
-         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ по той же причине, что у `check`:
-         * связывание теряет свойства и преобразования, и по одной связанной
-         * записи бинарник промолчал бы ровно о двух поверхностях из
-         * четырнадцати. Цена — один разбор входного файла.
+         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ОТДЕЛЬНО ОТ СВЯЗАННОГО по той же причине,
+         * что у `check`: связывание теряет свойства и преобразования, и по
+         * одной связанной записи бинарник промолчал бы ровно о двух
+         * поверхностях из четырнадцати.
+         *
+         * РАЗБОР БЕРЁТСЯ У ПРОВЕРКИ, А НЕ ДЕЛАЕТСЯ ЗАНОВО. Проверка выше уже
+         * разобрала этот же текст с этим же пустым списком ввозов ради законов
+         * категории и отдала разбор через `own`. Прежде здесь стоял свой
+         * разбор, и цена его была названа в разборах — «один разбор входного
+         * файла», — а в секундах вышла вдесятеро дороже того, ради чего
+         * платится: замер 27 августа 2026 дал 21,66 с при 0,00 с у самого шага
+         * «Чего печать не судила».
+         *
+         * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
+         * ровно как спрашивали при отказе своего разбора.
          */
         {
-          fl_value parsed = fl_nothing();
-          fl_value parse_args[2];
           fl_value obstacle = fl_nothing();
           fl_value obstacle_args[2];
           const char *utf8 = NULL;
           size_t obstacle_bytes = 0;
-          parse_args[0] = repl_value_text(text, bytes);
-          parse_args[1] = repl_value_list(NULL, 0);
-          if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
-            parsed = fl_nothing();
-          }
           obstacle_args[0] = linked;
-          if (!val_field(parsed, "программа", &obstacle_args[1])) {
-            obstacle_args[1] = program;
-          }
+          obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
           if (repl_call("Чего печать не судила", obstacle_args, 2, &obstacle) == FL_OK
               && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
             unjudged = val_copy(obstacle);
@@ -13459,7 +13506,7 @@ static int package_file(int argc, char **argv) {
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+                          NULL, NULL, NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);

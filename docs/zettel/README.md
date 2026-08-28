@@ -555,6 +555,7 @@
 - [Список обязательств собирался спуском по хвосту, и это стоило КВАДРАТА — не только времени, но и памяти: 1000 обязательств берут 4,25 ГиБ вместо 226 МиБ](obligations-list-built-by-descent-costs-a-square.md)
 - [Октеты в этом языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](octets-are-expressible-as-a-list-of-numbers-not-as-a-string.md)
 - [Одна форма цели держит пятую часть всего недоказанного: 446 обещаний вида «длина против длины»](one-goal-shape-blocks-a-fifth-of-all-unproven-promises.md)
+- [На границах ядру не хватает двух разных вещей, а не одной, и обе ложны на «число»](two-missing-bound-rules-not-one-and-both-are-false-on-ieee-numbers.md)
 - [Разводить столкновения имён по одному дороже, чем дать всем объявлениям цели один суффикс: у C# столкнулось 322 из 392, и судей у них три, а не один](one-target-suffix-for-every-declaration-beats-separating-collisions-one-by-one.md)
 - [Один нулевой байт внутри исходника прячет весь файл от `grep` — и счётчик по дереву молча теряет 162 примера](one-zero-byte-in-a-source-hides-the-whole-file-from-grep.md)
 - [Пометки не хватало 293 функциям из 2242 — остальным 1949 не хватает правил, и это измерено](only-293-of-2242-functions-lacked-a-mark-the-rest-lack-rules.md)

@@ -126,6 +126,8 @@ void fl_arena_init_small(fl_arena *arena, size_t least) {
   arena->staging = NULL;
   arena->staging_size = 0;
   arena->deny = NULL;
+  arena->recycle_mark = 0;
+  arena->recycle_next = 0;
   /* Нулевой кусок не бывает, а кусок больше общего минимума и есть общий
      минимум: мельчить умеем, крупнить незачем. */
   arena->least = least == 0 || least > FL_CHUNK_MIN ? FL_CHUNK_MIN : fl_round_up(least);
@@ -310,6 +312,8 @@ void fl_arena_release(fl_arena *arena) {
   arena->staging_size = 0;
   free(arena->deny);
   arena->deny = NULL;
+  arena->recycle_mark = 0;
+  arena->recycle_next = 0;
 }
 
 /* ═════════════════════════════ стек ═════════════════════════════ */
@@ -2989,11 +2993,24 @@ fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_erro
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
+  /* Другая область — счёт отступа начинается заново. Совпадение отметок у двух
+     разных свёрток обмеру не вредит: оно стоит лишней попытки, а не пропуска. */
+  if (mark.handed != arena->recycle_mark) {
+    arena->recycle_mark = mark.handed;
+    arena->recycle_next = 0;
+  }
+  if (grown < arena->recycle_next) {
+    /* В прошлый раз обмер отказал, и наросшее с тех пор не удвоилось. Пробовать
+       снова незачем: ответ будет тот же, а стоить он будет уже дороже. */
+    return FL_OK;
+  }
   if (!fl_region_size(arena, fl_region_live(arena, mark), *result, grown / FL_REGION_LOOP_GAIN, 0,
                       &live)) {
     /* Накопление: живого столько же, сколько наросло. Откат не окупится. */
+    arena->recycle_next = grown > ((size_t)-1) / 2 ? (size_t)-1 : grown * 2;
     return FL_OK;
   }
+  arena->recycle_next = 0;
   status = fl_region_close(ctx, mark, FL_OK, result, error);
   if (status != FL_OK) {
     return status;

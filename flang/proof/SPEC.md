@@ -951,7 +951,7 @@ F(X) = 1 + (число × X × X)
 > каждого длиннее написанного здесь на 28 умений. Полный список — раздел
 > «Восемь правил ядра и 28 умений, которых в описании не было»; сам список —
 > `flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/map/abilities.flang`, сторож —
-> `sh scripts/kernel-abilities-guard.sh`. Раздел оставлен как летопись.
+> `bootstrap/flang io scripts/kernel-abilities-guard.flang`. Раздел оставлен как летопись.
 >
 > Ссылка на `flang/proof/reduce.mjs` тоже мертва: реализации на JavaScript в
 > дереве нет, ядро живёт в `flang/self/proof-kernel.flang`.
@@ -2392,7 +2392,7 @@ bootstrap/flang check --proof flang/proof/map/abilities.flang
   код возврата 0
 ```
 
-Сторож на расхождение — `sh scripts/kernel-abilities-guard.sh`. Он спрашивает на
+Сторож на расхождение — `bootstrap/flang io scripts/kernel-abilities-guard.flang`. Он спрашивает на
 каждую строку четыре вещи: якорь стоит в ядре; номер умения стоит в этом файле;
 улика стоит в файле улик; строк списка столько же, сколько утверждений в уликах.
 **Убери одну способность из описания — сторож краснеет с кодом 1 и называет её

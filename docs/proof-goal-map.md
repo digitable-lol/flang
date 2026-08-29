@@ -51,7 +51,7 @@
 
 Перечень внутри каждого правила длиннее любой таблицы в этом файле на 28 умений:
 `flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/map/abilities.flang`, сторож —
-`sh scripts/kernel-abilities-guard.sh`.
+`bootstrap/flang io scripts/kernel-abilities-guard.flang`.
 
 Сверх правил есть четыре хода, вида цели не меняющих: разбор цели по условию
 (`если`), цель-выбор с истинной ветвью, вычисление замкнутой цели и индукция

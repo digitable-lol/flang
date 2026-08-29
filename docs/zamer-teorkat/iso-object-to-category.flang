@@ -1,4 +1,4 @@
-модуль «Замер: ход изоморфизма из объекта в категорию»
+модуль «Measurement isomorphism from object to category»
   использует «Orders» из "../../examples/cat/modules/orders.flang"
   использует «Payments» из "../../examples/cat/modules/payments.flang"
   использует «Shipping» из "../../examples/cat/modules/shipping.flang"

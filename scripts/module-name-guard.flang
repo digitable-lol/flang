@@ -193,8 +193,8 @@
   возвращает список строки
   обеспечивает «команда корпуса идёт через ключ -c» результат содержит "-c"
   пример «И файлы, и шапки спрашиваются у git одним заходом, а не переписаны руками»
-    ожидается ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
-  ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
+    ожидается ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
+  ["-c", "cd .. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
 
 тотальная функция «Кусок файлов»
   принимает вывод: строка
@@ -276,11 +276,70 @@
 
 тотальная функция «Долг»
   возвращает список строки
-  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 4
+  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 63
   ["flang/core/evaluate.flang",
    "flang/core/json.flang",
    "flang/core/lexer.flang",
-   "flang/core/parser.flang"]
+   "flang/core/parser.flang",
+   "flang/self/bootstrap/corpus.flang",
+   "flang/self/bounded.flang",
+   "flang/self/builtins.flang",
+   "flang/self/carriers.flang",
+   "flang/self/cli.flang",
+   "flang/self/commutative.flang",
+   "flang/self/conc.flang",
+   "flang/self/defunc.flang",
+   "flang/self/distributed.flang",
+   "flang/self/distributive.flang",
+   "flang/self/emit-c.flang",
+   "flang/self/emit-csharp.flang",
+   "flang/self/emit-elixir.flang",
+   "flang/self/emit-go.flang",
+   "flang/self/emit-java.flang",
+   "flang/self/emit-js.flang",
+   "flang/self/emit-python.flang",
+   "flang/self/emit-rust.flang",
+   "flang/self/factcheck.flang",
+   "flang/self/failures.flang",
+   "flang/self/functor-oracle.flang",
+   "flang/self/functor.flang",
+   "flang/self/grid.flang",
+   "flang/self/hotswap.flang",
+   "flang/self/idempotent.flang",
+   "flang/self/interpret.flang",
+   "flang/self/io.flang",
+   "flang/self/iso.flang",
+   "flang/self/law-oracle.flang",
+   "flang/self/lexer.flang",
+   "flang/self/link.flang",
+   "flang/self/lsp.flang",
+   "flang/self/mcp.flang",
+   "flang/self/monad-expand.flang",
+   "flang/self/monad.flang",
+   "flang/self/monoid.flang",
+   "flang/self/monotone.flang",
+   "flang/self/obligations.flang",
+   "flang/self/obyazatelstva-i-yadro.flang",
+   "flang/self/oracle.flang",
+   "flang/self/otkazy-tipov.flang",
+   "flang/self/otkazy-totalnosti.flang",
+   "flang/self/parser.flang",
+   "flang/self/partialorder.flang",
+   "flang/self/processes.flang",
+   "flang/self/proof-initial.flang",
+   "flang/self/proof-kernel.flang",
+   "flang/self/proof.flang",
+   "flang/self/proofterm.flang",
+   "flang/self/repl/repl.flang",
+   "flang/self/setoid-oracle.flang",
+   "flang/self/setoid.flang",
+   "flang/self/sets-oracle.flang",
+   "flang/self/sets.flang",
+   "flang/self/svoystva.flang",
+   "flang/self/tags.flang",
+   "flang/self/totality.flang",
+   "flang/self/types.flang",
+   "flang/self/zapis.flang"]
 
 тотальная функция «Новые строчки»
   принимает плохие: список строки
@@ -291,14 +350,28 @@
     ожидается ["раз.flang:модуль «Раз»"]
   отфильтровать плохие где строчка → не («Долг» содержит («Путь шапки» от строчка))
 
+// Разность списков вынесена отдельно НАРОЧНО: примеры не должны расти вместе
+// с долгом. Пока «Надгробия» брали долг целиком, пример пришлось бы писать в
+// шестьдесят две записи на каждую проверку, и его перестали бы читать.
+тотальная функция «Чего нет в списке»
+  принимает свои: список строки, чужие: список строки
+  возвращает список строки
+  обеспечивает «остаток не длиннее своего списка» (длина результат) не больше (длина свои)
+  пример «Осталось то, чего в чужом списке нет»
+    дано свои равно ["раз", "два", "три"]
+    дано чужие равно ["два"]
+    ожидается ["раз", "три"]
+  пример «Чужой список накрыл всё»
+    дано свои равно ["раз"]
+    дано чужие равно ["раз", "два"]
+    ожидается пустой список
+  отфильтровать свои где путь → не (чужие содержит путь)
+
 тотальная функция «Надгробия»
   принимает пути: список строки
   возвращает список строки
   обеспечивает «надгробий не больше, чем записей долга» (длина результат) не больше (длина («Долг»))
-  пример «Долг, у которого не осталось причины»
-    дано пути равно ["flang/core/json.flang", "flang/core/lexer.flang", "flang/core/parser.flang"]
-    ожидается ["flang/core/evaluate.flang"]
-  отфильтровать («Долг») где путь → не (пути содержит путь)
+  «Чего нет в списке» от («Долг») и пути
 
 // ── Отчёт ───────────────────────────────────────────────────────────────────
 

@@ -546,6 +546,7 @@
 - [Про PostgreSQL в драйвере PostgreSQL — меньше половины функций: 39 из 83, остальные 44 годятся любой базе](less-than-half-of-the-postgresql-driver-is-about-postgresql.md)
 - [Модули библиотеки не зовут друг друга по договорённости, а не по запрету языка — и довод, на котором она держалась, уже мёртв](library-modules-avoid-each-other-by-convention-not-by-a-language-ban.md)
 - [Линейный поиск функции по имени съедает 88 % витков проверки, и упирается в предел именно он](linear-lookup-of-a-declaration-eats-88-percent-of-check-loops.md)
+- [Цена одного поиска описания — это место имени в списке, а не число уже сделанных поисков](the-lookup-price-is-the-place-of-the-name-in-the-list.md)
 - [Связывание растёт линейно по виткам и квадратом по времени: счётчик шагов квадрата не видит](linking-costs-steps-linearly-and-time-quadratically.md)
 - [В образце списка имена закреплены: только «случай голова и хвост»](list-pattern-binders-are-fixed-names.md)
 - [Ведущий ноль в сумме ядро свёртывает, замыкающий — нет: отсюда асимметрия `app_nil_l` и `app_nil_r`](math-a-leading-zero-addend-folds-away-but-a-trailing-one-does-not.md)

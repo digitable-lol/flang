@@ -25,7 +25,7 @@ bootstrap/flang check flang/proof/map/boundaries.flang --proof
 
 `abilities.flang` стоит особняком: остальные файлы меряют, что ядро умеет и чего
 НЕ умеет, а этот — что ядро умеет, а описание об этом молчало. Список умений
-лежит в `flang/proof/УМЕНИЯ.tsv`, и `sh scripts/kernel-abilities-guard.sh` следит,
+лежит в `flang/proof/УМЕНИЯ.tsv`, и `bootstrap/flang io scripts/kernel-abilities-guard.flang` следит,
 чтобы ядро, описание и улики не разошлись. Все 28 утверждений обязаны быть
 «доказано»: одно «на сетке» здесь значит, что умение пропало из ядра.
 

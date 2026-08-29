@@ -1577,7 +1577,20 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
  * сравнивает списки и записи вглубь, а `ctx` у неё нет. Верхний уровень
  * `содержит` заряжен, глубина сравнения — нет.
  */
+/*
+ * Имя работающей функции. Кладётся в `fl_tick` и в `fl_enter`, читается тремя
+ * приборами: выборкой по времени (обработчик SIGPROF), окном наблюдения и
+ * ведомостью зарядов. Объявлено ЗДЕСЬ, а не у выборки по времени, потому что
+ * `fl_charge` стоит выше по файлу и читает его первым.
+ */
+static const char *volatile fl_now = NULL;
+
+/* Ведомость зарядов: определена ниже, вместе с ведомостью витков. Заряд и виток
+   тратят ОДИН и тот же предел, и считаются в одном месте и в один файл. */
+static void fl_charge_count(size_t count);
+
 void fl_charge(fl_ctx *ctx, size_t count) {
+  fl_charge_count(count);
   if (ctx == NULL || ctx->max_steps == 0 || count == 0) {
     return;
   }
@@ -1641,18 +1654,26 @@ static void fl_pulse_tick(fl_ctx *ctx, const char *function) {
 }
 
 /*
- * ТОЧНЫЙ СЧЁТ ВИТКОВ ПО ИМЕНАМ.
+ * ТОЧНЫЙ СЧЁТ ШАГОВ ПО ИМЕНАМ: ВИТКИ, ЗАРЯД И ВХОДЫ В ОДНОЙ ВЕДОМОСТИ.
  *
  * Выборка отвечает «примерно» и на редких именах ошибается заметно. Здесь счёт
- * ТОЧНЫЙ: каждый виток и каждый вход кладутся в ячейку по имени своей функции,
- * а при выходе таблица печатается. Ответ на вопрос «во что ушла работа» —
- * числом, а не долей на глаз.
+ * ТОЧНЫЙ: каждый виток, каждый заряд и каждый вход кладутся в ячейку по имени
+ * своей функции, а при выходе таблица печатается. Ответ на вопрос «во что ушла
+ * работа» — числом, а не долей на глаз.
+ *
+ * ТРИ СТРОКИ, А НЕ ОДНА, И ЭТО ГЛАВНОЕ. Предел шагов тратят два счётчика:
+ * `fl_tick` — по единице за виток, `fl_charge` — числом за проход встроенной
+ * формы. Шаг — это виток ИЛИ заряд, `ctx->steps` — их сумма, и шапка печатает
+ * сумму первой строкой. Ведомость, писавшая одни витки, называла шагами от
+ * 0,3 % до 11 % шагов (замер 29 августа 2026 на семи прогонах) и тем разводила
+ * себя с часами: `«Закрыть уровни»` шла у неё 0,07 % «шагов» при 16,40 %
+ * времени, а шагов берёт 22,11 %.
  *
  * ПОЧЕМУ ЭТО ДЁШЕВО. Имена функций — строковые литералы, напечатанные
  * бэкендом; их адреса неизменны за весь прогон. Значит ключ — УКАЗАТЕЛЬ, а не
  * строка: умножение, сдвиг и одно сравнение на виток, без единого `strcmp`.
- * Таблица на 8192 ячейки (128 КиБ) держится в кэше. Одинаковые строки с разных
- * адресов складываются при выводе, а не на горячем пути.
+ * Три таблицы по 8192 ячейки (384 КиБ вместе) держатся в кэше. Одинаковые
+ * строки с разных адресов складываются при выводе, а не на горячем пути.
  *
  * ЧТО ДАЁТ СТОЛБЕЦ «ВИТКОВ НА ВХОД». Хвостовой самовызов печатник разворачивает
  * в `for (;;)`: вход туда ОДИН, а витков столько, сколько оборотов сделала
@@ -1661,9 +1682,11 @@ static void fl_pulse_tick(fl_ctx *ctx, const char *function) {
  * растёт. Мерить её больше нечем: счёт по входам её не видит вовсе.
  *
  * Переполнение таблицы НЕ ЗАМАЛЧИВАЕТСЯ: непоместившиеся витки идут отдельным
- * счётчиком и печатаются строкой «не поместилось».
+ * счётчиком и печатаются строкой «не поместилось», непоместившийся заряд —
+ * своей строкой, потому что складывать штуки с единицами работы нельзя.
  *
- * Включается FLANG_TICKS_OUT=<файл>. Без него — одно сравнение с NULL на виток.
+ * Включается FLANG_TICKS_OUT=<файл>. Без него — одно сравнение с NULL на виток
+ * и одно на заряд.
  */
 #define FL_TICKS_SLOTS 8192u
 
@@ -1674,9 +1697,12 @@ struct fl_ticks_slot {
 
 static struct fl_ticks_slot fl_ticks_table[FL_TICKS_SLOTS];
 static struct fl_ticks_slot fl_enters_table[FL_TICKS_SLOTS];
+static struct fl_ticks_slot fl_charge_table[FL_TICKS_SLOTS];
 static unsigned long long fl_ticks_total = 0;
 static unsigned long long fl_enters_total = 0;
+static unsigned long long fl_charge_total = 0;
 static unsigned long long fl_ticks_lost = 0;
+static unsigned long long fl_charge_lost = 0;
 static const char *fl_ticks_path = NULL;
 static int fl_ticks_tried = 0;
 
@@ -1690,12 +1716,20 @@ static void fl_ticks_dump(void) {
   if (out == NULL) {
     return;
   }
+  fprintf(out, "шагов всего\t%llu\n", fl_ticks_total + fl_charge_total);
   fprintf(out, "витков всего\t%llu\n", fl_ticks_total);
+  fprintf(out, "заряда всего\t%llu\n", fl_charge_total);
   fprintf(out, "входов всего\t%llu\n", fl_enters_total);
   fprintf(out, "не поместилось\t%llu\n", fl_ticks_lost);
+  fprintf(out, "заряда не поместилось\t%llu\n", fl_charge_lost);
   for (index = 0; index < FL_TICKS_SLOTS; index++) {
     if (fl_ticks_table[index].name != NULL) {
       fprintf(out, "виток\t%llu\t%s\n", fl_ticks_table[index].count, fl_ticks_table[index].name);
+    }
+  }
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_charge_table[index].name != NULL) {
+      fprintf(out, "заряд\t%llu\t%s\n", fl_charge_table[index].count, fl_charge_table[index].name);
     }
   }
   for (index = 0; index < FL_TICKS_SLOTS; index++) {
@@ -1706,23 +1740,26 @@ static void fl_ticks_dump(void) {
   fclose(out);
 }
 
-static void fl_ticks_add(struct fl_ticks_slot *table, const char *function) {
+/* Возвращает 0, если имя не поместилось в таблицу: непоместившееся считает
+   вызвавший, каждый в свою строку «не поместилось». */
+static int fl_ticks_add(struct fl_ticks_slot *table, const char *function,
+                        unsigned long long count) {
   const unsigned long long key = (unsigned long long)(size_t)function;
   const unsigned start = (unsigned)((key * 2654435761ULL) >> 19) & (FL_TICKS_SLOTS - 1u);
   unsigned probe = 0;
   for (probe = 0; probe < 16u; probe++) {
     struct fl_ticks_slot *slot = &table[(start + probe) & (FL_TICKS_SLOTS - 1u)];
     if (slot->name == function) {
-      slot->count += 1;
-      return;
+      slot->count += count;
+      return 1;
     }
     if (slot->name == NULL) {
       slot->name = function;
-      slot->count = 1;
-      return;
+      slot->count = count;
+      return 1;
     }
   }
-  fl_ticks_lost += 1;
+  return 0;
 }
 
 static void fl_ticks_open(void) {
@@ -1745,7 +1782,9 @@ static void fl_ticks_count(const char *function) {
     return;
   }
   fl_ticks_total += 1;
-  fl_ticks_add(fl_ticks_table, function);
+  if (!fl_ticks_add(fl_ticks_table, function, 1)) {
+    fl_ticks_lost += 1;
+  }
 }
 
 static void fl_enters_count(const char *function) {
@@ -1754,7 +1793,43 @@ static void fl_enters_count(const char *function) {
     return;
   }
   fl_enters_total += 1;
-  fl_ticks_add(fl_enters_table, function);
+  if (!fl_ticks_add(fl_enters_table, function, 1)) {
+    fl_ticks_lost += 1;
+  }
+}
+
+/*
+ * ЗАРЯД ПО ИМЕНАМ — ТРЕТИЙ СТОЛБЕЦ ТОЙ ЖЕ ВЕДОМОСТИ, А НЕ ОТДЕЛЬНЫЙ ПРИБОР.
+ *
+ * Предел шагов тратят ДВА счётчика: `fl_tick` по единице за виток и `fl_charge`
+ * числом за проход встроенной формы. `ctx->steps` — их сумма. Ведомость же до
+ * 29 августа 2026 писала только витки, и её шапку «витков всего» читали как
+ * «шагов всего». На замыкании компилятора это давало ошибку в три с лишним
+ * раза: витков 27,5 млрд, заряда 72,7 млрд, предел кончился на 100,2 млрд.
+ *
+ * Отсюда и расхождение с часами. Ведомость витков отдавала `«Закрыть уровни»`
+ * 0,07 % при 16,40 % времени — в 234 раза мимо, — потому что вся работа этой
+ * функции идёт во встроенных формах, а их ведомость не видела вовсе. Столбца
+ * заряда не хватало не для полноты, а для того, чтобы два прибора отвечали про
+ * одну величину.
+ *
+ * Имя берётся из `fl_now` — то же самое, по которому начисляет точку выборка по
+ * времени. Значит доли заряда и доли времени считаны ОДНИМ ключом и сравнимы
+ * прямо; будь ключи разные, сведение было бы подгонкой.
+ *
+ * Цена, когда `FLANG_TICKS_OUT` не задан: один вызов и одно сравнение с NULL на
+ * заряд, ровно как у витка.
+ */
+static void fl_charge_count(size_t count) {
+  const char *function = fl_now;
+  fl_ticks_open();
+  if (fl_ticks_path == NULL || count == 0) {
+    return;
+  }
+  fl_charge_total += (unsigned long long)count;
+  if (function == NULL || !fl_ticks_add(fl_charge_table, function, (unsigned long long)count)) {
+    fl_charge_lost += (unsigned long long)count;
+  }
 }
 
 /*
@@ -1789,7 +1864,7 @@ static struct {
   unsigned long long count;
 } fl_time_table[FL_TIME_SLOTS];
 
-static const char *volatile fl_now = NULL;
+/* `fl_now` объявлено выше, у `fl_charge`: ведомость зарядов читает его раньше. */
 static volatile sig_atomic_t fl_time_points = 0;
 static volatile sig_atomic_t fl_time_nameless = 0;
 static const char *fl_time_path = NULL;

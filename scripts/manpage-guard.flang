@@ -398,12 +398,24 @@
     ожидается вариант «Ждём файлы» с осталось равным ["../packaging/flang.1", "../flang/src/emit/c/flang_repl.c", "../packaging/homebrew/flang.rb", "../package.json", "../scripts/release-in-c.flang"] и тексты равным пустой список
   вариант «Ждём файлы» с осталось равным («Файлы») и тексты равным пустой список
 
+// КЛЮЧ `-a` ПОСТАВЛЕН ПО ЗАМЕРУ, А НЕ НА ВСЯКИЙ СЛУЧАЙ.
+//
+// `flang/self/link.flang` несёт байт 0x00 на строке 1005 — разделитель
+// составного ключа. GNU grep на таком файле печатает совпадения ДО байта и
+// глушит всё после, отвечая «binary file matches» вместо строк. Без `-a` этот
+// вызов отдавал 809 строк вместо 810: терялась ровно `link.flang:1247` с
+// `FLANG_IMPORT_NOT_FOUND` (замер 29 августа 2026).
+//
+// Вердикт при этом НЕ МЕНЯЛСЯ, и это худшая половина беды: тот же код стоит в
+// `link.flang` ещё на строках 813 и 837, до нулевого байта, — сторож был зелен
+// по везению. Перенеси последнее вхождение любого кода за строку 1005, и он
+// объявил бы код несуществующим, оставаясь зелёным по форме.
 тотальная функция «Доводы grep»
   возвращает список строки
   обеспечивает «длина постоянного списка — Доводы grep» (длина результат) равен 7
-  пример «Ищутся строки со словом FLANG_ в компиляторе на flang и в рантайме на C»
-    ожидается ["-rh", "FLANG_", "../flang/self", "../flang/src/emit/c/flang_runtime.c", "../flang/src/emit/c/flang_runtime.h", "../flang/src/emit/c/flang_repl.c", "../flang/src/emit/c/flang_cli.c"]
-  ["-rh", "FLANG_", "../flang/self", "../flang/src/emit/c/flang_runtime.c", "../flang/src/emit/c/flang_runtime.h", "../flang/src/emit/c/flang_repl.c", "../flang/src/emit/c/flang_cli.c"]
+  пример «Ищутся строки со словом FLANG_ в компиляторе на flang и в рантайме на C, двоичное не пропускается»
+    ожидается ["-rha", "FLANG_", "../flang/self", "../flang/src/emit/c/flang_runtime.c", "../flang/src/emit/c/flang_runtime.h", "../flang/src/emit/c/flang_repl.c", "../flang/src/emit/c/flang_cli.c"]
+  ["-rha", "FLANG_", "../flang/self", "../flang/src/emit/c/flang_runtime.c", "../flang/src/emit/c/flang_runtime.h", "../flang/src/emit/c/flang_repl.c", "../flang/src/emit/c/flang_cli.c"]
 
 тотальная функция «Доводы тишины»
   возвращает список строки

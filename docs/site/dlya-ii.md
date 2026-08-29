@@ -88,7 +88,7 @@ has its own, and it reads exactly like this:
 | `Программа НЕ ПРОШЛА проверку языка, доказывать нечего:` | the same from `flang_prove` |
 | `Обещания «…» в программе нет.` | the name in `claim` was not found; the program itself is fine |
 
-Below the first line come lines of the form `FLANG_CODE, строка N, столбец M: …`
+Below the first line come lines of the form `FLANG_<CODE>, строка N, столбец M: …`
 (line N, column M). Branching on the words "did not pass" is too coarse: under
 that line sit a parse typo, a type mismatch, an example that did not match and a
 file that was not found — four different problems with four different repairs.

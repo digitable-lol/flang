@@ -7,7 +7,7 @@
 // ПОВРЕЖДЕНИЯ ОТ СЛИЯНИЯ: ДВОЙНОЕ ОБЪЯВЛЕНИЕ И ЗВАНЫЙ, КОТОРОГО НЕТ.
 //
 //   bootstrap/flang io scripts/name-splicing-guard.flang
-//   bootstrap/flang io scripts/name-splicing-guard.flang --plan «Переписать долг»
+//   bootstrap/flang io scripts/name-splicing-guard.flang --plan 'Переписать долг'
 //
 // Код возврата 0 — новых повреждений нет; 1 — есть, и каждое названо файлом,
 // строкой и именем. Раньше это была программа на JavaScript

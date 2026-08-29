@@ -81,7 +81,7 @@ Isabelle: **написать доказательство руками**. Сло
 каталогом `flang/test/fixtures`, тоже в обе стороны.
 
 ```
-flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 → аксиом ноль, нарушений 0; 36 файлов каталога — все под надзором   (код 0)
 ```
 

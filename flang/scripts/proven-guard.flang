@@ -2,8 +2,8 @@
 
 // ДОКАЗАННОГО НЕ ДОЛЖНО УБЫВАТЬ, И ЭТО ОБЯЗАНО БЫТЬ ВИДНО ЧИСЛОМ.
 //
-//   flang io flang/scripts/proven-guard.flang --plan «Доказанного не убыло» --timeout 900000
-//   flang io flang/scripts/proven-guard.flang --plan «Порча» --timeout 900000
+//   flang io flang/scripts/proven-guard.flang --plan 'Доказанного не убыло' --timeout 900000
+//   flang io flang/scripts/proven-guard.flang --plan 'Порча' --timeout 900000
 //
 // ── ЗАЧЕМ, И ЭТО ЗАМЕРЕНО, А НЕ ПРИДУМАНО ──────────────────────────────────
 // Приписанная теорема ЗАСЛОНЯЕТ путь, которым ядро снимало обещание само.
@@ -338,7 +338,7 @@
 
 // ── ПОКАЗ ПОРЧИ: зелёный без неё ничего не значит ──────────────────────────
 //
-//   flang io flang/scripts/proven-guard.flang --plan «Порча» --timeout 900000
+//   flang io flang/scripts/proven-guard.flang --plan 'Порча' --timeout 900000
 //
 // Сторож, который не может покраснеть, от отсутствующего неотличим. Порча
 // портит ДАННЫЕ, а не сторожа: в `flang/stdlib/base64.flang` приписывается

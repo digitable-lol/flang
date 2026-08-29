@@ -92,7 +92,7 @@ nowhere in it except in the named reasons explaining why this or that rule is a
 theorem:
 
 ```
-flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 → zero axioms, 0 violations   (exit 0)
 ```
 

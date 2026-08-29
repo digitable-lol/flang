@@ -2,7 +2,7 @@
 
 // СВОД ВЕДОМОСТИ ДОКАЗАТЕЛЬСТВА ПО КОРПУСУ — на flang, без Node.
 //
-//   flang io flang/scripts/ledger-summary.flang --plan «Свод» --timeout 900000
+//   flang io flang/scripts/ledger-summary.flang --plan 'Свод' --timeout 900000
 //
 // Заменяет `flang/scripts/proof-ledger.mjs` (ярлык `доказательства:ведомость`). Второй
 // ярлык того же .mjs — `доказательства:пустота` — НЕ переносится: он дублирует уже

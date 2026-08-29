@@ -14,7 +14,7 @@ JavaScript удалена (`fe8e8a37`), сверки при ней — тоже 
 обе стороны: довод из списка, которого в ядре нет, объявляется пропавшим.
 
 ```
-flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 → аксиом ноль, нарушений 0   (код 0)
 ```
 

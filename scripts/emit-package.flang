@@ -6,7 +6,7 @@
 // package.json ПЕЧАТАЕТСЯ ОТСЮДА, а не лежит написанным руками.
 //
 //   bootstrap/flang io scripts/emit-package.flang
-//   bootstrap/flang io scripts/emit-package.flang --plan «Пакет сходится»
+//   bootstrap/flang io scripts/emit-package.flang --plan 'Пакет сходится'
 //
 // Первый план перезаписывает `package.json`; второй сверяет записанное с
 // напечатанным ЗНАК В ЗНАК и отказывает кодом 1, если они разошлись.

@@ -27,6 +27,7 @@
 #   sh scripts/published-vs-tree.sh --перепись только перепись не-flang
 #   sh scripts/published-vs-tree.sh --выпуск  только выпуск: версия и теги
 #   sh scripts/published-vs-tree.sh --карта   только карта раскладки в README
+#   sh scripts/published-vs-tree.sh --команды только напечатанные команды
 #
 # ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
@@ -305,6 +306,61 @@ vypusk() {
   fi
 }
 
+# ── Напечатанные команды: работают ли они как напечатаны ─────────────────────
+#
+# ЗАЧЕМ. Число, которого нельзя воспроизвести командой, публиковать нельзя, — но
+# и команда, которая не работает как напечатана, ничем не лучше числа с потолка.
+# 29 августа 2026 таких команд в дереве нашлось ТРИДЦАТЬ ПЯТЬ, и одну из них
+# читатель встречал на главной странице сайта первым же абзацем.
+#
+# Ловушка. `--plan` берёт имя плана КАК ЕСТЬ. Ёлочки — способ языка писать имена
+# в исходнике, но в командной строке они становятся частью имени, а пробел без
+# кавычек оболочки разбивает имя на два довода. Обе половины проверены прогоном:
+#
+#   flang io ярлыки.flang --plan «Целость»          FLANG_UNKNOWN_PLAN, код 3
+#   flang io …kernel-forgeries.flang --plan «Аксиом ноль»
+#                                       «непонятный ключ «ноль»»», код 2
+#   flang io ярлыки.flang --plan Целость            код 0
+#   flang io …kernel-forgeries.flang --plan 'Аксиом ноль'   код 0
+#
+# ЧТО СПРАШИВАЕТСЯ. Только строки вида `flang io … --plan «…»`, то есть команды,
+# а не проза о ключе: «единственный отбор — `--plan «Имя»`» — рассказ об
+# устройстве, его трогать незачем.
+#
+# ЧЕГО СПРАШИВАТЬ НЕЛЬЗЯ, и это не поблажка, а обратная сторона того же правила:
+#
+#   flang/self/cli.flang, flang/src/emit/**, bootstrap/**  — сама справка
+#       двоичного. Она печатает `--plan «Имя»`, показывая ёлочками место под
+#       имя. Справка сбивает с толку, и об этом сказано на странице про командную
+#       строку, но переписать её можно только перепечаткой семени.
+#   docs/javascript-inventory.md — ДОСЛОВНАЯ выписка вывода `flang io --help`.
+#       Поправить выписку значило бы соврать о том, что двоичный печатает.
+#   docs/site/cli.md, docs/site/cli.ru.md — там ломаная форма показана НАРОЧНО,
+#       рядом с рабочей: страница учит именно этой разнице.
+#   docs/zettel/flang-io-cannot-be-the-entry-point-for-shortcuts.md — заметка, в
+#       которой ловушка и была измерена; она тоже показывает обе формы.
+#   этот файл — по той же причине: разбор ловушки стоит десятью строками выше.
+komandy() {
+  echo "НАПЕЧАТАННЫЕ КОМАНДЫ (работают ли они как напечатаны):"
+  git -c core.quotePath=false grep -n -- '--plan «' -- \
+      ':!bootstrap' ':!flang/self/cli.flang' ':!flang/src/emit' \
+      ':!docs/javascript-inventory.md' ':!docs/site/cli.md' ':!docs/site/cli.ru.md' \
+      ':!docs/zettel/flang-io-cannot-be-the-entry-point-for-shortcuts.md' \
+      ':!scripts/published-vs-tree.sh' \
+    | grep 'flang io ' > "$VREMENNO.kmd" || true
+
+  n=$(wc -l < "$VREMENNO.kmd" | tr -d ' ')
+  if [ "$n" = 0 ]; then
+    [ -n "${PODROBNO:-}" ] && echo "  ни одной команды с ёлочками в имени плана" || true
+  else
+    printf '  команд с ёлочками в имени плана: %s — как напечатаны, они ОТКАЗЫВАЮТ\n' "$n"
+    sed 's/^/    /' "$VREMENNO.kmd"
+    echo "    лечится так: --plan 'Имя плана' — без ёлочек, в кавычках оболочки"
+    plohih=$((plohih + n))
+  fi
+  rm -f "$VREMENNO.kmd"
+}
+
 # ── Карта раскладки: README против корня дерева ──────────────────────────────
 #
 # ЗАЧЕМ. Карта каталогов в README сверялась пробой `flang/test/readme-layout.test.mjs`.
@@ -353,7 +409,8 @@ case "$razdel" in
   --перепись) perepis ;;
   --выпуск)   vypusk ;;
   --карта)    karta ;;
-  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk; echo; karta ;;
+  --команды)  komandy ;;
+  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk; echo; karta; echo; komandy ;;
   *) echo "непонятный довод: $razdel" >&2; exit 2 ;;
 esac
 

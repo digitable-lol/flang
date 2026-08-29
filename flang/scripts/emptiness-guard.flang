@@ -2,9 +2,9 @@
 
 // ПУСТОЕ УТВЕРЖДЕНИЕ НЕ ИМЕЕТ ПРАВА СЧИТАТЬСЯ ДОКАЗАННЫМ ЗНАНИЕМ.
 //
-//   flang io flang/scripts/emptiness-guard.flang --plan «Пустоты в доказанном нет» --timeout 900000
-//   flang io flang/scripts/emptiness-guard.flang --plan «Перепись куч» --timeout 900000
-//   flang io flang/scripts/emptiness-guard.flang --plan «Порча» --timeout 900000
+//   flang io flang/scripts/emptiness-guard.flang --plan 'Пустоты в доказанном нет' --timeout 900000
+//   flang io flang/scripts/emptiness-guard.flang --plan 'Перепись куч' --timeout 900000
+//   flang io flang/scripts/emptiness-guard.flang --plan 'Порча' --timeout 900000
 //
 // ── ДВА КЛЮЧА, БЕЗ КОТОРЫХ ПРОГОН ВРЁТ, И ОБА ЗАМЕРЕНЫ ─────────────────────
 // `--timeout 900000` ОБЯЗАТЕЛЕН. Хозяин ждёт от запущенной программы вывода не
@@ -1081,7 +1081,7 @@
 
 // ── ПОКАЗ ПОРЧИ: зелёный без неё ничего не значит ──────────────────────────
 //
-//   flang io flang/scripts/emptiness-guard.flang --plan «Порча» --timeout 900000
+//   flang io flang/scripts/emptiness-guard.flang --plan 'Порча' --timeout 900000
 //
 // Сторож, который не может покраснеть, от отсутствующего неотличим. Порча
 // портит ДАННЫЕ, а не сторожа: в `flang/stdlib/numbers.flang` возвращается

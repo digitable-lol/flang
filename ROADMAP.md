@@ -500,7 +500,7 @@ flang check проба.flang --proof
 ```
 make -C bootstrap -j4
 ./bootstrap/flang io flang/scripts/kernel-forgeries.flang \
-  --plan «Подделки остаются недоказанными» --timeout 900000
+  --plan 'Подделки остаются недоказанными' --timeout 900000
 → нарушений: 40                                                        (код 1)
 ```
 
@@ -514,7 +514,7 @@ make -C bootstrap -j4
 ```
 SEMYA_OTSTALO_ZNAYU=1 VETVEY=2 PAMYAT=40G /srv/flang-rabota/vorota/flang-vorota \
   -- ./bootstrap/flang io flang/scripts/kernel-forgeries.flang \
-  --plan «Подделки остаются недоказанными» --timeout 900000
+  --plan 'Подделки остаются недоказанными' --timeout 900000
 ```
 
 Ответ — «нарушений: 40», код 1, и **все сорок теперь одного вида**: разбивка

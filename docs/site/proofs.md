@@ -79,7 +79,7 @@ The same program matches the list of forgeries against the `flang/test/fixtures`
 directory, both ways as well.
 
 ```
-flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 → zero axioms, 0 violations; 36 files in the catalogue, every one watched  (exit 0)
 ```
 

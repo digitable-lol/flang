@@ -18,7 +18,7 @@ flang io: непонятный ключ «--n=5»
 
 Ключи `flang io` — `--plan`, `--max-orders`, `--seed`, `--in-dir`, `--max-steps`,
 `--pretty` и шесть запретов полномочий. Хвоста строки нет, `--args` нет.
-Единственный отбор — `--plan «Имя»`.
+Единственный отбор — `--plan 'Имя'`.
 
 Держит: `word-occupancy.mjs`, `link-collision-guard.mjs` (зовётся `--дерево`),
 `proof-ledger.mjs` (`--pustota`), `word-guard.mjs` (`--porcha vse`),

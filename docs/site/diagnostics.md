@@ -380,7 +380,7 @@ performs it; the `FLANG_IO_*` family says the host refused.
 | code | what it means | what to do |
 |---|---|---|
 | `FLANG_PLAN` | the plan is declared wrong | check the plan form |
-| `FLANG_UNKNOWN_PLAN` | no plan by that name in the file | name one that exists: `--plan «Имя»` |
+| `FLANG_UNKNOWN_PLAN` | no plan by that name in the file | name one that exists: `--plan 'Имя'` |
 | `FLANG_PLAN_UNSUPPORTED` | this kind of order is not carried out by this runner | replace the order, or run where it exists |
 | `FLANG_IO_NO_HOST` | there is no host: nobody to hand the order to | run through `flang io`, not by evaluating a function |
 | `FLANG_IO_NOT_TEXT` | a text read hit something that is not text | read octets instead |
@@ -391,7 +391,7 @@ performs it; the `FLANG_IO_*` family says the host refused.
 Capabilities are narrowed one at a time; the default is "everything allowed":
 
 ```bash
-flang io план.flang --plan «Разбор» --no-net --in-dir
+flang io план.flang --plan 'Разбор' --no-net --in-dir
 ```
 
 ## Processes

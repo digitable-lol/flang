@@ -7,7 +7,7 @@ them. The word `total` in front of a function is a promise that it terminates on
 every input, and **the compiler** proves it, not a person. The word `ensures` is
 a promise about the result, and the kernel closes it over **every input**, not
 over the written examples. The kernel has zero axioms, and that is checked by a
-run: `flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»`
+run: `flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'`
 answers with exit code 0.
 
 The language is self-hosted: the flang compiler is written in flang, prints

@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `examples/`: 172 files in
-fifteen sets and one full-size project. There is no second directory of examples
+Every example program in flang lives in one directory — `examples/`: 190 files in
+twenty-one sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git ls-files examples | grep -c '\.flang$'` → 172.
+`git ls-files examples | grep -c '\.flang$'` → 190 (measured 29 August 2026).
 
 ## The sets
 
@@ -15,11 +15,15 @@ The number is recounted by one command:
 | [`leetcode/`](examples/leetcode) | 82 | solutions to LeetCode problems; every file is self-contained on purpose — why, is said in [`index.json`](examples/leetcode/index.json). The account of this set is [82 problems](case-studies.html) |
 | [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks |
 | [`cat/`](examples/cat) | 12 | category theory on applied problems: arrows with promises of their own, laws, CRDT merge |
-| [`web/`](examples/web) | 9 | HTTP: an orders service and the [URL shortener](shortener.html) — eight files, a plan and a service |
-| [`io/`](examples/io) | 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
+| [`web/`](examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
+| [`io/`](examples/io) | 8 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](examples/db) | 4 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
+| [`service-on-processes/`](examples/service-on-processes) | 4 | a service on processes rather than on a three-function example: the claim about an own alternative to OTP, checked at full size |
+| [`https/`](examples/https) | 3 | TLS: the RFC 8448 records, the system trust store, a hello to a real host |
+| [`proof-probes/`](examples/proof-probes) | 3 | probes of the proof core itself: the typed-AST door, a refused generic descent, a variant with fields |
+| [`driver/`](examples/driver) | 2 | hardware drivers where every function must provably terminate: a UART and an MSI |
 | [`measure/`](examples/measure) | 3 | termination by a declared measure: Euclid, binary search, natural numbers |
 | [`errors/`](examples/errors) | 2 | failure as a value rather than a crash: summing a column of numbers that arrived as strings, parsing numbers |
 | [`surfaces/`](examples/surfaces) | 2 | factorial on the Chinese and the Esperanto surface of the language |
@@ -27,6 +31,9 @@ The number is recounted by one command:
 | [`monad/`](examples/monad) | 1 | an order total written in the `в монаде` form |
 | [`money/`](examples/money) | 1 | money on the exact decimal type `сотых` |
 | [`paths/`](examples/paths) | 1 | the shortest path over a network with unreachable nodes |
+| [`allocator/`](examples/allocator) | 1 | a memory allocator as a pure automaton: can `malloc` be written in flang, and what does the kernel take about it |
+| [`host-boundary/`](examples/host-boundary) | 1 | the seam: flang decides, a C host executes — printed to C, built with the system `cc`, run whole |
+| [`service/`](examples/service) | 1 | asking a service |
 | [`import-check.flang`](examples/import-check.flang) | 1 | a probe of linking modules by name |
 
 ## How to run them
@@ -36,11 +43,12 @@ they are run by the binary:
 
 ```bash
 bootstrap/flang test examples/rosetta/   # one set
-bootstrap/flang test examples/           # all sixteen
+bootstrap/flang test examples/           # the whole catalogue, 190 files
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.
-The run of 24 August 2026: `leetcode` — 82 files, 804 examples, 12 seconds;
+The run of 24 August 2026: `leetcode` — 82 files, 804 examples, 12 seconds
+(that set holds 806 examples today);
 `crypto` — 8 files, 1223 examples, 39 minutes, because it computes real AES and
 ECDSA test vectors. A file the binary did not accept is named together with the
 refusal code rather than skipped in silence.
@@ -48,7 +56,7 @@ refusal code rather than skipped in silence.
 ## About `library-api`
 
 `library-api` stands apart in this row, and that is the only thing in which the
-sets here differ from one another. The other fifteen are programs: a file with
+sets here differ from one another. The other twenty-one are programs: a file with
 declarations that carry their own examples. `library-api` is a project: seven flang
 modules, one of them its own, with a directory layout of its own. The example shows
 not HTTP but a border: what moves into the language, where a piece of logic has a

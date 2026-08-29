@@ -25,6 +25,7 @@
 #   sh scripts/published-vs-tree.sh --числа    только ключи numbers.json
 #   sh scripts/published-vs-tree.sh --доля     только доля доказанного
 #   sh scripts/published-vs-tree.sh --перепись только перепись не-flang
+#   sh scripts/published-vs-tree.sh --выпуск  только выпуск: версия и теги
 #
 # ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
@@ -157,7 +158,7 @@ dolya_dokazannogo() {
   else
     printf '  числитель %s — под вопросом на %s обязательств из %s\n' "$zapisano_chisl" "$ob_sdv" "$zapisano_znam"
     printf '    файлов сдвинулось %s, ушло %s, прибыло %s\n' "$n_sdv" "$n_ush" "$n_pri"
-    [ -n "${PODROBNO:-}" ] && printf '%s' "$itog" | tail -n +2 || true
+    [ -n "${PODROBNO:-}" ] && printf '%s\n' "$itog" | tail -n +2 || true
     plohih=$((plohih + 1))
   fi
   rm -f "$VREMENNO"
@@ -170,7 +171,14 @@ dolya_dokazannogo() {
 
   # Заслон, без которого всякая доля доказанного лжёт: двоичный собран из СЕМЕНИ,
   # и пока семя отстало, он судит по старым правилам.
-  if sh scripts/seed-freshness.sh --chto "доля доказанного" >/dev/null 2>&1; then
+  # Ключ обхода спрашивается ЗДЕСЬ, а не отдаётся заслону. Заслон при ключе
+  # отвечает нулём — то же, что «семя свежее», — и сверка печатала бы «семя
+  # отвечает исходникам» там, где семя не сверяли вовсе. Зелёное, полученное
+  # обходом, остаётся зелёным, но обязано называть себя.
+  if [ -n "${SEMYA_OTSTALO_ZNAYU:-}" ]; then
+    echo "  СЕМЯ НЕ СВЕРЯЛОСЬ: судим по прямому указанию (SEMYA_OTSTALO_ZNAYU)."
+    echo "    свежесть семени держит своя проверка: sh scripts/seed-freshness.sh"
+  elif sh scripts/seed-freshness.sh --chto "доля доказанного" >/dev/null 2>&1; then
     echo "  семя отвечает исходникам — приговоры про это дерево"
   else
     echo "  СЕМЯ ОТСТАЛО: двоичный судит по старым правилам, и всякая доля"
@@ -207,11 +215,51 @@ perepis() {
   | awk '{printf "  %-24s               строк %7d\n", "НА FLANG", $1}'
 }
 
+# ── Выпуск: объявленная версия против выпущенных ─────────────────────────────
+#
+# ЗАЧЕМ ЭТО ЗДЕСЬ. Свод при каждом прогоне печатает рекомендацию вида
+# «версия: 0.6.2 → 0.7.0», и она молча не исполняется: рекомендация — не факт, и
+# в дереве от неё не остаётся следа. Факты, которые проверить МОЖНО, два:
+# объявленная версия обязана быть выпущена (иначе `npm i` даёт не то, что
+# описывает дерево), и невыпущенная работа обязана быть НАЗВАНА ЧИСЛОМ, а не
+# словом «накопилось». Первое краснеет, второе печатается.
+#
+# «Теги не выгружены» и «тега нет» — РАЗНЫЕ исходы, и смешивать их нельзя:
+# `actions/checkout` по умолчанию тянет одну ревизию без единого тега, и на таком
+# клоне «тега нет» означало бы только то, что его не выгружали.
+vypusk() {
+  echo "ВЫПУСК (объявленное деревом против выпущенного):"
+  v_paket=$(znach version package.json)
+  echo "  версия в package.json    $v_paket"
+
+  if [ -z "$(git tag -l 'v[0-9]*' 2>/dev/null)" ]; then
+    echo "  теги не выгружены — сверить нечем (git fetch --tags, в CI fetch-depth: 0)"
+    return
+  fi
+
+  svezhiy=$(git tag -l 'v[0-9]*' | sed 's/^v//' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
+  skazat "самый свежий тег" "$svezhiy" "$v_paket"
+
+  if git rev-parse -q --verify "refs/tags/v$v_paket" >/dev/null 2>&1; then
+    posle=$(git rev-list --count "v$v_paket..HEAD" 2>/dev/null || echo 0)
+    umeniy=$(git log --format=%s "v$v_paket..HEAD" 2>/dev/null | grep -c '^feat' || true)
+    pochinok=$(git log --format=%s "v$v_paket..HEAD" 2>/dev/null | grep -c '^fix' || true)
+    printf '  после тега v%s: коммитов %s, из них новых умений %s, починок %s\n' \
+      "$v_paket" "$posle" "$umeniy" "$pochinok"
+    echo "    это НЕ беда: число — мера того, сколько работы стоит невыпущенной."
+    echo "    Решение «выпускать» принимает человек; здесь оно перестаёт быть незаметным."
+  else
+    printf '  тега v%s НЕТ: дерево объявляет версию, которой никто не выпускал\n' "$v_paket"
+    plohih=$((plohih + 1))
+  fi
+}
+
 case "$razdel" in
   --числа)    chisla_sayta ;;
   --доля)     dolya_dokazannogo ;;
   --перепись) perepis ;;
-  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis ;;
+  --выпуск)   vypusk ;;
+  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk ;;
   *) echo "непонятный довод: $razdel" >&2; exit 2 ;;
 esac
 

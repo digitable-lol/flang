@@ -135,7 +135,7 @@ explanation:
 ```bash
 flang check file.flang         # what did not add up
 flang check file.flang --proof # what exactly is proved and what is not
-flang --help                   # ten commands and what each one does
+flang --help                   # twelve commands and what each one does
 ```
 
 A refusal starts with a name: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,

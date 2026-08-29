@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
 """Доля ФАЙЛА в отчёте о доказательствах, а не доля его замыкания по ввозу.
 
 ЗАЧЕМ. `flang check <файл> --proof` судит файл вместе с теми ввезёнными

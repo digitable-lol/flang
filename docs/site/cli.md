@@ -362,6 +362,7 @@ flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-
 | `--plan «Имя»` | Which plan to run, when there is more than one |
 | `--max-orders N` | The limit of orders per run. 10000 by default |
 | `--max-steps N` | The evaluation step limit for one turn |
+| `--timeout N` | The wait time for one order, in milliseconds. 30000 by default |
 | `--seed N` | The randomness seed: the run becomes repeatable |
 | `--in-dir` | Forbid paths outside the directory of the input file |
 | `--pretty` | JSON with indentation |
@@ -370,17 +371,22 @@ Permissions are narrowed one at a time: `--no-read`, `--no-write`, `--no-net`,
 `--no-clock`, `--no-random`, `--no-spawn`. The default is "everything is
 allowed": running a program with this command is your consent to what it does.
 
-`io` has no `--args` and no `--timeout` key. Arguments are not passed to a plan:
-a plan starts from its own "начинает с" function, not from call arguments. There
-is no wait time either — the run is bounded by the number of orders and the
-number of steps.
+`io` has no `--args` key. Arguments are not passed to a plan: a plan starts from
+its own "начинает с" function, not from call arguments.
 
 ```bash
-$ flang io план.flang --timeout 5
-flang io: непонятный ключ «--timeout»
+$ flang io examples/crypto/revocation.flang --args '{}'
+flang io: непонятный ключ «--args»
 $ echo $?
 2
 ```
+
+There **is** a wait time, and it is `--timeout N`, in milliseconds, 30000 by
+default. This page said the opposite until 29 August 2026 and showed a refusal
+that the binary does not print; the key is accepted, checks its value
+(`--timeout 0` and `--timeout abc` are refused with exit 2), and sixteen of this
+tree's own shortcuts pass it (`ярлыки.flang`). Beyond it the run is bounded by
+the number of orders and the number of steps.
 
 The exit codes are a contract: `0` — the plan ran to the end; `1` — the program
 gave up itself, that is, it found trouble and named it; `2` — a bad call; `3` —

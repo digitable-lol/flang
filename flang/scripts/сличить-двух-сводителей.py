@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
 """СЛИЧЕНИЕ ДВУХ СВОДИТЕЛЕЙ.
 
 Берёт ведомость ядра (`flang check --proof --json`) и ответ малого сводителя

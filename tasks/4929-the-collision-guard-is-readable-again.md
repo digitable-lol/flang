@@ -312,7 +312,7 @@ $ node flang/scripts/link-collision-guard.mjs --дерево
 
 `flang/scripts/code-guard.flang` вдобавок сейчас не работает вовсе, и не из-за
 нулевого байта: `bootstrap/flang io flang/scripts/code-guard.flang` отвечает
-`FLANG_KOD_NECHEM_SMOTRET` — вывод второго `git grep` 1 158 029 байт при пределе
+`FLANG_<KOD_NECHEM_SMOTRET>` — вывод второго `git grep` 1 158 029 байт при пределе
 1 048 576. Отказ честный (сторож говорит «смотреть нечем», а не «чисто»), но
 проверка на этой ветке ничего не сверяет.
 

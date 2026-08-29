@@ -1,4 +1,4 @@
-модуль «Все анаграммы в строке»
+модуль «Find all anagrams in a string»
 
 // LeetCode 438. Find All Anagrams in a String.
 // Собрать начала (нумерация с нуля) всех кусков строки, являющихся анаграммами

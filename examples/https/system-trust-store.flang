@@ -1,5 +1,5 @@
-модуль «Системная связка корней»
-  использует «Хранилище корней» из "../../flang/stdlib/trust-store.flang"
+модуль «System trust store»
+  использует «Trust store» из "../../flang/stdlib/trust-store.flang"
 
 // СИСТЕМНАЯ СВЯЗКА КОРНЕЙ, ПРОЧИТАННАЯ СВОИМИ РУКАМИ.
 //

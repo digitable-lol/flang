@@ -1,4 +1,4 @@
-модуль «Две суммы в отсортированном»
+модуль «Two sum ii input array is sorted»
 
 // LeetCode 167. Two Sum II - Input Array Is Sorted.
 // В неубывающем списке найти два числа с заданной суммой и вернуть их номера

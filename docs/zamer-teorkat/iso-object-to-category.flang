@@ -1,7 +1,7 @@
 модуль «Замер: ход изоморфизма из объекта в категорию»
-  использует «Заказы» из "../../examples/cat/modules/orders.flang"
-  использует «Платежи» из "../../examples/cat/modules/payments.flang"
-  использует «Отгрузка» из "../../examples/cat/modules/shipping.flang"
+  использует «Orders» из "../../examples/cat/modules/orders.flang"
+  использует «Payments» из "../../examples/cat/modules/payments.flang"
+  использует «Shipping» из "../../examples/cat/modules/shipping.flang"
 
 // ХОД ВЛАДЕЛЬЦА, ЗАПИСАННЫЙ ДОСЛОВНО.
 //

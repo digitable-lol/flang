@@ -1,4 +1,4 @@
-модуль «Произведение без себя»
+модуль «Product of array except self»
 
 // LeetCode 238. Product of Array Except Self.
 // Для каждого места вернуть произведение ВСЕХ остальных элементов. Делить

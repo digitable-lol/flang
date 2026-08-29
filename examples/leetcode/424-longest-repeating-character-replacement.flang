@@ -1,4 +1,4 @@
-модуль «Самый длинный кусок после замен»
+модуль «Longest repeating character replacement»
 
 // LeetCode 424. Longest Repeating Character Replacement.
 // В строке из заглавных латинских букв разрешено заменить не больше «запас»

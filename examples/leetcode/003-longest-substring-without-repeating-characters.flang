@@ -1,4 +1,4 @@
-модуль «Длиннейшая подстрока без повторов»
+модуль «Longest substring without repeating characters»
 
 // LeetCode 3. Longest Substring Without Repeating Characters.
 // Найти длину самой длинной подстроки, в которой ни один символ не повторяется.

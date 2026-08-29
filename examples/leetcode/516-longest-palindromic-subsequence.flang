@@ -1,4 +1,4 @@
-модуль «Длина палиндромной подпоследовательности»
+модуль «Longest palindromic subsequence»
 
 // LeetCode 516. Longest Palindromic Subsequence.
 // Найти длину самой длинной подпоследовательности строки, читающейся одинаково

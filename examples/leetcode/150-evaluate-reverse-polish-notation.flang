@@ -1,4 +1,4 @@
-модуль «Обратная польская запись»
+модуль «Evaluate reverse polish notation»
 
 // LeetCode 150. Evaluate Reverse Polish Notation.
 // Вычислить постфиксное выражение из списка слов: число кладётся на стек, знак

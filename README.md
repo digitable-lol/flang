@@ -524,7 +524,7 @@ not have.
 
 ```flang
 модуль «Проба импорта»
-  использует «Списки»
+  использует «Lists»
 
 тотальная функция «Сумма пробы»
   принимает элементы: список числа
@@ -536,9 +536,9 @@ There is no path in the line: a module is found by its name — the one written 
 line as `модуль «Списки»`. The search looks in the file's own directory, then in every directory
 above it while that directory still holds `.flang` files, then in the library shipped with the
 compiler. Moving a module to another directory does not break anything; a module off that road is
-named directly — `использует «Списки» из "path"`.
+named directly — `использует «Lists» из "path"`.
 
-A selective form takes only what you name — `использует «Списки» только «Сумма», «Длина»` —
+A selective form takes only what you name — `использует «Lists» только «Сумма», «Длина»` —
 which is also how a name conflict between two modules is resolved.
 
 How that scales to a full-size project is shown by two examples that are worth telling apart.

@@ -1,5 +1,5 @@
-модуль «Вход в постгрес по scram»
-  использует «Разговор с базой» из "../../flang/stdlib/postgres.flang"
+модуль «Postgres SCRAM plan»
+  использует «Postgres» из "../../flang/stdlib/postgres.flang"
   использует «SCRAM» из "../../flang/stdlib/scram.flang"
 
 // Настоящий вход в настоящую базу способом `scram-sha-256` (RFC 5802, RFC 7677)

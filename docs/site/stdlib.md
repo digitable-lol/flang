@@ -6,13 +6,13 @@ The library sits next to the compiler and is written in flang itself. Every func
 
 ```flang
 модуль «Моя программа»
-  использует «Списки»
+  использует «Lists»
 ```
 
 The WHOLE module comes in, and the printed code carries all of it. Need a single function — name it:
 
 ```flang
-  использует «Списки» только «Сумма»
+  использует «Lists» только «Сумма»
 ```
 
 `только` does not pull in what the named function calls. Ask for `«Двоичный поиск»` without `«Поиск в диапазоне»` and the compiler answers:
@@ -30,11 +30,11 @@ In the tables below, “takes” and “returns” are the signature from the so
 
 Nine modules cover almost everything written day to day. Each comes with a whole program you can copy and check.
 
-### Списки
+### Lists
 
 Lists of any values and lists of numbers: length, slice, range, search, folds, sorting.
 
-Import: `использует «Списки»`.
+Import: `использует «Lists»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -72,7 +72,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба списков»
-  использует «Списки»
+  использует «Lists»
 
 тотальная функция «Сумма чисел до предела»
   принимает предел: число
@@ -83,11 +83,11 @@ A whole program — checked by `flang check`:
   «Сумма» от («Числа до» от предел)
 ```
 
-### Строки
+### Strings
 
 Strings as data: split, replace, case, prefix and suffix, character tests, padding to width.
 
-Import: `использует «Строки»`.
+Import: `использует «Strings»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -127,7 +127,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба строк»
-  использует «Строки»
+  использует «Strings»
 
 тотальная функция «Слово задом наперёд»
   принимает текст: строка
@@ -138,11 +138,11 @@ A whole program — checked by `flang check`:
   «Обратить строку» от («Обрезать пробелы» от текст)
 ```
 
-### Числа
+### Numbers
 
 Numbers: sign, absolute value, integer division, GCD and LCM, power, factorial, digits.
 
-Import: `использует «Числа»`.
+Import: `использует «Numbers»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -166,7 +166,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба чисел»
-  использует «Числа»
+  использует «Numbers»
 
 тотальная функция «Доля в процентах»
   принимает часть: число, целое: число
@@ -178,11 +178,11 @@ A whole program — checked by `flang check`:
   «Ограничить» от («Целочисленное деление» от (часть умножить на 100) и целое) и 0 и 100
 ```
 
-### Опциональное значение
+### Optional
 
 A value that may be missing: present or absent, over any type.
 
-Import: `использует «Опциональное значение»`.
+Import: `использует «Optional»`.
 
 Types: `«Возможно»`.
 
@@ -204,7 +204,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба опции»
-  использует «Опциональное значение»
+  использует «Optional»
 
 тотальная функция «Первое или ноль»
   принимает элементы: список числа
@@ -215,11 +215,11 @@ A whole program — checked by `flang check`:
   «Первый элемент или запасное» от элементы и 0
 ```
 
-### Результат
+### Result
 
 The outcome of a computation: success with a value, or an error with a reason.
 
-Import: `использует «Результат»`.
+Import: `использует «Result»`.
 
 Types: `«Результат»`.
 
@@ -241,7 +241,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба результата»
-  использует «Результат»
+  использует «Result»
 
 тотальная функция «Деление на ноль не роняет»
   принимает делимое: число, делитель: число
@@ -253,11 +253,11 @@ A whole program — checked by `flang check`:
   «Деление или запасное» от делимое и делитель и -1
 ```
 
-### Высший порядок
+### Higher order
 
 Functions as values: map, filter, fold, sort by your own order.
 
-Import: `использует «Высший порядок»`.
+Import: `использует «Higher order»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -298,7 +298,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба высшего порядка»
-  использует «Высший порядок»
+  использует «Higher order»
 
 тотальная функция «Сумма квадратов»
   принимает элементы: список числа
@@ -309,11 +309,11 @@ A whole program — checked by `flang check`:
   «Свернуть» от функция «Сложить» и 0 и («Отобразить» от функция «Возвести в квадрат» и элементы)
 ```
 
-### Словарь
+### Dictionary
 
 A string → string map built as a list of pairs. Lookup is linear: a thousand keys behave like a thousand-element list.
 
-Import: `использует «Словарь»`.
+Import: `использует «Dictionary»`.
 
 Types: `«Связь»`.
 
@@ -333,7 +333,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба словаря»
-  использует «Словарь»
+  использует «Dictionary»
 
 тотальная функция «Значение по ключу связью»
   принимает ключ: строка
@@ -345,11 +345,11 @@ A whole program — checked by `flang check`:
   «Взять или запасное» от словарь и ключ и "нет"
 ```
 
-### Словарь хешем
+### Hash map
 
 A string → string map with constant-time access: a trie over hash digits.
 
-Import: `использует «Словарь хешем»`.
+Import: `использует «Hash map»`.
 
 Types: `«Звено»`, `«Узел хеша»`.
 
@@ -383,7 +383,7 @@ A whole program — checked by `flang check`:
 
 ```flang
 модуль «Проба словаря хешем»
-  использует «Словарь хешем»
+  использует «Hash map»
 
 тотальная функция «Значение по ключу»
   принимает ключ: строка
@@ -663,11 +663,11 @@ Import: `использует «X.509»`.
 | `«Сертификат ещё не начался»` | `октеты: список числа, сейчас: число` | `признак` | после начала срока сертификат уже начался |
 | `«Сертификат действует»` | `октеты: список числа, сейчас: число` | `признак` | действующий сертификат не позднее своего конца срока |
 
-### База SQLite
+### SQLite
 
 Reading a SQLite 3 database file: header, pages, cells, values.
 
-Import: `использует «База SQLite»`.
+Import: `использует «SQLite»`.
 
 Types: `«Варинт»`, `«Сбор варинтов»`, `«Сбор указателей»`, `«Значение»`, `«Ряд»`, `«Таблица»`.
 
@@ -733,7 +733,7 @@ python3 -c "import sqlite3; c=sqlite3.connect('база.db'); \
 
 ```flang
 модуль «Заголовок базы»
-  использует «База SQLite»
+  использует «SQLite»
 
 тип «Ход»
   вариант «Начало»
@@ -795,11 +795,11 @@ the contents.
 
 ## The rest of the modules
 
-### Вывод ключа
+### Key derivation
 
 Deriving a key from a password: PBKDF2-HMAC-SHA256, RFC 8018.
 
-Import: `использует «Вывод ключа»`.
+Import: `использует «Key derivation»`.
 
 Types: `«Ход вывода»`.
 
@@ -813,11 +813,11 @@ Types: `«Ход вывода»`.
 | `«Кусок вывода»` | `пароль: список числа, соль: список числа, повторов: число, номер: число` | `список числа` | кусок — ровно тридцать два байта |
 | `«Вывод ключа»` | `пароль: список числа, соль: список числа, повторов: число, байтов: неотрицательное` | `список числа` | ключ ровно заказанной длины |
 
-### Дата и время
+### Date and time
 
 Dates and times as values: ISO-8601 parsing, addition, difference, leap years, weekdays. It never asks what time it is — time arrives as an argument.
 
-Import: `использует «Дата и время»`.
+Import: `использует «Date and time»`.
 
 Types: `«Календарный день»`, `«Часы»`, `«Отметка»`, `«Итог даты»`.
 
@@ -848,11 +848,11 @@ Types: `«Календарный день»`, `«Часы»`, `«Отметка�
 | `«Напечатать пояс»` | `смещение: число` | `строка` | ноль печатается буквой Z, а целое смещение до 23:59 — знаком, часами и минутами, читаемыми обратно |
 | `«Напечатать отметку»` | `отметка: «Отметка»` | `строка` | печать отметки не короче двадцати знаков, а ровно двадцать — это запись со всемирным поясом |
 
-### Запросы и ответы
+### Requests and responses
 
 The pure half of HTTP: parsing and printing requests and responses, headers, status codes, URLs, percent-encoding.
 
-Import: `использует «Запросы и ответы»`.
+Import: `использует «Requests and responses»`.
 
 Types: `«Заголовок»`, `«Запрос»`, `«Ответ»`, `«Разбор запроса»`, `«Разбор заголовков»`, `«Разбор тела»`, `«Длина тела»`, `«Целое из строки»`, `«Ход раскодирования»`.
 
@@ -917,11 +917,11 @@ Types: `«Заголовок»`, `«Запрос»`, `«Ответ»`, `«Раз
 | `«Схема адреса»` | `адрес: строка` | `строка` | схема — ровно то, что стоит перед :// |
 | `«Адрес годен»` | `адрес: строка` | `признак` | годен ровно тот адрес, у которого схема http или https |
 
-### Логика
+### Logic
 
 Operations over booleans: and, or, not, exclusive or, implication, plus “all true” and “any true” over a list.
 
-Import: `использует «Логика»`.
+Import: `использует «Logic»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -933,11 +933,11 @@ Import: `использует «Логика»`.
 | `«Все верны»` | `значения: список признака` | `признак` | все верны ровно тогда, когда ложного среди значений нет |
 | `«Есть верное»` | `значения: список признака` | `признак` | есть верное ровно тогда, когда истинное среди значений есть |
 
-### Множество строк
+### String sets
 
 A set of strings: add, remove, union, intersection, difference, subset.
 
-Import: `использует «Множество строк»`.
+Import: `использует «String sets»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -951,11 +951,11 @@ Import: `использует «Множество строк»`.
 | `«Подмножество»` | `меньшее: список строки, большее: список строки` | `признак` | подмножество — это когда лишних элементов нет |
 | `«Размер множества»` | `множество: список строки` | `число` | размер множества неотрицателен |
 
-### Основание 64
+### Base64
 
 Base64 per RFC 4648: the standard alphabet and the URL-safe one.
 
-Import: `использует «Основание 64»`.
+Import: `использует «Base64»`.
 
 Types: `«Ход кодирования 64»`, `«Ход раскодирования 64»`.
 
@@ -981,11 +981,11 @@ Types: `«Ход кодирования 64»`, `«Ход раскодирова�
 | `«Закрыть раскодирование»` | `ход: «Ход раскодирования 64»` | `список числа` | хвост из двух знаков даёт байт, из трёх — два, из нуля — ни одного |
 | `«Раскодировать в байты»` | `код: строка` | `список числа` | байтов не больше, чем знаков |
 
-### Провод
+### Wire
 
 The shared half of a binary protocol: octets, network-order integers, zero-terminated strings, cutting a stream into pieces.
 
-Import: `использует «Провод»`.
+Import: `использует «Wire»`.
 
 Types: `«Печать»`, `«Набор байтов»`, `«Разбор целого»`, `«Разбор строки»`, `«Разбор числа»`.
 
@@ -1023,11 +1023,11 @@ Types: `«Печать»`, `«Набор байтов»`, `«Разбор цел
 | `«Число без знака»` | `знаки: список строки` | `«Разбор числа»` | пусто и длиннее пятнадцати цифр числом не считается |
 | `«Отрицать число»` | `исход: «Разбор числа»` | `«Разбор числа»` | разобранное число меняет знак, а не число остаётся не числом |
 
-### Разговор с базой
+### Postgres
 
 The PostgreSQL 3.0 protocol, pure half: building client messages and parsing server ones. No socket here.
 
-Import: `использует «Разговор с базой»`.
+Import: `использует «Postgres»`.
 
 Types: `«Поле»`, `«Беда базы»`, `«Весть»`, `«Разбор вести»`, `«Разбор потока»`, `«Значение»`.
 
@@ -1088,11 +1088,11 @@ Types: `«Поле»`, `«Беда базы»`, `«Весть»`, `«Разбо�
 | `«Настройки потока»` | `вести: список «Весть»` | `список строки` | пар выходит ровно столько, сколько среди вестей настроек |
 | `«Досыпать настройку»` | `весть: «Весть», собрано: список строки` | `список строки` | настройка досыпается в конец одной парой из имени, знака равенства и значения, прочее проносит собранное нетронутым |
 
-### Разговор с Redis
+### Redis
 
 The Redis protocol (RESP 2), pure half: building commands and parsing replies.
 
-Import: `использует «Разговор с Redis»`.
+Import: `использует «Redis»`.
 
 Types: `«Ответ Redis»`, `«Разбор Redis»`, `«Край Redis»`, `«Поток Redis»`.
 
@@ -1132,11 +1132,11 @@ Types: `«Ответ Redis»`, `«Разбор Redis»`, `«Край Redis»`, `
 | `«Это отказ Redis»` | `ответ: «Ответ Redis»` | `признак` | отказом считается только беда |
 | `«Есть отказ Redis»` | `ответы: список «Ответ Redis»` | `признак` | в пустом списке отказа нет |
 
-### Словарь деревом
+### Tree map
 
 A string → string map as a search tree: O(log n) access.
 
-Import: `использует «Словарь деревом»`.
+Import: `использует «Tree map»`.
 
 Types: `«Дерево»`.
 
@@ -1157,11 +1157,11 @@ Types: `«Дерево»`.
 | `«Ключи дерева»` | `дерево: «Дерево»` | `список строки` | ключей ровно столько, сколько узлов |
 | `«Дерево из ключей»` | `ключи: список строки` | `«Дерево»` | из пустого списка — пустое дерево, из непустого — непустое |
 
-### Списки строк
+### String lists
 
 Lists of strings: first, last, tail, join, access by index, common prefix.
 
-Import: `использует «Списки строк»`.
+Import: `использует «String lists»`.
 
 | function | takes | returns | what it does |
 | --- | --- | --- | --- |
@@ -1178,11 +1178,11 @@ Import: `использует «Списки строк»`.
 | `«Общее начало»` | `части: список строки` | `строка` | начинает первую и последнюю часть, не длиннее их общего начала, а на одной и на двух частях совпадает с ним точно |
 | `«Слова»` | `текст: строка` | `список строки` | склейка слов та же, что склейка кусков |
 
-### Числа деревом
+### Number tree
 
 An ordered tree of numbers: insert, search, sort by traversal.
 
-Import: `использует «Числа деревом»`.
+Import: `использует «Number tree»`.
 
 Types: `«Дерево чисел»`.
 

@@ -1,4 +1,4 @@
-модуль «Поиск в повёрнутом списке»
+модуль «Search in rotated sorted array»
 
 // LeetCode 33. Search in Rotated Sorted Array.
 // Возрастающий список без повторов повернули вокруг неизвестной точки.

@@ -1,4 +1,4 @@
-модуль «Обход дерева по порядку»
+модуль «Binary tree inorder traversal»
 
 // LeetCode 94. Binary Tree Inorder Traversal.
 // Перечислить значения двоичного дерева в порядке «левое поддерево, корень,

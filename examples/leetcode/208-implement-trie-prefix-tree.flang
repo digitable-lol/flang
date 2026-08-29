@@ -1,4 +1,4 @@
-модуль «Бор приставок»
+модуль «Implement trie prefix tree»
 
 // LeetCode 208. Implement Trie (Prefix Tree).
 // Завести бор (префиксное дерево) и уметь три вещи: вставить слово, проверить

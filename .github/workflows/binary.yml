@@ -291,6 +291,8 @@ jobs:
         run: sh scripts/published-vs-tree.sh --числа
       - name: Объявленная версия выпущена, и невыпущенное названо числом
         run: sh scripts/published-vs-tree.sh --выпуск
+      - name: Карта раскладки в README отвечает корню дерева
+        run: sh scripts/published-vs-tree.sh --карта
       - name: Перепись того, что в дереве не на flang
         run: sh scripts/published-vs-tree.sh --перепись
 

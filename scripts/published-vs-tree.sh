@@ -26,6 +26,7 @@
 #   sh scripts/published-vs-tree.sh --доля     только доля доказанного
 #   sh scripts/published-vs-tree.sh --перепись только перепись не-flang
 #   sh scripts/published-vs-tree.sh --выпуск  только выпуск: версия и теги
+#   sh scripts/published-vs-tree.sh --карта   только карта раскладки в README
 #
 # ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
@@ -254,12 +255,55 @@ vypusk() {
   fi
 }
 
+# ── Карта раскладки: README против корня дерева ──────────────────────────────
+#
+# ЗАЧЕМ. Карта каталогов в README сверялась пробой `flang/test/readme-layout.test.mjs`.
+# Проба удалена вместе с реализацией на JavaScript, и с того дня карта держалась
+# рукой. Держалась плохо: 29 августа 2026 README на обоих языках говорил «у корня
+# 10 каталогов» при одиннадцати, а каталога `tasks/` в карте не было вовсе —
+# читатель, искавший открытую работу дерева, узнать о ней из README не мог.
+#
+# Здесь восстановлено ровно то, что делала проба, и без единой зависимости:
+# число у корня и состав карты. Скрытые каталоги (`.github/`, `.claude/`) карта
+# называть вправе, но не обязана; НЕскрытый каталог обязана назвать каждый.
+#
+# Сортировка идёт под LC_ALL=C: `comm` сличает строки байтами, и в другой
+# раскладке он объявляет «input is not in sorted order» на ровном месте.
+karta() {
+  echo "КАРТА РАСКЛАДКИ (README против корня дерева):"
+  find . -mindepth 1 -maxdepth 1 -type d ! -name '.*' -printf '%f\n' | LC_ALL=C sort > "$VREMENNO.derevo"
+  n_dereve=$(wc -l < "$VREMENNO.derevo" | tr -d ' ')
+
+  for f in README.md README.ru.md; do
+    skazano=$(grep -aoE '(There are|У корня) [0-9]+ (directories at the root|каталогов)' "$f" \
+              | head -1 | grep -oE '[0-9]+')
+    skazat "$f: число у корня" "${skazano:-нет}" "$n_dereve"
+
+    awk '/КАРТА-НАЧАЛО/{v=1; next} /КАРТА-КОНЕЦ/{v=0} v' "$f" \
+      | grep -aoE '^[^[:space:]/]+/' | tr -d '/' | LC_ALL=C sort -u > "$VREMENNO.karta"
+
+    ne_nazvan=$(LC_ALL=C comm -23 "$VREMENNO.derevo" "$VREMENNO.karta" | tr '\n' ' ')
+    if [ -n "$(printf '%s' "$ne_nazvan" | tr -d ' ')" ]; then
+      printf '  %-22s в дереве есть, в карте нет: %s  РАЗОШЛОСЬ\n' "$f" "$ne_nazvan"
+      plohih=$((plohih + 1))
+    fi
+
+    vydumano=$(LC_ALL=C comm -13 "$VREMENNO.derevo" "$VREMENNO.karta" | grep -v '^\.' | tr '\n' ' ')
+    if [ -n "$(printf '%s' "$vydumano" | tr -d ' ')" ]; then
+      printf '  %-22s в карте есть, в дереве нет: %s  РАЗОШЛОСЬ\n' "$f" "$vydumano"
+      plohih=$((plohih + 1))
+    fi
+  done
+  rm -f "$VREMENNO.derevo" "$VREMENNO.karta"
+}
+
 case "$razdel" in
   --числа)    chisla_sayta ;;
   --доля)     dolya_dokazannogo ;;
   --перепись) perepis ;;
   --выпуск)   vypusk ;;
-  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk ;;
+  --карта)    karta ;;
+  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk; echo; karta ;;
   *) echo "непонятный довод: $razdel" >&2; exit 2 ;;
 esac
 

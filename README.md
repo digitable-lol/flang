@@ -87,9 +87,12 @@ There are 11 directories at the root, and the layout is plain: nearly everything
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
 point, packaging, measurements, documentation and the example programs.
 
-<!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs. Сегодня
-     он не запускается: как и почти весь набор проб, он ввозит модули удалённой реализации на
-     JavaScript. Пока проба не переписана, карта держится рукой — правьте её вместе с деревом. -->
+<!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs; проба
+     удалена вместе с реализацией на JavaScript, и полгода карта держалась рукой — держалась
+     плохо. С 29 августа 2026 её снова сверяет прогон, и без единой зависимости:
+     `sh scripts/published-vs-tree.sh --карта` сличает число у корня и состав карты с деревом,
+     работа `published` в binary.yml зовёт его на каждый пуш. Правьте карту вместе с деревом —
+     теперь об этом скажет проверка, а не читатель. -->
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap»

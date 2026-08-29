@@ -383,6 +383,7 @@
 - [Цена подключения категорной поверхности к компилятору — не рост замыкания, а сорок ненаписанных правил](a-category-surface-costs-forty-unwritten-rules-not-a-bigger-closure.md)
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](a-changed-verdict-must-be-carried-to-a-full-run.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](a-check-moved-to-the-binary-drops-out-of-ci-silently.md)
+- [Новое правило проверки, написанное на flang, испытывается толкователем того же двоичного — круг пять минут, а не перепечатка](a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint.md)
 - [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](a-child-process-starts-in-the-plan-directory-not-the-working-one.md)
 - [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
 - [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей МЕЖДУ СОБОЙ: у go с rust их пять](a-collision-map-taken-per-target-is-blind-to-target-against-target.md)
@@ -571,6 +572,7 @@
 - [Чужие пакеты надо хранить: из трёх укладов два — это один в два слоя, а третий не про наше десятилетие](other-peoples-packages-must-be-stored.md)
 - [Параметрический тип в языке ЕСТЬ, и упирается в него сегодня одиннадцать мест — все объявления, читающие тип именем; ссылка на процесс к ним не относилась никогда](parametric-types-exist-and-eleven-places-depend-on-them.md)
 - [Девять мест библиотеки обваливаются на «не числе» и пустой строке: встроенные формы `символ`, `элемент` и `код символа` частичны, а тип этого не запрещает](partial-builtin-forms-crash-the-stdlib-on-nan-and-the-empty-string.md)
+- [Планы не судит никто, и в отличие от процессов двоичный об этом молчит — двенадцать нарочных подделок из тринадцати проходят кодом 0](plans-are-not-judged-at-all-and-unlike-processes-the-binary-says-nothing.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](porting-the-tier-three-oracle-splits-into-five-different-tasks.md)
 - [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postconditions-run-so-their-call-graph-must-be-loop-free.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор, и увидеть это можно, только спросив его о каждом слове](printed-highlighting-rules-are-only-checked-by-the-editor-itself.md)
@@ -672,11 +674,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Новое правило проверки, написанное на flang, испытывается толкователем того же двоичного — круг пять минут, а не перепечатка](a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint.md)
-- [Планы не судит никто, и в отличие от процессов двоичный об этом молчит — двенадцать нарочных подделок из тринадцати проходят кодом 0](plans-are-not-judged-at-all-and-unlike-processes-the-binary-says-nothing.md)
 
 ## Как добавлять
 

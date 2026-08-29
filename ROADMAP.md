@@ -499,7 +499,8 @@ flang check проба.flang --proof
 
 ```
 make -C bootstrap -j4
-./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000
+./bootstrap/flang io flang/scripts/kernel-forgeries.flang \
+  --plan «Подделки остаются недоказанными» --timeout 900000
 → нарушений: 40                                                        (код 1)
 ```
 
@@ -512,7 +513,8 @@ make -C bootstrap -j4
 
 ```
 SEMYA_OTSTALO_ZNAYU=1 VETVEY=2 PAMYAT=40G /srv/flang-rabota/vorota/flang-vorota \
-  -- ./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000
+  -- ./bootstrap/flang io flang/scripts/kernel-forgeries.flang \
+  --plan «Подделки остаются недоказанными» --timeout 900000
 ```
 
 Ответ — «нарушений: 40», код 1, и **все сорок теперь одного вида**: разбивка
@@ -786,7 +788,8 @@ make -C bootstrap -j4                                    собрать комп
 ./bootstrap/flang check --proof --json ФАЙЛ              то же машинным видом
 ./bootstrap/flang test flang/stdlib/lists.flang          прогнать примеры
 ./bootstrap/flang io benchmarks/proof-cost/count-20.flang               цена доказательства
-./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000  доказатель не берёт ложь
+./ярлык подделки:проверка                                доказатель не берёт ложь
+./ярлык аксиомы:проверка                                 аксиом ноль (читает текст, дёшево)
 ./ярлык сколько-верим                                    скольким строкам приходится верить
 sh scripts/raskrutka.sh --bystro                         не отстал ли напечатанный компилятор
 ```

@@ -166,9 +166,11 @@ of which 162 are fixtures and only four are still runnable test files. `npm test
 implementation these tests were written against is gone, and what remains was pruned to what
 still resolves — every import in those four files points at a file that exists (all fifteen of
 them, checked 29 August 2026). **That is not the same as green**, and the difference is worth
-stating: `npm test` fails today. One of its checks reads the tree's own prose and finds
-18 pieces of jargon; another has no recorded debt for the file it is given. Said here rather
-than left to be discovered from a red log.
+stating: `npm test` fails today — 38 checks, 29 pass, 9 fail (measured 29 August 2026). Six of
+the nine are the jargon guard: it reads the tree's own prose, finds 18 pieces of jargon, and one
+file it is handed has no recorded debt. The other three are the `go` target failing to build in
+this environment, not a defect of the tree. Said here rather than left to be discovered from a
+red log.
 
 Laying out **your own** project is a separate document:
 [Раскладка проекта](docs/guide/project-layout.ru.md).

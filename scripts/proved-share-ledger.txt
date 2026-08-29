@@ -20,6 +20,12 @@
 // числитель нельзя было пересчитать по одному файлу: вычесть вклад
 // сдвинувшегося файла было не из чего. Теперь можно.
 //
+// Две строки — flang/self/proof-kernel.flang и flang/self/proofterm.flang —
+// сняты в тот же день тем же приёмом, но двоичным
+// f32d89f599dd6b9f740f42a752dff1ff и в текстовом виде; исходники с тех пор не
+// менялись. Оба двоичных сверены на flang/stdlib/aes.flang: 129 доказанных из
+// 218 знак в знак.
+//
 // Снято 29 августа 2026 двоичным 25605ce2dc63758bc8746e839a4e3481:
 // семя `bootstrap/compiler_flang.c` и `.h` без единой правки, рантайм дерева
 // `flang/src/emit/c`, блок настроек из шапки семени (без него первый же check
@@ -248,9 +254,9 @@ b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 9690ae80f958ddba4ab510be8e456692|22|—|—|—|—|flang/self/partialorder.flang
 100649fc2ed9f77d7511905e7b2e5f3f|17|—|—|—|—|flang/self/processes.flang
 f9d19f15c2041483d7257d5b20ff0f67|94|82|2|10|0|flang/self/proof-initial.flang
-84874562bf0a56611cdbcfcce8c75b78|44|—|—|—|—|flang/self/proof-kernel.flang
+84874562bf0a56611cdbcfcce8c75b78|44|44|0|0|0|flang/self/proof-kernel.flang
 fc32aa3eab8c4a98dd3e3c063c50b427|334|—|—|—|—|flang/self/proof.flang
-71ed6b9fc18f244be8aeee5a5c6b2be1|138|—|—|—|—|flang/self/proofterm.flang
+71ed6b9fc18f244be8aeee5a5c6b2be1|138|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|—|—|—|—|flang/self/repl/repl.flang
 5c21185a451e4b60efbb96ad60745149|88|—|—|—|—|flang/self/setoid-oracle.flang
 c3e9988435d72d7cdd3bcc04e7bfef81|101|—|—|—|—|flang/self/setoid.flang

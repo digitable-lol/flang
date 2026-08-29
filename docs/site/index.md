@@ -6,7 +6,9 @@ has no side effects — input and output come back as data, and the host perform
 them. The word `total` in front of a function is a promise that it terminates on
 every input, and **the compiler** proves it, not a person. The word `ensures` is
 a promise about the result, and the kernel closes it over **every input**, not
-over the written examples. The kernel has zero axioms.
+over the written examples. The kernel has zero axioms, and that is checked by a
+run: `flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»`
+answers with exit code 0.
 
 The language is self-hosted: the flang compiler is written in flang, prints
 itself, and prints to {{цели.словом}} more target languages. The standard
@@ -83,12 +85,13 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 **Not in who writes the proof.** You can write one by hand here too: the word
 `теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **160** such theorems in
-the language tree, **53** of them in the standard library
-(`grep -rc '^\s*теорема ' flang --include=*.flang`).
+of Isabelle's Isar, not a script of tactics. There are **182** such theorems in
+the language tree, **55** of them in the standard library
+(`grep -rac '^\s*теорема ' flang --include=*.flang`, summed with `awk`; the `-a`
+is not optional — without it `flang/conc/link.flang` is skipped silently).
 
 The difference is **what is left for the hand to write**. The kernel closes a
-claim on its own, by eleven rules, and a written theorem is needed only for the
+claim on its own, by twelve rules, and a written theorem is needed only for the
 remainder. The verdict line reports that as a separate number. Measured on
 `flang/stdlib/sha1.flang` together with its imports (`flang check --proof`):
 `утверждений 177: доказано 114 … из них без теоремы 54` — nearly half of what is

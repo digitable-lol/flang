@@ -54,7 +54,7 @@ as in Coq and Isabelle: **write the proof by hand**. The word `теорема` w
 structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
 and the kernel checks such a derivation step by step, searching for nothing.
-There are 160 such theorems in the language tree, 53 of them in the standard
+There are 182 such theorems in the language tree, 55 of them in the standard
 library. The difference from Coq and Lean is not that this option exists, but how
 rarely it is reached for: the verdict prints, as a separate number, how many
 claims were closed **without a single written line of proof**.
@@ -69,8 +69,26 @@ An axiom is what you accept without proof. Coq and Lean have axioms and use
 them: excluded middle, the axiom of choice. Each one is something the machine
 **does not check**.
 
-**flang has zero**, and the list is provably empty: a separate test holds it
-there, so one cannot be added quietly.
+**flang has zero**, and that is not a promise but a run. An axiom cannot be
+"put into" the kernel: there is no list of axioms there as a device — it can only
+be written in words. So a separate program reads the whole source of the proof
+kernel and demands that the word "аксиома" appear nowhere in it except in the
+named reasons that explain why this or that rule is a theorem; the check runs
+both ways, so a named reason with no matching word in the kernel is trouble too.
+The same program matches the list of forgeries against the `flang/test/fixtures`
+directory, both ways as well.
+
+```
+flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+→ zero axioms, 0 violations; 36 files in the catalogue, every one watched  (exit 0)
+```
+
+**What that command does not confirm**, and it is worth knowing: that every rule
+rejects its own forgery. That is the second, expensive end of the same guard (the
+plan «Подделки остаются недоказанными»), and today it is red — not because the
+kernel took a falsehood, but because nine rules have been written into the
+kernel's source and have not yet reached the built compiler: the bootstrap point
+has not been reprinted.
 
 The price is honest: without excluded middle some classical statements cannot be
 proved. For a programming language that turned out to be a lucky coincidence — we
@@ -92,9 +110,9 @@ checked on every claim in the repository, not on the ones somebody remembered.
 
 ## How the kernel is built
 
-Eleven decision rules, each readable in one sitting; the kernel names them in the
+Twelve decision rules, each readable in one sitting; the kernel names them in the
 text of its refusals, and the count is taken from the kernel itself
-(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 11). Most
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 12). Most
 of them ask about the SHAPE of the goal ("not less than 0", "not greater than a
 literal", "equals", "not greater than a term", "contains", "starts with",
 "non-decreasing"); the rest do not: "goal is an assumption" matches the goal
@@ -105,7 +123,7 @@ derive it, and splitting a goal on an `если` condition.
 
 There used to be three rules, then eight, and older sections of the specification
 still name the count as it stood on the day they were written. Today there are
-eleven, and that number can only be argued with the kernel in hand.
+twelve, and that number can only be argued with the kernel in hand.
 
 Proof **search** stands apart, and how it is built matters: it **believes
 nothing**. It only proposes, and the kernel re-checks everything. That is why

@@ -82,7 +82,23 @@ check but accepts.
 
 Here there are **{{законы.наВеру}}**, and that is not a claim but a field of the
 report: the list of assumptions is printed together with the other numbers, and
-today it is empty.
+on the day of the measurement it was empty.
+
+"Zero axioms" itself rests not on that field but on a run, and the run is named
+here. The kernel has no list of axioms as a device — an axiom can only be written
+in words in the source — so a separate program reads the whole of
+`flang/self/proof-kernel.flang` and demands that the word "аксиома" appear
+nowhere in it except in the named reasons explaining why this or that rule is a
+theorem:
+
+```
+flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+→ zero axioms, 0 violations   (exit 0)
+```
+
+What that command does not confirm: that every rule rejects its own forgery. That
+is the second end of the same guard, and today it is red — nine rules have been
+written into the kernel's source and have not yet reached the built compiler.
 
 For a reader this means one thing: when the report says "proved for all inputs",
 there is no invisible side condition behind that line that somebody once found

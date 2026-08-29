@@ -1,4 +1,4 @@
-модуль «Удалить повторы»
+модуль «Remove duplicates from sorted array»
 
 // LeetCode 26. Remove Duplicates from Sorted Array.
 // Из отсортированного списка убрать повторы. В условии просят изменить массив

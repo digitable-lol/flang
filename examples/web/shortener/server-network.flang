@@ -1,5 +1,5 @@
-модуль «Сокращатель на процессах»
-  использует «Служба по сети» из "plan-network.flang"
+модуль «Link server on processes»
+  использует «Link plan over the network» из "plan-network.flang"
 
 // ТА ЖЕ СЛУЖБА, ЧЕРЕЗ ТОТ ЖЕ СОКЕТ, НО НА ПРОЦЕССАХ.
 //

@@ -1,4 +1,4 @@
-модуль «Общий префикс»
+модуль «Longest common prefix»
 
 // LeetCode 14. Longest Common Prefix.
 // Найти наибольший общий начальный кусок для списка слов.

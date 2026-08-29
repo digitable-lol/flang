@@ -1,4 +1,4 @@
-модуль «Ближайший общий предок»
+модуль «Lowest common ancestor of a binary tree»
 
 // LeetCode 236. Lowest Common Ancestor of a Binary Tree.
 // Найти самый глубокий узел, у которого оба заданных узла лежат в поддереве.

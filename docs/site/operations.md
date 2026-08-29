@@ -24,11 +24,11 @@ imported module carries its own examples, and they run alongside yours.
 
 ```flang
 модуль «Операции»
-  использует «Списки»
-  использует «Строки»
-  использует «Множество строк»
-  использует «Списки строк»
-  использует «Числа»
+  использует «Lists»
+  использует «Strings»
+  использует «String sets»
+  использует «String lists»
+  использует «Numbers»
 ```
 
 The quoted name must match the module name inside the file. If nothing matches,
@@ -48,7 +48,7 @@ A module comes in whole. If you want one function, name it with `только` �
 `только` does not follow the dependencies of the function you named:
 
 ```flang
-  использует «Списки» только «Двоичный поиск»
+  использует «Lists» только «Двоичный поиск»
 ```
 
 ```

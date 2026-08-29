@@ -1,5 +1,5 @@
-модуль «Векторы RFC 8448»
-  использует «Рукопожатие TLS» из "../../flang/stdlib/tls-handshake.flang"
+модуль «RFC 8448 records»
+  использует «TLS handshake» из "../../flang/stdlib/tls-handshake.flang"
 
 // СЧЁТНАЯ ЧАСТЬ РУКОПОЖАТИЯ, СВЕРЕННАЯ С ТЕСТОВЫМИ ВЕКТОРАМИ RFC 8448.
 //

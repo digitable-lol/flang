@@ -1,4 +1,4 @@
-модуль «Сочетания букв номера»
+модуль «Letter combinations of a phone number»
 
 // LeetCode 17. Letter Combinations of a Phone Number.
 // Дана строка из цифр 2..9. Вернуть все слова, которые можно набрать на

@@ -1,4 +1,4 @@
-модуль «Медиана двух отсортированных»
+модуль «Median of two sorted arrays»
 
 // LeetCode 4. Median of Two Sorted Arrays.
 // Найти медиану объединения двух отсортированных списков за O(log(m+n)).

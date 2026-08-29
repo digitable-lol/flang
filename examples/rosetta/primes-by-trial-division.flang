@@ -1,4 +1,4 @@
-модуль «Простые пробным делением»
+модуль «Primes by trial division»
 
 // Rosetta Code — Sequence of primes by trial division.
 // Простые числа до предела: взять первое оставшееся число, объявить простым,

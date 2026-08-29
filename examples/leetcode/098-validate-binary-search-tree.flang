@@ -1,4 +1,4 @@
-модуль «Проверка дерева поиска»
+модуль «Validate binary search tree»
 
 // LeetCode 98. Validate Binary Search Tree.
 // Проверить, что дерево — дерево поиска: значение каждого узла строго больше

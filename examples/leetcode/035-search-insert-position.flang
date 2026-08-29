@@ -1,4 +1,4 @@
-модуль «Место вставки»
+модуль «Search insert position»
 
 // LeetCode 35. Search Insert Position.
 // В отсортированном списке найти номер цели, а если её нет — номер, куда её

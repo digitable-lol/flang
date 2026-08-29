@@ -1,4 +1,4 @@
-модуль «Наименьшее в повёрнутом списке»
+модуль «Find minimum in rotated sorted array»
 
 // LeetCode 153. Find Minimum in Rotated Sorted Array.
 // Возрастающий список без повторов повернули неизвестное число раз.

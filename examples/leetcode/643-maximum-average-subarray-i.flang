@@ -1,4 +1,4 @@
-модуль «Наибольшее среднее куска»
+модуль «Maximum average subarray I»
 
 // LeetCode 643. Maximum Average Subarray I.
 // Дан список чисел и ширина. Найти наибольшее среднее арифметическое среди

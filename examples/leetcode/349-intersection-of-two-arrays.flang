@@ -1,4 +1,4 @@
-модуль «Пересечение списков»
+модуль «Intersection of two arrays»
 
 // LeetCode 349. Intersection of Two Arrays.
 // Вернуть уникальные значения, встречающиеся в обоих списках.

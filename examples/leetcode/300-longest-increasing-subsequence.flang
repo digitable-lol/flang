@@ -1,4 +1,4 @@
-модуль «Длина возрастающей подпоследовательности»
+модуль «Longest increasing subsequence»
 
 // LeetCode 300. Longest Increasing Subsequence.
 // Найти длину самой длинной строго возрастающей подпоследовательности списка

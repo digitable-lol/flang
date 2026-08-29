@@ -1,5 +1,5 @@
 модуль «Корпус HTTP»
-  использует «Запросы и ответы» из "../stdlib/http.flang"
+  использует «Requests and responses» из "../stdlib/http.flang"
 
 // SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 // SPDX-License-Identifier: BSD-2-Clause

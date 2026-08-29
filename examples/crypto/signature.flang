@@ -1,5 +1,5 @@
-модуль «Проверка подписи»
-  использует «Подпись RSA» из "../../flang/stdlib/rsa.flang"
+модуль «Signature»
+  использует «RSA signature» из "../../flang/stdlib/rsa.flang"
   использует «SHA-256» из "../../flang/stdlib/sha256.flang"
 
 // ПОДПИСЬ RSA, ПРОВЕРЕННАЯ СВОИМИ РУКАМИ. Программа берёт НАСТОЯЩУЮ подпись

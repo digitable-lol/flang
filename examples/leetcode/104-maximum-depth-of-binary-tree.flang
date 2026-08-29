@@ -1,4 +1,4 @@
-модуль «Глубина дерева»
+модуль «Maximum depth of binary tree»
 
 // LeetCode 104. Maximum Depth of Binary Tree.
 // Найти длину самого длинного пути от корня до листа.

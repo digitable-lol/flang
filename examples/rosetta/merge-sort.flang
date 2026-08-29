@@ -1,4 +1,4 @@
-модуль «Сортировка слиянием»
+модуль «Merge sort»
 
 // Rosetta Code — Sorting algorithms/Merge sort.
 // Разделить список пополам, отсортировать половины, слить.

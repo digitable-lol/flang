@@ -1,4 +1,4 @@
-модуль «Римские числа»
+модуль «Roman to integer»
 
 // LeetCode 13. Roman to Integer.
 // Перевести римскую запись в число.

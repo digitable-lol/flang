@@ -1,4 +1,4 @@
-модуль «Первое вхождение подстроки»
+модуль «Find the index of the first occurrence in a string»
 
 // LeetCode 28. Find the Index of the First Occurrence in a String.
 // Вернуть номер (с нуля) начала первого вхождения образца в строку или −1,

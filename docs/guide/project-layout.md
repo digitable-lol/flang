@@ -291,7 +291,7 @@ the whole thing exists for: **a file can be moved to another directory and not o
 
 The search does not descend. A module from a neighbouring branch of the tree — the
 project's `stdlib/` next to `lib/`, say — is either named by path
-(`использует «Текст проекта» из "../stdlib/text.flang"`) or its directory is named
+(`использует «Project text» из "../stdlib/text.flang"`) or its directory is named
 once in `FLANG_MODULE_DIR` (directories separated by colons). A path, when written,
 is taken relative to the file's directory; an absolute path makes a project
 non-portable, and there is not one in the example.

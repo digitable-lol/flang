@@ -1,5 +1,5 @@
-модуль «Привет TLS настоящему узлу»
-  использует «Рукопожатие TLS» из "../../flang/stdlib/tls-handshake.flang"
+модуль «TLS hello to a real host»
+  использует «TLS handshake» из "../../flang/stdlib/tls-handshake.flang"
 
 // ПРИВЕТ TLS 1.3, ПОСЛАННЫЙ НАСТОЯЩЕМУ УЗЛУ, БЕЗ CURL И БЕЗ OPENSSL.
 //

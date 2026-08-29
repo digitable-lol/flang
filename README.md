@@ -106,7 +106,7 @@ flang/test/       the old test run: written against the deleted implementation, 
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         190 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
+examples/         191 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -373,9 +373,10 @@ Honestly, and the answer is uneven.
 
 **C is checked hardest, and by the strongest program there is — the compiler itself.**
 `sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
-the 40 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
-`scripts/otpechatok-semeni`, one hashed line each — and that record is itself behind the tree
-right now: it holds 37, because it is rewritten only by a reprint. `make -C bootstrap` compiles the resulting
+the 37 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
+`scripts/otpechatok-semeni`, one hashed line each — 42 lines — and that record is itself behind
+the tree right now: 41 of the 42 hashes do not match the sources (`sha256sum -c` over that
+file), because it is rewritten only by a reprint. `make -C bootstrap` compiles the resulting
 25 MiB under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one warning. Then the binary
 built from that C prints the same sources again and the result is compared with what is
 committed, all 26,598,071 bytes of it. A backend that miscompiled anything at that scale would
@@ -603,7 +604,7 @@ above about `npm test`.
 - **A full-size layout** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 183 more programs in [`examples/`](examples), in 22 sets; what sits
+- **The other examples** — 176 more programs in [`examples/`](examples), in 22 sets; what sits
   where is listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting

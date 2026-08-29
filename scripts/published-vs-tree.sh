@@ -28,6 +28,7 @@
 #   sh scripts/published-vs-tree.sh --выпуск  только выпуск: версия и теги
 #   sh scripts/published-vs-tree.sh --карта   только карта раскладки в README
 #   sh scripts/published-vs-tree.sh --команды только напечатанные команды
+#   sh scripts/published-vs-tree.sh --проза   только числа прозы (README и страницы)
 #
 # ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
@@ -60,6 +61,9 @@ skazat() { # ключ опубликовано вдереве
 fn()  { grep -acE '^[[:space:]]*(тотальная функция|функция)[[:space:]]' "$1" || true; }
 tot() { grep -acE '^[[:space:]]*тотальная функция[[:space:]]' "$1" || true; }
 pr()  { grep -acE '^[[:space:]]*пример[[:space:]]' "$1" || true; }
+
+# Проза читается плоской: перенос строки не должен решать, задан вопрос или нет.
+plosko() { tr '\n' ' ' < "$1"; }
 
 # ── Числа сайта ──────────────────────────────────────────────────────────────
 chisla_sayta() {
@@ -306,6 +310,84 @@ vypusk() {
   fi
 }
 
+# ── Числа прозы: README и страницы против дерева ─────────────────────────────
+#
+# ЗАЧЕМ. Числа `numbers.json` держит подстановка `{{ключ}}`, и разойтись молча им
+# больше не дают. Но добрая половина чисел, которые проект говорит о себе, стоит
+# в прозе НАБРАННОЙ РУКОЙ — в README, в шапке `AGENTS.md`, на страницах сайта, —
+# и её не сторожило ничто. 29 августа 2026 замер показал цену этого: примеров
+# было объявлено 190 при 191 в дереве и «ещё 183» при 176; отпечаток семени
+# объявлял 37 файлов при 42 строках; «три решающих правила» стояли на той же
+# странице, где двенадцать. Ни одно из этих чисел не появилось со зла — каждое
+# было верным в день, когда его написали.
+#
+# Здесь спрашиваются те из них, которые считаются БЕЗ двоичного: пересчёт стоит
+# доли секунды, и потому вопрос можно задавать на каждый пуш.
+#
+# ЧТО СЮДА НЕ ВХОДИТ. Числа, для которых нужен прогон компилятора (доля
+# доказанного, носители, утверждения) — их держит `--числа` и своя оговорка.
+proza() {
+  echo "ЧИСЛА ПРОЗЫ (README и страницы против дерева):"
+
+  # Примеры: сколько программ и сколько наборов.
+  pr_vsego=$(find examples -name '*.flang' | wc -l | tr -d ' ')
+  pr_naborov=$(find examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+  pr_ostalnyh=$(find examples -name '*.flang' \
+                | grep -vE '^examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
+  skazat "README.ru: программ"  "$(grep -oE 'examples/ +[0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "README: программ"     "$(grep -oE 'examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "README.ru: наборов"   "$(grep -oE 'программ[а-я]* на flang в [0-9]+ наборах' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
+  skazat "README: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' README.md | grep -oE '[0-9]+')" "$pr_naborov"
+  skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
+  skazat "README: остальных"    "$(grep -oE '[0-9]+ more programs in' README.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
+
+  # Библиотека: модулей, функций, тотальных, примеров — одной фразой в обоих README.
+  bf=0; bfn=0; btot=0; bpr=0
+  for f in flang/stdlib/*.flang; do
+    [ -f "$f" ] || continue
+    bf=$((bf + 1)); bfn=$((bfn + $(fn "$f"))); btot=$((btot + $(tot "$f"))); bpr=$((bpr + $(pr "$f")))
+  done
+  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[а-я]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[а-я]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+  skazat "README: модулей"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "README: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+
+  # Теоремы: всего в дереве и в библиотеке. Ключ -a обязателен — без него
+  # flang/conc/link.flang пропускается молча (это уже ловили).
+  #
+  # Проза читается ПЛОСКОЙ — переносы строк заменены пробелами. Иначе вопрос
+  # зависит от того, где редактор перенёс строку: «из них 55 в\nстандартной»
+  # не совпадает с образцом, а «из них 55 в стандартной» совпадает, и обёртка
+  # молча превращает проверку в непроверку.
+  t_vsego=$(grep -racE '^[[:space:]]*теорема ' flang --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
+  t_bibl=$(grep -racE '^[[:space:]]*теорема ' flang/stdlib --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
+  skazat "index.ru: теорем"    "$(plosko docs/site/index.ru.md | grep -oE 'теорем в дереве языка \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$t_vsego"
+  skazat "index: теорем"       "$(plosko docs/site/index.md | grep -oE 'There are \*\*[0-9]+\*\* such theorems' | grep -oE '[0-9]+')" "$t_vsego"
+  skazat "proofs.ru: теорем"   "$(plosko docs/site/proofs.ru.md | grep -oE 'таких теорем [0-9]+' | grep -oE '[0-9]+')" "$t_vsego"
+  skazat "proofs: теорем"      "$(plosko docs/site/proofs.md | grep -oE 'There are [0-9]+ such theorems' | grep -oE '[0-9]+')" "$t_vsego"
+  skazat "index.ru: в библиотеке"  "$(plosko docs/site/index.ru.md | grep -oE 'из них \*\*[0-9]+\*\* в стандартной' | grep -oE '[0-9]+')" "$t_bibl"
+  skazat "proofs.ru: в библиотеке" "$(plosko docs/site/proofs.ru.md | grep -oE 'из них [0-9]+ в стандартной' | grep -oE '[0-9]+')" "$t_bibl"
+
+  # Решающих правил ядра — счёт берётся у самого ядра, и на обеих страницах он
+  # стоит дважды: цифрой в скобках при команде и словом в прозе.
+  pravil=$(grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang | tr -d ' ')
+  skazat "proofs: правил ядра"    "$(plosko docs/site/proofs.md | grep -oE 'proof-kernel\.flang. → [0-9]+' | grep -oE '[0-9]+')" "$pravil"
+  skazat "proofs.ru: правил ядра" "$(plosko docs/site/proofs.ru.md | grep -oE 'proof-kernel\.flang. → [0-9]+' | grep -oE '[0-9]+')" "$pravil"
+  if grep -q 'три решающих правила\|the three decision rules' docs/site/proofs.ru.md docs/site/proofs.md docs/site/learning.ru.md 2>/dev/null; then
+    echo "  правил ядра словом    на странице «три решающих правила» при $pravil в ядре  РАЗОШЛОСЬ"
+    plohih=$((plohih + 1))
+  fi
+
+  # Отпечаток семени: сколько в нём строк. Число ходит с каждой перепечаткой.
+  otp=$(awk 'NF==2 && $1 ~ /^[0-9a-f]{64}$/' scripts/otpechatok-semeni | wc -l | tr -d ' ')
+  skazat "README.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' README.ru.md | grep -oE '[0-9]+')" "$otp"
+  skazat "README: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' README.md | grep -oE '[0-9]+')" "$otp"
+
+  # Подделок в каталоге — то же число называет сторож ядра.
+  pod=$(find flang/test/fixtures -maxdepth 1 -name 'poddelka-*' | wc -l | tr -d ' ')
+  skazat "ROADMAP: подделок" "$(plosko ROADMAP.md | grep -oE 'wc -l. отвечает \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$pod"
+}
+
 # ── Напечатанные команды: работают ли они как напечатаны ─────────────────────
 #
 # ЗАЧЕМ. Число, которого нельзя воспроизвести командой, публиковать нельзя, — но
@@ -410,7 +492,8 @@ case "$razdel" in
   --выпуск)   vypusk ;;
   --карта)    karta ;;
   --команды)  komandy ;;
-  --всё)      chisla_sayta; echo; dolya_dokazannogo; echo; perepis; echo; vypusk; echo; karta; echo; komandy ;;
+  --проза)    proza ;;
+  --всё)      chisla_sayta; echo; proza; echo; dolya_dokazannogo; echo; perepis; echo; vypusk; echo; karta; echo; komandy ;;
   *) echo "непонятный довод: $razdel" >&2; exit 2 ;;
 esac
 

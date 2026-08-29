@@ -23,8 +23,8 @@
 // процесса. Запускает хозяин.
 //
 // Прогон:
-//   bootstrap/flang io examples/io/child-process.flang --plan «Эхо через ввод»
-//   bootstrap/flang io examples/io/child-process.flang --plan «Долгая работа» --timeout 90000
+//   bootstrap/flang io examples/io/child-process.flang --plan 'Эхо через ввод'
+//   bootstrap/flang io examples/io/child-process.flang --plan 'Долгая работа' --timeout 90000
 
 // Состояние плана — продолжение, записанное значением: две точки, в которых
 // программа ждёт хозяина.

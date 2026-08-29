@@ -7,7 +7,7 @@
 // СТРАНИЦА СЛОВАРЯ ПЕЧАТАЕТСЯ ИЗ ТАБЛИЦЫ СЛОВ ЯЗЫКА, а не набирается руками.
 //
 //   bootstrap/flang io scripts/emit-dictionary.flang
-//   bootstrap/flang io scripts/emit-dictionary.flang --plan «Словарь сходится»
+//   bootstrap/flang io scripts/emit-dictionary.flang --plan 'Словарь сходится'
 //
 // Первый план перезаписывает `docs/glossary.md`; второй сверяет написанное с
 // напечатанным байт в байт и отказывает кодом 1, если они разошлись. Раньше это

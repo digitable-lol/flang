@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
+/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * ХОЗЯИН. Здесь лежит ровно то, чего на flang написать нельзя.
  *

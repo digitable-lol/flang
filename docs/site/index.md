@@ -6,7 +6,9 @@ has no side effects — input and output come back as data, and the host perform
 them. The word `total` in front of a function is a promise that it terminates on
 every input, and **the compiler** proves it, not a person. The word `ensures` is
 a promise about the result, and the kernel closes it over **every input**, not
-over the written examples. The kernel has zero axioms.
+over the written examples. The kernel has zero axioms, and that is checked by a
+run: `flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'`
+answers with exit code 0.
 
 The language is self-hosted: the flang compiler is written in flang, prints
 itself, and prints to {{цели.словом}} more target languages. The standard
@@ -69,6 +71,21 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 {{утверждения.доказано}} — the line is drawn explicitly on
 [What is proved and what is not](what-is-proved.html).
 
+**The four numbers above were measured on 23 August 2026, and today they
+describe a tree that does not exist.** They are measured by the compiler built
+from the bootstrap seed, and the seed has fallen behind the sources:
+`sh scripts/seed-freshness.sh` answers with a refusal — **44 files** have
+diverged. Among them are `proof-kernel`, `proof`, `obligations`, `totality` and
+`types` — exactly the ones that decide what counts as proved. So the compiler
+judged by rules that are no longer in the tree, and these numbers can only be
+recomputed after the seed is reprinted (`sh scripts/raskrutka.sh`, hours).
+
+The cheap numbers on this page — how many files, lines, functions and examples
+the tree holds — are recomputed without the compiler in nine seconds and are
+checked on every push (`sh scripts/published-vs-tree.sh --числа`). The gap
+between the two halves is measured as a number, not as a word: the same command
+prints how many files have moved since that measurement.
+
 ## Next
 
 - [Your first program](getting-started.html) — the same five minutes in full,
@@ -83,12 +100,13 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 **Not in who writes the proof.** You can write one by hand here too: the word
 `теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **160** such theorems in
-the language tree, **53** of them in the standard library
-(`grep -rc '^\s*теорема ' flang --include=*.flang`).
+of Isabelle's Isar, not a script of tactics. There are **182** such theorems in
+the language tree, **55** of them in the standard library
+(`grep -rac '^\s*теорема ' flang --include=*.flang`, summed with `awk`; the `-a`
+is not optional — without it `flang/conc/link.flang` is skipped silently).
 
 The difference is **what is left for the hand to write**. The kernel closes a
-claim on its own, by eleven rules, and a written theorem is needed only for the
+claim on its own, by twelve rules, and a written theorem is needed only for the
 remainder. The verdict line reports that as a separate number. Measured on
 `flang/stdlib/sha1.flang` together with its imports (`flang check --proof`):
 `утверждений 177: доказано 114 … из них без теоремы 54` — nearly half of what is

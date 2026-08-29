@@ -48,7 +48,7 @@ matching, module linking, a category surface and a concurrency surface, and one 
 printed into eight target languages.
 
 **There is one compiler, and it is written in flang.** It lives in
-[`flang/self/`](flang/self) — 56 files, 107,254 lines (measured 26 August 2026; 59 files and 112,426 lines
+[`flang/self/`](flang/self) — 57 files, 113,693 lines (measured 29 August 2026; 60 files and 118,918 lines
 counting the three in subdirectories) — and it builds into a single binary that
 needs nothing but a C compiler:
 
@@ -67,7 +67,7 @@ whether the inputs still match the ones the seed was printed from.
 
 ```
 sh scripts/raskrutka.sh --bystro
-→ 41 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
+→ 45 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
 ```
 
 Everything below still builds and runs — the seed is a working compiler. What it is not is
@@ -83,13 +83,16 @@ other is [`flang/self/SPEC.md`](flang/self/SPEC.md). This page does not go past 
 
 ## Where things live
 
-There are 10 directories at the root, and the layout is plain: nearly everything about the
+There are 11 directories at the root, and the layout is plain: nearly everything about the
 language lives inside `flang/`, and outside it is only what is not the language — the bootstrap
 point, packaging, measurements, documentation and the example programs.
 
-<!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs. Сегодня
-     он не запускается: как и почти весь набор проб, он ввозит модули удалённой реализации на
-     JavaScript. Пока проба не переписана, карта держится рукой — правьте её вместе с деревом. -->
+<!-- КАРТА-НАЧАЛО. Каталоги ниже сверял с деревом flang/test/readme-layout.test.mjs; проба
+     удалена вместе с реализацией на JavaScript, и полгода карта держалась рукой — держалась
+     плохо. С 29 августа 2026 её снова сверяет прогон, и без единой зависимости:
+     `sh scripts/published-vs-tree.sh --карта` сличает число у корня и состав карты с деревом,
+     работа `published` в binary.yml зовёт его на каждый пуш. Правьте карту вместе с деревом —
+     теперь об этом скажет проверка, а не читатель. -->
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap»
@@ -103,7 +106,7 @@ flang/test/       the old test run: written against the deleted implementation, 
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         175 flang programs in 17 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and nine more
+examples/         190 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -112,6 +115,7 @@ web/              flang in a tab: building a program to WebAssembly and running 
 .claude/          developer assistant skills: knowledge-base rules
 fspec/            the system's specification written in the language itself, and its guard
 docs/             documentation; README and SPEC files stay next to the code they describe
+tasks/            the open work of the tree: one file per task, taken and closed by hand
 .github/          CI and the npm release
 ```
 
@@ -150,18 +154,23 @@ cause instead.
 **What checks a file today, and what does not.** Two runs cover the language, and both are
 driven by the binary: `sh flang/проверки/обход.sh` — 162 checks written in flang itself, three
 seconds — and `flang test <directory>`, which runs the examples declared inside functions
-(804 of them in the LeetCode set). The recorded ledger the walk is diffed against is
+(806 of them in the LeetCode set). The recorded ledger the walk is diffed against is
 `flang/проверки/ведомость.txt`, one line per check — `wc -l` on it is where the 162 comes from.
 On every push CI builds the binary and runs those checks and the library-and-core examples with
 it; the LeetCode set and the rest of the tree are walked on a tag, because that walk takes over
 an hour.
 
-**`flang/test/` is a remnant, and small.** It holds 157 files (`git ls-files flang/test | wc -l`),
-of which 144 are fixtures and only four are still runnable test files. `npm test` is
+**`flang/test/` is a remnant, and small.** It holds 174 files (`git ls-files flang/test | wc -l`),
+of which 162 are fixtures and only four are still runnable test files. `npm test` is
 `./ярлык тесты`, which runs those four; there is no `pretest` step. The old JavaScript
 implementation these tests were written against is gone, and what remains was pruned to what
-still resolves — every import in those four files points at a file that exists. Said here rather
-than left to be discovered from a red log.
+still resolves — every import in those four files points at a file that exists (all fifteen of
+them, checked 29 August 2026). **That is not the same as green**, and the difference is worth
+stating: `npm test` fails today — 38 checks, 29 pass, 9 fail (measured 29 August 2026). Six of
+the nine are the jargon guard: it reads the tree's own prose, finds 18 pieces of jargon, and one
+file it is handed has no recorded debt. The other three are the `go` target failing to build in
+this environment, not a defect of the tree. Said here rather than left to be discovered from a
+red log.
 
 Laying out **your own** project is a separate document:
 [Раскладка проекта](docs/guide/project-layout.ru.md).
@@ -184,7 +193,7 @@ tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 ma
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
 sudo make install           # from 0.5.1; in the 0.5.0 archive there is no such
                             # target — copy `flang_cli` to bin/flang by hand
-flang --help                # ten commands and the language server
+flang --help                # twelve commands, the language server among them
 flang check m.flang         # parse, types, totality, proofs, examples — in words, not JSON
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
@@ -216,9 +225,9 @@ repository, and that repository is not published yet, so for now the plugin is s
 an install path. Neither needs anything but a C compiler. This is how self-hosting languages
 ship — Go carried generated C for years, Nim still does.
 
-**Be clear about what that binary is.** It answers to all ten commands and to the editor
-language server: `check`, `test`, `run`, `emit`, `ast`, `facts`, `io`, `lock`, `package`,
-`repl` and `lsp`. It prints into all eight targets. What it does not have is a separate
+**Be clear about what that binary is.** It answers to all twelve commands, the editor
+language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`,
+`lock`, `package`, `repl` and `lsp`. It prints into all eight targets. What it does not have is a separate
 evaluator — which is why `flang repl` evaluates the only honest way it can: it prints the
 session to C, builds it with the system `cc` against the runtime installed beside it, and runs
 that. Without a `cc` the shell does not switch off — it keeps checking parse, types and
@@ -364,8 +373,9 @@ Honestly, and the answer is uneven.
 
 **C is checked hardest, and by the strongest program there is — the compiler itself.**
 `sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
-the 37 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
-`scripts/otpechatok-semeni`, one hashed line each. `make -C bootstrap` compiles the resulting
+the 40 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
+`scripts/otpechatok-semeni`, one hashed line each — and that record is itself behind the tree
+right now: it holds 37, because it is rewritten only by a reprint. `make -C bootstrap` compiles the resulting
 25 MiB under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one warning. Then the binary
 built from that C prints the same sources again and the result is compared with what is
 committed, all 26,598,071 bytes of it. A backend that miscompiled anything at that scale would
@@ -439,11 +449,11 @@ part of the function, not a separate test file:
 
 ```bash
 flang test examples/leetcode/121-best-time-to-buy-and-sell-stock.flang
-flang test examples/leetcode/     # all 82 files, 804 examples, one run
+flang test examples/leetcode/     # all 82 files, 806 examples, one run
 ```
 
 Two example sets are kept. [`examples/leetcode/`](examples/leetcode) holds
-82 solutions with 300 functions between them, 298 of them proven total; the two exceptions are
+82 solutions with 301 functions between them, 299 of them proven total; the two exceptions are
 deliberate and explained in the file (`202-happy-number.flang`: the "until the number repeats"
 loop does terminate, but the language has nothing to prove it with). Each carries a comment
 explaining not only the algorithm but where the language pushed back — why "is this character
@@ -452,8 +462,8 @@ table costs a square (appending copies the list), why Single Number is O(n²) be
 bitwise operations.
 [`examples/rosetta/`](examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one. The standard
-library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **40 modules, 1340
-functions, of which 1335 are proven total, and 2386 examples** that run on every check:
+library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **42 modules, 1458
+functions, of which 1451 are proven total, and 2684 examples** that run on every check:
 
 ```bash
 ls flang/stdlib/*.flang | wc -l
@@ -497,7 +507,7 @@ files, 26,598,071 bytes — so `make` alone turns it into a working `flang`. Tha
 prints the compiler's sources again and the result should be identical to what is in
 `bootstrap/`; `sh scripts/raskrutka.sh --check` is that comparison, and a compiler whose
 printing had drifted from the tree fails it. It fails right now: the sources have moved ahead of
-the seed by 41 inputs, and reprinting is the tree's first open item.
+the seed by 45 inputs, and reprinting is the tree's first open item.
 
 **Two things about that circle are worth knowing before you rely on it.**
 
@@ -593,7 +603,7 @@ above about `npm test`.
 - **A full-size layout** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 168 more programs in [`examples/`](examples), in 17 sets; what sits
+- **The other examples** — 183 more programs in [`examples/`](examples), in 22 sets; what sits
   where is listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting

@@ -353,34 +353,72 @@ and the host performs it. That is why all the functions of a plan stay total and
 are checked with ordinary examples — no files, no network.
 
 ```bash
-flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir]
+flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-dir]
                       [--max-steps N] [--pretty]
 ```
 
 | Key | What it does |
 | --- | --- |
-| `--plan «Имя»` | Which plan to run, when there is more than one |
+| `--plan 'Имя'` | Which plan to run, when there is more than one |
 | `--max-orders N` | The limit of orders per run. 10000 by default |
 | `--max-steps N` | The evaluation step limit for one turn |
+| `--timeout N` | The wait time for one order, in milliseconds. 30000 by default |
 | `--seed N` | The randomness seed: the run becomes repeatable |
 | `--in-dir` | Forbid paths outside the directory of the input file |
 | `--pretty` | JSON with indentation |
+
+**A plan name is written WITHOUT guillemets, and a space inside it is closed by
+shell quotes.** Guillemets are how the language writes names in source, but the
+`--plan` key takes the name exactly as given, guillemets included:
+
+```bash
+$ flang io ярлыки.flang --plan «Целость»
+{"error":"не найден план ««Целость»»", … "code":"FLANG_UNKNOWN_PLAN" …}
+$ flang io ярлыки.flang --plan Целость
+{"plan":"Целость","result":"ярлыков 99; …
+$ echo $?
+0
+```
+
+A two-word name without shell quotes is split by the shell into two arguments,
+and only the first reaches the key:
+
+```bash
+$ flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+flang io: непонятный ключ «ноль»»
+$ echo $?
+2
+$ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
+{"plan":"Аксиом ноль","result":"… аксиом ноль, нарушений 0", …
+$ echo $?
+0
+```
+
+The binary's own help (`flang io --help`) prints `--plan «Имя»` and is misleading
+about this: there the guillemets mark the slot where a name goes, not part of the
+name. That help lives in `flang/self/cli.flang`, so it changes only with a
+reprint of the bootstrap seed; until then the working form is recorded here.
 
 Permissions are narrowed one at a time: `--no-read`, `--no-write`, `--no-net`,
 `--no-clock`, `--no-random`, `--no-spawn`. The default is "everything is
 allowed": running a program with this command is your consent to what it does.
 
-`io` has no `--args` and no `--timeout` key. Arguments are not passed to a plan:
-a plan starts from its own "начинает с" function, not from call arguments. There
-is no wait time either — the run is bounded by the number of orders and the
-number of steps.
+`io` has no `--args` key. Arguments are not passed to a plan: a plan starts from
+its own "начинает с" function, not from call arguments.
 
 ```bash
-$ flang io план.flang --timeout 5
-flang io: непонятный ключ «--timeout»
+$ flang io examples/crypto/revocation.flang --args '{}'
+flang io: непонятный ключ «--args»
 $ echo $?
 2
 ```
+
+There **is** a wait time, and it is `--timeout N`, in milliseconds, 30000 by
+default. This page said the opposite until 29 August 2026 and showed a refusal
+that the binary does not print; the key is accepted, checks its value
+(`--timeout 0` and `--timeout abc` are refused with exit 2), and sixteen of this
+tree's own shortcuts pass it (`ярлыки.flang`). Beyond it the run is bounded by
+the number of orders and the number of steps.
 
 The exit codes are a contract: `0` — the plan ran to the end; `1` — the program
 gave up itself, that is, it found trouble and named it; `2` — a bad call; `3` —

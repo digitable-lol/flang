@@ -162,7 +162,7 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
 | `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
-| `./ярлык лицензии:проверка` | SPDX marking of every file the package ships; **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
+| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
 | `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/link-guard.flang`) |
 | `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
@@ -246,9 +246,15 @@ What this means when you write:
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `scripts/emit-promises-guard.flang`;
   change the runtime and the guard demands the table be revisited.
-- **Licence headers.** Every file the package ships carries an SPDX header. The
-  file list is derived from the tree, not written down, so a new file without a
-  header fails the gate rather than leaving the repository quietly unmarked.
+- **Licence headers.** Every source file under `flang/` and `examples/` with one
+  of thirteen code extensions carries an SPDX header — 75 files as of 29 August
+  2026. The list is derived from the tree, not written down, so a new file
+  without a header fails the gate rather than leaving the repository quietly
+  unmarked. Say the area precisely: the guard walks those two directories, and
+  `bootstrap/` — which the npm package also ships — is **not** among them. Three
+  files there carry no header (`compiler_flang.c`, `compiler_flang.h`,
+  `flang_runtime.h`); they are printed by the compiler, so a header appears there
+  only through the printer, not by hand.
 
 None of them may be "fixed" by loosening the guard. The tree is the measurer.
 

@@ -34,7 +34,7 @@ sources print — and it does not:
 
 ```
 sh scripts/raskrutka.sh --bystro
-→ 41 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
+→ 45 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
 ```
 
 While that holds, an edit to the compiler's sources does not reach the built
@@ -50,12 +50,13 @@ they run out on the body shape of an ordinary function. How the kernel works —
 [Why and how](proofs.html).
 
 **The compiler says a great deal about itself, and little about it is proved.**
-The compiler's own sources (`flang/self`, 56 files, 105,677 lines) carry 6404
-`обеспечивает` lines over 8603 function declarations. Writing a claim is not the
-same as proving it — only a minority of them is proved, and it runs into the same
-wall as the library. These files must be counted with `awk`, not `grep`: lines in
-`link.flang` are long enough that `grep` calls the file binary and skips it
-silently.
+The compiler's own sources (`flang/self`, 57 files, 113,693 lines) carry 7214
+`обеспечивает` lines over 8664 function declarations (measured 29 August 2026).
+Writing a claim is not the same as proving it — only a minority of them is
+proved, and it runs into the same wall as the library. These files must be
+counted with `awk`, not `grep`: `link.flang` holds a single NUL byte inside a
+string literal, and one such byte is enough for `grep` to call the whole file
+binary and skip it silently — `grep -a` reads it.
 
 **An emitted program has no input boundary.** The installed `flang` does check
 arguments against declared types:
@@ -127,13 +128,15 @@ line of that emission. The same run cannot be repeated from a clean tree today.
 And these are examples, not applications in service: no program among them is one
 somebody runs in production.
 
-**4. The auxiliary code is still JavaScript.** The tree holds 53 such files and
-24,360 lines (`git ls-files | grep -E '\.(mjs|js)$'`) — the site build, the
-guards, the benchmarks. Some of them are not held up by a shortage of hands:
-capabilities are absent from the language itself, and what exactly holds each
-file is worked out in `docs/why-javascript-remains.md`. Twelve files are not a
-debt at all — the runtime of the `js` emit target, output of the compiler
-itself, and launchers that run before flang is on the machine.
+**4. The auxiliary code is still JavaScript.** The tree holds 54 such files and
+25,527 lines (`git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1`, measured
+29 August 2026) — the site build, the guards, the benchmarks. Some of them are
+not held up by a shortage of hands: capabilities are absent from the language
+itself, and what exactly holds each file is worked out in
+`docs/javascript-inventory.md`, which sorts all 54 into four heaps. **The debt
+is 28 files and 13,507 lines**; the other 26 are not a debt at all — the runtime
+of the `js` emit target, output of the compiler itself, launchers that run
+before flang is on the machine, and the separate directory of test fixtures.
 
 One of the holes in that analysis has closed halfway, and the other half will
 never close. Regular expressions arrived in the language, but there are no

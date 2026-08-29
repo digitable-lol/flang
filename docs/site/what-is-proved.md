@@ -11,6 +11,23 @@ functions, {{корпус.строк|разрядами}} lines.
 flang check <file> --proof --json
 ```
 
+> **When the numbers on this page were measured.** Files and lines are
+> recomputed from the sources in nine seconds and are checked on every push.
+> Everything else — termination, carriers, guard sites, claims about behaviour —
+> is printed by the compiler, and it printed them on **23 August 2026**.
+>
+> They have not been re-measured since, and the reason is named plainly: the
+> compiler is built from the bootstrap seed, and the seed has fallen behind the
+> sources. `sh scripts/seed-freshness.sh` answers with a refusal — **44 files**
+> have diverged, among them `proof-kernel`, `proof`, `obligations`, `totality`
+> and `types`, that is exactly the ones that decide what counts as proved.
+> Re-measuring today would produce verdicts about rules that are no longer in the
+> tree; it waits for the seed to be reprinted (`sh scripts/raskrutka.sh`, hours).
+>
+> How far the tree has moved since that measurement is not left to a word either:
+> `sh scripts/published-vs-tree.sh --числа` prints it as a count of files that
+> have shifted.
+
 For every claim that is stated, the kernel answers with one of three words, and
 they are not interchangeable.
 
@@ -82,7 +99,23 @@ check but accepts.
 
 Here there are **{{законы.наВеру}}**, and that is not a claim but a field of the
 report: the list of assumptions is printed together with the other numbers, and
-today it is empty.
+on the day of the measurement it was empty.
+
+"Zero axioms" itself rests not on that field but on a run, and the run is named
+here. The kernel has no list of axioms as a device — an axiom can only be written
+in words in the source — so a separate program reads the whole of
+`flang/self/proof-kernel.flang` and demands that the word "аксиома" appear
+nowhere in it except in the named reasons explaining why this or that rule is a
+theorem:
+
+```
+flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
+→ zero axioms, 0 violations   (exit 0)
+```
+
+What that command does not confirm: that every rule rejects its own forgery. That
+is the second end of the same guard, and today it is red — nine rules have been
+written into the kernel's source and have not yet reached the built compiler.
 
 For a reader this means one thing: when the report says "proved for all inputs",
 there is no invisible side condition behind that line that somebody once found

@@ -1,7 +1,7 @@
 # A case taken apart: leetcode tasks, their solutions, and what is proved about them
 
-`examples/leetcode/` — 82 files, 7 609 lines, 300 functions and 804 executable
-examples. Not an example written for this page but code in the tree.
+`examples/leetcode/` — 82 files, 7 709 lines, 301 functions and 806 executable
+examples (measured 29 August 2026). Not an example written for this page but code in the tree.
 
 Below are five tasks: the statement, the whole solution, and what the compiler
 answers about **exactly what** is proved for it. That last part is the
@@ -633,24 +633,27 @@ no promise, and the report says "nothing has been said about termination".
 | | |
 | --- | --- |
 | files | 82 |
-| lines | 7 609 |
-| functions | 300 |
-| of those total | 298 |
+| lines | 7 709 |
+| functions | 301 |
+| of those total | 299 |
 | ordinary | 2 |
-| executable examples | 804 |
+| executable examples | 806 |
 | declared measures (`убывает`) | 61 |
-| postconditions (`обеспечивает`) | 2 |
+| postconditions (`обеспечивает`) | 85, in 37 files |
 
-298 functions out of 300 are declared with the word `тотальная` — that is, they
+299 functions out of 301 are declared with the word `тотальная` — that is, they
 carry a promise of termination, and the compiler is obliged to prove that
 promise: failing to, it refuses to build the file. This is not "the examples
 passed". For tasks like "search in a rotated sorted array" or "trapping rain
 water" the infinite loop is closed before the program runs.
 
-Claims about the **result**, though, number two across all 82 tasks, both in task
-13. So for 298 functions it is proved that they **stop**, and for almost none of
-them that they compute **the right thing**. Correctness here is carried by 804
-examples, and an example is a claim about one input.
+Claims about the **result** number 85 across all 82 tasks, and they sit in 37
+files. This page used to say "two, both in task 13": that was the count on the
+day it was measured, and the set has been added to since. The gap itself has not
+closed: 85 postconditions over 301 functions is fewer than half the files, and
+while termination is proved for 299 functions, correctness of the result is
+proved for a minority. The rest of the correctness is carried by 806 examples,
+and an example is a claim about one input.
 
 The gap between "proved" and "correct" is the specification. You can write one:
 `обеспечивает` is accepted on any function, and the compiler will try to prove

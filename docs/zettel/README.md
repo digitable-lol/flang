@@ -642,6 +642,7 @@
 - [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
 - [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](the-socket-host-lost-the-reply-when-the-service-thought-before-answering.md)
+- [Квадрат сидит в ходе переписки, а не в неудачной попытке — и платится одинаково, чем бы ход ни кончился](the-square-is-in-the-rewrite-walk-not-in-the-failed-attempt.md)
 - [Цепочка шагов уже копит известное — и тратит его только на текст отказа](the-step-chain-collects-what-is-known-and-spends-it-on-refusal-text.md)
 - [Мера содержательности подменой тела СЛЕПА к утверждениям о порядке: пустой список упорядочен, значит заглушка проходит любое такое утверждение](the-substance-measure-is-blind-to-claims-about-order.md)
 - [Итоговая строка проверки врёт рядом с верным списком бед — порча смотрит на список и этого не видит](the-summary-line-lies-next-to-a-correct-list-of-failures.md)
@@ -675,10 +676,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Квадрат сидит в ходе переписки, а не в неудачной попытке — и платится одинаково, чем бы ход ни кончился](the-square-is-in-the-rewrite-walk-not-in-the-failed-attempt.md)
 
 ## Как добавлять
 

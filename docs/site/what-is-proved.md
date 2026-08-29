@@ -11,6 +11,23 @@ functions, {{корпус.строк|разрядами}} lines.
 flang check <file> --proof --json
 ```
 
+> **When the numbers on this page were measured.** Files and lines are
+> recomputed from the sources in nine seconds and are checked on every push.
+> Everything else — termination, carriers, guard sites, claims about behaviour —
+> is printed by the compiler, and it printed them on **23 August 2026**.
+>
+> They have not been re-measured since, and the reason is named plainly: the
+> compiler is built from the bootstrap seed, and the seed has fallen behind the
+> sources. `sh scripts/seed-freshness.sh` answers with a refusal — **44 files**
+> have diverged, among them `proof-kernel`, `proof`, `obligations`, `totality`
+> and `types`, that is exactly the ones that decide what counts as proved.
+> Re-measuring today would produce verdicts about rules that are no longer in the
+> tree; it waits for the seed to be reprinted (`sh scripts/raskrutka.sh`, hours).
+>
+> How far the tree has moved since that measurement is not left to a word either:
+> `sh scripts/published-vs-tree.sh --числа` prints it as a count of files that
+> have shifted.
+
 For every claim that is stated, the kernel answers with one of three words, and
 they are not interchangeable.
 

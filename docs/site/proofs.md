@@ -36,6 +36,13 @@ the way, and a run-time check picks up the difference. The report shows that as
 its own number — **{{сторож.мест}} sites across {{сторож.функций}} functions** — instead of folding it into
 the total.
 
+> The numbers in the tables on this page were printed by the compiler on
+> **23 August 2026** and have not been reprinted since: the bootstrap seed has
+> fallen behind the sources by 44 files, among them `proof-kernel`, `proof`,
+> `obligations`, `totality` and `types` — the ones that decide what counts as
+> proved. Why that is, and how the gap is measured, is on
+> [What is proved and what is not](what-is-proved.html).
+
 ## Three answers, not two
 
 The kernel answers in three different ways, and mixing them is not allowed:

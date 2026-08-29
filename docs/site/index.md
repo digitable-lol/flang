@@ -71,6 +71,21 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 {{утверждения.доказано}} — the line is drawn explicitly on
 [What is proved and what is not](what-is-proved.html).
 
+**The four numbers above were measured on 23 August 2026, and today they
+describe a tree that does not exist.** They are measured by the compiler built
+from the bootstrap seed, and the seed has fallen behind the sources:
+`sh scripts/seed-freshness.sh` answers with a refusal — **44 files** have
+diverged. Among them are `proof-kernel`, `proof`, `obligations`, `totality` and
+`types` — exactly the ones that decide what counts as proved. So the compiler
+judged by rules that are no longer in the tree, and these numbers can only be
+recomputed after the seed is reprinted (`sh scripts/raskrutka.sh`, hours).
+
+The cheap numbers on this page — how many files, lines, functions and examples
+the tree holds — are recomputed without the compiler in nine seconds and are
+checked on every push (`sh scripts/published-vs-tree.sh --числа`). The gap
+between the two halves is measured as a number, not as a word: the same command
+prints how many files have moved since that measurement.
+
 ## Next
 
 - [Your first program](getting-started.html) — the same five minutes in full,

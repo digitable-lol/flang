@@ -4,7 +4,7 @@
 // НОМЕР РЕШЕНИЯ ЗАНЯТ НЕ ОДНИМ РЕШЕНИЕМ — проверка.
 //
 //   flang io scripts/adr-numbers-guard.flang
-//   flang io scripts/adr-numbers-guard.flang --plan «Подлог»    проба на себе
+//   flang io scripts/adr-numbers-guard.flang --plan 'Подлог'    проба на себе
 //
 // Код 0 — каждый номер занят ровно одним решением; 1 — нет, и каждый назван.
 //

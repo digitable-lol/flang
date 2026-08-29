@@ -103,7 +103,7 @@ talk about programs, and programs compute.
 
 ### What zero axioms does not buy
 
-You still trust something, just less of it: that the three decision rules are
+You still trust something, just less of it: that the twelve decision rules are
 written correctly, that the kernel implementation is correct, that the compiler
 underneath it is correct, that the hardware computes correctly.
 

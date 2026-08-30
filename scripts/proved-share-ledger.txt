@@ -310,7 +310,10 @@
 //     двух» (:2135) — список ВСЕХ поверхностей программы, а не несудимых;
 //     судимость на неё не влияет вовсе (у flang check фраза своя, от «Названия
 //     несудимых», :1850). Между деревом перепечатки e053c01e и сегодняшним
-//     стволом функция не менялась ни знаком. Нужна правка, которой в дереве нет;
+//     стволом функция не менялась ни знаком. Нужна правка, которой в дереве нет.
+//     ⚠ ПРАВКА СДЕЛАНА 30 августа, задача 3714 — раздел ниже: 15 из 17 файлов
+//     открылись, 57 приговоров, все «доказано»; двух оставшихся правка не
+//     касается. Абзац оставлен как есть — он описывает замер до правки;
 //   • 6 честных программ с той же стеной (18): examples/paths/shortest-path (7,
 //     monoids), examples/money/exact-decimal (4, monoids),
 //     examples/cat/order-shipment (3), examples/cat/modules/orders (2),
@@ -352,6 +355,77 @@
 // Остальные 59 крестов пройдены ствольным двоичным заново и СОВПАЛИ С ЗАМЕРОМ
 // 9204 знак в знак — 59 из 59, код и код отказа. Ни один из 78 файлов с прошлого
 // замера не сдвинулся: md5 всех 78 строк сходится с деревом.
+//
+//
+// ────────── 30 августа 2026: 16 крестов сняты ПРАВКОЙ, задача 3714 ──────────
+//
+// Крестов было 80 на 234 обязательствах, стало 64 на 175. Шестнадцать строк
+// ниже несут приговор: пятнадцать flang/conc/** и examples/cat/modules/orders.
+//
+// ПОЧЕМУ ОТКРЫЛОСЬ. Отказ ведомости («Непосчитанное в бинарнике»,
+// flang/self/bootstrap/compiler.flang) спрашивал «Названия двух» — ВСЕ
+// поверхности программы, БЕЗ вычета судимых, — и потому срабатывал на
+// объявлениях, которые двоичный судит прекрасно. Одна и та же сборка на одном
+// файле говорила разом «законы processes, supervisors, runs бинарник не
+// считает» (check --proof) и «объявления эти сверены НЕ ДО КОНЦА — processes,
+// supervisors, runs» (check без ключа). Правка: и отказ ведомости, и фразу
+// печати («Чего печать не судила») перевели на «Названия несудимых» — с
+// вычетом «Все судимые ключи», как у соседней «Что бинарник не судил».
+//
+// ЧЕМ СНЯТО, и это НЕ двоичный дерева. Правка лежит в flang/self/** и доедет до
+// сборки только перепечаткой; своей не пускалось (шла чужая, неделимая).
+// Поэтому собран ПРОБНЫЙ двоичный, отличающийся от контрольного ровно правкой:
+//   контроль — bootstrap перепечатанного семени 52996005, собран заново:
+//             md5 4e32f9f76d8215c3b5df1b6abe0b6a68, 23 122 912 байт, побайтово
+//             тот же, что /srv/flang-rabota/b-batut/bootstrap/flang;
+//   проба    — те же исходники, в compiler_flang.c заменены ДВА вызова
+//             (compiler_flang_nazvaniya_dvuh → …_nesudimyh внутри
+//             neposchitannoe_v_binarnike и chego_pechat_ne_sudila):
+//             md5 42ccd2458f94fc0d29834750a4a29eba.
+// Собрано ВНЕ дерева (/srv/tmp/b-unjudged-names/), bootstrap/** не тронут.
+// Ворота PIK=1G PAMYAT=6G; файлы дешёвые — 0,07…0,34 с при пике 21 МБ.
+// ⚠ До следующей перепечатки ни один двоичный дерева этих чисел не повторит.
+//
+// ЧТО ИМЕННО СНЯТО. check <файл> --proof: контроль — код 2 и стена у всех
+// шестнадцати; проба — код 0 и ведомость у всех шестнадцати. Приговоров 57
+// (у orders.flang их нет: оба его обязательства — «закон», а у закона алфавит
+// вердиктов grid/violated, «доказано» у него нет вовсе). Все 57 — доказано:
+// 11 proved и 46 proved-induction в claims вывода --proof --json; declared,
+// grid и violated — ни одного. budget.flang снят с ключом
+// --предел-глубины 400000: без ключа он и до, и после упирается в
+// FLANG_RECURSION_LIMIT, и это стена не ведомости.
+//
+// ⚠ ПРИГОВОР ЗАПИСАН ПО ПРАВИЛУ ВЕДОМОСТИ, А НЕ ПО scripts/proved-share-of-a-file.py.
+// Счётчик знает три вердикта из пяти и кладёт proved-induction и
+// proved-conditional в «объявлено» — дефект названный, с заметкой в базе знаний
+// (docs/zettel/one-move-holds-a-third-of-what-three-compiler-files-promise.md,
+// раздел «счётчик занижает доказанное»). На этих пятнадцати файлах он дал бы
+// «доказано 11, объявлено 46» вместо «доказано 57»: 46 из 57 доказаны
+// индукцией. Сама ведомость считает иначе и правильно — «утверждений 3:
+// доказано 3 (из них индукцией 3)», — и flang/scripts/сличить-двух-сводителей.py
+// берёт {"proved", "proved-induction"}. Записано правило ведомости. Строки,
+// снятые счётчиком раньше, этим НЕ пересняты и по-прежнему занижены.
+//
+// ЧЕГО ПРАВКА НЕ ОТКРЫЛА, и это надо читать вместе с числом 68 выше:
+//   • flang/conc/services/file-read.flang (5) и host-io-survey.flang (6)
+//     двоичным 4e32f9f7 до отказа ведомости не доезжают вовсе: оба уходят
+//     кодом 1 и FLANG_MATCH_NOT_EXHAUSTIVE — и до правки, и после. Их держит
+//     беда в самих файлах. Ствольный 82f9ac40 на них печатает именно стену,
+//     потому в разборе выше и стоит 17 файлов и 68 обязательств: разошлись не
+//     замеры, а двоичные. Кресты у обоих остаются;
+//   • examples/cat/order-shipment.flang (3): отказ СЪЁЖИЛСЯ с трёх поверхностей
+//     до одной — «isomorphisms», единственной несудимой, — но остался. Крест;
+//   • shortest-path (7, monoids), exact-decimal (4, monoids),
+//     monoid-and-monad (1, monoids/monads), class-string-to-string
+//     (1, properties) — судьи этим поверхностям нет ни у двоичного, ни в
+//     дереве, и правка их не касается. Кресты.
+//
+// СТОРОЖ НЕ ПОГАШЕН, и это проверено парой:
+// flang/test/fixtures/ledger-refuses-only-unjudged-surfaces.flang объявляет
+// разом судимое (процесс/надзор/прогон) и несудимое (моноид). Контроль:
+// «не считает — monoids, processes, supervisors, runs», код 2. Проба:
+// «не считает — monoids», код 2. Отказ остался и назвал ровно то, у чего судьи
+// нет. Обязательств в файле нет, и в описи его поэтому нет тоже.
 //
 // ────────── остаток среза flang/self, flang/proof, flang/scripts (7205) ──────
 //
@@ -453,7 +527,7 @@ bf8c0880c1071d0ab9bab9f467a0ccfd|1|0|1|0|0|docs/site/numbers.flang
 09fad27f4a1529c83d303d716f825369|1|0|1|0|0|docs/site/podsvetka.flang
 59e40510fb0bb42d6e4622c380a9b343|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
 be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
-c110934b654de80f02da0999dfd1c88d|2|×|×|×|2|examples/cat/modules/orders.flang
+c110934b654de80f02da0999dfd1c88d|2|0|0|0|2|examples/cat/modules/orders.flang
 65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|examples/cat/monoid-and-monad.flang
 2532d2f0982166760ed7fd3b5961be72|3|×|×|×|3|examples/cat/order-shipment.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
@@ -538,28 +612,28 @@ c9e9b6f0bda64bbb0f20478a846dbf42|3|0|1|2|0|examples/web/marketplace/orders.flang
 a3c7b85b93f0c2f0090fbc38c1cf8086|1|0|1|0|0|examples/web/shortener/plan-durable.flang
 2582c1e7ee724ac4ad518f688e94cc66|8|1|4|3|0|examples/web/shortener/service.flang
 b85122f92feb1249627c5863b31d4c49|1|1|0|0|0|examples/web/shortener/store.flang
-a8a4bc5a69a3ca169dc935df04d2b9a7|4|×|×|×|0|flang/conc/examples/backpressure.flang
-ec1f624e7568f4537f7518b1b4c0d0fd|1|×|×|×|0|flang/conc/examples/budget.flang
-06ad4d0486befb5d8b1bf5b7a66e08dc|3|×|×|×|0|flang/conc/examples/counter.flang
-08aff10a8f36ba8071a0b5b9ec67e7f1|4|×|×|×|0|flang/conc/examples/distributed.flang
-942de0641ebe80e63db1d56eb0d5956b|1|×|×|×|0|flang/conc/examples/escalate.flang
-47710fb8ddff90712a70239bef22376b|3|×|×|×|0|flang/conc/examples/mailbox.flang
-0d1809abc948826d1096ad3a19f6921f|2|×|×|×|0|flang/conc/examples/measure.flang
-96d2864605ece9ea91fdf95adf6861ff|5|×|×|×|0|flang/conc/examples/node-name-of-a-foreign-kind.flang
+a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/conc/examples/backpressure.flang
+ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/conc/examples/budget.flang
+06ad4d0486befb5d8b1bf5b7a66e08dc|3|3|0|0|0|flang/conc/examples/counter.flang
+08aff10a8f36ba8071a0b5b9ec67e7f1|4|4|0|0|0|flang/conc/examples/distributed.flang
+942de0641ebe80e63db1d56eb0d5956b|1|1|0|0|0|flang/conc/examples/escalate.flang
+47710fb8ddff90712a70239bef22376b|3|3|0|0|0|flang/conc/examples/mailbox.flang
+0d1809abc948826d1096ad3a19f6921f|2|2|0|0|0|flang/conc/examples/measure.flang
+96d2864605ece9ea91fdf95adf6861ff|5|5|0|0|0|flang/conc/examples/node-name-of-a-foreign-kind.flang
 90b3896b3cf34bfb3644ac666527673f|2|×|×|×|0|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
-2249c7792bfcf8351e0c1e48bf624f8c|6|×|×|×|0|flang/conc/examples/node-reference-checked-on-receipt.flang
-232dd2e55e3b5ee6d1da51d27283de18|5|×|×|×|0|flang/conc/examples/node-reply-by-reference.flang
-5d10c2fe3aa3b9f64df3f88354a2332d|3|×|×|×|0|flang/conc/examples/node-work-by-reference.flang
-599500edfe756ab82ebc2f92e6875ce9|8|×|×|×|0|flang/conc/examples/race.flang
-35a028d8ee3aa862503ce54ea3ddcdf3|6|×|×|×|0|flang/conc/examples/server.flang
-18b4a4d39c60207fcffe9efde64b3d43|3|×|×|×|0|flang/conc/examples/supervision.flang
+2249c7792bfcf8351e0c1e48bf624f8c|6|6|0|0|0|flang/conc/examples/node-reference-checked-on-receipt.flang
+232dd2e55e3b5ee6d1da51d27283de18|5|5|0|0|0|flang/conc/examples/node-reply-by-reference.flang
+5d10c2fe3aa3b9f64df3f88354a2332d|3|3|0|0|0|flang/conc/examples/node-work-by-reference.flang
+599500edfe756ab82ebc2f92e6875ce9|8|8|0|0|0|flang/conc/examples/race.flang
+35a028d8ee3aa862503ce54ea3ddcdf3|6|6|0|0|0|flang/conc/examples/server.flang
+18b4a4d39c60207fcffe9efde64b3d43|3|3|0|0|0|flang/conc/examples/supervision.flang
 7c3d1b1fb1a4f917806623d2d5e13f32|21|16|0|5|0|flang/conc/hotswap-node.flang
 05e9608aaa61e762a2b9f1f51cbdfd7c|33|29|3|0|1|flang/conc/link.flang
 26ed25983705656840f4f2f305d98a75|9|9|0|0|0|flang/conc/node-benchmark.flang
 6a0e424d3be329c83fcc22cd09338b06|59|53|1|5|0|flang/conc/scheduler.flang
 b6ed9ed3db6b211f88ce057c954e1861|5|×|×|×|0|flang/conc/services/file-read.flang
 d33e2ac2e2338ffb7aa20d9d01b44d49|6|×|×|×|0|flang/conc/services/host-io-survey.flang
-c21138380e993a1c284bbdc534e1488e|3|×|×|×|0|flang/conc/services/two-on-our-own-engine.flang
+c21138380e993a1c284bbdc534e1488e|3|3|0|0|0|flang/conc/services/two-on-our-own-engine.flang
 7439fefc895f25f95273bc6d0b0099bf|55|46|1|8|0|flang/conc/supervisor.flang
 a398efda9d5366984530ac7abfdd3681|41|21|8|11|1|flang/conc/wire.flang
 b8c9a7955422d3218e6f7ae9820a617d|1|1|0|0|0|flang/core/evaluate.flang

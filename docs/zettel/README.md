@@ -130,6 +130,7 @@
 
 - [Цена, названная в единицах работы, читается дешевле, чем она есть](a-cost-named-in-work-units-reads-cheaper-than-it-is.md)
 - [Снятая проверка типа даёт не отказ, а неверный ответ — и это другой класс риска](a-dropped-type-check-gives-a-wrong-answer.md)
+- [Приговор файлу считает соседей, а не файл: у `carriers.flang` своих приговоров 10 из 525 — завышение в 52,5 раза, и разъезжается счёт в одной строке](a-file-verdict-counts-the-closure-and-diverges-in-one-line.md)
 - [Доля протухает молча, а счёт — нет: та же цена доказуемости за два дня уехала с 2,4 % на 1,1 %](a-share-goes-stale-a-count-does-not.md)
 - [Откат арены отдаёт куски системе: пик −36…61 % при времени ±1 %](arena-gives-chunks-back-on-rollback.md)
 - [Арена рантайма не возвращает память, поэтому длинное вычисление упирается в ОЗУ раньше, чем во время](arena-makes-memory-not-time-the-limit-of-a-long-computation.md)

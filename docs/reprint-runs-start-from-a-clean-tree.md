@@ -39,9 +39,24 @@ $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
 ```
 
 **`git status --short -- bootstrap/` для этого не годится**, и это замерено, а не
-предположено: на чистой копии он печатает пустоту и отвечает `0`, но `0` он
-отвечает и на грязной — код возврата у него не про находку, а про то, что он
-сумел посмотреть. Проверка, которую нельзя провалить, ничего не сторожит.
+предположено:
+
+```
+$ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
+    git -C /srv/flang-rabota/m-reprint-2 status --short -- bootstrap/ scripts/otpechatok-semeni
+    echo "git status на ГРЯЗНОЙ копии, код: $?"
+    git status --short -- bootstrap/ scripts/otpechatok-semeni
+    echo "git status на ЧИСТОЙ копии, код: $?"'
+ M bootstrap/flang_runtime.c
+ M bootstrap/flang_runtime.h
+git status на ГРЯЗНОЙ копии, код: 0
+git status на ЧИСТОЙ копии, код: 0
+```
+
+Код возврата один и тот же — `0` и там и там: у `git status` он не про находку,
+а про то, что команда сумела посмотреть. Разница видна только глазами по
+печати, а проверка, которую нельзя провалить кодом возврата, не остановит ни
+одного захода.
 
 Отслеживаемых файлов в `bootstrap/` восемь (`git ls-files bootstrap/`), продукты
 сборки (`bootstrap/*.o`, `*.a`, сам двоичный) закрыты `.gitignore` — поэтому

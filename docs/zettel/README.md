@@ -488,6 +488,7 @@
 - [Модуль, не подключённый ни к чему, копит имена, которые уже заняты, — и подключить его потом нельзя](an-unlinked-module-collects-names-that-are-already-taken.md)
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](an-unnameable-host-deadline-alone-kept-the-build-on-javascript.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](auto-repair-of-numbers-fixes-the-leaf-and-leaves-the-total.md)
+- [Тела-связыватели держат две трети недоказанного — 1475 обещаний из 2227, — но сама стена «ядро не заходит внутрь связывателя» не показалась ни на одной из шести проб](binder-bodies-hold-two-thirds-of-the-unproven-but-the-binder-wall-itself-did-not-show-on-six-probes.md)
 - [Сборка двоичного стоит минуту, а не час, — поэтому её место в CI на каждом пуше](building-the-binary-costs-a-minute-not-an-hour.md)
 - [Счёт вызовов, счёт шагов и часы — три разных ответа, и путать их дорого](calls-steps-and-the-clock-are-three-different-answers.md)
 - [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
@@ -691,10 +692,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Тела-связыватели держат две трети недоказанного — 1475 обещаний из 2227, — но сама стена «ядро не заходит внутрь связывателя» не показалась ни на одной из шести проб](binder-bodies-hold-two-thirds-of-the-unproven-but-the-binder-wall-itself-did-not-show-on-six-probes.md)
 
 ## Как добавлять
 

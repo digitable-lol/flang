@@ -639,6 +639,7 @@
 - [Прогон `emit` держит не печать, а суд ядра и два лишних разбора](the-kernel-step-not-printing-is-what-holds-the-emit-run.md)
 - [Оракулу законов мешала тотальность, а не отсутствие функций первого класса](the-law-oracle-was-blocked-by-totality-not-by-first-class-functions.md)
 - [Замок снимает места, а генератор кода их печатает — отсюда расхождение в 337 байт](the-lock-strips-locations-and-the-code-generator-prints-them-back.md)
+- [Цена одного поиска описания шла за местом имени, а не за числом уже сделанных поисков, и с перепечаткой 30 августа не растёт вовсе](the-lookup-price-follows-the-place-and-the-reprint-flattened-it.md)
 - [Цена одного поиска описания — это место имени в списке, а не число уже сделанных поисков](the-lookup-price-is-the-place-of-the-name-in-the-list.md)
 - [Планировщик узла переносим: из 224 строк мира в нём пять, а решений 219 — и они печатаются во все восемь целей](the-node-scheduler-is-portable-219-decisions-of-224-lines.md)
 - [Границу встроенной формы задаёт самая бедная из восьми целей печати, а не стандарт](the-poorest-print-target-sets-the-builtin-form-boundary-not-the-standard.md)

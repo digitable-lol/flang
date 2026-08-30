@@ -94,7 +94,14 @@ static fl_status compiler_flang_nayti_opisanie_body(fl_ctx *ctx, fl_value opisan
 накопленный итог из-за этого выглядит треугольным — по ПРОЙДЕННОЙ доле работы, а
 не по числу поисков.
 
-## Почему двоичный до сих пор перебирает
+## Почему двоичный до сих пор перебирал
+
+⚠ **Раздел говорит о положении до 30 августа 2026.** Семя перепечатано
+(`52996005`), словарь доехал до двоичного, и перебора в нём больше нет:
+`bootstrap/compiler_flang.c:324042` спускается по хеш-дереву. Замер того же
+дня на тех же пробах — [[the-lookup-price-follows-the-place-and-the-reprint-flattened-it]]:
+цена одного поиска перестала зависеть и от места, и от хода прогона.
+
 
 Словарь в `flang/self/interpret.flang` есть с 25–26 августа (`c47a77d6`,
 `9b66cbd1`). Семя `bootstrap/` напечатано 23 августа (`58b037c2`), то есть ДО
@@ -215,3 +222,4 @@ flang/self/bootstrap/compiler.flang --proof --предел-шагов 1000000000
 - [[linear-lookup-of-a-declaration-eats-88-percent-of-check-loops]]
 - [[a-dictionary-beats-the-scan-only-after-its-promises-are-proved]]
 - [[a-hash-dictionary-cheapens-the-lookup-and-the-building-costs]]
+- [[the-lookup-price-follows-the-place-and-the-reprint-flattened-it]]

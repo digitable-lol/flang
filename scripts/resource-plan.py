@@ -247,6 +247,7 @@ def poteri(repo, vliv, teper):
     except OSError:
         pass
     vetki = {v["vetka"] for v in vliv}
+    p["vlitye_imena"] = vetki
     p["doli_vsego"] = len(doli)
     p["doli_sovpalo"] = len(set(doli) & vetki)
     p["vetok_vlito"] = len(vetki)
@@ -330,7 +331,18 @@ def smerti(koren=STENOGRAMMY, razryv_min=30):
                         continue
             if not (nachalo and r.get("timestamp")):
                 continue
-            mertvye.append(dict(nachalo=nachalo, konec=r["timestamp"],
+            # В первой записи стенограммы стоит задание исполнителю, и в нём
+            # иногда названа ветка. Это единственная ниточка от умершего
+            # исполнителя к работе, которую он вёл.
+            vetka = None
+            try:
+                with open(f, encoding="utf-8", errors="replace") as fh:
+                    m = re.search(r"ВЕТКА:\s*([A-Za-z0-9/_.-]+)", fh.readline())
+                if m:
+                    vetka = m.group(1)
+            except OSError:
+                pass
+            mertvye.append(dict(nachalo=nachalo, konec=r["timestamp"], vetka=vetka,
                                 chas=(iso(r["timestamp"]) - iso(nachalo)).total_seconds() / 3600))
         except (OSError, ValueError, IndexError):
             continue
@@ -347,6 +359,7 @@ def smerti(koren=STENOGRAMMY, razryv_min=30):
         sob.append(tek)
     return dict(est=True, vsego=len(mertvye), stenogramm=zhivyh + len(mertvye),
                 chasov=sum(d["chas"] for d in mertvye),
+                s_vetkoj=[d["vetka"] for d in mertvye if d["vetka"]],
                 sobytiya=[dict(ot=e[0]["konec"], do=e[-1]["konec"], skolko=len(e),
                                chasov=sum(x["chas"] for x in e),
                                dolgozhitel=max(x["chas"] for x in e)) for e in sob])
@@ -467,8 +480,8 @@ def postroit(a):
       f"{skl(sum(x['kommitov'] for x in lezh0),'коммит','коммита','коммитов')}), из них "
       f"{sum(1 for x in lezh0 if (teper-iso(x['ts'])).days>=3)} старше трёх суток;")
     if sm["est"]:
-        W(f"* со смертями исполнителей по пределу сессии пропало "
-          f"**{chislo(sm['chasov'])} часа** ({sm['vsego']} "
+        W(f"* со смертями исполнителей по пределу сессии пропало до "
+          f"**{chislo(sm['chasov'])} часа** их жизни ({sm['vsego']} "
           f"{skl(sm['vsego'],'исполнитель','исполнителя','исполнителей')}, "
           f"{len(sm['sobytiya'])} {skl(len(sm['sobytiya']),'событие','события','событий')});")
     W(f"* на перепечатке компилятора стоит **{chislo(100*sum(1 for v in vliv if v['semya'])/vsego)} % работы**; "
@@ -689,6 +702,23 @@ def postroit(a):
         W("Событие с одним-единственным исполнителем может стоить дороже события с")
         W("восемнадцатью. Отсюда правило: **чем дольше исполнитель живёт без")
         W("промежуточного `git push`, тем дороже он обходится, когда умирает.**")
+        W("")
+        W("**Что именно значат эти часы.** Это время жизни исполнителя от первой")
+        W("записи до смерти, а не потраченное машинное время: исполнитель мог")
+        W("часть срока ждать. Верхняя граница потерянного, не счёт за работу.")
+        W("")
+        vb = sm.get("s_vetkoj") or []
+        if vb:
+            doshli = [b for b in vb if b in p["vlitye_imena"]]
+            W(f"**Ветку назвал только {len(vb)} из {sm['vsego']}.** Остальные —")
+            W("подручные исполнители: они не вели ветку, а собирали ответ для")
+            W("старшего, и их работа пропадала не из дерева, а из чужого разбора.")
+            W(f"Из названных веток до ствола дошло {len(doshli)}: "
+              + ", ".join(f"`{b}`" for b in sorted(set(vb))[:6]) + ".")
+        else:
+            W("**Ветку не назвал ни один из умерших.** Все они — подручные")
+            W("исполнители: работа пропадала не из дерева, а из чужого разбора,")
+            W("и связать её с веткой нечем.")
         W("")
         W("Смерть по пределу сессии **нигде на машине не записывается**. Эти числа")
         W("сняты разбором стенограмм — они живут, пока стенограммы не почищены, и")

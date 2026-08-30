@@ -653,6 +653,7 @@
 - [Петля постусловия развязана преобразованием программы, а не флажком при работе, — и круг «туда и обратно» стал выразим](the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag.md)
 - [Цена втаскивания цели печати в двоичный считается встречей имён, а не строками модуля: у Elixir вышло 262 столкновения на 436 объявлений](the-price-of-a-print-target-in-the-binary-is-counted-in-name-meetings.md)
 - [Цена втаскивания цели печати в двоичный оказалась не в столкновениях имён, а в долге эталона, который прятала побайтовая сверка с вычитанием](the-price-of-a-print-target-is-reference-debt-not-name-collisions.md)
+- [Ход через названную середину написан, а цена перебора оказалась ниже разброса прибора](the-price-of-the-midpoint-search-is-linear-in-the-order-facts.md)
 - [Перепечатка сожгла 27 часов и умерла не от предела, а оттого что двоичный стоял ВНЕ дерева и не нашёл библиотеку](the-reprint-burned-27-hours-because-the-binary-stood-outside-the-tree.md)
 - [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
 - [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
@@ -692,10 +693,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Ход через названную середину написан, а цена перебора оказалась ниже разброса прибора](the-price-of-the-midpoint-search-is-linear-in-the-order-facts.md)
 
 ## Как добавлять
 

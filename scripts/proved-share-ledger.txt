@@ -144,6 +144,27 @@
 // `flang/src/emit/c`, блок настроек из шапки семени (без него первый же check
 // бьёт стек), ключ «--предел-шагов 400000000000».
 //
+// ДОПИСАНО 30 августа 2026. Пересняты 25 строк — те, чей md5 разошёлся с
+// деревом, и две прибывшие, — двоичным 4e32f9f76d8215c3b5df1b6abe0b6a68,
+// собранным ИЗ ЭТОГО ДЕРЕВА (`make -C bootstrap -j8`), срок 90 с на файл.
+// Прочерк там, где двоичный ведомости не дал: «ведомости нет» и «ноль
+// доказанных» — разные вещи, и складывать их нельзя.
+//
+// ОПИСЬ СНЯТА РАЗНЫМИ ДВОИЧНЫМИ, и это её главное ограничение — оно измерено,
+// а не предположено. Прогон 30 августа перепроверил все 304 строки живой описи
+// двоичным дерева: ведомость снялась у 227, у 77 двоичный дерева отказался
+// вовсе (предел глубины вызовов 20 000 — 63 файла, предел шагов — 1, срок 45 с
+// — 13), а у этих 77 в описи записано 1825 доказанных. Там, где ведомость
+// снялась, приговоры совпали у 194 из 227; расхождения идут ВВЕРХ (сальдо
+// +93) — семя перепечатано 30 августа, и ядро знает больше правил, чем
+// знало 29-го.
+//
+// ОДНО ЧИСЛО по этой описи и ОГОВОРКА при нём — в `scripts/proved-share.json`:
+// доказано 4028 из 13 489 = 29,9 % на стволе 4233c18c (13 489 — это 13 581
+// написанных минус 92, которые в числитель не попадут никогда, задача 1729), и
+// это НИЖНЯЯ ОЦЕНКА: у 185 файлов из 510 (7751 обязательство, 57 % написанного)
+// живой ведомости нет вовсе, и в числителе они стоят нулём.
+//
 // Две строки среза flang/stdlib на буквы j–r — postgres.flang и redis.flang —
 // сняты 30 августа 2026, и снимались они ПО-РАЗНОМУ.
 //
@@ -387,39 +408,40 @@ a247e7b6269b93c8b0a925847ae32661|10|—|—|—|—|flang/proof/подделки
 5671d038fc0a663f8d9acea9fc4ec5c4|6|1|0|5|0|flang/proof/подделки/счёт-частей-ложь.flang
 56d0e4660bd3c90a5c3f984f60853e8d|4|0|0|4|0|flang/proof/подделки/счёт-частей-правда.flang
 84968c9bff8b2271c8747b1ce6beb99d|209|—|—|—|—|flang/proof/сверщик.flang
-1ddf6ccc2bd57e184630ad6c54f642ed|1|0|1|0|0|flang/scripts/binary.flang
-9eadfb6e0c8aa9e9cd061312deb659ca|19|18|1|0|0|flang/scripts/code-forgery.flang
-0988ecea768bf3adc6524486baf366e0|9|9|0|0|0|flang/scripts/code-guard.flang
-f8aa8435d49553d4045b2e7dd0f3ccc6|9|9|0|0|0|flang/scripts/conc-link-emitted.flang
-b7249cff9b5539ec1e741bb191f03bd2|48|48|0|0|0|flang/scripts/emptiness-guard.flang
+3eadfffaa256eae3b0ad59183d95037e|1|—|—|—|—|flang/scripts/binary.flang
+9a006efd285c04e39ecdb51f3f3f1747|1|1|0|0|0|flang/scripts/closed-length-guard.flang
+a5769e76ad82b8770ec8ab9c2ec0c1b5|20|19|1|0|0|flang/scripts/code-forgery.flang
+d0cab5c3b3582125fc3a846cc6fac322|9|9|0|0|0|flang/scripts/code-guard.flang
+9959f505c2c9240c1c9a9f07466925f6|9|9|0|0|0|flang/scripts/conc-link-emitted.flang
+83b9d7d007d8fb1d4ca0fc391ae599fc|48|48|0|0|0|flang/scripts/emptiness-guard.flang
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 540f341358b194e39f9fe1eba88bced0|2|0|2|0|0|flang/scripts/jargon-guard.flang
-44628a7992c70436e6acb8149b838b32|70|66|4|0|0|flang/scripts/kernel-forgeries.flang
+189756bd10259ae42cd4965cdfde056b|71|67|4|0|0|flang/scripts/kernel-forgeries.flang
 c1a1a43d923eeeb5cbf0b5f33800b262|38|38|0|0|0|flang/scripts/kernel-lines-to-trust.flang
-f6a5e7fd03ecb58b0422304e30ffcb54|19|19|0|0|0|flang/scripts/ledger-summary.flang
-3fa685256fdfe8e86af4e36c70dceda0|44|44|0|0|0|flang/scripts/memory-guard.flang
+948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.flang
+17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 c649864fff7dcb487da259f6b32f9fe9|7|7|0|0|0|flang/scripts/node-across-targets.flang
 39ce641a5ff266c3b6193eed52035d1e|10|10|0|0|0|flang/scripts/npm-install.flang
-21180f5d1c5fd78841ace43dcbee47c9|21|21|0|0|0|flang/scripts/proven-guard.flang
+f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 b2de588854f4726fc6d0bf03e1db7858|27|25|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 ae47a476c0aa3a419fcd566e9a5ca799|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
-556839e3c2c352dd204a3dcdd3d5f70e|2|—|—|—|—|flang/self/bootstrap/compiler.flang
+fca8ef83f591db55f8026a355413c951|4|—|—|—|—|flang/self/bootstrap/compiler.flang
 ad73c9e1fa30c764827a6e691c908703|153|—|—|—|—|flang/self/bounded.flang
 6aaba91c1582a7a15e3aba209ad69ef5|98|—|—|—|—|flang/self/builtins.flang
 ad1ac900e42f9208ee148029edcc821c|10|—|—|—|—|flang/self/carriers.flang
 132d7d57054d99af0d238dfc56390fad|78|53|8|17|0|flang/self/cli.flang
 0dfe4e482a1ae14add1236deb37b3cdd|13|—|—|—|—|flang/self/commutative.flang
-37019cd438e183470a9aece4137f9872|200|—|—|—|—|flang/self/conc.flang
+1763c05585a865658350356e870ae4ae|200|—|—|—|—|flang/self/conc.flang
 aa441b47a3998c1c849db86445a68f18|188|—|—|—|—|flang/self/defunc.flang
 6ccf6e2072e1d185a5eb575513180b96|82|54|6|21|1|flang/self/distributed.flang
 db8148fa41aba54509a56dfb508e7d57|20|—|—|—|—|flang/self/distributive.flang
-4ec5662b785edd2b7fad9faeba467553|402|—|—|—|—|flang/self/emit-c.flang
+3043fa1ce4d5769ee8989dd8c6472b1b|406|—|—|—|—|flang/self/emit-c.flang
 bc786f80a544bfce9eee67aafe578dde|659|—|—|—|—|flang/self/emit-csharp.flang
 0608929e7eb3e291d4f651eb9ee51c98|142|—|—|—|—|flang/self/emit-elixir.flang
 7586069b07e66dd5a2d172339cac5491|194|—|—|—|—|flang/self/emit-go.flang
 729bc9c0ea77f1698322385e3cb47c44|205|—|—|—|—|flang/self/emit-java.flang
-405a628d09a6bf7e66a553f824ae3ed5|149|—|—|—|—|flang/self/emit-js.flang
+7e99e04f3b902e5e209a2f828683bdef|149|—|—|—|—|flang/self/emit-js.flang
 7a3b1b152a970c2c6af3951d2c66463a|646|—|—|—|—|flang/self/emit-python.flang
 b1c7f8f9624ff9fdc7309cf8222fcfe9|114|—|—|—|—|flang/self/emit-rust.flang
 bc5cbdc5167ec7f3809e1bea340b6442|156|79|24|53|0|flang/self/factcheck.flang
@@ -430,7 +452,7 @@ da79f79c7b21f2f4ae0e04262c4211cb|2|—|—|—|—|flang/self/functor.flang
 480e5580b76a5262e9f6e8dc4e11753d|85|—|—|—|—|flang/self/hotswap.flang
 c4908e8d2fa28b0ca7d79fc21948ab16|18|—|—|—|—|flang/self/idempotent.flang
 616e999227590ef9154d68eeec646e91|254|—|—|—|—|flang/self/interpret.flang
-4aa4da3b40b703253078c73cb25751b4|60|—|—|—|—|flang/self/io.flang
+6c8518de3fe869aead5fb40179eada05|19|—|—|—|—|flang/self/io.flang
 64ce531304693a1eb2af88831192098c|24|—|—|—|—|flang/self/iso.flang
 936d7b8a40e720ad12db669d982ef074|43|—|—|—|—|flang/self/law-oracle.flang
 b28928eb0a5b8562c1fb7527e7f329be|88|88|0|0|0|flang/self/lexer.flang
@@ -445,11 +467,11 @@ b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 7053d352c8d580100815224813f99972|41|—|—|—|—|flang/self/oracle.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/otkazy-tipov.flang
 3b39fb329cde40c764f8cbca9f7e3efb|3|0|2|1|0|flang/self/otkazy-totalnosti.flang
-72af9715308a1c21d9e87d76151072a1|729|—|—|—|—|flang/self/parser.flang
+7929bf8a4ae7105a84100952dc478744|729|—|—|—|—|flang/self/parser.flang
 9690ae80f958ddba4ab510be8e456692|22|—|—|—|—|flang/self/partialorder.flang
 100649fc2ed9f77d7511905e7b2e5f3f|17|—|—|—|—|flang/self/processes.flang
 f9d19f15c2041483d7257d5b20ff0f67|94|82|2|10|0|flang/self/proof-initial.flang
-84874562bf0a56611cdbcfcce8c75b78|44|44|0|0|0|flang/self/proof-kernel.flang
+551dca5cf822e965c557b3baf2a19b8e|44|—|—|—|—|flang/self/proof-kernel.flang
 fc32aa3eab8c4a98dd3e3c063c50b427|334|—|—|—|—|flang/self/proof.flang
 71ed6b9fc18f244be8aeee5a5c6b2be1|138|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|—|—|—|—|flang/self/repl/repl.flang
@@ -618,7 +640,7 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 7aa7708e0ac4beb6aa74eb4de9efe769|2|2|0|0|0|fspec/spec/42-data-retention.flang
 787b6dc899122cc81b0ec3ecbde56e24|49|43|2|4|0|packaging/install-check.flang
 3e789a6b546b45604afbc5d66e6bb80b|25|25|0|0|0|packaging/install-parity.flang
-520d4da902c838fededb90c09d579e05|22|—|—|—|—|scripts/adr-numbers-guard.flang
+541c3766e167de86d411bf6abf80f2e9|22|15|7|0|0|scripts/adr-numbers-guard.flang
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/asdf-plugin-published.flang
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/asdf-version-list.flang
 dfebe4f2679f7178c4cd355cd58af957|25|25|0|0|0|scripts/bidi-control-guard.flang
@@ -630,9 +652,9 @@ c22b4c3025f6153fe7f423f22686ca54|37|26|10|1|0|scripts/commands-via-symlink.flang
 17bd2146713103e0881432cf8ba5f7ca|67|67|0|0|0|scripts/corpus-runner.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/dictionary-guard.flang
 f2e9b6586ff8bb4ed680b5cba480dc71|34|32|0|2|0|scripts/emit-and-examples.flang
-82fe66c4aae2b7a5de8ca278b7c002b1|14|14|0|0|0|scripts/emit-dictionary.flang
+dc9bc88cc97c59442d4ac7b8a83d9b9a|14|14|0|0|0|scripts/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/emit-law.flang
-002e50f1322a34efc6cfbfc6005d26ff|11|11|0|0|0|scripts/emit-package.flang
+c5a0345c44c46c293d187f192b3ea621|11|11|0|0|0|scripts/emit-package.flang
 ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 b9355c30780244f70669d1308c60cf41|6|6|0|0|0|scripts/file-extensions.flang
@@ -646,17 +668,18 @@ a72ce1dbc033191cc6867ee134a3212d|6|6|0|0|0|scripts/license-guard.flang
 5def98b4bc9fe3ad5ef96f982fe9f288|11|11|0|0|0|scripts/manpage-guard.flang
 f8e01fecff7e47ed055e836a42195ee0|15|—|—|—|—|scripts/module-name-guard.flang
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/name-collision-guard.flang
-490c0fcf6fabb2cc87d9627f1b390faa|22|22|0|0|0|scripts/name-splicing-guard.flang
+b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/name-splicing-guard.flang
 e5882768a71eeaaebddbbee15f85da71|4|0|0|4|0|scripts/new-binary-acceptance-probe.flang
 c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 98e235f661a5ff7a165c2943a5251c41|24|24|0|0|0|scripts/occupied-names-guard.flang
 0bd7f15ed7b862115d0005c2221a1932|14|14|0|0|0|scripts/path-without-node.flang
 cd5ba8e6506a5d6b59898333c0d061b2|26|26|0|0|0|scripts/plan-across-targets.flang
 b7b038af83dfc2fd177142569ecab833|30|30|0|0|0|scripts/region-in-c-target.flang
-06468dbea2ebb1941fdc256884244005|20|20|0|0|0|scripts/registry-tool.flang
+7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 8c3d550e05448975c2bc923b8671b80d|8|8|0|0|0|scripts/release-guard.flang
 6532ecb8603b4f6eb127b8d911d1d5d9|24|22|2|0|0|scripts/release-in-c.flang
 da53a2289cac09470f6f1d20ee509c82|10|—|—|—|—|scripts/reprint-freshness.flang
+10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang
 0f8b911ee5eb576b3d68d807d6937d17|5|3|2|0|0|scripts/tab-host-guard.flang
@@ -667,8 +690,8 @@ e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 586c580280515c4c6951cc760123238d|3|3|0|0|0|scripts/vscode-highlight-check.flang
 6749e762ed618bbcd5dd488b169cd63e|9|9|0|0|0|scripts/vscode-highlighting.flang
 6d3f808f631c688e4a87d590d305e029|12|12|0|0|0|scripts/vscode-rules.flang
-d7f6f0fafff00abebe65eb56a90104aa|10|8|2|0|0|scripts/сторож-дарвина.flang
+a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/сторож-дарвина.flang
 e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 704fe0f011c617acd4cff9afd576a5de|43|43|0|0|0|web/shortener/client.flang
 08e7e8cb7e8abb0e1a64a2c8901d7fde|25|—|—|—|—|web/stand.flang
-15350e7384f254470489609bfe65e33e|17|14|3|0|0|ярлыки.flang
+0057c5c5299164dac70a6f8df9361a55|17|14|3|0|0|ярлыки.flang

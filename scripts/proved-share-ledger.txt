@@ -332,7 +332,7 @@ c3e9988435d72d7cdd3bcc04e7bfef81|101|—|—|—|—|flang/self/setoid.flang
 56d52b403f9e95aa9cfdd0e1e462f55c|218|129|81|8|0|flang/stdlib/aes.flang
 ffb6e5860533af4659ebb397200e0fbb|127|120|6|1|0|flang/stdlib/automaton.flang
 36b0896ba41510dde1dc0a003cbc9d20|103|55|26|22|0|flang/stdlib/base64.flang
-991f7132f9817ab2c56b2d423d893654|68|—|—|—|—|flang/stdlib/crl.flang
+991f7132f9817ab2c56b2d423d893654|68|52|15|1|0|flang/stdlib/crl.flang
 b1a40e3ce864472988dc50b62886cb56|53|27|26|0|0|flang/stdlib/datetime.flang
 4ff2200043aef543c3ff861c14fbf937|69|48|17|4|0|flang/stdlib/der.flang
 1dc48f2c0e97d185c86f703a6c3337ac|34|23|8|3|0|flang/stdlib/dictionary.flang

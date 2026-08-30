@@ -265,6 +265,93 @@
 // пик 3,55 ГиБ, код 0. Приговоров правка не двигает — она живёт до ведомости,
 // а не в ней: контрольные flang/stdlib/result.flang (12|0|3) и
 // flang/stdlib/lists.flang (33|28|5) вышли знак в знак теми же, что в стволе.
+//
+// ────────── 78 крестов: три кучи, и цена перепечатки (задача 5710) ──────────
+//
+// Снято 30 августа 2026 на стволе 1e74933d. Крестов 78, написано на них 229
+// обязательств; все 78 пройдены прогоном заново. Двоичных три, и они судят
+// по-разному: ствольный (make -C bootstrap, md5 82f9ac40, правил у ядра ШЕСТЬ,
+// FL_MAX_STEPS 1 000 000 000, ключей нет), перепечатанный (b-batut, md5
+// 4e32f9f7, правил ДЕВЯТЬ, FL_MAX_STEPS 1 400 000 000 000, оба ключа) и приёма
+// 6128 (m-ledger-sweep/build-ledger, md5 93941588, оба ключа). Дерево сегодня
+// знает ДЕСЯТЬ правил (flang/self/proof-kernel.flang:495) — десятого нет ни у
+// одного собранного двоичного. Выходы — /srv/tmp/b-crosses-triage/.
+//
+// НИКОГДА — 28 файлов, 92 обязательства. Файл написан затем, чтобы быть
+// отвергнутым; у программы с замечанием ведомости не бывает. 25 подделок
+// (probe-forgery, forgery-*, подделки/круг, poddelka-*, binary-rules/*,
+// node-reference-checked-on-receipt-forged, fspec/experiments/*,
+// fspec/experience/03-discount-false) и 3 КАРТЫ ОТКАЗОВ flang/proof/map/* —
+// мерные приборы, чья шапка говорит «ЭТОТ ФАЙЛ ОБЯЗАН УХОДИТЬ КОДОМ 1». Клетки
+// карт двигаются с каждым новым правилом ядра: у refusal-boundaries есть клетка
+// «В5 результат не меньше терма» — ровно то, чему дерево научилось сегодня.
+// Приговор файла от этого не изменится (он отказывает раньше, на «В3 результат
+// не больше точного потолка»), но после перепечатки карты надо переснять.
+//
+// ЖДЁТ ПЕРЕПЕЧАТКИ — 2 файла, 6 обязательств. ВЕРХНЯЯ ОЦЕНКА: открывается
+// ведомость, а не приговор «доказано».
+//   • flang/proof/examples/honest-modus-ponens-by-guard.flang (5) — ствольное
+//     семя отвечает «правил шесть», перепечатанное даёт КОД 0 и все пять
+//     «доказано»;
+//   • flang/self/repl/repl.flang (1) — стена не глубины, а ШАГОВ: с ключом
+//     --предел-глубины 200000 отказ приходит на «Читать имя», «исчерпала лимит
+//     шагов (1000000000)». Перепечатка поднимает предел в 1400 раз, но ХВАТИТ ЛИ
+//     ЕГО — не измерено: прогон при 4·10^11 шёл 6 минут, дошёл до 12,4·10^9 и
+//     снят ради места у ворот.
+//
+// ДЕРЖИТСЯ НА ДРУГОМ — 48 файлов, 131 обязательство:
+//   • 17 файлов flang/conc/** (68) — код 2, «законы бинарник не считает —
+//     processes, supervisors, runs». ПЕРЕПЕЧАТКА ЭТОГО НЕ СНИМАЕТ, и это
+//     измерено: перепечатанное семя УЖЕ несёт «Ключи судимых процессов»
+//     (klyuchi_sudimyh_processov в его compiler_flang.c; у ствольного его нет) —
+//     и отвечает тем же кодом 2 и той же строкой на всех семнадцати. Ведомость
+//     запирает «Непосчитанное в бинарнике»
+//     (flang/self/bootstrap/compiler.flang:1818), а спрашивает она «Названия
+//     двух» (:2135) — список ВСЕХ поверхностей программы, а не несудимых;
+//     судимость на неё не влияет вовсе (у flang check фраза своя, от «Названия
+//     несудимых», :1850). Между деревом перепечатки e053c01e и сегодняшним
+//     стволом функция не менялась ни знаком. Нужна правка, которой в дереве нет;
+//   • 6 честных программ с той же стеной (18): examples/paths/shortest-path (7,
+//     monoids), examples/money/exact-decimal (4, monoids),
+//     examples/cat/order-shipment (3), examples/cat/modules/orders (2),
+//     examples/cat/monoid-and-monad (1), docs/zamer-teorkat/class-string-to-string
+//     (1, properties). Судьи этих поверхностей нет ни у двоичного, ни у дерева;
+//   • 24 файла docs/benchmark/** и docs/benchmark2/** (26) — долг доказательства
+//     автора: INDUCTION_STEP 9, INDUCTION_BRANCH 4, EXAMPLE 3, INDUCTION_CASES 2,
+//     INDUCTION_TYPE 2, TYPE_ARGS 2, PROOF_STEP 1, PARSE 1. Перепечатанное семя
+//     не снимает ни одного, а на 14-tree-of-numbers делает хуже (INDUCTION_STEP →
+//     RECURSION_LIMIT: распущенный батут перепечатки). Имя теоремы обманывает:
+//     у 08-maximum она зовётся «максимум не меньше любого элемента», но цель —
+//     ВЫЗОВ предиката, а не сравнение с термом, и правило «не меньше терма» её
+//     не берёт;
+//   • examples/db/postgres-plan.flang (19) — ДВА предела, а записан был один.
+//     Ствольным: 699,80 с, пик 6,38 ГиБ, «Сторожа в полях» исчерпала лимит шагов
+//     (1000000000). Ключ его снимает — и встаёт второй: двоичным приёма 6128 с
+//     --предел-шагов 400000000000 за 263,06 с (пик 3,65 ГиБ) приходит
+//     FLANG_EXAMPLE «непечатаемая длина дополняется пробелами» → «Байтов в
+//     тексте» исчерпала лимит шагов (40000000). Это «Предел витков проверки»,
+//     вшитый в flang/self/bootstrap/compiler.flang:871, — число живёт В ДЕРЕВЕ, и
+//     перепечатка впечатает в новое семя ровно его же. Правка соседа 7ed75077
+//     (влита 1e74933d) вернула под потолок flang/stdlib/postgres.flang, но не
+//     этот файл: замер сделан уже с починенным wire.flang (md5 47682190).
+//
+// ЧЕГО ЗАПИСАННЫЕ ПРИЧИНЫ НЕ ВЫДЕРЖАЛИ (четыре из семидесяти восьми):
+//   1. Две подделки flang/test/fixtures/binary-rules/ отвергаются НЕ по типам:
+//      обе уходят кодом 2 категорной стеной, а не FLANG_EQUALITY_NOT_SYMMETRIC —
+//      до своего отказа они не доезжают. Вывод «ведомости не будет никогда»
+//      верен, механизм, записанный выше в этой шапке, — нет.
+//   2. Крест flang/self/repl/repl.flang записан как «стена глубины», а это стена
+//      ШАГОВ (см. выше).
+//   3. Крест examples/db/postgres-plan.flang записан одним пределом, а их два.
+//   4. Восемнадцать крестов flang/conc/** несли в поле «без приговора» знак «×»,
+//      а не число, вопреки записанному в 9204 «у всех восемнадцати было нулём».
+//      Сумма не поехала лишь потому, что сверка читает поле как ^[0-9]+$
+//      (scripts/published-vs-tree.sh:343) и нечисло молча пропускает. Исправлено:
+//      у всех восемнадцати стоит 0.
+//
+// Остальные 59 крестов пройдены ствольным двоичным заново и СОВПАЛИ С ЗАМЕРОМ
+// 9204 знак в знак — 59 из 59, код и код отказа. Ни один из 78 файлов с прошлого
+// замера не сдвинулся: md5 всех 78 строк сходится с деревом.
 
 142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
 f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|benchmarks/proof-cost/probe-forgery.flang
@@ -401,28 +488,28 @@ c9e9b6f0bda64bbb0f20478a846dbf42|3|0|1|2|0|examples/web/marketplace/orders.flang
 a3c7b85b93f0c2f0090fbc38c1cf8086|1|0|1|0|0|examples/web/shortener/plan-durable.flang
 2582c1e7ee724ac4ad518f688e94cc66|8|1|4|3|0|examples/web/shortener/service.flang
 b85122f92feb1249627c5863b31d4c49|1|1|0|0|0|examples/web/shortener/store.flang
-a8a4bc5a69a3ca169dc935df04d2b9a7|4|×|×|×|×|flang/conc/examples/backpressure.flang
-ec1f624e7568f4537f7518b1b4c0d0fd|1|×|×|×|×|flang/conc/examples/budget.flang
-06ad4d0486befb5d8b1bf5b7a66e08dc|3|×|×|×|×|flang/conc/examples/counter.flang
-08aff10a8f36ba8071a0b5b9ec67e7f1|4|×|×|×|×|flang/conc/examples/distributed.flang
-942de0641ebe80e63db1d56eb0d5956b|1|×|×|×|×|flang/conc/examples/escalate.flang
-47710fb8ddff90712a70239bef22376b|3|×|×|×|×|flang/conc/examples/mailbox.flang
-0d1809abc948826d1096ad3a19f6921f|2|×|×|×|×|flang/conc/examples/measure.flang
-96d2864605ece9ea91fdf95adf6861ff|5|×|×|×|×|flang/conc/examples/node-name-of-a-foreign-kind.flang
-90b3896b3cf34bfb3644ac666527673f|2|×|×|×|×|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
-2249c7792bfcf8351e0c1e48bf624f8c|6|×|×|×|×|flang/conc/examples/node-reference-checked-on-receipt.flang
-232dd2e55e3b5ee6d1da51d27283de18|5|×|×|×|×|flang/conc/examples/node-reply-by-reference.flang
-5d10c2fe3aa3b9f64df3f88354a2332d|3|×|×|×|×|flang/conc/examples/node-work-by-reference.flang
-599500edfe756ab82ebc2f92e6875ce9|8|×|×|×|×|flang/conc/examples/race.flang
-35a028d8ee3aa862503ce54ea3ddcdf3|6|×|×|×|×|flang/conc/examples/server.flang
-18b4a4d39c60207fcffe9efde64b3d43|3|×|×|×|×|flang/conc/examples/supervision.flang
+a8a4bc5a69a3ca169dc935df04d2b9a7|4|×|×|×|0|flang/conc/examples/backpressure.flang
+ec1f624e7568f4537f7518b1b4c0d0fd|1|×|×|×|0|flang/conc/examples/budget.flang
+06ad4d0486befb5d8b1bf5b7a66e08dc|3|×|×|×|0|flang/conc/examples/counter.flang
+08aff10a8f36ba8071a0b5b9ec67e7f1|4|×|×|×|0|flang/conc/examples/distributed.flang
+942de0641ebe80e63db1d56eb0d5956b|1|×|×|×|0|flang/conc/examples/escalate.flang
+47710fb8ddff90712a70239bef22376b|3|×|×|×|0|flang/conc/examples/mailbox.flang
+0d1809abc948826d1096ad3a19f6921f|2|×|×|×|0|flang/conc/examples/measure.flang
+96d2864605ece9ea91fdf95adf6861ff|5|×|×|×|0|flang/conc/examples/node-name-of-a-foreign-kind.flang
+90b3896b3cf34bfb3644ac666527673f|2|×|×|×|0|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
+2249c7792bfcf8351e0c1e48bf624f8c|6|×|×|×|0|flang/conc/examples/node-reference-checked-on-receipt.flang
+232dd2e55e3b5ee6d1da51d27283de18|5|×|×|×|0|flang/conc/examples/node-reply-by-reference.flang
+5d10c2fe3aa3b9f64df3f88354a2332d|3|×|×|×|0|flang/conc/examples/node-work-by-reference.flang
+599500edfe756ab82ebc2f92e6875ce9|8|×|×|×|0|flang/conc/examples/race.flang
+35a028d8ee3aa862503ce54ea3ddcdf3|6|×|×|×|0|flang/conc/examples/server.flang
+18b4a4d39c60207fcffe9efde64b3d43|3|×|×|×|0|flang/conc/examples/supervision.flang
 7c3d1b1fb1a4f917806623d2d5e13f32|21|16|0|5|0|flang/conc/hotswap-node.flang
 05e9608aaa61e762a2b9f1f51cbdfd7c|33|29|3|0|1|flang/conc/link.flang
 26ed25983705656840f4f2f305d98a75|9|9|0|0|0|flang/conc/node-benchmark.flang
 6a0e424d3be329c83fcc22cd09338b06|59|53|1|5|0|flang/conc/scheduler.flang
-b6ed9ed3db6b211f88ce057c954e1861|5|×|×|×|×|flang/conc/services/file-read.flang
-d33e2ac2e2338ffb7aa20d9d01b44d49|6|×|×|×|×|flang/conc/services/host-io-survey.flang
-c21138380e993a1c284bbdc534e1488e|3|×|×|×|×|flang/conc/services/two-on-our-own-engine.flang
+b6ed9ed3db6b211f88ce057c954e1861|5|×|×|×|0|flang/conc/services/file-read.flang
+d33e2ac2e2338ffb7aa20d9d01b44d49|6|×|×|×|0|flang/conc/services/host-io-survey.flang
+c21138380e993a1c284bbdc534e1488e|3|×|×|×|0|flang/conc/services/two-on-our-own-engine.flang
 7439fefc895f25f95273bc6d0b0099bf|55|46|1|8|0|flang/conc/supervisor.flang
 a398efda9d5366984530ac7abfdd3681|41|21|8|11|1|flang/conc/wire.flang
 b8c9a7955422d3218e6f7ae9820a617d|1|1|0|0|0|flang/core/evaluate.flang

@@ -201,14 +201,31 @@ flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
 | `--index-base 0\|1` | Declare the index base of the program |
 | `--max-steps N` | The step limit baked into the printed code |
 | `--max-depth N` | The depth limit |
+| `--no-check` | Do not run the proof kernel. Parsing, types and termination are still judged |
 
-### There is no "print without checking" key — on purpose
+### The "print without checking" key removes exactly the proof kernel
 
 Only what was checked gets printed. Before printing, the program is judged the
 same way as by `flang check`. On a diagnostic, printing is cancelled, the code is
-`1`, and not a single file is written. There is no key that turns this check off,
-and there will not be one: the only caller who would need it is the compiler
-rebuilding itself, and that rebuild must go through the check.
+`1`, and not a single file is written.
+
+`--no-check` removes **exactly the proof kernel** from that road and nothing
+else: parsing, linking, types and termination are judged with it too, and a
+program that fails them is still not printed.
+
+**What this key prints does not belong in the trunk.** Without the kernel not a
+single proved postcondition is dropped — all of them go into the output, so it is
+fatter, the seed fingerprint will not match, and a binary built from such a seed
+drives the next printing more slowly. Reprinting the seed goes without this key,
+always. The binary says so out loud after every printing with the key.
+
+How much it saves is not one number: on `flang/self/builtins.flang` the
+"print and build" cycle takes 148.8 s without the key and 18.9 s with it, while
+on `flang/self/lexer.flang` the key **hurts** (6.5 s against 6.9 s), because the
+extra guards cost the build more than the kernel costs the printing. Speed is not
+the main point, though: `flang/self/distributed.flang` and
+`flang/self/bounded.flang` cannot be printed at all without it — the kernel runs
+out of steps. Details and reasoning: ADR-0010, amendment of 30 August 2026.
 
 The codes of `emit` and what each one means:
 

@@ -84,55 +84,97 @@ pr()  { grep -acE '^[[:space:]]*пример[[:space:]]' "$1" || true; }
 # Проза читается плоской: перенос строки не должен решать, задан вопрос или нет.
 plosko() { tr '\n' ' ' < "$1"; }
 
-# ── Строки корпуса: печатаются, а не краснеют ────────────────────────────────
+# ── Разошлось: число УСТАРЕЛО или было НЕВЕРНЫМ ──────────────────────────────
 #
-# ЕДИНСТВЕННЫЙ дешёвый ключ, которого НИ ОДИН ПУШ НЕ УДЕРЖИТ, и это замерено, а
-# не решено на глаз. Счёт по стволу за сутки 30 августа 2026, 333 коммита:
+# Это два разных случая, и до 30 августа 2026 сверка их не различала — краснела
+# на оба. Первый чинится пушем, второй пушем не чинится вовсе.
 #
-#   корпус.строк               двинули 49 коммитов из 333 — каждый седьмой
-#   корпус.файлов              1
-#   библиотека.строк, функций  7
-#   библиотека.файлов          0
-#   цели.*                     3
-#   отказы.*, база.*, провод.*, план.*, планировщик.*, связь.*   ни одного
+# НЕВЕРНОЕ — число, которого дерево не говорило НИ В ОДИН момент: набрано рукой,
+# списано с соседней страницы, оставлено от прежнего замера. Таким было
+# `библиотека.файлов` 26 при 42 и `корпус.файлов` 322 при 212 (29 августа 2026).
+# Это беда, и она обязана быть красной.
 #
-# Свод идёт каждые десять минут и сливает по нескольку веток разом. Ветка,
-# снявшая это число верно, устаревает в ТОМ ЖЕ СВОДЕ, который её вливает:
-# 30 августа 2026 ветка была зелена в 12:19, сведена в 12:20:02 вместе с тремя
-# чужими ветками и стала красной в 12:20:19 — разница 556 строк, которых в ней
-# не было. Держать число пушем нельзя и по второй причине: numbers.json — одна
-# строка на ключ, и две ветки, поправившие её разом, дают своду столкновение.
+# УСТАРЕВШЕЕ — число, снятое верно и разошедшееся потому, что ствол уехал. Его
+# не удержит ни один пуш, и вот замер, а не мнение. Смен ЗНАЧЕНИЯ у ключа за
+# сутки на стволе (377 коммитов, 30 августа 2026, счёт по истории — не «сколько
+# коммитов тронули файл», а сколько раз число стало другим):
 #
-# Довод тот же, которым в этом файле уже сделаны печатью дорогие ключи, раздел
-# `--доля` и невыпущенная работа в `--выпуск`: работа CI, красная от того, чего
-# ни один пуш починить не может, за неделю приучает не смотреть — и тогда она не
-# ловит уже ничего. Остальные дешёвые ключи держатся пушем и краснеют как
-# краснели: разошёлся корпус.файлов или цели.всего — это беда, и она красная.
-korpus_strok() {
-  if [ "$1" = "$2" ]; then
-    [ -n "${PODROBNO:-}" ] && printf '  %-22s %s\n' "корпус.строк" "сошлось: $1" || true
+#   корпус.строк 91   библиотека.строк 34   цели.всего 9   библиотека.функций 7
+#   корпус.файлов 7   цели.близнецов 3      остальные 24 ключа — 0
+#
+# Свод идёт каждые десять минут и вливает по нескольку веток разом. Ветка,
+# снявшая число верно, устаревает в ТОМ ЖЕ СВОДЕ, который её вливает: замерено
+# дважды за час — 12:19 зелено, 12:20:02 сведено с тремя чужими ветками,
+# 12:20:19 красно на 556 строк; и 12:50 зелено, 13:00 красно, потому что в один
+# цикл приехали четыре новых файла корпуса и близнец печати `emit-cpp`. Держать
+# такое число пушем нельзя и по второй причине: numbers.json — одна строка на
+# ключ, и две ветки, поправившие её разом, дают своду столкновение.
+#
+# КАК ОТЛИЧАЮТСЯ. У замера записано, НА КАКОМ КОММИТЕ он снят
+# (`снято.дешёвыеКоммит`). Если с того коммита ствол двигал ВХОД этого ключа —
+# число устарело: печатаем разницу, работу не красим. Если вход не двигали, а
+# число всё равно не сходится, — оно не было верным никогда, и это красное.
+#
+# Правило одно на все ключи, а не список избранных: ключ, сегодня неподвижный,
+# завтра начинает двигаться (`цели.близнецов` стоял 8 месяцами и стал 9 за один
+# свод), и городить список пришлось бы заново на каждый такой случай.
+#
+# ЧЕГО ЭТО НЕ ЛОВИТ, честно: если вход ключа двигали И число вдобавок набрано
+# неверно, разница спишется на устаревание. Замер на коммите съёмки закрыл бы и
+# это, но стоит второго прохода по дереву; пока — печатью и вслух.
+sdvinulos() { # включающая_регулярка [исключающая] [набор]  — двигали ли вход
+  [ -n "${SNYATO_NA:-}" ] || return 1
+  [ "${SNYATO_EST:-нет}" = "да" ] || return 1
+  spisok=$VREMENNO.sdvig
+  [ "${3:-}" = "набор" ] && spisok=$VREMENNO.nabor
+  if [ -n "${2:-}" ]; then
+    grep -E "$1" "$spisok" 2>/dev/null | grep -Eqv "$2"
+  else
+    grep -Eq "$1" "$spisok" 2>/dev/null
+  fi
+}
+
+sverit() { # ключ опубликовано вдереве включающая [исключающая] [набор]
+  if [ "$2" = "$3" ]; then
+    [ -n "${PODROBNO:-}" ] && printf '  %-22s %s\n' "$1" "сошлось: $2" || true
     return
   fi
-  raznica=$((${2:-0} - ${1:-0}))
-  case $raznica in -*) raznica=${raznica#-} ;; esac
-  printf '  %-22s опубликовано %-9s в дереве %-9s разница %s строк — НЕ КРАСНЕЕТ\n' \
-    "корпус.строк" "$1" "$2" "$raznica"
-  echo "    Этот ключ двигает каждый седьмой коммит ствола, а свод идёт каждые"
-  echo "    десять минут: снятое верно устаревает раньше, чем доедет. Пересъёмка"
-  echo "    вместе с дорогими — ./ярлык числа. Довод целиком — над этой функцией."
+  if sdvinulos "$4" "${5:-}" "${6:-}"; then
+    printf '  %-22s опубликовано %-9s в дереве %-9s УСТАРЕЛО (вход двигали с %s)\n' \
+      "$1" "$2" "$3" "$SNYATO_NA"
+    return
+  fi
+  printf '  %-22s опубликовано %-9s в дереве %-9s РАЗОШЛОСЬ\n' "$1" "$2" "$3"
+  plohih=$((plohih + 1))
+}
+
+# Пути, которые ствол двигал с той съёмки: считаются ОДИН раз на весь раздел.
+# Отдельно набор файлов (заведено, убрано, переименовано) — им отвечают ключи
+# «сколько файлов», и правка внутри файла их не касается.
+sdvig_snyat() {
+  SNYATO_NA=$(sed -n 's/.*"дешёвыеКоммит": *"\([^"]*\)".*/\1/p' "$CHISLA" | head -1)
+  SNYATO_EST=нет
+  : > "$VREMENNO.sdvig"; : > "$VREMENNO.nabor"
+  [ -n "$SNYATO_NA" ] || return 0
+  git rev-parse -q --verify "$SNYATO_NA^{commit}" >/dev/null 2>&1 || return 0
+  SNYATO_EST=да
+  git -c core.quotePath=false diff --name-only "$SNYATO_NA" > "$VREMENNO.sdvig" 2>/dev/null || true
+  git -c core.quotePath=false diff --name-status "$SNYATO_NA" 2>/dev/null \
+    | grep -E '^(A|D|R[0-9]*)	' | sed 's/^[^	]*	//; s/	.*//' > "$VREMENNO.nabor" || true
 }
 
 # ── Числа сайта ──────────────────────────────────────────────────────────────
 chisla_sayta() {
   echo "ЧИСЛА САЙТА ($CHISLA) — дешёвые ключи, пересчитаны по исходникам:"
+  sdvig_snyat
   lf=0; lstrok=0; lfn=0
   for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг; do
     [ -f "$f" ] || continue
     lf=$((lf + 1)); lstrok=$((lstrok + $(strok "$f"))); lfn=$((lfn + $(fn "$f")))
   done
-  skazat библиотека.файлов  "$(znach библиотека.файлов "$CHISLA")"  "$lf"
-  skazat библиотека.строк   "$(znach библиотека.строк "$CHISLA")"   "$lstrok"
-  skazat библиотека.функций "$(znach библиотека.функций "$CHISLA")" "$lfn"
+  sverit библиотека.файлов  "$(znach библиотека.файлов "$CHISLA")"  "$lf"   '^flang/stdlib/[^/]+\.(flang|fp|фп|фланг)$' "" набор
+  sverit библиотека.строк   "$(znach библиотека.строк "$CHISLA")"   "$lstrok" '^flang/stdlib/[^/]+\.(flang|fp|фп|фланг)$'
+  sverit библиотека.функций "$(znach библиотека.функций "$CHISLA")" "$lfn"  '^flang/stdlib/[^/]+\.(flang|fp|фп|фланг)$'
 
   # Корпус — тот же набор, что у flang/scripts/proof-ledger.mjs (ФАЙЛЫ).
   kf=0; kstrok=0
@@ -140,42 +182,43 @@ chisla_sayta() {
              | grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/compiler\.flang$' | sort); do
     kf=$((kf + 1)); kstrok=$((kstrok + $(strok "$f")))
   done
-  skazat корпус.файлов "$(znach корпус.файлов "$CHISLA")" "$kf"
-  korpus_strok "$(znach корпус.строк "$CHISLA")" "$kstrok"
+  sverit корпус.файлов "$(znach корпус.файлов "$CHISLA")" "$kf" '^flang/.*\.(flang|fp|фп|фланг)$' '^flang/test/fixtures/|^flang/self/bootstrap/compiler\.flang$' набор
+  sverit корпус.строк  "$(znach корпус.строк "$CHISLA")"  "$kstrok" '^flang/.*\.(flang|fp|фп|фланг)$' '^flang/test/fixtures/|^flang/self/bootstrap/compiler\.flang$'
 
-  skazat база.строк      "$(znach база.строк "$CHISLA")"      "$(strok flang/stdlib/postgres.flang)"
-  skazat база.функций    "$(znach база.функций "$CHISLA")"    "$(fn flang/stdlib/postgres.flang)"
-  skazat база.тотальных  "$(znach база.тотальных "$CHISLA")"  "$(tot flang/stdlib/postgres.flang)"
-  skazat база.примеров   "$(znach база.примеров "$CHISLA")"   "$(pr flang/stdlib/postgres.flang)"
-  skazat провод.строк    "$(znach провод.строк "$CHISLA")"    "$(strok flang/stdlib/wire.flang)"
-  skazat провод.функций  "$(znach провод.функций "$CHISLA")"  "$(fn flang/stdlib/wire.flang)"
+  sverit база.строк      "$(znach база.строк "$CHISLA")"      "$(strok flang/stdlib/postgres.flang)" '^flang/stdlib/postgres\.flang$'
+  sverit база.функций    "$(znach база.функций "$CHISLA")"    "$(fn flang/stdlib/postgres.flang)" '^flang/stdlib/postgres\.flang$'
+  sverit база.тотальных  "$(znach база.тотальных "$CHISLA")"  "$(tot flang/stdlib/postgres.flang)" '^flang/stdlib/postgres\.flang$'
+  sverit база.примеров   "$(znach база.примеров "$CHISLA")"   "$(pr flang/stdlib/postgres.flang)" '^flang/stdlib/postgres\.flang$'
+  sverit провод.строк    "$(znach провод.строк "$CHISLA")"    "$(strok flang/stdlib/wire.flang)" '^flang/stdlib/wire\.flang$'
+  sverit провод.функций  "$(znach провод.функций "$CHISLA")"  "$(fn flang/stdlib/wire.flang)" '^flang/stdlib/wire\.flang$'
   # `провод.тотальных` спрашивается ровно потому, что 29 августа 2026 он оказался
   # ЕДИНСТВЕННЫМ дешёвым ключом, которого сверка не спрашивала, — и стоял 31 при
   # 34 в дереве. Сосед по строке (`провод.функций`) краснел, а этот молчал:
   # незаданный вопрос не краснеет никогда. `база.тотальных` спрашивался с самого
   # начала и разошёлся вместе со своим соседом — то есть дело не в ключе, а в
   # том, что его забыли внести сюда.
-  skazat провод.тотальных "$(znach провод.тотальных "$CHISLA")" "$(tot flang/stdlib/wire.flang)"
-  skazat провод.примеров "$(znach провод.примеров "$CHISLA")" "$(pr flang/stdlib/wire.flang)"
-  skazat план.строк      "$(znach план.строк "$CHISLA")"      "$(strok examples/db/postgres-plan.flang)"
-  skazat план.примеров   "$(znach план.примеров "$CHISLA")"   "$(pr examples/db/postgres-plan.flang)"
-  skazat планировщик.строк    "$(znach планировщик.строк "$CHISLA")"    "$(strok flang/conc/scheduler.flang)"
-  skazat планировщик.функций  "$(znach планировщик.функций "$CHISLA")"  "$(fn flang/conc/scheduler.flang)"
-  skazat планировщик.примеров "$(znach планировщик.примеров "$CHISLA")" "$(pr flang/conc/scheduler.flang)"
-  skazat связь.строк     "$(znach связь.строк "$CHISLA")"     "$(strok flang/conc/link.flang)"
-  skazat связь.функций   "$(znach связь.функций "$CHISLA")"   "$(fn flang/conc/link.flang)"
-  skazat связь.примеров  "$(znach связь.примеров "$CHISLA")"  "$(pr flang/conc/link.flang)"
+  sverit провод.тотальных "$(znach провод.тотальных "$CHISLA")" "$(tot flang/stdlib/wire.flang)" '^flang/stdlib/wire\.flang$'
+  sverit провод.примеров "$(znach провод.примеров "$CHISLA")" "$(pr flang/stdlib/wire.flang)" '^flang/stdlib/wire\.flang$'
+  sverit план.строк      "$(znach план.строк "$CHISLA")"      "$(strok examples/db/postgres-plan.flang)" '^examples/db/postgres-plan\.flang$'
+  sverit план.примеров   "$(znach план.примеров "$CHISLA")"   "$(pr examples/db/postgres-plan.flang)" '^examples/db/postgres-plan\.flang$'
+  sverit планировщик.строк    "$(znach планировщик.строк "$CHISLA")"    "$(strok flang/conc/scheduler.flang)" '^flang/conc/scheduler\.flang$'
+  sverit планировщик.функций  "$(znach планировщик.функций "$CHISLA")"  "$(fn flang/conc/scheduler.flang)" '^flang/conc/scheduler\.flang$'
+  sverit планировщик.примеров "$(znach планировщик.примеров "$CHISLA")" "$(pr flang/conc/scheduler.flang)" '^flang/conc/scheduler\.flang$'
+  sverit связь.строк     "$(znach связь.строк "$CHISLA")"     "$(strok flang/conc/link.flang)" '^flang/conc/link\.flang$'
+  sverit связь.функций   "$(znach связь.функций "$CHISLA")"   "$(fn flang/conc/link.flang)" '^flang/conc/link\.flang$'
+  sverit связь.примеров  "$(znach связь.примеров "$CHISLA")"  "$(pr flang/conc/link.flang)" '^flang/conc/link\.flang$'
 
-  skazat цели.всего     "$(znach цели.всего "$CHISLA")"     "$(find flang/src/emit -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
-  skazat цели.близнецов "$(znach цели.близнецов "$CHISLA")" "$(find flang/self -maxdepth 1 -name 'emit-*.flang' | wc -l | tr -d ' ')"
-  skazat выпуск.версия  "$(znach выпуск.версия "$CHISLA")"  "$(znach version package.json)"
+  sverit цели.всего     "$(znach цели.всего "$CHISLA")"     "$(find flang/src/emit -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')" '^flang/src/emit/' "" набор
+  sverit цели.близнецов "$(znach цели.близнецов "$CHISLA")" "$(find flang/self -maxdepth 1 -name 'emit-*.flang' | wc -l | tr -d ' ')" '^flang/self/emit-[^/]+\.flang$' "" набор
+  sverit выпуск.версия  "$(znach выпуск.версия "$CHISLA")"  "$(znach version package.json)" '^package\.json$'
 
   o1=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/obligations.flang | sort -u | wc -l | tr -d ' ')
   o2=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/proofterm.flang | sort -u | wc -l | tr -d ' ')
-  skazat отказы.обязательств "$(znach отказы.обязательств "$CHISLA")" "$o1"
-  skazat отказы.вывода       "$(znach отказы.вывода "$CHISLA")"       "$o2"
-  skazat отказы.всего        "$(znach отказы.всего "$CHISLA")"        "$((o1 + o2))"
+  sverit отказы.обязательств "$(znach отказы.обязательств "$CHISLA")" "$o1" '^flang/self/obligations\.flang$'
+  sverit отказы.вывода       "$(znach отказы.вывода "$CHISLA")"       "$o2" '^flang/self/proofterm\.flang$'
+  sverit отказы.всего        "$(znach отказы.всего "$CHISLA")"        "$((o1 + o2))" '^flang/self/(obligations|proofterm)\.flang$'
 
+  rm -f "$VREMENNO.sdvig" "$VREMENNO.nabor"
   echo "  (дорогие ключи — корпус.функций, утверждения.*, носители.*, сторож.*,"
   echo "   словарь.* — здесь НЕ проверены: им нужен прогон двоичного по корпусу.)"
   vozrast_dorogih

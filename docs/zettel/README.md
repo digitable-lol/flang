@@ -265,6 +265,7 @@
 - [Подстановка, не попавшая в образец, доезжает до читателя двойными скобками — и молча](a-substitution-that-misses-the-pattern-reaches-the-reader.md)
 - [Режим `--mode=u=rw,go=r`, заданный ради повторимости архива, запирает каталоги наглухо](a-tar-mode-for-files-locks-directories.md)
 - [Проверку пути установки нельзя целиком написать на flang: хозяин убивает процесс на 30 000 мс, а сборка идёт 128 000 мс](host-timeout-of-30-seconds-keeps-builds-out-of-flang-plans.md)
+- [Расшифровка прогона на странице — это замер, и после тега его надо переснимать](stale-pages-are-measurements-nobody-retakes.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Старый проект FTS нельзя вынести из репозитория дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
 - [Выпуск был замкнут сам на себя: набор тестов требовал релизного архива, а собрать его прогону было нечем](vypusk-ne-mog-sostoyatsya-nabor-treboval-arhiv-kotorogo-nikto-ne-sobiral.md)

@@ -126,6 +126,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -297,6 +298,29 @@ static const char REPL_GREETING_NO_EVAL[] =
   "Невтащенных целей больше нет: все восемь живут в замыкании этой сборки, и\n" \
   "печатает их она сама, без Node."
 
+static const char HELP_MACHINE[] =
+    "flang --машина [<файл>]\n"
+    "\n"
+    "Постоянная машины: сколько витков она делает в секунду. Витки — свойство\n"
+    "программы, секунды — свойство машины, и вторые из первых получаются только\n"
+    "умножением на эту постоянную. Обещание пишется в витках, читателю показывают\n"
+    "секунды для НАЗВАННОЙ машины.\n"
+    "\n"
+    "  flang --машина            снять постоянную здесь и сейчас и напечатать\n"
+    "  flang --машина <файл>     взять снятую раньше и напечатать как есть\n"
+    "\n"
+    "ПОСТОЯННАЯ НЕ ОДНА, и вывод говорит об этом двумя строками. Виток разбора\n"
+    "строит узлы и просит память, виток лексера читает байты — цена у них разная,\n"
+    "и разброс между ними печатается числом. Рядом печатаются ядра и загрузка:\n"
+    "тот же файл считался 9 минут при загрузке 30 и 7 часов 23 минуты при 110, а\n"
+    "8 процессов на 8 свободных ядрах дают 7,92×, тогда как 16 потоков при 15\n"
+    "занятых ядрах — 1,15×. Загрузка снимается «/proc/loadavg»; где его нет, там\n"
+    "стоит «не снято», а не ноль: ноль читался бы как «машина свободна».\n"
+    "\n"
+    "Замер — настоящая работа компилятора над эталонным исходником, а не пустой\n"
+    "цикл: разбор и лексер повторяются, пока не набежит четверть секунды, и в\n"
+    "выводе названы витки, секунды и число повторов.";
+
 static const char FLANG_HELP[] =
     "flang " FLANG_VERSION " — язык, проверяемый до запуска: типы и доказанное завершение.\n"
     "\n"
@@ -317,12 +341,27 @@ static const char FLANG_HELP[] =
     "\n"
     "  flang --help                       эта справка\n"
     "  flang --version                    версия\n"
+    "  flang --машина [<файл>]            постоянная этой машины: витков в секунду\n"
     "  flang <команда> --help             все ключи команды\n"
     "\n"
+    "  --предел-глубины N                 предел глубины вызовов САМОГО бинарника\n"
+    "                                     на этот прогон; годится при любой команде\n"
+    "                                     и поднимает заодно стек. Латиницей:\n"
+    "                                     --depth-limit\n"
+    "\n";
+
+/*
+ * Вторая половина общей справки — не разделение по смыслу, а требование C99:
+ * строковый литерал в нём не длиннее 4095 байт, а справка на кириллице съедает
+ * по два байта на букву. Печатаются обе подряд, стыка человек не видит. Тем же
+ * приёмом и по той же причине разбита справка `emit` (HELP_EMIT, HELP_EMIT_2).
+ */
+static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 10 команд, языковой сервер живёт отдельной командой «flang-lsp».\n"
+    "Здесь все 12 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
+    "тот же языковой сервер, который кладёт на «PATH» пакет npm.\n"
     "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
     "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
     "прописать помощнику.\n"
@@ -332,6 +371,7 @@ static const char FLANG_HELP[] =
 
 static const char HELP_CHECK[] =
     "flang check <файл.flang> [--proof [--json] [--записать <файл>]]\n"
+    "                          [--предел-шагов N] [--предел-глубины N]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
     "код возврата 1, если программа не прошла.\n"
@@ -343,6 +383,23 @@ static const char HELP_CHECK[] =
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/сверщик.flang). Ключ пишется и латиницей:\n"
     "                     --record\n"
+    "  --предел-шагов N   поднять предел шагов ПРОВЕРЯЮЩЕГО на этот прогон.\n"
+    "                     Умолчание вшито при сборке (scripts/raskrutka.sh) и\n"
+    "                     ловит зацикливание; ключ поднимает его осознанно и\n"
+    "                     только там, где сказано. Исчерпание остаётся внятным:\n"
+    "                     FLANG_RECURSION_LIMIT с числом. Латиницей: --step-limit\n"
+    "  --предел-глубины N поднять предел ГЛУБИНЫ вызовов на этот прогон. Ключ\n"
+    "                     общий у всех команд бинарника и поднимает заодно стек,\n"
+    "                     которым глубина и несётся. Не путать с «--max-depth» у\n"
+    "                     «emit»: тот кладёт число в НАПЕЧАТАННУЮ программу, а\n"
+    "                     этот — в текущий прогон. Латиницей: --depth-limit\n";
+
+/*
+ * Вторая половина справки `check` — не разделение по смыслу, а то же требование
+ * C99, что у общей справки и у `emit`: строковый литерал в нём не длиннее 4095
+ * байт, а кириллица съедает по два байта на букву. Печатаются обе подряд.
+ */
+static const char HELP_CHECK_2[] =
     "\n"
     "Категорной поверхности и процессов бинарник НЕ СУДИТ ВОВСЕ — ни доказуемых\n"
     "правил (концы стрелок, замкнутость категории, полнота связи), ни законов на\n"
@@ -377,7 +434,7 @@ static const char HELP_TEST[] =
     "это КОРПУС, а не файл:\n"
     "\n"
     "  flang test flang/stdlib/                весь каталог, вглубь\n"
-    "  flang test \'flang/examples/**/*.flang\'  по маске (кавычки — от оболочки)\n"
+    "  flang test \'examples/**/*.flang\'  по маске (кавычки — от оболочки)\n"
     "\n"
     "У корпуса печатается каждый не прошедший пример и каждый не взятый файл, а\n"
     "прошедшие — числом. Код возврата 0 — взяты все файлы и сошлись все примеры;\n"
@@ -411,7 +468,9 @@ static const char HELP_RUN[] =
     "                     Списка или вложенного объекта здесь не принимают —\n"
     "                     их считает версия для Node\n"
     "  --max-steps N      предел шагов вычислителя\n"
-    "  --max-depth N      предел глубины";
+    "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
+    "                     бинарника — другой счётчик и другой ключ:\n"
+    "                     «--предел-глубины N»";
 
 static const char HELP_EMIT[] =
     "flang emit <файл.flang> --target " EMIT_TARGETS_WORDS "\n"
@@ -428,6 +487,10 @@ static const char HELP_EMIT[] =
     "  --cli | --no-cli  печатать ли прогонщик\n"
     "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
     "  --runtime каталог где лежат исходники рантайма цели\n"
+    "  --max-steps N     предел шагов, ВПЕЧАТЫВАЕМЫЙ в напечатанную программу\n"
+    "  --max-depth N     предел глубины, ВПЕЧАТЫВАЕМЫЙ в напечатанную программу\n"
+    "                    («#define FL_MAX_DEPTH»). Своему прогону печати он не\n"
+    "                    говорит ничего — для него «--предел-глубины N»\n"
     "\n";
 
 /* Вторая часть: C99 требует поддержки строкового литерала лишь до 4095
@@ -455,9 +518,10 @@ static const char HELP_EMIT_2[] =
     "(share/flang/<цель>); в дереве исходников это flang/src/emit/<цель>. Полный\n"
     "перечень имён — man flang.\n"
     "\n"
-    "ПЕЧАТЬ НЕ ПРОВЕРЯЕТ ТИПЫ И ЗАВЕРШАЕМОСТЬ — отменяют её только беды связывания.\n"
-    "Прогоняйте «flang check» отдельно: версия для Node печатать непроверенное\n"
-    "отказывается, а эта напечатает.\n"
+    "СВЕРХУ УЖЕ СКАЗАНО, ЧТО ПЕЧАТАЕТСЯ ТОЛЬКО ПРОВЕРЕННОЕ, и это правда: типы и\n"
+    "завершаемость печать судит и при замечании отменяется. Проверено прогоном\n"
+    "25 августа 2026: функция, объявленная как «число», с телом-строкой даёт\n"
+    "FLANG_TYPE, «печать отменена», код 1 и ни одного файла.\n"
     "\n"
     "ЧЕМ ЭТА ПЕЧАТЬ ОТЛИЧАЕТСЯ ОТ ПЕЧАТИ ПОЛНОГО ИНСТРУМЕНТАРИЯ:\n"
     "  c            недостижимое НЕ отбрасывается, доказанное не метится\n"
@@ -684,9 +748,9 @@ static const char HELP_REPL[] =
  */
 static void human_help(const char *topic) {
   if (topic == NULL) {
-    printf("%s\n", FLANG_HELP);
+    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   } else if (strcmp(topic, "check") == 0) {
-    printf("%s\n", HELP_CHECK);
+    printf("%s%s\n", HELP_CHECK, HELP_CHECK_2);
   } else if (strcmp(topic, "test") == 0) {
     printf("%s\n", HELP_TEST);
   } else if (strcmp(topic, "run") == 0) {
@@ -699,6 +763,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LSP);
   } else if (strcmp(topic, "--mcp-mode") == 0 || strcmp(topic, "mcp") == 0) {
     printf("%s\n", HELP_MCP);
+  } else if (strcmp(topic, "--машина") == 0 || strcmp(topic, "--machine") == 0) {
+    printf("%s\n", HELP_MACHINE);
   } else if (strcmp(topic, "ast") == 0) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "tokens") == 0) {
@@ -712,7 +778,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
   } else {
-    printf("%s\n", FLANG_HELP);
+    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   }
 }
 
@@ -1251,6 +1317,152 @@ static void repl_call_keep(const char *code, const char *message) {
   repl_call_message[say_fit] = 0;
 }
 
+/*
+ * ХОД ДЛИННОГО ШАГА: строка раз в полминуты о том, где счёт и сколько съел.
+ *
+ * ЗАЧЕМ ОНА. Перепечатка семени (`scripts/raskrutka.sh`) идёт от пяти с
+ * половиной до девяти с половиной часов и между «начал» и «кончил» не говорит
+ * НИ СЛОВА. Жива она или зациклилась — узнавалось только ковырянием в /proc:
+ *
+ *     процессорного времени   554 минуты      растёт 1:1 с часами
+ *     прошло по часам         563 минуты
+ *     write_bytes             4096            вывод ещё не начат
+ *
+ * Ночью на 25 августа 2026 перепечатку сняли на 563-й минуте, и девять с
+ * половиной часов пропали: смотреть было не на что, и никто не заметил вовремя.
+ *
+ * ЧЕГО НЕ ХВАТАЛО. Сведений хватало и раньше: `repl_ctx.steps` считает ШАГИ —
+ * витки от `fl_tick` и заряд от `fl_charge` вместе, а не одни витки, —
+ * `repl_ctx.max_steps` — предел, имя шага приходит в `repl_call` первым же
+ * доводом. Ровно этими числами печатается «ЗАПАС ШАГОВ НА ИСХОДЕ» ниже. Не
+ * хватало СРОКА: та строка стоит на пороге в половину предела и потому
+ * появляется один раз и уже ПОСЛЕ конца шага. Здесь то же самое, но по часам.
+ *
+ * ПОЧЕМУ БУДИЛЬНИК, А НЕ ПРОВЕРКА НА ВИТКЕ. Счёт витков (`fl_tick`) — самый
+ * горячий путь рантайма: он зовётся на каждом шаге вычислителя, и всякое лишнее
+ * действие там оплачивается миллиардами раз. Будильник не стоит на этом пути
+ * НИЧЕГО: SIGALRM приносит ядро, счёт витков о нём не знает. Вся цена — два
+ * присваивания на вызов `repl_call`, то есть на ШАГ ПРОВЕРКИ, а не на виток.
+ *
+ * ПОЧЕМУ ВСЁ РУКАМИ, А НЕ `fprintf`. Обработчик сигнала вправе звать только то,
+ * что POSIX объявил безопасным; stdio в этот список не входит и, прерванный
+ * посреди собственного буфера, кладёт процесс. Отсюда `write` в дескриптор 2 и
+ * сборка строки в свой буфер без единого вызова stdio.
+ *
+ * ПОЧЕМУ В stderr, А НЕ В stdout. Машинный вывод — `flang check --proof
+ * --json`, `flang emit`, сверка семени байт в байт — идёт в stdout и обязан
+ * остаться прежним до байта. Строка хода в stdout сдвинула бы его весь.
+ *
+ * SA_RESTART обязателен: без него будильник рвал бы `read` оболочки и `waitpid`
+ * внутри `system` кодом EINTR, и раз в полминуты сессия теряла бы набранное.
+ *
+ * ПОЛМИНУТЫ, А НЕ МИНУТА: «не реже раза в минуту» — это верхняя граница, а
+ * `alarm` отмеряет секунды с округлением вверх, и ровно шестьдесят иногда
+ * оказались бы шестьюдесятью с лишним. Тридцать в неё влезают с запасом, а
+ * стоят за девять часов около тысячи строк — против 23 МБ печати это ничто.
+ */
+#define REPL_HOD_SECONDS 30
+
+static volatile sig_atomic_t repl_hod_going = 0;
+static volatile sig_atomic_t repl_hod_ticking = 0;
+static char repl_hod_step[128];
+static int repl_hod_set = 0;
+
+/*
+ * ПЕЧАТЬ БЕЗ stdio ЖИВЁТ В РАНТАЙМЕ, А НЕ ЗДЕСЬ.
+ *
+ * Дописать текст, число пробелами по три разряда, память двоичными
+ * приставками, резидентный размер из /proc — всё это `fl_say_*`
+ * (flang_runtime.c). Раньше те же четыре помощника лежали копией здесь, и это
+ * было второе место правды: подключение задачи 0061 печатает те же числа, и
+ * разойдись две печати — одно и то же число выглядело бы в двух строках
+ * по-разному.
+ */
+
+static void repl_hod_say(int signal_number) {
+  char line[512];
+  size_t at = 0;
+  unsigned long steps = (unsigned long)repl_ctx.steps;
+  unsigned long limit = (unsigned long)repl_ctx.max_steps;
+  unsigned long bytes = 0;
+  ssize_t wrote = 0;
+  (void)signal_number;
+  /* Между шагами говорить не о чем: счётчик стоит, имя шага уже неверно. */
+  if (!repl_hod_going) {
+    repl_hod_ticking = 0;
+    return;
+  }
+  if (limit == 0) {
+    at = fl_say_text(line, sizeof(line), at, "шагов не считают (предел снят)");
+  } else {
+    /* Доля считается делением предела, а не умножением витков: витков к концу
+       перепечатки миллиарды, и «витки × 100» переполнило бы 32-разрядное
+       `unsigned long` там, где оно 32-разрядное. */
+    const unsigned long part = limit >= 100 ? steps / (limit / 100) : steps * 100 / limit;
+    at = fl_say_text(line, sizeof(line), at, "шагов ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " из ");
+    at = fl_say_number(line, sizeof(line), at, limit);
+    at = fl_say_text(line, sizeof(line), at, " (");
+    at = fl_say_number(line, sizeof(line), at, part);
+    at = fl_say_text(line, sizeof(line), at, " %)");
+  }
+  at = fl_say_text(line, sizeof(line), at, ", идёт «");
+  at = fl_say_text(line, sizeof(line), at, repl_hod_step);
+  at = fl_say_text(line, sizeof(line), at, "»");
+  bytes = fl_say_resident();
+  if (bytes != 0) {
+    at = fl_say_text(line, sizeof(line), at, ", ");
+    at = fl_say_size(line, sizeof(line), at, bytes);
+  }
+  at = fl_say_text(line, sizeof(line), at, "\n");
+  wrote = write(2, line, at);
+  (void)wrote;
+  alarm(REPL_HOD_SECONDS);
+}
+
+static void repl_hod_start(const char *name) {
+  size_t fit = 0;
+  /* Тем же именем зовётся шаг и в снимке подключения (`kill -USR1`): строка
+     хода говорит раз в полминуты, снимок — когда спросили, и называть шаг
+     двумя разными способами было бы ложью в одном из них. */
+  fl_watch_step(name);
+  if (!repl_hod_set) {
+    struct sigaction action;
+    fl_say_page_ready();
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = repl_hod_say;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = SA_RESTART;
+    if (sigaction(SIGALRM, &action, NULL) != 0) {
+      return;
+    }
+    repl_hod_set = 1;
+  }
+  fit = name == NULL ? 0 : strlen(name);
+  if (fit > sizeof(repl_hod_step) - 1) {
+    fit = sizeof(repl_hod_step) - 1;
+  }
+  memcpy(repl_hod_step, name == NULL ? "" : name, fit);
+  repl_hod_step[fit] = 0;
+  repl_hod_going = 1;
+  /* Будильник заводится один раз и дальше подводит себя сам. Заводить его на
+     каждом вызове значило бы сбрасывать отсчёт: тысяча коротких шагов подряд
+     идёт часами и не сказала бы ни слова, потому что ни один из них полминуты
+     не длится. */
+  if (!repl_hod_ticking) {
+    repl_hod_ticking = 1;
+    alarm(REPL_HOD_SECONDS);
+  }
+}
+
+static void repl_hod_stop(void) {
+  repl_hod_going = 0;
+  /* Между шагами имени шага нет: снимок, снятый в этот миг, назвал бы шаг,
+     который уже кончился. */
+  fl_watch_step(NULL);
+}
+
 static fl_status repl_call(const char *name, const fl_value *args, size_t count, fl_value *result) {
   fl_error error;
   fl_status status = FL_OK;
@@ -1260,7 +1472,9 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
      бы предел, отпущенный проверке. */
   repl_ctx.steps = 0;
   repl_ctx.depth = 0;
+  repl_hod_start(name);
   status = FL_PROGRAM_CALL(&repl_ctx, name, args, count, result, &error);
+  repl_hod_stop();
   /*
    * ЗАПАС ПРЕДЕЛА ШАГОВ ОБЯЗАН БЫТЬ ВИДЕН ЗАРАНЕЕ, А НЕ В ДЕНЬ ОБВАЛА.
    *
@@ -1285,11 +1499,26 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
    * Молчит она под `repl_call_quiet` — там, где вызывающий сам разбирает
    * отказ и лишняя строка сломала бы разбор вывода.
    */
+  /*
+   * «ШАГОВ», А НЕ «ВИТКОВ», И ЭТО ПРАВКА ПО ЗАМЕРУ, А НЕ ПО ВКУСУ.
+   *
+   * Прежде здесь стояло «съел N витков». `repl_ctx.steps` витками не является
+   * с 27 августа 2026: `fl_charge` кладёт в тот же счётчик цену прохода по
+   * встроенной форме. Числа расходятся не на проценты — замер 29 августа
+   * 2026 на `check flang/self/lexer.flang --proof`: витков 8 483 040, заряда
+   * 751 081 154, шагов 759 564 194, то есть слово «витков» занижало
+   * напечатанное в 89,5 раза.
+   *
+   * Цена ошибки уже уплачена: число «1 370 430 254 витка за 691 с, то есть
+   * 1,98 млн витков в секунду» в шапке scripts/raskrutka.sh снято ИМЕННО с
+   * этой строки, и по нему считаны все наши оценки времени перепечатки.
+   */
   if (!repl_call_quiet && repl_ctx.max_steps > 0 && repl_ctx.steps > repl_ctx.max_steps / 2) {
     fprintf(stderr,
-            "ЗАПАС ШАГОВ НА ИСХОДЕ: «%s» съел %lu витков из %lu (%lu %%). Рост дерева\n"
+            "ЗАПАС ШАГОВ НА ИСХОДЕ: «%s» съел %lu шагов из %lu (%lu %%). Рост дерева\n"
             "в полтора раза стоит вдвое с лишним — то, что перевалило за половину, в\n"
-            "следующий раз не поместится. Предел задаётся в scripts/raskrutka.sh.\n",
+            "следующий раз не поместится. Умолчание задаётся в scripts/raskrutka.sh,\n"
+            "а поднять его на один прогон: flang check <файл> --предел-шагов N.\n",
             name, (unsigned long)repl_ctx.steps, (unsigned long)repl_ctx.max_steps,
             (unsigned long)(repl_ctx.steps * 100 / repl_ctx.max_steps));
   }
@@ -1300,6 +1529,35 @@ static fl_status repl_call(const char *name, const fl_value *args, size_t count,
        значило бы соврать про проверку. */
     if (!repl_call_quiet) {
       fprintf(stderr, "%s: %s\n", repl_call_code, repl_call_message);
+    }
+    /*
+     * ДВА СЧЁТЧИКА ГЛУБИНЫ ПЕЧАТАЛИ ОДНО И ТО ЖЕ, И ПО ТЕКСТУ ИХ НЕ РАЗЛИЧАЛИ.
+     *
+     * Глубина вычисляемой программы («Машина» из interpret.flang) и глубина
+     * САМОГО бинарника (`ctx->depth` в рантайме) отказывают дословно одинаково:
+     * «функция «Х» превысила предел глубины вызовов (N) на глубине N+1». Из-за
+     * этого отказ второго читался как беда в проверяемом файле — и в задаче 0059
+     * виноватой назвали не ту функцию, а в 1093 двое суток поднимали предел,
+     * который не читался.
+     *
+     * Различить их здесь МОЖНО, и различие настоящее, а не по тексту: предел
+     * вычисляемой программы кончается ВНУТРИ значения (`repl_call` отдаёт FL_OK,
+     * а неудача лежит в полях «код» и «сообщение» ответа), а предел самого
+     * бинарника валит сам вызов — то есть приходит сюда. Значит всё, что дошло
+     * до этой ветки с кодом глубины, — предел ХОЗЯИНА, и сказать об этом можно
+     * прямо, не гадая по строке.
+     *
+     * Названная функция при этом — функция КОМПИЛЯТОРА, а не проверяемого файла,
+     * и это ровно то, что человека и сбивало.
+     */
+    if (!repl_call_quiet && error.code != NULL &&
+        strcmp(error.code, FL_CODE_RECURSION_LIMIT) == 0 &&
+        error.message != NULL && strstr(error.message, "глубины вызовов") != NULL) {
+      fprintf(stderr,
+              "Это предел глубины САМОГО КОМПИЛЯТОРА (%lu), а не вашей программы, и\n"
+              "названная функция — его собственная. Вшит он при сборке; поднять на\n"
+              "один прогон: flang <команда> <файл> --предел-глубины N.\n",
+              (unsigned long)repl_ctx.max_depth);
     }
   }
   return status;
@@ -2084,7 +2342,7 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
  * ВГЛУБЬ ПОИСК НЕ ИДЁТ, и это решено замером, а не вкусом. На 210 ввозах этого
  * репозитория обход ВСЕГО дерева от корня переставляет три ввоза на ЧУЖОЙ
  * модуль (`docs/zamer-teorkat/iso-object-to-category.flang` вместо
- * несуществующего `flang/examples/cat/moduli/zakazy.flang` находит
+ * несуществующего `examples/cat/moduli/zakazy.flang` находит
  * `…/cat/modules/orders.flang`) и заводит один спор имён на сгенерированных
  * прогонах `benchmarks/`. Правило выше на тех же 210 ввозах даёт 200 попаданий
  * ровно в тот файл, который назван путём сегодня, и НОЛЬ споров.
@@ -2368,21 +2626,78 @@ static void repl_places_of(const char *importer, repl_strings *places) {
   repl_library_places(places);
 }
 
+/** Имена модулей, о затенении которых уже сказано: строка на модуль, не на ввоз. */
+static repl_strings repl_shadow_said;
+static bool repl_shadow_started = false;
+
 /**
  * Модуль по имени: первое место, где он нашёлся, отдаёт ВСЕ свои совпадения.
  * Ничего не нашлось — молчим: скажет об этом связывание, и скажет кодом.
+ *
+ * ЗАТЕНЕНИЕ ГОВОРИТСЯ ВСЛУХ, и вот чего стоило молчание. Порядок мест —
+ * каталог ввозящего, потом ВВЕРХ по предкам, пока в предке есть хоть один
+ * `.flang`, и только потом библиотека рядом с двоичным. В общей рабочей зоне
+ * (`/srv/flang-rabota`) россыпью лежат черновики, среди них устаревшие копии
+ * модулей библиотеки, — и они перекрывают `flang/stdlib` проверяемого дерева
+ * МОЛЧА, потому что каталог-предок просматривается раньше библиотеки.
+ *
+ * Замер 24 августа 2026. `тип «Звено» от «З»` в `flang/stdlib/hashmap.flang`
+ * сделали параметрическим; внутри файла параметр работал, а любой ввоз отвечал
+ * «тип «Звено» объявлен от нуля параметров, а применён к 1 аргументу». Модуль
+ * «Словарь хешем» брался из `/srv/flang-rabota/u-teoremy-hashmap-hm-BAZA.flang`
+ * — копии ДО правки, — а `flang/stdlib/hashmap.flang` дерева не открывался
+ * вовсе. Час ушёл на поиск изъяна языка, которого нет, и записка о нём
+ * разошлась с правдой. Ровно так же в той же зоне лежит второй такой файл:
+ * `u-dok-hash-z1.flang` — модуль «SHA-256», 534 строки против 992 в
+ * библиотеке.
+ *
+ * Поэтому: взятый файл называется, перекрытые перечисляются. Строка идёт в
+ * stderr, печатается один раз на имя модуля и на код возврата НЕ ВЛИЯЕТ —
+ * это не отказ, а имя файла, которого не хватало.
  */
 static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
   repl_strings places;
+  repl_strings shadowed;
   size_t index = 0;
+  bool have = false;
   strings_init(&places);
+  strings_init(&shadowed);
   repl_places_of(importer, &places);
   for (index = 0; index < places.count; index += 1) {
-    repl_place_scan(places.items[index], name, found);
-    if (found->count > 0) {
-      break;
+    if (have) {
+      /* Место может повториться: подъём вверх бережётся от повтора, а библиотека
+         рядом с двоичным — нет, и каталог ввозящего вполне бывает ею же. Тот же
+         ПУТЬ не затеняет сам себя, поэтому сверяемся по пути, а не по месту. */
+      repl_strings here;
+      size_t at = 0;
+      strings_init(&here);
+      repl_place_scan(places.items[index], name, &here);
+      for (at = 0; at < here.count; at += 1) {
+        const char *path = here.items[at];
+        const size_t bytes = strlen(path);
+        if (!strings_has(found, path, bytes) && !strings_has(&shadowed, path, bytes)) {
+          strings_say(&shadowed, path);
+        }
+      }
+      strings_free(&here);
+    } else {
+      repl_place_scan(places.items[index], name, found);
+      have = found->count > 0;
     }
   }
+  if (!repl_shadow_started) {
+    strings_init(&repl_shadow_said);
+    repl_shadow_started = true;
+  }
+  if (have && shadowed.count > 0 && !strings_has(&repl_shadow_said, name, strlen(name))) {
+    strings_say(&repl_shadow_said, name);
+    fprintf(stderr, "flang: модуль «%s» взят из %s", name, found->items[0]);
+    for (index = 0; index < shadowed.count; index += 1) {
+      fprintf(stderr, "%s%s", index == 0 ? "; тот же модуль объявляют также: " : ", ", shadowed.items[index]);
+    }
+    fprintf(stderr, "\n");
+  }
+  strings_free(&shadowed);
   strings_free(&places);
 }
 
@@ -2454,6 +2769,93 @@ static size_t repl_header_bytes(const char *text, size_t bytes) {
   return cut;
 }
 
+/*
+ * ── «ТОЛЬКО» СУЖАЕТ НЕ ВИДИМОСТЬ, А РАБОТУ ────────────────────────────────
+ *
+ * `использует «Печать в C» только «Поле узла», …` уже говорило компилятору,
+ * какие имена видны; замыкание же клало в программу ВЕСЬ ввезённый файл.
+ * Замер 23 августа: `flang/self/tags.flang` — 28 своих функций, 212 в
+ * замыкании, 22,1 с и 5,9 ГиБ; вшестеро меньший `lexer.flang` со 103
+ * функциями — 5,3 с и 0,65 ГиБ. Рост по размеру замыкания сверхлинейный,
+ * и платился он за функции, которые названы не были и сослаться на них
+ * никто не имел права.
+ *
+ * Поэтому здесь запоминается РЕБРО ввоза: кто, кого и с каким списком имён.
+ * По рёбрам ниже (`repl_closure`) считается, что из каждого файла нужно, и
+ * ненужные объявления вычёркиваются из его текста ДО того, как он поедет
+ * компилятору. Список `только` действует и вглубь: имена, которые ввозящий
+ * видит через свой ввоз, тем же списком ограничены и в файлах, ввезённых уже
+ * ИМ, — потому набор имён едет по рёбрам дальше без ослабления.
+ *
+ * ЧТО ЗДЕСЬ НЕЛЬЗЯ: молча взять лишнее. Вычёркивание не смягчает ни одной
+ * проверки — оно убирает объявления, сослаться на которые связывание и так
+ * не давало. Ошибись оно в другую сторону — и на неназванное имя придёт
+ * честный отказ связывания, а не тихо подобранное объявление.
+ */
+typedef struct repl_edge {
+  char *from;
+  char *to;
+  repl_strings only;
+  bool has_only;
+} repl_edge;
+
+static repl_edge *repl_edge_items = NULL;
+static size_t repl_edge_count = 0;
+static size_t repl_edge_capacity = 0;
+
+static void repl_edge_push(const char *from, const char *to, const repl_strings *only, bool has_only) {
+  repl_edge edge;
+  size_t index = 0;
+  if (from == NULL || to == NULL) {
+    return;
+  }
+  if (repl_edge_count == repl_edge_capacity) {
+    repl_edge_capacity = repl_edge_capacity == 0 ? 8 : repl_edge_capacity * 2;
+    repl_edge_items = (repl_edge *)repl_grow(repl_edge_items, repl_edge_capacity * sizeof(repl_edge));
+  }
+  edge.from = repl_say(from);
+  edge.to = repl_say(to);
+  edge.has_only = has_only;
+  strings_init(&edge.only);
+  for (index = 0; index < only->count; index += 1) {
+    strings_add(&edge.only, only->items[index], only->sizes[index]);
+  }
+  repl_edge_items[repl_edge_count] = edge;
+  repl_edge_count += 1;
+}
+
+static void repl_edges_forget(void) {
+  size_t index = 0;
+  for (index = 0; index < repl_edge_count; index += 1) {
+    free(repl_edge_items[index].from);
+    free(repl_edge_items[index].to);
+    strings_free(&repl_edge_items[index].only);
+  }
+  free(repl_edge_items);
+  repl_edge_items = NULL;
+  repl_edge_count = 0;
+  repl_edge_capacity = 0;
+}
+
+/** Список `только` у одного ввоза; `нет` — списка не было вовсе. */
+static bool repl_only_of(fl_value node, repl_strings *out) {
+  fl_value only = fl_nothing();
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  if (!zn_field(node, "only", &only) || !zn_items(only, &items, &count)) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    const char *word = NULL;
+    size_t word_bytes = 0;
+    if (zn_text(items[index], &word, &word_bytes)) {
+      strings_add(out, word, word_bytes);
+    }
+  }
+  return true;
+}
+
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
@@ -2511,36 +2913,40 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
     for (inner = 0; inner < imports; inner += 1) {
       const char *path = NULL;
       size_t path_bytes = 0;
+      repl_strings only;
+      bool has_only = false;
+      strings_init(&only);
+      has_only = repl_only_of(items[inner], &only);
       if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
         char *relative = repl_dup(path, path_bytes);
         char *full = repl_resolve(directory, relative);
         strings_say(queue, full);
+        repl_edge_push(from, full, &only, has_only);
         free(relative);
         free(full);
-        continue;
-      }
-      /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
-         тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
-         «путь есть, он пустой». */
-      {
+      } else {
+        /* Пути нет — ввоз по имени: `использует «Списки»`. Ключа "from" в узле
+           тогда нет ВОВСЕ, и это единственный признак; пустая строка означала бы
+           «путь есть, он пустой». */
         const char *name = NULL;
         size_t name_bytes = 0;
         repl_strings found;
         size_t at = 0;
-        if (!zn_field_text(items[inner], "category", &name, &name_bytes) || name_bytes == 0) {
-          continue;
+        if (zn_field_text(items[inner], "category", &name, &name_bytes) && name_bytes != 0) {
+          strings_init(&found);
+          {
+            char *wanted = repl_dup(name, name_bytes);
+            repl_find_module(from, wanted, &found);
+            free(wanted);
+          }
+          for (at = 0; at < found.count; at += 1) {
+            strings_say(queue, found.items[at]);
+            repl_edge_push(from, found.items[at], &only, has_only);
+          }
+          strings_free(&found);
         }
-        strings_init(&found);
-        {
-          char *wanted = repl_dup(name, name_bytes);
-          repl_find_module(from, wanted, &found);
-          free(wanted);
-        }
-        for (at = 0; at < found.count; at += 1) {
-          strings_say(queue, found.items[at]);
-        }
-        strings_free(&found);
       }
+      strings_free(&only);
     }
   }
   free(directory);
@@ -3048,6 +3454,172 @@ static bool lock_beside(const char *entry) {
   return ok && pkg_beside(entry);
 }
 
+/** Где в списке лежит эта строка; `(size_t)-1` — её там нет. */
+static size_t repl_strings_index(const repl_strings *list, const char *text) {
+  size_t index = 0;
+  size_t bytes = strlen(text);
+  for (index = 0; index < list->count; index += 1) {
+    if (list->sizes[index] == bytes && memcmp(list->items[index], text, bytes) == 0) {
+      return index;
+    }
+  }
+  return (size_t)-1;
+}
+
+/**
+ * Текст модуля без объявлений, которых никто не называл: шапка целиком, а из
+ * остального — куски, чьё имя стоит в `names`.
+ *
+ * РЕЗ ИДЁТ ПО ПЕРВОЙ КОЛОНКЕ. Объявление начинается со строки, у которой нет
+ * отступа и которая не комментарий; имя его — первое «…» в этой строке. Всё до
+ * следующей такой строки — тело, и уходит вместе с ней. Проверено по дереву:
+ * строк первой колонки без «…» в нём нет ни одной.
+ *
+ * ВЫЧЕРКНУТАЯ СТРОКА ОСТАЁТСЯ ПУСТОЙ, а не исчезает. Места в диагностике и в
+ * ведомости доказательства считаются по строкам: сдвинь их — и ответ поменялся
+ * бы, ничего не ускорив. Байты уходят, номера строк остаются на месте.
+ *
+ * `NULL` — сузить нельзя (шапка не отделяется от тела), и файл едет целиком.
+ */
+static char *repl_narrow_text(const char *text, size_t bytes, const repl_strings *names, size_t *out_bytes) {
+  size_t head = repl_header_bytes(text, bytes);
+  size_t offset = 0;
+  bool keeping = false;
+  repl_buf out;
+  if (head == 0) {
+    return NULL;
+  }
+  buf_init(&out);
+  buf_add(&out, text, head);
+  offset = head;
+  while (offset < bytes) {
+    size_t start = offset;
+    size_t end = offset;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    if (end == start) {
+      keeping = false;
+    } else if (text[start] != ' ' && text[start] != '\t') {
+      keeping = false;
+      if (!(end - start >= 2 && text[start] == '/' && text[start + 1] == '/')) {
+        size_t at = start;
+        while (at + 1 < end && !(text[at] == (char)0xc2 && text[at + 1] == (char)0xab)) {
+          at += 1;
+        }
+        if (at + 1 < end) {
+          size_t name = at + 2;
+          size_t stop = name;
+          while (stop + 1 < end && !(text[stop] == (char)0xc2 && text[stop + 1] == (char)0xbb)) {
+            stop += 1;
+          }
+          if (stop + 1 < end && stop > name) {
+            keeping = strings_has(names, text + name, stop - name);
+          }
+        }
+      }
+    }
+    if (keeping) {
+      buf_add(&out, text + start, end - start);
+    }
+    buf_char(&out, '\n');
+    offset = (end < bytes) ? end + 1 : bytes;
+  }
+  *out_bytes = out.used;
+  return out.data;
+}
+
+/**
+ * Что из каждого ввезённого файла названо — по рёбрам ввоза, до неподвижной
+ * точки. Корни (то, что уже лежало в `paths` до замыкания) берутся целиком:
+ * это сам проверяемый файл, его никто не сужал.
+ *
+ * ПРАВИЛО ОДНО, И ОНО ПРО ФАЙЛ, А НЕ ПРО ПУТЬ К НЕМУ: файл сужается тогда и
+ * только тогда, когда КАЖДОЕ ведущее в него ребро несёт `только`; оставленное
+ * — объединение всех этих списков. Одно ребро без списка — и файл едет целиком.
+ *
+ * ВГЛУБЬ СПИСОК НЕ ИДЁТ, и это не осторожность, а замер. Пробой на
+ * `flang/self/setoid.flang`: он ввозит «Законы моноида» списком из 49 имён, в
+ * котором есть «Строка узла» и нет «Строка скаляра»; сама же «Строка узла»
+ * живёт в «Печать в C», который моноид ввозит БЕЗ списка, и зовёт оттуда
+ * «Строка скаляра». Связывание это принимает: список прячет имена того, кого
+ * ввезли им, а не тех, кого ввёз он. Продли список вглубь — и проверка,
+ * проходившая раньше, отказала бы пятнадцатью замечаниями. Проверено: с этим
+ * правилом вердикт `setoid.flang` тот же, что и был.
+ */
+static void repl_narrow_closure(repl_strings *paths, repl_strings *texts, size_t roots) {
+  repl_strings *need = NULL;
+  char *whole = NULL;
+  char *reach = NULL;
+  bool changed = true;
+  size_t index = 0;
+  size_t at = 0;
+  if (repl_edge_count == 0 || paths->count <= roots) {
+    return;
+  }
+  need = (repl_strings *)repl_alloc(paths->count * sizeof(repl_strings));
+  whole = (char *)repl_alloc(paths->count);
+  reach = (char *)repl_alloc(paths->count);
+  for (index = 0; index < paths->count; index += 1) {
+    strings_init(&need[index]);
+    whole[index] = index < roots ? 1 : 0;
+    reach[index] = index < roots ? 1 : 0;
+  }
+  while (changed) {
+    changed = false;
+    for (at = 0; at < repl_edge_count; at += 1) {
+      const repl_edge *edge = &repl_edge_items[at];
+      size_t from_index = repl_strings_index(paths, edge->from);
+      size_t to_index = repl_strings_index(paths, edge->to);
+      const repl_strings *source = NULL;
+      size_t scan = 0;
+      if (from_index == (size_t)-1 || to_index == (size_t)-1 || !reach[from_index]) {
+        continue;
+      }
+      if (!reach[to_index]) {
+        reach[to_index] = 1;
+        changed = true;
+      }
+      if (!edge->has_only) {
+        /* Ввезён без списка — файл едет целиком, и неважно, сужен ли сам
+           ввозящий: имена ввезённого прячет ТОЛЬКО его собственное ребро. */
+        if (!whole[to_index]) {
+          whole[to_index] = 1;
+          changed = true;
+        }
+        continue;
+      }
+      if (whole[to_index] || to_index == from_index) {
+        continue;
+      }
+      source = &edge->only;
+      for (scan = 0; scan < source->count; scan += 1) {
+        if (!strings_has(&need[to_index], source->items[scan], source->sizes[scan])) {
+          strings_add(&need[to_index], source->items[scan], source->sizes[scan]);
+          changed = true;
+        }
+      }
+    }
+  }
+  for (index = roots; index < paths->count; index += 1) {
+    if (reach[index] && !whole[index]) {
+      size_t narrowed = 0;
+      char *text = repl_narrow_text(texts->items[index], texts->sizes[index], &need[index], &narrowed);
+      if (text != NULL) {
+        free(texts->items[index]);
+        texts->items[index] = text;
+        texts->sizes[index] = narrowed;
+      }
+    }
+  }
+  for (index = 0; index < paths->count; index += 1) {
+    strings_free(&need[index]);
+  }
+  free(need);
+  free(whole);
+  free(reach);
+}
+
 /**
  * Замыкание по «использует»: к уже собранным (`paths`, `texts`) добавляется всё,
  * до чего дотягивается очередь, и всё вместе едет компилятору списком. Чтения
@@ -3065,6 +3637,7 @@ static bool lock_beside(const char *entry) {
 static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_strings *queue) {
   fl_value *items = NULL;
   fl_value list = fl_nothing();
+  const size_t roots = paths->count;
   size_t index = 0;
   for (index = 0; index < queue->count; index += 1) {
     const char *path = queue->items[index];
@@ -3084,6 +3657,11 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     repl_imports_of(text, bytes, path, queue);
     free(text);
   }
+  /* Файлы прочитаны и граф ввозов известен — теперь из них вычёркивается всё,
+     что не названо. Считать это раньше нельзя: пока обход не кончился, ещё не
+     видно, не ввозит ли кто-то тот же файл ЦЕЛИКОМ. */
+  repl_narrow_closure(paths, texts, roots);
+  repl_edges_forget();
   {
     fl_error error;
     error.code = NULL;
@@ -3195,7 +3773,7 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
-                               fl_value *linked_out, fl_value *dropped_out) {
+                               fl_value *linked_out, fl_value *dropped_out, fl_value *own_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -3203,6 +3781,23 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
   fl_value diagnostics = fl_nothing();
   size_t index = 0;
   *has_program = false;
+  /*
+   * РАЗБОР ОДНОГО ВХОДНОГО ФАЙЛА ОТДАЁТСЯ НАРУЖУ, И ЭТО НЕ УДОБСТВО.
+   *
+   * Он нужен и здесь (законы категории), и у вызывающего («Что бинарник не
+   * судил» у `check`, «Чего печать не судила» у `emit`) — по одному и тому же
+   * доводу: связывание теряет свойства и преобразования. Пока каждый разбирал
+   * сам, один и тот же файл разбирался дважды, и замер 27 августа 2026 назвал
+   * цену второго разбора: 21,66 с из 249,26 с прогона `emit`, при том что шаг,
+   * ради которого разбирали, отработал за 0,00 с.
+   *
+   * `fl_nothing()` здесь значит «разбора нет»: разобранная программа — запись,
+   * ничтом она не бывает. Вызывающий обязан различать эти два случая сам, как
+   * различал их прежде по отказу собственного разбора.
+   */
+  if (own_out != NULL) {
+    *own_out = fl_nothing();
+  }
   args[0] = sources;
   args[1] = repl_value_say(entry);
   if (repl_call("Связать исходники", args, 2, &linked) != FL_OK) {
@@ -3338,8 +3933,10 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
      * этой правки файл печатал две строки о категориях и ни одной о
      * преобразовании.
      *
-     * Довод тот же и то же место, что у «Что бинарник не судил» ниже, — там
-     * второй разбор уже стоит по этой же причине.
+     * РАЗБОР ЗДЕСЬ ОДИН НА ВСЕХ. Тот же довод и тот же файл нужны «Что бинарник
+     * не судил» у `check` и «Чего печать не судила» у `emit`; прежде каждый
+     * разбирал сам, и вход разбирался дважды. Теперь разбор уезжает наружу
+     * через `own_out`, а разбирается по-прежнему в одном месте — здесь.
      */
     judged[0] = *program;
     judged[1] = *program;
@@ -3355,6 +3952,9 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
         if (repl_call("Разбор исходника", parse_args, 2, &parsed) == FL_OK
             && val_field(parsed, "программа", &own)) {
           judged[1] = own;
+          if (own_out != NULL) {
+            *own_out = own;
+          }
         }
       }
     }
@@ -3438,7 +4038,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, false, NULL, NULL);
+                            false, false, false, NULL, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -5743,6 +6343,9 @@ static int check_file(const char *path) {
   repl_strings queue;
   repl_strings proven;
   fl_value program = fl_nothing();
+  /* Разбор одного входного файла: его делает `repl_check_sources` ради законов
+     категории, а спрашивает о нём «Что бинарник не судил» ниже. */
+  fl_value own = fl_nothing();
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -5787,7 +6390,7 @@ static int check_file(const char *path) {
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+                          NULL, NULL, &own);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -5881,13 +6484,11 @@ static int check_file(const char *path) {
    */
   if (has_program) {
     fl_value obstacle = fl_nothing();
-    fl_value parse_args[2];
-    fl_value parsed = fl_nothing();
     fl_value obstacle_args[2];
     const char *utf8 = NULL;
     size_t obstacle_bytes = 0;
     /*
-     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
+     * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ОТДЕЛЬНО ОТ СВЯЗАННОГО, И ЭТО НЕ РАСТОЧИТЕЛЬСТВО.
      *
      * Связывание доносит не все объявления: свойства и преобразования оно
      * теряет — их нет ни среди слитых, ни среди взятых у входного файла
@@ -5901,17 +6502,37 @@ static int check_file(const char *path) {
      * НЕ СВЯЗЫВАЕТ вовсе и судит разобранный; бинарник связывает всегда.
      *
      * Цена — один разбор входного файла (импорты не перебираются: их
-     * объявления доносит связывание). Отказ разбора здесь молчит: если
-     * программа не разобралась, об этом уже сказали пять шагов выше.
+     * объявления доносит связывание), и на ЧИСТОЙ программе она платится ОДИН
+     * РАЗ на команду: тот же разбор с тем же пустым списком ввозов делает
+     * `repl_check_sources` ради законов категории и отдаёт сюда через
+     * `own_out`. Прежде здесь стоял свой разбор, и файл разбирался дважды —
+     * замер 27 августа 2026 назвал цену второго: 21,66 с при 0,00 с у самого
+     * шага, ради которого разбирали.
+     *
+     * РАЗБОР ЗДЕСЬ ОСТАЁТСЯ ЗАПАСНЫМ ХОДОМ, и убирать его нельзя: наверху он
+     * стоит под `bads->count == 0`, то есть на программе С ЗАМЕЧАНИЯМИ его не
+     * было. А этот шаг идёт и на такой программе — «я не судил» говорится тем
+     * же голосом, прошла проверка или нет. Спроси здесь связанную, и бинарник
+     * промолчал бы ровно о двух поверхностях из четырнадцати именно на тех
+     * файлах, где замечания уже есть.
+     *
+     * Отказ разбора здесь молчит: если программа не разобралась, об этом уже
+     * сказали пять шагов выше, — тогда спрашивают связанную, ровно как
+     * спрашивали прежде.
      */
-    parse_args[0] = repl_value_text(text, bytes);
-    parse_args[1] = repl_value_list(NULL, 0);
-    if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
-      parsed = fl_nothing();
-    }
     obstacle_args[0] = program;
-    if (!val_field(parsed, "программа", &obstacle_args[1])) {
-      obstacle_args[1] = program;
+    obstacle_args[1] = program;
+    if (own.tag != FL_NOTHING) {
+      obstacle_args[1] = own;
+    } else {
+      fl_value parse_args[2];
+      fl_value parsed = fl_nothing();
+      parse_args[0] = repl_value_text(text, bytes);
+      parse_args[1] = repl_value_list(NULL, 0);
+      if (repl_call("Разбор исходника", parse_args, 2, &parsed) == FL_OK
+          && val_field(parsed, "программа", &own)) {
+        obstacle_args[1] = own;
+      }
     }
     if (repl_call("Что бинарник не судил", obstacle_args, 2, &obstacle) == FL_OK
         && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
@@ -5935,6 +6556,47 @@ static int check_file(const char *path) {
         && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
       fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
       unjudged = true;
+    }
+    /*
+     * ТРЕТЬЕ ПРЕПЯТСТВИЕ, И ОНО СНОВА НЕ ТО ЖЕ САМОЕ.
+     *
+     * Объявления `процесс`, `надзор` и `прогон` с приездом
+     * `flang/self/processes.flang` СУДЯТСЯ — три правила контракта слоя
+     * написаны, и потому этих трёх имён больше нет в списке «не судит вовсе».
+     * Но судятся они не до конца: адресата `отправить`, достижимый отказ без
+     * надзора, отказ начального состояния и тип сообщения у адресата не
+     * сверяет никто. «Замечаний нет» после трёх посчитанных правил читалось бы
+     * как «сверено всё», и это была бы ровно та молчаливая подмена, ради
+     * устранения которой написаны два шага выше.
+     *
+     * Вызов не находит функции у СТАРОГО двоичного — того, чьё семя напечатано
+     * до приезда слоя, — и тогда `repl_call` отвечает не FL_OK, строка не
+     * печатается, а команда ведёт себя ровно как прежде.
+     */
+    {
+      /*
+       * ВЫЗОВ ТИХИЙ, И ОДИН ОТКАЗ ИЗ НЕГО ГЛОТАЕТСЯ НАРОЧНО.
+       *
+       * Двоичный, собранный из семени ДО приезда слоя процессов, этой функции
+       * не несёт, и `repl_call` печатает `FLANG_UNKNOWN_NAME: не найдена
+       * функция «…»` — строку, которая для человека новостью не является: он
+       * спрашивал про свою программу, а не про состав семени. Замер 29 августа
+       * 2026: без этой оговорки двоичный из семени ствола выдавал её на каждом
+       * `check`. Любой ДРУГОЙ отказ печатается как прежде: молчать о поломке
+       * компилятора нельзя.
+       */
+      fl_status said = FL_OK;
+      repl_call_quiet = true;
+      said = repl_call("Что у процессов не сверялось", obstacle_args, 2, &obstacle);
+      repl_call_quiet = false;
+      if (said == FL_OK) {
+        if (val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+          fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
+          unjudged = true;
+        }
+      } else if (strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0) {
+        fprintf(stderr, "%s: %s\n", repl_call_code, repl_call_message);
+      }
     }
   }
   fflush(stderr);
@@ -6786,6 +7448,31 @@ static int run_file(int argc, char **argv) {
   repl_imports_of(text, bytes, full, &queue);
   sources = repl_closure(&paths, &texts, &queue);
 
+  /*
+   * СНИМОК ПОДКЛЮЧЕНИЯ ПЕЧАТАЕТ ВЫЗОВ, КОТОРЫМ ЭТОТ ПРОГОН НАЧАЛСЯ (задача 0061).
+   *
+   * Строку собирает хозяин, а не рантайм, ровно потому, что имя файла знает
+   * только он: рантайм видит доводы в двери программы (`fl_check_entry`), но
+   * файла у него нет. Собранная здесь строка вставляется в оболочку как есть и
+   * даёт ТОТ ЖЕ вызов — в этом весь смысл ступени 2 задачи: снимок отладки
+   * обязан быть воспроизводимым прогоном, а не картинкой.
+   *
+   * Путь берётся разрешённый (`full`), а не как написано в доводе: снимок могут
+   * читать из другого каталога.
+   */
+  {
+    char repeat[1024];
+    /* Имя в одинарных кавычках, а не в «ёлочках»: строку вставляют в оболочку,
+       и пробел в имени функции без кавычек разорвал бы её на два довода. Оба
+       написания `flang run` принимает — `run_bare_name` снимает «ёлочки» сам. */
+    if (given == NULL) {
+      snprintf(repeat, sizeof(repeat), "flang run %s --function '%s'", full, name);
+    } else {
+      snprintf(repeat, sizeof(repeat), "flang run %s --function '%s' --args '%s'", full, name, given);
+    }
+    fl_watch_repeat_set(repeat);
+  }
+
   if (!run_args(given, &bound)) {
     fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
     code = 2;
@@ -6937,7 +7624,7 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_COUNT 8
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
-#define EMIT_FIELD_MAX 16
+#define EMIT_FIELD_MAX 17
 #define EMIT_RUNTIME_MAX 6
 
 /**
@@ -6968,18 +7655,38 @@ typedef struct {
   const char *build_say;
 } emit_target;
 
-/* Поля записи «Настройки» из `emit-c.flang` — общие у целей «c» и «go». */
-#define EMIT_FIELDS_C                                                                                 \
+/* Поля записи «Настройки», какими их просит цель «go». Запись та же самая, что
+   у цели «c» (объявлена в `emit-c.flang`, а «Настройки Go из настроек» в
+   `flang/self/bootstrap/compiler.flang` уже на flang перекладывает её в то, что
+   читает `emit-go.flang`), — но НАБОР ПОЛЕЙ разошёлся. Общим он быть перестал
+   ровно тогда, когда «c» научилась печатать процессы: у неё прибавились ДВА
+   поля с текстом движка процессов (`flang_conc.h`, `flang_conc.c`), а у Go
+   процессов нет. Одно имя на два разошедшихся набора значило бы, что Go поедет
+   с чужими полями и разберёт тексты рантайма не по своим местам. */
+#define EMIT_FIELDS_GO                                                                                \
   {"путь",           "есть путь",         "база",            "предел глубины", "предел шагов",        \
    "прогонщик",      "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "оболочка",      \
    "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа"}
 
+/* Поля записи «Настройки» из `emit-c.flang`.
+   ПОРЯДОК БЕЗЫМЯННЫХ ПОЛЕЙ ЗНАЧИМ: поля, которых `emit_call` не знает по имени,
+   разбирают `runtime_files` подряд. Их шесть и идут они в том же порядке, что и
+   файлы: заголовок рантайма, исходник рантайма, прогонщик, оболочка, заголовок
+   движка процессов, исходник движка процессов. */
+#define EMIT_FIELDS_C                                                                                 \
+  {"путь",           "есть путь",         "база",            "предел глубины", "предел шагов",        \
+   "прогонщик",      "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "оболочка",      \
+   "исходник оболочки", "типы входа",     "поля входа",      "варианты входа", "параметры входа",     \
+   "планировщик заголовок", "планировщик исходник"}
+
 static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
-    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 15,
-     EMIT_FIELDS_C, 4, {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c"}, NULL},
+    {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 17,
+     EMIT_FIELDS_C, 6,
+     {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
+     NULL},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
-     15, EMIT_FIELDS_C, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
+     15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./..."},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
@@ -7734,10 +8441,12 @@ static int emit_file(int argc, char **argv, const char *self) {
       fl_value program = fl_nothing();
       fl_value linked = fl_nothing();
       fl_value dropped = fl_nothing();
+      fl_value own = fl_nothing();
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, true, &linked, &dropped)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, true, false, true, &linked, &dropped,
+                              &own)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -7793,27 +8502,29 @@ static int emit_file(int argc, char **argv, const char *self) {
          * — и сказать ей надо не «я не берусь», а «вот файлы, и вот чего за
          * ними не проверено».
          *
-         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ВТОРОЙ РАЗ по той же причине, что у `check`:
-         * связывание теряет свойства и преобразования, и по одной связанной
-         * записи бинарник промолчал бы ровно о двух поверхностях из
-         * четырнадцати. Цена — один разбор входного файла.
+         * ВХОДНОЙ ФАЙЛ РАЗБИРАЕТСЯ ОТДЕЛЬНО ОТ СВЯЗАННОГО по той же причине,
+         * что у `check`: связывание теряет свойства и преобразования, и по
+         * одной связанной записи бинарник промолчал бы ровно о двух
+         * поверхностях из четырнадцати.
+         *
+         * РАЗБОР БЕРЁТСЯ У ПРОВЕРКИ, А НЕ ДЕЛАЕТСЯ ЗАНОВО. Проверка выше уже
+         * разобрала этот же текст с этим же пустым списком ввозов ради законов
+         * категории и отдала разбор через `own`. Прежде здесь стоял свой
+         * разбор, и цена его была названа в разборах — «один разбор входного
+         * файла», — а в секундах вышла вдесятеро дороже того, ради чего
+         * платится: замер 27 августа 2026 дал 21,66 с при 0,00 с у самого шага
+         * «Чего печать не судила».
+         *
+         * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
+         * ровно как спрашивали при отказе своего разбора.
          */
         {
-          fl_value parsed = fl_nothing();
-          fl_value parse_args[2];
           fl_value obstacle = fl_nothing();
           fl_value obstacle_args[2];
           const char *utf8 = NULL;
           size_t obstacle_bytes = 0;
-          parse_args[0] = repl_value_text(text, bytes);
-          parse_args[1] = repl_value_list(NULL, 0);
-          if (repl_call("Разбор исходника", parse_args, 2, &parsed) != FL_OK) {
-            parsed = fl_nothing();
-          }
           obstacle_args[0] = linked;
-          if (!val_field(parsed, "программа", &obstacle_args[1])) {
-            obstacle_args[1] = program;
-          }
+          obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
           if (repl_call("Чего печать не судила", obstacle_args, 2, &obstacle) == FL_OK
               && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
             unjudged = val_copy(obstacle);
@@ -8091,6 +8802,39 @@ static int repl_loop(int argc, char **argv, const char *self) {
  * `check` и так печатает человеку, и молча принять ключ, который ничего не
  * меняет, значило бы пообещать работу и её не сделать.
  */
+/*
+ * `--предел-шагов N` — ЕДИНСТВЕННЫЙ разбор числа предела, и он строгий.
+ *
+ * Строгий потому, что эталон на flang (`flang/self/cli.flang`) числа ключей
+ * читает своим разбором, а он «1e3» не принимает вовсе. `strtod` здесь дал бы
+ * 1000 там, где эталон отказывает, — и свидетель разошёлся бы с эталоном молча,
+ * на ключе, который поднимает защиту от зависания. Поэтому только цифры.
+ *
+ * Ноль не принимается: `ctx->max_steps == 0` в рантайме выключает счёт совсем,
+ * а этот ключ — про «поднять предел осознанно», а не про «снять его».
+ */
+static bool human_steps(const char *text, size_t *out) {
+  size_t value = 0;
+  size_t at = 0;
+  if (text == NULL || text[0] == 0) {
+    return false;
+  }
+  for (at = 0; text[at] != 0; at += 1) {
+    if (text[at] < '0' || text[at] > '9') {
+      return false;
+    }
+    if (value > ((size_t)-1 - (size_t)(text[at] - '0')) / 10) {
+      return false;
+    }
+    value = value * 10 + (size_t)(text[at] - '0');
+  }
+  if (value == 0) {
+    return false;
+  }
+  *out = value;
+  return true;
+}
+
 static int check_command(int argc, char **argv) {
   const char *path = NULL;
   const char *record = NULL;
@@ -8102,6 +8846,23 @@ static int check_command(int argc, char **argv) {
       proof = true;
     } else if (strcmp(argv[index], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[index], "--предел-шагов") == 0 || strcmp(argv[index], "--step-limit") == 0) {
+      size_t steps = 0;
+      index += 1;
+      if (index >= argc) {
+        fputs("flang check --предел-шагов: не названо число шагов\n", stderr);
+        return 2;
+      }
+      if (!human_steps(argv[index], &steps)) {
+        fprintf(stderr,
+                "flang check --предел-шагов: «%s» — не целое число шагов больше нуля\n",
+                argv[index]);
+        return 2;
+      }
+      /* Ложится в умолчание рантайма, а не в текущий контекст: контекст
+         заводится заново на каждый вызов компилятора (`repl_cycle`). */
+      fl_max_steps_default_set(steps);
+      repl_ctx.max_steps = steps;
     } else if (strcmp(argv[index], "--записать") == 0 || strcmp(argv[index], "--record") == 0) {
       index += 1;
       if (index >= argc) {
@@ -9921,7 +10682,7 @@ static fl_value io_http_answer(const repl_buf *answer) {
  * ОТКУДА БЕРЁТСЯ ШИФРОВАНИЕ. Не отсюда. Криптографии в этом файле не прибавилось
  * ни байта, и `bootstrap/Makefile` по-прежнему линкует `-lm -lpthread` и ничего
  * сверх: точка раскрутки как собиралась одним `cc`, так и собирается. Три пути
- * взвешены числом в `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`,
+ * взвешены числом в `docs/adr/0007-encryption-by-request-to-an-external-host.md`,
  * и выбран третий — ТОТ ЖЕ, каким в словаре живут процессы: поручение уходит
  * НАРУЖУ, чужая проверенная программа его исполняет, мы разбираем ответ.
  *
@@ -10304,7 +11065,7 @@ static fl_value io_https(io_host *host, const char *method, const char *address,
  * `io_https` внешней программе. Втащить TLS в это основание значило бы положить
  * в него чужую криптографию — путь отвергнутый, а не забытый; отдать поручение
  * наружу — тот же путь, каким в словаре живут процессы. Довод целиком —
- * `docs/adr/0007-shifrovanie-porucheniem-vneshnemu-hozyainu.md`.
+ * `docs/adr/0007-encryption-by-request-to-an-external-host.md`.
  */
 static fl_value io_request(io_host *host, const char *method, const char *address, const char *body) {
   char host_name[512];
@@ -10602,6 +11363,81 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
+  /* «Удалить файл» убирает ОДНО имя: файл или ПУСТОЙ каталог. Зовётся `remove`,
+     а не `unlink`+`rmdir` вручную, потому что в POSIX он и есть «убрать имя, чем
+     бы оно ни было», и различать эти два случая хозяину незачем — план назвал
+     путь, а не вид узла. Рекурсии здесь нет и не будет: «Перечислить каталог»
+     отдаёт имена без признака каталога, и обход дерева стоял бы на догадке.
+     Разрешение спрашивается ТО ЖЕ, что у записи: удаление — это запись в дерево,
+     и хозяин, которому писать запрещено, удалять тем более не вправе. */
+  if (io_order_is(order, "Удалить файл")) {
+    char *given = io_order_text(order, "путь");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    if (!host->write_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    free(given);
+    if (!ok) return bad;
+    if (remove(full) != 0) {
+      free(full);
+      return io_fail_errno("FLANG_IO_REMOVE", "имя не убрано");
+    }
+    free(full);
+    return io_variant("Убрано", NULL, 0);
+  }
+
+  /* «Завести временный каталог»: имя досочиняет ХОЗЯИН (`mkdtemp`), и потому два
+     прогона одного плана за один каталог не дерутся. План даёт ОБРАЗЕЦ — начало
+     имени, — и обратно получает путь В ТЕХ ЖЕ КООРДИНАТАХ, в каких давал: он
+     относителен каталогу работы, и остальные поручения примут его как есть.
+     Отдавать полный путь нельзя: под правилом «внутри каталога» он и сам по себе
+     годится, но план, сложивший из него имя файла, получил бы путь, который
+     `io_path` уже не примет на чужом хозяине. Шесть `X` добавляет хозяин: они
+     часть договора `mkdtemp`, а не имени, которое выбирал план. */
+  if (io_order_is(order, "Завести временный каталог")) {
+    char *given = io_order_text(order, "образец");
+    fl_value bad = fl_nothing();
+    bool ok = true;
+    char *full = NULL;
+    char *pattern = NULL;
+    size_t bytes = 0;
+    if (!host->write_files) {
+      free(given);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать файлы");
+    }
+    full = io_path(host, given, &bad, &ok);
+    if (!ok) {
+      free(given);
+      return bad;
+    }
+    bytes = strlen(full);
+    pattern = (char *)repl_alloc(bytes + 7);
+    memcpy(pattern, full, bytes);
+    memcpy(pattern + bytes, "XXXXXX", 7);
+    free(full);
+    if (mkdtemp(pattern) == NULL) {
+      free(pattern);
+      free(given);
+      return io_fail_errno("FLANG_IO_TEMPDIR", "временный каталог не заведён");
+    }
+    {
+      const size_t head = strlen(given);
+      char *answer = (char *)repl_alloc(head + 7);
+      fl_value fields[1];
+      memcpy(answer, given, head);
+      memcpy(answer + head, pattern + bytes, 7);
+      free(pattern);
+      free(given);
+      fields[0] = io_pair("путь", io_say(answer));
+      free(answer);
+      return io_variant("Заведено", fields, 1);
+    }
+  }
+
   if (io_order_is(order, "Перечислить каталог")) {
     char *given = io_order_text(order, "путь");
     fl_value bad = fl_nothing();
@@ -10841,7 +11677,7 @@ static fl_value io_perform(io_host *host, fl_value order) {
        `strlen`, и пакет, начинающийся с нулевого октета, «записывался» нулём
        байт — а нулевая длина здесь ещё и значит «положить трубку», то есть
        двоичный запрос не просто терялся, он рвал соединение. Разбор —
-       `docs/zettel/dvoichnyy-hozyain-obryvaet-soderzhimoe-na-pervom-nule.md`.
+       `docs/zettel/the-binary-host-cuts-content-at-the-first-zero-octet.md`.
        Двоичное возит октетная пара ниже; здесь — текст, и нетекст отвергается. */
     {
       fl_value field = fl_nothing();
@@ -11092,6 +11928,7 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
                    fl_value **log, size_t *count, size_t *room, double limit, bool pretty) {
   fl_value state = fl_nothing();
   fl_value response = fl_nothing();
+  fl_value last = fl_nothing();
   fl_value step = first;
   fl_value field = fl_nothing();
   char *kind = NULL;
@@ -11128,6 +11965,32 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
   *log = (fl_value *)repl_alloc(*room * sizeof(fl_value));
   for (;;) {
     fl_value step_args[4];
+    /*
+     * ПОДКЛЮЧЕНИЕ К ИДУЩЕЙ СЛУЖБЕ — ВТОРАЯ ПОЛОВИНА ОТВЕТА (задача 0061).
+     *
+     * Обработчик сигнала отвечает сразу и сам, но вправе написать только то,
+     * что POSIX объявил безопасным: имя функции, глубину, витки, память. Здесь,
+     * на границе витка плана, безопасно всё — и потому здесь говорится то, чего
+     * обработчик сказать не мог: какой план идёт и сколько поручений он уже
+     * отдал. Заменять друг друга эти два ответа не могут: тесный расчёт до
+     * границы витка не дойдёт вовсе, а служба стоит на ней почти всё время.
+     *
+     * Цена — одно чтение переменной на виток плана, то есть на ПОРУЧЕНИЕ, а не
+     * на виток вычислителя. Копия последнего поручения — присваивание
+     * `fl_value`, четыре слова, и делается она рядом с настоящим поручением
+     * хозяину (файл, сеть, время), против которого не считается.
+     */
+    if (fl_watch_asked()) {
+      const char *what = NULL;
+      size_t what_bytes = 0;
+      if (!io_order_name(last, &what, &what_bytes)) {
+        what = "ещё ни одного";
+        what_bytes = strlen(what);
+      }
+      fprintf(stderr, "ПОДКЛЮЧЕНИЕ: идёт план «%s», поручений отдано %lu, последнее «%.*s»\n", plan_name,
+              (unsigned long)*count, (int)what_bytes, what);
+      fflush(stderr);
+    }
     step_args[0] = ready;
     step_args[1] = plan;
     step_args[2] = state;
@@ -11175,6 +12038,7 @@ static int io_loop(io_host *host, fl_value ready, fl_value plan, fl_value first,
       fl_value entry[2];
       val_field(step, "поручение", &order);
       val_field(step, "потом", &state);
+      last = order;
       response = io_perform(host, order);
       entry[0] = io_pair("поручение", order);
       entry[1] = io_pair("отклик", response);
@@ -11340,6 +12204,16 @@ static int io_file(int argc, char **argv) {
   args[0] = repl_closure(&paths, &texts, &queue);
   args[1] = repl_value_say(full);
   args[2] = repl_value_say(plan_name);
+
+  /* Снимок подключения (`kill -USR1`) печатает команду, которой служба поднята,
+     — тем же способом и по той же причине, что у `flang run`. Служба идёт
+     часами, и человек, подключившийся к чужому процессу, обязан узнать из
+     снимка, ЧТО именно идёт, а не идти искать это в чужой истории оболочки. */
+  {
+    char repeat[1024];
+    snprintf(repeat, sizeof(repeat), "flang io %s --plan \"%s\"", full, plan_name);
+    fl_watch_repeat_set(repeat);
+  }
 
   if (repl_call("План исходников", args, 3, &found) != FL_OK) {
     fputs("flang io: связывание не отработало\n", stderr);
@@ -12390,6 +13264,7 @@ static bool pkg_beside(const char *entry) {
   if (queue.count == 0) {
     strings_free(&queue);
     strings_free(&seen);
+    repl_edges_forget();
     return true;
   }
 
@@ -12512,6 +13387,9 @@ static bool pkg_beside(const char *entry) {
 
   strings_free(&queue);
   strings_free(&seen);
+  /* Рёбра ввоза здесь собирались попутно и никому не нужны: считает по ним
+     только замыкание, а склад пакетов ходит своим обходом. */
+  repl_edges_forget();
   return ok;
 }
 
@@ -12746,7 +13624,7 @@ static int package_file(int argc, char **argv) {
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL);
+                          NULL, NULL, NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);
@@ -13400,6 +14278,9 @@ static fl_value lsp_check(fl_value server, const char *path, const char *text, s
     repl_imports_of(found, bytes, needed, &queue);
     free(found);
   }
+  /* У сервера правки свой обход, не `repl_closure`; рёбра ввоза он не считает,
+     и копиться им между запросами незачем. */
+  repl_edges_forget();
 
   if (fl_list_alloc(&repl_ctx, paths.count, &items, &error) != FL_OK) {
     repl_oom();
@@ -13901,7 +14782,7 @@ static int mcp_serve(int argc, char **argv) {
       args[4] = repl_value_say(bads);
       free(bads);
       if (repl_call("Принять ведомость MCP", args, 5, &step) != FL_OK) {
-        fputs("flang --mcp-mode: ведомость не улеглась в ответ\n", stderr);
+        fputs("flang --mcp-mode: отчёт о доказательствах не улёгся в ответ\n", stderr);
         continue;
       }
     }
@@ -13963,6 +14844,188 @@ static bool human_flag(int argc, char **argv, const char *full, const char *shor
     }
   }
   return false;
+}
+
+/* ═══════════════════════ постоянная машины ═══════════════════════ */
+
+/*
+ * `flang --машина` — снять постоянную ЭТОЙ машины и напечатать её данными.
+ *
+ * ── Почему данными, а не доказательством ────────────────────────────────────
+ * Витки — свойство программы: их считает рантайм, и на одном входе их всегда
+ * одно и то же число. Секунды — свойство машины, и языку про них знать нечего.
+ * Замер недели, ради которого команда и заводится: один и тот же файл считался
+ * 9 минут при загрузке 30 и 7 часов 23 минуты при загрузке 110. Ничто в
+ * программе этого не предсказывает.
+ *
+ * Так уже устроено всё остальное в языке: программа не спрашивает мир сама,
+ * внешнее приходит данными. Постоянная машины — такие же данные, как содержимое
+ * файла. Отсюда и второй вид вызова: `flang --машина <файл>` берёт снятое
+ * РАНЬШЕ и не мерит ничего, чтобы обещание в витках можно было перевести в
+ * секунды для НАЗВАННОЙ машины, а не для той, где случилось читать.
+ *
+ * ── Почему постоянная НЕ ОДНА, и это видно из вывода ────────────────────────
+ * Виток витку не равен: виток разбора строит узлы и просит память, виток
+ * лексера читает байты. Одним числом это не описывается, и врать одним числом
+ * хуже, чем назвать два. Поэтому мерится ДВЕ работы разом, обе — настоящие шаги
+ * компилятора над одним и тем же эталонным исходником, и печатаются обе с
+ * разбросом между ними.
+ *
+ * Второе, чем машина не описывается одним числом, — сколько её сейчас свободно.
+ * Ядра печатаются рядом с загрузкой: 8 процессов на 8 свободных ядрах дают
+ * 7,92×, а 16 потоков при 15 занятых ядрах — 1,15×. Загрузка снимается
+ * `/proc/loadavg`; где его нет, там стоит «не снято», а не ноль: ноль означал
+ * бы «машина свободна», и это была бы неправда.
+ */
+
+/* Эталонный исходник замера: он и разбирается, и лексится. Меняя его, меняешь
+   постоянную — поэтому он лежит здесь, а не читается с диска. */
+static const char MACHINE_SOURCE[] =
+    "модуль «Мера машины»\n"
+    "\n"
+    "тотальная функция «Сумма до»\n"
+    "  принимает н: число\n"
+    "  возвращает число\n"
+    "  убывает н\n"
+    "  если н не больше 0\n"
+    "    то 0\n"
+    "    иначе н плюс («Сумма до» от (н минус 1))\n"
+    "\n"
+    "тотальная функция «Удвоить всё»\n"
+    "  принимает элементы: список числа\n"
+    "  возвращает список числа\n"
+    "  отобразить элементы как э → э умножить на 2\n"
+    "\n"
+    "тотальная функция «Только большие»\n"
+    "  принимает элементы: список числа, порог: число\n"
+    "  возвращает список числа\n"
+    "  отфильтровать элементы где э → э больше порог\n";
+
+static double machine_now(void) {
+  struct timespec point;
+  if (clock_gettime(CLOCK_MONOTONIC, &point) != 0) {
+    return 0.0;
+  }
+  return (double)point.tv_sec + (double)point.tv_nsec / 1000000000.0;
+}
+
+/* Одна работа замера: повторять, пока не набежит `least` секунд, и вернуть
+   витки и секунды. Повторов не меньше одного — иначе на быстрой машине работа
+   не была бы сделана ни разу и постоянная вышла бы из нуля. */
+static bool machine_weigh(const char *work, double least, unsigned long *ticks, double *seconds,
+                          unsigned long *rounds) {
+  double started = machine_now();
+  double spent = 0.0;
+  unsigned long total = 0;
+  unsigned long times = 0;
+  bool ok = true;
+  repl_call_quiet = true;
+  do {
+    fl_value args[2];
+    fl_value out = fl_nothing();
+    size_t count = 1;
+    args[0] = repl_value_text(MACHINE_SOURCE, sizeof(MACHINE_SOURCE) - 1);
+    if (strcmp(work, "разбор") == 0) {
+      args[1] = repl_value_list(NULL, 0);
+      count = 2;
+      ok = repl_call("Разбор исходника", args, count, &out) == FL_OK;
+    } else {
+      ok = repl_call("Токены", args, count, &out) == FL_OK;
+    }
+    total += (unsigned long)repl_ctx.steps;
+    times += 1;
+    spent = machine_now() - started;
+    /* Арена не отдаёт ничего сама: без сброса повторы съели бы память
+       пропорционально их числу, а на быстрой машине их тысячи. */
+    fl_arena_reset(&repl_arena);
+  } while (ok && spent < least);
+  repl_call_quiet = false;
+  *ticks = total;
+  *seconds = spent;
+  *rounds = times;
+  return ok;
+}
+
+/* Загрузка машины за минуту. Не снята — значит не снята: ноль означал бы
+   «свободна», и на этом числе строили бы обещание. */
+static bool machine_load(double *load) {
+  size_t bytes = 0;
+  char *text = repl_read_file("/proc/loadavg", &bytes);
+  if (text == NULL) {
+    return false;
+  }
+  *load = strtod(text, NULL);
+  free(text);
+  return true;
+}
+
+static void machine_print(FILE *to, double ticks_parse, double ticks_lex, long cores, bool has_load,
+                          double load, unsigned long parse_ticks, double parse_seconds,
+                          unsigned long parse_rounds, unsigned long lex_ticks, double lex_seconds,
+                          unsigned long lex_rounds) {
+  fprintf(to, "машина\n");
+  fprintf(to, "  ядер: %ld\n", cores);
+  if (has_load) {
+    fprintf(to, "  занято ядер: %.2f\n", load);
+    fprintf(to, "  свободно ядер: %.2f\n", (double)cores - load < 0.0 ? 0.0 : (double)cores - load);
+  } else {
+    fprintf(to, "  занято ядер: не снято\n");
+    fprintf(to, "  свободно ядер: не снято\n");
+  }
+  fprintf(to, "  витков в секунду, разбор: %.0f\n", ticks_parse);
+  fprintf(to, "  витков в секунду, лексер: %.0f\n", ticks_lex);
+  fprintf(to, "  разброс: %.2f\n", ticks_lex > 0.0 ? ticks_parse / ticks_lex : 0.0);
+  fprintf(to, "  замер разбора: %lu витков за %.6f с, повторов %lu\n", parse_ticks, parse_seconds,
+          parse_rounds);
+  fprintf(to, "  замер лексера: %lu витков за %.6f с, повторов %lu\n", lex_ticks, lex_seconds, lex_rounds);
+}
+
+/*
+ * Снятое раньше — обратно человеку, и НИЧЕГО не мерено.
+ *
+ * Тот, кто читает обещание «не больше N витков», обязан знать, на ЧЁМ мерено.
+ * Поэтому снятое кладут в файл рядом с обещанием, а не пересчитывают на своей
+ * машине: пересчёт молча заменил бы названную машину на случайную.
+ */
+static int machine_recall(const char *path) {
+  size_t bytes = 0;
+  char *text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    fprintf(stderr, "flang --машина: файл «%s» не читается\n", path);
+    return 1;
+  }
+  fputs(text, stdout);
+  free(text);
+  return 0;
+}
+
+static int machine_command(int argc, char **argv) {
+  unsigned long parse_ticks = 0, lex_ticks = 0, parse_rounds = 0, lex_rounds = 0;
+  double parse_seconds = 0.0, lex_seconds = 0.0, load = 0.0;
+  long cores = 0;
+  bool has_load = false;
+
+  if (argc > 2 && argv[2][0] != '-') {
+    return machine_recall(argv[2]);
+  }
+  if (!repl_is_compiler()) {
+    fputs("flang --машина: постоянную снимает компилятор flang, а эта программа — не он.\n", stderr);
+    return 2;
+  }
+  if (!machine_weigh("разбор", 0.25, &parse_ticks, &parse_seconds, &parse_rounds) ||
+      !machine_weigh("лексер", 0.25, &lex_ticks, &lex_seconds, &lex_rounds) || parse_seconds <= 0.0 ||
+      lex_seconds <= 0.0) {
+    fputs("flang --машина: замер не удался — работа компилятора отказала\n", stderr);
+    return 1;
+  }
+  cores = sysconf(_SC_NPROCESSORS_ONLN);
+  if (cores < 1) {
+    cores = 1;
+  }
+  has_load = machine_load(&load);
+  machine_print(stdout, (double)parse_ticks / parse_seconds, (double)lex_ticks / lex_seconds, cores, has_load,
+                load, parse_ticks, parse_seconds, parse_rounds, lex_ticks, lex_seconds, lex_rounds);
+  return 0;
 }
 
 /*
@@ -14070,6 +15133,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = lsp_serve(argc, argv);
   } else if (strcmp(command, "--mcp-mode") == 0) {
     code = mcp_serve(argc, argv);
+  } else if (strcmp(command, "--машина") == 0 || strcmp(command, "--machine") == 0) {
+    code = machine_command(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
     code = repl_loop(argc - 1, argv + 1, self);
   } else {

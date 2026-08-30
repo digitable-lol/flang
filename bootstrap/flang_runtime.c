@@ -47,11 +47,19 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 
 #ifdef FL_POSIX_STACK
 #include <pthread.h>
 #include <sys/resource.h>
+/* Окно наблюдения: сигнал, `write` в дескриптор 2 и чтение /proc/self/statm.
+   Всё, что здесь нужно, объявлено тем же _POSIX_C_SOURCE, что и стек. */
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <unistd.h>
+#define FL_WATCH 1
 #endif
 
 #ifdef FL_WASM_STACK
@@ -82,6 +90,15 @@ typedef union fl_align {
 
 #define FL_ALIGNMENT (sizeof(fl_align))
 #define FL_CHUNK_MIN (size_t)(64u * 1024u)
+
+/*
+ * Сколько кусков откат ОСТАВЛЯЕТ арене, отдавая остальные системе. Ноль значит
+ * «отдать весь хвост»; разбор и цена каждого варианта — в замере над
+ * `fl_arena_rollback`.
+ */
+#ifndef FL_ARENA_KEEP
+#define FL_ARENA_KEEP (size_t)4
+#endif
 
 struct fl_chunk {
   fl_chunk *next;
@@ -114,6 +131,9 @@ void fl_arena_init_small(fl_arena *arena, size_t least) {
   arena->guard_used = 0;
   arena->staging = NULL;
   arena->staging_size = 0;
+  arena->deny = NULL;
+  arena->recycle_mark = 0;
+  arena->recycle_next = 0;
   /* Нулевой кусок не бывает, а кусок больше общего минимума и есть общий
      минимум: мельчить умеем, крупнить незачем. */
   arena->least = least == 0 || least > FL_CHUNK_MIN ? FL_CHUNK_MIN : fl_round_up(least);
@@ -257,6 +277,8 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t ext
   return true;
 }
 
+static void fl_region_forget(fl_arena *arena);
+
 void fl_arena_reset(fl_arena *arena) {
   fl_chunk *chunk = NULL;
   if (arena == NULL) {
@@ -271,6 +293,7 @@ void fl_arena_reset(fl_arena *arena) {
      посреди вызова. Граница снимается, иначе она сторожила бы пустоту. */
   arena->guard_chunk = NULL;
   arena->guard_used = 0;
+  fl_region_forget(arena);
 }
 
 void fl_arena_release(fl_arena *arena) {
@@ -293,6 +316,10 @@ void fl_arena_release(fl_arena *arena) {
   arena->guard_used = 0;
   arena->staging = NULL;
   arena->staging_size = 0;
+  free(arena->deny);
+  arena->deny = NULL;
+  arena->recycle_mark = 0;
+  arena->recycle_next = 0;
 }
 
 /* ═════════════════════════════ стек ═════════════════════════════ */
@@ -522,6 +549,60 @@ bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state) {
 
 /* ═════════════════════════════ контекст ═════════════════════════════ */
 
+/*
+ * ПРЕДЕЛ ШАГОВ — ОДНО ЧИСЛО НА ПРОГРАММУ, И ЖИВЁТ ОНО ЗДЕСЬ.
+ *
+ * `FL_MAX_STEPS` печатается бэкендом перед этим файлом и потому неизменен: он
+ * УМОЛЧАНИЕ, а не потолок. Кто знает про свой счёт больше компоновщика —
+ * человек, сказавший `flang check --предел-шагов N`, — говорит об этом вслух, и
+ * сказанное ложится сюда, в одно место. Иначе поднимать предел пришлось бы
+ * пересборкой (scripts/raskrutka.sh), то есть переписывать число в двух местах:
+ * в семени и в скрипте.
+ *
+ * Почему не поле контекста, а общее умолчание: контекст заводится заново на
+ * КАЖДЫЙ вызов компилятора (`repl_cycle`), и назначенное одному контексту
+ * следующий уже не помнил бы. Умолчание помнит.
+ *
+ * Ноль здесь значит «не сказано», а не «счёт выключен»: выключение счёта —
+ * `ctx->max_steps = 0` на самом контексте, и путать эти два смысла в одном
+ * числе нельзя.
+ */
+static size_t fl_max_steps_told = 0;
+
+size_t fl_max_steps_default(void) {
+  return fl_max_steps_told == 0 ? (size_t)FL_MAX_STEPS : fl_max_steps_told;
+}
+
+void fl_max_steps_default_set(size_t steps) { fl_max_steps_told = steps; }
+
+/*
+ * ПРЕДЕЛ ГЛУБИНЫ — ТО ЖЕ САМОЕ И ПО ТЕМ ЖЕ ДОВОДАМ, что предел шагов выше.
+ *
+ * Здесь его не было, и это стоило двух суток работы (задача 7444). `FL_MAX_DEPTH`
+ * читался прямо в `fl_ctx_init`, поэтому предел глубины у идущего двоичного не
+ * менялся НИЧЕМ, кроме пересборки: ключ `--max-depth` у `emit` кладёт число в
+ * НАПЕЧАТАННУЮ программу, а своему прогону не говорит ничего. Человек, поднявший
+ * ключом предел, получал тот же отказ с тем же старым числом — и читал его как
+ * беду в своём файле.
+ *
+ * Ноль значит «не сказано», а не «предел снят»: снятие — `ctx->max_depth = 0` на
+ * самом контексте, и путать эти два смысла в одном числе нельзя. Точно так же
+ * устроен предел шагов, и расхождение здесь было бы ловушкой.
+ *
+ * ОДНОГО ЭТОГО ЧИСЛА МАЛО, и об этом надо знать. Глубину несёт стек, а стек
+ * заводится один раз на процесс — до того, как разобран хоть один ключ
+ * (`fl_call_deep` в flang_cli.c). Поэтому тот, кто поднимает предел здесь,
+ * обязан поднять и стек: иначе `fl_enter` упрётся в `fl_stack_spent` и честно
+ * скажет «исчерпала стек хозяина», не дойдя до объявленного предела.
+ */
+static size_t fl_max_depth_told = 0;
+
+size_t fl_max_depth_default(void) {
+  return fl_max_depth_told == 0 ? (size_t)FL_MAX_DEPTH : fl_max_depth_told;
+}
+
+void fl_max_depth_default_set(size_t depth) { fl_max_depth_told = depth; }
+
 void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   /* Отметка стека: адрес локальной этой самой функции. Всё, что расчёт займёт
      под ней, сторож и меряет. Брать её здесь правильно потому, что `fl_ctx_init`
@@ -533,9 +614,9 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   }
   ctx->arena = arena;
   ctx->depth = 0;
-  ctx->max_depth = FL_MAX_DEPTH;
+  ctx->max_depth = fl_max_depth_default();
   ctx->steps = 0;
-  ctx->max_steps = FL_MAX_STEPS;
+  ctx->max_steps = fl_max_steps_default();
   ctx->stack_base = &here;
   ctx->stack_room = fl_stack_room();
 #ifdef FL_WASM_STACK
@@ -562,6 +643,9 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
 #endif
   ctx->stack_seen = 0;
   ctx->stack_step = 0;
+  /* Окно наблюдения показывает ЭТОТ расчёт: `fl_ctx_init` зовут ровно там, где
+     расчёт начинается. Обработчик ставится один раз на процесс. */
+  fl_watch_open(ctx);
 }
 
 const char *fl_status_text(fl_status status) {
@@ -671,11 +755,118 @@ static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type, fl_value
   return FL_OK;
 }
 
+/*
+ * ── Сравнение имён и строк без похода в libc ───────────────────────────────
+ *
+ * Имена полей сверяются линейным перебором на КАЖДОМ взятии поля, а взятие поля
+ * — самое частое, что делает напечатанный код. Профиль `flang check
+ * flang/self/tags.flang` (perf, 14 тысяч проб): `__strcmp_avx2` 12,3 %,
+ * `__memcmp_avx2_movbe` 10,9 % — почти четверть всей работы уходит в libc на
+ * сравнения, которые в подавляющем большинстве кончаются НЕсовпадением.
+ *
+ * Имена в flang русские, и это меняет отсечку: первый байт кириллической буквы
+ * — D0 либо D1, то есть по нему не различается почти ничто. Различает ВТОРОЙ.
+ * Поэтому отсев идёт по двум байтам сразу, и только сойдись они оба — зовётся
+ * strcmp на остаток. Ответ тот же до буквы: это та же посимвольная сверка,
+ * просто первые два символа сверены на месте.
+ *
+ * Указатели сверяются первыми не ради скорости на совпадении, а потому что имя
+ * поля в напечатанном коде — литерал, и одинаковые литералы единицы трансляции
+ * компилятор сливает: у совпавшего имени указатели чаще всего РАВНЫ.
+ */
+static bool fl_name_same(const char *left, const char *right) {
+  if (left == right) {
+    return true;
+  }
+  if (left[0] != right[0]) {
+    return false;
+  }
+  if (left[0] == '\0') {
+    return true;
+  }
+  if (left[1] != right[1]) {
+    return false;
+  }
+  if (left[1] == '\0') {
+    return true;
+  }
+  return strcmp(left + 2, right + 2) == 0;
+}
+
+/* То же для строк flang: длина уже сошлась, сверяются края, потом середина. */
+static bool fl_bytes_same(const char *left, const char *right, size_t bytes) {
+  if (left == right || bytes == 0) {
+    return true;
+  }
+  if (left[0] != right[0] || left[bytes - 1] != right[bytes - 1]) {
+    return false;
+  }
+  return memcmp(left, right, bytes) == 0;
+}
+
+/*
+ * ── ДВА ПРОХОДА: сперва одни указатели, потом имена ────────────────────────
+ *
+ * Замер 24 августа, счётчики врезаны прямо в `fl_field_get` семени, прогон
+ * `check flang/stdlib/strings.flang --proof`:
+ *
+ *     вызовов        53 614 560      шагов цикла     78 527 481
+ *     СОВПАЛО ПО УКАЗАТЕЛЮ  53 614 560      совпало по strcmp   0
+ *
+ * и на `check flang/self/builtins.flang --proof` — 243 879 126 вызовов,
+ * 416 544 557 шагов, и снова ВСЕ до единого совпадения по указателю, ни одного
+ * по strcmp. Имя поля в напечатанном коде — литерал и на постройке записи, и на
+ * её чтении; одинаковые литералы единицы трансляции компилятор сливает, и
+ * указатели у них равны.
+ *
+ * ОТСЮДА ПРОВЕРЕННЫЙ ОТКАЗ ОТ ИНТЕРНИРОВАНИЯ. Общая таблица имён, где все копии
+ * одного имени получают один указатель, чинила бы совпадение по strcmp — а его
+ * НОЛЬ из 297 миллионов. Интернирование стоило бы таблицы, хеша и лишнего шага
+ * на каждой постройке записи и не убрало бы ни одного strcmp. Не сделано, и
+ * дальше пробовать незачем: числа выше это закрывают.
+ *
+ * Работа сидит не в совпадении, а В ПРОМАХАХ: 24,9 млн промахов на strings, 172,7
+ * млн на builtins — это те поля, мимо которых цикл прошёл до нужного. У промаха
+ * указатели разные ВСЕГДА, и `fl_name_same` идёт дальше — читать имя. А имя
+ * лежит в другой строке кэша, чем массив полей, и этот поход и есть цена.
+ *
+ * Поэтому цикл разделён надвое: первый проход сверяет ТОЛЬКО указатели и в
+ * память имён не заглядывает вовсе, второй (полный, посимвольный) заводится,
+ * лишь если первый ничего не нашёл. Ответ тот же: второй проход — прежний цикл
+ * целиком.
+ *
+ * Цена, снятая прогоном (эталон `check ... --proof`, машина свободна, прогоны
+ * по одному):
+ *
+ *     flang/self/builtins.flang   78,31 с → 76,53 с   (−2,3 %)
+ *     flang/stdlib/strings.flang   4,70 с →  4,68 с   (−0,4 %, на грани шума)
+ *
+ * Отсчёт вёлся от семени, в которое уже внесён `fl_name_same` выше, — то есть
+ * это цена ИМЕННО двух проходов, а не сравнения имён вообще. Сам `fl_name_same`
+ * против голого strcmp дал на том же эталоне 83,30 с → 78,31 с (−6,0 %).
+ *
+ * Вывод `--proof` сверен полностью и совпал знак в знак на обоих файлах
+ * (md5 006b9622a844a6acb429277c92d1b103 у всех четырёх сборок).
+ *
+ * Что осталось и чего здесь НЕТ. В профиле после правки первое место занимает
+ * не взятие поля (4,7 %), а обмер области — `fl_region_size` с
+ * `fl_region_fields_size` и `fl_region_close` вместе около 40 %. Пробная правка
+ * обмера (не звать себя рекурсивно на число, признак и «ничто», подняв проверку
+ * глубины перед цикл) на семени дала 76,53 с → 75,08 с на builtins и
+ * 4,68 с → 4,53 с на strings при том же выводе знак в знак, но сюда не
+ * внесена: обмер в этом файле уже переписан на пропуск подграфа ниже отметки
+ * (`fl_live`), и старое число к новому коду не относится. Мерить надо заново.
+ */
 /* Поле по имени среди полей записи или варианта; NULL — поля нет. */
 static const fl_field *fl_find_field(const fl_field *fields, size_t count, const char *name) {
   size_t index = 0;
   for (index = 0; index < count; index += 1) {
-    if (strcmp(fields[index].name, name) == 0) {
+    if (fields[index].name == name) {
+      return &fields[index];
+    }
+  }
+  for (index = 0; index < count; index += 1) {
+    if (fl_name_same(fields[index].name, name)) {
       return &fields[index];
     }
   }
@@ -771,7 +962,7 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
         size_t at = 0;
         bool declared = false;
         for (at = 0; at < type->field_count; at += 1) {
-          if (strcmp(table->fields[type->field_from + at].name, value.as.record->fields[item].name) == 0) {
+          if (fl_name_same(table->fields[type->field_from + at].name, value.as.record->fields[item].name)) {
             declared = true;
             break;
           }
@@ -790,7 +981,7 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
       }
       if (value.tag == FL_VARIANT) {
         for (item = 0; item < type->variant_count; item += 1) {
-          if (strcmp(table->variants[type->variant_from + item].name, value.as.variant->name) == 0) {
+          if (fl_name_same(table->variants[type->variant_from + item].name, value.as.variant->name)) {
             variant = &table->variants[type->variant_from + item];
             break;
           }
@@ -808,6 +999,488 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table, size_t
   }
 }
 
+/* ═════════════════════════ окно наблюдения ═════════════════════════
+ *
+ * К ИДУЩЕЙ ПРОГРАММЕ ПОДКЛЮЧАЮТСЯ СИГНАЛОМ, И ОТВЕЧАЕТ ХОЗЯИН.
+ *
+ * Зачем — задача 0061. 25–26 августа 2026 перепечатка семени шла девять с
+ * половиной часов и не сказала о себе ни слова; чтобы понять, жива она или
+ * зависла, пришлось читать /proc и сравнивать два профиля `perf` с получасовым
+ * промежутком. Строка хода задачи 0031 говорит раз в полминуты и говорит имя
+ * ШАГА; здесь тот же прибор отвечает, КОГДА СПРОСИЛИ, и называет функцию, на
+ * которой счёт стоит прямо сейчас.
+ *
+ * Форма выбрана и обоснована в
+ * docs/adr/0019-the-host-answers-the-signal-not-the-program.md. Три довода
+ * оттуда, без которых этот код читается неверно:
+ *
+ * 1. ПРОГРАММА В ЭТОМ НЕ УЧАСТВУЕТ. Ни нового слова, ни нового поручения —
+ *    и никакого способа заметить, что к ней подключились. Раз прогон под
+ *    наблюдением неотличим от прогона без него, ни одно обещание программы от
+ *    наблюдения не меняется. Отладка не входит в смысл программы.
+ *
+ * 2. НАБЛЮДАЕМОЕ ТЕЧЁТ ТОЛЬКО НАРУЖУ. Ни одно поле окна не лежит в `fl_ctx`,
+ *    поэтому ни одна ветка расчёта до него не дотянется. Дай программе прочесть
+ *    свои витки — она сможет по ним ветвиться, и два прогона одной программы
+ *    дадут разные ответы.
+ *
+ * 3. ХОЗЯИН И БЕЗ ТОГО ЭТО СЧИТАЕТ. Витки считает `fl_tick`, глубину —
+ *    `fl_enter`, имя функции приходит в `fl_enter` первым доводом. Новый здесь
+ *    не факт, а СРОК: те же числа, но когда спросили, а не когда сломалось.
+ *
+ * УМОЛЧАНИЕ SIGUSR1 В POSIX — ЗАВЕРШИТЬ ПРОЦЕСС. То есть до этого окна
+ * `kill -USR1 <pid>` не «ничего не делал», а УБИВАЛ идущий расчёт.
+ *
+ * ПОЧЕМУ ВСЁ РУКАМИ, А НЕ `fprintf`. Обработчик сигнала вправе звать только то,
+ * что POSIX объявил безопасным; stdio в этот список не входит и, прерванный
+ * посреди собственного буфера, кладёт процесс. Отсюда `write` в дескриптор 2 и
+ * сборка строки в свой буфер. Ровно тем же и по той же причине устроена строка
+ * хода в flang_repl.c — и её помощники переехали сюда, чтобы одно и то же число
+ * не выглядело в двух строках по-разному.
+ *
+ * ПОЧЕМУ В stderr, А НЕ В stdout. Машинный вывод (`flang check --proof --json`,
+ * `flang emit`, сверка семени байт в байт) идёт в stdout и обязан остаться
+ * прежним до байта.
+ */
+
+/* ── печать без stdio ── */
+
+size_t fl_say_text(char *out, size_t room, size_t at, const char *text) {
+  size_t index = 0;
+  if (text == NULL) {
+    return at;
+  }
+  while (text[index] != 0 && at + 1 < room) {
+    out[at] = text[index];
+    at += 1;
+    index += 1;
+  }
+  return at;
+}
+
+/* Число пробелами по три разряда: «4 800 000 000» читается глазом, а
+   «4800000000» приходится считать пальцем по экрану. */
+size_t fl_say_number(char *out, size_t room, size_t at, unsigned long value) {
+  char digits[24];
+  size_t count = 0;
+  do {
+    digits[count] = (char)('0' + (int)(value % 10));
+    value /= 10;
+    count += 1;
+  } while (value != 0 && count < sizeof(digits));
+  while (count > 0) {
+    count -= 1;
+    if (at + 1 < room) {
+      out[at] = digits[count];
+      at += 1;
+    }
+    if (count > 0 && count % 3 == 0) {
+      at = fl_say_text(out, room, at, " ");
+    }
+  }
+  return at;
+}
+
+/* Память теми же словами, какими её называет остальное дерево: ГиБ с одним
+   знаком после запятой, ниже гигабайта — целые МиБ. */
+size_t fl_say_size(char *out, size_t room, size_t at, unsigned long bytes) {
+  const unsigned long gib = 1024UL * 1024UL * 1024UL;
+  if (bytes >= gib) {
+    at = fl_say_number(out, room, at, bytes / gib);
+    at = fl_say_text(out, room, at, ",");
+    at = fl_say_number(out, room, at, (bytes % gib) / (gib / 10));
+    return fl_say_text(out, room, at, " ГиБ");
+  }
+  at = fl_say_number(out, room, at, bytes / (1024UL * 1024UL));
+  return fl_say_text(out, room, at, " МиБ");
+}
+
+/*
+ * Размер страницы снимается ЗАРАНЕЕ, вне обработчика: `sysconf` в списке
+ * безопасных не значится. Там, где /proc нет (macOS, BSD, wasm), ответ 0, и
+ * снимок просто обходится без памяти, а не пропадает целиком.
+ */
+static unsigned long fl_say_page = 0;
+
+void fl_say_page_ready(void) {
+#ifdef FL_WATCH
+  if (fl_say_page == 0) {
+    const long page = sysconf(_SC_PAGESIZE);
+    fl_say_page = page > 0 ? (unsigned long)page : 0;
+  }
+#endif
+}
+
+unsigned long fl_say_resident(void) {
+#ifdef FL_WATCH
+  char raw[128];
+  ssize_t got = 0;
+  int file = -1;
+  size_t at = 0;
+  unsigned long pages = 0;
+  if (fl_say_page == 0) {
+    return 0;
+  }
+  file = open("/proc/self/statm", O_RDONLY);
+  if (file < 0) {
+    return 0;
+  }
+  got = read(file, raw, sizeof(raw) - 1);
+  close(file);
+  if (got <= 0) {
+    return 0;
+  }
+  raw[got] = 0;
+  while (raw[at] != 0 && raw[at] != ' ') {
+    at += 1;
+  }
+  while (raw[at] == ' ') {
+    at += 1;
+  }
+  while (raw[at] >= '0' && raw[at] <= '9') {
+    pages = pages * 10 + (unsigned long)(raw[at] - '0');
+    at += 1;
+  }
+  return pages * fl_say_page;
+#else
+  return 0;
+#endif
+}
+
+/* ── что окно показывает ── */
+
+/*
+ * ИМЕНА ЖИВЫХ КАДРОВ ЛЕЖАТ ЗДЕСЬ, А НЕ В `fl_ctx`, и на то три причины.
+ *
+ * 1. `fl_ctx` заводится на стеке хозяина. Сигнал, пришедший после конца
+ *    расчёта, читал бы мёртвый кадр. Здесь лежат указатели на строковые
+ *    литералы напечатанного кода — они живут всю жизнь процесса, и
+ *    разыменование не падает никогда.
+ * 2. Ширина `fl_ctx` не меняется, значит `flang_conc.h` и всё, что кладёт
+ *    контекст в свои структуры, не трогается вовсе.
+ * 3. Программа до статики рантайма не дотянется, а до поля контекста дотянулась
+ *    бы (см. довод 2 в шапке).
+ *
+ * ПЛАТА НАЗВАНА: планировщик считает на нескольких потоках ОС (задача 0013), а
+ * массив у них один — на многопоточном прогоне снимок может назвать имя из
+ * чужого потока. Это искажение ДИАГНОСТИКИ, а не порча расчёта: любой
+ * записанный сюда указатель остаётся годным литералом.
+ */
+static const char *fl_watch_frames[FL_WATCH_FRAMES];
+
+/*
+ * Контекст, чьи числа показывать. Хранится указателем, а не копией: копировать
+ * пришлось бы на каждом витке, а это ровно та цена, которой здесь быть не
+ * должно. Числа снимаются НА ХОДУ и потому могут отстать на виток — это
+ * диагностика, а не учёт.
+ */
+static fl_ctx *fl_watch_ctx = NULL;
+
+/* Имя шага от хозяина и готовая строка «повторить». Обе собраны ВНЕ
+   обработчика: обработчик их только пишет. */
+static char fl_watch_label[192];
+static char fl_watch_repeat[768];
+
+#ifdef FL_WATCH
+static volatile sig_atomic_t fl_watch_set = 0;
+static volatile sig_atomic_t fl_watch_want = 0;
+#endif
+
+void fl_watch_step(const char *name) {
+  size_t fit = name == NULL ? 0 : strlen(name);
+  if (fit > sizeof(fl_watch_label) - 1) {
+    fit = sizeof(fl_watch_label) - 1;
+  }
+  memcpy(fl_watch_label, name == NULL ? "" : name, fit);
+  fl_watch_label[fit] = 0;
+}
+
+void fl_watch_repeat_set(const char *line) {
+  size_t fit = line == NULL ? 0 : strlen(line);
+  if (fit > sizeof(fl_watch_repeat) - 1) {
+    /* Обрезаем по БУКВЕ буфера и говорим об этом многоточием: обрезанную строку
+       нельзя вставить и повторить, и молчать об этом нельзя. Три точки одним
+       знаком, а не тремя: три знака могли бы рассечь букву UTF-8 пополам. */
+    fit = sizeof(fl_watch_repeat) - 4;
+    /* Отступить до начала буквы: продолжающие байты UTF-8 несут 10xxxxxx, и
+       обрыв на них дал бы в снимке битую букву. */
+    while (fit > 0 && ((unsigned char)line[fit] & 0xC0u) == 0x80u) {
+      fit -= 1;
+    }
+    memcpy(fl_watch_repeat, line, fit);
+    memcpy(fl_watch_repeat + fit, "…", 3);
+    fl_watch_repeat[fit + 3] = 0;
+    return;
+  }
+  memcpy(fl_watch_repeat, line == NULL ? "" : line, fit);
+  fl_watch_repeat[fit] = 0;
+}
+
+bool fl_watch_asked(void) {
+#ifdef FL_WATCH
+  if (fl_watch_want == 0) {
+    return false;
+  }
+  fl_watch_want = 0;
+  return true;
+#else
+  return false;
+#endif
+}
+
+#ifdef FL_WATCH
+/*
+ * Ответ на подключение. Всё, что здесь есть, законно внутри обработчика: ни
+ * stdio, ни выделения памяти, ни `sysconf`.
+ *
+ * Строка первая — где счёт стоит. Строка вторая — кто позвал, от глубокого к
+ * мелкому; она и отвечает на вопрос «как мы сюда попали». Строка третья —
+ * шаг, которым хозяин назвал бы работу целиком. Четвёртая — готовый вызов для
+ * `flang run`: снимок отладки, который можно вставить и повторить.
+ */
+static void fl_watch_say(int signal_number) {
+  char line[2048];
+  size_t at = 0;
+  size_t depth = 0;
+  size_t seen = 0;
+  size_t index = 0;
+  unsigned long steps = 0;
+  unsigned long limit = 0;
+  unsigned long bytes = 0;
+  ssize_t wrote = 0;
+  (void)signal_number;
+  fl_watch_want = 1;
+  if (fl_watch_ctx != NULL) {
+    depth = fl_watch_ctx->depth;
+    steps = (unsigned long)fl_watch_ctx->steps;
+    limit = (unsigned long)fl_watch_ctx->max_steps;
+  }
+  seen = depth < FL_WATCH_FRAMES ? depth : FL_WATCH_FRAMES;
+
+  at = fl_say_text(line, sizeof(line), at, "ПОДКЛЮЧЕНИЕ: идёт ");
+  if (seen > 0 && fl_watch_frames[seen - 1] != NULL) {
+    at = fl_say_text(line, sizeof(line), at, "«");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_frames[seen - 1]);
+    at = fl_say_text(line, sizeof(line), at, "»");
+  } else {
+    /* Ни одного живого кадра: расчёт либо ещё не начался, либо уже кончился, и
+       врать про функцию нельзя. */
+    at = fl_say_text(line, sizeof(line), at, "не функция — расчёт вне вызова");
+  }
+  at = fl_say_text(line, sizeof(line), at, ", глубина ");
+  at = fl_say_number(line, sizeof(line), at, (unsigned long)depth);
+  if (limit == 0) {
+    at = fl_say_text(line, sizeof(line), at, ", витков ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " (предел снят)");
+  } else {
+    /* Доля считается делением предела, а не умножением витков: витков к концу
+       перепечатки миллиарды, и «витки × 100» переполнило бы 32-разрядное
+       `unsigned long` там, где оно 32-разрядное. */
+    const unsigned long part = limit >= 100 ? steps / (limit / 100) : steps * 100 / limit;
+    at = fl_say_text(line, sizeof(line), at, ", витков ");
+    at = fl_say_number(line, sizeof(line), at, steps);
+    at = fl_say_text(line, sizeof(line), at, " из ");
+    at = fl_say_number(line, sizeof(line), at, limit);
+    at = fl_say_text(line, sizeof(line), at, " (");
+    at = fl_say_number(line, sizeof(line), at, part);
+    at = fl_say_text(line, sizeof(line), at, " %)");
+  }
+  bytes = fl_say_resident();
+  if (bytes != 0) {
+    at = fl_say_text(line, sizeof(line), at, ", ");
+    at = fl_say_size(line, sizeof(line), at, bytes);
+  }
+  at = fl_say_text(line, sizeof(line), at, "\n");
+
+  if (seen > 1) {
+    at = fl_say_text(line, sizeof(line), at, "  звали:");
+    for (index = seen - 1; index > 0; index -= 1) {
+      const char *name = fl_watch_frames[index - 1];
+      if (at + 256 > sizeof(line)) {
+        at = fl_say_text(line, sizeof(line), at, " …");
+        break;
+      }
+      at = fl_say_text(line, sizeof(line), at, index == seen - 1 ? " «" : " ← «");
+      at = fl_say_text(line, sizeof(line), at, name == NULL ? "?" : name);
+      at = fl_say_text(line, sizeof(line), at, "»");
+    }
+    if (depth > seen) {
+      at = fl_say_text(line, sizeof(line), at, " (и ещё ");
+      at = fl_say_number(line, sizeof(line), at, (unsigned long)(depth - seen));
+      at = fl_say_text(line, sizeof(line), at, " глубже)");
+    }
+    at = fl_say_text(line, sizeof(line), at, "\n");
+  }
+
+  if (fl_watch_label[0] != 0) {
+    at = fl_say_text(line, sizeof(line), at, "  шаг хозяина: «");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_label);
+    at = fl_say_text(line, sizeof(line), at, "»\n");
+  }
+  if (fl_watch_repeat[0] != 0) {
+    at = fl_say_text(line, sizeof(line), at, "  повторить: ");
+    at = fl_say_text(line, sizeof(line), at, fl_watch_repeat);
+    at = fl_say_text(line, sizeof(line), at, "\n");
+  }
+  wrote = write(2, line, at);
+  (void)wrote;
+}
+#endif
+
+void fl_watch_open(fl_ctx *ctx) {
+  fl_watch_ctx = ctx;
+  fl_say_page_ready();
+#ifdef FL_WATCH
+  if (!fl_watch_set) {
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = fl_watch_say;
+    sigemptyset(&action.sa_mask);
+    /* SA_RESTART обязателен: без него подключение рвало бы `read` оболочки и
+       `waitpid` внутри `system` кодом EINTR — то есть наблюдение ломало бы
+       наблюдаемое. */
+    action.sa_flags = SA_RESTART;
+    if (sigaction(SIGUSR1, &action, NULL) != 0) {
+      return;
+    }
+    fl_watch_set = 1;
+  }
+#endif
+}
+
+/*
+ * СТРОКА «ПОВТОРИТЬ»: вызов, которым расчёт начался, — готовым доводом для
+ * `flang run --args`.
+ *
+ * Собирается ЗДЕСЬ, в двери программы, а не в обработчике, и не на витке:
+ * `fl_check_entry` зовётся один раз на внешний вызов, и `snprintf` в нём
+ * законен. Обработчику остаётся написать готовые байты.
+ *
+ * ЧТО СЮДА НЕ ВЛЕЗАЕТ И ПОЧЕМУ ЭТО СКАЗАНО ВСЛУХ. Доводы ТЕКУЩЕГО внутреннего
+ * вызова до рантайма не доезжают вовсе: напечатанный код зовёт
+ * `fl_enter(ctx, "Имя", error)` — имя и ничего больше. Чтобы он понёс доводы,
+ * надо править печать (`flang/self/emit-c.flang`), а печатает её двоичный
+ * компилятор — значит правка доедет только перепечаткой семени. Разбор —
+ * ADR-0019, раздел «Чего это решение НЕ делает».
+ *
+ * `--args` знает только ПЛОСКИЙ объект скаляров (см. шапку `flang run` в
+ * flang_repl.c). Значит вызов с составным доводом повторить этой строкой
+ * нельзя, и снимок говорит об этом прямо, а не печатает то, что не примут.
+ */
+static void fl_watch_note(const fl_entry_table *table, const char *name, const fl_value *args,
+                          size_t count) {
+  size_t at = 0;
+  size_t index = 0;
+  size_t said = 0;
+  int wrote = 0;
+  fl_watch_repeat[0] = 0;
+  if (table == NULL || name == NULL) {
+    return;
+  }
+  /* Имя в одинарных кавычках, а не в «ёлочках»: строку вставляют в оболочку, и
+     пробел в имени функции без кавычек разорвал бы её на два довода. */
+  wrote = snprintf(fl_watch_repeat, sizeof(fl_watch_repeat), "--function '%s'", name);
+  if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat)) {
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  at = (size_t)wrote;
+  if (count == 0) {
+    return; /* функция без параметров зовётся без `--args` */
+  }
+  wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, " --args '{");
+  if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  at += (size_t)wrote;
+  for (index = 0; index < table->param_count && said < count; index += 1) {
+    const fl_entry_param *param = &table->params[index];
+    const fl_value value = args[said];
+    char shown[FL_NUMBER_TEXT_MAX];
+    size_t shown_bytes = 0;
+    if (!fl_name_same(param->function, name)) {
+      continue;
+    }
+    if (said > 0) {
+      if (at + 2 >= sizeof(fl_watch_repeat)) {
+        fl_watch_repeat[0] = 0;
+        return;
+      }
+      fl_watch_repeat[at] = ',';
+      at += 1;
+      fl_watch_repeat[at] = 0;
+    }
+    wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "\"%s\":", param->name);
+    if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+      fl_watch_repeat[0] = 0;
+      return;
+    }
+    at += (size_t)wrote;
+    switch (value.tag) {
+      case FL_NUMBER:
+        shown_bytes = fl_number_text(value.as.number, shown);
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "%.*s", (int)shown_bytes,
+                         shown);
+        break;
+      case FL_FLAG:
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "%s",
+                         value.as.flag ? "true" : "false");
+        break;
+      case FL_NOTHING:
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "null");
+        break;
+      case FL_STRING: {
+        /*
+         * Строка едет как есть или не едет вовсе. Экранирования здесь НЕТ
+         * нарочно: строку вставляют в оболочку внутри одинарных кавычек, и
+         * кавычка, обратная косая или перевод строки разорвали бы команду —
+         * а не «выглядели бы некрасиво». Длинную не режем по той же причине:
+         * обрезанный довод дал бы ДРУГОЙ вызов, а строка обещает тот же.
+         */
+        size_t byte = 0;
+        for (byte = 0; byte < value.as.string.bytes; byte += 1) {
+          const unsigned char symbol = (unsigned char)value.as.string.utf8[byte];
+          if (symbol == '"' || symbol == '\\' || symbol == '\'' || symbol < 0x20u) {
+            break;
+          }
+        }
+        if (byte != value.as.string.bytes || value.as.string.bytes > 200) {
+          fl_watch_repeat[0] = 0;
+          snprintf(fl_watch_repeat, sizeof(fl_watch_repeat),
+                   "--function '%s' — довод «%s» строкой команды не передаётся дословно", name,
+                   param->name);
+          return;
+        }
+        wrote = snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "\"%.*s\"",
+                         (int)value.as.string.bytes, value.as.string.utf8);
+        break;
+      }
+      default:
+        /* Список, запись, вариант: `--args` их не знает (см. шапку `flang run`),
+           и врать нечем. */
+        fl_watch_repeat[0] = 0;
+        snprintf(fl_watch_repeat, sizeof(fl_watch_repeat),
+                 "--function '%s' — доводы не скаляры, строкой для «flang run» не повторяется", name);
+        return;
+    }
+    if (wrote <= 0 || (size_t)wrote >= sizeof(fl_watch_repeat) - at) {
+      fl_watch_repeat[0] = 0;
+      return;
+    }
+    at += (size_t)wrote;
+    said += 1;
+  }
+  if (said != count || at + 3 >= sizeof(fl_watch_repeat)) {
+    /* Имени в таблице нет или число доводов не сошлось — об этом скажет
+       диспетчер своим текстом, а строка «повторить» врать не станет. */
+    fl_watch_repeat[0] = 0;
+    return;
+  }
+  snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "}'");
+}
+
 fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *name, const fl_value *args,
                          size_t count, fl_error *error) {
   size_t index = 0;
@@ -816,8 +1489,12 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
   if (ctx == NULL || table == NULL || name == NULL) {
     return FL_OK;
   }
+  /* Дверь программы — единственное место, где рантайм видит доводы вызова.
+     Отсюда снимок и берёт строку «повторить»; цена — один `snprintf` на
+     ВНЕШНИЙ вызов, не на виток. */
+  fl_watch_note(table, name, args, count);
   for (index = 0; index < table->param_count; index += 1) {
-    if (strcmp(table->params[index].function, name) == 0) {
+    if (fl_name_same(table->params[index].function, name)) {
       declared += 1;
     }
   }
@@ -831,7 +1508,7 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
   for (index = 0; index < table->param_count; index += 1) {
     const fl_entry_param *param = &table->params[index];
     const char *label = NULL;
-    if (strcmp(param->function, name) != 0) {
+    if (!fl_name_same(param->function, name)) {
       continue;
     }
     label = fl_label(ctx, "вызов функции «%s»: аргумент «%s»", name, param->name);
@@ -844,10 +1521,444 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *n
   return FL_OK;
 }
 
+/*
+ * Виток на элемент: цена цикла по списку, снятая до входа в цикл.
+ *
+ * До 26 августа 2026 счётчик витков не видел `отфильтровать`, `отобразить` и
+ * `свёртку` вовсе: `fl_tick` стоит на `fl_enter` и на витке хвостового цикла, а
+ * три эти формы печатаются обычным `for` со встроенным телом — ни одного тика
+ * на элемент. Замер задачи 0052 на синтетике из n функций: витков на функцию
+ * 387,6 → 390,7 при росте входа в 12 раз, показатель роста 1,00, тогда как
+ * время шло в квадрат (2,34). Счётчик считал ВЫЗОВЫ, а не РАБОТУ.
+ *
+ * Почему это опасно, а не просто неточно. Граница «функция стоит не больше N
+ * витков», выведенная из убывающей меры (задача 0060), ограничивала бы
+ * СЧЁТЧИК, а не работу: функция с фильтром по списку из миллиона элементов
+ * честно уложилась бы в свою границу и считалась бы час. Обещание было бы
+ * верным и бесполезным — и поехало бы в SLO.
+ *
+ * Почему заряд снимается ЗДЕСЬ, до цикла, а не внутри него. Внутрь рантайм не
+ * попадает: на элемент напечатанный цикл зовёт `fl_keep` только у фильтра, а у
+ * отображения и свёртки не зовёт ничего. Единственная точка, общая всем трём и
+ * знающая длину, — вот эта: `fl_require_list` получает сам список. Число витков
+ * от места заряда не меняется: печатаемый цикл идёт `for (i = 0; i < count; …)`
+ * без единого досрочного выхода, значит витков ровно `count`.
+ *
+ * Так же считает и толкователь на flang: у него список обходится кадрами
+ * «Кадр шага свёртки» и «Кадр шага обхода», по кадру на элемент, а
+ * «Шаг машины» тратит виток на каждый кадр (`обеспечивает «виток тратит не
+ * меньше одного шага»`, flang/self/interpret.flang). Расходились не замеры —
+ * расходились бэкенд C и толкователь, и здесь это сходится.
+ */
+/*
+ * ── ГДЕ ЕЩЁ СНИМАЕТСЯ ЗАРЯД, и почему список именно такой ──────────────────
+ *
+ * Сперва `fl_charge` звалась из одного места — `fl_require_list`, вход трёх
+ * форм по списку. Замер 27 августа 2026 показал, что этого мало: встроенные
+ * формы, которые тоже проходят вход целиком, шли счётчику бесплатно.
+ * `соединить` списка из 100 000 строк стоил 395,8 мкс и НОЛЬ витков, и время
+ * росло линейно, пока счётчик стоял.
+ *
+ * Заряжается ровно то, что пройдено, и в тех единицах, в каких работа и идёт:
+ *
+ *   соединить (две строки)  октеты склейки
+ *   соединить (список)      элементы плюс октеты склейки
+ *   содержит (список)       элементы ДО найденного, а не весь список
+ *   содержит (строка)       пройденная часть стога, а не весь стог
+ *   начинается с            октеты префикса
+ *   разделить               октеты строки дважды: счёт кусков и нарезка
+ *   символы                 октеты строки дважды: счёт точек и нарезка
+ *   символ, подстрока       знаки от начала до дальнего края среза
+ *   к числу                 октеты строки
+ *   к строке (число)        пробы точности: snprintf и strtod на пробу
+ *   добавить, приписать     длина списка — ТОЛЬКО на медленном пути, с копией
+ *
+ * Чего в списке НЕТ и почему. `длина`, `пусто`, `голова`, `хвост`, `элемент`,
+ * `код символа`, `символ по коду`, `остаток от`, `процентов от` работают за
+ * постоянное время: список в C — указатель и счётчик, `хвост` и срез строки
+ * не копируют ничего. Зарядить их длиной значило бы соврать вверх — ошибка
+ * того же рода, что прежний ноль, только в другую сторону.
+ *
+ * Остаётся ОДНА известная дыра, и она названа числом в задаче 0060: `fl_equal`
+ * сравнивает списки и записи вглубь, а `ctx` у неё нет. Верхний уровень
+ * `содержит` заряжен, глубина сравнения — нет.
+ */
+/*
+ * Имя работающей функции. Кладётся в `fl_tick` и в `fl_enter`, читается тремя
+ * приборами: выборкой по времени (обработчик SIGPROF), окном наблюдения и
+ * ведомостью зарядов. Объявлено ЗДЕСЬ, а не у выборки по времени, потому что
+ * `fl_charge` стоит выше по файлу и читает его первым.
+ */
+static const char *volatile fl_now = NULL;
+
+/* Ведомость зарядов: определена ниже, вместе с ведомостью витков. Заряд и виток
+   тратят ОДИН и тот же предел, и считаются в одном месте и в один файл. */
+static void fl_charge_count(size_t count);
+
+void fl_charge(fl_ctx *ctx, size_t count) {
+  fl_charge_count(count);
+  if (ctx == NULL || ctx->max_steps == 0 || count == 0) {
+    return;
+  }
+  /* Переполнение считается, а не исключается допущением о длине списка: при
+     нём счётчик встаёт на потолке size_t, и предел заведомо перейден. */
+  if (count > (size_t)-1 - ctx->steps) {
+    ctx->steps = (size_t)-1;
+    return;
+  }
+  ctx->steps += count;
+}
+
+/*
+ * ВТОРОЙ ПУЛЬС — ПО ВИТКАМ, А НЕ ПО ВХОДАМ.
+ *
+ * Пульс `fl_pulse` висит на `fl_enter`, то есть считает ВХОДЫ В ФУНКЦИЮ. Для
+ * дерева вызовов это почти то же, что работа. Для ХВОСТОВОГО САМОВЫЗОВА — нет:
+ * печатник разворачивает его в `for (;;)`, и вход там ОДИН на всю петлю,
+ * сколько бы витков она ни сделала. Перебор списка — ровно такая петля. Значит
+ * пульс по входам занижает цену перебора ровно во столько раз, какова длина
+ * перебора, и на выборке линейный поиск виден не будет НИКОГДА, как бы дорог
+ * он ни был.
+ *
+ * Виток же начисляется каждой итерации петли и несёт имя функции — той самой,
+ * чья петля крутится. Выборка по виткам — это выборка по работе.
+ *
+ * Цена, когда FLANG_WATCH_TICK не задан: одно сравнение указателя с NULL на
+ * виток. Задан — плюс деление с остатком. Пишем в ОТДЕЛЬНЫЙ файл, чтобы две
+ * выборки — по входам и по виткам — никогда не смешались в одной куче.
+ */
+static void fl_pulse_tick(fl_ctx *ctx, const char *function) {
+  static FILE *pulse = NULL;
+  static time_t started = 0;
+  static unsigned long long ticks = 0;
+  static unsigned long long every = 0;
+  static int tried = 0;
+  if (tried == 0) {
+    const char *path = getenv("FLANG_WATCH_TICK");
+    const char *step = getenv("FLANG_PULSE_TICK");
+    tried = 1;
+    started = time(NULL);
+    every = (step != NULL && step[0] != '\0') ? strtoull(step, NULL, 10) : 5000000ULL;
+    if (every == 0) {
+      every = 5000000ULL;
+    }
+    if (path != NULL && path[0] != '\0') {
+      pulse = fopen(path, "a");
+    }
+  }
+  if (pulse == NULL) {
+    return;
+  }
+  ticks += 1;
+  if (ticks % every == 0) {
+    long spent = (long)(time(NULL) - started);
+    fprintf(pulse, "%4ld:%02ld  витков %llu млн, глубина %lu, сейчас «%s»\n", spent / 60,
+            spent % 60, ticks / 1000000ULL, (unsigned long)(ctx != NULL ? ctx->depth : 0),
+            function != NULL ? function : "?");
+    fflush(pulse);
+  }
+}
+
+/*
+ * ТОЧНЫЙ СЧЁТ ШАГОВ ПО ИМЕНАМ: ВИТКИ, ЗАРЯД И ВХОДЫ В ОДНОЙ ВЕДОМОСТИ.
+ *
+ * Выборка отвечает «примерно» и на редких именах ошибается заметно. Здесь счёт
+ * ТОЧНЫЙ: каждый виток, каждый заряд и каждый вход кладутся в ячейку по имени
+ * своей функции, а при выходе таблица печатается. Ответ на вопрос «во что ушла
+ * работа» — числом, а не долей на глаз.
+ *
+ * ТРИ СТРОКИ, А НЕ ОДНА, И ЭТО ГЛАВНОЕ. Предел шагов тратят два счётчика:
+ * `fl_tick` — по единице за виток, `fl_charge` — числом за проход встроенной
+ * формы. Шаг — это виток ИЛИ заряд, `ctx->steps` — их сумма, и шапка печатает
+ * сумму первой строкой. Ведомость, писавшая одни витки, называла шагами от
+ * 0,3 % до 11 % шагов (замер 29 августа 2026 на семи прогонах) и тем разводила
+ * себя с часами: `«Закрыть уровни»` шла у неё 0,07 % «шагов» при 16,40 %
+ * времени, а шагов берёт 22,11 %.
+ *
+ * ПОЧЕМУ ЭТО ДЁШЕВО. Имена функций — строковые литералы, напечатанные
+ * бэкендом; их адреса неизменны за весь прогон. Значит ключ — УКАЗАТЕЛЬ, а не
+ * строка: умножение, сдвиг и одно сравнение на виток, без единого `strcmp`.
+ * Три таблицы по 8192 ячейки (384 КиБ вместе) держатся в кэше. Одинаковые
+ * строки с разных адресов складываются при выводе, а не на горячем пути.
+ *
+ * ЧТО ДАЁТ СТОЛБЕЦ «ВИТКОВ НА ВХОД». Хвостовой самовызов печатник разворачивает
+ * в `for (;;)`: вход туда ОДИН, а витков столько, сколько оборотов сделала
+ * петля. Значит частное «витки ÷ входы» — это длина петли, то есть ровно та
+ * величина, которая у перебора растёт с размером входа, а у поиска по хешу не
+ * растёт. Мерить её больше нечем: счёт по входам её не видит вовсе.
+ *
+ * Переполнение таблицы НЕ ЗАМАЛЧИВАЕТСЯ: непоместившиеся витки идут отдельным
+ * счётчиком и печатаются строкой «не поместилось», непоместившийся заряд —
+ * своей строкой, потому что складывать штуки с единицами работы нельзя.
+ *
+ * Включается FLANG_TICKS_OUT=<файл>. Без него — одно сравнение с NULL на виток
+ * и одно на заряд.
+ */
+#define FL_TICKS_SLOTS 8192u
+
+struct fl_ticks_slot {
+  const char *name;
+  unsigned long long count;
+};
+
+static struct fl_ticks_slot fl_ticks_table[FL_TICKS_SLOTS];
+static struct fl_ticks_slot fl_enters_table[FL_TICKS_SLOTS];
+static struct fl_ticks_slot fl_charge_table[FL_TICKS_SLOTS];
+static unsigned long long fl_ticks_total = 0;
+static unsigned long long fl_enters_total = 0;
+static unsigned long long fl_charge_total = 0;
+static unsigned long long fl_ticks_lost = 0;
+static unsigned long long fl_charge_lost = 0;
+static const char *fl_ticks_path = NULL;
+static int fl_ticks_tried = 0;
+
+static void fl_ticks_dump(void) {
+  FILE *out = NULL;
+  unsigned index = 0;
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  out = fopen(fl_ticks_path, "w");
+  if (out == NULL) {
+    return;
+  }
+  fprintf(out, "шагов всего\t%llu\n", fl_ticks_total + fl_charge_total);
+  fprintf(out, "витков всего\t%llu\n", fl_ticks_total);
+  fprintf(out, "заряда всего\t%llu\n", fl_charge_total);
+  fprintf(out, "входов всего\t%llu\n", fl_enters_total);
+  fprintf(out, "не поместилось\t%llu\n", fl_ticks_lost);
+  fprintf(out, "заряда не поместилось\t%llu\n", fl_charge_lost);
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_ticks_table[index].name != NULL) {
+      fprintf(out, "виток\t%llu\t%s\n", fl_ticks_table[index].count, fl_ticks_table[index].name);
+    }
+  }
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_charge_table[index].name != NULL) {
+      fprintf(out, "заряд\t%llu\t%s\n", fl_charge_table[index].count, fl_charge_table[index].name);
+    }
+  }
+  for (index = 0; index < FL_TICKS_SLOTS; index++) {
+    if (fl_enters_table[index].name != NULL) {
+      fprintf(out, "вход\t%llu\t%s\n", fl_enters_table[index].count, fl_enters_table[index].name);
+    }
+  }
+  fclose(out);
+}
+
+/* Возвращает 0, если имя не поместилось в таблицу: непоместившееся считает
+   вызвавший, каждый в свою строку «не поместилось». */
+static int fl_ticks_add(struct fl_ticks_slot *table, const char *function,
+                        unsigned long long count) {
+  const unsigned long long key = (unsigned long long)(size_t)function;
+  const unsigned start = (unsigned)((key * 2654435761ULL) >> 19) & (FL_TICKS_SLOTS - 1u);
+  unsigned probe = 0;
+  for (probe = 0; probe < 16u; probe++) {
+    struct fl_ticks_slot *slot = &table[(start + probe) & (FL_TICKS_SLOTS - 1u)];
+    if (slot->name == function) {
+      slot->count += count;
+      return 1;
+    }
+    if (slot->name == NULL) {
+      slot->name = function;
+      slot->count = count;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static void fl_ticks_open(void) {
+  if (fl_ticks_tried != 0) {
+    return;
+  }
+  fl_ticks_tried = 1;
+  fl_ticks_path = getenv("FLANG_TICKS_OUT");
+  if (fl_ticks_path != NULL && fl_ticks_path[0] == '\0') {
+    fl_ticks_path = NULL;
+  }
+  if (fl_ticks_path != NULL) {
+    atexit(fl_ticks_dump);
+  }
+}
+
+static void fl_ticks_count(const char *function) {
+  fl_ticks_open();
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  fl_ticks_total += 1;
+  if (!fl_ticks_add(fl_ticks_table, function, 1)) {
+    fl_ticks_lost += 1;
+  }
+}
+
+static void fl_enters_count(const char *function) {
+  fl_ticks_open();
+  if (fl_ticks_path == NULL) {
+    return;
+  }
+  fl_enters_total += 1;
+  if (!fl_ticks_add(fl_enters_table, function, 1)) {
+    fl_ticks_lost += 1;
+  }
+}
+
+/*
+ * ЗАРЯД ПО ИМЕНАМ — ТРЕТИЙ СТОЛБЕЦ ТОЙ ЖЕ ВЕДОМОСТИ, А НЕ ОТДЕЛЬНЫЙ ПРИБОР.
+ *
+ * Предел шагов тратят ДВА счётчика: `fl_tick` по единице за виток и `fl_charge`
+ * числом за проход встроенной формы. `ctx->steps` — их сумма. Ведомость же до
+ * 29 августа 2026 писала только витки, и её шапку «витков всего» читали как
+ * «шагов всего». На замыкании компилятора это давало ошибку в три с лишним
+ * раза: витков 27,5 млрд, заряда 72,7 млрд, предел кончился на 100,2 млрд.
+ *
+ * Отсюда и расхождение с часами. Ведомость витков отдавала `«Закрыть уровни»`
+ * 0,07 % при 16,40 % времени — в 234 раза мимо, — потому что вся работа этой
+ * функции идёт во встроенных формах, а их ведомость не видела вовсе. Столбца
+ * заряда не хватало не для полноты, а для того, чтобы два прибора отвечали про
+ * одну величину.
+ *
+ * Имя берётся из `fl_now` — то же самое, по которому начисляет точку выборка по
+ * времени. Значит доли заряда и доли времени считаны ОДНИМ ключом и сравнимы
+ * прямо; будь ключи разные, сведение было бы подгонкой.
+ *
+ * Цена, когда `FLANG_TICKS_OUT` не задан: один вызов и одно сравнение с NULL на
+ * заряд, ровно как у витка.
+ */
+static void fl_charge_count(size_t count) {
+  const char *function = fl_now;
+  fl_ticks_open();
+  if (fl_ticks_path == NULL || count == 0) {
+    return;
+  }
+  fl_charge_total += (unsigned long long)count;
+  if (function == NULL || !fl_ticks_add(fl_charge_table, function, (unsigned long long)count)) {
+    fl_charge_lost += (unsigned long long)count;
+  }
+}
+
+/*
+ * ВЫБОРКА ПО ВРЕМЕНИ.
+ *
+ * Ни счёт входов, ни счёт витков ВРЕМЕНЕМ не являются, и это не мелочь: на
+ * `check flang/self/lexer.flang --proof` «Найти описание» берёт 9,94 % ВИТКОВ и
+ * 0,26 % ВРЕМЕНИ. Причина в том, что встроенные формы — «равен» над записью,
+ * «длина», «добавить», обход списка внутри рантайма — делают работу, за которую
+ * НЕ НАЧИСЛЯЕТСЯ НИ ОДНОГО ВИТКА. Петля, крутящая такую форму, стоит минуты при
+ * тысячах витков, и оба счётных прибора покажут, что её почти нет.
+ *
+ * Здесь мерится время. Каждый виток и каждый вход кладут своё имя в `fl_now`
+ * (одна запись в глобальную переменную), часы ITIMER_PROF будят обработчик раз
+ * в 10 мс ПРОЦЕССОРНОГО времени, и он начисляет точку тому имени, которое
+ * стоит в `fl_now`. Доля имени — доля времени, а не доля вызовов.
+ *
+ * Обработчик не зовёт ни malloc, ни stdio: хеш указателя и инкремент в
+ * статической таблице, и ничего больше.
+ *
+ * ТРИ ПРИБОРА ОТВЕЧАЮТ НА ТРИ РАЗНЫХ ВОПРОСА, и подменять один другим нельзя:
+ * входы — «сколько раз позвали», витки — «во что ушёл ПРЕДЕЛ ШАГОВ», время —
+ * «во что ушли ЧАСЫ». Программа умирает от предела шагов по первой причине, а
+ * идёт сутки по третьей.
+ *
+ * Включается FLANG_TIME_OUT=<файл>. Без него — одна запись указателя на виток.
+ */
+#define FL_TIME_SLOTS 8192u
+
+static struct {
+  const char *name;
+  unsigned long long count;
+} fl_time_table[FL_TIME_SLOTS];
+
+/* `fl_now` объявлено выше, у `fl_charge`: ведомость зарядов читает его раньше. */
+static volatile sig_atomic_t fl_time_points = 0;
+static volatile sig_atomic_t fl_time_nameless = 0;
+static const char *fl_time_path = NULL;
+static int fl_time_tried = 0;
+
+static void fl_time_say(int signal_number) {
+  const char *name = fl_now;
+  unsigned long long key = 0;
+  unsigned start = 0;
+  unsigned probe = 0;
+  (void)signal_number;
+  fl_time_points += 1;
+  if (name == NULL) {
+    fl_time_nameless += 1;
+    return;
+  }
+  key = (unsigned long long)(size_t)name;
+  start = (unsigned)((key * 2654435761ULL) >> 19) & (FL_TIME_SLOTS - 1u);
+  for (probe = 0; probe < 16u; probe++) {
+    const unsigned at = (start + probe) & (FL_TIME_SLOTS - 1u);
+    if (fl_time_table[at].name == name) {
+      fl_time_table[at].count += 1;
+      return;
+    }
+    if (fl_time_table[at].name == NULL) {
+      fl_time_table[at].name = name;
+      fl_time_table[at].count = 1;
+      return;
+    }
+  }
+  fl_time_nameless += 1;
+}
+
+static void fl_time_dump(void) {
+  FILE *out = NULL;
+  unsigned index = 0;
+  if (fl_time_path == NULL) {
+    return;
+  }
+  out = fopen(fl_time_path, "w");
+  if (out == NULL) {
+    return;
+  }
+  fprintf(out, "точек всего\t%lu\n", (unsigned long)fl_time_points);
+  fprintf(out, "без имени\t%lu\n", (unsigned long)fl_time_nameless);
+  for (index = 0; index < FL_TIME_SLOTS; index++) {
+    if (fl_time_table[index].name != NULL) {
+      fprintf(out, "%llu\t%s\n", fl_time_table[index].count, fl_time_table[index].name);
+    }
+  }
+  fclose(out);
+}
+
+static void fl_time_open(void) {
+  struct sigaction action;
+  struct itimerval clock_setting;
+  if (fl_time_tried != 0) {
+    return;
+  }
+  fl_time_tried = 1;
+  fl_time_path = getenv("FLANG_TIME_OUT");
+  if (fl_time_path != NULL && fl_time_path[0] == '\0') {
+    fl_time_path = NULL;
+  }
+  if (fl_time_path == NULL) {
+    return;
+  }
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = fl_time_say;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = SA_RESTART;
+  sigaction(SIGPROF, &action, NULL);
+  clock_setting.it_interval.tv_sec = 0;
+  clock_setting.it_interval.tv_usec = 10000;
+  clock_setting.it_value.tv_sec = 0;
+  clock_setting.it_value.tv_usec = 10000;
+  setitimer(ITIMER_PROF, &clock_setting, NULL);
+  atexit(fl_time_dump);
+}
+
 fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
+  fl_pulse_tick(ctx, function);
+  fl_ticks_count(function);
+  fl_time_open();
+  fl_now = function;
   /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
      бы исчерпанной любую программу. */
   if (ctx->max_steps == 0) {
@@ -930,10 +2041,73 @@ static bool fl_stack_spent(fl_ctx *ctx) {
   return used + reserve > ctx->stack_room;
 }
 
+/*
+ * ПУЛЬС — наблюдение за идущей программой без остановки и без правки программы.
+ *
+ * ЗАЧЕМ. Перепечатка компилятора идёт часами и до сих пор не говорила о себе
+ * ничего: понять, работает она или встала, можно было только двумя снимками
+ * `perf` с получасовым промежутком. Замер 28 августа 2026: заход шёл 25 часов и
+ * не напечатал ни строки о том, где он.
+ *
+ * ЧЕМ ОТЛИЧАЕТСЯ ОТ ПОДКЛЮЧЕНИЯ СИГНАЛОМ. Сигнал (`kill -USR1`) отвечает на
+ * вопрос «где ты СЕЙЧАС» и требует, чтобы кто-то спросил. Пульс пишет сам, и
+ * потому годится там, где спрашивать некому: ночной прогон, прогон под сборщиком,
+ * прогон, который упал и унёс ответ с собой. Одно не заменяет другого.
+ *
+ * ПОЧЕМУ ЗДЕСЬ. Через `fl_enter` проходит каждый вызов языка, способный к
+ * рекурсии, — другого места, где видно И имя функции, И глубину, И число шагов,
+ * в рантайме нет.
+ *
+ * ПОЧЕМУ НЕ НА КАЖДЫЙ ВЫЗОВ. Их миллиарды: строка на вызов стоила бы времени
+ * больше, чем сама работа. Пишем раз в FLANG_PULSE вызовов. Умолчание пять
+ * миллионов — замерено: на перепечатке это строка примерно раз в минуту.
+ *
+ * ЦЕНА. Пока FLANG_WATCH не задан, всё стоит одного сравнения указателя с NULL
+ * на вызов. Задан — плюс одно деление с остатком.
+ *
+ * Буфер сбрасывается сразу: при убийстве прогона пропали бы ровно последние
+ * строки, а они самые нужные.
+ */
+static void fl_pulse(fl_ctx *ctx, const char *function) {
+  static FILE *pulse = NULL;
+  static time_t started = 0;
+  static unsigned long calls = 0;
+  static unsigned long every = 0;
+  static int tried = 0;
+  if (tried == 0) {
+    const char *path = getenv("FLANG_WATCH");
+    const char *step = getenv("FLANG_PULSE");
+    tried = 1;
+    started = time(NULL);
+    every = (step != NULL && step[0] != '\0') ? strtoul(step, NULL, 10) : 5000000UL;
+    if (every == 0) {
+      every = 5000000UL;
+    }
+    if (path != NULL && path[0] != '\0') {
+      pulse = fopen(path, "a");
+    }
+  }
+  if (pulse == NULL) {
+    return;
+  }
+  calls += 1;
+  if (calls % every == 0) {
+    long spent = (long)(time(NULL) - started);
+    fprintf(pulse, "%4ld:%02ld  вызовов %lu млн, глубина %lu, сейчас «%s»\n",
+            spent / 60, spent % 60, calls / 1000000UL,
+            (unsigned long)(ctx != NULL ? ctx->depth : 0),
+            function != NULL ? function : "?");
+    fflush(pulse);
+  }
+}
+
 fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
+  fl_pulse(ctx, function);
+  fl_enters_count(function);
+  fl_now = function;
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));
@@ -949,6 +2123,15 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
                    "функция «%s» исчерпала стек хозяина на глубине %lu, не дойдя до предела "
                    "глубины вызовов (%lu)",
                    function, (unsigned long)ctx->depth, (unsigned long)ctx->max_depth);
+  }
+  /*
+   * ОКНО НАБЛЮДЕНИЯ: имя этого кадра — по его глубине. Одно сравнение и одна
+   * запись; ни `fl_tick`, ни `fl_leave`, ни виток цикла хвостового самовызова
+   * не тронуты. `fl_leave` ничего не стирает нарочно: глубина убывает сама, и
+   * снимок читает `frames[depth - 1]`, то есть всегда живой кадр.
+   */
+  if (ctx->depth < FL_WATCH_FRAMES) {
+    fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;
   if (ctx->depth > ctx->max_depth) {
@@ -1062,10 +2245,189 @@ static bool fl_region_take(size_t *total, size_t budget, size_t need) {
   return true;
 }
 
-static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
-                                  size_t *total);
+/*
+ * ── Что откат ЗАБЕРЁТ, а что оставит на месте ──────────────────────────────
+ *
+ * Откат возвращает арене всё, что выдано ПОСЛЕ отметки, и не трогает ничего
+ * ниже неё. Значит подграф, целиком лежащий ниже отметки, переживёт откат сам —
+ * и копировать его незачем: ни обмеру считать его байты, ни перекладке их
+ * возить. Тот же довод уже записан у имён полей («ни одно имя не рождается во
+ * время расчёта»), только там он верен по построению, а здесь его надо спросить
+ * у арены.
+ *
+ * Спрашивается он ОБОЛОЧКОЙ: наименьший и наибольший адрес памяти, выданной
+ * после отметки. Оболочка, а не точный список кусков, потому что куски — это
+ * отдельные покупки у malloc, в адресах они не подряд, и «внутри оболочки» ещё
+ * не значит «выше отметки». Ошибка в эту сторону безобидна: узел просто
+ * скопируется, как копировался всегда. Обратной ошибки быть не может — ни один
+ * адрес выше отметки вне оболочки не лежит, потому что оболочка построена по
+ * всем таким кускам разом.
+ *
+ * Цена — два сравнения на узел вместо нуля, и обход цепочки кусков от отметки
+ * до текущего ОДИН раз на закрытие. Второе почти ничего не стоит: порог
+ * FL_REGION_MIN проходит меньше четырёх процентов закрытий (замер 23 августа:
+ * `check examples/wal/write-ahead-log.flang` — 5 415 из 613 703,
+ * `check flang/self/tags.flang` — 744 273 из 19 924 228).
+ */
+typedef struct fl_live {
+  const char *lo;
+  const char *hi;
+} fl_live;
 
-static bool fl_region_size(fl_value value, size_t budget, size_t depth, size_t *total) {
+static bool fl_live_in(fl_live zone, const void *p) {
+  const char *q = (const char *)p;
+  return q >= zone.lo && q < zone.hi;
+}
+
+static fl_live fl_region_live(const fl_arena *arena, fl_mark mark) {
+  fl_live zone;
+  fl_chunk *chunk = NULL;
+  zone.lo = NULL;
+  zone.hi = NULL;
+  if (arena == NULL) {
+    return zone;
+  }
+  for (chunk = mark.chunk == NULL ? arena->chunks : mark.chunk; chunk != NULL;
+       chunk = chunk->next) {
+    const char *base = fl_chunk_data(chunk);
+    const char *lo = base + (chunk == mark.chunk ? mark.used : (size_t)0);
+    const char *hi = base + chunk->used;
+    if (lo < hi) {
+      if (zone.lo == NULL || lo < zone.lo) {
+        zone.lo = lo;
+      }
+      if (zone.hi == NULL || hi > zone.hi) {
+        zone.hi = hi;
+      }
+    }
+    if (chunk == arena->current) {
+      break;
+    }
+  }
+  return zone;
+}
+
+/*
+ * ── Чего отсекать НЕЛЬЗЯ: списки ───────────────────────────────────────────
+ *
+ * Записи, варианты и строки заполняет ровно одно место — выдача, — и больше их
+ * не правит ничто; значит у узла, лежащего ниже отметки, ниже отметки лежит и
+ * всё, на что он указывает: оно выдано РАНЬШЕ него.
+ *
+ * У списка это неверно. Быстрый путь `fl_b_dobavit` пишет
+ * `grow->items[grow->filled] = item` в уже выданный массив: массив может лежать
+ * ниже отметки, а положенное в него значение — выше. Признак «массив с запасом»
+ * отличить не помогает: `fl_list_slice` его роняет, и тот же массив приезжает
+ * уже без признака. Проверено прогоном на прошлой попытке: отсечение списков
+ * ответило «FLANG_UNKNOWN_NAME: запись не содержит поле «вид»» кодом 1.
+ */
+
+/*
+ * ── Отказная памятка: обмер, который можно НЕ делать ───────────────────────
+ *
+ * Обмер кончается отказом в 98,7 % случаев (замер на `flang check
+ * flang/self/tags.flang`), и стоит он треть всего расчёта, тогда как перекладка,
+ * ради которой обмер и делается, — полпроцента. Мерят в шестьдесят пять раз
+ * больше, чем перекладывают.
+ *
+ * Причина не в длине одного обхода, а в их ЧИСЛЕ и во вложенности. Области
+ * вложены как вызовы: внутренняя закрывается, её результат становится частью
+ * результата внешней, тот — частью результата следующей. И каждая мерит заново
+ * ВЕСЬ свой результат, то есть один и тот же подграф обходится столько раз,
+ * какова глубина рекурсии. Отсюда и сверхлинейность.
+ *
+ * Памятка обрывает этот повтор одним доказанным фактом. Обмер МОНОТОНЕН по
+ * бюджету: `fl_region_take` отказывает тем охотнее, чем бюджет меньше, а порядок
+ * обхода от бюджета не зависит вовсе. Значит из «значение v не уложилось в
+ * бюджет B» следует «v не уложится ни в какой бюджет ≤ B» — то есть отказ даёт
+ * НИЖНЮЮ ОЦЕНКУ: копии v нужно БОЛЬШЕ B байт.
+ *
+ * Эту оценку и запоминает арена — ровно одну, про последний отказавший
+ * результат. Когда обход внешней области доходит до того же узла, у него в
+ * запасе остаётся `budget - *total` байт; если запас не больше запомненного B,
+ * узел заведомо не влезет, и обход обрывается сразу, не спускаясь внутрь.
+ *
+ * Чего памятка НЕ делает: она не отбирает ни одного отката, который состоялся бы
+ * без неё. Обрыв происходит только там, где полный обход всё равно кончился бы
+ * отказом, — это следствие монотонности, а не догадка. Поэтому память остаётся
+ * прежней, а ведомости — прежними до знака.
+ *
+ * Узнаётся значение по тройке (метка, адрес, число элементов). Адреса живут в
+ * арене, и после отката тот же адрес достаётся другому значению, — поэтому
+ * `fl_arena_rollback` памятку снимает. Даже проспи он её, беды бы не случилось:
+ * ошибочное срабатывание означает лишний ОТКАЗ области, а отказать область
+ * вправе в любой момент, и снаружи отказ не виден ничем, кроме памяти.
+ */
+struct fl_deny {
+  const void *id;
+  size_t count;
+  size_t need; /* доказано: копии этого узла нужно БОЛЬШЕ стольких байт */
+  int tag;
+};
+
+/*
+ * Памяток столько, какова обычная глубина вложенности областей на одном пути:
+ * каждая записывает свою, и вытеснять друг друга им незачем. Таблица заводится
+ * ЛЕНИВО и только у той арены, где обмер хоть раз отказал: арен в прогоне
+ * бывает по две на процесс, а процессов — миллион, и восемь килобайт с рождения
+ * стоили бы больше всей выгоды (см. `fl_arena_init_small`).
+ */
+#define FL_DENY_SLOTS (size_t)256
+
+static void fl_region_forget(fl_arena *arena) {
+  if (arena != NULL && arena->deny != NULL) {
+    memset(arena->deny, 0, FL_DENY_SLOTS * sizeof(struct fl_deny));
+  }
+}
+
+static struct fl_deny *fl_region_slot(struct fl_deny *table, const void *id) {
+  /* Адреса в арене выровнены по FL_ALIGNMENT, поэтому младшие биты пусты. */
+  return table + (((size_t)(const char *)id / FL_ALIGNMENT) & (FL_DENY_SLOTS - 1));
+}
+
+static bool fl_region_denied(const fl_arena *arena, int tag, const void *id, size_t count,
+                             size_t budget, size_t total) {
+  const struct fl_deny *slot = NULL;
+  if (arena == NULL || arena->deny == NULL) {
+    return false;
+  }
+  slot = fl_region_slot(arena->deny, id);
+  return slot->id == id && slot->tag == tag && slot->count == count && budget - total <= slot->need;
+}
+
+/*
+ * Запомнить отказ. `need` — сколько байт узлу заведомо мало: обход начался,
+ * когда в запасе было ровно столько, и не уложился. Оценка только РАСТЁТ:
+ * тот же узел, отказавший при большем запасе, знает о себе больше.
+ */
+static void fl_region_note(fl_arena *arena, int tag, const void *id, size_t count, size_t need) {
+  struct fl_deny *slot = NULL;
+  if (arena == NULL || id == NULL) {
+    return;
+  }
+  if (arena->deny == NULL) {
+    arena->deny = (struct fl_deny *)calloc(FL_DENY_SLOTS, sizeof(struct fl_deny));
+    if (arena->deny == NULL) {
+      return; /* без памятки обмер просто работает как раньше */
+    }
+  }
+  slot = fl_region_slot(arena->deny, id);
+  if (slot->id == id && slot->tag == tag && slot->count == count) {
+    if (slot->need < need) {
+      slot->need = need;
+    }
+    return;
+  }
+  slot->id = id;
+  slot->tag = tag;
+  slot->count = count;
+  slot->need = need;
+}
+static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field *fields,
+                                  size_t count, size_t budget, size_t depth, size_t *total);
+
+static bool fl_region_size(fl_arena *arena, fl_live zone, fl_value value, size_t budget,
+                           size_t depth, size_t *total) {
   if (depth > FL_REGION_DEPTH) {
     return false;
   }
@@ -1079,48 +2441,80 @@ static bool fl_region_size(fl_value value, size_t budget, size_t depth, size_t *
       if (value.as.string.bytes == (size_t)-1) {
         return false;
       }
+      if (value.as.string.utf8 != NULL && !fl_live_in(zone, value.as.string.utf8)) {
+        return true; /* откат этих октетов не тронет */
+      }
       return fl_region_take(total, budget, value.as.string.bytes + 1);
     case FL_LIST: {
       size_t index = 0;
+      const void *id = (const void *)value.as.list.items;
+      const size_t entry = *total;
       if (value.as.list.count == 0) {
         return true;
       }
-      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+      if (fl_region_denied(arena, (int)FL_LIST, id, value.as.list.count, budget, entry)) {
         return false;
       }
-      if (!fl_region_take(total, budget, value.as.list.count * sizeof(fl_value))) {
+      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value) ||
+          !fl_region_take(total, budget, value.as.list.count * sizeof(fl_value))) {
+        fl_region_note(arena, (int)FL_LIST, id, value.as.list.count, budget - entry);
         return false;
       }
       for (index = 0; index < value.as.list.count; index += 1) {
-        if (!fl_region_size(value.as.list.items[index], budget, depth + 1, total)) {
+        if (!fl_region_size(arena, zone, value.as.list.items[index], budget, depth + 1, total)) {
+          fl_region_note(arena, (int)FL_LIST, id, value.as.list.count, budget - entry);
           return false;
         }
       }
       return true;
     }
-    case FL_RECORD:
-      if (value.as.record == NULL) {
+    case FL_RECORD: {
+      const void *id = (const void *)value.as.record;
+      const size_t entry = *total;
+      if (id == NULL) {
         return false;
       }
-      if (!fl_region_take(total, budget, sizeof(fl_record))) {
+      if (!fl_live_in(zone, id)) {
+        return true; /* откат эту запись не тронет */
+      }
+      if (fl_region_denied(arena, (int)FL_RECORD, id, value.as.record->count, budget, entry)) {
         return false;
       }
-      return fl_region_fields_size(value.as.record->fields, value.as.record->count, budget, depth, total);
-    case FL_VARIANT:
-      if (value.as.variant == NULL) {
+      if (!fl_region_take(total, budget, sizeof(fl_record)) ||
+          !fl_region_fields_size(arena, zone, value.as.record->fields, value.as.record->count, budget,
+                                 depth, total)) {
+        fl_region_note(arena, (int)FL_RECORD, id, value.as.record->count, budget - entry);
         return false;
       }
-      if (!fl_region_take(total, budget, sizeof(fl_variant))) {
+      return true;
+    }
+    case FL_VARIANT: {
+      const void *id = (const void *)value.as.variant;
+      const size_t entry = *total;
+      if (id == NULL) {
         return false;
       }
-      return fl_region_fields_size(value.as.variant->fields, value.as.variant->count, budget, depth, total);
+      if (!fl_live_in(zone, id)) {
+        return true; /* откат этот вариант не тронет */
+      }
+      if (fl_region_denied(arena, (int)FL_VARIANT, id, value.as.variant->count, budget, entry)) {
+        return false;
+      }
+      if (!fl_region_take(total, budget, sizeof(fl_variant)) ||
+          !fl_region_fields_size(arena, zone, value.as.variant->fields, value.as.variant->count, budget,
+                                 depth, total)) {
+        fl_region_note(arena, (int)FL_VARIANT, id, value.as.variant->count, budget - entry);
+        return false;
+      }
+      return true;
+    }
     default:
       return false;
   }
 }
 
-static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t budget, size_t depth,
-                                  size_t *total) {
+static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field *fields,
+                                  size_t count, size_t budget, size_t depth, size_t *total) {
   size_t index = 0;
   if (count == 0) {
     return true;
@@ -1132,7 +2526,7 @@ static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t b
     return false;
   }
   for (index = 0; index < count; index += 1) {
-    if (!fl_region_size(fields[index].value, budget, depth + 1, total)) {
+    if (!fl_region_size(arena, zone, fields[index].value, budget, depth + 1, total)) {
       return false;
     }
   }
@@ -1152,11 +2546,24 @@ static bool fl_region_fields_size(const fl_field *fields, size_t count, size_t b
  * который построен ДО вызова, то есть ниже любой отметки. Ни одно имя не
  * рождается во время расчёта — единственный, кто их выделяет, это разбор
  * запроса в прогонщике. Тот же довод записан в `fl_conc_clone`.
+ *
+ * ── `zone`: что копировать, а что взять ссылкой ────────────────────────────
+ * Ровно та же граница, по которой считал обмер, — иначе буфер разошёлся бы с
+ * посчитанным размером. Узел ВНЕ зоны копируется не глубже самого значения:
+ * оно уже лежит там, где переживёт откат.
+ *
+ * Зона разная у двух перекладок одного закрытия, и это не небрежность:
+ *   • вниз, в буфер: зона — память, выданная после отметки (её откат заберёт);
+ *   • обратно, в арену: зона — сам буфер (всё, что не в нём, уже пережило
+ *     откат и лежит на месте).
+ * Множество копируемых узлов у обеих одно и то же, потому вторая и умещается
+ * в тот же посчитанный размер.
  */
 typedef struct fl_pack {
   char *base;
   size_t size;
   size_t used;
+  fl_live zone;
 } fl_pack;
 
 static void *fl_pack_alloc(fl_pack *pack, size_t size) {
@@ -1184,7 +2591,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       *out = value;
       return true;
     case FL_STRING: {
-      char *text = (char *)fl_pack_alloc(pack, value.as.string.bytes + 1);
+      char *text = NULL;
+      if (value.as.string.utf8 != NULL && !fl_live_in(pack->zone, value.as.string.utf8)) {
+        *out = value;
+        return true;
+      }
+      text = (char *)fl_pack_alloc(pack, value.as.string.bytes + 1);
       if (text == NULL) {
         return false;
       }
@@ -1218,7 +2630,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       return true;
     }
     case FL_RECORD: {
-      fl_record *record = (fl_record *)fl_pack_alloc(pack, sizeof(fl_record));
+      fl_record *record = NULL;
+      if (!fl_live_in(pack->zone, (const void *)value.as.record)) {
+        *out = value;
+        return true;
+      }
+      record = (fl_record *)fl_pack_alloc(pack, sizeof(fl_record));
       if (record == NULL) {
         return false;
       }
@@ -1232,7 +2649,12 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       return true;
     }
     case FL_VARIANT: {
-      fl_variant *variant = (fl_variant *)fl_pack_alloc(pack, sizeof(fl_variant));
+      fl_variant *variant = NULL;
+      if (!fl_live_in(pack->zone, (const void *)value.as.variant)) {
+        *out = value;
+        return true;
+      }
+      variant = (fl_variant *)fl_pack_alloc(pack, sizeof(fl_variant));
       if (variant == NULL) {
         return false;
       }
@@ -1274,28 +2696,168 @@ static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, 
 }
 
 /*
- * Откат к отметке. Куски не отдаются системе — они помечаются пустыми, ровно
- * как в `fl_arena_reset`, и ближайшая выдача берёт их снова. Оттого арена,
- * которую откатывают, остаётся горячей в кэше, а растущая — покупает новое и
- * гуляет по всей памяти; это и есть причина, по которой область не только
- * бережёт память, но и УСКОРЯЕТ расчёт.
+ * Откат к отметке. Куски выше отметки ОТДАЮТСЯ СИСТЕМЕ — все, кроме первых
+ * FL_ARENA_KEEP: их откат оставляет себе под ближайшую выдачу.
+ *
+ * ── Здесь стоял НЕЗАМЕРЕННЫЙ довод, и замер его отменил ────────────────────
+ * До 24 августа 2026 откат не отдавал НИЧЕГО: куски помечались пустыми, ровно
+ * как в `fl_arena_reset`, и ближайшая выдача брала их снова. Довод стоял прямо
+ * здесь и звучал так: арена, которую откатывают, остаётся горячей в кэше, а
+ * растущая покупает новое и гуляет по всей памяти, — то есть удержание кусков
+ * не только бережёт память, но и УСКОРЯЕТ расчёт.
+ *
+ * Довод верен по знаку и ничтожен по величине. Следствие же его дорого:
+ * `fl_arena_release` зовётся дважды и обе — в самом конце работы
+ * (`flang_cli.c`), поэтому пик прогона равен НЕ рабочему набору, а всему, что
+ * арена купила за жизнь. Отсюда «растёт по гигабайту в минуту и никогда не
+ * падает» у долгого счёта.
+ *
+ * ── Замер 24 августа 2026 ──────────────────────────────────────────────────
+ * `flang check flang/self/types.flang --proof`, четыре колонки ОДНИМ двоичным
+ * (perf на машине закрыт; режим включался переменной среды, чтобы сравнивать
+ * одну сборку с собою), подряд, при загрузке машины 14,7–15,2:
+ *
+ *   что делает откат          время      пик (maxRSS)   покупок у malloc
+ *   держит весь хвост        1:34,92     6 236 536 КБ         94 022
+ *   отдаёт весь хвост        1:36,06     3 952 772 КБ      1 303 680
+ *   отдаёт, оставив 1        1:35,50     3 950 176 КБ      1 104 760
+ *   отдаёт, оставив 4        1:34,99     3 974 552 КБ        657 256
+ *
+ * То есть ПАМЯТЬ −36,3 %, ВРЕМЯ +0,07 % — при разбросе повторов 0,45 %, то есть
+ * времени не потеряно вовсе. Ответ ведомости побайтово тот же (1 635 строк,
+ * одна сумма md5 на обе колонки).
+ *
+ * Почему оставлять всё-таки надо, и почему именно четыре: сразу после отката
+ * `fl_region_close` кладёт копию результата обратно в арену. Отдав весь хвост,
+ * она идёт за ним к malloc — отсюда 1,3 млн покупок вместо 94 тысяч и те
+ * самые +1,2 % времени. Четыре куска эту покупку перекрывают, покупок остаётся
+ * вдвое меньше, а пик не меняется: удержанное ограничено
+ * FL_ARENA_KEEP кусками на арену, а не всей историей.
+ *
+ * ── И то же самое двумя двоичными, без счётчиков ───────────────────────────
+ * Счётчики стоят около процента времени сами по себе, поэтому итог снят ещё раз
+ * ДВУМЯ обычными сборками — стволом и этой правкой, — подряд, при загрузке 15,8:
+ *
+ *   прогон                                     ствол            эта правка
+ *   check flang/self/types.flang --proof     1:33,91           1:33,37
+ *                                        6 235 232 КБ      3 965 748 КБ  (−36,4 %)
+ *   check flang/self/parser.flang --proof    1:42,92           1:43,76
+ *                                        3 022 784 КБ      1 172 216 КБ  (−61,2 %)
+ *   check flang/stdlib/strings.flang           0:03,77           0:04,03
+ *                                          211 152 КБ         89 064 КБ  (−57,8 %)
+ *
+ * Вывод у всех трёх побайтово тот же и код возврата тот же. Времени правка не
+ * стоит: на самом тяжёлом прогоне она даже быстрее ствола на 0,6 %, на мелком
+ * дороже на 0,26 с. Разброс повторов по времени 0,45 %, по пику 4,5 %.
+ *
+ * Чего замер НЕ показывает: перепечатку семени им не мерили — она в этот час
+ * шла у соседа, а второй такой машина не выдержала бы. Мерили `check` на
+ * исходниках самого компилятора; устройство арены у обеих команд одно, но доля
+ * отката в пике у перепечатки не измерена: по замеру 21 августа память печати
+ * лежит в глубокой НЕхвостовой рекурсии, где область отказывается от отката
+ * ЗАКОННО, — а где отката нет, там и отдавать нечего.
+ *
+ * ── Долю печати В ПИКЕ ИЗМЕРИЛИ: её нет (25 августа 2026) ──────────────────
+ * Задача 0032 просила связать этот откат с записью: печать компилятора копит
+ * двадцать один мегабайт вывода в памяти и пишет его одним куском в конце,
+ * значит-де «пик памяти включает весь накопленный вывод». Прогон отвечает: НЕ
+ * ВКЛЮЧАЕТ. `flang emit flang/self/parser.flang --target c` — 5,87 МБ печати,
+ * четверть компилятора, — разложен по шагам замером изнутри бинарника (VmHWM и
+ * VmRSS из /proc/self/status на границах шагов):
+ *
+ *   шаг            время      VmHWM после шага   VmRSS после шага
+ *   проверка      159,38 с        2 702 МиБ           976 МиБ
+ *   печать         68,25 с        2 702 МиБ         1 379 МиБ
+ *   запись файлов   0,00 с
+ *
+ * Пик НЕ СДВИНУЛСЯ ни на мегабайт: его ставит проверка, и ставит ДО того, как
+ * печать началась. Запись по ходу этого пика не снимет ничем — снимать нечего.
+ * Двадцать один мегабайт вывода против 250 ГБ пика перепечатки — восемь тысячных
+ * процента; беда была названа по догадке, а не по замеру.
+ *
+ * Что печать всё-таки стоит — ВРЕМЯ: 68,25 с из 228,4 с, то есть 30 % прогона на
+ * крупном файле, и весь этот срок каталог вывода ПУСТ (проверено опросом раз в
+ * две секунды: первые байты появляются в последнюю секунду). Вот это в задаче
+ * правда, и цена снятого прогона — эти 30 %, а не память.
+ *
+ * ── И то, ради чего врезка стоит именно здесь ──────────────────────────────
+ * Арена в СЕМЕНИ на 516 строк старше этого файла: напечатанный `bootstrap/` не
+ * знает ни отдачи хвоста системе, ни отказа копировать подграфы ниже отметки.
+ * Перепечатка идёт СЕМЕНЕМ — то есть без всего, что здесь написано. Два
+ * двоичных, собранных из одного `compiler_flang.c` и разных рантаймов, пущены
+ * ПОДРЯД при одной загрузке на одном и том же `emit parser.flang`:
+ *
+ *   семя как есть                       6:28,84      пик 27,2 ГиБ
+ *   оно же с рантаймом из этого файла   3:52,77      пик  2,64 ГиБ
+ *
+ * ВРЕМЯ −40 %, ПИК −90,3 % (в 10,3 раза). Напечатанное совпало байт в байт:
+ * `diff -r` чист на обеих программах (`builtins.flang` и `parser.flang`), md5
+ * одна на обе колонки. За сутки перепечатка умерла трижды, и один раз —
+ * `FLANG_MEMORY`; эти десять раз по пику ей доступны СЕЙЧАС, пересборкой
+ * `bootstrap/flang` с рантаймом отсюда, и перепечатки они не требуют.
+ *
+ * ── Почему хвост можно отдавать целиком ────────────────────────────────────
+ * За текущим куском вся цепочка ПУСТА, и это не случай: `fl_arena_alloc`
+ * продвигает `current` только на кусок с `used == 0`, а новый вставляет сразу
+ * за ним, — значит «после текущего всё пусто» держится с рождения арены. Куски
+ * от отметки до текущего пустеют этим самым откатом. Стало быть после отката
+ * пуст весь хвост за `mark.chunk`, и отдать его — то же самое, что занулить,
+ * только память при этом уходит системе.
+ *
+ * ── И почему обход до конца цепочки больше не дорог ────────────────────────
+ * Здесь стояло правило «обход обрывается на текущем куске, а не идёт до конца
+ * цепочки», и стояло оно по делу: за текущим лежали куски ВСЕХ прежних откатов,
+ * то есть вся история арены, и зануление их стоило 16 % времени на 665 тысячах
+ * откатов (`docs/zettel/subgraphs-below-the-rollback-mark-need-no-copy.md`).
+ * Отдача снимает саму причину: после каждого отката за отметкой остаётся не
+ * больше FL_ARENA_KEEP кусков, поэтому хвост — это то, что выдано ПОСЛЕ
+ * отметки, а не всё, что арена купила за жизнь. Истории в цепочке больше нет, и
+ * обрывать обход не на чем.
  */
 static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
+  const size_t header = fl_round_up(sizeof(fl_chunk));
   fl_chunk *chunk = NULL;
+  fl_chunk *keep_head = NULL;
+  fl_chunk *keep_tail = NULL;
+  size_t kept = 0;
   if (mark.chunk == NULL) {
     /* На отметке арена была пуста: пусто всё, что после неё. */
-    for (chunk = arena->chunks; chunk != NULL; chunk = chunk->next) {
-      chunk->used = 0;
-    }
-    arena->current = arena->chunks;
+    chunk = arena->chunks;
   } else {
     mark.chunk->used = mark.used;
-    for (chunk = mark.chunk->next; chunk != NULL; chunk = chunk->next) {
+    chunk = mark.chunk->next;
+  }
+  while (chunk != NULL) {
+    fl_chunk *next = chunk->next;
+    if (kept < (size_t)FL_ARENA_KEEP) {
       chunk->used = 0;
+      chunk->next = NULL;
+      if (keep_tail == NULL) {
+        keep_head = chunk;
+      } else {
+        keep_tail->next = chunk;
+      }
+      keep_tail = chunk;
+      kept += 1;
+    } else {
+      /* `reserved` — это купленное у malloc, и отданное из него вычитается:
+         иначе арена считала бы своим то, чего у неё уже нет. */
+      arena->reserved -= header + chunk->capacity;
+      free(chunk);
     }
+    chunk = next;
+  }
+  if (mark.chunk == NULL) {
+    arena->chunks = keep_head;
+    arena->current = keep_head;
+  } else {
+    mark.chunk->next = keep_head;
     arena->current = mark.chunk;
   }
   arena->handed = mark.handed;
+  /* Память выше отметки сейчас достанется кому-то другому, и запомненные адреса
+     могли бы совпасть с чужими значениями. Памятка снимается вместе с памятью. */
+  fl_region_forget(arena);
 }
 
 /** Буфер под перекладку: живёт между вызовами, отдаётся в `fl_arena_release`. */
@@ -1370,6 +2932,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   size_t grown = 0;
   size_t live = 0;
   fl_pack pack;
+  fl_live zone;
   fl_value staged = fl_nothing();
   fl_value moved = fl_nothing();
   char *block = NULL;
@@ -1387,11 +2950,13 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(*result, grown / FL_REGION_GAIN, 0, &live)) {
+  zone = fl_region_live(arena, mark);
+  if (!fl_region_size(arena, zone, *result, grown / FL_REGION_GAIN, 0, &live)) {
     return FL_OK;
   }
   if (live == 0) {
-    /* Результат — скаляр либо пустой список: перекладывать нечего. */
+    /* Копировать нечего: результат — скаляр, пустой список либо целиком лежит
+       ниже отметки. Во всех трёх случаях он переживёт откат как есть. */
     fl_arena_rollback(arena, mark);
     return FL_OK;
   }
@@ -1401,6 +2966,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   pack.base = arena->staging;
   pack.size = live;
   pack.used = 0;
+  pack.zone = zone;
   if (!fl_pack_value(&pack, *result, 0, &staged)) {
     return FL_OK;
   }
@@ -1414,6 +2980,10 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
   pack.base = block;
   pack.size = live;
   pack.used = 0;
+  /* Обратно копируется ровно то, что легло в буфер; всё прочее уже пережило
+     откат и лежит на месте. */
+  pack.zone.lo = arena->staging;
+  pack.zone.hi = arena->staging + live;
   if (!fl_pack_value(&pack, staged, 0, &moved)) {
     return fl_no_memory(error);
   }
@@ -1428,7 +2998,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
  * функция, внутри которой она стоит, вправе не быть рекурсивной — тогда области
  * у неё нет вовсе. А накопителей за цикл получается столько же, сколько витков,
  * и каждый из них живёт до конца объемлющего вызова. «Сортировка вставками» из
- * `flang/examples/rosetta/quicksort.flang` — ровно этот случай: на четырёх
+ * `examples/rosetta/quicksort.flang` — ровно этот случай: на четырёх
  * тысячах элементов живых значений четыре тысячи, а мёртвых почти восемь
  * миллионов, то есть 99,95 % пика.
  *
@@ -1504,10 +3074,24 @@ fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_erro
   if (grown < (size_t)FL_REGION_MIN) {
     return FL_OK;
   }
-  if (!fl_region_size(*result, grown / FL_REGION_LOOP_GAIN, 0, &live)) {
-    /* Накопление: живого столько же, сколько наросло. Откат не окупится. */
+  /* Другая область — счёт отступа начинается заново. Совпадение отметок у двух
+     разных свёрток обмеру не вредит: оно стоит лишней попытки, а не пропуска. */
+  if (mark.handed != arena->recycle_mark) {
+    arena->recycle_mark = mark.handed;
+    arena->recycle_next = 0;
+  }
+  if (grown < arena->recycle_next) {
+    /* В прошлый раз обмер отказал, и наросшее с тех пор не удвоилось. Пробовать
+       снова незачем: ответ будет тот же, а стоить он будет уже дороже. */
     return FL_OK;
   }
+  if (!fl_region_size(arena, fl_region_live(arena, mark), *result, grown / FL_REGION_LOOP_GAIN, 0,
+                      &live)) {
+    /* Накопление: живого столько же, сколько наросло. Откат не окупится. */
+    arena->recycle_next = grown > ((size_t)-1) / 2 ? (size_t)-1 : grown * 2;
+    return FL_OK;
+  }
+  arena->recycle_next = 0;
   status = fl_region_close(ctx, mark, FL_OK, result, error);
   if (status != FL_OK) {
     return status;
@@ -1929,7 +3513,7 @@ bool fl_is_scalar(fl_value value) {
 }
 
 bool fl_variant_is(fl_value value, const char *name) {
-  return value.tag == FL_VARIANT && strcmp(value.as.variant->name, name) == 0;
+  return value.tag == FL_VARIANT && fl_name_same(value.as.variant->name, name);
 }
 
 /* ═════════════════════════ число → текст ═════════════════════════ */
@@ -1945,7 +3529,13 @@ bool fl_variant_is(fl_value value, const char *name) {
  * точности от 1 до 17 и берём первую, которую strtod возвращает без потерь.
  * Шаг второй — расстановка точки и экспоненты ровно по таблице стандарта.
  */
-size_t fl_number_text(double value, char *buffer) {
+/*
+ * Проб точности — от одной до семнадцати, и каждая стоит snprintf плюс strtod.
+ * Это самая дорогая работа среди встроенных форм на один вызов, и счётчику она
+ * до сих пор ничего не стоила. `probes` считает сделанные пробы; NULL — не
+ * считать (диагностикам счёт не нужен, они не в счёте витков программы).
+ */
+static size_t fl_number_text_cost(double value, char *buffer, size_t *probes) {
   char probe[64];
   char digits[32];
   size_t offset = 0;
@@ -1978,6 +3568,9 @@ size_t fl_number_text(double value, char *buffer) {
 
   for (precision = 1; precision < 17; precision += 1) {
     snprintf(probe, sizeof probe, "%.*e", precision - 1, value);
+    if (probes != NULL) {
+      *probes += 1;
+    }
     if (strtod(probe, NULL) == value) {
       break;
     }
@@ -2039,6 +3632,10 @@ size_t fl_number_text(double value, char *buffer) {
   }
   buffer[offset] = '\0';
   return offset;
+}
+
+size_t fl_number_text(double value, char *buffer) {
+  return fl_number_text_cost(value, buffer, NULL);
 }
 
 /* ═════════════════════════ буфер для текстов ═════════════════════════ */
@@ -2238,6 +3835,28 @@ static bool fl_same_number(double left, double right) {
   return true;
 }
 
+/*
+ * ── ДИАГОНАЛЬ ПОПАДАЕТ ВСЕГДА: ЗАМЕР, А НЕ НАДЕЖДА ────────────────────────
+ *
+ * Поле ищется не перебором, а сверкой на СВОЁМ месте: у двух записей одного
+ * типа поля напечатаны в порядке объявления, а имя поля — литерал единицы
+ * трансляции, и одинаковые литералы компилятор сливает. Перебор оставлен под
+ * `иначе` — на случай, когда поля написаны в разном порядке: порядок ключей
+ * равенству не важен, и это семантика языка, а не подробность.
+ *
+ * СКОЛЬКО РАЗ ПЕРЕБОР НУЖЕН НА САМОМ ДЕЛЕ, снято счётчиками двоичным нынешнего
+ * печатника на работе `emit flang/self/lexer.flang --target c`:
+ *
+ *     зовов fl_fields_equal      14 838 502 744
+ *     полей просмотрено          41 262 203 904   (наибольшая запись — 13 полей)
+ *     витков перебора           134 303 803 982   3,25 витка на поле — КВАДРАТ
+ *     диагональ совпала бы       41 262 203 904   ВСЕ поля до единого
+ *     промахов диагонали                      0
+ *
+ * Ноль промахов на сорока одном миллиарде полей. Значит диагональ снимает
+ * 134 млрд витков перебора и все зовы `fl_name_same` вместе с ними — отсюда и
+ * `__strcmp_avx2` в профиле перепечатки.
+ */
 static bool fl_fields_equal(const fl_field *left, size_t left_count, const fl_field *right, size_t right_count) {
   size_t index = 0;
   size_t other = 0;
@@ -2247,10 +3866,14 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count, const fl_fi
   /* Порядок ключей неважен — важен состав, как в recordsEqual интерпретатора. */
   for (index = 0; index < left_count; index += 1) {
     bool found = false;
-    for (other = 0; other < right_count; other += 1) {
-      if (strcmp(left[index].name, right[other].name) == 0) {
-        found = fl_equal(left[index].value, right[other].value);
-        break;
+    if (left[index].name == right[index].name) {
+      found = fl_equal(left[index].value, right[index].value);
+    } else {
+      for (other = 0; other < right_count; other += 1) {
+        if (fl_name_same(left[index].name, right[other].name)) {
+          found = fl_equal(left[index].value, right[other].value);
+          break;
+        }
       }
     }
     if (!found) {
@@ -2260,6 +3883,39 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count, const fl_fi
   return true;
 }
 
+/*
+ * ── ОДИН И ТОТ ЖЕ УКАЗАТЕЛЬ — ОДНО СРАВНЕНИЕ, А НЕ ОБХОД ДЕРЕВА ────────────
+ *
+ * Записи, варианты и списки flang неизменяемы и живут в арене: `равен` над
+ * ними почти всегда зовётся на ОДНОМ И ТОМ ЖЕ значении — значение сверяется с
+ * самим собой или с собственным подузлом, приехавшим по другому пути. До этой
+ * правки каждый такой зов обходил всё дерево до листьев.
+ *
+ * СКОЛЬКО ИХ, снято счётчиками, врезанными в этот файл, двоичным нынешнего
+ * печатника (`bootstrap-pechatnyy`, тем самым, который сейчас печатает семя),
+ * работа `emit flang/self/lexer.flang --target c`, 8 мин 50 с:
+ *
+ *     зовов fl_equal            49 112 829 764
+ *       запись                   7 485 029 278   тот же указатель 7 480 721 921  99,942 %
+ *       вариант                  7 353 480 760   тот же указатель 7 341 572 922  99,838 %
+ *       список                   1 742 910 604   тот же указатель 1 741 380 199  99,912 %
+ *       строка                  18 368 031 077   тот же указатель 18 311 592 023 99,693 %
+ *
+ * То есть 34,9 млрд зовов из 49,1 (71 %) — это сверка значения с самим собой.
+ * У строк отсев уже был (`fl_bytes_same` начинается со сверки указателей); у
+ * записи, варианта и списка его не было, и он вносится здесь.
+ *
+ * ПОЧЕМУ ЭТО ТОЧНО, А НЕ «ПОЧТИ». Отсев верен ровно настолько, насколько
+ * равенство flang рефлексивно, — и оно рефлексивно на ВСЕХ значениях языка,
+ * включая края: `не число` (`0 делить на 0`) равен сам себе (`fl_same_number`
+ * возвращает истину для двух NaN, в отличие от IEEE 754), минус ноль равен
+ * минус нулю (знак у обоих один и тот же). Будь равенство IEEE-шным, отсев по
+ * указателю был бы НЕВЕРЕН на записи с `не число` внутри — поэтому здесь он
+ * стоит вместе со ссылкой на `fl_same_number`, а не сам по себе.
+ *
+ * У списка сверяется ПАРА «начало и длина»: один и тот же массив, взятый
+ * разной длины, — разные списки, и длина проверяется первой.
+ */
 bool fl_equal(fl_value left, fl_value right) {
   if (fl_is_scalar(left) || fl_is_scalar(right)) {
     if (!fl_is_scalar(left) || !fl_is_scalar(right) || left.tag != right.tag) {
@@ -2274,8 +3930,7 @@ bool fl_equal(fl_value left, fl_value right) {
         return fl_same_number(left.as.number, right.as.number);
       case FL_STRING:
         return left.as.string.bytes == right.as.string.bytes &&
-               (left.as.string.bytes == 0 ||
-                memcmp(left.as.string.utf8, right.as.string.utf8, left.as.string.bytes) == 0);
+               fl_bytes_same(left.as.string.utf8, right.as.string.utf8, left.as.string.bytes);
       default:
         return false;
     }
@@ -2285,6 +3940,9 @@ bool fl_equal(fl_value left, fl_value right) {
     if (left.as.list.count != right.as.list.count) {
       return false;
     }
+    if (left.as.list.items == right.as.list.items) {
+      return true;
+    }
     for (index = 0; index < left.as.list.count; index += 1) {
       if (!fl_equal(left.as.list.items[index], right.as.list.items[index])) {
         return false;
@@ -2293,13 +3951,19 @@ bool fl_equal(fl_value left, fl_value right) {
     return true;
   }
   if (left.tag == FL_VARIANT && right.tag == FL_VARIANT) {
-    if (strcmp(left.as.variant->name, right.as.variant->name) != 0) {
+    if (left.as.variant == right.as.variant) {
+      return true;
+    }
+    if (!fl_name_same(left.as.variant->name, right.as.variant->name)) {
       return false;
     }
     return fl_fields_equal(left.as.variant->fields, left.as.variant->count, right.as.variant->fields,
                            right.as.variant->count);
   }
   if (left.tag == FL_RECORD && right.tag == FL_RECORD) {
+    if (left.as.record == right.as.record) {
+      return true;
+    }
     return fl_fields_equal(left.as.record->fields, left.as.record->count, right.as.record->fields,
                            right.as.record->count);
   }
@@ -2313,7 +3977,13 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
   if (target.tag == FL_VARIANT) {
     /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка типов, поэтому сюда приезжает значение, у которого поле есть. Отказ ниже остаётся прежним: он про сумму из двух и более. */
     for (index = 0; index < target.as.variant->count; index += 1) {
-      if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+      if (target.as.variant->fields[index].name == name) {
+        *out = target.as.variant->fields[index].value;
+        return FL_OK;
+      }
+    }
+    for (index = 0; index < target.as.variant->count; index += 1) {
+      if (fl_name_same(target.as.variant->fields[index].name, name)) {
         *out = target.as.variant->fields[index].value;
         return FL_OK;
       }
@@ -2325,10 +3995,20 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
     return fl_fail(ctx, error, FL_CODE_TYPE, "поле «%s» можно взять только у записи, получено %s", name,
                    fl_type_name(ctx, target));
   }
-  for (index = 0; index < target.as.record->count; index += 1) {
-    if (strcmp(target.as.record->fields[index].name, name) == 0) {
-      *out = target.as.record->fields[index].value;
-      return FL_OK;
+  {
+    const fl_field *fields = target.as.record->fields;
+    size_t count = target.as.record->count;
+    for (index = 0; index < count; index += 1) {
+      if (fields[index].name == name) {
+        *out = fields[index].value;
+        return FL_OK;
+      }
+    }
+    for (index = 0; index < count; index += 1) {
+      if (fl_name_same(fields[index].name, name)) {
+        *out = fields[index].value;
+        return FL_OK;
+      }
     }
   }
   return fl_fail(ctx, error, FL_CODE_UNKNOWN_NAME, "запись не содержит поле «%s»", name);
@@ -2337,7 +4017,13 @@ fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value 
 fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error) {
   size_t index = 0;
   for (index = 0; index < target.as.variant->count; index += 1) {
-    if (strcmp(target.as.variant->fields[index].name, name) == 0) {
+    if (target.as.variant->fields[index].name == name) {
+      *out = target.as.variant->fields[index].value;
+      return FL_OK;
+    }
+  }
+  for (index = 0; index < target.as.variant->count; index += 1) {
+    if (fl_name_same(target.as.variant->fields[index].name, name)) {
       *out = target.as.variant->fields[index].value;
       return FL_OK;
     }
@@ -2396,6 +4082,22 @@ fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label, fl_val
     return fl_fail(ctx, error, FL_CODE_TYPE, "«%s» работает только со списком, получено %s", label,
                    fl_type_name(ctx, value));
   }
+  /*
+   * Единственная точка входа всех трёх циклов по списку — `отфильтровать`,
+   * `отобразить`, `свёртка`, — и единственная, где рантайму видна длина. Заряд
+   * снимается здесь; почему именно здесь, сказано у `fl_charge`.
+   *
+   * Заряд НЕ отказывает, хотя мог бы: у рантайма нет имени объемлющей функции,
+   * а отказ обязан назвать её дословно так, как называет толкователь
+   * («функция «Имя» исчерпала лимит шагов …»). Назвать вместо неё форму —
+   * «функция «отфильтровать»» — значило бы напечатать текст, которого
+   * толкователь не печатает никогда, то есть развести бэкенды. Поэтому предел
+   * ловит ближайший `fl_tick`: вход в функцию, виток хвостового цикла или
+   * отскок батута. Перелёт ограничен длиной ОДНОГО списка — список уже лежит в
+   * памяти целиком, убежать ему некуда, — и это строго лучше прежнего, где
+   * предел не срабатывал на этой работе вовсе.
+   */
+  fl_charge(ctx, value.as.list.count);
   *out = value;
   return FL_OK;
 }
@@ -2524,6 +4226,8 @@ static fl_status fl_join_two(fl_ctx *ctx, fl_value left, fl_value right, fl_valu
                    "«соединить»: на стыке октет продолжения прирос бы к последнему знаку левой "
                    "строки — два знака слились бы в один");
   }
+  /* Склейка копирует оба слагаемых целиком: столько октетов и стоит. */
+  fl_charge(ctx, bytes);
   data = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
   if (data == NULL) {
     return fl_no_memory(error);
@@ -2618,6 +4322,8 @@ fl_status fl_b_simvol(fl_ctx *ctx, fl_value index, fl_value text, fl_value *out,
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«символ»: индекс %s вне строки длиной %lu", number,
                    (unsigned long)text.as.string.points);
   }
+  /* `fl_utf8_offset` идёт по знакам от начала: до N-го знака ровно N шагов. */
+  fl_charge(ctx, (size_t)at + 1);
   start = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)at);
   stop = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)at + 1);
   *out = fl_text_borrow(text.as.string.utf8 + start, stop - start, 1);
@@ -2649,6 +4355,8 @@ fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to,
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«подстрока»: конец %s вне диапазона [%s, %lu]",
                    last_text, first_text, (unsigned long)text.as.string.points);
   }
+  /* Оба края ищутся обходом от начала строки; дальний и определяет цену. */
+  fl_charge(ctx, (size_t)end);
   first = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)start);
   last = fl_utf8_offset(text.as.string.utf8, text.as.string.bytes, (size_t)end);
   *out = fl_text_borrow(text.as.string.utf8 + first, last - first, (size_t)(end - start));
@@ -2698,6 +4406,9 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
       bytes += right.as.string.bytes * (left.as.list.count - 1);
       points += right.as.string.points * (left.as.list.count - 1);
     }
+    /* Два прохода: по элементам (проверка стыков и сумма длин) и по октетам
+       (копия). Заряд снимается один раз, за оба. */
+    fl_charge(ctx, left.as.list.count + bytes);
     data = (char *)fl_arena_alloc(ctx->arena, bytes + 1);
     if (data == NULL) {
       return fl_no_memory(error);
@@ -2739,8 +4450,12 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
  * края стоят на границе знака. Два сравнения октета на найденное вхождение —
  * дешевле, чем обход строки, и включаются они только после удачного memcmp.
  */
-static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle, size_t needle_bytes) {
+static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle,
+                           size_t needle_bytes, size_t *scanned) {
   size_t index = 0;
+  if (scanned != NULL) {
+    *scanned = 0;
+  }
   if (needle_bytes == 0) {
     return haystack;
   }
@@ -2748,6 +4463,11 @@ static const char *fl_find(const char *haystack, size_t haystack_bytes, const ch
     return NULL;
   }
   for (index = 0; index + needle_bytes <= haystack_bytes; index += 1) {
+    if (scanned != NULL) {
+      /* Цена — не длина стога, а пройденная его часть: на раннем совпадении
+         поиск обрывается, и заряжать за весь стог значило бы врать вверх. */
+      *scanned = index + 1;
+    }
     if (memcmp(haystack + index, needle, needle_bytes) == 0 &&
         fl_utf8_starts(haystack, index) &&
         fl_utf8_boundary(haystack, haystack_bytes, index + needle_bytes)) {
@@ -2777,6 +4497,9 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   size_t start = 0;
   fl_value *items = NULL;
 
+  /* Строка читается ДВАЖДЫ: сперва счёт кусков, потом их нарезка. Заряд снят
+     за оба прохода сразу — числа витков это не меняет, а места экономит. */
+  fl_charge(ctx, text.as.string.bytes * 2);
   for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
     if (fl_razdelit_zdes(text, separator, index)) {
       count += 1;
@@ -2843,6 +4566,8 @@ fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
   fl_value *items = NULL;
   FL_TRY(fl_expect_string(ctx, "символы", text, "строка", error));
 
+  /* Тоже два прохода по октетам: счёт кодовых точек и нарезка по ведущим. */
+  fl_charge(ctx, text.as.string.bytes * 2);
   count = fl_utf8_points(text.as.string.utf8, text.as.string.bytes);
   if (count == 0) {
     *out = fl_list(NULL, 0);
@@ -2946,17 +4671,23 @@ fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *o
     size_t index = 0;
     for (index = 0; index < left.as.list.count; index += 1) {
       if (fl_equal(left.as.list.items[index], right)) {
+        fl_charge(ctx, index + 1);
         *out = fl_flag(true);
         return FL_OK;
       }
     }
+    fl_charge(ctx, left.as.list.count);
     *out = fl_flag(false);
     return FL_OK;
   }
-  FL_TRY(fl_expect_string(ctx, "содержит", left, "строка или список", error));
-  FL_TRY(fl_expect_string(ctx, "содержит", right, "искомая подстрока", error));
-  *out = fl_flag(fl_find(left.as.string.utf8, left.as.string.bytes, right.as.string.utf8,
-                         right.as.string.bytes) != NULL);
+  {
+    size_t scanned = 0;
+    FL_TRY(fl_expect_string(ctx, "содержит", left, "строка или список", error));
+    FL_TRY(fl_expect_string(ctx, "содержит", right, "искомая подстрока", error));
+    *out = fl_flag(fl_find(left.as.string.utf8, left.as.string.bytes, right.as.string.utf8,
+                           right.as.string.bytes, &scanned) != NULL);
+    fl_charge(ctx, scanned);
+  }
   return FL_OK;
 }
 
@@ -2966,6 +4697,8 @@ fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_va
   /* Начало у префикса и у строки одно, поэтому левый край на границе знака
      всегда; сторожится правый — иначе «мама» начиналась бы с одинокого октета
      D0, то есть с половины своего первого знака. */
+  /* Сравнивается ровно префикс, дальше строка не читается. */
+  fl_charge(ctx, prefix.as.string.bytes);
   *out = fl_flag(prefix.as.string.bytes <= text.as.string.bytes &&
                  (prefix.as.string.bytes == 0 ||
                   (memcmp(text.as.string.utf8, prefix.as.string.utf8, prefix.as.string.bytes) == 0 &&
@@ -3034,6 +4767,8 @@ fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *err
   double number = 0.0;
   FL_TRY(fl_expect_string(ctx, "к числу", text, "строка", error));
 
+  /* Пробелы с краёв и сама проверка вида числа читают строку целиком. */
+  fl_charge(ctx, text.as.string.bytes);
   stop = text.as.string.bytes;
   while (start < stop) {
     const unsigned long code = fl_utf8_decode(text.as.string.utf8, stop, start, &width);
@@ -3108,9 +4843,15 @@ fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *er
     case FL_STRING:
       *out = value;
       return FL_OK;
-    case FL_NUMBER:
-      fl_number_text(value.as.number, text);
+    case FL_NUMBER: {
+      /* Кратчайшая запись ищется пробами: snprintf плюс strtod на пробу. Это
+         самая дорогая встроенная работа на один вызов, и до сих пор она шла
+         счётчику бесплатно. */
+      size_t probes = 0;
+      fl_number_text_cost(value.as.number, text, &probes);
+      fl_charge(ctx, probes);
       return fl_text(ctx, text, strlen(text), out, error);
+    }
     case FL_FLAG:
       /* Признак печатается по-русски: поверхность языка знает «да» и «нет». */
       *out = fl_text_static(value.as.flag ? "да" : "нет");
@@ -3312,6 +5053,11 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
   }
   FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
   if (count > 0) {
+    /* Заряд стоит ТОЛЬКО на медленном пути. Быстрый путь пишет одну ячейку за
+       концом и стоит постоянного времени — зарядить его длиной значило бы
+       оболгать «добавить» вверх и вернуть тот самый квадрат, ради снятия
+       которого запас и заведён. */
+    fl_charge(ctx, count);
     memcpy(items, list.as.list.items, count * sizeof(fl_value));
   }
   items[count] = item;
@@ -3389,6 +5135,8 @@ fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out
   }
   FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
   if (count > 0) {
+    /* Как и у «добавить»: платит копия, а не запись в занятый заранее запас. */
+    fl_charge(ctx, count);
     memcpy(items + slack, list.as.list.items, count * sizeof(fl_value));
   }
   items[slack - 1] = item;

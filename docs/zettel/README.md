@@ -58,11 +58,11 @@
 - [Автоматическая индукция по `разбор`у закрыла 9 утверждений, а из двенадцати заказанных — 5](auto-induction-on-match-closes-nine.md)
 - [Узкое место переехало: принцип индукции появился, а цепляться ему не за что](bottleneck-moved-to-body-shape.md)
 - [Узкое место доказуемости переехало третий раз за трое суток: теперь мешает форма УТВЕРЖДЕНИЯ, а не форма тела](bottleneck-moved-to-claim-shape.md)
-- [Постоянные в цели складываются только вокруг ОДНОЙ длины: вокруг произвольного числа это ложь на 10¹⁶](constants-in-a-goal-fold-only-around-one-length.md)
 - [Встроенное `приписать` в рекурсивной ветви `разбор`а рвёт индукцию, а тот же шаг через функцию с доказанным постусловием — не рвёт](builtin-prepend-in-a-recursive-branch-blocks-the-induction-hypothesis.md)
 - [Постусловие вызванной функции годится ядру в факты только ПОСЛЕ того, как оно доказано, — и этим же закрыт круг](callee-postcondition-is-a-fact-only-after-it-is-proved.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Замкнутую цель надо считать, а не выводить: 50 доказательств без единого нового правила](closed-goals-must-be-computed.md)
+- [Постоянные в цели можно складывать только вокруг ОДНОЙ длины: вокруг произвольного числа это ложь на 10¹⁶](constants-in-a-goal-fold-only-around-one-length.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)
 - [Даровое утверждение узнаётся подменой тела заглушкой, и в двух модулях библиотеки таких оказалось 17 из 32](darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.md)
 - [Дизъюнкция в допущении разбирается СЛУЧАЯМИ, а расщеплять её нельзя ни в какую сторону](dizyunkciya-v-dopushchenii-razbiraetsya-sluchayami-a-ne-rasshchepliaetsya.md)
@@ -194,7 +194,6 @@
 - [Перечень, записанный в проверке руками, переживает дерево и уносит с собой покрытие](a-hand-written-list-outlives-the-tree.md)
 - [Сборка релиза ломалась молча: имя выхода переименовали в трёх местах из четырёх, а четвёртое зовут руками](a-hard-coded-binary-name-outlives-its-rename.md)
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
-- [Ядро доказательств из исходников под интерпретатором до вердикта не доходит: стек хозяина кончается на глубине 2 074 974](the-source-proof-kernel-cannot-be-driven-by-the-interpreter.md)
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Слияние не умеет сливать напечатанное семя: любая сторона теряет правило, и на стволе `4c1b6aef` потерялась индукция по строке](a-merge-cannot-merge-a-generated-seed-either-side-loses-a-rule.md)
 - [Число, у которого нет ключа подстановки, расходится не с другой страницей, а со своим же отчётом](a-number-with-no-key-drifts-from-its-own-report.md)
@@ -248,6 +247,7 @@
 - [Дважды за один замер врал прибор, а не предмет — и оба раза это выглядело как находка](the-instrument-lied-not-the-subject.md)
 - [Вторую независимую реализацию возместить нечем — её можно только сохранить в проверках](the-second-implementation-cannot-be-replaced.md)
 - [Седьмое действие исчезло вместе с удалённым JavaScript: у двоичного словарь «Действие» остался шестивариантным](the-seventh-action-vanished-with-the-deleted-javascript.md)
+- [Ядро доказательств из исходников под интерпретатором до вердикта не доходит: стек хозяина кончается на глубине 2 074 974](the-source-proof-kernel-cannot-be-driven-by-the-interpreter.md)
 - [Стена «слой связывается асинхронно» стоит 263 синхронных места вызова, а не одной правки](the-sync-wall-costs-263-call-sites.md)
 - [Прогон работы перестал измерять что-либо, когда умер его второй конец, — и остался при этом зелёным по форме](the-work-run-measured-nothing-because-its-reference-end-died.md)
 - [Сторона на flang для анализа завершаемости не читает `обеспечивает`, и это тот же баг, который свидетель у себя уже чинил](totality-twin-does-not-read-postconditions.md)
@@ -450,6 +450,7 @@
 - [Отказ, полученный отставшим двоичным, нельзя приписывать проверяемому файлу](a-refusal-from-a-stale-binary-must-not-be-blamed-on-the-checked-file.md)
 - [Снятое препятствие — не цена: `lock` и `package` стоили 2 066 строк C при оценке в 280](a-removed-obstacle-is-not-the-price-of-a-command.md)
 - [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего, и до правки его не видно ни одним пересечением множеств](a-rename-that-separates-one-collision-creates-the-next-one.md)
+- [Правило, въехавшее в двоичный, ещё не спрошено двоичным: двенадцать подделок из двенадцати принимались молча, а компилятор при этом писал, что сверил](a-rule-inside-the-binary-is-not-a-rule-the-binary-asks.md)
 - [Правило, на которое не наступает ни одна программа корпуса, невидимо для сверки эталона — и живёт только в свидетеле](a-rule-no-corpus-program-touches-is-invisible-to-the-reference-check.md)
 - [Воспроизводимость по семени кончается ровно на границе узла, и обе половины теперь числа, а не слова](a-seed-orders-only-inside-one-node.md)
 - [Семя с рантаймом дерева бьёт стек, если не перенести блок настроек из его шапки](a-seed-with-tree-runtime-smashes-the-stack-without-its-limits-block.md)
@@ -689,10 +690,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Правило, въехавшее в двоичный, ещё не спрошено двоичным: двенадцать подделок из двенадцати принимались молча, а компилятор при этом писал, что сверил](a-rule-inside-the-binary-is-not-a-rule-the-binary-asks.md)
 
 ## Как добавлять
 

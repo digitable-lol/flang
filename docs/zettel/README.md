@@ -513,6 +513,7 @@
 - [Без блока «Граница входа» напечатанный C# собирается, но падает при первом запросе — и это чинится 136 строками на flang, а не вычитанием в проверке](five-targets-have-no-entry-boundary-and-only-a-raw-diff-shows-it.md)
 - [Язык доказательств у flang ЕСТЬ; чего в нём нет — шага, несущего промежуточный факт](flang-has-a-proof-language-what-it-lacks-is-a-step-carrying-a-fact.md)
 - [`flang test` на слое, у которого нет своих примеров, зеленеет всегда — а таких слоёв 11 683 строки](flang-test-is-always-green-on-a-layer-with-no-examples-of-its-own.md)
+- [«Не посмотрели» приходит четырьмя разными путями, и все четыре читаются как приговор](four-ways-of-not-having-looked-arrive-as-a-verdict.md)
 - [В примере годятся только литералы, и ещё две грабли записи, стоившие прогонов](front-end-example-blocks-take-literals-only.md)
 - [Один пример снимает ВСЕ доказанные постусловия функции, а не одно](front-end-one-example-per-function-lifts-all-its-proven-guards.md)
 - [Охрана берётся не только из ВЕРХНЕГО `если`: замеры на стенде, приложениях и правиле приёмки спек](fspec-guard-copied-from-a-nested-if-and-from-a-substituted-let.md)
@@ -679,10 +680,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [«Не посмотрели» приходит четырьмя разными путями, и все четыре читаются как приговор](four-ways-of-not-having-looked-arrive-as-a-verdict.md)
 
 ## Как добавлять
 

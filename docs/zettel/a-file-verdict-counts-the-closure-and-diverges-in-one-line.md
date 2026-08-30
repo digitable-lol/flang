@@ -10,7 +10,7 @@
 
 ```sh
 make -C bootstrap -j8
-PIK=3G PAMYAT=16G /srv/flang-rabota/vorota/flang-vorota -- \
+PIK=<пик> PAMYAT=<адресное> /srv/flang-rabota/vorota/flang-vorota -- \
   ./bootstrap/flang check <файл> --proof --json --предел-глубины 200000
 python3 scripts/proved-share-of-a-file.py <файл> <ведомость.json>
 ```
@@ -23,7 +23,11 @@ python3 scripts/proved-share-of-a-file.py <файл> <ведомость.json>
 | md5 | `4e32f9f76d8215c3b5df1b6abe0b6a68` |
 | размер | 23 122 912 байт |
 | версия | flang 0.6.2 |
-| ключ глубины | `--предел-глубины 200000` — без него оба файла падают в `FLANG_RECURSION_LIMIT` на глубине 20001 |
+| ключ глубины | `--предел-глубины 200000` |
+
+Ключ глубины обязателен: `carriers.flang` без него падает в
+`FLANG_RECURSION_LIMIT` на глубине 20001 (замерено, 23,90 с). У `tags.flang` без
+ключа не пробовалось — оба прогона таблицы сняты с одним и тем же ключом.
 
 ## Что вышло
 

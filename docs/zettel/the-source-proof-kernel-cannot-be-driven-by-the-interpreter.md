@@ -71,3 +71,12 @@
 
 Связано: [[a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted]],
 [[a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint]]
+
+## Чем снято и на каком семени
+
+Двоичный один на все прогоны: `bootstrap/flang`, md5 `4e32f9f7`, собран
+30 августа 2026 в 10:09 UTC из семени ствола `52996005` (коммит `1a4ca236`).
+Это семя откачено в 11:20 UTC того же дня коммитом `43bf2f25` — с доводом
+«novoe semya lomaet sborku po glubine vyzovov», то есть ровно про ту стену, что
+названа выше. Числа этой заметки говорят о ТОМ семени; на откаченном (21 374 208
+байт `compiler_flang.c` против 34 221 271) их надо снимать заново.

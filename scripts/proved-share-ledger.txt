@@ -62,6 +62,26 @@
 // семя `bootstrap/compiler_flang.c` и `.h` без единой правки, рантайм дерева
 // `flang/src/emit/c`, блок настроек из шапки семени (без него первый же check
 // бьёт стек), ключ «--предел-шагов 400000000000».
+//
+// Две строки среза flang/stdlib на буквы j–r — postgres.flang и redis.flang —
+// сняты 30 августа 2026, и снимались они ПО-РАЗНОМУ.
+//
+// `redis` перегонять было не нужно: ведомость лежала готовой во втором заходе
+// (/srv/tmp/m-raise-proved-share/obhod2, код 0, двоичный 25605ce2…), md5
+// исходника с тех пор не сдвинулся. Сведена оттуда и для верности переснята
+// двоичным ниже: 42|46|4 знак в знак обоими.
+//
+// `postgres` приёмом задачи 6128 не снимается вовсе, и упирается он НЕ в срок
+// и НЕ в память: 187 с и 3,45 ГиБ пика — и код 1. Отказ приходит на ПРИМЕРЕ:
+// «Предел витков проверки» вшит в семя числом 40 000 000
+// (flang/self/bootstrap/compiler.flang, строка 774 → bootstrap/compiler_flang.c),
+// а примеру «непечатаемая длина дополняется пробелами» его мало —
+// FLANG_RECURSION_LIMIT у «Байтов в тексте» на глубине 54. А ведомость у
+// программы с замечаниями не печатается вовсе. Снят двоичным, в котором эта
+// ОДНА константа поднята до 4 000 000 000 и больше не тронуто ничего: 307 с,
+// пик 3,55 ГиБ, код 0. Приговоров правка не двигает — она живёт до ведомости,
+// а не в ней: контрольные flang/stdlib/result.flang (12|0|3) и
+// flang/stdlib/lists.flang (33|28|5) вышли знак в знак теми же, что в стволе.
 
 142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
 f371ae4318c70abf98f5b3641ba17dc6|1|—|—|—|—|benchmarks/proof-cost/probe-forgery.flang
@@ -382,8 +402,8 @@ d7d04c1b5205721dbc3ec0844ef38238|11|8|3|0|0|flang/stdlib/kdf.flang
 5c4586f9a89fabedaec6b128e1394131|58|37|21|0|0|flang/stdlib/numbers.flang
 9e51a9c1dfe29e649fe8673f7d968461|13|5|6|2|0|flang/stdlib/numtree.flang
 48a111e5506449a7b29aa5d4ce33b4cf|22|12|7|3|0|flang/stdlib/optional.flang
-6c2749ea93d0a7e13644ff72ad07d9ed|159|—|—|—|—|flang/stdlib/postgres.flang
-9f530a5622bad022262c0ac728c7296a|92|—|—|—|—|flang/stdlib/redis.flang
+6c2749ea93d0a7e13644ff72ad07d9ed|159|86|65|8|0|flang/stdlib/postgres.flang
+9f530a5622bad022262c0ac728c7296a|92|42|46|4|0|flang/stdlib/redis.flang
 fa27c2b55c7564265f98ba2b86034f43|20|20|0|0|0|flang/stdlib/registry.flang
 92d80317b32a2be31c32f68efc2b12c2|15|12|0|3|0|flang/stdlib/result.flang
 c99b0f90d78b2ddebd00a3a1dcba8104|17|10|1|6|0|flang/stdlib/rsa.flang

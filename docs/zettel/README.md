@@ -570,6 +570,7 @@
 - [`только` не провозит типы — поэтому общий модуль с собственными типами берётся целиком, со всеми его именами](only-does-not-carry-types-so-a-shared-module-is-taken-whole.md)
 - [`только` у ввоза не сужает видимость, а выбрасывает объявления: ввезти слой одной точкой входа нельзя](only-on-an-import-discards-declarations-instead-of-narrowing-visibility.md)
 - [Из двух таблиц слов на flang сторожится одна, и вторая уже отстала на четыре фразы](only-one-of-two-word-tables-is-guarded-and-the-other-is-four-phrases-behind.md)
+- [Ход переписки заводит одно правило из шести, и недоказанных с ним — одно из восьми](only-the-equality-rule-walks-and-it-is-one-obligation-in-eight.md)
 - [Чужие пакеты надо хранить: из трёх укладов два — это один в два слоя, а третий не про наше десятилетие](other-peoples-packages-must-be-stored.md)
 - [Параметрический тип в языке ЕСТЬ, и упирается в него сегодня одиннадцать мест — все объявления, читающие тип именем; ссылка на процесс к ним не относилась никогда](parametric-types-exist-and-eleven-places-depend-on-them.md)
 - [Девять мест библиотеки обваливаются на «не числе» и пустой строке: встроенные формы `символ`, `элемент` и `код символа` частичны, а тип этого не запрещает](partial-builtin-forms-crash-the-stdlib-on-nan-and-the-empty-string.md)
@@ -681,7 +682,7 @@
 
 ## Ещё не разобранное
 
-- [Ход переписки заводит одно правило из шести, и недоказанных с ним — одно из восьми](only-the-equality-rule-walks-and-it-is-one-obligation-in-eight.md)
+- [«Не посмотрели» приходит четырьмя разными путями, и все четыре читаются как приговор](four-ways-of-not-having-looked-arrive-as-a-verdict.md)
 
 ## Как добавлять
 

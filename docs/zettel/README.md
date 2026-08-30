@@ -438,6 +438,7 @@
 - [У двоичного два входа, и цель печати достаётся человеку и машине разной ценой: прогонщику JSON — даром, ключу `--target` — 90 строк C](a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md)
 - [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](a-product-floor-works-only-paired-with-a-mirror.md)
 - [Обещание, дописанное звену хвостового круга, стирает батут из напечатанного кода — и главный цикл вычислителя становится рекурсией по стеку](a-promise-added-to-a-tail-cycle-deletes-the-trampoline-from-the-printed-code.md)
+- [Перепечатка 30 августа увезла в семя круг машины БЕЗ батута — и всякий план `flang io` умирает на шаге длиннее 6 666 витков; до возврата батута планы зовут прежним двоичным](plans-run-on-the-previous-seed-until-the-machine-loop-gets-its-trampoline-back.md)
 - [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
 - [Доказанное постусловие в напечатанный код больше не едет, и цена утверждений на сортировке упала с 3,23× до 2,72×](a-proved-postcondition-no-longer-reaches-printed-code.md)
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти — потому что разбор собрал его из уже существующих узлов](a-quantifier-over-adjacent-pairs-cost-two-files-not-twenty-nine.md)

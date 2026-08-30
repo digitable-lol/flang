@@ -65,7 +65,7 @@ The second command re-emits seven files and compares them with the committed
 ones. A divergence is reported by file, byte and line, not by the word
 "mismatch".
 
-The emission limits matter and are not decoration: `--max-steps 4000000000
+The emission limits matter and are not decoration: `--max-steps 1400000000000
 --max-depth 20000` (they are typed in `scripts/raskrutka.sh`, not on this page —
 check against it). Those numbers are stamped into the emitted byte
 (`#define FL_MAX_STEPS`), which means they take part in the equality. Rebuilt
@@ -79,10 +79,19 @@ emission itself but the library ledger: `flang check flang/stdlib/json.flang
 broke off with `FLANG_RECURSION_LIMIT` at call depth 78 out of 20 000 — that is,
 it was not looping, it was not finishing. How much it actually needs was measured
 with a binary built with a raised ceiling: 1 370 430 254 steps, 11 min 31 s,
-823 MiB, exit code 0. Today's four billion is that peak with headroom. The price
-of the headroom is named in the same place: a program that does NOT terminate now
-runs about thirty-four minutes before it is stopped, instead of eight. The whole
-breakdown is in the header of `scripts/raskrutka.sh`.
+823 MiB, exit code 0.
+
+Today's 1 400 000 000 000 no longer comes from that peak but from the measured
+cost of the most expensive emission step: "Kernel judgement on a program" was
+counted to the end on 29 August 2026 and costs 456 857 834 234 steps; the ceiling
+is that cost times three. The price of the headroom is named in the same place: a
+non-terminating program now runs 16.8 hours at 23.16 million steps per second
+before it is stopped. The whole breakdown is in the header of
+`scripts/raskrutka.sh`.
+
+This paragraph used to say "today's four billion" and "about thirty-four
+minutes"; both numbers had fallen two ceiling changes behind
+`scripts/raskrutka.sh`.
 
 ## What this circle does NOT mean
 

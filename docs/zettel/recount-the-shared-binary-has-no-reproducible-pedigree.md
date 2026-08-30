@@ -113,7 +113,7 @@ w-predely  14 068 248 байт   md5 2e640f12
 | семя | размер | md5 | чем сверено |
 |---|---|---|---|
 | ствол `db12d317` | 14 068 112 | `82f9ac40` | `cmp` код 0 с `stvol`, `m-reprint-from-trunk`, `m-kernel-ledger` |
-| ствол `52996005` (нынешний) | 23 122 912 | `4e32f9f7` | `cmp` код 0 с чужим `bootstrap/flang`; двумя путями — `make` из семени и `scripts/build-ledger-binary.sh` |
+| семя перепечатки `52996005` (откачена `43bf2f25`) | 23 122 912 | `4e32f9f7` | `cmp` код 0 с чужим `bootstrap/flang`; двумя путями — `make` из семени и `scripts/build-ledger-binary.sh` |
 | `4a26cf05` (двоичный описи) | 14 065 960 | `f32d89f5` | `cmp` код 0 с `m-kernel-ledger/build-kernel/flang` |
 
 Ствольное семя между `58b037c2` (23 августа 00:20) и `52996005^` (30 августа

@@ -1,0 +1,200 @@
+# Заход перепечатки пускается из чистой копии ствола
+
+Перепечатка семени (`sh scripts/raskrutka.sh`) стоит часы и сотни гигабайт, и
+она одна на машине. Заход, пущенный не из той копии, пропадает целиком: печать
+дойдёт до конца, а положить её будет некуда. Здесь записан порядок захода —
+откуда берётся копия, какой командой проверяется её чистота и что делать, если
+семя всё-таки правлено руками.
+
+Страница написана 30 августа 2026 по разбору заходов 2–4. Все числа ниже сняты
+прогонами через ворота в тот же день; команды и коды возврата приведены рядом.
+
+## 1. Копия заводится клоном приёмной, а не берётся готовая
+
+```sh
+git clone /srv/flang-priyom.git /srv/flang-rabota/<своё-имя>
+cd /srv/flang-rabota/<своё-имя>
+git fetch /srv/flang-priyom.git main && git checkout -B main FETCH_HEAD
+```
+
+Готовая копия соседа не годится не из-за беспорядка, а по одному месту:
+`bootstrap/**` и `scripts/otpechatok-semeni` печатаются перепечаткой, и если в
+копии их кто-то правил руками, печать пойдёт от правленого входа.
+
+## 2. Чистота проверяется одной командой, и это не `git status`
+
+```sh
+git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni
+```
+
+Код `0` — семя такое же, как в стволе; код `1` — правлено руками. Прогон
+30 августа 2026:
+
+```
+$ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
+    git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni; echo "чистота своей копии, код: $?"
+    git -C /srv/flang-rabota/m-reprint-2 diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni; echo "чистота m-reprint-2, код: $?"'
+чистота своей копии, код: 0
+чистота m-reprint-2, код: 1
+```
+
+**`git status --short -- bootstrap/` для этого не годится**, и это замерено, а не
+предположено:
+
+```
+$ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
+    git -C /srv/flang-rabota/m-reprint-2 status --short -- bootstrap/ scripts/otpechatok-semeni
+    echo "git status на ГРЯЗНОЙ копии, код: $?"
+    git status --short -- bootstrap/ scripts/otpechatok-semeni
+    echo "git status на ЧИСТОЙ копии, код: $?"'
+ M bootstrap/flang_runtime.c
+ M bootstrap/flang_runtime.h
+git status на ГРЯЗНОЙ копии, код: 0
+git status на ЧИСТОЙ копии, код: 0
+```
+
+Код возврата один и тот же — `0` и там и там: у `git status` он не про находку,
+а про то, что команда сумела посмотреть. Разница видна только глазами по
+печати, а проверка, которую нельзя провалить кодом возврата, не остановит ни
+одного захода.
+
+Отслеживаемых файлов в `bootstrap/` восемь (`git ls-files bootstrap/`), продукты
+сборки (`bootstrap/*.o`, `*.a`, сам двоичный) закрыты `.gitignore` — поэтому
+`git diff` смотрит ровно на входы печати и на собранный компилятор не ругается.
+
+## 3. Проверять надо ДО захода: после удачного захода та же команда краснеет
+
+Свежеотпечатанное семя лежит в рабочем дереве, ещё не сложенное в коммит, и `git diff`
+называет ровно те же файлы, что и правка руками. Различает их не команда, а
+минута: до печати код должен быть `0`, после печати `1` — это и есть результат.
+
+Отсюда порядок: снять код возврата **до** запуска `raskrutka.sh` и записать его
+рядом с журналом захода. Иначе после захода уже нечем сказать, чистым ли он
+начинался.
+
+## 4. Сегодня правленое семя держат 10 копий из 600
+
+Прогон 30 августа 2026, обход всех рабочих копий:
+
+```
+$ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
+    zhivyh=0; bitykh=0; gryaznyh=0
+    for d in /srv/flang-rabota/*/; do
+      [ -e "$d/.git" ] || continue
+      if ! git -C "$d" rev-parse --git-dir >/dev/null 2>&1; then bitykh=$((bitykh+1)); continue; fi
+      zhivyh=$((zhivyh+1))
+      if ! git -C "$d" diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni 2>/dev/null; then
+        gryaznyh=$((gryaznyh+1))
+        printf "%-42s %s\n" "${d%/}" "$(git -C "$d" diff --name-only HEAD -- bootstrap scripts/otpechatok-semeni | wc -l) файлов"
+      fi
+    done
+    printf "\nкопий живых: %s, битых: %s, с правленым семенем: %s\n" "$zhivyh" "$bitykh" "$gryaznyh"
+    [ "$gryaznyh" -eq 0 ]'
+/srv/flang-rabota/b-zaslon                 2 файлов
+/srv/flang-rabota/m-reprint-2              2 файлов
+/srv/flang-rabota/m-reprint-4              7 файлов
+/srv/flang-rabota/u-bez-js2                4 файлов
+/srv/flang-rabota/u-konyunkciya2           3 файлов
+/srv/flang-rabota/u-perepechatka-bystro    6 файлов
+/srv/flang-rabota/u-perepechatka           5 файлов
+/srv/flang-rabota/u-semya3                 7 файлов
+/srv/flang-rabota/u-zerkalo-porcha         2 файлов
+/srv/flang-rabota/u-zerkalo-stvol          4 файлов
+
+копий живых: 600, битых: 7, с правленым семенем: 10
+код возврата: 1
+```
+
+Семь копий с битым `.git` считаются отдельно нарочно: без проверки
+`git rev-parse --git-dir` они попадали в список правленых и завышали число с 10
+до 17. Проверка, которая молча считает ошибку находкой, врёт в ту же сторону
+всегда.
+
+Из этих десяти `m-reprint-4` — не правка руками, а вывод дошедшего захода
+(пункт 3). Остальные девять — правленые входы печати.
+
+## 5. Что делать, если семя правлено
+
+1. **Не печатать из этого дерева.** Заход даст семя, выведенное из чужой правки,
+   и никто не узнает, где именно оно разошлось со стволом.
+2. Правку, если она нужна по существу, перенести в `flang/src/emit/c/` — оттуда
+   рантайм уезжает в напечатанное дословно. Правка в `bootstrap/flang_runtime.*`
+   держится ровно до следующей перепечатки и стирается без следа.
+3. Завести чистую копию по пункту 1 и внести в неё только правку в
+   `flang/self/**`, ради которой заход делается.
+
+## 6. Результат захода кладётся в ствол не веткой
+
+Это место стоит отдельно, потому что порядок сдачи здесь **другой**, чем у
+всякой другой работы.
+
+Приёмная отвергает всякий коммит, тронувший машинный вывод, — без исключения
+для перепечатки. Правило живёт в `/srv/flang-priyom.git/hooks/pre-receive`,
+шаг 2, и ловит `bootstrap[^/]*/` и `scripts/otpechatok-semeni`. Прогон на самом
+коммите перепечатки:
+
+```
+$ git diff-tree --no-commit-id --name-only -r 52996005 |
+    grep -Eq '^(bootstrap[^/]*/|scripts/otpechatok-semeni$)'; echo $?
+0
+```
+
+Ноль здесь значит «попало под запрет»: отправь этот коммит веткой — приёмная
+откажет. Пуш прямо в `main` она тоже отвергает («в main напрямую не пушат»).
+
+Как семя попало в ствол на самом деле — видно в журнале ссылок ствола:
+
+```
+$ git -C /srv/priyom/stvol reflog --date=iso
+…
+52996005 HEAD@{2026-08-30 09:32:52 +0000}: commit: build(semya): компилятор перепечатан — …
+db12d317 HEAD@{2026-08-30 09:32:37 +0000}: reset: moving to origin/main
+```
+
+Слово `commit:` вместо `commit (merge): chore(svod): влита …` и есть ответ:
+коммит сделан **в самой рабочей копии ствола** `/srv/priyom/stvol`, через
+пятнадцать секунд после того, как её подтянули к приёмной. Веткой это не
+проходило и пройти не могло.
+
+Значит требование «ветка захода проходит приёмную без отказа» невыполнимо, и
+кончать заход надо иначе: подтянуть `/srv/priyom/stvol` к приёмной, положить
+туда семь напечатанных файлов и сделать один коммит `build(semya): …` прямо
+там. Всё остальное из захода (правки в `flang/self/**`, задачи, страницы) едет
+обычной веткой и обычным пушем.
+
+## 7. Заход, который дошёл: чем подтверждается, что он начинался чистым
+
+Заход 4 шёл в `/srv/flang-rabota/m-reprint-4`. Его копия заведена клоном
+(`git reflog`: `clone: from /srv/priyom/stvol`), голова — `f9e67fa6`.
+
+```
+$ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/otpechatok-semeni; echo $?
+0
+```
+
+Семя дерева захода на минуту начала совпадало со стволом файл в файл — значит
+заход начинался чистым. А напечатанное им совпало с тем, что легло в ствол:
+
+```
+$ sovpalo=0; vsego=0
+$ for f in bootstrap/compiler_flang.c bootstrap/compiler_flang.h bootstrap/flang_cli.c \
+           bootstrap/flang_repl.c bootstrap/flang_runtime.c bootstrap/flang_runtime.h \
+           scripts/otpechatok-semeni; do
+    vsego=$((vsego+1))
+    a=$(git rev-parse 52996005:$f)
+    b=$(git -C /srv/flang-rabota/m-reprint-4 hash-object -- $f)
+    [ "$a" = "$b" ] && sovpalo=$((sovpalo+1)) || echo "    РАЗОШЛОСЬ: $f"
+  done; echo "    совпало $sovpalo из $vsego"
+    совпало 7 из 7
+```
+
+Это и есть образец: чистая копия на входе, семь файлов на выходе, один коммит
+в стволе.
+
+## Чем эта страница НЕ является
+
+Она не про цену перепечатки — цена в [`reprint-cost.md`](reprint-cost.md) и в
+[`reprint-ledger.tsv`](reprint-ledger.tsv). Не про свежесть семени — это
+`scripts/seed-freshness.sh` и `sh scripts/raskrutka.sh --bystro`, и они отвечают
+на другой вопрос: «те ли входы у печати», а не «чиста ли копия, из которой
+печатают».

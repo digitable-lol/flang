@@ -331,7 +331,7 @@ c3e9988435d72d7cdd3bcc04e7bfef81|101|—|—|—|—|flang/self/setoid.flang
 54b4ec1e8dbd5c637251879ebcd94f91|72|—|—|—|—|flang/self/zapis.flang
 56d52b403f9e95aa9cfdd0e1e462f55c|218|129|81|8|0|flang/stdlib/aes.flang
 ffb6e5860533af4659ebb397200e0fbb|127|120|6|1|0|flang/stdlib/automaton.flang
-36b0896ba41510dde1dc0a003cbc9d20|103|—|—|—|—|flang/stdlib/base64.flang
+36b0896ba41510dde1dc0a003cbc9d20|103|55|26|22|0|flang/stdlib/base64.flang
 991f7132f9817ab2c56b2d423d893654|68|—|—|—|—|flang/stdlib/crl.flang
 e3dee91154828c2971cc18058176e1a3|53|—|—|—|—|flang/stdlib/datetime.flang
 4ff2200043aef543c3ff861c14fbf937|69|48|17|4|0|flang/stdlib/der.flang
@@ -339,8 +339,8 @@ e3dee91154828c2971cc18058176e1a3|53|—|—|—|—|flang/stdlib/datetime.flang
 c18c0a3a707c1f1781b8097faf3c4d73|35|29|1|5|0|flang/stdlib/ecdsa.flang
 32dc6cb3a1375821e76ca3f206f0f648|41|26|13|2|0|flang/stdlib/hashmap.flang
 582f2e47dba7641c140b69127e3379bb|62|40|19|3|0|flang/stdlib/higher-order.flang
-97a1542e308c3d13387b049108f3ca17|27|—|—|—|—|flang/stdlib/hmac.flang
-c834eeb890638afeab0a45cc23e8d55d|136|—|—|—|—|flang/stdlib/http.flang
+97a1542e308c3d13387b049108f3ca17|27|9|13|5|0|flang/stdlib/hmac.flang
+c834eeb890638afeab0a45cc23e8d55d|136|62|68|6|0|flang/stdlib/http.flang
 08c0556d326a252355df3e9fcb2b9955|110|13|63|34|0|flang/stdlib/json.flang
 d7d04c1b5205721dbc3ec0844ef38238|11|8|3|0|0|flang/stdlib/kdf.flang
 2c2c2e665857ba5f1bd83655ed8bae4f|66|33|28|5|0|flang/stdlib/lists.flang

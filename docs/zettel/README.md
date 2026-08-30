@@ -438,7 +438,6 @@
 - [У двоичного два входа, и цель печати достаётся человеку и машине разной ценой: прогонщику JSON — даром, ключу `--target` — 90 строк C](a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md)
 - [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](a-product-floor-works-only-paired-with-a-mirror.md)
 - [Обещание, дописанное звену хвостового круга, стирает батут из напечатанного кода — и главный цикл вычислителя становится рекурсией по стеку](a-promise-added-to-a-tail-cycle-deletes-the-trampoline-from-the-printed-code.md)
-- [Перепечатка 30 августа увезла в семя круг машины БЕЗ батута — и всякий план `flang io` умирает на шаге длиннее 6 666 витков; до возврата батута планы зовут прежним двоичным](plans-run-on-the-previous-seed-until-the-machine-loop-gets-its-trampoline-back.md)
 - [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
 - [Доказанное постусловие в напечатанный код больше не едет, и цена утверждений на сортировке упала с 3,23× до 2,72×](a-proved-postcondition-no-longer-reaches-printed-code.md)
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти — потому что разбор собрал его из уже существующих узлов](a-quantifier-over-adjacent-pairs-cost-two-files-not-twenty-nine.md)
@@ -484,6 +483,7 @@
 - [Модуль, не подключённый ни к чему, копит имена, которые уже заняты, — и подключить его потом нельзя](an-unlinked-module-collects-names-that-are-already-taken.md)
 - [Срок хозяина был не называем, и это одно держало сборку на JavaScript](an-unnameable-host-deadline-alone-kept-the-build-on-javascript.md)
 - [Автопочинка чисел правит лист и оставляет итог — предложение начинает врать связнее](auto-repair-of-numbers-fixes-the-leaf-and-leaves-the-total.md)
+- [Тела-связыватели держат половину недоказанного библиотеки — 483 обещания из 890, — но стена «ядро не входит под связыватель» стоит из них только 49](binder-bodies-are-a-half-of-the-unproven-but-the-condition-wall-costs-only-49.md)
 - [Сборка двоичного стоит минуту, а не час, — поэтому её место в CI на каждом пуше](building-the-binary-costs-a-minute-not-an-hour.md)
 - [Счёт вызовов, счёт шагов и часы — три разных ответа, и путать их дорого](calls-steps-and-the-clock-are-three-different-answers.md)
 - [Доказанное обещание без примера всё равно стоит проверки при работе](certificates-a-proved-promise-without-an-example-still-costs-a-runtime-check.md)
@@ -581,6 +581,7 @@
 - [Параметрический тип в языке ЕСТЬ, и упирается в него сегодня одиннадцать мест — все объявления, читающие тип именем; ссылка на процесс к ним не относилась никогда](parametric-types-exist-and-eleven-places-depend-on-them.md)
 - [Девять мест библиотеки обваливаются на «не числе» и пустой строке: встроенные формы `символ`, `элемент` и `код символа` частичны, а тип этого не запрещает](partial-builtin-forms-crash-the-stdlib-on-nan-and-the-empty-string.md)
 - [Планы не судит никто, и в отличие от процессов двоичный об этом молчит — двенадцать нарочных подделок из тринадцати проходят кодом 0](plans-are-not-judged-at-all-and-unlike-processes-the-binary-says-nothing.md)
+- [Перепечатка 30 августа увезла в семя круг машины БЕЗ батута — и всякий план `flang io` умирает на шаге длиннее 6 666 витков; до возврата батута планы зовут прежним двоичным](plans-run-on-the-previous-seed-until-the-machine-loop-gets-its-trampoline-back.md)
 - [Перенос оракула яруса III — не одна задача, а пять разных, и две из них другого рода](porting-the-tier-three-oracle-splits-into-five-different-tasks.md)
 - [Постусловие исполняется на каждом вызове, поэтому граф вызовов между постусловиями обязан быть без петель — и петля идёт через ТЕЛО тоже](postconditions-run-so-their-call-graph-must-be-loop-free.md)
 - [Напечатать правила подсветки из таблицы языка мало: съедает слова сам редактор, и увидеть это можно, только спросив его о каждом слове](printed-highlighting-rules-are-only-checked-by-the-editor-itself.md)
@@ -689,7 +690,7 @@
 
 ## Ещё не разобранное
 
-- [Тела-связыватели держат половину недоказанного библиотеки — 483 обещания из 890, — но стена «ядро не входит под связыватель» стоит из них только 49](binder-bodies-are-a-half-of-the-unproven-but-the-condition-wall-costs-only-49.md)
+- [Правило, въехавшее в двоичный, ещё не спрошено двоичным: двенадцать подделок из двенадцати принимались молча, а компилятор при этом писал, что сверил](a-rule-inside-the-binary-is-not-a-rule-the-binary-asks.md)
 
 ## Как добавлять
 

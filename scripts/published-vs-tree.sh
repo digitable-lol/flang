@@ -58,6 +58,25 @@ skazat() { # ключ опубликовано вдереве
 }
 
 # Правила счёта — из docs/site/site-numbers.mjs, функции «библиотека» и «модуль».
+#
+# СТРОКИ СЧИТАЮТСЯ НЕ `wc -l`, и это не придирка. Измеритель (`строкВ` в
+# site-numbers.mjs) делит текст по переводам и отбрасывает пустой хвост; `wc -l`
+# считает сами переводы. Расходятся они ровно на файлах БЕЗ перевода в конце:
+# последнюю строку `wc -l` теряет, измеритель сохраняет.
+#
+# Замерено 30 августа 2026 на этом дереве. Таких файлов пять:
+# flang/self/monad-expand.flang и четыре модуля библиотеки — lists, sets,
+# strings, strlists. Из-за них сверка требовала от numbers.json 35544 строк
+# библиотеки при 35548 у измерителя и 193927 строк корпуса при 193932 — то есть
+# требовала числа, которого `./ярлык числа` не запишет никогда: одна половина
+# считала по одному правилу, другая по другому, и сойтись они не могли ничем.
+# Правило здесь обязано совпадать с правилом измерителя: numbers.json пишет он,
+# а этот сторож только спрашивает записанное.
+strok() {
+  n=$(wc -l < "$1" | tr -d ' ')
+  if [ -s "$1" ] && [ "$(tail -c1 "$1" | wc -l | tr -d ' ')" = 0 ]; then n=$((n + 1)); fi
+  echo "$n"
+}
 fn()  { grep -acE '^[[:space:]]*(тотальная функция|функция)[[:space:]]' "$1" || true; }
 tot() { grep -acE '^[[:space:]]*тотальная функция[[:space:]]' "$1" || true; }
 pr()  { grep -acE '^[[:space:]]*пример[[:space:]]' "$1" || true; }
@@ -71,7 +90,7 @@ chisla_sayta() {
   lf=0; lstrok=0; lfn=0
   for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг; do
     [ -f "$f" ] || continue
-    lf=$((lf + 1)); lstrok=$((lstrok + $(wc -l < "$f"))); lfn=$((lfn + $(fn "$f")))
+    lf=$((lf + 1)); lstrok=$((lstrok + $(strok "$f"))); lfn=$((lfn + $(fn "$f")))
   done
   skazat библиотека.файлов  "$(znach библиотека.файлов "$CHISLA")"  "$lf"
   skazat библиотека.строк   "$(znach библиотека.строк "$CHISLA")"   "$lstrok"
@@ -81,16 +100,16 @@ chisla_sayta() {
   kf=0; kstrok=0
   for f in $(find flang -type f \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \) \
              | grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/compiler\.flang$' | sort); do
-    kf=$((kf + 1)); kstrok=$((kstrok + $(wc -l < "$f")))
+    kf=$((kf + 1)); kstrok=$((kstrok + $(strok "$f")))
   done
   skazat корпус.файлов "$(znach корпус.файлов "$CHISLA")" "$kf"
   skazat корпус.строк  "$(znach корпус.строк "$CHISLA")"  "$kstrok"
 
-  skazat база.строк      "$(znach база.строк "$CHISLA")"      "$(wc -l < flang/stdlib/postgres.flang)"
+  skazat база.строк      "$(znach база.строк "$CHISLA")"      "$(strok flang/stdlib/postgres.flang)"
   skazat база.функций    "$(znach база.функций "$CHISLA")"    "$(fn flang/stdlib/postgres.flang)"
   skazat база.тотальных  "$(znach база.тотальных "$CHISLA")"  "$(tot flang/stdlib/postgres.flang)"
   skazat база.примеров   "$(znach база.примеров "$CHISLA")"   "$(pr flang/stdlib/postgres.flang)"
-  skazat провод.строк    "$(znach провод.строк "$CHISLA")"    "$(wc -l < flang/stdlib/wire.flang)"
+  skazat провод.строк    "$(znach провод.строк "$CHISLA")"    "$(strok flang/stdlib/wire.flang)"
   skazat провод.функций  "$(znach провод.функций "$CHISLA")"  "$(fn flang/stdlib/wire.flang)"
   # `провод.тотальных` спрашивается ровно потому, что 29 августа 2026 он оказался
   # ЕДИНСТВЕННЫМ дешёвым ключом, которого сверка не спрашивала, — и стоял 31 при
@@ -100,12 +119,12 @@ chisla_sayta() {
   # том, что его забыли внести сюда.
   skazat провод.тотальных "$(znach провод.тотальных "$CHISLA")" "$(tot flang/stdlib/wire.flang)"
   skazat провод.примеров "$(znach провод.примеров "$CHISLA")" "$(pr flang/stdlib/wire.flang)"
-  skazat план.строк      "$(znach план.строк "$CHISLA")"      "$(wc -l < examples/db/postgres-plan.flang)"
+  skazat план.строк      "$(znach план.строк "$CHISLA")"      "$(strok examples/db/postgres-plan.flang)"
   skazat план.примеров   "$(znach план.примеров "$CHISLA")"   "$(pr examples/db/postgres-plan.flang)"
-  skazat планировщик.строк    "$(znach планировщик.строк "$CHISLA")"    "$(wc -l < flang/conc/scheduler.flang)"
+  skazat планировщик.строк    "$(znach планировщик.строк "$CHISLA")"    "$(strok flang/conc/scheduler.flang)"
   skazat планировщик.функций  "$(znach планировщик.функций "$CHISLA")"  "$(fn flang/conc/scheduler.flang)"
   skazat планировщик.примеров "$(znach планировщик.примеров "$CHISLA")" "$(pr flang/conc/scheduler.flang)"
-  skazat связь.строк     "$(znach связь.строк "$CHISLA")"     "$(wc -l < flang/conc/link.flang)"
+  skazat связь.строк     "$(znach связь.строк "$CHISLA")"     "$(strok flang/conc/link.flang)"
   skazat связь.функций   "$(znach связь.функций "$CHISLA")"   "$(fn flang/conc/link.flang)"
   skazat связь.примеров  "$(znach связь.примеров "$CHISLA")"  "$(pr flang/conc/link.flang)"
 

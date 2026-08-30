@@ -106,7 +106,7 @@ flang/test/       the old test run: written against the deleted implementation, 
 flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
-examples/         191 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
+examples/         193 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -463,8 +463,8 @@ table costs a square (appending copies the list), why Single Number is O(n²) be
 bitwise operations.
 [`examples/rosetta/`](examples/rosetta) holds 14 canonical Rosetta Code tasks, each
 written twice — 28 files: once on the Russian surface and once on the English one. The standard
-library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **42 modules, 1458
-functions, of which 1451 are proven total, and 2684 examples** that run on every check:
+library ([`flang/stdlib/`](flang/stdlib)) is written the same way — **42 modules, 1474
+functions, of which 1467 are proven total, and 2713 examples** that run on every check:
 
 ```bash
 ls flang/stdlib/*.flang | wc -l
@@ -604,7 +604,7 @@ above about `npm test`.
 - **A full-size layout** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 176 more programs in [`examples/`](examples), in 22 sets; what sits
+- **The other examples** — 178 more programs in [`examples/`](examples), in 22 sets; what sits
   where is listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting

@@ -99,7 +99,10 @@
   пример «Оба макроса на месте — бед нет»
     дано текст равно "#define _POSIX_C_SOURCE 200809L\n#if defined(__APPLE__)\n#define _DARWIN_C_SOURCE\n#endif"
     ожидается пустой список
-  «Слить» от («Беда если нет» от текст и "#define _POSIX_C_SOURCE" и "bootstrap/flang_repl.c: пропал #define _POSIX_C_SOURCE — на glibc он и открывает mkdtemp") и («Слить» от («Беда если нет» от текст и "#if defined(__APPLE__)" и "bootstrap/flang_repl.c: пропал блок #if defined(__APPLE__)") и («Беда если нет» от текст и "#define _DARWIN_C_SOURCE" и "bootstrap/flang_repl.c: пропал #define _DARWIN_C_SOURCE. Без него -std=c99 на Darwin закрывает mkdtemp, и brew install не доходит до конца НИ У КОГО на Mac — при зелёном ubuntu"))
+  пример «Макрос переименован — он пропал, хотя имя начинается так же»
+    дано текст равно "#define _POSIX_C_SOURCE 200809L\n#if defined(__APPLE__)\n#define _DARWIN_C_SOURCE_INACHE\n#endif"
+    ожидается ["bootstrap/flang_repl.c: пропал #define _DARWIN_C_SOURCE. Без него -std=c99 на Darwin закрывает mkdtemp, и brew install не доходит до конца НИ У КОГО на Mac — при зелёном ubuntu"]
+  «Слить» от («Беда если нет» от текст и "#define _POSIX_C_SOURCE " и "bootstrap/flang_repl.c: пропал #define _POSIX_C_SOURCE — на glibc он и открывает mkdtemp") и («Слить» от («Беда если нет» от текст и "#if defined(__APPLE__)" и "bootstrap/flang_repl.c: пропал блок #if defined(__APPLE__)") и («Беда если нет» от текст и "#define _DARWIN_C_SOURCE\n" и "bootstrap/flang_repl.c: пропал #define _DARWIN_C_SOURCE. Без него -std=c99 на Darwin закрывает mkdtemp, и brew install не доходит до конца НИ У КОГО на Mac — при зелёном ubuntu"))
 
 тотальная функция «Весть о пропаже»
   принимает имя: строка

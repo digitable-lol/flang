@@ -17,6 +17,13 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 Остальные 53 строки описи сошлись знак в знак. Числа ниже по тексту оставлены
 как снято 26 августа: это замер того дня, и он назван датой.
 
+**Сдвинулось 30 августа 2026.** В `flang/scripts/count-guard.mjs` теперь
+**970 строк**, а было 612: сторож чисел прозы научился читать врезки скриптов и
+сверять потолок шагов (задача 5123). На те же 358 строк подросли итоги: всего **25 885**, куча
+`flang/scripts` — **7 012** строк. Две строки таблицы поимённо переставлены на
+своё место по убыванию, и число `count-library.mjs` в ней приведено к 280 —
+к тому, что четырьмя абзацами выше уже сказано прозой.
+
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
 16:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
@@ -195,6 +202,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 
 | файл | строк | группа |
 |---|---:|---|
+| `flang/scripts/count-guard.mjs` | 970 | сторож |
 | `docs/site/build.mjs` | 958 | сайт |
 | `scripts/build-changelog.mjs` | 878 | журнал |
 | `scripts/build-changelog-page.mjs` | 833 | журнал |
@@ -203,7 +211,6 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `flang/scripts/binary-rules-guard.mjs` | 779 | сторож |
 | `flang/scripts/proof-ledger.mjs` | 768 | сторож |
 | `flang/scripts/word-guard.mjs` | 683 | сторож |
-| `flang/scripts/count-guard.mjs` | 612 | сторож |
 | `flang/scripts/discriminating-search.mjs` | 561 | сторож |
 | `flang/scripts/name-guard.mjs` | 530 | сторож |
 | `docs/site/sitemap.mjs` | 495 | сайт |
@@ -216,8 +223,8 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `docs/site/podsvetka.mjs` | 333 | сайт |
 | `docs/site/markdown.mjs` | 311 | сайт |
 | `flang/scripts/word-occupancy.mjs` | 311 | сторож |
+| `benchmarks/proof-cost/count-library.mjs` | 280 | замер |
 | `flang/scripts/target-words.mjs` | 309 | сторож |
-| `benchmarks/proof-cost/count-library.mjs` | 240 | замер |
 | `flang/conc/bin/wire.mjs` | 159 | узел |
 | `benchmarks/speed/work.mjs` | 158 | замер |
 | `flang/conc/bench/node-death-targets.mjs` | 147 | узел |

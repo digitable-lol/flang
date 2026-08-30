@@ -289,6 +289,7 @@
 - [Функция, названную которой печатает отказ при исчерпании предела, — не та, где уходит время](the-function-named-when-the-limit-runs-out-is-not-where-the-time-goes.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя, а не отвечать «неизвестная команда»](the-installed-binary-is-a-named-subset.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал НИ У ОДНОГО поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
+- [Два плана postgres держит не предел шагов, а стек хозяина: 1 ГиБ и 2 074 970 кадров, и ключами это не двигается](two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md)
 
 ## Найденные ошибки
 

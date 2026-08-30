@@ -93,8 +93,49 @@
 // (docs/zettel/two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md).
 // Ново то, что на ЭТОМ файле ключ прочерк СНИМАЕТ, а на трёх файлах той кучи не
 // снимал: «прочерк за отказом по глубине» — не однородный долг, и проверять его
-// надо ключом, а не заносить в долг целиком. Сколько прочерков он снимает
-// всего — не мерено, проверен один файл.
+// надо ключом, а не заносить в долг целиком.
+//
+// ────────── сколько прочерков ключ снимает: померено по всей описи (9204) ────
+//
+// 30 августа 2026 прочерков было 155, и каждый пройден прогоном. Ответ
+// ОТРИЦАТЕЛЬНЫЙ и в этом весь его вес: НА 110 ПРОЧЕРКАХ ВНЕ flang/self КЛЮЧ НЕ
+// СНЯЛ НИ ОДНОГО. Двоичным, собранным из перепечатанного семени e053c01e (md5
+// 4e32f9f76d8215c3b5df1b6abe0b6a68), 48 из них дали ведомость с ключом — и те
+// же 48 дали её БЕЗ ключа, выход совпал знак в знак (cmp, 48 из 48). В глубину
+// при умолчании 20 000 не упёрся ни один из 110.
+//
+// Ключ вообще нельзя поставить тому двоичному, что собирается из СЕГОДНЯШНЕГО
+// семени: коммит 43bf2f25 откатил перепечатку, и сборка ствола (md5
+// 82f9ac4018e795ec19955a7ce2a9c1a8) отвечает «неизвестная команда
+// «--предел-глубины»». Числа ниже сняты ЭТИМ двоичным — тем, что назван в
+// scripts/proved-share.json.
+//
+// Из 110: ведомость дали 50 (написано 181, доказано 89, сетка 45, объявлено
+// 47), 59 помечены «×», один (examples/db/postgres-scram-plan.flang) не уложился
+// в срок 900 с при пике 7,0 ГиБ и остаётся прочерком. Причины у крестов
+// названы поимённо в задаче 9204; ни одна из них — не глубина.
+//
+// Прочерки flang/self/** ключа тоже не требуют — требуют памяти. Проба
+// flang/self/sets-oracle.flang ствольным двоичным БЕЗ ключа: код 0, 999,24 с,
+// пик 16,6 ГиБ, приговор файлу 3 доказано при 13 написанных. Первая попытка при
+// PAMYAT=16G умерла на 793 с с FLANG_MEMORY — на файл компилятора просить надо
+// 60–80 ГиБ. Остальные 42 ведёт отдельный исполнитель.
+//
+// Ещё две строки сведены с готовых выходов второго захода
+// /srv/tmp/m-raise-proved-share/obhod2 (код 0, двоичный f32d89f5…, приём 6128):
+// flang/proof/сверщик.flang — 209 доказанных из 209, web/stand.flang — 19 из 25.
+// md5 исходников сверен, оба совпали; перегонять их заново было не нужно.
+//
+// Два семени судят ПО-РАЗНОМУ, и это видно на числах. Из 33 файлов, где
+// ведомость дали оба, приговоры разошлись на трёх:
+// flang/proof/examples/honest-modus-ponens-by-guard.flang перепечатанное семя
+// доказывает целиком (5 из 5), а ствольное отвергает (FLANG_PROOF_STEP:
+// «правил шесть» против «правил девять»); scripts/adr-numbers-guard.flang
+// 15/7/0 против 13/8/1; scripts/kernel-abilities-guard.flang 12/2/2 против
+// 11/2/3. Три файла, что перепечатанному семени с ключом 200 000 не дались по
+// глубине (examples/crypto/certificate, examples/web/shortener/plan-durable,
+// examples/web/marketplace/gateway), ствольное берёт без всякого ключа: 442 с,
+// 149 с и 109 с, пики 4,2 / 4,3 / 2,3 ГиБ.
 //
 // Прочерк вместо чисел — ведомость этого файла не снята, и в числитель файл не
 // идёт. Прежняя опись держала только md5 и число написанного, и из-за этого
@@ -107,7 +148,7 @@
 // Такой файл ждёт не прогона, а правки в компиляторе; в кучу «осталось
 // померить» его класть нельзя. В числитель он не идёт, как и прочерк.
 //
-// Крестами помечены 18 файлов среза flang/conc/examples/** и
+// Первые кресты — 18 файлов среза flang/conc/examples/** и
 // flang/conc/services/** — 70 обязательств. Снято 30 августа 2026 двоичным
 // f32d89f599dd6b9f740f42a752dff1ff («m-kernel-ledger/build-kernel», приём
 // задачи 6128), ключ «--предел-шагов 400000000000», ворота PAMYAT=45G. Ни один
@@ -226,67 +267,67 @@
 // flang/stdlib/lists.flang (33|28|5) вышли знак в знак теми же, что в стволе.
 
 142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
-f371ae4318c70abf98f5b3641ba17dc6|1|—|—|—|—|benchmarks/proof-cost/probe-forgery.flang
-5d96729211a2a87a7448b3b6cab6f04c|1|—|—|—|—|docs/benchmark/01-link-key.flang
-aec86952f766b306d663f0c424873e5a|1|—|—|—|—|docs/benchmark/02-node-key.flang
-3c5bf2d37560c9a5e3ac79068b5eca32|1|—|—|—|—|docs/benchmark/03-insert.flang
-3d15c938a9643f706026f97e6df342d8|1|—|—|—|—|docs/benchmark/04-dictionary-size.flang
-a4cffc9dc43acf6d92d08c956f526842|1|—|—|—|—|docs/benchmark/05-opposite.flang
-c0a3388b066bf1b2e320496bf3b1ce95|1|—|—|—|—|docs/benchmark/06-prepend.flang
-4515fb4f04c625b778b6293c6fc92493|1|—|—|—|—|docs/benchmark/07-insert-at.flang
-3580aee15f51eba6c7fd45245a09aacf|1|—|—|—|—|docs/benchmark/08-maximum.flang
-a555bcdd83be1c51d2ec9433ab88d5f1|1|—|—|—|—|docs/benchmark/09-take-first.flang
-8876a35e802af74025784b9512508ff4|1|—|—|—|—|docs/benchmark/10-binary-search.flang
-37b47f9f7e75f67d993e79659efd6272|1|—|—|—|—|docs/benchmark/11-unique.flang
-ab335a2f254dfae1f5f4a5bad7748e71|1|—|—|—|—|docs/benchmark/12-implies.flang
-604916df7ef09e120849af6fa38c1c41|1|—|—|—|—|docs/benchmark/13-even.flang
-1808a97dc4a32a39702a4b4a7f8e7850|1|—|—|—|—|docs/benchmark/14-tree-of-numbers.flang
-d2e190a10b1d3d8ed2f17d6f526d1184|1|—|—|—|—|docs/benchmark/15-first-or-default.flang
-7e7c0b1fb5f3d1fbbff894ba3c153e4d|1|—|—|—|—|docs/benchmark/16-success.flang
-798aed9a93d2ddb161ce8bdaf5a78d26|1|—|—|—|—|docs/benchmark/17-member-of-set.flang
-72071a47b59e87bed58e4c5f16bc3605|1|—|—|—|—|docs/benchmark/18-prepend-string.flang
-523e8664ce5be14fc6e9fc368d7b3849|1|—|—|—|—|docs/benchmark/19-lowercase-letter.flang
-1ebeeb5ed2272441a8753bdf8ff465ad|1|—|—|—|—|docs/benchmark/20-trim-spaces.flang
-21ff12c32fa7538d23b17d1863bd152d|2|—|—|—|—|docs/benchmark2/01-link-key.flang
-fa3838cf50fd91974617e5fe6786b528|2|—|—|—|—|docs/benchmark2/02-node-key.flang
-154ab2eb5bfce35dee614eb14a8efaa6|1|—|—|—|—|docs/benchmark2/03-insert.flang
-e42db3c602d4043230587bc737a1ee22|1|—|—|—|—|docs/benchmark2/04-dictionary-size.flang
-d0374334acaa6b0be30eac9a46b6e4f6|2|—|—|—|—|docs/benchmark2/05-opposite.flang
-7a203e51384f2f26cf504d70344f9678|1|—|—|—|—|docs/benchmark2/06-prepend.flang
-e92398b5176535692d4677520c144249|3|—|—|—|—|docs/benchmark2/07-insert-at.flang
-455a1dd94bc78f695b3c553864f5545d|1|—|—|—|—|docs/benchmark2/08-maximum.flang
-5321422c1140209d3211208fa24a05d4|2|—|—|—|—|docs/benchmark2/09-take-first.flang
-b57ede293fcd7a997a47fe6091e5b8eb|3|—|—|—|1|docs/benchmark2/10-binary-search.flang
-1b20e9ee58fcfb6f919eea37c59a1ea3|1|—|—|—|—|docs/benchmark2/11-unique.flang
-38872c5b3fe9793b9979bef17ab4835b|1|—|—|—|—|docs/benchmark2/12-implies.flang
-38181f8de4a377a20a9c67d90348dadc|1|—|—|—|—|docs/benchmark2/13-even.flang
-e54df9a876c79d1816685e08816cac3e|2|—|—|—|—|docs/benchmark2/14-tree-of-numbers.flang
-4ae0dd2d852ade03f0637cc062eba5fe|1|—|—|—|—|docs/benchmark2/15-first-or-default.flang
-5eaf806c38e2d4e9eee22db1e93d1e3c|1|—|—|—|—|docs/benchmark2/16-success.flang
-014b12524a8f19ca8ad1bdf76a867a9c|1|—|—|—|—|docs/benchmark2/17-member-of-set.flang
-115b339fad12ed459645cc227f5268e7|1|—|—|—|—|docs/benchmark2/18-prepend-string.flang
-25eea15374005dc4af3c589061b821dc|1|—|—|—|—|docs/benchmark2/19-lowercase-letter.flang
-b4c06c4145ce3782ff20ce2e06aedce5|1|—|—|—|—|docs/benchmark2/20-trim-spaces.flang
+f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|benchmarks/proof-cost/probe-forgery.flang
+5d96729211a2a87a7448b3b6cab6f04c|1|×|×|×|0|docs/benchmark/01-link-key.flang
+aec86952f766b306d663f0c424873e5a|1|0|0|1|0|docs/benchmark/02-node-key.flang
+3c5bf2d37560c9a5e3ac79068b5eca32|1|×|×|×|0|docs/benchmark/03-insert.flang
+3d15c938a9643f706026f97e6df342d8|1|×|×|×|0|docs/benchmark/04-dictionary-size.flang
+a4cffc9dc43acf6d92d08c956f526842|1|×|×|×|0|docs/benchmark/05-opposite.flang
+c0a3388b066bf1b2e320496bf3b1ce95|1|×|×|×|0|docs/benchmark/06-prepend.flang
+4515fb4f04c625b778b6293c6fc92493|1|×|×|×|0|docs/benchmark/07-insert-at.flang
+3580aee15f51eba6c7fd45245a09aacf|1|×|×|×|0|docs/benchmark/08-maximum.flang
+a555bcdd83be1c51d2ec9433ab88d5f1|1|0|0|1|0|docs/benchmark/09-take-first.flang
+8876a35e802af74025784b9512508ff4|1|×|×|×|0|docs/benchmark/10-binary-search.flang
+37b47f9f7e75f67d993e79659efd6272|1|×|×|×|0|docs/benchmark/11-unique.flang
+ab335a2f254dfae1f5f4a5bad7748e71|1|×|×|×|0|docs/benchmark/12-implies.flang
+604916df7ef09e120849af6fa38c1c41|1|×|×|×|0|docs/benchmark/13-even.flang
+1808a97dc4a32a39702a4b4a7f8e7850|1|×|×|×|0|docs/benchmark/14-tree-of-numbers.flang
+d2e190a10b1d3d8ed2f17d6f526d1184|1|0|1|0|0|docs/benchmark/15-first-or-default.flang
+7e7c0b1fb5f3d1fbbff894ba3c153e4d|1|×|×|×|0|docs/benchmark/16-success.flang
+798aed9a93d2ddb161ce8bdaf5a78d26|1|×|×|×|0|docs/benchmark/17-member-of-set.flang
+72071a47b59e87bed58e4c5f16bc3605|1|×|×|×|0|docs/benchmark/18-prepend-string.flang
+523e8664ce5be14fc6e9fc368d7b3849|1|×|×|×|0|docs/benchmark/19-lowercase-letter.flang
+1ebeeb5ed2272441a8753bdf8ff465ad|1|×|×|×|0|docs/benchmark/20-trim-spaces.flang
+21ff12c32fa7538d23b17d1863bd152d|2|1|0|1|0|docs/benchmark2/01-link-key.flang
+fa3838cf50fd91974617e5fe6786b528|2|1|0|1|0|docs/benchmark2/02-node-key.flang
+154ab2eb5bfce35dee614eb14a8efaa6|1|1|0|0|0|docs/benchmark2/03-insert.flang
+e42db3c602d4043230587bc737a1ee22|1|1|0|0|0|docs/benchmark2/04-dictionary-size.flang
+d0374334acaa6b0be30eac9a46b6e4f6|2|1|1|0|0|docs/benchmark2/05-opposite.flang
+7a203e51384f2f26cf504d70344f9678|1|1|0|0|0|docs/benchmark2/06-prepend.flang
+e92398b5176535692d4677520c144249|3|2|0|1|0|docs/benchmark2/07-insert-at.flang
+455a1dd94bc78f695b3c553864f5545d|1|×|×|×|0|docs/benchmark2/08-maximum.flang
+5321422c1140209d3211208fa24a05d4|2|1|0|1|0|docs/benchmark2/09-take-first.flang
+b57ede293fcd7a997a47fe6091e5b8eb|3|×|×|×|1|docs/benchmark2/10-binary-search.flang
+1b20e9ee58fcfb6f919eea37c59a1ea3|1|×|×|×|0|docs/benchmark2/11-unique.flang
+38872c5b3fe9793b9979bef17ab4835b|1|1|0|0|0|docs/benchmark2/12-implies.flang
+38181f8de4a377a20a9c67d90348dadc|1|×|×|×|0|docs/benchmark2/13-even.flang
+e54df9a876c79d1816685e08816cac3e|2|0|0|2|0|docs/benchmark2/14-tree-of-numbers.flang
+4ae0dd2d852ade03f0637cc062eba5fe|1|0|1|0|0|docs/benchmark2/15-first-or-default.flang
+5eaf806c38e2d4e9eee22db1e93d1e3c|1|0|0|1|0|docs/benchmark2/16-success.flang
+014b12524a8f19ca8ad1bdf76a867a9c|1|×|×|×|0|docs/benchmark2/17-member-of-set.flang
+115b339fad12ed459645cc227f5268e7|1|1|0|0|0|docs/benchmark2/18-prepend-string.flang
+25eea15374005dc4af3c589061b821dc|1|×|×|×|0|docs/benchmark2/19-lowercase-letter.flang
+b4c06c4145ce3782ff20ce2e06aedce5|1|×|×|×|0|docs/benchmark2/20-trim-spaces.flang
 13018dce186bb1bb6b9ce77d3b55d2f6|2|0|2|0|0|docs/examples/operations.flang
 56cc68097cc546efffdc2486f3fffc37|2|1|0|0|1|docs/examples/package/discount.flang
 ef527d1266eba835998db9851cb290be|1|0|0|0|1|docs/examples/package/shop/shop.flang
 9de471867d78163faf232d3386b49c05|4|1|1|1|1|docs/examples/tutorial.flang
 bf8c0880c1071d0ab9bab9f467a0ccfd|1|0|1|0|0|docs/site/numbers.flang
 09fad27f4a1529c83d303d716f825369|1|0|1|0|0|docs/site/podsvetka.flang
-59e40510fb0bb42d6e4622c380a9b343|1|—|—|—|—|docs/zamer-teorkat/class-string-to-string.flang
+59e40510fb0bb42d6e4622c380a9b343|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
 be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
-c110934b654de80f02da0999dfd1c88d|2|—|—|—|2|examples/cat/modules/orders.flang
-65de6a234d3abe159672760a3f98dba5|1|—|—|—|—|examples/cat/monoid-and-monad.flang
-2532d2f0982166760ed7fd3b5961be72|3|—|—|—|3|examples/cat/order-shipment.flang
+c110934b654de80f02da0999dfd1c88d|2|×|×|×|2|examples/cat/modules/orders.flang
+65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|examples/cat/monoid-and-monad.flang
+2532d2f0982166760ed7fd3b5961be72|3|×|×|×|3|examples/cat/order-shipment.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
-e3dce4b7d377d2076ca7154cade67ec6|2|—|—|—|—|examples/crypto/certificate.flang
+e3dce4b7d377d2076ca7154cade67ec6|2|1|1|0|0|examples/crypto/certificate.flang
 b6df92b9fab4356571dced4966d981fb|3|2|0|1|0|examples/crypto/ecdsa-digest.flang
 edceec78373f71b64a3fef4d418f4cfc|5|5|0|0|0|examples/crypto/ecdsa-signature.flang
 8ac759d266f3627ca3d6780c70d3e175|5|1|4|0|0|examples/crypto/revocation.flang
 ffd43bec337aab717e5558bcf690fbf9|2|1|0|1|0|examples/crypto/signature.flang
 8b491d47fa5189498e6912f4058c6704|11|3|5|3|0|examples/crypto/tls-hello.flang
 f9974bc9b8eb0a44af13fed4b58d67d2|5|5|0|0|0|examples/crypto/x25519-vectors.flang
-f51d8e584f7ceeea80d76dd53d890a48|19|—|—|—|—|examples/db/postgres-plan.flang
+f51d8e584f7ceeea80d76dd53d890a48|19|×|×|×|0|examples/db/postgres-plan.flang
 639fa825f2df988e10dce84ea1b2d048|33|—|—|—|—|examples/db/postgres-scram-plan.flang
 d855c80785fe708b31895afabff10ee0|23|11|12|0|0|examples/db/redis-plan.flang
 b416a4b5b59da1e7ceead41fd8663e34|4|0|0|4|0|examples/db/sqlite-read.flang
@@ -337,8 +378,8 @@ f3437a99cf0a6d1b0fdaace57be02c11|3|3|0|0|0|examples/leetcode/543-diameter-of-bin
 512a7401e5039f29c9d442d9d2027b5c|1|1|0|0|0|examples/leetcode/746-min-cost-climbing-stairs.flang
 0ea0c4de054c5b110db9fbb9b4a78538|1|1|0|0|0|examples/library-api/lib/fine.flang
 461082cb80cc41510c8b998b03037124|2|2|0|0|0|examples/measure/natural.flang
-98e6fd8dad6bd0554c97a5a8cd7f2b1d|4|—|—|—|—|examples/money/exact-decimal.flang
-486882fb75c4dcc66f437de7af535ec8|7|—|—|—|—|examples/paths/shortest-path.flang
+98e6fd8dad6bd0554c97a5a8cd7f2b1d|4|×|×|×|0|examples/money/exact-decimal.flang
+486882fb75c4dcc66f437de7af535ec8|7|×|×|×|0|examples/paths/shortest-path.flang
 d72e893cbfb14742d5a070a6cb1c5412|14|11|0|3|0|examples/proof-probes/typed-ast-door.flang
 a1737ad17b0278f531e8585b2ec361d9|23|20|0|3|0|examples/proof-probes/variant-with-fields.flang
 f67ab211153efcac32a4b5e50bda0c08|2|2|0|0|0|examples/rosetta/ackermann-function.flang
@@ -353,13 +394,13 @@ f14b0f4631acc10ffa5a19e589b36e86|1|1|0|0|0|examples/rosetta/primes-by-trial-divi
 82edf72897236b50735bc32f2bfc1cb9|1|0|0|1|0|examples/rosetta/towers-of-hanoi.flang
 e630c47c50819afd27acd4dd480b9d9d|9|6|3|0|0|examples/service-on-processes/core.flang
 13802e47475c5c77493a1e10f4d6168a|17|7|7|3|0|examples/wal/write-ahead-log.flang
-dcc1953cd5acc1b24859a0d654638b8f|5|—|—|—|—|examples/web/marketplace/cart.flang
-d2cc0dc445665e98265edb9ab98b63b6|1|—|—|—|—|examples/web/marketplace/catalog.flang
-6b5f7a6403ad6d6438c2d3bde94492fa|2|—|—|—|—|examples/web/marketplace/gateway.flang
-c9e9b6f0bda64bbb0f20478a846dbf42|3|—|—|—|—|examples/web/marketplace/orders.flang
-a3c7b85b93f0c2f0090fbc38c1cf8086|1|—|—|—|—|examples/web/shortener/plan-durable.flang
+dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/web/marketplace/cart.flang
+d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/web/marketplace/catalog.flang
+6b5f7a6403ad6d6438c2d3bde94492fa|2|0|0|2|0|examples/web/marketplace/gateway.flang
+c9e9b6f0bda64bbb0f20478a846dbf42|3|0|1|2|0|examples/web/marketplace/orders.flang
+a3c7b85b93f0c2f0090fbc38c1cf8086|1|0|1|0|0|examples/web/shortener/plan-durable.flang
 2582c1e7ee724ac4ad518f688e94cc66|8|1|4|3|0|examples/web/shortener/service.flang
-b85122f92feb1249627c5863b31d4c49|1|—|—|—|—|examples/web/shortener/store.flang
+b85122f92feb1249627c5863b31d4c49|1|1|0|0|0|examples/web/shortener/store.flang
 a8a4bc5a69a3ca169dc935df04d2b9a7|4|×|×|×|×|flang/conc/examples/backpressure.flang
 ec1f624e7568f4537f7518b1b4c0d0fd|1|×|×|×|×|flang/conc/examples/budget.flang
 06ad4d0486befb5d8b1bf5b7a66e08dc|3|×|×|×|×|flang/conc/examples/counter.flang
@@ -388,66 +429,66 @@ b8c9a7955422d3218e6f7ae9820a617d|1|1|0|0|0|flang/core/evaluate.flang
 def38b64a72f03daeef6217795fc6f28|25|14|3|8|0|flang/core/json.flang
 eb1e8343c6440e4399dc14ab96621066|4|4|0|0|0|flang/core/lexer.flang
 6de7e89e8365c425bff59da04ec23408|32|22|0|10|0|flang/core/parser.flang
-d190671fbc23a26c80ec23efdcebdc5e|4|—|—|—|—|flang/proof/examples/body-forms.flang
+d190671fbc23a26c80ec23efdcebdc5e|4|2|0|2|0|flang/proof/examples/body-forms.flang
 eba240cf6cb7ccae108943260e9892eb|7|7|0|0|0|flang/proof/examples/corpus-alphabet.flang
-635b23d7064b98383215c5a0d426c0f6|1|—|—|—|—|flang/proof/examples/corpus-brackets.flang
+635b23d7064b98383215c5a0d426c0f6|1|0|1|0|0|flang/proof/examples/corpus-brackets.flang
 92cd7d2bc0955f6d1ac7a9138302d8c7|3|3|0|0|0|flang/proof/examples/corpus-bytes.flang
-7c3b74fa20575355ffca756bc1d02b95|2|—|—|—|—|flang/proof/examples/corpus-carrier.flang
+7c3b74fa20575355ffca756bc1d02b95|2|0|0|2|0|flang/proof/examples/corpus-carrier.flang
 8a0ca8f41b428dca134d13aabd1668e1|2|2|0|0|0|flang/proof/examples/corpus-case.flang
 0e7ccd2e72193027a79930e1bda75732|4|4|0|0|0|flang/proof/examples/corpus-cforms.flang
 ec766747a503023c9bb4f5f487d58f98|3|3|0|0|0|flang/proof/examples/corpus-cident.flang
-ae9c27c9e1f6504e8bd51edbbdd38f7c|1|—|—|—|—|flang/proof/examples/corpus-depth.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|0|0|1|0|flang/proof/examples/corpus-depth.flang
 b29b8942741f81d1a5f034e484672f64|2|2|0|0|0|flang/proof/examples/corpus-endings.flang
-f757d434e2082ebaebb6d0dd7d4b7b27|1|—|—|—|—|flang/proof/examples/corpus-factorial.flang
+f757d434e2082ebaebb6d0dd7d4b7b27|1|0|0|1|0|flang/proof/examples/corpus-factorial.flang
 3740faa740f4af32131f1b2a00b7cbfa|1|1|0|0|0|flang/proof/examples/corpus-fullwidth.flang
 116fbaf42d6e4fcd726742a45c8c2e45|15|13|0|2|0|flang/proof/examples/corpus-hof.flang
-0e98a6c4fa8cf9b894e6be8eee4fc8cb|2|—|—|—|—|flang/proof/examples/corpus-json.flang
+0e98a6c4fa8cf9b894e6be8eee4fc8cb|2|0|0|2|0|flang/proof/examples/corpus-json.flang
 8a9fb38bc9950bfc895ef01188a2f396|3|3|0|0|0|flang/proof/examples/corpus-jsonescape.flang
 e1ac3c55307bedf1718e43602ebcaf69|2|2|0|0|0|flang/proof/examples/corpus-keywords.flang
-5d25416abfd9dcd5ec32bde955d1c801|1|—|—|—|—|flang/proof/examples/corpus-length.flang
-66039f68eceb10e34e13bda59904b414|15|—|—|—|—|flang/proof/examples/corpus-lists.flang
+5d25416abfd9dcd5ec32bde955d1c801|1|0|0|1|0|flang/proof/examples/corpus-length.flang
+66039f68eceb10e34e13bda59904b414|15|1|12|2|0|flang/proof/examples/corpus-lists.flang
 2afd20b4a0c2adc8921def724821064b|3|3|0|0|0|flang/proof/examples/corpus-marks.flang
 5215baa38e2e6964e03a7054e661e17c|2|2|0|0|0|flang/proof/examples/corpus-namesigns.flang
 b845d83f8f313392a9d7c918112130ff|3|3|0|0|0|flang/proof/examples/corpus-nat-names.flang
 482b7d989a63ac38902e00b38ba00c22|1|1|0|0|0|flang/proof/examples/corpus-natural-ceiling.flang
 0070cd3cc5ae1e5a1bb74865d8793344|1|1|0|0|0|flang/proof/examples/corpus-natural.flang
-d69b68384da03e8231ec6dd119ca38f8|1|—|—|—|—|flang/proof/examples/corpus-numtree.flang
+d69b68384da03e8231ec6dd119ca38f8|1|0|0|1|0|flang/proof/examples/corpus-numtree.flang
 91adb351557607ba9f85889435d5813d|2|2|0|0|0|flang/proof/examples/corpus-ophelpers.flang
 44e43c9704aa3b843ebd20928f6669b8|2|2|0|0|0|flang/proof/examples/corpus-phrases.flang
 a6b19bd06aec2b2cea3b20873a892cf7|3|3|0|0|0|flang/proof/examples/corpus-signs.flang
 43d4622bc4712d5767fe5a429bd20c2b|3|3|0|0|0|flang/proof/examples/corpus-tables.flang
 6dd276ad39ec0047becff7c1e9964ab0|2|2|0|0|0|flang/proof/examples/corpus-translit.flang
-3f67121ddfd86515433c3fff9f1f146d|1|—|—|—|—|flang/proof/examples/corpus-tree-depth.flang
-25e4bea46a69bce0ebad38edb2dd92be|1|—|—|—|—|flang/proof/examples/corpus-tree-height.flang
-591ac3f28e06006b7f28e660505f5858|1|—|—|—|—|flang/proof/examples/corpus-tree.flang
-fdf9c1bb490ba5abcc5add0c3a8a216f|1|—|—|—|—|flang/proof/examples/forgery-if-without-descent-theorem.flang
+3f67121ddfd86515433c3fff9f1f146d|1|0|0|1|0|flang/proof/examples/corpus-tree-depth.flang
+25e4bea46a69bce0ebad38edb2dd92be|1|0|0|1|0|flang/proof/examples/corpus-tree-height.flang
+591ac3f28e06006b7f28e660505f5858|1|0|0|1|0|flang/proof/examples/corpus-tree.flang
+fdf9c1bb490ba5abcc5add0c3a8a216f|1|×|×|×|0|flang/proof/examples/forgery-if-without-descent-theorem.flang
 725dc45f042fd71b8b1eb4fd98ae0940|4|0|0|4|0|flang/proof/examples/forgery-if-without-descent.flang
-eae27b7ed512b9544ab4c03916d69360|6|—|—|—|—|flang/proof/examples/forgery-modus-ponens-by-guard.flang
+eae27b7ed512b9544ab4c03916d69360|6|×|×|×|0|flang/proof/examples/forgery-modus-ponens-by-guard.flang
 8ca79d49a933c188ead3e9157ba73c33|5|2|0|1|2|flang/proof/examples/four-words.flang
-689bbc7d7eb457ec2a1a42798914a2f2|5|—|—|—|—|flang/proof/examples/honest-modus-ponens-by-guard.flang
+689bbc7d7eb457ec2a1a42798914a2f2|5|×|×|×|0|flang/proof/examples/honest-modus-ponens-by-guard.flang
 e0618f75ae00c1886ce5d01616ef1f9e|3|0|3|0|0|flang/proof/examples/if-over-a-segment.flang
 b1bc936c01505dd8be00f7aa7691a366|8|1|1|1|5|flang/proof/examples/precondition.flang
-2f32cf8346f684c304d00194e966d3db|2|—|—|—|—|flang/proof/examples/segment.flang
-e88f59fc12e684eff5e78632eb129fcb|2|—|—|—|—|flang/proof/examples/stack.flang
-3f5b39f132ed77ee5dcb5335494252fd|1|—|—|—|—|flang/proof/examples/traffic-light.flang
+2f32cf8346f684c304d00194e966d3db|2|0|0|2|0|flang/proof/examples/segment.flang
+e88f59fc12e684eff5e78632eb129fcb|2|0|0|2|0|flang/proof/examples/stack.flang
+3f5b39f132ed77ee5dcb5335494252fd|1|0|0|1|0|flang/proof/examples/traffic-light.flang
 4cff036ef9b62c189f00312cede89bac|38|27|0|1|10|flang/proof/map/abilities.flang
 492da63428684fa19e3c072e7831d3d6|11|7|4|0|0|flang/proof/map/boundaries.flang
 b678224e08744ad06f48800be3273433|8|6|2|0|0|flang/proof/map/equality.flang
 59857b44ed6404d25421d0ad57f3c302|12|9|3|0|0|flang/proof/map/forms.flang
 cf956a995066542576c45ef7de743d20|4|1|3|0|0|flang/proof/map/order.flang
-b1c403b0c11063b202cb30837278ad71|12|—|—|—|4|flang/proof/map/refusal-boundaries.flang
-51d2618f9fece56fe57ba194a38e2f8b|15|—|—|—|7|flang/proof/map/refusal-order.flang
-fd14757b3d65032109615e6476777b8c|9|—|—|—|3|flang/proof/map/refusal-substantive.flang
+b1c403b0c11063b202cb30837278ad71|12|×|×|×|4|flang/proof/map/refusal-boundaries.flang
+51d2618f9fece56fe57ba194a38e2f8b|15|×|×|×|7|flang/proof/map/refusal-order.flang
+fd14757b3d65032109615e6476777b8c|9|×|×|×|3|flang/proof/map/refusal-substantive.flang
 0cbd3b9813df2236e2e5e0838773108b|4|1|0|3|0|flang/proof/map/sources.flang
 ce12c504e1fa4df42abe479c03e47f99|7|1|4|2|0|flang/proof/map/substantive.flang
 1024d86a96f92fcaa68336ce0a839c04|6|3|2|0|1|flang/proof/map/types.flang
 5700462cd82330248c2967137b7b66ee|52|52|0|0|0|flang/proof/малый-сводитель.flang
-806cdb557cd3e282124d2c22145566c7|1|—|—|—|—|flang/proof/подделки/делением.flang
-fdd2edb52bc8f68942221aea61c2353f|1|—|—|—|—|flang/proof/подделки/круг.flang
-a247e7b6269b93c8b0a925847ae32661|10|—|—|—|—|flang/proof/подделки/переходность.flang
+806cdb557cd3e282124d2c22145566c7|1|0|0|1|0|flang/proof/подделки/делением.flang
+fdd2edb52bc8f68942221aea61c2353f|1|×|×|×|0|flang/proof/подделки/круг.flang
+a247e7b6269b93c8b0a925847ae32661|10|5|5|0|0|flang/proof/подделки/переходность.flang
 5671d038fc0a663f8d9acea9fc4ec5c4|6|1|0|5|0|flang/proof/подделки/счёт-частей-ложь.flang
 56d0e4660bd3c90a5c3f984f60853e8d|4|0|0|4|0|flang/proof/подделки/счёт-частей-правда.flang
-84968c9bff8b2271c8747b1ce6beb99d|209|—|—|—|—|flang/proof/сверщик.flang
+84968c9bff8b2271c8747b1ce6beb99d|209|209|0|0|0|flang/proof/сверщик.flang
 3eadfffaa256eae3b0ad59183d95037e|1|—|—|—|—|flang/scripts/binary.flang
 9a006efd285c04e39ecdb51f3f3f1747|1|1|0|0|0|flang/scripts/closed-length-guard.flang
 a5769e76ad82b8770ec8ab9c2ec0c1b5|20|19|1|0|0|flang/scripts/code-forgery.flang
@@ -517,7 +558,7 @@ fc32aa3eab8c4a98dd3e3c063c50b427|334|—|—|—|—|flang/self/proof.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|—|—|—|—|flang/self/repl/repl.flang
 5c21185a451e4b60efbb96ad60745149|88|—|—|—|—|flang/self/setoid-oracle.flang
 c3e9988435d72d7cdd3bcc04e7bfef81|101|—|—|—|—|flang/self/setoid.flang
-8856367393fe830db3397a349b4f458e|13|—|—|—|—|flang/self/sets-oracle.flang
+8856367393fe830db3397a349b4f458e|13|3|0|10|0|flang/self/sets-oracle.flang
 041b469a6a112e0963989815f3efa2b7|42|42|0|0|0|flang/self/sets.flang
 013c88e8f24b8452d4b61148038b0c27|19|—|—|—|—|flang/self/svoystva.flang
 286dcc638067945698d6992f0003e47b|18|—|—|—|—|flang/self/tags.flang
@@ -566,21 +607,21 @@ ce966cd97ac6a55b10b0d4eee9405e9f|84|46|25|13|0|flang/stdlib/utf8.flang
 820a0d145ce2553dddaa3a5120ecc4c9|35|12|8|15|0|flang/stdlib/x25519.flang
 229c5ac1ba7bad78bbf3a72396000e17|84|71|13|0|0|flang/stdlib/x509.flang
 43eace0771fdf5cc874f852818b1a343|53|30|17|6|0|flang/stdlib/образцы.flang
-219e3eb9ee5ee9caf328888bcf9c9b1e|1|—|—|—|1|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
-230faddc30a313a5aff2daf9d3f6821f|3|—|—|—|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
+219e3eb9ee5ee9caf328888bcf9c9b1e|1|×|×|×|1|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
+230faddc30a313a5aff2daf9d3f6821f|3|×|×|×|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
 04208ee4470ccce54bfab48fd23795c4|7|0|7|0|0|flang/test/fixtures/element-po-nomeru-chestnaya.flang
 47b111ca2d4fc1fa262a91283b135ad9|5|1|0|3|1|flang/test/fixtures/granica-nad-chislom-chestnaya.flang
 931899625ed8b56c950e75b91c3a50e7|3|0|3|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
 b65b8b5c81f4bd6af8bd4d43a442a470|7|1|6|0|0|flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
-201e862c59f20a09c27f0b47e3b9f93a|1|—|—|—|—|flang/test/fixtures/ohrana-daet-fakt.flang
+201e862c59f20a09c27f0b47e3b9f93a|1|0|0|1|0|flang/test/fixtures/ohrana-daet-fakt.flang
 a3d538b83d7858b73587fab6269b93f3|10|0|10|0|0|flang/test/fixtures/poddelka-builtin-emptiness-fact.flang
 f8b6a4793828e6e9f674f21bda331225|6|1|3|2|0|flang/test/fixtures/poddelka-dlina.flang
 7c666be3b8ccdce131938940d5834757|7|0|0|7|0|flang/test/fixtures/poddelka-dno-proizvedeniya.flang
 bdb08479d0c9d148a659cd2378f76678|8|0|0|8|0|flang/test/fixtures/poddelka-element-po-nomeru.flang
-7f1d1b973cdbd237cf6617d4c8f2b20c|7|—|—|—|—|flang/test/fixtures/poddelka-granica-nad-ne-chislom.flang
-991f0154e159e63c1ad65f15c9442604|2|—|—|—|—|flang/test/fixtures/poddelka-indukciya-po-stroke.flang
+7f1d1b973cdbd237cf6617d4c8f2b20c|7|×|×|×|0|flang/test/fixtures/poddelka-granica-nad-ne-chislom.flang
+991f0154e159e63c1ad65f15c9442604|2|×|×|×|0|flang/test/fixtures/poddelka-indukciya-po-stroke.flang
 73c719fbab555d314569252f3a34a493|7|0|7|0|0|flang/test/fixtures/poddelka-integrality-from-fact.flang
-97f50fa937ce1eb7dc0cf285b49aa16a|2|—|—|—|—|flang/test/fixtures/poddelka-istinnaya-vetv.flang
+97f50fa937ce1eb7dc0cf285b49aa16a|2|0|0|2|0|flang/test/fixtures/poddelka-istinnaya-vetv.flang
 51b8325546fac40604f7467fbdee513e|2|1|0|1|0|flang/test/fixtures/poddelka-konyunkciya.flang
 c458164e6e02eb27ee0280f176b7ff5f|1|0|1|0|0|flang/test/fixtures/poddelka-krug-pri-rabote.flang
 e95d255d053b6b75dabbfbf951bd8e7c|1|0|1|0|0|flang/test/fixtures/poddelka-lozhnaya-polovina.flang
@@ -589,51 +630,51 @@ f8f3700ebe3c9394a67f45248459cf0b|6|0|0|6|0|flang/test/fixtures/poddelka-nachalo-
 6645b560cb573d7dc3bf892020af9bed|4|1|0|3|0|flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang
 2fab94a1aa38984d8593340dbccf8688|12|0|0|10|2|flang/test/fixtures/poddelka-order-arithmetic.flang
 e0edea3abe0d2e00ffea85fe0972e667|2|0|2|0|0|flang/test/fixtures/poddelka-porjadok-sosednih.flang
-bd8c3290d93d1ff9afb7022472b6a2e0|1|—|—|—|—|flang/test/fixtures/poddelka-primer-pod-kvantorom.flang
-9b26a7e5c29d72f4dffb841cb31b137d|4|—|—|—|—|flang/test/fixtures/poddelka-promezhutochnyy-fakt.flang
+bd8c3290d93d1ff9afb7022472b6a2e0|1|×|×|×|0|flang/test/fixtures/poddelka-primer-pod-kvantorom.flang
+9b26a7e5c29d72f4dffb841cb31b137d|4|×|×|×|0|flang/test/fixtures/poddelka-promezhutochnyy-fakt.flang
 d70a8d789ea2a2eec53ccc4e8e0edaec|9|1|0|2|6|flang/test/fixtures/poddelka-protivorechie.flang
-0e4d7295f54c7ea78488968218b7458b|2|—|—|—|—|flang/test/fixtures/poddelka-ravenstvo-v-tele-ne-dokazyvaet.flang
+0e4d7295f54c7ea78488968218b7458b|2|0|0|2|0|flang/test/fixtures/poddelka-ravenstvo-v-tele-ne-dokazyvaet.flang
 870829d355374f6e8e8517f03bff0971|8|2|2|0|4|flang/test/fixtures/poddelka-razbor-sluchaev.flang
 673bca6f5c963db5b4feea8c945a93f2|12|0|12|0|0|flang/test/fixtures/poddelka-razbor-spiska.flang
 ca4c5eb57d09e652d3cb8f582c6e2e08|3|2|0|1|0|flang/test/fixtures/poddelka-razbor-vnutrennim.flang
 339cf690b61d2260517d9b0bf59ad455|1|0|1|0|0|flang/test/fixtures/poddelka-razdvoenie-diz.flang
-3b925f5d1f599358760b0e5748ea03c8|1|—|—|—|—|flang/test/fixtures/poddelka-razvyazka-postusloviy.flang
-e56148f75d6ae6f7c6655cbce8bed4e3|2|—|—|—|—|flang/test/fixtures/poddelka-refleksivnost.flang
+3b925f5d1f599358760b0e5748ea03c8|1|×|×|×|0|flang/test/fixtures/poddelka-razvyazka-postusloviy.flang
+e56148f75d6ae6f7c6655cbce8bed4e3|2|0|0|2|0|flang/test/fixtures/poddelka-refleksivnost.flang
 ed542bf318ede6e023d25d7b9671ef51|4|3|1|0|0|flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang
 9f5cdb46542beeac7b53ed78ea85d081|3|2|1|0|0|flang/test/fixtures/poddelka-snyatie-storozha.flang
 78e86a60ca089b769ae20244ef7a063b|1|0|1|0|0|flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang
 cff4ab9434f4b675634f02fb34b0c8cf|9|0|9|0|0|flang/test/fixtures/poddelka-strict-order.flang
 4d43a200d75dcd5fc681297d81da2749|7|0|6|1|0|flang/test/fixtures/poddelka-svyortka-nad-pustym.flang
-ffc205fa1f93ea9820625f28a67c678f|4|—|—|—|—|flang/test/fixtures/poddelka-svyortka-prefiks.flang
+ffc205fa1f93ea9820625f28a67c678f|4|×|×|×|0|flang/test/fixtures/poddelka-svyortka-prefiks.flang
 4943ee09b660b7cc76688bf96e3a1d7e|6|2|1|2|1|flang/test/fixtures/poddelka-svyortka-shagom.flang
-cc47f0dabed0a9d160625b619d44d163|1|—|—|—|—|flang/test/fixtures/poddelka-vhozhdenie.flang
+cc47f0dabed0a9d160625b619d44d163|1|0|0|1|0|flang/test/fixtures/poddelka-vhozhdenie.flang
 a80ef10ab4efd47d8ab5264097301964|3|0|0|3|0|flang/test/fixtures/svyortka-prefiks-chestnaya.flang
 461385f824bb8118c584ebe8cc7e1237|18|16|2|0|0|flang/проверки/korpus-http.flang
 90e74d4f92b91cc50f646f424a4ed9f3|2|1|1|0|0|fspec/experience/01-discount-coarse.flang
 aa82f1d7ac9e7246e9a006b658bd3c6f|2|2|0|0|0|fspec/experience/02-discount-exact.flang
-703430520ca062e5698afd12a810375d|2|—|—|—|—|fspec/experience/03-discount-false.flang
+703430520ca062e5698afd12a810375d|2|×|×|×|0|fspec/experience/03-discount-false.flang
 5b55b3a43b224480ab98653f83253cb9|1|0|0|1|0|fspec/experiments/conflict-cap-heir.flang
 af6062b8829e13620c0c4355293449d9|1|1|0|0|0|fspec/experiments/conflict-cap-legacy.flang
 8fb69bc9d2d5fc555c498788e09ac38d|1|0|0|1|0|fspec/experiments/conflict-rights-heir.flang
 a333def1745d2719647e8938412ae67e|1|1|0|0|0|fspec/experiments/conflict-rights-legacy.flang
-1e637bbd3a7cbed51acea14f88768ebd|2|—|—|—|—|fspec/experiments/contradiction-delivery-window.flang
-a817c983b278b6836ea1e85de0753182|2|—|—|—|2|fspec/experiments/contradiction-in-requirements.flang
-6a1fcce9f4b070e8e873aae7e40f15d0|2|—|—|—|—|fspec/experiments/contradiction-money-rounding.flang
-b6e348ae6f1ff906b4e4a54881700f07|3|—|—|—|1|fspec/experiments/contradiction-one-function.flang
-88162a1cca95adfbc304afe5a34d1f22|2|—|—|—|—|fspec/experiments/contradiction-return-defect.flang
-3e0e75a61f36a9e98e5e3e8989603dfd|2|—|—|—|—|fspec/experiments/contradiction-tax-theorem.flang
-ca49bba956fb4cf3b8f3a6ecb1e7b0dc|2|—|—|—|2|fspec/experiments/contradiction-weight-requirements.flang
+1e637bbd3a7cbed51acea14f88768ebd|2|×|×|×|0|fspec/experiments/contradiction-delivery-window.flang
+a817c983b278b6836ea1e85de0753182|2|×|×|×|2|fspec/experiments/contradiction-in-requirements.flang
+6a1fcce9f4b070e8e873aae7e40f15d0|2|×|×|×|0|fspec/experiments/contradiction-money-rounding.flang
+b6e348ae6f1ff906b4e4a54881700f07|3|×|×|×|1|fspec/experiments/contradiction-one-function.flang
+88162a1cca95adfbc304afe5a34d1f22|2|×|×|×|0|fspec/experiments/contradiction-return-defect.flang
+3e0e75a61f36a9e98e5e3e8989603dfd|2|×|×|×|0|fspec/experiments/contradiction-tax-theorem.flang
+ca49bba956fb4cf3b8f3a6ecb1e7b0dc|2|×|×|×|2|fspec/experiments/contradiction-weight-requirements.flang
 11312d5e3e260b9f3a140a19d5fe7455|3|1|0|1|1|fspec/experiments/contradiction-without-example.flang
-bb1290cca67cb53073a3391c61998114|1|—|—|—|—|fspec/experiments/false-claim-negative-zero.flang
-22468b06a3118d497088028559449fcd|1|—|—|—|—|fspec/experiments/false-claim-not-a-number.flang
-5d2101d5a6966a7a4723bc3783b6b911|1|—|—|—|—|fspec/experiments/false-claim-strict-discount.flang
+bb1290cca67cb53073a3391c61998114|1|×|×|×|0|fspec/experiments/false-claim-negative-zero.flang
+22468b06a3118d497088028559449fcd|1|×|×|×|0|fspec/experiments/false-claim-not-a-number.flang
+5d2101d5a6966a7a4723bc3783b6b911|1|×|×|×|0|fspec/experiments/false-claim-strict-discount.flang
 d7835f5db9edee56c73841a3a10794be|1|1|0|0|0|fspec/experiments/replacement-cap-45.flang
 3ebc6cf0b56c593604cdad3acd50fdac|1|1|0|0|0|fspec/experiments/silent-drop-heir.flang
 532381eaa98a4cba0afe91297f9219a4|2|2|0|0|0|fspec/experiments/silent-drop-legacy.flang
 f2c6d11d7b435c4c7a844e5a3d29821d|1|1|0|0|0|fspec/experiments/spec-legacy.flang
 0dcfdb75c33bb164aa696900bd45e776|1|0|0|1|0|fspec/experiments/spec-new-feature.flang
 970d839cdf5884993c5ff23275dd1116|1|1|0|0|0|fspec/experiments/superseded-cap-30.flang
-31162c1077c2f5fabe0133d4b97b935d|2|—|—|—|—|fspec/experiments/theorem-on-false.flang
+31162c1077c2f5fabe0133d4b97b935d|2|×|×|×|0|fspec/experiments/theorem-on-false.flang
 61c1123530c4208e51ba4a7df22a129d|18|18|0|0|0|fspec/forgery.flang
 e298a0c94594442f2f4d4bb084bb39f7|15|15|0|0|0|fspec/policy.flang
 7cff85831b0e3d09a1902f10f1b6ef86|3|3|0|0|0|fspec/spec/01-discount-cap.flang
@@ -700,13 +741,13 @@ ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 b9355c30780244f70669d1308c60cf41|6|6|0|0|0|scripts/file-extensions.flang
 d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
-9226c12745c52e368e33c2d313d40200|16|—|—|—|—|scripts/kernel-abilities-guard.flang
+9226c12745c52e368e33c2d313d40200|16|11|2|3|0|scripts/kernel-abilities-guard.flang
 6ef17c004db92a56a4491f404c23a13d|1|1|0|0|0|scripts/language-words.flang
 a72ce1dbc033191cc6867ee134a3212d|6|6|0|0|0|scripts/license-guard.flang
 6bbf942974c5bb56789c8e29896eac34|36|18|16|2|0|scripts/link-guard.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/lsp-check.flang
 5def98b4bc9fe3ad5ef96f982fe9f288|11|11|0|0|0|scripts/manpage-guard.flang
-f8e01fecff7e47ed055e836a42195ee0|15|—|—|—|—|scripts/module-name-guard.flang
+f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/module-name-guard.flang
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/name-collision-guard.flang
 b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/name-splicing-guard.flang
 e5882768a71eeaaebddbbee15f85da71|4|0|0|4|0|scripts/new-binary-acceptance-probe.flang
@@ -718,12 +759,12 @@ b7b038af83dfc2fd177142569ecab833|30|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 8c3d550e05448975c2bc923b8671b80d|8|8|0|0|0|scripts/release-guard.flang
 6532ecb8603b4f6eb127b8d911d1d5d9|24|22|2|0|0|scripts/release-in-c.flang
-da53a2289cac09470f6f1d20ee509c82|10|—|—|—|—|scripts/reprint-freshness.flang
+da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang
 0f8b911ee5eb576b3d68d807d6937d17|5|3|2|0|0|scripts/tab-host-guard.flang
-69bf909a9e2049e05ba96acc758128a1|25|—|—|—|—|scripts/tree-inventory.flang
+69bf909a9e2049e05ba96acc758128a1|25|19|5|1|0|scripts/tree-inventory.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 1231974321a7a26bcf88a014ebc00252|16|16|0|0|0|scripts/vim-rules.flang
@@ -733,5 +774,5 @@ e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/сторож-дарвина.flang
 e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 704fe0f011c617acd4cff9afd576a5de|43|43|0|0|0|web/shortener/client.flang
-08e7e8cb7e8abb0e1a64a2c8901d7fde|25|—|—|—|—|web/stand.flang
+08e7e8cb7e8abb0e1a64a2c8901d7fde|25|19|6|0|0|web/stand.flang
 0057c5c5299164dac70a6f8df9361a55|17|14|3|0|0|ярлыки.flang

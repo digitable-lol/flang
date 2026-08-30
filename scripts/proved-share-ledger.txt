@@ -20,6 +20,38 @@
 // числитель нельзя было пересчитать по одному файлу: вычесть вклад
 // сдвинувшегося файла было не из чего. Теперь можно.
 //
+// «×» вместо чисел — ведомость этого файла ПРОБОВАЛИ снять и не сняли. Прочерк
+// и «×» — разные вещи, и путать их дорого: прочерк значит «не мерено», «×»
+// значит «мерено приёмом задачи 6128, и двоичный ведомости не напечатал».
+// Такой файл ждёт не прогона, а правки в компиляторе; в кучу «осталось
+// померить» его класть нельзя. В числитель он не идёт, как и прочерк.
+//
+// Крестами помечены 18 файлов среза flang/conc/examples/** и
+// flang/conc/services/** — 70 обязательств. Снято 30 августа 2026 двоичным
+// f32d89f599dd6b9f740f42a752dff1ff («m-kernel-ledger/build-kernel», приём
+// задачи 6128), ключ «--предел-шагов 400000000000», ворота PAMYAT=45G. Ни один
+// из восемнадцати не упёрся ни в срок, ни в память: самый долгий отвечал 4,00 с
+// при пике 37 МБ, остальные — за доли секунды. Причин ровно две.
+//
+// 1. Семнадцать файлов, 68 обязательств — код 2 и «ведомость не печатается: в
+//    программе объявлено то, чьи законы бинарник не считает — processes,
+//    supervisors, runs». Отказ вызывает САМО объявление «процесс»/«надзор»/
+//    «прогон» в файле, а не обязательства: все 68 постусловий написаны у
+//    обычных функций, и такие двоичный судит. Совпадение по срезу
+//    flang/core + flang/conc полное, 29 файлов из 29: где такое объявление
+//    есть — отказ, где нет — ведомость. Считать эти законы умеет
+//    flang/self/setoid-oracle.flang, но в замыкание двоичного он не вшит.
+//
+// 2. Один файл, 2 обязательства —
+//    flang/conc/examples/node-reference-checked-on-receipt-forged.flang: это
+//    подделка, которая ОБЯЗАНА быть отвергнута по типам (FLANG_TYPE, код 1), а
+//    у программы с замечаниями ведомости не бывает. Ведомости у него не будет
+//    никогда, и это не долг.
+//
+// Десять строк того же среза (flang/core/*.flang, flang/conc/*.flang), снятых
+// 29 августа двоичным 25605ce2…, пересняты 30 августа двоичным f32d89f5… и
+// сошлись знак в знак все десять: 215 доказанных из 280.
+//
 // Две строки — flang/self/proof-kernel.flang и flang/self/proofterm.flang —
 // сняты в тот же день тем же приёмом, но двоичным
 // f32d89f599dd6b9f740f42a752dff1ff и в текстовом виде; исходники с тех пор не
@@ -166,28 +198,28 @@ c9e9b6f0bda64bbb0f20478a846dbf42|3|—|—|—|—|examples/web/marketplace/orde
 a3c7b85b93f0c2f0090fbc38c1cf8086|1|—|—|—|—|examples/web/shortener/plan-durable.flang
 2582c1e7ee724ac4ad518f688e94cc66|8|1|4|3|0|examples/web/shortener/service.flang
 b85122f92feb1249627c5863b31d4c49|1|—|—|—|—|examples/web/shortener/store.flang
-a8a4bc5a69a3ca169dc935df04d2b9a7|4|—|—|—|—|flang/conc/examples/backpressure.flang
-ec1f624e7568f4537f7518b1b4c0d0fd|1|—|—|—|—|flang/conc/examples/budget.flang
-06ad4d0486befb5d8b1bf5b7a66e08dc|3|—|—|—|—|flang/conc/examples/counter.flang
-08aff10a8f36ba8071a0b5b9ec67e7f1|4|—|—|—|—|flang/conc/examples/distributed.flang
-942de0641ebe80e63db1d56eb0d5956b|1|—|—|—|—|flang/conc/examples/escalate.flang
-47710fb8ddff90712a70239bef22376b|3|—|—|—|—|flang/conc/examples/mailbox.flang
-0d1809abc948826d1096ad3a19f6921f|2|—|—|—|—|flang/conc/examples/measure.flang
-96d2864605ece9ea91fdf95adf6861ff|5|—|—|—|—|flang/conc/examples/node-name-of-a-foreign-kind.flang
-90b3896b3cf34bfb3644ac666527673f|2|—|—|—|—|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
-2249c7792bfcf8351e0c1e48bf624f8c|6|—|—|—|—|flang/conc/examples/node-reference-checked-on-receipt.flang
-232dd2e55e3b5ee6d1da51d27283de18|5|—|—|—|—|flang/conc/examples/node-reply-by-reference.flang
-5d10c2fe3aa3b9f64df3f88354a2332d|3|—|—|—|—|flang/conc/examples/node-work-by-reference.flang
-599500edfe756ab82ebc2f92e6875ce9|8|—|—|—|—|flang/conc/examples/race.flang
-35a028d8ee3aa862503ce54ea3ddcdf3|6|—|—|—|—|flang/conc/examples/server.flang
-18b4a4d39c60207fcffe9efde64b3d43|3|—|—|—|—|flang/conc/examples/supervision.flang
+a8a4bc5a69a3ca169dc935df04d2b9a7|4|×|×|×|×|flang/conc/examples/backpressure.flang
+ec1f624e7568f4537f7518b1b4c0d0fd|1|×|×|×|×|flang/conc/examples/budget.flang
+06ad4d0486befb5d8b1bf5b7a66e08dc|3|×|×|×|×|flang/conc/examples/counter.flang
+08aff10a8f36ba8071a0b5b9ec67e7f1|4|×|×|×|×|flang/conc/examples/distributed.flang
+942de0641ebe80e63db1d56eb0d5956b|1|×|×|×|×|flang/conc/examples/escalate.flang
+47710fb8ddff90712a70239bef22376b|3|×|×|×|×|flang/conc/examples/mailbox.flang
+0d1809abc948826d1096ad3a19f6921f|2|×|×|×|×|flang/conc/examples/measure.flang
+96d2864605ece9ea91fdf95adf6861ff|5|×|×|×|×|flang/conc/examples/node-name-of-a-foreign-kind.flang
+90b3896b3cf34bfb3644ac666527673f|2|×|×|×|×|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
+2249c7792bfcf8351e0c1e48bf624f8c|6|×|×|×|×|flang/conc/examples/node-reference-checked-on-receipt.flang
+232dd2e55e3b5ee6d1da51d27283de18|5|×|×|×|×|flang/conc/examples/node-reply-by-reference.flang
+5d10c2fe3aa3b9f64df3f88354a2332d|3|×|×|×|×|flang/conc/examples/node-work-by-reference.flang
+599500edfe756ab82ebc2f92e6875ce9|8|×|×|×|×|flang/conc/examples/race.flang
+35a028d8ee3aa862503ce54ea3ddcdf3|6|×|×|×|×|flang/conc/examples/server.flang
+18b4a4d39c60207fcffe9efde64b3d43|3|×|×|×|×|flang/conc/examples/supervision.flang
 7c3d1b1fb1a4f917806623d2d5e13f32|21|16|0|5|0|flang/conc/hotswap-node.flang
 05e9608aaa61e762a2b9f1f51cbdfd7c|33|29|3|0|1|flang/conc/link.flang
 26ed25983705656840f4f2f305d98a75|9|9|0|0|0|flang/conc/node-benchmark.flang
 6a0e424d3be329c83fcc22cd09338b06|59|53|1|5|0|flang/conc/scheduler.flang
-b6ed9ed3db6b211f88ce057c954e1861|5|—|—|—|—|flang/conc/services/file-read.flang
-d33e2ac2e2338ffb7aa20d9d01b44d49|6|—|—|—|—|flang/conc/services/host-io-survey.flang
-c21138380e993a1c284bbdc534e1488e|3|—|—|—|—|flang/conc/services/two-on-our-own-engine.flang
+b6ed9ed3db6b211f88ce057c954e1861|5|×|×|×|×|flang/conc/services/file-read.flang
+d33e2ac2e2338ffb7aa20d9d01b44d49|6|×|×|×|×|flang/conc/services/host-io-survey.flang
+c21138380e993a1c284bbdc534e1488e|3|×|×|×|×|flang/conc/services/two-on-our-own-engine.flang
 7439fefc895f25f95273bc6d0b0099bf|55|46|1|8|0|flang/conc/supervisor.flang
 a398efda9d5366984530ac7abfdd3681|41|21|8|11|1|flang/conc/wire.flang
 b8c9a7955422d3218e6f7ae9820a617d|1|1|0|0|0|flang/core/evaluate.flang

@@ -479,6 +479,15 @@ vypusk() {
 #
 # ЧТО СЮДА НЕ ВХОДИТ. Числа, для которых нужен прогон компилятора (доля
 # доказанного, носители, утверждения) — их держит `--числа` и своя оговорка.
+# БУКВЕННЫХ ДИАПАЗОНОВ ЗДЕСЬ НЕТ, И ЭТО НЕ ВКУС. Работа CI идёт без локали
+# (LC_ALL не выставлен, значит POSIX), а `[а-я]` — диапазон ПО ПОРЯДКУ СЛОВАРЯ:
+# без русской локали кириллица в нём не буква, и выражение не совпадает ни с
+# чем. Замерено 30 августа 2026: `программ[а-я]* на flang в 22 наборах` под
+# ru_RU.UTF-8 находит строку, под C — не находит ничего, и сверка сравнивает
+# пустоту с 22, то есть краснеет на ровном месте. Поймать это раньше было
+# нечем: до сегодня работа падала на первом же шаге и до прозы не доходила.
+# Вместо диапазона — «что угодно, кроме разделителя»: `[^ ]*`, `[^,]+`. Они
+# работают побайтно и одинаковы в любой локали.
 proza() {
   echo "ЧИСЛА ПРОЗЫ (README и страницы против дерева):"
 
@@ -489,7 +498,7 @@ proza() {
                 | grep -vE '^examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
   skazat "README.ru: программ"  "$(grep -oE 'examples/ +[0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
   skazat "README: программ"     "$(grep -oE 'examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
-  skazat "README.ru: наборов"   "$(grep -oE 'программ[а-я]* на flang в [0-9]+ наборах' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
+  skazat "README.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
   skazat "README: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' README.md | grep -oE '[0-9]+')" "$pr_naborov"
   skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
   skazat "README: остальных"    "$(grep -oE '[0-9]+ more programs in' README.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
@@ -500,8 +509,8 @@ proza() {
     [ -f "$f" ] || continue
     bf=$((bf + 1)); bfn=$((bfn + $(fn "$f"))); btot=$((btot + $(tot "$f"))); bpr=$((bpr + $(pr "$f")))
   done
-  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[а-я]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
-  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[а-я]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
   skazat "README: модулей"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | head -1)" "$bf"
   skazat "README: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
 

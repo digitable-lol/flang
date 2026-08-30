@@ -10,10 +10,91 @@
 // раза, на ядре доказательств в 34,2).
 //
 // «без приговора» — обязательства, которых ведомость не судит вовсе: «требует»
-// (предусловие) и «закон». Замерено 29 августа 2026: у «требует» в выводе
-// `check --proof --json` нет ни записи в `obligations`, ни строки в `claims` —
-// оно проверяется на месте вызова, а не доказывается. В знаменателе эти
-// обязательства есть, в числитель попасть не могут ни при каком доказательстве.
+// (предусловие) и «закон». Поле это считается ПО ИСХОДНИКУ, и двоичный для него
+// не нужен: в ЭТОМ поле прочерк значит ноль, а не «не мерено», — и потому оно
+// проставлено числом и там, где ведомость не снята вовсе. Таких строк 12, они
+// несут 30 из 97; остальные 67 стоят у файлов с ведомостью. Сумма поля по описи
+// обязана сходиться со счётом по дереву, и сегодня сходится: 97 и 97.
+//
+// ────────── 97 без приговора: две кучи, и они разные ──────────
+//
+// Снято 30 августа 2026 на стволе `5c0d35c9`, двоичный собран из семени этого же
+// ствола (`make -C bootstrap -j8`, md5 4e32f9f76d8215c3b5df1b6abe0b6a68).
+// Счёт по дереву: «требует» 88 строк в 32 файлах, «закон» 9 строк в 4 файлах,
+// итого 97 при 13 484 «обеспечивает» — знаменатель дерева 13 581. Оба прибора
+// (`scripts/published-vs-tree.sh` и `scripts/proved-share-of-a-file.py`) дают
+// на этом стволе одно и то же число 13 581 = 13 484 + 97: расхождение приборов,
+// названное в задаче 1729, к 30 августа уже закрыто.
+//
+// «НЕ ДОКАЗАНО» И «ДОКАЗАТЬ НЕЛЬЗЯ» — РАЗНЫЕ ВЕЩИ, и из знаменателя выносится
+// только второе. Иначе доля лжёт в другую сторону.
+//
+// НИКОГДА — 92 строки. Вынесены из знаменателя доли.
+//
+//  • 88 «требует» в 32 файлах. Предусловие — ДОПУЩЕНИЕ, а не утверждение о
+//    функции, и судится оно НЕ ПО СТРОКЕ, А ПО МЕСТУ ВЫЗОВА. Механика, снятая
+//    прогоном: список приговоров строится фильтром `kind == "postcondition"`
+//    (`flang/self/proof.flang:2629`); предусловие ядро кладёт в ФАКТЫ, из
+//    которых доказывается постусловие (`flang/self/proofterm.flang:806` —
+//    «ПРЕДУСЛОВИЕ ФУНКЦИИ — ТОЖЕ ДОПУЩЕНИЕ», и `Факт предусловия` строит запись
+//    `kind: "precondition"`); наружу по предусловиям уезжают не вердикты, а СЧЁТ
+//    МЕСТ — `{sites, discharged, diagnostics}`
+//    (`flang/self/proofterm.flang:3496`). Единица суда видна и в отказе:
+//    `FLANG_PRECONDITION_CALL … строка 17, столбец 3: вызов «Узкая» в функции
+//    «Зовущая» не снимает предусловие «не меньше пяти»` — назван вызов, а не
+//    строка `требует`. Одна строка `требует` даёт столько судов, сколько у
+//    функции мест вызова: ноль, один или сто. Приговора у самой строки нет и
+//    быть не может — числитель считает строки, а не места.
+//    Прогон 30 августа: из 36 файлов с «требует»/«закон» ведомость напечаталась
+//    у 24, в них 67 строк «требует» — приговоров 0, и у всех 305 приговоров этих
+//    файлов `kind` равен `постусловие`, ни одного `precondition`.
+//
+//  • 4 «закон» в двух ПОДДЕЛКАХ каталога `flang/test/fixtures/binary-rules/`:
+//    `equality-not-symmetric.flang` (1) и `iso-mismatch.flang` (3). Файлы эти
+//    написаны затем, чтобы быть отвергнутыми: первый объявляет равенством
+//    несимметричное отношение и ждёт `FLANG_EQUALITY_NOT_SYMMETRIC`; второй —
+//    посимвольная копия честного `examples/cat/order-shipment.flang` с ОДНОЙ
+//    правкой (`обратный морфизм «по накладной»` → `«отгрузить»`). У программы,
+//    которую двоичный обязан отвергнуть, ведомости не бывает и не будет никогда.
+//
+// НЕЛЬЗЯ СЕГОДНЯШНИМ ДВОИЧНЫМ — 5 строк. Остаются в знаменателе.
+//
+//  • 5 «закон» в двух честных примерах: `examples/cat/order-shipment.flang` (3)
+//    и `examples/cat/modules/orders.flang` (2). Оба отвечают кодом 2:
+//    «ведомость не печатается: в программе объявлено то, чьи законы бинарник не
+//    считает — isomorphisms, categories, morphisms … У названного судьи нет
+//    вовсе: правил, которые сверяли бы эти объявления, в дереве не написано ни
+//    одной строкой». Это долг дерева, а не свойство обязательства, — и потому
+//    из знаменателя они НЕ выносятся.
+//    ⚠ Но и вшивание судьи их в числитель не приведёт: у закона алфавит
+//    вердиктов ровно двухбуквенный — `"grid"` и `"violated"`, и другого места,
+//    где собиралась бы `Строка закона ведомости`, в `flang/self/proof.flang`
+//    нет. Ведомость говорит об этом сама: «законы (сетка конечна,
+//    доказательством не является)», и считает их отдельной строкой итога
+//    («законов на сетке»), а не в «утверждений N». Чтобы закон попал в
+//    числитель, нужен НОВЫЙ род вердикта у закона, а не подключение оракула.
+//
+// Как это считать прогоном: `sh scripts/published-vs-tree.sh --доля` печатает
+// разложение знаменателя и знаменатель доли отдельной строкой.
+//
+// ────────── прочерк у flang/self/distributed.flang снят ключом, а не правкой ──
+//
+// Тем же заходом 30 августа 2026 выяснилось, что этот прочерк был «не мерено», а
+// не «мерить нечем». Файл отвечал `FLANG_RECURSION_LIMIT: функция «Прогон»
+// превысила предел глубины вызовов (20000)` — это предел САМОГО КОМПИЛЯТОРА, и
+// у двоичного есть ключ, которым он задаётся. Прогон
+// `./bootstrap/flang --предел-глубины 200000 check flang/self/distributed.flang
+// --proof --json` (ворота PIK=12G PAMYAT=60G) — код 0, 75,11 с, пик 810 МБ,
+// ведомость печатается: 54 доказано, 6 сетка, 21 объявлено при 81 постусловии,
+// плюс 1 «требует» без приговора. Строка описи заполнена этими числами.
+//
+// Сам ключ не нов: лесенку по нему снял сосед по задаче 2469, и за ключом стоит
+// стена стека хозяина — 1 ГиБ и 2 074 970 кадров
+// (docs/zettel/two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md).
+// Ново то, что на ЭТОМ файле ключ прочерк СНИМАЕТ, а на трёх файлах той кучи не
+// снимал: «прочерк за отказом по глубине» — не однородный долг, и проверять его
+// надо ключом, а не заносить в долг целиком. Сколько прочерков он снимает
+// всего — не мерено, проверен один файл.
 //
 // Прочерк вместо чисел — ведомость этого файла не снята, и в числитель файл не
 // идёт. Прежняя опись держала только md5 и число написанного, и из-за этого
@@ -114,7 +195,7 @@ d0374334acaa6b0be30eac9a46b6e4f6|2|—|—|—|—|docs/benchmark2/05-opposite.f
 e92398b5176535692d4677520c144249|3|—|—|—|—|docs/benchmark2/07-insert-at.flang
 455a1dd94bc78f695b3c553864f5545d|1|—|—|—|—|docs/benchmark2/08-maximum.flang
 5321422c1140209d3211208fa24a05d4|2|—|—|—|—|docs/benchmark2/09-take-first.flang
-b57ede293fcd7a997a47fe6091e5b8eb|3|—|—|—|—|docs/benchmark2/10-binary-search.flang
+b57ede293fcd7a997a47fe6091e5b8eb|3|—|—|—|1|docs/benchmark2/10-binary-search.flang
 1b20e9ee58fcfb6f919eea37c59a1ea3|1|—|—|—|—|docs/benchmark2/11-unique.flang
 38872c5b3fe9793b9979bef17ab4835b|1|—|—|—|—|docs/benchmark2/12-implies.flang
 38181f8de4a377a20a9c67d90348dadc|1|—|—|—|—|docs/benchmark2/13-even.flang
@@ -133,9 +214,9 @@ bf8c0880c1071d0ab9bab9f467a0ccfd|1|0|1|0|0|docs/site/numbers.flang
 09fad27f4a1529c83d303d716f825369|1|0|1|0|0|docs/site/podsvetka.flang
 59e40510fb0bb42d6e4622c380a9b343|1|—|—|—|—|docs/zamer-teorkat/class-string-to-string.flang
 be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
-c110934b654de80f02da0999dfd1c88d|2|—|—|—|—|examples/cat/modules/orders.flang
+c110934b654de80f02da0999dfd1c88d|2|—|—|—|2|examples/cat/modules/orders.flang
 65de6a234d3abe159672760a3f98dba5|1|—|—|—|—|examples/cat/monoid-and-monad.flang
-2532d2f0982166760ed7fd3b5961be72|3|—|—|—|—|examples/cat/order-shipment.flang
+2532d2f0982166760ed7fd3b5961be72|3|—|—|—|3|examples/cat/order-shipment.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
 e3dce4b7d377d2076ca7154cade67ec6|2|—|—|—|—|examples/crypto/certificate.flang
 b6df92b9fab4356571dced4966d981fb|3|2|0|1|0|examples/crypto/ecdsa-digest.flang
@@ -293,9 +374,9 @@ e88f59fc12e684eff5e78632eb129fcb|2|—|—|—|—|flang/proof/examples/stack.fl
 b678224e08744ad06f48800be3273433|8|6|2|0|0|flang/proof/map/equality.flang
 59857b44ed6404d25421d0ad57f3c302|12|9|3|0|0|flang/proof/map/forms.flang
 cf956a995066542576c45ef7de743d20|4|1|3|0|0|flang/proof/map/order.flang
-b1c403b0c11063b202cb30837278ad71|12|—|—|—|—|flang/proof/map/refusal-boundaries.flang
-51d2618f9fece56fe57ba194a38e2f8b|15|—|—|—|—|flang/proof/map/refusal-order.flang
-fd14757b3d65032109615e6476777b8c|9|—|—|—|—|flang/proof/map/refusal-substantive.flang
+b1c403b0c11063b202cb30837278ad71|12|—|—|—|4|flang/proof/map/refusal-boundaries.flang
+51d2618f9fece56fe57ba194a38e2f8b|15|—|—|—|7|flang/proof/map/refusal-order.flang
+fd14757b3d65032109615e6476777b8c|9|—|—|—|3|flang/proof/map/refusal-substantive.flang
 0cbd3b9813df2236e2e5e0838773108b|4|1|0|3|0|flang/proof/map/sources.flang
 ce12c504e1fa4df42abe479c03e47f99|7|1|4|2|0|flang/proof/map/substantive.flang
 1024d86a96f92fcaa68336ce0a839c04|6|3|2|0|1|flang/proof/map/types.flang
@@ -331,7 +412,7 @@ ad1ac900e42f9208ee148029edcc821c|10|—|—|—|—|flang/self/carriers.flang
 0dfe4e482a1ae14add1236deb37b3cdd|13|—|—|—|—|flang/self/commutative.flang
 37019cd438e183470a9aece4137f9872|200|—|—|—|—|flang/self/conc.flang
 aa441b47a3998c1c849db86445a68f18|188|—|—|—|—|flang/self/defunc.flang
-6ccf6e2072e1d185a5eb575513180b96|82|—|—|—|—|flang/self/distributed.flang
+6ccf6e2072e1d185a5eb575513180b96|82|54|6|21|1|flang/self/distributed.flang
 db8148fa41aba54509a56dfb508e7d57|20|—|—|—|—|flang/self/distributive.flang
 4ec5662b785edd2b7fad9faeba467553|402|—|—|—|—|flang/self/emit-c.flang
 bc786f80a544bfce9eee67aafe578dde|659|—|—|—|—|flang/self/emit-csharp.flang
@@ -423,8 +504,8 @@ ce966cd97ac6a55b10b0d4eee9405e9f|84|46|25|13|0|flang/stdlib/utf8.flang
 820a0d145ce2553dddaa3a5120ecc4c9|35|12|8|15|0|flang/stdlib/x25519.flang
 229c5ac1ba7bad78bbf3a72396000e17|84|71|13|0|0|flang/stdlib/x509.flang
 43eace0771fdf5cc874f852818b1a343|53|30|17|6|0|flang/stdlib/образцы.flang
-219e3eb9ee5ee9caf328888bcf9c9b1e|1|—|—|—|—|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
-230faddc30a313a5aff2daf9d3f6821f|3|—|—|—|—|flang/test/fixtures/binary-rules/iso-mismatch.flang
+219e3eb9ee5ee9caf328888bcf9c9b1e|1|—|—|—|1|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
+230faddc30a313a5aff2daf9d3f6821f|3|—|—|—|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
 04208ee4470ccce54bfab48fd23795c4|7|0|7|0|0|flang/test/fixtures/element-po-nomeru-chestnaya.flang
 47b111ca2d4fc1fa262a91283b135ad9|5|1|0|3|1|flang/test/fixtures/granica-nad-chislom-chestnaya.flang
 931899625ed8b56c950e75b91c3a50e7|3|0|3|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
@@ -474,12 +555,12 @@ af6062b8829e13620c0c4355293449d9|1|1|0|0|0|fspec/experiments/conflict-cap-legacy
 8fb69bc9d2d5fc555c498788e09ac38d|1|0|0|1|0|fspec/experiments/conflict-rights-heir.flang
 a333def1745d2719647e8938412ae67e|1|1|0|0|0|fspec/experiments/conflict-rights-legacy.flang
 1e637bbd3a7cbed51acea14f88768ebd|2|—|—|—|—|fspec/experiments/contradiction-delivery-window.flang
-a817c983b278b6836ea1e85de0753182|2|—|—|—|—|fspec/experiments/contradiction-in-requirements.flang
+a817c983b278b6836ea1e85de0753182|2|—|—|—|2|fspec/experiments/contradiction-in-requirements.flang
 6a1fcce9f4b070e8e873aae7e40f15d0|2|—|—|—|—|fspec/experiments/contradiction-money-rounding.flang
-b6e348ae6f1ff906b4e4a54881700f07|3|—|—|—|—|fspec/experiments/contradiction-one-function.flang
+b6e348ae6f1ff906b4e4a54881700f07|3|—|—|—|1|fspec/experiments/contradiction-one-function.flang
 88162a1cca95adfbc304afe5a34d1f22|2|—|—|—|—|fspec/experiments/contradiction-return-defect.flang
 3e0e75a61f36a9e98e5e3e8989603dfd|2|—|—|—|—|fspec/experiments/contradiction-tax-theorem.flang
-ca49bba956fb4cf3b8f3a6ecb1e7b0dc|2|—|—|—|—|fspec/experiments/contradiction-weight-requirements.flang
+ca49bba956fb4cf3b8f3a6ecb1e7b0dc|2|—|—|—|2|fspec/experiments/contradiction-weight-requirements.flang
 11312d5e3e260b9f3a140a19d5fe7455|3|1|0|1|1|fspec/experiments/contradiction-without-example.flang
 bb1290cca67cb53073a3391c61998114|1|—|—|—|—|fspec/experiments/false-claim-negative-zero.flang
 22468b06a3118d497088028559449fcd|1|—|—|—|—|fspec/experiments/false-claim-not-a-number.flang

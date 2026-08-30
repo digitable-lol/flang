@@ -676,6 +676,7 @@
 - [Шесть вещей, которых клиенту TLS не хватает, лежат в ЧУЖИХ файлах, и две из них — не нехватка кода, а столкновение имён](tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md)
 - [«Не число» РАВНО самому себе, и потому обещание про знак не мина](trees-numbers-nan-equals-itself-so-a-sign-promise-is-not-a-landmine.md)
 - [Край по нульместному варианту берётся девять раз из девяти, край по пустому входу — ноль из шести](trees-numbers-nullary-variant-edge-takes-where-empty-input-edge-does-not.md)
+- [Стена глубины отняла приговор у 28 сторожей из 92 и остановила примеры у 74 файлов из 105 — радиус назван парой двоичных на одном дереве](twenty-eight-of-ninety-two-guards-lost-their-verdict-to-the-depth-wall.md)
 - [Примеров по корпусу прогоняется вдвое больше, чем объявлено, а девять файлов на 11 683 строки отчитываются чужими](twice-as-many-examples-run-as-are-declared.md)
 - [Два исполнителя портили двоичный поток по-разному, и расхождение было не в кодировке, а в том, где каждый терял](two-hosts-corrupted-the-binary-stream-in-different-places.md)
 - [Из npm и из brew приезжали разные компиляторы: на одном корпусе они разошлись на 54 вызовах из 59](two-installs-answered-differently-on-54-calls-of-59.md)

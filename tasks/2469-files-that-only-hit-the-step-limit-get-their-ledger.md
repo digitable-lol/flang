@@ -18,8 +18,10 @@
 
 Снято 30 августа 2026. Заход лежит в `/srv/tmp/m-raise-proved-share/kucha/`,
 запись — коммит `44988053` ветки `m/raise-proved-share`
-(`/srv/flang-rabota/m-raise-proved-share`), **в ствол не влита**
-(`git merge-base --is-ancestor 44988053 f9e67fa6` → нет).
+(`/srv/flang-rabota/m-raise-proved-share`). **Влита в ствол 30 августа 2026**
+сведением со стволом: ведомость по этим файлам лежит в
+`scripts/proved-share-ledger.txt` новым устройством — на файл записан приговор,
+а не только md5.
 
 Куча `docs/zettel/one-binary-one-ledger-the-whole-tree.md:100` называла
 25 файлов и 1081 обязательство. Снято **22 файла, 1028 обязательств, доказано

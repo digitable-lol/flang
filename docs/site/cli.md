@@ -375,7 +375,7 @@ shell quotes.** Guillemets are how the language writes names in source, but the
 $ flang io ярлыки.flang --plan «Целость»
 {"error":"не найден план ««Целость»»", … "code":"FLANG_UNKNOWN_PLAN" …}
 $ flang io ярлыки.flang --plan Целость
-{"plan":"Целость","result":"ярлыков 99; …
+{"plan":"Целость","result":"ярлыков 101; …
 $ echo $?
 0
 ```

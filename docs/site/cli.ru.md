@@ -370,7 +370,7 @@ flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-di
 $ flang io ярлыки.flang --plan «Целость»
 {"error":"не найден план ««Целость»»", … "code":"FLANG_UNKNOWN_PLAN" …}
 $ flang io ярлыки.flang --plan Целость
-{"plan":"Целость","result":"ярлыков 99; …
+{"plan":"Целость","result":"ярлыков 101; …
 $ echo $?
 0
 ```

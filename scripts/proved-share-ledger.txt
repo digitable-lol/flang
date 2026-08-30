@@ -407,7 +407,7 @@ d7d04c1b5205721dbc3ec0844ef38238|11|8|3|0|0|flang/stdlib/kdf.flang
 fa27c2b55c7564265f98ba2b86034f43|20|20|0|0|0|flang/stdlib/registry.flang
 92d80317b32a2be31c32f68efc2b12c2|15|12|0|3|0|flang/stdlib/result.flang
 c99b0f90d78b2ddebd00a3a1dcba8104|17|10|1|6|0|flang/stdlib/rsa.flang
-461bf41b16ebbe179e5db6bb8e484f42|23|—|—|—|—|flang/stdlib/scram.flang
+461bf41b16ebbe179e5db6bb8e484f42|23|12|9|2|0|flang/stdlib/scram.flang
 11af2cfd5943fdf9ac42baa2fbff1721|43|30|12|1|0|flang/stdlib/sets.flang
 a3eaf30fa978447f0fd7b42d562244b5|64|47|8|9|0|flang/stdlib/sha1.flang
 100b2cd6023e85cdf890776052c40d79|114|46|36|32|0|flang/stdlib/sha256.flang

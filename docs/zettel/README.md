@@ -195,6 +195,7 @@
 - [Перечень, записанный в проверке руками, переживает дерево и уносит с собой покрытие](a-hand-written-list-outlives-the-tree.md)
 - [Сборка релиза ломалась молча: имя выхода переименовали в трёх местах из четырёх, а четвёртое зовут руками](a-hard-coded-binary-name-outlives-its-rename.md)
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
+- [Страж семени, спрашивающий про НЫНЕШНЕЕ дерево, красен по устройству, а не по нерадивости](a-seed-guard-asking-about-the-current-tree-is-red-by-construction.md)
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Слияние не умеет сливать напечатанное семя: любая сторона теряет правило, и на стволе `4c1b6aef` потерялась индукция по строке](a-merge-cannot-merge-a-generated-seed-either-side-loses-a-rule.md)
 - [Число, у которого нет ключа подстановки, расходится не с другой страницей, а со своим же отчётом](a-number-with-no-key-drifts-from-its-own-report.md)

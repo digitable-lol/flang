@@ -4,6 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
+коммит 1eb168da1f32a5443c3a8b8aed866abadbc80fc7
 49a0bda5a75f98d55c2bdb2aa7aecdeab13aa01c88736dd8103b3939ba02435b  flang/core/evaluate.flang
 6b2e50636fcc2953d79af01e52f4e385db15f218349db31571cb01ff31f67ce0  flang/core/json.flang
 b08879ed19ca737d60c7d62a2b7348d663431b3a48168b182bf24d6f96b47985  flang/self/bootstrap/compiler.flang

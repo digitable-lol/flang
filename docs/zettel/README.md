@@ -326,6 +326,7 @@
 - [Обещание `json.flang` «разбор печати даёт то же значение» ложно, и ломается оно тремя разными способами](json-print-parse-round-trip-is-false.md)
 - [Чему учить ядро следующим: свод семи каталогов отказов, а не догадка](kernel-gaps-ranked-across-shares.md)
 - [Минус ноль всплыл четыре раза — это класс, а не отдельные ошибки](minus-zero-is-a-class.md)
+- [Минус ноль чинили дважды подряд — и оба раза мимо, в разные стороны](minus-zero-fixed-twice-and-both-times-past-the-mark.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [Файл проверок, упавший на загрузке, в отчёте прогона неотличим от отсутствующего](nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.md)
 - [В WebAssembly нет сторожевой страницы, поэтому заниженная константа стека портит память молча](no-guard-page-in-wasm.md)

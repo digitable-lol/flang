@@ -77,9 +77,9 @@
  * `import`, ни `process`, ни потоков; всё, что нужно браузеру, у него есть без
  * этого файла. Здесь же — Node и только Node.
  */
-import { readFileSync } from "node:fs"
+import { readFileSync, realpathSync } from "node:fs"
 import { resolve } from "node:path"
-import { pathToFileURL } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { isMainThread, Worker } from "node:worker_threads"
 
 /* Имя, которое бэкенд даёт программе без объявленного имени модуля. */
@@ -524,11 +524,33 @@ async function main(argv) {
   for (const request of requests.slice(written)) process.stdout.write(`${answer(program, request)}\n`)
 }
 
+/*
+ * «Меня запустили напрямую?» — тот же ответ, что у всего дерева
+ * (`flang/scripts/direct-run.mjs`), но написанный ЗДЕСЬ, а не ввезённый оттуда.
+ * Ввезти нельзя дважды: `flang/scripts` в пакет не уезжает, и этот файл вдобавок
+ * КОПИРУЕТСЯ рядом с напечатанной программой, где никакого дерева нет вовсе.
+ * Копия сверяется с образцом строкой в строку (`flang/scripts/direct-run-guard.mjs`).
+ *
+ * Стояло здесь `pathToFileURL(resolve(process.argv[1])).href === import.meta.url`.
+ * Кириллицу и пробел оно переживает (обе стороны кодированы процентами), а
+ * символьную ссылку — нет: Node разрешает ссылку для `import.meta.url`, но не
+ * для `process.argv[1]`. Прогонщик, позванный по ссылке, молча не отвечал бы ни
+ * на один запрос, выйдя кодом 0.
+ */
+function запущенНапрямую(адресМодуля) {
+  const запуск = process.argv[1]
+  if (запуск === undefined || запуск === "") return false
+  try {
+    return realpathSync(fileURLToPath(адресМодуля)) === realpathSync(запуск)
+  } catch {
+    return false
+  }
+}
+
 /* Прогонщик запускается сам, только когда его ЗАПУСТИЛИ. Два условия, и каждое
    нужно: в потоке этот же файл импортируется ради `answer` (там `isMainThread`
    ложь), а из чужого кода его импортируют ради того же — и второй прогон был бы
    вторым ответом на каждый запрос либо ожиданием ввода, которого нет. */
-if (isMainThread && typeof process.argv[1] === "string"
-  && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+if (isMainThread && запущенНапрямую(import.meta.url)) {
   await main(process.argv)
 }

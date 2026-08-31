@@ -61,7 +61,7 @@ as in Coq and Isabelle: **write the proof by hand**. The word `теорема` w
 structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
 and the kernel checks such a derivation step by step, searching for nothing.
-There are 182 such theorems in the language tree, 55 of them in the standard
+There are 183 such theorems in the language tree, 55 of them in the standard
 library. The difference from Coq and Lean is not that this option exists, but how
 rarely it is reached for: the verdict prints, as a separate number, how many
 claims were closed **without a single written line of proof**.

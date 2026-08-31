@@ -62,6 +62,30 @@ BINARY=bootstrap/flang
 TABLE=ярлыки.flang
 BUILD='make -C bootstrap'
 
+# ── ВОРОТА СБОРКИ: из чего собираем — спрашивается ДО того, как собрали ──────
+#
+# Сборка берёт `bootstrap/**` и делает из него двоичный, которым потом судят всё
+# дерево, включая доказательства. До 31 августа 2026 никто не спрашивал, то ли
+# там лежит: отпечаток покрывал ВХОДЫ печати и молчал про её ВЫХОД. Показано
+# изъятием (/srv/tmp/dokazuemyy/Ч5-pechat/NAHODKA-podmena.md): 103 байта C в
+# `bootstrap/flang_repl.c` провели подделку через ядро как доказанную, и все
+# дешёвые сторожа остались зелёными.
+#
+# Спрашивается ровно один вопрос и самый дешёвый: сходится ли тело семени с
+# отпечатком. Замер 31 августа 2026 на стволе 03fb4060 — 0,17 с против 1 м 57 с
+# самой сборки, то есть 0,15 % её цены. Ни двоичного, ни git, ни временного
+# каталога проверке не нужно.
+proverit_telo() {
+  telo_out=$(sh "$ROOT/scripts/raskrutka.sh" --telo 2>&1) && return 0
+  err "СБОРКА НЕ НАЧАТА: тело точки раскрутки не сходится с отпечатком."
+  err ""
+  printf '%s\n' "$telo_out" >&2
+  err ""
+  err "Собирать из этого нельзя: двоичный, которым судят дерево, вышел бы не из"
+  err "того, что записано в scripts/otpechatok-semeni."
+  exit 3
+}
+
 err() { printf '%s\n' "$*" >&2; }
 
 cores() { (getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) | tr -d ' '; }
@@ -93,6 +117,7 @@ ask() {
 ensure_binary() {
   [ -x "$BINARY" ] && return 0
   err "двоичного $BINARY нет — собираю из точки раскрутки: $BUILD"
+  proverit_telo
   $BUILD -j"$(cores)" >&2
   [ -x "$BINARY" ] || { err "сборка прошла, а $BINARY так и нет"; exit 3; }
 }
@@ -116,6 +141,7 @@ if [ "$name" = "сборка" ]; then
     [ "$known" = "$BUILD" ] || say_drift="ярлык «сборка» в $TABLE — «$known», а оболочка знает «$BUILD»: они разошлись"
   fi
   [ -z "$say_drift" ] || { err "$say_drift"; exit 3; }
+  proverit_telo
   exec $BUILD -j"$(cores)" "$@"
 fi
 

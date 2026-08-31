@@ -22,7 +22,7 @@ bootstrap/flang --version
 ```
 
 ```
-flang 0.6.2
+flang {{выпуск.версия}}
 ```
 
 The built binary is what you run from then on:

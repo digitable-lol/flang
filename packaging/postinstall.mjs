@@ -39,7 +39,7 @@
  *   MAKE=…               чем звать make (по умолчанию `make`)
  */
 import { spawnSync } from "node:child_process"
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, statSync } from "node:fs"
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, statSync } from "node:fs"
 import { availableParallelism, tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -141,4 +141,33 @@ export function собрать() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) собрать()
+/*
+ * «Меня запустили напрямую?» — тот же ответ, что у всего дерева
+ * (`flang/scripts/direct-run.mjs`), но написанный ЗДЕСЬ, а не ввезённый оттуда.
+ *
+ * Ввезти нельзя: `flang/scripts` в раздел `files` пакета не входит, и `import`
+ * из установленного пакета упал бы с ERR_MODULE_NOT_FOUND — то есть починка
+ * сломала бы ровно ту установку, ради которой затевалась. Копия сверяется с
+ * образцом строкой в строку (`flang/scripts/direct-run-guard.mjs`), разойтись
+ * молча она не может.
+ *
+ * ЧТО ЗДЕСЬ БЫЛО СЛОМАНО. Стояло сравнение строк
+ * `process.argv[1] === fileURLToPath(import.meta.url)`. npm ставит пакет из
+ * каталога (`npm link`, `npm i ./flang`, `file:` в зависимостях) СИМВОЛЬНОЙ
+ * ССЫЛКОЙ: Node разрешает ссылку для `import.meta.url`, но НЕ для
+ * `process.argv[1]`, пути расходятся, `собрать()` не зовётся вовсе — и
+ * postinstall выходит кодом 0, не напечатав ни байта. Установка зелёная,
+ * компилятора нет. Замерено 31 августа 2026 на этом дереве: прямой запуск —
+ * 12 строк отказа, тот же файл через ссылку — 0 строк, код 0.
+ */
+function запущенНапрямую(адресМодуля) {
+  const запуск = process.argv[1]
+  if (запуск === undefined || запуск === "") return false
+  try {
+    return realpathSync(fileURLToPath(адресМодуля)) === realpathSync(запуск)
+  } catch {
+    return false
+  }
+}
+
+if (запущенНапрямую(import.meta.url)) собрать()

@@ -5,7 +5,7 @@ message per line. The assistant starts it, not a human: started by hand it waits
 for lines in silence — that is not a hang.
 
 Everything on this page was taken from runs on 24 August 2026 against
-`flang 0.6.2`. Every number and every quotation has the command that produces it
+`flang {{выпуск.версия}}`. Every number and every quotation has the command that produces it
 standing next to it; answers are quoted verbatim — including the places where
 the service does not behave the way you would expect. The service answers in
 Russian, so its own words are left untranslated and glossed instead.
@@ -29,7 +29,7 @@ flang --version
 ```
 
 ```
-flang 0.6.2
+flang {{выпуск.версия}}
 ```
 
 So you cannot learn from the service's answer which binary is answering.

@@ -113,6 +113,27 @@
 #define _DARWIN_C_SOURCE
 #endif
 
+/*
+ * И ТРЕТЬЯ ПОЛОВИНА — РАДИ `realpath`, И ОНА ТОЙ ЖЕ ПОРОДЫ.
+ *
+ * `realpath` нужен, чтобы «свой каталог» считался от НАСТОЯЩЕГО файла, а не от
+ * символьной ссылки, которой его подменяют npm, Homebrew и asdf. Но на glibc он
+ * объявлен НЕ под `_POSIX_C_SOURCE`, а под `__USE_MISC || __USE_XOPEN_EXTENDED`
+ * (`/usr/include/stdlib.h`), и одного `_POSIX_C_SOURCE 200809L` ему мало:
+ *
+ *   flang_repl.c: error: implicit declaration of function 'realpath'
+ *                 [-Wimplicit-function-declaration]
+ *
+ * Сборка идёт с `-Werror`, поэтому это не предупреждение, а остановка — ровно
+ * та же, что у `mkdtemp` абзацем выше, только с другой стороны океана.
+ * `_XOPEN_SOURCE 700` — тот же уровень POSIX.1-2008, названный второй стороной;
+ * он открывает `realpath`, ничего не закрывая, а `_DARWIN_C_SOURCE` выше держит
+ * macOS. Под #ifndef по той же причине, что и `_POSIX_C_SOURCE`.
+ */
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
+#endif
+
 #include "flang_runtime.h"
 
 #include <dirent.h>
@@ -1199,7 +1220,38 @@ static char *repl_read_file(const char *path, size_t *bytes) {
 
 /* ─────────────────────── чем вычислять: cc, lib, include ────────────────── */
 
-/** Каталог, из которого запущен сам бинарник: от него отсчитываются lib и include. */
+/*
+ * Каталог НАСТОЯЩЕГО файла по пути к нему: символьные ссылки раскрываются.
+ * Путь съедается, ответ отдаётся звавшему.
+ *
+ * `realpath` может отказать — файл исчез между запуском и вопросом, прав на
+ * каталог нет. Тогда берётся нераскрытый путь: прежний ответ не лучше, но и не
+ * хуже отсутствия ответа, а отказывать от установки из-за гонки незачем.
+ */
+static char *repl_dir_of_real(char *path) {
+  char *real = realpath(path, NULL);
+  char *dir = repl_dirname(real == NULL ? path : real);
+  free(real);
+  free(path);
+  return dir;
+}
+
+/*
+ * Каталог, из которого запущен сам бинарник: от него отсчитываются lib и include.
+ *
+ * ССЫЛКИ РАСКРЫВАЮТСЯ, И ЭТО НЕ ЗАПАС. И npm, и Homebrew, и asdf кладут в
+ * `<префикс>/bin` не сам бинарник, а СИМВОЛЬНУЮ ССЫЛКУ на него; заголовки и
+ * архив лежат рядом с настоящим файлом, то есть по другому `..`. Без раскрытия
+ * «свой каталог» — каталог ссылки, `../include` и `../lib` в нём пусты, и
+ * оболочка отвечает «не найден flang_runtime.h ($FLANG_INCLUDE_DIR, ../include
+ * или каталог самого бинарника)». Отказ при этом называет НЕ ТУ ПРИЧИНУ: файл
+ * лежит ровно там, где обещано, — смотрели не туда. Человек по такому отказу
+ * лезет искать пропавшие заголовки, которых никто не терял.
+ *
+ * Улика, а не догадка: раскладка `<п>/pkg/bin/flang` + `<п>/pkg/{include,lib}`,
+ * ссылка `<п>/bin/flang`. Тот же двоичный по настоящему пути находит и то и
+ * другое; по ссылке — ни того, ни другого.
+ */
 static char *repl_self_dir(const char *argv0) {
   if (argv0 == NULL || argv0[0] == '\0') {
     return NULL;
@@ -1207,17 +1259,14 @@ static char *repl_self_dir(const char *argv0) {
   if (strchr(argv0, '/') != NULL) {
     char *cwd = NULL;
     char *full = NULL;
-    char *dir = NULL;
     char buffer[4096];
     if (getcwd(buffer, sizeof(buffer)) == NULL) {
       return repl_dirname(argv0);
     }
     cwd = repl_say(buffer);
     full = repl_resolve(cwd, argv0);
-    dir = repl_dirname(full);
     free(cwd);
-    free(full);
-    return dir;
+    return repl_dir_of_real(full);
   }
   {
     /* Имя без косой черты — программу нашли в PATH; там же ищем и мы. */
@@ -1233,8 +1282,8 @@ static char *repl_self_dir(const char *argv0) {
         char *directory = repl_dup(scan, bytes);
         char *candidate = repl_join(directory, argv0);
         if (access(candidate, X_OK) == 0) {
-          free(candidate);
-          return directory;
+          free(directory);
+          return repl_dir_of_real(candidate);
         }
         free(candidate);
         free(directory);

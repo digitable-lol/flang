@@ -1,0 +1,216 @@
+файл	цель	почему_не_путь
+README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+README.ru.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/HANDOFF.md	saluto.eo.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/adr/0007-encryption-by-request-to-an-external-host.md	zamer-openssl.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/adr/0010-compatibility-promise-for-0-x.md	docs/compatibility.md	план: «Завести docs/compatibility.md» — прямо названо будущим
+docs/adr/0013-a-typed-node-enters-through-a-door-at-the-layer-boundary.md	flang/self/ast.flang	архитектурное упоминание в ADR, не найден текущий файл
+docs/adr/0016-three-file-extensions.md	svodka.flang	иллюстративный контраст имён в тексте («сводка.фп», а не svodka.flang), не файл
+docs/benchmark-speed.md	proverka_tipov.c	иллюстративный пример в тексте, не файл
+docs/branches-2026-08-15.md	saluto.eo.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/ci-inventory.md	output/storozh-zanyatogo.json	явное отрицание в тексте: «output/storozh-zanyatogo.json нет»
+docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/course/06-cost.md	-2.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/course/09-eight-targets.md	out-c/mesto_vstavki.c	учебный пример docs/course/09-eight-targets.md
+docs/course/README.md	content/post/flang-kurs/NN-slug.md	шаблон курса (нумерованный слаг), не файл
+docs/guide/naming.ru.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/guide/naming.ru.md	имя-english.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/naming.ru.md	имя.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/project-layout.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/guide/project-layout.md	isbn-module.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/project-layout.ru.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/guide/project-layout.ru.md	credit-limit.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/project-layout.ru.md	isbn-module.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/project-layout.ru.md	late-fee.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/guide/single-source.md	вывод/shtrafy.py	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/guide/single-source.ru.md	вывод/shtrafy.py	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/guide/totality.md	nt1.flang	шаблон нумерованного упражнения, не файл
+docs/guide/totality.md	nt2.flang	шаблон нумерованного упражнения, не файл
+docs/guide/totality.ru.md	nt1.flang	шаблон нумерованного упражнения, не файл
+docs/guide/totality.ru.md	nt2.flang	шаблон нумерованного упражнения, не файл
+docs/integer-closed-under-addition.md	proba-korpus.mjs	иллюстративный пример в тексте, не файл
+docs/integer-closed-under-addition.md	proba-nat.mjs	иллюстративный пример в тексте, не файл
+docs/integer-closed-under-addition.md	proba-obhod.mjs	иллюстративный пример в тексте, не файл
+docs/integer-closed-under-addition.md	proba-vstrechno.mjs	иллюстративный пример в тексте, не файл
+docs/javascript-inventory.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/javascript-removal.md	self/emit-X.flang	шаблон: буква X в имени цели печати
+docs/javascript-removal.md	src/emit/X.mjs	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+docs/javascript-removal.md	главный.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/javascript-removal.md	опора.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/modularity-and-packages.md	flang.json	явное отрицание в тексте: «манифеста проекта нет: ни flang.json...»
+docs/modularity-and-packages.md	flang/src/manifest.mjs	план: помечено «(новый)» в таблице модульности
+docs/modularity-and-packages.md	flang/src/store.mjs	план: помечено «(новый)» в таблице модульности
+docs/modularity-and-packages.md	flang/src/versions.mjs	план: помечено «(новый)» в таблице модульности
+docs/modularity-and-packages.md	flang/test/manifest.test.mjs	план: столбец «~500» из той же таблицы модульности
+docs/modularity-and-packages.md	store.test.mjs	план: та же таблица модульности, «новый»
+docs/native-x86-backend.md	stupen_1.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/open-work.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/open-work.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
+docs/reprint-cost.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
+docs/resource-plan.md	claims.tsv	внешний: координационный файл /srv/priyom, не файл этого дерева
+docs/resource-plan.md	svod.sh	внешний: инструмент /srv/priyom, не файл этого дерева
+docs/site/editor.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
+docs/site/editor.ru.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
+docs/site/embedding.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+docs/site/embedding.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	factorial.c	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	factorial.ex	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	factorial.py	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	flang/factorial.go	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	src/factorial.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+docs/site/embedding.ru.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	factorial.c	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	factorial.ex	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	factorial.py	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	flang/factorial.go	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	src/factorial.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/embedding.ru.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/getting-started.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/index.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/index.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/install.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
+docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
+docs/why-javascript-remains.md	build.flang	концептуальный шаг конвейера в docs/why-javascript-remains.md
+docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	flang_compiler.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md	u-dok-hash-z1.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md	u-teoremy-hashmap-hm-BAZA.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/a-measurement-that-guards-its-own-threshold-sends-heavy-runs-through-the-gate.md	reify-bisect.sh	внешний: инструмент задачи 5732, вне дерева
+docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan-bez.json	пример входного файла в описании, не файл
+docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan-porog.json	пример входного файла в описании, не файл
+docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan.json	пример входного файла в описании, не файл
+docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
+docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	dictionary-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
+docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
+docs/zettel/a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md	../share/flang/c	относительный путь в примере, сам не файл
+docs/zettel/a-stray-draft-above-the-tree-shadows-the-library-silently.md	u-dok-hash-z1.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/a-stray-draft-above-the-tree-shadows-the-library-silently.md	u-teoremy-hashmap-hm-BAZA.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	../../flang/src/a.mjs	относительный путь в примере, сам не файл
+docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	026-remove-duplicates...flang	относительный путь в примере, сам не файл
+docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл
+docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	X.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+docs/zettel/a-tail-call-under-a-promise-cannot-be-elided-and-the-printer-says-so-too.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
+docs/zettel/an-intermediate-fact-opened-a-door-with-nothing-behind-it.md	.scratch/dvavfakta.mjs	локальный: .scratch не отслеживается по конвенции
+docs/zettel/browser-app-gap.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
+docs/zettel/dropping-unreachable-code-in-flang-costs-180-times-more.md	flang/self/reachable.flang	уже в известном списке B5 (сверено отдельно, не путать с флагом ложной тревоги)
+docs/zettel/if-bodies-get-induction-but-assertions-still-block.md	…-teorema.flang	шаблон-многоточие в имени, не файл
+docs/zettel/javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md	scripts/stolknoveniya-celey.mjs	внешний: инструмент стороннего агента, не файл этого дерева
+docs/zettel/mirroring-assumptions-costs-nothing-and-gave-nothing.md	u-zerkalo-uglu.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/obligations-list-built-by-descent-costs-a-square.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
+docs/zettel/octet-orders-are-in-the-dictionary-but-no-host-executes-them.md	.scratch/proba-oktetov.flang	локальный: .scratch не отслеживается по конвенции
+docs/zettel/only-does-not-carry-types-so-a-shared-module-is-taken-whole.md	a.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+docs/zettel/only-does-not-carry-types-so-a-shared-module-is-taken-whole.md	b.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+docs/zettel/printed-runner-already-carries-a-json-reader.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/zettel/printing-must-ask-the-checker-and-name-its-subset-as-a-number.md	подделка.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/reprint-cache-key-cannot-name-the-dependency-that-exists.md	lekser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
+docs/zettel/reprint-cache-key-cannot-name-the-dependency-that-exists.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/the-arena-liveness-check-makes-every-accumulating-fold-quadratic.md	proba.flang	иллюстративный пример в тексте, не файл
+docs/zettel/the-entry-boundary-was-a-debt-of-printing-not-a-subtraction-in-the-check.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/zettel/the-price-of-a-print-target-is-reference-debt-not-name-collisions.md	scripts/stolknoveniya-celey.mjs	внешний: инструмент стороннего агента, не файл этого дерева
+docs/zettel/the-unison-diamond-breaks-on-a-type-edit-not-a-version-bump.md	unique-type-churn.md	внешний: ссылка на github.com/unisonweb/unison, не файл этого дерева
+docs/zettel/two-calls-refusal-is-about-the-callee-body-not-the-let-name.md	p20.flang	шаблон нумерованного упражнения, не файл
+docs/zettel/two-calls-refusal-is-about-the-callee-body-not-the-let-name.md	p21.flang	шаблон нумерованного упражнения, не файл
+docs/zettel/two-rewrites-of-one-file-may-be-halves.md	flang/self/X.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+docs/zettel/typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/спецификации/язык-доказательств.md	.scratch/dvavfakta.mjs	локальный: .scratch не отслеживается по конвенции
+docs/спецификации/язык-доказательств.md	.scratch/opyt.mjs	локальный: .scratch не отслеживается по конвенции
+docs/спецификации/язык-доказательств.md	.scratch/svod-teorem.mjs	локальный: .scratch не отслеживается по конвенции
+editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
+examples/driver/msi/README.md	sys/arch/riscv/starfive/jh7110_pcie_msi.c	внешний: путь чужого репозитория (NetBSD/BeamOS), не этого дерева
+flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
+flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
+flang/cat/POLY.md	examples/maybe-poly.flang	иллюстративное имя в разборе задачи/заметки, не файл
+flang/cat/SETS.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
+flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
+flang/self/SPEC.md	self/emit-common.flang	пример правки «ради вида» в SPEC.md, не итоговый файл
+tasks/0001-ci-targets-inventory.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0001-ci-targets-inventory.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0003-seed-reprint-finishes.md	dlina-100.flang	шаблон нумерованного упражнения, не файл
+tasks/0003-seed-reprint-finishes.md	dlina-1000.flang	шаблон нумерованного упражнения, не файл
+tasks/0004-arena-returns-chunks.md	zadachi-granicy-yazyka.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0005-postgres-redis-proofs.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/0037-docs-live-in-one-folder.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/0049-the-last-javascript-leaves-the-tree.md	count-library.flang	концептуальный шаг в задаче 0049, не файл
+tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/0059-walking-the-functions-costs-a-frame-each.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/0059-walking-the-functions-costs-a-frame-each.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/0059-walking-the-functions-costs-a-frame-each.md	frame-order-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/0059-walking-the-functions-costs-a-frame-each.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/0060-a-function-promises-its-cost.md	works.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	env-threshold.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	equal-lists-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	length-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	tower.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	docs/proba-imeni.flang	иллюстративный пример в тексте, не файл
+tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
+tasks/1477-a-promise-should-not-cost-a-frame.md	proven-promise-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/1600-real-mutual-recursion-cycles-are-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
+tasks/4454-why-the-order-rule-does-not-fire.md	dopushchenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4454-why-the-order-rule-does-not-fire.md	konechnost.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4454-why-the-order-rule-does-not-fire.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4454-why-the-order-rule-does-not-fire.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4454-why-the-order-rule-does-not-fire.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4501-sqlite-overflow-and-row-insert.md	sqlite-perepolnenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4501-sqlite-overflow-and-row-insert.md	sqlite-zapis.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/4837-trampolines-come-back-with-one-example.md	koltso.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/5732-all-superlinearities-are-named-and-measured.md	find-descents-full.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/5732-all-superlinearities-are-named-and-measured.md	find-descents.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/5732-all-superlinearities-are-named-and-measured.md	find-nesting-recursion.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/5732-all-superlinearities-are-named-and-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
+tasks/6329-the-four-files-around-the-kernel-get-their-ledger.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/6532-a-red-example-hides-the-ledger.md	before.mjs	иллюстративное имя в разборе задачи 6532, не файл
+tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-filler.flang	шаблон нумерованного упражнения, не файл
+tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-first.flang	шаблон нумерованного упражнения, не файл
+tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-last.flang	шаблон нумерованного упражнения, не файл
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	schet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	sud.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	tree-plans.flang	план в перечне задачи 8398, не файл
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	vsyo.sh	план в тексте задачи: перечень будущих скриптов, не файл
+tasks/8567-the-fifth-reprint-run-starts-on-a-grown-closure.md	versiya.sh	внешний: инструмент /srv/priyom, не файл этого дерева
+tasks/8570-the-print-is-outrun-because-it-is-slow.md	hranitel-tikov.sh	внешний: инструмент вне дерева, соседствует с pusk.sh
+tasks/8570-the-print-is-outrun-because-it-is-slow.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
+tasks/README.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл

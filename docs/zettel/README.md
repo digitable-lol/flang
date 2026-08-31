@@ -437,6 +437,7 @@
 - [Пакет — это замок, которому дали имя и версию: семь шагов подключения стали двумя](a-package-is-a-lock-given-a-name-and-a-version.md)
 - [Пара живых узлов поднимается одним `sh -c`, а судит их flang по журналам](a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md)
 - [Путь, названный в прозе обратными кавычками, не сверяется с деревом ничем — так контракт категорной поверхности пережил свои файлы на 28 упоминаний](a-path-in-backticks-is-checked-against-nothing.md)
+- [Отличить путь от кода в обратных кавычках можно синтаксисом, и это находит в разы больше мёртвых улик, чем видела прицельная выборка B5](a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md)
 - [Отказ плана `flang io` печатается в stderr, а успех — в stdout, и это ловится не сразу](a-plan-refusal-goes-to-stderr-and-success-to-stdout.md)
 - [Постусловие у зовущей функции превращает ХВОСТОВОЙ зов в кадр — и обход списка начинает стоить глубины по кадру на элемент](a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md)
 - [Постусловие считается при КАЖДОМ вызове и печатается в код, поэтому обход внутри него меняет порядок цены функции](a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order.md)

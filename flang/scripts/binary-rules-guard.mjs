@@ -131,6 +131,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { запущенНапрямую } from "./direct-run.mjs"
 import { позвать } from "./binary.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
@@ -772,7 +773,7 @@ export function числа(корень = КОРЕНЬ) {
 }
 
 /* ── запуск из командной строки ──────────────────────────────────────────── */
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (запущенНапрямую(import.meta.url)) {
   const итог = числа()
   const нарушения = проверить()
   console.log(

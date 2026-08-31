@@ -98,6 +98,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, isAbsolute, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "./direct-run.mjs"
 
 export const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 
@@ -1093,7 +1094,6 @@ function главная(аргументы) {
    Код возврата ставится полем, а НЕ `process.exit`: на трубе вывод уходит
    порциями, и `process.exit` рубит его на полуслове — поймано прогоном, `--json`
    на дереве с сотней столкновений приезжал обрезанным посреди строки. */
-if (process.argv[1] !== undefined
-  && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+if (запущенНапрямую(import.meta.url)) {
   process.exitCode = главная(process.argv.slice(2))
 }

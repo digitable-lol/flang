@@ -52,6 +52,8 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { запущенНапрямую } from "../flang/scripts/direct-run.mjs"
+
 export const КОРЕНЬ = resolve(fileURLToPath(new URL("..", import.meta.url)))
 export const НАСТРОЙКА = "docs/jargon.json"
 
@@ -473,4 +475,4 @@ function main() {
   return 0
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) process.exit(main())
+if (запущенНапрямую(import.meta.url)) process.exit(main())

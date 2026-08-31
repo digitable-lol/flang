@@ -155,6 +155,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "./direct-run.mjs"
 import { деревоИсходника, отсеятьЧужое, прогреть, своё } from "./binary.mjs"
 
 const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -525,6 +526,6 @@ function главная(аргументы) {
   return красный ? 1 : 0
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+if (запущенНапрямую(import.meta.url)) {
   process.exit(главная(process.argv.slice(2)))
 }

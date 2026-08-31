@@ -55,8 +55,9 @@
  *   node flang/scripts/word-occupancy.mjs неотрицательное натуральное «целое число»
  *   node flang/scripts/word-occupancy.mjs --json неотрицательное целое
  */
-import { readFileSync, realpathSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "./direct-run.mjs"
 
 import { globSync } from "../test/glob.mjs"
 import { ключевоеСлово, токеныМногих } from "./binary.mjs"
@@ -284,15 +285,7 @@ function печать(записи) {
   return `${строки.join("\n")}\n`
 }
 
-let запущен = false
-if (process.argv[1] !== undefined) {
-  try {
-    запущен = realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1])
-  } catch {
-    запущен = false
-  }
-}
-if (запущен) {
+if (запущенНапрямую(import.meta.url)) {
   const слова = process.argv.slice(2).filter((арг) => арг !== "--json")
   if (слова.length === 0) {
     process.stderr.write("нужно хотя бы одно слово: node flang/scripts/word-occupancy.mjs неотрицательное целое\n")

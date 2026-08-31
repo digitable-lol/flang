@@ -48,6 +48,7 @@
 import { execFileSync } from "node:child_process"
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "../../flang/scripts/direct-run.mjs"
 
 import { ФАЙЛЫ, сводКорпуса } from "../../flang/scripts/proof-ledger.mjs"
 import { ФОРМАТ, ПУТЬ_ЧИСЕЛ, прочитатьЧисла } from "./numbers.mjs"
@@ -515,7 +516,7 @@ export async function сверить() {
 
 /* ── Запуск ──────────────────────────────────────────────────────────────── */
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (запущенНапрямую(import.meta.url)) {
   if (process.argv.includes("--check")) {
     const беды = await сверить()
     if (беды.length) {

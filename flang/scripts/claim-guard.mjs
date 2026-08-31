@@ -79,6 +79,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { extname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { запущенНапрямую } from "./direct-run.mjs"
 import { ключевоеСлово } from "./binary.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
@@ -420,7 +421,7 @@ export function проверить(корень = КОРЕНЬ) {
 }
 
 /* ── запуск из командной строки ─────────────────────────────────────────── */
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (запущенНапрямую(import.meta.url)) {
   const нарушения = проверить()
   if (нарушения.length === 0) {
     console.log("сторож утверждений: чисто — ни одна проза не отрицает формы, которую знает лексер")

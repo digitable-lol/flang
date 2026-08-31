@@ -88,7 +88,8 @@
  */
 import { execFileSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
-import { fileURLToPath, pathToFileURL } from "node:url"
+import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "../flang/scripts/direct-run.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../", import.meta.url))
 const ФАЙЛ_MD = fileURLToPath(new URL("../CHANGELOG.md", import.meta.url))
@@ -873,6 +874,6 @@ function ход(аргументы) {
   console.log(`  не выпущено: ${журнал.unreleased.entries.length}`)
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (запущенНапрямую(import.meta.url)) {
   ход(process.argv.slice(2))
 }

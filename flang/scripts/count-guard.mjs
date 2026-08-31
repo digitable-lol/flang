@@ -66,6 +66,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { extname, join, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { запущенНапрямую } from "./direct-run.mjs"
 import { globSync } from "../test/glob.mjs"
 
 export const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
@@ -911,7 +912,7 @@ export function починить(расхождения, корень = КОРЕ
 }
 
 /* ── запуск из командной строки ─────────────────────────────────────────── */
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (запущенНапрямую(import.meta.url)) {
   /*
    * `--дерево <путь>` — прогнать сторожа над ДРУГИМ деревом.
    *

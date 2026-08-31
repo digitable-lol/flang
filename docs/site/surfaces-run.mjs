@@ -52,6 +52,7 @@
 import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "../../flang/scripts/direct-run.mjs"
 
 import { деревоРазбора, таблицаСлов } from "../../flang/scripts/binary.mjs"
 import { связаноИмён, сверитьПоверхности } from "../../flang/test/surface-pair.mjs"
@@ -306,7 +307,7 @@ export function сверитьСтраницу() {
   return беды
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (запущенНапрямую(import.meta.url)) {
   if (process.argv.includes("--check")) {
     let беды
     try {

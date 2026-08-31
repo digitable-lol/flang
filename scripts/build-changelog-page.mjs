@@ -52,6 +52,7 @@
 import { execFileSync, spawnSync } from "node:child_process"
 import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { запущенНапрямую } from "../flang/scripts/direct-run.mjs"
 
 import { решение, словоПравок } from "./build-changelog.mjs"
 
@@ -828,6 +829,6 @@ function главная() {
   return process.argv.includes("--check") ? сверить() : напечатать()
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (запущенНапрямую(import.meta.url)) {
   process.exit(главная())
 }

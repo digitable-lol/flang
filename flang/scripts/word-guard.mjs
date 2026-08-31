@@ -106,6 +106,7 @@ import { createHash } from "node:crypto"
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 
+import { запущенНапрямую } from "./direct-run.mjs"
 import { КОРЕНЬ, ведомость, ведомостьИсходника, дерево, позвать } from "./binary.mjs"
 
 /* ── 1. СЛОВАРЬ: у каждого вердикта ровно одно начальное слово ───────────── */
@@ -680,4 +681,4 @@ async function прогон() {
   process.exit(порча === null ? 1 : 2)
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await прогон()
+if (запущенНапрямую(import.meta.url)) await прогон()

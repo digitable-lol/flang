@@ -152,16 +152,20 @@ cause instead.
 <!-- КОРЕНЬ-КОНЕЦ -->
 
 **What checks a file today, and what does not.** Two runs cover the language, and both are
-driven by the binary: `sh flang/проверки/обход.sh` — 162 checks written in flang itself, three
+driven by the binary: `sh flang/проверки/обход.sh` — 180 checks written in flang itself, three
+<!-- СНЯТО 2026-08-31 строк flang/проверки/ведомость.txt = 180 -->
 seconds — and `flang test <directory>`, which runs the examples declared inside functions
 (806 of them in the LeetCode set). The recorded ledger the walk is diffed against is
-`flang/проверки/ведомость.txt`, one line per check — `wc -l` on it is where the 162 comes from.
+`flang/проверки/ведомость.txt`, one line per check — `wc -l` on it is where the 180 comes from.
+<!-- СНЯТО 2026-08-31 строк flang/проверки/ведомость.txt = 180 -->
 On every push CI builds the binary and runs those checks and the library-and-core examples with
 it; the LeetCode set and the rest of the tree are walked on a tag, because that walk takes over
 an hour.
 
-**`flang/test/` is a remnant, and small.** It holds 174 files (`git ls-files flang/test | wc -l`),
-of which 162 are fixtures and only four are still runnable test files. `npm test` is
+**`flang/test/` is a remnant, and small.** It holds 175 files (`git ls-files flang/test | wc -l`),
+<!-- СНЯТО 2026-08-31 файлов flang/test/* = 175 -->
+of which 163 are fixtures and only four are still runnable test files.
+<!-- СНЯТО 2026-08-31 файлов flang/test/fixtures/* = 163 --> `npm test` is
 `./ярлык тесты`, which runs those four; there is no `pretest` step. The old JavaScript
 implementation these tests were written against is gone, and what remains was pruned to what
 still resolves — every import in those four files points at a file that exists (all fifteen of
@@ -582,7 +586,7 @@ Work happens in a clone, and the only thing to build is the compiler itself:
 What to run after a change:
 
 ```bash
-sh flang/проверки/обход.sh            # 162 checks written in flang, three seconds
+sh flang/проверки/обход.sh            # 180 checks written in flang, three seconds
 ./bootstrap/flang test flang/stdlib/  # the library's examples — 2287 are written in the modules
 ./bootstrap/flang test flang/core/    # the core's examples
 sh scripts/raskrutka.sh               # only after flang/self/ or the C runtime changed

@@ -271,6 +271,55 @@ static char *hvost_posle(const char *s, const char *metka) {
 }
 static char *stroka_po_nomeru(Sp stroki, long n) { return obrezat(chast(stroki, n)); }
 
+/* ═══ ЧИТАТЬ ИСХОДНИК ТАК ЖЕ, КАК ЕГО ЧИТАЕТ ЯЗЫК — ЯЧЕЙКИ Ч119 и Ч126 ═══════
+   ПЕРЕНЕСЕНО В СТВОЛ ЯЧЕЙКОЙ Ч166, и перенесено НЕ ЦЕЛИКОМ. Пятое место
+   починки Ч126 — сверка объявления типа довода по «следу ядра» — здесь
+   отсутствует вместе с самим следом: блок следа писан на ДРУГОЙ линии
+   чекера (Ч70→Ч91→Ч92→Ч102), которой в стволе тоже нет. Вместе с ним не
+   перенесены `obyavlen_tipom` и `primer_protiv_dna`: у них здесь нет ни
+   одного зовущего, а функция без зовущего — не защита, а мёртвый код.
+   Четыре места ниже — те, что в стволе есть, и они починены все четыре.
+   ЧТО БЫЛО. Четыре места сверщика искали в исходнике ПОДСТРОКУ: объявление типа
+   довода, заголовок функции, слово «теорема», слово «обеспечивает». Ч119 провела
+   на этом три подделки до кода 0 «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО» — на файлах, которые
+   ядро отвергает поимённым контрпримером. Приёма было два, и оба про то, что
+   сверщик читает НЕ ТО, ЧТО ЯЗЫК:
+
+     1. ХВОСТОВОЕ ПРИМЕЧАНИЕ. `принимает первое: нат, второе: целое // второе: нат`
+        — законный flang, и язык читает тип `целое`. Сверщик находил подстроку
+        «второе: нат» ЗА ДВУМЯ КОСЫМИ и засчитывал её за объявление. Тем же
+        приёмом заголовок `функция «Двойник» // функция «Знаки»` подменял
+        настоящую функцию «Знаки».
+     2. ПРОБЕЛЬНЫЙ ПРОБЕГ. Язык терпит между словом и ёлочками ЛЮБОЙ пробельный
+        пробег: `обеспечивает  «ложное»` и `теорема\t«ложное»` — законные
+        постусловие и теорема, и ядро их опровергает. Счётчики полноты сверщика
+        сличали точный текст с ОДНИМ пробелом и молча их не видели.
+
+   Приём починки в сверщике уже был написан — `est_term` сличает по пробельным
+   краям, «иначе «х» нашлось бы внутри «хвост»». Здесь он доведён до конца:
+   прежде чем читать строку исходника, она приводится к тому виду, в каком её
+   читает язык, а имена сличаются ЦЕЛИКОМ, а не вхождением. */
+
+/* Строка без хвостового примечания. Двойные кавычки уважаются: «//» внутри
+   строкового литерала — знаки литерала, а не начало примечания. */
+static char *bez_primechaniya(const char *s) {
+  size_t i; int v_kavychkah = 0;
+  for (i = 0; s[i]; i++) {
+    if (s[i] == '"') v_kavychkah = !v_kavychkah;
+    else if (!v_kavychkah && s[i] == '/' && s[i + 1] == '/') return kopiya(s, i);
+  }
+  return (char *)s;
+}
+
+/* Имя функции, ОБЪЯВЛЕННОЙ этой строкой; строка не заголовок — пустая строка.
+   Заголовок пишется от левого края, поэтому отступ здесь не снимается. */
+static char *imya_funkcii(const char *syraya) {
+  char *b = bez_primechaniya(syraya);
+  if (!nachinaetsya(b, "функция «") && !nachinaetsya(b, "тотальная функция «"))
+    return (char *)"";
+  return v_yolochkah(b, 1);
+}
+
 /* Имя, стоящее в записи, обязано стоять и в исходнике. Имя пишется в языке и
    голым словом, и в ёлочках, поэтому ёлочки снимаются с обеих сторон. */
 static char *golo(const char *s) {
@@ -393,6 +442,12 @@ static char *szhat_probely(const char *t) {
   for (i = 0; i < v.n; i++) if (*v.e[i]) dobavit(&r, v.e[i]);
   return soedinit(r, " ");
 }
+/* Строка в том виде, в каком её читает язык: примечание отрезано, табуляции —
+   пробелы, пробельные пробеги сжаты в один. */
+static char *kak_chitaet_yazyk(const char *s) {
+  return szhat_probely(zamenit(bez_primechaniya(s), "\t", " "));
+}
+
 static char *rasstavit(const char *t) {
   return szhat_probely(zamenit(zamenit(t, "(", " ( "), ")", " ) "));
 }
@@ -573,10 +628,8 @@ static char *stroka_varianta_tipa(Sp stroki, const char *tip, const char *varian
 static char *hozyain_stroki(Sp stroki, long gde) {
   char *tekst = (char *)""; long i;
   for (i = 1; i <= stroki.n && i <= gde; i++) {
-    char *s = chast(stroki, i);
-    if (!soderzhit(s, "функция «")) continue;
-    if (nachinaetsya(s, "функция «") || nachinaetsya(s, "тотальная функция «"))
-      tekst = v_yolochkah(s, 1);
+    char *imya = imya_funkcii(chast(stroki, i));
+    if (*imya) tekst = imya;
   }
   return tekst;
 }
@@ -591,12 +644,12 @@ typedef struct { Sp stroki, svoi; char *cel, *funkciya, *po, *tip, *hvost; } Obs
    Список читается из ИСХОДНИКА, из строки «принимает», и той же строки держится
    ядро — разойдутся, и терм развёртки не совпадёт с целью. */
 static char *hvost_dovodov(Sp stroki, const char *funkciya) {
-  Sp chasti; char *zag = fmt("функция «%s»", funkciya), *hv = (char *)"";
+  Sp chasti; char *hv = (char *)"";
   int i, j, vnutri = 0;
   for (i = 0; i < stroki.n; i++) {
-    char *syraya = stroki.e[i], *l = obrezat(syraya);
-    if (nachinaetsya(syraya, "функция «") || nachinaetsya(syraya, "тотальная функция «"))
-      vnutri = soderzhit(l, zag);
+    char *syraya = stroki.e[i], *l = obrezat(bez_primechaniya(syraya));
+    char *imya_z = imya_funkcii(syraya);
+    if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
     else if (vnutri && nachinaetsya(l, "принимает ")) {
       chasti = razdelit(hvost_posle(l, "принимает "), ",");
       for (j = 1; j < chasti.n; j++) {
@@ -1106,8 +1159,7 @@ static long blok_funkcii(Sp stroki, const char *funkciya, long *konec) {
       if (*z && z[0] != ' ' && z[0] != '\t' && z[0] != '\r' && !nachinaetsya(z, "//")) { *konec = i; break; }
       continue;
     }
-    if (!(nachinaetsya(z, "функция «") || nachinaetsya(z, "тотальная функция «"))) continue;
-    if (soderzhit(z, fmt("функция «%s»", funkciya))) nachalo = i;
+    if (strcmp(imya_funkcii(z), funkciya) == 0) nachalo = i;
   }
   return nachalo;
 }
@@ -2101,15 +2153,14 @@ static void sverit_celost_bloka(Sverka *s, Sp svoi, const char *imya) {
 static void sverit_polnotu(Sverka *s, Sp stroki, Sp bloki) {
   Sp zamolchano = PUSTO; int i, j; long postusloviy = 0;
   for (i = 0; i < stroki.n; i++) {
-    char *l = stroki.e[i], *t;
-    if (nachinaetsya(l, "теорема «")) {
-      char *imya = v_yolochkah(l, 1);
+    char *l = stroki.e[i], *t = kak_chitaet_yazyk(l);
+    if (nachinaetsya(l, "теорема") && nachinaetsya(t, "теорема «")) {
+      char *imya = v_yolochkah(t, 1);
       for (j = 0; j < bloki.n; j++)
         if (strcmp(v_yolochkah(chast(razdelit(bloki.e[j], "\n"), 1), 1), imya) == 0) break;
       if (j == bloki.n) dobavit(&zamolchano, imya);
     }
-    t = obrezat(l);
-    if (!nachinaetsya(t, "//") && soderzhit(t, "обеспечивает «")) postusloviy++;
+    if (soderzhit(t, "обеспечивает «")) postusloviy++;
   }
   esli_ne(s, zamolchano.n == 0,
           fmt("в исходнике есть теоремы, о которых запись молчит: %s", soedinit(zamolchano, ", ")));

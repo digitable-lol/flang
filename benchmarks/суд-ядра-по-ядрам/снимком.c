@@ -38,6 +38,13 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
     size_t tried = 0;
     double sum = 0.0;
     double worst = 0.0;
+    /* Чьё обязательство оказалось самым дорогим в проходе: критический путь
+       складывается ровно из них, и назвать их поимённо важнее, чем назвать
+       среднее — работа по обязательствам разложена крайне неровно. */
+    char worst_of[192];
+    char worst_name[192];
+    worst_of[0] = 0;
+    worst_name[0] = 0;
     if (was > 0 && fl_list_alloc(&repl_ctx, was, &keys, &err) != FL_OK) { return; }
     for (i = 0; i < was; i += 1) {
       fl_value key = fl_nothing();
@@ -85,7 +92,24 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
       spent = machine_now() - t0;
       tried += 1;
       sum += spent;
-      if (spent > worst) { worst = spent; }
+      if (spent > worst) {
+        fl_value who = fl_nothing();
+        const char *utf8 = NULL;
+        size_t bytes = 0;
+        worst = spent;
+        two[0] = o; two[1] = repl_value_say("of");
+        if (repl_call("Строка поля", two, 2, &who) == FL_OK && val_text(who, &utf8, &bytes)) {
+          const size_t fit = bytes < sizeof(worst_of) ? bytes : sizeof(worst_of) - 1;
+          memcpy(worst_of, utf8, fit);
+          worst_of[fit] = 0;
+        }
+        two[0] = o; two[1] = repl_value_say("name");
+        if (repl_call("Строка поля", two, 2, &who) == FL_OK && val_text(who, &utf8, &bytes)) {
+          const size_t fit = bytes < sizeof(worst_name) ? bytes : sizeof(worst_name) - 1;
+          memcpy(worst_name, utf8, fit);
+          worst_name[fit] = 0;
+        }
+      }
       if (repl_call("Это ничто", &verdict, 1, &nothing) != FL_OK) { return; }
       if (nothing.tag == FL_FLAG && nothing.as.flag) { continue; }
       {
@@ -113,8 +137,10 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
     sum_all += sum;
     path_all += worst;
     fprintf(stderr,
-            "снимком: проход %lu — попыток %lu, закрылось %lu, работа %.3f с, самая долгая попытка %.3f с\n",
-            (unsigned long) pass, (unsigned long) tried, (unsigned long) added, sum, worst);
+            "снимком: проход %lu — попыток %lu, закрылось %lu, работа %.3f с, "
+            "самая долгая попытка %.3f с (%s: %s)\n",
+            (unsigned long) pass, (unsigned long) tried, (unsigned long) added, sum, worst,
+            worst_of, worst_name);
     closed = fl_list(grown, k);
     if (added == 0 || pass >= 100) { break; }
   }

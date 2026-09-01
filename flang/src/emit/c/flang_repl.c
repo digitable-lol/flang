@@ -3869,7 +3869,8 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
  */
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
-                               fl_value *linked_out, fl_value *dropped_out, fl_value *own_out) {
+                               const char *collision, fl_value *linked_out, fl_value *dropped_out,
+                               fl_value *own_out) {
   fl_value args[2];
   fl_value linked = fl_nothing();
   fl_value typed = fl_nothing();
@@ -3981,6 +3982,65 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       }
     } else if (strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0) {
       bads_say(bads, "суд над процессами прекращён");
+      return false;
+    }
+  }
+  /*
+   * СТОЛКНОВЕНИЕ ИМЁН ПОСЛЕ ТРАНСЛИТЕРАЦИИ — ПОСЛЕДНИМ ПЕРЕД ЯДРОМ.
+   *
+   * 31 августа 2026 пересборка семени шла 9 ч 56 мин и упала на ПЕЧАТИ, на
+   * последней стадии, от пары «Занято именем модуля C++» и «Занято именем
+   * модуля C»: плюсы в идентификаторе не выживают, и оба имени давали
+   * zanyato_imenem_modulya_c. Отказ вычисляется за секунды, а обнаружился на
+   * десятом часу.
+   *
+   * ЗДЕСЬ, А НЕ СРАЗУ ЗА СВЯЗЫВАНИЕМ. Имена известны уже после него, и первая
+   * правка ставила проверку туда — но выход отсюда уносил с собой всё, что
+   * ниже: на файле со 106 доказанными функциями сводка писала «с доказанным
+   * завершением 0», потому что `proven` заполняется тотальностью, а программа
+   * с ошибкой типа И столкновением сообщала только про столкновение. Отсюда
+   * диагностики связывания, типов, завершаемости и процессов УЖЕ собраны, а
+   * выгода цела: суд ядра ниже занимает 98 % прогона и ещё не начинался.
+   *
+   * ТОЛЬКО У ТОЙ ЦЕЛИ, У КОТОРОЙ ПРОВЕРКА ЕСТЬ, и это не осторожность. Правило
+   * засевает таблицу списком «Зарезервировано в C» — сорок девять слов, и они
+   * C-шные; у Go, Rust, JS и C# свои правила и свои списки, у остальных
+   * четырёх целей правила нет вовсе. Пока обёртка звалась с общей дороги,
+   * программа с функцией «Static», которую печатают в Go и никогда в C,
+   * переставала проходить `flang check` — по поводу языка, которого в этой
+   * команде нет. Имя обёртки приходит СТРОКОЙ ТАБЛИЦЫ ЦЕЛЕЙ (`collision` в
+   * `EMIT_TARGET_TABLE`), `NULL` значит «у этой цели проверки нет» — так же,
+   * как пустое имя файла там значит «поля у цели нет по существу». `check`,
+   * `package` и оболочка шлют `NULL`: целевого языка у них нет.
+   *
+   * ВЫЗОВ ТИХИЙ, И ОДИН ОТКАЗ ГЛОТАЕТСЯ НАРОЧНО — по тому же доводу, что у
+   * «Проверить процессы» выше: двоичный, собранный из семени ДО приезда
+   * обёртки, этой функции не несёт, и `repl_call` печатал бы
+   * `FLANG_UNKNOWN_NAME` на каждой печати. Любой ДРУГОЙ отказ — предел шагов,
+   * предел глубины, внутренний сбой — беда, и о ней говорится вслух: сторож,
+   * молча выключившийся, от исправного неотличим, а прежнее условие
+   * `repl_call(…) == FL_OK && …` считало всякий не-`FL_OK` за «столкновений
+   * нет».
+   */
+  if (collision != NULL) {
+    fl_value collided = fl_nothing();
+    fl_status said = FL_OK;
+    const char *collision_text = NULL;
+    size_t collision_bytes = 0;
+    repl_call_quiet = true;
+    said = repl_call(collision, program, 1, &collided);
+    repl_call_quiet = false;
+    if (said != FL_OK) {
+      if (strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0) {
+        bads_say(bads, "сверка столкновений имён прекращена");
+        return false;
+      }
+    } else if (val_text(collided, &collision_text, &collision_bytes) && collision_bytes > 0) {
+      /* Строки рантайма не кончаются нулём и мерятся ДЛИНОЙ. `repl_dup` копирует
+         ровно по ней; прежний буфер на 512 байт резал по байту и рвал UTF-8
+         посреди знака — на имени в 301 знак Ч151 добилась битой кодировки.
+         Освобождает `bads_free`, как и всякую другую беду списка. */
+      bads_push(bads, repl_say("FLANG_CLI"), repl_dup(collision_text, collision_bytes), false, 0, 0);
       return false;
     }
   }
@@ -4174,7 +4234,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
 static bool repl_check(repl_session *session, const char *source, const repl_imports *imports, repl_bads *bads,
                        fl_value *program, bool *has_program, repl_strings *proven) {
   return repl_check_sources(repl_sources(session, source, imports), session->file, bads, program, has_program, proven,
-                            false, false, false, NULL, NULL, NULL);
+                            false, false, false, NULL, NULL, NULL, NULL);
 }
 
 /** Имена функций связанной программы: с ними разбирается следующий ввод. */
@@ -6589,7 +6649,7 @@ static int check_file(const char *path, bool fast) {
    * Тяжелы ровно ядро и примеры, и ключ выключает ровно их.
    */
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, !fast, !fast,
-                          !fast, NULL, NULL, &own);
+                          !fast, NULL, NULL, NULL, &own);
 
   if (has_program) {
     check_count(program, &functions, &types, &proven, &proved);
@@ -7927,6 +7987,13 @@ typedef struct {
   size_t runtime_count;
   const char *runtime_files[EMIT_RUNTIME_MAX];
   const char *build_say;
+  /* Имя обёртки на flang, которой у цели проверяются столкновения имён после
+     транслитерации, — или NULL, если проверки у цели нет. Зовётся она из
+     `repl_check_sources` ПЕРЕД судом ядра, чтобы отказ приходил за минуты, а
+     не на десятом часу; довод целиком записан там. Правило у каждой цели своё
+     («Зарезервировано в C» — не список Go), поэтому имя стоит здесь, в строке
+     цели, а не в общей дороге проверки. */
+  const char *collision;
 } emit_target;
 
 /* Поля записи «Настройки», какими их просит цель «go». Запись та же самая, что
@@ -7957,16 +8024,19 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
     {"c", "C", "flang_runtime.h", {"flang/src/emit/c", "share/flang/c"}, "Напечатать связанное", false, 17,
      EMIT_FIELDS_C, 6,
      {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
-     NULL},
+     NULL,
+     "Столкновения имён"},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
      15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
-     "собрать: cd <каталог> && go build ./..."},
+     "собрать: cd <каталог> && go build ./...",
+     NULL},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
-     2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>"},
+     2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>",
+     NULL},
     {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
      "Напечатать связанное в Java",
      true, 16,
@@ -7974,7 +8044,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "рантайм поле", "рантайм ошибка", "рантайм контекст", "рантайм формы", "исходник прогонщика",
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
-     "собрать: cd <каталог> && make"},
+     "собрать: cd <каталог> && make",
+     NULL},
     /* У JavaScript рантайм лежит ЛИТЕРАЛАМИ внутри `emit-js.flang`: снаружи
        приезжают только прогонщик, планировщик и исполнитель планов, и по
        прогонщику же узнаётся каталог.
@@ -7998,25 +8069,29 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "прогонщик", "исходник прогонщика", "исходник исполнителя", "типы входа", "поля входа",
       "варианты входа", "параметры входа"},
      3, {"flang_conc.js", "flang_cli.js", "flang_io.js"},
-     "запустить: cd <каталог> && node flang_cli.js ./<имя>.js"},
+     "запустить: cd <каталог> && node flang_cli.js ./<имя>.js",
+     NULL},
     {"elixir", "Elixir", "flang_runtime.ex", {"flang/src/emit/elixir", "share/flang/elixir"},
      "Напечатать связанное в Elixir", true, 13,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "исходник конкурентности", "типы входа", "поля входа", "варианты входа",
       "параметры входа"},
-     3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "собрать и запустить: cd <каталог> && make run"},
+     3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "собрать и запустить: cd <каталог> && make run",
+     NULL},
     {"python", "Python", "flang_runtime.py", {"flang/src/emit/python", "share/flang/python"},
      "Напечатать связанное в Python", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
-     2, {"flang_runtime.py", "flang_cli.py"}, "запустить: cd <каталог> && python3 flang_cli.py <модуль>"},
+     2, {"flang_runtime.py", "flang_cli.py"}, "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
+     NULL},
     {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
      "Напечатать связанное в CSharp", true, 16,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
       "рантайм поле", "рантайм ошибка", "рантайм контекст", "рантайм операции", "исходник прогонщика",
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.cs", "Field.cs", "FlangError.cs", "Ctx.cs", "Flang.cs", "FlangCli.cs"},
-     "собрать: cd <каталог> && dotnet build"},
+     "собрать: cd <каталог> && dotnet build",
+     NULL},
     /* У C++ РАНТАЙМ ТОТ ЖЕ, ЧТО У «c», и это единственная строка таблицы, где
        `places` называет РОДИТЕЛЬСКИЙ каталог целей, а не каталог одной цели:
        три файла из четырёх читаются из `c/`, и только «лицо» цели —
@@ -8039,7 +8114,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "рантайм заголовок", "рантайм исходник", "исходник прогонщика", "лицо", "типы входа",
       "поля входа", "варианты входа", "параметры входа"},
      4, {"c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "cpp/flang_cpp.hpp"},
-     "собрать: cd <каталог> && make"},
+     "собрать: cd <каталог> && make",
+     NULL},
 };
 
 /** Ключи командной строки печати — одни на все цели. */
@@ -8770,8 +8846,8 @@ static int emit_file(int argc, char **argv, const char *self) {
       repl_bads list;
       bool has_program = false;
       bads_init(&list);
-      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, kernel, false, true, &linked,
-                              &dropped, &own)) {
+      if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, kernel, false, true,
+                              EMIT_TARGET_TABLE[chosen].collision, &linked, &dropped, &own)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -14009,7 +14085,7 @@ static int package_file(int argc, char **argv) {
   strings_add(&texts, text, bytes);
   repl_imports_of(text, bytes, full, &queue);
   ok = repl_check_sources(repl_closure(&paths, &texts, &queue), full, &bads, &program, &has_program, &proven, true, true, true,
-                          NULL, NULL, NULL);
+                          NULL, NULL, NULL, NULL);
   if (!ok || bads.count > 0) {
     repl_buf say;
     buf_init(&say);

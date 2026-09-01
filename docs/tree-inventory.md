@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 225 файлов вне flang, долг вне JavaScript — 63
-<!-- СНЯТО 2026-09-01 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 225 -->
+# Опись дерева по языкам: 226 файлов вне flang, долг вне JavaScript — 63
+<!-- СНЯТО 2026-09-01 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 226 -->
 
 Снято 29 августа 2026 одним прогоном в корне дерева:
 
@@ -32,14 +32,14 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 74 | 12 420 | 60 | 5 104 <!-- СНЯТО 2026-09-01 файлов *.sh = 74 --><!-- СНЯТО 2026-09-01 строк-в *.sh = 12420 --> |
-| C | 35 | 759 134 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.c,*.h = 35 --><!-- СНЯТО 2026-08-31 строк-в *.c,*.h = 759134 --> |
+| оболочка | 74 | 12 574 | 60 | 5 104 <!-- СНЯТО 2026-09-01 файлов *.sh = 74 --><!-- СНЯТО 2026-09-01 строк-в *.sh = 12574 --> |
+| C | 35 | 760 179 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.c,*.h = 35 --><!-- СНЯТО 2026-08-31 строк-в *.c,*.h = 760179 --> |
 | Python | 16 | 5 480 | 2 | 269 <!-- СНЯТО 2026-08-31 файлов *.py = 16 --><!-- СНЯТО 2026-08-31 строк-в *.py = 5480 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 57 | 27 517 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-01 файлов *.js,*.mjs = 57 --><!-- СНЯТО 2026-09-01 строк-в *.js,*.mjs = 27517 --> ||
+| JavaScript | 58 | 27 840 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-01 файлов *.js,*.mjs = 58 --><!-- СНЯТО 2026-09-01 строк-в *.js,*.mjs = 27840 --> ||
 | Java | 7 | 3 910 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-08-31 строк-в *.java = 3910 --> |
 | C# | 7 | 4 451 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-08-31 строк-в *.cs = 4451 --> |
 | Elixir | 4 | 4 619 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-08-31 строк-в *.ex,*.exs = 4619 --> |
@@ -73,7 +73,7 @@ flang в C.
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 726 169 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-08-31 строк-в bootstrap/*.c,bootstrap/*.h = 726169 --> |
-| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 43 976 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-08-31 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 43976 --> |
+| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 44 175 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-08-31 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 44175 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 14 | 2 729 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |
@@ -125,12 +125,12 @@ flang в C.
 
 | файл | строк | что делает |
 |---|---:|---|
-| `target-collisions.sh` | 314 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 314 --> |
+| `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 337 --> |
 | `bad-octet-guard.sh` | 314 | сторож негодных октетов <!-- СНЯТО 2026-08-29 строк scripts/bad-octet-guard.sh = 314 --> |
 | `seed-knows-type-words-guard.sh` | 309 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-01 строк scripts/seed-knows-type-words-guard.sh = 309 --> |
 | `prose-numbers-guard.sh` | 309 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-08-31 строк scripts/prose-numbers-guard.sh = 309 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
-| `target-census.sh` | 182 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/target-census.sh = 182 --> |
+| `target-census.sh` | 214 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/target-census.sh = 214 --> |
 | `seed-freshness.sh` | 188 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed-freshness.sh = 188 --> |
 | `test-remote.sh` | 129 | прогон на чужой машине <!-- СНЯТО 2026-08-29 строк scripts/test-remote.sh = 129 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/one-string-measure-guard.sh = 119 --> |

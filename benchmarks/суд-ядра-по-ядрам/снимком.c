@@ -22,6 +22,8 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
   size_t pass = 0;
   double sum_all = 0.0;
   double path_all = 0.0;
+  unsigned long sum_steps_all = 0;
+  unsigned long path_steps_all = 0;
   err.code = NULL;
   err.message = NULL;
   if (n == 0) {
@@ -43,6 +45,11 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
        среднее — работа по обязательствам разложена крайне неровно. */
     char worst_of[192];
     char worst_name[192];
+    /* Шаги, а не секунды: машина общая, и один и тот же счёт шагов на ней
+       занимает то 33, то 48 секунд. Отношение работы к критическому пути на
+       шагах от чужой нагрузки не зависит. */
+    unsigned long sum_steps = 0;
+    unsigned long worst_steps = 0;
     worst_of[0] = 0;
     worst_name[0] = 0;
     if (was > 0 && fl_list_alloc(&repl_ctx, was, &keys, &err) != FL_OK) { return; }
@@ -92,6 +99,8 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
       spent = machine_now() - t0;
       tried += 1;
       sum += spent;
+      sum_steps += (unsigned long) repl_ctx.steps;
+      if ((unsigned long) repl_ctx.steps > worst_steps) { worst_steps = (unsigned long) repl_ctx.steps; }
       if (spent > worst) {
         fl_value who = fl_nothing();
         const char *utf8 = NULL;
@@ -136,17 +145,22 @@ static void repl_kernel_snapshot(fl_value program, fl_value without, fl_value un
     pass += 1;
     sum_all += sum;
     path_all += worst;
+    sum_steps_all += sum_steps;
+    path_steps_all += worst_steps;
     fprintf(stderr,
             "снимком: проход %lu — попыток %lu, закрылось %lu, работа %.3f с, "
-            "самая долгая попытка %.3f с (%s: %s)\n",
+            "самая долгая попытка %.3f с (%s: %s); шагов %lu, у самой долгой %lu\n",
             (unsigned long) pass, (unsigned long) tried, (unsigned long) added, sum, worst,
-            worst_of, worst_name);
+            worst_of, worst_name, sum_steps, worst_steps);
     closed = fl_list(grown, k);
     if (added == 0 || pass >= 100) { break; }
   }
   fprintf(stderr,
           "снимком: ИТОГ — проходов %lu, закрыто %lu (спуском было %lu), вся работа %.3f с, "
-          "критический путь %.3f с, потолок разгона %.1f крат\n",
+          "критический путь %.3f с, потолок разгона %.1f крат; ПО ШАГАМ: работа %lu, "
+          "путь %lu, потолок %.2f крат\n",
           (unsigned long) pass, (unsigned long) closed.as.list.count, (unsigned long) was_closed,
-          sum_all, path_all, path_all > 0.0 ? sum_all / path_all : 0.0);
+          sum_all, path_all, path_all > 0.0 ? sum_all / path_all : 0.0,
+          sum_steps_all, path_steps_all,
+          path_steps_all > 0 ? (double) sum_steps_all / (double) path_steps_all : 0.0);
 }

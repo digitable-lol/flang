@@ -31,12 +31,12 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Эта опись считает ОДИН язык. Остальные пятнадцать — оболочка, C, Python, HTML,
 CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby — считает
-[`tree-inventory.md`](tree-inventory.md) (1 сентября 2026: 226 файлов вне flang,
-<!-- СНЯТО 2026-09-01 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 226 -->
+[`tree-inventory.md`](tree-inventory.md) (1 сентября 2026: 227 файлов вне flang,
+<!-- СНЯТО 2026-09-01 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 227 -->
 долг вне JavaScript — 63 файла, 5 452 строки). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-27 840 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-01 строк-в *.js,*.mjs = 27840 -->
+28 033 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-01 строк-в *.js,*.mjs = 28033 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк.)
 
 Записка [`why-javascript-remains.md`](why-javascript-remains.md) от 23 августа —

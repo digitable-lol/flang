@@ -180,6 +180,62 @@ for z in "$ZAP"/корпус/*.запись; do
   opyt C "корпус $(basename "$z")" 3 "$I" "$z"
 done
 
+say "── половина ячеек Ч56, Ч71, Ч76, Ч87: то, чего ствольный чекер не читал ──"
+# Эти пробы стерегут ровно ту работу, которую ячейка Ч166 перенесла в ствол:
+# терм при номере строки, привязку шага автора к примеру, подстановку тела
+# функции-таблицы и оглавление списочных литералов. Без них +889 строк чекера
+# не сторожит НИ ОДНА проба: записи прежних наборов новых видов строк не несут,
+# и вывод прогона на них побайтово тот же, что до переноса, — проверено.
+PRE=flang/proof/examples/precondition.flang
+TL=flang/proof/examples/traffic-light.flang
+CID=flang/proof/examples/corpus-cident.flang
+CASE=flang/proof/examples/corpus-case.flang
+
+say "  Ч56 — терм при номере строки и «закрыть требованием»"
+opyt C "Ч56 честная: развёртка несёт И номер, И тело" 0 "$PRE" "$ZAP/Ч56/precondition-dereva.запись"
+opyt P "Ч56 тело записи не то, что в строке исходника" 1 "$PRE" "$ZAP/Ч56/lozh-telo-ne-to.запись"
+opyt P "Ч56 номер строки лжёт при верном теле"        1 "$PRE" "$ZAP/Ч56/lozh-s-nomerom.запись"
+
+say "  Ч71 — шаг автора «по примеру» привязан к примеру"
+opyt C "Ч71 честная: все привязки сошлись" 0 "$TL" "$ZAP/Ч71/честная.запись"
+opyt P "Ч71 привязка зовёт чужой пример"        1 "$TL" "$ZAP/Ч71/p-chuzhoy-primer.запись"
+opyt P "Ч71 привязка указывает на «дано»"       1 "$TL" "$ZAP/Ч71/p-ukazal-na-dano.запись"
+opyt P "Ч71 привязка указывает на примечание"   1 "$TL" "$ZAP/Ч71/p-ukazal-na-primechanie.запись"
+opyt P "Ч71 привязка за концом файла"           1 "$TL" "$ZAP/Ч71/p-za-koncom-fajla.запись"
+opyt P "Ч71 зелёный шаг подменён красным"       1 "$TL" "$ZAP/Ч71/p-zelyonyy-na-krasnyy.запись"
+opyt P "Ч71 шаг без привязки вовсе"             1 "$TL" "$ZAP/Ч71/lozh-bez-privyazki.запись"
+opyt P "Ч71 пример о чужом варианте"            1 "$PROG/Ч71-lozh-chuzhoy-variant.flang" "$ZAP/Ч71/lozh-chuzhoy-variant.запись"
+# Снявшие привязку обязаны получить 3 и НИКОГДА 0: «проверено» не даётся за то,
+# что чекер перестал что-то проверять.
+opyt P "Ч71 привязка снята — третий исход, не приёмка"     3 "$TL" "$ZAP/Ч71/p-privyazka-snyata.запись"
+opyt P "Ч71 все привязки сняты — третий исход"             3 "$TL" "$ZAP/Ч71/p-vse-privyazki-snyaty.запись"
+opyt P "Ч71 номер привязки ноль — третий исход"            3 "$TL" "$ZAP/Ч71/p-nomer-nol.запись"
+
+say "  Ч76 — шаг автора вне случая, подстановка тела в терм"
+opyt C "Ч76 честная: цель замкнута телом и держится" 0 "$CID" "$ZAP/Ч76/честная.запись"
+opyt P "Ч76 тело мимо примера"          1 "$PROG/Ч76-1-telo-mimo-primera.flang"    "$ZAP/Ч76/1-telo-mimo-primera.запись"
+opyt P "Ч76 цель на теле не держится"   1 "$PROG/Ч76-2-cel-lozhna.flang"           "$ZAP/Ч76/2-cel-lozhna.запись"
+opyt P "Ч76 метки совпали"              1 "$PROG/Ч76-3-metki-sovpali.flang"        "$ZAP/Ч76/3-metki-sovpali.запись"
+opyt P "Ч76 длина на один больше"       1 "$PROG/Ч76-5-dlina-na-odin-bolshe.flang" "$ZAP/Ч76/5-dlina-na-odin-bolshe.запись"
+opyt P "Ч76 цифры подменены"            1 "$PROG/Ч76-6-cifry-podmeneny.flang"      "$ZAP/Ч76/6-cifry-podmeneny.запись"
+opyt P "Ч76 пример у чужой функции"     1 "$CID" "$ZAP/Ч76/7-chuzhaya-funkciya.запись"
+opyt P "Ч76 пример чужой функции"       1 "$CID" "$ZAP/Ч76/8-primer-chuzhoy-funkcii.запись"
+# «Не берусь» — не «сошлось»: причина названа строкой «НЕ ВЗЯЛСЯ», исход третий.
+opyt P "Ч76 отношение незнакомо — не берусь"  3 "$PROG/Ч76-4-otnoshenie-neznakomo.flang" "$ZAP/Ч76/4-otnoshenie-neznakomo.запись"
+opyt P "Ч76 тело не один литерал — не берусь" 3 "$PROG/Ч76-9-telo-ne-odin-literal.flang" "$ZAP/Ч76/9-telo-ne-odin-literal.запись"
+
+say "  Ч87 — списочное тело: оглавление печати ПЕРЕЧИТЫВАЕТСЯ"
+opyt C "Ч87 честная: вершина линии печати" 3 "$CASE" "$ZAP/Ч87/честная.запись"
+opyt P "Ч87 цель на списке не держится" 1 "$PROG/Ч87-F1-cel-lozhna.flang"           "$ZAP/Ч87/F1-cel-lozhna.запись"
+opyt P "Ч87 тело мимо примера"          1 "$PROG/Ч87-F2-telo-mimo-primera.flang"    "$ZAP/Ч87/F2-telo-mimo-primera.запись"
+opyt P "Ч87 два звена в одной строке"   1 "$PROG/Ч87-F3-dva-zvena-v-stroke.flang"   "$ZAP/Ч87/F3-dva-zvena-v-stroke.запись"
+opyt P "Ч87 звено закомментировано"     1 "$PROG/Ч87-F4-zveno-zakommentirovano.flang" "$ZAP/Ч87/F4-zveno-zakommentirovano.запись"
+opyt P "Ч87 оглавление зовёт чужую таблицу" 1 "$CASE" "$ZAP/Ч87/F5-chuzhaya-tablica.запись"
+opyt P "Ч87 граница таблицы сдвинута"       1 "$CASE" "$ZAP/Ч87/F6-granica-sdvinuta.запись"
+opyt P "Ч87 число звеньев соврано"          1 "$CASE" "$ZAP/Ч87/F7-zvenev-sovrano.запись"
+opyt P "Ч87 число таблиц соврано"           1 "$CASE" "$ZAP/Ч87/F8-tablic-sovrano.запись"
+opyt P "Ч87 оглавление снято — третий исход, не приёмка" 3 "$CASE" "$ZAP/Ч87/F9-oglavlenie-snyato.запись"
+
 say ""
 say "── ИСХОДЫ ПО ВСЕМ ПРОБАМ (их три, а не два) ──"
 say "  ПРОВЕРЕНО    (код 0): $N0"

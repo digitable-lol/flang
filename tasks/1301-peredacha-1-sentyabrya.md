@@ -152,6 +152,69 @@ rust 3113, go 2637, cpp 322.
 `emit-c`. Она — parser, лексер, типы, завершаемость, связывание, вычислитель,
 ядро доказательств: 26 234 строки flang, из них `parser.flang` 5 287 = 20,2 %.
 
+
+## ⛔ ОПИСЬ НЕВЛИТОГО на 1 сентября (предел исчерпан, работа цела)
+
+Все ячейки остановились разом, упёршись в недельный предел, а не в ошибку.
+Работа НЕ потеряна: 20 отчётов лежат в `/srv/tmp/dokazuemyy/Ч*/ОТЧЁТ.md`,
+32 ветки закоммичены в клонах. Ниже опись — что где лежит и сколько несёт.
+Клон ячейки: `/srv/tmp/dokazuemyy/<ячейка>/клон` (у части — `clon`).
+
+| ячейка | ветка | коммитов | размер |
+|---|---|---:|---|
+| `Ч123-vlivanie` | `a/svod-yacheek-31avg` | 17 | 27 files changed, 27 insertions(+), 1726 deletions(-) |
+| `Ч129-proza-do-konca` | `main` | 2 | 33 files changed, 812 insertions(+), 132 deletions(-) |
+| `Ч135-sbor-slov` | `main` | 2 | 5 files changed, 51 insertions(+), 12 deletions(-) |
+| `Ч136-leksem-kommentarii` | `main` | 2 | 1 file changed, 118 insertions(+) |
+| `Ч137-changelog-na-flang` | `HEAD` | 1 | 1702 files changed, 25197 insertions(+), 197768 deletions(-) |
+| `Ч139-nahodki-v-dokumenty` | `a/nahodki-31avg-v-chto-meshaet` | 1 | 1 file changed, 497 insertions(+), 6 deletions(-) |
+| `Ч141-taski` | `main` | 3 | 2 files changed, 149 insertions(+) |
+| `Ч143-termy-zanovo` | `a/термы-заново` | 1 | 1 file changed, 248 insertions(+), 23 deletions(-) |
+| `Ч144-shagi-zanovo` | `a/шаги-вывода-заново` | 2 | 1 file changed, 371 insertions(+), 39 deletions(-) |
+| `Ч145-platit-zanovo` | `a/платить-в-печати-заново` | 2 | 3 files changed, 590 insertions(+), 52 deletions(-) |
+| `Ч146-dve-linii-yadra` | `a/след-ядра-заново` | 1 | 2 files changed, 414 insertions(+), 38 deletions(-) |
+| `Ч147-otpechatok-i-privyazka` | `a/отпечаток-и-привязка` | 1 | 1 file changed, 36 insertions(+), 6 deletions(-) |
+| `Ч148-troyka-ravnyh` | `a/тройка-остатки` | 1 | 4 files changed, 156 insertions(+) |
+| `Ч152-kontrolnye-tochki` | `a/контрольные-точки` | 1 | 1 file changed, 205 insertions(+), 40 deletions(-) |
+| `Ч154-tri-schyota` | `a/линейка-ходов` | 1 | 7 files changed, 521 insertions(+), 43 deletions(-) |
+| `Ч158-spiski-rukami` | `a/списки-руками` | 7 | 25 files changed, 2044 insertions(+), 193 deletions(-) |
+| `Ч159-vernut-cheker` | `a/вернуть-чекер` | 1 | 12 files changed, 486 insertions(+), 59 deletions(-) |
+| `Ч160-semya-vosproizvodimo` | `a/семя-воспроизводимо` | 1 | 2 files changed, 68 insertions(+), 30 deletions(-) |
+| `Ч161-krugooborot` | `a/кругооборот` | 1 | 4 files changed, 387 insertions(+), 2 deletions(-) |
+| `Ч162-bez-proverki` | `a/без-проверки` | 1 | 1 file changed, 375 insertions(+) |
+| `Ч165-krasnye-storozha` | `a/красные-сторожа` | 1 | 14 files changed, 197 insertions(+), 16 deletions(-) |
+| `Ч166-polovina-chekera` | `a/половина-чекера` | 3 | 49 files changed, 3418 insertions(+), 54 deletions(-) |
+| `Ч168-korpus-86` | `a/корпус-86` | 1 | 1 file changed, 393 insertions(+) |
+| `Ч169-pochinka-storozha` | `a/починка-сторожа` | 1 | 2 files changed, 39 insertions(+) |
+| `Ч171-svesti-godnoe` | `a/свести-годное` | 8 | 44 files changed, 3190 insertions(+), 169 deletions(-) |
+| `Ч22-slepye` | `m/kernel-lines-declared-and-reasoning` | 24 | 33 files changed, 1368 insertions(+), 193 deletions(-) |
+| `Ч24-hody` | `ch24/hody` | 3 | 5 files changed, 358 insertions(+), 16 deletions(-) |
+| `Ч60-svedenie` | `ch60/svedenie` | 4 | 8 files changed, 532 insertions(+), 17 deletions(-) |
+| `Ч63-chekker-v-derevo` | `main` | 1 | 145 files changed, 6874 insertions(+), 7 deletions(-) |
+| `Ч67-lozhnye-v-dereve` | `main` | 1 | 3 files changed, 157 insertions(+) |
+| `Ч73-do-odin-nol` | `main` | 1 | 1 file changed, 406 insertions(+), 36 deletions(-) |
+| `Ч99-polovina-pravil` | `main` | 2 | 8 files changed, 576 insertions(+), 28 deletions(-) |
+### Что вливать первым и почему
+
+1. **`Ч166` половина чекера** (3418 строк) — снимает запрет на перепечатку,
+   см. задачу 1311. Без неё перепечатка ломает дерево.
+2. **`Ч169` починка сторожа** — семь замечаний Ч151 к перестановке; два из них
+   меняют поведение `flang check` на ВСЕХ программах (ранний выход лжёт в
+   сводке; проверка целевая для C зовётся из общей команды). Вливать
+   перестановку до этой починки нельзя.
+3. **`Ч171` свести годное** (3190 строк) — Ч137 и годная часть Ч140 по
+   вердиктам Ч156. Ч136 НЕ вливать: её же прогон дал 295 сломанных файлов из 296.
+4. **`Ч154` линейка ходов**, **`Ч168` корпус-86**, **`Ч161` кругооборот** —
+   приборы замера. Записанное число завтра соврёт, команда нет.
+5. **`Ч152` контрольные точки** — закрывают отказ ПОСЛЕ печати (задача 1304),
+   но не отказ на девятом часу.
+
+### Отчёты без веток, но с числами
+
+`Ч150` вынос печатников (задача 1309), `Ч151` проверка перестановки,
+`Ч155` три гейта, `Ч156` вердикты по четырём снимкам, `Ч160` цена сверки
+(задача 1310), `Ч162` восемь оснований ведомости.
+
 ## Грабли машины, стоившие времени
 
 * Код возврата снимать **до** любой трубы: `kod=$?` отдельной строкой. Ошибка

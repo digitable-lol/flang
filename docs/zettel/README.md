@@ -578,6 +578,7 @@
 - [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка: NaN и бесконечности внутрь не проходят](number-at-the-entry-boundary-is-narrower-than-number-in-the-language.md)
 - [Веер по обязательствам держит не ядро, а печать: движок процессов уезжает только той программе, которая объявила `процесс`, — а компилятор не объявляет ни одного](obligations-fan-out-is-blocked-by-the-printer-not-the-kernel.md)
+- [Делимая часть суда ядра — сотые доли процента, а вся его цена сидит в неподвижной точке «Закрыть без теорем»](the-divisible-part-of-the-kernel-judgment-is-a-fraction-of-a-percent.md)
 - [Список обязательств собирался спуском по хвосту, и это стоило КВАДРАТА — не только времени, но и памяти: 1000 обязательств берут 4,25 ГиБ вместо 226 МиБ](obligations-list-built-by-descent-costs-a-square.md)
 - [Октеты в этом языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](octets-are-expressible-as-a-list-of-numbers-not-as-a-string.md)
 - [Одна форма цели держит пятую часть всего недоказанного: 446 обещаний вида «длина против длины»](one-goal-shape-blocks-a-fifth-of-all-unproven-promises.md)

@@ -346,7 +346,7 @@ static const char FLANG_HELP[] =
  * строковый литерал в нём не длиннее 4095 байт, а справка на кириллице съедает
  * по два байта на букву. Печатаются обе подряд, стыка человек не видит. Тем же
  * приёмом и по той же причине разбита справка `emit` — на четыре части
- * (HELP_EMIT … HELP_EMIT_4).
+ * (HELP_EMIT … HELP_EMIT_4, HELP_EMIT_POST).
  */
 static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
@@ -469,6 +469,7 @@ static const char HELP_EMIT[] =
     "                        [--out каталог | --file имя] [--cli|--no-cli] [--repl]\n"
     "                        [--runtime каталог] [--index-base 0|1]\n"
     "                        [--max-steps N] [--max-depth N] [--no-check]\n"
+    "                        [--no-postconditions]\n"
     "\n"
     "Печатает программу без Node — во все восемь целей. Каталог из «--out»\n"
     "заводится сам, вместе с промежуточными и с подкаталогами, которых просит цель\n"
@@ -487,6 +488,10 @@ static const char HELP_EMIT[] =
     "                    зависит от модуля, и РАЗНИЦА ОГРОМНА: числа ниже.\n"
     "                    Напечатанное толще. ЧТО ЭТИМ НЕЛЬЗЯ — ниже, отдельным\n"
     "                    абзацем: в ствол напечатанное так НЕ ГОДИТСЯ\n"
+    "  --no-postconditions  не печатать сторожей постусловий В КОД. Судятся они\n"
+    "                    по-прежнему: это ключ печати, а не проверки. Напечатанное\n"
+    "                    заметно быстрее и говорит о ключе своей шапкой — числа и\n"
+    "                    условия ниже, отдельным абзацем\n"
     "\n";
 
 /* Вторая часть: C99 требует поддержки строкового литерала лишь до 4095
@@ -544,6 +549,43 @@ static const char HELP_EMIT_3[] =
     "Это средство разработчика, а не замена перепечатке. Двоичный говорит всё то же\n"
     "самое ВСЛУХ после каждой печати с ключом, чтобы ключ, уехавший в скопированный\n"
     "рецепт, не стал привычкой за день.\n"
+    "\n";
+
+/* Пятая по счёту и четвёртая по порядку часть — про «--no-postconditions».
+   Разрез там же и по той же причине: 4095 знаков литерала C99. */
+static const char HELP_EMIT_POST[] =
+    "«--no-postconditions» СНИМАЕТ СТОРОЖЕЙ В НАПЕЧАТАННОМ КОДЕ, А НЕ ПРОВЕРКУ.\n"
+    "Постусловие остаётся в исходнике, остаётся обещанием и судится этой же\n"
+    "командой: разбор, типы, завершаемость и ядро доказательств идут как обычно, и\n"
+    "замечание по-прежнему отменяет печать кодом 1. «flang check» и «flang test»\n"
+    "ключа не знают вовсе — они считают постусловия ВСЕГДА.\n"
+    "ЗАЧЕМ. Постусловие пересчитывается на КАЖДОМ возврате. Замер 2 сентября 2026,\n"
+    "раскладка терминального экрана (19 функций, 25 обещаний, цель go, кадр целиком,\n"
+    "«go test -benchtime 200x -count 5», медиана пяти, AMD EPYC 7742):\n"
+    "  кадр  80×24     42,6 мс со сторожами →  6,00 мс без них   в 7,1 раза\n"
+    "  кадр 200×50    100,0 мс              → 14,6 мс            в 6,9 раза\n"
+    "  выделений на кадре 200×50: 151 226 → 29 354\n"
+    "  напечатанного кода на Go: 1862 строки → 1303, сторожей rt.Post 23 → 0\n"
+    "Кадр перерисовывается не только по такту, но и на каждое нажатие клавиши и на\n"
+    "каждый SIGWINCH; 15 мс не видно, 100 мс видно. На программе, которую зовут раз\n"
+    "в час, ключ не нужен — померьте, прежде чем брать.\n"
+    "СВЕРЕНО, ЧТО СНЯТИЕ НЕ МЕНЯЕТ ЗНАЧЕНИЙ: 1119 входов на трёх функциях той же\n"
+    "раскладки, печать с ключом против печати без него — расхождений нет. И то, что\n"
+    "печатает ключ, совпало БАЙТ В БАЙТ с печатью исходника, из которого строки\n"
+    "«обеспечивает» вырезаны руками.\n"
+    "ВСЕ ВОСЕМЬ ЦЕЛЕЙ ВЕДУТ СЕБЯ ОДИНАКОВО: постусловия снимаются с разобранной\n"
+    "программы до того места, где цели расходятся, — печатнику про ключ знать\n"
+    "нечего.\n"
+    "НАПЕЧАТАННОЕ ГОВОРИТ О КЛЮЧЕ САМО. В шапку каждого файла кладётся заметка:\n"
+    "ключ, число снятых сторожей и то, что обещания проверяются на воротах, а не\n"
+    "здесь. Молча отдать облегчённый код нельзя — тот, кто взял его в руки, обязан\n"
+    "узнать об этом из него. Без заметки остаются два файла, где её негде\n"
+    "поставить: «go.mod» (шапки нет вовсе) и «flang.csproj» (XML-комментарий не\n"
+    "терпит двух дефисов подряд, а имя ключа их содержит).\n"
+    "ЧЕГО КЛЮЧ НЕ СНИМАЕТ: предусловия, сторожа убывания у тотальных функций,\n"
+    "пределы шагов и глубины, разбор отказов надзора.\n"
+    "ПЕРЕПЕЧАТКОЙ СЕМЕНИ ЭТО НЕ ПОЛЬЗУЮТСЯ: компилятор собирают со сторожами,\n"
+    "довод тот же, что у «--no-check».\n"
     "\n";
 
 /* Четвёртая часть: разрез там же и по той же причине. */
@@ -793,7 +835,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "run") == 0) {
     printf("%s\n", HELP_RUN);
   } else if (strcmp(topic, "emit") == 0) {
-    printf("%s\n%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_4);
+    printf("%s\n%s%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_POST, HELP_EMIT_4);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "lsp") == 0) {
@@ -8041,6 +8083,199 @@ static fl_value emit_entry_params(const fl_entry_table *table) {
   return out;
 }
 
+/*
+ * ═══════════ ПЕЧАТЬ БЕЗ ПРОВЕРКИ ПОСТУСЛОВИЙ: «--no-postconditions» ═══════════
+ *
+ * ЧТО КЛЮЧ СНИМАЕТ. Ровно сторожа `fl_post` в НАПЕЧАТАННОМ коде — все, а не
+ * только доказанные. Постусловие остаётся в исходнике, остаётся обещанием и
+ * остаётся под судом: разбор, типы, завершаемость и ядро доказательств судят
+ * его этой же командой и при этом ключе, и замечание по-прежнему ОТМЕНЯЕТ
+ * печать кодом 1. «flang check» и «flang test» ключа не знают вовсе — они
+ * считают постусловия всегда и от печати не зависят.
+ *
+ * ЗАЧЕМ. Постусловие пересчитывается на КАЖДОМ возврате, и на горячем пути это
+ * не проценты. Замер 2 сентября 2026 на разведочной раскладке терминального
+ * экрана (19 функций, 25 обещаний, цель go; `go test -benchtime 200x -count 5`,
+ * медиана пяти, AMD EPYC 7742): кадр 80×24 — 42,6 мс со сторожами против 6,00 мс
+ * без них, кадр 200×50 — 100,0 мс против 14,6 мс. В 7,1 и в 6,9 раза; выделений
+ * на кадре 200×50 — 151 226 против 29 354. Кадр перерисовывается не только по
+ * такту, но и на каждое нажатие клавиши и на каждый SIGWINCH; 15 мс не видно,
+ * 100 мс видно.
+ *
+ * ПОЧЕМУ КЛЮЧ ПЕЧАТИ, А НЕ ПРАВКА ИСХОДНИКА. Потому что иначе обещания вырезают
+ * скриптом: рабочему, которому нужен был быстрый кадр, пришлось снять 25 строк
+ * «обеспечивает» из исходника — и получить ВТОРОЙ исходник, который уже ни с
+ * чем не сверяется. Ключ оставляет один исходник и один суд над ним.
+ *
+ * ЧЕГО КЛЮЧ НЕ ДЕЛАЕТ МОЛЧА. Всякий напечатанный файл говорит о нём сам —
+ * заметкой в шапке (`emit_notice_put` ниже). Отдать облегчённый код молча
+ * нельзя: тот, кто взял его в руки, обязан узнать из НЕГО, а не из истории
+ * вызова, что сторожей в нём нет.
+ *
+ * ЧЕГО КЛЮЧ НЕ СНИМАЕТ. Предусловия, сторожа убывания у тотальных функций,
+ * пределы шагов и глубины, разбор отказов надзора. Снимается ровно то, что
+ * названо его именем.
+ */
+
+/** Потолок полей записи, которую этот файл копирует с подменой одного поля. */
+#define EMIT_RECORD_MAX 16
+
+/**
+ * Программа без единого постусловия — и сколько их снято.
+ *
+ * По узлам ходит не этот файл: узел AST — это «Значение» компилятора, и все три
+ * нужных шага на flang уже написаны и проверены примерами — «Элементы поля»
+ * (`flang/self/emit-c.flang`), «Узел без ключа» и «Заменить поле ядра»
+ * (`flang/self/bootstrap/compiler.flang`, `flang/self/proof-kernel.flang`).
+ * Здесь они только зовутся по именам, ровно как рядом зовётся «Программа без
+ * снятых постусловий», которой ядро отдаёт список ДОКАЗАННЫХ. Напиши C свой
+ * обход AST — и две копии разошлись бы молча, по тому же доводу, который уже
+ * записан у `repl_check_sources` и у «Чего печать не судила».
+ *
+ * Узел списка собирается ЗДЕСЬ, а не вызовом «Список как узел»: это имя в
+ * замыкании не одно — три модуля объявляют его порознь, — и какое из них
+ * уцелело при связывании, C знать не обязан.
+ */
+static bool emit_drop_postconditions(fl_value program, fl_value *out, size_t *dropped) {
+  fl_value functions = fl_nothing();
+  fl_value args[3];
+  fl_value *thinner = NULL;
+  size_t index = 0;
+  bool ok = true;
+
+  *out = program;
+  args[0] = program;
+  args[1] = repl_value_say("functions");
+  if (repl_call("Элементы поля", args, 2, &functions) != FL_OK || functions.tag != FL_LIST) {
+    return false;
+  }
+  if (functions.as.list.count == 0) {
+    return true;
+  }
+  thinner = (fl_value *)malloc(functions.as.list.count * sizeof(fl_value));
+  if (thinner == NULL) {
+    repl_oom();
+  }
+  for (index = 0; ok && index < functions.as.list.count; index += 1) {
+    fl_value had = fl_nothing();
+    fl_value bare = fl_nothing();
+    args[0] = functions.as.list.items[index];
+    args[1] = repl_value_say("postconditions");
+    if (repl_call("Элементы поля", args, 2, &had) == FL_OK && had.tag == FL_LIST) {
+      *dropped += had.as.list.count;
+    }
+    args[0] = functions.as.list.items[index];
+    args[1] = repl_value_say("postconditions");
+    if (repl_call("Узел без ключа", args, 2, &bare) != FL_OK) {
+      ok = false;
+    } else {
+      thinner[index] = bare;
+    }
+  }
+  if (ok) {
+    fl_value node = repl_value_variant_fields("Значение списка", "элементы",
+                                              repl_value_list(thinner, functions.as.list.count));
+    args[0] = program;
+    args[1] = repl_value_say("functions");
+    args[2] = node;
+    ok = repl_call("Заменить поле ядра", args, 3, out) == FL_OK;
+  }
+  free(thinner);
+  return ok;
+}
+
+/**
+ * Копия записи, у которой одно поле заменено; имена и порядок берутся у самой
+ * записи. Так «Программа с бедами» переживает подмену программы, не требуя от
+ * этого файла знать её поля наизусть: прибавится поле — копия его донесёт.
+ */
+static bool emit_record_with(fl_value record, const char *name, fl_value value, fl_value *out) {
+  const char *names[EMIT_RECORD_MAX];
+  fl_value values[EMIT_RECORD_MAX];
+  size_t index = 0;
+  if (record.tag != FL_RECORD || record.as.record->count > EMIT_RECORD_MAX) {
+    return false;
+  }
+  for (index = 0; index < record.as.record->count; index += 1) {
+    names[index] = record.as.record->fields[index].name;
+    values[index] = strcmp(record.as.record->fields[index].name, name) == 0
+                        ? value
+                        : record.as.record->fields[index].value;
+  }
+  *out = repl_value_record(names, values, record.as.record->count);
+  return true;
+}
+
+/**
+ * Заметка в шапку напечатанного файла — та самая, без которой ключ был бы
+ * молчаливым. Возвращает новый текст или NULL, если помечать нечего.
+ *
+ * ГДЕ ИМЕННО. Перед строкой «Сгенерировано flang» и ТЕМ ЖЕ зачином, каким
+ * написана она сама: у Go, Rust, Java, C# и JS это «// », у Python, Elixir и
+ * Makefile «# », у C — « * » внутри уже открытого блока. Зачин не угадывается
+ * по цели, а берётся из самой строки: девятая цель добавится строкой таблицы, и
+ * заметка поедет с ней, ничего здесь не требуя.
+ *
+ * КОГО ПРОПУСКАЕТ. Файл без этой строки (`go.mod`) — там нечего пометить, это
+ * не код программы. И описание проекта C# (`flang.csproj`): его шапка —
+ * XML-комментарий, а в XML-комментарии не бывает двух дефисов подряд, тогда как
+ * имя ключа их содержит. Написать имя ключа неправдой хуже, чем не написать в
+ * описании проекта ничего: заметку рядом несут все восемь `.cs`, а `.csproj` —
+ * не код программы.
+ */
+static char *emit_notice_put(const char *body, size_t bytes, size_t dropped, size_t *out_bytes) {
+  static const char *const MARK = "Сгенерировано flang";
+  static const char *const REST[3] = {
+      "В этом коде обещание на возврате НЕ проверяется ни разу. Проверка не отменена,",
+      "а осталась на воротах: «flang check» и «flang test» судят постусловия всегда и",
+      "этим ключом не управляются. Правишь исходник — прогоняй их: тут нарушение молчит."};
+  const size_t mark_bytes = strlen(MARK);
+  repl_buf whole;
+  size_t at = 0;
+  size_t line = 0;
+  size_t tail = 0;
+  size_t lead = 0;
+  size_t index = 0;
+  bool found = false;
+
+  *out_bytes = bytes;
+  for (at = 0; !found && at + mark_bytes <= bytes; at += 1) {
+    found = memcmp(body + at, MARK, mark_bytes) == 0;
+  }
+  if (!found) {
+    return NULL;
+  }
+  at -= 1;
+  for (line = at; line > 0 && body[line - 1] != '\n'; line -= 1) {
+  }
+  lead = at - line;
+  for (tail = at; tail < bytes && body[tail] != '\n'; tail += 1) {
+  }
+  if (tail >= 3 && memcmp(body + tail - 3, "-->", 3) == 0) {
+    return NULL;
+  }
+
+  buf_init(&whole);
+  buf_add(&whole, body, line);
+  buf_add(&whole, body + line, lead);
+  buf_put(&whole, "ПЕЧАТАНО БЕЗ ПРОВЕРКИ ПОСТУСЛОВИЙ — ключ «flang emit --no-postconditions».");
+  buf_char(&whole, '\n');
+  buf_add(&whole, body + line, lead);
+  buf_put(&whole, "Снято постусловий: ");
+  buf_number(&whole, dropped);
+  buf_put(&whole, " — ВСЕ обещания «обеспечивает» этой программы.");
+  buf_char(&whole, '\n');
+  for (index = 0; index < 3; index += 1) {
+    buf_add(&whole, body + line, lead);
+    buf_put(&whole, REST[index]);
+    buf_char(&whole, '\n');
+  }
+  buf_add(&whole, body + line, lead);
+  buf_add(&whole, body + at, bytes - at);
+  *out_bytes = whole.used;
+  return whole.data;
+}
+
 /**
  * Годится ли впечатанная граница связанной программе.
  *
@@ -8185,7 +8420,11 @@ static bool emit_write(const char *full, const char *text, size_t bytes) {
  * неё не меняется ничего; у Go путь — это имя пакета (`flangrt/flang_runtime.go`),
  * человек его не выбирал и знать не обязан. Сам `--out` заведён выше.
  */
-static int emit_files_out(fl_value files, const char *out, const char *one, size_t *written) {
+/* `dropped` больше нуля — печать шла с «--no-postconditions», и каждый файл
+   обязан сказать об этом сам: заметку кладёт `emit_notice_put`. Ноль — печать
+   обычная, и ни один байт вывода не меняется. */
+static int emit_files_out(fl_value files, const char *out, const char *one, size_t *written,
+                          size_t dropped) {
   size_t index = 0;
   int code = 0;
   bool found = false;
@@ -8195,10 +8434,19 @@ static int emit_files_out(fl_value files, const char *out, const char *one, size
     const char *body = NULL;
     size_t body_bytes = 0;
     char *name = NULL;
+    char *marked = NULL;
     if (!val_field(files.as.list.items[index], "путь", &where) ||
         !val_field(files.as.list.items[index], "содержимое", &content) ||
         !val_text(content, &body, &body_bytes)) {
       continue;
+    }
+    if (dropped > 0) {
+      size_t marked_bytes = 0;
+      marked = emit_notice_put(body, body_bytes, dropped, &marked_bytes);
+      if (marked != NULL) {
+        body = marked;
+        body_bytes = marked_bytes;
+      }
     }
     name = val_copy(where);
     if (one != NULL) {
@@ -8211,6 +8459,7 @@ static int emit_files_out(fl_value files, const char *out, const char *one, size
         *written += body_bytes;
       }
       free(name);
+      free(marked);
       continue;
     }
     {
@@ -8226,6 +8475,7 @@ static int emit_files_out(fl_value files, const char *out, const char *one, size
       free(destination);
     }
     free(name);
+    free(marked);
   }
   fflush(stdout);
   if (one != NULL && !found && code == 0) {
@@ -8408,6 +8658,19 @@ static int emit_file(int argc, char **argv, const char *self) {
    * шире дела, дело названо словами — в справке и после КАЖДОЙ печати с ключом.
    */
   bool kernel = true;
+  /*
+   * ВТОРОЙ КЛЮЧ, И ОН НЕ ПРО ПРОВЕРКУ, А ПРО НАПЕЧАТАННОЕ.
+   *
+   * «--no-check» снимает СУД перед печатью; «--no-postconditions» суд оставляет
+   * весь и снимает СТОРОЖЕЙ в напечатанном коде. Ключи независимы и сочетаются:
+   * довод у каждого свой, и подменять один другим нельзя.
+   *
+   * Ноль здесь значит «печать обычная», и тогда ни один байт вывода не
+   * отличается от прежнего — довод тот же, по которому «Программа без снятых
+   * постусловий» возвращает ту же программу, когда снимать нечего.
+   */
+  bool postconditions = true;
+  size_t dropped_by_key = 0;
 
   wish.own = "";
   wish.steps = "1000000";
@@ -8449,6 +8712,8 @@ static int emit_file(int argc, char **argv, const char *self) {
       wish.shell = true;
     } else if (strcmp(argv[argument], "--no-check") == 0) {
       kernel = false;
+    } else if (strcmp(argv[argument], "--no-postconditions") == 0) {
+      postconditions = false;
     } else if (argv[argument][0] != '-' && path == NULL) {
       path = argv[argument];
     } else {
@@ -8659,7 +8924,44 @@ static int emit_file(int argc, char **argv, const char *self) {
             unjudged = val_copy(obstacle);
           }
         }
-        if (drop_count > 0) {
+        /*
+         * «--no-postconditions» СНИМАЕТ ВСЕ, И ПОТОМУ ИДЁТ ВМЕСТО СНЯТИЯ ЯДРОМ,
+         * А НЕ ПОСЛЕ НЕГО. Список ядра — подмножество снимаемого ключом, и звать
+         * оба значило бы дважды пройти по тем же узлам ради того же итога, а
+         * потом ещё и объяснять человеку два числа вместо одного.
+         *
+         * Восемь целей ведут себя ОДИНАКОВО, и это не старание: постусловия
+         * снимаются с AST здесь, до `emit_call`, — то есть до того места, где
+         * цели вообще расходятся. Печатнику незачем знать про ключ, и девятая
+         * цель получит его тем, что появится строкой таблицы.
+         *
+         * Пять целей из восьми читают СВЯЗАННУЮ запись, а не голую программу
+         * (`from_linked`), поэтому подменяются обе: правь одну — печать
+         * разошлась бы между целями молча.
+         */
+        if (!postconditions) {
+          fl_value thinner = fl_nothing();
+          if (!emit_drop_postconditions(program, &thinner, &dropped_by_key)) {
+            fputs("flang emit: не вышло снять постусловия — печать отменена\n", stderr);
+            code = 1;
+          } else {
+            program = thinner;
+          }
+          if (code == 0 && EMIT_TARGET_TABLE[chosen].from_linked) {
+            fl_value inner = fl_nothing();
+            fl_value bare = fl_nothing();
+            fl_value shaved = fl_nothing();
+            size_t again = 0;
+            if (!val_field(linked, "программа", &inner)
+                || !emit_drop_postconditions(inner, &bare, &again)
+                || !emit_record_with(linked, "программа", bare, &shaved)) {
+              fputs("flang emit: не вышло снять постусловия у связанного — печать отменена\n", stderr);
+              code = 1;
+            } else {
+              linked = shaved;
+            }
+          }
+        } else if (drop_count > 0) {
           fl_value drop_args[2];
           fl_value thinner = fl_nothing();
           drop_args[0] = program;
@@ -8680,10 +8982,12 @@ static int emit_file(int argc, char **argv, const char *self) {
                   "проверено примерами функции — в напечатанный код оно не едет.\n",
                   (unsigned long)drop_count);
         }
-        fits = emit_entry_fits(program, table);
-        code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                         EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table, runtime,
-                         &wish, &files);
+        if (code == 0) {
+          fits = emit_entry_fits(program, table);
+          code = emit_call(&EMIT_TARGET_TABLE[chosen],
+                           EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
+                           runtime, &wish, &files);
+        }
       }
     }
   }
@@ -8693,7 +8997,7 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   if (code == 0) {
-    code = emit_files_out(files, out, one, &written);
+    code = emit_files_out(files, out, one, &written, dropped_by_key);
     if (code == 0) {
       /* Число файлов и байт — на stderr, потому что stdout занят печатью:
          `flang emit … --file x.c > x.c` обязан дать РОВНО файл. */
@@ -8772,6 +9076,23 @@ static int emit_file(int argc, char **argv, const char *self) {
               "ЭТИМ НЕ ПЕРЕПЕЧАТЫВАЮТ СЕМЯ: отпечаток не сойдётся, а толстый двоичный поведёт\n"
               "следующую печать медленнее. Ключ — средство правки, а не замена перепечатке.\n",
               stderr);
+      }
+      /*
+       * ВСЛУХ И ПОСЛЕ ПЕЧАТИ — по тому же доводу, что у «--no-check»: ключ,
+       * уехавший в скопированный рецепт, иначе становится привычкой за день.
+       * Число здесь настоящее — считано на этой программе, а не взято из
+       * справки; сказать его умеет ровно тот, кто сторожей и снял.
+       */
+      if (!postconditions) {
+        fprintf(stderr,
+                "ПОСТУСЛОВИЯ СНЯТЫ КЛЮЧОМ «--no-postconditions»: %lu, то есть ВСЕ обещания этой\n"
+                "программы. Сторожей в напечатанном станет меньше на столько же за вычетом тех,\n"
+                "что стоят у функций, до которых от входа не дойти: их печать отбрасывает и без\n"
+                "ключа. Проверены обещания при этом были — судом выше, в этой же команде, и\n"
+                "замечание отменило бы печать. Не проверяются они только в напечатанном коде, и\n"
+                "каждый напечатанный файл говорит об этом своей шапкой. Меняете исходник —\n"
+                "прогоняйте «flang check» и «flang test»: там постусловия судятся всегда.\n",
+                (unsigned long)dropped_by_key);
       }
       fputs("ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших\n"
             "программах он в предел шагов этого бинарника не укладывается — свяжи с ними\n"

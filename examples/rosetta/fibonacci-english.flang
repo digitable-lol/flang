@@ -1,8 +1,7 @@
 module «Fibonacci»
 
 // Rosetta Code — Fibonacci sequence, written on the ENGLISH keyword surface.
-// The same program as `fibonacci.flang`, keyword for keyword; the two trees are
-// compared against each other by `flang/test/rosetta.test.mjs`.
+// The same program as `fibonacci.flang`, keyword for keyword.
 //
 // F(0) = 0, F(1) = 1, then the sum of the two before. The task asks both for a
 // single term and for the start of the series as a list.
@@ -120,12 +119,11 @@ total function «Fibonacci»
     expected 102334155
   «Fibonacci by steps» of n and 0 and 1
 
-// The theorem this lemma was missing, and it was missing one word.
+// The theorem for this lemma.
 //
-// Until now the statement stood in the ledger as a grid: the postcondition was
-// counted by one example of the author («No steps left») — on one input out of
-// the segment [0, 2⁵³−1] and one pair of accumulators out of infinity. Now it is
-// proven about ALL inputs, and not one line was added to the kernel for it.
+// An example («No steps left») counts the postcondition on ONE input out of
+// the segment [0, 2⁵³−1] and one pair of accumulators out of infinity; the
+// theorem proves it about ALL inputs.
 //
 // The principle is the one from `flang/proof/examples/segment.flang` — the `nat`
 // SEGMENT: `remaining` is declared `nat`, the descent is by exactly one

@@ -4,9 +4,7 @@ module «Factorial»
 //
 // The same program as `factorial.flang`, keyword for keyword. flang has TWO
 // equal surfaces — `тотальная функция` and `total function`, `свёртка … начиная
-// с` and `fold … starting with` — and both produce the same syntax tree. That
-// is not a claim about documentation: the table lives in `flang/src/lexer.mjs`,
-// and `flang/test/rosetta.test.mjs` compares the two trees of this very pair.
+// с` and `fold … starting with` — and both produce the same syntax tree.
 //
 // n! = 1·2·…·n, with 0! = 1. The task asks for both a recursive and an
 // iterative version, and in flang the two differ by CLASS, not by style.

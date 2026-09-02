@@ -1,8 +1,7 @@
 module «Merge sort»
 
 // Rosetta Code — Sorting algorithms/Merge sort, written on the ENGLISH keyword
-// surface. The same program as `merge-sort.flang`, keyword for keyword; the two
-// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+// surface. The same program as `merge-sort.flang`, keyword for keyword.
 //
 // Split the list in half, sort the halves, merge them.
 //
@@ -11,9 +10,9 @@ module «Merge sort»
 //
 // Merging. The classical merge recurses now on the first list, now on the
 // second. The termination analysis demands ONE argument position that decreases
-// on EVERY recursive call (`totality.mjs` explains why the rule «every call
-// decreases somewhere» is wrong: two functions can shrink different arguments
-// in turn and grow together forever). A merge has two such positions, so
+// on EVERY recursive call (the rule «every call decreases somewhere» is wrong:
+// two functions can shrink different arguments in turn and grow together
+// forever). A merge has two such positions, so
 // directly — FLANG_NOT_TOTAL.
 //
 // Splitting. Half of a list is not a structural part of it: «Take first» builds

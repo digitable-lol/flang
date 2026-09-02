@@ -2,8 +2,7 @@ module «Levenshtein distance»
 
 // Rosetta Code — Levenshtein distance, written on the ENGLISH keyword surface.
 // The same program as `levenshtein-distance.flang`, keyword for keyword: the
-// two trees are the same up to a one-to-one renaming, and that is checked by
-// machine, not by eye.
+// trees match up to a one-to-one renaming, and that is checked by machine.
 //
 // The least number of insertions, deletions and substitutions turning one
 // string into another. «kitten» → «sitting» costs three.

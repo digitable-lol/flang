@@ -86,6 +86,16 @@ resident set size`, то есть память, а не диск. После т�
 
 Ветка `a/семя-воспроизводимо`, коммит `04ff2139`, не влита.
 
+⚠ **То же самое сделано заново 1 сентября ячейкой Ч181 на ветке
+`a/задачник-и-документы` — ветку Ч160 вливать поверх не надо, будет конфликт.**
+Правлены те же три места и ещё девять сверх них: `.github/workflows/reprint.yml`
+(шапка, сводка прогона, предупреждение, снятый отказ «FLANG не задан»),
+`scripts/reprint-freshness.flang` (обе строки; `flang check` — 13 функций из 13),
+`docs/gate-rules.md` (`PAMYAT=400G` → `80G`), `AGENTS.md`, `ROADMAP.md` (заведён
+раздел «Цена самосборки»), `docs/kernel-ledger.md`, `docs/tree-inventory.md`,
+`docs/guide/naming.ru.md`, `docs/ifl/reproduce.sh`, `scripts/raskrutka.sh` и
+восемь заметок `docs/zettel/**`.
+
 * `.github/workflows/reprint.yml` — три места с числом 24 августа заменены
   таблицей трёх замеров 31 августа со ссылками на журналы; вывод про раннер
   переписан.

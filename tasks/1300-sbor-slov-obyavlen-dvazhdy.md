@@ -73,6 +73,13 @@ flang check flang/self/bootstrap/compiler.flang   # FLANG_DUPLICATE_NAME
 Ч86, Ч87, Ч91, — среди которых линия печати ходов вывода Ч56 → Ч71 → Ч87.
 Порядок работ по ним — в задаче 1301.
 
-Остаётся столкновение того же вида, ещё не снятое: функция «Связка
-постусловия» объявлена и в `flang/self/totality.flang:1974`, и в
-`flang/self/proofterm.flang:1292` — держит заплату `C5-totalnost`.
+Остававшееся столкновение того же вида — функция «Связка постусловия» в
+`flang/self/totality.flang` и `flang/self/proofterm.flang` — **на сегодняшнем
+стволе тоже снято**: имя объявлено только в `proofterm.flang:1409`, в
+`totality.flang` его нет.
+
+    LC_ALL=C.UTF-8 /usr/bin/grep -c 'Связка постусловия' flang/self/totality.flang
+    # 0
+
+Столкновений этого рода за день сняли три, и третье нашла сама переставленная
+проверка: `de3fef84`, `ef718648`, `cd5a9f26` — разбор в задаче 1174.

@@ -578,7 +578,6 @@
 - [Служба на flang уже отвечает по сокету — задача 0047 описывала дерево двухдневной давности](network-a-service-on-flang-already-answers-over-the-socket.md)
 - [«Число» на входной границе напечатанной программы уже, чем «число» внутри языка: NaN и бесконечности внутрь не проходят](number-at-the-entry-boundary-is-narrower-than-number-in-the-language.md)
 - [Веер по обязательствам держит не ядро, а печать: движок процессов уезжает только той программе, которая объявила `процесс`, — а компилятор не объявляет ни одного](obligations-fan-out-is-blocked-by-the-printer-not-the-kernel.md)
-- [Делимая часть суда ядра — сотые доли процента, а вся его цена сидит в неподвижной точке «Закрыть без теорем»](the-divisible-part-of-the-kernel-judgment-is-a-fraction-of-a-percent.md)
 - [Список обязательств собирался спуском по хвосту, и это стоило КВАДРАТА — не только времени, но и памяти: 1000 обязательств берут 4,25 ГиБ вместо 226 МиБ](obligations-list-built-by-descent-costs-a-square.md)
 - [Октеты в этом языке выразимы списком чисел, а не строкой, и решает это отсутствие «символа по коду»](octets-are-expressible-as-a-list-of-numbers-not-as-a-string.md)
 - [Одна форма цели держит пятую часть всего недоказанного: 446 обещаний вида «длина против длины»](one-goal-shape-blocks-a-fifth-of-all-unproven-promises.md)
@@ -640,6 +639,7 @@
 - [Срок потомка у хозяина — главное препятствие для переноса долгих проверок, и в справке его нет](the-child-deadline-is-the-main-obstacle-for-long-checks.md)
 - [Сверка эталона командной строки не ловила забытую команду: на ключе свидетель отказывает раньше, чем доходит до команды](the-cli-reference-check-missed-a-forgotten-command.md)
 - [Закрытый список правил сверщика разошёлся с ядром: было восемь, стало тринадцать](the-closed-rule-list-of-the-checker-drifted-from-the-kernel.md)
+- [Делимая часть суда ядра — сотые доли процента, а вся его цена сидит в неподвижной точке «Закрыть без теорем»](the-divisible-part-of-the-kernel-judgment-is-a-fraction-of-a-percent.md)
 - [Ветвь «пусто» у тела-`разбора` закрыта ОБЕИМИ записями охраны, и литерал не помогает](the-empty-branch-of-a-match-is-shut-in-both-spellings.md)
 - [Двоичный расходится с Node на корпусе не печатью, а границей входа: у уже втащенной цели C расходится 161 программа из 163, и всегда одним и тем же блоком](the-entry-boundary-not-printing-splits-the-binary-from-node.md)
 - [Граница входа была долгом ПЕЧАТИ, а не вычитания в проверке: без неё напечатанный крейт Rust не собирается вовсе](the-entry-boundary-was-a-debt-of-printing-not-a-subtraction-in-the-check.md)
@@ -701,6 +701,11 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
+
+## Ещё не разобранное
+
+- [Проба порчей, которая ничего не испортила, выглядит как успех](a-sabotage-test-that-sabotages-nothing-looks-like-success.md)
+- [Семя нельзя подправить руками — оно не слинкуется](the-seed-cannot-be-patched-by-hand-it-will-not-link.md)
 
 ## Как добавлять
 

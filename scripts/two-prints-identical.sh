@@ -13,7 +13,7 @@
 # Не журналов, не отпечатков, не времени: тело, из которого соберётся двоичный.
 #
 # Звать:
-#   sh scripts/sverit-dve-pechati.sh <каталог-1> <каталог-2>
+#   sh scripts/two-prints-identical.sh <каталог-1> <каталог-2>
 # Каталог — корень дерева, в котором прошла печать (в нём лежит bootstrap/).
 #
 # Коды возврата — по правилу дерева: «плохо» и «не проверено» это РАЗНОЕ.
@@ -26,7 +26,7 @@ set -u
 skazhi() { printf '%s\n' "$*"; }
 beda()   { printf '%s\n' "$*" >&2; }
 
-[ $# -eq 2 ] || { beda "звать: sh scripts/sverit-dve-pechati.sh <каталог-1> <каталог-2>"; exit 2; }
+[ $# -eq 2 ] || { beda "звать: sh scripts/two-prints-identical.sh <каталог-1> <каталог-2>"; exit 2; }
 A=$1; B=$2
 for d in "$A" "$B"; do
   [ -d "$d" ] || { beda "не каталог: $d"; exit 2; }

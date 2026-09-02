@@ -71,7 +71,7 @@ a valid object name».
    чтобы померить Г4, надо знать, из какой ссылки его достать. Пока это так, у
    Г4 на стволе нет прибора.
 3. То же и с моими: `scripts/criterion-score-guard.sh` (считает сами гейты) и
-   `scripts/sverit-dve-pechati.sh` (прибор Г6) лежат в невлитой ветке
+   `scripts/two-prints-identical.sh` (прибор Г6) лежат в невлитой ветке
    `a/vremennoe-v-dereve`, а на стволе их нет.
 
 ## Правило

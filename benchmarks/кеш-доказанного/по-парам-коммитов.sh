@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # Сколько обязательств НЕ МЕНЯЕТСЯ между соседними коммитами ствола.
 #
-#   bash по-парам-коммитов.sh <клон> <вход.flang> <сколько коммитов> <куда>
+#   bash по-парам-коммитов.sh <клон> <вход.flang> <сколько коммитов> <куда> [откуда]
+#
+# «откуда» — коммит, от которого идти первым родителем; по умолчанию HEAD. Он
+# нужен, чтобы мерить ТО ЖЕ ОКНО ИСТОРИИ, что мерила прошлая ячейка: доля
+# попаданий у другого окна — другое число, и сличать их как «сошлось/не сошлось»
+# было бы подлогом.
 #
 # Ключи считаются по ИСХОДНИКАМ (ключи-по-дереву.py), то есть без мест и без
 # комментариев — это ВЕРХНЯЯ оценка попаданий. Ядро (двоичный, которым
@@ -13,6 +18,7 @@ klon=${1:?клон}
 vhod=${2:?вход}
 skolko=${3:?сколько коммитов}
 kuda=${4:?куда}
+otkuda=${5:-HEAD}
 here=$(cd "$(dirname "$0")" && pwd)
 mkdir -p "$kuda"
 derevo="$kuda/derevo"
@@ -23,8 +29,8 @@ if [ ! -d "$derevo" ]; then
   echo "рабочее дерево заведено, код $kod"
 fi
 
-git -C "$klon" -c core.quotepath=false log --first-parent -"$skolko" --format='%h' > "$kuda/kommity.txt"
-echo "коммитов взято: $(wc -l < "$kuda/kommity.txt")"
+git -C "$klon" -c core.quotepath=false log --first-parent -"$skolko" --format='%h' "$otkuda" > "$kuda/kommity.txt"
+echo "коммитов взято: $(wc -l < "$kuda/kommity.txt"), от $otkuda"
 
 while read -r c; do
   if [ -s "$kuda/klyuchi-$c.txt" ]; then continue; fi

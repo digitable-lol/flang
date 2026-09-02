@@ -9,8 +9,13 @@
 #   bash встроить.sh <куда-класть-семя>
 #
 # Дальше:
-#   FLANG_KESH=1 FLANG_KESH_KERNEL=<отпечаток> <куда>/flang check <файл>
-#   FLANG_KESH=1 FLANG_KESH_ONLY=1 ... — без второго прогона ядра целиком
+#   FLANG_KESH=1 <куда>/flang check <файл>              ключи и приговоры
+#   FLANG_KESH=1 FLANG_KESH_ONLY=1 ...                  без второго прогона ядра
+#   FLANG_KESH=1 FLANG_KESH_TOLKO_KLYUCHI=1 ...         одни ключи, ядро не звано
+#   FLANG_KESH=1 FLANG_KESH_TSENA=1 ...                 ещё и цена
+#
+# Отпечаток проверяльщика прибор снимает сам (/proc/self/exe); переменной среды
+# он больше не приезжает — см. замер.sh.
 set -e
 export LC_ALL=C.UTF-8
 here=$(cd "$(dirname "$0")" && pwd)

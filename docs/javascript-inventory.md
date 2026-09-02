@@ -26,13 +26,13 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
-16:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
+17:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
 `AGENTS.md`).
 
 Эта опись считает ОДИН язык. Остальные пятнадцать — оболочка, C, Python, HTML,
 CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby — считает
-[`tree-inventory.md`](tree-inventory.md) (1 сентября 2026: 237 файлов вне flang,
-<!-- СНЯТО 2026-09-02 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 237 -->
+[`tree-inventory.md`](tree-inventory.md) (1 сентября 2026: 247 файлов вне flang,
+<!-- СНЯТО 2026-09-02 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 247 -->
 долг вне JavaScript — **74 файла, 8 729 строк при потолке 63**: храповик красен,
 разбор — задача 4838). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и

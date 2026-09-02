@@ -1,8 +1,7 @@
 module «Towers of Hanoi»
 
 // Rosetta Code — Towers of Hanoi, written on the ENGLISH keyword surface. The
-// same program as `towers-of-hanoi.flang`, keyword for keyword; the two trees
-// are compared against each other by `flang/test/rosetta.test.mjs`.
+// same program as `towers-of-hanoi.flang`, keyword for keyword.
 //
 // Move a tower of n disks from one peg to another using a third; one disk at a
 // time, and a larger disk may never rest on a smaller one.

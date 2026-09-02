@@ -1,8 +1,7 @@
 module «100 doors»
 
 // Rosetta Code — 100 doors, written on the ENGLISH keyword surface. The same
-// program as `hundred-doors.flang`, keyword for keyword; the two trees are
-// compared against each other by `flang/test/rosetta.test.mjs`.
+// program as `hundred-doors.flang`, keyword for keyword.
 //
 // A hundred closed doors. On the first pass every door is touched, on the
 // second every second one, on the hundredth the hundredth. To touch is to

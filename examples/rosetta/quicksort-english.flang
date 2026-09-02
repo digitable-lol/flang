@@ -1,8 +1,7 @@
 module «Quicksort»
 
 // Rosetta Code — Sorting algorithms/Quicksort, written on the ENGLISH keyword
-// surface. The same program as `quicksort.flang`, keyword for keyword; the two
-// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+// surface. The same program as `quicksort.flang`, keyword for keyword.
 //
 // Take a pivot, split the rest into smaller and not-smaller, sort both parts,
 // glue them back together.

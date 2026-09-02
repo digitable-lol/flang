@@ -2,8 +2,7 @@ module «Primes by trial division»
 
 // Rosetta Code — Sequence of primes by trial division, written on the ENGLISH
 // keyword surface. The same program as `primes-by-trial-division.flang`,
-// keyword for keyword; the two trees are compared against each other by
-// `flang/test/rosetta.test.mjs`.
+// keyword for keyword.
 //
 // Primes up to a limit: take the first number left, declare it prime, throw
 // away everything divisible by it, repeat.

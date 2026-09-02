@@ -3,9 +3,7 @@ module «Faktorialo»
 // Rosetta Code — Faktorialo, sur la ESPERANTA vortsurfaco.
 //
 // La sama programo kiel `examples/rosetta/factorial.flang`, vorto post
-// vorto. Tio ne estas aserto pri dokumentado: `flang/test/surfaces.test.mjs`
-// komparas la du sintaksarbojn kaj postulas, ke ili koincidu ĝis reciproke
-// unusenca renomado.
+// vorto: la du sintaksarboj koincidas ĝis reciproke unusenca renomado.
 //
 // UNU VORTO RESTAS ANGLA, kaj tio estas decido, ne preteratento. En Esperanto
 // «modulo» nomas kaj la programeron kaj la reston de divido, kaj la anglan

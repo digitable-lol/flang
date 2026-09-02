@@ -69,6 +69,39 @@ name: CI
 # сборка семени там дороже. Считать их потолком нельзя, они пол.
 #
 # `workflow_dispatch` оставлен: ветку иногда надо проверить целиком руками.
+# ── ВЫПУСК НЕ ОПИРАЕТСЯ НА КЕШ ПРИГОВОРОВ ────────────────────────────────────
+#
+# `AGENTS.md`, раздел «Кеш приговоров: где живёт и чему он НЕ основание», несёт
+# правило, которое отменять нельзя: «Кешу верят для СКОРОСТИ. Для ИСТИНЫ — про-
+# веряльщику. Выпуск не имеет права опираться на кеш: перед меткой всё пересчи-
+# тывается начисто, без `FLANG_KESH_PRIGOVOROV`.»
+#
+# До 2 сентября 2026 правило было записано словами и не принуждалось ничем.
+# Правило, которое ничто не исполняет, — не правило: сторож столкновений имён
+# уже лежал в дереве, его никто не звал, и это стоило двадцати часов машины.
+# Теперь его принуждает составное действие `.github/actions/release-without-cache`
+# (почему не файл в `scripts/` — разобрано в его шапке), и шаг
+# «Выпуск не опирается на кеш приговоров» стоит ПЕРВЫМ после выкладки —
+# в каждой из семнадцати работ этого файла.
+#
+# ПОЧЕМУ В КАЖДОЙ РАБОТЕ, А НЕ В ОДНОЙ. Работы независимы: у каждой свой раннер
+# и своя среда, и заглянуть в чужую ни одна не может. Сторож в одной работе
+# ничего не говорит про остальные — а метка выпускает то, что сказали ВСЕ
+# вместе. Выбрать подмножество значило бы оставить дыры ровно там, куда не
+# посмотрели. Четыре работы файла и вовсе живут только меткой (`zhargon`,
+# `test`, `pravila`, `stale-pages`), а остальные тринадцать метка тоже гоняет.
+#
+# ПОЧЕМУ ПАДАЕТ, А НЕ СНИМАЕТ ПЕРЕМЕННУЮ МОЛЧА. Снять её можно только блоком
+# `env:` работы — а он затирает значение ДО сторожа, и сторож был бы зелен
+# всегда, ничего не проверяя. Молчаливое снятие вдобавок прячет находку:
+# заданная на пути выпуска переменная — признак того, что выпуск настроен
+# неправильно, и это надо увидеть один раз глазами, а не глотать каждый раз.
+#
+# На ветке и в запросе слияния сторож молчит: кеш там разрешён и нужен, он для
+# скорости. Красным он бывает только на метке. Ручной запуск выпуском НЕ
+# считается: шапка выше говорит прямо — «`workflow_dispatch` оставлен: ветку
+# иногда надо проверить целиком руками», а проверка ветки руками не выпуск.
+
 on:
   push:
     branches: [main]
@@ -138,6 +171,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - name: сторож краснеет на подложенном слове
         run: |
           if sh scripts/seed-knows-type-words-guard.sh --подлог; then
@@ -171,6 +206,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - name: сторож чисел краснеет на подложенном числе
         run: |
           if sh scripts/prose-numbers-guard.sh --подлог; then
@@ -199,6 +236,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       # Двоичный нужен живой: вопрос «умеет ли печать резать длинную
       # постоянную» задаётся ПРОГОНОМ печати. Чтением исходников на него не
       # ответить — печатью правит эмиттер, зашитый в двоичный, а не тот, что
@@ -234,6 +273,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -267,6 +308,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
@@ -318,6 +361,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/license-guard.flang
 
@@ -371,6 +416,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - name: Прогнать сторож и сказать правду в сводку независимо от вердикта
         run: |
@@ -399,6 +446,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/commands-via-symlink.flang
 
@@ -408,6 +457,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/emit-and-examples.flang
 
@@ -417,6 +468,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/corpus-runner.flang
 
@@ -443,6 +496,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/check-before-run.flang
 
@@ -452,6 +507,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/input-boundary.flang
 
@@ -477,6 +534,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/region-in-c-target.flang
@@ -546,6 +605,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: sh flang/proof/сверка-правил.sh --только-первая
         env:
@@ -559,6 +620,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: sh flang/proof/сверка-правил.sh
         env:
@@ -575,6 +638,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -621,6 +686,8 @@ jobs:
         # В клоне глубиной в одну ревизию сверять её не с чем.
         with:
           fetch-depth: 0
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

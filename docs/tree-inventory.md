@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 236 файлов вне flang, долг вне JavaScript — 74 при потолке 63
-<!-- СНЯТО 2026-09-02 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 236 -->
+# Опись дерева по языкам: 237 файлов вне flang, долг вне JavaScript — 74 при потолке 63
+<!-- СНЯТО 2026-09-02 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 237 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` 1 сентября 2026 отвечает кодом 1: «ДОЛГ ВНЕ JavaScript:
@@ -39,8 +39,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 81 | 13 481 | 61 | 5 249 <!-- СНЯТО 2026-09-02 файлов *.sh = 81 --><!-- СНЯТО 2026-09-02 строк-в *.sh = 13481 --> |
-| C | 37 | 760 562 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.c,*.h = 37 --><!-- СНЯТО 2026-08-31 строк-в *.c,*.h = 760562 --> |
+| оболочка | 82 | 13 599 | 61 | 5 249 <!-- СНЯТО 2026-09-02 файлов *.sh = 82 --><!-- СНЯТО 2026-09-02 строк-в *.sh = 13599 --> |
+| C | 37 | 760 883 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.c,*.h = 37 --><!-- СНЯТО 2026-08-31 строк-в *.c,*.h = 760883 --> |
 | Python | 16 | 5 480 | 2 | 269 <!-- СНЯТО 2026-08-31 файлов *.py = 16 --><!-- СНЯТО 2026-08-31 строк-в *.py = 5480 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
@@ -80,7 +80,7 @@ flang в C.
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 726 169 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-08-31 строк-в bootstrap/*.c,bootstrap/*.h = 726169 --> |
-| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 44 175 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-08-31 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 44175 --> |
+| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 44 496 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-09-02 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 44496 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 14 | 2 729 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |

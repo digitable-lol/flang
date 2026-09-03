@@ -993,6 +993,7 @@ static Progon proigrat_blok(Obst *o) {
    не «подделка», а «проверить нечем»: исход 3. `primety` — то, что человеку
    знать полезно, а на исход не влияет (правило Ч55 о поле «исходник»). */
 typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy, hodov,
+                 uzlov, uzlov_mest, uzlov_mimo,
                  bez_privyazki, shagov_na_slovo, shagov_primerom, dokazannyh; char *sha; int kripto;
                  /* Ч56: вердикт по каждому утверждению порознь (ключ
                     `--по-утверждениям`), а не один на весь файл. */
@@ -1837,10 +1838,119 @@ static int dovod_funkcii(Sp stroki, const char *mesto, const char *imya) {
   }
   return 0;
 }
+/* ═══ УЗЕЛ ВЕРДИКТА «РАЗБОРОМ ПО СЛУЧАЯМ» — ЯЧЕЙКА Ч363 ══════════════════════
+   ГДЕ ЭТО СТОИТ. Утверждение без теоремы ядро закрывает двумя подмаршрутами.
+   Один — «по объявленному типу»: в запись из него не доезжает ни байта, и
+   сверять нечего. Другой — «разбором по случаям»: принцип и посылки в записи
+   СТОЯТ, но `proigrat_blok` переигрывает только ВЫПИСАННЫЕ ходы, а у посылки,
+   закрытой сведением, их ноль. Оттого 13 таких мест корпуса числились на слово
+   ядра — вместе с 26 своими посылками, и это один и тот же долг.
+
+   ЧТО ПРОИГРЫВАЕТСЯ ЗДЕСЬ. Ровно один носитель — ОТРЕЗОК — и ровно одно правило
+   — «неотрицательность по построению». Тело обязано быть одним «если». Какая
+   ветвь дно, сказано ФОРМОЙ УСЛОВИЯ, а не догадкой о содержимом ветвей; её
+   значение сверщик считает сам и требует, чтобы цель на нём держалась. Спуск
+   обязан быть суммой неотрицательного ПО ПОСТРОЕНИЮ с рекурсивным вызовом на
+   «по минус шаг»: этот вызов и есть допущение индукции, других допущений
+   правило не берёт. Сошлось всё — узел снимается со слова ядра ВМЕСТЕ С
+   ПОСЫЛКАМИ, потому что проиграно именно то, что они называли именем правила.
+
+   ГДЕ ПРИЁМ КОНЧАЕТСЯ, И ГРАНИЦА НАРОЧНАЯ, а «не берусь» тут ДВУХ РАЗНЫХ ПОРОД.
+   Узел ВНЕ ПРИЁМА — носитель `algebra` (10 мест из 13), другое правило, другая
+   цель — считается ЧИСЛОМ в вердикте: приём за него не брался и не ломался.
+   Узел, за который приём ВЗЯЛСЯ и не смог (тело не из одного «если», форма
+   условия незнакома, дно не считается, спуск не сложился), называется
+   ПОИМЁННО строкой «НЕ ВЗЯЛСЯ» — правило Ч27 о закрытых списках. А вот
+   РАСХОЖДЕНИЕ прочитанного с записанным — «НЕ СОШЛОСЬ», как и у шага автора. */
+
+/* Слагаемое неотрицательно ПО ПОСТРОЕНИЮ: либо число не меньше нуля, либо сам
+   довод индукции, объявленный типом «нат». Список закрыт. */
+static int neotricatelen(const char *t, const char *po, int po_nat) {
+  double v;
+  if (chislo_tochno(t, &v)) return v >= 0;
+  return po_nat && strcmp(t, po) == 0;
+}
+
+/* Объявлен ли довод названным типом — читается ИЗ ИСХОДНИКА, а не берётся из
+   записи: на этом объявлении стоит неотрицательность самого довода. */
+static int dovod_tipa(Sp stroki, long a, long b, const char *imya, const char *tip) {
+  long i;
+  for (i = a; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (!nachinaetsya(l, "принимает ")) continue;
+    return est_term(szhat_probely(zamenit(zamenit(l, ":", " : "), ",", " , ")),
+                    fmt("%s : %s", imya, tip));
+  }
+  return 0;
+}
+
+/* Какая ветвь тела — дно: отношений пять, список закрыт, незнакомая форма даёт
+   пустое слово, и узел остаётся на слове ядра. */
+static const char *vetv_dna(const char *uslovie, const char *po) {
+  static const char *otn[] = { "не больше ", "не меньше ", "больше ", "меньше ", "равно " };
+  static const char *gde[] = { "то",         "иначе",      "иначе",   "то",      "то" };
+  char *hvost; double v; int k;
+  if (strcmp(slovo(uslovie, 1), po) != 0) return "";
+  hvost = slova_posle(uslovie, 1);
+  for (k = 0; k < 5; k++)
+    if (nachinaetsya(hvost, otn[k]) && chislo_tochno(hvost + strlen(otn[k]), &v)) return gde[k];
+  return "";
+}
+
+static int ne_proigran(Sverka *s, const char *imya, char *pochemu) {
+  dobavit(&s->ne_vzyalsya, fmt("утверждение «%s»: узел вердикта не проигран — %s", imya, pochemu));
+  return 0;
+}
+
+/* Проиграть узел вердикта заново. 1 — проигран целиком, и посылки его тоже. */
+static int proigrat_uzel(Sverka *s, Sp svoi, Sp stroki, const char *imya,
+                         const char *chya, const char *cel) {
+  char *princip = pervaya_s_nachalom(svoi, "принцип тип ");
+  Sp posylki = vse_s_nachalom(svoi, "посылка ");
+  char *po = v_yolochkah(princip, 2), *nositel = slovo_posle(princip, "носитель ");
+  char *usl = (char *)"", *v_to = (char *)"", *v_inache = (char *)"";
+  long shag = nomer_posle(princip, "шаг "), a, b, i, eslej = 0, n_to = 0, n_inache = 0;
+  const char *dno; char *t_dno, *t_spusk, *vyzov; Razrez sum; int znakom = 0;
+  int vne;
+  if (!*princip) return 0;               /* «по объявленному типу»: узла в записи нет */
+  /* ВНЕ ПРИЁМА — не поломка: узел остаётся на слове ядра и считается числом. */
+  vne = strcmp(nositel, "segment") != 0 || posylki.n != 2 || shag < 1
+        || strcmp(cel, "результат не меньше 0") != 0;
+  for (i = 0; !vne && i < posylki.n; i++)
+    if (strcmp(v_yolochkah(posylki.e[i], 3), "неотрицательность по построению") != 0) vne = 1;
+  if (vne) { s->uzlov_mimo++; return 0; }
+  a = blok_funkcii(stroki, chya, &b);
+  if (a < 1) return 0;                   /* функции в исходнике нет — об этом скажет сверка имён */
+  for (i = a; i < b; i++) {
+    char *z = kak_chitaet_yazyk(chast(stroki, i));
+    if (nachinaetsya(z, "если ")) { eslej++; usl = hvost_posle(z, "если "); }
+    else if (nachinaetsya(z, "то ")) { n_to++; v_to = hvost_posle(z, "то "); }
+    else if (nachinaetsya(z, "иначе ")) { n_inache++; v_inache = hvost_posle(z, "иначе "); }
+  }
+  if (eslej != 1 || n_to != 1 || n_inache != 1)
+    return ne_proigran(s, imya, (char *)"тело функции — не одно «если» с одной парой ветвей");
+  dno = vetv_dna(usl, po);
+  if (!*dno) return ne_proigran(s, imya, fmt("форма условия «%s» сверщику незнакома", usl));
+  t_dno   = term(strcmp(dno, "то") == 0 ? v_to : v_inache);
+  t_spusk = term(strcmp(dno, "то") == 0 ? v_inache : v_to);
+  if (!cel_derzhitsya(cel, t_dno, &znakom)) {
+    esli_ne(s, !znakom, fmt("утверждение «%s»: дно даёт «%s», и цель «%s» на нём НЕ держится",
+                            imya, t_dno, cel));
+    return znakom ? 0 : ne_proigran(s, imya, fmt("дно «%s» — не замкнутое число", t_dno));
+  }
+  vyzov = term(fmt("«%s» от ( %s минус %ld )", chya, po, shag));
+  sum = razrez_po(t_spusk, "плюс");
+  { int nat = dovod_tipa(stroki, a, b, po, "нат");
+    if (sum.est && strcmp(uzhat(sum.pravo), vyzov) == 0 && neotricatelen(uzhat(sum.levo), po, nat)) return 1;
+    if (sum.est && strcmp(uzhat(sum.levo), vyzov) == 0 && neotricatelen(uzhat(sum.pravo), po, nat)) return 1; }
+  return ne_proigran(s, imya, fmt("спуск «%s» — не сумма неотрицательного по построению с вызовом «%s»",
+                                  t_spusk, vyzov));
+}
+
 /* Посылок у принципа по объявленной сумме обязано быть ровно столько, сколько у
    типа вариантов, и варианты обязаны совпасть с объявленными в исходнике. */
 static void sverit_pokrytie(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
-                            const char *verdikt, const char *mesto) {
+                            const char *verdikt, const char *mesto, int proigran) {
   char *princip = pervaya_s_nachalom(svoi, "принцип тип ");
   Sp posylki = vse_s_nachalom(svoi, "посылка "), varianty, nepokr = PUSTO;
   int i, j, dokazano = strcmp(verdikt, "доказано") == 0, slabyh = 0;
@@ -1848,7 +1958,8 @@ static void sverit_pokrytie(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
   char *indukciya = pervaya_s_nachalom(svoi, "индукция по «");
   for (i = 0; i < posylki.n; i++)
     if (strcmp(slovo_posle(posylki.e[i], "вердикт "), "доказано") != 0) slabyh++;
-  s->na_slovo += posylki_na_slovo(svoi);
+  /* Ч363: узел вердикта проигран заново — посылки его больше не на слово. */
+  if (!proigran) s->na_slovo += posylki_na_slovo(svoi);
   esli_ne(s, !dokazano || slabyh == 0,
           fmt("теорема «%s»: вердикт «доказано», а посылок не доказано %d", imya_t, slabyh));
   if (!*princip) return;      /* прямое доказательство: принципа нет вовсе */
@@ -2212,24 +2323,34 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
     o.hvost = hvost_dovodov(stroki, chya); }
   p = proigrat_blok(&o);
   vlit_progon(s, &p, imya_t);
-  sverit_pokrytie(s, svoi, stroki, imya_t, verdikt, mesto);
+  sverit_pokrytie(s, svoi, stroki, imya_t, verdikt, mesto, 0);
 }
 
 /* Утверждение, доказанное БЕЗ теоремы, сверять нечем: доказательства в исходнике
    нет ни строкой, вердикт целиком на совести ядра. Чекер обязан сказать это
    числом. Два он всё же проверяет: что теоремы правда нет и что правила из списка. */
 static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
-                        const char *verdikt, const char *mesto) {
-  int i, spryatana = 0;
+                        const char *verdikt, const char *mesto, const char *chya) {
+  int i, spryatana = 0, proigran;
   for (i = 0; i < stroki.n; i++)
     if (strcmp(obrezat(stroki.e[i]), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
   esli_ne(s, !spryatana,
           fmt("в записи сказано «теоремы нет», а в исходнике теорема «%s» написана", imya));
+  /* Ч363: подмаршрут «разбором по случаям» — узел вердикта, который можно
+     проиграть заново. Цель берётся из ИСХОДНИКА, хвостом постусловия. */
+  proigran = strcmp(verdikt, "доказано") == 0 &&
+             proigrat_uzel(s, svoi, stroki, imya, chya,
+                           hvost_posle(kak_chitaet_yazyk(mesto),
+                                       fmt("обеспечивает «%s» ", imya)));
   sverit_pravila(s, svoi, fmt("утверждение «%s»", imya));
   sverit_polya_posylok(s, svoi, stroki, imya);
   sverit_svedenie(s, svoi, imya);
-  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto);
-  if (strcmp(verdikt, "доказано") == 0) s->na_slovo++;
+  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran);
+  /* Ч363: и узлы, и СНЯТЫЕ ИМИ МЕСТА — числом. Второе нужно тому, кто считает
+     породы мест по тексту записи: без него два прибора разойдутся на честной
+     записи, и расхождение это будет не находкой, а слепотой мерки. */
+  if (proigran) { s->uzlov++; s->uzlov_mest += 1 + vse_s_nachalom(svoi, "посылка ").n; }
+  else if (strcmp(verdikt, "доказано") == 0) s->na_slovo++;
 }
 
 static void sverit_utverzhdenie(Sverka *s, const char *blok, Sp stroki) {
@@ -2250,7 +2371,7 @@ static void sverit_utverzhdenie(Sverka *s, const char *blok, Sp stroki) {
           fmt("утверждение «%s» записано за функцией «%s», а строка %ld исходника стоит в функции «%s»",
               imya, chya, gde, hozyain));
   if (est_teorema) sverit_teoremu(s, svoi, stroki, verdikt, mesto, imya, chya);
-  else bez_teoremy(s, svoi, stroki, imya, verdikt, mesto);
+  else bez_teoremy(s, svoi, stroki, imya, verdikt, mesto, chya);
 }
 
 static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
@@ -2378,7 +2499,7 @@ int main(int argc, char **argv) {
   /* Ч76: за что сверщик НЕ ВЗЯЛСЯ, названо вслух и поимённо. Приём, который
      ломается молча, отличить от приёма, которому нечего проверять, нельзя. */
   if (s.ne_vzyalsya.n)
-    printf("НЕ ВЗЯЛСЯ (шагов вне случая %d): %s\n", s.ne_vzyalsya.n, soedinit(s.ne_vzyalsya, "; "));
+    printf("НЕ ВЗЯЛСЯ (мест %d): %s\n", s.ne_vzyalsya.n, soedinit(s.ne_vzyalsya, "; "));
   { int na_slovo_est = (s.na_slovo || s.shagov_na_slovo) ? 1 : 0;
     const char *golova;
     d = (na_slovo_est || !s.kripto) ? 1 : 0;
@@ -2397,11 +2518,15 @@ int main(int argc, char **argv) {
     printf("%s: утверждений %ld, шагов сверено с исходником %ld, сведений проиграно заново %ld"
            " (ходов проверено %ld). Числятся доказанными %ld."
            " НА СЛОВО ЯДРА: посылок и утверждений %ld, шагов %ld."
+           " Узлов вердикта «разбором по случаям» проиграно заново %ld"
+           " (снято со слова ядра мест %ld),"
+           " вне приёма сверщика %ld."
            " Шагов по примеру проверено по существу %ld."
            " Строк без привязки к исходнику %ld. Привязка к программе: %s."
            " sha256 исходника %s\n",
            golova, s.utverzhdeniy, s.shagov, s.svedeniy, s.hodov, s.dokazannyh,
-           s.na_slovo, s.shagov_na_slovo, s.shagov_primerom, s.bez_privyazki,
+           s.na_slovo, s.shagov_na_slovo, s.uzlov, s.uzlov_mest, s.uzlov_mimo,
+           s.shagov_primerom, s.bez_privyazki,
            s.kripto ? "SHA-256 сошёлся" : "только свёртка ядра — она ломается",
            s.sha);
     if (s.primety.n) printf("ПРИМЕТЫ (на исход не влияют): %s\n", soedinit(s.primety, "; "));

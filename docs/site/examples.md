@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `examples/`: 190 files in
+Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 192 --> 192 files in
 twenty-one sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git ls-files examples | grep -c '\.flang$'` → 190 (measured 29 August 2026).
+`git ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 192 --> 192 (measured 3 September 2026).
 
 ## The sets
 
@@ -19,7 +19,7 @@ The number is recounted by one command:
 | [`io/`](examples/io) | 8 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
-| [`db/`](examples/db) | 4 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
+| [`db/`](examples/db) | <!-- СНЯТО 2026-09-03 файлов examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
 | [`service-on-processes/`](examples/service-on-processes) | 4 | a service on processes rather than on a three-function example: the claim about an own alternative to OTP, checked at full size |
 | [`https/`](examples/https) | 3 | TLS: the RFC 8448 records, the system trust store, a hello to a real host |
 | [`proof-probes/`](examples/proof-probes) | 3 | probes of the proof core itself: the typed-AST door, a refused generic descent, a variant with fields |
@@ -43,7 +43,7 @@ they are run by the binary:
 
 ```bash
 bootstrap/flang test examples/rosetta/   # one set
-bootstrap/flang test examples/           # the whole catalogue, 190 files
+bootstrap/flang test examples/           # the whole catalogue, 192 files
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.

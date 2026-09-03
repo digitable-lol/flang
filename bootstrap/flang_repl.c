@@ -5115,12 +5115,13 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
    * зовётся своим маленьким прогонщиком (REPL_RUNNER), а он в границу и не
    * ходит — значения ему подаёт человек через ту же оболочку, а не сеть.
    */
-  static const char *const names[15] = {"путь",              "есть путь",        "база",
+  static const char *const names[17] = {"путь",              "есть путь",        "база",
                                         "предел глубины",    "предел шагов",     "прогонщик",
                                         "рантайм заголовок", "рантайм исходник", "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
-                                        "поля входа",        "варианты входа",   "параметры входа"};
-  fl_value values[15];
+                                        "поля входа",        "варианты входа",   "параметры входа",
+                                        "планировщик заголовок", "планировщик исходник"};
+  fl_value values[17];
   fl_value args[2];
   fl_value emitted = fl_nothing();
   fl_value files = fl_nothing();
@@ -5145,8 +5146,10 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
   values[12] = fl_list(NULL, 0);
   values[13] = fl_list(NULL, 0);
   values[14] = fl_list(NULL, 0);
+  values[15] = repl_value_say("");
+  values[16] = repl_value_say("");
   args[0] = program;
-  args[1] = repl_value_record(names, values, 15);
+  args[1] = repl_value_record(names, values, 17);
   if (repl_call("Напечатать связанное", args, 2, &emitted) != FL_OK) {
     *error = repl_say("печать сессии в C прекращена");
     return false;

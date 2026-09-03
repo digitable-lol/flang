@@ -48,8 +48,10 @@ brew install digitable-lol/tap/flang
 flang --version
 ```
 
-Вторая команда отвечает `flang {{выпуск.версия}}`. Остальные пути — asdf, из
-исходников — на странице [Установка](install.html).
+Первая строка ставит из репозитория
+[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap); вторая отвечает
+`flang {{выпуск.версия}}`. Остальные пути — asdf, из исходников — на странице
+[Установка](install.html).
 
 ## Что язык умеет сегодня
 

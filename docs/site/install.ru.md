@@ -19,8 +19,10 @@
 brew install digitable-lol/tap/flang
 ```
 
-Ставит `flang`, `libcompiler_flang.a`, два заголовка и страницу `man flang`.
-Node не нужен: в архиве релиза лежит готовый C99.
+Ставит `flang`, `libcompiler_flang.a`, два заголовка и страницу `man flang` —
+раздаёт их репозиторий
+[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap). Node не нужен:
+в архиве релиза лежит готовый C99.
 
 ## asdf
 
@@ -146,6 +148,21 @@ libcompiler_flang.a`, двоичный файл поставлен, а библ�
 `make -C bootstrap uninstall` снимает `bin/flang`, библиотеку и страницу man, но
 ОСТАВЛЯЕТ два заголовка в `include/` — удалите их руками, если каталог должен
 остаться пустым.
+
+## Построено на flang
+
+Четыре приложения вне этого репозитория — не примеры, а рабочий код:
+
+- **[flang-tui](https://github.com/digitable-lol/flang-tui)** — раскладка терминального экрана
+  на flang: полосы, обрезка по печатаемым ячейкам, укладка, вкладки, прокрутка. Печатается в Go
+  и C.
+- **[digitdisk](https://github.com/digitable-lol/digitdisk)** — обзор диска и системы на Linux:
+  правила решаются ядром на flang, системные вызовы — хозяином на Go.
+- **[flang-ribbon](https://github.com/digitable-lol/flang-ribbon)** — арифметика ленты окон на
+  flang: смещения, ширина колонки, высота окна, вставка, панели. Перенесена из digitwm и сверена
+  с ним побайтно на 526 871 входе. Печатается в C и в Go.
+- **[flang-env](https://github.com/digitable-lol/flang-env)** — разбор значений окружения на
+  flang: глубина цвета, язык, `NO_COLOR`. Чистые правила, чтение — за хозяином.
 
 ## Что дальше
 

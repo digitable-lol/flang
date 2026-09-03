@@ -19,8 +19,9 @@ every path — pick by what the machine already has.
 brew install digitable-lol/tap/flang
 ```
 
-Installs `flang`, `libcompiler_flang.a`, two headers and the `man flang` page.
-Node is not needed: the release archive carries ready C99.
+Installs `flang`, `libcompiler_flang.a`, two headers and the `man flang` page,
+served from the [`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap)
+repository. Node is not needed: the release archive carries ready C99.
 
 ## asdf
 
@@ -146,6 +147,21 @@ the directory holding it.
 `make -C bootstrap uninstall` removes `bin/flang`, the library and the man page,
 but LEAVES the two headers in `include/` — delete them by hand if the prefix has
 to be empty.
+
+## Built with flang
+
+Four applications outside this repository, not examples but working code:
+
+- **[flang-tui](https://github.com/digitable-lol/flang-tui)** — terminal screen layout in
+  flang: strips, clipping by printable cells, stacking, tabs, scrolling. Printed to Go and C.
+- **[digitdisk](https://github.com/digitable-lol/digitdisk)** — a disk and system overview for
+  Linux: the rules are decided by a kernel written in flang, the system calls by a Go host.
+- **[flang-ribbon](https://github.com/digitable-lol/flang-ribbon)** — window-ribbon arithmetic
+  in flang: offsets, column width, window height, insertion, panes. Carried over from digitwm
+  and checked to match it exactly on 526,871 inputs. Printed to C and to Go.
+- **[flang-env](https://github.com/digitable-lol/flang-env)** — parsing environment values in
+  flang: color depth, language, `NO_COLOR`. The rules are pure; reading the environment is left
+  to the host.
 
 ## Next
 

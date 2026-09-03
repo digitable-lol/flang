@@ -59,7 +59,7 @@ def замыкание_файлов(корень, вход):
     файлы = []
     for dp, dn, fn in os.walk(os.path.join(корень, 'flang')):
         for f in fn:
-            if f.endswith('.flang') or f.endswith('.fp') or f.endswith('.фп'):
+            if f.endswith('.flang') or f.endswith('.fp') or f.endswith('.фп') or f.endswith('.фланг'):
                 файлы.append(os.path.relpath(os.path.join(dp, f), корень))
     файлы.sort()
     модуль_в = {}

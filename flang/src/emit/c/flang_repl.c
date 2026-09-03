@@ -1649,6 +1649,14 @@ static fl_status repl_call_within(const char *name, const fl_value *args, size_t
             name, (unsigned long)repl_ctx.steps, (unsigned long)repl_ctx.max_steps,
             (unsigned long)(repl_ctx.steps * 100 / repl_ctx.max_steps));
   }
+  /*
+   * ВИТКИ ПО ШАГАМ — под переменной среды, а не всегда. Вопрос «где сидит
+   * время» задаётся не каждый прогон, а лишняя строка на каждый вызов сломала
+   * бы разбор вывода тем, кто читает бинарник трубой.
+   */
+  if (!repl_call_quiet && getenv("FLANG_VITKI") != NULL) {
+    fprintf(stderr, "витки: %s %lu\n", name, (unsigned long)repl_ctx.steps);
+  }
   if (status != FL_OK) {
     repl_call_keep(error.code == NULL ? "FLANG_INTERNAL" : error.code,
                    error.message == NULL ? "компилятор прекратил работу" : error.message);
@@ -3960,6 +3968,53 @@ static bool repl_kernel_stages_wanted(void) {
   return wanted != 0;
 }
 
+/*
+ * ═════════════════ КЕШ ПРИГОВОРОВ ЯДРА: ТОЛЬКО СКЛАД ══════════════════════
+ *
+ * ПРАВИЛО, ПО КОТОРОМУ РЕШАЮТ «ДОКАЗАНО», ОСТАЛОСЬ В ЯДРЕ. Здесь ровно склад:
+ * прочитать файл, отдать его ядру ДАННЫМИ, забрать обновлённый и записать
+ * обратно. Ключ считает ядро («Ключ кеша» в `flang/self/proofterm.flang`), и
+ * рантайм его не видит ни разу — иначе правило доверия уехало бы из слоя, вся
+ * ценность которого в недоверии.
+ *
+ * ОТПЕЧАТОК ПРОВЕРЯЛЬЩИКА — sha256 САМОГО ДВОИЧНОГО, а не исходников дерева, и
+ * это замер, а не осторожность. Два двоичных на побайтово одном дереве, в семени
+ * переписано одно правило («Предел ветвления» с 4 на 0): 49 приговоров из 103
+ * сменились с «доказано» на «не доказано», а всё, что видно из дерева, включая
+ * «Версию ядра», осталось прежним. Кеш с ключом по дереву отдал бы 49 ложных
+ * доказательств.
+ *
+ * СЕБЯ НЕ ПРОЧИТАЛИ — КЕШ ВЫКЛЮЧЕН, а не включён с ослабленным ключом.
+ * Ослабленный ключ раздаёт ложные доказательства молча, и молчание здесь хуже
+ * отказа.
+ */
+#define KESH_PEREMENNAYA "FLANG_KESH_PRIGOVOROV"
+
+static char *kesh_stamp_read(void) {
+  size_t bytes = 0;
+  char *body = NULL;
+  char *out = NULL;
+  sha256_ctx ctx;
+  if (repl_self_kept == NULL || repl_self_kept[0] == '\0') {
+    return NULL;
+  }
+  body = repl_read_file(repl_self_kept, &bytes);
+  if (body == NULL) {
+    return NULL;
+  }
+  out = (char *)malloc(65);
+  if (out == NULL) {
+    free(body);
+    return NULL;
+  }
+  sha256_init(&ctx);
+  sha256_add(&ctx, "flang-kesh-1 ", 13);
+  sha256_add(&ctx, body, bytes);
+  sha256_hex(&ctx, out);
+  free(body);
+  return out;
+}
+
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
                                const char *collision, fl_value *linked_out, fl_value *dropped_out,
@@ -4162,7 +4217,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     fl_value verdict = fl_nothing();
     fl_value kernel_bads = fl_nothing();
     fl_value pair[2];
-    fl_value triple[3];
+    fl_value triple[5];
     const bool stages = repl_kernel_stages_wanted();
     double started = 0.0;
     /*
@@ -4229,12 +4284,54 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       fprintf(stderr, "суд ядра о программе: начата «Проверить доказательства»\n");
       started = machine_now();
     }
-    triple[0] = *program;
-    triple[1] = obligations;
-    triple[2] = runs;
-    if (repl_call_within("Проверить доказательства", triple, 3, &verified) != FL_OK) {
-      bads_say(bads, "ядро доказательства прекращено");
-      return false;
+    {
+      const char *kesh_put = getenv(KESH_PEREMENNAYA);
+      char *kesh_stamp = (kesh_put == NULL || kesh_put[0] == '\0') ? NULL : kesh_stamp_read();
+      fl_value kesh_itog = fl_nothing();
+      fl_value kesh_novyy = fl_nothing();
+      fl_value kesh = fl_nothing();
+      triple[0] = *program;
+      triple[1] = obligations;
+      triple[2] = runs;
+      if (kesh_stamp != NULL) {
+        size_t kesh_bytes = 0;
+        char *kesh_text = repl_read_file(kesh_put, &kesh_bytes);
+        if (kesh_text != NULL) {
+          size_t kesh_where = 0;
+          if (!facts_json(kesh_text, &kesh_where, &kesh)) {
+            kesh = fl_nothing();
+          }
+          free(kesh_text);
+        }
+      }
+      triple[3] = kesh;
+      triple[4] = repl_value_say(kesh_stamp == NULL ? "" : kesh_stamp);
+      if (repl_call_within("Проверить доказательства с кешем", triple, 5, &kesh_itog) != FL_OK
+          || !val_field(kesh_itog, "узел", &verified)) {
+        free(kesh_stamp);
+        bads_say(bads, "ядро доказательства прекращено");
+        return false;
+      }
+      /*
+       * ЗАПИСЬ ИДЁТ ДАЖЕ ТОГДА, КОГДА ПРОГРАММА ОТВЕРГНУТА: приговор «не
+       * доказано» стоит тех же шагов, что «доказано», и переспрашивают его
+       * каждым проходом. Замер Ч183: на не закрытых обязательствах уходит
+       * 76–81 % шагов стадии.
+       */
+      if (kesh_stamp != NULL && val_field(kesh_itog, "кеш", &kesh_novyy)) {
+        fl_value printed = fl_nothing();
+        const char *kesh_utf8 = NULL;
+        size_t kesh_printed = 0;
+        if (repl_call("Печать значения", &kesh_novyy, 1, &printed) == FL_OK
+            && val_text(printed, &kesh_utf8, &kesh_printed)) {
+          FILE *kesh_stream = fopen(kesh_put, "wb");
+          if (kesh_stream != NULL) {
+            fwrite(kesh_utf8, 1, kesh_printed, kesh_stream);
+            fclose(kesh_stream);
+          }
+        }
+      }
+      free(kesh_stamp);
     }
     if (stages) {
       fprintf(stderr, "суд ядра о программе: «Проверить доказательства» заняла %.2f с\n",

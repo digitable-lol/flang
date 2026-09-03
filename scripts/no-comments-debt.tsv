@@ -408,7 +408,6 @@ flang/scripts/kernel-lines-to-trust.flang	295
 flang/scripts/ledger-summary.flang	68
 flang/scripts/memory-guard.flang	115
 flang/scripts/node-across-targets.flang	80
-flang/scripts/npm-install.flang	82
 flang/scripts/porodit-atomy.flang	108
 flang/scripts/proven-guard.flang	118
 flang/scripts/tasks.flang	107
@@ -462,7 +461,7 @@ flang/self/parser.flang	1344
 flang/self/partialorder.flang	117
 flang/self/processes.flang	195
 flang/self/proof-initial.flang	720
-flang/self/proof-kernel.flang	3648
+flang/self/proof-kernel.flang	3646
 flang/self/proof.flang	546
 flang/self/proofterm.flang	1138
 flang/self/repl/repl.flang	252
@@ -703,14 +702,13 @@ scripts/build-changelog.flang	18
 scripts/changelog.flang	83
 scripts/check-before-run.flang	63
 scripts/child-timeout.flang	44
-scripts/commands-via-symlink.flang	60
 scripts/conc-link-emit.flang	71
 scripts/corpus-runner.flang	71
 scripts/dictionary-guard.flang	61
 scripts/emit-and-examples.flang	59
 scripts/emit-dictionary.flang	63
 scripts/emit-law.flang	80
-scripts/emit-package.flang	76
+scripts/emit-package.flang	38
 scripts/emit-promises-guard.flang	79
 scripts/error-code-guard.flang	87
 scripts/file-extensions.flang	93

@@ -104,11 +104,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
+      # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
+      # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
+      # ниже зовёт `bootstrap/flang`, который собирает себе сам `./ярлык`.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
 
       # GNU tar. Обычный `tar` на macOS — это bsdtar, у него нет ни `--sort`,
       # ни `--mtime`, и архив вышел бы с другими байтами и другим sha256, чем
@@ -148,11 +149,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
+      # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
+      # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
+      # ниже зовёт `bootstrap/flang`, который собирает себе сам `./ярлык`.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
       - run: brew install gnu-tar
 
       - name: Собрать архив и упаковать той же командой, что в формуле

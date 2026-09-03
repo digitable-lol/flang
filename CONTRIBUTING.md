@@ -31,9 +31,8 @@ The built binary is what you then run:
 bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
-The package declares zero dependencies — `npm ls --all` prints `(empty)` — so
-`npm install` has nothing to fetch. The language server still runs on Node:
-`node flang/bin/flang-lsp.mjs`.
+The tree declares zero dependencies and has no package manager on the build
+path. The language server is a subcommand of the binary: `flang lsp --stdio`.
 
 ## Run the checks
 
@@ -44,7 +43,7 @@ sh scripts/raskrutka.sh --check
 ```
 
 These three run on the binary and need no Node. The JavaScript suite —
-`./ярлык тесты`, which `npm test` forwards to — **does not start on this tree**:
+`./ярлык тесты` — **does not start on this tree**:
 its preparation step imports a module of the removed second implementation and
 fails before the first check. Moving the suite onto the binary is separate work.
 Until it is done, the three commands above are the checks there are; two of them
@@ -194,18 +193,18 @@ here rather than discovered later.
 
 ### What is left in `package.json`
 
-Three entries, and none of them is a shortcut a person types. They are npm's own
-lifecycle hooks, and they belong to the *delivery* path — `npm install -g
-@digitable-lol/flang` — which is untouched.
+**No `scripts` section at all, and no `bin`.** All three entries that used to sit
+here were npm lifecycle hooks — `postinstall` built the binary during
+`npm install`, `test` forwarded to `./ярлык тесты`, `prepublishOnly` ran the
+suite before publishing. npm was removed from the tree on 3 September 2026
+(task 8649), and they went with it; the file now carries `"private": true`, so
+`npm publish` refuses on its own.
 
-| script | who runs it |
-| --- | --- |
-| `npm run postinstall` | npm lifecycle hook — builds the binary compiler from the C99 in `bootstrap/` and puts it in `dvoichnyy/flang`. This is what makes `npm install` deliver the *same* compiler `brew` delivers instead of a second implementation. Needs `cc` and `make`; without them the install still succeeds and the refusal names the fix. `FLANG_BEZ_SBORKI=1` skips the build |
-| `npm test` | npm's own verb, and CI spells it that way on every tag. It forwards to `./ярлык тесты`, so the command line exists in one place only. **Does not start today** — see above |
-| `npm run prepublishOnly` | npm lifecycle hook — the suite again, before a publish |
-
-`flang/test/readme-layout.test.mjs` fails if `package.json` grows a script this
-page is silent about.
+What is left is the **version**, the licence and the two addresses — read by the
+site build, by the Homebrew formula guard and by the release workflow. The file
+is printed from `scripts/emit-package.flang` and never hand-edited:
+`./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the two have
+drifted.
 
 ## Prose is checked, not trusted
 
@@ -251,7 +250,8 @@ What this means when you write:
   2026. The list is derived from the tree, not written down, so a new file
   without a header fails the gate rather than leaving the repository quietly
   unmarked. Say the area precisely: the guard walks those two directories, and
-  `bootstrap/` — which the npm package also ships — is **not** among them. Three
+  `bootstrap/` — which the release archive is printed from — is **not** among
+  them. Three
   files there carry no header (`compiler_flang.c`, `compiler_flang.h`,
   `flang_runtime.h`); they are printed by the compiler, so a header appears there
   only through the printer, not by hand.

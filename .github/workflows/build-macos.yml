@@ -31,6 +31,14 @@ on:
   pull_request:
   workflow_dispatch:
 
+# То же лекарство, что у ci.yml и binary.yml, здесь просто не было заведено:
+# при частых пушах подряд (слияние нескольких ячеек за час) старые прогоны
+# висели до конца вместо отмены — job дешёвый, но их много. На метке не
+# отменяем: метка — решение о версии, её прогон единственный.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 permissions:
   contents: read
 

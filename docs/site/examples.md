@@ -50,7 +50,11 @@ The sets cost very different amounts, and that is worth knowing before you start
 The run of 24 August 2026: `leetcode` — 82 files, 804 examples, 12 seconds
 (that set holds 806 examples today);
 `crypto` — 8 files, 1223 examples, 39 minutes, because it computes real AES and
-ECDSA test vectors. A file the binary did not accept is named together with the
+ECDSA test vectors (that set holds 1802 examples today, and
+`bootstrap/flang test examples/crypto/ --json` took 20 min 30 s, 0 failures —
+measured 3 September 2026 on a loaded machine; the growth comes from the
+library modules `crypto/` pulls in, not from the set itself). A file the
+binary did not accept is named together with the
 refusal code rather than skipped in silence.
 
 ## About `library-api`

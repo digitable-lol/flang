@@ -461,7 +461,7 @@ flang/self/parser.flang	1344
 flang/self/partialorder.flang	117
 flang/self/processes.flang	195
 flang/self/proof-initial.flang	720
-flang/self/proof-kernel.flang	3646
+flang/self/proof-kernel.flang	3655
 flang/self/proof.flang	546
 flang/self/proofterm.flang	1138
 flang/self/repl/repl.flang	252

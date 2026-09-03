@@ -998,7 +998,10 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     проиграно заново, сколько мест этим снято со слова ядра,
                     сколько узлов ВНЕ приёма и сколько приём взял, но не свёл. */
                  tozhdestv, tozhdestv_mest, tozhdestv_mimo, tozhdestv_ne_soshlos,
-                 bez_privyazki, shagov_na_slovo, shagov_primerom, dokazannyh; char *sha; int kripto;
+                 bez_privyazki, shagov_na_slovo, shagov_primerom, dokazannyh,
+                 /* Ч375: мест, где термин и номер строки стоят РЯДОМ и сверены
+                    друг против друга (третья ветка, ниже, задача 9612). */
+                 svereno_oboimi; char *sha; int kripto;
                  /* Ч56: вердикт по каждому утверждению порознь (ключ
                     `--по-утверждениям`), а не один на весь файл. */
                  Sp po_utverzhdeniyam;
@@ -1086,8 +1089,77 @@ static char *bez_nomerov_v(Sp v) {
   return soedinit(r, ", ");
 }
 
+/* ═══ ТРЕТЬЯ ВЕТКА: ТЕРМИН И НОМЕР СТРОКИ — ДВА СВИДЕТЕЛЯ ОБ ОДНОМ МЕСТЕ ═════
+   (задача 9612). Веток было две, и каждая брала РОВНО ОДНОГО свидетеля: есть
+   номер — читается исходник, термин не смотрят вовсе; нет номера — берётся
+   термин, а шаг вообще не сверяется ни с чем. Запись, несущая термин ВМЕСТО
+   номера, проверялась МЕНЬШЕ, а не больше. Здесь заведена третья ветка (термин
+   РЯДОМ с номером — сверяются друг против друга) и починена вторая (термин БЕЗ
+   номера обязан сойтись с чем-то, а не просто лечь в вердикт процитированным).
+   Первая ветка (один номер) не тронута ни на знак. */
+static int est_ugolki(const char *s) {
+  const char *a = strstr(s, "⟨");
+  return a != NULL && strstr(a + strlen("⟨"), "⟩") != NULL;
+}
+/* Строка записи без терма в уголках: термин несёт пробелы и ёлочки внутри
+   себя, и без выреза они съезжали бы в пословный разбор (слово номер N,
+   N-е ёлочки) — та самая беда, что делает вид «термин вместо номера»
+   нерабочим сегодня. */
+static char *bez_ugolkov(const char *s) {
+  const char *a = strstr(s, "⟨"), *b;
+  if (!a) return (char *)s;
+  b = strstr(a + strlen("⟨"), "⟩");
+  if (!b) return (char *)s;
+  return szhat_probely(fmt("%s %s", kopiya(s, (size_t)(a - s)), b + strlen("⟩")));
+}
+static char *shag_slovami(const char *sh) { return est_ugolki(sh) ? bez_ugolkov(sh) : (char *)sh; }
+
+/* Термин при номере обязан ПОВТОРИТЬ то, что написано в исходнике на названной
+   строке: у цели — хвост после «утверждаем», у шага — строку без «то»/«затем».
+   Сличение синтаксическое, как и всё равенство термов здесь (аксиома A5).
+   Расходятся — беда прогона с теоремой, местом, номером, термом записи и
+   текстом исходника. Сходятся — место сочтено сверенным ОБОИМИ свидетелями. */
+static void sverit_term_i_nomer(Sverka *s, const char *stroka_zapisi,
+                                const char *v_ishodnike, long gde,
+                                const char *imya_t, const char *chto) {
+  char *v_zapisi, *v_ish;
+  if (gde < 1 || !est_ugolki(stroka_zapisi)) return;
+  v_zapisi = term(v_ugolkah(stroka_zapisi, 1));
+  v_ish = term(v_ishodnike);
+  if (strcmp(v_zapisi, v_ish) == 0) { s->svereno_oboimi++; return; }
+  dobavit(&s->bedy,
+          fmt("теорема «%s», %s, строка %ld: термин записи и исходник говорят о разном — "
+              "в записи ⟨%s⟩, а на строке %ld исходника написано «%s»",
+              imya_t, chto, gde, v_zapisi, gde, v_ish));
+}
+/* Термин БЕЗ номера: источника, с которым его сверить, нет — единственный
+   независимый свидетель тут обоснование той же строки записи. «Достаточен сам
+   по себе» значит: термин обязан СОЙТИСЬ с обоснованием, а не просто лечь в
+   вердикт процитированным и забытым. Пуст либо расходится — беда прогона. */
+static void sverit_term_bez_nomera(Sverka *s, const char *stroka_zapisi,
+                                   const char *obosnovanie, const char *imya_t,
+                                   const char *chto) {
+  char *v_zapisi;
+  if (!est_ugolki(stroka_zapisi)) {
+    dobavit(&s->bedy, fmt("теорема «%s», %s: ни номера строки, ни термина в уголках — заменить привязку нечем",
+                          imya_t, chto));
+    return;
+  }
+  v_zapisi = term(v_ugolkah(stroka_zapisi, 1));
+  if (!*v_zapisi) {
+    dobavit(&s->bedy, fmt("теорема «%s», %s: термин в уголках пуст — заменить недостающий номер ему нечем",
+                          imya_t, chto));
+    return;
+  }
+  esli_ne(s, strcmp(v_zapisi, term(obosnovanie)) == 0,
+          fmt("теорема «%s», %s: термин в уголках говорит «%s», а обоснование той же строки записи — «%s» — расходятся между собой, а термина без номера сверить больше не с чем",
+              imya_t, chto, v_zapisi, obosnovanie));
+}
+
 /* ТЕОРЕМА ОБЯЗАНА ДОКАЗЫВАТЬ ТО САМОЕ, ЧТО ОБЕЩАНО: сличаются два хвоста строк
-   исходника — после «обеспечивает «имя»» и после «утверждаем». */
+   исходника — после «обеспечивает «имя»» и после «утверждаем». Термин цели БЕЗ
+   номера сверяется этим же сличением: он и есть «утверждено», и сойтись
+   обязан с обещанным постусловием — сам по себе, а не как цитата. */
 static void sverit_cel(Sverka *s, Sp svoi, Sp stroki, const char *mesto,
                        const char *imya, const char *imya_t) {
   char *obeshchano = hvost_posle(mesto, fmt("обеспечивает «%s» ", imya));
@@ -1095,7 +1167,10 @@ static void sverit_cel(Sverka *s, Sp svoi, Sp stroki, const char *mesto,
   long gde = nomer_posle(stroka_celi, "строка ");
   char *utverzhdeno;
   if (gde < 1) { utverzhdeno = v_ugolkah(stroka_celi, 1); s->bez_privyazki++; }
-  else utverzhdeno = hvost_posle(stroka_po_nomeru(stroki, gde), "утверждаем ");
+  else {
+    utverzhdeno = hvost_posle(stroka_po_nomeru(stroki, gde), "утверждаем ");
+    sverit_term_i_nomer(s, stroka_celi, utverzhdeno, gde, imya_t, "цель");
+  }
   esli_ne(s, strcmp(obeshchano, utverzhdeno) == 0,
           fmt("теорема «%s» утверждает «%s», а постусловие обещает «%s» — доказывается не то, что обещано",
               imya_t, utverzhdeno, obeshchano));
@@ -1146,6 +1221,18 @@ static char *bez_privyazki_primera(const char *sh) {
     p = q + 1;
   }
   return nashli ? kopiya(sh, (size_t)(nashli - sh)) : (char *)sh;
+}
+
+/* «Вид» (закрывающий/промежуточный) и обоснование шага, ПОСЛОВНО, независимо
+   от того, чем шаг привязан — номером, термином или обоими: «шаг K строка N»
+   даёт четыре слова до вида, один «шаг K» — два. Термин вырезается ПЕРЕД
+   счётом слов (`shag_slovami`), иначе он сдвигал бы счёт своими пробелами и
+   ёлочками — та самая беда, что делает вид «термин вместо номера» нерабочим. */
+static char *shag_vid(const char *sh) {
+  return slovo(shag_slovami(sh), nomer_posle(sh, "строка ") >= 1 ? 5 : 3);
+}
+static char *shag_obosnovanie(const char *sh) {
+  return slova_posle(bez_privyazki_primera(shag_slovami(sh)), nomer_posle(sh, "строка ") >= 1 ? 5 : 3);
 }
 
 /* Блок функции: строка её заголовка и первая строка ЗА блоком.
@@ -1685,7 +1772,9 @@ static int sverit_shag_vne_sluchaya(Sverka *s, Sp stroki, const char *imya_t,
 static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char *imya_t,
                                 const char *chya, const char *po, long sluchay_gde,
                                 const char *cel, int est_svobodnye) {
-  char *imya_p = v_yolochkah(sh, 1);
+  /* Имя примера ищется БЕЗ терма в уголках: термин может нести своё «в
+     ёлочках», и без выреза оно перехватило бы первое место у имени примера. */
+  char *imya_p = v_yolochkah(shag_slovami(sh), 1);
   long p = nomer_posle(sh, METKA_PRIMERA), a, b;
   char *ozh, *dano, *obrazec, *vetv; int znakom = 0;
   if (p < 1) { s->bez_privyazki++; return 0; }
@@ -1743,7 +1832,7 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
     if (nachinaetsya(sh, "случай строка")) { sluchay_gde = nomer_posle(sh, "строка "); continue; }
     if (!nachinaetsya(sh, "шаг ")) continue;
     gde = nomer_posle(sh, "строка ");
-    vid = slovo(sh, 5); obosnovanie = slova_posle(bez_privyazki_primera(sh), 5);
+    vid = shag_vid(sh); obosnovanie = shag_obosnovanie(sh);
     s->shagov++;
     /* Шаг, обоснованный свойством или законом, чекер НЕ пересчитывает: он
        сверяет, что так написано в исходнике, а держится ли обоснование —
@@ -1753,8 +1842,13 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
       else s->shagov_na_slovo++;
     } else if (nachinaetsya(obosnovanie, "по свойству") || nachinaetsya(obosnovanie, "по закону"))
       s->shagov_na_slovo++;
-    if (gde < 1) { s->bez_privyazki++; continue; }
+    if (gde < 1) {
+      sverit_term_bez_nomera(s, sh, obosnovanie, imya_t, fmt("шаг %s", slovo(sh, 2)));
+      s->bez_privyazki++; continue;
+    }
     v_ish = bez_to(stroka_po_nomeru(stroki, gde));
+    sverit_term_i_nomer(s, sh, nachinaetsya(v_ish, "затем ") ? slova_posle(v_ish, 1) : v_ish,
+                        gde, imya_t, fmt("шаг %s", slovo(sh, 2)));
     if (strcmp(vid, "промежуточный") == 0)
       esli_ne(s, nachinaetsya(v_ish, "затем ") && soderzhit(v_ish, obosnovanie),
               fmt("теорема «%s», строка %ld: запись зовёт шаг промежуточным и обоснованным «%s», а в исходнике стоит «%s» — промежуточный шаг пишется словом «затем»",
@@ -1776,7 +1870,7 @@ static long nezakrytye_sluchai(Sp svoi) {
     if (nachinaetsya(s, "случай строка")) {
       if (v_sluchae && !zakryt) dolg++;
       v_sluchae = 1; zakryt = 0;
-    } else if (nachinaetsya(s, "шаг ") && strcmp(slovo(s, 5), "закрывающий") == 0) zakryt = 1;
+    } else if (nachinaetsya(s, "шаг ") && strcmp(shag_vid(s), "закрывающий") == 0) zakryt = 1;
   }
   return (v_sluchae && !zakryt) ? dolg + 1 : dolg;
 }
@@ -1786,7 +1880,7 @@ static void sverit_zakrytie(Sverka *s, Sp svoi, const char *imya_t, const char *
   long zakryv = 0, sluchaev = vse_s_nachalom(svoi, "случай строка").n, nuzhno, nezakr;
   char *qed = slovo_posle(pervaya_s_nachalom(svoi, "следовательно доказано "), "доказано ");
   int i, dokazano = strcmp(verdikt, "доказано") == 0;
-  for (i = 0; i < shagi.n; i++) if (strcmp(slovo(shagi.e[i], 5), "закрывающий") == 0) zakryv++;
+  for (i = 0; i < shagi.n; i++) if (strcmp(shag_vid(shagi.e[i]), "закрывающий") == 0) zakryv++;
   nuzhno = sluchaev > 0 ? sluchaev : 1;
   nezakr = nezakrytye_sluchai(svoi);
   esli_ne(s, !dokazano || strcmp(qed, "да") == 0,
@@ -2294,9 +2388,12 @@ static void sverit_krugi(Sverka *s, Sp bloki) {
     Sp svoi = razdelit(bloki.e[i], "\n"), shagi;
     char *imya = v_yolochkah(chast(svoi, 1), 1);
     shagi = vse_s_nachalom(svoi, "шаг ");
+    /* Слова и ёлочки считаются БЕЗ терма (`shag_obosnovanie`/`shag_slovami`):
+       термин несёт внутри и пробелы, и ёлочки, и без выреза круг перестал бы
+       находиться ровно в записи, что несёт термин рядом с номером. */
     for (j = 0; j < shagi.n; j++)
-      if (nachinaetsya(slova_posle(shagi.e[j], 5), "по свойству "))
-        { dobavit(&iz, imya); dobavit(&v, v_yolochkah(shagi.e[j], 1)); }
+      if (nachinaetsya(shag_obosnovanie(shagi.e[j]), "по свойству "))
+        { dobavit(&iz, imya); dobavit(&v, v_yolochkah(shag_slovami(shagi.e[j]), 1)); }
   }
   while (rosla) {                       /* замыкание по достижимости */
     rosla = 0;
@@ -2491,7 +2588,12 @@ static const char *OBRAZCY[] = {
   "дано «» строка #", "цель строка #", "цель ⟨⟩", "индукция по «» строка #",
   "случай строка # шагов #", "шаг # строка # закрывающий …",
   "шаг # строка # промежуточный …", "шаг # ⟨⟩ закрывающий …",
-  "шаг # ⟨⟩ промежуточный …", "следовательно доказано да", "следовательно доказано нет",
+  "шаг # ⟨⟩ промежуточный …",
+  /* Ч375: термин РЯДОМ с номером — второй свидетель о том же месте, а не
+     замена первого (задача 9612). */
+  "цель строка # ⟨⟩", "шаг # строка # ⟨⟩ закрывающий …",
+  "шаг # строка # ⟨⟩ промежуточный …",
+  "следовательно доказано да", "следовательно доказано нет",
   "принцип тип «» по «» носитель . база # шаг #", "сведение «»",
   "посылка «» вид . вариант «» вердикт доказано закрыта . шагов # правило «»",
   "посылка «» вид . вариант «» вердикт нет вердикта закрыта . шагов # правило «»",
@@ -2809,12 +2911,14 @@ int main(int argc, char **argv) {
            " (снято со слова ядра мест %ld),"
            " вне приёма сверщика %ld, переписано, но не сошлось %ld."
            " Шагов по примеру проверено по существу %ld."
-           " Строк без привязки к исходнику %ld. Привязка к программе: %s."
+           " Строк без привязки к исходнику %ld."
+           " Мест, сверенных ОБОИМИ свидетелями (термин и номер строки), %ld."
+           " Привязка к программе: %s."
            " sha256 исходника %s\n",
            golova, s.utverzhdeniy, s.shagov, s.svedeniy, s.hodov, s.dokazannyh,
            s.na_slovo, s.shagov_na_slovo, s.uzlov, s.uzlov_mest, s.uzlov_mimo,
            s.tozhdestv, s.tozhdestv_mest, s.tozhdestv_mimo, s.tozhdestv_ne_soshlos,
-           s.shagov_primerom, s.bez_privyazki,
+           s.shagov_primerom, s.bez_privyazki, s.svereno_oboimi,
            s.kripto ? "SHA-256 сошёлся" : "только свёртка ядра — она ломается",
            s.sha);
     if (s.primety.n) printf("ПРИМЕТЫ (на исход не влияют): %s\n", soedinit(s.primety, "; "));

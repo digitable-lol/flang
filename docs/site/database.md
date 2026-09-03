@@ -1,8 +1,8 @@
 # Databases
 
-Two drivers ship with the language: PostgreSQL over the wire, and reading an
-SQLite file. Both are written in flang itself; both are checked by examples with
-no database present.
+Two drivers ship with the language: PostgreSQL over the wire, and SQLite as a
+file — read, and now written into as well. Both are written in flang itself;
+both are checked by examples with no database present.
 
 ## Who carries the bytes
 
@@ -78,7 +78,7 @@ the functions at the top of the plan.
 | one parsing pass | at most 1000 messages |
 | a corrupt stream | stops the parse with a distinct answer, not silently |
 
-## SQLite: read a file
+## SQLite: read and write a file
 
 `flang/stdlib/sqlite.flang` reads an SQLite 3 database as a list of octets: the
 file image comes in through one order, `Прочитать октеты из файла`. No server,
@@ -117,10 +117,12 @@ the name of the table stand in it as two one-line functions — `«Откуда�
 | the header | magic, page size, number of pages |
 | the schema page `sqlite_master` | table names, their root pages, their SQL |
 | a table b-tree leaf | cell pointers, payload length, row number, the payload |
+| internal b-tree pages (page kind 5) | read: a table larger than one page is walked level by level, root to leaves |
+| cell overflow | read: a payload too big for one page is followed through its chain of overflow pages |
 | a record | null, integers of all six widths, the 0 and 1 of serial types 8 and 9, text through UTF-8, binary |
-| real numbers (serial type 7) | the eight octets are handed over as they are, in variant «Дробное» |
-| writing | no. A reading driver is the half that can be checked without breaking someone's file |
-| internal b-tree pages and overflow | no. They begin on a table larger than one page; empty is returned rather than a forgery. `«Вид страницы»` answers 13 for a table leaf and 5 for an internal page |
+| real numbers (serial type 7) | read whole, in variant «Дробное»; not written back — there is no inverse into sign, exponent and mantissa |
+| building a file from scratch | `«Собрать база»` — a whole image, header through leaves, checked by reading its own output back |
+| inserting a row into an existing file | `«База со строкой»` (`examples/db/sqlite-insert.flang`, checked against real `sqlite3`): into a ready leaf's free middle, file length unchanged, row number one past the last. A page split, an out-of-order insertion, a row needing an overflow page, an edit, a delete, a journal — every one of those is refused as empty, not a corrupt file |
 | indexes (page kinds 2 and 10) | no: they are not table rows |
 
 ## Where to go next

@@ -63,7 +63,7 @@ are on the [Install](install.html) page.
 | **Claims about behaviour**: `ensures` is a promise about the result that the kernel proves for all inputs, not for the examples | the kernel does not accept every claim; how many it did accept is one line below |
 | **Emitting into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not emitted |
 | **[Processes and supervision](processes.html)**: processes, supervision, back pressure, a scheduler written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
-| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite database file is read | PostgreSQL takes `trust` and cleartext password only; SQLite is read, not written |
+| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite database file is read, built from nothing, and written a row into | PostgreSQL takes `trust` and cleartext password only; SQLite writes only into a ready file's own free space, no page split, no journal |
 | **HTTP**: requests and responses parsed and printed, headers, codes, addresses, percent encoding | there is no socket: the host carries the bytes, the language only computes them |
 | **Cryptography of our own**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | TLS is not built: https is done by an external curl |
 

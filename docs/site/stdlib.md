@@ -470,7 +470,7 @@ Five modules are younger than the rest. For each one: what it can do and what it
 | `«X25519»` | Computes a shared key for two sides: multiplies a Curve25519 point by a scalar — both the base point and the other side’s public key. | No Ed25519 signatures, and no randomness: the secret arrives as an argument. |
 | `«DER»` | Reads DER: tag, length, contents, nested sequences, integers, strings and object identifiers. | There is no DER writing — reading only. |
 | `«X.509»` | Takes a certificate out of PEM and reads version, serial number, issuer and subject, validity and the signature algorithm name; answers whether it is valid on a given day. | It does not parse the public key or extensions, does not verify the signature, does not build a chain and does not read revocation. |
-| `«База SQLite»` | Reads a database file: header, page size, pages and cells, records, column values, table names from the schema and the rows of a table by name. | There is no writing — reading only. SQL is not parsed: a table is taken by name, and you write the condition yourself. |
+| `«База SQLite»` | Reads a database file: header, page size, pages and cells, records, column values, table names from the schema and the rows of a table by name. Writes too: builds a whole file from nothing, and inserts a row into a ready file that came from elsewhere. | Inserting a row only reaches a ready leaf's own free middle, with no page split and no journal. SQL is not parsed: a table is taken by name, and you write the condition yourself. |
 
 ### AES
 
@@ -665,7 +665,12 @@ Import: `использует «X.509»`.
 
 ### SQLite
 
-Reading a SQLite 3 database file: header, pages, cells, values.
+Reading a SQLite 3 database file: header, pages, cells, values. Writing exists
+too — building a file from nothing (`«Собрать базу»`) and inserting a row into
+someone else's ready file (`«База со строкой»`,
+[`examples/db/sqlite-insert.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-insert.flang)) —
+but only the reading functions are listed below; the writing ones are named in
+`flang/stdlib/sqlite.flang` itself.
 
 Import: `использует «SQLite»`.
 

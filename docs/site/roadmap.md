@@ -89,12 +89,12 @@ there is little point in growing it" — and the order came out otherwise. Today
 termination proved, and none of the gaps from the old list is left:
 
 - databases — **two** drivers: PostgreSQL over the wire (protocol 3.0, login
-  through `scram-sha-256`) and SQLite, which now not only reads a file by walking
-  its b-tree but **builds one from nothing**: `«Собрать базу»` hands back the
-  whole file image, ready to be written by a single order. So far it checks
-  ITSELF — the postconditions read the image back through the same tree walk;
-  that a foreign `sqlite3` accepts the file has not yet been confirmed by a
-  separate run;
+  through `scram-sha-256`) and SQLite, which reads a file by walking its b-tree
+  (internal pages and cell overflow included), **builds one from nothing**
+  (`«Собрать базу»` hands back the whole file image, checked so far only by
+  reading its own output back through the same tree walk), and **writes a row
+  into an existing file** (`«База со строкой»`, checked against a real `sqlite3`
+  reading the result back — not self-checked only, this time);
 - networking — HTTP (parsing and printing request and response), a binary
   protocol over TCP (`provod`), Redis over RESP2, TLS handshake parsing;
 - own cryptography — AES with CTR, GCM and CBC modes, X25519 key exchange,
@@ -109,9 +109,12 @@ termination proved, and none of the gaps from the old list is left:
 What is **not** done in that list: the secure connection itself is not run by
 our own cipher — `https` still goes out to the external `curl`, and revocation
 checking is not wired into it, even though there is now something to read a CRL
-with. SQLite is written whole and only from nothing: there is nothing here to
-append a row to somebody else's existing file — that needs a journal, and there
-is none. A registry is needed more for this library, not less: there is now
+with. Writing a row into an existing SQLite file only reaches a ready leaf's free
+middle, in row-number order, without growing the file: a page split, a row out
+of order, a payload that needs an overflow page, an edit, a delete — every one
+of those refuses rather than corrupts the file, and there is still no journal
+to make any of it safe against a reader who has the file open at the same time.
+A registry is needed more for this library, not less: there is now
 something worth handing out by name and version.
 
 **3. Application code is thin, but no longer a single item.** A link-shortener

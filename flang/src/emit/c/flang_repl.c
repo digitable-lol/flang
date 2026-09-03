@@ -383,7 +383,7 @@ static const char FLANG_HELP_2[] =
     "Подробности: man flang";
 
 static const char HELP_CHECK[] =
-    "flang check <файл.flang> [--proof [--json] [--записать <файл>]]\n"
+    "flang check <файл.flang> [--proof [--json] [--строго] [--записать <файл>]]\n"
     "                          [--быстро] [--предел-шагов N] [--предел-глубины N]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
@@ -400,6 +400,12 @@ static const char HELP_CHECK[] =
     "  --proof            ведомость: чем несётся обещание «тотальная» у каждой\n"
     "                     функции и чем — каждое высказанное утверждение\n"
     "  --json             вместе с --proof: ведомость машинным видом\n"
+    "  --строго           вместе с --proof: код возврата 4 и тогда, когда всё\n"
+    "                     доказано, но часть оперлась на сетку значений автора\n"
+    "                     или на недоказанную посылку. Без ключа такая опора\n"
+    "                     остаётся нулём и называется строкой. «Объявлено, не\n"
+    "                     доказано» уходит кодом 3 и БЕЗ ключа. Латиницей:\n"
+    "                     --strict\n"
     "  --записать <файл>  вместе с --proof: положить САМО доказательство в файл\n"
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/сверщик.flang). Ключ пишется и латиницей:\n"
@@ -7117,6 +7123,188 @@ static int check_file(const char *path, bool fast) {
   return ok ? (unjudged ? 2 : (fast ? 4 : 0)) : 1;
 }
 
+/* ═════════ приговор ведомости доезжает до кода выхода (задача 9621) ═══════ */
+
+/*
+ * ПОЧЕМУ КОД ВЫХОДА ЧИТАЕТ ЧИСЛА ВЕДОМОСТИ, А НЕ СЧИТАЕТ СВОИХ.
+ *
+ * Ведомость внутри честна: на программе, где утверждение только объявлено, она
+ * пишет «объявлено, не доказано 1». Врал код выхода: он был нулём и там, где
+ * доказано всё, и там, где не доказано ничего, — а код выхода единственное, что
+ * читают работы CI, сторожа и сцепки. Всякое число, снятое по такому коду,
+ * ничего не стоит.
+ *
+ * Числа берутся из ТОЙ ЖЕ ведомости, которую слой на flang уже посчитал и уже
+ * отдал полем «в JSON» («Итоги утверждений» в `flang/self/proof.flang`). Здесь
+ * не считается ни одного числа заново: второй счёт спорил бы с первым, а спорить
+ * о доказанном должны люди, а не две реализации. Это перенос, а не подсчёт.
+ *
+ * Не прочиталось — код 2 «смотреть было нечем», а не 0: молчащий ноль на месте
+ * непрочитанного приговора и есть та самая беда, ради которой это писалось.
+ */
+typedef struct {
+  long total;
+  long proved;
+  long conditional;
+  long grid;
+  long declared;
+  long refused;
+  long violated;
+  long laws_grid;
+  long laws_assumed;
+} proof_tally;
+
+/*
+ * Целое поле «"имя":N» внутри отрезка [from, to). Отрезок обязателен: ключ
+ * «total» стоит и у функции («"total":true»), и у законов, и у утверждений, и
+ * поиск по всему тексту принёс бы чужое число.
+ */
+static bool proof_int_at(const char *text, size_t from, size_t to, const char *key, long *out) {
+  size_t klen = strlen(key);
+  size_t at = 0;
+  for (at = from; at + klen + 3 < to; at += 1) {
+    size_t digit = 0;
+    long value = 0;
+    if (text[at] != '"' || memcmp(text + at + 1, key, klen) != 0 || text[at + 1 + klen] != '"' ||
+        text[at + 2 + klen] != ':') {
+      continue;
+    }
+    digit = at + 3 + klen;
+    if (digit >= to || text[digit] < '0' || text[digit] > '9') {
+      return false;
+    }
+    while (digit < to && text[digit] >= '0' && text[digit] <= '9') {
+      value = value * 10 + (text[digit] - '0');
+      digit += 1;
+    }
+    *out = value;
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Границы объекта «"имя":{…}». Открывающая фигурная скобка — часть образца, и
+ * это она отличает раздел итога («"claims":{…}») от списка утверждений
+ * («"claims":[…]»), у которых имя одно. Вложенных объектов у обоих разделов
+ * итога нет, поэтому конец — первая же закрывающая скобка; встретится
+ * открывающая — считаем, что вид ведомости сменился, и честно отказываемся.
+ */
+static bool proof_object_at(const char *text, size_t bytes, const char *key, size_t *start,
+                            size_t *stop) {
+  size_t klen = strlen(key);
+  size_t at = 0;
+  for (at = 0; at + klen + 4 <= bytes; at += 1) {
+    if (text[at] != '"' || memcmp(text + at + 1, key, klen) != 0 || text[at + 1 + klen] != '"' ||
+        text[at + 2 + klen] != ':' || text[at + 3 + klen] != '{') {
+      continue;
+    }
+    *start = at + 4 + klen;
+    for (at = *start; at < bytes; at += 1) {
+      if (text[at] == '}') {
+        *stop = at;
+        return true;
+      }
+      if (text[at] == '{') {
+        return false;
+      }
+    }
+    return false;
+  }
+  return false;
+}
+
+/* Итог утверждений и итог законов — те же числа, что печатаются человеку. */
+static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
+  size_t from = 0;
+  size_t to = 0;
+  if (!proof_object_at(json, bytes, "claims", &from, &to)) {
+    return false;
+  }
+  if (!proof_int_at(json, from, to, "total", &out->total) ||
+      !proof_int_at(json, from, to, "proved", &out->proved) ||
+      !proof_int_at(json, from, to, "conditional", &out->conditional) ||
+      !proof_int_at(json, from, to, "grid", &out->grid) ||
+      !proof_int_at(json, from, to, "declared", &out->declared) ||
+      !proof_int_at(json, from, to, "refused", &out->refused) ||
+      !proof_int_at(json, from, to, "violated", &out->violated)) {
+    return false;
+  }
+  if (!proof_object_at(json, bytes, "laws", &from, &to)) {
+    return false;
+  }
+  return proof_int_at(json, from, to, "grid", &out->laws_grid) &&
+         proof_int_at(json, from, to, "assumed", &out->laws_assumed);
+}
+
+/*
+ * ПРИГОВОР ВЕДОМОСТИ СЛОВАРЁМ ДЕРЕВА, и он тот же, что у чекера записи
+ * (`flang/proof/чекер/ЧИТАТЬ.md`) и у `check --быстро` выше:
+ *
+ *   0  ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — доказанного хватило, ничего не осталось
+ *      высказанным без доказательства;
+ *   4  ПРОВЕРЕНО С ОПОРОЙ — доказано, но часть держится не на доказательстве:
+ *      сетка значений автора («это НЕ доказательство» — слова самой ведомости)
+ *      или вывод, опёршийся на недоказанную посылку;
+ *   3  НЕ ПРОВЕРЕНО — есть высказанное без доказательства: «объявлено, не
+ *      доказано», отвергнутое ядром или принятое на веру. Противоречия не
+ *      найдено, но и проверено не всё, и непроверенное названо числом;
+ *   1  НЕ СОШЛОСЬ — найден контрпример, ведомость пишет НАРУШЕНО.
+ *
+ * Пустая ведомость (утверждений 0) — это 0, а не 3: «доказывать было нечего»
+ * и «не смогли доказать» — не одно и то же, и файл без единого обещания не
+ * обязан краснеть. Слить их значило бы завести вторую неправду вместо первой.
+ *
+ * ── ПОЧЕМУ СЕТКА ПО УМОЛЧАНИЮ ОСТАЁТСЯ НУЛЁМ, А ЗА КЛЮЧОМ ─────────────────
+ * Замер по дереву, а не вкус. Из 64 файлов, у которых ведомость печатается
+ * (корпус `flang/proof`, карта умений, `flang/stdlib`), «объявлено, не
+ * доказано» стоит у ЧЕТЫРЁХ, а сетка — у ВОСЕМНАДЦАТИ; в самой библиотеке
+ * сетка есть у 21 файла из 23 — то есть почти у каждого. Молчащий ноль на
+ * «объявлено, не доказано» — ложь про четыре файла, и её надо убрать сразу.
+ * Ненулевой код на сетке — правда, но правда, которая красит библиотеку
+ * целиком, и её надо ввозить отдельным заходом, а не заодно.
+ *
+ * Ключ `--строго` и есть этот отдельный заход: он спрашивает «доказано ли
+ * САМО, без опоры», и без него ответ прежний — 0. Сама опора названа СТРОКОЙ
+ * в обоих случаях, поэтому умолчание молчаливым не остаётся: человек и
+ * инструмент видят «сетка N» и тогда, когда код нулевой.
+ *
+ * Старшинство сверху вниз: названное противоречие важнее названного пробела,
+ * а названный пробел важнее названной опоры.
+ */
+static int proof_verdict(const proof_tally *t, bool strict) {
+  if (t->violated > 0) {
+    return 1;
+  }
+  if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
+    return 3;
+  }
+  if (strict && (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0)) {
+    return 4;
+  }
+  return 0;
+}
+
+/*
+ * Приговор — В ПОТОК ОШИБОК, и по тому же доводу, что и всё прочее не-JSON:
+ * `flang check --proof --json` разбирают машиной, и строка русских слов посреди
+ * JSON сломала бы разбор. Печатается ВСЕГДА, в том числе при нуле: человек,
+ * читающий зелёный ответ, обязан видеть, чем этот зелёный заслужен.
+ */
+static void proof_say_verdict(const char *path, const proof_tally *t, int code) {
+  const bool leaning = t->grid > 0 || t->conditional > 0 || t->laws_grid > 0;
+  const char *word = code == 1   ? "НЕ СОШЛОСЬ"
+                     : code == 3 ? "НЕ ПРОВЕРЕНО"
+                     : code == 4 ? "ПРОВЕРЕНО С ОПОРОЙ"
+                     : leaning   ? "ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)"
+                                 : "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО";
+  fprintf(stderr,
+          "%s: %s — утверждений %ld: доказано %ld, условно %ld, сетка %ld, объявлено, не доказано %ld, "
+          "отвергнуто %ld, нарушено %ld; законов на сетке %ld, на веру %ld — код возврата %d\n",
+          path, word, t->total, t->proved, t->conditional, t->grid, t->declared, t->refused,
+          t->violated, t->laws_grid, t->laws_assumed, code);
+}
+
 /* ═══════════════════ flang check --proof: ведомость ══════════════════════ */
 
 /**
@@ -7140,7 +7328,7 @@ static int check_file(const char *path, bool fast) {
  * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
  * искали», а не «не найдено»).
  */
-static int proof_file(const char *path, bool json, const char *record) {
+static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
@@ -7189,6 +7377,8 @@ static int proof_file(const char *path, bool json, const char *record) {
   if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
     code = 1;
   } else if (val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) {
+    proof_tally tally;
+    bool counted = false;
     if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
       fwrite(utf8, 1, bytes, stdout);
       if (json) {
@@ -7196,6 +7386,21 @@ static int proof_file(const char *path, bool json, const char *record) {
       }
     }
     fflush(stdout);
+    /* ПРИГОВОР СНИМАЕТСЯ С МАШИННОГО ВИДА ВЕДОМОСТИ, а не со слов: слова
+       ведомости — для человека и меняются от редакции к редакции, поля JSON
+       названы объектом «Итоги утверждений» и меняются вместе с ним. Поле «в
+       JSON» лежит в ответе ВСЕГДА, независимо от того, что печаталось. */
+    memset(&tally, 0, sizeof(tally));
+    counted = val_field(result, "в JSON", &field) && val_text(field, &utf8, &bytes) &&
+              proof_tally_read(utf8, bytes, &tally);
+    if (!counted) {
+      fputs("FLANG_CLI: ведомость напечатана, а приговор из неё не прочитан — смотреть было нечем\n",
+            stderr);
+      code = 2;
+    } else {
+      code = proof_verdict(&tally, strict);
+      proof_say_verdict(path, &tally, code);
+    }
     /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
        ведомость читает человек, а запись читает сверщик, и смешать их в одной
        трубе значило бы заставить сверщика отделять одно от другого. Считает её
@@ -9723,12 +9928,15 @@ static int check_command(int argc, char **argv) {
   bool proof = false;
   bool json = false;
   bool fast = false;
+  bool strict = false;
   int index = 0;
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--proof") == 0) {
       proof = true;
     } else if (strcmp(argv[index], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[index], "--строго") == 0 || strcmp(argv[index], "--strict") == 0) {
+      strict = true;
     } else if (strcmp(argv[index], "--быстро") == 0 || strcmp(argv[index], "--fast") == 0) {
       fast = true;
     } else if (strcmp(argv[index], "--предел-шагов") == 0 || strcmp(argv[index], "--step-limit") == 0) {
@@ -9786,7 +9994,12 @@ static int check_command(int argc, char **argv) {
           stderr);
     return 2;
   }
-  return proof ? proof_file(path, json, record) : check_file(path, fast);
+  if (strict && !proof) {
+    fputs("flang check --строго осмыслен только рядом с «--proof»: без ведомости приговаривать нечего\n",
+          stderr);
+    return 2;
+  }
+  return proof ? proof_file(path, json, record, strict) : check_file(path, fast);
 }
 
 /* ═══════════════════════════════ flang ast ═══════════════════════════════ */

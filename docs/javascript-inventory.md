@@ -31,8 +31,8 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Эта опись считает ОДИН язык. Остальные пятнадцать — оболочка, C, Python, HTML,
 CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby — считает
-[`tree-inventory.md`](tree-inventory.md) (3 сентября 2026: 245 файлов вне flang,
-<!-- СНЯТО 2026-09-03 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 245 -->
+[`tree-inventory.md`](tree-inventory.md) (3 сентября 2026: 249 файлов вне flang,
+<!-- СНЯТО 2026-09-03 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 249 -->
 долг вне JavaScript — **74 файла, 8 729 строк при потолке 63**: храповик красен,
 разбор — задача 4838). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и

@@ -347,6 +347,7 @@ static const char FLANG_HELP[] =
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
+    "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
     "  flang --mcp-mode                   служба для ИИ-помощника (MCP по стандартным потокам)\n"
@@ -373,7 +374,7 @@ static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 12 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
+    "Здесь все 13 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
     "тот же языковой сервер, который кладёт на «PATH» пакет npm.\n"
     "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
     "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
@@ -747,6 +748,31 @@ static const char HELP_FACTS[] =
     "отказ до всякого вычисления. Упирание в предел шагов — тоже ответ, «не\n"
     "досчитали за отведённый бюджет», а не сбой инструмента.";
 
+static const char HELP_NEW[] =
+    "flang new <имя> [--force]\n"
+    "\n"
+    "Создаёт каталог <имя>/ с готовой структурой пакета одной командой: базовый\n"
+    "модуль с тотальной функцией и примером, каталог fspec/ с одной доказанной\n"
+    "спекой и стражем guard.flang, манифест flang.package и README.\n"
+    "\n"
+    "  flang new проба\n"
+    "  cd проба\n"
+    "  flang check проба.flang\n"
+    "  flang io fspec/guard.flang\n"
+    "\n"
+    "Имя пакета — без пробела, косой черты, обратной косой черты, кавычек и\n"
+    "гильемет, вне списка зарезервированных слов (имена команд бинарника,\n"
+    "«flang», «fspec») и не «.»/«..». Недопустимое имя — отказ FLANG_NEW,\n"
+    "код 2, и ни один файл не создаётся.\n"
+    "\n"
+    "  --force   переписать каталог, если он уже существует. Латиницей: --force,\n"
+    "            кириллицей: --силой. Без ключа существующий каталог — отказ\n"
+    "            FLANG_NEW, код 1: команда не переписывает чужую работу молча.\n"
+    "\n"
+    "Образец fspec/ команда берёт рядом с собой (<каталог двоичного>/../fspec)\n"
+    "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
+    "FLANG_NEW, код 1, и каталог не заводится вовсе.";
+
 static const char HELP_LOCK[] =
     "flang lock <файл.flang> [--pretty]\n"
     "\n"
@@ -893,6 +919,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
+  } else if (strcmp(topic, "new") == 0) {
+    printf("%s\n", HELP_NEW);
   } else {
     printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   }
@@ -14964,6 +14992,390 @@ static int package_file(int argc, char **argv) {
   return code;
 }
 
+/* ══════════════════════════ новый пакет: `flang new` ══════════════════════ */
+
+/*
+ * СТРУКТУРА, КОТОРУЮ КОМАНДА ВОСПРОИЗВОДИТ, — та же, что в `fspec/` дерева:
+ * `guard.flang` и `policy.flang` копируются с диска дословно (это они и
+ * проверяют потом сами себя — план, который меняться не должен от пакета к
+ * пакету), а `settings.txt`, спека-пример, слепок, манифест и README
+ * складываются заново под названное имя. Ту же проверку — «Имя пакета
+ * допустимо» — самостоятельно доказывает `flang/self/cli.flang`; здесь она
+ * продублирована ровно так же, как строгий разбор `--предел-шагов` у
+ * `human_steps`.
+ */
+#define NEW_MANIFEST "flang.package"
+#define NEW_TEMPLATE_ENV "FLANG_FSPEC_TEMPLATE_DIR"
+
+static const char *const NEW_RESERVED[] = {"check", "ast",  "tokens",  "run",     "test", "facts", "emit",
+                                           "io",    "repl", "lock",    "package", "new",  "lsp",   "help",
+                                           "version", "flang", "fspec"};
+#define NEW_RESERVED_COUNT (sizeof(NEW_RESERVED) / sizeof(NEW_RESERVED[0]))
+
+/** Запрещённые куски имени пакета — та же строка, что «Запрещённые куски
+    имени пакета» в cli.flang. */
+static const char *const NEW_FORBIDDEN[] = {" ", "\t", "\n", "/", "\\", "\"", "«", "»"};
+#define NEW_FORBIDDEN_COUNT (sizeof(NEW_FORBIDDEN) / sizeof(NEW_FORBIDDEN[0]))
+
+/** Дословно та же проверка, что «Имя пакета допустимо» в cli.flang: имя
+    остаётся русским (или любой другой письменностью языка) настолько же
+    свободно, насколько остальной flang — запрещены только куски, которые
+    ломают путь на диске, JSON манифеста или флаговый разбор. */
+static bool new_name_ok(const char *name) {
+  size_t index = 0;
+  if (name == NULL || name[0] == '\0') {
+    return false;
+  }
+  if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+    return false;
+  }
+  for (index = 0; index < NEW_FORBIDDEN_COUNT; index += 1) {
+    if (strstr(name, NEW_FORBIDDEN[index]) != NULL) {
+      return false;
+    }
+  }
+  for (index = 0; index < NEW_RESERVED_COUNT; index += 1) {
+    if (strcmp(name, NEW_RESERVED[index]) == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool new_refuse(const char *say) {
+  repl_print_bad("FLANG_NEW", say, NULL, NULL, 0, 0);
+  return false;
+}
+
+/**
+ * Каталог с образцом `fspec/`: сперва `$FLANG_FSPEC_TEMPLATE_DIR`, иначе
+ * `<каталог двоичного>/../fspec` — на дереве исходников это и есть корневой
+ * `fspec/`, рядом с `bootstrap/`. Не найден ни один — NULL, и пакет не
+ * заводится вовсе: пробел лучше спеки, скопированной ниоткуда.
+ */
+static char *new_template_dir(const char *self) {
+  const char *env = getenv(NEW_TEMPLATE_ENV);
+  char *self_dir = NULL;
+  char *parent = NULL;
+  char *candidate = NULL;
+  char *probe = NULL;
+  if (env != NULL && env[0] != '\0') {
+    probe = repl_join(env, "guard.flang");
+    if (repl_exists(probe)) {
+      free(probe);
+      return repl_say(env);
+    }
+    free(probe);
+  }
+  self_dir = repl_self_dir(self);
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  parent = repl_dirname(self_dir);
+  free(self_dir);
+  candidate = repl_join(parent, "fspec");
+  free(parent);
+  probe = repl_join(candidate, "guard.flang");
+  if (repl_exists(probe)) {
+    free(probe);
+    return candidate;
+  }
+  free(probe);
+  free(candidate);
+  return NULL;
+}
+
+/** Абсолютный путь к САМОМУ двоичному: settings.txt пакета обязан находить
+    компилятор независимо от того, откуда потом позовут `flang io`. */
+static char *new_compiler_self(const char *self) {
+  char *dir = repl_self_dir(self);
+  char *full = NULL;
+  if (dir == NULL) {
+    return repl_say("flang");
+  }
+  full = repl_join(dir, "flang");
+  free(dir);
+  if (access(full, X_OK) != 0) {
+    free(full);
+    return repl_say("flang");
+  }
+  return full;
+}
+
+static bool new_copy_template(const char *template_dir, const char *filename, const char *dest_dir) {
+  char *source = repl_join(template_dir, filename);
+  char *destination = repl_join(dest_dir, filename);
+  size_t bytes = 0;
+  char *text = repl_read_file(source, &bytes);
+  bool ok = false;
+  free(source);
+  if (text == NULL) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "образец ");
+    buf_put(&say, filename);
+    buf_put(&say, " не прочитан — пакет не создан");
+    new_refuse(say.data);
+    buf_free(&say);
+    free(destination);
+    return false;
+  }
+  ok = emit_write(destination, text, bytes);
+  free(destination);
+  free(text);
+  return ok;
+}
+
+static char *new_title(const char *name) {
+  char *title = repl_say(name);
+  if (title[0] >= 'a' && title[0] <= 'z') {
+    title[0] = (char)(title[0] - 'a' + 'A');
+  }
+  return title;
+}
+
+static bool new_write_all(const char *target, const char *fspec_dir, const char *spec_dir,
+                          const char *template_dir, const char *compiler_path, const char *name) {
+  char *title = new_title(name);
+  char *path = NULL;
+  repl_buf out;
+  bool ok = true;
+
+  buf_init(&out);
+  buf_put(&out, "модуль «");
+  buf_put(&out, title);
+  buf_put(&out,
+          "»\n\n"
+          "тотальная функция «Поприветствовать»\n"
+          "  принимает имя: строка\n"
+          "  возвращает строка\n"
+          "  пример «приветствие Марата»\n"
+          "    дано имя равно \"Марат\"\n"
+          "    ожидается \"Привет, Марат!\"\n"
+          "  соединить [\"Привет, \", имя, \"!\"] по \"\"\n");
+  {
+    repl_buf filename;
+    buf_init(&filename);
+    buf_put(&filename, name);
+    buf_put(&filename, ".flang");
+    path = repl_join(target, filename.data);
+    buf_free(&filename);
+  }
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, "{\"имя\": \"");
+  buf_put(&out, title);
+  buf_put(&out, "\", \"версия\": \"0.1.0\"}\n");
+  path = repl_join(target, NEW_MANIFEST);
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, "# ");
+  buf_put(&out, title);
+  buf_put(&out,
+          "\n\n"
+          "Пакет на flang. Минуты до первой доказанной тотальной функции:\n"
+          "флаг `тотальная` компилятор не принимает на слово, а проверяет.\n\n"
+          "## Собрать и проверить\n\n"
+          "    flang check ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang\n"
+          "    flang test ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang\n\n"
+          "Ответ `check` — сколько функций и сколько из них с доказанным\n"
+          "завершением; `test` прогоняет примеры, записанные внутри функций.\n\n"
+          "## Спеки предметной области\n\n"
+          "Каталог `fspec/` — доказанные бизнес-правила, а не только код.\n"
+          "Проверить все спеки разом:\n\n"
+          "    flang io fspec/guard.flang\n\n"
+          "Добавить спеку: файл `fspec/spec/NN-имя.flang` со своим\n"
+          "`обеспечивает «имя» цель`, затем та же команда, а после — переписать\n"
+          "слепок обещаний командой `flang io fspec/snapshot.flang`. Подробнее —\n"
+          "`fspec/README.md`.\n\n"
+          "## Пакет\n\n"
+          "    flang package ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang > ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang-package\n\n"
+          "Имя и версия для `flang package` берутся из `flang.package` рядом со\n"
+          "входным файлом.\n");
+  path = repl_join(target, "README.md");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, compiler_path);
+  buf_put(&out, "\nspec\n");
+  path = repl_join(fspec_dir, "settings.txt");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "# Спеки пакета\n\n"
+          "Бизнес-правило, доказанное компилятором, а не только описанное словами.\n"
+          "`spec/01-order-steps.flang` — полный работающий пример: две проверки,\n"
+          "ни одна не переживает подмену тела заглушкой той же подписи.\n\n"
+          "    flang io fspec/guard.flang        # проверить все спеки разом\n"
+          "    flang io fspec/snapshot.flang     # переписать слепок после правки спек\n\n"
+          "`guard.flang` и `policy.flang` — та же проверка, что в дереве flang\n"
+          "(https://github.com/digitable-lol/flang, каталог fspec/): читает\n"
+          "`settings.txt` (компилятор и каталог спек), находит файлы `spec/*.flang`,\n"
+          "спрашивает у компилятора отчёт о доказательствах и сверяет его с\n"
+          "`snapshot.txt` — слепком обещаний, который не даёт следующей спеке молча\n"
+          "ослабить прежнюю.\n\n"
+          "Новая спека — файл в `spec/` с номером в начале имени, модулем\n"
+          "`«Спека N: …»` и хотя бы одним `обеспечивает «имя» цель`.\n");
+  path = repl_join(fspec_dir, "README.md");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "модуль «Спека 1: шаги приёмки заказа»\n\n"
+          "тотальная функция «Шаги приёмки заказа»\n"
+          "  возвращает список строка\n"
+          "  обеспечивает «шагов ровно три» (длина результат) равен 3\n"
+          "  обеспечивает «первый шаг — оплата» результат содержит \"оплата\"\n"
+          "  пример «список шагов приёмки»\n"
+          "    ожидается [\"оплата\", \"сборка\", \"доставка\"]\n"
+          "  [\"оплата\", \"сборка\", \"доставка\"]\n");
+  path = repl_join(spec_dir, "01-order-steps.flang");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "01-order-steps.flang :: Шаги приёмки заказа :: шагов ровно три :: (длина "
+          "результат) равен 3\n"
+          "01-order-steps.flang :: Шаги приёмки заказа :: первый шаг — оплата :: "
+          "результат содержит \"оплата\"\n");
+  path = repl_join(fspec_dir, "snapshot.txt");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  ok = new_copy_template(template_dir, "guard.flang", fspec_dir) && ok;
+  ok = new_copy_template(template_dir, "policy.flang", fspec_dir) && ok;
+
+  free(title);
+  return ok;
+}
+
+static int new_project(int argc, char **argv, const char *self) {
+  const char *name = NULL;
+  bool force = false;
+  int index = 0;
+  char buffer[4096];
+  char *base = NULL;
+  char *target = NULL;
+  char *fspec_dir = NULL;
+  char *spec_dir = NULL;
+  char *template_dir = NULL;
+  char *compiler_path = NULL;
+  struct stat info;
+  bool exists = false;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--force") == 0 || strcmp(argv[index], "--силой") == 0) {
+      force = true;
+    } else if (strcmp(argv[index], "-") == 0) {
+      fputs("flang new требует имя пакета: со стандартного ввода оно не читается\n", stderr);
+      return 2;
+    } else if (argv[index][0] != '-' && name == NULL) {
+      name = argv[index];
+    } else {
+      fprintf(stderr, "flang new: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (name == NULL) {
+    fputs("flang new: не назван пакет. Пример: flang new проба\n", stderr);
+    return 2;
+  }
+  if (!new_name_ok(name)) {
+    fprintf(stderr,
+            "FLANG_NEW: имя «%s» недопустимо — без пробела, косой черты, кавычек и без\n"
+            "занятых слов (имена команд, «flang», «fspec»). Пакет не создан.\n",
+            name);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  target = repl_resolve(base, name);
+  free(base);
+
+  exists = stat(target, &info) == 0;
+  if (exists && !S_ISDIR(info.st_mode)) {
+    fprintf(stderr, "FLANG_NEW: «%s» уже существует и не каталог — новый пакет некуда класть\n", target);
+    free(target);
+    return 1;
+  }
+  if (exists && !force) {
+    fprintf(stderr,
+            "FLANG_NEW: каталог «%s» уже существует. flang new не переписывает чужую работу\n"
+            "молча — допишите --force (или --силой), если это точно то же место.\n",
+            target);
+    free(target);
+    return 1;
+  }
+
+  template_dir = new_template_dir(self);
+  if (template_dir == NULL) {
+    fprintf(stderr,
+            "FLANG_NEW: не найден образец fspec/ (guard.flang рядом с policy.flang) — искали\n"
+            "в $%s и в <каталог двоичного>/../fspec. Пакет не создан.\n",
+            NEW_TEMPLATE_ENV);
+    free(target);
+    return 1;
+  }
+
+  compiler_path = new_compiler_self(self);
+  fspec_dir = repl_join(target, "fspec");
+  spec_dir = repl_join(fspec_dir, "spec");
+
+  if (!emit_make_dir(spec_dir)) {
+    free(target);
+    free(fspec_dir);
+    free(spec_dir);
+    free(template_dir);
+    free(compiler_path);
+    return 1;
+  }
+
+  code = new_write_all(target, fspec_dir, spec_dir, template_dir, compiler_path, name) ? 0 : 1;
+  if (code == 0) {
+    fprintf(stderr,
+            "flang new: пакет «%s» создан в %s\n"
+            "  cd %s && flang check %s.flang\n"
+            "  flang io fspec/guard.flang\n",
+            name, target, name, name);
+  }
+
+  free(target);
+  free(fspec_dir);
+  free(spec_dir);
+  free(template_dir);
+  free(compiler_path);
+  return code;
+}
+
 /* ═══════════════════ языковой сервер: `flang lsp` ═════════════════════════ */
 
 /*
@@ -16360,6 +16772,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = lock_file(argc, argv);
   } else if (strcmp(command, "package") == 0) {
     code = package_file(argc, argv);
+  } else if (strcmp(command, "new") == 0) {
+    code = new_project(argc, argv, self);
   } else if (strcmp(command, "lsp") == 0) {
     code = lsp_serve(argc, argv);
   } else if (strcmp(command, "--mcp-mode") == 0) {

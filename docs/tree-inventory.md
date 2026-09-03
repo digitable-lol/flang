@@ -39,14 +39,14 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 91 | 14 993 | 61 | 5 249 <!-- СНЯТО 2026-09-03 файлов *.sh = 91 --><!-- СНЯТО 2026-09-03 строк-в *.sh = 14993 --> |
-| C | 38 | 762 381 | 0 | 0 <!-- СНЯТО 2026-09-03 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-03 строк-в *.c,*.h = 762381 --> |
+| оболочка | 91 | 15 012 | 61 | 5 249 <!-- СНЯТО 2026-09-03 файлов *.sh = 91 --><!-- СНЯТО 2026-09-03 строк-в *.sh = 15012 --> |
+| C | 38 | 762 504 | 0 | 0 <!-- СНЯТО 2026-09-03 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-03 строк-в *.c,*.h = 762504 --> |
 | Python | 17 | 5 681 | 2 | 269 <!-- СНЯТО 2026-09-02 файлов *.py = 17 --><!-- СНЯТО 2026-09-02 строк-в *.py = 5681 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 56 | 27 841 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-03 файлов *.js,*.mjs = 56 --><!-- СНЯТО 2026-09-03 строк-в *.js,*.mjs = 27841 --> ||
+| JavaScript | 56 | 27 857 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-03 файлов *.js,*.mjs = 56 --><!-- СНЯТО 2026-09-03 строк-в *.js,*.mjs = 27857 --> ||
 | Java | 7 | 3 910 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-08-31 строк-в *.java = 3910 --> |
 | C# | 7 | 4 451 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-08-31 строк-в *.cs = 4451 --> |
 | Elixir | 4 | 4 619 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-08-31 строк-в *.ex,*.exs = 4619 --> |
@@ -79,8 +79,8 @@ flang в C.
 
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
-| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 726 169 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-08-31 строк-в bootstrap/*.c,bootstrap/*.h = 726169 --> |
-| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 44 709 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-09-03 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 44709 --> |
+| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 726 172 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-08-31 строк-в bootstrap/*.c,bootstrap/*.h = 726172 --> |
+| рантайм цели печати | `flang/src/emit/{c,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 27 | 44 725 <!-- СНЯТО 2026-08-31 файлов flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 27 --><!-- СНЯТО 2026-09-03 строк-в flang/src/emit/c/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 44725 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 14 | 2 729 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |

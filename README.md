@@ -379,10 +379,17 @@ Honestly, and the answer is uneven.
 
 **C is checked hardest, and by the strongest program there is — the compiler itself.**
 `sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
-the 37 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
-`scripts/otpechatok-semeni`, one hashed line each — 42 lines — and that record is itself behind
-the tree right now: 41 of the 42 hashes do not match the sources (`sha256sum -c` over that
-file), because it is rewritten only by a reprint. `make -C bootstrap` compiles the resulting
+the 41 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
+`scripts/otpechatok-semeni`, one hashed line each — 46 lines — and that record is honestly
+behind the tree right now: 41 of the 46 hashes do not match the sources (`sha256sum -c` over
+that file), because the record is rewritten only by a reprint, and none has run since it was
+taken. It would be easy to make this line read "0 stale" by re-stamping the record from the
+current tree instead of reprinting — `sh scripts/raskrutka.sh --otpechatok` does exactly that —
+but the result would be a lie with a green face: the tool would be comparing the tree to a
+snapshot of itself, not to a real print. See
+`docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md` for the case this
+was caught on, and `tasks/9611` for what an honest fix costs (a real reprint, hours). `make -C
+bootstrap` compiles the resulting
 25 MiB under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one warning. Then the binary
 built from that C prints the same sources again and the result is compared with what is
 committed, all 26,598,071 bytes of it. A backend that miscompiled anything at that scale would

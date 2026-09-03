@@ -50,7 +50,7 @@ permissions:
 
 jobs:
   sobrat:
-    name: Собрать
+    name: build
     runs-on: ubuntu-latest
     steps:
       # fetch-depth: 0 — не запас на будущее. Страница «Что изменилось»
@@ -129,7 +129,7 @@ jobs:
           path: docs/site/out
 
   opublikovat:
-    name: Опубликовать
+    name: deploy
     needs: sobrat
     runs-on: ubuntu-latest
     environment:

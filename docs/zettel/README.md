@@ -600,6 +600,7 @@
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](printing-to-c-and-python-emits-bidirectional-controls-raw.md)
 - [Печать в C ищет исходники рантайма рядом с ДВОИЧНЫМ, и в дереве репозитория это работает по совпадению раскладки](printing-to-c-looks-for-runtime-sources-next-to-the-binary.md)
 - [Втаскивание модуля в самоприменённый компилятор стоит не по размеру модуля, а по числу столкновений имён с уже втащенными](pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size.md)
+- [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта — прибор, берущий эталон с того же предмета, что проверяет, не проверяет ничего](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 - [Заявленных чисел о дереве 1693 строки в 89 файлах, и делятся они на три кучи: перемеряемое за минуту, перемеряемое за часы и не перемеряемое никогда](recount-claimed-numbers-have-three-kinds-and-only-one-can-be-rechecked.md)
 - [У общего двоичного нет воспроизводимой родословной: время сборки известно, дерево — нет, а называемый коммит на два часа его моложе](recount-the-shared-binary-has-no-reproducible-pedigree.md)
 - [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)

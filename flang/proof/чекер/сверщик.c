@@ -998,6 +998,10 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     проиграно заново, сколько мест этим снято со слова ядра,
                     сколько узлов ВНЕ приёма и сколько приём взял, но не свёл. */
                  tozhdestv, tozhdestv_mest, tozhdestv_mimo, tozhdestv_ne_soshlos,
+                 /* Ч369: узлы «разбор цели по условию» — тот же счёт четырьмя
+                    числами: проиграно, снято мест, вне приёма, разобрано но не
+                    закрылось. */
+                 razbor, razbor_mest, razbor_mimo, razbor_ne_zakrylas,
                  bez_privyazki, shagov_na_slovo, shagov_primerom, dokazannyh,
                  /* Ч375: мест, где термин и номер строки стоят РЯДОМ и сверены
                     друг против друга (третья ветка, ниже, задача 9612). */
@@ -2315,6 +2319,407 @@ static int perepiskoy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   return 0;
 }
 
+/* ═══ ПЯТЫЙ ХОД ЯДРА: «РАЗБОР ЦЕЛИ ПО УСЛОВИЮ» — ЯЧЕЙКА Ч369 ════════════════
+   ЧТО ЭТО ЗА УЗЕЛ. Второе по величине правило сведения из 146 мест, которые
+   чекер числил на слово ядра: 40 мест в 15 записях корпуса. Ход НИЧЕГО НЕ
+   ВЫВОДИТ — он ДЕЛИТ цель по условию `если` надвое. Условие `У` есть выражение
+   типа `признак` (это проверил типизатор), а у признака значений ровно два;
+   значит цель при любом входе совпадает либо с целью, где `У` заменено на `да`,
+   либо с целью, где `У` заменено на `нет`. Доказав обе половины, доказали цель —
+   и ни разу не сказали, ЧТО следует из истинности или ложности `У`. Ловушка
+   «не число» (заметка `reading-if-conditions-closed-zero-goals`) сюда не
+   достаёт: она про перевод ОТРИЦАНИЯ сравнения в другое сравнение, а здесь
+   отрицания нет вовсе, есть подстановка значения.
+
+   ГДЕ ПРИЁМ СТРОЖЕ ЯДРА, И ЭТО НАРОЧНО.
+     • СВЯЗЫВАТЕЛЬ. Ядро не входит внутрь `пусть`, `разбор`, `свёртка`,
+       `отобразить`, `отфильтровать`; сверщик ОТКАЗЫВАЕТСЯ от всего терма, где
+       связыватель остался. `пусть` он перед этим разворачивает подстановкой —
+       язык чист, и `пусть` есть ровно подстановка, — а прочих четырёх не
+       разворачивает никак.
+     • СТАРШИНСТВА СВЯЗОК СВЕРЩИК НЕ ЗНАЕТ и догадываться о нём не станет:
+       свёртка выбора идёт только там, где конец ветви `иначе` назван
+       ЗАКРЫВАЮЩЕЙ СКОБКОЙ или концом терма, а связка разбирается только там,
+       где обе её части просты. Переписать терм по угаданному старшинству
+       значило бы доказать другой терм.
+     • ЛОЖЬЮ ПОЛОВИНА НЕ ОБЪЯВЛЯЕТСЯ НИКОГДА. Делений бывает несколько, и
+       сочетание значений условий бывает невыполнимым: при «н не меньше 0»
+       истинном «н больше 0» ложно — вход есть; наоборот — входа нет.
+       Незакрытая половина значит «не берусь», а не «неправда». Это урок Ч365,
+       взятый ДО замера, а не после.
+     • ПРЕДЕЛ ДЕЛЕНИЙ — ЧЕТЫРЕ, ровно как «Предел ветвления» ядра. Число
+       стережёт РАБОТУ, а не состоятельность: остановиться раньше значит
+       доказать меньше, а не доказать ложное. */
+
+#define PREDEL_VETVLENIYA 4
+
+/* Связыватели: список закрыт и повторяет закрытый список ядра («Это
+   связыватель», `flang/self/proof-kernel.flang`). Под связывателем у выражения
+   нет ОДНОГО значения — `эл равно искомое` внутри свёртки означает своё на
+   каждом элементе, — и заменять его нельзя. */
+static int est_svyazyvatel(const char *t) {
+  static const char *SVYAZ[6] = {
+    "пусть ", "разбор ", "свёртка ", "отобразить ", "отфильтровать ", "случай "
+  };
+  int k;
+  for (k = 0; k < 6; k++)
+    if (nachinaetsya(t, SVYAZ[k]) || soderzhit(t, fmt(" %s", SVYAZ[k]))) return 1;
+  return 0;
+}
+
+/* Сколько раз слово стоит на ВЕРХНЕМ уровне терма (вне скобок и вне кавычек).
+   Считается затем, чтобы отличить один выбор от двух вложенных, написанных без
+   скобок: второй читался бы догадкой о старшинстве. */
+static long skolko_sverhu(const char *t, const char *chto) {
+  const char *spisok[1]; const char *p = t; long gde, n = 0; int kakoe;
+  spisok[0] = chto;
+  while (nayti_sverhu(p, spisok, 1, &gde, &kakoe)) { n++; p += gde + strlen(chto); }
+  return n;
+}
+
+/* «если У то А иначе Б» на верхнем уровне терма. « то » и « иначе » обязаны
+   стоять ровно по одному разу вне скобок: два означали бы вложенный выбор без
+   скобок, и сверщик тут не берётся. */
+static int razrez_vybora(const char *t, char **u, char **a, char **b) {
+  static const char *TO_[1] = { " то " }, *INACHE_[1] = { " иначе " };
+  const char *h; long g1, g2; int k;
+  if (!nachinaetsya(t, "если ")) return 0;
+  h = t + strlen("если ");
+  if (skolko_sverhu(h, " то ") != 1 || skolko_sverhu(h, " иначе ") != 1) return 0;
+  if (!nayti_sverhu(h, TO_, 1, &g1, &k)) return 0;
+  if (!nayti_sverhu(h + g1 + strlen(" то "), INACHE_, 1, &g2, &k)) return 0;
+  *u = obrezat(kopiya(h, (size_t)g1));
+  *a = obrezat(kopiya(h + g1 + strlen(" то "), (size_t)g2));
+  *b = obrezat(h + g1 + strlen(" то ") + g2 + strlen(" иначе "));
+  return **u && **a && **b;
+}
+
+/* Терм, о старшинстве которого спрашивать не приходится: либо он обнят одной
+   парой скобок целиком, либо он одно слово. Только такие части сверщик и
+   разбирает по связкам — иначе он читал бы чужой разбор. */
+static int prostoy(const char *t) {
+  char *u = obrezat(t);
+  return odna_para(u) || !soderzhit(u, " ");
+}
+
+/* Условие ПЕРВОГО `если` терма — то самое, по которому ядро делит цель. `если`
+   ищется на границе слов и вне кавычек, условие берётся до « то » ТОГО ЖЕ
+   уровня скобок. */
+static int pervoe_uslovie(const char *t, char **u) {
+  const char *spisok[1]; long i, gde; int v_kav = 0, kakoe;
+  spisok[0] = " то ";
+  for (i = 0; t[i]; i++) {
+    if (v_kav) { if (t[i] == '\\' && t[i + 1]) i++; else if (t[i] == '"') v_kav = 0; continue; }
+    if (t[i] == '"') { v_kav = 1; continue; }
+    if ((i == 0 || t[i - 1] == ' ') && nachinaetsya(t + i, "если ")) {
+      const char *h = t + i + strlen("если ");
+      if (!nayti_sverhu(h, spisok, 1, &gde, &kakoe)) return 0;
+      *u = bez_vneshnih(kopiya(h, (size_t)gde));
+      return **u != 0;
+    }
+  }
+  return 0;
+}
+
+/* ГДЕ УСЛОВИЕ МОЖНО ЗАМЕНИТЬ, И СПИСОК СОСЕДЕЙ ЗАКРЫТ. Тот же набор знаков
+   бывает частью ДРУГОГО терма: «2 плюс н больше 0» читается как
+   «(2 плюс н) больше 0», и заменить в нём «н больше 0» значило бы прочитать
+   чужой разбор. Поэтому вхождение признаётся, только когда слева от него стоит
+   начало терма, открывающая скобка или одно из пяти слов, а справа — конец
+   терма, закрывающая скобка или одно из четырёх. Прочие вхождения того же
+   текста пропускаются НЕТРОНУТЫМИ, и половина тогда просто не закроется. */
+static int mesto_zameny(const char *t, long i, size_t d) {
+  static const char *SLEVA[7] = {
+    "( ", "если ", " то ", " иначе ", " и притом ", " или ", "не "
+  };
+  static const char *SPRAVA[5] = { " )", " то ", " иначе ", " и притом ", " или " };
+  int k, sleva = (i == 0), sprava = (t[i + (long)d] == 0);
+  for (k = 0; k < 7 && !sleva; k++) {
+    size_t dl = strlen(SLEVA[k]);
+    if ((size_t)i >= dl && strncmp(t + i - (long)dl, SLEVA[k], dl) == 0) sleva = 1;
+  }
+  for (k = 0; k < 5 && !sprava; k++)
+    if (nachinaetsya(t + i + (long)d, SPRAVA[k])) sprava = 1;
+  return sleva && sprava;
+}
+
+/* Замена условия литералом признака во ВСЕХ признанных местах. Внутрь кавычек и
+   внутрь «ёлочек» замена не заходит: там знаки значат себя, а не терм. */
+static char *podstavit_uslovie(const char *t, const char *u, const char *na, long *skolko) {
+  size_t d = strlen(u); long i, nach = 0; int v_kav = 0, v_yol = 0; Sp kuski = PUSTO;
+  *skolko = 0;
+  if (!d) return (char *)t;
+  for (i = 0; t[i]; i++) {
+    if (v_kav) { if (t[i] == '\\' && t[i + 1]) i++; else if (t[i] == '"') v_kav = 0; continue; }
+    if (t[i] == '"') { v_kav = 1; continue; }
+    if (nachinaetsya(t + i, "«")) { v_yol++; i += (long)strlen("«") - 1; continue; }
+    if (nachinaetsya(t + i, "»")) { if (v_yol) v_yol--; i += (long)strlen("»") - 1; continue; }
+    if (v_yol) continue;
+    if (strncmp(t + i, u, d) == 0 && mesto_zameny(t, i, d)) {
+      dobavit(&kuski, kopiya(t + nach, (size_t)(i - nach)));
+      dobavit(&kuski, kopiya(na, strlen(na)));
+      nach = i + (long)d; i = nach - 1; (*skolko)++;
+    }
+  }
+  dobavit(&kuski, kopiya(t + nach, strlen(t) - (size_t)nach));
+  return soedinit(kuski, "");
+}
+
+/* Законы признака: список закрыт, и ни один из них не про числа и не про
+   порядок — это подстановка значения в признак, ровно то, что делает пятый ход
+   ядра, и ничего сверх:
+     не да → нет      не нет → да
+     да и притом Х → Х      нет и притом Х → нет      (и зеркально)
+     нет или Х → Х          да или Х → да             (и зеркально)
+   Применяются они только к СОДЕРЖИМОМУ скобочной группы и только когда обе
+   части просты: старшинства сверщик не знает. */
+static int zakon_priznaka(const char *vnutri, char **out) {
+  static const char *SVYAZKI[2] = { " и притом ", " или " };
+  char *t = obrezat(vnutri), *l, *p; long gde; int kakoe;
+  if (nachinaetsya(t, "не ") && prostoy(t + strlen("не "))) {
+    char *v = bez_vneshnih(t + strlen("не "));
+    if (strcmp(v, "да") == 0)  { *out = (char *)"нет"; return 1; }
+    if (strcmp(v, "нет") == 0) { *out = (char *)"да";  return 1; }
+    return 0;
+  }
+  if (!nayti_sverhu(t, SVYAZKI, 2, &gde, &kakoe)) return 0;
+  if (skolko_sverhu(t, SVYAZKI[kakoe]) != 1) return 0;
+  l = kopiya(t, (size_t)gde);
+  p = t + gde + strlen(SVYAZKI[kakoe]);
+  if (!prostoy(l) || !prostoy(p)) return 0;
+  l = bez_vneshnih(l); p = bez_vneshnih(p);
+  if (kakoe == 0) {                                   /* и притом */
+    if (strcmp(l, "да") == 0) { *out = p; return 1; }
+    if (strcmp(p, "да") == 0) { *out = l; return 1; }
+    if (strcmp(l, "нет") == 0 || strcmp(p, "нет") == 0) { *out = (char *)"нет"; return 1; }
+    return 0;
+  }
+  if (strcmp(l, "нет") == 0) { *out = p; return 1; }   /* или */
+  if (strcmp(p, "нет") == 0) { *out = l; return 1; }
+  if (strcmp(l, "да") == 0 || strcmp(p, "да") == 0) { *out = (char *)"да"; return 1; }
+  return 0;
+}
+
+/* Свернуть выборы, чьё условие СТАЛО литералом признака, и связки по законам
+   выше. Сворачивается только группа, ОБНЯТАЯ СКОБКАМИ ЦЕЛИКОМ: у неё конец
+   ветви `иначе` назван закрывающей скобкой, а не старшинством. Выбор на самом
+   верху терма скобок не требует — его разбирает `polovina_zakryta`, там конец
+   ветви есть конец строки. Группы берутся ИЗНУТРИ НАРУЖУ: закрывающая скобка
+   всегда закрывает самую глубокую открытую. Проходов не больше шестнадцати:
+   каждая свёртка снимает узел и ни одного не заводит, а предел стережёт работу. */
+static char *sozhat_vybory(const char *syroy) {
+  char *t = obrezat(syroy); int raz;
+  for (raz = 0; raz < 16; raz++) {
+    long nachala[32]; long i; int gl = 0, v_kav = 0, menyali = 0;
+    for (i = 0; t[i] && !menyali; i++) {
+      char *vnutri, *u, *a, *b, *novoe = NULL; long nach;
+      if (v_kav) { if (t[i] == '\\' && t[i + 1]) i++; else if (t[i] == '"') v_kav = 0; continue; }
+      if (t[i] == '"') { v_kav = 1; continue; }
+      if (t[i] == '(') { if (gl < 32) nachala[gl] = i; gl++; continue; }
+      if (t[i] != ')') continue;
+      gl--;
+      if (gl < 0 || gl >= 32) break;
+      nach = nachala[gl];
+      vnutri = obrezat(kopiya(t + nach + 1, (size_t)(i - nach - 1)));
+      if (razrez_vybora(vnutri, &u, &a, &b)) {
+        char *uu = bez_vneshnih(u);
+        if (strcmp(uu, "да") == 0)  novoe = a;
+        if (strcmp(uu, "нет") == 0) novoe = b;
+      }
+      if (!novoe && !zakon_priznaka(vnutri, &novoe)) continue;
+      t = fmt("%s( %s )%s", kopiya(t, (size_t)nach), novoe, t + i + 1);
+      menyali = 1;
+    }
+    if (!menyali) break;
+  }
+  return t;
+}
+
+/* Замкнутое значение с ТРЕМЯ добавками к общему счётчику сверщика: списочный
+   литерал, выписанный прямо в терме (общий счётчик берёт списки только из
+   оглавления печати), его мера и вхождение в него. Общий счётчик зовётся
+   ПЕРВЫМ, и добавки трогаются лишь там, где он сказал «не берусь»: два ответа
+   на один вопрос разошлись бы молча. Значений списочный литерал не разбирает —
+   звенья сличаются как термы, ровно как в Ч87. */
+static Znach znach_moya(const char *syroy, Sp stroki, int gl) {
+  char *t = bez_vneshnih(syroy), *ls; long gde; int kakoe;
+  Znach z = ocenit_term(t, stroki, NE_BERUS, 0);
+  if (z.vid || gl > 6) return z;
+  { char *bp = bez_probelov_vne_kavychek(t); size_t d = strlen(bp);
+    if (d >= 2 && *bp == '[' && bp[d - 1] == ']' && kavychki_chisty(t))
+      return kak_spisok(bp, chleny_spiska(t).n); }
+  if (nachinaetsya(t, "длина ")) {
+    Znach a = znach_moya(t + strlen("длина "), stroki, gl + 1);
+    return a.vid == 4 ? kak_chislo(a.ch) : NE_BERUS;
+  }
+  if (!nayti_sverhu(t, OTNOSHENIYA, OTNOSHENIY, &gde, &kakoe)) return NE_BERUS;
+  ls = kopiya(t, (size_t)gde);
+  { Znach a = znach_moya(ls, stroki, gl + 1);
+    Znach b = znach_moya(t + gde + strlen(OTNOSHENIYA[kakoe]), stroki, gl + 1);
+    if (!a.vid || !b.vid) return NE_BERUS;
+    if (kakoe == 0 && a.vid == 4) {                    /* вхождение в выписанный список */
+      Sp chleny = chleny_spiska(bez_vneshnih(ls)); int i;
+      for (i = 0; i < chleny.n; i++) {
+        Znach c = znach_moya(chleny.e[i], stroki, gl + 1);
+        if (c.vid != b.vid) continue;
+        if ((c.vid == 1 || c.vid == 4) ? (strcmp(c.s, b.s) == 0) : (c.ch == b.ch))
+          return kak_priznak(1);
+      }
+      return NE_BERUS;                                 /* «звена не нашлось» — не ложь */
+    }
+    if (kakoe == 2 || kakoe == 3) {                    /* не равен / равен */
+      int ravny;
+      if (a.vid != b.vid) return NE_BERUS;
+      ravny = (a.vid == 1 || a.vid == 4) ? (strcmp(a.s, b.s) == 0) : (a.ch == b.ch);
+      return kak_priznak(kakoe == 2 ? !ravny : ravny);
+    }
+    if (a.vid != 2 || b.vid != 2) return NE_BERUS;
+    switch (kakoe) {
+      case 4: return kak_priznak(a.ch >= b.ch);
+      case 5: return kak_priznak(a.ch <= b.ch);
+      case 6: return kak_priznak(a.ch <  b.ch);
+      case 7: return kak_priznak(a.ch >  b.ch);
+      default: return NE_BERUS;
+    } }
+}
+
+/* «длина Т» неотрицательна ПО ОБЪЯВЛЕНИЮ встроенной формы: мера считает число
+   звеньев списка либо число знаков строки, и не-числа среди её значений нет.
+   Дверь одна и записана одной формой — «Т не меньше 0»; зеркальной записи
+   «0 не больше Т» эта дверь не знает: её знает зеркало порядка, а второй ответ
+   на тот же вопрос разошёлся бы с первым молча. */
+static int mera_neotricatelna(const char *t, Sp stroki) {
+  static const char *NM[1] = { " не меньше " };
+  char *l, *p; long gde; int kakoe;
+  if (!nayti_sverhu(t, NM, 1, &gde, &kakoe)) return 0;
+  l = bez_vneshnih(kopiya(t, (size_t)gde));
+  p = bez_vneshnih(t + gde + strlen(" не меньше "));
+  if (strcmp(p, "0") != 0) return 0;
+  return nachinaetsya(bez_vneshnih(svesti_term(l, stroki, 4)), "длина ");
+}
+
+static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy);
+
+/* Разделить цель по условию и закрыть ОБЕ половины. Замен обязано быть хоть
+   одна и ПОРОВНУ в обеих половинах: разное число значило бы, что заменено не
+   одно и то же место, а половины тогда — не половины этой цели. */
+static int delenie(const char *t, const char *u, Sp stroki, int deleniy) {
+  char *da, *net; long n1, n2;
+  if (deleniy >= PREDEL_VETVLENIYA || est_svyazyvatel(t)) return 0;
+  da  = podstavit_uslovie(t, u, "да",  &n1);
+  net = podstavit_uslovie(t, u, "нет", &n2);
+  if (n1 < 1 || n1 != n2) return 0;
+  return polovina_zakryta(da, stroki, deleniy + 1) &&
+         polovina_zakryta(net, stroki, deleniy + 1);
+}
+
+/* ПОЛОВИНА ЗАКРЫТА? Способов ровно ШЕСТЬ, список закрыт:
+     1. литерал `да`;
+     2. выбор с литеральным условием — закрыта выбранная ветвь;
+     3. замкнутый счёт даёт истину;
+     4. связка: `и притом` — обе части, `или` — хоть одна;
+     5. РАВЕНСТВО, стороны которого тождественны. Именно равенство и только
+        оно: `равен` языка есть `Object.is`, и «Т равен Т» истинно даже на
+        не-числе, а «Т не больше Т» — ЛОЖНО. Порядка в этом списке нет и не
+        будет; сторожит это подделка `poddelka-order-arithmetic`, где
+        «х не больше результат» стоит под оговоркой о конечности;
+     6. мера неотрицательна по объявлению встроенной формы;
+   и сверх них — само ДЕЛЕНИЕ по условию первого `если`.
+   Ни один способ не объявляет половину ЛОЖНОЙ: незакрытая половина значит
+   «не берусь». */
+static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy) {
+  static const char *SVYAZKI[2] = { " и притом ", " или " };
+  static const char *RAVNO[1] = { " равен " };
+  char *t = bez_vneshnih(sozhat_vybory(bez_vneshnih(syroy)));
+  char *u, *a, *b, *l, *p; long gde; int kakoe;
+  Znach z;
+  if (strcmp(t, "да") == 0) return 1;
+  if (strcmp(t, "нет") == 0) return 0;
+  if (razrez_vybora(t, &u, &a, &b)) {
+    char *uu = bez_vneshnih(u);
+    if (strcmp(uu, "да") == 0)  return polovina_zakryta(a, stroki, deleniy);
+    if (strcmp(uu, "нет") == 0) return polovina_zakryta(b, stroki, deleniy);
+    return delenie(t, uu, stroki, deleniy);
+  }
+  z = znach_moya(t, stroki, 0);
+  if (z.vid == 3) return z.ch != 0;
+  if (nayti_sverhu(t, SVYAZKI, 2, &gde, &kakoe)) {
+    l = kopiya(t, (size_t)gde);
+    p = t + gde + strlen(SVYAZKI[kakoe]);
+    if (prostoy(l) && prostoy(p)) {
+      int el = polovina_zakryta(l, stroki, deleniy);
+      int ep = polovina_zakryta(p, stroki, deleniy);
+      if (kakoe == 0 ? (el && ep) : (el || ep)) return 1;
+    }
+  }
+  if (nayti_sverhu(t, RAVNO, 1, &gde, &kakoe)) {
+    l = kopiya(t, (size_t)gde);
+    p = t + gde + strlen(" равен ");
+    if (prostoy(l) && prostoy(p) && tozhdestvenny(l, p, stroki, 6)) return 1;
+  }
+  if (mera_neotricatelna(t, stroki)) return 1;
+  if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy);
+  return 0;
+}
+
+/* Тело функции ОДНИМ термом, `пусть` развёрнут подстановкой. Язык чист и
+   тотален, поэтому `пусть имя равно значение` есть ровно подстановка значения
+   вместо имени, а `пусть`, которым никто не пользуется, исчезает целиком — на
+   этом стоит запись `binder-wall-map`: свёртка, в цель не входящая, цель ронять
+   не должна. Подстановка идёт С КОНЦА: поздний `пусть` вправе звать раннее имя,
+   ранний позднее — нет. Связывателей больше четырёх сверщик не разворачивает,
+   имя обязано быть одним словом, и строка не-`пусть` до последней делает тело
+   многострочным, то есть отказом, а не догадкой. */
+static char *telo_bez_pust(Sp stroki, long a, long b) {
+  static const char *OBYAVLENIYA[10] = {
+    "принимает ", "возвращает ", "обеспечивает ", "требует ", "для всех ",
+    "пример «", "дано ", "ожидается ", "теорема «", "использует "
+  };
+  Sp pusti = PUSTO; long i; int k; char *telo = (char *)"";
+  for (i = a + 1; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i)); int obyavlenie = 0;
+    if (!*l) continue;
+    for (k = 0; k < 10; k++) if (nachinaetsya(l, OBYAVLENIYA[k])) obyavlenie = 1;
+    if (obyavlenie) continue;
+    if (*telo) dobavit(&pusti, telo);
+    telo = l;
+  }
+  if (!*telo || pusti.n > 4) return (char *)"";
+  telo = term(telo);
+  for (i = pusti.n; i >= 1; i--) {
+    char *l = chast(pusti, i), *imya = slovo(l, 2), *znach = slova_posle(l, 3);
+    if (!nachinaetsya(l, "пусть ") || strcmp(slovo(l, 3), "равно") != 0) return (char *)"";
+    if (!*imya || !*znach || soderzhit(imya, "(")) return (char *)"";
+    telo = vstavit_vmesto(telo, imya, term(znach));
+  }
+  return telo;
+}
+
+/* Проиграть заново узел «разбор цели по условию».
+   1 — проигран, и место снимается со слова ядра. */
+static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
+                         const char *chya, const char *cel_syraya) {
+  char *cel, *telo; long a, b;
+  /* Узел Ч363 — принцип с посылками — не этот приём. И посылок у ЭТОГО узла
+     быть не может: он их не проигрывает, а стало быть и снять их со слова ядра
+     не вправе; счёт снятого держится на этой строке. */
+  if (*pervaya_s_nachalom(svoi, "принцип тип ") || vse_s_nachalom(svoi, "посылка ").n) return 0;
+  if (!*cel_syraya || !kavychki_chisty(cel_syraya)) return 0;
+  a = blok_funkcii(stroki, chya, &b);
+  if (a < 1) return 0;                 /* функции в исходнике нет — скажет сверка имён */
+  telo = telo_bez_pust(stroki, a, b);
+  if (!*telo || !kavychki_chisty(telo)) { s->razbor_mimo++; return 0; }
+  cel = vstavit_vmesto(term(cel_syraya), "результат", telo);
+  if (est_svyazyvatel(cel)) { s->razbor_mimo++; return 0; }
+  if (polovina_zakryta(cel, stroki, 0)) return 1;
+  /* Половина не закрылась — это «не берусь», а НЕ «неправда»: сочетание
+     значений условий бывает невыполнимым, и кричать тут было бы ложью. Имя
+     утверждения названо числом, а не строкой: строка на всякое незакрытое место
+     раздула бы вердикт до многострочного, а на этом уже спотыкалась линейка. */
+  s->razbor_ne_zakrylas++;
+  return 0;
+}
+
 /* Посылок у принципа по объявленной сумме обязано быть ровно столько, сколько у
    типа вариантов, и варианты обязаны совпасть с объявленными в исходнике. */
 static void sverit_pokrytie(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
@@ -2707,7 +3112,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
    числом. Два он всё же проверяет: что теоремы правда нет и что правила из списка. */
 static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
                         const char *verdikt, const char *mesto, const char *chya) {
-  int i, spryatana = 0, proigran, perepisan, dokazano;
+  int i, spryatana = 0, proigran, perepisan, razobran, dokazano;
   char *cel;
   for (i = 0; i < stroki.n; i++)
     if (strcmp(obrezat(stroki.e[i]), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
@@ -2724,10 +3129,17 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
      только там, где первый не взялся, и это не осторожность, а разные узлы:
      у первого в записи есть принцип с посылками, у второго нет ни строки. */
   perepisan = !proigran && dokazano && perepiskoy(s, svoi, stroki, imya, chya, cel);
+  /* Ч369: ТРЕТИЙ подмаршрут — «разбор цели по условию». Зовётся последним, и не
+     из осторожности: два первых приёма берут узлы, у которых цель уже сведена
+     тождеством или принципом, а этот берётся за цель, которую ещё НАДО поделить.
+     Порядок этот — не старшинство правил, а бережливость: место, снятое первым
+     приёмом, второй раз снимать нечем. */
+  razobran = !proigran && !perepisan && dokazano &&
+             razborom_celi(s, svoi, stroki, chya, cel);
   sverit_pravila(s, svoi, fmt("утверждение «%s»", imya));
   sverit_polya_posylok(s, svoi, stroki, imya);
   sverit_svedenie(s, svoi, imya);
-  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran || perepisan);
+  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran || perepisan || razobran);
   /* Ч363: и узлы, и СНЯТЫЕ ИМИ МЕСТА — числом. Второе нужно тому, кто считает
      породы мест по тексту записи: без него два прибора разойдутся на честной
      записи, и расхождение это будет не находкой, а слепотой мерки.
@@ -2736,6 +3148,10 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
      где посылок нет ни одной, и приписать себе чужое снятие ему нечем. */
   if (proigran) { s->uzlov++; s->uzlov_mest += 1 + vse_s_nachalom(svoi, "посылка ").n; }
   else if (perepisan) { s->tozhdestv++; s->tozhdestv_mest++; }
+  /* Ч369: приём разбора снимает РОВНО ОДНО место — само утверждение. Посылок он
+     не проигрывает и потому их не считает: берётся он только там, где посылок
+     нет ни одной. */
+  else if (razobran) { s->razbor++; s->razbor_mest++; }
   else if (dokazano) s->na_slovo++;
 }
 
@@ -2910,6 +3326,9 @@ int main(int argc, char **argv) {
            " Узлов «тождество после переписки допущением» проиграно заново %ld"
            " (снято со слова ядра мест %ld),"
            " вне приёма сверщика %ld, переписано, но не сошлось %ld."
+           " Узлов «разбор цели по условию» проиграно заново %ld"
+           " (снято со слова ядра мест %ld),"
+           " вне приёма сверщика %ld, разобрано, но не закрылось %ld."
            " Шагов по примеру проверено по существу %ld."
            " Строк без привязки к исходнику %ld."
            " Мест, сверенных ОБОИМИ свидетелями (термин и номер строки), %ld."
@@ -2918,6 +3337,7 @@ int main(int argc, char **argv) {
            golova, s.utverzhdeniy, s.shagov, s.svedeniy, s.hodov, s.dokazannyh,
            s.na_slovo, s.shagov_na_slovo, s.uzlov, s.uzlov_mest, s.uzlov_mimo,
            s.tozhdestv, s.tozhdestv_mest, s.tozhdestv_mimo, s.tozhdestv_ne_soshlos,
+           s.razbor, s.razbor_mest, s.razbor_mimo, s.razbor_ne_zakrylas,
            s.shagov_primerom, s.bez_privyazki, s.svereno_oboimi,
            s.kripto ? "SHA-256 сошёлся" : "только свёртка ядра — она ломается",
            s.sha);

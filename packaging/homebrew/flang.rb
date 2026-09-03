@@ -44,7 +44,7 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.6.2/flang-0.6.2-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.7.0/flang-0.7.0-c.tar.gz"
   # Хеш архива, собранного `bootstrap/flang io scripts/release-in-c.flang` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
@@ -109,7 +109,7 @@ class Flang < Formula
   # v0.6.2 тем же файлом. Внутри десять имён, ни одного `.o` и ни одного
   # собранного двоичного — проверено распаковкой. Прежде здесь стояло
   # a1e2e5a9… от выпуска 0.6.1, чей архив был собран без буквы X и не ставился.
-  sha256 "b8d82b1cfee57354374c5343f012f7119e884c3acb383150034136cbb5f5b259"
+  sha256 "ddf216172e3cac7cbce725bcae8293d182d7e3874be4db0e33c638e9902f7d5d"
   license "BSD-2-Clause"
   version "0.6.2"
 

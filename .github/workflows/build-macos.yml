@@ -60,6 +60,7 @@ permissions:
 
 jobs:
   bootstrap:
+    name: build-macos
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

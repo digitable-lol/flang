@@ -92,7 +92,7 @@ permissions:
 
 jobs:
   put:
-    name: Путь установки на ${{ matrix.os }}
+    name: install-path (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       # Красный на одной платформе не отменяет прогон на второй: нам важно
@@ -143,7 +143,7 @@ jobs:
   # есть ровно то дерево, которое уже уехало, — а нам нужно узнать про то,
   # которое уедет.
   brew:
-    name: Настоящий brew на macOS
+    name: homebrew
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

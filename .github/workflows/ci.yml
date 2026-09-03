@@ -168,6 +168,7 @@ jobs:
   # Подлог гоняется ПЕРЕД проверкой: сторож, разучившийся краснеть, зеленел бы
   # ровно так же, как чистое дерево, и разницы в ленте не было бы видно.
   semya:
+    name: seed-words
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -203,6 +204,7 @@ jobs:
   # Подлог гоняется ПЕРЕД сверкой — по тому же доводу, что и у сторожа слов
   # выше: сторож, разучившийся краснеть, в ленте не отличим от чистого дерева.
   proza:
+    name: prose-numbers
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -232,7 +234,7 @@ jobs:
   # Выпустить такое семя значило бы выпустить сборку, которая не собирается у
   # того, кто поверил Makefile на слово. Сторож считает это за 2,96 с.
   postoyannye:
-    name: Постоянные под пределом C99
+    name: c99-limits
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -265,7 +267,7 @@ jobs:
   # строки его не звала ни одна проверка — сторож, которого никто не зовёт, от
   # отсутствующего неотличим.
   stolknoveniya:
-    name: Два имени не дают один идентификатор
+    name: id-collisions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -288,7 +290,7 @@ jobs:
   # которого записанного долга нет вовсе («возьмите для этой проверки другой
   # файл»). Починка: долг страниц пересчитать, пробам дать файл с долгом.
   zhargon:
-    name: Жаргон на страницах
+    name: jargon
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -314,6 +316,7 @@ jobs:
   # та половина «двух часов», ради которой 14 августа сняли пуш-триггер; она
   # и остаётся на метке, а остальные двенадцать работ файла — нет.
   test:
+    name: test
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
@@ -383,6 +386,7 @@ jobs:
   # языке, — но нужен компилятор, а он в дереве не лежит: `bootstrap/flang` это
   # продукт сборки, и без `make` его бы просто не было.
   licensing:
+    name: licensing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -436,7 +440,7 @@ jobs:
   #       старый долг чинился отдельно и снимался из снимка по мере починки.
   # Путь (б) можно включить раньше пути (а); что выбрать — решение владельца.
   links:
-    name: Ссылки не ведут в никуда (совет, не приговор — см. комментарий выше)
+    name: links
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -487,6 +491,7 @@ jobs:
   # Печать не печатает непроверенного, а что из проверок печать не делает —
   # названо в её же справке. Отдельной работой: зависимостей нет, десять секунд.
   pechat:
+    name: emit-guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -498,6 +503,7 @@ jobs:
   # Прогонщик корпуса: каталог, маска и ведомость строкой. Отдельной работой —
   # зависимостей нет, семь секунд.
   korpus:
+    name: corpus-runner
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -526,6 +532,7 @@ jobs:
   # 22,72 с (замер 31 августа 2026, ствол `03fb4060`, ПОСЛЕ починки; со сборкой
   # семени 2 мин 14 с) — вдвое дешевле границы, за которой работу снимают с пуша.
   progon:
+    name: pretest-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -537,6 +544,7 @@ jobs:
   # Граница входа: довод «--args» сверяется объявленному типу до вычисления.
   # Отдельной работой: зависимостей нет, две секунды.
   granica:
+    name: input-bounds
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -564,6 +572,7 @@ jobs:
   # семени 2 мин 15 с — самая долгая работа этого файла из идущих на пуш).
   # В эти числа НЕ входит `apt-get install valgrind` шагом ниже: он не мерен.
   oblast:
+    name: c-region
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -634,7 +643,7 @@ jobs:
   # вместе 3 мин 07 с — под границей впятеро. Обе половины: 1066,3 с =
   # 17 мин 46 с, со сборкой 19 мин 37 с. Числа Ч89 подтверждены, не заменены.
   pravila-spisok:
-    name: Список правил сверщика сходится с ядром
+    name: rules-list
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -649,6 +658,7 @@ jobs:
   # 19 мин 37 с со сборкой против границы в пять минут; на пуш она не идёт, и
   # это названо ценой, а не удобством.
   pravila:
+    name: rules-check
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
@@ -667,7 +677,7 @@ jobs:
   # справки двоичного и разбором исходников — и называет разошедшийся ключ
   # поимённо. Отдельной работой: нужен только компилятор и node, полсекунды.
   klyuchi:
-    name: Ключи двух реализаций сошлись
+    name: cli-keys
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -710,7 +720,7 @@ jobs:
   # Ч77 называет «правкой на минуты в ярлыки.flang»: свой `--timeout` и
   # `--max-steps`.
   stale-pages:
-    name: Страницы не отстали от дерева
+    name: stale-pages
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:

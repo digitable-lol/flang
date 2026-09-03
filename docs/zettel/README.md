@@ -458,6 +458,7 @@
 - [Переименование, разводящее столкновение у одного судьи, создаёт столкновение у следующего, и до правки его не видно ни одним пересечением множеств](a-rename-that-separates-one-collision-creates-the-next-one.md)
 - [Правило, въехавшее в двоичный, ещё не спрошено двоичным: двенадцать подделок из двенадцати принимались молча, а компилятор при этом писал, что сверил](a-rule-inside-the-binary-is-not-a-rule-the-binary-asks.md)
 - [Правило, на которое не наступает ни одна программа корпуса, невидимо для сверки эталона — и живёт только в свидетеле](a-rule-no-corpus-program-touches-is-invisible-to-the-reference-check.md)
+- [Проба порчей, которая ничего не испортила, выглядит как успех](a-sabotage-test-that-sabotages-nothing-looks-like-success.md)
 - [Воспроизводимость по семени кончается ровно на границе узла, и обе половины теперь числа, а не слова](a-seed-orders-only-inside-one-node.md)
 - [Семя с рантаймом дерева бьёт стек, если не перенести блок настроек из его шапки](a-seed-with-tree-runtime-smashes-the-stack-without-its-limits-block.md)
 - [Признак «печатать отдельным файлом» — это «во вкладку не едет», а не «одинаково для всех программ»](a-separate-printed-file-means-it-cannot-ride-along.md)
@@ -663,6 +664,7 @@
 - [Ход через названную середину написан, а цена перебора оказалась ниже разброса прибора](the-price-of-the-midpoint-search-is-linear-in-the-order-facts.md)
 - [Перепечатка сожгла 27 часов и умерла не от предела, а оттого что двоичный стоял ВНЕ дерева и не нашёл библиотеку](the-reprint-burned-27-hours-because-the-binary-stood-outside-the-tree.md)
 - [Перебор описаний съедает предел шагов, а не часы; обстановка не съедает ничего](the-scan-eats-the-step-budget-not-the-clock.md)
+- [Семя нельзя подправить руками — оно не слинкуется](the-seed-cannot-be-patched-by-hand-it-will-not-link.md)
 - [Вшитый в семя предел шагов мал уже для ОДНОГО файла компилятора](the-seed-step-limit-is-now-too-small-for-a-single-self-file.md)
 - [Сокет-хозяин терял ответ ровно тогда, когда служба делала что-то между запросом и ответом](the-socket-host-lost-the-reply-when-the-service-thought-before-answering.md)
 - [Квадрат сидит в ходе переписки, а не в неудачной попытке — и платится одинаково, чем бы ход ни кончился](the-square-is-in-the-rewrite-walk-not-in-the-failed-attempt.md)
@@ -704,8 +706,7 @@
 
 ## Ещё не разобранное
 
-- [Проба порчей, которая ничего не испортила, выглядит как успех](a-sabotage-test-that-sabotages-nothing-looks-like-success.md)
-- [Семя нельзя подправить руками — оно не слинкуется](the-seed-cannot-be-patched-by-hand-it-will-not-link.md)
+- [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 
 ## Как добавлять
 

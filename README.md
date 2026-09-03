@@ -223,11 +223,12 @@ so as not to stamp that header a second time. The other seven targets read their
 same way, from `flang/src/emit/<target>/`.
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
-tap serves it. The asdf (and mise) plugin installs the same archive from the same releases, and
-its source is [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole
-repository, and that repository is not published yet, so for now the plugin is source rather than
-an install path. Neither needs anything but a C compiler. This is how self-hosting languages
-ship — Go carried generated C for years, Nim still does.
+tap — [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap) — serves it.
+The asdf (and mise) plugin installs the same archive from the same releases, and its source is
+[`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole repository:
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang), published, though it
+can lag behind this tree's latest release. Neither needs anything but a C compiler. This is how
+self-hosting languages ship — Go carried generated C for years, Nim still does.
 
 **Be clear about what that binary is.** It answers to all twelve commands, the editor
 language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`,
@@ -630,6 +631,23 @@ Further reading — in Russian (the language surface is Russian, and so is most 
 The documentation naming rule: an `.md` file with no language suffix is English, `X.ru.md` is its
 Russian version. The exception is `README.md` and `SPEC.md` next to code — they keep those names
 in whichever language they are written, because GitHub shows them as a directory's front page.
+
+---
+
+## Built with flang
+
+Four applications outside this repository, not examples but working code:
+
+- **[flang-tui](https://github.com/digitable-lol/flang-tui)** — terminal screen layout in
+  flang: strips, clipping by printable cells, stacking, tabs, scrolling. Printed to Go and C.
+- **[digitdisk](https://github.com/digitable-lol/digitdisk)** — a disk and system overview for
+  Linux: the rules are decided by a kernel written in flang, the system calls by a Go host.
+- **[flang-ribbon](https://github.com/digitable-lol/flang-ribbon)** — window-ribbon arithmetic
+  in flang: offsets, column width, window height, insertion, panes. Carried over from digitwm
+  and checked to match it exactly on 526,871 inputs. Printed to C and to Go.
+- **[flang-env](https://github.com/digitable-lol/flang-env)** — parsing environment values in
+  flang: color depth, language, `NO_COLOR`. The rules are pure; reading the environment is left
+  to the host.
 
 ---
 

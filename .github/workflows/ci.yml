@@ -171,7 +171,7 @@ jobs:
     name: seed-words
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: сторож краснеет на подложенном слове
@@ -207,7 +207,7 @@ jobs:
     name: prose-numbers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: сторож чисел краснеет на подложенном числе
@@ -237,7 +237,7 @@ jobs:
     name: c99-limits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # Двоичный нужен живой: вопрос «умеет ли печать резать длинную
@@ -270,7 +270,7 @@ jobs:
     name: id-collisions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: имена замыкания компилятора не схлопываются после «Змейки»
         run: node scripts/latin-collision-guard.mjs
 
@@ -294,10 +294,10 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
       - run: node --test flang/test/jargon-guard.test.mjs
@@ -328,7 +328,7 @@ jobs:
       # записанный файл с историей. Клон по умолчанию — одна ревизия без единого
       # тега, и в нём эта сверка сравнивать нечего с чем: она осталась бы
       # зелёной, ничего не проверив.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       - name: Выпуск не опирается на кеш приговоров
@@ -338,7 +338,7 @@ jobs:
       # зависимостей у дерева ноль, а единственным его делом был `postinstall`,
       # собиравший двоичный в `dvoichnyy/`, куда здесь никто не смотрит.
       # Двоичный собирается шагом ниже, и всегда собирался только им.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
       # Двоичный собирается ДО прогона, потому что часть проб дерева ходит
@@ -389,7 +389,7 @@ jobs:
     name: licensing
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -444,7 +444,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -494,7 +494,7 @@ jobs:
     name: emit-guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -506,7 +506,7 @@ jobs:
     name: corpus-runner
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -535,7 +535,7 @@ jobs:
     name: pretest-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -547,7 +547,7 @@ jobs:
     name: input-bounds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -575,7 +575,7 @@ jobs:
     name: c-region
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: sudo apt-get update && sudo apt-get install -y valgrind
@@ -646,7 +646,7 @@ jobs:
     name: rules-list
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -662,7 +662,7 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -680,10 +680,10 @@ jobs:
     name: cli-keys
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - run: make -C bootstrap -j"$(nproc)"
@@ -724,14 +724,14 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         # Страница выпусков печатается ИЗ ТЕГОВ, и её сверка — член семьи.
         # В клоне глубиной в одну ревизию сверять её не с чем.
         with:
           fetch-depth: 0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
       - run: make -C bootstrap -j"$(nproc)"

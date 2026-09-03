@@ -71,7 +71,7 @@ jobs:
     name: build-macos
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: Собрать точку раскрутки теми же флагами, что у Homebrew

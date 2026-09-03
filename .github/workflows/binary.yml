@@ -123,7 +123,7 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
 
@@ -512,7 +512,7 @@ jobs:
       # умолчание `actions/checkout` — один коммит. На обрезанном клоне
       # проверка отвечает кодом 5 «ПРОВЕРИТЬ НЕ УДАЛОСЬ», и это честно, но
       # бесполезно: спрашивать надо там, где ответ есть.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       - name: Выпуск не опирается на кеш приговоров
@@ -596,7 +596,7 @@ jobs:
       # объявленная версия, а клон по умолчанию — одна ревизия без единого тега.
       # На таком клоне «тега нет» означало бы только то, что его не выгружали, и
       # сверка честно скажет «сверить нечем» — то есть проверит ничего.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       - name: Выпуск не опирается на кеш приговоров
@@ -630,7 +630,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
 
@@ -817,7 +817,7 @@ jobs:
     runs-on: [self-hosted, bolshaya-pamyat]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: Следить за памятью раннера
@@ -886,7 +886,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: Чекер собирается из одного файла, ноль предупреждений
@@ -902,7 +902,7 @@ jobs:
     timeout-minutes: 20
     steps:
       # Полная история не нужна: сторож спрашивает `git ls-files`, а не журнал.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
@@ -1041,7 +1041,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"

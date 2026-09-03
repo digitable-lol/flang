@@ -67,7 +67,7 @@ jobs:
     name: freshness
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Нужна история: проверка спрашивает git о дате последней правки
           # входов печати. В клоне на одну ревизию ответа нет, и проверка
@@ -184,7 +184,7 @@ jobs:
     name: c99-limits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       # Сторожу нужен ЖИВОЙ двоичный: вопрос «умеет ли печать резать» он задаёт
       # прогоном печати, а не чтением исходников. Чтением на него ответить
       # нельзя — печатью правит эмиттер, зашитый в двоичный, а не тот, что
@@ -225,7 +225,7 @@ jobs:
     name: id-collisions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: имена замыкания компилятора не схлопываются после «Змейки»
         run: node scripts/latin-collision-guard.mjs
 
@@ -242,7 +242,7 @@ jobs:
     runs-on: [self-hosted, bolshaya-pamyat]
     timeout-minutes: 720
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       # ОТКАЗ «FLANG не задан» ЗДЕСЬ СНЯТ 1 сентября 2026, и вот чем он был неверен.
       #
@@ -350,7 +350,7 @@ jobs:
     # и саму сверку.
     timeout-minutes: 1440
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
 
       - name: Развести два дерева по разным каталогам

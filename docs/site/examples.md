@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 192 --> 192 files in
+Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 193 --> 193 files in
 twenty-one sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 192 --> 192 (measured 3 September 2026).
+`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 193 --> 193 (measured 3 September 2026).
 
 ## The sets
 
@@ -16,7 +16,7 @@ The number is recounted by one command:
 | [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks |
 | [`cat/`](examples/cat) | 12 | category theory on applied problems: arrows with promises of their own, laws, CRDT merge |
 | [`web/`](examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
-| [`io/`](examples/io) | 8 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
+| [`io/`](examples/io) | <!-- СНЯТО 2026-09-03 файлов examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](examples/db) | <!-- СНЯТО 2026-09-03 файлов examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
@@ -43,7 +43,7 @@ they are run by the binary:
 
 ```bash
 bootstrap/flang test examples/rosetta/   # one set
-bootstrap/flang test examples/           # the whole catalogue, 192 files
+bootstrap/flang test examples/           # the whole catalogue, 193 files
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.

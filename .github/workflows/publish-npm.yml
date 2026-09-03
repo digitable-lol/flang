@@ -167,8 +167,8 @@ jobs:
           set -eu
           if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release create "$GITHUB_REF_NAME" \
-              --title "$GITHUB_REF_NAME" \
-              --notes "Архив C99: собирается одним \`make\`, Node не нужен. Пакет npm: \`npm i -g @digitable-lol/flang\`."
+              --title "$(git tag -l --format='%(contents:subject)' "$GITHUB_REF_NAME")" \
+              --notes "$(git tag -l --format='%(contents:body)' "$GITHUB_REF_NAME")"
           fi
           gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'

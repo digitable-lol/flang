@@ -1,6 +1,42 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.0": {
+      "ru": {
+        "заголовок": "Компилятор перепечатан начисто, а главная работа выпуска — поиск собственных обманов",
+        "появилось": [
+          "Девятой целью печати стал C++; появились регулярные выражения, драйверы sqlite и Redis, TLS 1.3 и реестр пакетов.",
+          "У файлов три равноправных расширения; у пределов шагов и глубины — свои ключи; `--no-check` печатает без проверки, а `check --быстро` честно говорит, чего он не смотрел."
+        ],
+        "изменилось": [
+          "Компилятор перепечатан начисто с замороженного ствола: печать шла 12 часов 4 минуты, из них 10 часов 25 минут (86 %) заняла стадия «Суд ядра о программе».",
+          "Выпускной путь впервые прошёл целиком. Прежде он не проходил ни разу: шаг сборки архива звал двоичный, которого никто не собирал, и релиз 0.6.2 собирали руками."
+        ],
+        "сломалось": [
+          "Язык НЕ формально-доказуемый: из семи гейтов критерия взято два — ядро выдаёт объект доказательства и размер доверия назван числом.",
+          "Ядро способно доказать ЛОЖЬ: при развёртке вызова оно подставляет довод под связыватель того же имени и печатает «доказано обо ВСЕХ входах» про утверждение, ложное на каждом входе. В сегодняшнем корпусе таких доказательств нет — померено, 0 из 240.",
+          "Доля корпуса, проверенная независимым чекером, — 0,00 % на момент заморозки. Прежде называвшиеся 0,83 % завышены и сняты.",
+          "Чтобы перепечатать компилятор семенем 0.7.0, нужен ключ `--предел-глубины 200000`: вшитый предел 20 000 упирается в одну машинную строку постусловия в 90 286 знаков."
+        ]
+      },
+      "en": {
+        "заголовок": "The compiler was reprinted from scratch, and the release’s main work was finding our own self-deceptions",
+        "появилось": [
+          "C++ became the ninth print target; regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry arrived.",
+          "Files take three equal extensions; step and depth limits have their own flags; `--no-check` prints without checking, and `check --быстро` says plainly what it did not look at."
+        ],
+        "изменилось": [
+          "The compiler was reprinted from scratch off the frozen trunk: the print took 12 hours 4 minutes, of which 10 hours 25 minutes (86 %) was the kernel-judgment stage.",
+          "The release path completed end to end for the first time. Before, it never had: the archive step called a binary nobody built, and the 0.6.2 release was assembled by hand."
+        ],
+        "сломалось": [
+          "The language is NOT formally provable: two of the criterion’s seven gates are taken — the kernel emits a proof object, and the size of the trusted base is named as a number.",
+          "The kernel can prove a FALSEHOOD: unfolding a call substitutes an argument under a binder of the same name and prints “proved for ALL inputs” about a claim false on every input. Today’s corpus contains no such proof — measured, 0 of 240.",
+          "The share of the corpus verified by the independent checker is 0.00 % as of the freeze. The previously quoted 0.83 % was overstated and has been withdrawn.",
+          "Reprinting the compiler with the 0.7.0 seed needs `--предел-глубины 200000`: the built-in limit of 20 000 hits one machine-written postcondition line of 90 286 code points."
+        ]
+      }
+    },
     "0.6.2": {
       "ru": {
         "заголовок": "Установка через Homebrew починена: архив приезжал с каталогом, в который нельзя войти",

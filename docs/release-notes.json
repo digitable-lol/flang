@@ -20,7 +20,7 @@
       "en": {
         "заголовок": "The Homebrew install is fixed: the archive shipped a directory nobody could enter",
         "появилось": [
-          "TLS connections work for real: twelve runs with genuine response codes.",
+          "The secure connection works for real: twelve runs with genuine response codes.",
           "The fold principle is strengthened with the already-traversed part of the list: +2 proved obligations, with a forgery and its honest half added alongside the rule."
         ],
         "изменилось": [

@@ -1166,13 +1166,16 @@ static void sverit_term_bez_nomera(Sverka *s, const char *stroka_zapisi,
    обязан с обещанным постусловием — сам по себе, а не как цитата. */
 static void sverit_cel(Sverka *s, Sp svoi, Sp stroki, const char *mesto,
                        const char *imya, const char *imya_t) {
-  char *obeshchano = hvost_posle(mesto, fmt("обеспечивает «%s» ", imya));
+  /* Ч392: строка читается ТАК ЖЕ, КАК ЕЁ ЧИТАЕТ ЯЗЫК, прежде чем искать в ней
+     метку — иначе хвостовое примечание подменяет и обещанное, и утверждённое
+     (тот же приём, что уже применён рядом в bez_teoremy/sverit_pokrytie). */
+  char *obeshchano = hvost_posle(kak_chitaet_yazyk(mesto), fmt("обеспечивает «%s» ", imya));
   char *stroka_celi = pervaya_s_nachalom(svoi, "цель ");
   long gde = nomer_posle(stroka_celi, "строка ");
   char *utverzhdeno;
   if (gde < 1) { utverzhdeno = v_ugolkah(stroka_celi, 1); s->bez_privyazki++; }
   else {
-    utverzhdeno = hvost_posle(stroka_po_nomeru(stroki, gde), "утверждаем ");
+    utverzhdeno = hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gde)), "утверждаем ");
     sverit_term_i_nomer(s, stroka_celi, utverzhdeno, gde, imya_t, "цель");
   }
   esli_ne(s, strcmp(obeshchano, utverzhdeno) == 0,
@@ -1850,7 +1853,11 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
       sverit_term_bez_nomera(s, sh, obosnovanie, imya_t, fmt("шаг %s", slovo(sh, 2)));
       s->bez_privyazki++; continue;
     }
-    v_ish = bez_to(stroka_po_nomeru(stroki, gde));
+    /* Ч392: читать строку исходника ТАК ЖЕ, КАК ЕЁ ЧИТАЕТ ЯЗЫК, прежде чем
+       искать в ней обоснование — иначе хвостовое примечание подставляет
+       обоснование, которого в строке на самом деле нет (соderzhit ниже искал
+       бы и внутри примечания). */
+    v_ish = bez_to(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gde)));
     sverit_term_i_nomer(s, sh, nachinaetsya(v_ish, "затем ") ? slova_posle(v_ish, 1) : v_ish,
                         gde, imya_t, fmt("шаг %s", slovo(sh, 2)));
     if (strcmp(vid, "промежуточный") == 0)
@@ -1934,8 +1941,11 @@ static int dovod_funkcii(Sp stroki, const char *mesto, const char *imya) {
   for (i = 0; i < stroki.n; i++) {
     char *syraya = stroki.e[i], *l = obrezat(syraya);
     if (nachinaetsya(syraya, "функция «") || nachinaetsya(syraya, "тотальная функция «")) vnutri = 1;
+    /* Ч392: имя довода ищется по строке КАК ЕЁ ЧИТАЕТ ЯЗЫК — сырой `l` несёт
+       и хвостовое примечание, а est_term границ примечания не знает, только
+       пробельные края слова. */
     else if (vnutri && nachinaetsya(l, "принимает ") &&
-             est_term(zamenit(zamenit(l, ":", " : "), ",", " , "), imya)) return 1;
+             est_term(zamenit(zamenit(kak_chitaet_yazyk(l), ":", " : "), ",", " , "), imya)) return 1;
     if (strcmp(l, mesto) == 0) return 0;
   }
   return 0;
@@ -2751,7 +2761,9 @@ static void sverit_pokrytie(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
   esli_ne(s, !*indukciya || strcmp(v_yolochkah(princip, 2), v_yolochkah(indukciya, 1)) == 0,
           fmt("теорема «%s»: принцип ведёт индукцию по «%s», а запись говорит «индукция по «%s»»",
               imya_t, v_yolochkah(princip, 2), v_yolochkah(indukciya, 1)));
-  { char *v_ish = slovo_posle(mesto, "для всех "), *po = v_yolochkah(princip, 2);
+  /* Ч392: искать «для всех» нужно там, где его читает язык, а не где его
+     находит strstr в примечании или за лишним пробелом. */
+  { char *v_ish = slovo_posle(kak_chitaet_yazyk(mesto), "для всех "), *po = v_yolochkah(princip, 2);
     if (*v_ish)
       esli_ne(s, strcmp(golo(v_ish), po) == 0,
               fmt("теорема «%s»: принцип ведёт индукцию по «%s», а постусловие исходника — по «%s»",
@@ -3088,10 +3100,14 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
   sverit_chislo_shagov(s, svoi, imya_t);
   sverit_polya_posylok(s, svoi, stroki, imya_t);
   sverit_svedenie(s, svoi, imya_t);
+  /* Ч392: обе выборки «утверждаем» ниже читают строку исходника КАК ЕЁ ЧИТАЕТ
+     ЯЗЫК — иначе примечание в хвосте той же строки подставляет цель, которой
+     язык не видит (sverit_cel выше уже читает эту защиту, здесь тот же приём
+     для цели шагов и для цели проигрывания). */
   { char *sk = pervaya_s_nachalom(svoi, "цель ");
     long gc = nomer_posle(sk, "строка ");
     sverit_shagi(s, svoi, stroki, imya_t, chya,
-                 gc < 1 ? v_ugolkah(sk, 1) : hvost_posle(stroka_po_nomeru(stroki, gc), "утверждаем ")); }
+                 gc < 1 ? v_ugolkah(sk, 1) : hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gc)), "утверждаем ")); }
   sverit_zakrytie(s, svoi, imya_t, verdikt);
   sverit_pravila(s, svoi, fmt("теорема «%s»", imya_t));
   { char *princip = pervaya_s_nachalom(svoi, "принцип тип ");
@@ -3099,7 +3115,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
     long gde = nomer_posle(stroka_celi, "строка ");
     o.stroki = stroki; o.svoi = svoi; o.funkciya = (char *)chya;
     o.cel = term(gde < 1 ? v_ugolkah(stroka_celi, 1)
-                         : hvost_posle(stroka_po_nomeru(stroki, gde), "утверждаем "));
+                         : hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gde)), "утверждаем "));
     o.po = v_yolochkah(princip, 2); o.tip = v_yolochkah(princip, 1);
     o.hvost = hvost_dovodov(stroki, chya); }
   p = proigrat_blok(&o);
@@ -3167,7 +3183,10 @@ static void sverit_utverzhdenie(Sverka *s, const char *blok, Sp stroki) {
   s->utverzhdeniy++;
   if (strcmp(verdikt, "доказано") == 0) s->dokazannyh++;
   sverit_celost_bloka(s, svoi, imya);
-  esli_ne(s, soderzhit(mesto, fmt("обеспечивает «%s»", imya)),
+  /* Ч392: mesto — строка исходника КАК ЕСТЬ, с хвостовым примечанием и любым
+     пробельным пробегом; без kak_chitaet_yazyk имя постусловия ищется и там,
+     где язык его не читает вовсе (тот же изъян, что чинил Ч166 в bez_teoremy). */
+  esli_ne(s, soderzhit(kak_chitaet_yazyk(mesto), fmt("обеспечивает «%s»", imya)),
           fmt("строка %ld исходника не несёт «обеспечивает «%s»» — записанное утверждение в исходнике не стоит", gde, imya));
   esli_ne(s, strcmp(hozyain, chya) == 0,
           fmt("утверждение «%s» записано за функцией «%s», а строка %ld исходника стоит в функции «%s»",

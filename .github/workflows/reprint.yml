@@ -64,7 +64,7 @@ jobs:
   # красный, пока хоть одно из двух не так: сверка устарела или считать её
   # не на чем.
   svezhest:
-    name: Состояние побайтовой сверки
+    name: freshness
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -181,7 +181,7 @@ jobs:
   # входы печати, в которых такие постоянные лежат. Поэтому `sverka` теперь
   # ждёт его: полдня машины не тратятся на заведомо несобираемое семя.
   postoyannye:
-    name: Постоянные под пределом C99
+    name: c99-limits
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -222,7 +222,7 @@ jobs:
   # `scripts/raskrutka.sh` его нет намеренно («Node не нужен ни на одном шаге»),
   # и сторож туда не ставится.
   stolknoveniya:
-    name: Два имени не дают один идентификатор
+    name: id-collisions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -236,7 +236,7 @@ jobs:
   # выглядит как «идёт», хотя не идёт. Пусть лучше её не будет видно вовсе, чем
   # будет видно неправду.
   sverka:
-    name: Семя совпадает с печатью байт в байт
+    name: reprint-check
     needs: [postoyannye, stolknoveniya]
     if: vars.BOLSHAYA_PAMYAT == 'da'
     runs-on: [self-hosted, bolshaya-pamyat]
@@ -340,7 +340,7 @@ jobs:
   #   <база>/pervaya/derevo/   и  <база>/pervaya/pechat.log   → ZHURNAL_1
   #   <база>/vtoraya/derevo/   и  <база>/vtoraya/pechat.log   → ZHURNAL_2
   dve-pechati:
-    name: Две печати одного дерева совпадают побайтово
+    name: reprint-reproducibility
     needs: postoyannye
     if: vars.BOLSHAYA_PAMYAT == 'da'
     runs-on: [self-hosted, bolshaya-pamyat]

@@ -813,7 +813,15 @@ jobs:
   # тут нужнее, чем кажется.
   srashchivanie:
     name: merge-splicing
-    if: vars.BOLSHAYA_PAMYAT == 'da'
+    # На self-hosted раннере: неограниченный `pull_request` на публичном
+    # репозитории собирал бы и исполнял чужой код на этой машине без
+    # проверки источника. Найдено Ч402 (задача 9971) — гейт ниже пускает
+    # PR из ветки этого же репозитория (доверенной, там пишут только с
+    # правом записи), но не из чужого форка.
+    if: >-
+      vars.BOLSHAYA_PAMYAT == 'da' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, bolshaya-pamyat]
     timeout-minutes: 30
     steps:

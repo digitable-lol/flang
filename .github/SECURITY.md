@@ -33,7 +33,8 @@ The tree is the reference; a fix that is not on `main` does not exist.
 ## What is in scope
 
 - The compiler, the interpreter and the eight code generators in this repository.
-- The published npm package, including what it puts on `$PATH`.
+- The release archive `flang-<version>-c.tar.gz` and the Homebrew formula, including what
+  they put on `$PATH`. There is no npm package: publishing was removed on 3 September 2026.
 - The bootstrap point in `bootstrap/` — the compiler printed to C99.
 
 A defect where **the language accepts a program it is supposed to refuse**, or

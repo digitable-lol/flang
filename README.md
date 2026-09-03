@@ -103,12 +103,11 @@ flang/stdlib/     the standard library; its index is printed from the modules th
 flang/proof/      what the proof core may and may not conclude, and why
 flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
-flang/bin/        flang-lsp: an adapter that hands the call to the binary, never a home for meaning
 flang/cat/        the category-surface contract
 flang/conc/       the concurrency contract and its examples
 examples/         193 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fourteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
-packaging/        Homebrew, asdf, the npm launcher and the flang.1 man page
+packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
 benchmarks/       the harness, a checked-in baseline and the model-authoring measurement
 web/              flang in a tab: building a program to WebAssembly and running it in a browser
@@ -116,7 +115,7 @@ web/              flang in a tab: building a program to WebAssembly and running 
 fspec/            the system's specification written in the language itself, and its guard
 docs/             documentation; README and SPEC files stay next to the code they describe
 tasks/            the open work of the tree: one file per task, taken and closed by hand
-.github/          CI and the npm release
+.github/          CI and the release
 ```
 
 <!-- КАРТА-КОНЕЦ -->
@@ -133,21 +132,22 @@ tasks/            the open work of the tree: one file per task, taken and closed
 | `CONTRIBUTING.md` | GitHub puts it into the issue and pull-request forms; it looks in the root, in `.github/` and in `docs/` |
 | `CHANGELOG.md` · `changelog.json` | one structure, two printings: the page is for a human, the JSON is for a program. Both are printed from tags and commit subjects (`scripts/build-changelog.mjs`); hand-editing is forbidden |
 | `AGENTS.md` | guidance for agents: an assistant looks for a file of that name in the root of the working tree |
-| `package.json` · `package-lock.json` | the manifest of the npm install path. Both are **printed** from `scripts/emit-package.flang` and never hand-edited: `./ярлык пакет` prints them, `./ярлык пакет:проверка` refuses if a file and the declaration have drifted. The manifest declares zero dependencies and ships no second compiler: what it installs is the same binary `brew` installs, built from `bootstrap/` during `npm install`. npm reads the manifest only from the root of the package it publishes |
+| `package.json` | where the **version** lives, and nothing else of consequence. It is **printed** from `scripts/emit-package.flang` and never hand-edited: `./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the file and the declaration have drifted. Three programs read it — the site build, the Homebrew formula guard and the release workflow — and none of them is npm: publishing was removed on 3 September 2026, and with it `bin`, `files`, `scripts` and `package-lock.json`. What is left carries `"private": true`, so `npm publish` refuses on its own |
 | `ярлык` · `ярлыки.flang` | the shortcuts of this tree and the entry point that runs them. `ярлыки.flang` is the list — a flang program, type-checked, with a plan that goes red when a shortcut names a file that is not there; `ярлык` is `sh` — 69 lines of code inside 160 — that asks the binary for a command line and runs it. Both sit in the root because that is where a person types `./ярлык спеки:проверка`, and because `ярлык` resolves its own paths from its own directory |
 | `.gitignore` · `.gitattributes` | git reads them from the root |
 
 **The binary builds with a single `cc`.** `make -C bootstrap` — that is all; no package
-manager and no second language sit on the build path. `package.json` does not describe how the
-language is built; it describes how the language is installed from npm, and it declares zero
-dependencies (`npm ls --all` prints `(empty)`). `npm install` does two things: it puts `flang`
-into `node_modules/.bin` and it runs `make` over that same `bootstrap/`, so the `flang` command
-is the SAME binary compiler `brew` installs. It needs `cc` and `make`; without them the install
-still succeeds and the refusal names both the cause and the fix. The two commands the package
-puts on `$PATH` — `flang` and `flang-lsp` — are thin launchers that hand the call straight to
-that binary, because npm requires a `bin` entry Node can start; nothing about the language is
-decided in them, and there is no quiet fallback if the binary is missing — a refusal naming the
-cause instead.
+manager and no second language sit on the build path. There are two ways in: the release archive
+`flang-<version>-c.tar.gz` on GitHub, and `brew install digitable-lol/tap/flang`. Both hand you
+the same binary compiler.
+
+**There is no third way in, and Windows is the one that lost it.** Until 3 September 2026 the
+tree also published an npm package, and `bin` in npm must be a file Node can start — which is
+why `packaging/flang-launch.mjs` and `flang/bin/flang-lsp.mjs` existed at all. They are gone
+with the package. Homebrew does not install on Windows, and the release archive is C99 sources
+under `make`. Nothing here was ever tested on Windows either: `install-path.yml` says so in its
+own header. What was lost is a claim, not a working path — but it was the only claim there
+was.
 
 <!-- КОРЕНЬ-КОНЕЦ -->
 
@@ -165,12 +165,12 @@ an hour.
 **`flang/test/` is a remnant, and small.** It holds 175 files (`git ls-files flang/test | wc -l`),
 <!-- СНЯТО 2026-08-31 файлов flang/test/* = 175 -->
 of which 163 are fixtures and only four are still runnable test files.
-<!-- СНЯТО 2026-08-31 файлов flang/test/fixtures/* = 163 --> `npm test` is
-`./ярлык тесты`, which runs those four; there is no `pretest` step. The old JavaScript
+<!-- СНЯТО 2026-08-31 файлов flang/test/fixtures/* = 163 --> `./ярлык тесты`
+runs those four. The old JavaScript
 implementation these tests were written against is gone, and what remains was pruned to what
 still resolves — every import in those four files points at a file that exists (all fifteen of
 them, checked 29 August 2026). **That is not the same as green**, and the difference is worth
-stating: `npm test` fails today — 38 checks, 29 pass, 9 fail (measured 29 August 2026). Six of
+stating: `./ярлык тесты` fails today — 38 checks, 29 pass, 9 fail (measured 29 August 2026). Six of
 the nine are the jargon guard: it reads the tree's own prose, finds 18 pieces of jargon, and one
 file it is handed has no recorded debt. The other three are the `go` target failing to build in
 this environment, not a defect of the tree. Said here rather than left to be discovered from a
@@ -240,10 +240,11 @@ surface: monoids, monads, morphisms, processes and the declared properties. It d
 such a program in silence either — `flang check` names what it left unchecked and exits with
 code 2, because saying "no findings" there would be untrue.
 
-**Install from the clone, not from the registry.** The package is named `@digitable-lol/flang`,
-but nothing is published under that name yet: what sits on npm today is a build from 7 August
-under the previous name, and it drags commands into your `$PATH` that this tree no longer has.
-Until the new name reaches npm, take the clone and build the compiler out of it:
+**Install from the clone, from the release archive or from brew — the registry is not an
+option any more.** Nothing was ever published under the name `@digitable-lol/flang`, and nothing
+will be: npm publishing was removed on 3 September 2026. What still sits on npm is a build from
+7 August under the previous name, and it drags commands into your `$PATH` that this tree no
+longer has — do not install it. Take the clone and build the compiler out of it:
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
@@ -597,7 +598,7 @@ The bootstrap point is reprinted in the same commit as the change that moved it.
 first three on every push.
 
 `flang/test/` is not part of that list, and will not be until it is rewritten: see the note
-above about `npm test`.
+above about `./ярлык тесты`.
 
 ---
 
@@ -610,7 +611,7 @@ above about `npm test`.
   and why there.
 - **The other examples** — 178 more programs in [`examples/`](examples), in 22 sets; what sits
   where is listed in [`examples/README.md`](examples/README.md).
-- **Editors** — the `.flang` language server (`flang lsp`, wrapped for npm as
+- **Editors** — the `.flang` language server (`flang lsp`, described in
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting
   in [`editors/vim`](editors/vim/README.md).
 - **Measurements** — the speed harness and the model-authoring measurement in

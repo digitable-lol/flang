@@ -51,7 +51,7 @@ flang --version
 ```
 
 The second command answers `flang {{выпуск.версия}}`. The other paths — asdf,
-from source, via npm — are on the [Install](install.html) page.
+from source — are on the [Install](install.html) page.
 
 ## What the language can do today
 

@@ -379,10 +379,13 @@ Honestly, and the answer is uneven.
 
 **C is checked hardest, and by the strongest program there is — the compiler itself.**
 `sh scripts/raskrutka.sh` prints the compiler to C — `flang/self/bootstrap/compiler.flang` and
-the 37 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
-`scripts/otpechatok-semeni`, one hashed line each — 42 lines — and that record is itself behind
-the tree right now: 41 of the 42 hashes do not match the sources (`sha256sum -c` over that
-file), because it is rewritten only by a reprint. `make -C bootstrap` compiles the resulting
+the 44 flang files it pulls in, plus four C files copied verbatim; the list is recorded in
+`scripts/otpechatok-semeni`, one hashed line each — 49 lines — and that record drifts from the
+tree between reprints: it is rewritten only by a reprint, or by `sh scripts/raskrutka.sh
+--otpechatok`, which recomputes it without reprinting. Resynced 2026-09-03: all 49 hashes match
+the sources today (`sha256sum -c` over that file); the next source edit without a resync will
+make some of them stop matching again, and that is expected — it is `--check`, not this record,
+that speaks for the actual print. `make -C bootstrap` compiles the resulting
 25 MiB under `-std=c99 -Wall -Wextra -Werror -pedantic -O2` without one warning. Then the binary
 built from that C prints the same sources again and the result is compared with what is
 committed, all 26,598,071 bytes of it. A backend that miscompiled anything at that scale would

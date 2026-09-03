@@ -414,6 +414,7 @@
 - [Дробная степень в flang выражается точно — через целую степень и корень Ньютона](a-fractional-power-is-exact-through-an-integer-power-and-a-newton-root.md)
 - [Условие цели ядро подставляет значением, но фактом его не делает](a-goal-condition-is-substituted-as-a-value-but-never-becomes-a-fact.md)
 - [Сторож, поставленный раньше стадий, заполняющих отчёт, заставляет отчёт врать — а правильное место стоит 5,7 % прогона, не больше](a-guard-placed-before-the-reporting-stages-makes-the-report-lie.md)
+- [Второй, ручной список полей записи «Настройки» отстал от таблицы EMIT_FIELDS_C и ронял КАЖДЫЙ ввод живой оболочки, а не только «разложить … на символы»](a-hand-rolled-settings-record-drifts-from-the-field-table-silently.md)
 - [Рукописная копия обнаруживает себя столкновением имён ровно в тот день, когда библиотека дорастает до неё](a-hand-written-copy-reveals-itself-as-a-name-collision.md)
 - [Рукописный хозяин живёт по правилам напечатанного проекта, а не по своим](a-hand-written-host-lives-by-the-printed-projects-rules.md)
 - [Словарь хешем стал параметрическим по значению, и параметр ввоз переживает — ломала ввоз ЧУЖАЯ КОПИЯ МОДУЛЯ](a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md)

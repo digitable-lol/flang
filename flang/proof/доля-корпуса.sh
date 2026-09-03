@@ -167,10 +167,16 @@ izmerit() {
     if [ -z "$fields" ]; then utv=0; sver=0; sved=0; hod=0; dok=0; nsl=0; nsh=0
     else set -- $fields; utv=$1; sver=$2; sved=$3; hod=$4; dok=$5; nsl=$6; nsh=$7; fi
 
+    # Ч363: чекер научился ПРОИГРЫВАТЬ узел вердикта «разбором по случаям» и
+    # называет числом, сколько мест он этим снял со слова ядра. Текстовый счёт
+    # пород от этого не меняется — меняется тождество, которым два прибора
+    # сличаются: П1+П2 минус снятое обязано сойтись с полем чекера.
+    snyato=$(printf '%s\n' "$v" | sed -n 's/.*снято со слова ядра мест \([0-9]*\)).*/\1/p')
+    [ -n "$snyato" ] || snyato=0
     set -- $(porody "$z"); p1=$1; p2=$2; p3=$3; pr=$4; sv=$5; zk=$6
     soshlos=да
     if [ "$kod" -eq 0 ] || [ "$kod" -eq 3 ]; then
-      if [ $((p1+p2)) -eq "$nsl" ] && [ "$p3" -eq "$nsh" ]; then :
+      if [ $((p1+p2-snyato)) -eq "$nsl" ] && [ "$p3" -eq "$nsh" ]; then :
       else soshlos=нет; razoshlos=$((razoshlos+1)); fi
     fi
 

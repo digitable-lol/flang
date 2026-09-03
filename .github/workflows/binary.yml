@@ -91,7 +91,7 @@ jobs:
     name: Сборка и проверки на flang
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       # ── СКОЛЬКО ПАМЯТИ ОСТАВАЛОСЬ, НАЗЫВАЕТСЯ ЧИСЛОМ НА КАЖДОМ ПРОГОНЕ ────
       #
@@ -416,7 +416,7 @@ jobs:
       # умолчание `actions/checkout` — один коммит. На обрезанном клоне
       # проверка отвечает кодом 5 «ПРОВЕРИТЬ НЕ УДАЛОСЬ», и это честно, но
       # бесполезно: спрашивать надо там, где ответ есть.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       # ПОЧЕМУ ВРЕМЕННЫЙ КАТАЛОГ НАЗЫВАЕТСЯ ЗДЕСЬ, А НЕ БЕРЁТСЯ ПО УМОЛЧАНИЮ.
@@ -484,7 +484,7 @@ jobs:
       # объявленная версия, а клон по умолчанию — одна ревизия без единого тега.
       # На таком клоне «тега нет» означало бы только то, что его не выгружали, и
       # сверка честно скажет «сверить нечем» — то есть проверит ничего.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       - name: Дешёвые числа сайта пересчитаны по исходникам
@@ -516,7 +516,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       # Наблюдатель за памятью — по тому же доводу, что и в `sborka`: эту
       # работу снимали сигналом каждый прогон, и в журнале это выглядело
@@ -697,11 +697,19 @@ jobs:
   # тут нужнее, чем кажется.
   srashchivanie:
     name: Повреждения от слияния (нужна большая память)
-    if: vars.BOLSHAYA_PAMYAT == 'da'
+    # На self-hosted раннере: неограниченный `pull_request` на публичном
+    # репозитории собирал бы и исполнял чужой код на этой машине без
+    # проверки источника. Найдено Ч402 (задача 9971). Гейт ниже пускает
+    # PR из ветки этого же репозитория (доверенной, там пишут только с
+    # правом записи), но не из чужого форка.
+    if: >-
+      vars.BOLSHAYA_PAMYAT == 'da' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, bolshaya-pamyat]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Следить за памятью раннера
         run: sh scripts/memory-headroom.sh --следить
         env:
@@ -768,7 +776,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Чекер собирается из одного файла, ноль предупреждений
         run: make -C flang/proof/чекер
       - name: Весь набор проб
@@ -782,7 +790,7 @@ jobs:
     timeout-minutes: 20
     steps:
       # Полная история не нужна: сторож спрашивает `git ls-files`, а не журнал.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Каждый файл проверок «*.test.mjs» ЗАВОДИТСЯ
         run: bootstrap/flang io flang/scripts/guards-start.flang
@@ -873,7 +881,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       # Корпусный режим `flang test <каталог>` есть ТОЛЬКО у двоичного, и учить
       # ему что-то ещё незачем: он написан на самом flang

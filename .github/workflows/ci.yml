@@ -137,7 +137,7 @@ jobs:
   semya:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: сторож краснеет на подложенном слове
         run: |
           if sh scripts/seed-knows-type-words-guard.sh --подлог; then
@@ -170,7 +170,7 @@ jobs:
   proza:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: сторож чисел краснеет на подложенном числе
         run: |
           if sh scripts/prose-numbers-guard.sh --подлог; then
@@ -198,7 +198,7 @@ jobs:
     name: Постоянные под пределом C99
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       # Двоичный нужен живой: вопрос «умеет ли печать резать длинную
       # постоянную» задаётся ПРОГОНОМ печати. Чтением исходников на него не
       # ответить — печатью правит эмиттер, зашитый в двоичный, а не тот, что
@@ -229,7 +229,7 @@ jobs:
     name: Два имени не дают один идентификатор
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: имена замыкания компилятора не схлопываются после «Змейки»
         run: node scripts/latin-collision-guard.mjs
 
@@ -253,8 +253,8 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
       - run: node --test flang/test/jargon-guard.test.mjs
@@ -284,10 +284,10 @@ jobs:
       # записанный файл с историей. Клон по умолчанию — одна ревизия без единого
       # тега, и в нём эта сверка сравнивать нечего с чем: она осталась бы
       # зелёной, ничего не проверив.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -337,7 +337,7 @@ jobs:
   licensing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/license-guard.flang
 
@@ -390,7 +390,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Прогнать сторож и сказать правду в сводку независимо от вердикта
         run: |
@@ -418,7 +418,7 @@ jobs:
   komandy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/commands-via-symlink.flang
 
@@ -427,7 +427,7 @@ jobs:
   pechat:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/emit-and-examples.flang
 
@@ -436,7 +436,7 @@ jobs:
   korpus:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/corpus-runner.flang
 
@@ -462,7 +462,7 @@ jobs:
   progon:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/check-before-run.flang
 
@@ -471,7 +471,7 @@ jobs:
   granica:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/input-boundary.flang
 
@@ -496,7 +496,7 @@ jobs:
   oblast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/region-in-c-target.flang
@@ -565,7 +565,7 @@ jobs:
     name: Список правил сверщика сходится с ядром
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: sh flang/proof/сверка-правил.sh --только-первая
         env:
@@ -578,7 +578,7 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - run: sh flang/proof/сверка-правил.sh
         env:
@@ -594,8 +594,8 @@ jobs:
     name: Ключи двух реализаций сошлись
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - run: make -C bootstrap -j"$(nproc)"
@@ -636,12 +636,12 @@ jobs:
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         # Страница выпусков печатается ИЗ ТЕГОВ, и её сверка — член семьи.
         # В клоне глубиной в одну ревизию сверять её не с чем.
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
       - run: make -C bootstrap -j"$(nproc)"

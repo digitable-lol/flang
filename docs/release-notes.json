@@ -1,7 +1,7 @@
 {
   "формат": 1,
   "выпуски": {
-    "0.7.9": {
+    "0.7.10": {
       "ru": {
         "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
         "изменилось": [
@@ -20,6 +20,20 @@
         ],
         "сломалось": [
           "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.9": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.10 — шестая подряд непубликация в этой цепочке (после v0.7.4-v0.7.8), пока не нашёлся настоящий путь: у release.yml workflow_dispatch не снят (снят он был только у старого publish-npm.yml), и сухой прогон на ветке даёт настоящий хеш без сожжения тега. Конвейер каждый раз останавливался ДО публикации, ничего битого не вышло; тег не удалялся, просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.10 — the sixth publication failure in a row in this chain (after v0.7.4-v0.7.8), before finding the real fix: release.yml's workflow_dispatch was never removed (only the old publish-npm.yml lost it), and a dry run on the branch gives the real hash without burning a tag. The pipeline stopped BEFORE publishing each time, nothing broken went out; the tag was not deleted, simply skipped."
         ]
       }
     },

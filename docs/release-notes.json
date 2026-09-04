@@ -1,6 +1,76 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.4": {
+      "ru": {
+        "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
+        "изменилось": [
+          "REPL (`flang` без доводов) отвечал `FLANG_UNKNOWN_NAME: запись не содержит поле «планировщик заголовок»` на ЛЮБОЙ ввод, включая `1 плюс 1` — не только сложные примеры. Причина: ручной список полей записи «Настройки» в `flang_repl.c` (используется печатью цели «c» для каждой строки живой сессии) отстал от общей таблицы полей на два имени, когда цель «c» выучилась печатать процессы. Починка landed на dev 3 сентября, но приземлилась ПОСЛЕ тега v0.7.3 — в нём баг был живой.",
+          "Строка версии в семени (`FLANG_VERSION`) отстала на три релиза (`0.7.0` вместо `0.7.3`) — тот же класс беды, что уже чинил хотфикс 0.7.1, снова закрался и снова починен; заведена задача, чтобы это не повторялось в четвёртый раз."
+        ],
+        "сломалось": [
+          "Язык по-прежнему НЕ формально-доказуемый: взято 2 из 7 гейтов критерия. За это время найдена и починена настоящая дыра в независимом чекере (сокрытие текста за примечанием проходило непроверенным ещё в одном месте), доля корпуса, проверенная чекером, поднята с 5,00 % до 7,50 %, и впервые сошлась побайтово пара из двух независимых печатей одного коммита — но ни один гейт целиком этим не взят."
+        ]
+      },
+      "en": {
+        "заголовок": "Hotfix: the live shell crashed on every line of input",
+        "изменилось": [
+          "The REPL (`flang` with no arguments) answered `FLANG_UNKNOWN_NAME: record has no field «scheduler header»` on ANY input, including `1 плюс 1` — not just elaborate examples. Cause: a hand-rolled field list for the «Settings» record in `flang_repl.c` (used by the «c» target's emitter for every line of a live session) fell behind the shared field table by two names when the «c» target learned to emit processes. The fix landed on dev on September 3rd, but after the v0.7.3 tag was already cut — so the bug was live in that release.",
+          "The seed's version string (`FLANG_VERSION`) had drifted three releases behind (`0.7.0` instead of `0.7.3`) — the same bug class already fixed once by the 0.7.1 hotfix, recurred, and is fixed again; a task now tracks preventing a fourth recurrence."
+        ],
+        "сломалось": [
+          "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.3": {
+      "ru": {
+        "заголовок": "Хотфикс версии дошёл до публикации",
+        "изменилось": [
+          "Тот же хотфикс версии, что метился как 0.7.1 и 0.7.2, наконец опубликован: у обеих меток ручная сборка архива не совпала с тем, что собрал сам конвейер выпуска (0.7.1 — расхождение полное, 0.7.2 — 4 байта из 4 447 763, причина не разобрана), и Homebrew-формула не проходила проверку. Для 0.7.3 sha256 взят напрямую из sha256sum самого конвейера, а не пересчитан вручную — установка проверена целиком: скачивание, сверка хеша, сборка, `flang --version`."
+        ]
+      },
+      "en": {
+        "заголовок": "The version hotfix finally reached publication",
+        "изменилось": [
+          "The same version hotfix tagged as 0.7.1 and 0.7.2 is finally published: for both of those tags the hand-built archive didn't match what the release pipeline itself built (0.7.1 — a full mismatch; 0.7.2 — 4 bytes out of 4,447,763, cause never diagnosed), and the Homebrew formula failed verification. For 0.7.3 the sha256 was taken directly from the pipeline's own sha256sum rather than recomputed by hand — installation was verified end to end: download, hash check, build, `flang --version`."
+        ]
+      }
+    },
+    "0.7.2": {
+      "ru": {
+        "заголовок": "Метка есть, публикация снова не дошла",
+        "изменилось": [
+          "Вторая попытка опубликовать хотфикс версии 0.7.1: реальный sha256 архива взят с конвейера, а не пересчитан руками. Сборка разошлась с конвейером на 4 байта из 4 447 763 (причина не разобрана) — Homebrew-формула не проходила проверку. Тег не удалялся (запись запрещена), просто пропущен: пользователям, ставившим через Homebrew, эта метка ничего не дала."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, but publication failed again",
+        "изменилось": [
+          "A second attempt to publish the 0.7.1 version hotfix: the archive's real sha256 was taken from the pipeline rather than recomputed by hand. The build still diverged from the pipeline's own by 4 bytes out of 4,447,763 (cause never diagnosed) — the Homebrew formula failed verification. The tag was not deleted (deleting tags is forbidden here), simply skipped: it delivered nothing to anyone installing via Homebrew."
+        ]
+      }
+    },
+    "0.7.1": {
+      "ru": {
+        "заголовок": "Хотфикс версии — тег вышел, публикация не дошла",
+        "изменилось": [
+          "`flang --version` отвечал «0.6.2» под выпуском 0.7.0 — на два релиза позади: строку версии в семени забыли бампнуть вместе с `package.json`. Задача 9959 чинит её. Заодно исправлена версия Homebrew-формулы (`0.6.2 -> 0.7.0`, пропущенная при первой правке), версия на сайте и часть работ CI, жёгших часы на пуш без имени."
+        ],
+        "сломалось": [
+          "Публикация этой меткой НЕ дошла: ручная сборка релизного архива не совпала с тем, что собрал сам конвейер выпуска, и Homebrew-формула не проходила проверку хеша. Тег не удалялся, просто пропущен — успешно эта же починка опубликована только в 0.7.3."
+        ]
+      },
+      "en": {
+        "заголовок": "Version hotfix — tagged, but publication didn't land",
+        "изменилось": [
+          "`flang --version` answered “0.6.2” under the 0.7.0 release — two releases behind: the seed's version string was left un-bumped alongside `package.json`. Task 9959 fixes it. Also fixed along the way: the Homebrew formula's version (`0.6.2 -> 0.7.0`, missed in the first pass), the version shown on the site, and part of a CI job that was burning push-triggered hours running under no name."
+        ],
+        "сломалось": [
+          "Publication under this tag did NOT land: the hand-built release archive didn't match what the release pipeline itself built, and the Homebrew formula failed its hash check. The tag was not deleted, simply skipped — this same fix was only successfully published as 0.7.3."
+        ]
+      }
+    },
     "0.7.0": {
       "ru": {
         "заголовок": "Компилятор перепечатан начисто, а главная работа выпуска — поиск собственных обманов",

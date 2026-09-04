@@ -1,6 +1,6 @@
 {
   "name": "@digitable-lol/flang",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "flang: проверяемый язык с тотальными и обычными функциями, ядром доказательств на нуле аксиом и печатью в C, Go, Rust, Python, Java, C#, Elixir и JavaScript.",
   "type": "module",
   "license": "BSD-2-Clause",

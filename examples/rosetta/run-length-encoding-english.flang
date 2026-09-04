@@ -1,8 +1,7 @@
 module «Run-length encoding»
 
 // Rosetta Code — Run-length encoding, written on the ENGLISH keyword surface.
-// The same program as `run-length-encoding.flang`, keyword for keyword; the two
-// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+// The same program as `run-length-encoding.flang`, keyword for keyword.
 //
 // Compress a string by replacing a run of equal characters with «how many» and
 // the character itself; and expand it back.

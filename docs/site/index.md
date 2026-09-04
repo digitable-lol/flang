@@ -50,8 +50,10 @@ brew install digitable-lol/tap/flang
 flang --version
 ```
 
-The second command answers `flang {{выпуск.версия}}`. The other paths — asdf,
-from source, via npm — are on the [Install](install.html) page.
+The first line installs from the
+[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap) repository; the
+second answers `flang {{выпуск.версия}}`. The other paths — asdf, from source —
+are on the [Install](install.html) page.
 
 ## What the language can do today
 
@@ -61,7 +63,7 @@ from source, via npm — are on the [Install](install.html) page.
 | **Claims about behaviour**: `ensures` is a promise about the result that the kernel proves for all inputs, not for the examples | the kernel does not accept every claim; how many it did accept is one line below |
 | **Emitting into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not emitted |
 | **[Processes and supervision](processes.html)**: processes, supervision, back pressure, a scheduler written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
-| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite database file is read | PostgreSQL takes `trust` and cleartext password only; SQLite is read, not written |
+| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite database file is read, built from nothing, and written a row into | PostgreSQL takes `trust` and cleartext password only; SQLite writes only into a ready file's own free space, no page split, no journal |
 | **HTTP**: requests and responses parsed and printed, headers, codes, addresses, percent encoding | there is no socket: the host carries the bytes, the language only computes them |
 | **Cryptography of our own**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | TLS is not built: https is done by an external curl |
 
@@ -100,7 +102,7 @@ prints how many files have moved since that measurement.
 **Not in who writes the proof.** You can write one by hand here too: the word
 `теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **183** such theorems in
+of Isabelle's Isar, not a script of tactics. There are **216** such theorems in
 the language tree, **55** of them in the standard library
 (`grep -rac '^\s*теорема ' flang --include=*.flang`, summed with `awk`; the `-a`
 is not optional — without it `flang/conc/link.flang` is skipped silently).

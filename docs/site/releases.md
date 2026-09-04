@@ -12,7 +12,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What appeared
 
-- TLS connections work for real: twelve runs with genuine response codes.
+- The secure connection works for real: twelve runs with genuine response codes.
 - The fold principle is strengthened with the already-traversed part of the list: +2 proved obligations, with a forgery and its honest half added alongside the rule.
 
 ### What changed

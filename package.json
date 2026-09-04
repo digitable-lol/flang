@@ -1,6 +1,6 @@
 {
   "name": "@digitable-lol/flang",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "flang: проверяемый язык с тотальными и обычными функциями, ядром доказательств на нуле аксиом и печатью в C, Go, Rust, Python, Java, C#, Elixir и JavaScript.",
   "type": "module",
   "license": "BSD-2-Clause",
@@ -11,41 +11,6 @@
   "homepage": "https://github.com/digitable-lol/flang#readme",
   "bugs": {
     "url": "https://github.com/digitable-lol/flang/issues"
-  },
-  "bin": {
-    "flang": "./packaging/flang-launch.mjs",
-    "flang-lsp": "./flang/bin/flang-lsp.mjs"
-  },
-  "files": [
-    "flang/bin",
-    "flang/src",
-    "flang/core",
-    "flang/stdlib",
-    "flang/cat",
-    "flang/conc",
-    "flang/proof",
-    "flang/SPEC.md",
-    "flang/core/SPEC.md",
-    "examples",
-    "bootstrap",
-    "packaging/flang.1",
-    "packaging/postinstall.mjs",
-    "packaging/flang-launch.mjs",
-    "packaging/install-parity.flang",
-    "README.md",
-    "README.ru.md",
-    "CONTRIBUTING.md",
-    "CHANGELOG.md",
-    "changelog.json",
-    "LICENSE",
-    "LICENSE-RU.md",
-    "!**/test",
-    "!**/*.test.mjs"
-  ],
-  "scripts": {
-    "postinstall": "node packaging/postinstall.mjs",
-    "test": "./ярлык тесты",
-    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": ">=20"

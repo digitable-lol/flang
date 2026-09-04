@@ -1,8 +1,7 @@
 module «Palindrome»
 
 // Rosetta Code — Palindrome detection, written on the ENGLISH keyword surface.
-// The same program as `palindrome.flang`, keyword for keyword; the two trees
-// are compared against each other by `flang/test/rosetta.test.mjs`.
+// The same program as `palindrome.flang`, keyword for keyword.
 //
 // A string reads the same in both directions. The extended statement asks to
 // ignore case and punctuation.

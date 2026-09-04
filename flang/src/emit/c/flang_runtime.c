@@ -31,6 +31,20 @@
 #define FL_POSIX_STACK 1
 #endif
 
+/*
+ * ТОТ ЖЕ РАЗРЫВ, ЧТО У `flang_repl.c` (см. его комментарий выше по дереву и
+ * `docs/zettel/a-feature-macro-that-opens-on-glibc-closes-on-darwin.md`):
+ * `_POSIX_C_SOURCE` на Darwin ЗАКРЫВАЕТ то, что на glibc открывает. Здесь под
+ * ним `sigaction`/`sigemptyset` (окно наблюдения) и `getrlimit` (предел
+ * стека) — не проверено на настоящем Darwin (машины нет), но фикс безвреден
+ * там, где не нужен: `_DARWIN_C_SOURCE` только поднимает видимость, ничего
+ * не забирая. Без него этот файл рискует тем же самым `error: call to
+ * undeclared function`, только с другим именем функции.
+ */
+#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE
+#endif
+
 #if defined(__wasm__) && !defined(FL_NO_WASM_STACK)
 #define FL_WASM_STACK 1
 #endif

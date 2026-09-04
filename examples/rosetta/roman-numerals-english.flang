@@ -2,8 +2,7 @@ module «Roman numerals»
 
 // Rosetta Code — Roman numerals/Encode and Roman numerals/Decode, written on
 // the ENGLISH keyword surface. The same program as `roman-numerals.flang`,
-// keyword for keyword; the two trees are compared against each other by
-// `flang/test/rosetta.test.mjs`.
+// keyword for keyword.
 //
 // Write a number in Roman numerals and read a Roman numeral back.
 //
@@ -165,15 +164,13 @@ total function «To Roman»
 // negative — on ALL strings, not on the three written below. The kernel proves
 // this line instead of checking it: eight branches of choice end in eight
 // literals, every one of them at least zero, and "a choice between non-negative
-// values is non-negative" is a rule of `flang/proof/reduce.mjs` proved about
-// IEEE-754. That is why the ledger says "proved" here and not "grid, 3 values".
+// values is non-negative" is a rule of the kernel proved about IEEE-754. That is
+// why the ledger says "proved" here and not "grid, 3 values".
 //
 // This is true, not merely hoped for, and it rests on the eighth branch: an
 // unknown symbol yields ZERO, and the example «Not a Roman symbol — zero» is
 // exactly about it. Writing `is at least 1` here would be a lie on that very
-// example — and that is a check, not an argument: `flang/test/corpus-claims.test.mjs`
-// spoils the line in exactly that way and demands that "proved" disappear and
-// the run go red.
+// example.
 //
 // The second claim is about the UPPER bound, and another rule of the kernel
 // takes it ("bounded by construction"): the same eight literals, and none of

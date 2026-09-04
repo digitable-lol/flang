@@ -74,7 +74,7 @@ show_info() {
 sync_tree() {
   say "Синхронизация $ROOT → $REMOTE:$REMOTE_DIR"
   ssh "$REMOTE" "mkdir -p '$REMOTE_DIR'"
-  # node_modules и dist не едут: они собираются на хосте своим npm ci и своим
+  # node_modules и dist не едут: это продукты сборки, а не исходники
   # tsc. Копировать чужую сборку — это опять мерить не то, что думаешь.
   rsync -a --delete --info=stats1 \
     --exclude '.git/' --exclude 'node_modules/' --exclude 'dist/' \
@@ -82,10 +82,11 @@ sync_tree() {
     "$ROOT/" "$REMOTE:$REMOTE_DIR/" | sed 's/^/    /'
 }
 
-install_deps() {
-  say "Зависимости на хосте (npm ci)"
-  remote_run 'npm ci --no-audit --no-fund 2>&1 | tail -3' | sed 's/^/    /'
-}
+# ЗДЕСЬ БЫЛ `npm ci`. Снят 3 сентября 2026 вместе с npm: зависимостей у дерева
+# ноль, `package-lock.json` удалён, и без замка `npm ci` отвечает кодом 1
+# («can only install with an existing package-lock.json») — то есть шаг стал бы
+# ронять прогон, ничего не поставив. Двоичный, который нужен ярлыку, собирает
+# сам `./ярлык` на той стороне.
 
 case "${1:-}" in
   --info) show_info; exit 0 ;;
@@ -107,7 +108,6 @@ TARGET="${1:-тесты}"
 
 show_info
 sync_tree
-install_deps
 
 say "Прогон: ./ярлык $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
 info "${DIM}отсутствие любого тулчейна на хосте — провал, а не пропуск${RST}"

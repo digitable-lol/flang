@@ -13,7 +13,7 @@
 //   python3 -c "import sqlite3; c=sqlite3.connect('obrazec.db'); c.execute('create table люди(имя text, лет integer)'); c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 //
 // Прогон из корня дерева. Ключ «--max-steps» ОБЯЗАТЕЛЕН: умолчание — 10 000 000
-// шагов, а разбор восьми килобайт базы стоит больше. Замер: 16 секунд.
+// шагов, а разбор восьми килобайт базы стоит больше.
 //   bootstrap/flang io examples/db/sqlite-read.flang --max-steps 2000000000
 //
 // Сверка — тем же select у sqlite3:

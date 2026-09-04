@@ -1,8 +1,7 @@
 module «Ackermann function»
 
 // Rosetta Code — Ackermann function, written on the ENGLISH keyword surface.
-// The same program as `ackermann-function.flang`, keyword for keyword; the two
-// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+// The same program as `ackermann-function.flang`, keyword for keyword.
 //
 // A(0, n) = n + 1; A(m, 0) = A(m−1, 1); A(m, n) = A(m−1, A(m, n−1)).
 //

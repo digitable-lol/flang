@@ -52,6 +52,18 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+/*
+ * ТОТ ЖЕ РАЗРЫВ, ЧТО У `flang_repl.c` до 19 августа 2026 (см.
+ * `docs/zettel/a-feature-macro-that-opens-on-glibc-closes-on-darwin.md`):
+ * `_POSIX_C_SOURCE` на Darwin ЗАКРЫВАЕТ `mkdtemp` — ту же функцию, что уже
+ * ломала сборку на Mac один раз. Этот файл её тоже зовёт («Завести временный
+ * каталог» ниже) и фикса не получил. `_DARWIN_C_SOURCE` безвреден там, где
+ * не нужен: он только поднимает видимость, ничего не забирая.
+ */
+#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE
+#endif
+
 #include "flang_conc.h"
 
 #include <math.h>

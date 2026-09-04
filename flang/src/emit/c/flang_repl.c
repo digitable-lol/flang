@@ -244,7 +244,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.3"
+#define FLANG_VERSION "0.7.0"
 
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
@@ -347,6 +347,7 @@ static const char FLANG_HELP[] =
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
+    "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
     "  flang --mcp-mode                   служба для ИИ-помощника (MCP по стандартным потокам)\n"
@@ -373,7 +374,7 @@ static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 12 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
+    "Здесь все 13 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
     "тот же языковой сервер, который кладёт на «PATH» пакет npm.\n"
     "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
     "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
@@ -383,7 +384,7 @@ static const char FLANG_HELP_2[] =
     "Подробности: man flang";
 
 static const char HELP_CHECK[] =
-    "flang check <файл.flang> [--proof [--json] [--записать <файл>]]\n"
+    "flang check <файл.flang> [--proof [--json] [--строго] [--записать <файл>]]\n"
     "                          [--быстро] [--предел-шагов N] [--предел-глубины N]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
@@ -400,6 +401,12 @@ static const char HELP_CHECK[] =
     "  --proof            ведомость: чем несётся обещание «тотальная» у каждой\n"
     "                     функции и чем — каждое высказанное утверждение\n"
     "  --json             вместе с --proof: ведомость машинным видом\n"
+    "  --строго           вместе с --proof: код возврата 4 и тогда, когда всё\n"
+    "                     доказано, но часть оперлась на сетку значений автора\n"
+    "                     или на недоказанную посылку. Без ключа такая опора\n"
+    "                     остаётся нулём и называется строкой. «Объявлено, не\n"
+    "                     доказано» уходит кодом 3 и БЕЗ ключа. Латиницей:\n"
+    "                     --strict\n"
     "  --записать <файл>  вместе с --proof: положить САМО доказательство в файл\n"
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/сверщик.flang). Ключ пишется и латиницей:\n"
@@ -741,6 +748,31 @@ static const char HELP_FACTS[] =
     "отказ до всякого вычисления. Упирание в предел шагов — тоже ответ, «не\n"
     "досчитали за отведённый бюджет», а не сбой инструмента.";
 
+static const char HELP_NEW[] =
+    "flang new <имя> [--force]\n"
+    "\n"
+    "Создаёт каталог <имя>/ с готовой структурой пакета одной командой: базовый\n"
+    "модуль с тотальной функцией и примером, каталог fspec/ с одной доказанной\n"
+    "спекой и стражем guard.flang, манифест flang.package и README.\n"
+    "\n"
+    "  flang new проба\n"
+    "  cd проба\n"
+    "  flang check проба.flang\n"
+    "  flang io fspec/guard.flang\n"
+    "\n"
+    "Имя пакета — без пробела, косой черты, обратной косой черты, кавычек и\n"
+    "гильемет, вне списка зарезервированных слов (имена команд бинарника,\n"
+    "«flang», «fspec») и не «.»/«..». Недопустимое имя — отказ FLANG_NEW,\n"
+    "код 2, и ни один файл не создаётся.\n"
+    "\n"
+    "  --force   переписать каталог, если он уже существует. Латиницей: --force,\n"
+    "            кириллицей: --силой. Без ключа существующий каталог — отказ\n"
+    "            FLANG_NEW, код 1: команда не переписывает чужую работу молча.\n"
+    "\n"
+    "Образец fspec/ команда берёт рядом с собой (<каталог двоичного>/../fspec)\n"
+    "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
+    "FLANG_NEW, код 1, и каталог не заводится вовсе.";
+
 static const char HELP_LOCK[] =
     "flang lock <файл.flang> [--pretty]\n"
     "\n"
@@ -887,6 +919,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
+  } else if (strcmp(topic, "new") == 0) {
+    printf("%s\n", HELP_NEW);
   } else {
     printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
   }
@@ -1642,6 +1676,14 @@ static fl_status repl_call_within(const char *name, const fl_value *args, size_t
             "а поднять его на один прогон: flang check <файл> --предел-шагов N.\n",
             name, (unsigned long)repl_ctx.steps, (unsigned long)repl_ctx.max_steps,
             (unsigned long)(repl_ctx.steps * 100 / repl_ctx.max_steps));
+  }
+  /*
+   * ВИТКИ ПО ШАГАМ — под переменной среды, а не всегда. Вопрос «где сидит
+   * время» задаётся не каждый прогон, а лишняя строка на каждый вызов сломала
+   * бы разбор вывода тем, кто читает бинарник трубой.
+   */
+  if (!repl_call_quiet && getenv("FLANG_VITKI") != NULL) {
+    fprintf(stderr, "витки: %s %lu\n", name, (unsigned long)repl_ctx.steps);
   }
   if (status != FL_OK) {
     repl_call_keep(error.code == NULL ? "FLANG_INTERNAL" : error.code,
@@ -3954,6 +3996,53 @@ static bool repl_kernel_stages_wanted(void) {
   return wanted != 0;
 }
 
+/*
+ * ═════════════════ КЕШ ПРИГОВОРОВ ЯДРА: ТОЛЬКО СКЛАД ══════════════════════
+ *
+ * ПРАВИЛО, ПО КОТОРОМУ РЕШАЮТ «ДОКАЗАНО», ОСТАЛОСЬ В ЯДРЕ. Здесь ровно склад:
+ * прочитать файл, отдать его ядру ДАННЫМИ, забрать обновлённый и записать
+ * обратно. Ключ считает ядро («Ключ кеша» в `flang/self/proofterm.flang`), и
+ * рантайм его не видит ни разу — иначе правило доверия уехало бы из слоя, вся
+ * ценность которого в недоверии.
+ *
+ * ОТПЕЧАТОК ПРОВЕРЯЛЬЩИКА — sha256 САМОГО ДВОИЧНОГО, а не исходников дерева, и
+ * это замер, а не осторожность. Два двоичных на побайтово одном дереве, в семени
+ * переписано одно правило («Предел ветвления» с 4 на 0): 49 приговоров из 103
+ * сменились с «доказано» на «не доказано», а всё, что видно из дерева, включая
+ * «Версию ядра», осталось прежним. Кеш с ключом по дереву отдал бы 49 ложных
+ * доказательств.
+ *
+ * СЕБЯ НЕ ПРОЧИТАЛИ — КЕШ ВЫКЛЮЧЕН, а не включён с ослабленным ключом.
+ * Ослабленный ключ раздаёт ложные доказательства молча, и молчание здесь хуже
+ * отказа.
+ */
+#define KESH_PEREMENNAYA "FLANG_KESH_PRIGOVOROV"
+
+static char *kesh_stamp_read(void) {
+  size_t bytes = 0;
+  char *body = NULL;
+  char *out = NULL;
+  sha256_ctx ctx;
+  if (repl_self_kept == NULL || repl_self_kept[0] == '\0') {
+    return NULL;
+  }
+  body = repl_read_file(repl_self_kept, &bytes);
+  if (body == NULL) {
+    return NULL;
+  }
+  out = (char *)malloc(65);
+  if (out == NULL) {
+    free(body);
+    return NULL;
+  }
+  sha256_init(&ctx);
+  sha256_add(&ctx, "flang-kesh-1 ", 13);
+  sha256_add(&ctx, body, bytes);
+  sha256_hex(&ctx, out);
+  free(body);
+  return out;
+}
+
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
                                const char *collision, fl_value *linked_out, fl_value *dropped_out,
@@ -4156,7 +4245,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     fl_value verdict = fl_nothing();
     fl_value kernel_bads = fl_nothing();
     fl_value pair[2];
-    fl_value triple[3];
+    fl_value triple[5];
     const bool stages = repl_kernel_stages_wanted();
     double started = 0.0;
     /*
@@ -4223,12 +4312,54 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       fprintf(stderr, "суд ядра о программе: начата «Проверить доказательства»\n");
       started = machine_now();
     }
-    triple[0] = *program;
-    triple[1] = obligations;
-    triple[2] = runs;
-    if (repl_call_within("Проверить доказательства", triple, 3, &verified) != FL_OK) {
-      bads_say(bads, "ядро доказательства прекращено");
-      return false;
+    {
+      const char *kesh_put = getenv(KESH_PEREMENNAYA);
+      char *kesh_stamp = (kesh_put == NULL || kesh_put[0] == '\0') ? NULL : kesh_stamp_read();
+      fl_value kesh_itog = fl_nothing();
+      fl_value kesh_novyy = fl_nothing();
+      fl_value kesh = fl_nothing();
+      triple[0] = *program;
+      triple[1] = obligations;
+      triple[2] = runs;
+      if (kesh_stamp != NULL) {
+        size_t kesh_bytes = 0;
+        char *kesh_text = repl_read_file(kesh_put, &kesh_bytes);
+        if (kesh_text != NULL) {
+          size_t kesh_where = 0;
+          if (!facts_json(kesh_text, &kesh_where, &kesh)) {
+            kesh = fl_nothing();
+          }
+          free(kesh_text);
+        }
+      }
+      triple[3] = kesh;
+      triple[4] = repl_value_say(kesh_stamp == NULL ? "" : kesh_stamp);
+      if (repl_call_within("Проверить доказательства с кешем", triple, 5, &kesh_itog) != FL_OK
+          || !val_field(kesh_itog, "узел", &verified)) {
+        free(kesh_stamp);
+        bads_say(bads, "ядро доказательства прекращено");
+        return false;
+      }
+      /*
+       * ЗАПИСЬ ИДЁТ ДАЖЕ ТОГДА, КОГДА ПРОГРАММА ОТВЕРГНУТА: приговор «не
+       * доказано» стоит тех же шагов, что «доказано», и переспрашивают его
+       * каждым проходом. Замер Ч183: на не закрытых обязательствах уходит
+       * 76–81 % шагов стадии.
+       */
+      if (kesh_stamp != NULL && val_field(kesh_itog, "кеш", &kesh_novyy)) {
+        fl_value printed = fl_nothing();
+        const char *kesh_utf8 = NULL;
+        size_t kesh_printed = 0;
+        if (repl_call("Печать значения", &kesh_novyy, 1, &printed) == FL_OK
+            && val_text(printed, &kesh_utf8, &kesh_printed)) {
+          FILE *kesh_stream = fopen(kesh_put, "wb");
+          if (kesh_stream != NULL) {
+            fwrite(kesh_utf8, 1, kesh_printed, kesh_stream);
+            fclose(kesh_stream);
+          }
+        }
+      }
+      free(kesh_stamp);
     }
     if (stages) {
       fprintf(stderr, "суд ядра о программе: «Проверить доказательства» заняла %.2f с\n",
@@ -5463,6 +5594,19 @@ static size_t repl_defined(const char *text, size_t bytes, const char *macro) {
  * Ширину отскока батута заголовок диктует свою (FL_MAX_TAIL_ARGS входит в
  * fl_bounce), поэтому сессия, которой нужно больше, честно отвергается: собрать
  * её с готовым рантаймом нельзя, а тихо переполнить массив — тем более.
+ *
+ * Запись «Настройки» здесь обязана нести ВСЕ поля цели «c» из EMIT_FIELDS_C —
+ * не только те, что сессии пригождаются. `emit-c.flang` читает «планировщик
+ * заголовок»/«планировщик исходник» у записи БЕЗУСЛОВНО (для «заголовка
+ * движка»/«исходника движка»), и только потом решает, класть ли получившиеся
+ * файлы в ответ — сама подстановка в запись это не условие. Значит поле
+ * обязано быть в записи, даже когда сессия не конкурентна и файлы движка
+ * никуда не попадут. Ровно так же, как рантайм, движок сессией не печатается
+ * и не пересобирается, поэтому оба поля — пустые строки. Отстанет отсюда
+ * список полей от EMIT_FIELDS_C ещё раз — оболочка откажет отказом
+ * `FLANG_UNKNOWN_NAME: запись не содержит поле «…»` на КАЖДОМ вводе, не только
+ * на том, что до нового поля дотрагивается: прецедент — тот же провал у цели
+ * «js» с полем «исходник исполнителя», см. комментарий у EMIT_TARGET_TABLE.
  */
 static bool repl_compile(repl_session *session, fl_value program, char **error) {
   /* Прогонщик сессии — не тот, что печатается обычно, а наш маленький: ему
@@ -5476,12 +5620,13 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
    * зовётся своим маленьким прогонщиком (REPL_RUNNER), а он в границу и не
    * ходит — значения ему подаёт человек через ту же оболочку, а не сеть.
    */
-  static const char *const names[15] = {"путь",              "есть путь",        "база",
+  static const char *const names[17] = {"путь",              "есть путь",        "база",
                                         "предел глубины",    "предел шагов",     "прогонщик",
                                         "рантайм заголовок", "рантайм исходник", "исходник прогонщика",
                                         "оболочка",          "исходник оболочки", "типы входа",
-                                        "поля входа",        "варианты входа",   "параметры входа"};
-  fl_value values[15];
+                                        "поля входа",        "варианты входа",   "параметры входа",
+                                        "планировщик заголовок", "планировщик исходник"};
+  fl_value values[17];
   fl_value args[2];
   fl_value emitted = fl_nothing();
   fl_value files = fl_nothing();
@@ -5506,8 +5651,10 @@ static bool repl_compile(repl_session *session, fl_value program, char **error) 
   values[12] = fl_list(NULL, 0);
   values[13] = fl_list(NULL, 0);
   values[14] = fl_list(NULL, 0);
+  values[15] = repl_value_say("");
+  values[16] = repl_value_say("");
   args[0] = program;
-  args[1] = repl_value_record(names, values, 15);
+  args[1] = repl_value_record(names, values, 17);
   if (repl_call("Напечатать связанное", args, 2, &emitted) != FL_OK) {
     *error = repl_say("печать сессии в C прекращена");
     return false;
@@ -7117,6 +7264,188 @@ static int check_file(const char *path, bool fast) {
   return ok ? (unjudged ? 2 : (fast ? 4 : 0)) : 1;
 }
 
+/* ═════════ приговор ведомости доезжает до кода выхода (задача 9621) ═══════ */
+
+/*
+ * ПОЧЕМУ КОД ВЫХОДА ЧИТАЕТ ЧИСЛА ВЕДОМОСТИ, А НЕ СЧИТАЕТ СВОИХ.
+ *
+ * Ведомость внутри честна: на программе, где утверждение только объявлено, она
+ * пишет «объявлено, не доказано 1». Врал код выхода: он был нулём и там, где
+ * доказано всё, и там, где не доказано ничего, — а код выхода единственное, что
+ * читают работы CI, сторожа и сцепки. Всякое число, снятое по такому коду,
+ * ничего не стоит.
+ *
+ * Числа берутся из ТОЙ ЖЕ ведомости, которую слой на flang уже посчитал и уже
+ * отдал полем «в JSON» («Итоги утверждений» в `flang/self/proof.flang`). Здесь
+ * не считается ни одного числа заново: второй счёт спорил бы с первым, а спорить
+ * о доказанном должны люди, а не две реализации. Это перенос, а не подсчёт.
+ *
+ * Не прочиталось — код 2 «смотреть было нечем», а не 0: молчащий ноль на месте
+ * непрочитанного приговора и есть та самая беда, ради которой это писалось.
+ */
+typedef struct {
+  long total;
+  long proved;
+  long conditional;
+  long grid;
+  long declared;
+  long refused;
+  long violated;
+  long laws_grid;
+  long laws_assumed;
+} proof_tally;
+
+/*
+ * Целое поле «"имя":N» внутри отрезка [from, to). Отрезок обязателен: ключ
+ * «total» стоит и у функции («"total":true»), и у законов, и у утверждений, и
+ * поиск по всему тексту принёс бы чужое число.
+ */
+static bool proof_int_at(const char *text, size_t from, size_t to, const char *key, long *out) {
+  size_t klen = strlen(key);
+  size_t at = 0;
+  for (at = from; at + klen + 3 < to; at += 1) {
+    size_t digit = 0;
+    long value = 0;
+    if (text[at] != '"' || memcmp(text + at + 1, key, klen) != 0 || text[at + 1 + klen] != '"' ||
+        text[at + 2 + klen] != ':') {
+      continue;
+    }
+    digit = at + 3 + klen;
+    if (digit >= to || text[digit] < '0' || text[digit] > '9') {
+      return false;
+    }
+    while (digit < to && text[digit] >= '0' && text[digit] <= '9') {
+      value = value * 10 + (text[digit] - '0');
+      digit += 1;
+    }
+    *out = value;
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Границы объекта «"имя":{…}». Открывающая фигурная скобка — часть образца, и
+ * это она отличает раздел итога («"claims":{…}») от списка утверждений
+ * («"claims":[…]»), у которых имя одно. Вложенных объектов у обоих разделов
+ * итога нет, поэтому конец — первая же закрывающая скобка; встретится
+ * открывающая — считаем, что вид ведомости сменился, и честно отказываемся.
+ */
+static bool proof_object_at(const char *text, size_t bytes, const char *key, size_t *start,
+                            size_t *stop) {
+  size_t klen = strlen(key);
+  size_t at = 0;
+  for (at = 0; at + klen + 4 <= bytes; at += 1) {
+    if (text[at] != '"' || memcmp(text + at + 1, key, klen) != 0 || text[at + 1 + klen] != '"' ||
+        text[at + 2 + klen] != ':' || text[at + 3 + klen] != '{') {
+      continue;
+    }
+    *start = at + 4 + klen;
+    for (at = *start; at < bytes; at += 1) {
+      if (text[at] == '}') {
+        *stop = at;
+        return true;
+      }
+      if (text[at] == '{') {
+        return false;
+      }
+    }
+    return false;
+  }
+  return false;
+}
+
+/* Итог утверждений и итог законов — те же числа, что печатаются человеку. */
+static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
+  size_t from = 0;
+  size_t to = 0;
+  if (!proof_object_at(json, bytes, "claims", &from, &to)) {
+    return false;
+  }
+  if (!proof_int_at(json, from, to, "total", &out->total) ||
+      !proof_int_at(json, from, to, "proved", &out->proved) ||
+      !proof_int_at(json, from, to, "conditional", &out->conditional) ||
+      !proof_int_at(json, from, to, "grid", &out->grid) ||
+      !proof_int_at(json, from, to, "declared", &out->declared) ||
+      !proof_int_at(json, from, to, "refused", &out->refused) ||
+      !proof_int_at(json, from, to, "violated", &out->violated)) {
+    return false;
+  }
+  if (!proof_object_at(json, bytes, "laws", &from, &to)) {
+    return false;
+  }
+  return proof_int_at(json, from, to, "grid", &out->laws_grid) &&
+         proof_int_at(json, from, to, "assumed", &out->laws_assumed);
+}
+
+/*
+ * ПРИГОВОР ВЕДОМОСТИ СЛОВАРЁМ ДЕРЕВА, и он тот же, что у чекера записи
+ * (`flang/proof/чекер/ЧИТАТЬ.md`) и у `check --быстро` выше:
+ *
+ *   0  ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — доказанного хватило, ничего не осталось
+ *      высказанным без доказательства;
+ *   4  ПРОВЕРЕНО С ОПОРОЙ — доказано, но часть держится не на доказательстве:
+ *      сетка значений автора («это НЕ доказательство» — слова самой ведомости)
+ *      или вывод, опёршийся на недоказанную посылку;
+ *   3  НЕ ПРОВЕРЕНО — есть высказанное без доказательства: «объявлено, не
+ *      доказано», отвергнутое ядром или принятое на веру. Противоречия не
+ *      найдено, но и проверено не всё, и непроверенное названо числом;
+ *   1  НЕ СОШЛОСЬ — найден контрпример, ведомость пишет НАРУШЕНО.
+ *
+ * Пустая ведомость (утверждений 0) — это 0, а не 3: «доказывать было нечего»
+ * и «не смогли доказать» — не одно и то же, и файл без единого обещания не
+ * обязан краснеть. Слить их значило бы завести вторую неправду вместо первой.
+ *
+ * ── ПОЧЕМУ СЕТКА ПО УМОЛЧАНИЮ ОСТАЁТСЯ НУЛЁМ, А ЗА КЛЮЧОМ ─────────────────
+ * Замер по дереву, а не вкус. Из 64 файлов, у которых ведомость печатается
+ * (корпус `flang/proof`, карта умений, `flang/stdlib`), «объявлено, не
+ * доказано» стоит у ЧЕТЫРЁХ, а сетка — у ВОСЕМНАДЦАТИ; в самой библиотеке
+ * сетка есть у 21 файла из 23 — то есть почти у каждого. Молчащий ноль на
+ * «объявлено, не доказано» — ложь про четыре файла, и её надо убрать сразу.
+ * Ненулевой код на сетке — правда, но правда, которая красит библиотеку
+ * целиком, и её надо ввозить отдельным заходом, а не заодно.
+ *
+ * Ключ `--строго` и есть этот отдельный заход: он спрашивает «доказано ли
+ * САМО, без опоры», и без него ответ прежний — 0. Сама опора названа СТРОКОЙ
+ * в обоих случаях, поэтому умолчание молчаливым не остаётся: человек и
+ * инструмент видят «сетка N» и тогда, когда код нулевой.
+ *
+ * Старшинство сверху вниз: названное противоречие важнее названного пробела,
+ * а названный пробел важнее названной опоры.
+ */
+static int proof_verdict(const proof_tally *t, bool strict) {
+  if (t->violated > 0) {
+    return 1;
+  }
+  if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
+    return 3;
+  }
+  if (strict && (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0)) {
+    return 4;
+  }
+  return 0;
+}
+
+/*
+ * Приговор — В ПОТОК ОШИБОК, и по тому же доводу, что и всё прочее не-JSON:
+ * `flang check --proof --json` разбирают машиной, и строка русских слов посреди
+ * JSON сломала бы разбор. Печатается ВСЕГДА, в том числе при нуле: человек,
+ * читающий зелёный ответ, обязан видеть, чем этот зелёный заслужен.
+ */
+static void proof_say_verdict(const char *path, const proof_tally *t, int code) {
+  const bool leaning = t->grid > 0 || t->conditional > 0 || t->laws_grid > 0;
+  const char *word = code == 1   ? "НЕ СОШЛОСЬ"
+                     : code == 3 ? "НЕ ПРОВЕРЕНО"
+                     : code == 4 ? "ПРОВЕРЕНО С ОПОРОЙ"
+                     : leaning   ? "ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)"
+                                 : "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО";
+  fprintf(stderr,
+          "%s: %s — утверждений %ld: доказано %ld, условно %ld, сетка %ld, объявлено, не доказано %ld, "
+          "отвергнуто %ld, нарушено %ld; законов на сетке %ld, на веру %ld — код возврата %d\n",
+          path, word, t->total, t->proved, t->conditional, t->grid, t->declared, t->refused,
+          t->violated, t->laws_grid, t->laws_assumed, code);
+}
+
 /* ═══════════════════ flang check --proof: ведомость ══════════════════════ */
 
 /**
@@ -7140,7 +7469,7 @@ static int check_file(const char *path, bool fast) {
  * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
  * искали», а не «не найдено»).
  */
-static int proof_file(const char *path, bool json, const char *record) {
+static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
@@ -7189,6 +7518,8 @@ static int proof_file(const char *path, bool json, const char *record) {
   if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
     code = 1;
   } else if (val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) {
+    proof_tally tally;
+    bool counted = false;
     if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
       fwrite(utf8, 1, bytes, stdout);
       if (json) {
@@ -7196,6 +7527,21 @@ static int proof_file(const char *path, bool json, const char *record) {
       }
     }
     fflush(stdout);
+    /* ПРИГОВОР СНИМАЕТСЯ С МАШИННОГО ВИДА ВЕДОМОСТИ, а не со слов: слова
+       ведомости — для человека и меняются от редакции к редакции, поля JSON
+       названы объектом «Итоги утверждений» и меняются вместе с ним. Поле «в
+       JSON» лежит в ответе ВСЕГДА, независимо от того, что печаталось. */
+    memset(&tally, 0, sizeof(tally));
+    counted = val_field(result, "в JSON", &field) && val_text(field, &utf8, &bytes) &&
+              proof_tally_read(utf8, bytes, &tally);
+    if (!counted) {
+      fputs("FLANG_CLI: ведомость напечатана, а приговор из неё не прочитан — смотреть было нечем\n",
+            stderr);
+      code = 2;
+    } else {
+      code = proof_verdict(&tally, strict);
+      proof_say_verdict(path, &tally, code);
+    }
     /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
        ведомость читает человек, а запись читает сверщик, и смешать их в одной
        трубе значило бы заставить сверщика отделять одно от другого. Считает её
@@ -9723,12 +10069,15 @@ static int check_command(int argc, char **argv) {
   bool proof = false;
   bool json = false;
   bool fast = false;
+  bool strict = false;
   int index = 0;
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--proof") == 0) {
       proof = true;
     } else if (strcmp(argv[index], "--json") == 0) {
       json = true;
+    } else if (strcmp(argv[index], "--строго") == 0 || strcmp(argv[index], "--strict") == 0) {
+      strict = true;
     } else if (strcmp(argv[index], "--быстро") == 0 || strcmp(argv[index], "--fast") == 0) {
       fast = true;
     } else if (strcmp(argv[index], "--предел-шагов") == 0 || strcmp(argv[index], "--step-limit") == 0) {
@@ -9786,7 +10135,12 @@ static int check_command(int argc, char **argv) {
           stderr);
     return 2;
   }
-  return proof ? proof_file(path, json, record) : check_file(path, fast);
+  if (strict && !proof) {
+    fputs("flang check --строго осмыслен только рядом с «--proof»: без ведомости приговаривать нечего\n",
+          stderr);
+    return 2;
+  }
+  return proof ? proof_file(path, json, record, strict) : check_file(path, fast);
 }
 
 /* ═══════════════════════════════ flang ast ═══════════════════════════════ */
@@ -14638,6 +14992,390 @@ static int package_file(int argc, char **argv) {
   return code;
 }
 
+/* ══════════════════════════ новый пакет: `flang new` ══════════════════════ */
+
+/*
+ * СТРУКТУРА, КОТОРУЮ КОМАНДА ВОСПРОИЗВОДИТ, — та же, что в `fspec/` дерева:
+ * `guard.flang` и `policy.flang` копируются с диска дословно (это они и
+ * проверяют потом сами себя — план, который меняться не должен от пакета к
+ * пакету), а `settings.txt`, спека-пример, слепок, манифест и README
+ * складываются заново под названное имя. Ту же проверку — «Имя пакета
+ * допустимо» — самостоятельно доказывает `flang/self/cli.flang`; здесь она
+ * продублирована ровно так же, как строгий разбор `--предел-шагов` у
+ * `human_steps`.
+ */
+#define NEW_MANIFEST "flang.package"
+#define NEW_TEMPLATE_ENV "FLANG_FSPEC_TEMPLATE_DIR"
+
+static const char *const NEW_RESERVED[] = {"check", "ast",  "tokens",  "run",     "test", "facts", "emit",
+                                           "io",    "repl", "lock",    "package", "new",  "lsp",   "help",
+                                           "version", "flang", "fspec"};
+#define NEW_RESERVED_COUNT (sizeof(NEW_RESERVED) / sizeof(NEW_RESERVED[0]))
+
+/** Запрещённые куски имени пакета — та же строка, что «Запрещённые куски
+    имени пакета» в cli.flang. */
+static const char *const NEW_FORBIDDEN[] = {" ", "\t", "\n", "/", "\\", "\"", "«", "»"};
+#define NEW_FORBIDDEN_COUNT (sizeof(NEW_FORBIDDEN) / sizeof(NEW_FORBIDDEN[0]))
+
+/** Дословно та же проверка, что «Имя пакета допустимо» в cli.flang: имя
+    остаётся русским (или любой другой письменностью языка) настолько же
+    свободно, насколько остальной flang — запрещены только куски, которые
+    ломают путь на диске, JSON манифеста или флаговый разбор. */
+static bool new_name_ok(const char *name) {
+  size_t index = 0;
+  if (name == NULL || name[0] == '\0') {
+    return false;
+  }
+  if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+    return false;
+  }
+  for (index = 0; index < NEW_FORBIDDEN_COUNT; index += 1) {
+    if (strstr(name, NEW_FORBIDDEN[index]) != NULL) {
+      return false;
+    }
+  }
+  for (index = 0; index < NEW_RESERVED_COUNT; index += 1) {
+    if (strcmp(name, NEW_RESERVED[index]) == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool new_refuse(const char *say) {
+  repl_print_bad("FLANG_NEW", say, NULL, NULL, 0, 0);
+  return false;
+}
+
+/**
+ * Каталог с образцом `fspec/`: сперва `$FLANG_FSPEC_TEMPLATE_DIR`, иначе
+ * `<каталог двоичного>/../fspec` — на дереве исходников это и есть корневой
+ * `fspec/`, рядом с `bootstrap/`. Не найден ни один — NULL, и пакет не
+ * заводится вовсе: пробел лучше спеки, скопированной ниоткуда.
+ */
+static char *new_template_dir(const char *self) {
+  const char *env = getenv(NEW_TEMPLATE_ENV);
+  char *self_dir = NULL;
+  char *parent = NULL;
+  char *candidate = NULL;
+  char *probe = NULL;
+  if (env != NULL && env[0] != '\0') {
+    probe = repl_join(env, "guard.flang");
+    if (repl_exists(probe)) {
+      free(probe);
+      return repl_say(env);
+    }
+    free(probe);
+  }
+  self_dir = repl_self_dir(self);
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  parent = repl_dirname(self_dir);
+  free(self_dir);
+  candidate = repl_join(parent, "fspec");
+  free(parent);
+  probe = repl_join(candidate, "guard.flang");
+  if (repl_exists(probe)) {
+    free(probe);
+    return candidate;
+  }
+  free(probe);
+  free(candidate);
+  return NULL;
+}
+
+/** Абсолютный путь к САМОМУ двоичному: settings.txt пакета обязан находить
+    компилятор независимо от того, откуда потом позовут `flang io`. */
+static char *new_compiler_self(const char *self) {
+  char *dir = repl_self_dir(self);
+  char *full = NULL;
+  if (dir == NULL) {
+    return repl_say("flang");
+  }
+  full = repl_join(dir, "flang");
+  free(dir);
+  if (access(full, X_OK) != 0) {
+    free(full);
+    return repl_say("flang");
+  }
+  return full;
+}
+
+static bool new_copy_template(const char *template_dir, const char *filename, const char *dest_dir) {
+  char *source = repl_join(template_dir, filename);
+  char *destination = repl_join(dest_dir, filename);
+  size_t bytes = 0;
+  char *text = repl_read_file(source, &bytes);
+  bool ok = false;
+  free(source);
+  if (text == NULL) {
+    repl_buf say;
+    buf_init(&say);
+    buf_put(&say, "образец ");
+    buf_put(&say, filename);
+    buf_put(&say, " не прочитан — пакет не создан");
+    new_refuse(say.data);
+    buf_free(&say);
+    free(destination);
+    return false;
+  }
+  ok = emit_write(destination, text, bytes);
+  free(destination);
+  free(text);
+  return ok;
+}
+
+static char *new_title(const char *name) {
+  char *title = repl_say(name);
+  if (title[0] >= 'a' && title[0] <= 'z') {
+    title[0] = (char)(title[0] - 'a' + 'A');
+  }
+  return title;
+}
+
+static bool new_write_all(const char *target, const char *fspec_dir, const char *spec_dir,
+                          const char *template_dir, const char *compiler_path, const char *name) {
+  char *title = new_title(name);
+  char *path = NULL;
+  repl_buf out;
+  bool ok = true;
+
+  buf_init(&out);
+  buf_put(&out, "модуль «");
+  buf_put(&out, title);
+  buf_put(&out,
+          "»\n\n"
+          "тотальная функция «Поприветствовать»\n"
+          "  принимает имя: строка\n"
+          "  возвращает строка\n"
+          "  пример «приветствие Марата»\n"
+          "    дано имя равно \"Марат\"\n"
+          "    ожидается \"Привет, Марат!\"\n"
+          "  соединить [\"Привет, \", имя, \"!\"] по \"\"\n");
+  {
+    repl_buf filename;
+    buf_init(&filename);
+    buf_put(&filename, name);
+    buf_put(&filename, ".flang");
+    path = repl_join(target, filename.data);
+    buf_free(&filename);
+  }
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, "{\"имя\": \"");
+  buf_put(&out, title);
+  buf_put(&out, "\", \"версия\": \"0.1.0\"}\n");
+  path = repl_join(target, NEW_MANIFEST);
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, "# ");
+  buf_put(&out, title);
+  buf_put(&out,
+          "\n\n"
+          "Пакет на flang. Минуты до первой доказанной тотальной функции:\n"
+          "флаг `тотальная` компилятор не принимает на слово, а проверяет.\n\n"
+          "## Собрать и проверить\n\n"
+          "    flang check ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang\n"
+          "    flang test ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang\n\n"
+          "Ответ `check` — сколько функций и сколько из них с доказанным\n"
+          "завершением; `test` прогоняет примеры, записанные внутри функций.\n\n"
+          "## Спеки предметной области\n\n"
+          "Каталог `fspec/` — доказанные бизнес-правила, а не только код.\n"
+          "Проверить все спеки разом:\n\n"
+          "    flang io fspec/guard.flang\n\n"
+          "Добавить спеку: файл `fspec/spec/NN-имя.flang` со своим\n"
+          "`обеспечивает «имя» цель`, затем та же команда, а после — переписать\n"
+          "слепок обещаний командой `flang io fspec/snapshot.flang`. Подробнее —\n"
+          "`fspec/README.md`.\n\n"
+          "## Пакет\n\n"
+          "    flang package ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang > ");
+  buf_put(&out, name);
+  buf_put(&out,
+          ".flang-package\n\n"
+          "Имя и версия для `flang package` берутся из `flang.package` рядом со\n"
+          "входным файлом.\n");
+  path = repl_join(target, "README.md");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out, compiler_path);
+  buf_put(&out, "\nspec\n");
+  path = repl_join(fspec_dir, "settings.txt");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "# Спеки пакета\n\n"
+          "Бизнес-правило, доказанное компилятором, а не только описанное словами.\n"
+          "`spec/01-order-steps.flang` — полный работающий пример: две проверки,\n"
+          "ни одна не переживает подмену тела заглушкой той же подписи.\n\n"
+          "    flang io fspec/guard.flang        # проверить все спеки разом\n"
+          "    flang io fspec/snapshot.flang     # переписать слепок после правки спек\n\n"
+          "`guard.flang` и `policy.flang` — та же проверка, что в дереве flang\n"
+          "(https://github.com/digitable-lol/flang, каталог fspec/): читает\n"
+          "`settings.txt` (компилятор и каталог спек), находит файлы `spec/*.flang`,\n"
+          "спрашивает у компилятора отчёт о доказательствах и сверяет его с\n"
+          "`snapshot.txt` — слепком обещаний, который не даёт следующей спеке молча\n"
+          "ослабить прежнюю.\n\n"
+          "Новая спека — файл в `spec/` с номером в начале имени, модулем\n"
+          "`«Спека N: …»` и хотя бы одним `обеспечивает «имя» цель`.\n");
+  path = repl_join(fspec_dir, "README.md");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "модуль «Спека 1: шаги приёмки заказа»\n\n"
+          "тотальная функция «Шаги приёмки заказа»\n"
+          "  возвращает список строка\n"
+          "  обеспечивает «шагов ровно три» (длина результат) равен 3\n"
+          "  обеспечивает «первый шаг — оплата» результат содержит \"оплата\"\n"
+          "  пример «список шагов приёмки»\n"
+          "    ожидается [\"оплата\", \"сборка\", \"доставка\"]\n"
+          "  [\"оплата\", \"сборка\", \"доставка\"]\n");
+  path = repl_join(spec_dir, "01-order-steps.flang");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  buf_init(&out);
+  buf_put(&out,
+          "01-order-steps.flang :: Шаги приёмки заказа :: шагов ровно три :: (длина "
+          "результат) равен 3\n"
+          "01-order-steps.flang :: Шаги приёмки заказа :: первый шаг — оплата :: "
+          "результат содержит \"оплата\"\n");
+  path = repl_join(fspec_dir, "snapshot.txt");
+  ok = emit_write(path, out.data, out.used) && ok;
+  free(path);
+  buf_free(&out);
+
+  ok = new_copy_template(template_dir, "guard.flang", fspec_dir) && ok;
+  ok = new_copy_template(template_dir, "policy.flang", fspec_dir) && ok;
+
+  free(title);
+  return ok;
+}
+
+static int new_project(int argc, char **argv, const char *self) {
+  const char *name = NULL;
+  bool force = false;
+  int index = 0;
+  char buffer[4096];
+  char *base = NULL;
+  char *target = NULL;
+  char *fspec_dir = NULL;
+  char *spec_dir = NULL;
+  char *template_dir = NULL;
+  char *compiler_path = NULL;
+  struct stat info;
+  bool exists = false;
+  int code = 0;
+
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--force") == 0 || strcmp(argv[index], "--силой") == 0) {
+      force = true;
+    } else if (strcmp(argv[index], "-") == 0) {
+      fputs("flang new требует имя пакета: со стандартного ввода оно не читается\n", stderr);
+      return 2;
+    } else if (argv[index][0] != '-' && name == NULL) {
+      name = argv[index];
+    } else {
+      fprintf(stderr, "flang new: непонятный ключ «%s»\n", argv[index]);
+      return 2;
+    }
+  }
+  if (name == NULL) {
+    fputs("flang new: не назван пакет. Пример: flang new проба\n", stderr);
+    return 2;
+  }
+  if (!new_name_ok(name)) {
+    fprintf(stderr,
+            "FLANG_NEW: имя «%s» недопустимо — без пробела, косой черты, кавычек и без\n"
+            "занятых слов (имена команд, «flang», «fspec»). Пакет не создан.\n",
+            name);
+    return 2;
+  }
+
+  base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
+  target = repl_resolve(base, name);
+  free(base);
+
+  exists = stat(target, &info) == 0;
+  if (exists && !S_ISDIR(info.st_mode)) {
+    fprintf(stderr, "FLANG_NEW: «%s» уже существует и не каталог — новый пакет некуда класть\n", target);
+    free(target);
+    return 1;
+  }
+  if (exists && !force) {
+    fprintf(stderr,
+            "FLANG_NEW: каталог «%s» уже существует. flang new не переписывает чужую работу\n"
+            "молча — допишите --force (или --силой), если это точно то же место.\n",
+            target);
+    free(target);
+    return 1;
+  }
+
+  template_dir = new_template_dir(self);
+  if (template_dir == NULL) {
+    fprintf(stderr,
+            "FLANG_NEW: не найден образец fspec/ (guard.flang рядом с policy.flang) — искали\n"
+            "в $%s и в <каталог двоичного>/../fspec. Пакет не создан.\n",
+            NEW_TEMPLATE_ENV);
+    free(target);
+    return 1;
+  }
+
+  compiler_path = new_compiler_self(self);
+  fspec_dir = repl_join(target, "fspec");
+  spec_dir = repl_join(fspec_dir, "spec");
+
+  if (!emit_make_dir(spec_dir)) {
+    free(target);
+    free(fspec_dir);
+    free(spec_dir);
+    free(template_dir);
+    free(compiler_path);
+    return 1;
+  }
+
+  code = new_write_all(target, fspec_dir, spec_dir, template_dir, compiler_path, name) ? 0 : 1;
+  if (code == 0) {
+    fprintf(stderr,
+            "flang new: пакет «%s» создан в %s\n"
+            "  cd %s && flang check %s.flang\n"
+            "  flang io fspec/guard.flang\n",
+            name, target, name, name);
+  }
+
+  free(target);
+  free(fspec_dir);
+  free(spec_dir);
+  free(template_dir);
+  free(compiler_path);
+  return code;
+}
+
 /* ═══════════════════ языковой сервер: `flang lsp` ═════════════════════════ */
 
 /*
@@ -16034,6 +16772,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = lock_file(argc, argv);
   } else if (strcmp(command, "package") == 0) {
     code = package_file(argc, argv);
+  } else if (strcmp(command, "new") == 0) {
+    code = new_project(argc, argv, self);
   } else if (strcmp(command, "lsp") == 0) {
     code = lsp_serve(argc, argv);
   } else if (strcmp(command, "--mcp-mode") == 0) {

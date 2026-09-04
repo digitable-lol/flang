@@ -1,8 +1,7 @@
 module «Reverse a string»
 
 // Rosetta Code — Reverse a string, written on the ENGLISH keyword surface.
-// The same program as `reverse-string.flang`, keyword for keyword; the two
-// trees are compared against each other by `flang/test/rosetta.test.mjs`.
+// The same program as `reverse-string.flang`, keyword for keyword.
 //
 // «asdf» → «fdsa».
 //

@@ -8,9 +8,8 @@
 | [Homebrew](#homebrew) | `flang`, библиотеку, заголовки, `man flang` | `brew`, `cc`, `make` |
 | [asdf](#asdf) | `flang` рядом с другими версиями | `asdf`, `cc`, `make` |
 | [Из исходников](#из-исходников) | `flang` из клона | `git`, `cc`, `make` |
-| [Через npm](#через-npm) | `flang` и `flang-lsp` внутри проекта на Node | Node ≥ 20, `cc`, `make` |
 
-Все четыре дают ОДИН И ТОТ ЖЕ двоичный файл. Печать во все {{цели.словом}}
+Все три дают ОДИН И ТОТ ЖЕ двоичный файл. Печать во все {{цели.словом}}
 целей, проверки, доказательства и языковой сервер (`flang lsp --stdio`) есть на
 каждом пути — выбирайте по тому, что уже стоит на машине.
 
@@ -20,8 +19,10 @@
 brew install digitable-lol/tap/flang
 ```
 
-Ставит `flang`, `libcompiler_flang.a`, два заголовка и страницу `man flang`.
-Node не нужен: в архиве релиза лежит готовый C99.
+Ставит `flang`, `libcompiler_flang.a`, два заголовка и страницу `man flang` —
+раздаёт их репозиторий
+[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap). Node не нужен:
+в архиве релиза лежит готовый C99.
 
 ## asdf
 
@@ -67,22 +68,25 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
    flang_cli.c flang_repl.c flang_runtime.c compiler_flang.c -lm -lpthread
 ```
 
-## Через npm
+## Пути через npm больше нет
 
-Путь ровно для одного: положить `flang` внутрь проекта на Node, рядом с его
-прочими инструментами, и дать редактору языковой сервер `flang-lsp` там, где
-редактор его ищет.
+Четвёртый путь был, и его не стало 3 сентября 2026: удалены и пакет, и точки
+входа `flang` с `flang-lsp`, и сборка при установке, и работа публикации.
+`npm install @digitable-lol/flang` не работал никогда — под этим именем в
+реестре ничего не выкладывалось, — а
+`npm install git+https://github.com/digitable-lol/flang.git` больше не ставит ни
+одной команды: манифест их не объявляет.
 
-```bash
-npm install git+https://github.com/digitable-lol/flang.git
-```
+**Платит за это Windows.** `bin` в npm обязан быть файлом, который запустит
+`node`, — только поэтому оба запускателя и были на JavaScript, и только этот
+путь установки проект Windows и обещал. Homebrew под Windows не ставит, а путь
+из исходников хочет `cc` и `make`. Под Windows это значит MSYS2, WSL или другой
+набор с C99; родного пути нет. Проверен под Windows он при этом не был ни разу,
+так что потеряно обещание, а не работавшая дорога, — но другого обещания не
+было.
 
-Ставит `node_modules/.bin/flang` и `node_modules/.bin/flang-lsp`. Своих
-зависимостей у пакета нет, но `cc` и `make` на машине нужны: при установке он
-СОБИРАЕТ тот же двоичный файл из лежащего в нём C99.
-
-Не работает: `npm install @digitable-lol/flang` — под этим именем в реестре
-ничего не выложено, ставьте по адресу git выше.
+Языкового сервера это не касается: он и есть `flang lsp --stdio`, подкоманда
+самого двоичного, и он на каждом пути выше.
 
 ## Проверка, что встало
 
@@ -140,11 +144,25 @@ libcompiler_flang.a`, двоичный файл поставлен, а библ�
 | Homebrew | `brew uninstall flang` |
 | asdf | `asdf uninstall flang {{выпуск.версия}}`, затем `asdf plugin remove flang` |
 | Из исходников | `make -C bootstrap uninstall` — с тем же `PREFIX=…`, с каким ставили |
-| npm | `npm uninstall @digitable-lol/flang` |
 
 `make -C bootstrap uninstall` снимает `bin/flang`, библиотеку и страницу man, но
 ОСТАВЛЯЕТ два заголовка в `include/` — удалите их руками, если каталог должен
 остаться пустым.
+
+## Построено на flang
+
+Четыре приложения вне этого репозитория — не примеры, а рабочий код:
+
+- **[flang-tui](https://github.com/digitable-lol/flang-tui)** — раскладка терминального экрана
+  на flang: полосы, обрезка по печатаемым ячейкам, укладка, вкладки, прокрутка. Печатается в Go
+  и C.
+- **[digitdisk](https://github.com/digitable-lol/digitdisk)** — обзор диска и системы на Linux:
+  правила решаются ядром на flang, системные вызовы — хозяином на Go.
+- **[flang-ribbon](https://github.com/digitable-lol/flang-ribbon)** — арифметика ленты окон на
+  flang: смещения, ширина колонки, высота окна, вставка, панели. Перенесена из digitwm и сверена
+  с ним побайтно на 526 871 входе. Печатается в C и в Go.
+- **[flang-env](https://github.com/digitable-lol/flang-env)** — разбор значений окружения на
+  flang: глубина цвета, язык, `NO_COLOR`. Чистые правила, чтение — за хозяином.
 
 ## Что дальше
 

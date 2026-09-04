@@ -238,7 +238,15 @@ jobs:
   sverka:
     name: reprint-check
     needs: [postoyannye, stolknoveniya]
-    if: vars.BOLSHAYA_PAMYAT == 'da'
+    # У этой работы нет триггера pull_request (см. `on:` выше — только
+    # schedule/workflow_dispatch, оба доступны лишь с правом записи), но тот же
+    # довод, что закрыл задачу 9971 для binary.yml: раннер общий с хозяином,
+    # и защита не должна держаться на одном отсутствии триггера — она держится
+    # ещё и здесь, на каждой self-hosted работе одинаково.
+    if: >-
+      vars.BOLSHAYA_PAMYAT == 'da' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, bolshaya-pamyat]
     timeout-minutes: 720
     steps:
@@ -342,7 +350,12 @@ jobs:
   dve-pechati:
     name: reprint-reproducibility
     needs: postoyannye
-    if: vars.BOLSHAYA_PAMYAT == 'da'
+    # Тот же довод, что и у sverka выше и у задачи 9971 для binary.yml —
+    # защита не должна держаться на одном отсутствии триггера pull_request.
+    if: >-
+      vars.BOLSHAYA_PAMYAT == 'da' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, bolshaya-pamyat]
     # Две печати подряд. Заход длится 8 ч 34 мин – 9 ч 56 мин (замер 31 августа
     # 2026, tasks/1310-semya-sverka-zheleza.md), на каждую даётся 11 ч — итого

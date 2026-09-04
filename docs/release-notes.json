@@ -1,7 +1,7 @@
 {
   "формат": 1,
   "выпуски": {
-    "0.7.5": {
+    "0.7.6": {
       "ru": {
         "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
         "изменилось": [
@@ -20,6 +20,20 @@
         ],
         "сломалось": [
           "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.5": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.6: sha256 в Homebrew-формуле снят локально документированной командой, но местная сборка архива не совпала побайтово с тем, что даёт конвейер (причина не разобрана) — конвейер остановился ДО публикации, ничего битого не вышло. Тег не удалялся, просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.6: the Homebrew formula's sha256 was computed locally with the documented command, but the local archive build didn't byte-match what the pipeline produces (cause undiagnosed) — the pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped."
         ]
       }
     },

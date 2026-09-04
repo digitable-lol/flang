@@ -162,8 +162,8 @@ On every push CI builds the binary and runs those checks and the library-and-cor
 it; the LeetCode set and the rest of the tree are walked on a tag, because that walk takes over
 an hour.
 
-**`flang/test/` is a remnant, and small.** It holds 175 files (`git ls-files flang/test | wc -l`),
-<!-- СНЯТО 2026-08-31 файлов flang/test/* = 175 -->
+**`flang/test/` is a remnant, and small.** It holds 187 files (`git ls-files flang/test | wc -l`),
+<!-- СНЯТО 2026-09-04 файлов flang/test/* = 187 -->
 of which 163 are fixtures and only four are still runnable test files.
 <!-- СНЯТО 2026-08-31 файлов flang/test/fixtures/* = 163 --> `./ярлык тесты`
 runs those four. The old JavaScript

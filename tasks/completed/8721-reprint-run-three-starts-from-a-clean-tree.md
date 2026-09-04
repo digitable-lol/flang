@@ -140,4 +140,4 @@ db12d317 HEAD@{2026-08-30 09:32:37 +0000}: reset: moving to origin/main
 кладётся в ствол.
 
 Следующий заход эта задача не сторожит: заход 5 идёт своим наряду —
-[8567](8567-the-fifth-reprint-run-starts-on-a-grown-closure.md).
+[8567](../8567-the-fifth-reprint-run-starts-on-a-grown-closure.md).

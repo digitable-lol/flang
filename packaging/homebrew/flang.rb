@@ -44,7 +44,7 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.7.7/flang-0.7.7-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.7.8/flang-0.7.8-c.tar.gz"
   # Хеш архива, собранного `bootstrap/flang io scripts/release-in-c.flang` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
@@ -126,9 +126,9 @@ class Flang < Formula
   # release-versions/9959.md; тот же класс беды снова нашёлся и починен
   # для 0.7.6 — задача 9983). b8d82b1c… от выпуска 0.6.2 стоял ещё раньше,
   # 2 995 862 байта.
-  sha256 "573e3a567b2b66630364ffaa4fe51ad1236908410e181626bbcb92fdf64dd7f2" # ЗАВЕДОМО ЧУЖОЕ (это хеш архива 0.7.6) — v0.7.7 нарочно ставится на провал, чтобы получить настоящий хеш из текста ошибки конвейера
+  sha256 "d2aad36d21a28b12af5091ebd95e9028e4c43105d6d0df859fc43d6a306ec4a9" # ЗАВЕДОМО ЧУЖОЕ (хеш архива 0.7.7) — v0.7.8 нарочно на провал ради настоящего хеша
   license "BSD-2-Clause"
-  version "0.7.7"
+  version "0.7.8"
 
   # Node не нужен: в архиве C99 и Makefile. Из внешнего нужен только `make` —
   # он и объявлен; всё остальное даёт компилятор C, который есть в системе

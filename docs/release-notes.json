@@ -1,7 +1,7 @@
 {
   "формат": 1,
   "выпуски": {
-    "0.7.8": {
+    "0.7.9": {
       "ru": {
         "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
         "изменилось": [
@@ -20,6 +20,20 @@
         ],
         "сломалось": [
           "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.8": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером — намеренно",
+        "изменилось": [
+          "Метка поставлена сознательно с заведомо чужим хешем (архива 0.7.7), чтобы получить настоящий хеш архива 0.7.8 из текста ошибки конвейера. Заодно найдено: конвейер требует точного совпадения версии тега и package.json ДО сборки архива — версию нельзя было оставить прежней, чтобы сохранить силу хеша. Тот же материал реально вышел как 0.7.9."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline — deliberately",
+        "изменилось": [
+          "Tagged on purpose with a known-wrong hash (the 0.7.7 archive's) to harvest the real 0.7.8 archive hash from the pipeline's own error text. Also found along the way: the pipeline requires the tag's version to exactly match package.json BEFORE building the archive — the version could not be left unchanged to keep a hash valid. The same content actually shipped as 0.7.9."
         ]
       }
     },

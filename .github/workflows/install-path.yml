@@ -67,8 +67,10 @@ on:
       - "scripts/release-in-c.flang"
       - "scripts/path-without-node.flang"
       - "scripts/raskrutka.sh"
+      - "scripts/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
+      - "package.json"
       - ".github/workflows/install-path.yml"
     tags: ["v*"]
   pull_request:
@@ -77,8 +79,10 @@ on:
       - "scripts/release-in-c.flang"
       - "scripts/path-without-node.flang"
       - "scripts/raskrutka.sh"
+      - "scripts/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
+      - "package.json"
       - ".github/workflows/install-path.yml"
   # Раз в сутки — потому что ломает путь установки не только своя правка.
   # `asdf global` удалили в ЧУЖОМ инструменте, и наше дерево в тот день не
@@ -129,6 +133,9 @@ jobs:
 
       - name: Формула Homebrew сходится сама с собой
         run: ./ярлык формула:проверка
+
+      - name: FLANG_VERSION совпадает с package.json
+        run: ./ярлык версия:проверка
 
   # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────
   #

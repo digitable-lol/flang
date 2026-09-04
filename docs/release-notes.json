@@ -1,7 +1,7 @@
 {
   "формат": 1,
   "выпуски": {
-    "0.7.4": {
+    "0.7.5": {
       "ru": {
         "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
         "изменилось": [
@@ -20,6 +20,20 @@
         ],
         "сломалось": [
           "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.4": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.5: sha256 в Homebrew-формуле стоял от 0.7.3, конвейер выпуска сверил его с архивом, который сам собрал на теге, и остановился ДО публикации — прибор сработал как задуман, ничего битого не вышло. Тег не удалялся (запись запрещена), просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.5: the Homebrew formula's sha256 was still 0.7.3's, the release pipeline checked it against the archive it built on the tag itself, and stopped BEFORE publishing — the safeguard worked as intended, nothing broken went out. The tag was not deleted, simply skipped."
         ]
       }
     },

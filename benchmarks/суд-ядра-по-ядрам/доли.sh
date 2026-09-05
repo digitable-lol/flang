@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 export LC_ALL=ru_RU.UTF-8
-root=/srv/tmp/dokazuemyy/Ч180-vse-yadra/клон
+# Корень дерева берётся ОТ СЕБЯ, как в соседнем встроить.sh. Раньше здесь стоял
+# путь на чужой временный каталог — из свежего клона файл не запускался вовсе
+# (задачи 9688, 7405).
+root=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$root" || exit 1
 export FLANG_MODULE_DIR="$root/flang/stdlib:$root/flang/core"
 export FLANG_KERNEL_SPLIT=16
-out=/srv/tmp/dokazuemyy/Ч180-vse-yadra/замеры
+out=${ZAMERY:-${FLANG_TMP:-/srv/tmp}/суд-ядра-по-ядрам}
+mkdir -p "$out" || exit 1
 for f in "$@"; do
   name=$(basename "$f" .flang)
   t0=$(date +%s%N)

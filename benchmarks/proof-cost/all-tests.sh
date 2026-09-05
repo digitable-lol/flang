@@ -1,5 +1,7 @@
 #!/bin/bash
-cd /home/a/projects/flang/.claude/worktrees/agent-a4daa59c6b3b8bbfc
+# Корень дерева берётся ОТ СЕБЯ. Раньше здесь стоял `cd` на чужой рабочий
+# каталог агента — из свежего клона файл не запускался вовсе (задачи 9688, 7405).
+cd "$(dirname "$0")/../.." || exit 1
 export LC_ALL=C.UTF-8
 # Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016).
 for f in docs/benchmark2/*.flang docs/benchmark2/*.fp docs/benchmark2/*.фп docs/benchmark2/*.фланг; do

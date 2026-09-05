@@ -29,12 +29,12 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 17:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
 `AGENTS.md`).
 
-Эта опись считает ОДИН язык. Остальные пятнадцать — оболочка, C, Python, HTML,
-CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby — считает
-[`tree-inventory.md`](tree-inventory.md) (5 сентября 2026: 266 файлов вне flang,
-<!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb = 266 -->
-долг вне JavaScript — **74 файла, 8 729 строк при потолке 63**: храповик красен,
-разбор — задача 4838). Там же названы 569 строк
+Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
+HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
+считает [`tree-inventory.md`](tree-inventory.md) (5 сентября 2026: 266 файлов вне flang,
+<!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 266 -->
+долг вне JavaScript — **106 файлов, 15 264 строки при потолке 63**: храповик
+красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
 28 327 строк этой описи — нижняя оценка.
 <!-- СНЯТО 2026-09-05 строк-в *.js,*.mjs = 28327 -->

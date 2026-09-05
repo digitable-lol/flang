@@ -1,6 +1,196 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.10": {
+      "ru": {
+        "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
+        "изменилось": [
+          "REPL (`flang` без доводов) отвечал `FLANG_UNKNOWN_NAME: запись не содержит поле «планировщик заголовок»` на ЛЮБОЙ ввод, включая `1 плюс 1` — не только сложные примеры. Причина: ручной список полей записи «Настройки» в `flang_repl.c` (используется печатью цели «c» для каждой строки живой сессии) отстал от общей таблицы полей на два имени, когда цель «c» выучилась печатать процессы. Починка landed на dev 3 сентября, но приземлилась ПОСЛЕ тега v0.7.3 — в нём баг был живой.",
+          "Строка версии в семени (`FLANG_VERSION`) отстала на три релиза (`0.7.0` вместо `0.7.3`) — тот же класс беды, что уже чинил хотфикс 0.7.1, снова закрался и снова починен; заведена задача, чтобы это не повторялось в четвёртый раз."
+        ],
+        "сломалось": [
+          "Язык по-прежнему НЕ формально-доказуемый: взято 2 из 7 гейтов критерия. За это время найдена и починена настоящая дыра в независимом чекере (сокрытие текста за примечанием проходило непроверенным ещё в одном месте), доля корпуса, проверенная чекером, поднята с 5,00 % до 7,50 %, и впервые сошлась побайтово пара из двух независимых печатей одного коммита — но ни один гейт целиком этим не взят."
+        ]
+      },
+      "en": {
+        "заголовок": "Hotfix: the live shell crashed on every line of input",
+        "изменилось": [
+          "The REPL (`flang` with no arguments) answered `FLANG_UNKNOWN_NAME: record has no field «scheduler header»` on ANY input, including `1 плюс 1` — not just elaborate examples. Cause: a hand-rolled field list for the «Settings» record in `flang_repl.c` (used by the «c» target's emitter for every line of a live session) fell behind the shared field table by two names when the «c» target learned to emit processes. The fix landed on dev on September 3rd, but after the v0.7.3 tag was already cut — so the bug was live in that release.",
+          "The seed's version string (`FLANG_VERSION`) had drifted three releases behind (`0.7.0` instead of `0.7.3`) — the same bug class already fixed once by the 0.7.1 hotfix, recurred, and is fixed again; a task now tracks preventing a fourth recurrence."
+        ],
+        "сломалось": [
+          "The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this."
+        ]
+      }
+    },
+    "0.7.9": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.10 — шестая подряд непубликация в этой цепочке (после v0.7.4-v0.7.8), пока не нашёлся настоящий путь: у release.yml workflow_dispatch не снят (снят он был только у старого publish-npm.yml), и сухой прогон на ветке даёт настоящий хеш без сожжения тега. Конвейер каждый раз останавливался ДО публикации, ничего битого не вышло; тег не удалялся, просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.10 — the sixth publication failure in a row in this chain (after v0.7.4-v0.7.8), before finding the real fix: release.yml's workflow_dispatch was never removed (only the old publish-npm.yml lost it), and a dry run on the branch gives the real hash without burning a tag. The pipeline stopped BEFORE publishing each time, nothing broken went out; the tag was not deleted, simply skipped."
+        ]
+      }
+    },
+    "0.7.8": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером — намеренно",
+        "изменилось": [
+          "Метка поставлена сознательно с заведомо чужим хешем (архива 0.7.7), чтобы получить настоящий хеш архива 0.7.8 из текста ошибки конвейера. Заодно найдено: конвейер требует точного совпадения версии тега и package.json ДО сборки архива — версию нельзя было оставить прежней, чтобы сохранить силу хеша. Тот же материал реально вышел как 0.7.9."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline — deliberately",
+        "изменилось": [
+          "Tagged on purpose with a known-wrong hash (the 0.7.7 archive's) to harvest the real 0.7.8 archive hash from the pipeline's own error text. Also found along the way: the pipeline requires the tag's version to exactly match package.json BEFORE building the archive — the version could not be left unchanged to keep a hash valid. The same content actually shipped as 0.7.9."
+        ]
+      }
+    },
+    "0.7.7": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером — намеренно",
+        "изменилось": [
+          "Метка поставлена сознательно с заведомо чужим хешем (архива 0.7.6), чтобы получить настоящий хеш архива 0.7.7 из текста ошибки конвейера — тем же приёмом, каким и так уже дважды снимался хеш этой ночью. Тот же материал реально вышел как 0.7.8."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline — deliberately",
+        "изменилось": [
+          "Tagged on purpose with a known-wrong hash (the 0.7.6 archive's) specifically to harvest the real 0.7.7 archive hash from the pipeline's own error text — the same technique already used twice tonight. The same content actually shipped as 0.7.8."
+        ]
+      }
+    },
+    "0.7.6": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Число в Homebrew-формуле было хешем архива 0.7.5 (координатор перепутал версию содержимого при копировании числа из ошибки конвейера) — при своей же сборке на теге содержимое, разумеется, разошлось. Конвейер остановился ДО публикации, ничего битого не вышло. Тег не удалялся, просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "The number in the Homebrew formula was the 0.7.5 archive's hash (the coordinator copied the pipeline-reported hash for the wrong content version) — its own build on the tag naturally diverged. The pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped."
+        ]
+      }
+    },
+    "0.7.5": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.6: sha256 в Homebrew-формуле снят локально документированной командой, но местная сборка архива не совпала побайтово с тем, что даёт конвейер (причина не разобрана) — конвейер остановился ДО публикации, ничего битого не вышло. Тег не удалялся, просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.6: the Homebrew formula's sha256 was computed locally with the documented command, but the local archive build didn't byte-match what the pipeline produces (cause undiagnosed) — the pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped."
+        ]
+      }
+    },
+    "0.7.4": {
+      "ru": {
+        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "изменилось": [
+          "Тот же материал, что вышел как 0.7.5: sha256 в Homebrew-формуле стоял от 0.7.3, конвейер выпуска сверил его с архивом, который сам собрал на теге, и остановился ДО публикации — прибор сработал как задуман, ничего битого не вышло. Тег не удалялся (запись запрещена), просто пропущен."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, publication stopped by the pipeline",
+        "изменилось": [
+          "Same content that shipped as 0.7.5: the Homebrew formula's sha256 was still 0.7.3's, the release pipeline checked it against the archive it built on the tag itself, and stopped BEFORE publishing — the safeguard worked as intended, nothing broken went out. The tag was not deleted, simply skipped."
+        ]
+      }
+    },
+    "0.7.3": {
+      "ru": {
+        "заголовок": "Хотфикс версии дошёл до публикации",
+        "изменилось": [
+          "Тот же хотфикс версии, что метился как 0.7.1 и 0.7.2, наконец опубликован: у обеих меток ручная сборка архива не совпала с тем, что собрал сам конвейер выпуска (0.7.1 — расхождение полное, 0.7.2 — 4 байта из 4 447 763, причина не разобрана), и Homebrew-формула не проходила проверку. Для 0.7.3 sha256 взят напрямую из sha256sum самого конвейера, а не пересчитан вручную — установка проверена целиком: скачивание, сверка хеша, сборка, `flang --version`."
+        ]
+      },
+      "en": {
+        "заголовок": "The version hotfix finally reached publication",
+        "изменилось": [
+          "The same version hotfix tagged as 0.7.1 and 0.7.2 is finally published: for both of those tags the hand-built archive didn't match what the release pipeline itself built (0.7.1 — a full mismatch; 0.7.2 — 4 bytes out of 4,447,763, cause never diagnosed), and the Homebrew formula failed verification. For 0.7.3 the sha256 was taken directly from the pipeline's own sha256sum rather than recomputed by hand — installation was verified end to end: download, hash check, build, `flang --version`."
+        ]
+      }
+    },
+    "0.7.2": {
+      "ru": {
+        "заголовок": "Метка есть, публикация снова не дошла",
+        "изменилось": [
+          "Вторая попытка опубликовать хотфикс версии 0.7.1: реальный sha256 архива взят с конвейера, а не пересчитан руками. Сборка разошлась с конвейером на 4 байта из 4 447 763 (причина не разобрана) — Homebrew-формула не проходила проверку. Тег не удалялся (запись запрещена), просто пропущен: пользователям, ставившим через Homebrew, эта метка ничего не дала."
+        ]
+      },
+      "en": {
+        "заголовок": "Tagged, but publication failed again",
+        "изменилось": [
+          "A second attempt to publish the 0.7.1 version hotfix: the archive's real sha256 was taken from the pipeline rather than recomputed by hand. The build still diverged from the pipeline's own by 4 bytes out of 4,447,763 (cause never diagnosed) — the Homebrew formula failed verification. The tag was not deleted (deleting tags is forbidden here), simply skipped: it delivered nothing to anyone installing via Homebrew."
+        ]
+      }
+    },
+    "0.7.1": {
+      "ru": {
+        "заголовок": "Хотфикс версии — тег вышел, публикация не дошла",
+        "изменилось": [
+          "`flang --version` отвечал «0.6.2» под выпуском 0.7.0 — на два релиза позади: строку версии в семени забыли бампнуть вместе с `package.json`. Задача 9959 чинит её. Заодно исправлена версия Homebrew-формулы (`0.6.2 -> 0.7.0`, пропущенная при первой правке), версия на сайте и часть работ CI, жёгших часы на пуш без имени."
+        ],
+        "сломалось": [
+          "Публикация этой меткой НЕ дошла: ручная сборка релизного архива не совпала с тем, что собрал сам конвейер выпуска, и Homebrew-формула не проходила проверку хеша. Тег не удалялся, просто пропущен — успешно эта же починка опубликована только в 0.7.3."
+        ]
+      },
+      "en": {
+        "заголовок": "Version hotfix — tagged, but publication didn't land",
+        "изменилось": [
+          "`flang --version` answered “0.6.2” under the 0.7.0 release — two releases behind: the seed's version string was left un-bumped alongside `package.json`. Task 9959 fixes it. Also fixed along the way: the Homebrew formula's version (`0.6.2 -> 0.7.0`, missed in the first pass), the version shown on the site, and part of a CI job that was burning push-triggered hours running under no name."
+        ],
+        "сломалось": [
+          "Publication under this tag did NOT land: the hand-built release archive didn't match what the release pipeline itself built, and the Homebrew formula failed its hash check. The tag was not deleted, simply skipped — this same fix was only successfully published as 0.7.3."
+        ]
+      }
+    },
+    "0.7.0": {
+      "ru": {
+        "заголовок": "Компилятор перепечатан начисто, а главная работа выпуска — поиск собственных обманов",
+        "появилось": [
+          "Девятой целью печати стал C++; появились регулярные выражения, драйверы sqlite и Redis, TLS 1.3 и реестр пакетов.",
+          "У файлов три равноправных расширения; у пределов шагов и глубины — свои ключи; `--no-check` печатает без проверки, а `check --быстро` честно говорит, чего он не смотрел."
+        ],
+        "изменилось": [
+          "Компилятор перепечатан начисто с замороженного ствола: печать шла 12 часов 4 минуты, из них 10 часов 25 минут (86 %) заняла стадия «Суд ядра о программе».",
+          "Выпускной путь впервые прошёл целиком. Прежде он не проходил ни разу: шаг сборки архива звал двоичный, которого никто не собирал, и релиз 0.6.2 собирали руками."
+        ],
+        "сломалось": [
+          "Язык НЕ формально-доказуемый: из семи гейтов критерия взято два — ядро выдаёт объект доказательства и размер доверия назван числом.",
+          "Ядро способно доказать ЛОЖЬ: при развёртке вызова оно подставляет довод под связыватель того же имени и печатает «доказано обо ВСЕХ входах» про утверждение, ложное на каждом входе. В сегодняшнем корпусе таких доказательств нет — померено, 0 из 240.",
+          "Доля корпуса, проверенная независимым чекером, — 0,00 % на момент заморозки. Прежде называвшиеся 0,83 % завышены и сняты.",
+          "Чтобы перепечатать компилятор семенем 0.7.0, нужен ключ `--предел-глубины 200000`: вшитый предел 20 000 упирается в одну машинную строку постусловия в 90 286 знаков."
+        ]
+      },
+      "en": {
+        "заголовок": "The compiler was reprinted from scratch, and the release’s main work was finding our own self-deceptions",
+        "появилось": [
+          "C++ became the ninth print target; regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry arrived.",
+          "Files take three equal extensions; step and depth limits have their own flags; `--no-check` prints without checking, and `check --быстро` says plainly what it did not look at."
+        ],
+        "изменилось": [
+          "The compiler was reprinted from scratch off the frozen trunk: the print took 12 hours 4 minutes, of which 10 hours 25 minutes (86 %) was the kernel-judgment stage.",
+          "The release path completed end to end for the first time. Before, it never had: the archive step called a binary nobody built, and the 0.6.2 release was assembled by hand."
+        ],
+        "сломалось": [
+          "The language is NOT formally provable: two of the criterion’s seven gates are taken — the kernel emits a proof object, and the size of the trusted base is named as a number.",
+          "The kernel can prove a FALSEHOOD: unfolding a call substitutes an argument under a binder of the same name and prints “proved for ALL inputs” about a claim false on every input. Today’s corpus contains no such proof — measured, 0 of 240.",
+          "The share of the corpus verified by the independent checker is 0.00 % as of the freeze. The previously quoted 0.83 % was overstated and has been withdrawn.",
+          "Reprinting the compiler with the 0.7.0 seed needs `--предел-глубины 200000`: the built-in limit of 20 000 hits one machine-written postcondition line of 90 286 code points."
+        ]
+      }
+    },
     "0.6.2": {
       "ru": {
         "заголовок": "Установка через Homebrew починена: архив приезжал с каталогом, в который нельзя войти",

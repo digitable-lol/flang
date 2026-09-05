@@ -6,6 +6,116 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.10 — 4 September 2026
+
+**Hotfix: the live shell crashed on every line of input**
+
+### What changed
+
+- The REPL (`flang` with no arguments) answered `FLANG_UNKNOWN_NAME: record has no field «scheduler header»` on ANY input, including `1 плюс 1` — not just elaborate examples. Cause: a hand-rolled field list for the «Settings» record in `flang_repl.c` (used by the «c» target's emitter for every line of a live session) fell behind the shared field table by two names when the «c» target learned to emit processes. The fix landed on dev on September 3rd, but after the v0.7.3 tag was already cut — so the bug was live in that release.
+- The seed's version string (`FLANG_VERSION`) had drifted three releases behind (`0.7.0` instead of `0.7.3`) — the same bug class already fixed once by the 0.7.1 hotfix, recurred, and is fixed again; a task now tracks preventing a fourth recurrence.
+
+### What broke
+
+- The language is still NOT formally provable: 2 of the criterion's 7 gates are taken. In the meantime a real hole in the independent checker was found and fixed (hiding text behind a trailing comment went unchecked at one more site), checker-verified corpus share rose from 5.00% to 7.50%, and for the first time two independent prints of the same commit matched byte-for-byte — but no gate was closed outright by any of this.
+
+## 0.7.9 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline**
+
+### What changed
+
+- Same content that shipped as 0.7.10 — the sixth publication failure in a row in this chain (after v0.7.4-v0.7.8), before finding the real fix: release.yml's workflow_dispatch was never removed (only the old publish-npm.yml lost it), and a dry run on the branch gives the real hash without burning a tag. The pipeline stopped BEFORE publishing each time, nothing broken went out; the tag was not deleted, simply skipped.
+
+## 0.7.8 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline — deliberately**
+
+### What changed
+
+- Tagged on purpose with a known-wrong hash (the 0.7.7 archive's) to harvest the real 0.7.8 archive hash from the pipeline's own error text. Also found along the way: the pipeline requires the tag's version to exactly match package.json BEFORE building the archive — the version could not be left unchanged to keep a hash valid. The same content actually shipped as 0.7.9.
+
+## 0.7.7 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline — deliberately**
+
+### What changed
+
+- Tagged on purpose with a known-wrong hash (the 0.7.6 archive's) specifically to harvest the real 0.7.7 archive hash from the pipeline's own error text — the same technique already used twice tonight. The same content actually shipped as 0.7.8.
+
+## 0.7.6 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline**
+
+### What changed
+
+- The number in the Homebrew formula was the 0.7.5 archive's hash (the coordinator copied the pipeline-reported hash for the wrong content version) — its own build on the tag naturally diverged. The pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped.
+
+## 0.7.5 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline**
+
+### What changed
+
+- Same content that shipped as 0.7.6: the Homebrew formula's sha256 was computed locally with the documented command, but the local archive build didn't byte-match what the pipeline produces (cause undiagnosed) — the pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped.
+
+## 0.7.4 — 4 September 2026
+
+**Tagged, publication stopped by the pipeline**
+
+### What changed
+
+- Same content that shipped as 0.7.5: the Homebrew formula's sha256 was still 0.7.3's, the release pipeline checked it against the archive it built on the tag itself, and stopped BEFORE publishing — the safeguard worked as intended, nothing broken went out. The tag was not deleted, simply skipped.
+
+## 0.7.3 — 3 September 2026
+
+**The version hotfix finally reached publication**
+
+### What changed
+
+- The same version hotfix tagged as 0.7.1 and 0.7.2 is finally published: for both of those tags the hand-built archive didn't match what the release pipeline itself built (0.7.1 — a full mismatch; 0.7.2 — 4 bytes out of 4,447,763, cause never diagnosed), and the Homebrew formula failed verification. For 0.7.3 the sha256 was taken directly from the pipeline's own sha256sum rather than recomputed by hand — installation was verified end to end: download, hash check, build, `flang --version`.
+
+## 0.7.2 — 3 September 2026
+
+**Tagged, but publication failed again**
+
+### What changed
+
+- A second attempt to publish the 0.7.1 version hotfix: the archive's real sha256 was taken from the pipeline rather than recomputed by hand. The build still diverged from the pipeline's own by 4 bytes out of 4,447,763 (cause never diagnosed) — the Homebrew formula failed verification. The tag was not deleted (deleting tags is forbidden here), simply skipped: it delivered nothing to anyone installing via Homebrew.
+
+## 0.7.1 — 3 September 2026
+
+**Version hotfix — tagged, but publication didn't land**
+
+### What changed
+
+- `flang --version` answered “0.6.2” under the 0.7.0 release — two releases behind: the seed's version string was left un-bumped alongside `package.json`. Task 9959 fixes it. Also fixed along the way: the Homebrew formula's version (`0.6.2 -> 0.7.0`, missed in the first pass), the version shown on the site, and part of a CI job that was burning push-triggered hours running under no name.
+
+### What broke
+
+- Publication under this tag did NOT land: the hand-built release archive didn't match what the release pipeline itself built, and the Homebrew formula failed its hash check. The tag was not deleted, simply skipped — this same fix was only successfully published as 0.7.3.
+
+## 0.7.0 — 3 September 2026
+
+**The compiler was reprinted from scratch, and the release’s main work was finding our own self-deceptions**
+
+### What appeared
+
+- C++ became the ninth print target; regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry arrived.
+- Files take three equal extensions; step and depth limits have their own flags; `--no-check` prints without checking, and `check --быстро` says plainly what it did not look at.
+
+### What changed
+
+- The compiler was reprinted from scratch off the frozen trunk: the print took 12 hours 4 minutes, of which 10 hours 25 minutes (86 %) was the kernel-judgment stage.
+- The release path completed end to end for the first time. Before, it never had: the archive step called a binary nobody built, and the 0.6.2 release was assembled by hand.
+
+### What broke
+
+- The language is NOT formally provable: two of the criterion’s seven gates are taken — the kernel emits a proof object, and the size of the trusted base is named as a number.
+- The kernel can prove a FALSEHOOD: unfolding a call substitutes an argument under a binder of the same name and prints “proved for ALL inputs” about a claim false on every input. Today’s corpus contains no such proof — measured, 0 of 240.
+- The share of the corpus verified by the independent checker is 0.00 % as of the freeze. The previously quoted 0.83 % was overstated and has been withdrawn.
+- Reprinting the compiler with the 0.7.0 seed needs `--предел-глубины 200000`: the built-in limit of 20 000 hits one machine-written postcondition line of 90 286 code points.
+
 ## 0.6.2 — 22 August 2026
 
 **The Homebrew install is fixed: the archive shipped a directory nobody could enter**
@@ -68,7 +178,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
-- The `emit:check` shortcut is gone: the emit check is done by `печать:проверка` in the language itself, and `занятые:проверка` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.
+- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.
 - The shared half of the PostgreSQL driver moved into the "Wire" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import "Wire".
 
 ## 0.5.1 — 19 August 2026
@@ -79,7 +189,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - `«Открыть соединение»` — an order with which a program itself reaches a foreign service over a socket. Before it, no client to a database or to any binary-protocol service could be written in flang: a service could answer but not ask.
 - All four network orders now use one word for the concept.
-- A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `неотрицательное` argument and never knew.
+- A second door for a printed C program — `МОДУЛЬ_enter` — checks arguments against declared types. Before it, foreign code linked against the library got `1` for `−3` on a `нат` argument and never knew.
 
 ### What changed
 

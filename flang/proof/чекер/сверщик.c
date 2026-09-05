@@ -2000,7 +2000,16 @@ static void sverit_obyavlenie(Sverka *s, Sp svoi, const char *o_chyom) {
 }
 
 /* ДОЛГ СЧИТАЕТСЯ ПОИМЁННО: посылка стоит в долге, если её правило названо, а
-   ходов под нею не записано ни одного — проверить в ней нечего, кроме имени. */
+   ходов под нею не записано ни одного — проверить в ней нечего, кроме имени.
+
+   Ч2718. «Ход записан» — это ХОД, а не строка, закрывающая блок. Прежде здесь
+   стояло `strcmp(s, "ход конец") == 0`, и пустой блок из одной этой строки
+   снимал посылку с долга: ходов под нею ноль, а числилась она проверенной.
+   Подделка дописывала `ход конец` под каждую свою посылку и выходила по долгу
+   ЛУЧШЕ честной записи — на `flang/proof/map/substantive.flang` «на слово
+   ядра» 3 против честных 6. Замер по всем 226 записям дерева: блоков с
+   нумерованными ходами 98, без блока вовсе 228, пустых блоков из одного
+   `ход конец` — 6, и все шесть в подделке `9984-hody-pryachut-dolg`. */
 static long posylki_na_slovo(Sp svoi) {
   int i, pravilo = 0, hody = 0; long dolg = 0;
   for (i = 0; i < svoi.n; i++) {
@@ -2008,7 +2017,7 @@ static long posylki_na_slovo(Sp svoi) {
     if (nachinaetsya(s, "посылка ")) {
       if (pravilo && !hody) dolg++;
       pravilo = *v_yolochkah(s, 3) != 0; hody = 0;
-    } else if (strcmp(s, "ход конец") == 0) hody = 1;
+    } else if (nachinaetsya(s, "ход ") && strcmp(s, "ход конец") != 0) hody = 1;
   }
   return (pravilo && !hody) ? dolg + 1 : dolg;
 }
@@ -3200,10 +3209,59 @@ static const char *vid_po_variantu_tipa(Sp stroki, const char *tip, const char *
   return soderzhit(hvost_posle(stroka, "содержит "), fmt("«%s»", tip)) ? "step" : "base";
 }
 
+/* Имя варианта, который разбирает случай ИСХОДНИКА. Формы языка закрыты и все
+   четыре в дереве: `случай вариант «X» …`, `случай вариант X …`, встроенные
+   `случай пусто` и `случай голова Г и хвост Х`, и голое имя варианта. */
+static char *variant_sluchaya(const char *hvost) {
+  if (nachinaetsya(hvost, "вариант ")) return imya_varianta(hvost);
+  if (nachinaetsya(hvost, "голова ")) return (char *)"голова и хвост";
+  return slovo(hvost, 1);
+}
+
+/* Ч2718, ПЕРВАЯ ПОЛОВИНА ДЫРЫ 9984. Есть ли в исходнике ветвь, которую ядро
+   могло свести. «Закрыта reduction» говорит ровно это: ядро свело цель посылки
+   НА ТЕЛЕ ВЕТВИ — `flang/self/proofterm.flang`, «Случай сведённый ядром»,
+   поле `conclusion` есть «цель посылки, в которой `результат` уже заменён
+   телом ветви». Ветви нет там, где автор не писал случая на этот вариант:
+   сводить тогда нечего, и посылка выдумана целиком.
+
+   Прежде эта ветвь проверяла РОВНО «шагов == 0» и к исходнику не обращалась
+   вовсе. Подделка дописывала к утверждению, которому ядро вынесло «нет
+   вердикта», принцип и две посылки `закрыта reduction шагов 0` — и счёт
+   доказанного рос молча (4 против честных 3 на `map/substantive.flang`).
+
+   Замер по всем 226 записям дерева: посылок `закрыта reduction` носителя
+   `algebra` с непустым вариантом — 61. Случай в исходнике нашёлся у 54 из 54
+   ЧЕСТНЫХ; не нашёлся ровно у семи, и все семь — подделки (три записи 9984 и
+   `9986/variant-ne-iz-istochnika-base`). Ни одной честной записи правило не
+   трогает.
+
+   Носители `segment` и `fold` сюда не идут, и это не осторожность: вариант у
+   них пуст (`посылка «дно» … вариант «»`), ветвями объявленной суммы они не
+   ходят, и случая в исходнике под ними нет по устройству.
+
+   ГДЕ ПРАВИЛО КОНЧАЕТСЯ, сказано прямо: случай ищется во ВСЁМ блоке функции, а
+   не только во внешнем `разборе` по переменной индукции. Вложенный `разбор` по
+   другому имени даст те же имена вариантов и правило пропустит. Строже сделать
+   нельзя тем же дешёвым приёмом: язык склоняет имя (`разбор дерева` при
+   `по «дерево»`), и сличать их пришлось бы морфологией. */
+static int est_vetv_varianta(Sp stroki, const char *funkciya, const char *variant) {
+  long a, b, i;
+  a = blok_funkcii(stroki, funkciya, &b);
+  if (a < 1) return 1;                 /* функции в исходнике нет — скажет сверка имён */
+  for (i = a; i < b; i++) {
+    char *l = stroka_po_nomeru(stroki, i);
+    if (nachinaetsya(l, "случай ") &&
+        strcmp(variant_sluchaya(slova_posle(l, 1)), variant) == 0) return 1;
+  }
+  return 0;
+}
+
 /* Поля посылки: «закрыта» из закрытого списка двух слов, объявленное число
    шагов посылки сходится с числом шагов случая того же варианта, а «вид» не
    спорит с именем посылки там, где имя пишет ядро. */
-static void sverit_polya_posylok(Sverka *s, Sp svoi, Sp stroki, const char *imya_t) {
+static void sverit_polya_posylok(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
+                                 const char *chya) {
   Sp posylki = vse_s_nachalom(svoi, "посылка "); int i;
   char *princip = pervaya_s_nachalom(svoi, "принцип тип ");
   int po_algebre = *princip && strcmp(slovo_posle(princip, "носитель "), "algebra") == 0;
@@ -3231,10 +3289,15 @@ static void sverit_polya_posylok(Sverka *s, Sp svoi, Sp stroki, const char *imya
                     zhdyom ? zhdyom : ""));
     char *variant = v_yolochkah(q, 2);
     long shagov = nomer_posle(q, "шагов "), v_sluchae = shagov_sluchaya(svoi, stroki, variant);
-    if (strcmp(zakryta, "reduction") == 0)
+    if (strcmp(zakryta, "reduction") == 0) {
       esli_ne(s, shagov == 0,
               fmt("теорема «%s», посылка «%s»: закрыта сведением, а шагов объявлено %ld — шагов автора там нет",
                   imya_t, variant, shagov));
+      /* Ч2718: и по ИСХОДНИКУ, а не по одному числу шагов — см. `est_vetv_varianta`. */
+      esli_ne(s, !po_algebre || !*variant || est_vetv_varianta(stroki, chya, variant),
+              fmt("теорема «%s», посылка «%s»: закрыта сведением, а случая на вариант «%s» в функции «%s» исходника нет — ядру нечего было сводить",
+                  imya_t, variant, variant, chya));
+    }
     else if (strcmp(zakryta, "term") == 0)
       esli_ne(s, shagov >= 1 && (v_sluchae < 0 || shagov <= v_sluchae),
               fmt("теорема «%s», посылка «%s»: объявлено шагов %ld, а в случае того же варианта написано %ld",
@@ -3444,7 +3507,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
   sverit_cel(s, svoi, stroki, mesto, imya, imya_t);
   sverit_imena(s, svoi, stroki, imya_t);
   sverit_chislo_shagov(s, svoi, imya_t);
-  sverit_polya_posylok(s, svoi, stroki, imya_t);
+  sverit_polya_posylok(s, svoi, stroki, imya_t, chya);
   sverit_svedenie(s, svoi, imya_t);
   /* Ч392: обе выборки «утверждаем» ниже читают строку исходника КАК ЕЁ ЧИТАЕТ
      ЯЗЫК — иначе примечание в хвосте той же строки подставляет цель, которой
@@ -3526,7 +3589,7 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   razobran = !proigran && !perepisan && dokazano &&
              razborom_celi(s, svoi, stroki, chya, cel);
   sverit_pravila(s, svoi, fmt("утверждение «%s»", imya));
-  sverit_polya_posylok(s, svoi, stroki, imya);
+  sverit_polya_posylok(s, svoi, stroki, imya, chya);
   sverit_svedenie(s, svoi, imya);
   sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran || perepisan || razobran);
   /* Ч363: и узлы, и СНЯТЫЕ ИМИ МЕСТА — числом. Второе нужно тому, кто считает

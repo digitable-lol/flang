@@ -1102,7 +1102,7 @@ da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang
 0f8b911ee5eb576b3d68d807d6937d17|5|3|2|0|0|scripts/tab-host-guard.flang
-69bf909a9e2049e05ba96acc758128a1|25|19|5|1|0|scripts/tree-inventory.flang
+69bf909a9e2049e05ba96acc758128a1|32|19|5|1|0|scripts/tree-inventory.flang
 42d8f37919203b62c6e3362c82d81593|8|3|3|2|0|scripts/version-guard.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang

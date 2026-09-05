@@ -65,8 +65,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 100 | 17 176 | 89 | 11 342 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17176 --> |
-| C | 38 | 774 066 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774066 --> |
+| оболочка | 100 | 17 222 | 89 | 11 342 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17222 --> |
+| C | 38 | 774 073 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774073 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |

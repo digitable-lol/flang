@@ -5,8 +5,8 @@
 Write a rule once, in the words its domain already uses, and the same file is the
 implementation, the test suite and the documentation at once: the examples sit inside the
 function and run on every check, the compiler *proves* termination instead of taking your word
-for it, and one command prints the rule into C, Go, Rust, Java, JavaScript, Elixir, Python or
-C#. A written specification drifts from the code the day after it is merged. Here there is
+for it, and one command prints the rule into C, C++, Go, Rust, Java, JavaScript, Elixir,
+Python or C#. A written specification drifts from the code the day after it is merged. Here there is
 nothing to drift, because the specification **is** the program.
 
 The authoring surface is Russian; an English surface exists and lexes to the same identifiers
@@ -35,7 +35,7 @@ next to its body and run on every check of the file.
 The rest of the shape: sum types, pattern matching, lists, strings as data, a module
 system that links by name, indentation instead of brackets, and two keyword surfaces —
 Russian and English — that lex into the very same identifiers. One source is printed
-into eight target languages. The compiler is written in flang itself.
+into nine target languages. The compiler is written in flang itself.
 
 ## What kind of language this is
 
@@ -45,7 +45,7 @@ carries its own examples and its own promise about the result right next to its 
 `тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
 it cannot prove. The language has sum types, lists, strings as data, recursion, pattern
 matching, module linking, a category surface and a concurrency surface, and one source is
-printed into eight target languages.
+printed into nine target languages.
 
 **There is one compiler, and it is written in flang.** It lives in
 [`flang/self/`](flang/self) — 57 files, 113,693 lines (measured 29 August 2026; 60 files and 118,918 lines
@@ -96,9 +96,9 @@ point, packaging, measurements, documentation and the example programs.
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap»
-flang/self/       the compiler: lexer, parser, types, totality, proof core, eight printers
+flang/self/       the compiler: lexer, parser, types, totality, proof core, nine printers
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
-flang/src/        the target runtimes, copied verbatim into printed code — C, Go, Rust, Java, JS, Elixir, Python, C#
+flang/src/        the target runtimes, copied verbatim into printed code — C, C++, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
 flang/proof/      what the proof core may and may not conclude, and why
 flang/проверки/   checks written in flang, walked by the binary
@@ -232,7 +232,7 @@ self-hosting languages ship — Go carried generated C for years, Nim still does
 
 **Be clear about what that binary is.** It answers to all twelve commands, the editor
 language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`,
-`lock`, `package`, `repl` and `lsp`. It prints into all eight targets. What it does not have is a separate
+`lock`, `package`, `repl` and `lsp`. It prints into all nine targets. What it does not have is a separate
 evaluator — which is why `flang repl` evaluates the only honest way it can: it prints the
 session to C, builds it with the system `cc` against the runtime installed beside it, and runs
 that. Without a `cc` the shell does not switch off — it keeps checking parse, types and
@@ -259,7 +259,7 @@ What the bootstrap point is, what guards it and how it is updated:
 
 ---
 
-## One function, eight targets
+## One function, nine targets
 
 This is `examples/leetcode/035-search-insert-position.flang` — LeetCode 35, the position
 where a value belongs in a sorted list. One fold, proven terminating:
@@ -282,11 +282,11 @@ flang emit examples/leetcode/035-search-insert-position.flang --target c --out .
 #              …and again with go, rust, python, java, csharp, elixir, js
 ```
 
-and is pasted verbatim, not written by hand. Seven backends emit the module, a runtime, a
+and is pasted verbatim, not written by hand. Eight backends emit the module, a runtime, a
 JSON-in/JSON-out driver, a build file and — where the target has one — a package manifest
 (`go.mod`, `Cargo.toml`, `flang.csproj`); the JavaScript backend emits a single self-contained
 module plus the same driver next to it (`flang_cli.js`, dropped by `--no-cli`) — the driver is
-what makes the declared call-depth limit real for an ordinary run. Two of the eight are shown
+what makes the declared call-depth limit real for an ordinary run. Two of the nine are shown
 here, and only the function itself; the other six read the same way — run the command and look.
 
 <details open>
@@ -403,7 +403,7 @@ differentially against the deleted implementation — the same program printed i
 directory, built with the real toolchain and run as a real process on a grid of inputs from its
 own examples plus deliberately wrong arguments. Those runs lived in `flang/test/emit-*.test.mjs`,
 they went with the implementation they compared against, and nothing has replaced them. What can
-be said today is only that all eight targets print, which is checked by running each of them.
+be said today is only that all nine targets print, which is checked by running each of them.
 
 The cost of that gap is named where the difference shows: `flang emit` does not check the
 program at all — not types, not totality — so run `flang check` first and read what it says.
@@ -413,7 +413,7 @@ program at all — not types, not totality — so run `flang check` first and re
 ## Why this exists
 
 A rule is written once, in the form a domain expert reads, not only a programmer. From that
-single source come the implementation, the tests and the checks — in eight languages at once,
+single source come the implementation, the tests and the checks — in nine languages at once,
 and a declared `свойство` becomes a postcondition of the emitted code: a Python service, a Go
 service and a C binary refuse the same input with the same words.
 
@@ -676,7 +676,7 @@ Stated plainly, because a project with unmarked boundaries cannot be relied on.
   left proves that the committed C matches what today's sources print — which catches a stale
   artefact, and cannot catch a misunderstanding, because there is no second understanding to
   disagree with.
-- **Seven of the eight backends have no check running.** See above.
+- **Eight of the nine backends have no check running.** See above.
 - **The category and concurrency surface is not judged by the binary.** It says so and exits 2
   rather than passing such a program in silence.
 

@@ -1096,7 +1096,7 @@ cd5ba8e6506a5d6b59898333c0d061b2|26|26|0|0|0|scripts/plan-across-targets.flang
 b7b038af83dfc2fd177142569ecab833|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 8c3d550e05448975c2bc923b8671b80d|8|8|0|0|0|scripts/release-guard.flang
-6532ecb8603b4f6eb127b8d911d1d5d9|24|22|2|0|0|scripts/release-in-c.flang
+6532ecb8603b4f6eb127b8d911d1d5d9|26|22|2|0|0|scripts/release-in-c.flang
 da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang

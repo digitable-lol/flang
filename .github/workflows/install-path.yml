@@ -192,6 +192,12 @@ jobs:
           node-version: 24
       - run: brew install gnu-tar
 
+      # ПОСЛЕДНЕЕ ИМЯ В СПИСКЕ — `runtime`, каталог рантаймов девяти целей.
+      # Прежде здесь стояло `share`, и такого каталога скрипт выпуска не клал
+      # НИКОГДА: с самого заведения этого файла шаг падал на
+      # `gtar: share: Cannot stat`, то есть работа brew ниже не доходила до
+      # brew вовсе. Проверено прогоном 5 сентября 2026: та же команда со словом
+      # `share` даёт код 2, со словом `runtime` — собирает архив.
       - name: Собрать архив и упаковать той же командой, что в формуле
         run: |
           set -eu
@@ -199,7 +205,7 @@ jobs:
           gtar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
                --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - \
                LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
-               flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h share \
+               flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h runtime \
             | gzip -9n > "$PWD/output/flang-local-c.tar.gz"
 
       - name: Формула на свежий архив
@@ -243,3 +249,27 @@ jobs:
           "$(brew --prefix)/bin/flang" emit проба.flang --target c --out печать
           test -f печать/flang_runtime.h
           grep -q 'SPDX-FileCopyrightText' печать/flang_runtime.h
+
+      # ВСЕ ДЕВЯТЬ ЦЕЛЕЙ, А НЕ ОДНА. Шаг выше щупает `c` — и щупал только её,
+      # пока brew ставил рантайм одной цели из девяти и восемь остальных у
+      # поставившего не работали (задача 7261). Здесь каждая цель печатается из
+      # поставленного brew, без единого ключа, и красная называется по имени.
+      - name: Поставленное brew умеет печатать во все девять целей
+        run: |
+          set -eu
+          printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
+          beda=0
+          for cel in c cpp csharp elixir go java js python rust; do
+            if "$(brew --prefix)/bin/flang" emit проба.flang --target "$cel" --out "печать-$cel"; then
+              echo "  зелена  $cel"
+            else
+              echo "::error::цель $cel не печатается из установки brew — рантайма нет в share/flang/$cel"
+              beda=$((beda + 1))
+            fi
+          done
+          celey=$(find "$(brew --prefix)/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
+          if [ "$celey" -ne 9 ]; then
+            echo "::error::в share/flang легло каталогов целей: $celey, а печать обещает девять"
+            beda=$((beda + 1))
+          fi
+          [ "$beda" -eq 0 ] || exit 1

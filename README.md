@@ -202,25 +202,40 @@ flang check m.flang         # parse, types, totality, proofs, examples — in wo
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
 
-**`flang emit --target c` needs four runtime files, and before 0.5.3 they were in neither the
-archive nor the installation.** Printing copies `flang_runtime.h`, `flang_runtime.c`,
-`flang_cli.c` and `flang_repl.c` into the output **verbatim**, so it reads them from disk — in
-turn from `--runtime <dir>`, from `$FLANG_RUNTIME_DIR`, and from `share/flang/c` next to the
-command. From 0.5.3 both the formula and the plugin put them there; archives 0.5.0—0.5.2 do not
-carry them at all, and `flang emit` answers «не найдены исходники рантайма C». While an older
-version is installed, here is the **temporary workaround**, verified by a run: take them from a
-clone.
+**What gets installed, not just what gets printed.** `flang emit` copies a target's runtime
+sources into the output **verbatim**, so it reads them from disk — in turn from `--runtime <dir>`,
+from `$FLANG_RUNTIME_DIR`, and from `share/flang/<target>` next to the command. Nothing found and
+`flang emit` answers «не найдены исходники рантайма» and prints nothing at all.
+
+**The installation carries the runtimes of all nine targets** — 32 files, 2,435,747 bytes, in nine
+`share/flang/<target>` directories. <!-- СНЯТО 2026-09-05 файлов flang/src/emit/*/* = 32 --> The
+Homebrew formula, the asdf plugin and the release archive all do this (the archive carries them in
+a `runtime/` directory). Verified by a run on 5 September 2026: archive built, installed by the
+plugin, and from the installed prefix all nine targets print with no flags at all.
+
+**Until 5 September 2026 one target out of nine was installed.** Both packagings shipped only
+`share/flang/c`, so `--target js`, `--target go` and six others did not work for anyone who
+installed — although all of them are promised here, in `man`, and in the binary's own help. The
+same old shape of bug: the formula's test exercised the single target `c`, and so it was green
+every single time. It now exercises two (`c` and `js`) and counts the nine directories. Fixed by
+task 7261.
+
+While version 0.7.11 or older is installed, here is the **temporary workaround**, verified by a
+run: take the runtime from a clone.
 
 ```bash
 git clone https://github.com/digitable-lol/flang
-flang emit m.flang --target c --out out --runtime flang/flang/src/emit/c
-# the same, once: export FLANG_RUNTIME_DIR=$PWD/flang/flang/src/emit/c
+flang emit m.flang --target js --out out --runtime flang/flang/src/emit/js
+# the same, once: export FLANG_RUNTIME_DIR=$PWD/flang/flang/src/emit/js
 ```
+
+The `cpp` target has a different contract: both the flag and the variable expect the **root**
+(`flang/src/emit`), not the target directory, because three of its four files come from `c/` and
+only its own `cpp/flang_cpp.hpp` comes from `cpp/`.
 
 The files at the top of the unpacked archive will **not** do, despite the identical names: those
 are printed copies whose first line is the «Сгенерировано flang» header, and printing rejects them
-so as not to stamp that header a second time. The other seven targets read their runtimes the
-same way, from `flang/src/emit/<target>/`.
+so as not to stamp that header a second time.
 
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb) and the
 tap — [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap) — serves it.

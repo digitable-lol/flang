@@ -87,7 +87,6 @@ docs/site/install.md	hello.flang	иллюстративное имя в разб
 docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
 docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/why-javascript-remains.md	build.flang	концептуальный шаг конвейера в docs/why-javascript-remains.md
 docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	flang_compiler.c	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md	u-dok-hash-z1.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -163,7 +162,6 @@ tasks/completed/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблон�
 tasks/completed/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/0049-the-last-javascript-leaves-the-tree.md	count-library.flang	концептуальный шаг в задаче 0049, не файл
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
 tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта

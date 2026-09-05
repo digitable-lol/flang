@@ -386,5 +386,5 @@ AST — 62 яруса JSON.
 
 * `docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md`
   — та же цена у вычислителя, на один зов.
-* `tasks/1600-real-mutual-recursion-cycles-are-measured.md`
-* `tasks/0059-walking-the-functions-costs-a-frame-each.md`
+* `tasks/completed/1600-real-mutual-recursion-cycles-are-measured.md`
+* `tasks/completed/0059-walking-the-functions-costs-a-frame-each.md`

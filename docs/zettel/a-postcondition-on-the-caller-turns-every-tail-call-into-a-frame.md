@@ -146,5 +146,5 @@
 
 * `docs/zettel/obligations-list-built-by-descent-costs-a-square.md` — тот же
   приём против КВАДРАТА по памяти, а не против глубины.
-* `tasks/0059-walking-the-functions-costs-a-frame-each.md`
+* `tasks/completed/0059-walking-the-functions-costs-a-frame-each.md`
 * `tasks/0003-seed-reprint-finishes.md`

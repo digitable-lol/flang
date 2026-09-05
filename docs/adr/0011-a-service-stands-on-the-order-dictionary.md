@@ -2,8 +2,8 @@
 
 **Состояние:** ПРЕДЛОЖЕНИЕ, владельцем не рассмотрено
 **Дата:** 26 августа 2026
-**Основание:** задачи [0047](../../tasks/0047-the-language-can-open-a-connection-itself.md)
-и [0018](../../tasks/0018-how-to-call-foreign-code.md); словарь
+**Основание:** задачи [0047](../../tasks/completed/0047-the-language-can-open-a-connection-itself.md)
+и [0018](../../tasks/completed/0018-how-to-call-foreign-code.md); словарь
 [`flang/self/parser.flang`](../../flang/self/parser.flang); хозяева
 [`flang_repl.c`](../../flang/src/emit/c/flang_repl.c) и
 [`flang_conc.c`](../../flang/src/emit/c/flang_conc.c);

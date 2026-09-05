@@ -77,4 +77,4 @@
 ## Рядом
 
 * `docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md`
-* `tasks/0059-walking-the-functions-costs-a-frame-each.md`
+* `tasks/completed/0059-walking-the-functions-costs-a-frame-each.md`

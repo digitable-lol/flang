@@ -4,7 +4,7 @@
 **Дата:** 26 августа 2026
 **Основание:** задача
 [0028](../../tasks/0028-typed-ast-instead-of-generic-value.md) и отменённая из-за
-неё [0029](../../tasks/0029-typescript-target-buys-almost-nothing.md);
+неё [0029](../../tasks/completed/0029-typescript-target-buys-almost-nothing.md);
 `flang/self/SPEC.md` строки 1605, 1831, 1989, 2110;
 [`flang/core/json.flang`](../../flang/core/json.flang);
 заметки

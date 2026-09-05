@@ -2,9 +2,9 @@
 
 **Состояние:** ПРЕДЛОЖЕНИЕ, владельцем не рассмотрено
 **Дата:** 26 августа 2026
-**Основание:** задача [0061](../../tasks/0061-attach-to-a-running-program.md);
-рядом [0031](../../tasks/0031-reprint-says-how-far-it-got.md) (строка хода
-через `alarm`) и [0021](../../tasks/0021-hot-swap-reaches-a-live-node.md)
+**Основание:** задача [0061](../../tasks/completed/0061-attach-to-a-running-program.md);
+рядом [0031](../../tasks/completed/0031-reprint-says-how-far-it-got.md) (строка хода
+через `alarm`) и [0021](../../tasks/completed/0021-hot-swap-reaches-a-live-node.md)
 (веление доезжает до живого узла); [ADR-0011](0011-a-service-stands-on-the-order-dictionary.md)
 (граница «решает / ждёт»), [ADR-0008](0008-layer-boundary.md) (расширять
 словарём, общего шлюза не заводить); рантайм

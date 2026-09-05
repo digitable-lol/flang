@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
 # -*- coding: utf-8 -*-
 """Ч9987: объединяет привязка-исходная.py (если/отступ) и привязка-широкая.py
 (или/и-притом/не) под общим фильтром «только функции запрошенного файла» —

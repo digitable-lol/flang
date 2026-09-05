@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
 # -*- coding: utf-8 -*-
 """Ч9987: чинит привязка-широкая.py (Ч413)/привязка.py (Ч332) — обе гуляли по
 ВСЕМУ дереву `flang ast`, включая функции из чужих файлов (плоское замыкание

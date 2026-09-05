@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
 # -*- coding: utf-8 -*-
 """КРУГООБОРОТ: собрать текст обратно из потока токенов и сличить с исходником.
 

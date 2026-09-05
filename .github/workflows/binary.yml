@@ -501,6 +501,26 @@ jobs:
         run: ./bootstrap/flang io scripts/dictionary-guard.flang
       - name: Справочная страница (man) отвечает исходнику
         run: ./bootstrap/flang io scripts/manpage-guard.flang
+      # Порча — переписанное обещание в README.ru.md. Сторож держит фразу
+      # дословно и обязан сказать «обещание пропало», а не промолчать. 6612.
+      - name: Сторож обещаний о печати умеет краснеть
+        run: |
+          set -u
+          podlog=README.ru.md
+          cp "$podlog" "$podlog.do"
+          sed -i 's/Здесь показаны две цели из восьми/Здесь показаны две цели из девяти/' "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: фразы про две цели из восьми в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if ./bootstrap/flang io scripts/emit-promises-guard.flang; then
+            git checkout -- "$podlog"
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$podlog"
       - name: Числа прозы о печати сходятся с прогоном
         run: ./bootstrap/flang io scripts/emit-promises-guard.flang
       - name: Сильное слово о доказанности не сказано про слабое основание

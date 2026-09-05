@@ -447,6 +447,26 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
+      # Порча — снятая строка SPDX-License-Identifier у одного публикуемого
+      # исходника. Сторож обязан назвать файл. Задача 6612.
+      - name: Сторож лицензий умеет краснеть
+        run: |
+          set -u
+          podlog=flang/src/emit/c/flang_runtime.c
+          cp "$podlog" "$podlog.do"
+          sed -i '/SPDX-License-Identifier/d' "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки SPDX в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if bootstrap/flang io scripts/license-guard.flang; then
+            git checkout -- "$podlog"
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$podlog"
       - run: bootstrap/flang io scripts/license-guard.flang
 
   # ── ССЫЛКИ: НАЗАД НА ОБЫЧНЫЙ РАННЕР, НО ПОКА СОВЕТОМ, А НЕ ПРИГОВОРОМ ────
@@ -757,6 +777,34 @@ jobs:
         with:
           node-version: 24
       - run: make -C bootstrap -j"$(nproc)"
+      # Порча — снятая запись из ведомости долга. Ведомость сверяется в обе
+      # стороны, и снятая запись обязана дать «незнакомец». Задача 6612.
+      - name: Сторож ключей умеет краснеть
+        run: |
+          set -u
+          podlog=flang/scripts/cli-keys-debt.json
+          cp "$podlog" "$podlog.do"
+          python3 - <<'PY'
+          import io, json
+          p = 'flang/scripts/cli-keys-debt.json'
+          d = json.load(io.open(p, encoding='utf-8'))
+          razryad = d['разряд-1-только-в-C']
+          assert '--fast' in razryad, 'подлог не собрался: записи --fast в ведомости нет'
+          del razryad['--fast']
+          io.open(p, 'w', encoding='utf-8').write(
+              json.dumps(d, ensure_ascii=False, indent=2) + '\n')
+          PY
+          if cmp -s "$podlog.do" "$podlog"; then
+            mv "$podlog.do" "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: ведомость $podlog не изменилась — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          if node flang/scripts/cli-keys-guard.mjs; then
+            mv "$podlog.do" "$podlog"
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+          mv "$podlog.do" "$podlog"
       - run: node flang/scripts/cli-keys-guard.mjs
 
   # Страницы, отставшие от дерева: расшифровка прогона на странице — это замер,
@@ -996,3 +1044,66 @@ jobs:
           mv "$podlog.do" "$podlog"
       - name: сторожа без зова сходятся с ведомостью
         run: ./ярлык зов:проверка
+
+      # ── Ещё двое, прогнанные и снабжённые подлогом задачей 6612 ────────────
+      #
+      # Оба числились ЗВАНЫМИ у переписи зова, и оба званы не были: прибор
+      # считает зов ПО ФАЙЛУ, а у файла бывает несколько ключей и несколько
+      # планов. `scripts/raskrutka.sh` в CI зовут — но с `--check`, не с
+      # `--stroki`; `flang/scripts/kernel-forgeries.flang` зовут — но планом
+      # «Подделки остаются недоказанными», не «Аксиом ноль». Ключ и план прибор
+      # не различает, и обе проверки числились работающими, не работая ни разу.
+      # Здесь они встают парой: сперва подлог обязан покраснеть, потом рабочий
+      # шаг обязан быть зелёным. Времена: 4 с и 21 с на прогон.
+      #
+      # ЗОВЁМ ПО ИМЕНИ ЯРЛЫКА, А НЕ ПО ПУТИ ФАЙЛА, и это не вкусовщина. Оба
+      # прибора переписи считают зов по файлу; напиши здесь
+      # `sh scripts/raskrutka.sh --stroki` — и они зачли бы пробу ещё и
+      # `раскрутка:проверка`, у которого её нет и не будет дёшево (полный
+      # прогон дороже 130 с). Имя ярлыка однозначно, путь — нет.
+
+      - name: сторож литералов C краснеет на незакрытой строке
+        run: |
+          set -u
+          podlog=flang/src/emit/c/flang_runtime.c
+          cp "$podlog" "$podlog.do"
+          # Незакрытый строковый литерал ломает сборку C на четвёртой минуте, а
+          # этот сторож обязан назвать его за секунду — файлом и строкой.
+          printf '\nstatic const char *podlog = "не закрыт;\n' >> "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: дописать строку в $podlog не вышло — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if ./ярлык строки:проверка; then
+            git checkout -- "$podlog"
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$podlog"
+      - name: литералы C в рантайме закрыты
+        run: ./ярлык строки:проверка
+
+      - name: сторож аксиом краснеет на слове «аксиома» в ядре
+        run: |
+          set -u
+          podlog=flang/self/proofterm.flang
+          cp "$podlog" "$podlog.do"
+          # Слово «аксиома» вне закрытого перечня доводов — ровно то, ради чего
+          # заведён план «Аксиом ноль»: аксиом в ядре обязано быть ноль.
+          printf '\n// подлог: здесь завелась аксиома\n' >> "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: дописать строку в $podlog не вышло — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if ./ярлык аксиомы:проверка; then
+            git checkout -- "$podlog"
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$podlog"
+      - name: аксиом в ядре ноль
+        run: ./ярлык аксиомы:проверка
